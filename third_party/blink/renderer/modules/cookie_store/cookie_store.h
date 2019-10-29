@@ -9,7 +9,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom-blink.h"
-#include "third_party/blink/public/platform/web_canonical_cookie.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -21,6 +20,7 @@
 
 namespace blink {
 
+class CanonicalCookie;
 class CookieStoreDeleteOptions;
 class CookieStoreGetOptions;
 class CookieStoreSetOptions;
@@ -97,8 +97,8 @@ class CookieStore final : public EventTargetWithInlineData,
                             const RegisteredEventListener&) final;
 
  private:
-  using DoReadBackendResultConverter =
-      void (*)(ScriptPromiseResolver*, const Vector<WebCanonicalCookie>&);
+  using DoReadBackendResultConverter = void (*)(ScriptPromiseResolver*,
+                                                const Vector<CanonicalCookie>&);
 
   // Common code in CookieStore::{get,getAll}.
   //
@@ -115,13 +115,13 @@ class CookieStore final : public EventTargetWithInlineData,
   // the promise result expected by CookieStore.getAll.
   static void GetAllForUrlToGetAllResult(
       ScriptPromiseResolver*,
-      const Vector<WebCanonicalCookie>& backend_result);
+      const Vector<CanonicalCookie>& backend_result);
 
   // Converts the result of a RestrictedCookieManager::GetAllForUrl mojo call to
   // the promise result expected by CookieStore.get.
   static void GetAllForUrlToGetResult(
       ScriptPromiseResolver*,
-      const Vector<WebCanonicalCookie>& backend_result);
+      const Vector<CanonicalCookie>& backend_result);
 
   // Common code in CookieStore::delete and CookieStore::set.
   ScriptPromise DoWrite(ScriptState*,

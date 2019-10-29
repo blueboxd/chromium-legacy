@@ -481,10 +481,10 @@ TEST_P(ParameterizedVisibleUnitsWordTest,
 }
 
 TEST_P(ParameterizedVisibleUnitsWordTest, NextWordBasic) {
-  EXPECT_EQ("<p> (1|) abc def</p>", DoNextWord("<p>| (1) abc def</p>"));
-  EXPECT_EQ("<p> (1|) abc def</p>", DoNextWord("<p> |(1) abc def</p>"));
+  EXPECT_EQ("<p> (|1) abc def</p>", DoNextWord("<p>| (1) abc def</p>"));
+  EXPECT_EQ("<p> (|1) abc def</p>", DoNextWord("<p> |(1) abc def</p>"));
   EXPECT_EQ("<p> (1|) abc def</p>", DoNextWord("<p> (|1) abc def</p>"));
-  EXPECT_EQ("<p> (1) abc| def</p>", DoNextWord("<p> (1|) abc def</p>"));
+  EXPECT_EQ("<p> (1)| abc def</p>", DoNextWord("<p> (1|) abc def</p>"));
   EXPECT_EQ("<p> (1) abc| def</p>", DoNextWord("<p> (1)| abc def</p>"));
   EXPECT_EQ("<p> (1) abc| def</p>", DoNextWord("<p> (1) |abc def</p>"));
   EXPECT_EQ("<p> (1) abc| def</p>", DoNextWord("<p> (1) a|bc def</p>"));
@@ -535,16 +535,21 @@ TEST_P(ParameterizedVisibleUnitsWordTest, NextWordPunctuation) {
   EXPECT_EQ("abc|.def", DoNextWord("|abc.def"));
   EXPECT_EQ("abc|.def", DoNextWord("a|bc.def"));
   EXPECT_EQ("abc|.def", DoNextWord("ab|c.def"));
-  EXPECT_EQ("abc.def|", DoNextWord("abc|.def"));
+  EXPECT_EQ("abc.|def", DoNextWord("abc|.def"));
   EXPECT_EQ("abc.def|", DoNextWord("abc.|def"));
 
   EXPECT_EQ("abc|...def", DoNextWord("|abc...def"));
   EXPECT_EQ("abc|...def", DoNextWord("a|bc...def"));
   EXPECT_EQ("abc|...def", DoNextWord("ab|c...def"));
-  EXPECT_EQ("abc...def|", DoNextWord("abc|...def"));
-  EXPECT_EQ("abc...def|", DoNextWord("abc.|..def"));
-  EXPECT_EQ("abc...def|", DoNextWord("abc..|.def"));
+  EXPECT_EQ("abc...|def", DoNextWord("abc|...def"));
+  EXPECT_EQ("abc...|def", DoNextWord("abc.|..def"));
+  EXPECT_EQ("abc...|def", DoNextWord("abc..|.def"));
   EXPECT_EQ("abc...def|", DoNextWord("abc...|def"));
+
+  EXPECT_EQ("abc| ((())) def", DoNextWord("|abc ((())) def"));
+  EXPECT_EQ("abc ((()))| def", DoNextWord("abc |((())) def"));
+  EXPECT_EQ("abc| 32.3 def", DoNextWord("|abc 32.3 def"));
+  EXPECT_EQ("abc 32.3| def", DoNextWord("abc |32.3 def"));
 }
 
 TEST_P(ParameterizedVisibleUnitsWordTest, NextWordSkipTab) {
@@ -559,7 +564,7 @@ TEST_P(ParameterizedVisibleUnitsWordTest, NextWordSkipTextControl) {
             DoNextWord("f|oo<input value=\"bla\">bar"));
   EXPECT_EQ("foo|<input value=\"bla\">bar",
             DoNextWord("fo|o<input value=\"bla\">bar"));
-  EXPECT_EQ("foo<input value=\"bla\">bar|",
+  EXPECT_EQ("foo<input value=\"bla\">|bar",
             DoNextWord("foo|<input value=\"bla\">bar"));
   EXPECT_EQ("foo<input value=\"bla\">bar|",
             DoNextWord("foo<input value=\"bla\">|bar"));
@@ -578,8 +583,8 @@ TEST_P(ParameterizedVisibleUnitsWordTest, PreviousWordBasic) {
   EXPECT_EQ("<p> |(1) abc def</p>", DoPreviousWord("<p> |(1) abc def</p>"));
   EXPECT_EQ("<p> |(1) abc def</p>", DoPreviousWord("<p> (|1) abc def</p>"));
   EXPECT_EQ("<p> (|1) abc def</p>", DoPreviousWord("<p> (1|) abc def</p>"));
-  EXPECT_EQ("<p> (|1) abc def</p>", DoPreviousWord("<p> (1)| abc def</p>"));
-  EXPECT_EQ("<p> (|1) abc def</p>", DoPreviousWord("<p> (1) |abc def</p>"));
+  EXPECT_EQ("<p> (1|) abc def</p>", DoPreviousWord("<p> (1)| abc def</p>"));
+  EXPECT_EQ("<p> (1|) abc def</p>", DoPreviousWord("<p> (1) |abc def</p>"));
   EXPECT_EQ("<p> (1) |abc def</p>", DoPreviousWord("<p> (1) a|bc def</p>"));
   EXPECT_EQ("<p> (1) |abc def</p>", DoPreviousWord("<p> (1) ab|c def</p>"));
   EXPECT_EQ("<p> (1) |abc def</p>", DoPreviousWord("<p> (1) abc| def</p>"));
@@ -588,6 +593,12 @@ TEST_P(ParameterizedVisibleUnitsWordTest, PreviousWordBasic) {
   EXPECT_EQ("<p> (1) abc |def</p>", DoPreviousWord("<p> (1) abc de|f</p>"));
   EXPECT_EQ("<p> (1) abc |def</p>", DoPreviousWord("<p> (1) abc def|</p>"));
   EXPECT_EQ("<p> (1) abc |def</p>", DoPreviousWord("<p> (1) abc def</p>|"));
+  EXPECT_EQ("<p> |abc ((())) def</p>",
+            DoPreviousWord("<p> abc |((())) def</p>"));
+  EXPECT_EQ("<p> abc |((())) def</p>",
+            DoPreviousWord("<p> abc ((())) |def</p>"));
+  EXPECT_EQ("<p> |abc 32.3 def</p>", DoPreviousWord("<p> abc |32.3 def</p>"));
+  EXPECT_EQ("<p> abc |32.3 def</p>", DoPreviousWord("<p> abc 32.3 |def</p>"));
 }
 
 TEST_P(ParameterizedVisibleUnitsWordTest, PreviousWordSkipTextControl) {
@@ -599,7 +610,7 @@ TEST_P(ParameterizedVisibleUnitsWordTest, PreviousWordSkipTextControl) {
             DoPreviousWord("fo|o<input value=\"bla\">bar"));
   EXPECT_EQ("|foo<input value=\"bla\">bar",
             DoPreviousWord("foo|<input value=\"bla\">bar"));
-  EXPECT_EQ("|foo<input value=\"bla\">bar",
+  EXPECT_EQ("foo|<input value=\"bla\">bar",
             DoPreviousWord("foo<input value=\"bla\">|bar"));
   EXPECT_EQ("foo<input value=\"bla\">|bar",
             DoPreviousWord("foo<input value=\"bla\">b|ar"));

@@ -66,7 +66,6 @@
 <translation id="1407135791313364759">Отваряне на всички</translation>
 <translation id="1409426117486808224">Опростен изглед на отворените раздели</translation>
 <translation id="1409879593029778104">Изтеглянето на „<ph name="FILE_NAME" />“ е предотвратено, защото файлът вече съществува.</translation>
-<translation id="1413136574162415971">Google може да проверява дали паролите ви са изтекли при нарушение на сигурността на данните. Функцията ще бъде включена, когато влезете с профила си в Google и включите синхронизирането.</translation>
 <translation id="1414981605391750300">Установява се връзка с Google. Това може да отнеме известно време…</translation>
 <translation id="1416550906796893042">Версия на приложението</translation>
 <translation id="1430915738399379752">Печат</translation>
@@ -207,6 +206,7 @@
 <translation id="2498359688066513246">Помощ и отзиви</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2513403576141822879">За още настройки за поверителността, сигурността и събирането на данни вижте <ph name="BEGIN_LINK" />Синхронизиране и услуги на Google<ph name="END_LINK" /></translation>
+<translation id="2517472476991765520">Сканиране</translation>
 <translation id="2518590038762162553">В олекотения режим на Chrome страниците се зареждат по-бързо и се използват до 60 процента по-малко данни. С цел оптимизиране на посещаваните от вас страници Chrome изпраща до Google уеб трафика ви. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Изпраща до Google URL адресите на страниците, които посещавате</translation>
 <translation id="2532336938189706096">Изглед в мрежата</translation>
@@ -877,7 +877,6 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (Актуализирано: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">спестени данни</translation>
 <translation id="7498271377022651285">Моля, изчакайте...</translation>
-<translation id="7510943789645525906">Предупреждава ви, ако използвана от вас парола е изтекла при нарушение на сигурността на данните</translation>
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="751961395872307827">Не може да се установи връзка със сайта</translation>
 <translation id="7521387064766892559">Javascript</translation>
@@ -933,7 +932,6 @@
 <translation id="7886917304091689118">Изпълнява се в Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Изтегля се файл.}other{Изтеглят се # файла.}}</translation>
 <translation id="7929962904089429003">Отваряне на менюто</translation>
-<translation id="7930681627240672853">Проверка на безопасността на паролата</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> не е актуален.</translation>
 <translation id="7947953824732555851">Приемам и влизам</translation>
 <translation id="7963646190083259054">Доставчик:</translation>
@@ -949,7 +947,6 @@
 <translation id="8007176423574883786">Изключено за това устройство</translation>
 <translation id="8013372441983637696">Изчистване на данните ви в Chrome и от това устройство</translation>
 <translation id="8015452622527143194">Стандартен размер на всички елементи на страницата</translation>
-<translation id="8015780634880457457">Google може да проверява дали паролите ви са изтекли при нарушение на сигурността на данните</translation>
 <translation id="802154636333426148">Изтеглянето не бе успешно</translation>
 <translation id="8026334261755873520">Изчистване на данните за сърфирането</translation>
 <translation id="8035133914807600019">Нова папка…</translation>

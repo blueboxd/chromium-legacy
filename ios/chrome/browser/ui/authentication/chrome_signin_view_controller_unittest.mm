@@ -16,6 +16,7 @@
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -142,23 +143,26 @@ class ChromeSigninViewControllerTest
     builder.AddTestingFactory(
         UnifiedConsentServiceFactory::GetInstance(),
         base::BindRepeating(&CreateFakeUnifiedConsentService));
-    context_ = builder.Build();
+    browser_state_ = builder.Build();
+    WebStateList* web_state_list = nullptr;
+    browser_ =
+        std::make_unique<TestBrowser>(browser_state_.get(), web_state_list);
+
     ios::FakeChromeIdentityService* identity_service =
         ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
     identity_service->AddIdentity(identity_);
     identity_manager_ =
-        IdentityManagerFactory::GetForBrowserState(context_.get());
+        IdentityManagerFactory::GetForBrowserState(browser_state_.get());
     fake_consent_auditor_ = static_cast<consent_auditor::FakeConsentAuditor*>(
-        ConsentAuditorFactory::GetForBrowserState(context_.get()));
+        ConsentAuditorFactory::GetForBrowserState(browser_state_.get()));
 
     // Setup view controller.
     vc_ = [[ChromeSigninViewController alloc]
-        initWithBrowserState:context_.get()
-                 accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-                 promoAction:signin_metrics::PromoAction::
-                                 PROMO_ACTION_WITH_DEFAULT
-              signInIdentity:identity_
-                  dispatcher:nil];
+        initWithBrowser:browser_.get()
+            accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
+            promoAction:signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT
+         signInIdentity:identity_
+             dispatcher:nil];
     vc_delegate_ = [[FakeChromeSigninViewControllerDelegate alloc] init];
     vc_.delegate = vc_delegate_;
     UIScreen* screen = [UIScreen mainScreen];
@@ -341,7 +345,8 @@ class ChromeSigninViewControllerTest
   }
 
   web::WebTaskEnvironment task_environment_;
-  std::unique_ptr<TestChromeBrowserState> context_;
+  std::unique_ptr<TestChromeBrowserState> browser_state_;
+  std::unique_ptr<Browser> browser_;
   FakeChromeIdentity* identity_;
   UIWindow* window_;
   ChromeSigninViewController* vc_;

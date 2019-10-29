@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/signin/constants.h"
 
 @protocol ApplicationCommands;
+class Browser;
 @class ChromeIdentity;
 @class ChromeSigninViewController;
 
@@ -83,16 +84,16 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 @property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
 
 // Designated initializer.
-// * |browserState| is the current browser state.
+// * |browser| is the browser where sign-in is being presented.
 // * |accessPoint| represents the access point that initiated the sign-in.
 // * |identity| will be signed in without requiring user input if not nil.
 // * |dispatcher| is the dispatcher that can accept commands for displaying
 //   settings views.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                         accessPoint:(signin_metrics::AccessPoint)accessPoint
-                         promoAction:(signin_metrics::PromoAction)promoAction
-                      signInIdentity:(ChromeIdentity*)identity
-                          dispatcher:(id<ApplicationCommands>)dispatcher;
+- (instancetype)initWithBrowser:(Browser*)browser
+                    accessPoint:(signin_metrics::AccessPoint)accessPoint
+                    promoAction:(signin_metrics::PromoAction)promoAction
+                 signInIdentity:(ChromeIdentity*)identity
+                     dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Cancels the on-going authentication operation (if any). |delegate| will be
 // called with |didFailSignIn|.
@@ -102,6 +103,7 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 
 @interface ChromeSigninViewController (Subclassing)
 
+@property(nonatomic, readonly) Browser* browser;
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 
 // Vertical padding used underneath buttons. Default value is 18.

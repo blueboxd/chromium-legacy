@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "chromecast/media/audio/mixer_service/receiver/receiver.h"
-
 namespace chromecast {
 namespace media {
 class MediaPipelineBackendManager;

@@ -83,14 +83,17 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime IntervalBegin() const { return interval_.begin; }
   SMILTime SimpleDuration() const;
 
-  bool NeedsIntervalUpdate(SMILTime elapsed) const;
   void UpdateInterval(SMILTime presentation_time);
   void UpdateActiveState(SMILTime elapsed);
+  // Updates the next interval time for this element. After calling this,
+  // SMILTimeContainer::Reschedule() should be called in close proximity to
+  // make sure the priority queue is up-to-date/correctly sorted.
+  void UpdateNextIntervalTime(SMILTime presentation_time);
   void UpdateProgressState(SMILTime presentation_time);
   bool IsHigherPriorityThan(const SVGSMILElement* other,
                             SMILTime presentation_time) const;
 
-  SMILTime NextIntervalTime(SMILTime presentation_time) const;
+  SMILTime NextIntervalTime() const { return next_interval_time_; }
   SMILTime ComputeNextIntervalTime(SMILTime presentation_time) const;
   SMILTime NextProgressTime(SMILTime elapsed) const;
   void UpdateAnimatedValue(SVGSMILElement* result_element) {
@@ -107,6 +110,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   unsigned DocumentOrderIndex() const { return document_order_index_; }
   void SetDocumentOrderIndex(unsigned index) { document_order_index_ = index; }
+
+  wtf_size_t& PriorityQueueHandle() { return queue_handle_; }
 
   virtual void ResetAnimatedType() = 0;
   virtual void ClearAnimatedType() = 0;
@@ -166,8 +171,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime ResolveActiveEnd(SMILTime resolved_begin) const;
   SMILTime RepeatingDuration() const;
   const SMILInterval& GetActiveInterval(SMILTime elapsed) const;
-  void SetNewInterval(const SMILInterval&, SMILTime presentation_time);
-  void SetNewIntervalEnd(SMILTime new_end, SMILTime presentation_time);
+  void SetNewInterval(const SMILInterval&);
+  void SetNewIntervalEnd(SMILTime new_end);
 
   void AddInstanceTime(BeginOrEnd begin_or_end,
                        SMILTime time,
@@ -280,6 +285,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   Member<SMILTimeContainer> time_container_;
   unsigned document_order_index_;
+  wtf_size_t queue_handle_;
 
   mutable SMILTime cached_dur_;
   mutable SMILTime cached_repeat_dur_;

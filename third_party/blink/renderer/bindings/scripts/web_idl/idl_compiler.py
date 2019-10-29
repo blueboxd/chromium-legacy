@@ -277,7 +277,8 @@ class IdlCompiler(object):
             self._ir_map.add(new_interface)
 
     def _group_overloaded_functions(self):
-        old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
+        old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.CALLBACK_INTERFACE,
+                                            IRMap.IR.Kind.INTERFACE,
                                             IRMap.IR.Kind.NAMESPACE)
 
         self._ir_map.move_to_new_phase()

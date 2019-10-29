@@ -130,7 +130,7 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled() {
 bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {
   web_app::AppId app_id = web_app::GenerateAppIdFromURL(manifest_.start_url);
   DCHECK(registrar().IsLocallyInstalled(app_id));
-  auto display_mode = registrar().GetAppDisplayMode(app_id);
+  auto display_mode = registrar().GetAppUserDisplayMode(app_id);
   return display_mode == blink::mojom::DisplayMode::kBrowser;
 }
 
@@ -166,7 +166,7 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
   base::Optional<web_app::AppId> app_id =
       registrar().FindAppWithUrlInScope(validated_url_);
   if (app_id.has_value() && *app_id == installed_app_id &&
-      registrar().GetAppDisplayMode(*app_id) ==
+      registrar().GetAppUserDisplayMode(*app_id) ==
           blink::mojom::DisplayMode::kStandalone) {
     OnInstall(blink::mojom::DisplayMode::kStandalone);
   }

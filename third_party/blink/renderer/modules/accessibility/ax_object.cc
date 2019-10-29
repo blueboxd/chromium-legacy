@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
@@ -3122,8 +3123,7 @@ bool AXObject::OnNativeClickAction() {
     return false;
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(document->GetFrame(),
-                                       UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(document->GetFrame());
 
   Element* element = GetElement();
   if (!element && GetNode())
@@ -3133,6 +3133,26 @@ bool AXObject::OnNativeClickAction() {
     return OnNativeFocusAction();
 
   if (element) {
+    // Always set the sequential focus navigation starting point.
+    // Even if this element isn't focusable, if you press "Tab" it will
+    // start the search from this element.
+    GetDocument()->SetSequentialFocusNavigationStartingPoint(element);
+
+    // Explicitly focus the element if it's focusable but not currently
+    // the focused element, to be consistent with
+    // EventHandler::HandleMousePressEvent.
+    if (element->IsMouseFocusable() && !element->IsFocusedElementInDocument()) {
+      Page* const page = GetDocument()->GetPage();
+      if (page) {
+        page->GetFocusController().SetFocusedElement(
+            element, GetDocument()->GetFrame(),
+            FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeMouse,
+                        nullptr));
+      }
+    }
+
+    // For most elements, AccessKeyAction triggers sending a simulated
+    // click, including simulating the mousedown, mouseup, and click events.
     element->AccessKeyAction(true);
     return true;
   }

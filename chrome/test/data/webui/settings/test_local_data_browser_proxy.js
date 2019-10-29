@@ -52,7 +52,7 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
     if (filter === undefined) {
       filter = '';
     }
-    let output = [];
+    const output = [];
     for (let i = 0; i < this.cookieList_.length; ++i) {
       if (this.cookieList_[i].site.indexOf(filter) >= 0) {
         output.push(this.filteredCookieList_[i]);

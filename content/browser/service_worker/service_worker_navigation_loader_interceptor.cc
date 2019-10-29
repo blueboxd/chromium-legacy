@@ -66,11 +66,11 @@ void FallbackCallbackWrapperOnCoreThread(
 void InvokeRequestHandlerOnCoreThread(
     SingleRequestURLLoaderFactory::RequestHandler handler,
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     network::mojom::URLLoaderClientPtrInfo client_info) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   network::mojom::URLLoaderClientPtr client(std::move(client_info));
-  std::move(handler).Run(resource_request, std::move(request),
+  std::move(handler).Run(resource_request, std::move(receiver),
                          std::move(client));
 }
 
@@ -290,14 +290,14 @@ ServiceWorkerNavigationLoaderInterceptor::GetWeakPtr() {
 void ServiceWorkerNavigationLoaderInterceptor::RequestHandlerWrapper(
     SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread,
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     network::mojom::URLLoaderClientPtr client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
       FROM_HERE,
       base::BindOnce(InvokeRequestHandlerOnCoreThread,
                      std::move(handler_on_core_thread), resource_request,
-                     std::move(request), client.PassInterface()));
+                     std::move(receiver), client.PassInterface()));
 }
 
 }  // namespace content

@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1442386063175183758">Lipatan format gate di kanan</translation>
 <translation id="1442987760062738829">Lubang</translation>
-<translation id="1450011005989029586">Pelanggaran data di situs atau aplikasi yang Anda gunakan telah mengungkapkan sandi Anda. Chrome merekomendasikan <ph name="BOLD" /> pada <ph name="ORIGIN" /> sekarang.</translation>
 <translation id="1455413310270022028">Penghapus</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">Tampilkan lainnya</translation>
@@ -275,6 +274,7 @@
 <translation id="2257315177824333709">Maaf, saat ini informasi kartu Anda tidak dapat disimpan</translation>
 <translation id="2262243747453050782">Kesalahan HTTP</translation>
 <translation id="2263079731045660823">Perbarui info IsiOtomatis kartu kredit di setelan Chrome</translation>
+<translation id="2267047181501709434">Memverifikasi identitas Anda...</translation>
 <translation id="2270484714375784793">Nomor telepon</translation>
 <translation id="2277103315734023688">Cari Maju</translation>
 <translation id="2283340219607151381">Simpan dan isi alamat</translation>
@@ -282,6 +282,7 @@
 <translation id="2292556288342944218">Akses Internet Anda diblokir</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
+<translation id="2315864634253056100">Nama situs ini terlihat mirip dengan <ph name="LOOKALIKE_DOMAIN" />. Penyerang terkadang meniru situs dengan membuat perubahan yang sulit terlihat pada alamat web.</translation>
 <translation id="2316887270356262533">Sediakan ruang kurang dari 1 MB. Beberapa situs mungkin dimuat lebih lambat dibuka lagi.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> memerlukan nama pengguna dan sandi.</translation>
 <translation id="2317583587496011522">Kartu debit diterima.</translation>
@@ -476,6 +477,7 @@
 <translation id="3229041911291329567">Informasi versi tentang perangkat dan browser Anda</translation>
 <translation id="323107829343500871">Masukkan CVC untuk <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Selalu deteksi konten penting di situs ini</translation>
+<translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> terlihat mirip dengan <ph name="SUGGESTED_DOMAIN" />. Penyerang terkadang meniru situs dengan menggunakan URL yang mirip.</translation>
 <translation id="3270847123878663523">&amp;Urungkan Pengaturan Ulang</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3281668902344226640">Gunakan Touch ID untuk memverifikasi metode pembayaran yang Anda simpan.</translation>
@@ -680,13 +682,13 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Coba jalankan Diagnostik Jaringan<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Lanjutkan ke <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Valid</translation>
+<translation id="4248776159690739358">Bagikan data tentang peristiwa keamanan yang telah ditandai oleh Perlindungan Ancaman Chrome Enterprise kepada Administrator Anda. Informasi ini dapat mencakup URL halaman yang Anda kunjungi, metadata atau nama file, dan nama pengguna yang Anda gunakan untuk login ke perangkat dan Chrome.</translation>
 <translation id="4250431568374086873">Sambungan ke situs ini tidak sepenuhnya aman</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="425582637250725228">Perubahan yang Anda lakukan mungkin tidak disimpan.</translation>
 <translation id="4258748452823770588">Tanda tangan salah</translation>
 <translation id="4261046003697461417">Dokumen yang dilindungi tidak dapat dianotasi</translation>
 <translation id="4265872034478892965">Diizinkan oleh administrator</translation>
-<translation id="4270615291506829403">mengubah sandi Anda</translation>
 <translation id="4275830172053184480">Mulai ulang perangkat Anda</translation>
 <translation id="4277028893293644418">Setel ulang sandi</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> Anda dikelola oleh <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -766,7 +768,6 @@
 <translation id="4708268264240856090">Sambungan Anda terganggu</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Jalankan Diagnostik Jaringan Windows<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">Pelanggaran data di situs atau aplikasi yang Anda gunakan telah mengungkapkan sandi Anda. Chrome merekomendasikan Anda untuk memeriksa sandi tersimpan sekarang juga.</translation>
 <translation id="4726672564094551039">Muat ulang kebijakan</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
@@ -1183,7 +1184,6 @@
 <translation id="679355240208270552">Diabaikan karena penelusuran default tidak diaktifkan menurut kebijakan.</translation>
 <translation id="681021252041861472">Kolom Wajib Diisi</translation>
 <translation id="6810899417690483278">ID Penyesuaian</translation>
-<translation id="6819440013020405090">Pelanggaran data di situs atau aplikasi yang Anda gunakan telah mengungkapkan sandi Anda. Chrome merekomendasikan Anda untuk memeriksa sandi yang tersimpan dan mengubahnya di <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi server menyajikan sertifikat yang ditandatangani menggunakan algoritme tanda tangan yang lemah (seperti SHA-1). Hal ini berarti kredensial keamanan yang disajikan server mungkin telah dipalsukan, dan server tersebut mungkin bukan yang diharapkan (Anda mungkin sedang berkomunikasi dengan penyerang).</translation>
 <translation id="6826370046007623921">Pencegahan Kebocoran Data</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
@@ -1226,7 +1226,6 @@
 <translation id="7064851114919012435">Info kontak</translation>
 <translation id="7075452647191940183">Permintaan terlalu besar</translation>
 <translation id="7079718277001814089">Situs ini berisi malware</translation>
-<translation id="70850504851191913">Pelanggaran data dilaporkan</translation>
 <translation id="7087282848513945231">Wilayah</translation>
 <translation id="7090678807593890770">Telusuri <ph name="LINK" /> di Google</translation>
 <translation id="7108338896283013870">Sembunyikan</translation>
@@ -1489,6 +1488,7 @@
 <translation id="830498451218851433">Lipatan setengah</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8308427013383895095">Terjemahan gagal karena ada masalah dengan koneksi jaringan.</translation>
+<translation id="831207732689920588">Halaman ini mencurigakan (ditandai oleh Chrome).</translation>
 <translation id="8332188693563227489">Akses ke <ph name="HOST_NAME" /> ditolak</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Jika Anda memahami risiko terhadap keamanan, Anda dapat <ph name="BEGIN_LINK" />mengunjungi situs ini<ph name="END_LINK" /> sebelum program berbahaya tersebut dibuang.</translation>
@@ -1576,6 +1576,7 @@
 <translation id="8903921497873541725">Perbesar</translation>
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="8912362522468806198">Akun Google</translation>
+<translation id="8918231688545606538">Halaman ini mencurigakan</translation>
 <translation id="892588693504540538">Lubang di kanan atas</translation>
 <translation id="8931333241327730545">Ingin menyimpan kartu ini ke Akun Google Anda?</translation>
 <translation id="8932102934695377596">Setelan waktu Anda terlalu lambat</translation>

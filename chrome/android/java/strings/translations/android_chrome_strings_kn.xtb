@@ -9,6 +9,7 @@
 <translation id="10614374240317010">ಉಳಿಸಿಯೇ ಇಲ್ಲ</translation>
 <translation id="1067922213147265141">ಇತರ Google ಸೇವೆಗಳು</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> ನಲ್ಲಿನ ಪುಟಗಳನ್ನು ಎಂದಿಗೂ ಅನುವಾದ ಮಾಡಬೇಡಿ</translation>
+<translation id="107147699690128016">ಫೈಲ್ ವಿಸ್ತರಣೆಯನ್ನು ಬದಲಾಯಿಸಿದರೆ, ಇತರ ಅಪ್ಲಿಕೇಶನ್‌ಗಳಲ್ಲಿ ಫೈಲ್‌ ಅನ್ನು ತೆರೆಯಬಹುದು ಮತ್ತು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಹಾನಿಗೊಳಿಸಬಹುದು.</translation>
 <translation id="1100066534610197918">ಗುಂಪಿನ ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆ</translation>
 <translation id="1105960400813249514">ಪರದೆ ಕ್ಯಾಪ್ಚರ್</translation>
 <translation id="1111673857033749125">ನಿಮ್ಮ ಇತರ ಸಾಧನಗಳಲ್ಲಿ ಉಳಿಸಲಾದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ.</translation>
@@ -65,7 +66,6 @@
 <translation id="1407135791313364759">ಎಲ್ಲವನ್ನೂ ತೆರೆಯಿರಿ</translation>
 <translation id="1409426117486808224">ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳಿಗಾಗಿ ಸರಳೀಕೃತ ವೀಕ್ಷಣೆ</translation>
 <translation id="1409879593029778104">ಫೈಲ್ ಈಗಾಗಲೇ ಇರುವುದರಿಂದ <ph name="FILE_NAME" /> ಡೌನ್‌ಲೋಡ್ ತಡೆಯಲಾಗಿದೆ.</translation>
-<translation id="1413136574162415971">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಡೇಟಾ ಉಲ್ಲಂಘನೆಯ ಭಾಗವಾಗಿತ್ತೇ ಎಂದು Google ಪರಿಶೀಲಿಸಬಹುದು. ನಿಮ್ಮ Google ಖಾತೆಯೊಂದಿಗೆ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ ಮತ್ತು ಸಿಂಕ್ ಆನ್ ಮಾಡಿದಾಗ ಇದನ್ನು ಆನ್ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="1414981605391750300">Google ಅನ್ನು ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ. ಇದು ಒಂದು ನಿಮಿಷದಷ್ಟು ಸಮಯ ತೆಗೆದುಕೊಳ್ಳಬಹುದು...</translation>
 <translation id="1416550906796893042">ಅಪ್ಲಿಕೇಶನ್ ಆವೃತ್ತಿ</translation>
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
@@ -169,6 +169,7 @@
 <translation id="2156074688469523661">ಉಳಿದ ಸೈಟ್‌ಗಳು (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">ನಿಮ್ಮ ಫೋನ್‌ನಿಂದ ಮತ್ತೊಂದು ಸಾಧನಕ್ಕೆ ಏನನ್ನಾದರೂ ಹಂಚಿಕೊಳ್ಳಲು, ಎರಡೂ ಸಾಧನಗಳಲ್ಲಿರುವ, Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸಿಂಕ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
 <translation id="2170088579611075216">VR ಪ್ರಸ್ತುತಿಯನ್ನು ಅನುಮತಿಸಿ ಮತ್ತು ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="2175927920773552910">QR ಕೋಡ್</translation>
 <translation id="218608176142494674">ಹಂಚಿಕೆ</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ನಂತೆ ಮುಂದುವರಿಸಿ</translation>
 <translation id="2234876718134438132">ಸಿಂಕ್ ಮತ್ತು Google ಸೇವೆಗಳು</translation>
@@ -206,6 +207,7 @@
 <translation id="2498359688066513246">ಸಹಾಯ ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆ</translation>
 <translation id="2501278716633472235">ಹಿಂದಿರುಗಿ</translation>
 <translation id="2513403576141822879">ಗೌಪ್ಯತೆ, ಸುರಕ್ಷತೆ ಮತ್ತು ಡೇಟಾ ಸಂಗ್ರಹಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಹೆಚ್ಚಿನ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗಾಗಿ <ph name="BEGIN_LINK" />ಸಿಂಕ್ ಮತ್ತು Google ಸೇವೆಗಳನ್ನು<ph name="END_LINK" /> ನೋಡಿ</translation>
+<translation id="2517472476991765520">ಸ್ಕ್ಯಾನ್</translation>
 <translation id="2518590038762162553">ಲೈಟ್ ಮೋಡ್‍ನಲ್ಲಿ, Chrome ವೇಗವಾಗಿ ಪುಟಗಳನ್ನು ಲೋಡ್ ಮಾಡುತ್ತದೆ, ಮತ್ತು ಸುಮಾರು ಶೇಕಡಾ 60 ರಷ್ಟು ಕಡಿಮೆ ಡೇಟಾವನ್ನು ಬಳಸುತ್ತದೆ. ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳನ್ನು ಆಪ್ಟಿಮೈಸ್ ಮಾಡಲು, Chrome ನಿಮ್ಮ ವೆಬ್ ಟ್ರಾಫಿಕ್ ಕುರಿತ ಮಾಹಿತಿಯನ್ನು Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳ URLಗಳನ್ನು Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
 <translation id="2532336938189706096">ವೆಬ್ ವೀಕ್ಷಣೆ</translation>
@@ -259,6 +261,7 @@
 <translation id="2900528713135656174">ಈವೆಂಟ್ ರಚಿಸು</translation>
 <translation id="290376772003165898"><ph name="LANGUAGE" /> ನಲ್ಲಿನ ಪುಟ ಇಲ್ಲವೇ?</translation>
 <translation id="2904414404539560095">ಟ್ಯಾಬ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಬೇಕಾದ ಸಾಧನಗಳ ಪಟ್ಟಿಯನ್ನು ಪೂರ್ಣ ಎತ್ತರದಲ್ಲಿ ತೆರೆಯಲಾಗಿದೆ.</translation>
+<translation id="2909615210195135082">Google ಅಧಿಸೂಚನೆಗಳು ಪ್ಲ್ಯಾಟ್‌ಫಾರ್ಮ್</translation>
 <translation id="2910701580606108292">ಸಂರಕ್ಷಿತ ವಿಷಯವನ್ನು ಪ್ಲೇ ಮಾಡಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ</translation>
 <translation id="2913331724188855103">ಕುಕೀ ಡೇಟಾವನ್ನು ಉಳಿಸಲು ಮತ್ತು ರೀಡ್ ಮಾಡಲು ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="2923908459366352541">ಹೆಸರು ಅಮಾನ್ಯವಾಗಿದೆ</translation>
@@ -314,6 +317,7 @@
 <translation id="3315103659806849044">ನೀವು ಪ್ರಸ್ತುತವಾಗಿ ನಿಮ್ಮ ಸಿಂಕ್ ಮತ್ತು Google ಸೇವೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡುತ್ತಿರುವಿರಿ. ಸಿಂಕ್ ಆನ್ ಮಾಡುವುದನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು, ಪರದೆಯ ಕೆಳಭಾಗದಲ್ಲಿ ಸಮೀಪದಲ್ಲಿರುವ 'ದೃಢೀಕರಿಸಿ' ಬಟನ್ ಟ್ಯಾಪ್ ಮಾಡಿ. ಮೇಲಕ್ಕೆ ನ್ಯಾವಿಗೇಟ್</translation>
 <translation id="3328801116991980348">ಸೈಟ್ ಮಾಹಿತಿ</translation>
 <translation id="3333961966071413176">ಎಲ್ಲಾ ಸಂಪರ್ಕಗಳು</translation>
+<translation id="3334729583274622784">ಫೈಲ್ ವಿಸ್ತರಣೆಯನ್ನು ಬದಲಿಸುವುದೇ?</translation>
 <translation id="3341058695485821946">ನೀವು ಎಷ್ಟು ಡೇಟಾ ಉಳಿಸಿದ್ದಿರಾ ಎಂದು ನೋಡಿ</translation>
 <translation id="3350687908700087792">ಎಲ್ಲಾ ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="3353615205017136254">Lite ಪುಟವನ್ನು Google ಒದಗಿಸಿದೆ. ಮೂಲ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಲು ಮೂಲ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಿ ಎಂಬ ಬಟನ್ ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
@@ -670,6 +674,7 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="5962718611393537961">ಕುಗ್ಗಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="6000066717592683814">Google ಇರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="6005538289190791541">ಸೂಚಿಸಿದ ಪಾಸ್‌ವರ್ಡ್</translation>
+<translation id="6019358956729171834">ಇನ್ನಷ್ಟು ಲೋಡ್ ಮಾಡಿ…</translation>
 <translation id="6036057147555329831">ಹೆಚ್ಚುವರಿ ICU</translation>
 <translation id="6039379616847168523">ಮುಂದಿನ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
@@ -873,7 +878,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="7494974237137038751">ಉಳಿತಾಯವಾದ ಡೇಟಾ</translation>
 <translation id="7498271377022651285">ದಯವಿಟ್ಟು ಕಾಯಿರಿ...</translation>
-<translation id="7510943789645525906">ನೀವು ಬಳಸುವ ಪಾಸ್‌ವರ್ಡ್ ಡೇಟಾ ಉಲ್ಲಂಘನೆಯ ಭಾಗವಾಗಿದ್ದರೆ ನಿಮಗೆ ಎಚ್ಚರಿಕೆ ನೀಡುತ್ತದೆ</translation>
 <translation id="7514365320538308">ಡೌನ್‌ಲೋಡ್</translation>
 <translation id="751961395872307827">ಸೈಟ್‌ಗೆ ಸಂಪರ್ಕಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -929,7 +933,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="7886917304091689118">Chrome ನಲ್ಲಿ ಚಾಲನೆಯಾಗುತ್ತಿದೆ</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{ಫೈಲ್ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ.}one{# ಫೈಲ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ.}other{# ಫೈಲ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ.}}</translation>
 <translation id="7929962904089429003">ಮೆನು ತೆರೆಯಿರಿ</translation>
-<translation id="7930681627240672853">ಪಾಸ್‌ವರ್ಡ್ ಸುರಕ್ಷತೆಯನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ನ ಅವಧಿ ಮುಗಿದಿದೆ.</translation>
 <translation id="7947953824732555851">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಸೈನ್‌ ಇನ್‌ ಮಾಡಿ</translation>
 <translation id="7963646190083259054">ಮಾರಾಟಗಾರ:</translation>
@@ -945,7 +948,6 @@ VR ಗೆ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ನೀವು ಈ ವೆ
 <translation id="8007176423574883786">ಈ ಸಾಧನಕ್ಕೆ ಆಫ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8013372441983637696">ಈ ಸಾಧನದಿಂದ ನಿಮ್ಮ Chrome ಡೇಟಾವನ್ನು ಸಹ ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="8015452622527143194">ಪುಟದಲ್ಲಿರುವ ಪ್ರತಿಯೊಂದನ್ನೂ ಡೀಫಾಲ್ಟ್ ಗಾತ್ರಕ್ಕೆ ಹಿಂತಿರುಗಿಸಿ</translation>
-<translation id="8015780634880457457">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಡೇಟಾ ಉಲ್ಲಂಘನೆಯ ಭಾಗವಾಗಿತ್ತೇ ಎಂದು Google ಪರಿಶೀಲಿಸಬಹುದು</translation>
 <translation id="802154636333426148">ಡೌನ್‌ಲೋಡ್‌ ವಿಫಲಗೊಂಡಿದೆ</translation>
 <translation id="8026334261755873520">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="8035133914807600019">ಹೊಸ ಫೋಲ್ಡರ್‌…</translation>

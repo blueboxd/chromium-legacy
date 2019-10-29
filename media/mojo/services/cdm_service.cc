@@ -122,9 +122,10 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
 
 }  // namespace
 
-CdmService::CdmService(std::unique_ptr<Client> client,
-                       service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
+CdmService::CdmService(
+    std::unique_ptr<Client> client,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+    : service_binding_(this, std::move(receiver)),
       keepalive_(std::make_unique<service_manager::ServiceKeepalive>(
           &service_binding_,
           kKeepaliveIdleTimeout)),
@@ -164,8 +165,8 @@ void CdmService::OnDisconnected() {
   Terminate();
 }
 
-void CdmService::Create(mojom::CdmServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void CdmService::Create(mojo::PendingReceiver<mojom::CdmService> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 #if defined(OS_MACOSX)

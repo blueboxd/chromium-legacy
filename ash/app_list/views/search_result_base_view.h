@@ -63,6 +63,14 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
 
   void set_index_in_container(size_t index) { index_in_container_ = index; }
 
+  void set_result_display_start_time(base::TimeTicks start_time) {
+    result_display_start_time_ = start_time;
+  }
+
+  base::TimeTicks result_display_start_time() const {
+    return result_display_start_time_;
+  }
+
   // views::Button:
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
 
@@ -102,6 +110,9 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
 
   // The index of this view within a |SearchResultContainerView| that holds it.
   base::Optional<int> index_in_container_;
+
+  // The starting time when |result_| is being displayed.
+  base::TimeTicks result_display_start_time_;
 
   SearchResult* result_ = nullptr;  // Owned by SearchModel::SearchResults.
 

@@ -141,7 +141,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d_device_;
   std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>> textures_arr_;
   uint32_t acquired_swapchain_texture_;
-  uint32_t next_action_space_;
+  uint32_t next_space_;
   XrTime next_predicted_display_time_;
 
   // paths_ is used to keep tracked of strings that already has a corresponding

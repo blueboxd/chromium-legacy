@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -168,6 +169,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
                            DownloadHighResAvatarTest);
+  FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest,
+                           MigrateLegacyProfileNamesAndRecomputeIfNeeded);
 
   const base::DictionaryValue* GetInfoForProfileAtIndex(size_t index) const;
   // Saves the profile info to a cache.
@@ -187,17 +190,18 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // generic profile avatar.
   const gfx::Image* GetHighResAvatarOfProfileAtIndex(size_t index) const;
 
-  // Migrate any legacy profile names ("First user", "Default Profile") to
-  // new style default names ("Person 1"), and download and high-res avatars
-  // used by the profiles.
-  void MigrateLegacyProfileNamesAndDownloadAvatars();
-
-  // Recompute profile names to guarantee there are no duplicates of "Person n"
-  // exist, i.e. Two or more profiles with the profile name "Person 1" would be
-  // recomputed to "Person 1" and "Person 2".
-  void RecomputeProfileNamesIfNeeded();
-
+  // Download and high-res avatars used by the profiles.
+  void DownloadAvatars();
   void NotifyIfProfileNamesHaveChanged();
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  // Migrate any legacy profile names ("First user", "Default Profile") to
+  // new style default names ("Person 1"). Rename any duplicates of "Person n"
+  // i.e. Two or more profiles with the profile name "Person 1" would be
+  // recomputed to "Person 1" and "Person 2".
+  void MigrateLegacyProfileNamesAndRecomputeIfNeeded();
+  static void EnableLegacyProfileMigrationForTesting();
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
   std::vector<std::string> keys_;
   const base::FilePath user_data_dir_;

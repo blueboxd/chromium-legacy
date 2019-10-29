@@ -33,8 +33,9 @@ class AppRegistryController {
 
   virtual void Init(base::OnceClosure callback) = 0;
 
-  virtual void SetAppDisplayMode(const AppId& app_id,
-                                 blink::mojom::DisplayMode display_mode) = 0;
+  virtual void SetAppUserDisplayMode(
+      const AppId& app_id,
+      blink::mojom::DisplayMode display_mode) = 0;
 
   virtual void SetAppIsLocallyInstalledForTesting(
       const AppId& app_id,

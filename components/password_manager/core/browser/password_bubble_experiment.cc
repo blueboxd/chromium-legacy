@@ -19,9 +19,6 @@
 
 namespace password_bubble_experiment {
 
-const char kSmartBubbleExperimentName[] = "PasswordSmartBubble";
-const char kSmartBubbleThresholdParam[] = "dismissal_count";
-
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       password_manager::prefs::kWasSignInPasswordPromoClicked, false);
@@ -34,11 +31,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 int GetSmartBubbleDismissalThreshold() {
-  std::string param = variations::GetVariationParamValue(
-      kSmartBubbleExperimentName, kSmartBubbleThresholdParam);
-  int threshold = 0;
-  // 3 is the default magic number that proved to show the best result.
-  return base::StringToInt(param, &threshold) ? threshold : 3;
+  return 3;
 }
 
 bool IsSmartLockUser(const syncer::SyncService* sync_service) {

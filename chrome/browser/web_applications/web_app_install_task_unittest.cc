@@ -504,6 +504,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   const GURL manifest_scope = GURL("https://example.com/scope");
   const base::Optional<SkColor> manifest_theme_color = 0xAABBCCDD;
   const base::Optional<SkColor> expected_theme_color = 0xFFBBCCDD;  // Opaque.
+  const auto display_mode = blink::mojom::DisplayMode::kMinimalUi;
 
   {
     auto manifest = std::make_unique<blink::Manifest>();
@@ -512,6 +513,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
     manifest->start_url = manifest_start_url;
     manifest->scope = manifest_scope;
     manifest->theme_color = manifest_theme_color;
+    manifest->display = display_mode;
 
     data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
   }
@@ -544,6 +546,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   EXPECT_EQ(renderer_description, web_app->description());
   EXPECT_EQ(manifest_scope, web_app->scope());
   EXPECT_EQ(expected_theme_color, web_app->theme_color());
+  EXPECT_EQ(display_mode, web_app->display_mode());
 }
 
 TEST_F(WebAppInstallTaskTest, GetIcons) {
@@ -1113,42 +1116,42 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
                          /*open_as_window*/ false);
 
     InstallManager::InstallParams params;
-    params.display_mode = blink::mojom::DisplayMode::kUndefined;
+    params.user_display_mode = blink::mojom::DisplayMode::kUndefined;
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
-              registrar().GetAppById(app_id)->display_mode());
+              registrar().GetAppById(app_id)->user_display_mode());
   }
   {
     CreateDataToRetrieve(GURL("https://example.org/"), /*open_as_window*/ true);
 
     InstallManager::InstallParams params;
-    params.display_mode = blink::mojom::DisplayMode::kUndefined;
+    params.user_display_mode = blink::mojom::DisplayMode::kUndefined;
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
-              registrar().GetAppById(app_id)->display_mode());
+              registrar().GetAppById(app_id)->user_display_mode());
   }
   {
     CreateDataToRetrieve(GURL("https://example.au/"), /*open_as_window*/ true);
 
     InstallManager::InstallParams params;
-    params.display_mode = blink::mojom::DisplayMode::kBrowser;
+    params.user_display_mode = blink::mojom::DisplayMode::kBrowser;
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
-              registrar().GetAppById(app_id)->display_mode());
+              registrar().GetAppById(app_id)->user_display_mode());
   }
   {
     CreateDataToRetrieve(GURL("https://example.app/"),
                          /*open_as_window*/ false);
 
     InstallManager::InstallParams params;
-    params.display_mode = blink::mojom::DisplayMode::kStandalone;
+    params.user_display_mode = blink::mojom::DisplayMode::kStandalone;
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
-              registrar().GetAppById(app_id)->display_mode());
+              registrar().GetAppById(app_id)->user_display_mode());
   }
 }
 

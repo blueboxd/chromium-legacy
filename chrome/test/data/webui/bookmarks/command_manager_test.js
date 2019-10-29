@@ -620,12 +620,12 @@ suite('<bookmarks-item> CommandManager integration', function() {
 
     await test_util.flushTasks();
 
-    let dropdown = commandManager.$.dropdown.getIfExists();
-    let dialog = dropdown.getDialog();
+    const dropdown = commandManager.$.dropdown.getIfExists();
+    const dialog = dropdown.getDialog();
     assertTrue(dropdown.open);
 
-    let x = dialog.offsetLeft + dialog.offsetWidth + 5;
-    let y = dialog.offsetHeight;
+    const x = dialog.offsetLeft + dialog.offsetWidth + 5;
+    const y = dialog.offsetHeight;
 
     // Ensure the dialog is the target even when clicking outside it, and send
     // a context menu event which should immediately dismiss the dialog,

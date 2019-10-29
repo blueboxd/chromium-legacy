@@ -313,7 +313,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     // Flush all of the thread message loops to ensure that there are no
     // tasks currently running.
     FlushThreadMessageLoops();
-    sb_service_ = NULL;
+    sb_service_ = nullptr;
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     in_process_utility_thread_helper_ = nullptr;
 
@@ -383,19 +383,19 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   }
 
   // Reads a single PEM-encoded certificate from the testdata directory.
-  // Returns NULL on failure.
+  // Returns nullptr on failure.
   scoped_refptr<net::X509Certificate> ReadTestCertificate(
       const std::string& filename) {
     std::string cert_data;
     if (!base::ReadFileToString(testdata_path_.AppendASCII(filename),
                                 &cert_data)) {
-      return NULL;
+      return nullptr;
     }
     net::CertificateList certs =
         net::X509Certificate::CreateCertificateListFromBytes(
             cert_data.data(), cert_data.size(),
             net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
-    return certs.empty() ? NULL : certs[0];
+    return certs.empty() ? nullptr : certs[0];
   }
 
   const ClientDownloadRequest* GetClientDownloadRequest() const {
@@ -403,7 +403,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   }
 
   bool HasClientDownloadRequest() const {
-    return last_client_download_request_.get() != NULL;
+    return last_client_download_request_.get() != nullptr;
   }
 
   void ClearClientDownloadRequest() { last_client_download_request_.reset(); }

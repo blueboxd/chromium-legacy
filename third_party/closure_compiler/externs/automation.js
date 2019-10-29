@@ -373,6 +373,18 @@ chrome.automation.NameFromType = {
 
 /**
  * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-DescriptionFromType
+ */
+chrome.automation.DescriptionFromType = {
+  UNINITIALIZED: 'uninitialized',
+  ATTRIBUTE: 'attribute',
+  CONTENTS: 'contents',
+  RELATED_ELEMENT: 'relatedElement',
+  TITLE: 'title',
+};
+
+/**
+ * @enum {string}
  * @see https://developer.chrome.com/extensions/automation#type-Restriction
  */
 chrome.automation.Restriction = {
@@ -598,13 +610,6 @@ chrome.automation.AutomationNode.prototype.unclippedLocation;
 chrome.automation.AutomationNode.prototype.description;
 
 /**
- * The tooltip of the node, if any.
- * @type {(string|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-tooltip
- */
-chrome.automation.AutomationNode.prototype.tooltip;
-
-/**
  * The placeholder for this text field, if any.
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-placeholder
@@ -624,6 +629,13 @@ chrome.automation.AutomationNode.prototype.roleDescription;
  * @see https://developer.chrome.com/extensions/automation#type-name
  */
 chrome.automation.AutomationNode.prototype.name;
+
+/**
+ * The tooltip of the node, if any.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-tooltip
+ */
+chrome.automation.AutomationNode.prototype.tooltip;
 
 /**
  * The source of the name.

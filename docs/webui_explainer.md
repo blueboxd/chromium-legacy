@@ -157,6 +157,12 @@ Visiting `chrome://donuts` should show in something like:
 
 Delicious success.
 
+By default $i18n{} escapes strings for HTML. $i18nRaw{} can be used for
+translations that embed HTML, and $i18nPolymer{} can be used for Polymer
+bindings. See
+[this comment](https://bugs.chromium.org/p/chromium/issues/detail?id=1010815#c1)
+for more information.
+
 ## C++ classes
 
 ### WebUI

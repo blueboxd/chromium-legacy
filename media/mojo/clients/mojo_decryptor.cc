@@ -42,8 +42,9 @@ base::OnceCallback<T> ToOnceCallback(const base::RepeatingCallback<T>& cb) {
 
 // TODO(xhwang): Consider adding an Initialize() to reduce the amount of work
 // done in the constructor.
-MojoDecryptor::MojoDecryptor(mojom::DecryptorPtr remote_decryptor,
-                             uint32_t writer_capacity)
+MojoDecryptor::MojoDecryptor(
+    mojo::PendingRemote<mojom::Decryptor> remote_decryptor,
+    uint32_t writer_capacity)
     : remote_decryptor_(std::move(remote_decryptor)) {
   DVLOG(1) << __func__;
 
@@ -75,7 +76,7 @@ MojoDecryptor::MojoDecryptor(mojom::DecryptorPtr remote_decryptor,
       GetDefaultDecoderBufferConverterCapacity(DemuxerStream::VIDEO),
       &decrypted_producer_handle);
 
-  remote_decryptor_.set_connection_error_with_reason_handler(
+  remote_decryptor_.set_disconnect_with_reason_handler(
       base::Bind(&MojoDecryptor::OnConnectionError, base::Unretained(this)));
 
   // Pass the other end of each pipe to |remote_decryptor_|.

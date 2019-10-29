@@ -26,9 +26,9 @@ using BinderCallback =
                                  mojo::ScopedMessagePipeHandle)>;
 
 template <typename Interface>
-void BindInterface(mojo::InterfaceRequest<Interface> request,
+void BindInterface(mojo::PendingReceiver<Interface> receiver,
                    const BinderCallback& binder_callback) {
-  binder_callback.Run(Interface::Name_, request.PassMessagePipe());
+  binder_callback.Run(Interface::Name_, receiver.PassPipe());
 }
 
 }  // namespace
@@ -37,10 +37,7 @@ namespace ui {
 
 ScenicGpuHost::ScenicGpuHost(ScenicWindowManager* scenic_window_manager)
     : scenic_window_manager_(scenic_window_manager),
-      host_binding_(this),
-      gpu_binding_(this),
-      ui_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+      ui_thread_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DETACH_FROM_THREAD(io_thread_checker_);
 }
 
@@ -48,11 +45,10 @@ ScenicGpuHost::~ScenicGpuHost() {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
 }
 
-mojom::ScenicGpuHostPtr ScenicGpuHost::CreateHostProcessSelfBinding() {
-  DCHECK(!host_binding_.is_bound());
-  mojom::ScenicGpuHostPtr gpu_host;
-  host_binding_.Bind(mojo::MakeRequest(&gpu_host));
-  return gpu_host;
+mojo::PendingRemote<mojom::ScenicGpuHost>
+ScenicGpuHost::CreateHostProcessSelfRemote() {
+  DCHECK(!host_receiver_.is_bound());
+  return host_receiver_.BindNewPipeAndPassRemote();
 }
 
 void ScenicGpuHost::AttachSurfaceToWindow(
@@ -86,24 +82,23 @@ void ScenicGpuHost::OnGpuServiceLaunched(
     GpuHostTerminateCallback terminate_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
-  mojom::ScenicGpuServicePtr scenic_gpu_service;
-  BindInterface(mojo::MakeRequest(&scenic_gpu_service), binder);
+  mojo::PendingRemote<mojom::ScenicGpuService> scenic_gpu_service;
+  BindInterface(scenic_gpu_service.InitWithNewPipeAndPassReceiver(), binder);
   ui_thread_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ScenicGpuHost::OnGpuServiceLaunchedOnUI,
                                 weak_ptr_factory_.GetWeakPtr(),
-                                scenic_gpu_service.PassInterface()));
+                                std::move(scenic_gpu_service)));
 }
 
 void ScenicGpuHost::OnGpuServiceLaunchedOnUI(
-    mojo::InterfacePtrInfo<mojom::ScenicGpuService> gpu_service_ptr_info) {
+    mojo::PendingRemote<mojom::ScenicGpuService> gpu_service) {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
 
-  mojom::ScenicGpuHostPtr gpu_host;
-  gpu_binding_.Close();
-  gpu_binding_.Bind(mojo::MakeRequest(&gpu_host));
+  gpu_receiver_.reset();
+  gpu_service_.reset();
 
-  gpu_service_.Bind(std::move(gpu_service_ptr_info));
-  gpu_service_->Initialize(std::move(gpu_host));
+  gpu_service_.Bind(std::move(gpu_service));
+  gpu_service_->Initialize(gpu_receiver_.BindNewPipeAndPassRemote());
 }
 
 void ScenicGpuHost::OnMessageReceived(const IPC::Message& message) {

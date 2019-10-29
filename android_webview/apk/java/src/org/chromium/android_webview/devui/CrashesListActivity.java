@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
+import org.chromium.android_webview.devui.util.NavigationMenuHelper;
 import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
 
 import java.util.Date;
@@ -191,11 +192,15 @@ public class CrashesListActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.crashes_options_menu, menu);
+        NavigationMenuHelper.inflate(this, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (NavigationMenuHelper.onOptionsItemSelected(this, item)) {
+            return true;
+        }
         if (item.getItemId() == R.id.options_menu_refresh) {
             updateCrashesList();
             return true;

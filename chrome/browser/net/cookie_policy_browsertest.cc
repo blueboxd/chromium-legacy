@@ -25,6 +25,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/window_open_disposition.h"
 
 using content::BrowserThread;
 
@@ -33,6 +34,12 @@ namespace {
 const std::vector<std::string> kStorageTypes{
     "Cookie",    "LocalStorage", "FileSystem",   "SessionStorage",
     "IndexedDb", "WebSql",       "CacheStorage", "ServiceWorker",
+};
+
+// TODO(crbug.com/1016355): WebLocks can't be blocked yet.
+const std::vector<std::string> kCrossTabCommunicationTypes{
+    "SharedWorker",
+    //"WebLock",
 };
 
 class CookiePolicyBrowserTest : public InProcessBrowserTest {
@@ -63,6 +70,13 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
   void NavigateToPageWithFrame(const std::string& host) {
     GURL main_url(https_server_.GetURL(host, "/iframe.html"));
     ui_test_utils::NavigateToURL(browser(), main_url);
+  }
+
+  void NavigateToNewTabWithFrame(const std::string& host) {
+    GURL main_url(https_server_.GetURL(host, "/iframe.html"));
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), main_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   }
 
   void NavigateFrameTo(const std::string& host, const std::string& path) {
@@ -119,6 +133,25 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
 
   void ExpectStorageForFrame(content::RenderFrameHost* frame, bool expected) {
     for (const auto& data_type : kStorageTypes) {
+      bool data;
+      EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+          frame, "has" + data_type + "();", &data));
+      EXPECT_EQ(expected, data) << data_type;
+    }
+  }
+
+  void SetCrossTabInfoForFrame(content::RenderFrameHost* frame) {
+    for (const auto& data_type : kCrossTabCommunicationTypes) {
+      bool data;
+      EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+          frame, "set" + data_type + "()", &data));
+      EXPECT_TRUE(data) << data_type;
+    }
+  }
+
+  void ExpectCrossTabInfoForFrame(content::RenderFrameHost* frame,
+                                  bool expected) {
+    for (const auto& data_type : kCrossTabCommunicationTypes) {
       bool data;
       EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
           frame, "has" + data_type + "();", &data));
@@ -567,6 +600,110 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, NestedFirstPartyIFrameStorage) {
   NavigateFrameTo("b.com", "/iframe.html");
   NavigateNestedFrameTo("a.com", "/browsing_data/site_data.html");
   ExpectStorageForFrame(GetNestedFrame(), true);
+}
+
+// Test third-party cookie blocking of features that allow to communicate
+// between tabs such as SharedWorkers.
+IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, MultiTabTest) {
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/browsing_data/site_data.html");
+
+  ExpectCrossTabInfoForFrame(GetFrame(), false);
+  SetCrossTabInfoForFrame(GetFrame());
+  ExpectCrossTabInfoForFrame(GetFrame(), true);
+
+  // Create a second tab to test communication between tabs.
+  NavigateToNewTabWithFrame("a.com");
+  NavigateFrameTo("b.com", "/browsing_data/site_data.html");
+  ExpectCrossTabInfoForFrame(GetFrame(), true);
+
+  SetBlockThirdPartyCookies(true);
+
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/browsing_data/site_data.html");
+  ExpectCrossTabInfoForFrame(GetFrame(), false);
+
+  // Allow all requests to b.com to access cookies.
+  auto cookie_settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile());
+  GURL a_url = https_server_.GetURL("a.com", "/");
+  GURL b_url = https_server_.GetURL("b.com", "/");
+  cookie_settings->SetCookieSetting(b_url,
+                                    ContentSetting::CONTENT_SETTING_ALLOW);
+
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/browsing_data/site_data.html");
+  ExpectCrossTabInfoForFrame(GetFrame(), true);
+
+  // Remove ALLOW setting.
+  cookie_settings->ResetCookieSetting(b_url);
+
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/browsing_data/site_data.html");
+  ExpectCrossTabInfoForFrame(GetFrame(), false);
+
+  // Allow all third-parties on a.com to access cookies.
+  cookie_settings->SetThirdPartyCookieSetting(
+      a_url, ContentSetting::CONTENT_SETTING_ALLOW);
+
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/browsing_data/site_data.html");
+  ExpectCrossTabInfoForFrame(GetFrame(), true);
+}
+
+// Same as MultiTabTest but with a nested frame on a.com inside a b.com frame.
+// The a.com frame should be treated as third-party although it matches the
+// top-frame-origin.
+IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, MultiTabNestedTest) {
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/iframe.html");
+  NavigateNestedFrameTo("a.com", "/browsing_data/site_data.html");
+
+  ExpectCrossTabInfoForFrame(GetNestedFrame(), false);
+  SetCrossTabInfoForFrame(GetNestedFrame());
+  ExpectCrossTabInfoForFrame(GetNestedFrame(), true);
+
+  // Create a second tab to test communication between tabs.
+  NavigateToNewTabWithFrame("a.com");
+  NavigateFrameTo("b.com", "/iframe.html");
+  NavigateNestedFrameTo("a.com", "/browsing_data/site_data.html");
+  ExpectCrossTabInfoForFrame(GetNestedFrame(), true);
+
+  SetBlockThirdPartyCookies(true);
+
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/iframe.html");
+  NavigateNestedFrameTo("a.com", "/browsing_data/site_data.html");
+  ExpectCrossTabInfoForFrame(GetNestedFrame(), false);
+
+  // Allow all requests to a.com to access cookies.
+  auto cookie_settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile());
+  GURL a_url = https_server_.GetURL("a.com", "/");
+  cookie_settings->SetCookieSetting(a_url,
+                                    ContentSetting::CONTENT_SETTING_ALLOW);
+
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/iframe.html");
+  NavigateNestedFrameTo("a.com", "/browsing_data/site_data.html");
+  ExpectCrossTabInfoForFrame(GetNestedFrame(), true);
+
+  // Remove ALLOW setting.
+  cookie_settings->ResetCookieSetting(a_url);
+
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/iframe.html");
+  NavigateNestedFrameTo("a.com", "/browsing_data/site_data.html");
+  ExpectCrossTabInfoForFrame(GetNestedFrame(), false);
+
+  // Allow all third-parties on a.com to access cookies.
+  cookie_settings->SetThirdPartyCookieSetting(
+      a_url, ContentSetting::CONTENT_SETTING_ALLOW);
+
+  NavigateToPageWithFrame("a.com");
+  NavigateFrameTo("b.com", "/iframe.html");
+  NavigateNestedFrameTo("a.com", "/browsing_data/site_data.html");
+  ExpectCrossTabInfoForFrame(GetNestedFrame(), true);
 }
 
 }  // namespace

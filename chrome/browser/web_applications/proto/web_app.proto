@@ -40,15 +40,26 @@ message WebAppProto {
   // |name| and |theme_color|. A random last update wins.
   required sync_pb.WebAppSpecifics sync_data = 1;
 
+  // This enum should be synced with
+  // third_party/blink/public/mojom/manifest/display_mode.mojom
+  enum DisplayMode {
+    // UNDEFINED is never serialized.
+    BROWSER = 1;
+    MINIMAL_UI = 2;
+    STANDALONE = 3;
+    FULLSCREEN = 4;
+  }
+
   // Local data. May vary across devices. Not to be synced.
   //
   required string name = 2;
   optional uint32 theme_color = 3;
   optional string description = 4;
-  optional string scope = 5;
-  required SourcesProto sources = 6;
-  required bool is_locally_installed = 7;
-  optional bool is_in_sync_install = 8;
+  optional DisplayMode display_mode = 5;
+  optional string scope = 6;
+  required SourcesProto sources = 7;
+  required bool is_locally_installed = 8;
+  optional bool is_in_sync_install = 9;
   // A list of icon infos.
-  repeated WebAppIconInfoProto icons = 9;
+  repeated WebAppIconInfoProto icons = 10;
 }

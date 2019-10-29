@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1442386063175183758">Dobra simétrica à direita</translation>
 <translation id="1442987760062738829">Perfurar</translation>
-<translation id="1450011005989029586">Uma violação de dados num site ou numa aplicação que utiliza expôs a sua palavra-passe. O Chrome recomenda <ph name="BOLD" /> em <ph name="ORIGIN" /> agora.</translation>
 <translation id="1455413310270022028">Borracha</translation>
 <translation id="1463543813647160932">5 x 7</translation>
 <translation id="1472675084647422956">Mostrar mais</translation>
@@ -691,7 +690,6 @@
 <translation id="4258748452823770588">Assinatura incorreta</translation>
 <translation id="4261046003697461417">Não é possível anotar documentos protegidos</translation>
 <translation id="4265872034478892965">Permitida pelo gestor</translation>
-<translation id="4270615291506829403">alterar a palavra-passe</translation>
 <translation id="4275830172053184480">Reiniciar o dispositivo</translation>
 <translation id="4277028893293644418">Repor palavra-passe</translation>
 <translation id="4279811152705618813">O seu <ph name="DEVICE_TYPE" /> é gerido por <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -771,7 +769,6 @@
 <translation id="4708268264240856090">A ligação foi interrompida</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Executar o Diagnóstico de rede do Windows<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">Uma violação de dados num site ou numa aplicação que utiliza expôs a sua palavra-passe. O Chrome recomenda que verifique agora as palavras-passe guardadas.</translation>
 <translation id="4726672564094551039">Recarregar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
@@ -1188,7 +1185,6 @@
 <translation id="679355240208270552">Ignorado porque a pesquisa predefinida não está ativada pela política.</translation>
 <translation id="681021252041861472">Campo obrigatório</translation>
 <translation id="6810899417690483278">ID de personalização</translation>
-<translation id="6819440013020405090">Uma violação de dados num site ou numa aplicação que utiliza expôs a sua palavra-passe. O Chrome recomenda que verifique as palavras-passe guardadas e que altere a sua palavra-passe em <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado assinado utilizando um algoritmo de assinatura fraco (como SHA-1). Isto significa que as credenciais de segurança apresentadas pelo servidor podem ter sido falsificadas e que o servidor pode não ser aquele que pretende (pode estar a comunicar com um utilizador mal intencionado).</translation>
 <translation id="6826370046007623921">Prevenção contra a perda de dados</translation>
 <translation id="6831043979455480757">Traduzir</translation>
@@ -1231,7 +1227,6 @@
 <translation id="7064851114919012435">Informações de contacto</translation>
 <translation id="7075452647191940183">O pedido é demasiado grande.</translation>
 <translation id="7079718277001814089">Este site contém um software malicioso</translation>
-<translation id="70850504851191913">Violação de dados comunicada</translation>
 <translation id="7087282848513945231">Município</translation>
 <translation id="7090678807593890770">Pesquisar <ph name="LINK" /> no Google</translation>
 <translation id="7108338896283013870">Ocultar</translation>

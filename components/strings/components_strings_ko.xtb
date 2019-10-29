@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1442386063175183758">오른쪽 게이트 폴드</translation>
 <translation id="1442987760062738829">펀칭</translation>
-<translation id="1450011005989029586">사용하는 사이트 또는 앱의 정보 유출로 인해 비밀번호가 노출되었습니다. Chrome에서는 <ph name="ORIGIN" />에서 지금 바로 <ph name="BOLD" />할 것을 권장합니다.</translation>
 <translation id="1455413310270022028">지우개</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">자세히 보기</translation>
@@ -275,6 +274,7 @@
 <translation id="2257315177824333709">죄송합니다. 지금은 카드를 저장할 수 없습니다.</translation>
 <translation id="2262243747453050782">HTTP 오류</translation>
 <translation id="2263079731045660823">Chrome 설정에서 신용카드 자동 완성 정보를 업데이트하세요.</translation>
+<translation id="2267047181501709434">본인 확인 중...</translation>
 <translation id="2270484714375784793">전화번호</translation>
 <translation id="2277103315734023688">앞으로 탐색</translation>
 <translation id="2283340219607151381">주소 저장 및 자동 입력</translation>
@@ -282,6 +282,7 @@
 <translation id="2292556288342944218">인터넷 액세스가 차단됨</translation>
 <translation id="2297722699537546652">B5(봉투)</translation>
 <translation id="2310021320168182093">Chou2(봉투)</translation>
+<translation id="2315864634253056100">이 사이트의 이름이 <ph name="LOOKALIKE_DOMAIN" />과(와) 유사해 보입니다. 일부 공격자는 웹 주소를 알아채기 어렵게 변경하여 다른 사이트를 모방합니다.</translation>
 <translation id="2316887270356262533">1MB 미만의 저장용량을 확보합니다. 일부 사이트는 다음 방문 시 로드 속도가 느려질 수 있습니다.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" />에 사용자 이름과 비밀번호를 입력해야 합니다.</translation>
 <translation id="2317583587496011522">직불카드를 사용할 수 있습니다.</translation>
@@ -474,6 +475,7 @@
 <translation id="3229041911291329567">기기와 브라우저에 관한 버전 정보</translation>
 <translation id="323107829343500871"><ph name="CREDIT_CARD" /> 카드의 CVC를 입력하세요.</translation>
 <translation id="3234666976984236645">이 사이트에서 중요한 콘텐츠 항상 감지</translation>
+<translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" />은(는) <ph name="SUGGESTED_DOMAIN" />과(와) 유사합니다. 일부 공격자는 비슷한 URL을 사용하여 다른 사이트를 모방합니다.</translation>
 <translation id="3270847123878663523">재정렬 실행 취소(&amp;U)</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3281668902344226640">Touch ID를 사용해 저장된 결제 수단을 확인합니다.</translation>
@@ -679,13 +681,13 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />네트워크 진단 프로그램을 실행<ph name="END_LINK" />해 보세요.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" /><ph name="SITE" />(으)로 이동<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">유효</translation>
+<translation id="4248776159690739358">Chrome 기업 보안 위협 대응에서 보고한 보안 이벤트에 관한 데이터를 관리자와 공유합니다. 여기에는 방문한 페이지 URL, 파일 이름 또는 메타데이터 및 기기와 Chrome 로그인에 사용한 사용자 이름이 포함될 수 있습니다.</translation>
 <translation id="4250431568374086873">이 사이트의 보안 연결(HTTPS)은 완벽하지 않습니다.</translation>
 <translation id="4250680216510889253">아니요</translation>
 <translation id="425582637250725228">변경사항이 저장되지 않을 수 있습니다.</translation>
 <translation id="4258748452823770588">잘못된 서명</translation>
 <translation id="4261046003697461417">보호된 문서에는 주석을 달 수 없습니다.</translation>
 <translation id="4265872034478892965">관리자가 허용함</translation>
-<translation id="4270615291506829403">비밀번호를 변경</translation>
 <translation id="4275830172053184480">기기 다시 시작</translation>
 <translation id="4277028893293644418">비밀번호 재설정</translation>
 <translation id="4279811152705618813"><ph name="ENROLLMENT_DOMAIN" />에서 <ph name="DEVICE_TYPE" />을(를) 관리합니다</translation>
@@ -765,7 +767,6 @@
 <translation id="4708268264240856090">연결이 끊김</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows 네트워크 진단 프로그램 실행<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">사용하는 사이트 또는 앱의 정보 유출로 인해 비밀번호가 노출되었습니다. 지금 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
 <translation id="4726672564094551039">정책 새로고침</translation>
 <translation id="4728558894243024398">플랫폼</translation>
 <translation id="4731967714531604179">Prc2(봉투)</translation>
@@ -1182,7 +1183,6 @@
 <translation id="679355240208270552">정책에 의해 기본 검색이 사용 설정되지 않았기 때문에 무시되었습니다.</translation>
 <translation id="681021252041861472">필수 입력란</translation>
 <translation id="6810899417690483278">맞춤설정 ID</translation>
-<translation id="6819440013020405090">사용하는 사이트 또는 앱의 정보 유출로 인해 비밀번호가 노출되었습니다. 저장된 비밀번호를 확인하고 <ph name="ORIGIN" />의 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="6825578344716086703"><ph name="DOMAIN" />에 접속하려 했으나 서버에서 안전성이 낮은 서명 알고리즘을 사용하여 서명된 인증서(예: SHA-1)를 전달했습니다. 이는 서버에서 전달한 보안 사용자 인증 정보가 위조되었을 수 있으며 사용하려는 서버가 아님을 의미합니다. 서버를 가장한 공격자와 통신 중일 수 있습니다.</translation>
 <translation id="6826370046007623921">데이터 손실 방지</translation>
 <translation id="6831043979455480757">번역</translation>
@@ -1225,7 +1225,6 @@
 <translation id="7064851114919012435">연락처 정보</translation>
 <translation id="7075452647191940183">요청이 너무 큼</translation>
 <translation id="7079718277001814089">이 사이트에 멀웨어가 있습니다.</translation>
-<translation id="70850504851191913">정보 유출 보고됨</translation>
 <translation id="7087282848513945231">카운티</translation>
 <translation id="7090678807593890770">Google에서 <ph name="LINK" /> 검색</translation>
 <translation id="7108338896283013870">숨기기</translation>
@@ -1489,6 +1488,7 @@
 <translation id="830498451218851433">폴드 하프</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8308427013383895095">네트워크 연결 문제로 인해 번역에 실패했습니다.</translation>
+<translation id="831207732689920588">의심스러운 페이지(Chrome에서 보고함)</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" />에 대한 액세스가 거부됨</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_YEAR" />/<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="834457929814110454">보안 관련 위험을 이해한다면 악성 프로그램이 삭제되기 전에 <ph name="BEGIN_LINK" />이 사이트를 방문<ph name="END_LINK" />해도 됩니다.</translation>
@@ -1578,6 +1578,7 @@
 <translation id="8903921497873541725">확대</translation>
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="8912362522468806198">Google 계정</translation>
+<translation id="8918231688545606538">의심스러운 페이지</translation>
 <translation id="892588693504540538">오른쪽 상단 펀칭</translation>
 <translation id="8931333241327730545">이 카드를 Google 계정에 저장하시겠습니까?</translation>
 <translation id="8932102934695377596">시간이 너무 먼 과거로 설정되어 있습니다.</translation>

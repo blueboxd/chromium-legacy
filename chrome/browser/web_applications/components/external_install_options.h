@@ -18,7 +18,7 @@ enum class ExternalInstallSource;
 
 struct ExternalInstallOptions {
   ExternalInstallOptions(const GURL& url,
-                         blink::mojom::DisplayMode display_mode,
+                         blink::mojom::DisplayMode user_display_mode,
                          ExternalInstallSource install_source);
   ~ExternalInstallOptions();
   ExternalInstallOptions(const ExternalInstallOptions& other);
@@ -28,7 +28,7 @@ struct ExternalInstallOptions {
   bool operator==(const ExternalInstallOptions& other) const;
 
   GURL url;
-  blink::mojom::DisplayMode display_mode;
+  blink::mojom::DisplayMode user_display_mode;
   ExternalInstallSource install_source;
 
   // If true, a shortcut is added to the Applications folder on macOS, and Start

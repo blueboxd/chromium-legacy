@@ -58,7 +58,7 @@ class MockModelLoader : public ModelLoader {
 
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
-  MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
+  MockClientSideDetectionService() : ClientSideDetectionService(nullptr) {}
 
   ~MockClientSideDetectionService() override {}
 

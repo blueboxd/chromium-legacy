@@ -200,6 +200,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   CanvasColorParams ColorParamsForTest() const { return ColorParams(); }
 
+  bool IsDeferralEnabled() const final;
+
  protected:
   CanvasColorParams ColorParams() const override;
   bool WritePixels(const SkImageInfo& orig_info,

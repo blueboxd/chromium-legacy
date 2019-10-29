@@ -360,10 +360,6 @@ const base::Feature kPassiveEventListenersDueToFling{
 const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Whether we should use the navigation_client mojo interface for navigations.
-const base::Feature kPerNavigationMojoInterface = {
-    "PerNavigationMojoInterface", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kPepper3DImageChromium {

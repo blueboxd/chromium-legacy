@@ -84,6 +84,20 @@ public final class SyncTestUtil {
     }
 
     /**
+     * Waits for sync machinery to become active.
+     */
+    public static void waitForSyncTransportActive() {
+        CriteriaHelper.pollUiThread(
+                new Criteria("Timed out waiting for sync transport state to become active.") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return ProfileSyncService.get().isTransportStateActive();
+                    }
+                },
+                TIMEOUT_MS, INTERVAL_MS);
+    }
+
+    /**
      * Waits for sync's engine to be initialized.
      */
     public static void waitForEngineInitialized() {

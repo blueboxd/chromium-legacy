@@ -129,9 +129,10 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
   ~InputMethodEngineBase() override;
 
-  void Initialize(std::unique_ptr<InputMethodEngineBase::Observer> observer,
-                  const char* extension_id,
-                  Profile* profile);
+  virtual void Initialize(
+      std::unique_ptr<InputMethodEngineBase::Observer> observer,
+      const char* extension_id,
+      Profile* profile);
 
   // IMEEngineHandlerInterface overrides.
   void FocusIn(const ui::IMEEngineHandlerInterface::InputContext& input_context)

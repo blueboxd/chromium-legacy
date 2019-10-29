@@ -124,7 +124,7 @@ suite('InternetPage', function() {
 
         // Ensure that the initial state is disabled and the toggle is
         // enabled but unchecked.
-        let wifiDevice =
+        const wifiDevice =
             mojoApi_.getDeviceStateForTest(mojom.NetworkType.kWiFi);
         assertTrue(!!wifiDevice);
         assertEquals(mojom.DeviceStateType.kDisabled, wifiDevice.deviceState);
@@ -137,7 +137,7 @@ suite('InternetPage', function() {
         toggle.click();
         return flushAsync().then(() => {
           assertTrue(toggle.checked);
-          let wifiDevice =
+          const wifiDevice =
               mojoApi_.getDeviceStateForTest(mojom.NetworkType.kWiFi);
           assertTrue(!!wifiDevice);
           assertEquals(mojom.DeviceStateType.kEnabled, wifiDevice.deviceState);

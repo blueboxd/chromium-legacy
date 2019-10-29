@@ -130,8 +130,7 @@ public class EntitySuggestionProcessorUnitTest {
         MockitoAnnotations.initMocks(this);
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
 
-        mProcessor = new EntitySuggestionProcessor(mActivity, mSuggestionHost);
-        mProcessor.setImageFetcherForTesting(mImageFetcher);
+        mProcessor = new EntitySuggestionProcessor(mActivity, mSuggestionHost, () -> mImageFetcher);
     }
 
     @Test

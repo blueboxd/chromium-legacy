@@ -303,7 +303,8 @@ suite('CupsAddPrinterDialogTests', function() {
     return cupsPrintersBrowserProxy
         .whenCalled('getCupsPrinterManufacturersList')
         .then(function() {
-          let modelDialog = dialog.$$('add-printer-manufacturer-model-dialog');
+          const modelDialog =
+              dialog.$$('add-printer-manufacturer-model-dialog');
           assertTrue(!!modelDialog);
           // Manufacturer dialog has been rendered and the model list was not
           // requested.  We're done.
@@ -422,7 +423,7 @@ suite('CupsAddPrinterDialogTests', function() {
         .then(function() {
           // Select the printer.
           // TODO(skau): Figure out how to select in a dom-repeat.
-          let discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+          const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
           assertTrue(!!discoveryDialog, 'Cannot find discovery dialog');
           discoveryDialog.selectedPrinter = newPrinter;
           // Run printer setup.
@@ -477,7 +478,7 @@ suite('CupsAddPrinterDialogTests', function() {
     return cupsPrintersBrowserProxy.whenCalled('startDiscoveringPrinters')
         .then(function() {
           // Select the printer.
-          let discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+          const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
           assertTrue(!!discoveryDialog, 'Cannot find discovery dialog');
           discoveryDialog.selectedPrinter = newPrinter;
           // Run printer setup.

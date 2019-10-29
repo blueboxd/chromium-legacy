@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">언어 설정</translation>
 <translation id="1962969542251276847">화면 잠금</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
+<translation id="1972950159383891558"><ph name="USERNAME" />님, 안녕하세요.</translation>
 <translation id="1978498689038657292">텍스트 입력</translation>
 <translation id="1993072747612765854">최신 <ph name="SYSTEM_APP_NAME" /> 업데이트에 관해 자세히 알아보세요.</translation>
 <translation id="1995660704900986789">끄기</translation>
@@ -159,7 +160,6 @@
 <translation id="3139942575505304791">데스크 1</translation>
 <translation id="315116470104423982">모바일 데이터</translation>
 <translation id="3151786313568798007">방향</translation>
-<translation id="3152934361839663679">기기가 연결 가능한 최대 개수의 모니터에 연결되어 있으므로 스크린 중 하나가 연결 해제되었습니다.</translation>
 <translation id="3153444934357957346">멀티 로그인에는 계정을 <ph name="MULTI_PROFILE_USER_LIMIT" />개까지만 사용할 수 있습니다.</translation>
 <translation id="3154351730702813399">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{기기 1개에 연결됨}other{기기 #개에 연결됨}}</translation>

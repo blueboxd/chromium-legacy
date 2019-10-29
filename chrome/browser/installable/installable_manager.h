@@ -179,6 +179,7 @@ class InstallableManager
   void SetManifestDependentTasksComplete();
 
   // Methods coordinating and dispatching work for the current task.
+  void CleanupAndStartNextTask();
   void RunCallback(InstallableTask task,
                    std::vector<InstallableStatusCode> errors);
   void WorkOnTask();

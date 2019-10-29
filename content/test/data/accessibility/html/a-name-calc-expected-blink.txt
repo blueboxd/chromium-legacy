@@ -5,7 +5,7 @@ rootWebArea
 ++++++++inlineTextBox name='InnerText0' nameFrom=contents
 ++++staticText name=' ' nameFrom=contents
 ++++++inlineTextBox name=' ' nameFrom=contents
-++++link description='Title1' name='InnerText1' nameFrom=contents descriptionFrom=attribute
+++++link description='Title1' name='InnerText1' nameFrom=contents descriptionFrom=title
 ++++++staticText name='InnerText1' nameFrom=contents
 ++++++++inlineTextBox name='InnerText1' nameFrom=contents
 ++++staticText name=' ' nameFrom=contents

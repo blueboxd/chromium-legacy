@@ -14,7 +14,8 @@
 #include "base/unguessable_token.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
@@ -150,15 +151,16 @@ class CONTENT_EXPORT SignedExchangeLoader final
 
   // This |url_loader_| is the pointer of the network URL loader.
   network::mojom::URLLoaderPtr url_loader_;
-  // This binding connects |this| with the network URL loader.
-  mojo::Binding<network::mojom::URLLoaderClient> url_loader_client_binding_;
+  // This receiver connects |this| with the network URL loader.
+  mojo::Receiver<network::mojom::URLLoaderClient> url_loader_client_receiver_{
+      this};
 
   // This is pending until connected by ConnectToClient().
   network::mojom::URLLoaderClientPtr client_;
 
-  // This URLLoaderClientRequest is used by ConnectToClient() to connect
-  // |client_|.
-  network::mojom::URLLoaderClientRequest pending_client_request_;
+  // This pending receiver is used by ConnectToClient() to connect |client_|.
+  mojo::PendingReceiver<network::mojom::URLLoaderClient>
+      pending_client_receiver_;
 
   std::unique_ptr<SignedExchangeHandler> signed_exchange_handler_;
   std::unique_ptr<network::SourceStreamToDataPipe> body_data_pipe_adapter_;

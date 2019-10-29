@@ -856,7 +856,6 @@
 <translation id="2224471211857467033">Догађаји у вези са приступачношћу</translation>
 <translation id="2224551243087462610">Измена имена директоријума</translation>
 <translation id="2226449515541314767">Спречено је да овај сајт у потпуности контролише MIDI уређаје.</translation>
-<translation id="2226720438730111184">Реците нам шта се дешава</translation>
 <translation id="2227179592712503583">Уклони предлог</translation>
 <translation id="2229161054156947610">Остало је више од сат времена</translation>
 <translation id="222931766245975952">Датотека је скраћена</translation>
@@ -2957,7 +2956,6 @@
 <translation id="5360150013186312835">Прикажи на траци с алаткама</translation>
 <translation id="5362741141255528695">Изаберите датотеку приватног кључа.</translation>
 <translation id="5363109466694494651">Обави Powerwash и врати</translation>
-<translation id="5365716706805792666">Google може да провери да ли су ваше лозинке обухваћене упадом у податке. То ће се укључити када се пријавите помоћу Google налога.</translation>
 <translation id="5365881113273618889">Директоријум који сте изабрали садржи осетљиве датотеке. Желите ли стварно да одобрите апликацији „<ph name="APP_NAME" />“ сталан приступ за уписивање за овај директоријум?</translation>
 <translation id="5367091008316207019">Читање датотеке..</translation>
 <translation id="5368720394188453070">Телефон је закључан. Откључајте га да бисте приступили.</translation>
@@ -3557,7 +3555,6 @@
 <translation id="6202304368170870640">Можете да користите PIN за пријављивање на уређај или за откључавање уређаја.</translation>
 <translation id="6206311232642889873">Коп&amp;ирај слику</translation>
 <translation id="6207200176136643843">Ресетуј на подразумевани ниво зумирања</translation>
-<translation id="620722923698527029">Увек отварај ове типове линкова у повезаној апликацији</translation>
 <translation id="6207282396926186323">Инсталирајте апликацију <ph name="APP_NAME" /> (Linux апликација)</translation>
 <translation id="6207937957461833379">Земља/регија</translation>
 <translation id="6208521041562685716">Мобилни подаци се активирају</translation>
@@ -4431,7 +4428,6 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> је регистрован за управљање предузећем.</translation>
 <translation id="7507930499305566459">Сертификат за одзивник статуса</translation>
 <translation id="7508054832109420082">Омогућите приступ штампачима</translation>
-<translation id="7510943789645525906">Упозорава вас ако је лозинка коју користите била део упада у податке</translation>
 <translation id="7513029293694390567">Аутоматски се пријављујте на веб-сајтове помоћу сачуваних акредитива. Када је ова функција онемогућена, тражићемо потврду пре сваког пријављивања на веб-сајт.</translation>
 <translation id="7514239104543605883">Копирајте на свој уређај</translation>
 <translation id="7514365320538308">Преузми</translation>
@@ -4620,7 +4616,6 @@
 
 
 <ph name="EXTENSION_NAME" /></translation>
-<translation id="7788383851298063850">Реците нам шта се дешава</translation>
 <translation id="7788444488075094252">Језици и унос</translation>
 <translation id="7788668840732459509">Позиција:</translation>
 <translation id="7789963078219276159">Позадина почетне странице је промењена у: <ph name="CATEGORY" />.</translation>
@@ -4735,7 +4730,6 @@
 <translation id="7926423016278357561">То нисам ја.</translation>
 <translation id="7928836894214140642">Управља <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Сачувани начини плаћања ће се приказивати овде</translation>
-<translation id="7930681627240672853">Проверите безбедност лозинке</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> дели екран и звук.</translation>
 <translation id="7931318309563332511">Непознато</translation>
 <translation id="793293630927785390">Дијалог Нова Wi-Fi мрежа</translation>
@@ -4808,7 +4802,6 @@
 <translation id="8014154204619229810">Програм за ажурирање је тренутно активан. Сачекајте мало, па освежите и проверите поново.</translation>
 <translation id="8014206674403687691">Није могуће вратити <ph name="IDS_SHORT_PRODUCT_NAME" /> на претходно инсталирану верзију. Покушајте да поново обавите Powerwash уређаја.</translation>
 <translation id="8014210335923519270">Шаљите Google-у податке о систему и коришћењу и побољшајте <ph name="IDS_SHORT_PRODUCT_NAME" /> и његову безбедност</translation>
-<translation id="8015780634880457457">Google може да провери да ли су ваше лозинке обухваћене упадом у податке</translation>
 <translation id="8016266267177410919">Привремени меморијски простор</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Пречица је измењена</translation>

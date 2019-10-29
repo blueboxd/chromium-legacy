@@ -306,9 +306,16 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
                         ? 0
                         : kInchInMm * mode_info->size().width() /
                               snapshot->physical_size().width();
+  constexpr gfx::Size k225DisplaySizeHack(3000, 2000);
+
   if (snapshot->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
     new_info.set_native(true);
-    device_scale_factor = FindDeviceScaleFactor(dpi);
+    // This is a stopgap hack to deal with b/74845106. Unfortunately, some old
+    // devices (like evt) does not have a firmware fix, so we need to keep this.
+    if (mode_info->size() == k225DisplaySizeHack)
+      device_scale_factor = 2.25f;
+    else if (dpi)
+      device_scale_factor = FindDeviceScaleFactor(dpi);
   } else {
     ManagedDisplayMode mode;
     if (display_manager_->GetSelectedModeForDisplayId(snapshot->display_id(),

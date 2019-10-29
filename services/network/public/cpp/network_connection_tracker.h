@@ -16,7 +16,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
 namespace network {
@@ -148,7 +148,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
   const scoped_refptr<base::ObserverListThreadSafe<NetworkConnectionObserver>>
       leaky_network_change_observer_list_;
 
-  mojo::Binding<network::mojom::NetworkChangeManagerClient> binding_;
+  mojo::Receiver<network::mojom::NetworkChangeManagerClient> receiver_{this};
 
   // Only the initialization and re-initialization of |this| are required to
   // be bound to the same sequence.

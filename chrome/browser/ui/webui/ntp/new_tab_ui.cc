@@ -162,7 +162,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
     // A path under new-tab was requested; it's likely a bad relative
     // URL from the new tab page, but in any case it's an error.
     NOTREACHED() << path << " should not have been requested on the NTP";
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
 

@@ -346,7 +346,7 @@ ExternalFileURLLoaderFactory::ExternalFileURLLoaderFactory(
 ExternalFileURLLoaderFactory::~ExternalFileURLLoaderFactory() = default;
 
 void ExternalFileURLLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

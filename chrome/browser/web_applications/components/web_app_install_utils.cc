@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace web_app {
@@ -125,6 +126,14 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
 
   if (manifest.theme_color)
     web_app_info->theme_color = *manifest.theme_color;
+
+  // When the display member is missing, or if there is no valid display member,
+  // the user agent uses the browser display mode as the default display mode.
+  // https://w3c.github.io/manifest/#display-modes
+  web_app_info->display_mode =
+      (manifest.display == blink::mojom::DisplayMode::kUndefined)
+          ? blink::mojom::DisplayMode::kBrowser
+          : manifest.display;
 
   // Create the WebApplicationInfo icons list *outside* of |web_app_info|, so
   // that we can decide later whether or not to replace the existing icons array

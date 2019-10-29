@@ -12,14 +12,12 @@ import android.text.TextUtils;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
+import org.chromium.base.Supplier;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
@@ -41,7 +39,7 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
     private final SuggestionHost mSuggestionHost;
     private final Map<String, List<PropertyModel>> mPendingImageRequests;
     private final int mEntityImageSizePx;
-    private ImageFetcher mImageFetcher;
+    private final Supplier<ImageFetcher> mImageFetcherSupplier;
     // Threshold for low RAM devices. We won't be showing entity suggestion images
     // on devices that have less RAM than this to avoid bloat and reduce user-visible
     // slowdown while spinning up an image decompression process.
@@ -63,13 +61,15 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
      * @param context An Android context.
      * @param suggestionHost A handle to the object using the suggestions.
      */
-    public EntitySuggestionProcessor(Context context, SuggestionHost suggestionHost) {
+    public EntitySuggestionProcessor(Context context, SuggestionHost suggestionHost,
+            Supplier<ImageFetcher> imageFetcherSupplier) {
         super(context, suggestionHost);
         mContext = context;
         mSuggestionHost = suggestionHost;
         mPendingImageRequests = new HashMap<>();
         mEntityImageSizePx = context.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_entity_icon_size);
+        mImageFetcherSupplier = imageFetcherSupplier;
     }
 
     @Override
@@ -89,13 +89,10 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
 
     @Override
     public void onNativeInitialized() {
-        mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_ONLY,
-                GlobalDiscardableReferencePool.getReferencePool());
     }
 
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
-        if (mImageFetcher != null && !hasFocus) mImageFetcher.clear();
     }
 
     @Override
@@ -111,19 +108,14 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
         // http://cs.chromium.org/Omnibox.SuggestionUsed.RichEntity
     }
 
-    /**
-     * Specify ImageFetcher instance to be used for testing purposes.
-     * TODO(http://crbug.com/1015997): Create fetcher instance in AutocompleteMediator and pass it
-     * to the constructor.
-     */
-    void setImageFetcherForTesting(ImageFetcher fetcher) {
-        mImageFetcher = fetcher;
-    }
-
     private void fetchEntityImage(OmniboxSuggestion suggestion, PropertyModel model) {
         ThreadUtils.assertOnUiThread();
         final String url = suggestion.getImageUrl();
         if (TextUtils.isEmpty(url)) return;
+
+        // Ensure an image fetcher is available prior to requesting images.
+        ImageFetcher imageFetcher = mImageFetcherSupplier.get();
+        if (imageFetcher == null) return;
 
         // Do not make duplicate answer image requests for the same URL (to avoid generating
         // duplicate bitmaps for the same image).
@@ -136,7 +128,7 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
         models.add(model);
         mPendingImageRequests.put(url, models);
 
-        mImageFetcher.fetchImage(url, ImageFetcher.ENTITY_SUGGESTIONS_UMA_CLIENT_NAME,
+        imageFetcher.fetchImage(url, ImageFetcher.ENTITY_SUGGESTIONS_UMA_CLIENT_NAME,
                 mEntityImageSizePx, mEntityImageSizePx, (Bitmap bitmap) -> {
                     ThreadUtils.assertOnUiThread();
 

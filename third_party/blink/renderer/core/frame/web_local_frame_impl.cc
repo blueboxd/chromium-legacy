@@ -1056,8 +1056,7 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
     plugin_lookup_context_node = ContextMenuNodeInner();
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(GetFrame(),
-                                       UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame());
 
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer(plugin_lookup_context_node);
@@ -1072,8 +1071,7 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name,
   DCHECK(GetFrame());
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(GetFrame(),
-                                       UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame());
 
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer();
@@ -2062,8 +2060,7 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
     return;
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(GetFrame(),
-                                       UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame());
   GetFrame()->GetScriptController().ExecuteJavaScriptURL(
       url, kDoNotCheckContentSecurityPolicy);
 }

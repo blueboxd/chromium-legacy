@@ -15,7 +15,10 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.pagecontroller.controllers.first_run.TOSController;
+import org.chromium.chrome.test.pagecontroller.controllers.ntp.NewTabPageController;
 import org.chromium.chrome.test.pagecontroller.rules.ChromeUiApplicationTestRule;
 import org.chromium.chrome.test.pagecontroller.rules.ChromeUiAutomatorTestRule;
 
@@ -31,16 +34,23 @@ public class FirstRunControllerTest {
     @Rule
     public final TestRule mChain = RuleChain.outerRule(mChromeUiRule).around(mUiAutomatorRule);
 
-    private TOSController mTOSController;
-
     @Before
     public void setUp() {
         mChromeUiRule.launchApplication();
-        mTOSController = TOSController.getInstance();
     }
 
     @Test
     public void testFirstRunIsShown() {
-        Assert.assertTrue("TOS page should be shown", mTOSController.isCurrentPageThis());
+        Assert.assertTrue("TOS page should be shown.",
+                          TOSController.getInstance().isCurrentPageThis());
+    }
+
+    @Switches(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+    @Test
+    public void testDisableFre() {
+        Assert.assertTrue(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE + " should work.",
+                          NewTabPageController.getInstance().isCurrentPageThis());
+        Assert.assertFalse("TOS Page should not be detected.",
+                          TOSController.getInstance().isCurrentPageThis());
     }
 }

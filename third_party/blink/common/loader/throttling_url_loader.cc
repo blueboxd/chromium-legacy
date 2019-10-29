@@ -98,19 +98,19 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
     loader_->ResumeReadingBodyFromNet(throttle_);
   }
 
-  void InterceptResponse(
-      network::mojom::URLLoaderPtr new_loader,
-      network::mojom::URLLoaderClientRequest new_client_request,
-      network::mojom::URLLoaderPtr* original_loader,
-      network::mojom::URLLoaderClientRequest* original_client_request)
-      override {
+  void InterceptResponse(network::mojom::URLLoaderPtr new_loader,
+                         mojo::PendingReceiver<network::mojom::URLLoaderClient>
+                             new_client_receiver,
+                         network::mojom::URLLoaderPtr* original_loader,
+                         mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+                             original_client_receiver) override {
     if (!loader_)
       return;
 
     ScopedDelegateCall scoped_delegate_call(this);
     loader_->InterceptResponse(std::move(new_loader),
-                               std::move(new_client_request), original_loader,
-                               original_client_request);
+                               std::move(new_client_receiver), original_loader,
+                               original_client_receiver);
   }
 
   void RestartWithFlags(int additional_load_flags) override {
@@ -834,18 +834,19 @@ void ThrottlingURLLoader::ResumeReadingBodyFromNet(
 
 void ThrottlingURLLoader::InterceptResponse(
     network::mojom::URLLoaderPtr new_loader,
-    network::mojom::URLLoaderClientRequest new_client_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver,
     network::mojom::URLLoaderPtr* original_loader,
-    network::mojom::URLLoaderClientRequest* original_client_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+        original_client_receiver) {
   response_intercepted_ = true;
 
   if (original_loader)
     *original_loader = network::mojom::URLLoaderPtr(url_loader_.Unbind());
   url_loader_.Bind(new_loader.PassInterface());
 
-  if (original_client_request)
-    *original_client_request = client_receiver_.Unbind();
-  client_receiver_.Bind(std::move(new_client_request),
+  if (original_client_receiver)
+    *original_client_receiver = client_receiver_.Unbind();
+  client_receiver_.Bind(std::move(new_client_receiver),
                         start_info_->task_runner);
   client_receiver_.set_disconnect_handler(base::BindOnce(
       &ThrottlingURLLoader::OnClientConnectionError, base::Unretained(this)));

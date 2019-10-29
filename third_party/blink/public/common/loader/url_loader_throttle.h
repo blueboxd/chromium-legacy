@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/request_priority.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
@@ -79,9 +80,11 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
     // ThrottlingURLLoader instance.
     virtual void InterceptResponse(
         network::mojom::URLLoaderPtr new_loader,
-        network::mojom::URLLoaderClientRequest new_client_request,
+        mojo::PendingReceiver<network::mojom::URLLoaderClient>
+            new_client_receiver,
         network::mojom::URLLoaderPtr* original_loader,
-        network::mojom::URLLoaderClientRequest* original_client_request);
+        mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+            original_client_receiver);
 
     // Restarts the URL loader using |additional_load_flags|.
     //

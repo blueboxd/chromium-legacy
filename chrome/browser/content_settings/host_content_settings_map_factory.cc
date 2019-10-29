@@ -120,13 +120,10 @@ scoped_refptr<RefcountedKeyedService>
         HostContentSettingsMap::NOTIFICATION_ANDROID_PROVIDER,
         std::move(channels_provider));
 
-    if (base::FeatureList::IsEnabled(chrome::android::
-          kTrustedWebActivityNotificationDelegationEnrolment)) {
-      auto webapp_provider = std::make_unique<InstalledWebappProvider>();
-      settings_map->RegisterProvider(
-          HostContentSettingsMap::INSTALLED_WEBAPP_PROVIDER,
-          std::move(webapp_provider));
-    }
+    auto webapp_provider = std::make_unique<InstalledWebappProvider>();
+    settings_map->RegisterProvider(
+        HostContentSettingsMap::INSTALLED_WEBAPP_PROVIDER,
+        std::move(webapp_provider));
   }
 #endif  // defined (OS_ANDROID)
   return settings_map;

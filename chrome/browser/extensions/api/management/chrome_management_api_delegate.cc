@@ -51,6 +51,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -224,6 +225,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->title = base::UTF8ToUTF16(title);
     web_app_info->app_url = launch_url;
+    web_app_info->display_mode = blink::mojom::DisplayMode::kBrowser;
     web_app_info->open_as_window = false;
 
     if (!image_result.image.IsEmpty()) {

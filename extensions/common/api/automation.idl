@@ -389,6 +389,14 @@
     value
   };
 
+  enum DescriptionFromType {
+    uninitialized,
+    attribute,
+    contents,
+    relatedElement,
+    title
+  };
+
   // The input restriction for a object -- even non-controls can be disabled.
   enum Restriction {
     disabled,

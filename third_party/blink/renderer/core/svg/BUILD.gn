@@ -6,6 +6,7 @@ import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("svg") {
   sources = [
+    "animation/priority_queue.h",
     "animation/smil_animation_sandwich.cc",
     "animation/smil_animation_sandwich.h",
     "animation/smil_repeat_count.h",

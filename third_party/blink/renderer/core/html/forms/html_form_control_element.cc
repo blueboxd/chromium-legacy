@@ -300,11 +300,6 @@ bool HTMLFormControlElement::ShouldHaveFocusAppearance() const {
   return SelectorChecker::MatchesFocusVisiblePseudoClass(*this);
 }
 
-int HTMLFormControlElement::tabIndex() const {
-  // Skip the supportsFocus check in HTMLElement.
-  return Element::tabIndex();
-}
-
 bool HTMLFormControlElement::willValidate() const {
   return ListedElement::WillValidate();
 }

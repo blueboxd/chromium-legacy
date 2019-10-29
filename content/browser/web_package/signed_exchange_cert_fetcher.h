@@ -16,6 +16,7 @@
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace network {
@@ -107,7 +108,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   void OnDataURLRequest(const network::ResourceRequest& resource_request,
-                        network::mojom::URLLoaderRequest,
+                        mojo::PendingReceiver<network::mojom::URLLoader>,
                         network::mojom::URLLoaderClientPtr);
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;

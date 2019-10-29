@@ -111,7 +111,7 @@ const char* ProtoEnumToString(
     sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type);
 
 const char* ProtoEnumToString(
-    sync_pb::WebAppSpecifics::DisplayMode display_mode);
+    sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode);
 
 const char* ProtoEnumToString(
     sync_pb::WifiConfigurationSpecificsData::SecurityType security_type);

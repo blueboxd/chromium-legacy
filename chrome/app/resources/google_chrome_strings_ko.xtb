@@ -234,7 +234,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8521348052903287641">Chrome 개발자에서 mDNS 트래픽을 허용할 때 사용되는 인바운드 규칙입니다.</translation>
 <translation id="8540666473246803645">Chrome</translation>
 <translation id="8556340503434111824">이전보다 더 빨라진 Chrome 새 버전을 사용할 수 있습니다.</translation>
-<translation id="8606668294522778825">Chrome에서 사용자에게 더 나은 인터넷 사용 환경을 제공하기 위해 웹 서비스를 사용할 수 있습니다. 원하는 경우 서비스를 사용 중지하실 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Chrome이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
 <translation id="8625237574518804553">{0,plural, =1{1분 후 Chrome이 다시 시작됩니다}other{#분 후 Chrome이 다시 시작됩니다}}</translation>
 <translation id="8669527147644353129">Chrome 도우미</translation>

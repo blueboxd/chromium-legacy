@@ -127,9 +127,10 @@ void WebAppInstallFinalizer::FinalizeInstall(
     web_app->SetThemeColor(
         SkColorSetA(*web_app_info.theme_color, SK_AlphaOPAQUE));
   }
-  web_app->SetDisplayMode(web_app_info.open_as_window
-                              ? blink::mojom::DisplayMode::kStandalone
-                              : blink::mojom::DisplayMode::kBrowser);
+  web_app->SetDisplayMode(web_app_info.display_mode);
+  web_app->SetUserDisplayMode(web_app_info.open_as_window
+                                  ? blink::mojom::DisplayMode::kStandalone
+                                  : blink::mojom::DisplayMode::kBrowser);
   web_app->SetIsLocallyInstalled(options.locally_installed);
 
   SetWebAppIcons(web_app_info.icons, web_app.get());

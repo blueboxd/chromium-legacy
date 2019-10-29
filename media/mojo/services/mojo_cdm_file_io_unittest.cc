@@ -7,8 +7,11 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "media/cdm/api/content_decryption_module.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,24 +44,25 @@ class MockCdmFile : public mojom::CdmFile {
 
 class MockCdmStorage : public mojom::CdmStorage {
  public:
-  MockCdmStorage(mojom::CdmStorageRequest request, MockCdmFile* cdm_file)
-      : binding_(this, std::move(request)), client_binding_(cdm_file) {}
+  MockCdmStorage(mojo::PendingReceiver<mojom::CdmStorage> receiver,
+                 MockCdmFile* cdm_file)
+      : receiver_(this, std::move(receiver)), client_receiver_(cdm_file) {}
   ~MockCdmStorage() override = default;
 
-  // MojoCdmFileIO calls CdmStorage::Open() to open the file. Requests always
+  // MojoCdmFileIO calls CdmStorage::Open() to open the file. Receivers always
   // succeed.
   void Open(const std::string& file_name, OpenCallback callback) override {
-    mojom::CdmFileAssociatedPtrInfo client_ptr_info;
-    client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
+    mojo::PendingAssociatedRemote<mojom::CdmFile> client_remote;
+    client_receiver_.Bind(client_remote.InitWithNewEndpointAndPassReceiver());
     std::move(callback).Run(mojom::CdmStorage::Status::kSuccess,
-                            std::move(client_ptr_info));
+                            std::move(client_remote));
 
     base::RunLoop().RunUntilIdle();
   }
 
  private:
-  mojo::Binding<mojom::CdmStorage> binding_;
-  mojo::AssociatedBinding<mojom::CdmFile> client_binding_;
+  mojo::Receiver<mojom::CdmStorage> receiver_;
+  mojo::AssociatedReceiver<mojom::CdmFile> client_receiver_;
 };
 
 }  // namespace
@@ -75,12 +79,11 @@ class MojoCdmFileIOTest : public testing::Test, public MojoCdmFileIO::Delegate {
   void SetUp() override {
     client_ = std::make_unique<MockFileIOClient>();
 
-    auto request = mojo::MakeRequest(&cdm_storage_ptr_);
-    cdm_storage_ =
-        std::make_unique<MockCdmStorage>(std::move(request), &cdm_file_);
+    cdm_storage_ = std::make_unique<MockCdmStorage>(
+        cdm_storage_remote_.BindNewPipeAndPassReceiver(), &cdm_file_);
 
     file_io_ = std::make_unique<MojoCdmFileIO>(this, client_.get(),
-                                               cdm_storage_ptr_.get());
+                                               cdm_storage_remote_.get());
   }
 
   // MojoCdmFileIO::Delegate implementation.
@@ -94,7 +97,7 @@ class MojoCdmFileIOTest : public testing::Test, public MojoCdmFileIO::Delegate {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<MojoCdmFileIO> file_io_;
   std::unique_ptr<MockFileIOClient> client_;
-  mojom::CdmStoragePtr cdm_storage_ptr_;
+  mojo::Remote<mojom::CdmStorage> cdm_storage_remote_;
   std::unique_ptr<MockCdmStorage> cdm_storage_;
   MockCdmFile cdm_file_;
 };

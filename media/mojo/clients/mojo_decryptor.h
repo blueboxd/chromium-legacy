@@ -14,6 +14,8 @@
 #include "media/base/decryptor.h"
 #include "media/mojo/mojom/decryptor.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 
@@ -28,7 +30,7 @@ class MojoDecryptor : public Decryptor {
  public:
   // |writer_capacity| can be used for testing. If 0, default writer capacity
   // will be used.
-  MojoDecryptor(mojom::DecryptorPtr remote_decryptor,
+  MojoDecryptor(mojo::PendingRemote<mojom::Decryptor> remote_decryptor,
                 uint32_t writer_capacity = 0);
   ~MojoDecryptor() final;
 
@@ -89,7 +91,7 @@ class MojoDecryptor : public Decryptor {
 
   base::ThreadChecker thread_checker_;
 
-  mojom::DecryptorPtr remote_decryptor_;
+  mojo::Remote<mojom::Decryptor> remote_decryptor_;
 
   // Helper class to send DecoderBuffer to the |remote_decryptor_| for
   // DecryptAndDecodeAudio(), DecryptAndDecodeVideo() and Decrypt().

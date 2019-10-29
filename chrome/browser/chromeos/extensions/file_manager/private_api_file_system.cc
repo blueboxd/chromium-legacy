@@ -1196,7 +1196,6 @@ void FileManagerPrivateSearchFilesFunction::OnSearchByPattern(
   const std::string fs_root = base::StrCat({url.spec(), "/"});
 
   auto entries = std::make_unique<base::ListValue>();
-  entries->GetList().reserve(results.size());
   for (const auto& result : results) {
     base::FilePath fs_path("/");
     if (!my_files_path.AppendRelativePath(result.first, &fs_path)) {

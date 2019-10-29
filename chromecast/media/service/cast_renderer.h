@@ -104,8 +104,8 @@ class CastRenderer : public ::media::Renderer,
   bool eos_[2];
   gfx::Size video_res_;
 
-  ::media::mojom::CastApplicationMediaInfoManagerPtr
-      application_media_info_manager_ptr_;
+  mojo::Remote<::media::mojom::CastApplicationMediaInfoManager>
+      application_media_info_manager_remote_;
   mojo::Remote<chromecast::mojom::MultiroomManager> multiroom_manager_;
   ::media::PipelineStatusCallback init_cb_;
 

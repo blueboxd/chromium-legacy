@@ -26,14 +26,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.params.ParameterizedCommandLineFlags;
+import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
+import org.chromium.base.test.params.SkipCommandLineParameterization;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.parameter.CommandLineParameter;
-import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -76,12 +77,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Tests of the Omnibox.
  *
- * TODO(yolandyan): Replace the CommandLineParameter with new JUnit4 parameterized
- * framework once it supports Test Rule Parameterization
+ * TODO(yolandyan): Replace the ParameterizedCommandLineFlags with new JUnit4
+ * parameterized framework once it supports Test Rule Parameterization.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@CommandLineParameter({"", "disable-features=" + ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE})
+// clang-format off
+@ParameterizedCommandLineFlags({
+  @Switches(),
+  @Switches("disable-features=" + ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE),
+})
+// clang-format on
 @SuppressLint("SetTextI18n")
 public class OmniboxTest {
     @Rule

@@ -859,7 +859,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2224471211857467033">Événements d'accessibilité</translation>
 <translation id="2224551243087462610">Modifier le nom du dossier</translation>
 <translation id="2226449515541314767">Le contrôle total des appareils MIDI a été bloqué pour ce site.</translation>
-<translation id="2226720438730111184">Décrivez-nous le problème rencontré</translation>
 <translation id="2227179592712503583">Supprimer la suggestion</translation>
 <translation id="2229161054156947610">Plus d'1 heure restante</translation>
 <translation id="222931766245975952">Fichier tronqué.</translation>
@@ -2960,7 +2959,6 @@ N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="5360150013186312835">Afficher dans la barre d'outils</translation>
 <translation id="5362741141255528695">Sélectionnez le fichier de clé privée.</translation>
 <translation id="5363109466694494651">Powerwash et rétablir</translation>
-<translation id="5365716706805792666">Google peut vérifier si vos mots de passe sont concernés par une violation des données. Cette option sera activée lorsque vous connecterez avec votre compte Google.</translation>
 <translation id="5365881113273618889">Le dossier que vous avez sélectionné contient des fichiers sensibles. Voulez-vous vraiment accorder à "<ph name="APP_NAME" />" un accès en écriture permanent à ce dossier ?</translation>
 <translation id="5367091008316207019">Lecture du fichier en cours…</translation>
 <translation id="5368720394188453070">Votre téléphone est verrouillé. Déverrouillez-le pour y accéder.</translation>
@@ -3559,7 +3557,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6202304368170870640">Vous pouvez utiliser votre code pour vous connecter à votre appareil ou le déverrouiller.</translation>
 <translation id="6206311232642889873">Cop&amp;ier l'image</translation>
 <translation id="6207200176136643843">Réinitialiser le niveau de zoom par défaut</translation>
-<translation id="620722923698527029">Toujours ouvrir ces types de liens dans l'application associée</translation>
 <translation id="6207282396926186323">Installer <ph name="APP_NAME" /> (application Linux)</translation>
 <translation id="6207937957461833379">Pays/Région</translation>
 <translation id="6208521041562685716">Activation des données mobiles…</translation>
@@ -4433,7 +4430,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7506541170099744506">Votre <ph name="DEVICE_TYPE" /> a bien été enregistré pour bénéficier de la gestion d'entreprise.</translation>
 <translation id="7507930499305566459">Certificat du répondeur d'état</translation>
 <translation id="7508054832109420082">Autoriser l'accès aux imprimantes</translation>
-<translation id="7510943789645525906">Recevoir une alerte si l'un de vos mots de passe est compromis suite à une violation de données</translation>
 <translation id="7513029293694390567">Permet de se connecter automatiquement aux sites Web à l'aide des identifiants enregistrés. Si cette fonctionnalité est désactivée, vous êtes invité à confirmer chaque connexion à un site Web.</translation>
 <translation id="7514239104543605883">Copier sur votre appareil</translation>
 <translation id="7514365320538308">Télécharger</translation>
@@ -4622,7 +4618,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 
 
 <ph name="EXTENSION_NAME" /></translation>
-<translation id="7788383851298063850">Décrivez-nous le problème rencontré</translation>
 <translation id="7788444488075094252">Langues et saisie</translation>
 <translation id="7788668840732459509">Position :</translation>
 <translation id="7789963078219276159">L'arrière-plan par défaut de la page d'accueil a été remplacé par <ph name="CATEGORY" />.</translation>
@@ -4737,7 +4732,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7926423016278357561">Ce n'était pas moi</translation>
 <translation id="7928836894214140642">Géré par <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Les modes de paiement enregistrés s'afficheront ici</translation>
-<translation id="7930681627240672853">Vérifier si le mot de passe est sûr</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> partage votre écran et un contenu audio.</translation>
 <translation id="7931318309563332511">Langue source inconnue</translation>
 <translation id="793293630927785390">Boîte de dialogue "Ajouter un réseau Wi-Fi"</translation>
@@ -4810,7 +4804,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8014154204619229810">Le processus de mise à jour est en cours. Actualisez la page dans quelques instants et revérifiez.</translation>
 <translation id="8014206674403687691">Impossible de revenir à la version précédente de <ph name="IDS_SHORT_PRODUCT_NAME" />. Veuillez essayer de réinitialiser l'appareil avec la fonctionnalité Powerwash.</translation>
 <translation id="8014210335923519270">Améliorez <ph name="IDS_SHORT_PRODUCT_NAME" /> et ses paramètres de sécurité en envoyant des informations système et des données d'utilisation à Google</translation>
-<translation id="8015780634880457457">Google peut vérifier si vos mots de passe sont concernés par une violation de données</translation>
 <translation id="8016266267177410919">Stockage temporaire</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Raccourci modifié</translation>

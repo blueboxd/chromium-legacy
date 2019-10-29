@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ssl_error_navigation_throttle.h"
+#include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -43,8 +43,11 @@ void MockHandleSSLError(
   } else {
     std::move(blocking_page_ready_callback).Run(std::move(blocking_page));
   }
+}
 
-}  // namespace
+bool IsInHostedApp(content::WebContents* web_contents) {
+  return false;
+}
 
 class TestSSLErrorNavigationThrottle : public SSLErrorNavigationThrottle {
  public:
@@ -60,7 +63,8 @@ class TestSSLErrorNavigationThrottle : public SSLErrorNavigationThrottle {
                                     const chrome_browser_ssl::
                                         CertLoggerRequest_ChromeChannel)>(),
                 certificate_reporting_test_utils::CERT_REPORT_NOT_EXPECTED),
-            base::Bind(&MockHandleSSLError, async_handle_ssl_error)),
+            base::Bind(&MockHandleSSLError, async_handle_ssl_error),
+            base::Bind(&IsInHostedApp)),
         on_cancel_deferred_navigation_(
             std::move(on_cancel_deferred_navigation)) {}
 

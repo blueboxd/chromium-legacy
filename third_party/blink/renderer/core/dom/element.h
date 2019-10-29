@@ -893,7 +893,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void ClearMutableInlineStyleIfEmpty();
 
   void setTabIndex(int);
-  int tabIndex() const override;
+  int tabIndex() const;
 
   // Helpers for V8DOMActivityLogger::logEvent.  They call logEvent only if
   // the element is isConnected() and the context is an isolated world.
@@ -1112,6 +1112,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       const QualifiedName&) const;
 
   void CancelFocusAppearanceUpdate();
+  virtual int DefaultTabIndex() const;
 
   const ComputedStyle* VirtualEnsureComputedStyle(
       PseudoId pseudo_element_specifier = kPseudoIdNone) override {

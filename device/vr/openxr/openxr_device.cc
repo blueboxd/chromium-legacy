@@ -155,12 +155,6 @@ void OpenXrDevice::OnRequestSessionResult(
 
   OnStartPresenting();
 
-  EnsureRenderLoop();
-  gfx::Size view_size = render_loop_->GetViewSize();
-  display_info_->left_eye->render_width = view_size.width();
-  display_info_->right_eye->render_width = view_size.width();
-  display_info_->left_eye->render_height = view_size.height();
-  display_info_->right_eye->render_height = view_size.height();
   session->display_info = display_info_.Clone();
 
   std::move(callback).Run(

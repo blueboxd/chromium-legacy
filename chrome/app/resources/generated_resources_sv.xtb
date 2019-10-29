@@ -859,7 +859,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2224471211857467033">Tillgänglighetshändelser</translation>
 <translation id="2224551243087462610">Redigera mappnamn</translation>
 <translation id="2226449515541314767">Webbplatsen har blockerats från fullständig kontroll över MIDI-enheter.</translation>
-<translation id="2226720438730111184">Berätta vad som händer</translation>
 <translation id="2227179592712503583">Ta bort förslag</translation>
 <translation id="2229161054156947610">Mer än 1 timme kvar</translation>
 <translation id="222931766245975952">Filen är trunkerad</translation>
@@ -2960,7 +2959,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5360150013186312835">Visa i verktygsfältet</translation>
 <translation id="5362741141255528695">Välj privat nyckelfil.</translation>
 <translation id="5363109466694494651">Använd Powerwash och återställ</translation>
-<translation id="5365716706805792666">Google kan kontrollera om dina lösenord har läckt ut vid ett dataintrång. Detta aktiveras när du loggar in med Google-kontot.</translation>
 <translation id="5365881113273618889">Mappen som du valde innehåller känsliga filer. Vill du bevilja <ph name="APP_NAME" /> permanent skrivåtkomst till den här mappen?</translation>
 <translation id="5367091008316207019">Läser fil ...</translation>
 <translation id="5368720394188453070">Din mobil är låst. Lås upp den.</translation>
@@ -3558,7 +3556,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="6202304368170870640">Du kan logga in på eller låsa upp enheten med pinkoden.</translation>
 <translation id="6206311232642889873">Kopiera &amp;bild</translation>
 <translation id="6207200176136643843">Återställ standardzoomnivån</translation>
-<translation id="620722923698527029">Öppna alltid dessa typer av länkar i den kopplade appen</translation>
 <translation id="6207282396926186323">Installera <ph name="APP_NAME" /> (Linux-app)</translation>
 <translation id="6207937957461833379">Land/region</translation>
 <translation id="6208521041562685716">Mobildata aktiveras</translation>
@@ -4432,7 +4429,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> har registrerats för företagshantering.</translation>
 <translation id="7507930499305566459">Status för svarscertifikat</translation>
 <translation id="7508054832109420082">Ge åtkomst till skrivare</translation>
-<translation id="7510943789645525906">Varnar om ett lösenord du använder har identifierats i samband med ett dataintrång</translation>
 <translation id="7513029293694390567">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du bekräfta inloggningen varje gång du besöker en webbplats.</translation>
 <translation id="7514239104543605883">Kopiera till din enhet</translation>
 <translation id="7514365320538308">Ladda ned</translation>
@@ -4621,7 +4617,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 
 
 <ph name="EXTENSION_NAME" /></translation>
-<translation id="7788383851298063850">Berätta vad som händer</translation>
 <translation id="7788444488075094252">Språk och inmatning</translation>
 <translation id="7788668840732459509">Position:</translation>
 <translation id="7789963078219276159">Startsidans bakgrundsbild har ändrats till <ph name="CATEGORY" />.</translation>
@@ -4736,7 +4731,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="7926423016278357561">Det var inte jag.</translation>
 <translation id="7928836894214140642">Hanteras av <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Sparade betalningsmetoder visas här</translation>
-<translation id="7930681627240672853">Kontrollera om lösenordet är säkert</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> delar skärmen och ljudet.</translation>
 <translation id="7931318309563332511">okänt</translation>
 <translation id="793293630927785390">Dialogruta för nytt Wi-Fi-nätverk</translation>
@@ -4809,7 +4803,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8014154204619229810">Uppdateringsprogrammet körs. Uppdatera sidan om en minut och kolla igen.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> kan inte återställas till den föregående installerade versionen. Försök använda Powerwash på enheten igen.</translation>
 <translation id="8014210335923519270">Gör <ph name="IDS_SHORT_PRODUCT_NAME" /> bättre och säkrare genom att skicka information om system och användning till Google</translation>
-<translation id="8015780634880457457">Google kan kontrollera om dina lösenord har läckt ut vid ett dataintrång</translation>
 <translation id="8016266267177410919">Tillfällig lagring</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Genvägen har ändrats</translation>

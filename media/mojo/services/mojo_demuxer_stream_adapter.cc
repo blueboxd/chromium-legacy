@@ -18,7 +18,7 @@
 namespace media {
 
 MojoDemuxerStreamAdapter::MojoDemuxerStreamAdapter(
-    mojom::DemuxerStreamPtr demuxer_stream,
+    mojo::PendingRemote<mojom::DemuxerStream> demuxer_stream,
     const base::Closure& stream_ready_cb)
     : demuxer_stream_(std::move(demuxer_stream)),
       stream_ready_cb_(stream_ready_cb),

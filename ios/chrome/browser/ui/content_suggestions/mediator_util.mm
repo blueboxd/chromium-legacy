@@ -72,11 +72,7 @@ ContentSuggestionsItem* ConvertSuggestion(
         contentSuggestion.reading_list_suggestion_extra()->favicon_page_url;
   }
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
-    if (base::FeatureList::IsEnabled(kOptionalArticleThumbnail)) {
-      suggestion.hasImage = contentSuggestion.salient_image_url().is_valid();
-    } else {
-      suggestion.hasImage = YES;
-    }
+    suggestion.hasImage = contentSuggestion.salient_image_url().is_valid();
     suggestion.readLaterAction = YES;
   }
 

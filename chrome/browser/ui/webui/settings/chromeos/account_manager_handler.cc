@@ -153,7 +153,7 @@ void AccountManagerUIHandler::HandleGetAccounts(const base::ListValue* args) {
 void AccountManagerUIHandler::OnGetAccounts(
     base::Value callback_id,
     const std::vector<AccountManager::Account>& stored_accounts) {
-  base::ListValue accounts;
+  base::Value::ListStorage accounts;
 
   const AccountId device_account_id =
       ProfileHelper::Get()
@@ -204,7 +204,7 @@ void AccountManagerUIHandler::OnGetAccounts(
     if (IsSameAccount(account_key, device_account_id)) {
       device_account = std::move(account);
     } else {
-      accounts.Append(std::move(account));
+      accounts.push_back(std::move(account));
     }
   }
 
@@ -223,11 +223,10 @@ void AccountManagerUIHandler::OnGetAccounts(
               identity_manager_->GetPrimaryAccountInfo().email));
     }
 
-    accounts.GetList().insert(accounts.GetList().begin(),
-                              std::move(device_account));
+    accounts.insert(accounts.begin(), std::move(device_account));
   }
 
-  ResolveJavascriptCallback(callback_id, accounts);
+  ResolveJavascriptCallback(callback_id, base::Value(std::move(accounts)));
 }
 
 void AccountManagerUIHandler::HandleAddAccount(const base::ListValue* args) {

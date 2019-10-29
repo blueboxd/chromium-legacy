@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">మీ భాషని సెట్ చేయండి</translation>
 <translation id="1962969542251276847">స్క్రీన్‌ను లాక్ చేయి</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">హాయ్, <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">వచన ఇన్‌పుట్</translation>
 <translation id="1993072747612765854">తాజా <ph name="SYSTEM_APP_NAME" /> అప్‌డేట్ గురించి మరింత తెలుసుకోండి</translation>
 <translation id="1995660704900986789">పవర్ ఆఫ్ చేయి</translation>
@@ -159,7 +160,6 @@
 <translation id="3139942575505304791">డెస్క్ 1</translation>
 <translation id="315116470104423982">మొబైల్ డేటా</translation>
 <translation id="3151786313568798007">దృగ్విన్యాసం</translation>
-<translation id="3152934361839663679">మీ పరికరం గరిష్ఠ సంఖ్యలో మానిటర్‌లకు కనెక్ట్ చేయబడింది, కనుక స్క్రీన్‌లలో ఒకటి డిస్‌కనెక్ట్ చేయబడింది.</translation>
 <translation id="3153444934357957346">బహుళ సైన్-ఇన్‌లో గరిష్టంగా <ph name="MULTI_PROFILE_USER_LIMIT" /> ఖాతాలు మాత్రమే ఉండవచ్చు.</translation>
 <translation id="3154351730702813399">పరికర నిర్వాహకుడు మీ బ్రౌజింగ్ కార్యకలాపాన్ని పర్యవేక్షించవచ్చు.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{పరికరానికి కనెక్ట్ చేయబడింది}other{# పరికరాలకు కనెక్ట్ చేయబడింది}}</translation>

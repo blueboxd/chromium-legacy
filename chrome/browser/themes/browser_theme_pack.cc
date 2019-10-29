@@ -106,7 +106,7 @@ struct PersistingImagesTable {
   // someone adds a new resource.
   int idr_id;
 
-  // String to check for when parsing theme manifests or NULL if this isn't
+  // String to check for when parsing theme manifests or null if this isn't
   // supposed to be changeable by the user.
   const char* const key;
 };
@@ -371,7 +371,7 @@ SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
   SkRect scaled_bounds = RectToSkRect(gfx::Rect(scaled_size));
   // Note(oshima): The following scaling code doesn't work with
   // a mask image.
-  canvas.drawBitmapRect(source_bitmap, scaled_bounds, NULL);
+  canvas.drawBitmapRect(source_bitmap, scaled_bounds, nullptr);
   return scaled_bitmap;
 }
 
@@ -733,18 +733,18 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
 
   if (!pack->data_pack_->LoadFromPath(path)) {
     LOG(ERROR) << "Failed to load theme data pack.";
-    return NULL;
+    return nullptr;
   }
 
   base::StringPiece pointer;
   if (!pack->data_pack_->GetStringPiece(kHeaderID, &pointer))
-    return NULL;
+    return nullptr;
   pack->header_ = reinterpret_cast<BrowserThemePackHeader*>(const_cast<char*>(
       pointer.data()));
 
   if (pack->header_->version != kThemePackVersion) {
     DLOG(ERROR) << "BuildFromDataPack failure! Version mismatch!";
-    return NULL;
+    return nullptr;
   }
   // TODO(erg): Check endianess once DataPack works on the other endian.
   std::string theme_id(reinterpret_cast<char*>(pack->header_->theme_id),
@@ -752,36 +752,36 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   std::string truncated_id = expected_id.substr(0, crx_file::id_util::kIdSize);
   if (theme_id != truncated_id) {
     DLOG(ERROR) << "Wrong id: " << theme_id << " vs " << expected_id;
-    return NULL;
+    return nullptr;
   }
 
   if (!pack->data_pack_->GetStringPiece(kTintsID, &pointer))
-    return NULL;
+    return nullptr;
   pack->tints_ = reinterpret_cast<TintEntry*>(const_cast<char*>(
       pointer.data()));
 
   if (!pack->data_pack_->GetStringPiece(kColorsID, &pointer))
-    return NULL;
+    return nullptr;
   pack->colors_ =
       reinterpret_cast<ColorPair*>(const_cast<char*>(pointer.data()));
 
   if (!pack->data_pack_->GetStringPiece(kDisplayPropertiesID, &pointer))
-    return NULL;
+    return nullptr;
   pack->display_properties_ = reinterpret_cast<DisplayPropertyPair*>(
       const_cast<char*>(pointer.data()));
 
   if (!pack->data_pack_->GetStringPiece(kSourceImagesID, &pointer))
-    return NULL;
+    return nullptr;
   pack->source_images_ = reinterpret_cast<int*>(
       const_cast<char*>(pointer.data()));
 
   if (!pack->data_pack_->GetStringPiece(kScaleFactorsID, &pointer))
-    return NULL;
+    return nullptr;
 
   if (!InputScalesValid(pointer, pack->scale_factors_)) {
     DLOG(ERROR) << "BuildFromDataPack failure! The pack scale factors differ "
                 << "from those supported by platform.";
-    return NULL;
+    return nullptr;
   }
   pack->is_valid_ = true;
   return pack;
@@ -979,7 +979,7 @@ gfx::Image BrowserThemePack::GetImageNamed(int idr_id) {
 base::RefCountedMemory* BrowserThemePack::GetRawData(
     int idr_id,
     ui::ScaleFactor scale_factor) const {
-  base::RefCountedMemory* memory = NULL;
+  base::RefCountedMemory* memory = nullptr;
   int prs_id = GetPersistentIDByIDR(idr_id);
   int raw_id = GetRawIDByPersistentID(prs_id, scale_factor);
 
@@ -1304,7 +1304,7 @@ void BrowserThemePack::ParseImageNamesFromJSON(
   for (base::DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
        iter.Advance()) {
     if (iter.value().is_dict()) {
-      const base::DictionaryValue* inner_value = NULL;
+      const base::DictionaryValue* inner_value = nullptr;
       if (iter.value().GetAsDictionary(&inner_value)) {
         for (base::DictionaryValue::Iterator inner_iter(*inner_value);
              !inner_iter.IsAtEnd();

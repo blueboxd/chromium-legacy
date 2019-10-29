@@ -2,11 +2,11 @@ rootWebArea
 ++genericContainer ignored
 ++++textField inputType='text' name='Title0'
 ++++++genericContainer
-++++textField description='Title1' inputType='text' name='Label1' descriptionFrom=attribute
+++++textField description='Title1' inputType='text' name='Label1' descriptionFrom=title
 ++++++genericContainer
-++++textField description='Title2' inputType='text' name='AriaLabel2' descriptionFrom=attribute
+++++textField description='Title2' inputType='text' name='AriaLabel2' descriptionFrom=title
 ++++++genericContainer
-++++textField description='Title3' inputType='text' name='LabelledBy3' descriptionFrom=attribute
+++++textField description='Title3' inputType='text' name='LabelledBy3' descriptionFrom=title
 ++++++genericContainer
 ++++textField inputType='text' name='Placeholder4'
 ++++++staticText name='Placeholder4'
@@ -18,7 +18,7 @@ rootWebArea
 ++++++staticText name='Placeholder4b'
 ++++++++inlineTextBox name='Placeholder4b'
 ++++++genericContainer
-++++textField description='Title5' inputType='text' name='Placeholder5' descriptionFrom=attribute
+++++textField description='Title5' inputType='text' name='Placeholder5' descriptionFrom=title
 ++++++staticText name='Placeholder5'
 ++++++++inlineTextBox name='Placeholder5'
 ++++++genericContainer

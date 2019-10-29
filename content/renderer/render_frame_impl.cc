@@ -3306,9 +3306,9 @@ void RenderFrameImpl::CommitNavigation(
     const base::UnguessableToken& devtools_navigation_token,
     CommitNavigationCallback commit_callback) {
   DCHECK(!navigation_client_impl_);
-  // We can have a FrameNavigationControl::CommitNavigation with
-  // IsPerNavigationMojoInterfaceEnabled() == true, for non-committed
-  // interstitials where no NavigationRequest was created. Therefore, no DCHECK.
+  // Note: We can only have FrameNavigationControl::CommitNavigation for
+  // non-committed interstitials where no NavigationRequest was created.
+  // TODO(ahemery): Remove when https://crbug.com/448486 is done.
   CommitNavigationInternal(
       std::move(common_params), std::move(commit_params),
       std::move(response_head), std::move(response_body),
@@ -3338,7 +3338,6 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
     mojom::NavigationClient::CommitNavigationCallback
         per_navigation_mojo_interface_callback) {
   DCHECK(navigation_client_impl_);
-  DCHECK(IsPerNavigationMojoInterfaceEnabled());
   CommitNavigationInternal(
       std::move(common_params), std::move(commit_params),
       std::move(response_head), std::move(response_body),
@@ -3377,17 +3376,9 @@ void RenderFrameImpl::CommitNavigationInternal(
     return;
   }
 
-  bool was_initiated_in_this_frame = false;
-  if (IsPerNavigationMojoInterfaceEnabled()) {
-    was_initiated_in_this_frame =
-        navigation_client_impl_ &&
-        navigation_client_impl_->was_initiated_in_this_frame();
-  } else {
-    was_initiated_in_this_frame =
-        browser_side_navigation_pending_ &&
-        browser_side_navigation_pending_url_ == commit_params->original_url &&
-        commit_params->nav_entry_id == 0;
-  }
+  bool was_initiated_in_this_frame =
+      navigation_client_impl_ &&
+      navigation_client_impl_->was_initiated_in_this_frame();
 
   // Sanity check that the browser always sends us new loader factories on
   // cross-document navigations.
@@ -6875,11 +6866,9 @@ void RenderFrameImpl::BeginNavigationInternal(
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;
-  if (IsPerNavigationMojoInterfaceEnabled()) {
-    BindNavigationClient(
-        navigation_client_remote.InitWithNewEndpointAndPassReceiver());
-    navigation_client_impl_->MarkWasInitiatedInThisFrame();
-  }
+  BindNavigationClient(
+      navigation_client_remote.InitWithNewEndpointAndPassReceiver());
+  navigation_client_impl_->MarkWasInitiatedInThisFrame();
 
   mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator(
       std::move(info->navigation_initiator_handle), 0);
@@ -7029,10 +7018,8 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&RenderFrameImpl::BindFrameNavigationControl,
                           weak_factory_.GetWeakPtr()));
 
-  if (IsPerNavigationMojoInterfaceEnabled()) {
-    GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
-        &RenderFrameImpl::BindNavigationClient, weak_factory_.GetWeakPtr()));
-  }
+  GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
+      &RenderFrameImpl::BindNavigationClient, weak_factory_.GetWeakPtr()));
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindFullscreen, weak_factory_.GetWeakPtr()));

@@ -241,6 +241,7 @@ XrResult OpenXrApiWrapper::InitSession(
   // It's ok if stage_space_ fails since not all OpenXR devices are required to
   // support this reference space.
   CreateSpace(XR_REFERENCE_SPACE_TYPE_STAGE, &stage_space_);
+  UpdateStageBounds();
 
   // Since the objects in these arrays are used on every frame,
   // we don't want to create and destroy these objects every frame,
@@ -638,17 +639,23 @@ std::string OpenXrApiWrapper::GetRuntimeName() const {
   }
 }
 
-XrResult OpenXrApiWrapper::GetStageBounds(XrExtent2Df* stage_bounds) const {
-  DCHECK(stage_bounds);
+// stage bounds is fixed unless we received event
+// XrEventDataReferenceSpaceChangePending
+XrResult OpenXrApiWrapper::UpdateStageBounds() {
   DCHECK(HasSession());
+  XrResult xr_result;
+  xr_result = xrGetReferenceSpaceBoundsRect(
+      session_, XR_REFERENCE_SPACE_TYPE_STAGE, &stage_bounds_);
+  if (XR_FAILED(xr_result)) {
+    stage_bounds_.height = 0;
+    stage_bounds_.width = 0;
+  }
 
-  return xrGetReferenceSpaceBoundsRect(session_, XR_REFERENCE_SPACE_TYPE_STAGE,
-                                       stage_bounds);
+  return xr_result;
 }
 
-bool OpenXrApiWrapper::GetStageParameters(
-    XrExtent2Df* stage_bounds,
-    gfx::Transform* local_from_stage) const {
+bool OpenXrApiWrapper::GetStageParameters(XrExtent2Df* stage_bounds,
+                                          gfx::Transform* local_from_stage) {
   DCHECK(stage_bounds);
   DCHECK(local_from_stage);
   DCHECK(HasSession());
@@ -659,8 +666,7 @@ bool OpenXrApiWrapper::GetStageParameters(
   if (!HasSpace(XR_REFERENCE_SPACE_TYPE_STAGE))
     return false;
 
-  if (XR_FAILED(GetStageBounds(stage_bounds)))
-    return false;
+  *stage_bounds = stage_bounds_;
 
   XrSpaceLocation local_from_stage_location = {XR_TYPE_SPACE_LOCATION};
   if (FAILED(xrLocateSpace(local_space_, stage_space_,

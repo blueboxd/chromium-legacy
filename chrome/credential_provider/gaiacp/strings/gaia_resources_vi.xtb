@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Tài khoản của bạn đã bị khóa. Vui lòng liên hệ với quản trị viên hệ thống.</translation>
 <translation id="2844349213149998955">Bạn không thể đăng nhập vào thiết bị này bằng tài khoản cá nhân. Vui lòng đăng nhập bằng tài khoản công việc.</translation>
 <translation id="3306357053520292004">Một người dùng trên máy tính này đã được thêm bằng tài khoản này. Vui lòng đăng nhập bằng một tài khoản khác.</translation>
+<translation id="3926852373333893095">Chỉ người dùng GSuite Enterprise mới được phép đăng nhập.</translation>
 <translation id="4057329986137569701">Đã xảy ra lỗi nội bộ.</translation>
 <translation id="4267670563222825190">Không tìm được người dùng miền nào cho tài khoản của bạn. Vui lòng liên hệ với quản trị viên.</translation>
 <translation id="4300229033992784001">Mật khẩu tài khoản của bạn đã thay đổi. Hãy nhập mật khẩu Windows hiện tại để đồng bộ hóa tài khoản Windows với tài khoản công việc của bạn.</translation>
 <translation id="4706454071748629324">Không thêm được người dùng mới. Máy tính này chỉ cho phép tạo 1 người dùng bằng tài khoản công việc.</translation>
 <translation id="6033715878377252112">Trình trợ giúp của Trình cung cấp thông tin đăng nhập Google dành cho Windows</translation>
 <translation id="6149399665202317746">Trình cung cấp thông tin đăng nhập Google dành cho Windows</translation>
+<translation id="6239180560789153226">Thiết bị của bạn thiếu thông tin khôi phục. Hãy đăng nhập bằng Tài khoản Google mà bạn dùng cho công việc.</translation>
 <translation id="6312494990035843744">Bạn không được phép đăng nhập bằng tài khoản công việc trên miền này. Hãy thử một tài khoản khác.</translation>
 <translation id="6463752215771576050">Không thể đăng ký dịch vụ quản lý doanh nghiệp cho máy tính này.  Vui lòng đăng nhập bằng một tài khoản công việc khác.</translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
+<translation id="6937049691815837345">Thiết bị của bạn cần phải đăng ký tính năng quản lý thiết bị. Hãy đăng nhập bằng Tài khoản Google mà bạn dùng cho công việc.</translation>
 <translation id="7209941495304122410">Nhập mật khẩu Windows</translation>
 <translation id="7357241217513796177">Hãy đảm bảo bạn có kết nối mạng rồi thử lại.</translation>
 <translation id="7536769223115622137">Thêm tài khoản công việc</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Phiên truy cập của bạn đã hết hạn. Hãy đăng nhập bằng tài khoản công việc trên Google.</translation>
 <translation id="9055998212250844221">Tài khoản người dùng tạo bởi Trình cung cấp thông tin đăng nhập Google dành cho Windows</translation>
 <translation id="9135619837062629367">Tài khoản này không được phép đăng nhập. Hãy thử một tài khoản khác.</translation>
+<translation id="998002716857524853">Đăng nhập bằng tài khoản GSuite mà bạn dùng cho công việc.</translation>
 </translationbundle>

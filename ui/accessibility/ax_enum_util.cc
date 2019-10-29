@@ -2539,6 +2539,8 @@ const char* ToString(ax::mojom::DescriptionFrom description_from) {
       return "contents";
     case ax::mojom::DescriptionFrom::kRelatedElement:
       return "relatedElement";
+    case ax::mojom::DescriptionFrom::kTitle:
+      return "title";
   }
 
   return "";
@@ -2555,6 +2557,8 @@ ax::mojom::DescriptionFrom ParseDescriptionFrom(const char* description_from) {
     return ax::mojom::DescriptionFrom::kContents;
   if (0 == strcmp(description_from, "relatedElement"))
     return ax::mojom::DescriptionFrom::kRelatedElement;
+  if (0 == strcmp(description_from, "title"))
+    return ax::mojom::DescriptionFrom::kTitle;
   return ax::mojom::DescriptionFrom::kNone;
 }
 

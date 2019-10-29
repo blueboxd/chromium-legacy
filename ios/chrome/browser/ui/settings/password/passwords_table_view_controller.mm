@@ -471,7 +471,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   SettingsSwitchItem* leakCheckItem =
       [[SettingsSwitchItem alloc] initWithType:ItemTypePasswordLeakCheckSwitch];
   leakCheckItem.text = l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SWITCH);
-  leakCheckItem.on = [passwordLeakCheckEnabled_ value];
+  leakCheckItem.on = [self leakCheckItemOnState];
   leakCheckItem.accessibilityIdentifier = @"leakCheckItem_switch";
 
   AuthenticationService* authService =
@@ -533,7 +533,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     DCHECK(base::FeatureList::IsEnabled(
         password_manager::features::kLeakDetection));
     // Update the item.
-    leakCheckItem_.on = [passwordLeakCheckEnabled_ value];
+    leakCheckItem_.on = [self leakCheckItemOnState];
 
     // Update the cell if it's not removed by presenting search controller.
     if ([self.tableViewModel
@@ -562,7 +562,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [passwordLeakCheckEnabled_ setValue:switchView.on];
 
   // Update the item.
-  leakCheckItem_.on = [passwordLeakCheckEnabled_ value];
+  leakCheckItem_.on = [self leakCheckItemOnState];
   [self updateDetailTextLeakCheckItem];
   [self reconfigureCellsForItems:@[ leakCheckItem_ ]];
 }
@@ -1259,9 +1259,17 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [self reconfigureCellsForItems:@[ savePasswordsItem_ ]];
 }
 
+// Returns a boolean indicating if the switch should appear as "On" or "Off"
+// based on the sync preference and the sign in status.
+- (BOOL)leakCheckItemOnState {
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(browserState_);
+  return [passwordLeakCheckEnabled_ value] && authService->IsAuthenticated();
+}
+
 // Sets the leak check switch item's enabled status to |enabled| and
-// reconfigures the corresponding cell. If the user is not sign in, |enabled| is
-// overriden with |NO|.
+// reconfigures the corresponding cell. If the user is not signed in, |enabled|
+// is overriden with |NO|.
 - (void)setLeakCheckSwitchItemEnabled:(BOOL)enabled {
   if (!base::FeatureList::IsEnabled(password_manager::features::kLeakDetection))
     return;
@@ -1293,18 +1301,16 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     // When editing keep the current detail text.
     return;
   }
-  if (leakCheckItem_.enabled) {
-    leakCheckItem_.detailText =
-        l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_IN_DESC);
-    return;
-  }
-  if (leakCheckItem_.on) {
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(browserState_);
+  if (!authService->IsAuthenticated() && [passwordLeakCheckEnabled_ value]) {
+    // If the user is signed out and the sync preference is enabled, this
+    // informs that it will be turned on on sign in.
     leakCheckItem_.detailText =
         l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_OUT_ENABLED_DESC);
     return;
   }
-  leakCheckItem_.detailText =
-      l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_OUT_DISABLED_DESC);
+  leakCheckItem_.detailText = nil;
 }
 
 #pragma mark - Testing

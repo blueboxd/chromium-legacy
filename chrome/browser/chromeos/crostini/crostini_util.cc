@@ -532,17 +532,13 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
                                  std::string container_name) {
   auto* pref_service = profile->GetPrefs();
   ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
+  updater->EraseListIter(std::find_if(
+      updater->GetList().begin(), updater->GetList().end(),
+      [&](const auto& dict) {
+        return *dict.FindStringKey(prefs::kVmKey) == vm_name &&
+               *dict.FindStringKey(prefs::kContainerKey) == container_name;
+      }));
 
-  for (auto it = updater->GetList().begin(); it != updater->GetList().end();
-       it++) {
-    auto* vm_name_test = it->FindKey(prefs::kVmKey);
-    auto* container_name_test = it->FindKey(prefs::kContainerKey);
-    if (vm_name_test->GetString() == vm_name &&
-        container_name_test->GetString() == container_name) {
-      updater->GetList().erase(it);
-      break;
-    }
-  }
   CrostiniRegistryServiceFactory::GetForProfile(profile)->ClearApplicationList(
       vm_name, container_name);
   CrostiniMimeTypesServiceFactory::GetForProfile(profile)->ClearMimeTypes(

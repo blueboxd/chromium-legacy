@@ -340,7 +340,7 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
          current_flow_ == FOLLOWUP_AFTER_CVC_AUTH_FLOW);
   // End the flow if the server responded with an error.
   if (result != AutofillClient::PaymentsRpcResult::SUCCESS) {
-    if (current_flow_ != OPT_OUT_FLOW)
+    if (current_flow_ == OPT_IN_FETCH_CHALLENGE_FLOW)
       autofill_client_->UpdateWebauthnOfferDialogWithError();
     current_flow_ = NONE_FLOW;
     return;
@@ -479,6 +479,7 @@ CreditCardFIDOAuthenticator::ParseCreationOptions(
       "timeout_millis", base::Value::Type::INTEGER);
   options->adjusted_timeout = base::TimeDelta::FromMilliseconds(
       timeout ? timeout->GetInt() : kWebAuthnTimeoutMs);
+  options->attestation = AttestationConveyancePreference::kDirect;
 
   // Only allow user-verifying platform authenticators.
   options->authenticator_selection = AuthenticatorSelectionCriteria(

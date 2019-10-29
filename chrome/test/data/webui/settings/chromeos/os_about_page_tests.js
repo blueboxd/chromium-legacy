@@ -286,7 +286,7 @@ cr.define('settings_about_page', function() {
        * page.$$("#") is used to access items inside dom-if.
        */
       test('ReleaseNotes', async () => {
-        let releaseNotes = null;
+        const releaseNotes = null;
 
         /**
          * Checks the visibility of the "release notes" section when online.

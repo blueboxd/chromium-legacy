@@ -9,6 +9,7 @@
 <translation id="10614374240317010">Ei ole kunagi salvestatud</translation>
 <translation id="1067922213147265141">Muud Google'i teenused</translation>
 <translation id="1068672505746868501">Ära tõlgi kunagi <ph name="SOURCE_LANGUAGE" /> keeles olevaid lehti</translation>
+<translation id="107147699690128016">Kui muudate faililaiendit, võib fail avaneda mõnes teises rakenduses ja teie seadmele ohtu kujutada.</translation>
 <translation id="1100066534610197918">Ava rühmas uuel vahelehel</translation>
 <translation id="1105960400813249514">Kuva jäädvustamine</translation>
 <translation id="1111673857033749125">Siin kuvatakse teie teistes seadmetes salvestatud järjehoidjad.</translation>
@@ -65,7 +66,6 @@
 <translation id="1407135791313364759">Ava kõik</translation>
 <translation id="1409426117486808224">Avatud vahelehtede lihtsustatud vaade</translation>
 <translation id="1409879593029778104">Faili <ph name="FILE_NAME" /> ei laaditud alla, kuna fail on juba olemas.</translation>
-<translation id="1413136574162415971">Google saab kontrollida, kas teie paroolid olid osa andmetega seotud rikkumisest. See lülitatakse sisse, kui logite sisse oma Google'i kontoga ja lülitate sünkroonimise sisse.</translation>
 <translation id="1414981605391750300">Google'iga ühenduse võtmine. See võib natuke aega võtta …</translation>
 <translation id="1416550906796893042">Rakenduse versioon</translation>
 <translation id="1430915738399379752">Printimine</translation>
@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">Järelejäänud saidid (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Kui soovite midagi oma telefonist teise seadmega jagada, lülitage sünkroonimine mõlema seadme Chrome'i seadetes sisse</translation>
 <translation id="2170088579611075216">Luba virtuaalreaalsus ja sisene</translation>
+<translation id="2175927920773552910">QR-kood</translation>
 <translation id="218608176142494674">Jagamine</translation>
 <translation id="2227444325776770048">Jätka kasutajana <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sünkroonimine ja Google'i teen.</translation>
@@ -205,6 +206,7 @@
 <translation id="2498359688066513246">Abi ja tagasiside</translation>
 <translation id="2501278716633472235">Mine tagasi</translation>
 <translation id="2513403576141822879">Privaatsuse, turvalisuse ning andmete kogumisega seotud lisaseadete nägemiseks avage valik <ph name="BEGIN_LINK" />Sünkroonimine ja Google'i teenused<ph name="END_LINK" /></translation>
+<translation id="2517472476991765520">Kontrolli</translation>
 <translation id="2518590038762162553">Lihtsustatud režiimis laadib Chrome lehti kiiremini ja kasutab kuni 60% vähem andmemahtu. Külastatud lehtede optimeerimiseks saadab Chrome teie veebiliikluse Google’ile. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Saadab Google'ile teie külastatud lehtede URL-id</translation>
 <translation id="2532336938189706096">Veebi kuva</translation>
@@ -258,6 +260,7 @@
 <translation id="2900528713135656174">Looge sündmus</translation>
 <translation id="290376772003165898">Kas leht ei ole <ph name="LANGUAGE" /> keeles?</translation>
 <translation id="2904414404539560095">Vahelehe jagamise seadmete loend (täiskõrgusel avatud).</translation>
+<translation id="2909615210195135082">Google'i märguannete platvorm</translation>
 <translation id="2910701580606108292">Küsi enne saitidel kaitstud sisu esitamise lubamist</translation>
 <translation id="2913331724188855103">Lubab saitidel salvestada küpsiseid ja lugeda küpsiste andmeid (soovitatav)</translation>
 <translation id="2923908459366352541">Nimi on sobimatu</translation>
@@ -313,6 +316,7 @@
 <translation id="3315103659806849044">Kohandate praegu sünkroonimise ja Google'i teenuste seadeid. Sünkroonimise sisselülitamiseks puudutage ekraani alaosas nuppu Kinnita. Liigu üles</translation>
 <translation id="3328801116991980348">Saiditeave</translation>
 <translation id="3333961966071413176">Kõik kontaktid</translation>
+<translation id="3334729583274622784">Kas muuta faililaiendit?</translation>
 <translation id="3341058695485821946">Vaadake, kui palju andmemahtu olete säästnud</translation>
 <translation id="3350687908700087792">Kõigi inkognito vahelehtede sulgemine</translation>
 <translation id="3353615205017136254">Lihtsustatud lehte pakub Google. Algse lehe laadimiseks puudutage nuppu Laadi algne.</translation>
@@ -670,6 +674,7 @@ Enne VR-i aktiveerimist veenduge, et sait oleks usaldusväärne.</translation>
 <translation id="5962718611393537961">Ahendamiseks puudutage</translation>
 <translation id="6000066717592683814">Säilita Google</translation>
 <translation id="6005538289190791541">Soovitatud parool</translation>
+<translation id="6019358956729171834">Laadi rohkem …</translation>
 <translation id="6036057147555329831">Täiendav ICU</translation>
 <translation id="6039379616847168523">Järgmisele vahelehele liikumine</translation>
 <translation id="6040143037577758943">Sulge</translation>
@@ -872,7 +877,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7493994139787901920"><ph name="VERSION" /> (värskendati <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">säästetud andmemaht</translation>
 <translation id="7498271377022651285">Oodake ...</translation>
-<translation id="7510943789645525906">Hoiatab teid, kui kasutatav parool oli osa andmetega seotud rikkumisest</translation>
 <translation id="7514365320538308">Laadi alla</translation>
 <translation id="751961395872307827">Saidiga ei saa ühendust luua</translation>
 <translation id="7521387064766892559">Javascript</translation>
@@ -928,7 +932,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7886917304091689118">Töötab Chrome'is</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Faili allalaadimine.}other{# faili allalaadimine.}}</translation>
 <translation id="7929962904089429003">Menüü avamine</translation>
-<translation id="7930681627240672853">Kontrolli parooli ohutust</translation>
 <translation id="7942131818088350342">Teenus <ph name="PRODUCT_NAME" /> on aegunud.</translation>
 <translation id="7947953824732555851">Nõustu ja logi sisse</translation>
 <translation id="7963646190083259054">Teenusepakkuja:</translation>
@@ -944,7 +947,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8007176423574883786">Selle seadme puhul on välja lülitatud</translation>
 <translation id="8013372441983637696">Kustuta sellest seadmest ka Chrome'i andmed</translation>
 <translation id="8015452622527143194">Lehel kuvatud sisu vaikesuuruses kuvamine</translation>
-<translation id="8015780634880457457">Google saab kontrollida, kas teie paroolid olid osa andmetega seotud rikkumisest</translation>
 <translation id="802154636333426148">Allalaadimine ebaõnnestus</translation>
 <translation id="8026334261755873520">Sirvimisandmete kustutamine</translation>
 <translation id="8035133914807600019">Uus kaust …</translation>

@@ -408,7 +408,7 @@ suite('CrActionMenu', function() {
 
         dots.style.marginLeft = '800px';
 
-        let dotsRect = dots.getBoundingClientRect();
+        const dotsRect = dots.getBoundingClientRect();
 
         // Anchored at right-top by default.
         menu.showAt(dots);

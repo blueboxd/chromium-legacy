@@ -19,12 +19,11 @@
 #include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/data_decoder_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -179,7 +178,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* loader,
-      network::mojom::URLLoaderClientRequest* client_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
       blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,
       bool* will_return_unsafe_redirect) override {
@@ -194,10 +193,11 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
         BundledExchangesSource::MaybeCreateFromFileUrl(request.url);
     if (!source)
       return false;
-    reader_ = base::MakeRefCounted<BundledExchangesReader>(std::move(source));
+    reader_ = base::MakeRefCounted<BundledExchangesReader>(std::move(source),
+                                                           LaunchDataDecoder());
     reader_->ReadMetadata(base::BindOnce(&InterceptorForFile::OnMetadataReady,
                                          weak_factory_.GetWeakPtr(), request));
-    *client_request = forwarding_client_.BindNewPipeAndPassReceiver();
+    *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
     *will_return_unsafe_redirect = true;
     return true;
   }
@@ -228,13 +228,13 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
   }
 
   void StartResponse(const network::ResourceRequest& resource_request,
-                     network::mojom::URLLoaderRequest request,
+                     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
                      network::mojom::URLLoaderClientPtr client) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     network::ResourceRequest new_resource_request = resource_request;
     new_resource_request.url = primary_url_;
     url_loader_factory_->CreateLoaderAndStart(
-        std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
+        std::move(receiver), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
         new_resource_request, std::move(client),
         net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
     std::move(done_callback_).Run(primary_url_, std::move(url_loader_factory_));
@@ -277,7 +277,9 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
                               DoneCallback done_callback,
                               int frame_tree_node_id)
       : source_(std::move(source)),
-        reader_(base::MakeRefCounted<BundledExchangesReader>(source_->Clone())),
+        reader_(
+            base::MakeRefCounted<BundledExchangesReader>(source_->Clone(),
+                                                         LaunchDataDecoder())),
         done_callback_(std::move(done_callback)),
         frame_tree_node_id_(frame_tree_node_id) {
     reader_->ReadMetadata(
@@ -300,9 +302,10 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
                        weak_factory_.GetWeakPtr())));
   }
 
-  void CreateURLLoader(const network::ResourceRequest& resource_request,
-                       network::mojom::URLLoaderRequest request,
-                       network::mojom::URLLoaderClientPtr client) {
+  void CreateURLLoader(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      network::mojom::URLLoaderClientPtr client) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (metadata_error_) {
       client->OnComplete(network::URLLoaderCompletionStatus(
@@ -314,7 +317,7 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
       // This must be the first request to the bundled exchange file.
       DCHECK_EQ(source_->url(), resource_request.url);
       pending_resource_request_ = resource_request;
-      pending_request_ = std::move(request);
+      pending_receiver_ = std::move(receiver);
       pending_client_ = std::move(client);
       return;
     }
@@ -325,8 +328,8 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
     // URL.
     if (source_->url() != resource_request.url) {
       url_loader_factory_->CreateLoaderAndStart(
-          std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
-          resource_request, std::move(client),
+          std::move(receiver), /*routing_id=*/0, /*request_id=*/0,
+          /*options=*/0, resource_request, std::move(client),
           net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
       std::move(done_callback_)
           .Run(resource_request.url, std::move(url_loader_factory_));
@@ -338,7 +341,7 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
     redirect_loader->OnReadyToRedirect(resource_request, primary_url_);
     mojo::MakeSelfOwnedReceiver(
         std::move(redirect_loader),
-        mojo::PendingReceiver<network::mojom::URLLoader>(std::move(request)));
+        mojo::PendingReceiver<network::mojom::URLLoader>(std::move(receiver)));
   }
 
   void OnMetadataReady(data_decoder::mojom::BundleMetadataParseErrorPtr error) {
@@ -354,9 +357,9 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
           std::move(reader_), frame_tree_node_id_);
     }
 
-    if (pending_request_) {
+    if (pending_receiver_) {
       DCHECK(pending_client_);
-      CreateURLLoader(pending_resource_request_, std::move(pending_request_),
+      CreateURLLoader(pending_resource_request_, std::move(pending_receiver_),
                       std::move(pending_client_));
     }
   }
@@ -367,7 +370,7 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
   const int frame_tree_node_id_;
 
   network::ResourceRequest pending_resource_request_;
-  network::mojom::URLLoaderRequest pending_request_;
+  mojo::PendingReceiver<network::mojom::URLLoader> pending_receiver_;
   network::mojom::URLLoaderClientPtr pending_client_;
 
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
@@ -421,12 +424,13 @@ class InterceptorForTrackedNavigationFromTrustableFile final
             weak_factory_.GetWeakPtr())));
   }
 
-  void CreateURLLoader(const network::ResourceRequest& resource_request,
-                       network::mojom::URLLoaderRequest request,
-                       network::mojom::URLLoaderClientPtr client) {
+  void CreateURLLoader(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      network::mojom::URLLoaderClientPtr client) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     url_loader_factory_->CreateLoaderAndStart(
-        std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
+        std::move(receiver), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
         resource_request, std::move(client),
         net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
     std::move(done_callback_)
@@ -486,9 +490,10 @@ class InterceptorForTrackedNavigationFromFile final
 
   bool ShouldBypassRedirectChecks() override { return true; }
 
-  void CreateURLLoader(const network::ResourceRequest& resource_request,
-                       network::mojom::URLLoaderRequest request,
-                       network::mojom::URLLoaderClientPtr client) {
+  void CreateURLLoader(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      network::mojom::URLLoaderClientPtr client) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (!is_redirected_) {
       DCHECK(url_loader_factory_->reader()->HasEntry(resource_request.url));
@@ -505,13 +510,14 @@ class InterceptorForTrackedNavigationFromFile final
       redirect_loader->OnReadyToRedirect(resource_request, new_url);
       mojo::MakeSelfOwnedReceiver(
           std::move(redirect_loader),
-          mojo::PendingReceiver<network::mojom::URLLoader>(std::move(request)));
+          mojo::PendingReceiver<network::mojom::URLLoader>(
+              std::move(receiver)));
       return;
     }
     network::ResourceRequest new_resource_request = resource_request;
     new_resource_request.url = original_request_url_;
     url_loader_factory_->CreateLoaderAndStart(
-        std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
+        std::move(receiver), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
         new_resource_request, std::move(client),
         net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
     std::move(done_callback_)
@@ -549,7 +555,8 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
       DoneCallback done_callback,
       int frame_tree_node_id)
       : reader_(base::MakeRefCounted<BundledExchangesReader>(
-            navigation_info->source().Clone())),
+            navigation_info->source().Clone(),
+            LaunchDataDecoder())),
         target_inner_url_(navigation_info->target_inner_url()),
         done_callback_(std::move(done_callback)),
         frame_tree_node_id_(frame_tree_node_id) {
@@ -573,9 +580,10 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
                        weak_factory_.GetWeakPtr())));
   }
 
-  void CreateURLLoader(const network::ResourceRequest& resource_request,
-                       network::mojom::URLLoaderRequest request,
-                       network::mojom::URLLoaderClientPtr client) {
+  void CreateURLLoader(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      network::mojom::URLLoaderClientPtr client) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (metadata_error_) {
       client->OnComplete(network::URLLoaderCompletionStatus(
@@ -585,7 +593,7 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
 
     if (!url_loader_factory_) {
       pending_resource_request_ = resource_request;
-      pending_request_ = std::move(request);
+      pending_receiver_ = std::move(receiver);
       pending_client_ = std::move(client);
       return;
     }
@@ -593,7 +601,7 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
     network::ResourceRequest new_resource_request = resource_request;
     new_resource_request.url = target_inner_url_;
     url_loader_factory_->CreateLoaderAndStart(
-        std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
+        std::move(receiver), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
         new_resource_request, std::move(client),
         net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
     std::move(done_callback_)
@@ -612,9 +620,9 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
           std::move(reader_), frame_tree_node_id_);
     }
 
-    if (pending_request_) {
+    if (pending_receiver_) {
       DCHECK(pending_client_);
-      CreateURLLoader(pending_resource_request_, std::move(pending_request_),
+      CreateURLLoader(pending_resource_request_, std::move(pending_receiver_),
                       std::move(pending_client_));
     }
   }
@@ -625,7 +633,7 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
   const int frame_tree_node_id_;
 
   network::ResourceRequest pending_resource_request_;
-  network::mojom::URLLoaderRequest pending_request_;
+  mojo::PendingReceiver<network::mojom::URLLoader> pending_receiver_;
   network::mojom::URLLoaderClientPtr pending_client_;
 
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;

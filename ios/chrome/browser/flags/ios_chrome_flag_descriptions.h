@@ -236,11 +236,6 @@ extern const char kOmniboxUseDefaultSearchEngineFaviconDescription[];
 extern const char kOmniboxOnDeviceHeadSuggestionsName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 
-// Title and description for the flag to enable optional thumbnail for NTP
-// articles according to European copyright directive(EUCD).
-extern const char kOptionalArticleThumbnailName[];
-extern const char kOptionalArticleThumbnailDescription[];
-
 // Title and description for the flag to enable leak detection for entered
 // credentials.
 extern const char kPasswordLeakDetectionName[];

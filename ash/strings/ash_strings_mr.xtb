@@ -18,7 +18,7 @@
 <translation id="1195412055398077112">ओव्हरस्कॅन</translation>
 <translation id="119944043368869598">सर्व साफ करा</translation>
 <translation id="1247372569136754018">मायक्रोफोन (अंतर्गत)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> या सेटिंगची अंमलबजावणी तुमचा अ‍ॅडमिनिस्ट्रेटरकडून करतो .</translation>
+<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> या सेटिंगची अंमलबजावणी तुमचा अ‍ॅडमिनिस्ट्रेटर करतो .</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> पासून चार्ज होत आहे</translation>
 <translation id="1255033239764210633">हवामान कसे आहे?</translation>
 <translation id="1267032506238418139">शॉर्टकट बदल</translation>
@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">तुमची भाषा सेट करा</translation>
 <translation id="1962969542251276847">लॉक स्क्रीन</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">हाय, <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">मजकूर इनपुट</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> च्या नवीनतम अपडेटबाबत अधिक जाणून घ्या</translation>
 <translation id="1995660704900986789">बंद करा</translation>
@@ -159,7 +160,6 @@
 <translation id="3139942575505304791">डेस्‍क १</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="3151786313568798007">अभिमुखता</translation>
-<translation id="3152934361839663679">तुमचा डिव्हाइस मॉनिटरच्या कमाल संख्येने जोडला आहे म्हणून स्क्रीनपैकी एक स्क्रीन डिस्कनेक्ट करण्यात आली आहे.</translation>
 <translation id="3153444934357957346">मल्टिपल साइन इन मध्ये तुमच्याकडे जास्तीत जास्त फक्त <ph name="MULTI_PROFILE_USER_LIMIT" /> खाती असू शकतात.</translation>
 <translation id="3154351730702813399">डिव्हाइस प्रशासक कदाचित आपल्या ब्राउझिंग क्रियाकलापाचे परीक्षण करू शकतो.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{डिव्हाइसशी कनेक्ट केले}other{# डिव्हाइसशी कनेक्ट केले}}</translation>

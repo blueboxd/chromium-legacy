@@ -9,17 +9,12 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "components/drive/chromeos/fake_file_system.h"
-#include "components/drive/service/fake_drive_service.h"
-#include "components/drive/service/test_util.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
@@ -49,11 +44,7 @@ constexpr char kExpectedFileContents[] =
 class ExternalFileURLLoaderFactoryTest : public testing::Test {
  protected:
   ExternalFileURLLoaderFactoryTest()
-      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
-        integration_service_factory_callback_(base::BindRepeating(
-            &ExternalFileURLLoaderFactoryTest::CreateDriveIntegrationService,
-            base::Unretained(this))),
-        fake_file_system_(nullptr) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   ~ExternalFileURLLoaderFactoryTest() override {}
 
@@ -80,12 +71,6 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
     service->MountFileSystem(kProviderId,
                              chromeos::file_system_provider::MountOptions(
                                  kFileSystemId, "Test FileSystem"));
-
-    // Create the drive integration service for the profile.
-    integration_service_factory_scope_.reset(
-        new drive::DriveIntegrationServiceFactory::ScopedFactoryForTest(
-            &integration_service_factory_callback_));
-    drive::DriveIntegrationServiceFactory::GetForProfile(profile);
 
     // Create the URLLoaderFactory.
     url_loader_factory_ = std::make_unique<ExternalFileURLLoaderFactory>(
@@ -120,35 +105,8 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
   }
 
  private:
-  // Create the drive integration service for the |profile|
-  drive::DriveIntegrationService* CreateDriveIntegrationService(
-      Profile* profile) {
-    drive::FakeDriveService* const drive_service = new drive::FakeDriveService;
-    if (!drive::test_util::SetUpTestEntries(drive_service))
-      return NULL;
-
-    const std::string& drive_mount_name =
-        drive::util::GetDriveMountPointPath(profile).BaseName().AsUTF8Unsafe();
-    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-        drive_mount_name, storage::kFileSystemTypeDrive,
-        storage::FileSystemMountOption(),
-        drive::util::GetDriveMountPointPath(profile));
-    DCHECK(!fake_file_system_);
-    fake_file_system_ = new drive::test_util::FakeFileSystem(drive_service);
-    if (!drive_cache_dir_.CreateUniqueTempDir())
-      return NULL;
-    return new drive::DriveIntegrationService(
-        profile, nullptr, drive_service, drive_mount_name,
-        drive_cache_dir_.GetPath(), fake_file_system_);
-  }
-
   content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
-  drive::DriveIntegrationServiceFactory::FactoryCallback
-      integration_service_factory_callback_;
-  std::unique_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
-      integration_service_factory_scope_;
-  drive::test_util::FakeFileSystem* fake_file_system_;
 
   std::unique_ptr<ExternalFileURLLoaderFactory> url_loader_factory_;
 
@@ -156,7 +114,6 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
   std::unique_ptr<chromeos::FakeChromeUserManager> user_manager_;
   // Used to register the profile with the ChildProcessSecurityPolicyImpl.
   std::unique_ptr<content::MockRenderProcessHost> render_process_host_;
-  base::ScopedTempDir drive_cache_dir_;
 };
 
 TEST_F(ExternalFileURLLoaderFactoryTest, NonGetMethod) {

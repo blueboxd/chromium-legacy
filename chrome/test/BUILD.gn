@@ -2096,6 +2096,7 @@ if (!is_android) {
         "../browser/chromeos/first_run/drive_first_run_browsertest.cc",
         "../browser/chromeos/first_run/goodies_displayer_browsertest.cc",
         "../browser/chromeos/input_method/input_method_engine_browsertests.cc",
+        "../browser/chromeos/input_method/native_input_method_engine_browsertest.cc",
         "../browser/chromeos/input_method/textinput_browsertest.cc",
         "../browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc",
         "../browser/chromeos/input_method/textinput_test_helper.cc",

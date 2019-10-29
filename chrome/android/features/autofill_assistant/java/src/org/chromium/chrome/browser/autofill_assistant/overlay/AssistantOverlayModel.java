@@ -87,41 +87,60 @@ public class AssistantOverlayModel extends PropertyModel {
     }
 
     @CalledByNative
-    private boolean setBackgroundColor(String colorString) {
-        return setColor(BACKGROUND_COLOR, colorString);
+    private void setBackgroundColor(@ColorInt int color) {
+        set(BACKGROUND_COLOR, color);
     }
 
     @CalledByNative
-    private boolean setHighlightBorderColor(String colorString) {
-        return setColor(HIGHLIGHT_BORDER_COLOR, colorString);
+    private void clearBackgroundColor() {
+        set(BACKGROUND_COLOR, null);
+    }
+
+    @CalledByNative
+    private void setHighlightBorderColor(@ColorInt int color) {
+        set(HIGHLIGHT_BORDER_COLOR, color);
+    }
+
+    @CalledByNative
+    private void clearHighlightBorderColor() {
+        set(HIGHLIGHT_BORDER_COLOR, null);
+    }
+
+    /**
+     * Parses {@code colorString} and returns the corresponding color integer. This is only safe to
+     * call for valid strings, which should be checked with {@code isValidColorString} before
+     * calling this method!
+     * @return the 32-bit integer representation of {@code colorString} or an unspecified fallback
+     * value if {@code colorString} is not a valid color string.
+     */
+    @CalledByNative
+    private static @ColorInt int parseColorString(String colorString) {
+        if (!isValidColorString(colorString)) {
+            return Color.BLACK;
+        }
+        return Color.parseColor(colorString);
+    }
+
+    /**
+     * Returns whether {@code colorString} is a valid string representation of a color. Supported
+     * color formats are #RRGGBB and #AARRGGBB.
+     */
+    @CalledByNative
+    private static boolean isValidColorString(String colorString) {
+        if (colorString.isEmpty()) {
+            return false;
+        }
+        try {
+            Color.parseColor(colorString);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @CalledByNative
     private void setTapTracking(int count, long durationMs) {
         set(TAP_TRACKING_COUNT, count);
         set(TAP_TRACKING_DURATION_MS, durationMs);
-    }
-
-    /**
-     * Sets the given color property.
-     *
-     * @param property property to set
-     * @param colorString color value as a property. The empty string means use the default color
-     * @return true if the color string was parsed and set properly
-     */
-    private boolean setColor(WritableObjectPropertyKey<Integer> property, String colorString) {
-        if (colorString.isEmpty()) {
-            set(property, null);
-            return true;
-        }
-        @ColorInt
-        int colorInt;
-        try {
-            set(property, Color.parseColor(colorString));
-            return true;
-        } catch (IllegalArgumentException e) {
-            set(property, null);
-            return false;
-        }
     }
 }

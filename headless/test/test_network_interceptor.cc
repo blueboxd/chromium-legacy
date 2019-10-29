@@ -28,7 +28,7 @@ class RedirectLoader : public network::mojom::URLLoader {
                  TestNetworkInterceptor::Response* response,
                  const std::string& url)
       : interceptor_impl_(interceptor_impl),
-        binding_(this, std::move(request->request)),
+        binding_(this, std::move(request->receiver)),
         client_(std::move(request->client)),
         url_request_(request->url_request),
         response_(response),

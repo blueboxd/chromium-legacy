@@ -296,7 +296,7 @@ TEST_F(ModelLoaderTest, ModelNamesTest) {
 
   // No Finch setup. Should default to 0.
   std::unique_ptr<ModelLoader> loader;
-  loader.reset(new ModelLoader(base::Closure(), NULL,
+  loader.reset(new ModelLoader(base::Closure(), nullptr,
                                false /* is_extended_reporting */));
   EXPECT_EQ(loader->name(), "client_model_v5_variation_0.pb");
   EXPECT_EQ(loader->url_.spec(),
@@ -305,12 +305,12 @@ TEST_F(ModelLoaderTest, ModelNamesTest) {
 
   // Model 1, no extended reporting.
   SetFinchModelNumber(1);
-  loader.reset(new ModelLoader(base::Closure(), NULL, false));
+  loader.reset(new ModelLoader(base::Closure(), nullptr, false));
   EXPECT_EQ(loader->name(), "client_model_v5_variation_1.pb");
 
   // Model 2, with extended reporting.
   SetFinchModelNumber(2);
-  loader.reset(new ModelLoader(base::Closure(), NULL, true));
+  loader.reset(new ModelLoader(base::Closure(), nullptr, true));
   EXPECT_EQ(loader->name(), "client_model_v5_ext_variation_2.pb");
 }
 

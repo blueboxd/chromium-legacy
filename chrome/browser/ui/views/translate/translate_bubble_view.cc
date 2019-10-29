@@ -345,7 +345,7 @@ void TranslateBubbleView::ButtonPressed(views::Button* sender,
 }
 
 std::unique_ptr<views::View> TranslateBubbleView::CreateFootnoteView() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (bubble_ui_model_ != language::TranslateUIBubbleModel::TAB) {
     return nullptr;
   }

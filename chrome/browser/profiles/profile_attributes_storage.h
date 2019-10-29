@@ -84,7 +84,15 @@ class ProfileAttributesStorage
   base::string16 ChooseNameForNewProfile(size_t icon_index) const;
 
   // Determines whether |name| is one of the default assigned names.
-  bool IsDefaultProfileName(const base::string16& name) const;
+  // On Desktop, if |include_check_for_legacy_profile_name| is false,
+  // |IsDefaultProfileName()| would only return true if the |name| is in the
+  // form of |Person %n| which is the new default local profile name. If
+  // |include_check_for_legacy_profile_name| is true, we will also check if name
+  // is one of the legacy profile names (e.g. Saratoga, Default user, ..).
+  // For other platforms, so far |include_check_for_legacy_profile_name|
+  // is not used.
+  bool IsDefaultProfileName(const base::string16& name,
+                            bool include_check_for_legacy_profile_name) const;
 
   // Returns an avatar icon index that can be assigned to a newly created
   // profile. Note that the icon may not be unique since there are a limited

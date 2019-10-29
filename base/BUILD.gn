@@ -3450,6 +3450,8 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegateFactory.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterProvider.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterSet.java",
+      "test/android/javatests/src/org/chromium/base/test/params/ParameterizedCommandLineFlags.java",
+      "test/android/javatests/src/org/chromium/base/test/params/SkipCommandLineParameterization.java",
       "test/android/javatests/src/org/chromium/base/test/task/SchedulerTestHelpers.java",
       "test/android/javatests/src/org/chromium/base/test/task/ThreadPoolTestHelpers.java",
       "test/android/javatests/src/org/chromium/base/test/util/AdvancedMockContext.java",
@@ -3483,8 +3485,6 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/TimeoutTimer.java",
       "test/android/javatests/src/org/chromium/base/test/util/UserActionTester.java",
       "test/android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
-      "test/android/javatests/src/org/chromium/base/test/util/parameter/CommandLineParameter.java",
-      "test/android/javatests/src/org/chromium/base/test/util/parameter/SkipCommandLineParameterization.java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }

@@ -94,8 +94,9 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Checks if sufficient resources for a new encode job with |frame| as input
   // are available, and if so, claims them by associating them with
   // a VaapiEncodeJob, and returns the newly-created job, nullptr otherwise.
-  scoped_refptr<VaapiEncodeJob> CreateEncodeJob(scoped_refptr<VideoFrame> frame,
-                                                bool force_keyframe);
+  std::unique_ptr<VaapiEncodeJob> CreateEncodeJob(
+      scoped_refptr<VideoFrame> frame,
+      bool force_keyframe);
 
   // Continues encoding frames as long as input_queue_ is not empty, and we are
   // able to create new EncodeJobs.
@@ -123,7 +124,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
 
   // Downloads encoded data produced as a result of running |encode_job| into
   // |buffer|, and returns it to the client.
-  void ReturnBitstreamBuffer(scoped_refptr<VaapiEncodeJob> encode_job,
+  void ReturnBitstreamBuffer(std::unique_ptr<VaapiEncodeJob> encode_job,
                              std::unique_ptr<BitstreamBufferRef> buffer);
 
   // Puts the encoder into en error state and notifies the client
@@ -202,7 +203,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
 
   // Jobs submitted to driver for encode, awaiting bitstream buffers to become
   // available.
-  base::queue<scoped_refptr<VaapiEncodeJob>> submitted_encode_jobs_;
+  base::queue<std::unique_ptr<VaapiEncodeJob>> submitted_encode_jobs_;
 
   // Encoder thread. All tasks are executed on it.
   base::Thread encoder_thread_;

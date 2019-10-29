@@ -87,6 +87,7 @@ class WebAppIconManagerTest : public WebAppTest {
     auto web_app = std::make_unique<WebApp>(app_id);
     web_app->AddSource(Source::kSync);
     web_app->SetDisplayMode(blink::mojom::DisplayMode::kStandalone);
+    web_app->SetUserDisplayMode(blink::mojom::DisplayMode::kStandalone);
     web_app->SetName("Name");
     web_app->SetLaunchUrl(app_url);
 

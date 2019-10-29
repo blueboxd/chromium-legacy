@@ -345,11 +345,12 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
   }
 
   void BindToProxyResolvingSocketFactory(
-      network::mojom::ProxyResolvingSocketFactoryRequest request) {
-    proxy_resolving_socket_factory_binding_ = std::make_unique<
-        mojo::Binding<network::mojom::ProxyResolvingSocketFactory>>(
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+          receiver) {
+    proxy_resolving_socket_factory_receiver_ = std::make_unique<
+        mojo::Receiver<network::mojom::ProxyResolvingSocketFactory>>(
         proxy_resolving_socket_factory_.get());
-    proxy_resolving_socket_factory_binding_->Bind(std::move(request));
+    proxy_resolving_socket_factory_receiver_->Bind(std::move(receiver));
   }
 
   enum Signal {
@@ -570,8 +571,8 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
   MockProxyResolvingSocketFactory* mock_proxy_resolving_socket_factory_;
   std::unique_ptr<network::mojom::ProxyResolvingSocketFactory>
       proxy_resolving_socket_factory_;
-  std::unique_ptr<mojo::Binding<network::mojom::ProxyResolvingSocketFactory>>
-      proxy_resolving_socket_factory_binding_;
+  std::unique_ptr<mojo::Receiver<network::mojom::ProxyResolvingSocketFactory>>
+      proxy_resolving_socket_factory_receiver_;
 
   std::unique_ptr<NetworkServiceAsyncSocket> ns_async_socket_;
   base::circular_deque<SignalSocketState> signal_socket_states_;

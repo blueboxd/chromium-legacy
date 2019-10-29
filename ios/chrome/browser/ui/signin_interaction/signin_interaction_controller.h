@@ -11,9 +11,7 @@
 #include "components/signin/public/base/signin_metrics.h"
 
 @protocol ApplicationCommands;
-namespace ios {
-class ChromeBrowserState;
-}
+class Browser;
 @class ChromeIdentity;
 @protocol SigninInteractionPresenting;
 
@@ -37,16 +35,16 @@ typedef void (^SigninInteractionControllerCompletionCallback)(
 @interface SigninInteractionController : NSObject
 
 // Designated initializer.
-// * |browserState| is the current browser state. Must not be nil.
+// * |browser| is the browser where sign-in is being presented. Must not be nil.
 // * |presentationProvider| presents the UI. Must not be nil.
 // * |accessPoint| represents the access point that initiated the sign-in.
 // * |promoAction| is the action taken on a Signin Promo.
 // * |dispatcher| is the dispatcher to be used by this class.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                presentationProvider:(id<SigninInteractionPresenting>)presenter
-                         accessPoint:(signin_metrics::AccessPoint)accessPoint
-                         promoAction:(signin_metrics::PromoAction)promoAction
-                          dispatcher:(id<ApplicationCommands>)dispatcher;
+- (instancetype)initWithBrowser:(Browser*)browser
+           presentationProvider:(id<SigninInteractionPresenting>)presenter
+                    accessPoint:(signin_metrics::AccessPoint)accessPoint
+                    promoAction:(signin_metrics::PromoAction)promoAction
+                     dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Starts user sign-in.
 // * |identity|, if not nil, the user will be signed in without requiring user

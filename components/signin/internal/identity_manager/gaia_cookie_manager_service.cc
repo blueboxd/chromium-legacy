@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <queue>
 #include <set>
 
@@ -674,11 +675,6 @@ void GaiaCookieManagerService::OnCookieChange(
     }
   }
 
-  // Ignore changes to the cookie while requests are pending.  These changes
-  // are caused by the service itself as it adds accounts.  A side effects is
-  // that any changes to the gaia cookie outside of this class, while requests
-  // are pending, will be lost.  However, trying to process these changes could
-  // cause an endless loop (see crbug.com/516070).
   if (requests_.empty()) {
     requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
     fetcher_retries_ = 0;
@@ -686,6 +682,17 @@ void GaiaCookieManagerService::OnCookieChange(
     signin_client_->DelayNetworkCall(
         base::BindOnce(&GaiaCookieManagerService::StartFetchingListAccounts,
                        weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // Remove all /ListAccounts requests except the very first request because
+    // it is currently executing.
+    requests_.erase(std::remove_if(requests_.begin() + 1, requests_.end(),
+                                   [](const GaiaCookieRequest& request) {
+                                     return request.request_type() ==
+                                            LIST_ACCOUNTS;
+                                   }),
+                    requests_.end());
+    // Add a new /ListAccounts request at the end.
+    requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
   }
 }
 

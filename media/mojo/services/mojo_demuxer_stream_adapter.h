@@ -14,6 +14,8 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder_config.h"
 #include "media/mojo/mojom/demuxer_stream.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 
@@ -21,9 +23,8 @@ class MojoDecoderBufferReader;
 
 // This class acts as a MojoRendererService-side stub for a real DemuxerStream
 // that is part of a Pipeline in a remote application. Roughly speaking, it
-// takes a mojom::DemuxerStreamPtr and exposes it as a DemuxerStream for
-// use by
-// media components.
+// takes a mojo::Remote<mojom::DemuxerStream> and exposes it as a DemuxerStream
+// for use by media components.
 class MojoDemuxerStreamAdapter : public DemuxerStream {
  public:
   // |demuxer_stream| is connected to the mojom::DemuxerStream that |this|
@@ -32,8 +33,9 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
   // |stream_ready_cb| will be invoked when |demuxer_stream| has fully
   //     initialized and |this| is ready for use.
   // NOTE: Illegal to call any methods until |stream_ready_cb| is invoked.
-  MojoDemuxerStreamAdapter(mojom::DemuxerStreamPtr demuxer_stream,
-                           const base::Closure& stream_ready_cb);
+  MojoDemuxerStreamAdapter(
+      mojo::PendingRemote<mojom::DemuxerStream> demuxer_stream,
+      const base::Closure& stream_ready_cb);
   ~MojoDemuxerStreamAdapter() override;
 
   // DemuxerStream implementation.
@@ -64,7 +66,7 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
                     const base::Optional<VideoDecoderConfig>& video_config);
 
   // See constructor for descriptions.
-  mojom::DemuxerStreamPtr demuxer_stream_;
+  mojo::Remote<mojom::DemuxerStream> demuxer_stream_;
   base::Closure stream_ready_cb_;
 
   // The last ReadCB received through a call to Read().

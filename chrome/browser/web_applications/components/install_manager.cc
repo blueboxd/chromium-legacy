@@ -17,14 +17,7 @@ void OnInstallabilityCheckCompleted(
     InstallManager::WebAppInstallabilityCheckCallback callback,
     std::unique_ptr<content::WebContents> web_contents,
     const InstallableData& data) {
-  // This task is posted. This is because this function will be called by the
-  // InstallableManager associated with |web_contents|, and |web_contents| might
-  // be freed in the callback. If that happens, and this isn't posted, the
-  // InstallableManager will be freed, and then when this function returns to
-  // the InstallManager calling function, there will be a crash.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(web_contents),
-                                data.errors.empty()));
+  std::move(callback).Run(std::move(web_contents), data.errors.empty());
 }
 
 void OnWebAppUrlLoaded(

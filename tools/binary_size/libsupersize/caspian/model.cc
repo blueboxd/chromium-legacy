@@ -10,7 +10,7 @@
 
 #include "tools/binary_size/libsupersize/caspian/file_format.h"
 
-using namespace caspian;
+namespace caspian {
 
 Symbol::Symbol() = default;
 Symbol::Symbol(const Symbol& other) = default;
@@ -128,3 +128,5 @@ SectionId NodeStats::ComputeBiggestSection() const {
   }
   return ret;
 }
+
+}  // namespace caspian

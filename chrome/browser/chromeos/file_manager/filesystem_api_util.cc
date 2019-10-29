@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_core_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -37,22 +36,6 @@
 namespace file_manager {
 namespace util {
 namespace {
-
-// Helper function used to implement GetNonNativeLocalPathMimeType. It extracts
-// the mime type from the passed Drive resource entry.
-void GetMimeTypeAfterGetResourceEntryForDrive(
-    base::OnceCallback<void(const base::Optional<std::string>&)> callback,
-    drive::FileError error,
-    std::unique_ptr<drive::ResourceEntry> entry) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (error != drive::FILE_ERROR_OK || !entry->has_file_specific_info() ||
-      entry->file_specific_info().content_mime_type().empty()) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-  std::move(callback).Run(entry->file_specific_info().content_mime_type());
-}
 
 void GetMimeTypeAfterGetMetadata(
     base::OnceCallback<void(const base::Optional<std::string>&)> callback,
@@ -196,14 +179,6 @@ void GetNonNativeLocalPathMimeType(
   if (drive_integration_service &&
       drive_integration_service->GetRelativeDrivePath(path,
                                                       &drive_relative_path)) {
-    if (drive::FileSystemInterface* file_system =
-            drive_integration_service->file_system()) {
-      file_system->GetResourceEntry(
-          drive::util::ExtractDrivePath(path),
-          base::BindOnce(&GetMimeTypeAfterGetResourceEntryForDrive,
-                         std::move(callback)));
-      return;
-    }
     if (auto* drivefs = drive_integration_service->GetDriveFsInterface()) {
       drivefs->GetMetadata(
           drive_relative_path,

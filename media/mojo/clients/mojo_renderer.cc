@@ -17,6 +17,7 @@
 #include "media/mojo/clients/mojo_demuxer_stream_impl.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/renderers/video_overlay_factory.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 
@@ -76,21 +77,21 @@ void MojoRenderer::InitializeRendererFromStreams(
   // Create mojom::DemuxerStream for each demuxer stream and bind its lifetime
   // to the pipe.
   std::vector<DemuxerStream*> streams = media_resource_->GetAllStreams();
-  std::vector<mojom::DemuxerStreamPtrInfo> stream_proxies;
+  std::vector<mojo::PendingRemote<mojom::DemuxerStream>> stream_proxies;
 
   for (auto* stream : streams) {
-    mojom::DemuxerStreamPtrInfo stream_proxy_info;
+    mojo::PendingRemote<mojom::DemuxerStream> stream_proxy;
     auto mojo_stream = std::make_unique<MojoDemuxerStreamImpl>(
-        stream, mojo::MakeRequest(&stream_proxy_info));
+        stream, stream_proxy.InitWithNewPipeAndPassReceiver());
 
     // Using base::Unretained(this) is safe because |this| owns |mojo_stream|,
     // and the error handler can't be invoked once |mojo_stream| is destroyed.
-    mojo_stream->set_connection_error_handler(
+    mojo_stream->set_disconnect_handler(
         base::Bind(&MojoRenderer::OnDemuxerStreamConnectionError,
                    base::Unretained(this), mojo_stream.get()));
 
     streams_.push_back(std::move(mojo_stream));
-    stream_proxies.push_back(std::move(stream_proxy_info));
+    stream_proxies.push_back(std::move(stream_proxy));
   }
 
   BindRemoteRendererIfNeeded();

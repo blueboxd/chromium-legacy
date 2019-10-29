@@ -41,8 +41,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.is_save_same_object %}
   // [SaveSameObject]
-  static const V8PrivateProperty::SymbolKey
-      save_same_object_key("{{cpp_class}}#{{attribute.camel_case_name}}");
+  static const V8PrivateProperty::SymbolKey save_same_object_key;
   auto private_same_object =
       V8PrivateProperty::GetSymbol(info.GetIsolate(), save_same_object_key);
   {
@@ -77,8 +76,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
       V8PrivateProperty::GetHistoryStateSymbol(info.GetIsolate());
   {% else %}
   {% if not attribute.private_property_is_shared_between_getter_and_setter %}
-  static const V8PrivateProperty::SymbolKey
-      {{attribute.private_property_key_name}}("{{cpp_class}}#{{attribute.camel_case_name}}");
+  static const V8PrivateProperty::SymbolKey {{attribute.private_property_key_name}};
 
   {% endif %}
   V8PrivateProperty::Symbol property_symbol =
@@ -184,9 +182,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   if ({{attribute.cpp_value}} && DOMDataStore::SetReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value_to_script_wrappable}}))
     return;
   v8::Local<v8::Value> v8_value(ToV8({{attribute.cpp_value_to_script_wrappable}}, holder, info.GetIsolate()));
-  static int private_property_key;
-  V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), &private_property_key, "KeepAlive#{{interface_name}}#{{attribute.name}}")
+  static const V8PrivateProperty::SymbolKey keep_alive_key;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
       .Set(holder, v8_value);
   {% endif %}
 

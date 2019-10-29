@@ -516,6 +516,6 @@ interface URLLoaderClient {
 // Convenient struct that groups the two communication endpoints most
 // implementations of URLLoaderClient use to communicate with their URLLoader.
 struct URLLoaderClientEndpoints {
-  URLLoader url_loader;
-  URLLoaderClient& url_loader_client;
+  pending_remote<URLLoader> url_loader;
+  pending_receiver<URLLoaderClient> url_loader_client;
 };

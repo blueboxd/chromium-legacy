@@ -324,7 +324,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsTargetsUIHandler::GetTarget(
   auto it = targets_.find(target_id);
   if (it != targets_.end())
     return it->second;
-  return NULL;
+  return nullptr;
 }
 
 void DevToolsTargetsUIHandler::Open(const std::string& browser_id,
@@ -333,7 +333,7 @@ void DevToolsTargetsUIHandler::Open(const std::string& browser_id,
 
 scoped_refptr<DevToolsAgentHost>
 DevToolsTargetsUIHandler::GetBrowserAgentHost(const std::string& browser_id) {
-  return NULL;
+  return nullptr;
 }
 
 std::unique_ptr<base::DictionaryValue> DevToolsTargetsUIHandler::Serialize(

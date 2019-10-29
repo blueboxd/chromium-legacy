@@ -14,7 +14,8 @@
 #include "base/optional.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -107,7 +108,8 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* response_url_loader,
-      network::mojom::URLLoaderClientRequest* response_client_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+          response_client_receiver,
       blink::ThrottlingURLLoader* url_loader);
 
   base::Optional<SubresourceLoaderParams> TakeSubresourceLoaderParams() {
@@ -150,7 +152,8 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   int redirect_limit_ = net::URLRequest::kMaxRedirects;
 
   network::mojom::URLLoaderPtr url_loader_;
-  mojo::Binding<network::mojom::URLLoaderClient> url_loader_client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> url_loader_client_receiver_{
+      this};
   // The factory used to request the script. This is the same as
   // |default_loader_factory_| if a service worker or other interceptor didn't
   // elect to handle the request.

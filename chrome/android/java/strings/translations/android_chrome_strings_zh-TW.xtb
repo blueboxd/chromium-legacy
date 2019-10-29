@@ -9,6 +9,7 @@
 <translation id="10614374240317010">一律不儲存</translation>
 <translation id="1067922213147265141">其他 Google 服務</translation>
 <translation id="1068672505746868501">一律不翻譯<ph name="SOURCE_LANGUAGE" />網頁</translation>
+<translation id="107147699690128016">如果變更副檔名，這個檔案可能會在其他應用程式中開啟，並可能對裝置造成損害。</translation>
 <translation id="1100066534610197918">在群組的新分頁中開啟</translation>
 <translation id="1105960400813249514">螢幕擷取</translation>
 <translation id="1111673857033749125">儲存在您其他裝置上的書籤會顯示在這裡。</translation>
@@ -65,7 +66,6 @@
 <translation id="1407135791313364759">全部開啟</translation>
 <translation id="1409426117486808224">使用簡易檢視模式查看開啟的分頁</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> 檔案已存在，因此無法下載。</translation>
-<translation id="1413136574162415971">Google 可以檢查你的密碼資料是否外洩。當你使用 Google 帳戶登入並開啟同步功能時，系統會開啟這項功能。</translation>
 <translation id="1414981605391750300">正在連線至 Google。可能需要一分鐘…</translation>
 <translation id="1416550906796893042">應用程式版本</translation>
 <translation id="1430915738399379752">列印</translation>
@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">其餘網站 (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">如要將手機上的內容分享至另一台裝置，你必須在這兩台裝置的 Chrome 設定中開啟同步功能</translation>
 <translation id="2170088579611075216">允許並進入 VR</translation>
+<translation id="2175927920773552910">QR 圖碼</translation>
 <translation id="218608176142494674">共用</translation>
 <translation id="2227444325776770048">以「<ph name="USER_FULL_NAME" />」的身分繼續</translation>
 <translation id="2234876718134438132">同步處理和 Google 服務</translation>
@@ -205,6 +206,7 @@
 <translation id="2498359688066513246">說明與意見回饋</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2513403576141822879">如需更多隱私權、安全性和資料收集的相關設定，請參閱<ph name="BEGIN_LINK" />同步處理和 Google 服務<ph name="END_LINK" /></translation>
+<translation id="2517472476991765520">掃描</translation>
 <translation id="2518590038762162553">使用精簡模式時，Chrome 可加快網頁載入速度，並可節省多達 60% 的數據用量。Chrome 會將你的網路流量傳送給 Google，以便針對你造訪的網頁進行最佳化處理。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">將你造訪的網頁網址傳送給 Google</translation>
 <translation id="2532336938189706096">網頁檢視</translation>
@@ -258,6 +260,7 @@
 <translation id="2900528713135656174">建立活動</translation>
 <translation id="290376772003165898">不是<ph name="LANGUAGE" />網頁嗎？</translation>
 <translation id="2904414404539560095">要共用分頁的裝置清單已開啟，顯示於整個畫面。</translation>
+<translation id="2909615210195135082">Google 通知平台</translation>
 <translation id="2910701580606108292">允許網站播放受保護的內容前，必須先詢問你</translation>
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
 <translation id="2923908459366352541">名稱無效</translation>
@@ -313,6 +316,7 @@
 <translation id="3315103659806849044">你正在自訂同步功能和 Google 服務設定。如要完成開啟同步功能，請輕觸畫面底部附近的 [確認] 按鈕。向上瀏覽</translation>
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="3333961966071413176">所有聯絡人</translation>
+<translation id="3334729583274622784">是否要變更副檔名？</translation>
 <translation id="3341058695485821946">查看節省的數據用量</translation>
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
 <translation id="3353615205017136254">由 Google 提供的精簡版網頁。輕觸 [載入原始頁面] 按鈕即可載入原始頁面。</translation>
@@ -670,6 +674,7 @@
 <translation id="5962718611393537961">輕觸即可收合</translation>
 <translation id="6000066717592683814">繼續使用 Google</translation>
 <translation id="6005538289190791541">建議的密碼</translation>
+<translation id="6019358956729171834">載入更多…</translation>
 <translation id="6036057147555329831">其他 ICU</translation>
 <translation id="6039379616847168523">跳至下一個分頁</translation>
 <translation id="6040143037577758943">關閉</translation>
@@ -872,7 +877,6 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (上次更新時間：<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">(已節省的數據量)</translation>
 <translation id="7498271377022651285">請稍候…</translation>
-<translation id="7510943789645525906">在發生線上資料侵害事件時向你發出警告</translation>
 <translation id="7514365320538308">下載</translation>
 <translation id="751961395872307827">無法連線至網站</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -928,7 +932,6 @@
 <translation id="7886917304091689118">正在 Chrome 中執行</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{正在下載檔案。}other{正在下載 # 個檔案。}}</translation>
 <translation id="7929962904089429003">開啟選單</translation>
-<translation id="7930681627240672853">檢查密碼安全性</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 版本過舊。</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7963646190083259054">供應商：</translation>
@@ -944,7 +947,6 @@
 <translation id="8007176423574883786">已在這個裝置上關閉</translation>
 <translation id="8013372441983637696">一併清除你在這個裝置上的 Chrome 資料</translation>
 <translation id="8015452622527143194">將網頁上的所有內容都回復為預設大小</translation>
-<translation id="8015780634880457457">Google 可以檢查你的密碼資料是否外洩</translation>
 <translation id="802154636333426148">下載失敗</translation>
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8035133914807600019">新資料夾…</translation>

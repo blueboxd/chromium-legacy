@@ -5043,6 +5043,47 @@
     ]
   },
 
+  "PerAppTimeLimits": {
+    "os": ["chromeos"],
+    "test_policy": { "PerAppTimeLimits": {
+      "app_limits": [
+        {
+          "app_info": {
+            "app_id": "com.example.myapp",
+            "app_type": "ARC"
+          },
+          "restriction": "TIME_LIMIT",
+          "daily_limit_mins": 30,
+          "last_updated_millis": "1570223060437"
+        },
+        {
+          "app_info": {
+            "app_id": "pjkljhegncpnkpknbcohdijeoejaedia",
+            "app_type": "EXTENSION"
+          },
+          "restriction": "TIME_LIMIT",
+          "daily_limit_mins": 10,
+          "last_updated_millis": "1570223000000"
+        },
+        {
+          "app_info": {
+            "app_id": "iniodglblcgmngkgdipeiclkdjjpnlbn",
+            "app_type": "BUILT-IN"
+          },
+          "restriction": "BLOCK",
+          "last_updated_millis": "1570223000000"
+        }
+      ],
+      "reset_at": {
+        "hour": 6,
+        "minute": 0
+      }
+    }
+    },
+    "can_be_recommended": false,
+    "pref_mappings": [{ "pref": "child_user.per_app_time_limits.policy" }]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

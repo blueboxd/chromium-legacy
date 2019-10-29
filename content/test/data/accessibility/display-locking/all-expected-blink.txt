@@ -26,5 +26,3 @@ rootWebArea
 ++++++++genericContainer invisible
 ++++++++++staticText invisible name='aria-hidden text'
 ++++++++staticText name='<newline>  '
-
-

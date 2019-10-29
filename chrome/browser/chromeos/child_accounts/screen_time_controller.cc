@@ -65,9 +65,10 @@ ash::AuthDisabledReason ConvertLockReason(
 
 // static
 void ScreenTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kPerAppTimeLimitsPolicy);
   registry->RegisterDictionaryPref(prefs::kScreenTimeLastState);
-  registry->RegisterDictionaryPref(prefs::kUsageTimeLimit);
   registry->RegisterDictionaryPref(prefs::kTimeLimitLocalOverride);
+  registry->RegisterDictionaryPref(prefs::kUsageTimeLimit);
 }
 
 ScreenTimeController::ScreenTimeController(content::BrowserContext* context)

@@ -142,8 +142,7 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
             // System messages to the browser.
             // TODO(https://crbug.com/1017270): Remove this after spec change,
             // or when activation moves to browser.
-            LocalFrame::NotifyUserActivation(local_frame,
-                                             UserGestureToken::kNewGesture);
+            LocalFrame::NotifyUserActivation(local_frame);
 
             if (options->multiple()) {
               HeapVector<Member<NativeFileSystemHandle>> results;

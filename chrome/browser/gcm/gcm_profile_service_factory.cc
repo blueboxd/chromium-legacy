@@ -28,6 +28,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "content/public/browser/browser_context.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #endif
 
@@ -50,24 +51,26 @@ namespace {
 void RequestProxyResolvingSocketFactoryOnUIThread(
     Profile* profile,
     base::WeakPtr<GCMProfileService> service,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   if (!service)
     return;
   network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetNetworkContext();
-  network_context->CreateProxyResolvingSocketFactory(std::move(request));
+  network_context->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
 // A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
 void RequestProxyResolvingSocketFactory(
     Profile* profile,
     base::WeakPtr<GCMProfileService> service,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, profile,
-                     std::move(service), std::move(request)));
+                     std::move(service), std::move(receiver)));
 }
 #endif
 

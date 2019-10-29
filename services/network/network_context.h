@@ -268,7 +268,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojo::PendingReceiver<mojom::TCPBoundSocket> receiver,
       CreateTCPBoundSocketCallback callback) override;
   void CreateProxyResolvingSocketFactory(
-      mojom::ProxyResolvingSocketFactoryRequest request) override;
+      mojo::PendingReceiver<mojom::ProxyResolvingSocketFactory> receiver)
+      override;
   void LookUpProxyForURL(const GURL& url,
                          mojo::PendingRemote<mojom::ProxyLookupClient>
                              proxy_lookup_client) override;
@@ -519,7 +520,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::unique_ptr<SocketFactory> socket_factory_;
 
-  mojo::StrongBindingSet<mojom::ProxyResolvingSocketFactory>
+  mojo::UniqueReceiverSet<mojom::ProxyResolvingSocketFactory>
       proxy_resolving_socket_factories_;
 
 #if !defined(OS_IOS)

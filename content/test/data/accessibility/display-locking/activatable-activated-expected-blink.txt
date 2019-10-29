@@ -8,5 +8,3 @@ rootWebArea
 ++++++++genericContainer
 ++++++++++staticText name='nested locked element!'
 ++++++++genericContainer
-
-

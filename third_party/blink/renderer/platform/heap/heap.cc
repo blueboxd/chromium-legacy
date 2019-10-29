@@ -313,9 +313,11 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
       finished = DrainWorklistWithDeadline(
           deadline, marking_worklist_.get(),
           [visitor](const MarkingItem& item) {
-            DCHECK(!HeapObjectHeader::FromPayload(item.object)
-                        ->IsInConstruction());
+            HeapObjectHeader* header =
+                HeapObjectHeader::FromPayload(item.object);
+            DCHECK(!header->IsInConstruction());
             item.callback(visitor, item.object);
+            visitor->AccountMarkedBytes(header);
           },
           WorklistTaskId::MutatorThread);
       if (!finished)
@@ -328,14 +330,15 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
             GCInfoTable::Get()
                 .GCInfoFromIndex(header->GcInfoIndex())
                 ->trace(visitor, header->Payload());
+            visitor->AccountMarkedBytes(header);
           },
           WorklistTaskId::MutatorThread);
       if (!finished)
         break;
 
-      // Iteratively mark all objects that were previously discovered while
-      // being in construction. The objects can be processed incrementally once
-      // a safepoint was reached.
+      // Convert |previously_not_fully_constructed_worklist_| to
+      // |marking_worklist_|. This merely re-adds items with the proper
+      // callbacks.
       finished = DrainWorklistWithDeadline(
           deadline, previously_not_fully_constructed_worklist_.get(),
           [visitor](const NotFullyConstructedItem& item) {
@@ -364,8 +367,10 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
   finished = DrainWorklistWithDeadline(
       deadline, marking_worklist_.get(),
       [visitor](const MarkingItem& item) {
-        DCHECK(!HeapObjectHeader::FromPayload(item.object)->IsInConstruction());
+        HeapObjectHeader* header = HeapObjectHeader::FromPayload(item.object);
+        DCHECK(!header->IsInConstruction());
         item.callback(visitor, item.object);
+        visitor->AccountMarkedBytes(header);
       },
       visitor->task_id());
   if (!finished)
@@ -378,6 +383,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
         GCInfoTable::Get()
             .GCInfoFromIndex(header->GcInfoIndex())
             ->trace(visitor, header->Payload());
+        visitor->AccountMarkedBytes(header);
       },
       visitor->task_id());
   return finished;

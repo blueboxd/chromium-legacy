@@ -198,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 taneden fazla okunmamış bildirim var}other{# taneden fazla okunmamış bildirim var}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 dakika içinde}other{# dakika içinde}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568"><ph name="ORIGIN" /> arasında bir sayı</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 saat önce}other{# saat önce}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sn. kaldı}other{# sn. kaldı}}</translation>
 <translation id="8134065097954893699">Bu sayfa yeniden yükleniyor</translation>

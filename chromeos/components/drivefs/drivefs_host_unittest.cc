@@ -22,7 +22,7 @@
 #include "chromeos/components/drivefs/fake_drivefs.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
-#include "chromeos/components/drivefs/pending_connection_manager.h"
+#include "chromeos/components/mojo_bootstrap/pending_connection_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/drive/drive_notification_manager.h"
 #include "components/drive/drive_notification_observer.h"
@@ -342,7 +342,8 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     token_ = StartMount();
     DispatchMountSuccessEvent(token_);
 
-    ASSERT_TRUE(PendingConnectionManager::Get().OpenIpcChannel(token_, {}));
+    ASSERT_TRUE(mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
+        token_, {}));
     {
       base::RunLoop run_loop;
       bootstrap_receiver_.set_disconnect_handler(run_loop.QuitClosure());
@@ -488,7 +489,8 @@ TEST_F(DriveFsHostTest, OnMountFailedFromDbus) {
   run_loop.Run();
 
   ASSERT_FALSE(host_->IsMounted());
-  EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
+  EXPECT_FALSE(mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
+      token, {}));
 }
 
 TEST_F(DriveFsHostTest, DestroyBeforeMojoConnection) {
@@ -498,7 +500,8 @@ TEST_F(DriveFsHostTest, DestroyBeforeMojoConnection) {
                                           chromeos::UNMOUNT_OPTIONS_LAZY, _));
 
   host_.reset();
-  EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
+  EXPECT_FALSE(mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
+      token, {}));
 }
 
 TEST_F(DriveFsHostTest, MountWhileAlreadyMounted) {

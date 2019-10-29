@@ -859,7 +859,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2224471211857467033">Eventos de acessibilidade</translation>
 <translation id="2224551243087462610">Editar nome da pasta</translation>
 <translation id="2226449515541314767">O controle total de dispositivos MIDI foi bloqueado neste site.</translation>
-<translation id="2226720438730111184">Conte-nos o que está acontecendo</translation>
 <translation id="2227179592712503583">Remover sugestão</translation>
 <translation id="2229161054156947610">Mais de 1 hora restante</translation>
 <translation id="222931766245975952">Arquivo truncado</translation>
@@ -2960,7 +2959,6 @@ Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5360150013186312835">Mostrar na barra de ferramentas</translation>
 <translation id="5362741141255528695">Selecionar arquivo de chave privada.</translation>
 <translation id="5363109466694494651">Realizar Powerwash e reverter</translation>
-<translation id="5365716706805792666">O Google pode verificar se suas senhas foram afetadas por uma violação de dados. O recurso será ativado quando você fizer login com sua Conta Google.</translation>
 <translation id="5365881113273618889">A pasta selecionada contém arquivos confidenciais. Tem certeza de que quer conceder acesso permanente de gravação nessa pasta ao "<ph name="APP_NAME" />"?</translation>
 <translation id="5367091008316207019">Lendo arquivo...</translation>
 <translation id="5368720394188453070">Seu smartphone está bloqueado. Desbloqueie-o para entrar.</translation>
@@ -3560,7 +3558,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6202304368170870640">Use seu PIN para fazer login ou desbloquear seu dispositivo.</translation>
 <translation id="6206311232642889873">&amp;Copiar imagem</translation>
 <translation id="6207200176136643843">Redefinir para o nível de zoom padrão</translation>
-<translation id="620722923698527029">Abrir sempre esse tipo de link no app associado</translation>
 <translation id="6207282396926186323">Instalar o <ph name="APP_NAME" /> (app Linux)</translation>
 <translation id="6207937957461833379">País/Região</translation>
 <translation id="6208521041562685716">Ativando dados móveis</translation>
@@ -4434,7 +4431,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7506541170099744506">Seu <ph name="DEVICE_TYPE" /> foi inscrito para o gerenciamento empresarial.</translation>
 <translation id="7507930499305566459">Certificado do respondente de status</translation>
 <translation id="7508054832109420082">Conceder acesso a impressoras</translation>
-<translation id="7510943789645525906">Avisa se uma senha que você usa estava em uma violação de dados</translation>
 <translation id="7513029293694390567">Faça login automaticamente nos sites que usam credenciais armazenadas. Quando o recurso estiver desativado, será necessário fornecer uma confirmação todas as vezes que fizer login em um site.</translation>
 <translation id="7514239104543605883">Copiar para o dispositivo</translation>
 <translation id="7514365320538308">Fazer o download</translation>
@@ -4623,7 +4619,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 
 
 <ph name="EXTENSION_NAME" /></translation>
-<translation id="7788383851298063850">Conte-nos o que está acontecendo</translation>
 <translation id="7788444488075094252">Idiomas e entrada</translation>
 <translation id="7788668840732459509">Posição:</translation>
 <translation id="7789963078219276159">O plano de fundo da página inicial foi alterado para <ph name="CATEGORY" />.</translation>
@@ -4738,7 +4733,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7926423016278357561">Não fui eu.</translation>
 <translation id="7928836894214140642">Gerenciado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">As formas de pagamento salvas serão exibidas aqui</translation>
-<translation id="7930681627240672853">Verificar segurança da senha</translation>
 <translation id="79312157130859720">O app <ph name="APP_NAME" /> está compartilhando sua tela e áudio.</translation>
 <translation id="7931318309563332511">Desconhecido</translation>
 <translation id="793293630927785390">Caixa de diálogo para nova rede Wi-Fi</translation>
@@ -4811,7 +4805,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8014154204619229810">O atualizador está sendo executado no momento. Aguarde um minuto e atualize para verificar novamente.</translation>
 <translation id="8014206674403687691">Não foi possível reverter o produto <ph name="IDS_SHORT_PRODUCT_NAME" /> para a versão anteriormente instalada. Tente executar novamente o Powerwash no seu dispositivo.</translation>
 <translation id="8014210335923519270">Melhore o <ph name="IDS_SHORT_PRODUCT_NAME" /> e a segurança dele enviando informações do sistema e sobre o uso para o Google</translation>
-<translation id="8015780634880457457">O Google pode verificar se suas senhas foram afetadas em uma violação de dados</translation>
 <translation id="8016266267177410919">Armazenamento temporário</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Atalho editado</translation>

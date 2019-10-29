@@ -95,12 +95,6 @@ TreeScope& SVGElement::TreeScopeForIdResolution() const {
   return tree_scope_element->GetTreeScope();
 }
 
-int SVGElement::tabIndex() const {
-  if (SupportsFocus())
-    return Element::tabIndex();
-  return -1;
-}
-
 void SVGElement::WillRecalcStyle(const StyleRecalcChange change) {
   if (!HasSVGRareData())
     return;

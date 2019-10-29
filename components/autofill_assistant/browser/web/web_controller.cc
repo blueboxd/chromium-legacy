@@ -738,6 +738,23 @@ void WebController::FillAddressForm(
                              std::move(callback)));
 }
 
+void WebController::FillCardForm(
+    std::unique_ptr<autofill::CreditCard> card,
+    const base::string16& cvc,
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  DVLOG(3) << __func__ << " " << selector;
+  auto data_to_autofill = std::make_unique<FillFormInputData>();
+  data_to_autofill->card = std::move(card);
+  data_to_autofill->cvc = cvc;
+  FindElement(selector,
+              /* strict_mode= */ true,
+              base::BindOnce(&WebController::OnFindElementForFillingForm,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             std::move(data_to_autofill), selector,
+                             std::move(callback)));
+}
+
 void WebController::OnFindElementForFillingForm(
     std::unique_ptr<FillFormInputData> data_to_autofill,
     const Selector& selector,
@@ -746,12 +763,18 @@ void WebController::OnFindElementForFillingForm(
     std::unique_ptr<ElementFinder::Result> element_result) {
   if (!status.ok()) {
     DVLOG(1) << __func__ << " Failed to find the element for filling the form.";
-    std::move(callback).Run(status);
+    std::move(callback).Run(FillAutofillErrorStatus(status));
     return;
   }
 
   ContentAutofillDriver* driver = ContentAutofillDriver::GetForRenderFrameHost(
       element_result->container_frame_host);
+  if (driver == nullptr) {
+    DVLOG(1) << __func__ << " Failed to get the autofill driver.";
+    std::move(callback).Run(
+        FillAutofillErrorStatus(UnexpectedErrorStatus(__FILE__, __LINE__)));
+    return;
+  }
   DCHECK(!selector.empty());
   // TODO(crbug.com/806868): Figure out whether there are cases where we need
   // more than one selector, and come up with a solution that can figure out the
@@ -772,15 +795,17 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
     const autofill::FormFieldData& form_field) {
   if (form_data.fields.empty()) {
     DVLOG(1) << __func__ << " Failed to get form data to fill form.";
-    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__));
+    std::move(callback).Run(
+        FillAutofillErrorStatus(UnexpectedErrorStatus(__FILE__, __LINE__)));
     return;
   }
 
   ContentAutofillDriver* driver =
       ContentAutofillDriver::GetForRenderFrameHost(container_frame_host);
-  if (!driver) {
+  if (driver == nullptr) {
     DVLOG(1) << __func__ << " Failed to get the autofill driver.";
-    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__));
+    std::move(callback).Run(
+        FillAutofillErrorStatus(UnexpectedErrorStatus(__FILE__, __LINE__)));
     return;
   }
 
@@ -794,23 +819,6 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
   }
 
   std::move(callback).Run(OkClientStatus());
-}
-
-void WebController::FillCardForm(
-    std::unique_ptr<autofill::CreditCard> card,
-    const base::string16& cvc,
-    const Selector& selector,
-    base::OnceCallback<void(const ClientStatus&)> callback) {
-  DVLOG(3) << __func__ << " " << selector;
-  auto data_to_autofill = std::make_unique<FillFormInputData>();
-  data_to_autofill->card = std::move(card);
-  data_to_autofill->cvc = cvc;
-  FindElement(selector,
-              /* strict_mode= */ true,
-              base::BindOnce(&WebController::OnFindElementForFillingForm,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             std::move(data_to_autofill), selector,
-                             std::move(callback)));
 }
 
 void WebController::SelectOption(

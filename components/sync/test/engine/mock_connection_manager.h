@@ -39,7 +39,7 @@ class MockConnectionManager : public ServerConnectionManager {
     virtual ~MidCommitObserver() {}
   };
 
-  MockConnectionManager(syncable::Directory*, CancelationSignal* signal);
+  explicit MockConnectionManager(syncable::Directory*);
   ~MockConnectionManager() override;
 
   // Overridden ServerConnectionManager functions.

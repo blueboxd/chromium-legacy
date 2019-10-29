@@ -100,7 +100,7 @@ cr.define('test_util', function() {
     // These test defaults reflect the actual defaults assigned to each
     // ContentSettingType, but keeping these in sync shouldn't matter for tests.
     const defaults = {};
-    for (let type in settings.ContentSettingsTypes) {
+    for (const type in settings.ContentSettingsTypes) {
       defaults[settings.ContentSettingsTypes[type]] =
           createDefaultContentSetting({});
     }
@@ -130,7 +130,7 @@ cr.define('test_util', function() {
 
     const chooserExceptions = {};
     const exceptions = {};
-    for (let type in settings.ContentSettingsTypes) {
+    for (const type in settings.ContentSettingsTypes) {
       chooserExceptions[settings.ContentSettingsTypes[type]] = [];
       exceptions[settings.ContentSettingsTypes[type]] = [];
     }

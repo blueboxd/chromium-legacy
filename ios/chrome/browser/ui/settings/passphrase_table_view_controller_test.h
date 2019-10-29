@@ -22,6 +22,7 @@ namespace web {
 class BrowserState;
 }  // namespace web
 
+class Browser;
 class TestChromeBrowserState;
 @class UINavigationController;
 @class UIViewController;
@@ -45,6 +46,7 @@ class PassphraseTableViewControllerTest : public ChromeTableViewControllerTest {
   web::WebTaskEnvironment task_environment_;
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<Browser> browser_;
   // Weak, owned by chrome_browser_state_.
   syncer::MockSyncService* fake_sync_service_;
 

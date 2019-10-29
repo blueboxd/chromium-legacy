@@ -1253,9 +1253,14 @@ void WebContentsImpl::NotifyManifestUrlChanged(
 }
 
 WebUI* WebContentsImpl::GetWebUI() {
-  WebUI* commited_web_ui = GetCommittedWebUI();
-  return commited_web_ui ? commited_web_ui
-                         : GetRenderManager()->GetNavigatingWebUI();
+  WebUI* committed_web_ui = GetCommittedWebUI();
+  if (committed_web_ui)
+    return committed_web_ui;
+
+  if (GetRenderManager()->speculative_frame_host())
+    return GetRenderManager()->speculative_frame_host()->web_ui();
+
+  return nullptr;
 }
 
 WebUI* WebContentsImpl::GetCommittedWebUI() {
@@ -1339,11 +1344,10 @@ const base::string16& WebContentsImpl::GetTitle() {
     return entry->GetTitleForDisplay();
   }
 
-  WebUI* navigating_web_ui = GetRenderManager()->GetNavigatingWebUI();
-  WebUI* our_web_ui = navigating_web_ui
-                          ? navigating_web_ui
-                          : GetRenderManager()->current_frame_host()->web_ui();
-
+  WebUI* our_web_ui =
+      GetRenderManager()->speculative_frame_host()
+          ? GetRenderManager()->speculative_frame_host()->web_ui()
+          : GetRenderManager()->current_frame_host()->web_ui();
   if (our_web_ui) {
     // Don't override the title in view source mode.
     entry = controller_.GetVisibleEntry();

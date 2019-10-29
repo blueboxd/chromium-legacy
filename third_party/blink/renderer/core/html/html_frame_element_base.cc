@@ -197,6 +197,10 @@ bool HTMLFrameElementBase::SupportsFocus() const {
   return true;
 }
 
+int HTMLFrameElementBase::DefaultTabIndex() const {
+  return 0;
+}
+
 void HTMLFrameElementBase::SetFocused(bool received, WebFocusType focus_type) {
   HTMLFrameOwnerElement::SetFocused(received, focus_type);
   if (Page* page = GetDocument().GetPage()) {

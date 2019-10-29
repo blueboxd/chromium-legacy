@@ -31,6 +31,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/policy/policy_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
@@ -282,8 +283,13 @@ class CupsPrintersManagerImpl
 
   // Callback for ServerPrintersProvider.
   void OnPrintersUpdated(bool complete) {
-    OnPrintersFound(kPrintServerDetector,
-                    server_printers_provider_->GetPrinters());
+    const std::vector<PrinterDetector::DetectedPrinter> printers =
+        server_printers_provider_->GetPrinters();
+    if (complete) {
+      PRINTER_LOG(EVENT) << "The list of server printers has been completed. "
+                         << "Number of server printers: " << printers.size();
+    }
+    OnPrintersFound(kPrintServerDetector, printers);
   }
 
  private:

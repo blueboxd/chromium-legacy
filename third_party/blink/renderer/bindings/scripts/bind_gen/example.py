@@ -4,25 +4,41 @@
 
 import os.path
 
+from blinkbuild.name_style_converter import NameStyleConverter
+
 from .clang_format import clang_format
 from .code_generation_context import CodeGenerationContext
 from .code_node import CodeNode
 from .code_node import FunctionDefinitionNode
 from .code_node import LiteralNode
+from .code_node import SequenceNode
+from .code_node import SymbolDefinitionNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
+from .code_node import UnlikelyExitNode
 from .mako_renderer import MakoRenderer
 
+_format = CodeNode.format_template
 
-def make_common_local_vars(cg_context):
+
+def _snake_case(name):
+    return NameStyleConverter(name).to_snake_case()
+
+
+def _upper_camel_case(name):
+    return NameStyleConverter(name).to_upper_camel_case()
+
+
+def bind_common_local_vars(code_node, cg_context):
+    assert isinstance(code_node, SymbolScopeNode)
     assert isinstance(cg_context, CodeGenerationContext)
 
     S = SymbolNode
     T = TextNode
 
     local_vars = []
-    supplemental_bindings = {}
+    template_vars = {}
 
     local_vars.extend([
         S("class_like_name", ("const char* const ${class_like_name} = "
@@ -30,11 +46,9 @@ def make_common_local_vars(cg_context):
         S("current_context", ("v8::Local<v8::Context> ${current_context} = "
                               "${isolate}->GetCurrentContext();")),
         S("current_script_state", ("ScriptState* ${current_script_state} = "
-                                   "ScriptState::ForCurrentRealm(${info});")),
-        S("exception_state",
-          ("ExceptionState ${exception_state}("
-           "${isolate}, ${exception_state_context_type}, ${class_like_name}, "
-           "${property_name});${reject_promise_scope_definition}")),
+                                   "ScriptState::From(${current_context});")),
+        S("execution_context", ("ExecutionContext* ${execution_context} = "
+                                "ExecutionContext::From(${script_state});")),
         S("isolate", "v8::Isolate* ${isolate} = ${info}.GetIsolate();"),
         S("per_context_data", ("V8PerContextData* ${per_context_data} = "
                                "${script_state}->PerContextData();")),
@@ -44,23 +58,33 @@ def make_common_local_vars(cg_context):
           "const char* const ${property_name} = \"${property.identifier}\";"),
         S("receiver", "v8::Local<v8::Object> ${receiver} = ${info}.This();"),
         S("receiver_context", ("v8::Local<v8::Context> ${receiver_context} = "
-                               "${receiver_script_state}->GetContext();")),
+                               "${receiver}->CreationContext();")),
         S("receiver_script_state",
           ("ScriptState* ${receiver_script_state} = "
-           "ScriptState::ForRelevantRealm(${info});")),
+           "ScriptState::From(${receiver_context});")),
     ])
 
+    is_receiver_context = (cg_context.member_like
+                           and not cg_context.member_like.is_static)
+
+    # creation_context
+    pattern = "const v8::Local<v8::Context>& ${creation_context} = {_1};"
+    _1 = "${receiver_context}" if is_receiver_context else "${current_context}"
+    local_vars.append(S("creation_context", _format(pattern, _1=_1)))
+
+    # creation_context_object
+    text = ("${receiver}"
+            if is_receiver_context else "${current_context}->Global()")
+    template_vars["creation_context_object"] = T(text)
+
     # script_state
-    def_text = "ScriptState* ${script_state} = {_1};"
-    if cg_context.member_like and not cg_context.member_like.is_static:
-        _1 = "${receiver_script_state}"
-    else:
-        _1 = "${current_script_state}"
-    local_vars.append(
-        S("script_state", CodeNode.format_template(def_text, _1=_1)))
+    pattern = "ScriptState* ${script_state} = {_1};"
+    _1 = ("${receiver_script_state}"
+          if is_receiver_context else "${current_script_state}")
+    local_vars.append(S("script_state", _format(pattern, _1=_1)))
 
     # exception_state_context_type
-    def_text = (
+    pattern = (
         "const ExceptionState::ContextType ${exception_state_context_type} = "
         "{_1};")
     if cg_context.attribute_get:
@@ -72,21 +96,171 @@ def make_common_local_vars(cg_context):
     else:
         _1 = "ExceptionState::kExecutionContext"
     local_vars.append(
-        S("exception_state_context_type",
-          CodeNode.format_template(def_text, _1=_1)))
+        S("exception_state_context_type", _format(pattern, _1=_1)))
 
-    # reject_promise_scope_definition
-    if ((cg_context.attribute_get and cg_context.attribute.idl_type.is_promise)
-            or (cg_context.operation
-                and cg_context.operation.return_type.is_promise)):
-        template_text = ("\n"
-                         "ExceptionToRejectPromiseScope reject_promise_scope"
-                         "(${info}, ${exception_state});")
+    # exception_state
+    pattern = "ExceptionState ${exception_state}({_1});{_2}"
+    _1 = [
+        "${isolate}", "${exception_state_context_type}", "${class_like_name}",
+        "${property_name}"
+    ]
+    _2 = ""
+    if cg_context.return_type and cg_context.return_type.unwrap().is_promise:
+        _2 = ("\n"
+              "ExceptionToRejectPromiseScope reject_promise_scope"
+              "(${info}, ${exception_state});")
+    local_vars.append(
+        S("exception_state", _format(pattern, _1=", ".join(_1), _2=_2)))
+
+    code_node.register_code_symbols(local_vars)
+    code_node.add_template_vars(template_vars)
+
+
+def make_v8_to_blink_value(blink_var_name, v8_value_expr, idl_type):
+    assert isinstance(blink_var_name, str)
+    assert isinstance(v8_value_expr, str)
+
+    pattern = "NativeValueTraits<{_1}>::NativeValue({_2})"
+    _1 = "IDL{}".format(idl_type.type_name)
+    _2 = ["${isolate}", v8_value_expr, "${exception_state}"]
+
+    blink_value = _format(pattern, _1=_1, _2=", ".join(_2))
+    idl_type_tag = _1
+
+    pattern = "{_1}& ${{{_2}}} = {_3};"
+    _1 = "NativeValueTraits<{}>::ImplType".format(idl_type_tag)
+    _2 = blink_var_name
+    _3 = blink_value
+    text = _format(pattern, _1=_1, _2=_2, _3=_3)
+
+    def create_definition(symbol_node):
+        return SymbolDefinitionNode(symbol_node, [
+            TextNode(text),
+            UnlikelyExitNode(
+                cond=TextNode("${exception_state}.HadException()"),
+                body=SymbolScopeNode([TextNode("return;")])),
+        ])
+
+    return SymbolNode(blink_var_name, definition_constructor=create_definition)
+
+
+def bind_blink_api_arguments(code_node, cg_context):
+    assert isinstance(code_node, SymbolScopeNode)
+    assert isinstance(cg_context, CodeGenerationContext)
+
+    if cg_context.attribute_get:
+        return
+
+    if cg_context.attribute_set:
+        name = "arg1_value"
+        v8_value = "${info}[0]"
+        code_node.register_code_symbol(
+            make_v8_to_blink_value(name, v8_value,
+                                   cg_context.attribute.idl_type))
+        return
+
+    for index, argument in enumerate(cg_context.function_like.arguments, 1):
+        name = "arg{}_{}".format(index, _snake_case(argument.identifier))
+        if argument.is_variadic:
+            assert False, "Variadic arguments are not yet supported"
+        else:
+            v8_value = "${{info}}[{}]".format(argument.index)
+            code_node.register_code_symbol(
+                make_v8_to_blink_value(name, v8_value, argument.idl_type))
+
+
+def bind_blink_api_call(code_node, cg_context):
+    assert isinstance(code_node, SymbolScopeNode)
+    assert isinstance(cg_context, CodeGenerationContext)
+
+    property_implemented_as = (
+        cg_context.member_like.code_generator_info.property_implemented_as)
+    func_name = property_implemented_as or cg_context.member_like.identifier
+    if cg_context.attribute_set:
+        func_name = "set{}".format(_upper_camel_case(func_name))
+
+    if cg_context.member_like.is_static:
+        receiver_implemented_as = (
+            cg_context.member_like.code_generator_info.receiver_implemented_as)
+        class_name = receiver_implemented_as or cg_context.class_like.identifier
+        func_name = "{}::{}".format(class_name, func_name)
+
+    arguments = []
+    ext_attrs = cg_context.member_like.extended_attributes
+
+    values = ext_attrs.values_of("CallWith") + (
+        ext_attrs.values_of("SetterCallWith") if cg_context.attribute_set else
+        ())
+    if "Isolate" in values:
+        arguments.append("${isolate}")
+    if "ScriptState" in values:
+        arguments.append("${script_state}")
+    if "ExecutionContext" in values:
+        arguments.append("${execution_context}")
+
+    if cg_context.attribute_get:
+        pass
+    elif cg_context.attribute_set:
+        arguments.append("${arg1_value}")
     else:
-        template_text = ""
-    supplemental_bindings["reject_promise_scope_definition"] = T(template_text)
+        for index, argument in enumerate(cg_context.function_like.arguments,
+                                         1):
+            arguments.append("${{arg{}_{}}}".format(
+                index, _snake_case(argument.identifier)))
 
-    return local_vars, supplemental_bindings
+    if cg_context.is_return_by_argument:
+        arguments.append("${return_value}")
+
+    if cg_context.may_throw_exception:
+        arguments.append("${exception_state}")
+
+    text = _format("{_1}({_2})", _1=func_name, _2=", ".join(arguments))
+    code_node.add_template_var("blink_api_call", TextNode(text))
+
+
+def bind_return_value(code_node, cg_context):
+    assert isinstance(code_node, SymbolScopeNode)
+    assert isinstance(cg_context, CodeGenerationContext)
+
+    def create_definition(symbol_node):
+        if cg_context.return_type.unwrap().is_void:
+            text = "${blink_api_call};"
+        elif cg_context.is_return_by_argument:
+            text = "${blink_return_type} ${return_value};\n${blink_api_call};"
+        else:
+            text = "const auto& ${return_value} = ${blink_api_call};"
+        node = SymbolDefinitionNode(symbol_node, [TextNode(text)])
+        if cg_context.may_throw_exception:
+            node.append(
+                UnlikelyExitNode(
+                    cond=TextNode("${exception_state}.HadException()"),
+                    body=SymbolScopeNode([TextNode("return;")])))
+        return node
+
+    code_node.register_code_symbol(
+        SymbolNode("return_value", definition_constructor=create_definition))
+
+
+def bind_v8_set_return_value(code_node, cg_context):
+    assert isinstance(code_node, SymbolScopeNode)
+    assert isinstance(cg_context, CodeGenerationContext)
+
+    pattern = "{_1}({_2});"
+    _1 = "V8SetReturnValue"
+    _2 = ["${info}", "${return_value}"]
+
+    if cg_context.return_type.unwrap().is_void:
+        # Render a SymbolNode |return_value| discarding the content text, and
+        # let a symbol definition be added.
+        pattern = "<% str(return_value) %>"
+    elif (cg_context.world == cg_context.MAIN_WORLD
+          and cg_context.return_type.unwrap().is_interface):
+        _1 = "V8SetReturnValueForMainWorld"
+    elif cg_context.return_type.unwrap().is_interface:
+        _2.append("${creation_context_object}")
+
+    text = _format(pattern, _1=_1, _2=", ".join(_2))
+    code_node.add_template_var("v8_set_return_value", TextNode(text))
 
 
 def make_attribute_get_def(cg_context):
@@ -97,21 +271,59 @@ def make_attribute_get_def(cg_context):
 
     cg_context = cg_context.make_copy(attribute_get=True)
 
-    local_vars, local_vars_bindings = make_common_local_vars(cg_context)
-
     func_def = FunctionDefinitionNode(
         name=L("AttributeGetCallback"),
         arg_decls=[L("const v8::FunctionCallbackInfo<v8::Value>& info")],
-        return_type=L("void"),
-        local_vars=local_vars)
+        return_type=L("void"))
 
     body = func_def.body
     body.add_template_var("info", "info")
-    body.add_template_vars(local_vars_bindings)
     body.add_template_vars(cg_context.template_bindings())
 
+    binders = [
+        bind_common_local_vars,
+        bind_blink_api_arguments,
+        bind_blink_api_call,
+        bind_return_value,
+        bind_v8_set_return_value,
+    ]
+    for bind in binders:
+        bind(body, cg_context)
+
     body.extend([
-        T("(void)(${per_context_data}, ${exception_state});"),
+        T("${v8_set_return_value}"),
+    ])
+
+    return func_def
+
+
+def make_operation_def(cg_context):
+    assert isinstance(cg_context, CodeGenerationContext)
+
+    L = LiteralNode
+    T = TextNode
+
+    func_def = FunctionDefinitionNode(
+        name=L("OperationCallback"),
+        arg_decls=[L("const v8::FunctionCallbackInfo<v8::Value>& info")],
+        return_type=L("void"))
+
+    body = func_def.body
+    body.add_template_var("info", "info")
+    body.add_template_vars(cg_context.template_bindings())
+
+    binders = [
+        bind_common_local_vars,
+        bind_blink_api_arguments,
+        bind_blink_api_call,
+        bind_return_value,
+        bind_v8_set_return_value,
+    ]
+    for bind in binders:
+        bind(body, cg_context)
+
+    body.extend([
+        T("${v8_set_return_value}"),
     ])
 
     return func_def
@@ -124,13 +336,19 @@ def run_example(web_idl_database, output_dirs):
     filepath = os.path.join(output_dirs['core'], filename)
 
     namespace = list(web_idl_database.namespaces)[0]
-    attribute = namespace.attributes[0]
 
-    cg_context = CodeGenerationContext(
-        namespace=namespace, attribute=attribute)
+    cg_context = CodeGenerationContext(namespace=namespace)
 
-    root_node = SymbolScopeNode(renderer=renderer)
-    root_node.append(make_attribute_get_def(cg_context))
+    root_node = SymbolScopeNode(separator_last="\n", renderer=renderer)
+    for attribute in namespace.attributes:
+        root_node.append(
+            make_attribute_get_def(cg_context.make_copy(attribute=attribute)))
+    for operation_group in namespace.operation_groups:
+        for operation in operation_group:
+            root_node.append(
+                make_operation_def(
+                    cg_context.make_copy(
+                        operation_group=operation_group, operation=operation)))
 
     prev = ''
     current = str(root_node)

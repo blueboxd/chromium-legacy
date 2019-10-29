@@ -2243,6 +2243,9 @@ extern const char kVaapiJpegImageDecodeAccelerationDescription[];
 extern const char kVaapiWebPImageDecodeAccelerationName[];
 extern const char kVaapiWebPImageDecodeAccelerationDescription[];
 
+extern const char kVirtualKeyboardBorderedKeyName[];
+extern const char kVirtualKeyboardBorderedKeyDescription[];
+
 extern const char kVirtualKeyboardName[];
 extern const char kVirtualKeyboardDescription[];
 

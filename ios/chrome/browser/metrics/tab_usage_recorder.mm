@@ -7,9 +7,9 @@
 #import <UIKit/UIKit.h>
 
 #include "base/metrics/histogram_macros.h"
+#include "components/ukm/ios/ukm_url_recorder.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
-#include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation/navigation_context.h"

@@ -73,7 +73,7 @@ void PrintersToValues(const PrinterList& printer_list,
 template <typename Predicate>
 base::Value GetFilteredList(const base::Value* list, Predicate pred) {
   auto out_list = list->Clone();
-  base::EraseIf(out_list.GetList(), pred);
+  out_list.EraseListValueIf(pred);
   return out_list;
 }
 
@@ -120,44 +120,40 @@ base::Value ValidateCddForPrintPreview(base::Value cdd) {
     const auto& key = capability.first;
     base::Value* value = &capability.second;
 
-    base::Value* list = nullptr;
+    base::Value* list_value = nullptr;
     if (value->is_dict())
-      list = value->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
+      list_value = value->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
     else if (value->is_list())
-      list = value;
+      list_value = value;
 
-    if (!list) {
+    if (!list_value) {
       out_caps.SetKey(key, std::move(*value));
       continue;
     }
 
     bool is_vendor_capability = key == kVendorCapabilityKey;
-    base::EraseIf(list->GetList(),
-                  is_vendor_capability ? VendorCapabilityInvalid : ValueIsNull);
-    if (list->GetList().empty())  // leave out empty lists.
+    list_value->EraseListValueIf(is_vendor_capability ? VendorCapabilityInvalid
+                                                      : ValueIsNull);
+    if (list_value->GetList().empty())  // leave out empty lists.
       continue;
 
     if (is_vendor_capability) {
       // Need to also filter the individual capability lists.
-      for (auto& vendor_option : list->GetList()) {
-        const base::Value* option_type =
-            vendor_option.FindKeyOfType(kTypeKey, base::Value::Type::STRING);
-        if (option_type->GetString() != kSelectString)
+      for (auto& vendor_option : list_value->GetList()) {
+        if (*vendor_option.FindStringKey(kTypeKey) != kSelectString)
           continue;
 
-        base::Value* options_dict = vendor_option.FindKeyOfType(
-            kSelectCapKey, base::Value::Type::DICTIONARY);
-        base::Value* options_list =
-            options_dict->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
-        base::EraseIf(options_list->GetList(), ValueIsNull);
+        vendor_option.FindDictKey(kSelectCapKey)
+            ->FindListKey(kOptionKey)
+            ->EraseListValueIf(ValueIsNull);
       }
     }
     if (value->is_dict()) {
       base::Value option_dict(base::Value::Type::DICTIONARY);
-      option_dict.SetKey(kOptionKey, std::move(*list));
+      option_dict.SetKey(kOptionKey, std::move(*list_value));
       out_caps.SetKey(key, std::move(option_dict));
     } else {
-      out_caps.SetKey(key, std::move(*list));
+      out_caps.SetKey(key, std::move(*list_value));
     }
   }
   cdd.SetKey(kPrinter, std::move(out_caps));

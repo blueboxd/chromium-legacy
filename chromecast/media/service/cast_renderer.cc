@@ -93,21 +93,22 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
                               ::media::PipelineStatusCallback init_cb) {
   LOG(INFO) << __FUNCTION__ << ": " << this;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!application_media_info_manager_ptr_);
+  DCHECK(!application_media_info_manager_remote_);
 
   init_cb_ = std::move(init_cb);
 
-  // Retrieve application_media_info_manager_ptr_ if it is available via
+  // Retrieve application_media_info_manager_remote_ if it is available via
   // CastApplicationMediaInfoManager.
 
   if (host_interfaces_) {
     service_manager::GetInterface<
         ::media::mojom::CastApplicationMediaInfoManager>(
-        host_interfaces_, &application_media_info_manager_ptr_);
+        host_interfaces_,
+        application_media_info_manager_remote_.BindNewPipeAndPassReceiver());
   }
 
-  if (application_media_info_manager_ptr_) {
-    application_media_info_manager_ptr_->GetCastApplicationMediaInfo(
+  if (application_media_info_manager_remote_) {
+    application_media_info_manager_remote_->GetCastApplicationMediaInfo(
         base::BindOnce(&CastRenderer::OnApplicationMediaInfoReceived,
                        weak_factory_.GetWeakPtr(), media_resource, client));
   } else {

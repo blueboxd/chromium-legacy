@@ -173,7 +173,7 @@ void TextRenderer::BufferReady(DemuxerStream* stream,
   }
 
   if (input->end_of_stream()) {
-    CueReady(stream, NULL);
+    CueReady(stream, nullptr);
     return;
   }
 

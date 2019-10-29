@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">Nyelv beállítása</translation>
 <translation id="1962969542251276847">Képernyő lezárása</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">Üdv, <ph name="USERNAME" />!</translation>
 <translation id="1978498689038657292">Szöveges bevitel</translation>
 <translation id="1993072747612765854">További információ a legújabb <ph name="SYSTEM_APP_NAME" />-frissítésről</translation>
 <translation id="1995660704900986789">Kikapcsolás</translation>
@@ -159,7 +160,6 @@
 <translation id="3139942575505304791">1. asztal</translation>
 <translation id="315116470104423982">Mobiladatok</translation>
 <translation id="3151786313568798007">Tájolás</translation>
-<translation id="3152934361839663679">Eszközéhez a maximális számú monitor csatlakozik, ezért az egyiket le kell választania.</translation>
 <translation id="3153444934357957346">Legfeljebb <ph name="MULTI_PROFILE_USER_LIMIT" /> fiókot használhat a többfiókos bejelentkezés során.</translation>
 <translation id="3154351730702813399">Az eszköz rendszergazdája figyelheti a böngészési tevékenységét.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Egy eszközhöz csatlakoztatva}other{# eszközhöz csatlakoztatva}}</translation>

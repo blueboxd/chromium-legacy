@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantCollectUserDataModel_jni.h"
@@ -76,6 +77,22 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDateTime(
   return Java_AssistantCollectUserDataModel_createAssistantDateTime(
       env, (int)proto.date().year(), proto.date().month(), proto.date().day(),
       proto.time().hour(), proto.time().minute(), proto.time().second());
+}
+
+// Returns a 32-bit integer representing |color_string| in Java. Uses
+// base::Optional to distinguish between valid and invalid colors.
+base::Optional<int> CreateJavaColor(JNIEnv* env,
+                                    const std::string& color_string) {
+  if (!Java_AssistantOverlayModel_isValidColorString(
+          env, base::android::ConvertUTF8ToJavaString(env, color_string))) {
+    if (!color_string.empty()) {
+      DVLOG(1) << "Encountered invalid color string: " << color_string;
+    }
+    return base::Optional<int>();
+  }
+
+  return Java_AssistantOverlayModel_parseColorString(
+      env, base::android::ConvertUTF8ToJavaString(env, color_string));
 }
 
 // Creates the java equivalent to the text inputs specified in |section|.
@@ -381,18 +398,21 @@ void UiControllerAndroid::OnOverlayColorsChanged(
     const UiDelegate::OverlayColors& colors) {
   JNIEnv* env = AttachCurrentThread();
   auto overlay_model = GetOverlayModel();
-  if (!Java_AssistantOverlayModel_setBackgroundColor(
-          env, overlay_model,
-          base::android::ConvertUTF8ToJavaString(env, colors.background))) {
-    DVLOG(1) << __func__
-             << ": Ignoring invalid overlay color: " << colors.background;
+
+  auto background_color = CreateJavaColor(env, colors.background);
+  if (background_color.has_value()) {
+    Java_AssistantOverlayModel_setBackgroundColor(env, overlay_model,
+                                                  *background_color);
+  } else {
+    Java_AssistantOverlayModel_clearBackgroundColor(env, overlay_model);
   }
-  if (!Java_AssistantOverlayModel_setHighlightBorderColor(
-          env, overlay_model,
-          base::android::ConvertUTF8ToJavaString(env,
-                                                 colors.highlight_border))) {
-    DVLOG(1) << __func__ << ": Ignoring invalid highlight border color: "
-             << colors.highlight_border;
+
+  auto highlight_border_color = CreateJavaColor(env, colors.highlight_border);
+  if (highlight_border_color.has_value()) {
+    Java_AssistantOverlayModel_setHighlightBorderColor(env, overlay_model,
+                                                       *highlight_border_color);
+  } else {
+    Java_AssistantOverlayModel_clearHighlightBorderColor(env, overlay_model);
   }
 }
 

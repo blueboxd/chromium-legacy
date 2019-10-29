@@ -184,7 +184,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   void AbortPendingVideoDecodeCB() {
     if (pending_video_decode_cb_) {
       std::move(pending_video_decode_cb_)
-          .Run(Decryptor::kSuccess, scoped_refptr<VideoFrame>(NULL));
+          .Run(Decryptor::kSuccess, scoped_refptr<VideoFrame>(nullptr));
     }
   }
 
@@ -301,8 +301,8 @@ TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_DecodeError) {
   Initialize();
 
   EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
-      .WillRepeatedly(
-          RunCallback<1>(Decryptor::kError, scoped_refptr<VideoFrame>(NULL)));
+      .WillRepeatedly(RunCallback<1>(Decryptor::kError,
+                                     scoped_refptr<VideoFrame>(nullptr)));
 
   DecodeAndExpect(encrypted_buffer_, DecodeStatus::DECODE_ERROR);
 

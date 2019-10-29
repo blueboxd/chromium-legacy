@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">Dilinizi ayarlayın</translation>
 <translation id="1962969542251276847">Kilit Ekranı</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">Merhaba <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">Metin girişi</translation>
 <translation id="1993072747612765854">En yeni <ph name="SYSTEM_APP_NAME" /> güncellemesi ile ilgili daha fazla bilgi edinin</translation>
 <translation id="1995660704900986789">Kapat</translation>
@@ -159,7 +160,6 @@
 <translation id="3139942575505304791">Çalışma Masası 1</translation>
 <translation id="315116470104423982">Mobil veriler</translation>
 <translation id="3151786313568798007">Yön</translation>
-<translation id="3152934361839663679">Cihazınız maksimum sayıda monitöre bağlı olduğundan ekranlardan birinin bağlantısı kesildi.</translation>
 <translation id="3153444934357957346">Çoklu oturum açmada en fazla <ph name="MULTI_PROFILE_USER_LIMIT" /> hesabınız olabilir.</translation>
 <translation id="3154351730702813399">Cihaz yöneticisi göz atma etkinliğinizi izleyebilir.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Bir cihaza bağlı}other{# cihaza bağlı}}</translation>

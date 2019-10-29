@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -88,7 +88,8 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   // network loader. This can be provided by an interceptor. For example,
   // AppCache's interceptor creates this for AppCache's fallback case.
   network::mojom::URLLoaderPtr response_url_loader_;
-  mojo::Binding<network::mojom::URLLoaderClient> response_url_loader_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> response_url_loader_receiver_{
+      this};
 
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 

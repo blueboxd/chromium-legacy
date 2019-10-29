@@ -18,8 +18,7 @@ namespace syncer {
 // always succeed.
 class LoopbackConnectionManager : public ServerConnectionManager {
  public:
-  LoopbackConnectionManager(CancelationSignal* signal,
-                            const base::FilePath& persistent_file);
+  explicit LoopbackConnectionManager(const base::FilePath& persistent_file);
   ~LoopbackConnectionManager() override;
 
  private:

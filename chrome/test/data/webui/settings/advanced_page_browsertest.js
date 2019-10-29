@@ -42,7 +42,8 @@ TEST_F('SettingsAdvancedPageBrowserTest', 'MAYBE_Load', function() {
 
     test('advanced pages', function() {
       const page = self.basicPage;
-      let sections = ['privacy', 'languages', 'downloads', 'printing', 'reset'];
+      const sections =
+          ['privacy', 'languages', 'downloads', 'printing', 'reset'];
       for (let i = 0; i < sections.length; i++) {
         const section = self.getSection(page, sections[i]);
         assertTrue(!!section);
@@ -101,7 +102,7 @@ TEST_F('SettingsAdvancedPageBrowserTestCrOS', 'MAYBE_Load', function() {
 
     test('advanced pages', function() {
       const page = self.basicPage;
-      let sections = [
+      const sections = [
         'privacy', 'languages', 'downloads', 'printing', 'reset', 'dateTime',
         'a11y'
       ];

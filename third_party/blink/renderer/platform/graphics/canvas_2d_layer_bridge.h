@@ -175,6 +175,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   // This is called when the Canvas element has cleared the frame, so the 2D
   // bridge knows that there's no previous content on the resource.
   void ClearFrame() { clear_frame_ = true; }
+  bool IsDeferralEnabled() const { return is_deferral_enabled_; }
 
  private:
   friend class Canvas2DLayerBridgeTest;

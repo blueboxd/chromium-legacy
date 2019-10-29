@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -243,10 +244,12 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showSignin:(ShowSigninCommand*)command
     baseViewController:(UIViewController*)baseViewController {
   if (!self.mainController.signinInteractionCoordinator) {
+    Browser* mainBrowser =
+        self.mainController.interfaceProvider.mainInterface.browser;
     self.mainController.signinInteractionCoordinator =
         [[SigninInteractionCoordinator alloc]
-            initWithBrowserState:self.mainController.mainBrowserState
-                      dispatcher:self.mainController.mainBVC.dispatcher];
+            initWithBrowser:mainBrowser
+                 dispatcher:self.mainController.mainBVC.dispatcher];
   }
 
   switch (command.operation) {
@@ -270,10 +273,12 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController {
+  Browser* mainBrowser =
+      self.mainController.interfaceProvider.mainInterface.browser;
   self.mainController.signinInteractionCoordinator =
       [[SigninInteractionCoordinator alloc]
-          initWithBrowserState:self.mainController.mainBrowserState
-                    dispatcher:self.mainController.mainBVC.dispatcher];
+          initWithBrowser:mainBrowser
+               dispatcher:self.mainController.mainBVC.dispatcher];
   [self.mainController.signinInteractionCoordinator
       showAdvancedSigninSettingsWithPresentingViewController:
           baseViewController];
@@ -281,11 +286,13 @@ enum class EnterTabSwitcherSnapshotResult {
 
 // TODO(crbug.com/779791) : Remove settings commands from MainController.
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
+  Browser* mainBrowser =
+      self.mainController.interfaceProvider.mainInterface.browser;
   if (!self.mainController.signinInteractionCoordinator) {
     self.mainController.signinInteractionCoordinator =
         [[SigninInteractionCoordinator alloc]
-            initWithBrowserState:self.mainController.mainBrowserState
-                      dispatcher:self.mainController.mainBVC.dispatcher];
+            initWithBrowser:mainBrowser
+                 dispatcher:self.mainController.mainBVC.dispatcher];
   }
 
   [self.mainController.signinInteractionCoordinator

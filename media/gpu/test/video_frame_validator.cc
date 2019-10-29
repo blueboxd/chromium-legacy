@@ -20,6 +20,24 @@
 namespace media {
 namespace test {
 
+VideoFrameValidator::MismatchedFrameInfo::MismatchedFrameInfo(
+    size_t frame_index,
+    std::string computed_md5,
+    std::string expected_md5)
+    : validate_mode(ValidateMode::MD5),
+      frame_index(frame_index),
+      computed_md5(std::move(computed_md5)),
+      expected_md5(std::move(expected_md5)) {}
+
+VideoFrameValidator::MismatchedFrameInfo::MismatchedFrameInfo(
+    size_t frame_index,
+    size_t diff_cnt)
+    : validate_mode(ValidateMode::RAW),
+      frame_index(frame_index),
+      diff_cnt(diff_cnt) {}
+
+VideoFrameValidator::MismatchedFrameInfo::~MismatchedFrameInfo() = default;
+
 // static
 std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
     const std::vector<std::string>& expected_frame_checksums,
@@ -36,12 +54,42 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
   return video_frame_validator;
 }
 
+std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
+    const std::vector<scoped_refptr<const VideoFrame>> model_frames,
+    const uint8_t tolerance,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor) {
+  auto video_frame_validator = base::WrapUnique(new VideoFrameValidator(
+      std::move(model_frames), tolerance, std::move(corrupt_frame_processor)));
+  if (!video_frame_validator->Initialize()) {
+    LOG(ERROR) << "Failed to initialize VideoFrameValidator.";
+    return nullptr;
+  }
+
+  return video_frame_validator;
+}
+
 VideoFrameValidator::VideoFrameValidator(
     std::vector<std::string> expected_frame_checksums,
     VideoPixelFormat validation_format,
     std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
-    : expected_frame_checksums_(std::move(expected_frame_checksums)),
+    : validate_mode_(ValidateMode::MD5),
+      expected_frame_checksums_(std::move(expected_frame_checksums)),
       validation_format_(validation_format),
+      corrupt_frame_processor_(std::move(corrupt_frame_processor)),
+      num_frames_validating_(0),
+      frame_validator_thread_("FrameValidatorThread"),
+      frame_validator_cv_(&frame_validator_lock_) {
+  DETACH_FROM_SEQUENCE(validator_sequence_checker_);
+  DETACH_FROM_SEQUENCE(validator_thread_sequence_checker_);
+}
+
+VideoFrameValidator::VideoFrameValidator(
+    const std::vector<scoped_refptr<const VideoFrame>> model_frames,
+    const uint8_t tolerance,
+    std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor)
+    : validate_mode_(ValidateMode::RAW),
+      model_frames_(std::move(model_frames)),
+      tolerance_(tolerance),
       corrupt_frame_processor_(std::move(corrupt_frame_processor)),
       num_frames_validating_(0),
       frame_validator_thread_("FrameValidatorThread"),
@@ -140,27 +188,30 @@ void VideoFrameValidator::ProcessVideoFrameTask(
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
   LOG_ASSERT(validated_frame->IsMappable());
-  if (validated_frame->format() != validation_format_) {
-    validated_frame =
-        ConvertVideoFrame(validated_frame.get(), validation_format_);
-  }
 
-  ASSERT_TRUE(validated_frame);
-  std::string computed_md5 = ComputeMD5FromVideoFrame(validated_frame.get());
+  base::Optional<MismatchedFrameInfo> mismatched_info;
+  switch (validate_mode_) {
+    case ValidateMode::MD5: {
+      if (validated_frame->format() != validation_format_) {
+        validated_frame =
+            ConvertVideoFrame(validated_frame.get(), validation_format_);
+      }
+      ASSERT_TRUE(validated_frame);
+      mismatched_info = ValidateMD5(*validated_frame, frame_index);
+      break;
+    }
+    case ValidateMode::RAW:
+      mismatched_info = ValidateRaw(*validated_frame, frame_index);
+      break;
+  }
 
   base::AutoLock auto_lock(frame_validator_lock_);
 
-  if (expected_frame_checksums_.size() > 0) {
-    LOG_IF(FATAL, frame_index >= expected_frame_checksums_.size())
-        << "Frame number is over than the number of read md5 values in file.";
-    const auto& expected_md5 = expected_frame_checksums_[frame_index];
-    if (computed_md5 != expected_md5) {
-      mismatched_frames_.push_back(
-          MismatchedFrameInfo{frame_index, computed_md5, expected_md5});
-      // Perform additional processing on the corrupt video frame if requested.
-      if (corrupt_frame_processor_)
-        corrupt_frame_processor_->ProcessVideoFrame(video_frame, frame_index);
-    }
+  if (mismatched_info) {
+    mismatched_frames_.push_back(std::move(mismatched_info).value());
+    // Perform additional processing on the corrupt video frame if requested.
+    if (corrupt_frame_processor_)
+      corrupt_frame_processor_->ProcessVideoFrame(validated_frame, frame_index);
   }
 
   num_frames_validating_--;
@@ -168,15 +219,44 @@ void VideoFrameValidator::ProcessVideoFrameTask(
 }
 
 std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
-    const VideoFrame* video_frame) const {
+    const VideoFrame& video_frame) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
   base::MD5Context context;
   base::MD5Init(&context);
-  VideoFrame::HashFrameForTesting(&context, *video_frame);
+  VideoFrame::HashFrameForTesting(&context, video_frame);
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
   return MD5DigestToBase16(digest);
 }
 
+base::Optional<VideoFrameValidator::MismatchedFrameInfo>
+VideoFrameValidator::ValidateMD5(const VideoFrame& validated_frame,
+                                 size_t frame_index) {
+  std::string computed_md5 = ComputeMD5FromVideoFrame(validated_frame);
+
+  if (expected_frame_checksums_.size() > 0) {
+    LOG_IF(FATAL, frame_index >= expected_frame_checksums_.size())
+        << "Frame number is over than the number of read md5 values in file.";
+    const auto& expected_md5 = expected_frame_checksums_[frame_index];
+    if (computed_md5 != expected_md5) {
+      return MismatchedFrameInfo{frame_index, computed_md5, expected_md5};
+    }
+  }
+  return base::nullopt;
+}
+
+base::Optional<VideoFrameValidator::MismatchedFrameInfo>
+VideoFrameValidator::ValidateRaw(const VideoFrame& validated_frame,
+                                 size_t frame_index) {
+  if (model_frames_.size() > 0) {
+    LOG_IF(FATAL, frame_index >= model_frames_.size())
+        << "Frame number is over than the number of given frames.";
+    size_t diff_cnt = CompareFramesWithErrorDiff(
+        validated_frame, *model_frames_[frame_index], tolerance_);
+    if (diff_cnt > 0)
+      return MismatchedFrameInfo{frame_index, diff_cnt};
+  }
+  return base::nullopt;
+}
 }  // namespace test
 }  // namespace media

@@ -524,7 +524,7 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
   // permissions are not displayed.
   base::Value exceptions =
       GetChooserExceptionListFromProfile(profile(), *chooser_type);
-  auto& exceptions_list = exceptions.GetList();
+  base::span<const base::Value> exceptions_list = exceptions.GetList();
   ASSERT_EQ(exceptions_list.size(), 4u);
 
   // This exception should describe the permissions for any device with the

@@ -81,7 +81,7 @@ void FakeTextTrackStream::SatisfyPendingRead(
 
 void FakeTextTrackStream::AbortPendingRead() {
   DCHECK(read_cb_);
-  std::move(read_cb_).Run(kAborted, NULL);
+  std::move(read_cb_).Run(kAborted, nullptr);
 }
 
 void FakeTextTrackStream::SendEosNotification() {

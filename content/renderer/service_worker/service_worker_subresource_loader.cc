@@ -152,7 +152,7 @@ class ServiceWorkerSubresourceLoader::StreamWaiter
 // ServiceWorkerSubresourceLoader -------------------------------------------
 
 ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -164,7 +164,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : redirect_limit_(net::URLRequest::kMaxRedirects),
       url_loader_client_(std::move(client)),
-      url_loader_binding_(this, std::move(request)),
+      url_loader_binding_(this, std::move(receiver)),
       body_as_blob_size_(blink::BlobUtils::kUnknownSize),
       controller_connector_(std::move(controller_connector)),
       fetch_request_restarted_(false),
@@ -812,7 +812,7 @@ ServiceWorkerSubresourceLoaderFactory::
     ~ServiceWorkerSubresourceLoaderFactory() = default;
 
 void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -824,7 +824,7 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
   // the request, passes the request to the fallback factory, and
   // destructs itself (while the loader client continues to work).
   new ServiceWorkerSubresourceLoader(
-      std::move(request), routing_id, request_id, options, resource_request,
+      std::move(receiver), routing_id, request_id, options, resource_request,
       std::move(client), traffic_annotation, controller_connector_,
       fallback_factory_, task_runner_);
 }

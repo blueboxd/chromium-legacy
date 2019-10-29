@@ -219,9 +219,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
   LocalFrame* frame = doc ? doc->GetFrame() : nullptr;
   GetService(ExecutionContext::From(script_state))
       ->RequestPermission(
-          std::move(descriptor),
-          LocalFrame::HasTransientUserActivation(
-              frame, true /* check_if_main_thread */),
+          std::move(descriptor), LocalFrame::HasTransientUserActivation(frame),
           WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
                     WrapPersistent(resolver),
                     WTF::Passed(std::move(descriptor_copy))));
@@ -295,8 +293,7 @@ ScriptPromise Permissions::requestAll(
   GetService(ExecutionContext::From(script_state))
       ->RequestPermissions(
           std::move(internal_permissions),
-          LocalFrame::HasTransientUserActivation(
-              frame, true /* check_if_main_thread */),
+          LocalFrame::HasTransientUserActivation(frame),
           WTF::Bind(&Permissions::BatchTaskComplete, WrapPersistent(this),
                     WrapPersistent(resolver),
                     WTF::Passed(std::move(internal_permissions_copy)),

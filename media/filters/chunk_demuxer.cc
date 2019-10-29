@@ -83,7 +83,7 @@ void ChunkDemuxerStream::AbortReads() {
   base::AutoLock auto_lock(lock_);
   ChangeState_Locked(RETURNING_ABORT_FOR_READS);
   if (read_cb_)
-    std::move(read_cb_).Run(kAborted, NULL);
+    std::move(read_cb_).Run(kAborted, nullptr);
 }
 
 void ChunkDemuxerStream::CompletePendingReadIfPossible() {
@@ -415,7 +415,7 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
           break;
         case SourceBufferStreamStatus::kConfigChange:
           status = kConfigChanged;
-          buffer = NULL;
+          buffer = nullptr;
           DVLOG(2) << __func__ << ": returning kConfigChange, type " << type_;
           break;
       }
@@ -425,7 +425,7 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
       // for a seek. Any buffers in the SourceBuffer should NOT be returned
       // because they are associated with the seek.
       status = DemuxerStream::kAborted;
-      buffer = NULL;
+      buffer = nullptr;
       DVLOG(2) << __func__ << ": returning kAborted, type " << type_;
       break;
     case SHUTDOWN:
@@ -445,7 +445,7 @@ ChunkDemuxer::ChunkDemuxer(
     MediaLog* media_log)
     : state_(WAITING_FOR_INIT),
       cancel_next_seek_(false),
-      host_(NULL),
+      host_(nullptr),
       open_cb_(open_cb),
       progress_cb_(progress_cb),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),

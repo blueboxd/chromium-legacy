@@ -196,8 +196,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            features::kUserActivationPostMessageTransfer, kUseFeatureState},
           {wf::EnableUserActivationSameOriginVisibility,
            features::kUserActivationSameOriginVisibility, kUseFeatureState},
-          {wf::EnableUserActivationV2, features::kUserActivationV2,
-           kUseFeatureState},
           {wf::EnablePassiveDocumentEventListeners,
            features::kPassiveDocumentEventListeners, kUseFeatureState},
           {wf::EnablePassiveDocumentWheelEventListeners,

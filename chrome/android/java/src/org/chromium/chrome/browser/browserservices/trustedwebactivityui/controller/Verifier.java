@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.browserservices.trustedwebactivityui.control
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.Promise;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
@@ -81,10 +80,6 @@ public class Verifier implements NativeInitObserver {
         @Override
         public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
             if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) {
-                assert false : "Shouldn't observe navigation when TWAs are disabled";
-                return;
-            }
             verifyVisitedOrigin(new Origin(navigation.getUrl()));
         }
     };
@@ -150,11 +145,6 @@ public class Verifier implements NativeInitObserver {
     @Override
     public void onFinishNativeInitialization() {
         Origin initialOrigin = new Origin(mIntentDataProvider.getUrlToLoad());
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) {
-            mTabObserverRegistrar.unregisterTabObserver(mVerifyOnPageLoadObserver);
-            updateState(initialOrigin, VerificationStatus.FAILURE);
-            return;
-        }
 
         collectTrustedOrigins(initialOrigin);
         verifyVisitedOrigin(initialOrigin);

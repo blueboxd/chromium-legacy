@@ -540,12 +540,11 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
-    sync_pb::WebAppSpecifics::DisplayMode display_mode) {
-  ASSERT_ENUM_BOUNDS(sync_pb::WebAppSpecifics, DisplayMode, BROWSER,
+    sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode) {
+  ASSERT_ENUM_BOUNDS(sync_pb::WebAppSpecifics, UserDisplayMode, BROWSER,
                      STANDALONE);
-  switch (display_mode) {
+  switch (user_display_mode) {
     ENUM_CASE(sync_pb::WebAppSpecifics, BROWSER);
-    ENUM_CASE(sync_pb::WebAppSpecifics, MINIMAL_UI);
     ENUM_CASE(sync_pb::WebAppSpecifics, STANDALONE);
   }
   NOTREACHED();

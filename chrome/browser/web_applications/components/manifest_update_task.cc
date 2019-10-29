@@ -122,17 +122,17 @@ void ManifestUpdateTask::OnAllAppWindowsClosed(blink::Manifest manifest) {
   web_application_info->title =
       base::UTF8ToUTF16(registrar_.GetAppShortName(app_id_));
 
-  // Preserve the user's choice of launch container (excluding fullscreen).
-  switch (registrar_.GetAppDisplayMode(app_id_)) {
+  // Preserve the user's choice of opening in browser tab or standalone window.
+  switch (registrar_.GetAppUserDisplayMode(app_id_)) {
     case blink::mojom::DisplayMode::kBrowser:
       web_application_info->open_as_window = false;
       break;
-    case blink::mojom::DisplayMode::kMinimalUi:
     case blink::mojom::DisplayMode::kStandalone:
-    case blink::mojom::DisplayMode::kFullscreen:
       web_application_info->open_as_window = true;
       break;
     case blink::mojom::DisplayMode::kUndefined:
+    case blink::mojom::DisplayMode::kMinimalUi:
+    case blink::mojom::DisplayMode::kFullscreen:
       NOTREACHED();
       break;
   }

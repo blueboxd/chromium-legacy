@@ -278,12 +278,6 @@ const char kOmniboxOnDeviceHeadSuggestionsDescription[] =
     "Shows Google head non personalized search suggestions provided by a "
     "compact on device model";
 
-const char kOptionalArticleThumbnailName[] =
-    "Enable optional thumbnails for NTP articles";
-const char kOptionalArticleThumbnailDescription[] =
-    "Make thumbnails of NTP articles optional due to European copyright "
-    "directive(EUCD). Also change the layout of article cells";
-
 const char kPasswordLeakDetectionName[] = "Password Leak Detection";
 const char kPasswordLeakDetectionDescription[] =
     "Enables the detection of leaked passwords.";

@@ -25,7 +25,6 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
-#include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -733,7 +732,6 @@ DriveIntegrationService::DriveIntegrationService(
                 logger_.get(), cache_.get(), scheduler_.get(),
                 resource_metadata_.get(), blocking_task_runner_.get(),
                 cache_root_directory_.Append(kTemporaryFileDirectory)));
-  download_handler_ = std::make_unique<DownloadHandler>(file_system());
   debug_info_collector_ = std::make_unique<DebugInfoCollector>(
       resource_metadata_.get(), file_system(), blocking_task_runner_.get());
 
@@ -762,7 +760,6 @@ void DriveIntegrationService::Shutdown() {
   RemoveDriveMountPoint();
   notification_manager_.reset();
   debug_info_collector_.reset();
-  download_handler_.reset();
   file_system_.reset();
   scheduler_.reset();
   drive_service_.reset();
@@ -1167,25 +1164,6 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
   // migrated and any dirty files are recovered whenever switching to DriveFS.
   profile_->GetPrefs()->ClearPref(prefs::kDriveFsPinnedMigrated);
 
-  // Initialize Download Handler for hooking downloads to the Drive folder.
-  content::DownloadManager* download_manager =
-      g_browser_process->download_status_updater()
-          ? BrowserContext::GetDownloadManager(profile_)
-          : nullptr;
-  download_handler_->Initialize(
-      download_manager,
-      cache_root_directory_.Append(kTemporaryFileDirectory));
-
-  // Install the handler also to incognito profile.
-  if (g_browser_process->download_status_updater()) {
-    if (profile_->HasOffTheRecordProfile()) {
-      download_handler_->ObserveIncognitoDownloadManager(
-          BrowserContext::GetDownloadManager(
-              profile_->GetOffTheRecordProfile()));
-    }
-    observed_profiles_.Add(profile_);
-  }
-
   // Register for Google Drive invalidation notifications.
   DriveNotificationManager* drive_notification_manager =
       DriveNotificationManagerFactory::GetForBrowserContext(profile_);
@@ -1224,13 +1202,6 @@ bool DriveIntegrationService::DownloadDirectoryPreferenceIsInDrive() {
   const auto* user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
   return user && user->GetAccountId().HasAccountIdKey() &&
          GetMountPointPath().IsParent(downloads_path);
-}
-
-void DriveIntegrationService::OnOffTheRecordProfileCreated(
-    Profile* off_the_record) {
-  DCHECK_EQ(profile_, off_the_record->GetOriginalProfile());
-  download_handler_->ObserveIncognitoDownloadManager(
-      BrowserContext::GetDownloadManager(off_the_record));
 }
 
 void DriveIntegrationService::MigratePinnedFiles() {

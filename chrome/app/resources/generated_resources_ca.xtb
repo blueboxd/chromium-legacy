@@ -859,7 +859,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2224471211857467033">Esdeveniments d'accessibilitat</translation>
 <translation id="2224551243087462610">Edita el nom de la carpeta</translation>
 <translation id="2226449515541314767">S'ha impedit que aquest lloc tingui control total dels dispositius MIDI.</translation>
-<translation id="2226720438730111184">Indica'ns el problema</translation>
 <translation id="2227179592712503583">Suprimeix el suggeriment</translation>
 <translation id="2229161054156947610">Queda més d'una hora</translation>
 <translation id="222931766245975952">Fitxer truncat</translation>
@@ -2958,7 +2957,6 @@ Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translatio
 <translation id="5360150013186312835">Mostra a la barra d'eines</translation>
 <translation id="5362741141255528695">Seleccioneu el fitxer de clau privada.</translation>
 <translation id="5363109466694494651">Fes un Powerwash i canvia a la versió anterior</translation>
-<translation id="5365716706805792666">Google pot comprovar si les teves contrasenyes s'han vist afectades per una violació de les dades. Aquesta opció s'activarà quan iniciïs la sessió amb el Compte de Google.</translation>
 <translation id="5365881113273618889">La carpeta que has seleccionat conté fitxers confidencials. Confirmes que vols concedir a "<ph name="APP_NAME" />" accés d'escriptura permanent en aquesta carpeta?</translation>
 <translation id="5367091008316207019">S'està llegint el fitxer...</translation>
 <translation id="5368720394188453070">El telèfon està bloquejat. Desbloquegeu-lo per accedir-hi.</translation>
@@ -3557,7 +3555,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6202304368170870640">Pots utilitzar el PIN per iniciar la sessió al dispositiu o per desbloquejar-lo.</translation>
 <translation id="6206311232642889873">Cop&amp;ia la imatge</translation>
 <translation id="6207200176136643843">Restableix el nivell de zoom predeterminat</translation>
-<translation id="620722923698527029">Obre sempre aquest tipus d'enllaços a l'aplicació associada</translation>
 <translation id="6207282396926186323">Instal·la <ph name="APP_NAME" /> (aplicació de Linux)</translation>
 <translation id="6207937957461833379">País o regió</translation>
 <translation id="6208521041562685716">S'estan activant les dades mòbils</translation>
@@ -4431,7 +4428,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> s'ha inscrit correctament a la gestió empresarial.</translation>
 <translation id="7507930499305566459">Certificat de resposta d'estat</translation>
 <translation id="7508054832109420082">Dona permís per accedir a les impressores</translation>
-<translation id="7510943789645525906">T'avisa si una contrasenya que utilitzes ha patit una violació de les dades</translation>
 <translation id="7513029293694390567">Inicia la sessió automàticament als llocs web amb les credencials emmagatzemades. Si la funció està desactivada, se't demanarà sempre que confirmis les credencials per iniciar la sessió en un lloc web.</translation>
 <translation id="7514239104543605883">Copia-ho al dispositiu</translation>
 <translation id="7514365320538308">Baixa</translation>
@@ -4620,7 +4616,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 
 
 <ph name="EXTENSION_NAME" /></translation>
-<translation id="7788383851298063850">Indica'ns el problema</translation>
 <translation id="7788444488075094252">Idiomes i introducció de text</translation>
 <translation id="7788668840732459509">Posició:</translation>
 <translation id="7789963078219276159">El fons de la pàgina d'inici s'ha canviat a <ph name="CATEGORY" />.</translation>
@@ -4735,7 +4730,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7926423016278357561">No era jo.</translation>
 <translation id="7928836894214140642">Gestionat per <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Les formes de pagament desades es mostraran aquí</translation>
-<translation id="7930681627240672853">Comprova la seguretat de la contrasenya</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> està compartint la pantalla i l'àudio.</translation>
 <translation id="7931318309563332511">Desconegut</translation>
 <translation id="793293630927785390">Diàleg per afegir una xarxa Wi-Fi</translation>
@@ -4808,7 +4802,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8014154204619229810">L'actualitzador està en funcionament. Actualitzeu la pantalla d'aquí a un minut per tornar-ho a comprovar.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> no pot canviar a la versió anterior instal·lada. Torneu a provar de fer un Powerwash al dispositiu.</translation>
 <translation id="8014210335923519270">Envia a Google informació del sistema i dades sobre l'ús de <ph name="IDS_SHORT_PRODUCT_NAME" /> per millorar aquest servei i la seva seguretat</translation>
-<translation id="8015780634880457457">Google pot comprovar si les teves contrasenyes s'han vist afectades per una violació de les dades.</translation>
 <translation id="8016266267177410919">Emmagatzematge temporal</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">S'ha editat la drecera</translation>

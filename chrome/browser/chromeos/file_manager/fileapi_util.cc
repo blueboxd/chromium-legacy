@@ -13,11 +13,9 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/drive/file_system_core_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -469,34 +467,6 @@ storage::FileSystemContext* GetFileSystemContextForRenderFrameHost(
   content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   return content::BrowserContext::GetStoragePartition(profile, site_instance)->
       GetFileSystemContext();
-}
-
-base::FilePath ConvertDrivePathToRelativeFileSystemPath(
-    Profile* profile,
-    const std::string& extension_id,
-    const base::FilePath& drive_path) {
-  // "/special/drive-xxx"
-  base::FilePath path = drive::util::GetDriveMountPointPath(profile);
-  // appended with (|drive_path| - "drive").
-  drive::util::GetDriveGrandRootPath().AppendRelativePath(drive_path, &path);
-
-  base::FilePath relative_path;
-  ConvertAbsoluteFilePathToRelativeFileSystemPath(profile,
-                                                  extension_id,
-                                                  path,
-                                                  &relative_path);
-  return relative_path;
-}
-
-GURL ConvertDrivePathToFileSystemUrl(Profile* profile,
-                                     const base::FilePath& drive_path,
-                                     const std::string& extension_id) {
-  const base::FilePath relative_path =
-      ConvertDrivePathToRelativeFileSystemPath(profile, extension_id,
-                                               drive_path);
-  if (relative_path.empty())
-    return GURL();
-  return ConvertRelativeFilePathToFileSystemUrl(relative_path, extension_id);
 }
 
 bool ConvertAbsoluteFilePathToFileSystemUrl(Profile* profile,

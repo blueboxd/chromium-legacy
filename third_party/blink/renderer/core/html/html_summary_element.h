@@ -45,6 +45,7 @@ class HTMLSummaryElement final : public HTMLElement {
   HTMLDetailsElement* DetailsElement() const;
 
   bool SupportsFocus() const override;
+  int DefaultTabIndex() const override;
 };
 
 }  // namespace blink

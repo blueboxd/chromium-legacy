@@ -38,13 +38,15 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
  public:
   METADATA_HEADER(StyledLabel);
 
+  using LinkTargets = std::map<Link*, gfx::Range>;
+
   // TestApi is used for tests to get internal implementation details.
   class VIEWS_EXPORT TestApi {
    public:
     explicit TestApi(StyledLabel* view);
     ~TestApi();
 
-    const std::map<View*, gfx::Range>& link_targets();
+    const LinkTargets& link_targets();
 
    private:
     StyledLabel* const view_;
@@ -55,7 +57,8 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // Parameters that define label style for a styled label's text range.
   struct VIEWS_EXPORT RangeStyleInfo {
     RangeStyleInfo();
-    RangeStyleInfo(const RangeStyleInfo& copy);
+    RangeStyleInfo(const RangeStyleInfo&);
+    RangeStyleInfo& operator=(const RangeStyleInfo&);
     ~RangeStyleInfo();
 
     // Creates a range style info with default values for link.
@@ -210,7 +213,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // A mapping from a view to the range it corresponds to in |text_|. Only views
   // that correspond to ranges with is_link style set will be added to the map.
-  std::map<View*, gfx::Range> link_targets_;
+  LinkTargets link_targets_;
 
   // Owns the custom views used to replace ranges of text with icons, etc.
   std::set<std::unique_ptr<View>> custom_views_;

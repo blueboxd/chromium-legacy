@@ -21,7 +21,7 @@
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/file_data_source.h"
@@ -96,7 +96,7 @@ class ContentURLLoader : public network::mojom::URLLoader {
  public:
   static void CreateAndStart(
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderRequest loader,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
       network::mojom::URLLoaderClientPtrInfo client_info) {
     // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
     // bindings are alive - essentially until either the client gives up or all
@@ -116,17 +116,17 @@ class ContentURLLoader : public network::mojom::URLLoader {
   void ResumeReadingBodyFromNet() override {}
 
  private:
-  ContentURLLoader() : binding_(this) {}
+  ContentURLLoader() = default;
   ~ContentURLLoader() override = default;
 
   void Start(const network::ResourceRequest& request,
-             network::mojom::URLLoaderRequest loader,
+             mojo::PendingReceiver<network::mojom::URLLoader> loader,
              network::mojom::URLLoaderClientPtrInfo client_info) {
     network::ResourceResponseHead head;
     head.request_start = head.response_start = base::TimeTicks::Now();
-    binding_.Bind(std::move(loader));
-    binding_.set_connection_error_handler(base::BindOnce(
-        &ContentURLLoader::OnConnectionError, base::Unretained(this)));
+    receiver_.Bind(std::move(loader));
+    receiver_.set_disconnect_handler(base::BindOnce(
+        &ContentURLLoader::OnMojoDisconnect, base::Unretained(this)));
 
     network::mojom::URLLoaderClientPtr client;
     client.Bind(std::move(client_info));
@@ -227,13 +227,13 @@ class ContentURLLoader : public network::mojom::URLLoader {
     MaybeDeleteSelf();
   }
 
-  void OnConnectionError() {
-    binding_.Close();
+  void OnMojoDisconnect() {
+    receiver_.reset();
     MaybeDeleteSelf();
   }
 
   void MaybeDeleteSelf() {
-    if (!binding_.is_bound() && !client_.is_bound())
+    if (!receiver_.is_bound() && !client_.is_bound())
       delete this;
   }
 
@@ -256,7 +256,7 @@ class ContentURLLoader : public network::mojom::URLLoader {
   }
 
   std::unique_ptr<mojo::DataPipeProducer> data_producer_;
-  mojo::Binding<network::mojom::URLLoader> binding_;
+  mojo::Receiver<network::mojom::URLLoader> receiver_{this};
   network::mojom::URLLoaderClientPtr client_;
 
   // In case of successful loads, this holds the total of bytes written.
@@ -276,7 +276,7 @@ ContentURLLoaderFactory::ContentURLLoaderFactory(
 ContentURLLoaderFactory::~ContentURLLoaderFactory() = default;
 
 void ContentURLLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

@@ -504,11 +504,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns the associated WebUI or null if none applies.
   WebUIImpl* web_ui() const { return web_ui_.get(); }
-
-  // Returns the pending WebUI, or null if none applies.
-  WebUIImpl* pending_web_ui() const {
-    return should_reuse_web_ui_ ? web_ui_.get() : pending_web_ui_.get();
-  }
+  WebUI::TypeID web_ui_type() const { return web_ui_type_; }
 
   // Enable Mojo JavaScript bindings in the renderer process. It will be
   // effective on the first creation of script context after the call is made.
@@ -789,25 +785,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // addition, its associated RenderWidgetHost has to be focused.
   bool IsFocused();
 
-  // Updates the pending WebUI of this RenderFrameHost based on the provided
-  // |dest_url|, setting it to either none, a new instance or to reuse the
-  // currently active one. Returns true if the pending WebUI was updated.
+  // Creates a WebUI for this RenderFrameHost based on the provided |dest_url|
+  // if required. Returns true if a new WebUI was created.
   // If this is a history navigation its NavigationEntry bindings should be
   // provided through |entry_bindings| to allow verifying that they are not
   // being set differently this time around. Otherwise |entry_bindings| should
   // be set to NavigationEntryImpl::kInvalidBindings so that no checks are done.
-  bool UpdatePendingWebUI(const GURL& dest_url, int entry_bindings);
+  bool CreateWebUI(const GURL& dest_url, int entry_bindings);
 
-  // Updates the active WebUI with the pending one set by the last call to
-  // UpdatePendingWebUI and then clears any pending data. If UpdatePendingWebUI
-  // was not called the active WebUI will simply be cleared.
-  void CommitPendingWebUI();
-
-  // Destroys the pending WebUI and resets related data.
-  void ClearPendingWebUI();
-
-  // Destroys all WebUI instances and resets related data.
-  void ClearAllWebUI();
+  // Destroys WebUI instance and resets related data.
+  void ClearWebUI();
 
   // Returns the Mojo ImageDownloader service.
   const mojo::Remote<blink::mojom::ImageDownloader>& GetMojoImageDownloader();
@@ -1176,6 +1163,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
       NavigationRequest* committing_navigation_request,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params);
+
+  bool has_committed_any_navigation() const {
+    return has_committed_any_navigation_;
+  }
 
   // Returns the network isolation key used for subresources from the currently
   // committed navigation. It is reset on each document commit.
@@ -2197,16 +2188,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<WebUIImpl> web_ui_;
   WebUI::TypeID web_ui_type_;
 
-  // The pending WebUIImpl and its type. These values will be used exclusively
-  // for same-site navigations to keep a transition of a WebUI in a pending
-  // state until the navigation commits.
-  std::unique_ptr<WebUIImpl> pending_web_ui_;
-  WebUI::TypeID pending_web_ui_type_;
-
-  // If true the associated WebUI should be reused when CommitPendingWebUI is
-  // called (no pending instance should be set).
-  bool should_reuse_web_ui_;
-
   // If true, then the RenderFrame has selected text.
   bool has_selection_;
 
@@ -2223,6 +2204,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Previews status as the top-level frame.
   PreviewsState last_navigation_previews_state_;
 
+  // This boolean indicates whether this RenderFrameHostImpl has committed
+  // *any* navigation or not. Starts off false and is set to true for the
+  // lifetime of the object when the first CommitNavigation message is sent to
+  // the RenderFrame.
   bool has_committed_any_navigation_ = false;
 
   mojo::AssociatedReceiver<mojom::FrameHost> frame_host_associated_receiver_{

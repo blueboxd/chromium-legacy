@@ -349,8 +349,8 @@ std::unique_ptr<ClientSideDetectionHost> ClientSideDetectionHost::Create(
 
 ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
     : content::WebContentsObserver(tab),
-      csd_service_(NULL),
-      classification_request_(NULL),
+      csd_service_(nullptr),
+      classification_request_(nullptr),
       should_extract_malware_features_(true),
       should_classify_for_malware_(false),
       pageload_complete_(false),

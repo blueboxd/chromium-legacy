@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
-#include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
@@ -209,11 +208,11 @@ TEST_F(SyncerProtoUtilTest, VerifyDisabledByAdmin) {
 
 class DummyConnectionManager : public ServerConnectionManager {
  public:
-  explicit DummyConnectionManager(CancelationSignal* signal)
-      : ServerConnectionManager("unused", 0, false, signal),
-        send_error_(false) {}
+  DummyConnectionManager() : send_error_(false) {}
 
-  bool PostBufferWithCachedAuth(PostBufferParams* params) override {
+  bool PostBufferToPath(PostBufferParams* params,
+                        const std::string& path,
+                        const std::string& access_token) override {
     if (send_error_) {
       return false;
     }
@@ -231,8 +230,7 @@ class DummyConnectionManager : public ServerConnectionManager {
 };
 
 TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
-  CancelationSignal signal;
-  DummyConnectionManager dcm(&signal);
+  DummyConnectionManager dcm;
   ClientToServerMessage msg;
   SyncerProtoUtil::SetProtocolVersion(&msg);
   msg.set_share("required");

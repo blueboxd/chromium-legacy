@@ -121,8 +121,7 @@ class SyncSchedulerImplTest : public testing::Test {
     workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_UI));
     workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_PASSIVE));
 
-    connection_ = std::make_unique<MockConnectionManager>(directory(),
-                                                          &cancelation_signal_);
+    connection_ = std::make_unique<MockConnectionManager>(directory());
     connection_->SetServerReachable();
 
     model_type_registry_ = std::make_unique<ModelTypeRegistry>(

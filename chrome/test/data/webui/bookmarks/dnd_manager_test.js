@@ -283,7 +283,7 @@ suite('drag and drop', function() {
   test('drag multiple list items preserve displaying order', function() {
     // Dragging multiple items with different selection order.
     store.data.selection.items = new Set(['15', '13']);
-    let dragElement = getListItem('13');
+    const dragElement = getListItem('13');
     simulateDragStart(dragElement);
     assertDeepEquals(['13', '15'], getDragIds());
   });

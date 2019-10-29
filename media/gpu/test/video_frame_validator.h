@@ -38,10 +38,32 @@ namespace test {
 // performance measurements.
 class VideoFrameValidator : public VideoFrameProcessor {
  public:
+  static constexpr uint8_t kDefaultTolerance = 4;
+  // TODO(hiroh): Support a validation by PSNR and SSIM.
+  enum class ValidateMode {
+    MD5,  // Check if md5sum value of coded area of a given VideoFrame on
+          // ProcessVideoFrame() matches the expected md5sum.
+    RAW,  // Compare each byte of visible area of a given VideoFrame on
+          // ProcessVideoFrame() with a expected VideoFrame. An absolute
+          // difference equal to or less than |tolerance_| is allowed on
+          // comparison.
+  };
+
   struct MismatchedFrameInfo {
-    size_t frame_index;
+    MismatchedFrameInfo(size_t frame_index,
+                        std::string computed_md5,
+                        std::string expected_md5);
+    MismatchedFrameInfo(size_t frame_index, size_t diff_cnt);
+    ~MismatchedFrameInfo();
+
+    ValidateMode validate_mode;
+    size_t frame_index = 0;
+
+    // variables for ValidateMode::MD5 mode.
     std::string computed_md5;
     std::string expected_md5;
+    // variables for ValidateMode::ERRORDIFF mode.
+    size_t diff_cnt = 0;
   };
 
   // Create an instance of the video frame validator. The calculated checksums
@@ -55,6 +77,11 @@ class VideoFrameValidator : public VideoFrameProcessor {
   static std::unique_ptr<VideoFrameValidator> Create(
       const std::vector<std::string>& expected_frame_checksums,
       const VideoPixelFormat validation_format = PIXEL_FORMAT_I420,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
+
+  static std::unique_ptr<VideoFrameValidator> Create(
+      const std::vector<scoped_refptr<const VideoFrame>> model_frames,
+      const uint8_t tolerance = kDefaultTolerance,
       std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
 
   ~VideoFrameValidator() override;
@@ -82,6 +109,11 @@ class VideoFrameValidator : public VideoFrameProcessor {
       VideoPixelFormat validation_format,
       std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
 
+  VideoFrameValidator(
+      const std::vector<scoped_refptr<const VideoFrame>> model_frames,
+      const uint8_t tolerance,
+      std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor);
+
   // Start the frame validation thread.
   bool Initialize();
   // Stop the frame validation thread.
@@ -92,19 +124,29 @@ class VideoFrameValidator : public VideoFrameProcessor {
                              size_t frame_index);
 
   // Returns md5 values of video frame represented by |video_frame|.
-  std::string ComputeMD5FromVideoFrame(const VideoFrame* video_frame) const;
+  std::string ComputeMD5FromVideoFrame(const VideoFrame& video_frame) const;
 
-  // The results of invalid frame data.
-  std::vector<MismatchedFrameInfo> mismatched_frames_
-      GUARDED_BY(frame_validator_lock_);
+  base::Optional<MismatchedFrameInfo> ValidateMD5(
+      const VideoFrame& validated_frame,
+      size_t frame_index);
+  base::Optional<MismatchedFrameInfo> ValidateRaw(
+      const VideoFrame& validated_frame,
+      size_t frame_index);
 
+  const ValidateMode validate_mode_;
+
+  // Values used only if |validate_mode_| is MD5.
   // The list of expected MD5 frame checksums.
   const std::vector<std::string> expected_frame_checksums_;
+  // VideoPixelFormat the VideoFrame will be converted to for validation.
+  const VideoPixelFormat validation_format_ = PIXEL_FORMAT_UNKNOWN;
+
+  // Values used only if |validate_mode_| is RAW.
+  // The list of expected frames
+  const std::vector<scoped_refptr<const VideoFrame>> model_frames_;
+  const uint8_t tolerance_ = 0;
 
   std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
-
-  // VideoPixelFormat the VideoFrame will be converted to for validation.
-  const VideoPixelFormat validation_format_;
 
   // An optional video frame processor that all corrupted frames will be
   // forwarded to. This can be used to e.g. write corrupted frames to disk.
@@ -112,6 +154,9 @@ class VideoFrameValidator : public VideoFrameProcessor {
 
   // The number of frames currently queued for validation.
   size_t num_frames_validating_ GUARDED_BY(frame_validator_lock_);
+  // The results of invalid frame data.
+  std::vector<MismatchedFrameInfo> mismatched_frames_
+      GUARDED_BY(frame_validator_lock_);
 
   // Thread on which video frame validation is done.
   base::Thread frame_validator_thread_;

@@ -240,7 +240,7 @@ cr.define('settings', function() {
      */
     moveLanguage(languageCode, moveType) {
       let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
-      let languages = languageCodes.split(',');
+      const languages = languageCodes.split(',');
       const index = languages.indexOf(languageCode);
 
       if (moveType == chrome.languageSettingsPrivate.MoveType.TOP) {
@@ -255,7 +255,7 @@ cr.define('settings', function() {
           return;
         }
 
-        let temp = languages[index - 1];
+        const temp = languages[index - 1];
         languages[index - 1] = languageCode;
         languages[index] = temp;
       } else if (moveType == chrome.languageSettingsPrivate.MoveType.DOWN) {
@@ -263,7 +263,7 @@ cr.define('settings', function() {
           return;
         }
 
-        let temp = languages[index + 1];
+        const temp = languages[index + 1];
         languages[index + 1] = languageCode;
         languages[index] = temp;
       }

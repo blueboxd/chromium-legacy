@@ -60,6 +60,9 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 @property(nonatomic, weak) id<SettingsNavigationControllerDelegate>
     settingsNavigationDelegate;
 
+// The Browser instance this controller is configured with.
+@property(nonatomic, assign) Browser* browser;
+
 @end
 
 @implementation SettingsNavigationController
@@ -76,7 +79,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
            dispatcher:[delegate dispatcherForSettings]];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browser->GetBrowserState()
+                         browser:browser
                         delegate:delegate];
   [controller navigationItem].rightBarButtonItem = [nc doneButton];
   return nc;
@@ -87,13 +90,13 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                         delegate:
                             (id<SettingsNavigationControllerDelegate>)delegate {
   DCHECK(browser);
-  AccountsTableViewController* controller = [[AccountsTableViewController alloc]
-           initWithBrowserState:browser->GetBrowserState()
-      closeSettingsOnAddAccount:YES];
+  AccountsTableViewController* controller =
+      [[AccountsTableViewController alloc] initWithBrowser:browser
+                                 closeSettingsOnAddAccount:YES];
   controller.dispatcher = [delegate dispatcherForSettings];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browser->GetBrowserState()
+                         browser:browser
                         delegate:delegate];
   [controller navigationItem].leftBarButtonItem = [nc cancelButton];
   return nc;
@@ -112,7 +115,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   // root view controller.
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:nil
-                    browserState:browser->GetBrowserState()
+                         browser:browser
                         delegate:delegate];
   [nc showGoogleServices];
   return nc;
@@ -130,7 +133,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   controller.dispatcher = [delegate dispatcherForSettings];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browser->GetBrowserState()
+                         browser:browser
                         delegate:delegate];
   [controller navigationItem].leftBarButtonItem = [nc cancelButton];
   return nc;
@@ -148,7 +151,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browser->GetBrowserState()
+                         browser:browser
                         delegate:delegate];
   [controller navigationItem].rightBarButtonItem = [nc doneButton];
 
@@ -175,7 +178,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   DCHECK(controller);
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browser->GetBrowserState()
+                         browser:browser
                         delegate:delegate];
   // If the controller overrides overrideUserInterfaceStyle, respect that in the
   // SettingsNavigationController.
@@ -186,15 +189,14 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 }
 
 + (instancetype)
-    importDataControllerForBrowserState:(ios::ChromeBrowserState*)browserState
-                               delegate:
-                                   (id<SettingsNavigationControllerDelegate>)
-                                       delegate
-                     importDataDelegate:
-                         (id<ImportDataControllerDelegate>)importDataDelegate
-                              fromEmail:(NSString*)fromEmail
-                                toEmail:(NSString*)toEmail
-                             isSignedIn:(BOOL)isSignedIn {
+    importDataControllerForBrowser:(Browser*)browser
+                          delegate:
+                              (id<SettingsNavigationControllerDelegate>)delegate
+                importDataDelegate:
+                    (id<ImportDataControllerDelegate>)importDataDelegate
+                         fromEmail:(NSString*)fromEmail
+                           toEmail:(NSString*)toEmail
+                        isSignedIn:(BOOL)isSignedIn {
   UIViewController* controller =
       [[ImportDataTableViewController alloc] initWithDelegate:importDataDelegate
                                                     fromEmail:fromEmail
@@ -203,7 +205,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browserState
+                         browser:browser
                         delegate:delegate];
 
   // Make sure the cancel button is always present, as the Save Passwords screen
@@ -225,7 +227,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browser->GetBrowserState()
+                         browser:browser
                         delegate:delegate];
 
   // Make sure the cancel button is always present, as the Autofill screen
@@ -247,7 +249,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browser->GetBrowserState()
+                         browser:browser
                         delegate:delegate];
 
   // Make sure the cancel button is always present, as the Autofill screen
@@ -258,14 +260,16 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 #pragma mark - Lifecycle
 
-- (instancetype)
-    initWithRootViewController:(UIViewController*)rootViewController
-                  browserState:(ios::ChromeBrowserState*)browserState
-                      delegate:
-                          (id<SettingsNavigationControllerDelegate>)delegate {
+- (instancetype)initWithRootViewController:(UIViewController*)rootViewController
+                                   browser:(Browser*)browser
+                                  delegate:
+                                      (id<SettingsNavigationControllerDelegate>)
+                                          delegate {
+  DCHECK(browser);
+  DCHECK(!browser->GetBrowserState()->IsOffTheRecord());
   self = [super initWithRootViewController:rootViewController];
   if (self) {
-    _mainBrowserState = browserState;
+    _browser = browser;
     _settingsNavigationDelegate = delegate;
     self.modalPresentationStyle = UIModalPresentationFormSheet;
     // Set the presentationController delegate. This is used for swipe down to
@@ -366,7 +370,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   self.googleServicesSettingsCoordinator =
       [[GoogleServicesSettingsCoordinator alloc]
           initWithBaseViewController:self
-                        browserState:self.mainBrowserState
+                             browser:self.browser
                                 mode:GoogleServicesSettingsModeSettings];
   self.googleServicesSettingsCoordinator.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
@@ -488,9 +492,9 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController {
-  AccountsTableViewController* controller = [[AccountsTableViewController alloc]
-           initWithBrowserState:self.mainBrowserState
-      closeSettingsOnAddAccount:NO];
+  AccountsTableViewController* controller =
+      [[AccountsTableViewController alloc] initWithBrowser:self.browser
+                                 closeSettingsOnAddAccount:NO];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
@@ -507,7 +511,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (UIViewController*)baseViewController {
   SyncEncryptionPassphraseTableViewController* controller =
       [[SyncEncryptionPassphraseTableViewController alloc]
-          initWithBrowserState:self.mainBrowserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
@@ -518,7 +522,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (UIViewController*)baseViewController {
   PasswordsTableViewController* controller =
       [[PasswordsTableViewController alloc]
-          initWithBrowserState:self.mainBrowserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
@@ -529,7 +533,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (UIViewController*)baseViewController {
   AutofillProfileTableViewController* controller =
       [[AutofillProfileTableViewController alloc]
-          initWithBrowserState:self.mainBrowserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
@@ -540,7 +544,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (UIViewController*)baseViewController {
   AutofillCreditCardTableViewController* controller =
       [[AutofillCreditCardTableViewController alloc]
-          initWithBrowserState:self.mainBrowserState];
+          initWithBrowserState:self.browser->GetBrowserState()];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];

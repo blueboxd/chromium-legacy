@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">چاپ</translation>
 <translation id="1442386063175183758">سمت راست تاخوردگی دروازه‌ای</translation>
 <translation id="1442987760062738829">سوراخ کردن</translation>
-<translation id="1450011005989029586">‏نقض داده‌ای در سایت یا برنامه‌ای که می‌استفاده می‌کنید باعث افشا شدن گذرواژه‌تان شده است. Chrome <ph name="BOLD" /> را همین‌الان در <ph name="ORIGIN" /> توصیه می‌کند.</translation>
 <translation id="1455413310270022028">پاک‌کن</translation>
 <translation id="1463543813647160932">۵x۷</translation>
 <translation id="1472675084647422956">بیشتر ببینید</translation>
@@ -690,7 +689,6 @@
 <translation id="4258748452823770588">امضای نادرست</translation>
 <translation id="4261046003697461417">نمی‌توان در سند محافظت‌شده حاشیه‌نویسی کرد</translation>
 <translation id="4265872034478892965">توسط سرپرست مجاز شده است</translation>
-<translation id="4270615291506829403">تغییر گذرواژهٔ شما</translation>
 <translation id="4275830172053184480">راه‌اندازی دستگاه خود</translation>
 <translation id="4277028893293644418">بازنشانی گذرواژه</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> شما توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود.</translation>
@@ -770,7 +768,6 @@
 <translation id="4708268264240856090">اتصال شما قطع شد</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />اجرای Windows Network Diagnostics<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">‏نقض داده‌ای در سایت یا برنامه‌ای که می‌استفاده می‌کنید باعث افشا شدن گذرواژه‌تان شده است. Chrome توصیه می‌کند همین‌حالا گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید.</translation>
 <translation id="4726672564094551039">تازه‌سازی خط مشی‌ها</translation>
 <translation id="4728558894243024398">پلت فورم</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
@@ -1187,7 +1184,6 @@
 <translation id="679355240208270552">نادیده گرفته شد، زیرا جستجوی پیش‌فرض توسط خط‌مشی فعال نشده است.</translation>
 <translation id="681021252041861472">فیلد ضروری</translation>
 <translation id="6810899417690483278">شناسه سفارشی‌سازی</translation>
-<translation id="6819440013020405090">‏نقض داده‌ای در سایت یا برنامه‌ای که می‌استفاده می‌کنید باعث افشا شدن گذرواژه‌تان شده است. Chrome توصیه می‌کند گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید و گذرواژه‌تان را در <ph name="ORIGIN" /> تغییر دهید.</translation>
 <translation id="6825578344716086703">‏تلاش کردید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما گواهینامه ارائه‌شده از سوی سرور با استفاده از یک الگوریتم امضای ضعیف (مانند SHA-1) امضا شده است. یعنی ممکن است اعتبارنامه امنیتی ارائه‌شده از سوی سرور جعلی باشد و ممکن است سرور، سرور موردانتظار شما نباشد (ممکن است با یک مهاجم در ارتباط باشید).</translation>
 <translation id="6826370046007623921">جلوگیری از از بین رفتن داده‌ها</translation>
 <translation id="6831043979455480757">ترجمه</translation>
@@ -1230,7 +1226,6 @@
 <translation id="7064851114919012435">اطلاعات تماس</translation>
 <translation id="7075452647191940183">درخواست خیلی بزرگ است</translation>
 <translation id="7079718277001814089">این سایت حاوی بدافزار است</translation>
-<translation id="70850504851191913">نقض داده گزارش شد</translation>
 <translation id="7087282848513945231">بخش/شهرستان</translation>
 <translation id="7090678807593890770">‏جستجوی <ph name="LINK" /> در Google</translation>
 <translation id="7108338896283013870">عدم نمایش</translation>

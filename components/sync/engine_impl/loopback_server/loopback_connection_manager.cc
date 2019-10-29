@@ -10,10 +10,8 @@
 namespace syncer {
 
 LoopbackConnectionManager::LoopbackConnectionManager(
-    CancelationSignal* signal,
     const base::FilePath& persistent_file)
-    : ServerConnectionManager("localhost", 0, false, signal),
-      loopback_server_(persistent_file) {}
+    : loopback_server_(persistent_file) {}
 
 LoopbackConnectionManager::~LoopbackConnectionManager() {}
 

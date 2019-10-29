@@ -160,7 +160,6 @@
 <translation id="3139942575505304791">Pöytä 1</translation>
 <translation id="315116470104423982">Mobiilitiedonsiirto</translation>
 <translation id="3151786313568798007">Suunta</translation>
-<translation id="3152934361839663679">Laitteesi on yhdistetty enimmäismäärään näyttöjä, joten yhden näytön yhteys on katkaistu.</translation>
 <translation id="3153444934357957346">Voit lisätä enintään <ph name="MULTI_PROFILE_USER_LIMIT" /> tiliä useille tileille kirjautumista varten.</translation>
 <translation id="3154351730702813399">Laitteen järjestelmänvalvoja saattaa seurata selaustoimintaasi.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Yhdistetty 1 laitteeseen}other{Yhdistetty # laitteeseen}}</translation>

@@ -531,14 +531,11 @@ base::Value PeopleHandler::GetStoredAccountsList() {
   const bool dice_enabled =
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_);
 
-  base::Value::ListStorage& accounts_list = accounts.GetList();
   if (dice_enabled) {
     // If dice is enabled, show all the accounts.
-    std::vector<AccountInfo> accounts =
-        signin_ui_util::GetAccountsForDicePromos(profile_);
-    accounts_list.reserve(accounts.size());
-    for (auto const& account : accounts) {
-      accounts_list.push_back(GetAccountValue(account));
+    for (auto const& account :
+         signin_ui_util::GetAccountsForDicePromos(profile_)) {
+      accounts.Append(GetAccountValue(account));
     }
   } else {
     // If dice is disabled (and unified consent enabled), show only the primary
@@ -548,7 +545,7 @@ base::Value PeopleHandler::GetStoredAccountsList() {
         identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identity_manager->GetPrimaryAccountInfo());
     if (primary_account_info.has_value())
-      accounts_list.push_back(GetAccountValue(primary_account_info.value()));
+      accounts.Append(GetAccountValue(primary_account_info.value()));
   }
 
   return accounts;

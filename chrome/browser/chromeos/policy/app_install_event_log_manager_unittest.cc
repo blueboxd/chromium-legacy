@@ -101,7 +101,6 @@ bool ContainsSameEvents(const Events& expected,
 
 base::Value ConvertEventsToValue(const Events& events, Profile* profile) {
   base::Value event_list(base::Value::Type::LIST);
-  base::Value::ListStorage& mutable_list = event_list.GetList();
 
   for (auto it = events.begin(); it != events.end(); ++it) {
     const std::string& package = (*it).first;
@@ -110,7 +109,7 @@ base::Value ConvertEventsToValue(const Events& events, Profile* profile) {
       base::Value wrapper;
       wrapper =
           ConvertEventToValue(package, app_install_report_log_event, profile);
-      mutable_list.push_back(std::move(wrapper));
+      event_list.Append(std::move(wrapper));
     }
   }
 

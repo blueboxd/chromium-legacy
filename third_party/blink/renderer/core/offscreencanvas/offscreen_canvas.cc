@@ -319,7 +319,10 @@ CanvasResourceDispatcher* OffscreenCanvas::GetOrCreateResourceDispatcher() {
 
 void OffscreenCanvas::DiscardResourceProvider() {
   CanvasResourceHost::DiscardResourceProvider();
-  needs_matrix_clip_restore_ = true;
+  // If deferral is enabled the recorder will play back the transform, so
+  // we should not do it here or else it will be applied twice
+  if (!context_->IsDeferralEnabled())
+    needs_matrix_clip_restore_ = true;
 }
 
 CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
@@ -371,15 +374,6 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
         surface_size, usage, SharedGpuContext::ContextProviderWrapper(), 0,
         FilterQuality(), context_->ColorParams(), presentation_mode,
         std::move(dispatcher_weakptr), false /* is_origin_top_left */));
-
-    // The fallback chain for k*CompositedResourceUsage should never fall
-    // all the way through to BitmapResourceProvider, except in unit tests.
-    // In non unit-test scenarios, it should always be possible to at least
-    // get a ResourceProviderSharedBitmap as a last resort.
-    // This CHECK verifies that we did indeed get a resource provider that
-    // supports compositing when one is required.
-    CHECK(!ResourceProvider() || !HasPlaceholderCanvas() ||
-          ResourceProvider()->SupportsDirectCompositing());
 
     if (ResourceProvider() && ResourceProvider()->IsValid()) {
       ResourceProvider()->Clear();

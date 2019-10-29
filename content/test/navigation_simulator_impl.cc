@@ -670,7 +670,6 @@ void NavigationSimulatorImpl::AbortFromRenderer() {
          "NavigationSimulatorImpl::CommitErrorPage.";
 
   was_aborted_ = true;
-  DCHECK(IsPerNavigationMojoInterfaceEnabled());
   request_->RendererAbortedNavigationForTesting();
   state_ = FINISHED;
 

@@ -157,30 +157,31 @@ void OfflineInternalsUIMessageHandler::HandleDeletedRequestsCallback(
 void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
     std::string callback_id,
     const offline_pages::MultipleOfflinePageItemResult& pages) {
-  base::ListValue results;
+  std::vector<base::Value> results;
   for (const auto& page : pages) {
-    auto offline_page = std::make_unique<base::DictionaryValue>();
-    offline_page->SetString("onlineUrl", page.url.spec());
-    offline_page->SetString("namespace", page.client_id.name_space);
-    offline_page->SetDouble("size", page.file_size);
-    offline_page->SetString("id", std::to_string(page.offline_id));
-    offline_page->SetString("filePath", page.file_path.MaybeAsASCII());
-    offline_page->SetDouble("creationTime", page.creation_time.ToJsTime());
-    offline_page->SetDouble("lastAccessTime", page.last_access_time.ToJsTime());
-    offline_page->SetInteger("accessCount", page.access_count);
-    offline_page->SetString("originalUrl",
-                            page.original_url_if_different.spec());
-    offline_page->SetString("requestOrigin", page.request_origin);
-    results.Append(std::move(offline_page));
+    base::Value offline_page(base::Value::Type::DICTIONARY);
+    offline_page.SetStringKey("onlineUrl", page.url.spec());
+    offline_page.SetStringKey("namespace", page.client_id.name_space);
+    offline_page.SetDoubleKey("size", page.file_size);
+    offline_page.SetStringKey("id", std::to_string(page.offline_id));
+    offline_page.SetStringKey("filePath", page.file_path.MaybeAsASCII());
+    offline_page.SetDoubleKey("creationTime", page.creation_time.ToJsTime());
+    offline_page.SetDoubleKey("lastAccessTime",
+                              page.last_access_time.ToJsTime());
+    offline_page.SetIntKey("accessCount", page.access_count);
+    offline_page.SetStringKey("originalUrl",
+                              page.original_url_if_different.spec());
+    offline_page.SetStringKey("requestOrigin", page.request_origin);
+    results.push_back(std::move(offline_page));
   }
   // Sort by creation order.
-  std::sort(results.GetList().begin(), results.GetList().end(),
-            [](auto& a, auto& b) {
-              return a.FindKey({"creationTime"})->GetDouble() <
-                     b.FindKey({"creationTime"})->GetDouble();
-            });
+  std::sort(results.begin(), results.end(), [](const auto& a, const auto& b) {
+    return a.FindKey({"creationTime"})->GetDouble() <
+           b.FindKey({"creationTime"})->GetDouble();
+  });
 
-  ResolveJavascriptCallback(base::Value(callback_id), results);
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(std::move(results)));
 }
 
 void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(

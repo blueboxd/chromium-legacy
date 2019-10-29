@@ -198,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Rohkem kui 1 lugemata märguanne}other{Rohkem kui # lugemata märguannet}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 min pärast}other{# min pärast}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568">Number saidilt <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 tund tagasi}other{# tundi tagasi}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s on jäänud}other{# s on jäänud}}</translation>
 <translation id="8134065097954893699">Lehe uuesti laadimine</translation>

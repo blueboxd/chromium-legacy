@@ -30,8 +30,10 @@ class BrowserTestSuiteRunnerChromeOS : public ChromeTestSuiteRunner {
  public:
   int RunTestSuite(int argc, char** argv) override {
     BrowserTestSuiteChromeOS test_suite(argc, argv);
-    // Browser tests are expected not to tear-down various globals.
+    // Browser tests are expected not to tear-down various globals and may
+    // complete with the thread priority being above NORMAL.
     test_suite.DisableCheckForLeakedGlobals();
+    test_suite.DisableCheckForThreadPriorityAtTestEnd();
     return test_suite.Run();
   }
 };

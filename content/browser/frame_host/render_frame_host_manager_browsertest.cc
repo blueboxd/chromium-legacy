@@ -2425,33 +2425,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   crash_observer2.Wait();
 }
 
-// Ensure that pending_and_current_web_ui_ is cleared when a URL commits.
-// Otherwise it might get picked up by InitRenderView when granting bindings
-// to other RenderViewHosts.  See http://crbug.com/330811.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClearPendingWebUIOnCommit) {
-  // Visit a WebUI page with bindings.
-  GURL webui_url(GURL(std::string(kChromeUIScheme) + "://" +
-                      std::string(kChromeUIGpuHost)));
-  EXPECT_TRUE(NavigateToURL(shell(), webui_url));
-  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
-  WebUIImpl* webui = root->current_frame_host()->web_ui();
-  EXPECT_TRUE(webui);
-  EXPECT_FALSE(
-      web_contents->GetRenderManagerForTesting()->GetNavigatingWebUI());
-
-  // Navigate to another WebUI URL that reuses the WebUI object. Make sure we
-  // clear GetNavigatingWebUI() when it commits.
-  GURL webui_url2(webui_url.spec() + "#foo");
-  EXPECT_TRUE(NavigateToURL(shell(), webui_url2));
-  EXPECT_EQ(webui, root->current_frame_host()->web_ui());
-  EXPECT_FALSE(
-      web_contents->GetRenderManagerForTesting()->GetNavigatingWebUI());
-}
-
 class RFHMProcessPerTabTest : public RenderFrameHostManagerTest {
  public:
   RFHMProcessPerTabTest() {}

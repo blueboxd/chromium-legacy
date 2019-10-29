@@ -296,7 +296,7 @@ void CertificateReportingServiceTestHelper::SendResponse(
 }
 
 void CertificateReportingServiceTestHelper::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

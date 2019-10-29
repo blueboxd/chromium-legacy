@@ -76,7 +76,6 @@ void IncompatibleApplicationsHandler::HandleRequestIncompatibleApplicationsList(
           IncompatibleApplicationsUpdater::GetCachedApplications();
 
   base::Value application_list(base::Value::Type::LIST);
-  application_list.GetList().reserve(incompatible_applications.size());
 
   for (const auto& application : incompatible_applications) {
     // Set up a registry watcher for each problem application.

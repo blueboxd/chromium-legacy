@@ -19,14 +19,15 @@ class DummySharedURLLoaderFactory : public network::SharedURLLoaderFactory {
   DummySharedURLLoaderFactory() {}
 
   // network::URLLoaderFactory implementation:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     // Ensure the client pipe doesn't get closed to avoid SimpleURLLoader seeing
     // a connection error.
     clients_.push_back(std::move(client));

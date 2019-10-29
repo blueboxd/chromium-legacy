@@ -11,7 +11,7 @@
 <translation id="2831078752570172210">Je hebt geen toegang meer tot je account. Neem contact op met je systeembeheerder.</translation>
 <translation id="2844349213149998955">Inloggen met een persoonlijk account op dit apparaat is niet toegestaan. Log in met een werkaccount.</translation>
 <translation id="3306357053520292004">Er is al een gebruiker op deze computer toegevoegd met dit account. Log in met een ander account.</translation>
-<translation id="3926852373333893095">Alleen G Suite Enterprise-gebruikers mogen inloggen.</translation>
+<translation id="3926852373333893095">Alleen G Suite Enterprise-gebruikers mogen inloggen.</translation>
 <translation id="4057329986137569701">Er is een interne fout opgetreden.</translation>
 <translation id="4267670563222825190">Er kan geen domeingebruiker worden gevonden voor je account. Neem contact op met je beheerder.</translation>
 <translation id="4300229033992784001">Het wachtwoord van je account is gewijzigd. Geef je huidige Windows-wachtwoord op om je Windows-account te synchroniseren met je werkaccount.</translation>
@@ -33,5 +33,5 @@
 <translation id="8973975512230260387">Je sessie is verlopen. Log in met je Google-werkaccount.</translation>
 <translation id="9055998212250844221">Gebruikersaccount gemaakt door Google-referentieprovider voor Windows</translation>
 <translation id="9135619837062629367">Inloggen met dit account is niet toegestaan. Gebruik een ander account.</translation>
-<translation id="998002716857524853">Log in met je werkaccount van G Suite.</translation>
+<translation id="998002716857524853">Log in met je werkaccount van G Suite.</translation>
 </translationbundle>

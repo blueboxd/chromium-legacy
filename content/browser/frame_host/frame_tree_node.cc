@@ -457,9 +457,6 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
     return;
 
   devtools_instrumentation::OnResetNavigationRequest(navigation_request_.get());
-
-  NavigationRequest::AssociatedSiteInstanceType site_instance_type =
-      navigation_request_->associated_site_instance_type();
   navigation_request_.reset();
 
   if (keep_state)
@@ -469,13 +466,6 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
   // it created for the navigation. Also register that the load stopped.
   DidStopLoading();
   render_manager_.CleanUpNavigation();
-
-  // When reusing the same SiteInstance, a pending WebUI may have been created
-  // on behalf of the navigation in the current RenderFrameHost. Clear it.
-  if (site_instance_type ==
-      NavigationRequest::AssociatedSiteInstanceType::CURRENT) {
-    current_frame_host()->ClearPendingWebUI();
-  }
 }
 
 void FrameTreeNode::DidStartLoading(bool to_different_document,

@@ -16,6 +16,8 @@
 #include "media/mojo/mojom/cdm_proxy.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 
@@ -23,7 +25,8 @@ namespace media {
 class MEDIA_MOJO_EXPORT MojoCdmProxy : public cdm::CdmProxy,
                                        mojom::CdmProxyClient {
  public:
-  MojoCdmProxy(mojom::CdmProxyPtr cdm_proxy_ptr, cdm::CdmProxyClient* client);
+  MojoCdmProxy(mojo::PendingRemote<mojom::CdmProxy> cdm_proxy_remote,
+               cdm::CdmProxyClient* client);
   ~MojoCdmProxy() override;
 
   // cdm::CdmProxy implementation.
@@ -64,7 +67,7 @@ class MEDIA_MOJO_EXPORT MojoCdmProxy : public cdm::CdmProxy,
   void OnKeySet(media::CdmProxy::Status status);
   void OnKeyRemoved(media::CdmProxy::Status status);
 
-  mojom::CdmProxyPtr cdm_proxy_ptr_;
+  mojo::Remote<mojom::CdmProxy> cdm_proxy_remote_;
   cdm::CdmProxyClient* client_;
 
   mojo::AssociatedBinding<mojom::CdmProxyClient> client_binding_;

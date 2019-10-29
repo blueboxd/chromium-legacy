@@ -13,7 +13,7 @@ cr.define('settings', function() {
         return new Promise(function(resolve, reject) {
           // This URL needs to match the URL passed to <settings-idle-load> from
           // <settings-basic-page>.
-          let path = (pathPrefix || '') + '/lazy_load.html';
+          const path = (pathPrefix || '') + '/lazy_load.html';
           Polymer.Base.importHref(path, resolve, reject, true);
         });
       });

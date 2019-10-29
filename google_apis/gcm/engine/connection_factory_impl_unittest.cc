@@ -17,6 +17,7 @@
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/backoff_entry.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
@@ -293,8 +294,9 @@ class ConnectionFactoryImplTest
 
  private:
   void GetProxyResolvingSocketFactory(
-      network::mojom::ProxyResolvingSocketFactoryRequest request) {
-    network_context_->CreateProxyResolvingSocketFactory(std::move(request));
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+          receiver) {
+    network_context_->CreateProxyResolvingSocketFactory(std::move(receiver));
   }
   void ConnectionsComplete();
 

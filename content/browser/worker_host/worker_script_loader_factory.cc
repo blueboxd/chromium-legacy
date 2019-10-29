@@ -14,7 +14,7 @@
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/browser/worker_host/worker_script_loader.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
@@ -43,7 +43,7 @@ WorkerScriptLoaderFactory::~WorkerScriptLoaderFactory() {
 }
 
 void WorkerScriptLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -64,7 +64,7 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
       std::move(client), service_worker_handle_, appcache_host_,
       browser_context_getter_, loader_factory_, traffic_annotation);
   script_loader_ = script_loader->GetWeakPtr();
-  mojo::MakeStrongBinding(std::move(script_loader), std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(script_loader), std::move(receiver));
 }
 
 void WorkerScriptLoaderFactory::Clone(

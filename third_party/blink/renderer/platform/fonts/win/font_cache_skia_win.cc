@@ -388,9 +388,12 @@ scoped_refptr<SimpleFontData> FontCache::GetDWriteFallbackFamily(
 
     SkString skia_family;
     typeface->getFamilyName(&skia_family);
+    FontDescription fallback_updated_font_description(font_description);
+    fallback_updated_font_description.UpdateFromSkiaFontStyle(
+        typeface->fontStyle());
     FontFaceCreationParams create_by_family(ToAtomicString(skia_family));
-    FontPlatformData* data =
-        GetFontPlatformData(font_description, create_by_family);
+    FontPlatformData* data = GetFontPlatformData(
+        fallback_updated_font_description, create_by_family);
     if (!data || !data->FontContainsCharacter(codepoint))
       return nullptr;
     return FontDataFromFontPlatformData(data, kDoNotRetain);

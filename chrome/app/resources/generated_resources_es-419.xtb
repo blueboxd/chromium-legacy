@@ -45,6 +45,7 @@
 <translation id="1056775291175587022">No hay redes</translation>
 <translation id="1056898198331236512">Advertencia</translation>
 <translation id="1058262162121953039">PUK</translation>
+<translation id="1061745542578250838"><ph name="FILE_NAME" /> incluye contenido sensible y se bloqueó.</translation>
 <translation id="1061904396131502319">Casi es hora de un descanso</translation>
 <translation id="1067048845568873861">Creada</translation>
 <translation id="1067291318998134776">Linux (Beta)</translation>
@@ -279,6 +280,7 @@
 <translation id="1410197035576869800">Ícono de la app</translation>
 <translation id="1410616244180625362">Seguir permitiendo que <ph name="HOST" /> acceda a la cámara</translation>
 <translation id="1414648216875402825">Estás por actualizar a una versión inestable de <ph name="PRODUCT_NAME" /> en la que se incluyen funciones que aún se están desarrollando. Se producirán bloqueos y errores inesperados. Continúa con precaución.</translation>
+<translation id="1414866280542221544">Habilitar en ese dispositivo</translation>
 <translation id="1415708812149920388">Se denegó el acceso de lectura al portapapeles</translation>
 <translation id="1415990189994829608">No se permite <ph name="EXTENSION_NAME" /> (ID de extensión "<ph name="EXTENSION_ID" />") en este tipo de sesión.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -543,6 +545,7 @@
 <translation id="1776712937009046120">Agregar usuario</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">Ingresa esta clave de acceso en "<ph name="DEVICE_NAME" />":</translation>
+<translation id="1780152987505130652">Cerrar grupo</translation>
 <translation id="1781291988450150470">PIN actual</translation>
 <translation id="1781502536226964113">Abrir una pestaña nueva</translation>
 <translation id="1781771911845953849">Cuentas y sincronización</translation>
@@ -834,6 +837,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2202898655984161076">Hubo un problema al enumerar las impresoras. Algunas de tus impresoras pueden no haberse registrado con éxito con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">El motor de búsqueda que se usa en la <ph name="BEGIN_LINK" />barra de direcciones<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Leer y cambiar todo lo que escribas</translation>
+<translation id="2204397710290433380">¿Quieres inhabilitar ADB?</translation>
 <translation id="220792432208469595">Envía datos de uso y diagnóstico. De forma automática, este dispositivo está enviando a Google datos de diagnóstico y sobre el uso del dispositivo y las apps. Esta información ayudará a lograr la estabilidad de las apps y el sistema, entre otras mejoras. Algunos datos agregados también ayudarán a las apps y los socios de Google, como los desarrolladores de Android. El propietario controla esta configuración. Si habilitaste la "Actividad de web y de aplicaciones adicional", es posible que se almacenen estos datos en tu Cuenta de Google. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Ingresa este código PIN en "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Dejar de compartir</translation>
@@ -852,7 +856,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2224471211857467033">Eventos de accesibilidad</translation>
 <translation id="2224551243087462610">Editar nombre de carpeta</translation>
 <translation id="2226449515541314767">Se bloqueó este sitio para que no tenga el control total de los dispositivos MIDI</translation>
-<translation id="2226720438730111184">Cuéntanos cuál es el problema</translation>
 <translation id="2227179592712503583">Quitar sugerencia</translation>
 <translation id="2229161054156947610">Falta más de una hora.</translation>
 <translation id="222931766245975952">Archivo truncado</translation>
@@ -1084,6 +1087,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> no se pudo conectar a <ph name="NETWORK_ID" />. Selecciona otra red o inténtalo de nuevo.</translation>
 <translation id="2553440850688409052">Ocultar este complemento</translation>
 <translation id="2554553592469060349">El archivo seleccionado es demasiado grande (tamaño máximo: 3 MB).</translation>
+<translation id="2557378327156922632">El archivo incluye contenido sensible.</translation>
 <translation id="255747371423522804">Agregar al grupo existente</translation>
 <translation id="2558896001721082624">Siempre mostrar opciones de accesibilidad en el menú del sistema</translation>
 <translation id="2562743677925229011">No accediste a <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1124,6 +1128,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="26224892172169984">No permitir que los sitios web procesen protocolos</translation>
 <translation id="2624142942574147739">Esta página está accediendo a la cámara y al micrófono.</translation>
 <translation id="2626799779920242286">Vuelve a intentarlo más tarde.</translation>
+<translation id="2629227353894235473">Desarrollar apps de Android</translation>
 <translation id="2630681426381349926">Conéctate a una red Wi-Fi para comenzar</translation>
 <translation id="2631120081682787498">¿Realmente quieres cerrar esta pestaña?</translation>
 <translation id="2631498379019108537">Mostrar opciones de entrada en la biblioteca</translation>
@@ -1174,6 +1179,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2690024944919328218">Mostrar opciones de idioma</translation>
 <translation id="2691385045260836588">Modelo</translation>
 <translation id="2693176596243495071">Se produjo un error desconocido. Vuelve a intentarlo más tarde o comunícate con tu administrador si el problema persiste.</translation>
+<translation id="2693982916035708855">Finalizó el análisis; no se detectaron problemas.</translation>
 <translation id="2695749433451188613">Protocolo de impresión por Internet (HTTPS)</translation>
 <translation id="2699911226086014512">No se pudo realizar la operación del PIN con el código <ph name="RETRIES" />.</translation>
 <translation id="2701737434167469065">Acceder, <ph name="EMAIL" /></translation>
@@ -1297,6 +1303,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2861301611394761800">Se completó la actualización del sistema. Reinicie el sistema.</translation>
 <translation id="2861941300086904918">Administrador de seguridad NATIVE_CLIENT</translation>
 <translation id="2864601841139725659">Establecer tu foto de perfil</translation>
+<translation id="2865919525181940183">Captura de pantalla de los programas que aparecen</translation>
 <translation id="2867768963760577682">Abrir como pestaña fija</translation>
 <translation id="2868746137289129307">Esta extensión está desactualizada e inhabilitada por política de la empresa. Podría habilitarse automáticamente cuando haya una versión nueva disponible.</translation>
 <translation id="2870560284913253234">Sitio</translation>
@@ -1319,6 +1326,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2889064240420137087">Abrir el vínculo con...</translation>
 <translation id="2889925978073739256">Seguir bloqueando los complementos no incluidos en la zona de pruebas</translation>
 <translation id="2893168226686371498">Navegador predeterminado</translation>
+<translation id="2894757982205307093">Nueva pestaña en el grupo</translation>
 <translation id="289644616180464099">La tarjeta SIM está bloqueada</translation>
 <translation id="2896909745808647285">El archivo <ph name="FILE_NAME" /> está encriptado y no tiene permiso para abrirse.</translation>
 <translation id="289695669188700754">ID de clave: <ph name="KEY_ID" /></translation>
@@ -1992,6 +2000,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3873315167136380065">A fin de activar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /> para quitar la frase de contraseña de sincronización</translation>
 <translation id="3873423927483480833">Muestra los PIN</translation>
 <translation id="3873915545594852654">Hubo un problema con ARC++.</translation>
+<translation id="387924939625099872">Para inhabilitar ADB, reinicia tu <ph name="DEVICE_TYPE" />. Se restablecerá la configuración de fábrica del dispositivo y se borrarán todos los datos locales y Cuentas de usuarios.</translation>
 <translation id="3879748587602334249">Administrador de descargas</translation>
 <translation id="3886446263141354045">Tu solicitud de acceso a este sitio se envió a <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Tomar notas con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2048,6 +2057,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importado de Internet Explorer</translation>
 <translation id="3950820424414687140">Acceder</translation>
+<translation id="3952230510293296226">Se bloqueó este archivo porque incluye contenido sensible.</translation>
 <translation id="3953834000574892725">Mis cuentas</translation>
 <translation id="3954354850384043518">En curso</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> × <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz)</translation>
@@ -2365,6 +2375,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4451757071857432900">Bloqueados en sitios que muestran anuncios intrusivos o engañosos (opción recomendada)</translation>
 <translation id="4453946976636652378">Buscar en <ph name="SEARCH_ENGINE_NAME" /> o escribir una URL</translation>
 <translation id="4459169140545916303">Activo hace <ph name="DEVICE_LAST_ACTIVATED_TIME" /> días</translation>
+<translation id="4460014764210899310">Desagrupar</translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
 <translation id="4469477701382819144">Bloqueados en sitios que muestran anuncios intrusivos o engañosos</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> puede editar archivos en <ph name="FOLDERNAME" /></translation>
@@ -2624,6 +2635,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4871308555310586478">No se obtuvo en Chrome Web Store.</translation>
 <translation id="4871322859485617074">El PIN contiene caracteres no válidos</translation>
 <translation id="4871370605780490696">Agregar marcador</translation>
+<translation id="4871719318659334896">Cerrar grupo</translation>
 <translation id="4873312501243535625">Comprobador de archivos multimedia</translation>
 <translation id="4876273079589074638">¡Ayuda a que nuestros ingenieros investiguen y solucionen este fallo! Enumera los pasos exactos si es posible. No omitas ningún detalle.</translation>
 <translation id="4876895919560854374">Bloquear y desbloquear la pantalla</translation>
@@ -2944,7 +2956,6 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="5360150013186312835">Mostrar en la barra de herramientas</translation>
 <translation id="5362741141255528695">Seleccionar archivo de clave privada.</translation>
 <translation id="5363109466694494651">Utilizar la función Powerwash y revertir</translation>
-<translation id="5365716706805792666">Google puede determinar si tus contraseñas formaron parte de un incumplimiento de datos. Se activará esta opción cuando accedas con tu Cuenta de Google.</translation>
 <translation id="5365881113273618889">La carpeta seleccionada contiene archivos confidenciales. ¿Confirmas que deseas otorgar a "<ph name="APP_NAME" />" acceso de escritura permanente a esta carpeta?</translation>
 <translation id="5367091008316207019">Leyendo el archivo...</translation>
 <translation id="5368720394188453070">El teléfono está bloqueado. Desbloquéalo para ingresar.</translation>
@@ -3304,6 +3315,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="5860494867054883682">Actualizando tu dispositivo al canal <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Mostrar herramientas de la pluma stylus en la biblioteca</translation>
 <translation id="5863445608433396414">Habilitar funciones de depuración</translation>
+<translation id="5863471434640009253">Para habilitar Android Debug Bridge, primero reinicia tu <ph name="DEVICE_TYPE" />. Si quieres inhabilitar ADB, deberás restablecer la configuración de fábrica.</translation>
 <translation id="5864471791310927901">Falló la búsqueda de DHCP</translation>
 <translation id="586567932979200359">Estás ejecutando <ph name="PRODUCT_NAME" /> desde la imagen de disco. Instalarlo en tu computadora te permite ejecutarlo sin la imagen de disco y garantiza que se mantenga actualizado.</translation>
 <translation id="5865733239029070421">Envía automáticamente informes de fallos y estadísticas de uso a Google</translation>
@@ -3372,6 +3384,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="5958529069007801266">Usuario supervisado</translation>
 <translation id="5959471481388474538">Red no disponible</translation>
 <translation id="595959584676692139">Vuelve a cargar la página para usar esta extensión</translation>
+<translation id="5961320084471308154">¿Quieres habilitar ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> máximo)</translation>
 <translation id="5965661248935608907">También controla qué página se muestra al hacer clic en el botón de página principal o al realizar búsquedas desde el cuadro multifunción.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> puede ver archivos en <ph name="FOLDERNAME" /></translation>
@@ -3502,6 +3515,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="6141988275892716286">Confirmar la descarga</translation>
 <translation id="6143186082490678276">Obtener ayuda</translation>
 <translation id="6144938890088808325">Ayúdanos a mejorar las Chromebook</translation>
+<translation id="614611931938947795">Este archivo es demasiado grande para su análisis en la nube y no se permite abrirlo.</translation>
 <translation id="6147020289383635445">Error al imprimir vista previa</translation>
 <translation id="6148576794665275391">Abrir ahora</translation>
 <translation id="6149015141270619212">No se puede establecer conexión a Internet</translation>
@@ -3539,7 +3553,6 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="6202304368170870640">Puedes usar el PIN para acceder a tu dispositivo o desbloquearlo.</translation>
 <translation id="6206311232642889873">Cop&amp;iar imagen</translation>
 <translation id="6207200176136643843">Restablece el nivel de zoom predeterminado</translation>
-<translation id="620722923698527029">Siempre abrir este tipo de vínculos en la app asociada</translation>
 <translation id="6207282396926186323">Instalar <ph name="APP_NAME" /> (app de Linux)</translation>
 <translation id="6207937957461833379">País/Región</translation>
 <translation id="6208521041562685716">Se están activando los datos móviles</translation>
@@ -3833,6 +3846,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="6649563841575838401">El formato de archivo no es compatible o el archivo está dañado.</translation>
 <translation id="665061930738760572">Abrir en una &amp;nueva ventana</translation>
 <translation id="6651237644330755633">Confía en este certificado para identificar sitios web</translation>
+<translation id="6651823585377804376">La descarga contiene software malicioso.</translation>
 <translation id="665355505818177700">La integración de <ph name="MS_AD_NAME" /> en Chrome solo es compatible en plataformas x86_64. Las Chromebooks creadas a partir de una plataforma ARM o x86 no son compatibles con esta funcionalidad.</translation>
 <translation id="6655190889273724601">Modo de desarrollador</translation>
 <translation id="6655458902729017087">Ocultar cuentas</translation>
@@ -4412,7 +4426,6 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="7506541170099744506">Tu dispositivo <ph name="DEVICE_TYPE" /> se inscribió correctamente para la administración empresarial.</translation>
 <translation id="7507930499305566459">Certificado del respondedor de estado</translation>
 <translation id="7508054832109420082">Otorgar acceso a las impresoras</translation>
-<translation id="7510943789645525906">Te avisa si una contraseña que usas formó parte de un incumplimiento de datos</translation>
 <translation id="7513029293694390567">Accede automáticamente a los sitios web con las credenciales almacenadas. Si la función está inhabilitada, deberás confirmar siempre tu identidad para acceder a un sitio web.</translation>
 <translation id="7514239104543605883">Copiar a tu dispositivo</translation>
 <translation id="7514365320538308">Descargar</translation>
@@ -4519,6 +4532,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="7683373461016844951">Para continuar, haz clic en Aceptar y, luego, en Agregar un usuario para crear un perfil nuevo para tu dirección de correo electrónico de <ph name="DOMAIN" />.</translation>
 <translation id="7684212569183643648">Instalado por el administrador</translation>
 <translation id="7684559058815332124">Visitar la página de acceso al portal cautivo</translation>
+<translation id="7684718995427157417">Si quieres crear y probar apps, habilita Android Debug Bridge (ADB). Ten en cuenta que esta acción permite la instalación de apps para Android que Google no verificó. Si quieres inhabilitar ADB, deberás restablecer la configuración de fábrica.</translation>
 <translation id="7685049629764448582">Memoria de JavaScript</translation>
 <translation id="7685087414635069102">Se requiere el PIN</translation>
 <translation id="7685301384041462804">Asegúrate de que el sitio sea confiable antes de entrar al modo RV.</translation>
@@ -4560,6 +4574,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="7731119595976065702">Más idiomas…</translation>
 <translation id="7732111077498238432">La red está controlada por políticas</translation>
 <translation id="7737238973539693982">Borrar Linux (Beta)</translation>
+<translation id="7737456446569756884">Este dispositivo recibirá actualizaciones automáticas de software y seguridad hasta <ph name="MONTH_AND_YEAR" />.</translation>
 <translation id="7740996059027112821">Estándar</translation>
 <translation id="7744047395460924128">Ver tu historial de impresión</translation>
 <translation id="7746457520633464754">Para detectar apps y sitios peligrosos, Chrome envía a Google URL de algunas páginas que visitas, información limitada sobre el sistema y contenido de algunas páginas</translation>
@@ -4599,7 +4614,6 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 
 
 <ph name="EXTENSION_NAME" /></translation>
-<translation id="7788383851298063850">Cuéntanos cuál es el problema</translation>
 <translation id="7788444488075094252">Idiomas y entradas</translation>
 <translation id="7788668840732459509">Posición:</translation>
 <translation id="7789963078219276159">El fondo de la página de inicio se cambió a <ph name="CATEGORY" />.</translation>
@@ -4714,7 +4728,6 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="7926423016278357561">No era yo.</translation>
 <translation id="7928836894214140642">Administrado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Las formas de pago guardadas se mostrarán aquí</translation>
-<translation id="7930681627240672853">Revisar la seguridad de las contraseñas</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> comparte tu pantalla y audio.</translation>
 <translation id="7931318309563332511">Desconocido</translation>
 <translation id="793293630927785390">Cuadro de diálogo de nueva red Wi-Fi</translation>
@@ -4787,7 +4800,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8014154204619229810">El actualizador se está ejecutando en este momento. Actualiza dentro de un minuto para verificarlo de nuevo.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> no puede volver a la versión instalada previamente. Vuelve a intentarlo para utilizar la función Powerwash en el dispositivo.</translation>
 <translation id="8014210335923519270">Para mejorar <ph name="IDS_SHORT_PRODUCT_NAME" /> y su seguridad, envía a Google información sobre el sistema y sobre el modo en que lo usas</translation>
-<translation id="8015780634880457457">Google puede determinar si tus contraseñas formaron parte de un incumplimiento de datos</translation>
 <translation id="8016266267177410919">Almacenamiento temporal</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Se editó el acceso directo</translation>
@@ -5280,6 +5292,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8736288397686080465">Este sitio se actualizó en segundo plano.</translation>
 <translation id="8737685506611670901">Abrir vínculos de <ph name="PROTOCOL" /> en lugar de <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
+<translation id="8738766971144275885">Este archivo está encriptado y no se permite abrirlo.</translation>
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> es tu código para <ph name="ORIGIN" /></translation>
 <translation id="8743390665131937741">Nivel de zoom en pantalla completa:</translation>
 <translation id="8743864605301774756">Se actualizó hace 1 h</translation>
@@ -5311,6 +5324,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8780123805589053431">Obtener descripciones de imágenes de Google</translation>
 <translation id="8780443667474968681">Se desactivó la búsqueda por voz.</translation>
 <translation id="878069093594050299">Este certificado se verificó para los siguientes usos:</translation>
+<translation id="8781834595282316166">Nueva pestaña en el grupo</translation>
 <translation id="8781980678064919987">Apagar cuando se cierra la tapa</translation>
 <translation id="8782565991310229362">Se canceló el inicio de la aplicación del kiosco.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora (&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) contigo.</translation>
@@ -5368,6 +5382,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8850251000316748990">Ver más…</translation>
 <translation id="885246833287407341">Argumentos de la función de la API</translation>
 <translation id="8853586775156634952">Esta tarjeta solo se guardará en este dispositivo</translation>
+<translation id="8855501062415172277"><ph name="FILE_NAME" /> incluye contenido sensible.</translation>
 <translation id="885701979325669005">Almacenamiento</translation>
 <translation id="8859057652521303089">Selecciona tu idioma:</translation>
 <translation id="8859174528519900719">Submarco: <ph name="SUBFRAME_SITE" /></translation>
@@ -5562,6 +5577,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9130015405878219958">Se ingresó un modo no válido.</translation>
 <translation id="9131487537093447019">Enviar y recibir mensajes desde dispositivos Bluetooth</translation>
 <translation id="9134304429738380103">Acepto.</translation>
+<translation id="9135090785674039430">Cuando esta opción está activada, los sitios no pueden usar cookies para rastrearte en la Web. Es posible que algunos sitios web no funcionen.</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137157311132182254">Motor de búsqueda preferido</translation>
 <translation id="9137248913990643158">Abre Chrome y accede a tu cuenta antes de usar esta app.</translation>

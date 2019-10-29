@@ -38,7 +38,7 @@ namespace extensions {
 
 namespace {
 
-ContentVerifier::TestObserver* g_content_verifier_test_observer = NULL;
+ContentVerifier::TestObserver* g_content_verifier_test_observer = nullptr;
 
 // This function converts paths like "//foo/bar", "./foo/bar", and
 // "/foo/bar" to "foo/bar". It also converts path separators to "/".
@@ -434,14 +434,14 @@ scoped_refptr<ContentVerifyJob> ContentVerifier::CreateAndStartJobFor(
   // hopping solution, but that requires a substantial change in
   // ContnetVerifier/ContentVerifyJob.
   if (!data)
-    return NULL;
+    return nullptr;
 
   base::FilePath normalized_unix_path = NormalizeRelativePath(relative_path);
 
   std::set<base::FilePath> unix_paths;
   unix_paths.insert(normalized_unix_path);
   if (!ShouldVerifyAnyPaths(extension_id, extension_root, unix_paths))
-    return NULL;
+    return nullptr;
 
   // TODO(asargent) - we can probably get some good performance wins by having
   // a cache of ContentHashReader's that we hold onto past the end of each job.

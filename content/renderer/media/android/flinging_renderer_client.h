@@ -19,7 +19,8 @@
 #include "media/mojo/clients/mojo_renderer.h"
 #include "media/mojo/clients/mojo_renderer_wrapper.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
 
@@ -29,11 +30,11 @@ class CONTENT_EXPORT FlingingRendererClient
     : public media::mojom::FlingingRendererClientExtension,
       public media::MojoRendererWrapper {
  public:
-  using ClientExtentionRequest =
-      media::mojom::FlingingRendererClientExtensionRequest;
+  using ClientExtentionPendingReceiver =
+      mojo::PendingReceiver<media::mojom::FlingingRendererClientExtension>;
 
   FlingingRendererClient(
-      ClientExtentionRequest client_extension_request,
+      ClientExtentionPendingReceiver client_extension_receiver,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       std::unique_ptr<media::MojoRenderer> mojo_renderer,
       media::RemotePlayStateChangeCB remote_play_state_change_cb);
@@ -55,11 +56,12 @@ class CONTENT_EXPORT FlingingRendererClient
 
   media::RemotePlayStateChangeCB remote_play_state_change_cb_;
 
-  // Used temporarily, to delay binding to |client_extension_binding_| until we
+  // Used temporarily, to delay binding to |client_extension_receiver_| until we
   // are on the right sequence, when Initialize() is called.
-  ClientExtentionRequest delayed_bind_client_extension_request_;
+  ClientExtentionPendingReceiver delayed_bind_client_extension_receiver_;
 
-  mojo::Binding<FlingingRendererClientExtension> client_extension_binding_;
+  mojo::Receiver<FlingingRendererClientExtension> client_extension_receiver_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(FlingingRendererClient);
 };

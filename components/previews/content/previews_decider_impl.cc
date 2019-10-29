@@ -281,11 +281,9 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
         return PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
       passed_reasons->push_back(
           PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
-    }
 
-    // The blacklist will disallow certain hosts for periods of time based on
-    // user's opting out of the preview.
-    if (previews_black_list_) {
+      // The blacklist will disallow certain hosts for periods of time based on
+      // user's opting out of the preview.
       PreviewsEligibilityReason status =
           previews_black_list_->IsLoadedAndAllowed(
               url, type,

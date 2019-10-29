@@ -44,7 +44,8 @@ std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
   sync_pb::WebAppSpecifics* sync_data =
       entity_data->specifics.mutable_web_app();
   sync_data->set_launch_url(app.launch_url().spec());
-  sync_data->set_display_mode(ToWebAppSpecificsDisplayMode(app.display_mode()));
+  sync_data->set_user_display_mode(
+      ToWebAppSpecificsUserDisplayMode(app.user_display_mode()));
   sync_data->set_name(app.sync_data().name);
   if (app.sync_data().theme_color.has_value())
     sync_data->set_theme_color(app.sync_data().theme_color.value());
@@ -75,8 +76,8 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
     return;
   }
 
-  // Always override display mode with a synced value.
-  app->SetDisplayMode(ToMojomDisplayMode(sync_data.display_mode()));
+  // Always override user_display mode with a synced value.
+  app->SetUserDisplayMode(ToMojomDisplayMode(sync_data.user_display_mode()));
 
   WebApp::SyncData parsed_sync_data;
   parsed_sync_data.name = sync_data.name();
@@ -171,13 +172,13 @@ void WebAppSyncBridge::Init(base::OnceClosure callback) {
                                          std::move(callback)));
 }
 
-void WebAppSyncBridge::SetAppDisplayMode(
+void WebAppSyncBridge::SetAppUserDisplayMode(
     const AppId& app_id,
-    blink::mojom::DisplayMode display_mode) {
+    blink::mojom::DisplayMode user_display_mode) {
   ScopedRegistryUpdate update(this);
   WebApp* web_app = update->UpdateApp(app_id);
   if (web_app)
-    web_app->SetDisplayMode(display_mode);
+    web_app->SetUserDisplayMode(user_display_mode);
 }
 
 void WebAppSyncBridge::SetAppIsLocallyInstalledForTesting(

@@ -554,7 +554,6 @@ void OnSearchDriveFs(
   const base::FilePath root("/");
 
   auto result = std::make_unique<base::ListValue>();
-  result->GetList().reserve(items->size());
   for (const auto& item : *items) {
     base::FilePath path;
     if (!root.AppendRelativePath(item->path, &path))
@@ -942,7 +941,6 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs(
   }
 
   auto results_list = std::make_unique<base::ListValue>();
-  results_list->GetList().reserve(results->GetList().size());
   for (auto& entry : *results) {
     base::DictionaryValue dict;
     std::string highlight;

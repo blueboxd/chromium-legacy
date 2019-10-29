@@ -184,9 +184,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabSwitcherLongpressMenu,
     &kTabSwitcherOnReturn,
     &kTabToGTSAnimation,
-    &kTrustedWebActivity,
     &kTrustedWebActivityPostMessage,
-    &kTrustedWebActivityNotificationDelegationEnrolment,
     &kStartSurfaceAndroid,
     &kUmaBackgroundSessions,
     &kUpdateNotificationSchedulingIntegration,
@@ -561,15 +559,8 @@ const base::Feature kTabSwitcherOnReturn{"TabSwitcherOnReturn",
 const base::Feature kTabToGTSAnimation{"TabToGTSAnimation",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kTrustedWebActivity{"TrustedWebActivity",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kTrustedWebActivityPostMessage{
     "TrustedWebActivityPostMessage", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kTrustedWebActivityNotificationDelegationEnrolment{
-    "TrustedWebActivityNotificationDelegationAutoEnrolment",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kStartSurfaceAndroid{"StartSurfaceAndroid",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

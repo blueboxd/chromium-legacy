@@ -652,7 +652,7 @@ TEST_F(ShellUtilShortcutTest, ClearShortcutArguments) {
       ShellUtil::CURRENT_USER,
       chrome_exe_,
       false,
-      NULL,
+      nullptr,
       &shortcuts));
   ASSERT_EQ(2u, shortcuts.size());
   std::pair<base::FilePath, base::string16> shortcut3 =
@@ -671,7 +671,7 @@ TEST_F(ShellUtilShortcutTest, ClearShortcutArguments) {
       ShellUtil::CURRENT_USER,
       chrome_exe_,
       true,
-      NULL,
+      nullptr,
       &shortcuts));
   ASSERT_EQ(2u, shortcuts.size());
   shortcut3 = shortcuts[0].first == shortcut3_path ? shortcuts[0] :

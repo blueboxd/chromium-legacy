@@ -46,11 +46,10 @@
 
 // Designated initializer.
 // |viewController|: navigation controller.
-// |browserState|: browser state.
+// |browser|: browser.
 // |mode|: mode to display the Google services settings.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                                   browser:(Browser*)browser
                                       mode:(GoogleServicesSettingsMode)mode
     NS_DESIGNATED_INITIALIZER;
 

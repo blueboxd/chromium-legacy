@@ -29,8 +29,6 @@ Polymer({
      */
     pageVisibility: Object,
 
-    unifiedConsentEnabled: Boolean,
-
     /** @type {settings.SyncStatus} */
     syncStatus: Object,
 
@@ -127,10 +125,10 @@ Polymer({
    * @private
    */
   showSpellCheckControl_: function() {
-    return !this.unifiedConsentEnabled ||
-        (!!this.prefs.spellcheck &&
-         /** @type {!Array<string>} */
-         (this.prefs.spellcheck.dictionaries.value).length > 0);
+    return (
+        !!this.prefs.spellcheck &&
+        /** @type {!Array<string>} */
+        (this.prefs.spellcheck.dictionaries.value).length > 0);
   },
 
   /**
@@ -139,8 +137,7 @@ Polymer({
    */
   shouldShowDriveSuggest_: function() {
     return loadTimeData.getBoolean('driveSuggestAvailable') &&
-        !!this.unifiedConsentEnabled && !!this.syncStatus &&
-        !!this.syncStatus.signedIn &&
+        !!this.syncStatus && !!this.syncStatus.signedIn &&
         this.syncStatus.statusAction !== settings.StatusAction.REAUTHENTICATE;
   },
 });

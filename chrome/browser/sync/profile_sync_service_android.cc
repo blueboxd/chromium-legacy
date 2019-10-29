@@ -177,6 +177,14 @@ jboolean ProfileSyncServiceAndroid::IsEngineInitialized(
   return sync_service_->IsEngineInitialized();
 }
 
+jboolean ProfileSyncServiceAndroid::IsTransportStateActive(
+    JNIEnv* env,
+    const JavaParamRef<jobject>&) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->GetTransportState() ==
+         syncer::SyncService::TransportState::ACTIVE;
+}
+
 void ProfileSyncServiceAndroid::SetSetupInProgress(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

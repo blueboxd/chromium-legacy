@@ -13,13 +13,10 @@
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/file_data_source.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/url_util.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -136,11 +133,10 @@ class BundledExchangesReader::SharedFileDataSource final
 };
 
 BundledExchangesReader::BundledExchangesReader(
-    std::unique_ptr<BundledExchangesSource> source)
+    std::unique_ptr<BundledExchangesSource> source,
+    mojo::Remote<data_decoder::mojom::DataDecoderService> service)
     : source_(std::move(source)),
-      parser_(ServiceManagerConnection::GetForProcess()
-                  ? ServiceManagerConnection::GetForProcess()->GetConnector()
-                  : nullptr),
+      parser_(std::move(service)),
       file_(base::MakeRefCounted<SharedFile>(source_->Clone())) {}
 
 BundledExchangesReader::~BundledExchangesReader() {

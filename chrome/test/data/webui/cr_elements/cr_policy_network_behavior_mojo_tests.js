@@ -23,7 +23,7 @@ suite('CrPolicyNetworkBehaviorMojo', function() {
   });
 
   test('active', function() {
-    let property = {
+    const property = {
       activeValue: 'foo',
       policySource: mojom.PolicySource.kNone,
     };
@@ -37,7 +37,7 @@ suite('CrPolicyNetworkBehaviorMojo', function() {
 
 
   test('user_recommended', function() {
-    let property = {
+    const property = {
       activeValue: 'foo',
       policySource: mojom.PolicySource.kUserPolicyRecommended,
       policyValue: 'bar',
@@ -54,7 +54,7 @@ suite('CrPolicyNetworkBehaviorMojo', function() {
   });
 
   test('device_recommended', function() {
-    let property = {
+    const property = {
       activeValue: 'foo',
       policySource: mojom.PolicySource.kDevicePolicyRecommended,
       policyValue: 'bar',
@@ -71,7 +71,7 @@ suite('CrPolicyNetworkBehaviorMojo', function() {
   });
 
   test('user_enforced', function() {
-    let property = {
+    const property = {
       activeValue: 'foo',
       policySource: mojom.PolicySource.kUserPolicyEnforced,
       policyValue: 'foo',
@@ -88,7 +88,7 @@ suite('CrPolicyNetworkBehaviorMojo', function() {
   });
 
   test('device_enforced', function() {
-    let property = {
+    const property = {
       activeValue: 'foo',
       policySource: mojom.PolicySource.kDevicePolicyEnforced,
       policyValue: 'foo',
@@ -105,7 +105,7 @@ suite('CrPolicyNetworkBehaviorMojo', function() {
   });
 
   test('extension_controlled', function() {
-    let property = {
+    const property = {
       activeValue: 'foo',
       policySource: mojom.PolicySource.kActiveExtension,
     };

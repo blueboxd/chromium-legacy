@@ -3634,6 +3634,8 @@ if (enable_java_templates) {
 #   module_name: The module's name.
 #   native_libraries_config: Path to file listing native libraries to be
 #     packaged into each module.
+#   is_multi_abi: If true will add a library placeholder for the missing ABI if
+#     either the primary or the secondary ABI has no native libraries set.
 template("create_android_app_bundle_module") {
   _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
   _rebased_native_libraries_config =
@@ -3694,6 +3696,9 @@ template("create_android_app_bundle_module") {
             ":${invoker.module_name})",
         "--secondary-android-abi=$android_app_secondary_abi",
       ]
+    }
+    if (defined(invoker.is_multi_abi) && invoker.is_multi_abi) {
+      args += [ "--is-multi-abi" ]
     }
 
     # Use either provided dex path or build config path based on type of module.

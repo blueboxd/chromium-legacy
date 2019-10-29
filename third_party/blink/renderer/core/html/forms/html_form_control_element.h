@@ -156,8 +156,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   bool IsFormControlElement() const final { return true; }
   bool AlwaysCreateUserAgentShadowRoot() const override { return true; }
 
-  int tabIndex() const override;
-
   bool IsValidElement() override;
   bool MatchesValidityPseudoClasses() const override;
 

@@ -679,10 +679,6 @@ bool HTMLSlotElement::HasAssignedNodesSlow() const {
   return assignment.FindHostChildBySlotName(GetName());
 }
 
-int HTMLSlotElement::tabIndex() const {
-  return Element::tabIndex();
-}
-
 void HTMLSlotElement::Trace(Visitor* visitor) {
   visitor->Trace(assigned_nodes_);
   visitor->Trace(flat_tree_children_);

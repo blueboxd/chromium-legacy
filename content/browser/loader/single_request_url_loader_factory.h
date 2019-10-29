@@ -23,20 +23,21 @@ class CONTENT_EXPORT SingleRequestURLLoaderFactory
  public:
   using RequestHandler =
       base::OnceCallback<void(const network::ResourceRequest& resource_request,
-                              network::mojom::URLLoaderRequest,
+                              mojo::PendingReceiver<network::mojom::URLLoader>,
                               network::mojom::URLLoaderClientPtr)>;
 
   explicit SingleRequestURLLoaderFactory(RequestHandler handler);
 
   // SharedURLLoaderFactory:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override;
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
       override;
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;

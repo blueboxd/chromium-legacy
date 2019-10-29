@@ -98,6 +98,10 @@ bool HTMLSummaryElement::SupportsFocus() const {
   return IsMainSummary() || HTMLElement::SupportsFocus();
 }
 
+int HTMLSummaryElement::DefaultTabIndex() const {
+  return IsMainSummary() ? 0 : -1;
+}
+
 void HTMLSummaryElement::DefaultEventHandler(Event& event) {
   if (IsMainSummary()) {
     if (event.type() == event_type_names::kDOMActivate &&

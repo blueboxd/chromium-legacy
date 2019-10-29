@@ -16,7 +16,8 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -73,7 +74,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   // Passed as the RequestHandler for
   // NavigationLoaderInterceptor::MaybeCreateLoader.
   void StartRequest(const network::ResourceRequest& resource_request,
-                    network::mojom::URLLoaderRequest request,
+                    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
                     network::mojom::URLLoaderClientPtr client);
 
   // The navigation request that was holding this job is
@@ -89,7 +90,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   class StreamWaiter;
   enum class Status {
     kNotStarted,
-    // |binding_| is bound and the fetch event is being dispatched to the
+    // |receiver_| is bound and the fetch event is being dispatched to the
     // service worker.
     kStarted,
     // The response head has been sent to |url_loader_client_|.
@@ -174,7 +175,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   // Pointer to the URLLoaderClient (i.e. NavigationURLLoader).
   network::mojom::URLLoaderClientPtr url_loader_client_;
-  mojo::Binding<network::mojom::URLLoader> binding_;
+  mojo::Receiver<network::mojom::URLLoader> receiver_{this};
 
   Status status_ = Status::kNotStarted;
   bool is_detached_ = false;

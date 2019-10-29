@@ -346,6 +346,13 @@ var GetNameFrom = natives.GetNameFrom;
 /**
  * @param {string} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
+ * @return {automation.DescriptionFromType} The node description source.
+ */
+var GetDescriptionFrom = natives.GetDescriptionFrom;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
  * @return {?string} The image annotation status, which may
  *     include the annotation itself if completed successfully.
  */
@@ -660,6 +667,11 @@ AutomationNodeImpl.prototype = {
 
   get nameFrom() {
     return GetNameFrom(this.treeID, this.id);
+  },
+
+
+  get descriptionFrom() {
+    return GetDescriptionFrom(this.treeID, this.id);
   },
 
   get imageAnnotation() {
@@ -1749,6 +1761,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'root',
         'htmlAttributes',
         'nameFrom',
+        'descriptionFrom',
         'bold',
         'italic',
         'underline',

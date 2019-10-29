@@ -249,13 +249,13 @@ class DecryptingDemuxerStreamTest : public testing::Test {
 
   void AbortPendingDecryptCB() {
     if (pending_decrypt_cb_) {
-      std::move(pending_decrypt_cb_).Run(Decryptor::kSuccess, NULL);
+      std::move(pending_decrypt_cb_).Run(Decryptor::kSuccess, nullptr);
     }
   }
 
   void SatisfyPendingDemuxerReadCB(DemuxerStream::Status status) {
     scoped_refptr<DecoderBuffer> buffer =
-        (status == DemuxerStream::kOk) ? encrypted_buffer_ : NULL;
+        (status == DemuxerStream::kOk) ? encrypted_buffer_ : nullptr;
     std::move(pending_demuxer_read_cb_).Run(status, buffer);
   }
 
@@ -415,7 +415,7 @@ TEST_F(DecryptingDemuxerStreamTest, KeyAdded_DuringPendingDecrypt) {
   EXPECT_CALL(*this, BufferReady(DemuxerStream::kOk, decrypted_buffer_));
   // The decrypt callback is returned after the correct decryption key is added.
   key_added_cb_.Run();
-  std::move(pending_decrypt_cb_).Run(Decryptor::kNoKey, NULL);
+  std::move(pending_decrypt_cb_).Run(Decryptor::kNoKey, nullptr);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -476,11 +476,11 @@ TEST_F(DecryptingDemuxerStreamTest, Reset_AfterReset) {
 TEST_F(DecryptingDemuxerStreamTest, DemuxerRead_Aborted) {
   Initialize();
 
-  // ReturnBuffer() with NULL triggers aborted demuxer read.
+  // ReturnBuffer() with null triggers aborted demuxer read.
   EXPECT_CALL(*input_audio_stream_, OnRead(_))
       .WillOnce(ReturnBuffer(scoped_refptr<DecoderBuffer>()));
 
-  ReadAndExpectBufferReadyWith(DemuxerStream::kAborted, NULL);
+  ReadAndExpectBufferReadyWith(DemuxerStream::kAborted, nullptr);
 }
 
 // Test resetting when waiting for an aborted read.
@@ -488,7 +488,7 @@ TEST_F(DecryptingDemuxerStreamTest, Reset_DuringAbortedDemuxerRead) {
   Initialize();
   EnterPendingReadState();
 
-  // Make sure we get a NULL audio frame returned.
+  // Make sure we get a null audio frame returned.
   EXPECT_CALL(*this, BufferReady(DemuxerStream::kAborted, IsNull()));
 
   Reset();
@@ -509,7 +509,7 @@ TEST_F(DecryptingDemuxerStreamTest, DemuxerRead_ConfigChanged) {
       .WillOnce(RunOnceCallback<0>(DemuxerStream::kConfigChanged,
                                    scoped_refptr<DecoderBuffer>()));
 
-  ReadAndExpectBufferReadyWith(DemuxerStream::kConfigChanged, NULL);
+  ReadAndExpectBufferReadyWith(DemuxerStream::kConfigChanged, nullptr);
 }
 
 // Test resetting when waiting for a config changed read.

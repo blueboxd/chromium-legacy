@@ -32,7 +32,9 @@ class ServerPrintersFetcher {
       const GURL& server_url,
       std::vector<PrinterDetector::DetectedPrinter>&& printers)>;
 
-  ServerPrintersFetcher(const GURL& server_url, OnPrintersFetchedCallback cb);
+  ServerPrintersFetcher(const GURL& server_url,
+                        const std::string& server_name,
+                        OnPrintersFetchedCallback cb);
   virtual ~ServerPrintersFetcher();
 
  private:

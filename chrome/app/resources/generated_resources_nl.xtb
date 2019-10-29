@@ -859,7 +859,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2224471211857467033">Toegankelijkheidsfunctionaliteit</translation>
 <translation id="2224551243087462610">Mapnaam bewerken</translation>
 <translation id="2226449515541314767">Deze site is geblokkeerd voor volledig beheer van MIDI-apparaten.</translation>
-<translation id="2226720438730111184">Vertel ons wat er aan de hand is</translation>
 <translation id="2227179592712503583">Suggestie verwijderen</translation>
 <translation id="2229161054156947610">Meer dan 1 uur resterend</translation>
 <translation id="222931766245975952">Bestand afgekapt</translation>
@@ -2960,7 +2959,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5360150013186312835">In werkbalk weergeven</translation>
 <translation id="5362741141255528695">Selecteer een privésleutelbestand.</translation>
 <translation id="5363109466694494651">Powerwash en terugzetten</translation>
-<translation id="5365716706805792666">Google kan controleren of je wachtwoorden betrokken waren bij een gegevenslek. Dit wordt ingeschakeld wanneer je inlogt met je Google-account.</translation>
 <translation id="5365881113273618889">De map die je hebt geselecteerd, bevat gevoelige bestanden. Weet je zeker dat je '<ph name="APP_NAME" />' permanente schrijftoegang wilt geven tot deze map?</translation>
 <translation id="5367091008316207019">Bestand lezen...</translation>
 <translation id="5368720394188453070">Je telefoon is vergrendeld. Ontgrendel deze om door te gaan.</translation>
@@ -3520,7 +3518,7 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="6141988275892716286">Download bevestigen</translation>
 <translation id="6143186082490678276">Hulp nodig?</translation>
 <translation id="6144938890088808325">Help ons Chromebooks te verbeteren</translation>
-<translation id="614611931938947795">Dit bestand is te groot voor scannen in de cloud en is geblokkeerd. Je kunt dit bestand niet openen.</translation>
+<translation id="614611931938947795">Dit bestand is te groot om te scannen in de cloud en is geblokkeerd. Je kunt dit bestand niet openen.</translation>
 <translation id="6147020289383635445">Kan afdrukvoorbeeld niet weergeven.</translation>
 <translation id="6148576794665275391">Nu geopend</translation>
 <translation id="6149015141270619212">Kan geen verbinding maken met internet</translation>
@@ -3558,7 +3556,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="6202304368170870640">Je kunt je pincode gebruiken om in te loggen of je apparaat te ontgrendelen.</translation>
 <translation id="6206311232642889873">A&amp;fbeelding kopiëren</translation>
 <translation id="6207200176136643843">Standaardzoomniveau resetten</translation>
-<translation id="620722923698527029">Deze typen links altijd openen in de bijbehorende app</translation>
 <translation id="6207282396926186323"><ph name="APP_NAME" /> (Linux-app) installeren</translation>
 <translation id="6207937957461833379">Land/regio</translation>
 <translation id="6208521041562685716">Mobiele data activeren</translation>
@@ -4432,7 +4429,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="7506541170099744506">Je <ph name="DEVICE_TYPE" /> is aangemeld voor bedrijfsbeheer.</translation>
 <translation id="7507930499305566459">Certificaat voor statusbeantwoorder</translation>
 <translation id="7508054832109420082">Toegang verlenen tot printers</translation>
-<translation id="7510943789645525906">Je krijgt een waarschuwing als je wachtwoord betrokken was bij een gegevenslek</translation>
 <translation id="7513029293694390567">Automatisch inloggen bij websites met de opgeslagen gegevens. Als de functie is uitgeschakeld, wordt elke keer om bevestiging gevraagd voordat je inlogt bij een website.</translation>
 <translation id="7514239104543605883">Kopiëren naar je apparaat</translation>
 <translation id="7514365320538308">Downloaden</translation>
@@ -4620,7 +4616,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="7788298548579301890">Een ander programma op je computer heeft een app toegevoegd die de manier kan wijzigen waarop Chrome werkt.
 
 <ph name="EXTENSION_NAME" /></translation>
-<translation id="7788383851298063850">Vertel ons wat er aan de hand is</translation>
 <translation id="7788444488075094252">Talen en invoer</translation>
 <translation id="7788668840732459509">Positie:</translation>
 <translation id="7789963078219276159">Achtergrond van startpagina is gewijzigd in <ph name="CATEGORY" />.</translation>
@@ -4735,7 +4730,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="7926423016278357561">Dit was ik niet.</translation>
 <translation id="7928836894214140642">Beheerd door <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Opgeslagen betaalmethoden worden hier weergegeven</translation>
-<translation id="7930681627240672853">Wachtwoordveiligheid controleren</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> deelt je scherm en audio.</translation>
 <translation id="7931318309563332511">Onbekend</translation>
 <translation id="793293630927785390">Dialoogvenster 'Nieuw wifi-netwerk'</translation>
@@ -4808,7 +4802,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8014154204619229810">De updater wordt momenteel uitgevoerd. Klik op Vernieuwen om opnieuw te controleren.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> kan niet worden teruggezet naar de voorgaande versie. Probeer Powerwash opnieuw op je apparaat.</translation>
 <translation id="8014210335923519270">Verbeter <ph name="IDS_SHORT_PRODUCT_NAME" /> en de beveiliging ervan door systeem- en gebruiksgegevens naar Google te verzenden</translation>
-<translation id="8015780634880457457">Google kan controleren of je wachtwoorden betrokken waren bij een gegevenslek</translation>
 <translation id="8016266267177410919">Tijdelijke opslag</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Snelkoppeling bewerkt</translation>

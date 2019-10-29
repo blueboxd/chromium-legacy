@@ -22,7 +22,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
@@ -345,16 +345,17 @@ class SubresourceSignedExchangeURLLoaderFactory
   ~SubresourceSignedExchangeURLLoaderFactory() override {}
 
   // network::mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     DCHECK_EQ(request.url, entry_->inner_url());
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<InnerResponseURLLoader>(
             request, *entry_->inner_response(), request_initiator_site_lock_,
             std::make_unique<const storage::BlobDataHandle>(
@@ -438,20 +439,22 @@ class PrefetchedNavigationLoaderInterceptor
     kInnerResponseRequested
   };
 
-  void StartRedirectResponse(const network::ResourceRequest& resource_request,
-                             network::mojom::URLLoaderRequest request,
-                             network::mojom::URLLoaderClientPtr client) {
-    mojo::MakeStrongBinding(
+  void StartRedirectResponse(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      network::mojom::URLLoaderClientPtr client) {
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<RedirectResponseURLLoader>(
             resource_request, exchange_->inner_url(),
             *exchange_->outer_response(), std::move(client)),
-        std::move(request));
+        std::move(receiver));
   }
 
-  void StartInnerResponse(const network::ResourceRequest& resource_request,
-                          network::mojom::URLLoaderRequest request,
-                          network::mojom::URLLoaderClientPtr client) {
-    mojo::MakeStrongBinding(
+  void StartInnerResponse(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      network::mojom::URLLoaderClientPtr client) {
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<InnerResponseURLLoader>(
             resource_request, *exchange_->inner_response(),
             url::Origin::Create(exchange_->inner_url()),
@@ -459,7 +462,7 @@ class PrefetchedNavigationLoaderInterceptor
                 *exchange_->blob_data_handle()),
             *exchange_->completion_status(), std::move(client),
             true /* is_navigation_request */),
-        std::move(request));
+        std::move(receiver));
   }
 
   State state_ = State::kInitial;

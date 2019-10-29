@@ -13,7 +13,7 @@ cr.define('settings_sync_account_control', function() {
   }
 
   suite('SyncAccountControl', function() {
-    let peoplePage = null;
+    const peoplePage = null;
     let browserProxy = null;
     let testElement = null;
 
@@ -130,7 +130,6 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('not signed in but has stored accounts', function() {
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: false,
@@ -224,7 +223,6 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('signed in, no error', function() {
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: true,
@@ -260,7 +258,6 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('signed in, has error', function() {
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: true,
@@ -341,7 +338,6 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('signed in, setup in progress', function() {
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         signedIn: true,
         signedInUsername: 'bar@bar.com',
@@ -357,12 +353,6 @@ cr.define('settings_sync_account_control', function() {
       const setupButtons = testElement.$$('#setup-buttons');
 
       assertTrue(userInfo.textContent.includes('barName'));
-      assertFalse(userInfo.textContent.includes('Setup in progress...'));
-      assertVisible(setupButtons, false);
-
-      testElement.unifiedConsentEnabled = true;
-
-      assertTrue(userInfo.textContent.includes('barName'));
       assertTrue(userInfo.textContent.includes('Setup in progress...'));
       assertVisible(setupButtons, true);
     });
@@ -373,7 +363,6 @@ cr.define('settings_sync_account_control', function() {
       const banner = testElement.$$('#banner');
       assertVisible(banner, true);
 
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: true,
@@ -443,7 +432,6 @@ cr.define('settings_sync_account_control', function() {
 
     test('hide buttons', function() {
       testElement.hideButtons = true;
-      testElement.unifiedConsentEnabled = false;
       testElement.syncStatus = {
         firstSetupInProgress: false,
         signedIn: true,

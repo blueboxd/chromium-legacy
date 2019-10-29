@@ -340,6 +340,8 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   hibernation_image_.reset();
 
   if (resource_host_) {
+    // If deferral is enabled the recorder will play back the transform, so we
+    // should not do it here or else it will be applied twice
     if (!is_deferral_enabled_)
       resource_host_->RestoreCanvasMatrixClipStack(resource_provider->Canvas());
 

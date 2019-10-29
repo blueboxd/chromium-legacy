@@ -5,6 +5,7 @@
 // Note: The API should stay in sync with the IDL definitions in
 // third_party/WebKit/Source/core/mojo
 
+// eslint-disable-next-line no-var
 var Mojo = Mojo || {};
 
 /**

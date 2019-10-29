@@ -76,6 +76,7 @@
 <translation id="1957958912175573503">अपनी भाषा सेट करें</translation>
 <translation id="1962969542251276847">लॉक स्‍क्रीन</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">नमस्ते, <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">टेक्स्ट इनपुट</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> के नए अपडेट के बारे में ज़्यादा जानें</translation>
 <translation id="1995660704900986789">पावर बंद करें</translation>
@@ -155,7 +156,6 @@
 <translation id="3139942575505304791">डेस्क 1</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="3151786313568798007">अभिविन्‍यास</translation>
-<translation id="3152934361839663679">आपका डिवाइस काम कर सकने वाले ज़्यादा से ज़्यादा मॉनीटर से कनेक्ट है, इसलिए उनमें से कोई एक स्क्रीन डिसकनेक्ट कर दी गई है.</translation>
 <translation id="3153444934357957346">एक से ज़्यादा साइन-इन की सुविधा के लिए आपके पास ज़्यादा से ज़्यादा <ph name="MULTI_PROFILE_USER_LIMIT" /> खाते हो सकते हैं.</translation>
 <translation id="3154351730702813399">डिवाइस व्यवस्थापक आपकी ब्राउज़िंग गतिविधि की निगरानी कर सकता है.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{किसी डिवाइस से कनेक्ट है}one{# डिवाइस से कनेक्ट है}other{# डिवाइस से कनेक्ट है}}</translation>

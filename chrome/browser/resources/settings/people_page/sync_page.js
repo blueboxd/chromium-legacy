@@ -129,18 +129,13 @@ Polymer({
       type: Boolean,
       value: false,
       computed: 'computeSyncSectionDisabled_(' +
-          'unifiedConsentEnabled, syncStatus.signedIn, syncStatus.disabled, ' +
+          'syncStatus.signedIn, syncStatus.disabled, ' +
           'syncStatus.hasError, syncStatus.statusAction)',
     },
 
     // <if expr="not chromeos">
     diceEnabled: Boolean,
     // </if>
-
-    unifiedConsentEnabled: {
-      type: Boolean,
-      observer: 'initializeDidAbort_',
-    },
 
     /** @private */
     showSetupCancelDialog_: {
@@ -159,12 +154,9 @@ Polymer({
   browserProxy_: null,
 
   /**
-   * If unified consent is enabled, the beforeunload callback is used to
-   * show the 'Leave site' dialog. This makes sure that the user has the chance
-   * to go back and confirm the sync opt-in before leaving.
-   *
-   * If unified consent is disabled, the beforeunload callback is used
-   * to confirm the sync setup before leaving the opt-in flow.
+   * The beforeunload callback is used to show the 'Leave site' dialog. This
+   * makes sure that the user has the chance to go back and confirm the sync
+   * opt-in before leaving.
    *
    * This property is non-null if the user is currently navigated on the sync
    * settings route.
@@ -174,9 +166,8 @@ Polymer({
   beforeunloadCallback_: null,
 
   /**
-   * If unified consent is enabled, the unload callback is used to cancel the
-   * sync setup when the user hits the browser back button after arriving on the
-   * page.
+   * The unload callback is used to cancel the sync setup when the user hits
+   * the browser back button after arriving on the page.
    * Note: Cases like closing the tab or reloading don't need to be handled,
    * because they are already caught in |PeopleHandler::~PeopleHandler|
    * from the C++ code.
@@ -193,11 +184,10 @@ Polymer({
   collapsibleSectionsInitialized_: false,
 
   /**
-   * Whether the user decided to abort sync. When unified consent is enabled,
-   * this is initialized to true.
+   * Whether the user decided to abort sync.
    * @private {boolean}
    */
-  didAbort_: false,
+  didAbort_: true,
 
   /**
    * Whether the user confirmed the cancellation of sync.
@@ -251,7 +241,7 @@ Polymer({
    * @private
    */
   computeSyncSectionDisabled_: function() {
-    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
+    return this.syncStatus !== undefined &&
         (!this.syncStatus.signedIn || !!this.syncStatus.disabled ||
          (!!this.syncStatus.hasError &&
           this.syncStatus.statusAction !==
@@ -308,8 +298,7 @@ Polymer({
 
     const userActionCancelsSetup = this.syncStatus &&
         this.syncStatus.firstSetupInProgress && this.didAbort_;
-    if (this.unifiedConsentEnabled && userActionCancelsSetup &&
-        !this.setupCancelConfirmed_) {
+    if (userActionCancelsSetup && !this.setupCancelConfirmed_) {
       chrome.metricsPrivate.recordUserAction(
           'Signin_Signin_BackOnAdvancedSyncSettings');
       // Show the 'Cancel sync?' dialog.
@@ -357,27 +346,21 @@ Polymer({
 
     this.browserProxy_.didNavigateToSyncPage();
 
-    if (this.unifiedConsentEnabled) {
-      this.beforeunloadCallback_ = event => {
-        // When the user tries to leave the sync setup, show the 'Leave site'
-        // dialog.
-        if (this.unifiedConsentEnabled && this.syncStatus &&
-            this.syncStatus.firstSetupInProgress) {
-          event.preventDefault();
-          event.returnValue = '';
+    this.beforeunloadCallback_ = event => {
+      // When the user tries to leave the sync setup, show the 'Leave site'
+      // dialog.
+      if (this.syncStatus && this.syncStatus.firstSetupInProgress) {
+        event.preventDefault();
+        event.returnValue = '';
 
-          chrome.metricsPrivate.recordUserAction(
-              'Signin_Signin_AbortAdvancedSyncSettings');
-        }
-      };
-      window.addEventListener('beforeunload', this.beforeunloadCallback_);
+        chrome.metricsPrivate.recordUserAction(
+            'Signin_Signin_AbortAdvancedSyncSettings');
+      }
+    };
+    window.addEventListener('beforeunload', this.beforeunloadCallback_);
 
-      this.unloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
-      window.addEventListener('unload', this.unloadCallback_);
-    } else {
-      this.beforeunloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
-      window.addEventListener('beforeunload', this.beforeunloadCallback_);
-    }
+    this.unloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
+    window.addEventListener('unload', this.unloadCallback_);
   },
 
   /** @private */
@@ -391,7 +374,6 @@ Polymer({
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
 
     this.browserProxy_.didNavigateAwayFromSyncPage(this.didAbort_);
-    this.initializeDidAbort_();
 
     window.removeEventListener('beforeunload', this.beforeunloadCallback_);
     this.beforeunloadCallback_ = null;
@@ -568,28 +550,6 @@ Polymer({
   },
 
   /**
-   * When unified-consent enabled, the non-toggle items on the bottom of sync
-   * section should be wrapped with 'list-frame' in order to be indented
-   * correctly.
-   * @return {string}
-   * @private
-   */
-  getListFrameClass_: function() {
-    return this.unifiedConsentEnabled ? 'list-frame' : '';
-  },
-
-  /**
-   * When unified-consent enabled, the non-toggle items on the bottom of sync
-   * section will be wrapped with 'list-frame', and should have the 'list-item'
-   * instead of 'settings-box' in order to be indented correctly.
-   * @return {string}
-   * @private
-   */
-  getListItemClass_: function() {
-    return this.unifiedConsentEnabled ? 'list-item' : 'settings-box';
-  },
-
-  /**
    * When there is a sync passphrase, some items have an additional line for the
    * passphrase reset hint, making them three lines rather than two.
    * @return {string}
@@ -605,7 +565,7 @@ Polymer({
    * @private
    */
   shouldShowSyncAccountControl_: function() {
-    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
+    return this.syncStatus !== undefined &&
         !!this.syncStatus.syncSystemEnabled && !!this.syncStatus.signinAllowed;
   },
   // </if>
@@ -615,17 +575,7 @@ Polymer({
    * @private
    */
   shouldShowExistingPassphraseBelowAccount_: function() {
-    return !!this.unifiedConsentEnabled && this.syncPrefs !== undefined &&
-        !!this.syncPrefs.passphraseRequired;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowExistingPassphraseInSyncSection_: function() {
-    return !this.unifiedConsentEnabled && this.syncPrefs !== undefined &&
-        !!this.syncPrefs.passphraseRequired;
+    return this.syncPrefs !== undefined && !!this.syncPrefs.passphraseRequired;
   },
 
   /**
@@ -650,29 +600,6 @@ Polymer({
   /** @private */
   onSyncAdvancedTap_: function() {
     settings.navigateTo(settings.routes.SYNC_ADVANCED);
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowDriveSuggest_: function() {
-    return loadTimeData.getBoolean('driveSuggestAvailable') &&
-        !this.unifiedConsentEnabled;
-  },
-
-  /**
-   * Used when unified consent is disabled.
-   * @private
-   */
-  onSyncSetupCancel_: function() {
-    this.didAbort_ = true;
-    settings.navigateTo(settings.routes.BASIC);
-  },
-
-  /** @private */
-  initializeDidAbort_: function() {
-    this.didAbort_ = !!this.unifiedConsentEnabled;
   },
 
   /**

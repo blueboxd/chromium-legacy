@@ -162,9 +162,8 @@ bool SVGAElement::HasActivationBehavior() const {
   return true;
 }
 
-int SVGAElement::tabIndex() const {
-  // Skip the supportsFocus check in SVGElement.
-  return Element::tabIndex();
+int SVGAElement::DefaultTabIndex() const {
+  return 0;
 }
 
 bool SVGAElement::SupportsFocus() const {

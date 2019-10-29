@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">In</translation>
 <translation id="1442386063175183758">Gấp dạng cửa bên phải</translation>
 <translation id="1442987760062738829">Đục lỗ</translation>
-<translation id="1450011005989029586">Một sự cố rò rỉ dữ liệu trên trang web hoặc ứng dụng bạn dùng đã làm lộ mật khẩu của bạn. Bạn nên <ph name="BOLD" /> trên <ph name="ORIGIN" /> ngay bây giờ.</translation>
 <translation id="1455413310270022028">Tẩy</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">Hiển thị thêm</translation>
@@ -275,6 +274,7 @@
 <translation id="2257315177824333709">Rất tiếc, không thể lưu thẻ của bạn ngay bây giờ</translation>
 <translation id="2262243747453050782">Lỗi HTTP</translation>
 <translation id="2263079731045660823">Cập nhật thông tin tự động điền thẻ tín dụng trong mục cài đặt của Chrome</translation>
+<translation id="2267047181501709434">Đang xác minh danh tính của bạn...</translation>
 <translation id="2270484714375784793">Số điện thoại</translation>
 <translation id="2277103315734023688">Tua tiến</translation>
 <translation id="2283340219607151381">Lưu và điền địa chỉ</translation>
@@ -282,6 +282,7 @@
 <translation id="2292556288342944218">Quyền truy cập Internet của bạn bị chặn</translation>
 <translation id="2297722699537546652">B5 (Phong bì)</translation>
 <translation id="2310021320168182093">Chou2 (Phong bì)</translation>
+<translation id="2315864634253056100">Tên trang web này trông giống với <ph name="LOOKALIKE_DOMAIN" />. Kẻ tấn công đôi khi bắt chước các trang web bằng cách thực hiện các thay đổi đối với địa chỉ web mà bạn khó nhận ra.</translation>
 <translation id="2316887270356262533">Bộ nhớ đệm còn chưa đầy 1 MB. Một số trang web có thể tải chậm hơn vào lần tới bạn truy cập.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> yêu cầu tên người dùng và mật khẩu.</translation>
 <translation id="2317583587496011522">Thẻ ghi nợ được chấp nhận.</translation>
@@ -476,6 +477,7 @@
 <translation id="3229041911291329567">Thông tin phiên bản về thiết bị và trình duyệt của bạn</translation>
 <translation id="323107829343500871">Nhập CVC cho <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Luôn luôn phát hiện nội dung quan trọng trên trang web này</translation>
+<translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> trông giống với <ph name="SUGGESTED_DOMAIN" />. Kẻ tấn công đôi khi bắt chước các trang web bằng cách sử dụng các URL tương tự những trang này.</translation>
 <translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3281668902344226640">Dùng Touch ID để xác minh phương thức thanh toán đã lưu.</translation>
@@ -681,13 +683,13 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Thử chạy Chẩn đoán mạng<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Tiếp tục truy cập vào <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Hợp lệ</translation>
+<translation id="4248776159690739358">Chia sẻ với Quản trị viên các dữ liệu về những sự kiện bảo mật mà tính năng Bảo vệ khỏi mối đe dọa của Chrome Enterprise đã gắn cờ. Các dữ liệu này có thể bao gồm URL của các trang bạn truy cập, tên tệp hoặc siêu dữ liệu, cũng như tên người dùng mà bạn sử dụng để đăng nhập vào thiết bị và Chrome.</translation>
 <translation id="4250431568374086873">Kết nối của bạn tới trang web này không đủ an toàn</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="425582637250725228">Các thay đổi bạn đã thực hiện có thể không được lưu.</translation>
 <translation id="4258748452823770588">Chữ ký không hợp lệ</translation>
 <translation id="4261046003697461417">Không thể chú thích tài liệu được bảo vệ</translation>
 <translation id="4265872034478892965">Được quản trị viên cho phép</translation>
-<translation id="4270615291506829403">thay đổi mật khẩu</translation>
 <translation id="4275830172053184480">Khởi động lại thiết bị của bạn</translation>
 <translation id="4277028893293644418">Đặt lại mật khẩu</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> của bạn do <ph name="ENROLLMENT_DOMAIN" /> quản lý</translation>
@@ -767,7 +769,6 @@
 <translation id="4708268264240856090">Kết nối của bạn bị gián đoạn</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Chạy Chẩn đoán mạng của Windows<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">Một sự cố rò rỉ dữ liệu trên trang web hoặc ứng dụng bạn dùng đã làm lộ mật khẩu của bạn. Bạn nên kiểm tra mật khẩu đã lưu ngay bây giờ.</translation>
 <translation id="4726672564094551039">Tải lại chính sách</translation>
 <translation id="4728558894243024398">Nền tảng</translation>
 <translation id="4731967714531604179">Prc2 (Phong bì)</translation>
@@ -1184,7 +1185,6 @@
 <translation id="679355240208270552">Đã bỏ qua vì chính sách đã tắt tìm kiếm mặc định.</translation>
 <translation id="681021252041861472">Trường bắt buộc</translation>
 <translation id="6810899417690483278">ID tùy chỉnh</translation>
-<translation id="6819440013020405090">Một sự cố rò rỉ dữ liệu trên trang web hoặc ứng dụng bạn dùng đã làm lộ mật khẩu của bạn. Bạn nên kiểm tra mật khẩu đã lưu và đổi mật khẩu dùng trên <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Bạn đã cố gắng truy cập vào <ph name="DOMAIN" /> nhưng máy chủ xuất trình một chứng chỉ được ký bằng một thuật toán chữ ký yếu (chẳng hạn như SHA-1). Điều này có nghĩa là thông tin đăng nhập bảo mật mà máy chủ xuất trình có thể đã bị giả mạo và máy chủ đó có thể không phải là máy chủ mà bạn mong đợi (bạn có thể đang kết nối với kẻ tấn công).</translation>
 <translation id="6826370046007623921">Ngăn chặn mất dữ liệu</translation>
 <translation id="6831043979455480757">Dịch</translation>
@@ -1227,7 +1227,6 @@
 <translation id="7064851114919012435">Thông tin liên hệ</translation>
 <translation id="7075452647191940183">Yêu cầu quá lớn</translation>
 <translation id="7079718277001814089">Trang web này có chứa phần mềm độc hại</translation>
-<translation id="70850504851191913">Đã báo cáo sự cố rò rỉ dữ liệu</translation>
 <translation id="7087282848513945231">Hạt</translation>
 <translation id="7090678807593890770">Tìm kiếm <ph name="LINK" /> trên Google</translation>
 <translation id="7108338896283013870">Ẩn</translation>
@@ -1492,6 +1491,7 @@ Thông tin chi tiết bổ sung:
 <translation id="830498451218851433">Gấp đôi</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8308427013383895095">Không thể dịch do kết nối mạng có sự cố.</translation>
+<translation id="831207732689920588">Đây là trang đáng ngờ (do Chrome gắn cờ).</translation>
 <translation id="8332188693563227489">Quyền truy cập <ph name="HOST_NAME" /> bị từ chối</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Nếu bạn hiểu các rủi ro về bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang này<ph name="END_LINK" /> trước khi các chương trình độc hại bị xóa.</translation>
@@ -1582,6 +1582,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8903921497873541725">Phóng to</translation>
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>
+<translation id="8918231688545606538">Đây là trang đáng ngờ</translation>
 <translation id="892588693504540538">Đục lỗ trên cùng bên phải</translation>
 <translation id="8931333241327730545">Bạn có muốn lưu thẻ này vào Tài khoản Google của mình không?</translation>
 <translation id="8932102934695377596">Đồng hồ của bạn chạy chậm</translation>

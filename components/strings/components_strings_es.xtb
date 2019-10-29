@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1442386063175183758">Plegado en ventana a la derecha</translation>
 <translation id="1442987760062738829">Perforar</translation>
-<translation id="1450011005989029586">Una quiebra de seguridad de datos en un sitio web o en una aplicación que usas ha expuesto tu contraseña. Chrome recomienda <ph name="BOLD" /> de <ph name="ORIGIN" /> ahora.</translation>
 <translation id="1455413310270022028">Borrador</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">Mostrar más</translation>
@@ -691,7 +690,6 @@
 <translation id="4258748452823770588">Firma errónea</translation>
 <translation id="4261046003697461417">No se pueden añadir anotaciones a los documentos protegidos</translation>
 <translation id="4265872034478892965">Permitido por el administrador</translation>
-<translation id="4270615291506829403">cambiar tu contraseña</translation>
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4277028893293644418">Cambiar contraseña</translation>
 <translation id="4279811152705618813">Tu <ph name="DEVICE_TYPE" /> lo gestiona <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -771,7 +769,6 @@
 <translation id="4708268264240856090">Se ha interrumpido la conexión</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Ejecutar Diagnósticos de red de Windows<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">Una quiebra de seguridad de datos en un sitio web o en una aplicación que usas ha expuesto tu contraseña. Chrome te recomienda que compruebes las contraseñas guardadas lo antes posible.</translation>
 <translation id="4726672564094551039">Volver a cargar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4731967714531604179">Prc2 (sobre)</translation>
@@ -1188,7 +1185,6 @@
 <translation id="679355240208270552">Se ha ignorado el valor porque se ha establecido una política que inhabilita la búsqueda predeterminada.</translation>
 <translation id="681021252041861472">Campo obligatorio</translation>
 <translation id="6810899417690483278">ID de personalización</translation>
-<translation id="6819440013020405090">Una quiebra de seguridad de datos en un sitio web o en una aplicación que usas ha expuesto tu contraseña. Chrome te recomienda que compruebes las contraseñas guardadas y que cambies la de <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado firmado con un algoritmo de firma no seguro (por ejemplo, SHA-1). Una posible causa de este problema es que se hayan falsificado las credenciales de seguridad presentadas por el servidor y que hayas accedido a la página de un atacante en lugar de establecer conexión con el servidor en cuestión.</translation>
 <translation id="6826370046007623921">Prevención de la pérdida de datos</translation>
 <translation id="6831043979455480757">Traducir</translation>
@@ -1231,7 +1227,6 @@
 <translation id="7064851114919012435">Información de contacto</translation>
 <translation id="7075452647191940183">La solicitud es demasiado grande</translation>
 <translation id="7079718277001814089">Este sitio web contiene software malicioso</translation>
-<translation id="70850504851191913">Se ha denunciado una quiebra de seguridad de datos</translation>
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7090678807593890770">Busca <ph name="LINK" /> en Google</translation>
 <translation id="7108338896283013870">Ocultar</translation>

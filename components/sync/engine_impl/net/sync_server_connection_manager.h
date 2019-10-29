@@ -11,46 +11,12 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "components/sync/base/cancelation_observer.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 
 namespace syncer {
 
+class CancelationSignal;
 class HttpPostProviderFactory;
-class HttpPostProviderInterface;
-
-// This provides HTTP Post functionality through the interface provided
-// by the application hosting the syncer backend.
-class SyncBridgedConnection : public ServerConnectionManager::Connection,
-                              public CancelationObserver {
- public:
-  // All pointers must not be null and must outlive this object.
-  SyncBridgedConnection(ServerConnectionManager* scm,
-                        HttpPostProviderFactory* factory,
-                        CancelationSignal* cancelation_signal);
-
-  ~SyncBridgedConnection() override;
-
-  bool Init(const char* path,
-            const std::string& access_token,
-            const std::string& payload,
-            HttpResponse* response) override;
-
-  void OnSignalReceived() override;
-
- private:
-  // Pointer to the factory we use for creating HttpPostProviders. We do not
-  // own |factory_|.
-  HttpPostProviderFactory* const factory_;
-
-  // Cancelation signal is signalled when engine shuts down. Current blocking
-  // operation should be aborted.
-  CancelationSignal* const cancelation_signal_;
-
-  HttpPostProviderInterface* const post_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncBridgedConnection);
-};
 
 // A ServerConnectionManager subclass that generates a POST object using an
 // instance of the HttpPostProviderFactory class.
@@ -66,8 +32,9 @@ class SyncServerConnectionManager : public ServerConnectionManager {
   ~SyncServerConnectionManager() override;
 
  protected:
-  // ServerConnectionManager overrides.
-  std::unique_ptr<Connection> MakeConnection() override;
+  bool PostBufferToPath(PostBufferParams* params,
+                        const std::string& path,
+                        const std::string& access_token) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncServerConnectionManagerTest, VeryEarlyAbortPost);
@@ -75,6 +42,15 @@ class SyncServerConnectionManager : public ServerConnectionManager {
   FRIEND_TEST_ALL_PREFIXES(SyncServerConnectionManagerTest, AbortPost);
   FRIEND_TEST_ALL_PREFIXES(SyncServerConnectionManagerTest,
                            FailPostWithTimedOut);
+
+  // The sync_server_ is the server that requests will be made to.
+  const std::string sync_server_;
+
+  // The sync_server_port_ is the port that HTTP requests will be made on.
+  const int sync_server_port_;
+
+  // Indicates whether or not requests should be made using HTTPS.
+  const bool use_ssl_;
 
   // A factory creating concrete HttpPostProviders for use whenever we need to
   // issue a POST to sync servers.

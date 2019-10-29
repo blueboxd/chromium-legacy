@@ -79,17 +79,6 @@ class CHROMECAST_EXPORT CastMediaShlib {
   // Tests if the implementation supports renderer clock rate adjustments.
   static bool SupportsMediaClockRateChange();
 
-  // Reset the post processing pipeline. |callback| will be called with
-  // |success| = |true| if the new config loads without error.
-  static void ResetPostProcessors(ResultCallback callback)
-      __attribute__((__weak__));
-
-  // Updates all postprocessors with the given |name| to have new configuration
-  // |config|.
-  static void SetPostProcessorConfig(const std::string& name,
-                                     const std::string& config)
-      __attribute__((__weak__));
-
   // Sets up a direct audio source for output. The media backend will pull audio
   // directly from |source| whenever more output data is needed; this provides
   // low-latency output. The source must remain valid until

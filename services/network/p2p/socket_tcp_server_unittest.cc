@@ -11,6 +11,8 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/completion_once_callback.h"
 #include "services/network/p2p/socket_tcp.h"
 #include "services/network/p2p/socket_test_utils.h"
@@ -87,17 +89,16 @@ namespace network {
 class P2PSocketTcpServerTest : public testing::Test {
  protected:
   void SetUp() override {
-    mojom::P2PSocketClientPtr socket_client;
-    auto socket_client_request = mojo::MakeRequest(&socket_client);
-    mojom::P2PSocketPtr socket;
-    auto socket_request = mojo::MakeRequest(&socket);
+    mojo::PendingRemote<mojom::P2PSocketClient> socket_client;
+    mojo::PendingRemote<mojom::P2PSocket> socket;
+    auto socket_receiver = socket.InitWithNewPipeAndPassReceiver();
 
-    fake_client_.reset(new FakeSocketClient(std::move(socket),
-                                            std::move(socket_client_request)));
+    fake_client_.reset(new FakeSocketClient(
+        std::move(socket), socket_client.InitWithNewPipeAndPassReceiver()));
 
     socket_ = new FakeServerSocket();
     p2p_socket_ = std::make_unique<P2PSocketTcpServer>(
-        &socket_delegate_, std::move(socket_client), std::move(socket_request),
+        &socket_delegate_, std::move(socket_client), std::move(socket_receiver),
         P2P_SOCKET_TCP_CLIENT);
     p2p_socket_->socket_.reset(socket_);
 

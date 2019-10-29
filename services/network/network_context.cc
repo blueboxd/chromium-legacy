@@ -1042,10 +1042,10 @@ void NetworkContext::CreateTCPBoundSocket(
 }
 
 void NetworkContext::CreateProxyResolvingSocketFactory(
-    mojom::ProxyResolvingSocketFactoryRequest request) {
-  proxy_resolving_socket_factories_.AddBinding(
+    mojo::PendingReceiver<mojom::ProxyResolvingSocketFactory> receiver) {
+  proxy_resolving_socket_factories_.Add(
       std::make_unique<ProxyResolvingSocketFactoryMojo>(url_request_context()),
-      std::move(request));
+      std::move(receiver));
 }
 
 void NetworkContext::LookUpProxyForURL(

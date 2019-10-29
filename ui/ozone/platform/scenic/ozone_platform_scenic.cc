@@ -135,10 +135,11 @@ class OzonePlatformScenic
     base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
     scenic_gpu_host_ = std::make_unique<ScenicGpuHost>(window_manager_.get());
-    scenic_gpu_host_ptr_ = scenic_gpu_host_->CreateHostProcessSelfBinding();
+    scenic_gpu_host_remote_.Bind(
+        scenic_gpu_host_->CreateHostProcessSelfRemote());
 
     surface_factory_ =
-        std::make_unique<ScenicSurfaceFactory>(scenic_gpu_host_ptr_.get());
+        std::make_unique<ScenicSurfaceFactory>(scenic_gpu_host_remote_.get());
   }
 
   void InitializeGPU(const InitParams& params) override {
@@ -153,9 +154,9 @@ class OzonePlatformScenic
     } else {
       DCHECK(!surface_factory_);
       scenic_gpu_service_ = std::make_unique<ScenicGpuService>(
-          mojo::MakeRequest(&scenic_gpu_host_ptr_));
+          scenic_gpu_host_remote_.BindNewPipeAndPassReceiver());
       surface_factory_ =
-          std::make_unique<ScenicSurfaceFactory>(scenic_gpu_host_ptr_.get());
+          std::make_unique<ScenicSurfaceFactory>(scenic_gpu_host_remote_.get());
     }
   }
 
@@ -175,7 +176,7 @@ class OzonePlatformScenic
   void WillDestroyCurrentMessageLoop() override {
     // We must ensure to destroy any resources which rely on the MessageLoop's
     // async_dispatcher.
-    scenic_gpu_host_ptr_ = nullptr;
+    scenic_gpu_host_remote_.reset();
     surface_factory_ = nullptr;
     scenic_gpu_host_ = nullptr;
     overlay_manager_ = nullptr;
@@ -195,7 +196,7 @@ class OzonePlatformScenic
   std::unique_ptr<ScenicGpuService> scenic_gpu_service_;
   std::unique_ptr<ScenicSurfaceFactory> surface_factory_;
 
-  mojom::ScenicGpuHostPtr scenic_gpu_host_ptr_;
+  mojo::Remote<mojom::ScenicGpuHost> scenic_gpu_host_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformScenic);
 };

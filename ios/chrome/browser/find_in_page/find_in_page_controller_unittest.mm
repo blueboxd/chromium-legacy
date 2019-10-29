@@ -6,11 +6,11 @@
 
 #import "base/mac/foundation_util.h"
 #import "base/test/ios/wait_util.h"
+#include "components/ukm/ios/ukm_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_response_delegate.h"
-#include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -25,6 +25,7 @@
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -42,21 +43,24 @@ namespace {
 void RequestProxyResolvingSocketFactoryOnUIThread(
     WebViewBrowserState* browser_state,
     base::WeakPtr<TiclInvalidationService> service,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   if (!service)
     return;
-  browser_state->GetProxyResolvingSocketFactory(std::move(request));
+  browser_state->GetProxyResolvingSocketFactory(std::move(receiver));
 }
 
-// A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
+// A thread-safe wrapper to request a
+// network::mojom::ProxyResolvingSocketFactory.
 void RequestProxyResolvingSocketFactory(
     WebViewBrowserState* browser_state,
     base::WeakPtr<TiclInvalidationService> service,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   base::PostTask(
       FROM_HERE, {web::WebThread::UI},
       base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
-                     browser_state, std::move(service), std::move(request)));
+                     browser_state, std::move(service), std::move(receiver)));
 }
 }
 

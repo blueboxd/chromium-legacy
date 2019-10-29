@@ -93,16 +93,16 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
       MediaDrmStorageImpl::GetOriginIdCB get_origin_id_cb,
       MediaDrmStorageImpl::AllowEmptyOriginIdCB allow_empty_cb =
           base::BindRepeating(&AllowEmptyOriginId)) {
-    media::mojom::MediaDrmStoragePtr media_drm_storage_ptr;
-    auto request = mojo::MakeRequest(&media_drm_storage_ptr);
+    mojo::PendingRemote<media::mojom::MediaDrmStorage> media_drm_storage_remote;
+    auto receiver = media_drm_storage_remote.InitWithNewPipeAndPassReceiver();
 
     auto media_drm_storage = std::make_unique<media::MojoMediaDrmStorage>(
-        std::move(media_drm_storage_ptr));
+        std::move(media_drm_storage_remote));
 
     // The created object will be destroyed on connection error.
     new MediaDrmStorageImpl(rfh, pref_service_.get(),
                             std::move(get_origin_id_cb),
-                            std::move(allow_empty_cb), std::move(request));
+                            std::move(allow_empty_cb), std::move(receiver));
 
     return std::move(media_drm_storage);
   }

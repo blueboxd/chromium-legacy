@@ -332,9 +332,8 @@ const AtomicString& HTMLAnchorElement::GetName() const {
   return GetNameAttribute();
 }
 
-int HTMLAnchorElement::tabIndex() const {
-  // Skip the supportsFocus check in HTMLElement.
-  return Element::tabIndex();
+int HTMLAnchorElement::DefaultTabIndex() const {
+  return 0;
 }
 
 bool HTMLAnchorElement::IsLiveLink() const {

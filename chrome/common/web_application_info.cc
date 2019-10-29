@@ -11,6 +11,7 @@ WebApplicationIconInfo::~WebApplicationIconInfo() = default;
 WebApplicationInfo::WebApplicationInfo()
     : mobile_capable(MOBILE_CAPABLE_UNSPECIFIED),
       generated_icon_color(SK_ColorTRANSPARENT),
+      display_mode(blink::mojom::DisplayMode::kStandalone),
       open_as_window(false) {}
 
 WebApplicationInfo::WebApplicationInfo(const WebApplicationInfo& other) =

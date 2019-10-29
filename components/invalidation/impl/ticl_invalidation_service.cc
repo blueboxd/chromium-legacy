@@ -61,9 +61,9 @@ TiclInvalidationService::TiclInvalidationService(
     const std::string& user_agent,
     IdentityProvider* identity_provider,
     gcm::GCMDriver* gcm_driver,
-    base::RepeatingCallback<
-        void(base::WeakPtr<TiclInvalidationService>,
-             network::mojom::ProxyResolvingSocketFactoryRequest)>
+    base::RepeatingCallback<void(
+        base::WeakPtr<TiclInvalidationService>,
+        mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
         get_socket_factory_callback,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,

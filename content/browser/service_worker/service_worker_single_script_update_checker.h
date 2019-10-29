@@ -8,7 +8,8 @@
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_updated_script_loader.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -61,7 +62,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
         std::unique_ptr<
             ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
             network_loader,
-        network::mojom::URLLoaderClientRequest network_client_request,
+        mojo::PendingReceiver<network::mojom::URLLoaderClient>
+            network_client_receiver,
         mojo::ScopedDataPipeConsumerHandle network_consumer,
         ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
         ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state);
@@ -73,7 +75,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
     std::unique_ptr<
         ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
         network_loader;
-    network::mojom::URLLoaderClientRequest network_client_request;
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>
+        network_client_receiver;
     mojo::ScopedDataPipeConsumerHandle network_consumer;
     ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state;
     ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state;
@@ -170,7 +173,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   std::unique_ptr<
       ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
       network_loader_;
-  mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> network_client_receiver_{
+      this};
   mojo::ScopedDataPipeConsumerHandle network_consumer_;
   mojo::SimpleWatcher network_watcher_;
 

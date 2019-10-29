@@ -17,6 +17,7 @@ goog.require('PanelCommand');
 goog.require('cvox.BrailleTable');
 goog.require('cvox.BrailleTranslatorManager');
 goog.require('cvox.ChromeVox');
+goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.CommandStore');
 goog.require('cvox.ExtensionBridge');

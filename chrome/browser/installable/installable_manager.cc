@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -422,6 +424,17 @@ void InstallableManager::SetManifestDependentTasksComplete() {
   SetIconFetched(IconPurpose::MASKABLE);
 }
 
+void InstallableManager::CleanupAndStartNextTask() {
+  // Sites can always register a service worker after we finish checking, so
+  // don't cache a missing service worker error to ensure we always check
+  // again.
+  if (worker_error() == NO_MATCHING_SERVICE_WORKER)
+    worker_ = std::make_unique<ServiceWorkerProperty>();
+
+  task_queue_.Next();
+  WorkOnTask();
+}
+
 void InstallableManager::RunCallback(
     InstallableTask task,
     std::vector<InstallableStatusCode> errors) {
@@ -458,17 +471,14 @@ void InstallableManager::WorkOnTask() {
   auto errors = GetErrors(params);
   bool check_passed = errors.empty();
   if ((!check_passed && !params.is_debug_mode) || IsComplete(params)) {
+    // Yield the UI thread before processing the next task. If this object is
+    // deleted in the meantime, the next task naturally won't run.
+    base::PostTask(FROM_HERE, {base::CurrentThread()},
+                   base::BindOnce(&InstallableManager::CleanupAndStartNextTask,
+                                  weak_factory_.GetWeakPtr()));
+
     auto task = std::move(task_queue_.Current());
     RunCallback(std::move(task), std::move(errors));
-
-    // Sites can always register a service worker after we finish checking, so
-    // don't cache a missing service worker error to ensure we always check
-    // again.
-    if (worker_error() == NO_MATCHING_SERVICE_WORKER)
-      worker_ = std::make_unique<ServiceWorkerProperty>();
-
-    task_queue_.Next();
-    WorkOnTask();
     return;
   }
 

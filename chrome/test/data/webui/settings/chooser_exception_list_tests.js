@@ -141,8 +141,8 @@ suite('ChooserExceptionList', function() {
     assertEquals(exception.chooserType, actualException.chooserType);
     assertDeepEquals(exception.object, actualException.object);
 
-    let sites = exception.sites;
-    let actualSites = actualException.sites;
+    const sites = exception.sites;
+    const actualSites = actualException.sites;
     assertEquals(sites.length, actualSites.length);
     for (let i = 0; i < sites.length; ++i) {
       assertSiteOriginsEquals(sites[i], actualSites[i]);

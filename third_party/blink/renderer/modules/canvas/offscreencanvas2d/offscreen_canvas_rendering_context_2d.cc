@@ -270,6 +270,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
   if (is_deferral_enabled_) {
     recorder_->getRecordingCanvas()->restore();
     recorder_->getRecordingCanvas()->save();
+    Host()->SetNeedsMatrixClipRestore();
   }
 
   return ImageBitmap::Create(std::move(image));

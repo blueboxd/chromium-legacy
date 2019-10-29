@@ -69,7 +69,7 @@ TEST_F(ExtensionsInternalsUnitTest, WriteToStringPermissions) {
 
   EXPECT_EQ(extensions_list->GetList().size(), 1U);
 
-  base::Value* extension_1 = &extensions_list->GetList().at(0);
+  base::Value* extension_1 = &extensions_list->GetList()[0];
   ASSERT_TRUE(extension_1->is_dict());
   base::Value* permissions = extension_1->FindDictKey("permissions");
   ASSERT_TRUE(permissions);
@@ -80,24 +80,19 @@ TEST_F(ExtensionsInternalsUnitTest, WriteToStringPermissions) {
 
   base::Value* active = permissions->FindDictKey("active");
   ASSERT_NE(active->FindListKey("api"), nullptr);
-  EXPECT_EQ(active->FindListKey("api")->GetList().at(0).GetString(),
-            "activeTab");
+  EXPECT_EQ(active->FindListKey("api")->GetList()[0].GetString(), "activeTab");
   ASSERT_NE(active->FindListKey("manifest"), nullptr);
-  EXPECT_TRUE(active->FindListKey("manifest")
-                  ->GetList()
-                  .at(0)
-                  .FindBoolKey("automation"));
+  EXPECT_TRUE(
+      active->FindListKey("manifest")->GetList()[0].FindBoolKey("automation"));
   ASSERT_NE(active->FindListKey("explicit_hosts"), nullptr);
-  EXPECT_EQ(active->FindListKey("explicit_hosts")->GetList().at(0).GetString(),
+  EXPECT_EQ(active->FindListKey("explicit_hosts")->GetList()[0].GetString(),
             "https://example.com/*");
   ASSERT_NE(active->FindListKey("scriptable_hosts"), nullptr);
-  EXPECT_EQ(
-      active->FindListKey("scriptable_hosts")->GetList().at(0).GetString(),
-      "https://chromium.org/foo");
+  EXPECT_EQ(active->FindListKey("scriptable_hosts")->GetList()[0].GetString(),
+            "https://chromium.org/foo");
 
   base::Value* optional = permissions->FindDictKey("optional");
-  EXPECT_EQ(optional->FindListKey("api")->GetList().at(0).GetString(),
-            "storage");
+  EXPECT_EQ(optional->FindListKey("api")->GetList()[0].GetString(), "storage");
 }
 
 // Test that tab-specific permissions show up correctly in the JSON returned by
@@ -115,7 +110,7 @@ TEST_F(ExtensionsInternalsUnitTest, WriteToStringTabSpecificPermissions) {
   auto extensions_list = base::JSONReader::Read(source.WriteToString());
   ASSERT_TRUE(extensions_list) << "Failed to parse extensions internals json.";
   base::Value* permissions =
-      extensions_list->GetList().at(0).FindDictKey("permissions");
+      extensions_list->GetList()[0].FindDictKey("permissions");
 
   // Check that initially there is no tab-scpecific data.
   EXPECT_EQ(permissions->FindDictKey("tab_specific")->DictSize(), 0U);
@@ -132,7 +127,7 @@ TEST_F(ExtensionsInternalsUnitTest, WriteToStringTabSpecificPermissions) {
   extension->permissions_data()->UpdateTabSpecificPermissions(1,
                                                               tab_permissions);
   extensions_list = base::JSONReader::Read(source.WriteToString());
-  permissions = extensions_list->GetList().at(0).FindDictKey("permissions");
+  permissions = extensions_list->GetList()[0].FindDictKey("permissions");
 
   // Check the tab specific data is present now.
   base::Value* tab_specific = permissions->FindDictKey("tab_specific");
@@ -140,20 +135,17 @@ TEST_F(ExtensionsInternalsUnitTest, WriteToStringTabSpecificPermissions) {
   EXPECT_EQ(tab_specific->DictSize(), 1U);
   EXPECT_EQ(tab_specific->FindDictKey("1")
                 ->FindListKey("explicit_hosts")
-                ->GetList()
-                .at(0)
+                ->GetList()[0]
                 .GetString(),
             "https://google.com/*");
   EXPECT_EQ(tab_specific->FindDictKey("1")
                 ->FindListKey("scriptable_hosts")
-                ->GetList()
-                .at(0)
+                ->GetList()[0]
                 .GetString(),
             "https://google.com/*");
   EXPECT_EQ(tab_specific->FindDictKey("1")
                 ->FindListKey("api")
-                ->GetList()
-                .at(0)
+                ->GetList()[0]
                 .GetString(),
             "tabs");
 }
@@ -175,14 +167,13 @@ TEST_F(ExtensionsInternalsUnitTest, WriteToStringWithheldPermissions) {
   auto extensions_list = base::JSONReader::Read(source.WriteToString());
   ASSERT_TRUE(extensions_list) << "Failed to parse extensions internals json.";
   base::Value* permissions =
-      extensions_list->GetList().at(0).FindDictKey("permissions");
+      extensions_list->GetList()[0].FindDictKey("permissions");
 
   // Check the host is initially in active hosts and there are no withheld
   // entries.
   EXPECT_EQ(permissions->FindDictKey("active")
                 ->FindListKey("explicit_hosts")
-                ->GetList()
-                .at(0)
+                ->GetList()[0]
                 .GetString(),
             "https://example.com/*");
   EXPECT_EQ(permissions->FindDictKey("withheld")
@@ -210,7 +201,7 @@ TEST_F(ExtensionsInternalsUnitTest, WriteToStringWithheldPermissions) {
   extensions::ScriptingPermissionsModifier modifier(profile(), extension);
   modifier.SetWithholdHostPermissions(true);
   extensions_list = base::JSONReader::Read(source.WriteToString());
-  permissions = extensions_list->GetList().at(0).FindDictKey("permissions");
+  permissions = extensions_list->GetList()[0].FindDictKey("permissions");
 
   // Check the host that was active is now withheld.
   EXPECT_EQ(permissions->FindDictKey("active")
@@ -220,8 +211,7 @@ TEST_F(ExtensionsInternalsUnitTest, WriteToStringWithheldPermissions) {
             0U);
   EXPECT_EQ(permissions->FindDictKey("withheld")
                 ->FindListKey("explicit_hosts")
-                ->GetList()
-                .at(0)
+                ->GetList()[0]
                 .GetString(),
             "https://example.com/*");
 }

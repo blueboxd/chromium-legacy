@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.omnibox.AnswerTextStyle;
 import org.chromium.components.omnibox.AnswerTextType;
 import org.chromium.components.omnibox.AnswerType;
@@ -72,9 +71,6 @@ public class AnswerSuggestionProcessorUnitTest {
 
     @Mock
     Bitmap mFakeBitmap;
-
-    @Mock
-    Profile mProfile;
 
     private Activity mActivity;
     private AnswerSuggestionProcessor mProcessor;
@@ -191,10 +187,9 @@ public class AnswerSuggestionProcessorUnitTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
-        when(mSuggestionHost.getCurrentProfile()).thenReturn(mProfile);
 
-        mProcessor = new AnswerSuggestionProcessor(mActivity, mSuggestionHost, mUrlStateProvider);
-        mProcessor.setImageFetcherForTesting(mImageFetcher);
+        mProcessor = new AnswerSuggestionProcessor(
+                mActivity, mSuggestionHost, mUrlStateProvider, () -> mImageFetcher);
     }
 
     /** Populate model for associated suggestion. */
@@ -418,14 +413,13 @@ public class AnswerSuggestionProcessorUnitTest {
     }
 
     @Test
-    public void answerImage_noImageFetchWhenProfileIsUnavailable() {
+    public void answerImage_noImageFetchWhenFetcherIsUnavailable() {
         final String url = "http://site.com";
-        when(mSuggestionHost.getCurrentProfile()).thenReturn(null);
+        mImageFetcher = null;
         final SuggestionTestHelper suggHelper =
                 createAnswerSuggestion(AnswerType.WEATHER, "", 1, "", 1, url);
         processSuggestion(suggHelper);
-
-        verify(mImageFetcher, times(0)).fetchImage(anyString(), anyString(), any());
+        Assert.assertNotNull(suggHelper.getIcon());
     }
 
     @Test

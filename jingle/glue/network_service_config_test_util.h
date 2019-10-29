@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "jingle/glue/network_service_config.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/network_context.h"
@@ -54,10 +55,12 @@ class NetworkServiceConfigTestUtil {
       base::WeakPtr<NetworkServiceConfigTestUtil> instance,
       scoped_refptr<base::SequencedTaskRunner> mojo_runner,
       scoped_refptr<base::SequencedTaskRunner> net_runner,
-      network::mojom::ProxyResolvingSocketFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+          receiver);
   static void RequestSocketOnMojoRunner(
       base::WeakPtr<NetworkServiceConfigTestUtil> instance,
-      network::mojom::ProxyResolvingSocketFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+          receiver);
   void CreateNetworkContextOnNetworkRunner(
       mojo::PendingReceiver<network::mojom::NetworkContext>
           network_context_receiver,

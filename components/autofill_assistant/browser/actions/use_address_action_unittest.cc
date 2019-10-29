@@ -16,6 +16,7 @@
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/mock_personal_data_manager.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
+#include "components/autofill_assistant/browser/web/web_controller_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -278,6 +279,66 @@ TEST_F(UseAddressActionTest, FallbackSucceeds) {
   }
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
             ProcessAction(action_proto));
+}
+
+TEST_F(UseAddressActionTest, AutofillFailureWithoutRequiredFieldsIsFatal) {
+  ActionProto action_proto = CreateUseAddressAction();
+
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillAddressForm(
+                  NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
+      .WillOnce(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
+
+  ProcessedActionProto processed_action;
+  EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&processed_action));
+
+  UseAddressAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+
+  EXPECT_EQ(processed_action.status(),
+            ProcessedActionStatusProto::OTHER_ACTION_STATUS);
+  EXPECT_EQ(processed_action.has_status_details(), false);
+}
+
+TEST_F(UseAddressActionTest,
+       AutofillFailureWithRequiredFieldsLaunchesFallback) {
+  ActionProto action_proto = CreateUseAddressAction();
+  AddRequiredField(&action_proto, UseAddressProto::RequiredField::FIRST_NAME,
+                   "#first_name");
+
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillAddressForm(
+                  NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
+      .WillOnce(RunOnceCallback<2>(
+          FillAutofillErrorStatus(ClientStatus(OTHER_ACTION_STATUS))));
+
+  // First validation fails.
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Selector({"#first_name"}), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+  // Fill first name.
+  Expectation set_first_name =
+      EXPECT_CALL(mock_action_delegate_,
+                  OnSetFieldValue(Selector({"#first_name"}), kFirstName, _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  // Second validation succeeds.
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Selector({"#first_name"}), _))
+      .After(set_first_name)
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+
+  ProcessedActionProto processed_action;
+  EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&processed_action));
+
+  UseAddressAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+
+  EXPECT_EQ(processed_action.status(),
+            ProcessedActionStatusProto::ACTION_APPLIED);
+  EXPECT_EQ(processed_action.status_details()
+                .autofill_error_info()
+                .autofill_error_status(),
+            OTHER_ACTION_STATUS);
 }
 
 }  // namespace

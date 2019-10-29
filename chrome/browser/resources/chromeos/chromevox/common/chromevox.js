@@ -66,10 +66,6 @@ cvox.ChromeVox.tts;
  */
 cvox.ChromeVox.braille;
 /**
- * @type {cvox.MathJaxInterface}
- */
-cvox.ChromeVox.mathJax;
-/**
  * @type {boolean}
  */
 cvox.ChromeVox.isActive = true;

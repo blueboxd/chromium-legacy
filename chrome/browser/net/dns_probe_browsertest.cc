@@ -214,7 +214,7 @@ class BreakableCorrectionInterceptor {
   void InterceptURLLoaderRequest(
       content::URLLoaderInterceptor::RequestParams* params) {
     DelayedURLLoader* job = new DelayedURLLoader(
-        std::move(params->request), std::move(params->client), net_error_,
+        std::move(params->receiver), std::move(params->client), net_error_,
         delay_requests_,
         base::BindOnce(&BreakableCorrectionInterceptor::OnRequestDestroyed,
                        base::Unretained(this)));

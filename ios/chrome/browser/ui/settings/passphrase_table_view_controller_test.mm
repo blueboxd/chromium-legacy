@@ -16,6 +16,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
@@ -72,6 +73,9 @@ void PassphraseTableViewControllerTest::SetUp() {
           &AuthenticationServiceFake::CreateAuthenticationService));
   test_cbs_builder.SetPrefService(CreatePrefService());
   chrome_browser_state_ = test_cbs_builder.Build();
+  WebStateList* web_state_list = nullptr;
+  browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
+                                           web_state_list);
 
   fake_sync_service_ = static_cast<syncer::MockSyncService*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -100,7 +104,7 @@ void PassphraseTableViewControllerTest::SetUpNavigationController(
   dummy_controller_ = [[UIViewController alloc] init];
   nav_controller_ = [[SettingsNavigationController alloc]
       initWithRootViewController:dummy_controller_
-                    browserState:chrome_browser_state_.get()
+                         browser:browser_.get()
                         delegate:nil];
   [nav_controller_ pushViewController:test_controller animated:NO];
 }

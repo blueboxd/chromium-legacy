@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1442386063175183758">Plegado en ventana a la derecha</translation>
 <translation id="1442987760062738829">Perforar</translation>
-<translation id="1450011005989029586">Tu contraseña quedó expuesta debido a una violación de la seguridad de datos en un sitio o app que usas. Chrome te recomienda que <ph name="BOLD" /> en <ph name="ORIGIN" /> ahora.</translation>
 <translation id="1455413310270022028">Borrador</translation>
 <translation id="1463543813647160932">5 x 7</translation>
 <translation id="1472675084647422956">Mostrar más</translation>
@@ -275,6 +274,7 @@
 <translation id="2257315177824333709">No se puede guardar tu tarjeta en este momento</translation>
 <translation id="2262243747453050782">Error de HTTP</translation>
 <translation id="2263079731045660823">Actualiza la información de "Autocompletar" para la tarjeta de crédito en la configuración de Chrome</translation>
+<translation id="2267047181501709434">Verificando identidad…</translation>
 <translation id="2270484714375784793">Número de teléfono</translation>
 <translation id="2277103315734023688">Buscar más adelante</translation>
 <translation id="2283340219607151381">Guardar y completar direcciones</translation>
@@ -282,6 +282,7 @@
 <translation id="2292556288342944218">Se bloqueó tu acceso a Internet</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
+<translation id="2315864634253056100">El nombre de este sitio es similar al de <ph name="LOOKALIKE_DOMAIN" />. A veces, los atacantes hacen cambios difíciles de detectar en la dirección web para imitar sitios.</translation>
 <translation id="2316887270356262533">Esta acción libera menos de 1 MB. Es posible que algunos sitios se carguen más lento en tu próxima visita.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> requiere un nombre de usuario y una contraseña.</translation>
 <translation id="2317583587496011522">Se aceptan tarjetas de débito.</translation>
@@ -475,6 +476,7 @@
 <translation id="3229041911291329567">Información de versión sobre tu dispositivo y navegador</translation>
 <translation id="323107829343500871">Ingresar el CVC de la tarjeta <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Siempre detectar contenido importante en este sitio</translation>
+<translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> es similar a <ph name="SUGGESTED_DOMAIN" />. A veces, los atacantes usan URL similares para imitar sitios.</translation>
 <translation id="3270847123878663523">&amp;Deshacer Reorganizar</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3281668902344226640">Usa Touch ID para verificar tus formas de pago guardadas.</translation>
@@ -680,13 +682,13 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Intenta ejecutar el Diagnóstico de red<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Continuar a <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Válido</translation>
+<translation id="4248776159690739358">Comparte con tu administrador información sobre eventos de seguridad que se hayan marcado en la función de Protección contra amenazas de Chrome Enterprise. Esta información puede incluir URL de las páginas que visitas, nombres de archivos o metadatos, y el nombre de usuario con el que accedes a tu dispositivo y a Chrome.</translation>
 <translation id="4250431568374086873">Tu conexión con este sitio no es completamente segura</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="425582637250725228">Es posible que los cambios que implementaste no se puedan guardar.</translation>
 <translation id="4258748452823770588">Firma no válida</translation>
 <translation id="4261046003697461417">No se pueden realizar anotaciones en documentos protegidos</translation>
 <translation id="4265872034478892965">Permitido por tu administrador</translation>
-<translation id="4270615291506829403">cambies tu contraseña</translation>
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4277028893293644418">Restablecer contraseña</translation>
 <translation id="4279811152705618813"><ph name="ENROLLMENT_DOMAIN" /> administra tu dispositivo <ph name="DEVICE_TYPE" /></translation>
@@ -766,7 +768,6 @@
 <translation id="4708268264240856090">Se interrumpió la conexión</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Ejecución del Diagnóstico de red de Windows<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">Tu contraseña quedó expuesta debido a un incumplimiento de datos en un sitio o app que usas. Chrome te recomienda que revises tus contraseñas guardadas ahora.</translation>
 <translation id="4726672564094551039">Volver a cargar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
@@ -1183,7 +1184,6 @@
 <translation id="679355240208270552">Se ignora porque la búsqueda predeterminada no está habilitada según la política.</translation>
 <translation id="681021252041861472">Campo obligatorio</translation>
 <translation id="6810899417690483278">ID de personalización</translation>
-<translation id="6819440013020405090">Tu contraseña quedó expuesta debido a un incumplimiento de datos en un sitio o app que usas. Chrome te recomienda revisar las contraseñas guardadas y cambiar la contraseña que usas en <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Intentaste acceder a <ph name="DOMAIN" />, pero el servidor presentó un certificado firmado con un algoritmo de firma no seguro (como SHA-1). Esto significa que podrían haberse falsificado las credenciales de seguridad presentadas por el servidor y que este no sea el servidor esperado (es posible que hayas establecido comunicación con un atacante).</translation>
 <translation id="6826370046007623921">Prevención de pérdida de datos</translation>
 <translation id="6831043979455480757">Traducir</translation>
@@ -1226,7 +1226,6 @@
 <translation id="7064851114919012435">Información de contacto</translation>
 <translation id="7075452647191940183">La solicitud es demasiado grande</translation>
 <translation id="7079718277001814089">Este sitio contiene software malicioso</translation>
-<translation id="70850504851191913">Se denunció un incumplimiento de datos</translation>
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7090678807593890770">Buscar <ph name="LINK" /> en Google</translation>
 <translation id="7108338896283013870">Ocultar</translation>
@@ -1491,6 +1490,7 @@ Detalles adicionales:
 <translation id="830498451218851433">Plegado a la mitad</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8308427013383895095">Se produjo un error en la traducción a causa de un problema con la conexión de red.</translation>
+<translation id="831207732689920588">Esta página es sospechosa (marcada por Chrome).</translation>
 <translation id="8332188693563227489">Se denegó el acceso a <ph name="HOST_NAME" /></translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Si comprendes los riesgos de seguridad, puedes <ph name="BEGIN_LINK" />visitar este sitio<ph name="END_LINK" /> antes de que se hayan eliminado los programas peligrosos.</translation>
@@ -1581,6 +1581,7 @@ Detalles adicionales:
 <translation id="8903921497873541725">Acercar</translation>
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="8912362522468806198">Cuenta de Google</translation>
+<translation id="8918231688545606538">Esta página es sospechosa</translation>
 <translation id="892588693504540538">Perforación en la esquina superior derecha</translation>
 <translation id="8931333241327730545">¿Quieres guardar esta tarjeta en tu cuenta de Google?</translation>
 <translation id="8932102934695377596">El reloj está atrasado</translation>

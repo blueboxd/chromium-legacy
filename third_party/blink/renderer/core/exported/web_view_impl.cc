@@ -1844,8 +1844,8 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
       break;
     case WebInputEvent::kMouseDown:
       event_type = event_type_names::kMousedown;
-      gesture_indicator = LocalFrame::NotifyUserActivation(
-          element->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
+      gesture_indicator =
+          LocalFrame::NotifyUserActivation(element->GetDocument().GetFrame());
       mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
       break;
     case WebInputEvent::kMouseUp:

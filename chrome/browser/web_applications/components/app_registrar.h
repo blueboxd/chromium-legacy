@@ -78,7 +78,7 @@ class AppRegistrar {
       const AppId& app_id) const = 0;
   virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
   virtual base::Optional<GURL> GetAppScope(const AppId& app_id) const = 0;
-  virtual blink::mojom::DisplayMode GetAppDisplayMode(
+  virtual blink::mojom::DisplayMode GetAppUserDisplayMode(
       const web_app::AppId& app_id) const = 0;
 
   virtual std::vector<AppId> GetAppIds() const = 0;

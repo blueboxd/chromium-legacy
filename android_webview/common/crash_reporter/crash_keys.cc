@@ -15,12 +15,15 @@ const char kAppPackageVersionCode[] = "app-package-version-code";
 
 const char kAndroidSdkInt[] = "android-sdk-int";
 
+const char kSupportLibraryWebkitVersion[] = "androidx-webkit-version";
+
 // clang-format off
 const char* const kWebViewCrashKeyWhiteList[] = {
     "AW_WHITELISTED_DEBUG_KEY",
     kAppPackageName,
     kAppPackageVersionCode,
     kAndroidSdkInt,
+    kSupportLibraryWebkitVersion,
 
     // process type
     "ptype",

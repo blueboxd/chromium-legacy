@@ -425,7 +425,7 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
         }
       } else {
         if (app_ranker_) {
-          const auto& it = app_ranks_.find(result.result->id());
+          const auto& it = app_ranks_.find(NormalizeAppId(result.result->id()));
           if (it != app_ranks_.end()) {
             result.score = kBoostOfApps + ReRange(it->second, 0.67, 1.0);
           }

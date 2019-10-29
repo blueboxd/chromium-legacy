@@ -11,6 +11,18 @@
 
 namespace blink {
 
+// As SymbolKey is widely used, numerous instances of SymbolKey are created,
+// plus all the instances have static storage duration (defined as static
+// variables).  Thus, it's important to make SymbolKey
+// trivially-constructible/destructible so that compilers can remove all the
+// constructor/destructor calls and reduce the code size.
+static_assert(
+    std::is_trivially_constructible<V8PrivateProperty::SymbolKey>::value,
+    "SymbolKey is not trivially constructible");
+static_assert(
+    std::is_trivially_destructible<V8PrivateProperty::SymbolKey>::value,
+    "SymbolKey is not trivially destructible");
+
 v8::MaybeLocal<v8::Value> V8PrivateProperty::Symbol::GetFromMainWorld(
     ScriptWrappable* script_wrappable) {
   v8::Local<v8::Object> wrapper = script_wrappable->MainWorldWrapper(isolate_);
@@ -27,7 +39,7 @@ V8PrivateProperty::Symbol V8PrivateProperty::GetSymbol(
   auto iter = symbol_map.find(&key);
   v8::Local<v8::Private> v8_private;
   if (UNLIKELY(iter == symbol_map.end())) {
-    v8_private = CreateV8Private(isolate, key.GetDescription());
+    v8_private = CreateV8Private(isolate, nullptr);
     symbol_map.insert(&key, v8::Eternal<v8::Private>(isolate, v8_private));
   } else {
     v8_private = iter->value.Get(isolate);

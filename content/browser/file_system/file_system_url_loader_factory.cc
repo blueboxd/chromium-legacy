@@ -100,7 +100,7 @@ class FileSystemEntryURLLoader
       public base::SupportsWeakPtr<FileSystemEntryURLLoader> {
  public:
   explicit FileSystemEntryURLLoader(FactoryParams params)
-      : binding_(this), params_(std::move(params)) {}
+      : params_(std::move(params)) {}
 
   // network::mojom::URLLoader:
   void FollowRedirect(const std::vector<std::string>& removed_headers,
@@ -115,7 +115,7 @@ class FileSystemEntryURLLoader
   virtual void FileSystemIsMounted() = 0;
 
   void Start(const network::ResourceRequest& request,
-             network::mojom::URLLoaderRequest loader,
+             mojo::PendingReceiver<network::mojom::URLLoader> loader,
              network::mojom::URLLoaderClientPtrInfo client_info,
              scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
     io_task_runner->PostTask(
@@ -125,7 +125,7 @@ class FileSystemEntryURLLoader
   }
 
   void MaybeDeleteSelf() {
-    if (!binding_.is_bound() && !client_.is_bound())
+    if (!receiver_.is_bound() && !client_.is_bound())
       delete this;
   }
 
@@ -143,7 +143,7 @@ class FileSystemEntryURLLoader
     OnClientComplete(network::URLLoaderCompletionStatus(net_error));
   }
 
-  mojo::Binding<network::mojom::URLLoader> binding_;
+  mojo::Receiver<network::mojom::URLLoader> receiver_{this};
   network::mojom::URLLoaderClientPtr client_;
   FactoryParams params_;
   std::unique_ptr<mojo::DataPipeProducer> data_producer_;
@@ -152,11 +152,11 @@ class FileSystemEntryURLLoader
 
  private:
   void StartOnIOThread(const network::ResourceRequest& request,
-                       network::mojom::URLLoaderRequest loader,
+                       mojo::PendingReceiver<network::mojom::URLLoader> loader,
                        network::mojom::URLLoaderClientPtrInfo client_info) {
-    binding_.Bind(std::move(loader));
-    binding_.set_connection_error_handler(base::BindOnce(
-        &FileSystemEntryURLLoader::OnConnectionError, base::Unretained(this)));
+    receiver_.Bind(std::move(loader));
+    receiver_.set_disconnect_handler(base::BindOnce(
+        &FileSystemEntryURLLoader::OnMojoDisconnect, base::Unretained(this)));
 
     client_.Bind(std::move(client_info));
 
@@ -221,8 +221,8 @@ class FileSystemEntryURLLoader
     FileSystemIsMounted();
   }
 
-  void OnConnectionError() {
-    binding_.Close();
+  void OnMojoDisconnect() {
+    receiver_.reset();
     MaybeDeleteSelf();
   }
 
@@ -233,7 +233,7 @@ class FileSystemDirectoryURLLoader : public FileSystemEntryURLLoader {
  public:
   static void CreateAndStart(
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderRequest loader,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
       network::mojom::URLLoaderClientPtrInfo client_info,
       FactoryParams params,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
@@ -395,7 +395,7 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
  public:
   static void CreateAndStart(
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderRequest loader,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
       network::mojom::URLLoaderClientPtrInfo client_info,
       FactoryParams params,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
@@ -604,14 +604,15 @@ class FileSystemURLLoaderFactory : public network::mojom::URLLoaderFactory {
   ~FileSystemURLLoaderFactory() override = default;
 
  private:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     DVLOG(1) << "CreateLoaderAndStart: " << request.url;
 
     const std::string path = request.url.path();

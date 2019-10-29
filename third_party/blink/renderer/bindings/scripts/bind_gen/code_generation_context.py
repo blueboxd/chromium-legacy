@@ -29,6 +29,7 @@ class CodeGenerationContext(object):
         #   attribute name: default value
         cls._context_attrs = {
             # Top-level definition
+            "callback_function": None,
             "callback_interface": None,
             "dictionary": None,
             "interface": None,
@@ -133,6 +134,10 @@ class CodeGenerationContext(object):
                 or self.namespace)
 
     @property
+    def function_like(self):
+        return (self.callback_function or self.constructor or self.operation)
+
+    @property
     def is_return_by_argument(self):
         if self.return_type is None:
             return None
@@ -164,6 +169,8 @@ class CodeGenerationContext(object):
     def return_type(self):
         if self.attribute_get:
             return self.attribute.idl_type
+        if self.callback_function:
+            return self.callback_function.return_type
         if self.operation:
             return self.operation.return_type
         return None

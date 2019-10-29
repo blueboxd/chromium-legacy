@@ -1008,8 +1008,17 @@
     <activity
         android:label="WebView
         Crashes"
+        android:launchMode="singleTop"
         android:name="org.chromium.android_webview.devui.CrashesListActivity"
-        android:process=":webview_apk"/>
+        android:process=":webview_apk"
+        android:theme="@android:style/Theme.DeviceDefault"/>
+    <activity
+        android:label="WebView
+        DevTools"
+        android:launchMode="singleTask"
+        android:name="org.chromium.android_webview.devui.MainActivity"
+        android:process=":webview_apk"
+        android:theme="@android:style/Theme.DeviceDefault"/>
     <activity
         android:enabled="false"
         android:excludeFromRecents="true"

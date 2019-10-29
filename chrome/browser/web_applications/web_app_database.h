@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
@@ -93,10 +94,16 @@ class WebAppDatabase {
 };
 
 blink::mojom::DisplayMode ToMojomDisplayMode(
-    ::sync_pb::WebAppSpecifics::DisplayMode display_mode);
+    WebAppProto::DisplayMode display_mode);
 
-::sync_pb::WebAppSpecifics::DisplayMode ToWebAppSpecificsDisplayMode(
+blink::mojom::DisplayMode ToMojomDisplayMode(
+    ::sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode);
+
+WebAppProto::DisplayMode ToWebAppProtoDisplayMode(
     blink::mojom::DisplayMode display_mode);
+
+::sync_pb::WebAppSpecifics::UserDisplayMode ToWebAppSpecificsUserDisplayMode(
+    blink::mojom::DisplayMode user_display_mode);
 
 }  // namespace web_app
 

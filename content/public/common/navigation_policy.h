@@ -15,7 +15,6 @@
 
 namespace content {
 
-CONTENT_EXPORT bool IsPerNavigationMojoInterfaceEnabled();
 CONTENT_EXPORT bool IsBackForwardCacheEnabled();
 CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceEnabled();
 CONTENT_EXPORT bool IsNavigationImmediateResponseBodyEnabled();

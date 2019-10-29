@@ -15,6 +15,7 @@
 #include "base/timer/timer.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -37,7 +38,7 @@ using ResultCallback =
 
 using RequestHandler =
     base::OnceCallback<void(const network::ResourceRequest& resource_request,
-                            network::mojom::URLLoaderRequest,
+                            mojo::PendingReceiver<network::mojom::URLLoader>,
                             network::mojom::URLLoaderClientPtr)>;
 
 // This class attempts to fetch a LitePage from the LitePage server, and if
@@ -106,7 +107,7 @@ class PreviewsLitePageRedirectServingURLLoader
   // navigation path.
   void SetUpForwardingClient(
       const network::ResourceRequest&,
-      network::mojom::URLLoaderRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
       network::mojom::URLLoaderClientPtr forwarding_client);
 
   // The network URLLoader that fetches the LitePage URL and its binding.

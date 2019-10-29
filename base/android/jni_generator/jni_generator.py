@@ -61,7 +61,7 @@ _EXTRACT_METHODS_REGEX = re.compile(
     flags=re.DOTALL)
 
 _NATIVE_PROXY_EXTRACTION_REGEX = re.compile(
-    r'@NativeMethods\s*(public|private)*\s*interface\s*'
+    r'@NativeMethods[\S\s]+?interface\s*'
     r'(?P<interface_name>\w*)\s*(?P<interface_body>{(\s*.*)+?\s*})')
 
 # Use 100 columns rather than 80 because it makes many lines more readable.

@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -162,8 +163,8 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
   EXPECT_EQ(styled_label_test.link_targets().size(), 1U);
 
   // Tap on the learn more link.
-  views::View* link_view = styled_label_test.link_targets().begin()->first;
-  TapOnView(link_view);
+  views::Link* link = styled_label_test.link_targets().begin()->first;
+  TapOnView(link);
   EXPECT_NE(test_api.warning_dialog(), nullptr);
   EXPECT_TRUE(test_api.warning_dialog()->GetVisible());
 

@@ -106,7 +106,7 @@ class Json3OutputTest(unittest.TestCase):
         testing.TestResult('benchmark/story2', status='PASS'),
         testing.TestResult('benchmark/story1', status='FAIL'),
         testing.TestResult('benchmark/story2', status='SKIP',
-                           is_expected=False),
+                           expected=False),
     ])
 
     test_result = self.FindTestResult(results, 'benchmark', 'story1')

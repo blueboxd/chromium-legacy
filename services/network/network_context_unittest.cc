@@ -499,7 +499,7 @@ TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {
   // the client receiving a connection error.
   network_context.reset();
 
-  client.RunUntilConnectionError();
+  client.RunUntilDisconnect();
   EXPECT_FALSE(client.has_received_completion());
 }
 

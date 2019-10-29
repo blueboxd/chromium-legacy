@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">Stampa</translation>
 <translation id="1442386063175183758">Piegatura a finestra a destra</translation>
 <translation id="1442987760062738829">Perforatura</translation>
-<translation id="1450011005989029586">A causa di una violazione dei dati su un sito o un'app che usi, la tua password è stata esposta. Chrome consiglia di <ph name="BOLD" /> sul sito <ph name="ORIGIN" /> immediatamente.</translation>
 <translation id="1455413310270022028">Gomma</translation>
 <translation id="1463543813647160932">5 x 7</translation>
 <translation id="1472675084647422956">Mostra altro</translation>
@@ -688,7 +687,6 @@
 <translation id="4258748452823770588">Firma errata</translation>
 <translation id="4261046003697461417">Non è possibile inserire annotazioni nei documenti protetti</translation>
 <translation id="4265872034478892965">Consentita dall'amministratore</translation>
-<translation id="4270615291506829403">cambiare la password</translation>
 <translation id="4275830172053184480">Riavvia il dispositivo</translation>
 <translation id="4277028893293644418">Reimposta password</translation>
 <translation id="4279811152705618813">Il tuo dispositivo <ph name="DEVICE_TYPE" /> è gestito dal dominio <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -768,7 +766,6 @@
 <translation id="4708268264240856090">La connessione è stata interrotta</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica di rete Windows<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">A causa di una violazione dei dati su un sito o un'app che usi, la tua password è stata esposta. Chrome suggerisce di controllare subito le tue password salvate.</translation>
 <translation id="4726672564094551039">Ricarica criteri</translation>
 <translation id="4728558894243024398">Piattaforma</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
@@ -1184,7 +1181,6 @@
 <translation id="679355240208270552">Ignorato perché la ricerca predefinita non è attiva secondo la norma.</translation>
 <translation id="681021252041861472">Campo obbligatorio</translation>
 <translation id="6810899417690483278">ID personalizzazione</translation>
-<translation id="6819440013020405090">A causa di una violazione dei dati su un sito o un'app che usi, la tua password è stata esposta. Chrome suggerisce di controllare le tue password salvate e di cambiare la tua password su <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Hai tentato di accedere al sito <ph name="DOMAIN" />, ma il server ha presentato un certificato firmato utilizzando un algoritmo di firma debole (ad esempio SHA-1). Ciò significa che le credenziali di sicurezza presentate dal server potrebbero essere state falsificate e il server potrebbe non essere quello previsto (è possibile che tu stia comunicando con un malintenzionato).</translation>
 <translation id="6826370046007623921">Prevenzione della perdita dei dati</translation>
 <translation id="6831043979455480757">Traduci</translation>
@@ -1227,7 +1223,6 @@
 <translation id="7064851114919012435">Informazioni di contatto</translation>
 <translation id="7075452647191940183">La richiesta è troppo grande</translation>
 <translation id="7079718277001814089">Questo sito contiene malware</translation>
-<translation id="70850504851191913">Segnalazione di violazione dei dati</translation>
 <translation id="7087282848513945231">Contea</translation>
 <translation id="7090678807593890770">Cerca <ph name="LINK" /> con Google</translation>
 <translation id="7108338896283013870">Nascondi</translation>

@@ -12,7 +12,7 @@
 #include "base/test/task_environment.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
-#include "chromeos/components/drivefs/pending_connection_manager.h"
+#include "chromeos/components/mojo_bootstrap/pending_connection_manager.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -91,8 +91,8 @@ class DriveFsBootstrapTest : public testing::Test,
   }
 
   void WaitForConnection(const base::UnguessableToken& token) {
-    ASSERT_TRUE(
-        PendingConnectionManager::Get().OpenIpcChannel(token.ToString(), {}));
+    ASSERT_TRUE(mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
+        token.ToString(), {}));
     base::RunLoop run_loop;
     bootstrap_receiver_.set_disconnect_handler(run_loop.QuitClosure());
     run_loop.Run();
@@ -121,8 +121,8 @@ TEST_F(DriveFsBootstrapTest, Listen_Connect_Disconnect) {
   EXPECT_CALL(*this, OnDisconnect());
   receiver_.reset();
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(
-      PendingConnectionManager::Get().OpenIpcChannel(token.ToString(), {}));
+  ASSERT_FALSE(mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
+      token.ToString(), {}));
 }
 
 TEST_F(DriveFsBootstrapTest, Listen_Connect_DisconnectDelegate) {
@@ -132,8 +132,8 @@ TEST_F(DriveFsBootstrapTest, Listen_Connect_DisconnectDelegate) {
   EXPECT_CALL(*this, OnDisconnect());
   delegate_.reset();
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(
-      PendingConnectionManager::Get().OpenIpcChannel(token.ToString(), {}));
+  ASSERT_FALSE(mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
+      token.ToString(), {}));
 }
 
 TEST_F(DriveFsBootstrapTest, Listen_Connect_Destroy) {
@@ -143,8 +143,8 @@ TEST_F(DriveFsBootstrapTest, Listen_Connect_Destroy) {
   EXPECT_CALL(*this, OnDisconnect()).Times(0);
   connection_.reset();
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(
-      PendingConnectionManager::Get().OpenIpcChannel(token.ToString(), {}));
+  ASSERT_FALSE(mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
+      token.ToString(), {}));
 }
 
 TEST_F(DriveFsBootstrapTest, Listen_Destroy) {
@@ -152,8 +152,8 @@ TEST_F(DriveFsBootstrapTest, Listen_Destroy) {
   auto token = ListenForConnection();
   connection_.reset();
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(
-      PendingConnectionManager::Get().OpenIpcChannel(token.ToString(), {}));
+  ASSERT_FALSE(mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
+      token.ToString(), {}));
 }
 
 TEST_F(DriveFsBootstrapTest, Listen_DisconnectDelegate) {

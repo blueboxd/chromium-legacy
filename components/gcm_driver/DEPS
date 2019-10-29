@@ -20,6 +20,7 @@ include_rules = [
   "+google_apis/gaia/gaia_oauth_client.h",
   "+google_apis/gaia/google_service_auth_error.h",
   "+google_apis/gcm",
+  "+mojo/public",
   "+net",
   "+services/network/public/cpp",
   "+services/network/public/mojom",

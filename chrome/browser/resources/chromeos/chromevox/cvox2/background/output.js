@@ -31,8 +31,10 @@ goog.require('LanguageSwitching');
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
+var DescriptionFromType = chrome.automation.DescriptionFromType;
 var Dir = constants.Dir;
 var EventType = chrome.automation.EventType;
+var NameFromType = chrome.automation.NameFromType;
 var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
 
@@ -1313,7 +1315,7 @@ Output.prototype = {
           this.append_(buff, filename, options);
           ruleStr.writeTokenWithValue(token, filename);
         } else if (token == 'nameFromNode') {
-          if (node.nameFrom == chrome.automation.NameFromType.CONTENTS)
+          if (node.nameFrom == NameFromType.CONTENTS)
             return;
 
           options.annotation.push('name');
@@ -1325,7 +1327,7 @@ Output.prototype = {
           // the descendants text if |node| has only static text children.
           options.annotation.push(token);
           if (node.name &&
-              (node.nameFrom != 'contents' ||
+              (node.nameFrom != NameFromType.CONTENTS ||
                node.children.every(function(child) {
                  return child.role == RoleType.STATIC_TEXT;
                }))) {
@@ -1545,7 +1547,7 @@ Output.prototype = {
                 related, related, Output.EventType.NAVIGATE, buff, ruleStr);
           }
         } else if (token == 'nameOrTextContent') {
-          if (node.name && node.nameFrom != 'contents') {
+          if (node.name && node.nameFrom != NameFromType.CONTENTS) {
             ruleStr.writeToken(token);
             this.format_(node, '$name', buff, ruleStr);
             return;
@@ -2164,15 +2166,19 @@ Output.prototype = {
     if (node.placeholder)
       this.append_(buff, node.placeholder);
 
-    if (node.tooltip)
+    // Only include tooltip as a hint as a last alternative. It may have been
+    // included as the name or description previously. As a rule of thumb, only
+    // include it if there's no name and no description.
+    if (node.tooltip && !node.name && !node.description)
       this.append_(buff, node.tooltip);
 
-    if (AutomationPredicate.checkable(node))
+    if (AutomationPredicate.checkable(node)) {
       this.format_(
           node, '@hint_checkable', buff, ruleStr, undefined, hintProperties);
-    else if (AutomationPredicate.clickable(node))
+    } else if (AutomationPredicate.clickable(node)) {
       this.format_(
           node, '@hint_clickable', buff, ruleStr, undefined, hintProperties);
+    }
 
     if (node.autoComplete == 'list' || node.autoComplete == 'both' ||
         node.state[StateType.AUTOFILL_AVAILABLE]) {
@@ -2180,10 +2186,11 @@ Output.prototype = {
           node, '@hint_autocomplete_list', buff, ruleStr, undefined,
           hintProperties);
     }
-    if (node.autoComplete == 'inline' || node.autoComplete == 'both')
+    if (node.autoComplete == 'inline' || node.autoComplete == 'both') {
       this.format_(
           node, '@hint_autocomplete_inline', buff, ruleStr, undefined,
           hintProperties);
+    }
     if (node.accessKey) {
       this.append_(buff, Msgs.getMsg('access_key', [node.accessKey]));
       ruleStr.write(Msgs.getMsg('access_key', [node.accessKey]));
@@ -2191,18 +2198,21 @@ Output.prototype = {
 
     // Ancestry based hints.
     if (uniqueAncestors.find(
-            /** @type {function(?) : boolean} */ (AutomationPredicate.table)))
+            /** @type {function(?) : boolean} */ (AutomationPredicate.table))) {
       this.format_(
           node, '@hint_table', buff, ruleStr, undefined, hintProperties);
+    }
     if (uniqueAncestors.find(/** @type {function(?) : boolean} */ (
-            AutomationPredicate.roles([RoleType.MENU, RoleType.MENU_BAR]))))
+            AutomationPredicate.roles([RoleType.MENU, RoleType.MENU_BAR])))) {
       this.format_(
           node, '@hint_menu', buff, ruleStr, undefined, hintProperties);
+    }
     if (uniqueAncestors.find(/** @type {function(?) : boolean} */ (function(n) {
           return !!n.details;
-        })))
+        }))) {
       this.format_(
           node, '@hint_details', buff, ruleStr, undefined, hintProperties);
+    }
   },
 
   /**

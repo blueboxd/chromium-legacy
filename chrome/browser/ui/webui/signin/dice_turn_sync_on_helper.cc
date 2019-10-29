@@ -376,11 +376,12 @@ void DiceTurnSyncOnHelper::OnProviderUpdatePropagated(
 void DiceTurnSyncOnHelper::CreateNewSignedInProfile() {
   // Create a new profile and have it call back when done so we can start the
   // signin flow.
-  size_t icon_index = g_browser_process->profile_manager()
-                          ->GetProfileAttributesStorage()
-                          .ChooseAvatarIconIndexForNewProfile();
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  size_t icon_index = storage.ChooseAvatarIconIndexForNewProfile();
+
   ProfileManager::CreateMultiProfileAsync(
-      base::UTF8ToUTF16(account_info_.email),
+      storage.ChooseNameForNewProfile(icon_index),
       profiles::GetDefaultAvatarIconUrl(icon_index),
       base::BindRepeating(&DiceTurnSyncOnHelper::OnNewProfileCreated,
                           weak_pointer_factory_.GetWeakPtr()));

@@ -245,9 +245,8 @@ std::set<std::string> AppInstallEventLogger::GetPackagesFromPref(
 void AppInstallEventLogger::SetPref(const std::string& pref_name,
                                     const std::set<std::string>& packages) {
   base::Value value(base::Value::Type::LIST);
-  auto& list = value.GetList();
   for (const std::string& package : packages) {
-    list.push_back(base::Value(package));
+    value.Append(package);
   }
   profile_->GetPrefs()->Set(pref_name, value);
 }

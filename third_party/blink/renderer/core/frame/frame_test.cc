@@ -75,8 +75,7 @@ TEST_F(FrameTest, PossiblyExisting) {
 TEST_F(FrameTest, NewGesture) {
   // UserGestureToken::Status doesn't impact Document gesture state.
   std::unique_ptr<UserGestureIndicator> holder =
-      LocalFrame::NotifyUserActivation(GetDocument().GetFrame(),
-                                       UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
 }
 
@@ -165,8 +164,6 @@ TEST_F(FrameTest, NavigateSameDomainNoGesture) {
 }
 
 TEST_F(FrameTest, UserActivationInterfaceTest) {
-  ScopedUserActivationV2ForTest scoped_feature(true);
-
   // Initially both sticky and transient bits are false.
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(

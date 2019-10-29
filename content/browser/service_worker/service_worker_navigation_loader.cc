@@ -83,8 +83,7 @@ ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
     : fallback_callback_(std::move(fallback_callback)),
       provider_host_(std::move(provider_host)),
-      url_loader_factory_getter_(std::move(url_loader_factory_getter)),
-      binding_(this) {
+      url_loader_factory_getter_(std::move(url_loader_factory_getter)) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader", this,
@@ -116,7 +115,7 @@ ServiceWorkerNavigationLoader::AsWeakPtr() {
 
 void ServiceWorkerNavigationLoader::StartRequest(
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     network::mojom::URLLoaderClientPtr client) {
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
                          "ServiceWorkerNavigationLoader::StartRequest", this,
@@ -132,10 +131,10 @@ void ServiceWorkerNavigationLoader::StartRequest(
         base::make_optional(provider_host_->fetch_request_window_id());
   }
 
-  DCHECK(!binding_.is_bound());
+  DCHECK(!receiver_.is_bound());
   DCHECK(!url_loader_client_.is_bound());
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
       base::BindOnce(&ServiceWorkerNavigationLoader::OnConnectionClosed,
                      base::Unretained(this)));
   url_loader_client_ = std::move(client);
@@ -452,7 +451,7 @@ void ServiceWorkerNavigationLoader::OnConnectionClosed() {
   weak_factory_.InvalidateWeakPtrs();
   fetch_dispatcher_.reset();
   stream_waiter_.reset();
-  binding_.Close();
+  receiver_.reset();
 
   // Respond to the request if it's not yet responded to.
   if (status_ != Status::kCompleted)
@@ -463,7 +462,7 @@ void ServiceWorkerNavigationLoader::OnConnectionClosed() {
 }
 
 void ServiceWorkerNavigationLoader::DeleteIfNeeded() {
-  if (!binding_.is_bound() && is_detached_)
+  if (!receiver_.is_bound() && is_detached_)
     delete this;
 }
 

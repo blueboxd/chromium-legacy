@@ -137,6 +137,17 @@ public class ProfileSyncService {
     }
 
     /**
+     * Checks whether sync machinery is active.
+     *
+     * @return true if the transport state is active.
+     */
+    @VisibleForTesting
+    public boolean isTransportStateActive() {
+        return ProfileSyncServiceJni.get().isTransportStateActive(
+                mNativeProfileSyncServiceAndroid, ProfileSyncService.this);
+    }
+
+    /**
      * Checks whether Sync-the-feature can (attempt to) start. This means that there is a primary
      * account and no disable reasons. Note that the Sync machinery may start up in transport-only
      * mode even if this is false.
@@ -643,6 +654,8 @@ public class ProfileSyncService {
         boolean isEncryptEverythingAllowed(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         boolean isEncryptEverythingEnabled(
+                long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
+        boolean isTransportStateActive(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         void enableEncryptEverything(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);

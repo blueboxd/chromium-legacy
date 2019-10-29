@@ -9,6 +9,7 @@
 <translation id="10614374240317010">Nunca guardado</translation>
 <translation id="1067922213147265141">Otros servicios de Google</translation>
 <translation id="1068672505746868501">No traducir nunca páginas en <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="107147699690128016">Si cambias la extensión de archivo, es posible que el archivo se abra en una app diferente y dañe el dispositivo.</translation>
 <translation id="1100066534610197918">Abrir pestaña nueva en grupo</translation>
 <translation id="1105960400813249514">Captura de pantalla</translation>
 <translation id="1111673857033749125">Los favoritos guardados en tus otros dispositivos aparecerán aquí.</translation>
@@ -65,7 +66,6 @@
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1409426117486808224">Vista simplificada para las pestañas abiertas</translation>
 <translation id="1409879593029778104">Se impidió la descarga de <ph name="FILE_NAME" /> porque el archivo ya existe.</translation>
-<translation id="1413136574162415971">Google puede determinar si tus contraseñas formaron parte de un incumplimiento de datos. Se activará esta opción cuando accedas con tu Cuenta de Google y habilites la sincronización.</translation>
 <translation id="1414981605391750300">Se está estableciendo la comunicación con Google. Esta acción puede demorar unos minutos…</translation>
 <translation id="1416550906796893042">Versión de la aplicación</translation>
 <translation id="1430915738399379752">Imprimir</translation>
@@ -168,6 +168,7 @@
 <translation id="2156074688469523661">Sitios restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Si quieres compartir contenido entre tu teléfono y otro dispositivo, activa la sincronización en la configuración de Chrome en ambos dispositivos.</translation>
 <translation id="2170088579611075216">Permitir y acceder a la RV</translation>
+<translation id="2175927920773552910">Código QR</translation>
 <translation id="218608176142494674">Uso compartido</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sincronización y servicios</translation>
@@ -205,6 +206,7 @@
 <translation id="2498359688066513246">Ayuda y comentarios</translation>
 <translation id="2501278716633472235">Ir atrás</translation>
 <translation id="2513403576141822879">Para obtener más opciones de configuración relacionadas con la privacidad, la seguridad y la recopilación de datos, visita <ph name="BEGIN_LINK" />Sincronización y servicios<ph name="END_LINK" /></translation>
+<translation id="2517472476991765520">Buscar</translation>
 <translation id="2518590038762162553">En el modo lite, Chrome carga las páginas más rápido y usa hasta un 60% menos de datos. Para optimizar las páginas que visitas, Chrome envía tu tráfico en la Web a Google. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Envía a Google las URL de las páginas que visitas</translation>
 <translation id="2532336938189706096">Vista web</translation>
@@ -258,6 +260,7 @@
 <translation id="2900528713135656174">Crear evento</translation>
 <translation id="290376772003165898">¿La página no está en <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">La lista de dispositivos con los que se puede compartir una pestaña está totalmente abierta.</translation>
+<translation id="2909615210195135082">Plataforma de notificaciones de Google</translation>
 <translation id="2910701580606108292">Preguntar antes de permitir que los sitios reproduzcan contenido protegido</translation>
 <translation id="2913331724188855103">Permitir que todos los sitios guarden y lean datos de cookies (recomendado)</translation>
 <translation id="2923908459366352541">El nombre no es válido</translation>
@@ -313,6 +316,7 @@
 <translation id="3315103659806849044">Estás personalizando la opción de configuración "Sincronización y servicios". Para activar la sincronización, presiona el botón Confirmar cerca de la parte inferior de la pantalla. Navegar hacia arriba</translation>
 <translation id="3328801116991980348">Información del sitio</translation>
 <translation id="3333961966071413176">Todos los contactos</translation>
+<translation id="3334729583274622784">¿Quieres cambiar la extensión del archivo?</translation>
 <translation id="3341058695485821946">Consulta cuántos datos redujiste</translation>
 <translation id="3350687908700087792">Cerrar todas las pestañas de incógnito</translation>
 <translation id="3353615205017136254">Google proporcionó la página básica. Para cargar la original, presiona el botón.</translation>
@@ -670,6 +674,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="5962718611393537961">Presiona para contraer</translation>
 <translation id="6000066717592683814">Seguir usando Google</translation>
 <translation id="6005538289190791541">Contraseña sugerida</translation>
+<translation id="6019358956729171834">Cargar más…</translation>
 <translation id="6036057147555329831">ICU adicional</translation>
 <translation id="6039379616847168523">Ir a la pestaña siguiente</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -872,7 +877,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="7493994139787901920"><ph name="VERSION" /> (actualización: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de datos ahorrados</translation>
 <translation id="7498271377022651285">Espera un momento…</translation>
-<translation id="7510943789645525906">Te avisa si una contraseña que usas formó parte de un incumplimiento de datos</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="751961395872307827">No se puede conectar al sitio</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -928,7 +932,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="7886917304091689118">Se está ejecutando en Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Descargando archivo}other{Descargando # archivos}}</translation>
 <translation id="7929962904089429003">Abrir el menú</translation>
-<translation id="7930681627240672853">Revisar la seguridad de las contraseñas</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> no está actualizado.</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
@@ -944,7 +947,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="8007176423574883786">Desactivado para este dispositivo</translation>
 <translation id="8013372441983637696">Borrar también los datos de Chrome de este dispositivo</translation>
 <translation id="8015452622527143194">Restablecer tamaño de los elementos de la página</translation>
-<translation id="8015780634880457457">Google puede determinar si tus contraseñas formaron parte de un incumplimiento de datos</translation>
 <translation id="802154636333426148">Error en la descarga</translation>
 <translation id="8026334261755873520">Eliminar datos de navegación</translation>
 <translation id="8035133914807600019">Nueva carpeta…</translation>

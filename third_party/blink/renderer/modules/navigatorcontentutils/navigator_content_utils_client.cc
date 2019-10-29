@@ -19,7 +19,7 @@ void NavigatorContentUtilsClient::Trace(blink::Visitor* visitor) {
 void NavigatorContentUtilsClient::RegisterProtocolHandler(const String& scheme,
                                                           const KURL& url,
                                                           const String& title) {
-  bool user_gesture = LocalFrame::HasTransientUserActivation(frame_, false);
+  bool user_gesture = LocalFrame::HasTransientUserActivation(frame_);
   frame_->GetLocalFrameHostRemote().RegisterProtocolHandler(scheme, url, title,
                                                             user_gesture);
 }
@@ -27,7 +27,7 @@ void NavigatorContentUtilsClient::RegisterProtocolHandler(const String& scheme,
 void NavigatorContentUtilsClient::UnregisterProtocolHandler(
     const String& scheme,
     const KURL& url) {
-  bool user_gesture = LocalFrame::HasTransientUserActivation(frame_, false);
+  bool user_gesture = LocalFrame::HasTransientUserActivation(frame_);
   frame_->GetLocalFrameHostRemote().UnregisterProtocolHandler(scheme, url,
                                                               user_gesture);
 }

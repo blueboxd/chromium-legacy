@@ -1028,7 +1028,8 @@ interface NetworkContext {
   //
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when NetworkContext goes away.
-  CreateProxyResolvingSocketFactory(ProxyResolvingSocketFactory& factory);
+  CreateProxyResolvingSocketFactory(
+      pending_receiver<ProxyResolvingSocketFactory> factory);
 
   // Looks up what proxy to use for a particular URL.
   LookUpProxyForURL(url.mojom.Url url,

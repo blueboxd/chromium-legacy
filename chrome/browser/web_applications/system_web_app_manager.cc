@@ -201,6 +201,15 @@ base::Optional<AppId> SystemWebAppManager::GetAppIdForSystemApp(
   return registrar_->LookupExternalAppId(app_url_it->second.install_url);
 }
 
+base::Optional<SystemAppType> SystemWebAppManager::GetSystemAppTypeForAppId(
+    AppId app_id) const {
+  auto it = app_id_to_app_type_.find(app_id);
+  if (it == app_id_to_app_type_.end())
+    return base::nullopt;
+
+  return it->second;
+}
+
 bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
   return registrar_->HasExternalAppWithInstallSource(
       app_id, ExternalInstallSource::kSystemInstalled);

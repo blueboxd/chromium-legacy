@@ -795,9 +795,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                         completion:nil];
       break;
     case ItemTypeAccount:
-      controller = [[AccountsTableViewController alloc]
-               initWithBrowserState:_browserState
-          closeSettingsOnAddAccount:NO];
+      controller = [[AccountsTableViewController alloc] initWithBrowser:_browser
+                                              closeSettingsOnAddAccount:NO];
       break;
     case ItemGoogleServices:
       [self showSyncGoogleService];
@@ -924,7 +923,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   _googleServicesSettingsCoordinator =
       [[GoogleServicesSettingsCoordinator alloc]
           initWithBaseViewController:self.navigationController
-                        browserState:_browserState
+                             browser:_browser
                                 mode:GoogleServicesSettingsModeSettings];
   _googleServicesSettingsCoordinator.dispatcher = self.dispatcher;
   _googleServicesSettingsCoordinator.navigationController =
@@ -1058,9 +1057,9 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                     completion:(ShowSigninCommandCompletionCallback)completion {
   DCHECK(![self.signinInteractionCoordinator isActive]);
   if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-        initWithBrowserState:_browserState
-                  dispatcher:self.dispatcher];
+    self.signinInteractionCoordinator =
+        [[SigninInteractionCoordinator alloc] initWithBrowser:_browser
+                                                   dispatcher:self.dispatcher];
   }
 
   __weak SettingsTableViewController* weakSelf = self;

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -94,8 +93,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   local_data->set_name(web_app.name());
 
-  sync_data->set_display_mode(
-      ToWebAppSpecificsDisplayMode(web_app.display_mode()));
+  local_data->set_display_mode(
+      ToWebAppProtoDisplayMode(web_app.display_mode()));
+  sync_data->set_user_display_mode(
+      ToWebAppSpecificsUserDisplayMode(web_app.user_display_mode()));
 
   DCHECK(web_app.sources_.any());
   local_data->mutable_sources()->set_system(web_app.sources_[Source::kSystem]);
@@ -178,11 +179,18 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetName(local_data.name());
 
-  if (!sync_data.has_display_mode()) {
+  if (!local_data.has_display_mode()) {
     DLOG(ERROR) << "WebApp proto parse error: no display_mode field";
     return nullptr;
   }
-  web_app->SetDisplayMode(ToMojomDisplayMode(sync_data.display_mode()));
+  web_app->SetDisplayMode(ToMojomDisplayMode(local_data.display_mode()));
+
+  if (!sync_data.has_user_display_mode()) {
+    DLOG(ERROR) << "WebApp proto parse error: no user_display_mode field";
+    return nullptr;
+  }
+  web_app->SetUserDisplayMode(
+      ToMojomDisplayMode(sync_data.user_display_mode()));
 
   if (!local_data.has_is_locally_installed()) {
     DLOG(ERROR) << "WebApp proto parse error: no is_locally_installed field";
@@ -327,30 +335,57 @@ std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(const AppId& app_id,
 }
 
 blink::mojom::DisplayMode ToMojomDisplayMode(
-    ::sync_pb::WebAppSpecifics::DisplayMode display_mode) {
+    WebAppProto::DisplayMode display_mode) {
   switch (display_mode) {
+    case WebAppProto::BROWSER:
+      return blink::mojom::DisplayMode::kBrowser;
+    case WebAppProto::MINIMAL_UI:
+      return blink::mojom::DisplayMode::kMinimalUi;
+    case WebAppProto::STANDALONE:
+      return blink::mojom::DisplayMode::kStandalone;
+    case WebAppProto::FULLSCREEN:
+      return blink::mojom::DisplayMode::kFullscreen;
+  }
+}
+
+blink::mojom::DisplayMode ToMojomDisplayMode(
+    ::sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode) {
+  switch (user_display_mode) {
     case ::sync_pb::WebAppSpecifics::BROWSER:
       return blink::mojom::DisplayMode::kBrowser;
-    case ::sync_pb::WebAppSpecifics::MINIMAL_UI:
-      return blink::mojom::DisplayMode::kMinimalUi;
     case ::sync_pb::WebAppSpecifics::STANDALONE:
       return blink::mojom::DisplayMode::kStandalone;
   }
 }
 
-::sync_pb::WebAppSpecifics::DisplayMode ToWebAppSpecificsDisplayMode(
+WebAppProto::DisplayMode ToWebAppProtoDisplayMode(
     blink::mojom::DisplayMode display_mode) {
   switch (display_mode) {
     case blink::mojom::DisplayMode::kBrowser:
-      return ::sync_pb::WebAppSpecifics::BROWSER;
+      return WebAppProto::BROWSER;
     case blink::mojom::DisplayMode::kMinimalUi:
-      return ::sync_pb::WebAppSpecifics::MINIMAL_UI;
+      return WebAppProto::MINIMAL_UI;
     case blink::mojom::DisplayMode::kUndefined:
       NOTREACHED();
       FALLTHROUGH;
-    case blink::mojom::DisplayMode::kFullscreen:
     case blink::mojom::DisplayMode::kStandalone:
-      // We do not persist kFullscreen - see crbug.com/850465.
+      return WebAppProto::STANDALONE;
+    case blink::mojom::DisplayMode::kFullscreen:
+      return WebAppProto::FULLSCREEN;
+  }
+}
+
+::sync_pb::WebAppSpecifics::UserDisplayMode ToWebAppSpecificsUserDisplayMode(
+    blink::mojom::DisplayMode user_display_mode) {
+  switch (user_display_mode) {
+    case blink::mojom::DisplayMode::kBrowser:
+      return ::sync_pb::WebAppSpecifics::BROWSER;
+    case blink::mojom::DisplayMode::kUndefined:
+    case blink::mojom::DisplayMode::kMinimalUi:
+    case blink::mojom::DisplayMode::kFullscreen:
+      NOTREACHED();
+      FALLTHROUGH;
+    case blink::mojom::DisplayMode::kStandalone:
       return ::sync_pb::WebAppSpecifics::STANDALONE;
   }
 }

@@ -27,14 +27,14 @@ StyledLabel::TestApi::TestApi(StyledLabel* view) : view_(view) {}
 
 StyledLabel::TestApi::~TestApi() = default;
 
-const std::map<View*, gfx::Range>& StyledLabel::TestApi::link_targets() {
+const StyledLabel::LinkTargets& StyledLabel::TestApi::link_targets() {
   return view_->link_targets_;
 }
 
 StyledLabel::RangeStyleInfo::RangeStyleInfo() = default;
-StyledLabel::RangeStyleInfo::RangeStyleInfo(const RangeStyleInfo& copy) =
-    default;
-
+StyledLabel::RangeStyleInfo::RangeStyleInfo(const RangeStyleInfo&) = default;
+StyledLabel::RangeStyleInfo& StyledLabel::RangeStyleInfo::operator=(
+    const RangeStyleInfo&) = default;
 StyledLabel::RangeStyleInfo::~RangeStyleInfo() = default;
 
 // static
@@ -268,7 +268,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     width_at_last_layout_ = width;
 
   const gfx::Insets insets = GetInsets();
-  width -= insets.width();
+  const int content_width = width - insets.width();
 
   if (!dry_run) {
     RemoveAllChildViews(true);
@@ -279,18 +279,16 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
   // The current child view's position, relative to content bounds, in pixels.
   gfx::Point offset(0, insets.top());
-  int total_height = 0;
-  // The max width of all lines. Guaranteed to be no larger than |width|.
-  int max_width = 0;
 
   RangeStyleInfo default_style;
   default_style.text_style = default_text_style_;
+  int max_width = 0, total_height = 0;
 
   // Try to preserve leading whitespace on the first line.
   bool can_trim_leading_whitespace = false;
   StyleRanges::const_iterator current_range = style_ranges_.begin();
   for (base::string16 remaining_string = text_;
-       width > 0 && !remaining_string.empty();) {
+       content_width > 0 && !remaining_string.empty();) {
     // Max height of the views in a line.
     int line_height = default_line_height;
 
@@ -299,7 +297,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
     while (!remaining_string.empty()) {
       if (offset.x() == 0 && can_trim_leading_whitespace) {
-        if (remaining_string.front() == L'\n') {
+        if (remaining_string.front() == '\n') {
           // Wrapped to the next line on \n, remove it. Other whitespace,
           // e.g. spaces to indent the next line, are preserved.
           remaining_string.erase(0, 1);
@@ -324,7 +322,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       if (position != range.start() ||
           (current_range != style_ranges_.end() &&
            !current_range->style_info.custom_view)) {
-        const gfx::Rect chunk_bounds(offset.x(), 0, width - offset.x(),
+        const gfx::Rect chunk_bounds(offset.x(), 0, content_width - offset.x(),
                                      default_line_height);
         // If the start of the remaining text is inside a styled range, the font
         // style may differ from the base font. The font specified by the range
@@ -392,7 +390,8 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
         }
 
         if (((custom_view &&
-              offset.x() + custom_view->GetPreferredSize().width() > width) ||
+              offset.x() + custom_view->GetPreferredSize().width() >
+                  content_width) ||
              (style_info.disable_line_wrapping &&
               chunk.size() < range.length())) &&
             position == range.start() && offset.x() != 0) {
@@ -407,8 +406,9 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
         if (!custom_view) {
           label = CreateLabel(chunk, style_info);
           if (style_info.IsLink() && !dry_run) {
-            static_cast<Link*>(label.get())->set_listener(this);
-            link_targets_[label.get()] = range;
+            Link* link = static_cast<Link*>(label.get());
+            link->set_listener(this);
+            link_targets_[link] = range;
           }
         }
 
@@ -424,13 +424,14 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       }
 
       View* child_view = custom_view ? custom_view : label.get();
-      gfx::Size size = child_view->GetPreferredSize();
+      gfx::Size child_size = child_view->GetPreferredSize();
       // A custom view could be wider than the available width.
-      size.set_width(std::min(size.width(), width - offset.x()));
+      child_size.set_width(
+          std::min(child_size.width(), content_width - offset.x()));
 
-      child_view->SetBoundsRect(gfx::Rect(offset, size));
-      offset.set_x(offset.x() + size.width());
-      line_height = std::max(line_height, size.height());
+      child_view->SetBoundsRect(gfx::Rect(offset, child_size));
+      offset.set_x(offset.x() + child_size.width());
+      line_height = std::max(line_height, child_size.height());
 
       if (!dry_run) {
         views_in_a_line.push_back(child_view);
@@ -454,11 +455,12 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     }
     total_height += line_height;
     max_width = std::max(max_width, offset.x());
+
     // Trim whitespace at the start of the next line.
     can_trim_leading_whitespace = true;
 
     // Adjust the positions of the views in the line.
-    const int start_x = StartX(width - offset.x());
+    const int start_x = StartX(content_width - offset.x());
     for (auto* view : views_in_a_line) {
       view->SetPosition({start_x + view->x(),
                          offset.y() + (line_height - view->height()) / 2.0f});
@@ -468,9 +470,6 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     offset = gfx::Point(0, offset.y() + line_height);
   }
 
-  // |width| may be negative if the value passed in was smaller than
-  // insets.width().
-  DCHECK_LE(max_width, std::max(width, 0));
   calculated_size_ =
       gfx::Size(max_width + insets.width(), total_height + insets.height());
   return calculated_size_;
@@ -478,7 +477,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
 std::unique_ptr<Label> StyledLabel::CreateLabel(
     const base::string16& text,
-    const StyledLabel::RangeStyleInfo& style_info) const {
+    const RangeStyleInfo& style_info) const {
   std::unique_ptr<Label> result;
   if (style_info.IsLink()) {
     // Nothing should (and nothing does) use a custom font for links.

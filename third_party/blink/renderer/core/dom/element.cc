@@ -540,9 +540,17 @@ void Element::setTabIndex(int value) {
 }
 
 int Element::tabIndex() const {
-  return HasElementFlag(ElementFlags::kTabIndexWasSetExplicitly)
-             ? GetIntegralAttribute(html_names::kTabindexAttr)
-             : 0;
+  // https://html.spec.whatwg.org/C/#dom-tabindex
+  // The tabIndex IDL attribute must reflect the value of the tabindex content
+  // attribute. The default value is 0 if the element is an a, area, button,
+  // frame, iframe, input, object, select, textarea, or SVG a element, or is a
+  // summary element that is a summary for its parent details. The default value
+  // is −1 otherwise.
+  return GetIntegralAttribute(html_names::kTabindexAttr, DefaultTabIndex());
+}
+
+int Element::DefaultTabIndex() const {
+  return -1;
 }
 
 bool Element::IsFocusableStyle() const {
@@ -4204,7 +4212,8 @@ bool Element::IsKeyboardFocusable() const {
   DCHECK(!GetDocument().IsActive() ||
          !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
   return isConnected() && !IsInert() && IsFocusableStyle() &&
-         ((SupportsFocus() && tabIndex() >= 0) ||
+         ((SupportsFocus() &&
+           GetIntegralAttribute(html_names::kTabindexAttr, 0) >= 0) ||
           (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
            IsScrollableNode(this))) &&
          !DisplayLockPreventsActivation(DisplayLockActivationReason::kViewport);

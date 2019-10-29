@@ -7,7 +7,7 @@
 import json
 
 
-def TestResult(test_path, status='PASS', is_expected=None,
+def TestResult(test_path, status='PASS', expected=None,
                start_time='2015-10-21T07:28:00.000Z', run_duration='1.00s',
                output_artifacts=None, tags=None):
   """Build a TestResult dict.
@@ -20,12 +20,13 @@ def TestResult(test_path, status='PASS', is_expected=None,
       the form '{benchmark_name}/{story_name}'.
     status: An optional string indicating the status of the test run. Usually
       one of 'PASS', 'SKIP', 'FAIL'. Defaults to 'PASS'.
-    is_expected: An optional bool indicating whether the status result is
+    expected: An optional bool indicating whether the status result is
       expected. Defaults to True for 'PASS', 'SKIP'; and False otherwise.
     start_time: An optional UTC timestamp recording when the test run started.
     run_duration: An optional duration string recording the amount of time
       that the test run lasted.
-    artifcats: An optional dict mapping artifact names to Artifact dicts.
+    output_artifacts: An optional mapping of artifact names to Artifact dicts,
+      may be given as a dict or a sequence of pairs.
     tags: An optional sequence of tags associated with this test run; each
       tag is given as a '{key}:{value}' string. Keys are not unique, the same
       key may appear multiple times.
@@ -33,17 +34,17 @@ def TestResult(test_path, status='PASS', is_expected=None,
   Returns:
     A TestResult dict.
   """
-  if is_expected is None:
-    is_expected = status in ('PASS', 'SKIP')
+  if expected is None:
+    expected = status in ('PASS', 'SKIP')
   test_result = {
       'testPath': test_path,
       'status': status,
-      'isExpected': is_expected,
+      'expected': expected,
       'startTime': start_time,
       'runDuration': run_duration
   }
   if output_artifacts is not None:
-    test_result['outputArtifacts'] = output_artifacts
+    test_result['outputArtifacts'] = dict(output_artifacts)
   if tags is not None:
     test_result['tags'] = [_SplitTag(tag) for tag in tags]
 

@@ -23,7 +23,7 @@
 #include "base/task/task_traits.h"
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/switches.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
 #include "net/base/filename_util.h"
@@ -152,7 +152,7 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
   // |metadata_channel|, if it is connected to a file, is accessed to get the
   // MIME type and charset of the file.
   static void CreateAndStart(
-      network::mojom::URLLoaderRequest url_loader_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
       const network::ResourceRequest& request,
       network::mojom::URLLoaderClientPtrInfo client_info,
       fidl::InterfaceHandle<fuchsia::io::Node> file_channel,
@@ -164,7 +164,8 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
 
     // |loader|'s lifetime is bound to the lifetime of the URLLoader Mojo
     // client endpoint.
-    mojo::MakeStrongBinding(std::move(loader), std::move(url_loader_request));
+    mojo::MakeSelfOwnedReceiver(std::move(loader),
+                                std::move(url_loader_receiver));
   }
 
   void Start(const network::ResourceRequest& request,
@@ -314,7 +315,7 @@ net::Error ContentDirectoryLoaderFactory::OpenFileFromDirectory(
 }
 
 void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

@@ -145,6 +145,6 @@ void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
     details.callback.Run(icon_data.get());
   } else {
     // TODO(glen): send a dummy icon.
-    details.callback.Run(NULL);
+    details.callback.Run(nullptr);
   }
 }

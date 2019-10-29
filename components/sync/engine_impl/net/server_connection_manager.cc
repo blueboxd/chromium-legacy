@@ -19,9 +19,6 @@
 #include "url/gurl.h"
 
 namespace syncer {
-
-using std::string;
-
 namespace {
 
 const char kSyncServerSyncPath[] = "/command/";
@@ -93,87 +90,11 @@ HttpResponse HttpResponse::ForSuccess() {
   return response;
 }
 
-ServerConnectionManager::Connection::Connection(ServerConnectionManager* scm)
-    : scm_(scm) {}
-
-ServerConnectionManager::Connection::~Connection() {}
-
-bool ServerConnectionManager::Connection::ReadBufferResponse(
-    string* buffer_out,
-    HttpResponse* response,
-    bool require_response) {
-  if (net::HTTP_OK != response->http_status_code) {
-    response->server_status = HttpResponse::SYNC_SERVER_ERROR;
-    return false;
-  }
-
-  if (require_response && (1 > response->content_length))
-    return false;
-
-  const int64_t bytes_read =
-      ReadResponse(buffer_out, static_cast<int>(response->content_length));
-  if (bytes_read != response->content_length) {
-    response->server_status = HttpResponse::IO_ERROR;
-    return false;
-  }
-  return true;
-}
-
-namespace {
-
-string StripTrailingSlash(const string& s) {
-  int stripped_end_pos = s.size();
-  if (s.at(stripped_end_pos - 1) == '/') {
-    stripped_end_pos = stripped_end_pos - 1;
-  }
-
-  return s.substr(0, stripped_end_pos);
-}
-
-}  // namespace
-
-// TODO(crbug.com/951350): Use a GURL instead of string concatenation.
-string ServerConnectionManager::Connection::MakeConnectionURL(
-    const string& sync_server,
-    const string& path,
-    bool use_ssl) const {
-  string connection_url = (use_ssl ? "https://" : "http://");
-  connection_url += sync_server;
-  connection_url = StripTrailingSlash(connection_url);
-  connection_url += path;
-
-  return connection_url;
-}
-
-int ServerConnectionManager::Connection::ReadResponse(string* out_buffer,
-                                                      int length) {
-  int bytes_read = buffer_.length();
-  CHECK(length <= bytes_read);
-  out_buffer->assign(buffer_);
-  return bytes_read;
-}
-
-ServerConnectionManager::ServerConnectionManager(
-    const string& server,
-    int port,
-    bool use_ssl,
-    CancelationSignal* cancelation_signal)
-    : sync_server_(server),
-      sync_server_port_(port),
-      use_ssl_(use_ssl),
-      proto_sync_path_(kSyncServerSyncPath),
-      server_response_(HttpResponse::Uninitialized()),
-      cancelation_signal_(cancelation_signal) {}
+ServerConnectionManager::ServerConnectionManager()
+    : proto_sync_path_(kSyncServerSyncPath),
+      server_response_(HttpResponse::Uninitialized()) {}
 
 ServerConnectionManager::~ServerConnectionManager() = default;
-
-std::unique_ptr<ServerConnectionManager::Connection>
-ServerConnectionManager::MakeActiveConnection() {
-  if (cancelation_signal_->IsSignalled())
-    return nullptr;
-
-  return MakeConnection();
-}
 
 bool ServerConnectionManager::SetAccessToken(const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -223,50 +144,11 @@ void ServerConnectionManager::NotifyStatusChanged() {
 bool ServerConnectionManager::PostBufferWithCachedAuth(
     PostBufferParams* params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  string path =
+  std::string path =
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
   bool result = PostBufferToPath(params, path, access_token_);
   SetServerResponse(params->response);
   return result;
-}
-
-bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
-                                               const string& path,
-                                               const string& access_token) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (access_token.empty()) {
-    params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
-    // Print a log to distinguish this "known failure" from others.
-    DVLOG(1) << "ServerConnectionManager forcing SYNC_AUTH_ERROR due to missing"
-                " access token";
-    return false;
-  }
-
-  std::unique_ptr<Connection> connection = MakeActiveConnection();
-  if (!connection) {
-    params->response.server_status = HttpResponse::CONNECTION_UNAVAILABLE;
-    return false;
-  }
-
-  // Note that |post| may be aborted by now, which will just cause Init to fail
-  // with CONNECTION_UNAVAILABLE.
-  bool ok = connection->Init(path.c_str(), access_token, params->buffer_in,
-                             &params->response);
-
-  if (params->response.server_status == HttpResponse::SYNC_AUTH_ERROR) {
-    access_token_.clear();
-  }
-
-  if (!ok || net::HTTP_OK != params->response.http_status_code)
-    return false;
-
-  if (connection->ReadBufferResponse(&params->buffer_out, &params->response,
-                                     true)) {
-    params->response.server_status = HttpResponse::SERVER_CONNECTION_OK;
-    return true;
-  }
-  return false;
 }
 
 void ServerConnectionManager::AddListener(
@@ -279,11 +161,6 @@ void ServerConnectionManager::RemoveListener(
     ServerConnectionEventListener* listener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   listeners_.RemoveObserver(listener);
-}
-
-std::unique_ptr<ServerConnectionManager::Connection>
-ServerConnectionManager::MakeConnection() {
-  return nullptr;  // For testing.
 }
 
 std::ostream& operator<<(std::ostream& s, const struct HttpResponse& hr) {

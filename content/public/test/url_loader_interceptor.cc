@@ -107,7 +107,7 @@ class URLLoaderInterceptor::IOState
   }
 
   bool BeginNavigationCallback(
-      network::mojom::URLLoaderRequest* request,
+      mojo::PendingReceiver<network::mojom::URLLoader>* receiver,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -116,7 +116,7 @@ class URLLoaderInterceptor::IOState
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
     RequestParams params;
     params.process_id = 0;
-    params.request = std::move(*request);
+    params.receiver = std::move(*receiver);
     params.routing_id = routing_id;
     params.request_id = request_id;
     params.options = options;
@@ -127,7 +127,7 @@ class URLLoaderInterceptor::IOState
     if (Intercept(&params))
       return true;
 
-    *request = std::move(params.request);
+    *receiver = std::move(params.receiver);
     *client = std::move(params.client);
     return false;
   }
@@ -193,7 +193,7 @@ class URLLoaderClientInterceptor : public network::mojom::URLLoaderClient {
     network::mojom::URLLoaderClientPtr delegating_client;
     delegating_client_binding_.Bind(mojo::MakeRequest(&delegating_client));
     factory_getter.Run()->CreateLoaderAndStart(
-        std::move(params.request), params.routing_id, params.request_id,
+        std::move(params.receiver), params.routing_id, params.request_id,
         params.options, std::move(params.url_request),
         std::move(delegating_client), params.traffic_annotation);
   }
@@ -271,17 +271,18 @@ class URLLoaderInterceptor::Interceptor
 
  private:
   // network::mojom::URLLoaderFactory implementation:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& url_request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     RequestParams params;
     params.process_id = process_id_getter_.Run();
-    params.request = std::move(request);
+    params.receiver = std::move(receiver);
     params.routing_id = routing_id;
     params.request_id = request_id;
     params.options = options;

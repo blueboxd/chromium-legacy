@@ -198,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Bạn có hơn 1 thông báo chưa đọc}other{Bạn có hơn # thông báo chưa đọc}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{trong 1 phút}other{trong # phút}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568">Số điện thoại từ <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 giờ trước}other{# giờ trước}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Còn 1 giây}other{Còn # giây}}</translation>
 <translation id="8134065097954893699">Tải lại trang này</translation>

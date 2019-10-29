@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="1442386063175183758">Gatefold rechts</translation>
 <translation id="1442987760062738829">Perforeren</translation>
-<translation id="1450011005989029586">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan nu <ph name="BOLD" /> op <ph name="ORIGIN" />.</translation>
 <translation id="1455413310270022028">Gum</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">Meer weergeven</translation>
@@ -671,7 +670,6 @@
 <translation id="4258748452823770588">Onjuiste handtekening</translation>
 <translation id="4261046003697461417">Er kunnen geen aantekeningen worden gemaakt in beveiligde documenten</translation>
 <translation id="4265872034478892965">Toegestaan door je beheerder</translation>
-<translation id="4270615291506829403">je wachtwoord te wijzigen</translation>
 <translation id="4275830172053184480">Je apparaat opnieuw opstarten</translation>
 <translation id="4277028893293644418">Wachtwoord opnieuw instellen</translation>
 <translation id="4279811152705618813">Je <ph name="DEVICE_TYPE" /> wordt beheerd door <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -750,7 +748,6 @@
 <translation id="4708268264240856090">Je verbinding is onderbroken</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows Netwerkcontrole uitvoeren<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan je opgeslagen wachtwoorden nu te controleren.</translation>
 <translation id="4726672564094551039">Beleid opnieuw laden</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4731967714531604179">Prc2 (envelop)</translation>
@@ -1166,7 +1163,6 @@
 <translation id="679355240208270552">Genegeerd omdat de standaard zoekoptie door het beleid is uitgeschakeld.</translation>
 <translation id="681021252041861472">Verplicht veld</translation>
 <translation id="6810899417690483278">Aanpassings-ID</translation>
-<translation id="6819440013020405090">Je wachtwoord is gelekt bij een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan je opgeslagen wachtwoorden te controleren en je wachtwoord op <ph name="ORIGIN" /> te wijzigen.</translation>
 <translation id="6825578344716086703">Je probeert <ph name="DOMAIN" /> te bereiken. De server heeft echter een certificaat geretourneerd dat een zwak ondertekeningsalgoritme (zoals SHA-1) gebruikt. Dit houdt in dat de betrouwbaarheidsverklaring van de server kan zijn vervalst. Het is mogelijk dat de server zelf een imitatie is (wellicht een server die je schade probeert te berokkenen).</translation>
 <translation id="6826370046007623921">Gegevensverlies voorkomen</translation>
 <translation id="6831043979455480757">Vertalen</translation>
@@ -1209,7 +1205,6 @@
 <translation id="7064851114919012435">Contactgegevens</translation>
 <translation id="7075452647191940183">Verzoek is te groot</translation>
 <translation id="7079718277001814089">Deze site bevat malware</translation>
-<translation id="70850504851191913">Gegevenslek gemeld</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7090678807593890770">Zoek op Google naar <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Verbergen</translation>

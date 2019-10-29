@@ -36,7 +36,7 @@ class CrossThreadSharedURLLoaderFactoryInfo::State
 
   // Delegation for mojom::URLLoaderFactory API.
   void CreateLoaderAndStart(
-      mojom::URLLoaderRequest loader,
+      mojo::PendingReceiver<mojom::URLLoader> loader,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -79,7 +79,7 @@ class CrossThreadSharedURLLoaderFactory : public SharedURLLoaderFactory {
   explicit CrossThreadSharedURLLoaderFactory(scoped_refptr<State> state);
 
   // mojom::URLLoaderFactory implementation:
-  void CreateLoaderAndStart(mojom::URLLoaderRequest loader,
+  void CreateLoaderAndStart(mojo::PendingReceiver<mojom::URLLoader> loader,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
@@ -112,7 +112,7 @@ CrossThreadSharedURLLoaderFactory::~CrossThreadSharedURLLoaderFactory() {
 }
 
 void CrossThreadSharedURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -187,7 +187,7 @@ void CrossThreadSharedURLLoaderFactoryInfo::State::DeleteOnCorrectThread()
 }
 
 void CrossThreadSharedURLLoaderFactoryInfo::State::CreateLoaderAndStart(
-    mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

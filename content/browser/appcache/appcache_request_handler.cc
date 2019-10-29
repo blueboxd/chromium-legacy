@@ -580,7 +580,7 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
     const network::ResourceResponseHead& response,
     mojo::ScopedDataPipeConsumerHandle* response_body,
     network::mojom::URLLoaderPtr* loader,
-    network::mojom::URLLoaderClientRequest* client_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
     blink::ThrottlingURLLoader* url_loader,
     bool* skip_other_interceptors,
     bool* will_return_unsafe_redirect) {
@@ -592,16 +592,17 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
   loader_callback_ = base::BindOnce(
       [](const network::ResourceRequest& resource_request,
          network::mojom::URLLoaderPtr* loader,
-         network::mojom::URLLoaderClientRequest* client_request,
+         mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+             client_receiver,
          bool* was_called,
          SingleRequestURLLoaderFactory::RequestHandler handler) {
         *was_called = true;
         network::mojom::URLLoaderClientPtr client;
-        *client_request = mojo::MakeRequest(&client);
+        *client_receiver = mojo::MakeRequest(&client);
         std::move(handler).Run(resource_request, mojo::MakeRequest(loader),
                                std::move(client));
       },
-      *(request_->GetResourceRequest()), loader, client_request, &was_called);
+      *(request_->GetResourceRequest()), loader, client_receiver, &was_called);
   request_->set_response(response);
   if (!MaybeLoadFallbackForResponse(nullptr)) {
     DCHECK(!was_called);

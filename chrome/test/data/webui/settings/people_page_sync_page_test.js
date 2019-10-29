@@ -84,20 +84,7 @@ cr.define('settings_people_page_sync_page', function() {
           .then(testRecreate);
     });
 
-    test('SyncSectionLayout_NoUnifiedConsent_SignedIn', function() {
-      const syncSection = syncPage.$$('#sync-section');
-      const otherItems = syncPage.$$('#other-sync-items');
-
-      syncPage.syncStatus = {signedIn: true, disabled: false};
-      syncPage.unifiedConsentEnabled = false;
-      Polymer.dom.flush();
-      assertFalse(syncSection.hidden);
-      assertTrue(syncPage.$$('#sync-separator').hidden);
-      assertFalse(otherItems.classList.contains('list-frame'));
-      assertFalse(!!otherItems.querySelector('list-item'));
-    });
-
-    test('SyncSectionLayout_UnifiedConsentEnabled_SignedIn', function() {
+    test('SyncSectionLayout_SignedIn', function() {
       const syncSection = syncPage.$$('#sync-section');
       const otherItems = syncPage.$$('#other-sync-items');
 
@@ -107,7 +94,6 @@ cr.define('settings_people_page_sync_page', function() {
         hasError: false,
         statusAction: settings.StatusAction.NO_ACTION,
       };
-      syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
       assertFalse(syncSection.hidden);
       assertTrue(syncPage.$$('#sync-separator').hidden);
@@ -136,7 +122,7 @@ cr.define('settings_people_page_sync_page', function() {
       assertTrue(syncPage.$$('#sync-separator').hidden);
     });
 
-    test('SyncSectionLayout_UnifiedConsentEnabled_SignedOut', function() {
+    test('SyncSectionLayout_SignedOut', function() {
       const syncSection = syncPage.$$('#sync-section');
 
       syncPage.syncStatus = {
@@ -145,13 +131,12 @@ cr.define('settings_people_page_sync_page', function() {
         hasError: false,
         statusAction: settings.StatusAction.NO_ACTION,
       };
-      syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
       assertTrue(syncSection.hidden);
       assertFalse(syncPage.$$('#sync-separator').hidden);
     });
 
-    test('SyncSectionLayout_UnifiedConsentEnabled_SyncDisabled', function() {
+    test('SyncSectionLayout_SyncDisabled', function() {
       const syncSection = syncPage.$$('#sync-section');
 
       syncPage.syncStatus = {
@@ -160,7 +145,6 @@ cr.define('settings_people_page_sync_page', function() {
         hasError: false,
         statusAction: settings.StatusAction.NO_ACTION,
       };
-      syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
       assertTrue(syncSection.hidden);
     });
@@ -350,8 +334,6 @@ cr.define('settings_people_page_sync_page', function() {
           prefs.encryptAllData = true;
           prefs.passphraseRequired = true;
           cr.webUIListenerCallback('sync-prefs-changed', prefs);
-
-          syncPage.unifiedConsentEnabled = false;
           Polymer.dom.flush();
 
           const existingPassphraseInput =
@@ -371,8 +353,6 @@ cr.define('settings_people_page_sync_page', function() {
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
-
-      syncPage.unifiedConsentEnabled = false;
       Polymer.dom.flush();
 
       const existingPassphraseInput = syncPage.$$('#existingPassphraseInput');
@@ -403,8 +383,6 @@ cr.define('settings_people_page_sync_page', function() {
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
-
-      syncPage.unifiedConsentEnabled = false;
       Polymer.dom.flush();
 
       const existingPassphraseInput = syncPage.$$('#existingPassphraseInput');
@@ -438,7 +416,6 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     test('SyncAdvancedRow', function() {
-      syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
 
       const syncAdvancedRow = syncPage.$$('#sync-advanced-row');
@@ -525,47 +502,8 @@ cr.define('settings_people_page_sync_page', function() {
     // ##################################
 
     if (!cr.isChromeOS) {
-      test('SyncSetupCancel_UnifiedConsentDisabled', function() {
-        syncPage.unifiedConsentEnabled = false;
-        Polymer.dom.flush();
-
-        const toast = syncPage.$$('cr-toast');
-
-        // During initialization, the toast values start as undefined/false.
-        syncPage.syncStatus = {};
-        Polymer.dom.flush();
-        assertTrue(!!toast);
-        assertFalse(!!toast.open);
-
-        // Next, the toast shows up during setup.
-        syncPage.syncStatus = {firstSetupInProgress: true};
-        Polymer.dom.flush();
-        assertTrue(toast.open);
-
-        // At the end, confirm that setup can be cancelled.
-        toast.querySelector('cr-button').click();
-
-        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
-            .then(abort => {
-              assertTrue(abort);
-            });
-      });
-
-      test('SyncSetupLeavePage UnifiedConsentDisabled', function() {
-        syncPage.unifiedConsentEnabled = false;
-        Polymer.dom.flush();
-
-        settings.navigateTo(settings.routes.BASIC);
-
-        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
-            .then(abort => {
-              assertFalse(abort);
-            });
-      });
-
-      test('SyncSetupCancel UnifiedConsentEnabled', function() {
+      test('SyncSetupCancel', function() {
         syncPage.diceEnabled = true;
-        syncPage.unifiedConsentEnabled = true;
         syncPage.syncStatus = {
           signinAllowed: true,
           syncSystemEnabled: true,
@@ -588,9 +526,8 @@ cr.define('settings_people_page_sync_page', function() {
             });
       });
 
-      test('SyncSetupConfirm UnifiedConsentEnabled', function() {
+      test('SyncSetupConfirm', function() {
         syncPage.diceEnabled = true;
-        syncPage.unifiedConsentEnabled = true;
         syncPage.syncStatus = {
           signinAllowed: true,
           syncSystemEnabled: true,
@@ -613,8 +550,7 @@ cr.define('settings_people_page_sync_page', function() {
             });
       });
 
-      test('SyncSetupLeavePage UnifiedConsentEnabled', function() {
-        syncPage.unifiedConsentEnabled = true;
+      test('SyncSetupLeavePage', function() {
         syncPage.syncStatus = {
           signinAllowed: true,
           syncSystemEnabled: true,
@@ -664,8 +600,7 @@ cr.define('settings_people_page_sync_page', function() {
             });
       });
 
-      test('SyncSetupSearchSettings UnifiedConsentEnabled', function() {
-        syncPage.unifiedConsentEnabled = true;
+      test('SyncSetupSearchSettings', function() {
         syncPage.syncStatus = {
           signinAllowed: true,
           syncSystemEnabled: true,
@@ -689,7 +624,6 @@ cr.define('settings_people_page_sync_page', function() {
         syncPage.diceEnabled = true;
         Polymer.dom.flush();
         assertFalse(!!syncPage.$$('settings-sync-account-control'));
-        syncPage.unifiedConsentEnabled = true;
         syncPage.syncStatus = {signinAllowed: false, syncSystemEnabled: false};
         Polymer.dom.flush();
         assertFalse(!!syncPage.$$('settings-sync-account-control'));

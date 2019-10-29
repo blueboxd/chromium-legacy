@@ -198,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Lebih dari 1 notifikasi belum dibaca}other{Lebih dari # notifikasi belum dibaca}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{dalam 1 m}other{dalam # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568">Nomor dari <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 jam yang lalu}other{# jam yang lalu}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 dtk lagi}other{# dtk lagi}}</translation>
 <translation id="8134065097954893699">Memuat ulang halaman ini</translation>

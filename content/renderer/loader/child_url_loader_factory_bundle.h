@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -90,14 +91,15 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
       FactoryGetterCallback direct_network_factory_getter);
 
   // URLLoaderFactoryBundle overrides.
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override;
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override;
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
   // Does the same as Clone(), but without cloning the appcache_factory_.

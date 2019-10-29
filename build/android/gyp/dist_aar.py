@@ -21,10 +21,12 @@ from util import build_utils
 _ANDROID_BUILD_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
-def _MergeRTxt(r_paths):
+def _MergeRTxt(r_paths, include_globs):
   """Merging the given R.txt files and returns them as a string."""
   all_lines = set()
   for r_path in r_paths:
+    if include_globs and not build_utils.MatchesGlob(r_path, include_globs):
+      continue
     with open(r_path) as f:
       all_lines.update(f.readlines())
   return ''.join(sorted(all_lines))
@@ -40,18 +42,21 @@ def _MergeProguardConfigs(proguard_configs):
   return '\n'.join(ret)
 
 
-def _AddResources(aar_zip, resource_zips):
+def _AddResources(aar_zip, resource_zips, include_globs):
   """Adds all resource zips to the given aar_zip.
 
   Ensures all res/values/* files have unique names by prefixing them.
   """
   for i, path in enumerate(resource_zips):
+    if include_globs and not build_utils.MatchesGlob(path, include_globs):
+      continue
     with zipfile.ZipFile(path) as res_zip:
       for info in res_zip.infolist():
         data = res_zip.read(info)
         dirname, basename = posixpath.split(info.filename)
         if 'values' in dirname:
-          basename = '{}_{}'.format(basename, i)
+          root, ext = os.path.splitext(basename)
+          basename = '{}_{}{}'.format(root, i, ext)
           info.filename = posixpath.join(dirname, basename)
         info.filename = posixpath.join('res', info.filename)
         aar_zip.writestr(info, data)
@@ -84,6 +89,9 @@ def main(args):
   parser.add_argument(
       '--jar-included-globs',
       help='GN-list of globs for paths to include in jar.')
+  parser.add_argument(
+      '--resource-included-globs',
+      help='GN-list of globs for paths to include in R.txt and resources zips.')
 
   options = parser.parse_args(args)
 
@@ -100,6 +108,8 @@ def main(args):
       options.jar_excluded_globs)
   options.jar_included_globs = build_utils.ParseGnList(
       options.jar_included_globs)
+  options.resource_included_globs = build_utils.ParseGnList(
+      options.resource_included_globs)
 
   with tempfile.NamedTemporaryFile(delete=False) as staging_file:
     try:
@@ -115,7 +125,10 @@ def main(args):
           build_utils.AddToZipHermetic(z, 'classes.jar', src_path=jar_file.name)
 
         build_utils.AddToZipHermetic(
-            z, 'R.txt', data=_MergeRTxt(options.r_text_files))
+            z,
+            'R.txt',
+            data=_MergeRTxt(options.r_text_files,
+                            options.resource_included_globs))
         build_utils.AddToZipHermetic(z, 'public.txt', data='')
 
         if options.proguard_configs:
@@ -123,7 +136,8 @@ def main(args):
               z, 'proguard.txt',
               data=_MergeProguardConfigs(options.proguard_configs))
 
-        _AddResources(z, options.dependencies_res_zips)
+        _AddResources(z, options.dependencies_res_zips,
+                      options.resource_included_globs)
 
         for native_library in options.native_libraries:
           libname = os.path.basename(native_library)

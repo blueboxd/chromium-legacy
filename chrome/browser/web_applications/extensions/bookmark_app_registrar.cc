@@ -150,7 +150,7 @@ base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
   return base::nullopt;
 }
 
-blink::mojom::DisplayMode BookmarkAppRegistrar::GetAppDisplayMode(
+blink::mojom::DisplayMode BookmarkAppRegistrar::GetAppUserDisplayMode(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetExtension(app_id);
   if (!extension)

@@ -10,7 +10,7 @@ suite('InternetDetailPage', function() {
   let mojoApi_ = null;
 
   /** @type {Object} */
-  let prefs_ = {
+  const prefs_ = {
     'vpn_config_allowed': {
       key: 'vpn_config_allowed',
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
@@ -205,7 +205,7 @@ suite('InternetDetailPage', function() {
 
       internetDetailPage.init('wifi_device_guid', 'WiFi', 'wifi_device');
       return flushAsync().then(() => {
-        let allowShared = getAllowSharedProxy();
+        const allowShared = getAllowSharedProxy();
         assertFalse(allowShared.hasAttribute('hidden'));
         assertFalse(allowShared.disabled);
       });
@@ -229,7 +229,7 @@ suite('InternetDetailPage', function() {
 
       internetDetailPage.init('wifi_device_guid', 'WiFi', 'wifi_device');
       return flushAsync().then(() => {
-        let allowShared = getAllowSharedProxy();
+        const allowShared = getAllowSharedProxy();
         assertFalse(allowShared.hasAttribute('hidden'));
         assertFalse(allowShared.disabled);
       });

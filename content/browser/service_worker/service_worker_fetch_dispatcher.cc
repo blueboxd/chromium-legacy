@@ -695,7 +695,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   // Create the DelegatingURLLoaderClient, which becomes the
   // URLLoaderClient for the navigation preload network request.
   network::mojom::URLLoaderClientPtr inner_url_loader_client;
-  preload_handle_->url_loader_client_request =
+  preload_handle_->url_loader_client_receiver =
       mojo::MakeRequest(&inner_url_loader_client);
   auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
       std::move(inner_url_loader_client), resource_request);

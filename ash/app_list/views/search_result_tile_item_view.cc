@@ -389,6 +389,9 @@ void SearchResultTileItemView::OnMenuClosed() {
 
 void SearchResultTileItemView::ActivateResult(int event_flags) {
   if (result()->result_type() == AppListSearchResultType::kPlayStoreApp) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Arc.PlayStoreSearch.ResultClickLatency",
+        base::TimeTicks::Now() - result_display_start_time());
     UMA_HISTOGRAM_EXACT_LINEAR(
         "Apps.AppListPlayStoreAppLaunchedIndex",
         group_index_in_container_view(),

@@ -20,6 +20,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -82,7 +83,7 @@ class ProxyingURLLoaderFactory::InProgressRequest
  public:
   InProgressRequest(
       ProxyingURLLoaderFactory* factory,
-      network::mojom::URLLoaderRequest loader_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -169,8 +170,8 @@ class ProxyingURLLoaderFactory::InProgressRequest
   mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
   network::mojom::URLLoaderClientPtr target_client_;
 
-  // Messages received by |loader_binding_| are forwarded to |target_loader_|.
-  mojo::Binding<network::mojom::URLLoader> loader_binding_;
+  // Messages received by |loader_receiver_| are forwarded to |target_loader_|.
+  mojo::Receiver<network::mojom::URLLoader> loader_receiver_;
   network::mojom::URLLoaderPtr target_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(InProgressRequest);
@@ -296,7 +297,7 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyResponseAdapter
 
 ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     ProxyingURLLoaderFactory* factory,
-    network::mojom::URLLoaderRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -311,7 +312,7 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       is_main_frame_(request.is_main_frame),
       client_binding_(this),
       target_client_(std::move(client)),
-      loader_binding_(this, std::move(loader_request)) {
+      loader_receiver_(this, std::move(loader_receiver)) {
   network::mojom::URLLoaderClientPtr proxy_client;
   client_binding_.Bind(mojo::MakeRequest(&proxy_client));
 
@@ -345,7 +346,7 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
   base::RepeatingClosure closure = base::BarrierClosure(
       2, base::BindOnce(&InProgressRequest::OnBindingsClosed,
                         base::Unretained(this)));
-  loader_binding_.set_connection_error_handler(closure);
+  loader_receiver_.set_disconnect_handler(closure);
   client_binding_.set_connection_error_handler(closure);
 }
 
@@ -475,7 +476,7 @@ bool ProxyingURLLoaderFactory::MaybeProxyRequest(
 }
 
 void ProxyingURLLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -483,8 +484,8 @@ void ProxyingURLLoaderFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   requests_.insert(std::make_unique<InProgressRequest>(
-      this, std::move(loader_request), routing_id, request_id, options, request,
-      std::move(client), traffic_annotation));
+      this, std::move(loader_receiver), routing_id, request_id, options,
+      request, std::move(client), traffic_annotation));
 }
 
 void ProxyingURLLoaderFactory::Clone(

@@ -48,6 +48,9 @@ class ProfileAttributesEntry {
   // Gets the name of the profile to be displayed in the User Menu. The name can
   // be the GAIA name, local profile name or a combination of them.
   base::string16 GetName() const;
+  // Returns |GetGAIAGivenName()| if not empty. Otherwise, returns
+  // |GetGAIAName()|.
+  base::string16 GetGAIANameToDisplay() const;
   // Returns true if the profile name has changed.
   bool HasProfileNameChanged();
 
@@ -173,7 +176,6 @@ class ProfileAttributesEntry {
   //   return false.
   // - Otherwise the concatenation of GAIA name and local profile name.
   base::string16 GetNameToDisplay() const;
-  base::string16 GetGAIANameToDisplay() const;
   base::string16 GetLastNameToDisplay() const;
 
   // Returns true if:

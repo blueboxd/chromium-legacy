@@ -570,8 +570,6 @@ class CORE_EXPORT Node : public EventTarget {
   void SetHasFocusWithin(bool flag);
   virtual void SetDragged(bool flag);
 
-  virtual int tabIndex() const;
-
   virtual const Node* FocusDelegate() const;
   // This is called only when the node is focused.
   virtual bool ShouldHaveFocusAppearance() const;

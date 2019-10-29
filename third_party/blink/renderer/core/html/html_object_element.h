@@ -132,6 +132,8 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
     return NamedItemType::kNameOrId;
   }
 
+  int DefaultTabIndex() const override;
+
   String class_id_;
   bool use_fallback_content_ : 1;
 };

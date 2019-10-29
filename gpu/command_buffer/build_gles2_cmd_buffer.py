@@ -2972,8 +2972,8 @@ _FUNCTION_INFO = {
                 'uint32_t counts_shm_id, uint32_t counts_shm_offset, '
                 'uint32_t instance_counts_shm_id, '
                 'uint32_t instance_counts_shm_offset, GLsizei drawcount',
-    'extension': 'WEBGL_multi_draw_instanced',
-    'extension_flag': 'webgl_multi_draw_instanced',
+    'extension': 'WEBGL_multi_draw',
+    'extension_flag': 'WEBGL_multi_draw',
     'data_transfer_methods': ['shm'],
     'size_args': {
       'firsts': 'drawcount * sizeof(GLint)',
@@ -3012,8 +3012,8 @@ _FUNCTION_INFO = {
                 'uint32_t offsets_shm_id, uint32_t offsets_shm_offset, '
                 'uint32_t instance_counts_shm_id, '
                 'uint32_t instance_counts_shm_offset, GLsizei drawcount',
-    'extension': 'WEBGL_multi_draw_instanced',
-    'extension_flag': 'webgl_multi_draw_instanced',
+    'extension': 'WEBGL_multi_draw',
+    'extension_flag': 'WEBGL_multi_draw',
     'data_transfer_methods': ['shm'],
     'size_args': {
       'counts': 'drawcount * sizeof(GLsizei)',
@@ -3032,8 +3032,8 @@ _FUNCTION_INFO = {
   },
   'MultiDrawArraysInstancedWEBGL': {
     'type': 'NoCommand',
-    'extension': 'WEBGL_multi_draw_instanced',
-    'extension_flag': 'webgl_multi_draw_instanced',
+    'extension': 'WEBGL_multi_draw',
+    'extension_flag': 'WEBGL_multi_draw',
   },
   'MultiDrawElementsWEBGL': {
     'type': 'NoCommand',
@@ -3042,8 +3042,8 @@ _FUNCTION_INFO = {
   },
   'MultiDrawElementsInstancedWEBGL': {
     'type': 'NoCommand',
-    'extension': 'WEBGL_multi_draw_instanced',
-    'extension_flag': 'webgl_multi_draw_instanced',
+    'extension': 'WEBGL_multi_draw',
+    'extension_flag': 'WEBGL_multi_draw',
   },
   'OverlayPromotionHintCHROMIUM': {
     'decoder_func': 'DoOverlayPromotionHintCHROMIUM',

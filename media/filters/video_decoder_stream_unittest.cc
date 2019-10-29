@@ -289,7 +289,7 @@ class VideoDecoderStreamTest
                const Decryptor::DecryptCB& decrypt_cb) {
     DCHECK(encrypted->decrypt_config());
     if (has_no_key_) {
-      decrypt_cb.Run(Decryptor::kNoKey, NULL);
+      decrypt_cb.Run(Decryptor::kNoKey, nullptr);
       return;
     }
 
@@ -328,7 +328,7 @@ class VideoDecoderStreamTest
   }
 
   void ReadOneFrame() {
-    frame_read_ = NULL;
+    frame_read_ = nullptr;
     pending_read_ = true;
     video_decoder_stream_->Read(base::BindOnce(
         &VideoDecoderStreamTest::FrameReady, base::Unretained(this)));

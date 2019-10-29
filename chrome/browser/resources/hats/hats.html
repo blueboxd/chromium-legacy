@@ -20,7 +20,8 @@
     <script>
       /**
        * Close the window when the survey is submitted or when the survey
-       * has already been submitted in the past.
+       * has already been submitted in the past. It is called through HaTS
+       * javascript library's accessGrantedCallback function.
        * @param {boolean} isFirstRun Will be true when the user just earned
        *    access to the content and false if the user had already had access
        *    previously.
@@ -30,14 +31,42 @@
           return;
         }
 
-        window.close();
+        // HaTS 1 library will post the answer through a form to an iframe.
+        // Once the iframe is loaded, it will be disposed. We can not listen to
+        // the iframe's load event since the previous listener will dispose the
+        // iframe so our listener will not be notified. Instead, we listen to
+        // the iframe's disposal to make sure the iframe is already loaded,
+        // which means the answer has been posted to the server.
+        // TODO(weili): Once this issue is fixed in HaTS library
+        // (https://b.corp.google.com/issues/143494318), remove the following
+        // work around.
+        const element = document.querySelector(`iframe[id^='closure_frame']`);
+        if (element === null) {
+          // No iframe found.
+          window.close();
+        }
+
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            for (let i = 0; i < mutation.removedNodes.length; i++) {
+              if (element === mutation.removedNodes[i]) {
+                window.close();
+              }
+            }
+          })
+        });
+
+        // Watch for the iframe disposal event.
+        observer.observe(element.parentNode, {childList: true});
       }
 
       /**
        * Called after the survey HTML is injected into the page.
+       * It is called through HaTS javascript library's afterShowCallback
+       * function.
        */
       function onSurveyShown() {
-        /* Don't show logo on the survey */
+        // Don't show logo on the survey.
         const elements = document.getElementsByClassName('t402-prompt-logo');
         for (const element of elements)
           element.style.display = 'none';

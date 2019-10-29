@@ -30,7 +30,7 @@ class TestSharedURLLoaderFactory : public SharedURLLoaderFactory {
                                       bool is_trusted = false);
 
   // URLLoaderFactory implementation:
-  void CreateLoaderAndStart(mojom::URLLoaderRequest loader,
+  void CreateLoaderAndStart(mojo::PendingReceiver<mojom::URLLoader> loader,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,

@@ -118,9 +118,9 @@ void ExecuteWebTask(Profile* profile,
       apps::mojom::LaunchContainer::kLaunchContainerWindow;
 
   // If the app isn't configured to open in a window, it should open as a tab.
-  if (registrar.GetAppDisplayMode(task.app_id) !=
+  if (registrar.GetAppUserDisplayMode(task.app_id) !=
       blink::mojom::DisplayMode::kStandalone) {
-    DCHECK_EQ(registrar.GetAppDisplayMode(task.app_id),
+    DCHECK_EQ(registrar.GetAppUserDisplayMode(task.app_id),
               blink::mojom::DisplayMode::kBrowser);
     launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
   }

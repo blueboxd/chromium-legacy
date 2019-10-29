@@ -103,8 +103,7 @@ TEST_F(VideoAutoFullscreen, PlayTriggersFullscreenWithoutPlaysInline) {
   Video()->SetSrc("http://example.com/foo.mp4");
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
-      LocalFrame::NotifyUserActivation(GetFrame(),
-                                       UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame());
   Video()->Play();
 
   MakeGarbageCollected<WaitForEvent>(Video(), event_type_names::kPlay);
@@ -118,8 +117,7 @@ TEST_F(VideoAutoFullscreen, PlayDoesNotTriggerFullscreenWithPlaysInline) {
   Video()->SetSrc("http://example.com/foo.mp4");
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
-      LocalFrame::NotifyUserActivation(GetFrame(),
-                                       UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame());
   Video()->Play();
 
   MakeGarbageCollected<WaitForEvent>(Video(), event_type_names::kPlay);
@@ -132,8 +130,7 @@ TEST_F(VideoAutoFullscreen, ExitFullscreenPausesWithoutPlaysInline) {
   Video()->SetSrc("http://example.com/foo.mp4");
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
-      LocalFrame::NotifyUserActivation(GetFrame(),
-                                       UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame());
   Video()->Play();
 
   MakeGarbageCollected<WaitForEvent>(Video(), event_type_names::kPlay);
@@ -153,8 +150,7 @@ TEST_F(VideoAutoFullscreen, ExitFullscreenDoesNotPauseWithPlaysInline) {
   Video()->SetSrc("http://example.com/foo.mp4");
 
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
-      LocalFrame::NotifyUserActivation(GetFrame(),
-                                       UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(GetFrame());
   Video()->Play();
 
   MakeGarbageCollected<WaitForEvent>(Video(), event_type_names::kPlay);
@@ -174,8 +170,7 @@ TEST_F(VideoAutoFullscreen, OnPlayTriggersFullscreenWithoutGesture) {
   Video()->SetSrc("http://example.com/foo.mp4");
   {
     std::unique_ptr<UserGestureIndicator> user_gesture_scope =
-        LocalFrame::NotifyUserActivation(GetFrame(),
-                                         UserGestureToken::kNewGesture);
+        LocalFrame::NotifyUserActivation(GetFrame());
     Video()->Play();
   }
   MakeGarbageCollected<WaitForEvent>(Video(), event_type_names::kPlay);

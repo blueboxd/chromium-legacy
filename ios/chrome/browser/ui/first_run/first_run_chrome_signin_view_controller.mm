@@ -56,12 +56,11 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
                      dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(browser);
   self = [super
-      initWithBrowserState:browser->GetBrowserState()
-               accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE
-               promoAction:signin_metrics::PromoAction::
-                               PROMO_ACTION_NO_SIGNIN_PROMO
-            signInIdentity:identity
-                dispatcher:dispatcher];
+      initWithBrowser:browser
+          accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE
+          promoAction:signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
+       signInIdentity:identity
+           dispatcher:dispatcher];
   if (self) {
     _browser = browser;
     _firstRunConfig = firstRunConfig;

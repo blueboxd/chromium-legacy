@@ -34,6 +34,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,21 +49,23 @@ const char kUserID[] = "user";
 void RequestProxyResolvingSocketFactoryOnUIThread(
     Profile* profile,
     base::WeakPtr<gcm::GCMProfileService> service,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   if (!service)
     return;
   return content::BrowserContext::GetDefaultStoragePartition(profile)
       ->GetNetworkContext()
-      ->CreateProxyResolvingSocketFactory(std::move(request));
+      ->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
 void RequestProxyResolvingSocketFactory(
     Profile* profile,
     base::WeakPtr<gcm::GCMProfileService> service,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
-                                profile, service, std::move(request)));
+                                profile, service, std::move(receiver)));
 }
 
 std::unique_ptr<KeyedService> BuildGCMProfileService(

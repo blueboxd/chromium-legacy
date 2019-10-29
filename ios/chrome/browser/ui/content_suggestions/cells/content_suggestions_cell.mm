@@ -190,10 +190,7 @@ const CGFloat kAnimationDuration = 0.3;
       [additionalInfoLabel sizeThatFits:sizeForLabels].height;
   labelHeight += MAX(additionalInfoHeight, kFaviconSize);
   // Add extra space at the bottom for separators between cells.
-  if (base::FeatureList::IsEnabled(kOptionalArticleThumbnail)) {
-    return MAX(minimalHeight, labelHeight) + kStandardSpacing;
-  }
-  return MAX(minimalHeight, labelHeight);
+  return MAX(minimalHeight, labelHeight) + kStandardSpacing;
 }
 
 #pragma mark - UICollectionViewCell
@@ -296,50 +293,27 @@ const CGFloat kAnimationDuration = 0.3;
 
   AddSameConstraints(_contentImageView, _imageContainer);
 
-  // For standard layout, the image container should be aligned to the right
-  // border if kOptionalArticleThumbnail is enabled, otherwise the left border.
-  if (base::FeatureList::IsEnabled(kOptionalArticleThumbnail)) {
-    // Prevent _additionalInformationLabel from overlapping with _titleLabel
-    // when a11y font size is used.
-    [_additionalInformationLabel.topAnchor
-        constraintGreaterThanOrEqualToAnchor:_titleLabel.bottomAnchor
-                                    constant:kSmallSpacing]
-        .active = YES;
+  // Prevent _additionalInformationLabel from overlapping with _titleLabel when
+  // a11y font size is used.
+  [_additionalInformationLabel.topAnchor
+      constraintGreaterThanOrEqualToAnchor:_titleLabel.bottomAnchor
+                                  constant:kSmallSpacing]
+      .active = YES;
 
-    _imageTitleHorizontalSpacing = [_imageContainer.leadingAnchor
-        constraintEqualToAnchor:_titleLabel.trailingAnchor
-                       constant:kStandardSpacing];
+  _imageTitleHorizontalSpacing = [_imageContainer.leadingAnchor
+      constraintEqualToAnchor:_titleLabel.trailingAnchor
+                     constant:kStandardSpacing];
 
-    _standardConstraints = @[
-      _imageTitleHorizontalSpacing,
-      [_titleLabel.topAnchor constraintEqualToAnchor:_imageContainer.topAnchor],
-      [_titleLabel.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kStandardSpacing],
-      [_imageContainer.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kStandardSpacing],
-    ];
-  } else {
-    [_imageContainer.bottomAnchor
-        constraintLessThanOrEqualToAnchor:_faviconView.bottomAnchor]
-        .active = YES;
-
-    _imageTitleHorizontalSpacing = [_titleLabel.leadingAnchor
-        constraintEqualToAnchor:_imageContainer.trailingAnchor
-                       constant:kStandardSpacing];
-
-    _standardConstraints = @[
-      _imageTitleHorizontalSpacing,
-      [_titleLabel.topAnchor constraintEqualToAnchor:_imageContainer.topAnchor],
-      [_imageContainer.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kStandardSpacing],
-      [_titleLabel.trailingAnchor
-          constraintEqualToAnchor:self.contentView.trailingAnchor
-                         constant:-kStandardSpacing],
-    ];
-  }
+  _standardConstraints = @[
+    _imageTitleHorizontalSpacing,
+    [_titleLabel.topAnchor constraintEqualToAnchor:_imageContainer.topAnchor],
+    [_titleLabel.leadingAnchor
+        constraintEqualToAnchor:self.contentView.leadingAnchor
+                       constant:kStandardSpacing],
+    [_imageContainer.trailingAnchor
+        constraintEqualToAnchor:self.contentView.trailingAnchor
+                       constant:-kStandardSpacing],
+  ];
 
   // For a11y layout, the image container is always aligned to the left border.
   _imageTitleVerticalSpacing = [_titleLabel.topAnchor

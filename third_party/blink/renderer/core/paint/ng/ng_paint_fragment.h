@@ -252,14 +252,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     bool is_in_layout_ng_inline_formatting_context_;
   };
 
-  // Returns NGPaintFragment for the inline formatting context the LayoutObject
-  // belongs to.
-  //
-  // When the LayoutObject is an inline block, it belongs to an inline
-  // formatting context while it creates its own for its descendants. This
-  // function always returns the one it belongs to.
-  static const NGPaintFragment* GetForInlineContainer(const LayoutObject*);
-
   // Returns a range of NGPaintFragment in an inline formatting context that are
   // for a LayoutObject.
   static FragmentRange InlineFragmentsFor(const LayoutObject*);

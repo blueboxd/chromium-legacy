@@ -13,8 +13,7 @@
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/cert/x509_util.h"
@@ -80,8 +79,9 @@ class DeferringURLLoaderThrottle final : public blink::URLLoaderThrottle {
 
 class MockURLLoader final : public network::mojom::URLLoader {
  public:
-  MockURLLoader(network::mojom::URLLoaderRequest url_loader_request)
-      : binding_(this, std::move(url_loader_request)) {}
+  MockURLLoader(
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver)
+      : receiver_(this, std::move(url_loader_receiver)) {}
   ~MockURLLoader() override = default;
 
   MOCK_METHOD3(FollowRedirect,
@@ -95,7 +95,7 @@ class MockURLLoader final : public network::mojom::URLLoader {
   MOCK_METHOD0(ResumeReadingBodyFromNet, void());
 
  private:
-  mojo::Binding<network::mojom::URLLoader> binding_;
+  mojo::Receiver<network::mojom::URLLoader> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(MockURLLoader);
 };
@@ -107,15 +107,16 @@ class URLLoaderFactoryForMockLoader final
   ~URLLoaderFactoryForMockLoader() override = default;
 
   // network::mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest url_loader_request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    loader_ = std::make_unique<MockURLLoader>(std::move(url_loader_request));
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& url_request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
+    loader_ = std::make_unique<MockURLLoader>(std::move(url_loader_receiver));
     url_request_ = url_request;
     client_ptr_ = std::move(client);
   }

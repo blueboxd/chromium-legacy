@@ -178,7 +178,7 @@ void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
   web_app_info.title = base::UTF8ToUTF16(install_options_.url.spec());
   web_app_info.app_url = install_options_.url;
 
-  switch (install_options_.display_mode) {
+  switch (install_options_.user_display_mode) {
     case blink::mojom::DisplayMode::kUndefined:
     case blink::mojom::DisplayMode::kBrowser:
       web_app_info.open_as_window = false;

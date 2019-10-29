@@ -146,7 +146,6 @@
         <template is="dom-if" if="[[shouldShowSyncAccountControl_(diceEnabled_,
             syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
           <settings-sync-account-control
-              unified-consent-enabled
               sync-status="[[syncStatus]]"
               promo-label-with-account="$i18n{peopleSignInPrompt}"
               promo-label-with-no-account="$i18n{peopleSignInPrompt}"
@@ -300,7 +299,6 @@
 <if expr="not chromeos">
               dice-enabled="[[diceEnabled_]]"
 </if>
-              unified-consent-enabled
               sync-status="[[syncStatus]]" prefs="{{prefs}}"
               page-visibility="[[pageVisibility.privacy]]">
           </settings-sync-page>

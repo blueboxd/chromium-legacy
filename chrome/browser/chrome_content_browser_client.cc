@@ -127,11 +127,9 @@
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
-#include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
-#include "chrome/browser/ssl/ssl_error_navigation_throttle.h"
 #include "chrome/browser/ssl/typed_navigation_timing_throttle.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
@@ -239,6 +237,8 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
+#include "components/security_interstitials/content/ssl_cert_reporter.h"
+#include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -510,6 +510,7 @@
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -1040,6 +1041,17 @@ void MaybeAddThrottle(
     std::unique_ptr<content::NavigationThrottle> maybe_throttle) {
   if (maybe_throttle)
     throttles->push_back(std::move(maybe_throttle));
+}
+
+// Returns whether |web_contents| is within a hosted app.
+bool IsInHostedApp(WebContents* web_contents) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  return (browser &&
+          web_app::AppBrowserController::IsForWebAppBrowser(browser));
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -3897,7 +3909,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle,
       std::make_unique<CertificateReportingServiceCertReporter>(web_contents),
-      base::Bind(&SSLErrorHandler::HandleSSLError)));
+      base::Bind(&SSLErrorHandler::HandleSSLError),
+      base::Bind(&IsInHostedApp)));
 
   throttles.push_back(std::make_unique<LoginNavigationThrottle>(handle));
 
@@ -4326,14 +4339,15 @@ class FileURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
  private:
   // network::mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     if (!content::ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
             child_id_, request.url)) {
       client->OnComplete(

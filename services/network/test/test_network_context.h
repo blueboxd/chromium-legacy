@@ -144,7 +144,8 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojo::PendingReceiver<mojom::TCPBoundSocket> receiver,
       CreateTCPBoundSocketCallback callback) override {}
   void CreateProxyResolvingSocketFactory(
-      mojom::ProxyResolvingSocketFactoryRequest request) override {}
+      mojo::PendingReceiver<mojom::ProxyResolvingSocketFactory> receiver)
+      override {}
   void CreateWebSocket(
       const GURL& url,
       const std::vector<std::string>& requested_protocols,

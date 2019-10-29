@@ -11,42 +11,43 @@ namespace ui {
 
 namespace {
 
-// Fulfills an InterfaceRequest<T> using an InterfacePtr<T>.
+// Fulfills a PendingReceiver<T> using a PendingRemote<T>.
 //
-// Messages queued on the InterfaceRequest's message pipe are preserved and will
-// be eventually delivered to the remote end of InterfacePtr<T>'s.
+// Messages queued on the PendingReceiver's message pipe are preserved and will
+// be eventually delivered to the remote end of PendingRemote<T>'s.
 //
-// InterfacePtr<T> must be a brand new interface; i.e., it not have been
+// PendingRemote<T> must be a brand new interface; i.e., it not have been
 // previously used to send a message.
 template <typename Interface>
-void FulfillInterfaceRequest(
-    mojo::InterfaceRequest<Interface> interface_request,
-    mojo::InterfacePtr<Interface> interface_ptr) {
+void FulfillPendingReceiver(mojo::PendingReceiver<Interface> receiver,
+                            mojo::PendingRemote<Interface> remote) {
   MojoResult result =
-      mojo::FuseMessagePipes(interface_ptr.PassInterface().PassHandle(),
-                             interface_request.PassMessagePipe());
+      mojo::FuseMessagePipes(remote.PassPipe(), receiver.PassPipe());
   DCHECK_EQ(result, MOJO_RESULT_OK);
 }
 
 }  // namespace
 
-ScenicGpuService::ScenicGpuService(mojom::ScenicGpuHostRequest gpu_host_request)
-    : gpu_host_request_(std::move(gpu_host_request)), weak_ptr_factory_(this) {}
+ScenicGpuService::ScenicGpuService(
+    mojo::PendingReceiver<mojom::ScenicGpuHost> gpu_host_receiver)
+    : gpu_host_receiver_(std::move(gpu_host_receiver)) {}
 
 ScenicGpuService::~ScenicGpuService() {}
 
-base::RepeatingCallback<void(mojom::ScenicGpuServiceRequest)>
+base::RepeatingCallback<void(mojo::PendingReceiver<mojom::ScenicGpuService>)>
 ScenicGpuService::GetBinderCallback() {
-  return base::BindRepeating(&ScenicGpuService::AddBinding,
+  return base::BindRepeating(&ScenicGpuService::AddReceiver,
                              weak_ptr_factory_.GetWeakPtr());
 }
 
-void ScenicGpuService::Initialize(mojom::ScenicGpuHostPtr gpu_host) {
-  FulfillInterfaceRequest(std::move(gpu_host_request_), std::move(gpu_host));
+void ScenicGpuService::Initialize(
+    mojo::PendingRemote<mojom::ScenicGpuHost> gpu_host) {
+  FulfillPendingReceiver(std::move(gpu_host_receiver_), std::move(gpu_host));
 }
 
-void ScenicGpuService::AddBinding(mojom::ScenicGpuServiceRequest request) {
-  binding_set_.AddBinding(this, std::move(request));
+void ScenicGpuService::AddReceiver(
+    mojo::PendingReceiver<mojom::ScenicGpuService> receiver) {
+  receiver_set_.Add(this, std::move(receiver));
 }
 
 }  // namespace ui

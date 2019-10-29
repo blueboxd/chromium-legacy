@@ -401,19 +401,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   CGSize size = [super collectionView:collectionView
                                layout:collectionViewLayout
                sizeForItemAtIndexPath:indexPath];
-
-  // No need to add extra spacing if kOptionalArticleThumbnail is enabled,
-  // because each cell already has spacing at top and bottom for separators.
-  if (base::FeatureList::IsEnabled(kOptionalArticleThumbnail)) {
-    return size;
-  }
-
-  // Special case for last item to add extra spacing before the footer.
-  if ([self.collectionUpdater isContentSuggestionsSection:indexPath.section] &&
-      indexPath.row ==
-          [self.collectionView numberOfItemsInSection:indexPath.section] - 1) {
-    size.height += [ContentSuggestionsCell standardSpacing];
-  }
   return size;
 }
 
@@ -528,21 +515,9 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     shouldHideItemSeparatorAtIndexPath:(NSIndexPath*)indexPath {
-  // If kOptionalArticleThumbnail is enabled, show separators for all cells in
-  // content suggestion sections.
-  if (base::FeatureList::IsEnabled(kOptionalArticleThumbnail)) {
-    return !
-        [self.collectionUpdater isContentSuggestionsSection:indexPath.section];
-  }
-  // Special case, show a seperator between the last regular item and the
-  // footer.
-  if (![self.collectionUpdater
-          shouldUseCustomStyleForSection:indexPath.section] &&
-      indexPath.row ==
-          [self.collectionView numberOfItemsInSection:indexPath.section] - 1) {
-    return NO;
-  }
-  return YES;
+  // Show separators for all cells in content suggestion sections.
+  return !
+      [self.collectionUpdater isContentSuggestionsSection:indexPath.section];
 }
 
 - (BOOL)collectionView:(UICollectionView*)collectionView

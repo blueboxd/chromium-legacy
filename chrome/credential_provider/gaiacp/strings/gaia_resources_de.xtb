@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Ihr Konto wurde gesperrt. Bitte wenden Sie sich an Ihren Systemadministrator.</translation>
 <translation id="2844349213149998955">Die Anmeldung mit einem privaten Konto ist auf diesem Gerät nicht zulässig. Melden Sie sich bitte mit einem Arbeitskonto an.</translation>
 <translation id="3306357053520292004">Ein Nutzer dieses Computers wurde bereits über dieses Konto hinzugefügt. Bitte melden Sie sich mit einem anderen Konto an.</translation>
+<translation id="3926852373333893095">Nur G Suite Enterprise-Nutzer dürfen sich anmelden.</translation>
 <translation id="4057329986137569701">Ein interner Fehler ist aufgetreten.</translation>
 <translation id="4267670563222825190">Für Ihr Konto wurde kein Domainnutzer gefunden. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="4300229033992784001">Das Passwort für Ihr Konto wurde geändert. Geben Sie Ihr aktuelles Windows-Passwort ein, um Ihr Windows-Konto mit Ihrem Arbeitskonto zu synchronisieren.</translation>
 <translation id="4706454071748629324">Es konnte kein neuer Nutzer hinzugefügt werden. Auf diesem Computer kann nur ein Nutzer mit einem Arbeitskonto erstellt werden.</translation>
 <translation id="6033715878377252112">Hilfsdienst für den Google-Anmeldeinformationsanbieter unter Windows</translation>
 <translation id="6149399665202317746">Google-Anmeldeinformationsanbieter für Windows</translation>
+<translation id="6239180560789153226">Es fehlen Wiederstellungsinfos für Ihr Gerät. Melden Sie sich mit Ihrem Google-Arbeitskonto an.</translation>
 <translation id="6312494990035843744">Die Anmeldung mit einem Arbeitskonto ist bei dieser Domain nicht zulässig. Versuchen Sie es mit einem anderen Konto.</translation>
 <translation id="6463752215771576050">Dieser Computer kann nicht für die Unternehmensverwaltung registriert werden.  Bitte melden Sie sich mit einem anderen Arbeitskonto an.</translation>
 <translation id="6657585470893396449">Passwort</translation>
+<translation id="6937049691815837345">Ihr Gerät muss bei der Geräteverwaltung angemeldet werden. Melden Sie sich mit Ihrem Google-Arbeitskonto an.</translation>
 <translation id="7209941495304122410">Windows-Passwort eingeben</translation>
 <translation id="7357241217513796177">Sorgen Sie dafür, dass Sie eine Netzwerkverbindung haben, und versuchen Sie es dann noch einmal.</translation>
 <translation id="7536769223115622137">Arbeitskonto hinzufügen</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Ihre Sitzung ist abgelaufen. Melden Sie sich mit Ihrem Google-Arbeitskonto an.</translation>
 <translation id="9055998212250844221">Nutzerkonto wurde vom Google-Anmeldeinformationsanbieter für Windows erstellt</translation>
 <translation id="9135619837062629367">Die Anmeldung mit diesem Konto ist nicht zulässig. Versuchen Sie es mit einem anderen Konto.</translation>
+<translation id="998002716857524853">Melden Sie sich mit Ihrem G Suite-Arbeitskonto an.</translation>
 </translationbundle>

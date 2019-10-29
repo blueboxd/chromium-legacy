@@ -82,7 +82,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
   }
 
   void StartLoader(const network::ResourceRequest& resource_request,
-                   network::mojom::URLLoaderRequest request,
+                   mojo::PendingReceiver<network::mojom::URLLoader> receiver,
                    network::mojom::URLLoaderClientPtr client) {
     *most_recent_resource_request_ = resource_request;
     static network::mojom::URLLoaderFactoryParams params;
@@ -93,7 +93,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
         nullptr /* network_context_client */,
         base::BindOnce(&TestNavigationLoaderInterceptor::DeleteURLLoader,
                        base::Unretained(this)),
-        std::move(request), 0 /* options */, resource_request,
+        std::move(receiver), 0 /* options */, resource_request,
         std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         0, /* request_id */
         0 /* keepalive_request_size */, resource_scheduler_client_,
@@ -107,7 +107,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
       const network::ResourceResponseHead& response,
       mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* loader,
-      network::mojom::URLLoaderClientRequest* client_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
       blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,
       bool* will_return_unsafe_redirect) override {

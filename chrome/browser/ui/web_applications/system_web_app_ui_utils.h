@@ -21,6 +21,11 @@ class WebUIDataSource;
 
 namespace web_app {
 
+// Returns the system app type for the given App ID.
+base::Optional<SystemAppType> GetSystemWebAppTypeForAppId(
+    Profile* profile,
+    web_app::AppId app_id);
+
 // Returns the PWA system App ID for the given system app type.
 base::Optional<web_app::AppId> GetAppIdForSystemWebApp(Profile* profile,
                                                        SystemAppType app_type);

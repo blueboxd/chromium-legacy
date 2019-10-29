@@ -4,9 +4,16 @@
 
 package org.chromium.chrome.browser.sync;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.support.test.uiautomator.UiDevice;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceCategory;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -14,14 +21,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -147,6 +159,106 @@ public class SyncAndServicesPreferencesTest {
                 mSyncTestRule.hasServerAutofillCreditCards());
     }
 
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    public void testDismissedSettingsDoesNotSetFirstSetupComplete() throws Exception {
+        mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
+        startPreferencesForAdvancedSyncFlowAndInterruptIt();
+        // FirstSetupComplete should not be set.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertFalse(ProfileSyncService.get().isFirstSetupComplete()); });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    public void testDismissedSettingsShowsSyncSwitchOffByDefault() throws Exception {
+        mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
+        startPreferencesForAdvancedSyncFlowAndInterruptIt();
+        SyncAndServicesPreferences fragment = startSyncAndServicesPreferences();
+        assertSyncOffState(fragment);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    public void testDismissedSettingsShowsSyncErrorCard() throws Exception {
+        mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
+        startPreferencesForAdvancedSyncFlowAndInterruptIt();
+        SyncAndServicesPreferences fragment = startSyncAndServicesPreferences();
+        Assert.assertNotNull("Sync error card should be shown", getSyncErrorCard(fragment));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    public void testFirstSetupCompleteIsSetAfterSettingsOpenedAndBackPressed() throws Exception {
+        mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
+        startPreferencesForAdvancedSyncFlowAndInterruptIt();
+        // Open Settings and leave sync off.
+        SyncAndServicesPreferences fragment = startSyncAndServicesPreferences();
+        pressBackAndDismissActivity(fragment.getActivity());
+        // FirstSetupComplete should be set.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertTrue(ProfileSyncService.get().isFirstSetupComplete()); });
+        fragment = startSyncAndServicesPreferences();
+        Assert.assertNull("Sync error card should not be shown", getSyncErrorCard(fragment));
+        assertSyncOffState(fragment);
+        Assert.assertFalse(AndroidSyncSettings.get().isChromeSyncEnabled());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    public void testFirstSetupCompleteIsSetAfterSettingsOpenedAndDismissed() throws Exception {
+        mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
+        startPreferencesForAdvancedSyncFlowAndInterruptIt();
+        // Open Settings and leave sync off.
+        SyncAndServicesPreferences fragment = startSyncAndServicesPreferences();
+        ApplicationTestUtils.finishActivity(fragment.getActivity());
+        // FirstSetupComplete should be set.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertTrue(ProfileSyncService.get().isFirstSetupComplete()); });
+        fragment = startSyncAndServicesPreferences();
+        Assert.assertNull("Sync error card should not be shown", getSyncErrorCard(fragment));
+        assertSyncOffState(fragment);
+        Assert.assertFalse(AndroidSyncSettings.get().isChromeSyncEnabled());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    public void testFirstSetupCompleteIsSetAfterSyncTurnedOn() throws Exception {
+        mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
+        startPreferencesForAdvancedSyncFlowAndInterruptIt();
+        // Open Settings and turn sync on.
+        SyncAndServicesPreferences fragment = startSyncAndServicesPreferences();
+        ChromeSwitchPreference syncSwitch = getSyncSwitch(fragment);
+        mSyncTestRule.togglePreference(syncSwitch);
+        Assert.assertTrue(syncSwitch.isChecked());
+        Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
+        // FirstSetupComplete should be set.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertTrue(ProfileSyncService.get().isFirstSetupComplete()); });
+        Assert.assertNull("Sync error card should not be shown", getSyncErrorCard(fragment));
+    }
+
+    /**
+     * Start SyncAndServicesPreferences signin screen and dissmiss it without pressing confirm or
+     * cancel.
+     */
+    private void startPreferencesForAdvancedSyncFlowAndInterruptIt() throws Exception {
+        Context context = InstrumentationRegistry.getTargetContext();
+        String fragmentName = SyncAndServicesPreferences.class.getName();
+        final Bundle arguments = SyncAndServicesPreferences.createArguments(true);
+        Intent intent =
+                PreferencesLauncher.createIntentForSettingsPage(context, fragmentName, arguments);
+        Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
+        Assert.assertTrue(activity instanceof Preferences);
+        ApplicationTestUtils.finishActivity(activity);
+    }
+
     private SyncAndServicesPreferences startSyncAndServicesPreferences() {
         mPreferences = mSyncTestRule.startPreferences(SyncAndServicesPreferences.class.getName());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -161,9 +273,48 @@ public class SyncAndServicesPreferencesTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
+    // TODO(https://crbug.com/1015449): Move this function to ApplicationTestUtils.
+    private void waitForActivityState(Activity activity, @ActivityState int state)
+            throws Exception {
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        final ApplicationStatus.ActivityStateListener activityStateListener =
+                (activity1, newState) -> {
+            if (newState == state) {
+                callbackHelper.notifyCalled();
+            }
+        };
+        try {
+            boolean correctState = TestThreadUtils.runOnUiThreadBlocking(() -> {
+                if (ApplicationStatus.getStateForActivity(activity) == state) {
+                    return true;
+                }
+                ApplicationStatus.registerStateListenerForActivity(activityStateListener, activity);
+                activity.finish();
+                return false;
+            });
+            if (!correctState) {
+                callbackHelper.waitForCallback(0);
+            }
+        } finally {
+            ApplicationStatus.unregisterActivityStateListener(activityStateListener);
+        }
+    }
+
+    private void pressBackAndDismissActivity(Activity activity) throws Exception {
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        device.pressBack();
+        waitForActivityState(activity, ActivityState.DESTROYED);
+    }
+
     private ChromeSwitchPreference getSyncSwitch(SyncAndServicesPreferences fragment) {
         return (ChromeSwitchPreference) fragment.findPreference(
                 SyncAndServicesPreferences.PREF_SYNC_REQUESTED);
+    }
+
+    private Preference getSyncErrorCard(SyncAndServicesPreferences fragment) {
+        return ((PreferenceCategory) fragment.findPreference(
+                        SyncAndServicesPreferences.PREF_SYNC_CATEGORY))
+                .findPreference(SyncAndServicesPreferences.PREF_SYNC_ERROR_CARD);
     }
 
     private void assertSyncOnState(SyncAndServicesPreferences fragment) {

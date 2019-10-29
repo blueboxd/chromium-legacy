@@ -12,7 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/mojom/scenic_gpu_host.mojom.h"
 #include "ui/ozone/public/mojom/scenic_gpu_service.mojom.h"
@@ -32,9 +35,9 @@ class ScenicGpuHost : public mojom::ScenicGpuHost,
   ScenicGpuHost(ScenicWindowManager* scenic_window_manager);
   ~ScenicGpuHost() override;
 
-  // Creates browser process binding. This is used to create a software output
+  // Creates browser process remote. This is used to create a software output
   // on the UI thread.
-  mojom::ScenicGpuHostPtr CreateHostProcessSelfBinding();
+  mojo::PendingRemote<mojom::ScenicGpuHost> CreateHostProcessSelfRemote();
 
   // mojom::ScenicGpuHost:
   void AttachSurfaceToWindow(int32_t window_id,
@@ -57,21 +60,21 @@ class ScenicGpuHost : public mojom::ScenicGpuHost,
 
  private:
   void OnGpuServiceLaunchedOnUI(
-      mojo::InterfacePtrInfo<mojom::ScenicGpuService> gpu_service_ptr_info);
-  void UpdateBinding(uint32_t service_launch_count,
-                     mojom::ScenicGpuHostRequest scenic_gpu_host_request);
+      mojo::PendingRemote<mojom::ScenicGpuService> gpu_service);
+  void UpdateReceiver(uint32_t service_launch_count,
+                      mojo::PendingReceiver<mojom::ScenicGpuHost> receiver);
 
   ScenicWindowManager* const scenic_window_manager_;
-  mojo::Binding<mojom::ScenicGpuHost> host_binding_;
-  mojo::Binding<mojom::ScenicGpuHost> gpu_binding_;
+  mojo::Receiver<mojom::ScenicGpuHost> host_receiver_{this};
+  mojo::Receiver<mojom::ScenicGpuHost> gpu_receiver_{this};
 
-  mojom::ScenicGpuServicePtr gpu_service_;
+  mojo::Remote<mojom::ScenicGpuService> gpu_service_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_runner_;
 
   THREAD_CHECKER(ui_thread_checker_);
   THREAD_CHECKER(io_thread_checker_);
 
-  base::WeakPtrFactory<ScenicGpuHost> weak_ptr_factory_;
+  base::WeakPtrFactory<ScenicGpuHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScenicGpuHost);
 };

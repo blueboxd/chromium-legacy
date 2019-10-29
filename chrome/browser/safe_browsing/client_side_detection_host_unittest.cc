@@ -122,7 +122,7 @@ ACTION(QuitUIMessageLoop) {
 
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
-  MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
+  MockClientSideDetectionService() : ClientSideDetectionService(nullptr) {}
   ~MockClientSideDetectionService() override {}
 
   MOCK_METHOD3(SendClientReportPhishingRequest,

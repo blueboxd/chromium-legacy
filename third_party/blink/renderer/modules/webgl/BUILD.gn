@@ -97,8 +97,6 @@ blink_modules_sources("webgl") {
     "webgl_multi_draw.h",
     "webgl_multi_draw_common.cc",
     "webgl_multi_draw_common.h",
-    "webgl_multi_draw_instanced.cc",
-    "webgl_multi_draw_instanced.h",
     "webgl_object.cc",
     "webgl_object.h",
     "webgl_program.cc",

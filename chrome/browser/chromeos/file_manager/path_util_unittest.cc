@@ -533,6 +533,8 @@ class FileManagerPathUtilConvertUrlTest : public testing::Test {
         profile_manager_->CreateTestingProfile("user@gmail.com");
     ASSERT_TRUE(primary_profile);
     ASSERT_TRUE(profile_manager_->CreateTestingProfile("user2@gmail.com"));
+    primary_profile->GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt,
+                                           "a");
 
     // Set up an Arc service manager with a fake file system.
     arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
@@ -549,10 +551,12 @@ class FileManagerPathUtilConvertUrlTest : public testing::Test {
     // Add a drive mount point for the primary profile.
     storage::ExternalMountPoints* mount_points =
         storage::ExternalMountPoints::GetSystemInstance();
-    drive_mount_point_ = drive::util::GetDriveMountPointPath(primary_profile);
+    drive::DriveIntegrationService* integration_service =
+        drive::DriveIntegrationServiceFactory::GetForProfile(primary_profile);
+    drive_mount_point_ = integration_service->GetMountPointPath();
     mount_points->RegisterFileSystem(
         drive_mount_point_.BaseName().AsUTF8Unsafe(),
-        storage::kFileSystemTypeDrive, storage::FileSystemMountOption(),
+        storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
         drive_mount_point_);
 
     // Add a crostini mount point for the primary profile.
@@ -651,7 +655,8 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Special) {
   // - creating externalfile: URL from the path
   // - encoding the URL to Chrome content provider URL
   EXPECT_EQ(GURL("content://org.chromium.arc.chromecontentprovider/"
-                 "externalfile%3Adrive-user%252540gmail.com-hash%2Fa%2Fb%2Fc"),
+                 "externalfile%3Adrivefs-b1f44746e7144c3caafeacaa8bb5c569%2Fa"
+                 "%2Fb%2Fc"),
             url);
 }
 
@@ -777,8 +782,8 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_Special) {
             run_loop->Quit();
             ASSERT_EQ(1U, urls.size());
             EXPECT_EQ(GURL("content://org.chromium.arc.chromecontentprovider/"
-                           "externalfile%3Adrive-user%252540gmail.com-hash%2Fa%"
-                           "2Fb%2Fc"),
+                           "externalfile%3Adrivefs-b1f44746e7144c3caafeacaa8bb5"
+                           "c569%2Fa%2Fb%2Fc"),
                       urls[0]);
           },
           &run_loop));
@@ -891,8 +896,8 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_MultipleUrls) {
                            "removable/a/b/c"),
                       urls[1]);
             EXPECT_EQ(GURL("content://org.chromium.arc.chromecontentprovider/"
-                           "externalfile%3Adrive-user%252540gmail.com-hash%2Fa%"
-                           "2Fb%2Fc"),
+                           "externalfile%3Adrivefs-b1f44746e7144c3caafeacaa8bb5"
+                           "c569%2Fa%2Fb%2Fc"),
                       urls[2]);
             EXPECT_EQ(
                 GURL("content://org.chromium.arc.file_system.fileprovider/"

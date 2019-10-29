@@ -52,7 +52,7 @@ cr.define('settings', function() {
 
     /** @param {!Array<!chrome.bluetooth.Device>} devices */
     simulateDevicesAddedForTest: function(devices) {
-      let newDevices = devices.slice();
+      const newDevices = devices.slice();
       // Make sure the new devices don't already exist.
       for (const d of newDevices) {
         const found = this.devices.find(element => {

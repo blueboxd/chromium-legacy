@@ -165,7 +165,7 @@ class Dependency:
 
 
 def _extract_dependencies(html_file):
-  with open(html_file, 'r') as f:
+  with io.open(html_file, encoding='utf-8', mode='r') as f:
     lines = f.readlines()
     deps = []
     for line in lines:
@@ -182,7 +182,7 @@ def _generate_js_imports(html_file):
 
 
 def _extract_dom_module_id(html_file):
-  with open(html_file, 'r') as f:
+  with io.open(html_file, encoding='utf-8', mode='r') as f:
     contents = f.read()
     match = re.search(r'\s*<dom-module id="(.*)"', contents)
     assert match
@@ -191,11 +191,11 @@ def _extract_dom_module_id(html_file):
 
 def _extract_template(html_file, html_type):
   if html_type == 'v3-ready':
-    with open(html_file, 'r') as f:
+    with io.open(html_file, encoding='utf-8', mode='r') as f:
       return f.read()
 
   if html_type == 'dom-module':
-    with open(html_file, 'r') as f:
+    with io.open(html_file, encoding='utf-8', mode='r') as f:
       lines = f.readlines()
       start_line = -1
       end_line = -1
@@ -214,7 +214,7 @@ def _extract_template(html_file, html_type):
     return '\n' + ''.join(lines[start_line:end_line + 1])
 
   if html_type == 'style-module':
-    with open(html_file, 'r') as f:
+    with io.open(html_file, encoding='utf-8', mode='r') as f:
       lines = f.readlines()
       start_line = -1
       end_line = -1
@@ -234,7 +234,7 @@ def _extract_template(html_file, html_type):
 
   if html_type == 'iron-iconset':
     templates = []
-    with open(html_file, 'r') as f:
+    with io.open(html_file, encoding='utf-8', mode='r') as f:
       lines = f.readlines()
       start_line = -1
       end_line = -1
@@ -255,7 +255,7 @@ def _extract_template(html_file, html_type):
 
 
   assert html_type == 'custom-style'
-  with open(html_file, 'r') as f:
+  with io.open(html_file, encoding='utf-8', mode='r') as f:
     lines = f.readlines()
     start_line = -1
     end_line = -1
@@ -284,7 +284,7 @@ def _process_v3_ready(js_file, html_file):
   # Extract HTML template and place in JS file.
   html_template = _extract_template(html_file, 'v3-ready')
 
-  with open(js_file) as f:
+  with io.open(js_file, encoding='utf-8') as f:
     lines = f.readlines()
 
   HTML_TEMPLATE_REGEX = '{__html_template__}'
@@ -312,7 +312,7 @@ def _process_dom_module(js_file, html_file):
   # Replace export annotations with 'export'.
   EXPORT_LINE_REGEX = '/* #export */'
 
-  with open(js_file) as f:
+  with io.open(js_file, encoding='utf-8') as f:
     lines = f.readlines()
 
   imports_added = False
@@ -481,9 +481,11 @@ def main(argv):
   # Reconstruct file.
   # Specify the newline character so that the exact same file is generated
   # across platforms.
-  with io.open(os.path.join(out_folder, result[1]), 'w', newline='\n') as f:
+  with io.open(os.path.join(out_folder, result[1]), mode='w', encoding='utf-8', newline='\n') as f:
     for l in result[0]:
-      f.write(unicode(l, 'utf-8'))
+      if (type(l) != unicode):
+        l = unicode(l, encoding='utf-8')
+      f.write(l)
   return
 
 

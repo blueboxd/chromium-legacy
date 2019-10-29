@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -105,6 +106,7 @@ void BinaryUploadService::UploadForDeepScanning(
 
   Request* raw_request = request.get();
   active_requests_[raw_request] = std::move(request);
+  start_times_[raw_request] = base::TimeTicks::Now();
 
   if (!binary_fcm_service_) {
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
@@ -296,6 +298,8 @@ void BinaryUploadService::OnTimeout(Request* request) {
 void BinaryUploadService::FinishRequest(Request* request,
                                         Result result,
                                         DeepScanningClientResponse response) {
+  RecordRequestMetrics(request, result, response);
+
   request->FinishRequest(result, response);
   active_requests_.erase(request);
   active_timers_.erase(request);
@@ -307,6 +311,31 @@ void BinaryUploadService::FinishRequest(Request* request,
   if (token_it != active_tokens_.end()) {
     binary_fcm_service_->ClearCallbackForToken(token_it->second);
     active_tokens_.erase(token_it);
+  }
+}
+
+void BinaryUploadService::RecordRequestMetrics(
+    Request* request,
+    Result result,
+    const DeepScanningClientResponse& response) {
+  base::UmaHistogramEnumeration("SafeBrowsingBinaryUploadRequest.Result",
+                                result);
+  base::UmaHistogramCustomTimes("SafeBrowsingBinaryUploadRequest.Duration",
+                                base::TimeTicks::Now() - start_times_[request],
+                                base::TimeDelta::FromMilliseconds(1),
+                                base::TimeDelta::FromMinutes(6), 50);
+
+  if (response.has_malware_scan_verdict()) {
+    // For now just distinguish safe from unsafe verdicts.
+    base::UmaHistogramBoolean("SafeBrowsingBinaryUploadRequest.MalwareResult",
+                              response.malware_scan_verdict().verdict() !=
+                                  MalwareDeepScanningVerdict::CLEAN);
+  }
+
+  if (response.has_dlp_scan_verdict()) {
+    base::UmaHistogramBoolean("SafeBrowsingBinaryUploadRequest.DlpResult",
+                              response.dlp_scan_verdict().status() ==
+                                  DlpDeepScanningVerdict::SUCCESS);
   }
 }
 

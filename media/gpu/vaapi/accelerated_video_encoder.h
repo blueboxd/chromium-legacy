@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "media/base/video_codecs.h"
@@ -53,7 +53,7 @@ class AcceleratedVideoEncoder {
   // provided by the accelerator itself, based on these parameters.
   // Accelerators are also responsible for providing any resources (such as
   // memory for output and reference pictures, etc.) as needed.
-  class EncodeJob : public base::RefCounted<EncodeJob> {
+  class EncodeJob {
    public:
     // Creates an EncodeJob to encode |input_frame|, which will be executed
     // by calling |execute_cb|. If |keyframe| is true, requests this job
@@ -61,6 +61,7 @@ class AcceleratedVideoEncoder {
     EncodeJob(scoped_refptr<VideoFrame> input_frame,
               bool keyframe,
               base::OnceClosure execute_cb);
+    virtual ~EncodeJob();
 
     // Schedules a callback to be run immediately before this job is executed.
     // Can be called multiple times to schedule multiple callbacks, and all
@@ -97,10 +98,6 @@ class AcceleratedVideoEncoder {
     virtual BitstreamBufferMetadata Metadata(size_t payload_size) const;
 
     virtual VaapiEncodeJob* AsVaapiEncodeJob();
-
-   protected:
-    friend class base::RefCounted<EncodeJob>;
-    virtual ~EncodeJob();
 
    private:
     // Input VideoFrame to be encoded.

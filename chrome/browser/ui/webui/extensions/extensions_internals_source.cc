@@ -282,7 +282,6 @@ base::Value FormatKeepaliveData(extensions::ProcessManager* process_manager,
   const extensions::ProcessManager::ActivitiesMultiset activities =
       process_manager->GetLazyKeepaliveActivities(extension);
   base::Value activities_data(base::Value::Type::LIST);
-  activities_data.GetList().reserve(activities.size());
   for (const auto& activity : activities) {
     base::Value activities_entry(base::Value::Type::DICTIONARY);
     activities_entry.SetKey(
@@ -299,7 +298,6 @@ base::Value FormatKeepaliveData(extensions::ProcessManager* process_manager,
 template <typename T>
 base::Value FormatDetailedPermissionSet(const T& permissions) {
   base::Value value_list(base::Value::Type::LIST);
-  value_list.GetList().reserve(permissions.size());
   for (const auto& permission : permissions) {
     std::unique_ptr<base::Value> detail(permission->ToValue());
     if (detail) {

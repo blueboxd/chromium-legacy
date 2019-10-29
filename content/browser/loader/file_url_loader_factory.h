@@ -40,21 +40,23 @@ class CONTENT_EXPORT FileURLLoaderFactory
 
  private:
   // network::mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override;
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override;
   void Clone(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) override;
 
-  void CreateLoaderAndStartInternal(const network::ResourceRequest request,
-                                    network::mojom::URLLoaderRequest loader,
-                                    network::mojom::URLLoaderClientPtr client,
-                                    bool cors_flag);
+  void CreateLoaderAndStartInternal(
+      const network::ResourceRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      network::mojom::URLLoaderClientPtr client,
+      bool cors_flag);
 
   const base::FilePath profile_path_;
   const scoped_refptr<SharedCorsOriginAccessList>

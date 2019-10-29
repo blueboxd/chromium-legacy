@@ -165,7 +165,7 @@ scoped_refptr<const Extension> TestExtensionEnvironment::MakePackagedApp(
 std::unique_ptr<content::WebContents> TestExtensionEnvironment::MakeTab()
     const {
   std::unique_ptr<content::WebContents> contents(
-      content::WebContentsTester::CreateTestWebContents(profile(), NULL));
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
   // Create a tab id.
   SessionTabHelper::CreateForWebContents(contents.get());
   return contents;

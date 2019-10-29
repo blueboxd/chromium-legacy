@@ -1719,7 +1719,6 @@ void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
   };
 
   // We are ready to get the list of printers and finish.
-  base::Value::ListStorage& vresults = results_->GetList();
   for (const auto& type : kClassesToFetch) {
     std::vector<chromeos::Printer> printer_list =
         printers_manager_->GetPrinters(type);
@@ -1728,7 +1727,7 @@ void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
       result.SetKey("printerName", base::Value(printer.display_name()));
       result.SetKey("printerId", base::Value(printer.id()));
       result.SetKey("printerType", base::Value(GetPrinterType(type)));
-      vresults.push_back(std::move(result));
+      results_->Append(std::move(result));
     }
   }
   // We have to respond in separate task, because it will cause a destruction of

@@ -54,17 +54,16 @@ class ScriptWrappable;
 
 // Provides access to V8's private properties.
 //
-// Usage 1) Fast path to use a pre-registered symbol.
+// Usage 1) Path to use a pre-registered symbol.
 //   auto private_property = V8PrivateProperty::GetDOMExceptionError(isolate);
 //   v8::Local<v8::Object> object = ...;
 //   v8::Local<v8::Value> value;
 //   if (!private_property.GetOrUndefined(object).ToLocal(&value)) return;
 //   value = ...;
-//   private_property.set(object, value);
+//   private_property.Set(object, value);
 //
-// Usage 2) Slow path to create a global private symbol.
-//   /* |desc| is a description of the private property. */
-//   static const SymbolKey key(desc);
+// Usage 2) Access with a symbol key.
+//   static const SymbolKey key;
 //   auto private_property = V8PrivateProperty::GetSymbol(isolate, key);
 //   ...
 class PLATFORM_EXPORT V8PrivateProperty {
@@ -134,29 +133,21 @@ class PLATFORM_EXPORT V8PrivateProperty {
   // This class is used for a key to get Symbol.
   //
   // We can improve ability of tracking private properties by using an instance
-  // of this class. |desc_| is a description of the private property.
+  // of this class.
   class PLATFORM_EXPORT SymbolKey final {
    public:
-    // Note that, unlike a string class, the lifetime of |desc| must be longer
-    // than this SymbolKey, i.e. this SymbolKey does not copy |desc| nor have
-    // |desc| alive enough long.
-    explicit SymbolKey(const char* desc) : desc_(desc) {}
-
-    const char* GetDescription() const { return desc_; }
+    SymbolKey() = default;
 
    private:
     SymbolKey(const SymbolKey&) = delete;
     SymbolKey& operator=(const SymbolKey&) = delete;
-
-    const char* const desc_;
   };
 
 #define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)        \
   static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */          \
                                                 InterfaceName, KeyName)( \
       v8::Isolate * isolate) {                                           \
-    static const SymbolKey private_property_key(                         \
-        V8_PRIVATE_PROPERTY_SYMBOL_STRING(InterfaceName, KeyName));      \
+    static const SymbolKey private_property_key;                         \
     return GetSymbol(isolate, private_property_key);                     \
   }
 
@@ -195,7 +186,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
   // This is a hack for PopStateEvent to get the same private property of
   // History, named State.
   static Symbol GetHistoryStateSymbol(v8::Isolate* isolate) {
-    static const SymbolKey private_property_key("History#State");
+    static const SymbolKey private_property_key;
     return GetSymbol(isolate, private_property_key);
   }
 

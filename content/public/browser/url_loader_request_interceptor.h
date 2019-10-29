@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace network {
@@ -31,7 +32,7 @@ class URLLoaderRequestInterceptor {
 
   using RequestHandler =
       base::OnceCallback<void(const network::ResourceRequest& resource_request,
-                              network::mojom::URLLoaderRequest,
+                              mojo::PendingReceiver<network::mojom::URLLoader>,
                               network::mojom::URLLoaderClientPtr)>;
   using LoaderCallback = base::OnceCallback<void(RequestHandler)>;
 

@@ -37,7 +37,9 @@ android_library("apk_java") {
 android_library("devui_java") {
   java_files = [
     "java/src/org/chromium/android_webview/devui/CrashesListActivity.java",
+    "java/src/org/chromium/android_webview/devui/MainActivity.java",
     "java/src/org/chromium/android_webview/devui/util/CrashInfoLoader.java",
+    "java/src/org/chromium/android_webview/devui/util/NavigationMenuHelper.java",
     "java/src/org/chromium/android_webview/devui/util/UnuploadedFilesStateLoader.java",
     "java/src/org/chromium/android_webview/devui/util/UploadedCrashesInfoLoader.java",
     "java/src/org/chromium/android_webview/devui/util/WebViewCrashInfoCollector.java",
@@ -49,6 +51,7 @@ android_library("devui_java") {
     "//android_webview:system_webview_manifest",
     "//base:base_java",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//ui/android:ui_java",
   ]
   android_manifest_for_lint = system_webview_android_manifest
   min_sdk_version = 21

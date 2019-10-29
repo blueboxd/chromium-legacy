@@ -954,6 +954,10 @@ const char kNTLMShareAuthenticationEnabled[] =
 // Controlled by ParentAccessCodeConfig policy.
 const char kParentAccessCodeConfig[] = "child_user.parent_access_code.config";
 
+// Dictionary pref containing the per-app time limits configuration for child
+// user. Controlled by PerAppTimeLimits policy.
+const char kPerAppTimeLimitsPolicy[] = "child_user.per_app_time_limits.policy";
+
 // List of preconfigured network file shares.
 const char kNetworkFileSharesPreconfiguredShares[] =
     "network_file_shares.preconfigured_shares";

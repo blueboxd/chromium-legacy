@@ -16,12 +16,11 @@ namespace blink {
 // User gestures timeout in 1 second.
 const double kUserGestureTimeout = 1.0;
 
-UserGestureToken::UserGestureToken(Status status)
+UserGestureToken::UserGestureToken()
     : consumable_gestures_(0),
       clock_(base::DefaultClock::GetInstance()),
       timestamp_(clock_->Now().ToDoubleT()) {
-  if (status == kNewGesture || !UserGestureIndicator::CurrentTokenThreadSafe())
-    consumable_gestures_++;
+  consumable_gestures_++;
 }
 
 bool UserGestureToken::HasGestures() const {
@@ -68,42 +67,16 @@ UserGestureIndicator::UserGestureIndicator(
   UpdateRootToken();
 }
 
-UserGestureIndicator::UserGestureIndicator(UserGestureToken::Status status) {
+UserGestureIndicator::UserGestureIndicator() {
   if (!IsMainThread())
     return;
-  token_ = base::AdoptRef(new UserGestureToken(status));
+  token_ = base::AdoptRef(new UserGestureToken());
   UpdateRootToken();
 }
 
 UserGestureIndicator::~UserGestureIndicator() {
   if (IsMainThread() && token_ && token_ == root_token_)
     root_token_ = nullptr;
-}
-
-// static
-bool UserGestureIndicator::ProcessingUserGesture() {
-  if (auto* token = CurrentToken())
-    return token->HasGestures();
-  return false;
-}
-
-// static
-bool UserGestureIndicator::ProcessingUserGestureThreadSafe() {
-  return IsMainThread() && ProcessingUserGesture();
-}
-
-// static
-bool UserGestureIndicator::ConsumeUserGesture() {
-  if (auto* token = CurrentToken()) {
-    if (token->ConsumeGesture())
-      return true;
-  }
-  return false;
-}
-
-// static
-bool UserGestureIndicator::ConsumeUserGestureThreadSafe() {
-  return IsMainThread() && ConsumeUserGesture();
 }
 
 // static

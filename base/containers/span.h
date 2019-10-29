@@ -91,14 +91,7 @@ using EnableIfSpanCompatibleContainer =
 template <typename Container, typename T, size_t Extent>
 using EnableIfSpanCompatibleContainerAndSpanIsDynamic =
     std::enable_if_t<IsSpanCompatibleContainer<Container, T>::value &&
-                         Extent == dynamic_extent,
-                     bool>;
-
-template <typename Container, typename T, size_t Extent>
-using EnableIfSpanCompatibleContainerAndSpanIsStatic =
-    std::enable_if_t<IsSpanCompatibleContainer<Container, T>::value &&
-                         Extent != dynamic_extent,
-                     bool>;
+                     Extent == dynamic_extent>;
 
 // A helper template for storing the size of a span. Spans with static extents
 // don't require additional storage, since the extent itself is specified in the
@@ -272,34 +265,20 @@ class span : public internal::ExtentStorage<Extent> {
   // base::size().
   template <
       typename Container,
-      internal::EnableIfSpanCompatibleContainerAndSpanIsDynamic<Container&,
-                                                                T,
-                                                                Extent> = false>
+      typename =
+          internal::EnableIfSpanCompatibleContainerAndSpanIsDynamic<Container&,
+                                                                    T,
+                                                                    Extent>>
   constexpr span(Container& container) noexcept
       : span(base::data(container), base::size(container)) {}
 
   template <
       typename Container,
-      internal::EnableIfSpanCompatibleContainerAndSpanIsStatic<Container&,
-                                                               T,
-                                                               Extent> = false>
-  constexpr explicit span(Container& container) noexcept
-      : span(base::data(container), base::size(container)) {}
-
-  template <typename Container,
-            internal::EnableIfSpanCompatibleContainerAndSpanIsDynamic<
-                const Container&,
-                T,
-                Extent> = false>
+      typename = internal::EnableIfSpanCompatibleContainerAndSpanIsDynamic<
+          const Container&,
+          T,
+          Extent>>
   constexpr span(const Container& container) noexcept
-      : span(base::data(container), base::size(container)) {}
-
-  template <
-      typename Container,
-      internal::EnableIfSpanCompatibleContainerAndSpanIsStatic<const Container&,
-                                                               T,
-                                                               Extent> = false>
-  constexpr explicit span(const Container& container) noexcept
       : span(base::data(container), base::size(container)) {}
 
   constexpr span(const span& other) noexcept = default;
@@ -519,7 +498,7 @@ template <size_t N,
               decltype(base::data(std::declval<Container&>()))>,
           typename = internal::EnableIfSpanCompatibleContainer<Container&, T>>
 constexpr span<T, N> make_span(Container& container) noexcept {
-  return span<T, N>(container);
+  return span<T, N>(data(container), size(container));
 }
 
 template <
@@ -530,7 +509,7 @@ template <
         decltype(base::data(std::declval<const Container&>()))>,
     typename = internal::EnableIfSpanCompatibleContainer<const Container&, T>>
 constexpr span<T, N> make_span(const Container& container) noexcept {
-  return span<T, N>(container);
+  return span<T, N>(data(container), size(container));
 }
 
 template <int&... ExplicitArgumentBarrier, typename T, size_t X>

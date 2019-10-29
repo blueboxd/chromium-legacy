@@ -83,7 +83,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   void AttributeChanged(const AttributeModificationParams&) final;
 
-  int tabIndex() const override;
   AtomicString GetName() const;
 
   // This method can be slow because this has to traverse the children of a

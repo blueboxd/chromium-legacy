@@ -18,8 +18,6 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/public/common/content_features.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
 #include "net/http/http_status_code.h"
@@ -54,8 +52,9 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
  protected:
   class MockURLLoaderClient final : public network::mojom::URLLoaderClient {
    public:
-    explicit MockURLLoaderClient(network::mojom::URLLoaderClientRequest request)
-        : loader_client_binding_(this, std::move(request)) {}
+    explicit MockURLLoaderClient(
+        mojo::PendingReceiver<network::mojom::URLLoaderClient> receiver)
+        : loader_client_receiver_(this, std::move(receiver)) {}
     ~MockURLLoaderClient() override {}
 
     // network::mojom::URLLoaderClient overrides:
@@ -73,14 +72,15 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     MOCK_METHOD1(OnComplete, void(const network::URLLoaderCompletionStatus&));
 
    private:
-    mojo::Binding<network::mojom::URLLoaderClient> loader_client_binding_;
+    mojo::Receiver<network::mojom::URLLoaderClient> loader_client_receiver_;
     DISALLOW_COPY_AND_ASSIGN(MockURLLoaderClient);
   };
 
   class MockURLLoader final : public network::mojom::URLLoader {
    public:
-    explicit MockURLLoader(network::mojom::URLLoaderRequest url_loader_request)
-        : binding_(this, std::move(url_loader_request)) {}
+    explicit MockURLLoader(
+        mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver)
+        : receiver_(this, std::move(url_loader_receiver)) {}
     ~MockURLLoader() override = default;
 
     // network::mojom::URLLoader overrides:
@@ -95,7 +95,7 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     MOCK_METHOD0(ResumeReadingBodyFromNet, void());
 
    private:
-    mojo::Binding<network::mojom::URLLoader> binding_;
+    mojo::Receiver<network::mojom::URLLoader> receiver_;
 
     DISALLOW_COPY_AND_ASSIGN(MockURLLoader);
   };
@@ -107,16 +107,17 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     MockValidityPingURLLoaderFactory() = default;
     ~MockValidityPingURLLoaderFactory() override = default;
 
-    void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                              int32_t routing_id,
-                              int32_t request_id,
-                              uint32_t options,
-                              const network::ResourceRequest& url_request,
-                              network::mojom::URLLoaderClientPtr client,
-                              const net::MutableNetworkTrafficAnnotationTag&
-                                  traffic_annotation) override {
+    void CreateLoaderAndStart(
+        mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+        int32_t routing_id,
+        int32_t request_id,
+        uint32_t options,
+        const network::ResourceRequest& url_request,
+        network::mojom::URLLoaderClientPtr client,
+        const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+        override {
       ASSERT_FALSE(bool{ping_loader_});
-      ping_loader_ = std::make_unique<MockURLLoader>(std::move(request));
+      ping_loader_ = std::make_unique<MockURLLoader>(std::move(receiver));
       ping_loader_client_ = std::move(client);
     }
     void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)

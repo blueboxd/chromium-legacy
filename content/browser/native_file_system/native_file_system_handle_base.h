@@ -11,7 +11,9 @@
 #include "base/sequence_checker.h"
 #include "base/threading/sequence_bound.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/file_system/isolated_context.h"
@@ -34,7 +36,8 @@ namespace content {
 // NativeFileSystemPermissionContext expects to be interacted with, which
 // is the UI thread.
 class CONTENT_EXPORT NativeFileSystemHandleBase
-    : public NativeFileSystemPermissionGrant::Observer {
+    : public NativeFileSystemPermissionGrant::Observer,
+      public WebContentsObserver {
  public:
   using BindingContext = NativeFileSystemManagerImpl::BindingContext;
   using SharedHandleState = NativeFileSystemManagerImpl::SharedHandleState;
@@ -82,6 +85,10 @@ class CONTENT_EXPORT NativeFileSystemHandleBase
   const BindingContext& context() { return context_; }
   storage::FileSystemContext* file_system_context() {
     return manager()->context();
+  }
+
+  WebContentsImpl* web_contents() const {
+    return static_cast<WebContentsImpl*>(WebContentsObserver::web_contents());
   }
 
   virtual base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() = 0;
@@ -187,16 +194,19 @@ class CONTENT_EXPORT NativeFileSystemHandleBase
                               PermissionStatus)> callback,
       NativeFileSystemPermissionGrant::PermissionRequestOutcome outcome);
 
+  bool ShouldTrackUsage() const {
+    return url_.type() == storage::kFileSystemTypeNativeLocal;
+  }
+
   // The NativeFileSystemManagerImpl that owns this instance.
   NativeFileSystemManagerImpl* const manager_;
   const BindingContext context_;
   const storage::FileSystemURL url_;
   const SharedHandleState handle_state_;
 
-  class UsageIndicatorTracker;
-  base::SequenceBound<UsageIndicatorTracker> usage_indicator_tracker_;
+  base::FilePath directory_for_usage_tracking_;
+  bool was_readable_at_last_check_ = false;
   bool was_writable_at_last_check_ = false;
-  bool was_readable_at_last_check_ = true;
 
   void UpdateUsage();
 

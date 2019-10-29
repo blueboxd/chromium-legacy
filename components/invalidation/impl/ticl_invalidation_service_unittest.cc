@@ -46,11 +46,11 @@ class TiclInvalidationServiceTestDelegate {
         identity_test_env_.identity_manager());
     DCHECK(identity_provider_);
     invalidation_service_ = std::make_unique<TiclInvalidationService>(
-        "TestUserAgent", identity_provider_.get(),
-        gcm_driver_.get(),
+        "TestUserAgent", identity_provider_.get(), gcm_driver_.get(),
         base::RepeatingCallback<void(
             base::WeakPtr<TiclInvalidationService>,
-            network::mojom::ProxyResolvingSocketFactoryRequest)>(),
+            mojo::PendingReceiver<
+                network::mojom::ProxyResolvingSocketFactory>)>(),
         nullptr, nullptr, network::TestNetworkConnectionTracker::GetInstance());
   }
 

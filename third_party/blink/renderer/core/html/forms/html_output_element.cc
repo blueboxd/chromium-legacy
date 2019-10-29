@@ -116,10 +116,6 @@ void HTMLOutputElement::setDefaultValue(const String& value) {
     setTextContent(value);
 }
 
-int HTMLOutputElement::tabIndex() const {
-  return HTMLElement::tabIndex();
-}
-
 void HTMLOutputElement::Trace(Visitor* visitor) {
   visitor->Trace(tokens_);
   HTMLFormControlElement::Trace(visitor);

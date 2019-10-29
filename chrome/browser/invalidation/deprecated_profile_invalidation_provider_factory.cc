@@ -40,6 +40,7 @@
 
 #if defined(OS_ANDROID)
 #include "components/invalidation/impl/invalidation_service_android.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #else
 #include "chrome/browser/signin/identity_manager_factory.h"
 #endif  // defined(OS_ANDROID)
@@ -61,24 +62,26 @@ namespace {
 void RequestProxyResolvingSocketFactoryOnUIThread(
     Profile* profile,
     base::WeakPtr<TiclInvalidationService> service,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   if (!service)
     return;
   network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetNetworkContext();
-  network_context->CreateProxyResolvingSocketFactory(std::move(request));
+  network_context->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
 // A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
 void RequestProxyResolvingSocketFactory(
     Profile* profile,
     base::WeakPtr<TiclInvalidationService> service,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, profile,
-                     std::move(service), std::move(request)));
+                     std::move(service), std::move(receiver)));
 }
 
 #endif

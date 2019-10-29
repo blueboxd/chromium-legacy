@@ -621,7 +621,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       advancedConfigButton.click();
       Polymer.dom.flush();
 
-      let advancedConfigDialog = dialog.$$('#advancedConfigDialog');
+      const advancedConfigDialog = dialog.$$('#advancedConfigDialog');
       assertTrue(!!advancedConfigDialog);
       assertTrue(advancedConfigDialog.open);
       assertTrue(addDialog.hidden);

@@ -95,12 +95,21 @@ PositionInFlatTree NextWordPositionInternal(
       TextBreakIterator* it = WordBreakIterator(text.Span16());
       for (int runner = it->following(offset); runner != kTextBreakDone;
            runner = it->following(runner)) {
+        // Accumulate punctuation runs
+        if (static_cast<unsigned>(runner) < text.length() &&
+            WTF::unicode::IsPunct(text[runner])) {
+          if (WTF::unicode::IsAlphanumeric(text[runner - 1]))
+            return Position::Before(runner);
+          continue;
+        }
         // We stop searching when the character preceding the break is
-        // alphanumeric or underscore.
+        // alphanumeric or punctuations or underscore.
         if (static_cast<unsigned>(runner) < text.length() &&
             (WTF::unicode::IsAlphanumeric(text[runner - 1]) ||
-             text[runner - 1] == kLowLineCharacter))
+             (WTF::unicode::IsPunct(text[runner - 1])) ||
+             text[runner - 1] == kLowLineCharacter)) {
           return Position::After(runner - 1);
+        }
       }
       if (text[text.length() - 1] != kNewlineCharacter)
         return Position::After(text.length() - 1);
@@ -121,10 +130,22 @@ PositionInFlatTree PreviousWordPositionInternal(
       if (!offset || text.length() == 0)
         return Position();
       TextBreakIterator* it = WordBreakIterator(text.Span16());
+      int punct_runner = -1;
       for (int runner = it->preceding(offset); runner != kTextBreakDone;
            runner = it->preceding(runner)) {
+        // Accumulate punctuation runs
+        if (static_cast<unsigned>(runner) < text.length() &&
+            WTF::unicode::IsPunct(text[runner])) {
+          if (WTF::unicode::IsAlphanumeric(text[runner - 1]))
+            return Position::Before(runner);
+          punct_runner = runner;
+          continue;
+        }
+
+        if (punct_runner >= 0)
+          return Position::Before(punct_runner);
         // We stop searching when the character following the break is
-        // alphanumeric or underscore.
+        // alphanumeric or punctuations or underscore.
         if (runner && (WTF::unicode::IsAlphanumeric(text[runner]) ||
                        text[runner] == kLowLineCharacter))
           return Position::Before(runner);

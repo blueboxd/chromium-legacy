@@ -180,17 +180,6 @@ void TestManagePasswordsUIController::HidePasswordBubble() {
   }
 }
 
-void CreateSmartBubbleFieldTrial() {
-  using password_bubble_experiment::kSmartBubbleExperimentName;
-  using password_bubble_experiment::kSmartBubbleThresholdParam;
-  std::map<std::string, std::string> params;
-  params[kSmartBubbleThresholdParam] =
-      base::NumberToString(kGreatDissmisalCount / 2);
-  variations::AssociateVariationParams(kSmartBubbleExperimentName, "A", params);
-  ASSERT_TRUE(
-      base::FieldTrialList::CreateFieldTrial(kSmartBubbleExperimentName, "A"));
-}
-
 }  // namespace
 
 class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
@@ -428,7 +417,6 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedFormPasswordSubmitted) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleSuppressed) {
-  CreateSmartBubbleFieldTrial();
   std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
   std::vector<password_manager::InteractionsStats> stats(1);
   stats[0].origin_domain = test_local_form().origin.GetOrigin();
@@ -447,7 +435,6 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleSuppressed) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
-  CreateSmartBubbleFieldTrial();
   std::unique_ptr<PasswordFormManager> test_form_manager(CreateFormManager());
   std::vector<password_manager::InteractionsStats> stats(1);
   stats[0].origin_domain = test_local_form().origin.GetOrigin();

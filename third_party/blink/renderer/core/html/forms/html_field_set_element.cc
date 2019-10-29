@@ -137,8 +137,4 @@ HTMLCollection* HTMLFieldSetElement::elements() {
   return EnsureCachedCollection<HTMLCollection>(kFormControls);
 }
 
-int HTMLFieldSetElement::tabIndex() const {
-  return HTMLElement::tabIndex();
-}
-
 }  // namespace blink

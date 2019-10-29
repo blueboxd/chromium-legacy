@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
@@ -64,8 +65,14 @@ struct WebApplicationInfo {
   // The color to use for the web app frame.
   base::Optional<SkColor> theme_color;
 
-  // Whether the app should be opened in a window. If false, the app will be
-  // opened in a tab.
+  // App preference regarding whether the app should be opened in a tab,
+  // in a window (with or without minimal-ui buttons), or full screen.
+  blink::mojom::DisplayMode display_mode;
+
+  // User preference as to whether the app should be opened in a window.
+  // If false, the app will be opened in a tab.
+  // If true, the app will be opened in a window, with minimal-ui buttons
+  // if display_mode is kBrowser or kMinimalUi.
   bool open_as_window;
 
   // The extensions and mime types the app can handle.

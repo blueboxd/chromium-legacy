@@ -188,7 +188,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
       test('ConfirmButtonDisabledWhenEmpty', function() {
         // Confirm button is diabled when there is nothing entered.
-        let confirmButton = passwordPromptDialog.$$('#confirmButton');
+        const confirmButton = passwordPromptDialog.$$('#confirmButton');
         assertTrue(!!confirmButton);
         assertTrue(confirmButton.disabled);
 
@@ -324,8 +324,8 @@ cr.define('settings_people_page_quick_unlock', function() {
       // Toggling the lock screen preference calls setLockScreenEnabled.
       test('SetLockScreenEnabled', function() {
         testElement.authToken = quickUnlockPrivateApi.getFakeToken();
-        let toggle = getFromElement('#enableLockScreen');
-        let lockScreenEnabled = toggle.checked;
+        const toggle = getFromElement('#enableLockScreen');
+        const lockScreenEnabled = toggle.checked;
         quickUnlockPrivateApi.lockScreenEnabled = lockScreenEnabled;
 
         toggle.click();
@@ -430,7 +430,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         testElement.quickUnlockPrivate = quickUnlockPrivateApi;
         document.body.appendChild(testElement);
 
-        let testPinKeyboard = testElement.$.pinKeyboard;
+        const testPinKeyboard = testElement.$.pinKeyboard;
         testPinKeyboard.setModes = (modes, credentials, onComplete) => {
           quickUnlockPrivateApi.setModes(
               quickUnlockPrivateApi.getFakeToken(), modes, credentials, () => {
@@ -453,21 +453,21 @@ cr.define('settings_people_page_quick_unlock', function() {
       });
 
       test('Text input blocked', () => {
-        let event = new KeyboardEvent(
+        const event = new KeyboardEvent(
             'keydown', {cancelable: true, key: 'a', keyCode: 65});
         pinInput.dispatchEvent(event);
         assertTrue(event.defaultPrevented);
       });
 
       test('Numeric input not blocked', () => {
-        let event = new KeyboardEvent(
+        const event = new KeyboardEvent(
             'keydown', {cancelable: true, key: '1', keyCode: 49});
         pinInput.dispatchEvent(event);
         assertFalse(event.defaultPrevented);
       });
 
       test('System keys not blocked', () => {
-        let event = new KeyboardEvent(
+        const event = new KeyboardEvent(
             'keydown', {cancelable: true, key: 'BrightnessUp', keyCode: 217});
         pinInput.dispatchEvent(event);
         assertFalse(event.defaultPrevented);
@@ -650,7 +650,7 @@ cr.define('settings_people_page_quick_unlock', function() {
       // Verify that the backspace button is disabled when there is nothing
       // entered.
       test('BackspaceDisabledWhenNothingEntered', function() {
-        let backspaceButton = pinKeyboard.$$('#backspaceButton');
+        const backspaceButton = pinKeyboard.$$('#backspaceButton');
         assertTrue(!!backspaceButton);
         assertTrue(backspaceButton.disabled);
 

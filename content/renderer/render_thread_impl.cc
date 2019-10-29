@@ -1424,7 +1424,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 
   bool support_locking = false;
   bool support_gles2_interface = true;
-  bool support_raster_interface = false;
+  bool support_raster_interface = true;
   bool support_oop_rasterization = false;
   bool support_grcontext = true;
   // Enable automatic flushes to improve canvas throughput.

@@ -46,7 +46,6 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/drive/chromeos/file_system_interface.h"
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
@@ -890,24 +889,7 @@ void VolumeManager::OnMountEvent(
     const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   switch (mount_info.mount_type) {
-    case chromeos::MOUNT_TYPE_ARCHIVE: {
-      // If the file is not mounted now, tell it to drive file system so that
-      // it can handle file caching correctly.
-      // Note that drive file system knows if the file is managed by drive file
-      // system or not, so here we report all paths.
-      if ((event == chromeos::disks::DiskMountManager::MOUNTING &&
-           error_code != chromeos::MOUNT_ERROR_NONE) ||
-          (event == chromeos::disks::DiskMountManager::UNMOUNTING &&
-           error_code == chromeos::MOUNT_ERROR_NONE)) {
-        drive::FileSystemInterface* const file_system =
-            drive::util::GetFileSystemByProfile(profile_);
-        if (file_system) {
-          file_system->MarkCacheFileAsUnmounted(
-              base::FilePath(mount_info.source_path), base::DoNothing());
-        }
-      }
-      FALLTHROUGH;
-    }
+    case chromeos::MOUNT_TYPE_ARCHIVE:
     case chromeos::MOUNT_TYPE_DEVICE: {
       // Notify a mounting/unmounting event to observers.
       const chromeos::disks::Disk* const disk =

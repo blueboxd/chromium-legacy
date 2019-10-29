@@ -90,8 +90,7 @@ base::DictionaryValue GetCapabilitiesFull() {
 
 base::Value ValidList(const base::Value* list) {
   auto out_list = list->Clone();
-  base::EraseIf(out_list.GetList(),
-                [](const base::Value& v) { return v.is_none(); });
+  out_list.EraseListValueIf([](const base::Value& v) { return v.is_none(); });
   return out_list;
 }
 

@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/filtered_data_source.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -50,7 +51,7 @@ class CONTENT_EXPORT FileURLLoaderObserver
 // A directory path will always yield a FILE_NOT_FOUND network error.
 CONTENT_EXPORT void CreateFileURLLoader(
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     network::mojom::URLLoaderClientPtr client,
     std::unique_ptr<FileURLLoaderObserver> observer,
     bool allow_directory_listing,

@@ -31,10 +31,8 @@ namespace syncer {
 static char kValidAccessToken[] = "AccessToken";
 static char kCacheGuid[] = "kqyg7097kro6GSUod+GSg==";
 
-MockConnectionManager::MockConnectionManager(syncable::Directory* directory,
-                                             CancelationSignal* signal)
-    : ServerConnectionManager("unused", 0, false, signal),
-      server_reachable_(true),
+MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
+    : server_reachable_(true),
       conflict_all_commits_(false),
       conflict_n_commits_(0),
       next_new_id_(10000),

@@ -84,7 +84,7 @@ test('bookmarkManagerPrivate', async () => {
 
     function getSubtree() {
       bookmarkManager.getSubtree(childFolder.id, false, pass(function(result) {
-                                   let children = result[0].children;
+                                   const children = result[0].children;
                                    assertEquals(3, children.length);
                                    assertEquals(childNodeA.id, children[0].id);
                                    assertEquals(childNodeB.id, children[1].id);
@@ -95,7 +95,7 @@ test('bookmarkManagerPrivate', async () => {
 
     function getSubtreeFoldersOnly() {
       bookmarkManager.getSubtree(childFolder.id, true, pass(function(result) {
-                                   let children = result[0].children;
+                                   const children = result[0].children;
                                    assertEquals(1, children.length);
                                    assertEquals(
                                        grandChildFolder.id, children[0].id);
@@ -215,8 +215,8 @@ test('bookmarkManagerPrivate', async () => {
             }
             assertTrue(barIndex + 2 < result.length);
 
-            let last = result[barIndex + 1];
-            let last2 = result[barIndex + 2];
+            const last = result[barIndex + 1];
+            const last2 = result[barIndex + 2];
             assertEquals(fooNode.title, last.title);
             assertEquals(fooNode.url, last.url);
             assertEquals(fooNode.parentId, last.parentId);

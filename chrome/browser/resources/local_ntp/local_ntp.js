@@ -1432,13 +1432,13 @@ function overrideExecutableTimeoutForTesting(timeout) {
  */
 function populateAutocompleteMatches(matches) {
   const realboxMatchesEl = document.createElement('div');
-  realboxMatchesEl.role = 'listbox';
+  realboxMatchesEl.setAttribute('role', 'listbox');
 
   for (let i = 0; i < matches.length; ++i) {
     const match = matches[i];
     const matchEl = document.createElement('a');
     matchEl.href = match.destinationUrl;
-    matchEl.role = 'option';
+    matchEl.setAttribute('role', 'option');
 
     if (match.isSearchType) {
       const icon = document.createElement('div');

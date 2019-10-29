@@ -55,8 +55,7 @@ WebScriptExecutor::WebScriptExecutor(
 Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
   std::unique_ptr<UserGestureIndicator> indicator;
   if (user_gesture_) {
-    indicator =
-        LocalFrame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
+    indicator = LocalFrame::NotifyUserActivation(frame);
   }
 
   Vector<v8::Local<v8::Value>> results;

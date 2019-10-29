@@ -9,7 +9,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
-#include "ios/chrome/browser/metrics/features.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #include "testing/gtest/include/gtest/gtest.h"

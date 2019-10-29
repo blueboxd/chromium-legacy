@@ -198,6 +198,10 @@ bool HTMLButtonElement::RecalcWillValidate() const {
   return type_ == SUBMIT && HTMLFormControlElement::RecalcWillValidate();
 }
 
+int HTMLButtonElement::DefaultTabIndex() const {
+  return 0;
+}
+
 bool HTMLButtonElement::IsInteractiveContent() const {
   return true;
 }

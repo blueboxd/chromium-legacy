@@ -28,6 +28,7 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/svg/animation/priority_queue.h"
 #include "third_party/blink/renderer/core/svg/animation/smil_animation_sandwich.h"
 #include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -54,10 +55,8 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   ~SMILTimeContainer();
 
   void Schedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
+  void Reschedule(SVGSMILElement*);
   void Unschedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
-
-  void MarkIntervalsDirty() { intervals_dirty_ = true; }
-  void ScheduleIntervalUpdate();
 
   // Returns the time we are currently updating.
   SMILTime Elapsed() const;
@@ -117,10 +116,12 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   bool CanScheduleFrame(SMILTime earliest_fire_time) const;
   void UpdateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed);
   void RemoveUnusedKeys();
-  void UpdateIntervals(SMILTime);
-  SMILTime NextIntervalTime(SMILTime elapsed) const;
+  void ResetIntervals();
+  SVGSMILElement* GetNextReady(SMILTime presentation_time) const;
+  void UpdateIntervals(SMILTime presentation_time);
   void UpdateAnimationTimings(SMILTime elapsed);
   void ApplyAnimationValues(SMILTime elapsed);
+  SMILTime NextProgressTime(SMILTime presentation_time) const;
   void ServiceOnNextFrame();
   void ScheduleWakeUp(base::TimeDelta delay_time, FrameSchedulingState);
   bool HasPendingSynchronization() const;
@@ -143,13 +144,15 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   bool paused_ : 1;   // The timeline is paused.
 
   bool document_order_indexes_dirty_ : 1;
-  bool intervals_dirty_ : 1;
   bool is_updating_intervals_;
 
   TaskRunnerTimer<SMILTimeContainer> wakeup_timer_;
   TaskRunnerTimer<SMILTimeContainer> animation_policy_once_timer_;
 
   AnimationsMap scheduled_animations_;
+
+  struct NextIntervalTimeLess;
+  PriorityQueue<SVGSMILElement, NextIntervalTimeLess> priority_queue_;
 
   Member<SVGSVGElement> owner_svg_element_;
 

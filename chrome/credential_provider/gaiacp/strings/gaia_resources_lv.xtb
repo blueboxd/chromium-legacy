@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Piekļuve jūsu kontam ir bloķēta. Lūdzu, sazinieties ar sistēmas administratoru.</translation>
 <translation id="2844349213149998955">Šajā ierīcē nav atļauts pierakstīties ar personīgo kontu. Lūdzu, pierakstieties ar darba kontu.</translation>
 <translation id="3306357053520292004">Lietotājs šajā datorā jau tika pievienots, izmantojot šo kontu. Lūdzu, pierakstieties ar citu kontu.</translation>
+<translation id="3926852373333893095">Drīkst pieteikties tikai G Suite Enterprise lietotāji.</translation>
 <translation id="4057329986137569701">Radās iekšēja kļūda.</translation>
 <translation id="4267670563222825190">Jūsu kontam nevarēja atrast nevienu domēna lietotāju. Lūdzu, sazinieties ar savu administratoru.</translation>
 <translation id="4300229033992784001">Jūsu konta parole ir mainīta. Lūdzu, ievadiet pašreizējo Windows paroli, lai sinhronizētu Windows kontu ar jūsu darba kontu.</translation>
 <translation id="4706454071748629324">Neizdevās pievienot jaunu lietotāju. Šis dators ļauj tikai vienam lietotājam veidot darba kontu.</translation>
 <translation id="6033715878377252112">Palīgs programmai “Google akreditācijas datu nodrošinātājs” operētājsistēmai Windows</translation>
 <translation id="6149399665202317746">Google akreditācijas datu nodrošinātājs operētājsistēmai Windows</translation>
+<translation id="6239180560789153226">Ierīcē trūkst atkopšanas informācijas. Pierakstieties Google darba kontā.</translation>
 <translation id="6312494990035843744">Pierakstīšanās ar darba kontu šajā domēnā nav atļauta. Mēģiniet lietot citu kontu.</translation>
 <translation id="6463752215771576050">Nevar reģistrēt šo datoru uzņēmuma pārvaldībai.  Lūdzu, pierakstieties ar citu darba kontu.</translation>
 <translation id="6657585470893396449">Parole</translation>
+<translation id="6937049691815837345">Ierīce ir jāreģistrē ierīču pārvaldībai. Pierakstieties Google darba kontā.</translation>
 <translation id="7209941495304122410">Ievadīt Windows paroli</translation>
 <translation id="7357241217513796177">Pārbaudiet, vai ir izveidots tīkla savienojums, un mēģiniet vēlreiz.</translation>
 <translation id="7536769223115622137">Pievienot darba kontu</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Sesija ir beigusies. Pierakstieties Google darba kontā.</translation>
 <translation id="9055998212250844221">Lietotāja konts izveidots, izmantojot Google akreditācijas datu nodrošinātāju operētājsistēmai Windows</translation>
 <translation id="9135619837062629367">Pierakstīšanās ar šo kontu nav atļauta. Mēģiniet lietot citu kontu.</translation>
+<translation id="998002716857524853">Pierakstieties G Suite darba kontā.</translation>
 </translationbundle>

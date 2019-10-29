@@ -38,7 +38,7 @@ scoped_refptr<ExtensionFunction> ExtensionFunctionRegistry::NewFunction(
     const std::string& name) {
   auto iter = factories_.find(name);
   if (iter == factories_.end()) {
-    return NULL;
+    return nullptr;
   }
   scoped_refptr<ExtensionFunction> function = iter->second.factory_();
   function->set_name(iter->second.function_name_);

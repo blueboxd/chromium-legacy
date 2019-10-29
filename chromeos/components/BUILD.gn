@@ -19,6 +19,7 @@ test("chromeos_components_unittests") {
     "//chromeos:chromeos_buildflags",
     "//chromeos/components/account_manager:unit_tests",
     "//chromeos/components/drivefs:unit_tests",
+    "//chromeos/components/mojo_bootstrap:unit_tests",
     "//chromeos/components/multidevice:unit_tests",
     "//chromeos/components/nearby:unit_tests",
     "//chromeos/components/power:unit_tests",

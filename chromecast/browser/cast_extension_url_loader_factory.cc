@@ -27,7 +27,7 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
                                public network::mojom::URLLoaderClient {
  public:
   static void CreateAndStart(
-      network::mojom::URLLoaderRequest loader_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -39,7 +39,7 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
     // bindings are alive - essentially until either the client gives up or all
     // data has been sent to it.
     auto* cast_extension_url_loader = new CastExtensionURLLoader(
-        std::move(loader_request), std::move(client));
+        std::move(loader_receiver), std::move(client));
     cast_extension_url_loader->Start(routing_id, request_id, options,
                                      std::move(request), traffic_annotation,
                                      network_factory);
@@ -181,7 +181,7 @@ CastExtensionURLLoaderFactory::CastExtensionURLLoaderFactory(
 CastExtensionURLLoaderFactory::~CastExtensionURLLoaderFactory() = default;
 
 void CastExtensionURLLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -202,7 +202,7 @@ void CastExtensionURLLoaderFactory::CreateLoaderAndStart(
   if (!CastRedirectHandler::ParseUrl(&cast_url, extension, url)) {
     // Defer to the default handler to load from disk.
     extension_factory_->CreateLoaderAndStart(
-        std::move(loader_request), routing_id, request_id, options, request,
+        std::move(loader_receiver), routing_id, request_id, options, request,
         std::move(client), traffic_annotation);
     return;
   }
@@ -226,7 +226,7 @@ void CastExtensionURLLoaderFactory::CreateLoaderAndStart(
   // Force a redirect to the new URL but without changing where the webpage
   // thinks it is.
   CastExtensionURLLoader::CreateAndStart(
-      std::move(loader_request), routing_id, request_id, options,
+      std::move(loader_receiver), routing_id, request_id, options,
       std::move(new_request), std::move(client), traffic_annotation,
       network_factory_);
 }

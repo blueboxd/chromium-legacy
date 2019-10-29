@@ -40,6 +40,11 @@ class WebApp {
   const GURL& scope() const { return scope_; }
   const base::Optional<SkColor>& theme_color() const { return theme_color_; }
   blink::mojom::DisplayMode display_mode() const { return display_mode_; }
+
+  blink::mojom::DisplayMode user_display_mode() const {
+    return user_display_mode_;
+  }
+
   // Locally installed apps have shortcuts installed on various UI surfaces.
   // If app isn't locally installed, it is excluded from UIs and only listed as
   // a part of user's app library.
@@ -88,6 +93,7 @@ class WebApp {
   void SetScope(const GURL& scope);
   void SetThemeColor(base::Optional<SkColor> theme_color);
   void SetDisplayMode(blink::mojom::DisplayMode display_mode);
+  void SetUserDisplayMode(blink::mojom::DisplayMode user_display_mode);
   void SetIsLocallyInstalled(bool is_locally_installed);
   void SetIsInSyncInstall(bool is_in_sync_install);
   void SetIcons(Icons icons);
@@ -113,6 +119,7 @@ class WebApp {
   GURL scope_;
   base::Optional<SkColor> theme_color_;
   blink::mojom::DisplayMode display_mode_;
+  blink::mojom::DisplayMode user_display_mode_;
   bool is_locally_installed_ = true;
   bool is_in_sync_install_ = false;
   Icons icons_;

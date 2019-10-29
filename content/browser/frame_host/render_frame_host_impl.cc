@@ -913,8 +913,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       browser_plugin_embedder_ax_tree_id_(ui::AXTreeIDUnknown()),
       no_create_browser_accessibility_manager_for_testing_(false),
       web_ui_type_(WebUI::kNoWebUI),
-      pending_web_ui_type_(WebUI::kNoWebUI),
-      should_reuse_web_ui_(false),
       has_selection_(false),
       is_audible_(false),
       last_navigation_previews_state_(PREVIEWS_UNSPECIFIED),
@@ -944,10 +942,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     // this RenderFrameHost is on the pending deletion list and the parent
     // FrameTreeNode has changed its current RenderFrameHost.
     parent_ = frame_tree_node_->parent()->current_frame_host();
-
-    // All frames in a page are expected to have the same bindings.
-    if (parent_->GetEnabledBindings())
-      enabled_bindings_ = parent_->GetEnabledBindings();
 
     // New child frames should inherit the nav_entry_id of their parent.
     set_nav_entry_id(
@@ -1038,7 +1032,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   // Release the WebUI instances before all else as the WebUI may accesses the
   // RenderFrameHost during cleanup.
-  ClearAllWebUI();
+  ClearWebUI();
 
   SetLastCommittedSiteUrl(GURL());
   if (last_committed_document_priority_) {
@@ -2985,7 +2979,7 @@ void RenderFrameHostImpl::OnSwappedOut() {
   if (swapout_event_monitor_timeout_)
     swapout_event_monitor_timeout_->Stop();
 
-  ClearAllWebUI();
+  ClearWebUI();
 
   // If this is a main frame RFH that's about to be deleted, update its RVH's
   // swapped-out state here. https://crbug.com/505887.  This should only be
@@ -3177,6 +3171,14 @@ void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
 
   int webui_bindings = bindings_flags & kWebUIBindingsPolicyMask;
 
+  // TODO(nasko): Ensure callers that specify non-zero WebUI bindings are
+  // doing so on a RenderFrameHost that has WebUI associated with it.
+
+  // The bindings being granted here should not differ from the bindings that
+  // the associated WebUI requires.
+  if (web_ui_)
+    CHECK_EQ(web_ui_->GetBindings(), webui_bindings);
+
   // Ensure we aren't granting WebUI bindings to a process that has already
   // been used for non-privileged views.
   if (webui_bindings && GetProcess()->IsInitializedAndNotDead() &&
@@ -3197,8 +3199,6 @@ void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
   }
 
   enabled_bindings_ |= bindings_flags;
-  if (GetParent())
-    DCHECK_EQ(GetParent()->GetEnabledBindings(), GetEnabledBindings());
 
   if (render_frame_created_) {
     if (!frame_bindings_control_)
@@ -4512,7 +4512,7 @@ void RenderFrameHostImpl::BeginNavigation(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params->url.possibly_invalid_spec());
 
-  DCHECK(IsPerNavigationMojoInterfaceEnabled() == navigation_client.is_valid());
+  DCHECK(navigation_client.is_valid());
 
   mojom::CommonNavigationParamsPtr validated_params = common_params.Clone();
   if (!VerifyBeginNavigationCommonParams(GetSiteInstance(), &*validated_params))
@@ -5818,98 +5818,54 @@ bool RenderFrameHostImpl::IsFocused() {
   return focused_rfh == this || focused_rfh->IsDescendantOf(this);
 }
 
-bool RenderFrameHostImpl::UpdatePendingWebUI(const GURL& dest_url,
-                                             int entry_bindings) {
+bool RenderFrameHostImpl::CreateWebUI(const GURL& dest_url,
+                                      int entry_bindings) {
+  // Verify expectation that WebUI should not be created for error pages.
+  DCHECK_NE(GetSiteInstance()->GetSiteURL(), GURL(kUnreachableWebDataURL));
+
   WebUI::TypeID new_web_ui_type =
       WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
           GetSiteInstance()->GetBrowserContext(), dest_url);
+  CHECK_NE(new_web_ui_type, WebUI::kNoWebUI);
 
-  // If the required WebUI matches the pending WebUI or if it matches the
-  // to-be-reused active WebUI, then leave everything as is.
-  if (new_web_ui_type == pending_web_ui_type_ ||
-      (should_reuse_web_ui_ && new_web_ui_type == web_ui_type_)) {
+  // If |web_ui_| already exists, there is no need to create a new one. However,
+  // it is useful to verify that its type hasn't changed. Site isolation
+  // guarantees that RenderFrameHostImpl will be changed if the WebUI type
+  // differs.
+  if (web_ui_) {
+    CHECK_EQ(new_web_ui_type, web_ui_type_);
     return false;
   }
 
-  // Reset the pending WebUI as from this point it will certainly not be reused.
-  ClearPendingWebUI();
+  web_ui_ = delegate_->CreateWebUIForRenderFrameHost(dest_url);
+  if (!web_ui_)
+    return false;
 
-  // If error page isolation is enabled and this RenderFrameHost is going to
-  // commit an error page, there is no reason to create WebUI and give the
-  // process any bindings.
-  if (GetSiteInstance()->GetSiteURL() == GURL(kUnreachableWebDataURL))
-    return true;
-
-  // If this navigation is not to a WebUI, skip directly to bindings work.
-  if (new_web_ui_type != WebUI::kNoWebUI) {
-    if (new_web_ui_type == web_ui_type_) {
-      // The active WebUI should be reused when dest_url requires a WebUI and
-      // its type matches the current.
-      DCHECK(web_ui_);
-      should_reuse_web_ui_ = true;
-    } else {
-      // Otherwise create a new pending WebUI.
-      pending_web_ui_ = delegate_->CreateWebUIForRenderFrameHost(dest_url);
-      DCHECK(pending_web_ui_);
-      pending_web_ui_type_ = new_web_ui_type;
-
-      // If we have assigned (zero or more) bindings to the NavigationEntry in
-      // the past, make sure we're not granting it different bindings than it
-      // had before. If so, note it and don't give it any bindings, to avoid a
-      // potential privilege escalation.
-      if (entry_bindings != NavigationEntryImpl::kInvalidBindings &&
-          pending_web_ui_->GetBindings() != entry_bindings) {
-        RecordAction(
-            base::UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
-        ClearPendingWebUI();
-      }
-    }
+  // If we have assigned (zero or more) bindings to the NavigationEntry in
+  // the past, make sure we're not granting it different bindings than it
+  // had before. If so, note it and don't give it any bindings, to avoid a
+  // potential privilege escalation.
+  if (entry_bindings != NavigationEntryImpl::kInvalidBindings &&
+      web_ui_->GetBindings() != entry_bindings) {
+    RecordAction(base::UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
+    ClearWebUI();
+    return false;
   }
-  DCHECK_EQ(!pending_web_ui_, pending_web_ui_type_ == WebUI::kNoWebUI);
 
-  // Either grant or check the RenderViewHost with/for proper bindings.
-  if (pending_web_ui_ && !render_view_host_->GetProcess()->IsForGuestsOnly()) {
-    // If a WebUI was created for the URL and the RenderView is not in a guest
-    // process, then enable missing bindings.
-    int new_bindings = pending_web_ui_->GetBindings();
-    if ((GetEnabledBindings() & new_bindings) != new_bindings) {
-      AllowBindings(new_bindings);
-    }
-  } else if (render_view_host_->is_active()) {
-    // If the ongoing navigation is not to a WebUI or the RenderView is in a
-    // guest process, ensure that we don't create an unprivileged RenderView in
-    // a WebUI-enabled process unless it's swapped out.
-    bool url_acceptable_for_webui =
-        WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-            GetSiteInstance()->GetBrowserContext(), dest_url);
-    if (!url_acceptable_for_webui) {
-      CHECK(!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-          GetProcess()->GetID()));
-    }
-  }
+  // It is not expected for GuestView to be able to navigate to WebUI.
+  DCHECK(!GetProcess()->IsForGuestsOnly());
+
+  web_ui_type_ = new_web_ui_type;
+
+  // Since this is new WebUI instance, this RenderFrameHostImpl should not
+  // have had any bindings. Verify that and grant the required bindings.
+  DCHECK_EQ(0, GetEnabledBindings());
+  AllowBindings(web_ui_->GetBindings());
+
   return true;
 }
 
-void RenderFrameHostImpl::CommitPendingWebUI() {
-  if (should_reuse_web_ui_) {
-    should_reuse_web_ui_ = false;
-  } else {
-    web_ui_ = std::move(pending_web_ui_);
-    web_ui_type_ = pending_web_ui_type_;
-    pending_web_ui_type_ = WebUI::kNoWebUI;
-  }
-  DCHECK(!pending_web_ui_ && pending_web_ui_type_ == WebUI::kNoWebUI &&
-         !should_reuse_web_ui_);
-}
-
-void RenderFrameHostImpl::ClearPendingWebUI() {
-  pending_web_ui_.reset();
-  pending_web_ui_type_ = WebUI::kNoWebUI;
-  should_reuse_web_ui_ = false;
-}
-
-void RenderFrameHostImpl::ClearAllWebUI() {
-  ClearPendingWebUI();
+void RenderFrameHostImpl::ClearWebUI() {
   web_ui_type_ = WebUI::kNoWebUI;
   web_ui_.reset();
 }
@@ -7771,13 +7727,6 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
       base::debug::AllocateCrashKeyString("original_url_origin",
                                           base::debug::CrashKeySize::Size256),
       GetSiteInstance()->original_url().GetOrigin().spec());
-
-  base::debug::SetCrashKeyString(
-      base::debug::AllocateCrashKeyString("is_transfer_needed",
-                                          base::debug::CrashKeySize::Size32),
-      bool_to_crash_key(
-          frame_tree_node_->render_manager()
-              ->IsRendererTransferNeededForNavigation(this, url)));
 
   base::debug::SetCrashKeyString(
       base::debug::AllocateCrashKeyString("is_mhtml_document",

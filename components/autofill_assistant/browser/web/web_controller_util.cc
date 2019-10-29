@@ -47,6 +47,13 @@ ClientStatus JavaScriptErrorStatus(
   return status;
 }
 
+ClientStatus FillAutofillErrorStatus(ClientStatus status) {
+  status.mutable_details()
+      ->mutable_autofill_error_info()
+      ->set_autofill_error_status(status.proto_status());
+  return status;
+}
+
 bool SafeGetObjectId(const runtime::RemoteObject* result, std::string* out) {
   if (result && result->HasObjectId()) {
     *out = result->GetObjectId();

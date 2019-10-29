@@ -330,11 +330,11 @@ void SignedExchangeCertFetcher::OnComplete(
 
 void SignedExchangeCertFetcher::OnDataURLRequest(
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderRequest url_loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
     network::mojom::URLLoaderClientPtr url_loader_client_ptr) {
   data_url_loader_factory_ = std::make_unique<DataURLLoaderFactory>();
   data_url_loader_factory_->CreateLoaderAndStart(
-      std::move(url_loader_request), 0, 0, 0, resource_request,
+      std::move(url_loader_receiver), 0, 0, 0, resource_request,
       std::move(url_loader_client_ptr),
       net::MutableNetworkTrafficAnnotationTag(kCertFetcherTrafficAnnotation));
 }

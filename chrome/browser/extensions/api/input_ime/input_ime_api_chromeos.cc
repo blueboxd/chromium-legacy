@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/native_input_method_engine.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -444,11 +445,13 @@ bool InputImeEventRouter::RegisterImeExtension(
     profile = profile->GetOffTheRecordProfile();
   }
 
-  std::unique_ptr<InputMethodEngineBase::Observer> observer(
-      new ImeObserverChromeOS(extension_id, profile));
-  auto engine = std::make_unique<chromeos::InputMethodEngine>();
+  auto observer = std::make_unique<ImeObserverChromeOS>(extension_id, profile);
+  auto engine = (extension_id == "jkghodnilhceideoidjikpgommlajknk")
+                    ? std::make_unique<chromeos::NativeInputMethodEngine>()
+                    : std::make_unique<chromeos::InputMethodEngine>();
   engine->Initialize(std::move(observer), extension_id.c_str(), profile);
   engine_map_[extension_id] = std::move(engine);
+
   chromeos::UserSessionManager::GetInstance()
       ->GetDefaultIMEState(profile)
       ->AddInputMethodExtension(extension_id, descriptors,

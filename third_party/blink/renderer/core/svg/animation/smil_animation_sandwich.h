@@ -88,13 +88,8 @@ namespace blink {
 //
 // Implementation details:
 //
-// UpdateTiming() handles updates to interval and transitions the active state.
-//
-// UpdateActiveStateAndOrder() handles the sorting described above and updates
-// the active state of the elements in the sandwich.
-//
-// UpdateActiveAnimationStack() constructs a vector containing only the active
-// elements.
+// UpdateActiveAnimationStack() handles the sorting described above and
+// constructs a vector containing only the active elements.
 //
 // ApplyAnimationValues() computes the actual animation value based on the
 // vector of active elements and applies it to the target element.
@@ -104,17 +99,11 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
   using ScheduledVector = HeapVector<Member<SVGSMILElement>>;
   SMILAnimationSandwich();
 
-  void Schedule(SVGSMILElement* animation);
-  void Unschedule(SVGSMILElement* animation);
-  void Reset();
+  void Add(SVGSMILElement* animation);
+  void Remove(SVGSMILElement* animation);
 
-  void UpdateTiming(SMILTime presentation_time);
-  void UpdateActiveStateAndOrder(SMILTime presentation_time);
   void UpdateActiveAnimationStack(SMILTime presentation_time);
   SVGSMILElement* ApplyAnimationValues();
-
-  SMILTime NextIntervalTime(SMILTime presentation_time) const;
-  SMILTime NextProgressTime(SMILTime presentation_time) const;
 
   bool IsEmpty() { return sandwich_.IsEmpty(); }
 

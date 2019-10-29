@@ -14,6 +14,7 @@
 #include "chrome/browser/previews/previews_lite_page_redirect_serving_url_loader.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -94,13 +95,13 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader,
   // redirect to the lite page server URL.
   void StartHandlingRedirectToModifiedRequest(
       const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
       network::mojom::URLLoaderClientPtr client);
 
   // Helper method for setting up and serving |redirect_info| to |client|.
   void StartHandlingRedirect(
       const network::ResourceRequest& /* resource_request */,
-      network::mojom::URLLoaderRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
       network::mojom::URLLoaderClientPtr client);
 
   // Helper method to create redirect information to |redirect_url| and modify

@@ -630,7 +630,7 @@ message AccessibilitySettingsProto {
   // Sets the state of the high contrast accessibility feature on the login
   // screen. If this policy is set to true, the high contrast will be enabled
   // when the login screen is shown. If this policy is set to false, the high
-  // contrast will be disabled when the high contrast is shown. If the
+  // contrast will be disabled when the login screen is shown. If the
   // PolicyOptions mode was being mandatory then the user won't be able to
   // change these settings. Only if PolicyOptions was being set as
   // recommended users can temporarily override this setting by enabling or
@@ -646,7 +646,7 @@ message AccessibilitySettingsProto {
   // Sets the state of the virtual keyboard accessibility feature on the login
   // screen. If this policy is set to true, the virtual keyboard will be enabled
   // when the login screen is shown. If this policy is set to false, the virtual
-  // keyboard will be disabled when the virtual keyboard is shown. If the
+  // keyboard will be disabled when the login screen is shown. If the
   // PolicyOptions mode was being mandatory then the user won't be able to
   // change these settings. Only if PolicyOptions was being set as
   // recommended users can temporarily override this setting by enabling or
@@ -662,7 +662,7 @@ message AccessibilitySettingsProto {
   // Sets the state of the dictation accessibility feature on the login screen.
   // If this policy is set to true, the dictation will be enabled when the login
   // screen is shown. If this policy is set to false, the dictation will
-  // be disabled when the dictation is shown. If the PolicyOptions mode was
+  // be disabled when the login screen is shown. If the PolicyOptions mode was
   // being mandatory then the user won't be able to change these settings. Only
   // if PolicyOptions was being set as recommended users can temporarily
   // override this setting by enabling or disabling the dictation. However, the
@@ -677,7 +677,7 @@ message AccessibilitySettingsProto {
   // Sets the state of the select to speak accessibility feature on the login
   // screen. If this policy is set to true, the select to speak will be enabled
   // when the login screen is shown. If this policy is set to false, the select
-  // to speak will be disabled when the select to speak is shown. If the
+  // to speak will be disabled when the login screen is shown. If the
   // PolicyOptions mode was being mandatory then the user won't be able to
   // change these settings. Only if PolicyOptions was being set as recommended
   // users can temporarily override this setting by enabling or disabling the
@@ -693,7 +693,7 @@ message AccessibilitySettingsProto {
   // Sets the state of the cursor highlight accessibility feature on the login
   // screen. If this policy is set to true, the cursor highlight will be enabled
   // when the login screen is shown. If this policy is set to false, the cursor
-  // highlight will be disabled when the cursor highlight is shown. If the
+  // highlight will be disabled when the login screen is shown. If the
   // PolicyOptions mode was being mandatory then the user won't be able to
   // change these settings. Only if PolicyOptions was being set as recommended
   // users can temporarily override this setting by enabling or disabling the
@@ -709,7 +709,7 @@ message AccessibilitySettingsProto {
   // Sets the state of the caret highlight accessibility feature on the login
   // screen. If this policy is set to true, the caret highlight will be enabled
   // when the login screen is shown. If this policy is set to false, the spoken
-  // feedback will be disabled when the caret highlight is shown. If the
+  // feedback will be disabled when the login screen is shown. If the
   // PolicyOptions mode was being mandatory then the user won't be able to
   // change these settings. Only if PolicyOptions was being set as recommended
   // users can temporarily override this setting by enabling or disabling the
@@ -725,7 +725,7 @@ message AccessibilitySettingsProto {
   // Sets the state of the mono audio accessibility feature on the login
   // screen. If this policy is set to true, the mono audio will be enabled
   // when the login screen is shown. If this policy is set to false, the mono
-  // audio will be disabled when the mono audio is shown. If the PolicyOptions
+  // audio will be disabled when the login screen is shown. If the PolicyOptions
   // mode was being mandatory then the user won't be able to change these
   // settings. Only if PolicyOptions was being set as recommended users can
   // temporarily override this setting by enabling or disabling the mono audio.
@@ -741,7 +741,7 @@ message AccessibilitySettingsProto {
   // Sets the state of the autoclick accessibility feature on the login
   // screen. If this policy is set to true, the autoclick will be enabled
   // when the login screen is shown. If this policy is set to false, the
-  // autoclick will be disabled when the autoclick is shown. If the
+  // autoclick will be disabled when the login screen is shown. If the
   // PolicyOptions mode was being mandatory then the user won't be able to
   // change these settings. Only if PolicyOptions was being set as recommended
   // users can temporarily override this setting by enabling or disabling the
@@ -757,7 +757,7 @@ message AccessibilitySettingsProto {
   // Sets the state of the sticky keys accessibility feature on the login
   // screen. If this policy is set to true, the sticky keys will be enabled
   // when the login screen is shown. If this policy is set to false, the
-  // sticky keys will be disabled when the sticky keys is shown. If the
+  // sticky keys will be disabled when the login screen is shown. If the
   // PolicyOptions mode was being mandatory then the user won't be able to
   // change these settings. Only if PolicyOptions was being set as recommended
   // users can temporarily override this setting by enabling or disabling the
@@ -773,17 +773,17 @@ message AccessibilitySettingsProto {
   // Sets the state of the keyboard focus highlight accessibility feature on the
   // login screen. If this policy is set to true, the keyboard focus highlight
   // will be enabled when the login screen is shown. If this policy is set to
-  // false, the keyboard focus highlight will be disabled when the keyboard
-  // focus highlight is shown. If the PolicyOptions mode was being mandatory
-  // then the user won't be able to change these settings. Only if PolicyOptions
-  // was being set as recommended users can temporarily override this setting by
-  // enabling or disabling the keyboard focus highlight. However, the user's
-  // choice is not persistent and the default is restored whenever the login
-  // screen is shown anew or the user remains idle on the login screen for a
-  // minute. If this policy is left unset, the keyboard focus highlight is
-  // disabled when the login screen is first shown. Users can enable or disable
-  // the keyboard focus highlight anytime and its status on the login screen is
-  // persisted between users.
+  // false, the keyboard focus highlight will be disabled when the login screen
+  // is shown. If the PolicyOptions mode was being mandatory then the user won't
+  // be able to change these settings. Only if PolicyOptions was being set as
+  // recommended users can temporarily override this setting by enabling or
+  // disabling the keyboard focus highlight. However, the user's choice is not
+  // persistent and the default is restored whenever the login screen is shown
+  // anew or the user remains idle on the login screen for a minute. If this
+  // policy is left unset, the keyboard focus highlight is disabled when the
+  // login screen is first shown. Users can enable or disable the keyboard focus
+  // highlight anytime and its status on the login screen is persisted between
+  // users.
   optional bool login_screen_keyboard_focus_highlight_enabled = 28;
   optional PolicyOptions login_screen_keyboard_focus_highlight_enabled_options =
       29;
@@ -792,8 +792,8 @@ message AccessibilitySettingsProto {
   // screen. If this policy is set to 1, the screen magnifier will be enabled
   // in full-screen magnifier mode, when the login screen is shown. If this
   // policy is set to 2, the screen magnifier will be enabled in docked
-  // magnifier mode, when the screen magnifier is shown. If this policy is set
-  // to 0, the screen magnifier will be disabled, when the screen magnifier is
+  // magnifier mode, when the login screen is shown. If this policy is set
+  // to 0, the screen magnifier will be disabled, when the login screen is
   // shown. If the PolicyOptions mode was being mandatory then the user won't be
   // able to change these settings. Only if PolicyOptions was being set as
   // recommended users can temporarily override this setting by changing the

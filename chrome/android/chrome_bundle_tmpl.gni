@@ -9,11 +9,14 @@ import("//chrome/android/modules/chrome_feature_module_tmpl.gni")
 
 # Instantiates a Chrome-specific app bundle.
 #
-# Supports most attributes of chrome_feature_module and android_app_bundle,
-# plus:
+# Supports most variables of chrome_feature_module and android_app_bundle, plus:
 #   module_descs: List of descriptors for modules that are part of this bundle.
 #     See //chrome/android/modules/chrome_feature_modules.gni for the format of
 #     a module descriptor.
+#   is_64_bit_browser: (Optional) Whether Chrome (as opposed to WebView) runs in
+#     64 bit.
+#   include_32_bit_webview: (Optional) Whether to include 32 bit code for
+#     WebView.
 template("chrome_bundle") {
   _bundle_target_name = target_name
   _package_id = 126  # == 0x7e.
@@ -25,7 +28,6 @@ template("chrome_bundle") {
       forward_variables_from(invoker,
                              [
                                "base_module_target",
-                               "include_32_bit_webview",
                                "is_64_bit_browser",
                                "is_monochrome_or_trichrome",
                                "manifest_package",
@@ -46,6 +48,24 @@ template("chrome_bundle") {
     _extra_modules += [ _module_desc ]
     _package_id -= 1
   }
+
+  # Determine whether the bundle has native libraries for both the primary and
+  # the secondary ABI. This is the case if we package WebView with the
+  # complementary ABI of the browser.
+  _is_64_bit_browser =
+      defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
+  _include_32_bit_webview =
+      defined(invoker.include_32_bit_webview) && invoker.include_32_bit_webview
+  _is_multi_abi = false
+  if (_is_64_bit_browser) {
+    _is_multi_abi = _include_32_bit_webview
+  } else {
+    assert(!_include_32_bit_webview)
+
+    # WebView is included with 64bit ABI if |android_64bit_target_cpu| is true.
+    _is_multi_abi = android_64bit_target_cpu
+  }
+  assert(!_is_multi_abi || build_apk_secondary_abi)
 
   android_app_bundle(target_name) {
     forward_variables_from(invoker,
@@ -69,6 +89,7 @@ template("chrome_bundle") {
     enable_language_splits = true
     extra_modules = _extra_modules
     system_image_locale_whitelist = locales - android_chrome_omitted_locales
+    is_multi_abi = _is_multi_abi
 
     # NOTE: Only sign bundle for official builds since this is very slow.
     if (enable_chrome_android_internal && use_signing_keys &&

@@ -163,10 +163,12 @@ test.realbox.testReplyWithMatches = function() {
 
   const matchesEl = $(test.realbox.IDS.REALBOX_MATCHES);
   assertTrue(!!matchesEl);
+  assertTrue(matchesEl.hasAttribute('role'));
   assertEquals(matches.length, matchesEl.children.length);
   assertEquals(matches[0].destinationUrl, matchesEl.children[0].href);
   assertEquals(matches[1].destinationUrl, matchesEl.children[1].href);
   assertEquals(matches[1].textContent, matchesEl.children[1].contents);
+  assertTrue(matchesEl.children[0].hasAttribute('role'));
 };
 
 test.realbox.testReplyWithInlineAutocompletion = function() {

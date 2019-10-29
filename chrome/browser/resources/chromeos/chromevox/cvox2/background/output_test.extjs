@@ -1082,3 +1082,63 @@ TEST_F('ChromeVoxOutputE2ETest', 'NestedList', function() {
       o.speechOutputForTest.string_);
   });
 });
+
+TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', function() {
+  this.runWithLoadedTree(function() {/*!
+    <div title="title"></div>
+    <div aria-label="label" title="title"></div>
+    <div aria-describedby="desc" title="title"></div>
+    <div aria-label="label" aria-describedby="desc" title="title"></div>
+    <div aria-label=""></div>
+    <p id="desc">describedby</p>
+  */},
+  function(root) {
+    var title = root.children[0];
+    var o = new Output()
+        .withSpeech(cursors.Range.fromNode(title), null, 'navigate');
+    assertEqualsJSON(
+        {string_: 'title', spans_: [{value: 'name', start: 0, end: 5}]},
+        o.speechOutputForTest);
+
+    var labelTitle = root.children[1];
+    o = new Output()
+        .withSpeech(cursors.Range.fromNode(labelTitle), null, 'navigate');
+    assertEqualsJSON(
+        {string_: 'label|title', spans_: [{value: 'name', start: 0, end: 5},
+                                      {value: 'description', start: 6, end: 11}]},
+        o.speechOutputForTest);
+
+    var describedByTitle = root.children[2];
+    o = new Output()
+        .withSpeech(cursors.Range.fromNode(describedByTitle), null, 'navigate');
+    assertEqualsJSON(
+        {string_: 'title|describedby', spans_:
+         [{value: 'name', start: 0, end: 5},
+          {value: 'description', start: 6, end: 17}]},
+        o.speechOutputForTest);
+
+    var labelDescribedByTitle = root.children[3];
+    o = new Output()
+        .withSpeech(cursors.Range.fromNode(
+            labelDescribedByTitle), null, 'navigate');
+    assertEqualsJSON(
+        {string_: 'label|describedby', spans_:
+         [{value: 'name', start: 0, end: 5},
+          {value: 'description', start: 6, end: 17}]},
+        o.speechOutputForTest);
+
+    // Hijack the 4th node to force tooltip to return a value. This can only
+    // occur on ARC++ where tooltip gets set even if name and description are
+    // both empty.
+    var tooltip = root.children[4];
+    Object.defineProperty(root.children[4], 'tooltip', {
+      get: () => 'tooltip'
+    });
+
+    o = new Output()
+        .withSpeech(cursors.Range.fromNode(tooltip), null, 'navigate');
+    assertEqualsJSON(
+        {string_: 'tooltip', spans_: []},
+        o.speechOutputForTest);
+  });
+});

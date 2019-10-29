@@ -23,7 +23,7 @@ XrResult xrAcquireSwapchainImage(
     XrSwapchain swapchain,
     const XrSwapchainImageAcquireInfo* acquire_info,
     uint32_t* index) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSwapchain(swapchain));
@@ -39,7 +39,7 @@ XrResult xrAcquireSwapchainImage(
 XrResult xrAttachSessionActionSets(
     XrSession session,
     const XrSessionActionSetsAttachInfo* attach_info) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -49,7 +49,7 @@ XrResult xrAttachSessionActionSets(
 
 XrResult xrBeginFrame(XrSession session,
                       const XrFrameBeginInfo* frame_begin_info) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -61,7 +61,7 @@ XrResult xrBeginFrame(XrSession session,
 
 XrResult xrBeginSession(XrSession session,
                         const XrSessionBeginInfo* begin_info) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -80,7 +80,7 @@ XrResult xrBeginSession(XrSession session,
 XrResult xrCreateAction(XrActionSet action_set,
                         const XrActionCreateInfo* create_info,
                         XrAction* action) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateActionSet(action_set));
@@ -93,7 +93,7 @@ XrResult xrCreateAction(XrActionSet action_set,
 XrResult xrCreateActionSet(XrInstance instance,
                            const XrActionSetCreateInfo* create_info,
                            XrActionSet* action_set) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
@@ -106,7 +106,7 @@ XrResult xrCreateActionSet(XrInstance instance,
 XrResult xrCreateActionSpace(XrSession session,
                              const XrActionSpaceCreateInfo* create_info,
                              XrSpace* space) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -120,7 +120,7 @@ XrResult xrCreateActionSpace(XrSession session,
 
 XrResult xrCreateInstance(const XrInstanceCreateInfo* create_info,
                           XrInstance* instance) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
 
   RETURN_IF(create_info->applicationInfo.apiVersion != XR_CURRENT_API_VERSION,
             XR_ERROR_API_VERSION_UNSUPPORTED, "apiVersion unsupported");
@@ -154,7 +154,7 @@ XrResult xrCreateInstance(const XrInstanceCreateInfo* create_info,
 XrResult xrCreateReferenceSpace(XrSession session,
                                 const XrReferenceSpaceCreateInfo* create_info,
                                 XrSpace* space) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -178,7 +178,7 @@ XrResult xrCreateReferenceSpace(XrSession session,
 XrResult xrCreateSession(XrInstance instance,
                          const XrSessionCreateInfo* create_info,
                          XrSession* session) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
@@ -203,7 +203,7 @@ XrResult xrCreateSession(XrInstance instance,
 XrResult xrCreateSwapchain(XrSession session,
                            const XrSwapchainCreateInfo* create_info,
                            XrSwapchain* swapchain) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -238,7 +238,7 @@ XrResult xrCreateSwapchain(XrSession session,
 }
 
 XrResult xrDestroyActionSet(XrActionSet action_set) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateActionSet(action_set));
@@ -246,7 +246,7 @@ XrResult xrDestroyActionSet(XrActionSet action_set) {
 }
 
 XrResult xrDestroyInstance(XrInstance instance) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
@@ -255,7 +255,7 @@ XrResult xrDestroyInstance(XrInstance instance) {
 }
 
 XrResult xrDestroySpace(XrSpace space) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSpace(space));
@@ -264,7 +264,7 @@ XrResult xrDestroySpace(XrSpace space) {
 }
 
 XrResult xrEndFrame(XrSession session, const XrFrameEndInfo* frame_end_info) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -305,7 +305,7 @@ XrResult xrEndFrame(XrSession session, const XrFrameEndInfo* frame_end_info) {
 }
 
 XrResult xrEndSession(XrSession session) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -321,7 +321,7 @@ XrResult xrEnumerateEnvironmentBlendModes(
     uint32_t environmentBlendModeCapacityInput,
     uint32_t* environmentBlendModeCountOutput,
     XrEnvironmentBlendMode* environmentBlendModes) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
@@ -344,7 +344,7 @@ XrResult xrEnumerateInstanceExtensionProperties(
     uint32_t property_capacity_input,
     uint32_t* property_count_output,
     XrExtensionProperties* properties) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
 
   RETURN_IF(
       property_capacity_input < OpenXrTestHelper::NumExtensionsSupported() &&
@@ -372,7 +372,7 @@ XrResult xrEnumerateViewConfigurationViews(
     uint32_t view_capacity_input,
     uint32_t* view_count_output,
     XrViewConfigurationView* views) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
@@ -395,7 +395,7 @@ XrResult xrEnumerateSwapchainImages(XrSwapchain swapchain,
                                     uint32_t image_capacity_input,
                                     uint32_t* image_count_output,
                                     XrSwapchainImageBaseHeader* images) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSwapchain(swapchain));
@@ -431,7 +431,7 @@ XrResult xrGetD3D11GraphicsRequirementsKHR(
     XrInstance instance,
     XrSystemId system_id,
     XrGraphicsRequirementsD3D11KHR* graphics_requirements) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
@@ -463,7 +463,7 @@ XrResult xrGetD3D11GraphicsRequirementsKHR(
 XrResult xrGetActionStateFloat(XrSession session,
                                const XrActionStateGetInfo* get_info,
                                XrActionStateFloat* state) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
   RETURN_IF(get_info->type != XR_TYPE_ACTION_STATE_GET_INFO,
@@ -483,7 +483,7 @@ XrResult xrGetActionStateFloat(XrSession session,
 XrResult xrGetActionStateBoolean(XrSession session,
                                  const XrActionStateGetInfo* get_info,
                                  XrActionStateBoolean* state) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -504,7 +504,7 @@ XrResult xrGetActionStateBoolean(XrSession session,
 XrResult xrGetActionStateVector2f(XrSession session,
                                   const XrActionStateGetInfo* get_info,
                                   XrActionStateVector2f* state) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -525,7 +525,7 @@ XrResult xrGetActionStateVector2f(XrSession session,
 XrResult xrGetActionStatePose(XrSession session,
                               const XrActionStateGetInfo* get_info,
                               XrActionStatePose* state) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -545,21 +545,38 @@ XrResult xrGetActionStatePose(XrSession session,
 
 XrResult xrGetInstanceProperties(XrInstance instance,
                                  XrInstanceProperties* instanceProperties) {
-  // TODO(https://crbug.com/996502)
-  return XR_ERROR_FUNCTION_UNSUPPORTED;
+  DVLOG(2) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
+  RETURN_IF(instanceProperties->type != XR_TYPE_INSTANCE_PROPERTIES,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrGetReferenceSpaceBoundsRect type is not stage");
+  errno_t error =
+      strcpy_s(instanceProperties->runtimeName, "OpenXR Mock Runtime");
+  DCHECK(error == 0);
+  return XR_SUCCESS;
 }
 
 XrResult xrGetReferenceSpaceBoundsRect(XrSession session,
                                        XrReferenceSpaceType referenceSpaceType,
                                        XrExtent2Df* bounds) {
-  // TODO(https://crbug.com/996502)
-  return XR_ERROR_FUNCTION_UNSUPPORTED;
+  DVLOG(2) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
+  RETURN_IF(referenceSpaceType != XR_REFERENCE_SPACE_TYPE_STAGE,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrGetReferenceSpaceBoundsRect type is not stage");
+  bounds->width = 0;
+  bounds->height = 0;
+  return XR_SUCCESS;
 }
 
 XrResult xrGetSystem(XrInstance instance,
                      const XrSystemGetInfo* get_info,
                      XrSystemId* system_id) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
@@ -576,7 +593,6 @@ XrResult xrGetSystem(XrInstance instance,
 XrResult xrGetSystemProperties(XrInstance instance,
                                XrSystemId systemId,
                                XrSystemProperties* properties) {
-  // TODO(https://crbug.com/996502)
   properties->trackingProperties.positionTracking = true;
   return XR_SUCCESS;
 }
@@ -585,7 +601,7 @@ XrResult xrLocateSpace(XrSpace space,
                        XrSpace baseSpace,
                        XrTime time,
                        XrSpaceLocation* location) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSpace(space));
@@ -606,7 +622,7 @@ XrResult xrLocateViews(XrSession session,
                        uint32_t view_capacity_input,
                        uint32_t* view_count_output,
                        XrView* views) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -631,7 +647,7 @@ XrResult xrLocateViews(XrSession session,
 }
 
 XrResult xrPollEvent(XrInstance instance, XrEventDataBuffer* event_data) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
@@ -655,7 +671,7 @@ XrResult xrPollEvent(XrInstance instance, XrEventDataBuffer* event_data) {
 XrResult xrReleaseSwapchainImage(
     XrSwapchain swapchain,
     const XrSwapchainImageReleaseInfo* release_info) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSwapchain(swapchain));
@@ -669,7 +685,7 @@ XrResult xrReleaseSwapchainImage(
 XrResult xrSuggestInteractionProfileBindings(
     XrInstance instance,
     const XrInteractionProfileSuggestedBinding* suggested_bindings) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
@@ -699,7 +715,7 @@ XrResult xrSuggestInteractionProfileBindings(
 XrResult xrStringToPath(XrInstance instance,
                         const char* pathString,
                         XrPath* path) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
@@ -710,7 +726,7 @@ XrResult xrStringToPath(XrInstance instance,
 }
 
 XrResult xrSyncActions(XrSession session, const XrActionsSyncInfo* sync_info) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -732,7 +748,7 @@ XrResult xrSyncActions(XrSession session, const XrActionsSyncInfo* sync_info) {
 XrResult xrWaitFrame(XrSession session,
                      const XrFrameWaitInfo* frame_wait_info,
                      XrFrameState* frame_state) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
@@ -748,7 +764,7 @@ XrResult xrWaitFrame(XrSession session,
 
 XrResult xrWaitSwapchainImage(XrSwapchain swapchain,
                               const XrSwapchainImageWaitInfo* wait_info) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSwapchain(swapchain));

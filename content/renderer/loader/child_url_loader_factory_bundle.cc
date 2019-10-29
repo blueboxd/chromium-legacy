@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -22,11 +22,12 @@ namespace {
 class URLLoaderRelay : public network::mojom::URLLoaderClient,
                        public network::mojom::URLLoader {
  public:
-  URLLoaderRelay(network::mojom::URLLoaderPtr loader_sink,
-                 network::mojom::URLLoaderClientRequest client_source,
-                 network::mojom::URLLoaderClientPtr client_sink)
+  URLLoaderRelay(
+      network::mojom::URLLoaderPtr loader_sink,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient> client_source,
+      network::mojom::URLLoaderClientPtr client_sink)
       : loader_sink_(std::move(loader_sink)),
-        client_source_binding_(this, std::move(client_source)),
+        client_source_receiver_(this, std::move(client_source)),
         client_sink_(std::move(client_sink)) {}
 
   // network::mojom::URLLoader implementation:
@@ -93,7 +94,7 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
 
  private:
   network::mojom::URLLoaderPtr loader_sink_;
-  mojo::Binding<network::mojom::URLLoaderClient> client_source_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> client_source_receiver_;
   network::mojom::URLLoaderClientPtr client_sink_;
 };
 
@@ -197,7 +198,7 @@ network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactory(
 }
 
 void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -211,7 +212,7 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
     subresource_overrides_.erase(override_iter);
 
     client->OnReceiveResponse(std::move(transferrable_loader->head));
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<URLLoaderRelay>(
             network::mojom::URLLoaderPtr(
                 std::move(transferrable_loader->url_loader)),

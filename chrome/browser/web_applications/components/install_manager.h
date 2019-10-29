@@ -89,7 +89,7 @@ class InstallManager {
 
   // These params are a subset of ExternalInstallOptions.
   struct InstallParams {
-    blink::mojom::DisplayMode display_mode =
+    blink::mojom::DisplayMode user_display_mode =
         blink::mojom::DisplayMode::kUndefined;
 
     bool add_to_applications_menu = true;

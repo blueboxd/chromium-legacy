@@ -14,8 +14,7 @@ struct BackingModifier {
   HeapObjectHeader* const header;
 };
 
-BackingModifier CanFreeOrShrinkBacking(ThreadState* const state,
-                                       void* address) {
+BackingModifier CanModifyBacking(ThreadState* const state, void* address) {
   // - |SweepForbidden| protects against modifying objects from destructors.
   // - |IsSweepingInProgress| protects against modifying objects while
   // concurrent sweeping is in progress.
@@ -51,7 +50,7 @@ void HeapAllocator::BackingFree(void* address) {
     return;
 
   ThreadState* const state = ThreadState::Current();
-  BackingModifier result = CanFreeOrShrinkBacking(state, address);
+  BackingModifier result = CanModifyBacking(state, address);
   if (!result.can_modify)
     return;
 
@@ -78,8 +77,9 @@ bool HeapAllocator::BackingExpand(void* address, size_t new_size) {
     return false;
 
   ThreadState* state = ThreadState::Current();
-  // Don't expand if concurrent sweeping is in progress.
-  if (state->SweepForbidden() || state->IsSweepingInProgress())
+
+  BackingModifier result = CanModifyBacking(state, address);
+  if (!result.can_modify)
     return false;
   DCHECK(!state->in_atomic_pause());
   DCHECK(state->IsAllocationAllowed());
@@ -93,14 +93,9 @@ bool HeapAllocator::BackingExpand(void* address, size_t new_size) {
 
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(address);
   NormalPageArena* arena = static_cast<NormalPage*>(page)->ArenaForNormalPage();
-  const size_t old_size = header->size();
   bool succeed = arena->ExpandObject(header, new_size);
   if (succeed) {
     state->Heap().AllocationPointAdjusted(arena->ArenaIndex());
-    if (header->IsMarked<HeapObjectHeader::AccessMode::kAtomic>() &&
-        state->IsMarkingInProgress()) {
-      state->CurrentVisitor()->AdjustMarkedBytes(header, old_size);
-    }
   }
   return succeed;
 }
@@ -126,7 +121,7 @@ bool HeapAllocator::BackingShrink(void* address,
   DCHECK_LT(quantized_shrunk_size, quantized_current_size);
 
   ThreadState* const state = ThreadState::Current();
-  BackingModifier result = CanFreeOrShrinkBacking(state, address);
+  BackingModifier result = CanModifyBacking(state, address);
   if (!result.can_modify)
     return false;
 

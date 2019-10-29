@@ -88,7 +88,6 @@ base::Value ConvertProtoToValue(
   DCHECK(app_install_report_request);
 
   base::Value event_list(base::Value::Type::LIST);
-  base::Value::ListStorage& mutable_list = event_list.GetList();
 
   for (const em::AppInstallReport& app_install_report :
        app_install_report_request->app_install_reports()) {
@@ -98,7 +97,7 @@ base::Value ConvertProtoToValue(
       wrapper = ConvertEventToValue(
           app_install_report.has_package() ? app_install_report.package() : "",
           app_install_report_log_event, profile);
-      mutable_list.push_back(std::move(wrapper));
+      event_list.Append(std::move(wrapper));
     }
   }
 

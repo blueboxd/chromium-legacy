@@ -112,20 +112,9 @@ public class AutofillAssistantDirectActionHandlerTest {
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
         reportAvailableDirectActions(mHandler, reporter);
 
-        assertEquals(2, reporter.mActions.size());
+        assertEquals(1, reporter.mActions.size());
 
-        FakeDirectActionDefinition perform = reporter.mActions.get(0);
-        assertEquals("perform_assistant_action", perform.mId);
-        assertEquals(2, perform.mParameters.size());
-        assertEquals("name", perform.mParameters.get(0).mName);
-        assertEquals(Type.STRING, perform.mParameters.get(0).mType);
-        assertEquals("experiment_ids", perform.mParameters.get(1).mName);
-        assertEquals(Type.STRING, perform.mParameters.get(1).mType);
-        assertEquals(1, perform.mResults.size());
-        assertEquals("success", perform.mResults.get(0).mName);
-        assertEquals(Type.BOOLEAN, perform.mResults.get(0).mType);
-
-        FakeDirectActionDefinition fetch = reporter.mActions.get(1);
+        FakeDirectActionDefinition fetch = reporter.mActions.get(0);
         assertEquals("fetch_website_actions", fetch.mId);
         assertEquals(2, fetch.mParameters.size());
         assertEquals("user_name", fetch.mParameters.get(0).mName);
@@ -145,21 +134,21 @@ public class AutofillAssistantDirectActionHandlerTest {
         reportAvailableDirectActions(mHandler, reporter);
 
         // Now that the AA stack is up, the fetdch_website_actions should no longer show up.
-        assertEquals(3, reporter.mActions.size());
-
-        assertEquals("perform_assistant_action", reporter.mActions.get(0).mId);
+        assertEquals(2, reporter.mActions.size());
 
         // Now we expect 2 dyamic actions "search" and "action2".
-        FakeDirectActionDefinition search = reporter.mActions.get(1);
+        FakeDirectActionDefinition search = reporter.mActions.get(0);
         assertEquals("search", search.mId);
-        assertEquals(1, search.mParameters.size());
+        assertEquals(2, search.mParameters.size());
         assertEquals("experiment_ids", search.mParameters.get(0).mName);
         assertEquals(Type.STRING, search.mParameters.get(0).mType);
+        assertEquals("SEARCH_QUERY", search.mParameters.get(1).mName);
+        assertEquals(Type.STRING, search.mParameters.get(1).mType);
         assertEquals(1, search.mResults.size());
         assertEquals("success", search.mResults.get(0).mName);
         assertEquals(Type.BOOLEAN, search.mResults.get(0).mType);
 
-        FakeDirectActionDefinition action2 = reporter.mActions.get(2);
+        FakeDirectActionDefinition action2 = reporter.mActions.get(1);
         assertEquals("action2", action2.mId);
         assertEquals(1, action2.mParameters.size());
         assertEquals("experiment_ids", action2.mParameters.get(0).mName);
@@ -178,20 +167,9 @@ public class AutofillAssistantDirectActionHandlerTest {
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
         reportAvailableDirectActions(mHandler, reporter);
 
-        assertEquals(2, reporter.mActions.size());
+        assertEquals(1, reporter.mActions.size());
 
-        FakeDirectActionDefinition perform = reporter.mActions.get(0);
-        assertEquals("perform_assistant_action", perform.mId);
-        assertEquals(2, perform.mParameters.size());
-        assertEquals("name", perform.mParameters.get(0).mName);
-        assertEquals(Type.STRING, perform.mParameters.get(0).mType);
-        assertEquals("experiment_ids", perform.mParameters.get(1).mName);
-        assertEquals(Type.STRING, perform.mParameters.get(1).mType);
-        assertEquals(1, perform.mResults.size());
-        assertEquals("success", perform.mResults.get(0).mName);
-        assertEquals(Type.BOOLEAN, perform.mResults.get(0).mType);
-
-        FakeDirectActionDefinition fetch = reporter.mActions.get(1);
+        FakeDirectActionDefinition fetch = reporter.mActions.get(0);
         assertEquals("fetch_website_actions", fetch.mId);
         assertEquals(2, fetch.mParameters.size());
         assertEquals("user_name", fetch.mParameters.get(0).mName);
@@ -294,23 +272,22 @@ public class AutofillAssistantDirectActionHandlerTest {
         }));
     }
 
-    /** Calls perform_assistant_action and returns the result. */
+    /** Performs direct action |name| and returns the result. */
     private Boolean performAction(String name, Bundle arguments) throws Exception {
-        return performActionAsync(name, arguments).waitForResult("perform_assistant_action");
+        return performActionAsync(name, arguments).waitForResult("success");
     }
 
     /**
-     * Calls perform_assistant_action and returns a {@link WaitingCallback} that'll eventually
+     * Performs direct action |name| and returns a {@link WaitingCallback} that'll eventually
      * contain the result.
      */
     private WaitingCallback<Boolean> performActionAsync(String name, Bundle arguments)
             throws Exception {
         WaitingCallback<Boolean> callback = new WaitingCallback<Boolean>();
         Bundle allArguments = new Bundle(arguments);
-        if (!name.isEmpty()) allArguments.putString("name", name);
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> mHandler.performDirectAction("perform_assistant_action", allArguments,
+                        -> mHandler.performDirectAction(name, allArguments,
                                 (bundle) -> callback.onResult(bundle.getBoolean("success"))));
         return callback;
     }

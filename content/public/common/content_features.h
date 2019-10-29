@@ -84,7 +84,6 @@ CONTENT_EXPORT extern const base::Feature kPassiveDocumentEventListeners;
 CONTENT_EXPORT extern const base::Feature kPassiveDocumentWheelEventListeners;
 CONTENT_EXPORT extern const base::Feature kPassiveEventListenersDueToFling;
 CONTENT_EXPORT extern const base::Feature kPeriodicBackgroundSync;
-CONTENT_EXPORT extern const base::Feature kPerNavigationMojoInterface;
 CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
 CONTENT_EXPORT extern const base::Feature kPreferCompositingToLCDText;
 CONTENT_EXPORT extern const base::Feature kPrioritizeBootstrapTasks;

@@ -73,15 +73,15 @@ BinderOverrides& GetBinderOverrides() {
 }  // namespace
 
 ServiceBinding::ServiceBinding(service_manager::Service* service)
-    : service_(service), binding_(this) {
+    : service_(service) {
   DCHECK(service_);
 }
 
 ServiceBinding::ServiceBinding(service_manager::Service* service,
-                               mojom::ServiceRequest request)
+                               mojo::PendingReceiver<mojom::Service> receiver)
     : ServiceBinding(service) {
-  if (request.is_pending())
-    Bind(std::move(request));
+  if (receiver.is_valid())
+    Bind(std::move(receiver));
 }
 
 ServiceBinding::~ServiceBinding() = default;
@@ -92,10 +92,10 @@ Connector* ServiceBinding::GetConnector() {
   return connector_.get();
 }
 
-void ServiceBinding::Bind(mojom::ServiceRequest request) {
+void ServiceBinding::Bind(mojo::PendingReceiver<mojom::Service> receiver) {
   DCHECK(!is_bound());
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindOnce(
       &ServiceBinding::OnConnectionError, base::Unretained(this)));
 }
 
@@ -114,7 +114,7 @@ void ServiceBinding::RequestClose() {
 
 void ServiceBinding::Close() {
   DCHECK(is_bound());
-  binding_.Close();
+  receiver_.reset();
   service_control_.reset();
   connector_.reset();
 }

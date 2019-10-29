@@ -302,9 +302,25 @@ class _IRBuilder(object):
 
     def _build_callback_interface(self, node):
         assert node.GetProperty('CALLBACK')
-        # TODO(peria): Build members and register them in |callback_interface|
+
+        child_nodes = list(node.GetChildren())
+        extended_attributes = self._take_extended_attributes(child_nodes)
+        members = map(self._build_interface_or_namespace_member, child_nodes)
+        constants = []
+        operations = []
+        for member in members:
+            if isinstance(member, Constant.IR):
+                constants.append(member)
+            elif isinstance(member, Operation.IR):
+                operations.append(member)
+            else:
+                assert False
+
         return CallbackInterface.IR(
             identifier=Identifier(node.GetName()),
+            constants=constants,
+            operations=operations,
+            extended_attributes=extended_attributes,
             component=self._component,
             debug_info=self._build_debug_info(node))
 

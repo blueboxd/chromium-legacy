@@ -1024,19 +1024,6 @@ String HTMLElement::title() const {
   return FastGetAttribute(html_names::kTitleAttr);
 }
 
-int HTMLElement::tabIndex() const {
-  if (DelegatesFocus())
-    return GetIntegralAttribute(html_names::kTabindexAttr, -1);
-
-  // TODO(tkent): Follow https://html.spec.whatwg.org/C/#dom-tabindex
-  if (SupportsFocus() ||
-      (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
-       IsScrollableNode(this))) {
-    return Element::tabIndex();
-  }
-  return -1;
-}
-
 TranslateAttributeMode HTMLElement::GetTranslateAttributeMode() const {
   const AtomicString& value = FastGetAttribute(html_names::kTranslateAttr);
 

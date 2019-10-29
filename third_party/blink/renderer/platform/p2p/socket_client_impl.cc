@@ -34,8 +34,7 @@ P2PSocketClientImpl::P2PSocketClientImpl(
       state_(STATE_UNINITIALIZED),
       traffic_annotation_(traffic_annotation),
       random_socket_id_(0),
-      next_packet_id_(0),
-      binding_(this) {
+      next_packet_id_(0) {
   crypto::RandBytes(&random_socket_id_, sizeof(random_socket_id_));
 }
 
@@ -57,13 +56,12 @@ void P2PSocketClientImpl::Init(
 
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   state_ = STATE_OPENING;
-  network::mojom::blink::P2PSocketClientPtr socket_client;
-  binding_.Bind(mojo::MakeRequest(&socket_client));
-  binding_.set_connection_error_handler(base::BindOnce(
-      &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
   dispatcher_->GetP2PSocketManager()->get()->CreateSocket(
       type, local_address, network::P2PPortRange(min_port, max_port),
-      remote_address, std::move(socket_client), mojo::MakeRequest(&socket_));
+      remote_address, receiver_.BindNewPipeAndPassRemote(),
+      socket_.BindNewPipeAndPassReceiver());
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
 }
 
 uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,
@@ -134,18 +132,18 @@ void P2PSocketClientImpl::SendComplete(
 
 void P2PSocketClientImpl::IncomingTcpConnection(
     const net::IPEndPoint& socket_address,
-    network::mojom::blink::P2PSocketPtr socket,
-    network::mojom::blink::P2PSocketClientRequest client_request) {
+    mojo::PendingRemote<network::mojom::blink::P2PSocket> socket,
+    mojo::PendingReceiver<network::mojom::blink::P2PSocketClient>
+        client_receiver) {
   DCHECK_EQ(state_, STATE_OPEN);
 
   auto new_client =
       std::make_unique<P2PSocketClientImpl>(dispatcher_, traffic_annotation_);
   new_client->state_ = STATE_OPEN;
 
-  network::mojom::blink::P2PSocketClientPtr socket_client;
-  new_client->socket_ = std::move(socket);
-  new_client->binding_.Bind(std::move(client_request));
-  new_client->binding_.set_connection_error_handler(base::BindOnce(
+  new_client->socket_.Bind(std::move(socket));
+  new_client->receiver_.Bind(std::move(client_receiver));
+  new_client->receiver_.set_disconnect_handler(base::BindOnce(
       &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
 
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

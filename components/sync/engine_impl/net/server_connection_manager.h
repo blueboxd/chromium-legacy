@@ -18,8 +18,6 @@
 
 namespace syncer {
 
-class CancelationSignal;
-
 // HttpResponse gathers the relevant output properties of an HTTP request.
 // Depending on the value of the server_status code, response_code, and
 // content_length may not be valid.
@@ -103,60 +101,14 @@ class ServerConnectionManager {
     HttpResponse response = HttpResponse::Uninitialized();
   };
 
-  // Abstract class providing network-layer functionality to the
-  // ServerConnectionManager. Subclasses implement this using an HTTP stack of
-  // their choice.
-  class Connection {
-   public:
-    explicit Connection(ServerConnectionManager* scm);
-    virtual ~Connection();
-
-    // Called to initialize and perform an HTTP POST.
-    // TODO(crbug.com/951350): Return the HttpResponse by value. It's not
-    // obvious what the boolean return value means. (True means success or HTTP
-    // error, false means canceled or network error.)
-    virtual bool Init(const char* path,
-                      const std::string& access_token,
-                      const std::string& payload,
-                      HttpResponse* response) = 0;
-
-    bool ReadBufferResponse(std::string* buffer_out,
-                            HttpResponse* response,
-                            bool require_response);
-
-   protected:
-    std::string MakeConnectionURL(const std::string& sync_server,
-                                  const std::string& path,
-                                  bool use_ssl) const;
-
-    void GetServerParams(std::string* server,
-                         int* server_port,
-                         bool* use_ssl) const {
-      server->assign(scm_->sync_server_);
-      *server_port = scm_->sync_server_port_;
-      *use_ssl = scm_->use_ssl_;
-    }
-
-    std::string buffer_;
-
-   private:
-    int ReadResponse(std::string* buffer, int length);
-
-    ServerConnectionManager* scm_;
-  };
-
-  ServerConnectionManager(const std::string& server,
-                          int port,
-                          bool use_ssl,
-                          CancelationSignal* cancelation_signal);
-
+  ServerConnectionManager();
   virtual ~ServerConnectionManager();
 
   // POSTS buffer_in and reads a response into buffer_out. Uses our currently
   // set access token in our headers.
   //
   // Returns true if executed successfully.
-  virtual bool PostBufferWithCachedAuth(PostBufferParams* params);
+  bool PostBufferWithCachedAuth(PostBufferParams* params);
 
   void AddListener(ServerConnectionEventListener* listener);
   void RemoveListener(ServerConnectionEventListener* listener);
@@ -198,38 +150,19 @@ class ServerConnectionManager {
   // changed.
   void SetServerResponse(const HttpResponse& server_response);
 
-  // Factory method to create an Connection object we can use for communication
-  // with the server. The returned object must not outlive |*this|.
-  virtual std::unique_ptr<Connection> MakeConnection();
-
-  // NOTE: Tests rely on this protected function being virtual.
-  //
-  // Internal PostBuffer base function.
+  // Internal PostBuffer base function which subclasses are expected to
+  // implement.
   virtual bool PostBufferToPath(PostBufferParams*,
                                 const std::string& path,
-                                const std::string& access_token);
+                                const std::string& access_token) = 0;
 
   void ClearAccessToken();
-
-  // Helper to check terminated flags and build a Connection object. If this
-  // ServerConnectionManager has been terminated, this will return null. The
-  // returned object must not outlive |*this|.
-  std::unique_ptr<Connection> MakeActiveConnection();
 
  private:
   void NotifyStatusChanged();
 
-  // The sync_server_ is the server that requests will be made to.
-  std::string sync_server_;
-
-  // The sync_server_port_ is the port that HTTP requests will be made on.
-  int sync_server_port_;
-
   // The unique id of the user's client.
   std::string client_id_;
-
-  // Indicates whether or not requests should be made using HTTPS.
-  bool use_ssl_;
 
   // The paths we post to.
   std::string proto_sync_path_;
@@ -242,8 +175,6 @@ class ServerConnectionManager {
   HttpResponse server_response_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  CancelationSignal* const cancelation_signal_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerConnectionManager);
 };

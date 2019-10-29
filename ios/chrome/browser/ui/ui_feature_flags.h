@@ -31,9 +31,6 @@ extern const base::Feature kOmniboxUseDefaultSearchEngineFavicon;
 // Feature flag for the language settings page.
 extern const base::Feature kLanguageSettings;
 
-// Feature flag for the optional article thumbnail.
-extern const base::Feature kOptionalArticleThumbnail;
-
 // Feature flag for embedders to block restore urls.
 extern const base::Feature kEmbedderBlockRestoreUrl;
 

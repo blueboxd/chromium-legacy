@@ -23,7 +23,7 @@ NavigationPreloadRequest::NavigationPreloadRequest(
       fetch_event_id_(fetch_event_id),
       url_(url),
       url_loader_(std::move(preload_handle->url_loader)),
-      binding_(this, std::move(preload_handle->url_loader_client_request)) {}
+      receiver_(this, std::move(preload_handle->url_loader_client_receiver)) {}
 
 NavigationPreloadRequest::~NavigationPreloadRequest() = default;
 

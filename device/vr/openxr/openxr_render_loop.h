@@ -24,8 +24,6 @@ class OpenXrRenderLoop : public XRCompositorCommon {
                        on_display_info_changed);
   ~OpenXrRenderLoop() override;
 
-  gfx::Size GetViewSize() const;
-
  private:
   // XRDeviceAbstraction:
   mojom::XRFrameDataPtr GetNextFrameData() override;
@@ -36,7 +34,7 @@ class OpenXrRenderLoop : public XRCompositorCommon {
   bool HasSessionEnded() override;
   bool SubmitCompositedFrame() override;
 
-  bool UpdateDisplayInfo();
+  void InitializeDisplayInfo();
   bool UpdateEyeParameters();
   bool UpdateEye(const XrView& view_head,
                  const gfx::Size& view_size,

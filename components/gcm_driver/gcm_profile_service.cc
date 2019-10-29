@@ -144,9 +144,9 @@ GCMProfileService::GCMProfileService(
 GCMProfileService::GCMProfileService(
     PrefService* prefs,
     base::FilePath path,
-    base::RepeatingCallback<
-        void(base::WeakPtr<GCMProfileService>,
-             network::mojom::ProxyResolvingSocketFactoryRequest)>
+    base::RepeatingCallback<void(
+        base::WeakPtr<GCMProfileService>,
+        mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
         get_socket_factory_callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker,

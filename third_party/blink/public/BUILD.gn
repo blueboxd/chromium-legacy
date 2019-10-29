@@ -199,7 +199,6 @@ source_set("blink_headers") {
     "platform/web_blob_info.h",
     "platform/web_cache.h",
     "platform/web_callbacks.h",
-    "platform/web_canonical_cookie.h",
     "platform/web_client_hints_type.h",
     "platform/web_coalesced_input_event.h",
     "platform/web_color_scheme.h",

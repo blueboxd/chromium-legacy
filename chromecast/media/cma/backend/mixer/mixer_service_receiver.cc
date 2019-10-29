@@ -79,6 +79,10 @@ class MixerServiceReceiver::ControlConnection
       send_stream_count_ = message.request_stream_count().subscribe();
       OnStreamCountChanged();
     }
+    if (message.has_set_num_output_channels()) {
+      mixer_->SetNumOutputChannels(
+          message.set_num_output_channels().channels());
+    }
 
     return true;
   }

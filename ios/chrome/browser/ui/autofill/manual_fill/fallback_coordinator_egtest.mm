@@ -53,15 +53,11 @@ id<GREYMatcher> ProfileTableViewButtonMatcher() {
   return grey_buttonTitle(@"Underworld");
 }
 
-// TODO(crbug.com/1016367): Remove the guard once ExecuteJavaScript is updated
-// to compile on EG2.
-#if defined(CHROME_EARL_GREY_1)
 // Polls the JavaScript query |java_script_condition| until the returned
 // |boolValue| is YES with a kWaitForActionTimeout timeout.
 BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   auto verify_block = ^BOOL {
-    id boolValue =
-        chrome_test_util::ExecuteJavaScript(java_script_condition, nil);
+    id boolValue = [ChromeEarlGrey executeJavaScript:java_script_condition];
     return [boolValue isEqual:@YES];
   };
   //  NSTimeInterval timeout = base::test::ios::kWaitForActionTimeout;
@@ -71,7 +67,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
                                                         block:verify_block];
   return [condition waitWithTimeout:kWaitForActionTimeout];
 }
-#endif
 
 // Undocks and split the keyboard by swiping it up. Does nothing if already
 // undocked. Some devices, like iPhone or iPad Pro, do not allow undocking or
@@ -178,9 +173,6 @@ BOOL WaitForKeyboardToAppear() {
   [super tearDown];
 }
 
-// TODO(crbug.com/1016367): Remove the guard once ExecuteJavaScript is updated
-// to compile on EG2.
-#if defined(CHROME_EARL_GREY_1)
 // Tests that the when tapping the outside the popover on iPad, suggestions
 // continue working.
 - (void)testIPadTappingOutsidePopOverResumesSuggestionsCorrectly {
@@ -225,7 +217,6 @@ BOOL WaitForKeyboardToAppear() {
                        kFormElementName, name];
   XCTAssertTrue(WaitForJavaScriptCondition(javaScriptCondition));
 }
-#endif  // CHROME_EARL_GREY_1
 
 // Tests that the manual fallback view concedes preference to the system picker
 // for selection elements.

@@ -16,7 +16,7 @@ class DawnPlatform : public dawn_platform::Platform {
   ~DawnPlatform() override;
 
   const unsigned char* GetTraceCategoryEnabledFlag(
-      const char* category_group) override;
+      dawn_platform::TraceCategory category) override;
 
   double MonotonicallyIncreasingTime() override;
 

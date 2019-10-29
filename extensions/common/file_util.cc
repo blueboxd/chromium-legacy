@@ -206,20 +206,20 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
   std::unique_ptr<base::DictionaryValue> manifest =
       LoadManifest(extension_path, error);
   if (!manifest.get())
-    return NULL;
+    return nullptr;
   if (!extension_l10n_util::LocalizeExtension(
           extension_path, manifest.get(), error)) {
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<Extension> extension(Extension::Create(
       extension_path, location, *manifest, flags, extension_id, error));
   if (!extension.get())
-    return NULL;
+    return nullptr;
 
   std::vector<InstallWarning> warnings;
   if (!ValidateExtension(extension.get(), error, &warnings))
-    return NULL;
+    return nullptr;
   extension->AddInstallWarnings(std::move(warnings));
 
   return extension;
@@ -238,11 +238,11 @@ std::unique_ptr<base::DictionaryValue> LoadManifest(
   base::FilePath manifest_path = extension_path.Append(manifest_filename);
   if (!base::PathExists(manifest_path)) {
     *error = l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_UNREADABLE);
-    return NULL;
+    return nullptr;
   }
 
   JSONFileValueDeserializer deserializer(manifest_path);
-  std::unique_ptr<base::Value> root(deserializer.Deserialize(NULL, error));
+  std::unique_ptr<base::Value> root(deserializer.Deserialize(nullptr, error));
   if (!root.get()) {
     if (error->empty()) {
       // If |error| is empty, than the file could not be read.
@@ -254,12 +254,12 @@ std::unique_ptr<base::DictionaryValue> LoadManifest(
       *error = base::StringPrintf(
           "%s  %s", manifest_errors::kManifestParseError, error->c_str());
     }
-    return NULL;
+    return nullptr;
   }
 
   if (!root->is_dict()) {
     *error = l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_INVALID);
-    return NULL;
+    return nullptr;
   }
 
   return base::DictionaryValue::From(std::move(root));
@@ -504,7 +504,7 @@ MessageBundle* LoadMessageBundle(
   // Load locale information if available.
   base::FilePath locale_path = extension_path.Append(kLocaleFolder);
   if (!base::PathExists(locale_path))
-    return NULL;
+    return nullptr;
 
   std::set<std::string> chrome_locales;
   extension_l10n_util::GetAllLocales(&chrome_locales);
@@ -515,7 +515,7 @@ MessageBundle* LoadMessageBundle(
       !base::PathExists(default_locale_path)) {
     *error = l10n_util::GetStringUTF8(
         IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED);
-    return NULL;
+    return nullptr;
   }
 
   MessageBundle* message_bundle =

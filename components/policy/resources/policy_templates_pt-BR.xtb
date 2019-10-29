@@ -1,6 +1,15 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="1001649754854402482">Ative as mitigações de verificação de <ph name="CORS" /> na nova implementação de <ph name="CORS" />, permitindo que as extensões mantenham um comportamento compatível e permitindo que o <ph name="PRODUCT_NAME" /> envie cabeçalhos especificados sem verificações de <ph name="CORS" />.
+
+      Se esta lista é definida como vazia, o <ph name="PRODUCT_NAME" /> tenta executar extensões de maneiras compatíveis e não introduzirá mudanças de <ph name="API" /> para o <ph name="PRODUCT_NAME" /> 79, conforme explicado em <ph name="WEB_REQUEST_API_MANUAL" />.
+
+      Se esta lista é definida para ter nomes de cabeçalho de solicitação <ph name="HTTP" />, a inspeção <ph name="CORS" /> ignora os cabeçalhos listados e ativa a mitigação para extensões.
+
+      Se esta lista não for definida, nenhuma das duas mitigações explicadas acima será aplicada.
+
+      Para saber detalhes sobre <ph name="CORS" />, acesse: <ph name="CORS_HELP_URL" />.</translation>
 <translation id="1002439864875515590">Se esta política for definida como uma string em branco ou não for configurada, a opção de preenchimento automático não será exibida no <ph name="PRODUCT_OS_NAME" /> durante o fluxo de login do usuário.
       Se esta política for definida como uma string que representa um nome de domínio, uma opção de preenchimento automático será exibida no <ph name="PRODUCT_OS_NAME" /> durante o login, permitindo que o usuário digite apenas o nome dele sem a extensão de nome de domínio.  O usuário não poderá substituir essa extensão de nome de domínio.
       Se o valor da política não for um domínio válido, a política não será aplicada.</translation>
@@ -60,6 +69,17 @@
       Se esta política for definida, o usuário não poderá alterá-la ou substitui-la.</translation>
 <translation id="1062011392452772310">Ativar declaração remota para o dispositivo</translation>
 <translation id="1062407476771304334">Substituir</translation>
+<translation id="1078643757670228170">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Especifica o período sem entradas do usuário após o qual a tela é desligada quando o dispositivo funciona com energia CA.
+
+          Quando esta política é definida como um valor maior que zero, ela especifica o período que o usuário precisa permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> desligue a tela.
+
+          Quando esta política é definida como zero, o <ph name="PRODUCT_OS_NAME" /> não desliga a tela quando o usuário fica inativo.
+
+          Quando esta política não é definida, um período padrão é usado.
+
+          O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores que ou iguais ao intervalo de inatividade.</translation>
 <translation id="1079801999187584280">Não permite o uso das Ferramentas para Desenvolvedores</translation>
 <translation id="1087437665304381368">Essa política controla apenas o modo de desenvolvedor do <ph name="PRODUCT_OS_NAME" />. Se quiser impedir o acesso às Opções do desenvolvedor do Android, configure a política <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">A lista de políticas do Chrome Enterprise está de mudança. Atualize seus favoritos para <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -211,6 +231,13 @@
       Esta política afeta todos os tipos de saída de áudio, não apenas os alto-falantes integrados. Recursos de acessibilidade que utilizem áudio também são inibidos por esta política. Não ative esta política se um leitor de tela for necessário para o usuário.
 
       Se esta configuração for definida como verdadeira ou for deixada sem definição, os usuários poderão usar no dispositivo todos os tipos de saídas de áudio compatíveis.</translation>
+<translation id="1358050607773151553">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Quando esta política é definida, ela especifica a ação que o <ph name="PRODUCT_OS_NAME" /> executa quando o usuário permanece inativo pelo período definido pelo tempo de inatividade, que pode ser configurado separadamente.
+
+          Quando esta política não é definida, é tomada a ação padrão de suspender o dispositivo.
+
+          Se a ação for de suspender, o <ph name="PRODUCT_OS_NAME" /> poderá ser configurado separadamente para bloquear ou não a tela antes da suspensão.</translation>
 <translation id="1359553908012294236">Se esta política é definida como "true" ou não é configurada, o <ph name="PRODUCT_NAME" /> ativa os logins de convidados. Os logins de convidados são perfis do <ph name="PRODUCT_NAME" /> nos quais todas as janelas ficam no modo de navegação anônima.
 
       Se esta política é definida como "false", o <ph name="PRODUCT_NAME" /> não permite que perfis de convidados sejam iniciados.</translation>
@@ -220,6 +247,11 @@
       Se a política estiver desativada, o Google Assistente não terá permissão para acessar o contexto da tela.
       Se ela não for definida, os usuários poderão decidir se o Google Assistente terá permissão para acessar o contexto da tela ou não.</translation>
 <translation id="1376119291123231789">Ativar o modo avançado de carregamento da bateria</translation>
+<translation id="1377134027840513298">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Esta política fornece um valor substituto para as políticas <ph name="IDLE_ACTION_AC_POLICY_NAME" /> e <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> mais específicas. Se esta política for definida, os valores serão usados quando uma política respectiva mais específica não for usada.
+
+          Se esta política não for definida, o comportamento das políticas mais específicas não será afetado.</translation>
 <translation id="1383493480903114193">Esta política força o código de rede a ser executado no processo do navegador.
 
       A política está desativada por padrão e, se ativada, deixa usuários vulneráveis aos problemas de segurança quando o processo de rede estiver no sandbox.
@@ -322,6 +354,7 @@ Cada item da lista da política é uma string que contém um código de extensã
           Se a política EnableMediaRouter estiver definida como falsa, o valor desta política não terá nenhum efeito.</translation>
 <translation id="1509692106376861764">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Ativar <ph name="PRODUCT_NAME" /></translation>
+<translation id="1515824657887788963">Permite que uma página execute solicitações XHR síncronas durante a dispensa de páginas.</translation>
 <translation id="1522425503138261032">Permitir que os sites rastreiem a localização física dos usuários</translation>
 <translation id="1523774894176285446">Navegador alternativo que será iniciado com sites configurados.</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o provedor de pesquisa padrão</translation>
@@ -555,6 +588,17 @@ Cada item da lista da política é uma string que contém um código de extensã
       Se essa configuração estiver desativada, o Preenchimento automático nunca sugerirá ou preencherá informações de endereço, nem salvará outras informações de endereço que o usuário possa enviar ao navegar na Web.
 
       Se essa configuração estiver ativada ou não tiver um valor definido, o usuário poderá controlar o recurso Preenchimento automático para endereços na IU.</translation>
+<translation id="1959613237819575097">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Especifica o período sem entradas do usuário após o qual a tela é desligada quando o dispositivo funciona com energia da bateria.
+
+          Quando esta política é definida como um valor maior que zero, ela especifica o período que o usuário precisa permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> desligue a tela.
+
+          Quando esta política é definida como zero, o <ph name="PRODUCT_OS_NAME" /> não desliga a tela quando o usuário fica inativo.
+
+          Quando esta política não é definida, um período padrão é usado.
+
+          O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores que ou iguais ao intervalo de inatividade.</translation>
 <translation id="1962273523772270623">Permite a coleta de logs de eventos WebRTC dos serviços do Google</translation>
 <translation id="1964634611280150550">Modo de navegação anônima desativado</translation>
 <translation id="1964802606569741174">Esta política não tem nenhum efeito sobre o app YouTube para Android. Se o modo de segurança do YouTube precisar ser aplicado, a instalação desse app será bloqueada.</translation>
@@ -663,6 +707,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="214901426630414675">Restringir o modo duplex de impressão</translation>
 <translation id="2149330464730004005">Ativar a impressão colorida</translation>
 <translation id="2156132677421487971">"Configurar políticas para o <ph name="PRODUCT_NAME" />", um recurso que permite que os usuários enviem o conteúdo de guias, sites ou a área de trabalho do navegador para telas e sistemas de som remotos.</translation>
+<translation id="2156755242840687300">Servidores de impressão externos ativados</translation>
 <translation id="2166472654199325139">Não filtrar sites com conteúdo adulto</translation>
 <translation id="2168397434410358693">Intervalo de inatividade no funcionamento com alimentação CA</translation>
 <translation id="217013996107840632">Parâmetros de linha de comando para fazer a mudança do navegador alternativo.</translation>
@@ -710,6 +755,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
       Esta política afeta todos os tipos de entradas de vídeo, não só a câmera integrada.</translation>
 <translation id="2201555246697292490">Configurar a lista de permissões de mensagens nativas</translation>
+<translation id="220280840901385239">Permitir que os usuários adicionem exceções para permitir conteúdo misturado bloqueável</translation>
 <translation id="2204753382813641270">Controlar a ocultação automática da estante</translation>
 <translation id="2208976000652006649">Parâmetros para URL de pesquisa que usa POST</translation>
 <translation id="2214880135980649323">Quando esta política estiver definida como ativada, as extensões instaladas pela política da empresa poderão usar a API Enterprise Hardware Platform.
@@ -763,6 +809,11 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2345547870894930157">Ativar DNS sobre HTTPS sem substituto inseguro</translation>
 <translation id="237494535617297575">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="2386362615870139244">Permitir bloqueios de ativação da tela</translation>
+<translation id="2398554235599593694"> Esta política controla se a caixa de seleção "Sempre aberto" é exibida ou não em prompts de confirmação de inicialização de protocolo externo.
+
+      Se esta política for definida como verdadeira, quando uma confirmação de protocolo externo for exibida, o usuário poderá optar por deixar o protocolo "Sempre aberto" sem futuros prompts de confirmação.
+
+      Se esta política for definida como falsa ou não definida, a caixa de seleção "Sempre aberto" não será exibida, e o usuário precisará confirmar sempre que um protocolo externo for invocado.</translation>
 <translation id="2411817661175306360">O aviso de proteção de senha está desativado</translation>
 <translation id="2411919772666155530">Bloquear notificações nestes sites</translation>
 <translation id="2418507228189425036">Desativa o salvamento do histórico do navegador em <ph name="PRODUCT_NAME" /> e impede que os usuários alterem esta configuração.
@@ -791,6 +842,19 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se essa configuração não for definida, o usuário poderá optar por usar essa função ou não.
 
       Essa configuração foi removida do <ph name="PRODUCT_NAME" /> 29 e de versões superiores.</translation>
+<translation id="2430828513262055658">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
+
+          Especifica o período sem entradas do usuário após o qual a tela é bloqueada quando está usando energia CA.
+
+          Quando esta política é definida como um valor maior que zero, ela especifica quanto tempo o usuário precisa ficar inativo para que o <ph name="PRODUCT_OS_NAME" /> bloqueie a tela.
+
+          Quando esta política é definida como zero, o <ph name="PRODUCT_OS_NAME" /> não bloqueia a tela quando o usuário fica inativo.
+
+          Quando esta política não é definida, um período padrão é usado.
+
+          A maneira recomendada de bloquear a tela depois de um período de inatividade é ativar o bloqueio de tela quando o dispositivo estiver suspenso e suspender o <ph name="PRODUCT_OS_NAME" /> depois do intervalo de inatividade. Esta política só deve ser usada quando o bloqueio de tela ocorre muito antes da suspensão ou quando a suspensão devida à inatividade não é desejada.
+
+          O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores que o intervalo de inatividade.</translation>
 <translation id="2433412232489478893">Esta política controla se o recurso de Compartilhamento de arquivos de rede do <ph name="PRODUCT_NAME" /> é permitido para um usuário.
 
       Quando esta política não for configurada ou for definida como verdadeira, os usuários poderão usar o Compartilhamento de arquivos de rede.
@@ -890,6 +954,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se esta configuração estiver ativada ou não configurada, os usuários poderão imprimir.
 
       Se esta configuração estiver desativada, os usuários não poderão imprimir em <ph name="PRODUCT_NAME" />. A impressão é desativada no menu de ferramentas, nas extensões, em aplicativos JavaScript etc. Ainda é possível imprimir a partir de plug-ins que ignoram <ph name="PRODUCT_NAME" /> durante a impressão. Por exemplo, determinados aplicativos Flash trazem a opção de impressão no menu de contexto, o que não é abordado nesta política.</translation>
+<translation id="2517466659416174529">Permitir congelamento das guias em segundo plano</translation>
 <translation id="2518231489509538392">Permitir a reprodução de áudio</translation>
 <translation id="2521581787935130926">Exibir os atalhos de aplicativos na barra de favoritos</translation>
 <translation id="2529659024053332711">Permite que você especifique o comportamento na inicialização.
@@ -984,6 +1049,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           O URL de pesquisa do Google pode ser especificado como: <ph name="GOOGLE_SEARCH_URL" />.
 
           Esta opção deve ser definida quando a política "DefaultSearchProviderEnabled" estiver ativada e será respeitada somente se este for o caso.</translation>
+<translation id="2658653824183107970">Usar a implementação legada de <ph name="CORS" /> em vez do novo <ph name="CORS" /></translation>
 <translation id="2659019163577049044">Se esta configuração estiver ativada, os usuários poderão configurar os dispositivos para sincronizar mensagens SMS entre os smartphones e Chromebooks deles. Se esta política for permitida, os usuários precisarão aceitar explicitamente esse recurso concluindo um fluxo de configuração. Após a conclusão desse fluxo, eles poderão enviar e receber mensagens SMS no Chromebook.
 
       Se esta configuração estiver desativada, os usuários não terão permissão para configurar a sincronização de SMS.
@@ -1138,6 +1204,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2872961005593481000">Desligar</translation>
 <translation id="2873651257716068683">Modifica o tamanho da página de impressão padrão. Se o tamanho da página não estiver disponível, esta política será ignorada.</translation>
 <translation id="2874209944580848064">Observação para dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com apps Android:</translation>
+<translation id="2875192972412983412">Especifica o subconjunto de servidores de impressão que serão consultados para impressoras de servidor.
+
+      Se esta política for usada, somente as impressoras de servidor com códigos correspondentes aos valores desta política estarão disponíveis para o usuário.
+
+      Os códigos precisam corresponder ao campo "id" no arquivo especificado em <ph name="EXTERNAL_PRINT_SERVERS_POLICY" />.
+
+      Se esta política não for definida, a filtragem será omitida, e todos os servidores de impressão serão considerados.</translation>
 <translation id="2877225735001246144">Desativar consulta CNAME ao negociar a autenticação do Kerberos</translation>
 <translation id="2890645751406497668">Conceder automaticamente permissão a esses sites para se conectarem a dispositivos USB com determinados IDs de fornecedores e produtos.</translation>
 <translation id="2892414556511568464">Restringe o modo duplex de impressão. Se a política não for definida ou estiver em branco, não haverá restrição.</translation>
@@ -1275,6 +1348,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
       Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="3119125876909100625">Permitir o upload de arquivos protegidos por senha</translation>
+<translation id="3122082892722698079">Controlar o uso de exceções de conteúdo não seguro</translation>
 <translation id="3152425128389603870">Disponibilizar e ativar por padrão a área de trabalho unificada</translation>
 <translation id="3159375329008977062">O usuário tem permissão para exportar/importar contêineres do Crostini por meio da IU</translation>
 <translation id="3165808775394012744">Essas políticas estão incluídas aqui para facilitar a remoção delas.</translation>
@@ -1488,6 +1562,19 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Se esta política não for definida, o "Selecionar para ouvir" será desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="3591527072193107424">Ativa o recurso "Suporte a navegadores legados".</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
+<translation id="3602332793276340697">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
+
+          Especifica o período sem entradas do usuário após o qual a tela é bloqueada quando o dispositivo funciona com energia da bateria.
+
+          Quando esta política é definida como um valor maior que zero, ela especifica quanto tempo o usuário precisa ficar inativo para que o <ph name="PRODUCT_OS_NAME" /> bloqueie a tela.
+
+          Quando esta política é definida como zero, o <ph name="PRODUCT_OS_NAME" /> não bloqueia a tela quando o usuário fica inativo.
+
+          Quando esta política não é definida, um período padrão é usado.
+
+          A maneira recomendada de bloquear a tela depois de um período de inatividade é ativar o bloqueio de tela quando o dispositivo estiver suspenso e suspender o <ph name="PRODUCT_OS_NAME" /> depois do intervalo de inatividade. Esta política só deve ser usada quando o bloqueio de tela ocorre muito antes da suspensão ou quando a suspensão devida à inatividade não é desejada.
+
+          O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores que o intervalo de inatividade.</translation>
 <translation id="3624515566460517364">Verifica violações da regra de proteção de dados confidenciais em uploads e downloads</translation>
 <translation id="3627678165642179114">Ativar ou desativar serviço da web de verificação ortográfica</translation>
 <translation id="3628480121685794414">Ativar impressão simplex</translation>
@@ -1722,12 +1809,14 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se esta política de plano de fundo for definida, o dispositivo Chrome OS fará o download da imagem de plano de fundo e a usará na tela de login caso nenhum usuário tenha feito login no dispositivo. Depois que o usuário faz login, a política de plano de fundo dele entra em ação.
 
       Se a política de plano de fundo do dispositivo não for definida, a política de plano de fundo do usuário definirá o que exibir, caso ela tenha sido definida.</translation>
+<translation id="3964298692570794635">Permitir conteúdo não seguro nesses sites</translation>
 <translation id="3964606652985594895">Informa estatísticas de hardware e identificadores para dispositivos de armazenamento.
 
       Se a política for definida como falsa ou se não for definida, as estatísticas não serão informadas.
       Se for definida como verdadeira, as estatísticas serão informadas.</translation>
 <translation id="3965339130942650562">Tempo limite até que a saída do usuário ocioso seja executada</translation>
 <translation id="3973371701361892765">Nunca ocultar automaticamente a estante</translation>
+<translation id="3979738908158213640">URLs que terão acesso para realizar o atestado do dispositivo durante a autenticação SAML</translation>
 <translation id="3984028218719007910">Determina se o <ph name="PRODUCT_OS_NAME" /> deve manter os dados locais da conta após a saída. Se for configurada como true, nenhuma conta persistente será mantida pelo <ph name="PRODUCT_OS_NAME" /> e todos os dados da sessão do usuário serão descartados após a saída. Se esta política for configurada como false ou não for configurada, o dispositivo poderá manter os dados locais do usuário (criptografados).</translation>
 <translation id="398475542699441679">Essa política controla a ativação e a desativação do "Suporte a navegadores legados".
 
@@ -2094,6 +2183,13 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 
           Se esta configuração for desativada ou não for definida, o host de acesso remoto poderá ser associado a qualquer usuário local.</translation>
 <translation id="4591366717022345234">Oferecer Quick Fix Build a usuários</translation>
+<translation id="4592246263545654202">Especifica se o usuário pode abrir páginas no modo de navegação anônima no <ph name="PRODUCT_NAME" />.
+
+      Se "Ativado" for selecionado ou se a política não for definida, as páginas poderão ser abertas no modo de navegação anônima.
+
+      Se "Desativado" for selecionado, as páginas não poderão ser abertas no modo de navegação anônima.
+
+      Se "Forçado" for selecionado, as páginas poderão ser abertas SOMENTE no modo de navegação anônima. A opção "Forçado" não funciona para Android no Chrome</translation>
 <translation id="4600786265870346112">Ativar cursor grande</translation>
 <translation id="4604931264910482931">Configurar a lista de proibições de mensagens nativas</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2433,6 +2529,17 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Consulte também https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types (em inglês).</translation>
 <translation id="5249453807420671499">Os usuários podem adicionar contas do Kerberos</translation>
 <translation id="5255162913209987122">Pode ser recomendada</translation>
+<translation id="5261766238868915624">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Especifica o período sem entradas do usuário após o qual a tela é apagada quando o dispositivo funciona com energia da bateria.
+
+          Quando esta política é definida como um valor maior que zero, ela especifica o período que o usuário precisa permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> apague a tela.
+
+          Quando esta política é definida como zero, o <ph name="PRODUCT_OS_NAME" /> não apaga a tela quando o usuário fica inativo.
+
+          Quando esta política não é definida, um período padrão é usado.
+
+          O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores que ou iguais ao intervalo de desligamento da tela (se definido) e ao intervalo de inatividade.</translation>
 <translation id="527237119693897329">Permite especificar quais hosts de mensagens nativas não devem ser carregados.
 
           O valor "*" na lista de proibições significa que todos os hosts de mensagens nativas estão presentes na lista de proibições, a menos que sejam explicitamente relacionados na lista de permissões.
@@ -2686,6 +2793,20 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           A política só terá efeito se <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> estiver desativada. Do contrário, ela será ignorada, uma vez que o intervalo de escurecimento da tela é determinado por um modelo de aprendizado de máquina.
 
           O fator de cálculo precisa ser de 100% ou mais. Valores que tornariam o intervalo de escurecimento da tela no modo de apresentação menor do que o intervalo de escurecimento da tela comum não são permitidos.</translation>
+<translation id="5590988845778885692">Oferece as configurações dos servidores de impressão disponíveis.
+
+      Esta política permite fornecer a configuração de servidores de impressão externos no formato de arquivo JSON para dispositivos <ph name="PRODUCT_OS_NAME" />.
+
+      O arquivo não pode ser maior que 1 MB e precisa conter uma matriz de registros (objetos JSON). Cada registro precisa conter os campos "id", "url" e "display_name" com strings como valores. Os valores dos campos "id" precisam ser exclusivos.
+
+      O arquivo é transferido por download e armazenado em cache. A hash criptográfica é usada para verificar a integridade do download. O download do arquivo será feito novamente sempre que o URL ou a hash mudar.
+
+      Se esta política estiver definida no valor correto, será realizada uma consulta nos servidores de impressão especificados quanto à disponibilidade de impressoras. Isso é feito no dispositivo com o uso do protocolo IPP.
+
+      Se esta política não for definida ou tiver o valor incorreto, nenhuma impressora de servidor ficará visível aos usuários.
+
+      Atualmente, o limite de número de servidores de impressão é 16. Apenas os 16 primeiros servidores de impressão da lista serão consultados.
+      </translation>
 <translation id="5592242031005200087">
       Se a política estiver ativada, cada uma das origens indicadas em uma
       lista separada por vírgulas será executada no próprio processo. Isso também isolará
@@ -2852,6 +2973,9 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5961137303188584693">Endereço MAC da placa de rede integrada do dispositivo</translation>
 <translation id="5966615072639944554">Extensões que podem usar a API de declaração remota</translation>
 <translation id="5983708779415553259">Comportamento padrão para sites fora de pacotes de conteúdo</translation>
+<translation id="5997107377032983906">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir conteúdo combinado bloqueável (ativo), por exemplo, conteúdo HTTP em sites HTTPS.
+
+          Se esta política não for definida, o conteúdo combinado bloqueável será bloqueado, mas os usuários poderão definir exceções para exibi-lo para sites específicos.</translation>
 <translation id="5997543603646547632">Usar relógido de 24 horas por padrão</translation>
 <translation id="5997846976342452720">Especifica se o localizador de plug-ins deve ser desativado (uso suspenso)</translation>
 <translation id="5998198091336830580">Esta política faz parte do seguinte grupo atômico (apenas as políticas da fonte de maior prioridade presentes no grupo são aplicadas):</translation>
@@ -2999,6 +3123,12 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6224304369267200483">Os URLs/domínios permitidos automaticamente direcionam a declaração da chave de segurança</translation>
 <translation id="6233173491898450179">Definir diretório de download</translation>
 <translation id="6244210204546589761">URLs que devem ser abertos na inicialização</translation>
+<translation id="6247316685259031374">Esta política controla o sandbox do processo de áudio.
+      Se esta política for ativada, o processo de áudio será executado no sandbox.
+      Se esta política for desativada, o processo de áudio será executado fora do sandbox, e o módulo de processamento de áudio WebRTC será executado no processo do renderizador.
+      Essa opção deixa os usuários vulneráveis a riscos de segurança relacionados à execução do subsistema de áudio fora do sandbox.
+      Se esta política não for definida, a configuração padrão do sandbox de áudio será usada, o que pode variar de acordo com a plataforma.
+      Com esta política, as empresas que usam configurações de software de segurança que afetam o sandbox têm a flexibilidade de desativar o sandbox de áudio.</translation>
 <translation id="6255387031094435995">Permite que as políticas selecionadas sejam mescladas quando vierem de fontes diferentes, com o mesmo escopo e nível.
 
         Se uma política estiver na lista, caso haja conflito entre duas fontes, considerando que elas tenham o mesmo escopo e nível, os valores serão mesclados em uma nova lista de políticas.
@@ -3011,6 +3141,17 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6281043242780654992">Configura políticas para as mensagens nativas. Os hosts de mensagens nativas presentes na lista de proibições não serão permitidos, a menos que estejam na lista de permissões.</translation>
 <translation id="6282799760374509080">Permitir ou negar captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6293957650182823856">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Especifica o tempo que o usuário precisa ficar sem interagir para que uma caixa de diálogo de aviso seja mostrada enquanto o dispositivo funciona com alimentação CA.
+
+          Quando esta política é definida, ela especifica o tempo que um usuário precisa permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> mostre uma caixa de diálogo avisando que a ação de inatividade está prestes a ser realizada.
+
+          Quando esta política não é definida, nenhuma caixa de diálogo é mostrada.
+
+          O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores que ou iguais ao intervalo de inatividade.
+
+          A mensagem de aviso só será mostrada se a ação de inatividade for para sair ou encerrar.</translation>
 <translation id="6310223829319187614">Ativar preenchimento automático do nome de domínio durante login do usuário</translation>
 <translation id="6315673513957120120">O Chrome mostra uma página de aviso quando os usuários navegam para sites que têm erros de SSL. Por padrão ou quando esta política é definida como "true", os usuários têm permissão para clicar nessas páginas de aviso.
       A definição desta política como "false" não permite que os usuários cliquem em qualquer página de aviso.</translation>
@@ -3060,6 +3201,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6440051664870270040">Permitir que sites naveguem e abram pop-ups simultaneamente</translation>
 <translation id="6447948611083700881">Backup e restauração desativados</translation>
 <translation id="6449476513004303784">Não permitir que os usuários gerenciem certificados</translation>
+<translation id="6453641799812499182">Ativar as mitigações de verificação de <ph name="CORS" /> na nova implementação de <ph name="CORS" /></translation>
 <translation id="645425387487868471">Ativar login forçado no <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Ativa o Preenchimento automático de endereços</translation>
 <translation id="6467613372414922590">Permitir hosts de mensagens nativas no nível do usuário (instalados sem permissão do administrador)</translation>
@@ -3197,6 +3339,9 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="6786747875388722282">Extensões</translation>
 <translation id="6786967369487349613">Configurar o diretório do perfil de roaming</translation>
 <translation id="6795485990775913659">Permitir impressão apenas sem PIN</translation>
+<translation id="6800064234889290465">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para exibir conteúdo combinado bloqueável (ativo), por exemplo, conteúdo HTTP em sites HTTPS.
+
+          Se esta política não for definida, o conteúdo combinado bloqueável será bloqueado, mas os usuários poderão definir exceções para exibi-lo para sites específicos.</translation>
 <translation id="6810445994095397827">Bloquear o JavaScript nestes sites</translation>
 <translation id="6813263547126514821">Ligar e desligar</translation>
 <translation id="681446116407619279">Esquemas de autenticação compatíveis</translation>
@@ -3242,6 +3387,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="6894178810167845842">URL da página "Nova guia"</translation>
 <translation id="6899705656741990703">Detectar automaticamente configurações de proxy</translation>
 <translation id="6903814433019432303">Esta política é ativa somente no modo de varejo. Determina o conjunto de URLs a serem carregados quando a sessão de demonstração for iniciada. Esta política substitui quaisquer outros mecanismos de definição do URL inicial e, portanto, somente pode ser aplicada a uma sessão não associada a determinado usuário.</translation>
+<translation id="6907778402784621686">Bloquear conteúdo não seguro nesses sites</translation>
 <translation id="6908640907898649429">Configura o provedor de pesquisa padrão. É possível especificar o provedor de pesquisa padrão que será usado ou escolhido pelo usuário para desativar a pesquisa padrão.</translation>
 <translation id="6913068954484253496">Permitir que o <ph name="PRODUCT_NAME" /> conecte-se a dispositivos de transmissão em todos os endereços IP.</translation>
 <translation id="6915442654606973733">Ativar o recurso de acessibilidade do feedback falado.
@@ -3794,6 +3940,7 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 <translation id="7774768074957326919">Usar configurações de proxy do sistema</translation>
 <translation id="7777535871204167559">Tratar dispositivos de armazenamento externo como somente leitura</translation>
 <translation id="7788511847830146438">Por perfil</translation>
+<translation id="7792973482799545782">Não permitir que nenhum site carregue conteúdo combinado bloqueável</translation>
 <translation id="780603170519840350">Desativa a aplicação dos requisitos de Transparência dos certificados para uma lista de hashes subjectPublicKeyInfo.
 
       Esta política permite a desativação dos requisitos de divulgação da Transparência dos certificados para cadeias que contenham certificados com um dos hashes subjectPublicKeyInfo especificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados para hosts da empresa.
@@ -3873,6 +4020,11 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 <translation id="7937491150792971922">Mesclar políticas de lista para instalação de extensões de diversas fontes</translation>
 <translation id="7937766917976512374">Permitir ou negar captura de vídeo</translation>
 <translation id="7941975817681987555">Não prever ações da rede em nenhuma conexão de rede</translation>
+<translation id="7944213656414105292">Esta política configura quais URLs terão acesso para usar o atestado remoto da identidade do dispositivo durante o fluxo SAML na tela de login.
+
+      Especificamente, se um URL corresponder a um dos padrões fornecidos por esta política, ele poderá receber um cabeçalho HTTP com uma resposta para um desafio de atestado remoto, atestando a identidade e o estado do dispositivo.
+
+      Se esta política não for definida ou for definida como uma lista vazia, nenhum URL poderá usar o atestado remoto na tela de login.</translation>
 <translation id="7952007677054834789">Configura as páginas a serem carregadas na inicialização, a página inicial padrão e a página "Nova guia" padrão no <ph name="PRODUCT_NAME" /> e impede que elas sejam alteradas pelos usuários.
 
       As configurações da página inicial do usuário só serão completamente bloqueadas se você selecionar a página inicial como a página "Nova guia" ou se configurá-la para que seja um URL específico. Se você não especificar o URL, o usuário ainda poderá definir a página inicial como a página "Nova guia" especificando "chrome://newtab".
@@ -4015,6 +4167,15 @@ Esses favoritos são colocados em uma pasta que não pode ser modificada pelo us
 
       Se esta política não for definida, não haverá exceções para a lista de proibições na política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permitir que o usuário corporativo seja o usuário principal de diversos perfis (comportamento padrão para usuários gerenciados por empresa)</translation>
+<translation id="8176620453475617465">Esta política permite que um administrador especifique que uma página pode enviar solicitações XHR síncronas durante a dispensa de páginas.
+
+      Quando a política é definida como ativada. as páginas podem enviar solicitações XHR síncronas durante a dispensa de páginas.
+
+      Quando a política é definida como desativada ou não é definida, as páginas não podem enviar solicitações XHR síncronas durante a dispensa de páginas.
+
+      Essa política será removida no Chrome 82.
+
+      Consulte https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="8183108371184777472">Suprimir a inicialização da janela do navegador</translation>
 <translation id="8186911565834244165">Permitir feedback do usuário</translation>
 <translation id="8214600119442850823">Configura o gerenciador de senhas.</translation>
@@ -4226,6 +4387,11 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Se a política não for definida ou for definida como verdadeira, todos os usuários poderão usar o ARC (a não ser que o ARC seja desativado por outros meios).
 
       Alterações à política só serão aplicadas enquanto o ARC não estiver funcionando, ou seja, enquanto o Chrome OS estiver no processo de inicialização.</translation>
+<translation id="8606263947930257189">Controla se o <ph name="PRODUCT_NAME" /> pode congelar as guias que estão em segundo plano há pelo menos 5 minutos.
+
+      Se a política for definida como verdadeira, as guias que estiverem em segundo plano há pelo menos 5 minutos poderão ser congeladas. O congelamento de guias reduz o uso de CPU, bateria e memória. O <ph name="PRODUCT_NAME" /> usa a heurística para evitar o congelamento de guias que fazem um bom trabalho em segundo plano (por exemplo, exibir notificações, reproduzir som, fazer streaming de vídeo). Os desenvolvedores da Web também podem desativar o congelamento nos respectivos sites (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
+
+      Se a política for definida como falsa, nenhuma guia será congelada.</translation>
 <translation id="8615400197788843468">Permite o recurso de login restrito do <ph name="PRODUCT_NAME" /> no G Suite e impede que os usuários alterem esta configuração.
 
       Se você definir esta configuração, o usuário só poderá acessar apps do
@@ -4245,6 +4411,17 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       https://support.google.com/a/answer/1668854.
 
       Os usuários não poderão alterar ou modificar esta configuração.</translation>
+<translation id="8618139576368821933">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Especifica o período sem entradas do usuário após o qual a tela é apagada quando o dispositivo funciona com energia CA.
+
+          Quando esta política é definida como um valor maior que zero, ela especifica o período que o usuário precisa permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> apague a tela.
+
+          Quando esta política é definida como zero, o <ph name="PRODUCT_OS_NAME" /> não apaga a tela quando o usuário fica inativo.
+
+          Quando esta política não é definida, um período padrão é usado.
+
+          O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores que ou iguais ao intervalo de desligamento da tela (se definido) e ao intervalo de inatividade.</translation>
 <translation id="8625234016727663537">Permite definir uma lista de URLs que especificam quais sites receberão permissão automaticamente para acessar um dispositivo USB com determinados IDs de produto e de fornecedor na tela de login. Cada item da lista precisa conter os dispositivos e URLs para que a política seja válida. Cada item dos dispositivos pode conter um campo de ID de fornecedor e ID de produto. Os IDs omitidos são tratados como um caractere curinga com uma exceção, e isso impede a especificação de um ID de produto sem também especificar um ID de fornecedor. Caso contrário, a política não será válida e será ignorada.
 
         O modelo de permissão USB usa o URL do site solicitante ("URL solicitante") e o URL do site de frame de nível superior ("URL de incorporação") para conceder permissão ao URL solicitante para acessar o dispositivo USB. O URL solicitante pode ser diferente do URL de incorporação quando o site solicitante está carregado em um iframe. Portanto, o campo "URLs" pode conter até duas strings de URL delimitadas por uma vírgula para especificar os URLs solicitante e de incorporação, respectivamente. Se apenas um URL for especificado, o acesso aos dispositivos USB correspondentes será concedido quando o URL do site solicitante coincidir com esse URL independentemente do status de incorporação. Os URLs contidos em "URLs" precisam ser válidos. Caso contrário, a política será ignorada.
@@ -4293,11 +4470,23 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Se esta configuração estiver ativada ou não definida, o histórico de navegação e de download poderá ser excluído.
 
       Se esta configuração estiver desativada, não será possível excluir o histórico de navegação e de download.</translation>
+<translation id="8752541111574086388">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Especifica o tempo que o usuário precisa ficar sem interagir para que uma caixa de diálogo de aviso seja mostrada enquanto o dispositivo funciona com alimentação da bateria.
+
+          Quando esta política é definida, ela especifica o tempo que um usuário precisa permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> mostre uma caixa de diálogo avisando que a ação de inatividade está prestes a ser realizada.
+
+          Quando esta política não é definida, nenhuma caixa de diálogo é mostrada.
+
+          O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores que ou iguais ao intervalo de inatividade.
+
+          A mensagem de aviso só será mostrada se a ação de inatividade for para sair ou encerrar.</translation>
 <translation id="8757552286070680084">Configuração do DTC wilco</translation>
 <translation id="8758831693895931466">Permite a inscrição obrigatória no gerenciamento em nuvem</translation>
 <translation id="8759829385824155666">Permitir tipos de criptografia Kerberos</translation>
 <translation id="8764119899999036911">Especifica se o SPN do Kerberos se baseia no nome DNS canônico ou no nome original inserido. Se ativar esta configuração, a pesquisa CNAME será ignorada e o nome do servidor será usado como inserido. Se desativar essa configuração ou a deixar sem definição, o nome canônico do servidor será determinado através da pesquisa CNAME.</translation>
 <translation id="8764477907716150749">Esta política é destinada a uso interno pelo próprio <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8777369558049831576">Exibir uma caixa de seleção "Sempre aberto" na caixa de diálogo do protocolo externo.</translation>
 <translation id="877773134585155834">Lista os identificadores de aplicativo que o <ph name="PRODUCT_OS_NAME" /> exibe como apps fixados na barra do acesso rápido.
 
       Aplicativos do Google Chrome são especificados por um código, por exemplo, "pjkljhegncpnkpknbcohdijeoejaedia", enquanto apps Android são especificados por um nome de pacote, como "com.google.android.gm", e apps da Web pelo URL usado em WebAppInstallForceList, por exemplo, "https://google.com/maps".
@@ -4376,6 +4565,24 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 <translation id="8911348623012274122">Definir um limite de memória para instâncias do Chrome</translation>
 <translation id="891435090623616439">codificado como um string JSON, para ver mais detalhes consulte <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Permite que o usuário gerencie os certificados de CA instalados.</translation>
+<translation id="8926275581598789324">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Especifica o período sem entradas do usuário após o qual a ação de inatividade é tomada quando o dispositivo funciona com energia da bateria.
+
+          Quando esta política é definida, ela especifica o tempo que o usuário precisa permanecer inativo para que o <ph name="PRODUCT_OS_NAME" /> tome a ação de inatividade, que pode ser configurada separadamente.
+
+          Quando esta política não é definida, um período padrão é usado.
+
+          O valor da política precisa ser especificado em milissegundos.</translation>
+<translation id="8929997566627164343">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
+
+          Especifica o período sem entradas do usuário após o qual a ação de inatividade é tomada quando o dispositivo funciona com energia CA.
+
+          Quando esta política é definida, ela especifica o tempo que o usuário precisa permanecer inativo para que o <ph name="PRODUCT_OS_NAME" /> tome a ação de inatividade, que pode ser configurada separadamente.
+
+          Quando esta política não é definida, um período padrão é usado.
+
+          O valor da política precisa ser especificado em milissegundos.</translation>
 <translation id="8934944553121392674">Controla quais impressoras da <ph name="DEVICE_PRINTERS_POLICY" /> estão disponíveis para os usuários.
 
       Determina qual política de acesso é usada para a configuração de impressoras em massa. Se a opção <ph name="PRINTERS_ALLOW_ALL" /> for selecionada, todas as impressoras serão mostradas. Se a opção <ph name="PRINTERS_BLACKLIST" /> for selecionada, <ph name="DEVICE_PRINTERS_BLACKLIST" /> será usada para restringir o acesso às impressoras especificadas. Se <ph name="PRINTERS_WHITELIST" /> for selecionada, <ph name="DEVICE_PRINTERS_WHITELIST" /> determinará apenas as impressoras que podem ser selecionadas.

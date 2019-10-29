@@ -36,8 +36,9 @@ class BundledExchangesSource;
 class CONTENT_EXPORT BundledExchangesReader final
     : public base::RefCounted<BundledExchangesReader> {
  public:
-  explicit BundledExchangesReader(
-      std::unique_ptr<BundledExchangesSource> source);
+  BundledExchangesReader(
+      std::unique_ptr<BundledExchangesSource> source,
+      mojo::Remote<data_decoder::mojom::DataDecoderService> service);
 
   // Starts parsing, and runs |callback| when meta data gets to be available.
   // |error| is set only on failures.

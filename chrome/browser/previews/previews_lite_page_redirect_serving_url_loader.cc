@@ -268,11 +268,11 @@ PreviewsLitePageRedirectServingURLLoader::ServingResponseHandler() {
 
 void PreviewsLitePageRedirectServingURLLoader::SetUpForwardingClient(
     const network::ResourceRequest& /* resource_request */,
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     network::mojom::URLLoaderClientPtr forwarding_client) {
   // Bind to the content/ navigation code.
   DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+  binding_.Bind(std::move(receiver));
   binding_.set_connection_error_handler(base::BindOnce(
       &PreviewsLitePageRedirectServingURLLoader::OnConnectionError,
       weak_ptr_factory_.GetWeakPtr()));

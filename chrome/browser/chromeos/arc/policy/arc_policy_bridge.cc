@@ -223,7 +223,7 @@ void AddRequiredKeyPairs(const ArcSmartCardManagerBridge* smart_card_manager,
   std::unique_ptr<base::ListValue> cert_names(
       std::make_unique<base::ListValue>());
   for (const auto& name : smart_card_manager->get_required_cert_names()) {
-    cert_names->GetList().emplace_back(name);
+    cert_names->Append(name);
   }
   filtered_policies->Set(kArcRequiredKeyPairs, std::move(cert_names));
 }

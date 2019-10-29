@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Na-lock out ang iyong account. Makipag-ugnayan sa administrator ng iyong system.</translation>
 <translation id="2844349213149998955">Hindi pinapayagan ang pag-sign in gamit ang isang personal na account sa device na ito. Mag-log in gamit ang isang account sa trabaho.</translation>
 <translation id="3306357053520292004">May naidagdag nang user sa computer na ito gamit ang account na ito. Mag-sign in gamit ang ibang account.</translation>
+<translation id="3926852373333893095">Mga user lang ng GSuite Enterprise ang pinapayagang mag-log in.</translation>
 <translation id="4057329986137569701">Nagkaroon ng internal na error.</translation>
 <translation id="4267670563222825190">Walang makitang user ng Domain para sa iyong account. Makipag-ugnayan sa iyong administrator.</translation>
 <translation id="4300229033992784001">Nagbago ang password ng iyong account. Pakilagay ang iyong kasalukuyang password sa Windows para i-sync ang Windows account mo sa iyong account sa trabaho.</translation>
 <translation id="4706454071748629324">Hindi nakapagdagdag ng bagong user. Isang user lang ang pinapahintulutang magawa ng computer na ito gamit ang isang account sa trabaho.</translation>
 <translation id="6033715878377252112">Helper ng Credential Provider ng Google para sa Windows</translation>
 <translation id="6149399665202317746">Credential Provider ng Google para sa Windows</translation>
+<translation id="6239180560789153226">Kulang ng impormasyon sa pag-recover ang iyong device. Mag-sign in gamit ang iyong account sa trabaho ng Google.</translation>
 <translation id="6312494990035843744">Hindi pinapayagan ang pag-sign in gamit ang account sa trabaho sa domain na ito. Sumubok ng ibang account.</translation>
 <translation id="6463752215771576050">Hindi ma-enroll ang computer na ito para sa pamamahala ng enterprise.  Mag-sign in gamit ang ibang account sa trabaho.</translation>
 <translation id="6657585470893396449">Password</translation>
+<translation id="6937049691815837345">Kailangang mag-enroll ng iyong device sa pamamahala ng device. Mag-sign in gamit ang iyong account sa trabaho ng Google.</translation>
 <translation id="7209941495304122410">Ilagay ang Password sa Windows</translation>
 <translation id="7357241217513796177">Tiyaking mayroon kang koneksyon sa network at subukang muli.</translation>
 <translation id="7536769223115622137">Magdagdag ng account sa trabaho</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Nag-expire na ang iyong session. Mag-sign in gamit ang iyong account sa trabaho ng Google.</translation>
 <translation id="9055998212250844221">Ginawa ng Credential Provider ng Google para sa Windows ang user account</translation>
 <translation id="9135619837062629367">Hindi pinapayagan ang pag-sign in gamit ang account na ito. Sumubok ng ibang account.</translation>
+<translation id="998002716857524853">Mag-sign in gamit ang iyong account sa trabaho ng GSuite.</translation>
 </translationbundle>

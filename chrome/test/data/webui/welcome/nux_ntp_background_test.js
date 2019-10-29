@@ -12,7 +12,7 @@ import {TestNtpBackgroundProxy} from './test_ntp_background_proxy.js';
 
 suite('NuxNtpBackgroundTest', function() {
   /** @type {!Array<!NtpBackgroundData} */
-  let backgrounds = [
+  const backgrounds = [
     {
       id: 0,
       title: 'Art',

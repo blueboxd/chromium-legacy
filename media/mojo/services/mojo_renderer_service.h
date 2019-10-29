@@ -22,6 +22,7 @@
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
@@ -53,7 +54,8 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   // mojom::Renderer implementation.
   void Initialize(
       mojom::RendererClientAssociatedPtrInfo client,
-      base::Optional<std::vector<mojom::DemuxerStreamPtrInfo>> streams,
+      base::Optional<std::vector<mojo::PendingRemote<mojom::DemuxerStream>>>
+          streams,
       mojom::MediaUrlParamsPtr media_url_params,
       InitializeCallback callback) final;
   void Flush(FlushCallback callback) final;

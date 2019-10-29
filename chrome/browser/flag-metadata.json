@@ -1144,6 +1144,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "enable-cros-virtual-keyboard-bordered-key",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "enable-cssom-view-scroll-coordinates",
     "owners": [ "cathiechen@igalia.com", "fwang@igalia.com" ],
     "expiry_milestone": 83

@@ -64,7 +64,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
         num_decrypt_and_decode_calls_(0),
         num_frames_in_decryptor_(0),
         encrypted_buffer_(CreateFakeEncryptedBuffer()),
-        decoded_frame_(NULL),
+        decoded_frame_(nullptr),
         decoded_frame_list_() {}
 
   ~DecryptingAudioDecoderTest() override { Destroy(); }

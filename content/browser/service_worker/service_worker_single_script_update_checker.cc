@@ -111,7 +111,6 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
       force_bypass_cache_(force_bypass_cache),
       update_via_cache_(update_via_cache),
       time_since_last_check_(time_since_last_check),
-      network_client_binding_(this),
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                        base::SequencedTaskRunnerHandle::Get()),
@@ -216,7 +215,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
       /*pause_when_not_identical=*/true);
 
   network::mojom::URLLoaderClientPtrInfo network_client;
-  network_client_binding_.Bind(mojo::MakeRequest(&network_client));
+  network_client_receiver_.Bind(mojo::MakeRequest(&network_client));
 
   // Use NavigationURLLoaderImpl to get a unique request id across
   // browser-initiated navigations and worker script fetch.
@@ -677,7 +676,7 @@ void ServiceWorkerSingleScriptUpdateChecker::Finish(
   if (Result::kDifferent == result) {
     auto paused_state = std::make_unique<PausedState>(
         std::move(cache_writer_), std::move(network_loader_),
-        network_client_binding_.Unbind(), std::move(network_consumer_),
+        network_client_receiver_.Unbind(), std::move(network_consumer_),
         network_loader_state_, body_writer_state_);
     std::move(callback_).Run(script_url_, result, nullptr,
                              std::move(paused_state));
@@ -685,7 +684,7 @@ void ServiceWorkerSingleScriptUpdateChecker::Finish(
   }
 
   network_loader_.reset();
-  network_client_binding_.Close();
+  network_client_receiver_.reset();
   network_consumer_.reset();
   std::move(callback_).Run(script_url_, result, std::move(failure_info),
                            nullptr);
@@ -696,13 +695,14 @@ ServiceWorkerSingleScriptUpdateChecker::PausedState::PausedState(
     std::unique_ptr<
         ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
         network_loader,
-    network::mojom::URLLoaderClientRequest network_client_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>
+        network_client_receiver,
     mojo::ScopedDataPipeConsumerHandle network_consumer,
     ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
     ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state)
     : cache_writer(std::move(cache_writer)),
       network_loader(std::move(network_loader)),
-      network_client_request(std::move(network_client_request)),
+      network_client_receiver(std::move(network_client_receiver)),
       network_consumer(std::move(network_consumer)),
       network_loader_state(network_loader_state),
       body_writer_state(body_writer_state) {}

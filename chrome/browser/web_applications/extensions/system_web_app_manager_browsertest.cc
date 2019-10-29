@@ -110,16 +110,19 @@ class TestWebUIControllerFactory : public content::WebUIControllerFactory {
 
   content::WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
                                       const GURL& url) override {
-    return reinterpret_cast<content::WebUI::TypeID>(1);
+    if (url.SchemeIs(content::kChromeUIScheme))
+      return reinterpret_cast<content::WebUI::TypeID>(1);
+
+    return content::WebUI::kNoWebUI;
   }
 
   bool UseWebUIForURL(content::BrowserContext* browser_context,
                       const GURL& url) override {
-    return true;
+    return url.SchemeIs(content::kChromeUIScheme);
   }
   bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
                               const GURL& url) override {
-    return true;
+    return url.SchemeIs(content::kChromeUIScheme);
   }
 
  private:

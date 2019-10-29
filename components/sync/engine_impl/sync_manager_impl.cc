@@ -352,7 +352,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
     allstatus_.SetLocalBackendFolder(
         args->local_sync_backend_folder.AsUTF8Unsafe());
     connection_manager_ = std::make_unique<LoopbackConnectionManager>(
-        args->cancelation_signal, args->local_sync_backend_folder);
+        args->local_sync_backend_folder);
   } else {
     connection_manager_ = std::make_unique<SyncServerConnectionManager>(
         args->service_url.host() + args->service_url.path(),

@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">ตั้งค่าภาษา</translation>
 <translation id="1962969542251276847">ล็อกหน้าจอ</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">สวัสดี คุณ <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">การป้อนข้อความ</translation>
 <translation id="1993072747612765854">ดูข้อมูลเพิ่มเติมเกี่ยวกับอัปเดตล่าสุดของ <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">ปิดเครื่อง</translation>
@@ -159,7 +160,6 @@
 <translation id="3139942575505304791">โต๊ะที่ 1</translation>
 <translation id="315116470104423982">เน็ตมือถือ</translation>
 <translation id="3151786313568798007">การวางแนว</translation>
-<translation id="3152934361839663679">อุปกรณ์เชื่อมต่อกับหน้าจอครบตามจำนวนสูงสุดที่อนุญาต จึงยกเลิกการเชื่อมต่อหน้าจอหนึ่ง</translation>
 <translation id="3153444934357957346">คุณมีบัญชีได้สูงสุด <ph name="MULTI_PROFILE_USER_LIMIT" /> บัญชีในการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="3154351730702813399">ผู้ดูแลระบบของอุปกรณ์อาจตรวจสอบกิจกรรมการท่องเว็บของคุณ</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{เชื่อมต่ออุปกรณ์แล้ว 1 เครื่อง}other{เชื่อมต่ออุปกรณ์แล้ว # เครื่อง}}</translation>

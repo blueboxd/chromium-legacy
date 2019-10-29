@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_mode.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -64,30 +65,41 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
 @implementation AdvancedSigninSettingsCoordinator
 
 - (void)start {
+  // Create the navigation controller.
   self.advancedSigninSettingsNavigationController =
       [[AdvancedSigninSettingsNavigationController alloc] init];
-  self.advancedSigninSettingsNavigationController.modalPresentationStyle =
-      UIModalPresentationFormSheet;
-  self.advancedSigninSettingsNavigationController.presentationController
-      .delegate = self;
-  self.googleServicesSettingsCoordinator = [[GoogleServicesSettingsCoordinator
-      alloc]
-      initWithBaseViewController:self.advancedSigninSettingsNavigationController
-                    browserState:self.browserState
-                            mode:
-                              GoogleServicesSettingsModeAdvancedSigninSettings];
-  self.googleServicesSettingsCoordinator.dispatcher = self.dispatcher;
-  self.googleServicesSettingsCoordinator.navigationController =
+
+  // Shorter name to make line wrapping better.
+  AdvancedSigninSettingsNavigationController* controller =
       self.advancedSigninSettingsNavigationController;
+  controller.modalPresentationStyle = UIModalPresentationFormSheet;
+  controller.presentationController.delegate = self;
+
+  // Init and start Google settings coordinator.
+  GoogleServicesSettingsMode mode =
+      GoogleServicesSettingsModeAdvancedSigninSettings;
+  self.googleServicesSettingsCoordinator =
+      [[GoogleServicesSettingsCoordinator alloc]
+          initWithBaseViewController:controller
+                             browser:self.browser
+                                mode:mode];
+  self.googleServicesSettingsCoordinator.dispatcher = self.dispatcher;
+  self.googleServicesSettingsCoordinator.navigationController = controller;
+  // Starting the coordinator will add its view controller to the navigation
+  // controller.
   [self.googleServicesSettingsCoordinator start];
+
+  // Set navigation items for settings coordinator.
   self.googleServicesSettingsCoordinator.viewController.navigationItem
       .leftBarButtonItem = [self navigationCancelButton];
   self.googleServicesSettingsCoordinator.viewController.navigationItem
       .rightBarButtonItem = [self navigationConfirmButton];
-  [self.baseViewController
-      presentViewController:self.advancedSigninSettingsNavigationController
-                   animated:YES
-                 completion:nil];
+
+  // Present the navigation controller that now contains the Google settings
+  // view controller.
+  [self.baseViewController presentViewController:controller
+                                        animated:YES
+                                      completion:nil];
 }
 
 - (void)abortWithDismiss:(BOOL)dismiss

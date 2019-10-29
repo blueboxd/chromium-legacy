@@ -256,8 +256,7 @@ class SyncerTest : public testing::Test,
 
   void SetUp() override {
     test_user_share_.SetUp();
-    mock_server_ = std::make_unique<MockConnectionManager>(
-        directory(), &cancelation_signal_);
+    mock_server_ = std::make_unique<MockConnectionManager>(directory());
     debug_info_getter_ = std::make_unique<MockDebugInfoGetter>();
     workers_.push_back(
         scoped_refptr<ModelSafeWorker>(new FakeModelWorker(GROUP_PASSIVE)));

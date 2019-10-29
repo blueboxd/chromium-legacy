@@ -1421,7 +1421,9 @@ class ProxyTestGenerator(BaseTest):
     test_data = """
     class SampleProxyJni {
       private void do_not_match();
+      @VisibleForTesting
       @NativeMethods
+      @Generated("Test")
       interface Natives {
         @NativeClassQualifiedName("FooAndroid::BarDelegate")
         void foo(long nativePtr);

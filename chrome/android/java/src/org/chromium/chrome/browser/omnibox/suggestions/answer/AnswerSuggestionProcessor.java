@@ -8,13 +8,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
 
+import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
@@ -22,7 +20,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
-import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.components.omnibox.AnswerType;
 import org.chromium.components.omnibox.SuggestionAnswer;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -34,31 +31,25 @@ import java.util.Map;
 
 /** A class that handles model and view creation for the most commonly used omnibox suggestion. */
 public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
-    private static final int MAX_CACHE_SIZE = 500 * ConversionUtils.BYTES_PER_KILOBYTE;
     private final Map<String, List<PropertyModel>> mPendingAnswerRequestUrls;
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
-    private ImageFetcher mImageFetcher;
+    private final Supplier<ImageFetcher> mImageFetcherSupplier;
 
     /**
      * @param context An Android context.
      * @param suggestionHost A handle to the object using the suggestions.
      */
     public AnswerSuggestionProcessor(Context context, SuggestionHost suggestionHost,
-            UrlBarEditingTextStateProvider editingTextProvider) {
+            UrlBarEditingTextStateProvider editingTextProvider,
+            Supplier<ImageFetcher> imageFetcherSupplier) {
         super(context, suggestionHost);
         mContext = context;
         mSuggestionHost = suggestionHost;
         mPendingAnswerRequestUrls = new HashMap<>();
         mUrlBarEditingTextProvider = editingTextProvider;
-    }
-
-    public void destroy() {
-        if (mImageFetcher != null) {
-            mImageFetcher.destroy();
-            mImageFetcher = null;
-        }
+        mImageFetcherSupplier = imageFetcherSupplier;
     }
 
     @Override
@@ -89,10 +80,6 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
 
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
-        // This clear is necessary for memory as well as clearing when switching to/from incognito.
-        if (!hasFocus && mImageFetcher != null) {
-            mImageFetcher.clear();
-        }
     }
 
     @Override
@@ -112,20 +99,12 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
         // https://cs.chromium.org/Omnibox.SuggestionUsed.AnswerInSuggest
     }
 
-    /**
-     * Specify ImageFetcher instance to be used for testing purposes.
-     * TODO(http://crbug.com/1015997): Create fetcher instance in AutocompleteMediator and pass it
-     * to the constructor.
-     */
-    void setImageFetcherForTesting(ImageFetcher fetcher) {
-        mImageFetcher = fetcher;
-    }
-
     private void maybeFetchAnswerIcon(PropertyModel model, OmniboxSuggestion suggestion) {
         ThreadUtils.assertOnUiThread();
 
-        // Attempting to fetch answer data before we have a profile to request it for.
-        if (mSuggestionHost.getCurrentProfile() == null) return;
+        // Ensure an image fetcher is available prior to requesting images.
+        ImageFetcher imageFetcher = mImageFetcherSupplier.get();
+        if (imageFetcher == null) return;
 
         // Note: we also handle calculations here, which do not have answer defined.
         if (!suggestion.hasAnswer()) return;
@@ -139,17 +118,11 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
             return;
         }
 
-        if (mImageFetcher == null) {
-            mImageFetcher =
-                    ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_ONLY,
-                            GlobalDiscardableReferencePool.getReferencePool(), MAX_CACHE_SIZE);
-        }
-
         List<PropertyModel> models = new ArrayList<>();
         models.add(model);
         mPendingAnswerRequestUrls.put(url, models);
 
-        mImageFetcher.fetchImage(
+        imageFetcher.fetchImage(
                 url, ImageFetcher.ANSWER_SUGGESTIONS_UMA_CLIENT_NAME, (Bitmap bitmap) -> {
                     ThreadUtils.assertOnUiThread();
                     // Remove models for the URL ahead of all the checks to ensure we
@@ -175,7 +148,6 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
      * Sets both lines of the Omnibox suggestion based on an Answers in Suggest result.
      */
     private void setStateForSuggestion(PropertyModel model, OmniboxSuggestion suggestion) {
-        SuggestionAnswer answer = suggestion.getAnswer();
         AnswerText[] details = AnswerTextNewLayout.from(
                 mContext, suggestion, mUrlBarEditingTextProvider.getTextWithoutAutocomplete());
 

@@ -137,7 +137,7 @@ TEST_F(WindowNativeFileSystemTest, UserActivationChooseEntriesSuccessful) {
   LocalFrame* frame = &GetFrame();
   EXPECT_FALSE(frame->HasBeenActivated());
 
-  LocalFrame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
+  LocalFrame::NotifyUserActivation(frame);
   EXPECT_TRUE(frame->HasBeenActivated());
 
   base::RunLoop manager_run_loop;
@@ -193,7 +193,7 @@ TEST_F(WindowNativeFileSystemTest, UserActivationChooseEntriesErrors) {
   MockNativeFileSystemManager manager(&frame->GetInterfaceProvider());
 
   for (const NativeFileSystemStatus& status : statuses) {
-    LocalFrame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
+    LocalFrame::NotifyUserActivation(frame);
     EXPECT_TRUE(frame->HasBeenActivated());
 
     base::RunLoop manager_run_loop;

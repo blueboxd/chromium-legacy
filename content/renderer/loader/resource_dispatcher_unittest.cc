@@ -86,14 +86,14 @@ class ResourceDispatcherTest : public testing::Test,
   }
 
   void CreateLoaderAndStart(
-      network::mojom::URLLoaderRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& annotation) override {
-    loader_and_clients_.emplace_back(std::move(request), std::move(client));
+    loader_and_clients_.emplace_back(std::move(receiver), std::move(client));
   }
 
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
@@ -157,7 +157,7 @@ class ResourceDispatcherTest : public testing::Test,
   }
 
  protected:
-  std::vector<std::pair<network::mojom::URLLoaderRequest,
+  std::vector<std::pair<mojo::PendingReceiver<network::mojom::URLLoader>,
                         network::mojom::URLLoaderClientPtr>>
       loader_and_clients_;
   base::test::SingleThreadTaskEnvironment task_environment_;

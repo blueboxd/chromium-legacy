@@ -12,8 +12,8 @@
 
 namespace network {
 
-TestURLLoaderClient::TestURLLoaderClient() : binding_(this) {}
-TestURLLoaderClient::~TestURLLoaderClient() {}
+TestURLLoaderClient::TestURLLoaderClient() = default;
+TestURLLoaderClient::~TestURLLoaderClient() = default;
 
 void TestURLLoaderClient::OnReceiveResponse(
     mojom::URLResponseHeadPtr response_head) {
@@ -100,14 +100,14 @@ void TestURLLoaderClient::ClearHasReceivedRedirect() {
 
 mojom::URLLoaderClientPtr TestURLLoaderClient::CreateInterfacePtr() {
   mojom::URLLoaderClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
-  binding_.set_connection_error_handler(base::BindOnce(
-      &TestURLLoaderClient::OnConnectionError, base::Unretained(this)));
+  receiver_.Bind(mojo::MakeRequest(&client_ptr));
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &TestURLLoaderClient::OnMojoDisconnect, base::Unretained(this)));
   return client_ptr;
 }
 
 void TestURLLoaderClient::Unbind() {
-  binding_.Unbind();
+  receiver_.reset();
   response_body_.reset();
 }
 
@@ -151,11 +151,11 @@ void TestURLLoaderClient::RunUntilComplete() {
   run_loop.Run();
 }
 
-void TestURLLoaderClient::RunUntilConnectionError() {
-  if (has_received_connection_error_)
+void TestURLLoaderClient::RunUntilDisconnect() {
+  if (has_received_disconnect_)
     return;
   base::RunLoop run_loop;
-  quit_closure_for_on_connection_error_ = run_loop.QuitClosure();
+  quit_closure_for_disconnect_ = run_loop.QuitClosure();
   run_loop.Run();
 }
 
@@ -165,12 +165,12 @@ void TestURLLoaderClient::RunUntilTransferSizeUpdated() {
   run_loop.Run();
 }
 
-void TestURLLoaderClient::OnConnectionError() {
-  if (has_received_connection_error_)
+void TestURLLoaderClient::OnMojoDisconnect() {
+  if (has_received_disconnect_)
     return;
-  has_received_connection_error_ = true;
-  if (quit_closure_for_on_connection_error_)
-    std::move(quit_closure_for_on_connection_error_).Run();
+  has_received_disconnect_ = true;
+  if (quit_closure_for_disconnect_)
+    std::move(quit_closure_for_disconnect_).Run();
 }
 
 }  // namespace network

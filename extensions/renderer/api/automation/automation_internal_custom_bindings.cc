@@ -1039,6 +1039,20 @@ void AutomationInternalCustomBindings::AddRoutes() {
                        .ToLocalChecked());
       });
   RouteNodeIDFunction(
+      "GetDescriptionFrom",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        ax::mojom::DescriptionFrom description_from =
+            static_cast<ax::mojom::DescriptionFrom>(
+                node->data().GetIntAttribute(
+                    ax::mojom::IntAttribute::kDescriptionFrom));
+        std::string description_from_str = ui::ToString(description_from);
+        result.Set(v8::String::NewFromUtf8(isolate,
+                                           description_from_str.c_str(),
+                                           v8::NewStringType::kNormal)
+                       .ToLocalChecked());
+      });
+  RouteNodeIDFunction(
       "GetImageAnnotation",
       [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
              AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {

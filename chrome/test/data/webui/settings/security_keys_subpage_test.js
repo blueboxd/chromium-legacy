@@ -348,7 +348,7 @@ suite('SecurityKeysSetPINDialog', function() {
   });
 
   // Test error codes that are returned immediately.
-  for (let testCase of [
+  for (const testCase of [
            [1 /* INVALID_COMMAND */, 'noPINSupport'],
            [52 /* temporary lock */, 'reinsert'], [50 /* locked */, 'locked'],
            [1000 /* invalid error */, 'error']]) {
@@ -453,7 +453,7 @@ suite('SecurityKeysSetPINDialog', function() {
   });
 
   // Test error codes that are only returned after attempting to set a PIN.
-  for (let testCase of [
+  for (const testCase of [
            [52 /* temporary lock */, 'reinsert'], [50 /* locked */, 'locked'],
            [1000 /* invalid error */, 'error']]) {
     test('Error' + testCase[0].toString(), async function() {
@@ -753,7 +753,7 @@ suite('SecurityKeysBioEnrollment', function() {
     await browserProxy.whenCalled('enumerateEnrollments');
     uiReady =
         test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
-    let enrollments = [
+    const enrollments = [
       {
         name: 'Fingerprint00',
         id: '0000',

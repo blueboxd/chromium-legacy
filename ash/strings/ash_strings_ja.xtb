@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">言語を設定</translation>
 <translation id="1962969542251276847">画面をロック</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
+<translation id="1972950159383891558"><ph name="USERNAME" /> さん、こんにちは</translation>
 <translation id="1978498689038657292">テキストを入力</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください</translation>
 <translation id="1995660704900986789">電源を切る</translation>
@@ -159,7 +160,6 @@
 <translation id="3139942575505304791">デスク 1</translation>
 <translation id="315116470104423982">モバイル データ</translation>
 <translation id="3151786313568798007">向き</translation>
-<translation id="3152934361839663679">デバイスが接続されているモニター数が上限に達したため、1 台のスクリーンの接続を解除しました。</translation>
 <translation id="3153444934357957346">マルチログインに使用できるのは <ph name="MULTI_PROFILE_USER_LIMIT" /> アカウントまでです。</translation>
 <translation id="3154351730702813399">デバイス管理者が閲覧アクティビティを監視している可能性があります。</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{1 台のデバイスと接続されています}other{# 台のデバイスと接続されています}}</translation>

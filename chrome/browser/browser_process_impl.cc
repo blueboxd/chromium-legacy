@@ -132,6 +132,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
@@ -529,17 +530,19 @@ void RundownTaskCounter::TimedWait(base::TimeDelta timeout) {
 
 #if !defined(OS_ANDROID)
 void RequestProxyResolvingSocketFactoryOnUIThread(
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   network::mojom::NetworkContext* network_context =
       g_browser_process->system_network_context_manager()->GetContext();
-  network_context->CreateProxyResolvingSocketFactory(std::move(request));
+  network_context->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
 void RequestProxyResolvingSocketFactory(
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   base::PostTask(FROM_HERE, {BrowserThread::UI},
                  base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
-                                std::move(request)));
+                                std::move(receiver)));
 }
 #endif
 

@@ -16,7 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -105,7 +105,7 @@ void PrefetchURLLoaderService::GetFactory(
 }
 
 void PrefetchURLLoaderService::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -191,11 +191,11 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
             ->prefetched_signed_exchange_cache;
   }
 
-  // For now we strongly bind the loader to the request, while we can
-  // also possibly make the new loader owned by the factory so that
-  // they can live longer than the client (i.e. run in detached mode).
+  // For now we make self owned receiver for the loader to the request, while we
+  // can also possibly make the new loader owned by the factory so that they can
+  // live longer than the client (i.e. run in detached mode).
   // TODO(kinuko): Revisit this.
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<PrefetchURLLoader>(
           routing_id, request_id, options, current_context.frame_tree_node_id,
           resource_request, std::move(client), traffic_annotation,
@@ -209,7 +209,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
           base::BindOnce(
               &PrefetchURLLoaderService::GenerateRecursivePrefetchToken, this,
               current_context.weak_ptr_factory.GetWeakPtr())),
-      std::move(request));
+      std::move(receiver));
 }
 
 PrefetchURLLoaderService::~PrefetchURLLoaderService() = default;

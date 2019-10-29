@@ -439,9 +439,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, DownloadDeletedBookmark) {
       syncer::PersistentTombstoneEntity::CreateNew(entity_id, std::string()));
   GetFakeServer()->InjectEntity(std::move(tombstone));
 
-  const syncer::ModelTypeSet kBookmarksType(syncer::BOOKMARKS);
-  TriggerSyncForModelTypes(kSingleProfileIndex, kBookmarksType);
-
   const int kExpectedCountAfterDeletion = 0;
   ASSERT_TRUE(BookmarksTitleChecker(kSingleProfileIndex, title,
                                     kExpectedCountAfterDeletion)
@@ -477,9 +474,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   sync_pb::BookmarkSpecifics* bookmark_specifics = specifics.mutable_bookmark();
   bookmark_specifics->set_url(updated_url.spec());
   ASSERT_TRUE(GetFakeServer()->ModifyEntitySpecifics(entity_id, specifics));
-
-  const syncer::ModelTypeSet kBookmarksType(syncer::BOOKMARKS);
-  TriggerSyncForModelTypes(kSingleProfileIndex, kBookmarksType);
 
   ASSERT_TRUE(BookmarksUrlChecker(kSingleProfileIndex, updated_url, 1).Wait());
   ASSERT_EQ(0u,
@@ -788,10 +782,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
                                          /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
-// TODO(crbug.com/1014086): re-enable this test on all builders once flakiness
-// is addressed.
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
-                       DISABLED_ApplyRemoteCreationWithValidGUID) {
+                       ApplyRemoteCreationWithValidGUID) {
   // Start syncing.
   DisableVerifier();
   ASSERT_TRUE(SetupSync());
@@ -818,10 +810,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
       GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
 }
 
-// TODO(crbug.com/1014086): re-enable this test on all builders once flakiness
-// is addressed.
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
-                       DISABLED_ApplyRemoteCreationWithoutValidGUID) {
+                       ApplyRemoteCreationWithoutValidGUID) {
   // Start syncing.
   DisableVerifier();
   ASSERT_TRUE(SetupSync());
@@ -854,10 +844,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
       GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
 }
 
-// TODO(crbug.com/1014086): re-enable this test on all builders once flakiness
-// is addressed.
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
-                       DISABLED_ApplyRemoteCreationWithoutValidGUIDOrOCII) {
+                       ApplyRemoteCreationWithoutValidGUIDOrOCII) {
   // Start syncing.
   DisableVerifier();
   ASSERT_TRUE(SetupSync());
@@ -974,10 +962,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
                                             originator_client_item_id));
 }
 
-// TODO(crbug.com/1014086): re-enable this test on all builders once flakiness
-// is addressed.
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
-                       DISABLED_ApplyRemoteUpdateWithValidGUID) {
+                       ApplyRemoteUpdateWithValidGUID) {
   // Create a bookmark.
   const GURL url = GURL("https://foo.com");
   fake_server::EntityBuilderFactory entity_builder_factory;

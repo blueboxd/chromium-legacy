@@ -47,7 +47,7 @@ def Convert(test_results, base_dir):
     benchmark_name, story_name = result['testPath'].split('/')
     story_name = urllib.unquote(story_name)
     actual_status = result['status']
-    expected_status = actual_status if result['isExpected'] else 'PASS'
+    expected_status = actual_status if result['expected'] else 'PASS'
     status_counter[actual_status] += 1
     artifacts = result.get('outputArtifacts', {})
     shard = _GetTagValue(result.get('tags', []), 'shard', as_type=int)
@@ -58,7 +58,7 @@ def Convert(test_results, base_dir):
                 story_name: {
                     'actual': actual_status,
                     'expected': expected_status,
-                    'is_unexpected': not result['isExpected'],
+                    'is_unexpected': not result['expected'],
                     'times': float(result['runDuration'].rstrip('s')),
                     'shard': shard,
                     'artifacts': {
@@ -86,7 +86,7 @@ def Convert(test_results, base_dir):
                            else datetime.datetime.utcnow().isoformat() + 'Z')
   # If Telemetry stops with a unhandleable error, then remaining stories
   # are marked as unexpectedly skipped.
-  interrupted = any(t['status'] == 'SKIP' and not t['isExpected']
+  interrupted = any(t['status'] == 'SKIP' and not t['expected']
                     for t in test_results)
   results.update(
       seconds_since_epoch=util.IsoTimestampToEpoch(test_suite_start_time),

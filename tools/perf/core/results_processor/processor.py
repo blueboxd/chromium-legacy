@@ -77,7 +77,7 @@ def ProcessResults(options):
           result, upload_bucket, results_label, run_identifier,
           test_suite_start, should_compute_metrics, max_num_values),
       test_results,
-      on_failure=lambda result: result.update(status='FAIL'),
+      on_failure=util.SetUnexpectedFailure,
   )
 
   if should_compute_metrics:
@@ -110,7 +110,7 @@ def ProcessTestResult(test_result, upload_bucket, results_label,
     if max_num_values is not None and num_values > max_num_values:
       logging.error('%s produced %d values, but only %d are allowed.',
                     test_result['testPath'], num_values, max_num_values)
-      test_result['status'] = 'FAIL'
+      util.SetUnexpectedFailure(test_result)
       del test_result['_histograms']
     else:
       AddDiagnosticsToHistograms(test_result, test_suite_start, results_label)
@@ -159,6 +159,11 @@ def _LoadTestResults(intermediate_dir):
       if 'benchmarkRun' in record:
         benchmark_run.update(record['benchmarkRun'])
       if 'testResult' in record:
+        # TODO(crbug.com/1018248): Remove this after the field is renamed
+        # in Telemetry.
+        if 'isExpected' in record['testResult']:
+          record['testResult']['expected'] = record['testResult']['isExpected']
+          del record['testResult']['isExpected']
         test_results.append(record['testResult'])
   for test_result in test_results:
     test_result['_benchmarkRun'] = benchmark_run

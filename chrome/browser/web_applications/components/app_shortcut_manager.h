@@ -37,7 +37,6 @@ class AppShortcutManager {
   void AddObserver(AppShortcutObserver* observer);
   void RemoveObserver(AppShortcutObserver* observer);
 
-  // virtual for testing.
   virtual bool CanCreateShortcuts() const;
 
   // virtual for testing.

@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace jingle_glue {
 
@@ -80,25 +81,27 @@ void NetworkServiceConfigTestUtil::RequestSocket(
     base::WeakPtr<NetworkServiceConfigTestUtil> instance,
     scoped_refptr<base::SequencedTaskRunner> mojo_runner,
     scoped_refptr<base::SequencedTaskRunner> net_runner,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   DCHECK(net_runner->RunsTasksInCurrentSequence());
   mojo_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&NetworkServiceConfigTestUtil::RequestSocketOnMojoRunner,
-                     std::move(instance), std::move(request)));
+                     std::move(instance), std::move(receiver)));
 }
 
 void NetworkServiceConfigTestUtil::RequestSocketOnMojoRunner(
     base::WeakPtr<NetworkServiceConfigTestUtil> instance,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   if (!instance)
     return;
   if (instance->network_context_getter_) {
     instance->network_context_getter_.Run()->CreateProxyResolvingSocketFactory(
-        std::move(request));
+        std::move(receiver));
   } else {
     instance->network_context_remote_->CreateProxyResolvingSocketFactory(
-        std::move(request));
+        std::move(receiver));
   }
 }
 

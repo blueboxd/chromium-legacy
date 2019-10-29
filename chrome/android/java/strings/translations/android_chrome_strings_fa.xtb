@@ -66,7 +66,6 @@
 <translation id="1407135791313364759">باز کردن همه</translation>
 <translation id="1409426117486808224">نمای ساده‌شده برای برگه‌های باز</translation>
 <translation id="1409879593029778104">بارگیری <ph name="FILE_NAME" /> انجام نشد زیرا فایل از قبل موجود است.</translation>
-<translation id="1413136574162415971">‏Google می‌تواند بررسی کند آیا گذرواژه‌هایتان بخشی از نقض داده‌ها بوده است یا نه. اگر با حساب Google به سیستم وارد شوید و همگام‌سازی را روشن کرده باشید، این ویژگی روشن خواهد شد.</translation>
 <translation id="1414981605391750300">‏درحال اتصال به Google. ممکن است یک دقیقه طول بکشد…</translation>
 <translation id="1416550906796893042">نسخه برنامه</translation>
 <translation id="1430915738399379752">چاپ</translation>
@@ -207,6 +206,7 @@
 <translation id="2498359688066513246">راهنمایی و بازخورد</translation>
 <translation id="2501278716633472235">بازگشت</translation>
 <translation id="2513403576141822879">‏برای تنظیمات بیشتر مرتبط با حریم خصوصی، امنیت و جمع‌آوری داده‌ها، <ph name="BEGIN_LINK" />همگام‌سازی و سرویس‌های Google<ph name="END_LINK" /> را ببینید</translation>
+<translation id="2517472476991765520">اسکن</translation>
 <translation id="2518590038762162553">‏در «حالت ساده»، Chrome صفحه‌ها را سریع‌تر بار می‌کند و تا ۶۰ درصد مصرف داده را کاهش می‌دهد. برای بهینه‌سازی صفحاتی که بازدید می‌کنید، Chrome ترافیک وب شما را به Google ارسال می‌کند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">‏نشانی وب صفحه‌هایی را که بازدید می‌کنید برای Google ارسال می‌کند</translation>
 <translation id="2532336938189706096">نمای وب</translation>
@@ -877,7 +877,6 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (زمان به‌روزرسانی <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">داده صرفه‌جویی‌شده</translation>
 <translation id="7498271377022651285">لطفاً صبر کنید...</translation>
-<translation id="7510943789645525906">اگر گذرواژه مورداستفاده بخشی از نقض داده باشد، هشدار می‌دهد</translation>
 <translation id="7514365320538308">بارگیری</translation>
 <translation id="751961395872307827">نمی‌توان به این سایت متصل شد</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
@@ -933,7 +932,6 @@
 <translation id="7886917304091689118">‏درحال اجرا در Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{درحال بارگیری فایل.}one{درحال بارگیری # فایل.}other{درحال بارگیری # فایل.}}</translation>
 <translation id="7929962904089429003">باز کردن منو</translation>
-<translation id="7930681627240672853">بررسی امنیت گذرواژه</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قدیمی است.</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
 <translation id="7963646190083259054">ارائه‌دهنده:</translation>
@@ -949,7 +947,6 @@
 <translation id="8007176423574883786">برای این دستگاه غیرفعال شد</translation>
 <translation id="8013372441983637696">‏داده‌های این Chrome هم از این دستگاه پاک شود</translation>
 <translation id="8015452622527143194">برگرداندن همه‌چیز در صفحه به‌اندازه پیش‌فرض</translation>
-<translation id="8015780634880457457">‏Google می‌تواند بررسی کند که آیا گذرواژه‌هایتان بخشی از نقض داده بوده است یا نه</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="8035133914807600019">پوشه جدید…</translation>

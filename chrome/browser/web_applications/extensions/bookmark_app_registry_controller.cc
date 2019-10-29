@@ -36,7 +36,7 @@ const Extension* BookmarkAppRegistryController::GetExtension(
   return extension;
 }
 
-void BookmarkAppRegistryController::SetAppDisplayMode(
+void BookmarkAppRegistryController::SetAppUserDisplayMode(
     const web_app::AppId& app_id,
     blink::mojom::DisplayMode display_mode) {
   const Extension* extension = GetExtension(app_id);

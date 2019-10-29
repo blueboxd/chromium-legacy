@@ -27,8 +27,6 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   friend class UserGestureIndicator;
 
  public:
-  enum Status { kNewGesture, kPossiblyExistingGesture };
-
   ~UserGestureToken() = default;
 
   void SetClockForTesting(const base::Clock* clock) { clock_ = clock; }
@@ -36,7 +34,7 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(UserGestureIndicatorTest, Timeouts);
-  UserGestureToken(Status);
+  UserGestureToken();
 
   void TransferGestureTo(UserGestureToken*);
   bool ConsumeGesture();
@@ -59,17 +57,6 @@ class CORE_EXPORT UserGestureIndicator final {
   // non-suffixed counterparts *must* be called on the main thread. Consider
   // always using the non-suffixed one unless the code really
   // needs to be thread-safe
-
-  // Returns whether a user gesture is currently in progress.
-  static bool ProcessingUserGesture();
-  static bool ProcessingUserGestureThreadSafe();
-
-  // Mark the current user gesture (if any) as having been used, such that
-  // it cannot be used again.  This is done only for very security-sensitive
-  // operations like creating a new process.
-  static bool ConsumeUserGesture();
-  static bool ConsumeUserGestureThreadSafe();
-
   static UserGestureToken* CurrentToken();
   static UserGestureToken* CurrentTokenThreadSafe();
 
@@ -77,8 +64,7 @@ class CORE_EXPORT UserGestureIndicator final {
 
   // Constructs a UserGestureIndicator with a new UserGestureToken of the given
   // status.
-  explicit UserGestureIndicator(
-      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture);
+  explicit UserGestureIndicator();
   ~UserGestureIndicator();
 
  private:

@@ -29,6 +29,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -1452,6 +1453,21 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserBleDisabledTest, CheckBleDisabled) {
   fake_hid_discovery->WaitForCallToStart();
   EXPECT_TRUE(fake_hid_discovery->is_start_requested());
   EXPECT_FALSE(fake_ble_discovery->is_start_requested());
+}
+
+class WebAuthLocalClientBackForwardCacheBrowserTest
+    : public WebAuthLocalClientBrowserTest {
+ protected:
+  BackForwardCacheDisabledTester tester_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBackForwardCacheBrowserTest,
+                       WebAuthDisablesBackForwardCache) {
+  // Initialisation of the test should disable bfcache.
+  EXPECT_TRUE(tester_.IsDisabledForFrameWithReason(
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      shell()->web_contents()->GetMainFrame()->GetRoutingID(),
+      "WebAuthenticationAPI"));
 }
 
 // WebAuthBrowserCtapTest ----------------------------------------------

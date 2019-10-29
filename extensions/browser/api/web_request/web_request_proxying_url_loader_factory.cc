@@ -998,7 +998,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
 }
 
 void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -1032,7 +1032,7 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
       web_request_id,
       std::make_unique<InProgressRequest>(
           this, web_request_id, request_id, routing_id, options, request,
-          traffic_annotation, std::move(loader_request), std::move(client)));
+          traffic_annotation, std::move(loader_receiver), std::move(client)));
   result.first->second->Restart();
 }
 

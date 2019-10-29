@@ -116,7 +116,7 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 151
+TOTAL_TESTS = 153
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 20 + TOTAL_WONTFIX
 TOTAL_CRASHES = 78
@@ -307,6 +307,9 @@ layer at (0,0) size 800x34
               expected_text=None,
               actual_checksum=None, actual_image=None,
               expected_checksum=None, expected_image=None)
+
+    tests.add('virtual/virtual_empty_bases/physical1.html')
+    tests.add('virtual/virtual_empty_bases/dir/physical2.html')
 
     return tests
 
@@ -568,15 +571,14 @@ class TestPort(Port):
 
     def virtual_test_suites(self):
         return [
-            VirtualTestSuite(prefix='virtual_passes', base='passes', args=['--virtual-arg']),
-            VirtualTestSuite(prefix='virtual_passes', base='passes_two', args=['--virtual-arg']),
-            VirtualTestSuite(prefix='skipped', base='failures/expected', args=['--virtual-arg2']),
-            VirtualTestSuite(prefix='virtual_failures', base='failures/unexpected', args=['--virtual-arg3']),
-            VirtualTestSuite(prefix='references_use_default_args', base='passes/reftest.html',
-                             args=['--virtual-arg'], references_use_default_args=True),
-            VirtualTestSuite(prefix='virtual_wpt', base='external/wpt', args=['--virtual-arg']),
-            VirtualTestSuite(prefix='virtual_wpt_dom', base='external/wpt/dom', args=['--virtual-arg']),
-            VirtualTestSuite(prefix='virtual_wpt_dom', base='wpt_internal/dom', args=['--virtual-arg']),
+            VirtualTestSuite(prefix='virtual_passes', bases=['passes', 'passes_two'], args=['--virtual-arg']),
+            VirtualTestSuite(prefix='skipped', bases=['failures/expected'], args=['--virtual-arg-skipped']),
+            VirtualTestSuite(prefix='virtual_failures', bases=['failures/unexpected'], args=['--virtual-arg-failures']),
+            VirtualTestSuite(prefix='references_use_default_args', bases=['passes/reftest.html'],
+                             args=['--virtual-arg-reftest'], references_use_default_args=True),
+            VirtualTestSuite(prefix='virtual_wpt', bases=['external/wpt'], args=['--virtual-arg-wpt']),
+            VirtualTestSuite(prefix='virtual_wpt_dom', bases=['external/wpt/dom', 'wpt_internal/dom'], args=['--virtual-arg-wpt-dom']),
+            VirtualTestSuite(prefix='virtual_empty_bases', bases=[], args=['--virtual-arg-empty-bases']),
         ]
 
 

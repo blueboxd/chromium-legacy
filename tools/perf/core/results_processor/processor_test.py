@@ -49,25 +49,24 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
   def CreateHistogramsArtifact(self, hist):
     """Create an artifact with histograms."""
     histogram_dicts = [hist.AsDict()]
-    hist_file = os.path.join(self.output_dir,
-                             compute_metrics.HISTOGRAM_DICTS_FILE)
-    with open(hist_file, 'w') as f:
-      json.dump(histogram_dicts, f)
-    return testing.Artifact(hist_file)
+    with tempfile.NamedTemporaryFile(
+        dir=self.intermediate_dir, delete=False) as artifact_file:
+      json.dump(histogram_dicts, artifact_file)
+    return (compute_metrics.HISTOGRAM_DICTS_FILE,
+            testing.Artifact(artifact_file.name))
 
   def CreateDiagnosticsArtifact(self, **diagnostics):
     """Create an artifact with diagnostics."""
-    diag_file = os.path.join(self.output_dir,
-                             processor.DIAGNOSTICS_NAME)
-    with open(diag_file, 'w') as f:
-      json.dump({'diagnostics': diagnostics}, f)
-    return testing.Artifact(diag_file)
+    with tempfile.NamedTemporaryFile(
+        dir=self.intermediate_dir, delete=False) as artifact_file:
+      json.dump({'diagnostics': diagnostics}, artifact_file)
+    return processor.DIAGNOSTICS_NAME, testing.Artifact(artifact_file.name)
 
   def CreateMeasurementsArtifact(self, measurements):
     with tempfile.NamedTemporaryFile(
         dir=self.intermediate_dir, delete=False) as artifact_file:
       json.dump({'measurements': measurements}, artifact_file)
-    return testing.Artifact(artifact_file.name)
+    return processor.MEASUREMENTS_NAME, testing.Artifact(artifact_file.name)
 
   def testJson3Output(self):
     self.SerializeIntermediateResults(
@@ -135,21 +134,17 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
   def testMaxValuesPerTestCase(self):
     def SomeMeasurements(num):
-      return (
-          processor.MEASUREMENTS_NAME,
-          self.CreateMeasurementsArtifact({
-              'n%d' % i: {'unit': 'count', 'samples': [i]}
-              for i in range(num)
-          })
-      )
+      return self.CreateMeasurementsArtifact({
+          'n%d' % i: {'unit': 'count', 'samples': [i]}
+          for i in range(num)})
 
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story1', status='PASS',
-            output_artifacts=dict([SomeMeasurements(3)])),
+            output_artifacts=[SomeMeasurements(3)]),
         testing.TestResult(
             'benchmark/story2', status='PASS',
-            output_artifacts=dict([SomeMeasurements(7)])),
+            output_artifacts=[SomeMeasurements(7)]),
     )
 
     exit_code = processor.main([
@@ -167,21 +162,20 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     self.assertEqual(results['tests']['benchmark']['story1']['actual'], 'PASS')
     self.assertEqual(results['tests']['benchmark']['story2']['actual'], 'FAIL')
+    self.assertTrue(results['tests']['benchmark']['story2']['is_unexpected'])
 
   def testHistogramsOutput(self):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={
-                compute_metrics.HISTOGRAM_DICTS_FILE:
-                    self.CreateHistogramsArtifact(
-                        histogram.Histogram('a', 'unitless')),
-                processor.DIAGNOSTICS_NAME:
-                    self.CreateDiagnosticsArtifact(
-                        benchmarks=['benchmark'],
-                        osNames=['linux'],
-                        documentationUrls=[['documentation', 'url']]),
-            },
+            output_artifacts=[
+                self.CreateHistogramsArtifact(
+                    histogram.Histogram('a', 'unitless')),
+                self.CreateDiagnosticsArtifact(
+                    benchmarks=['benchmark'],
+                    osNames=['linux'],
+                    documentationUrls=[['documentation', 'url']])
+            ],
             start_time='2009-02-13T23:31:30.987000Z',
         ),
     )
@@ -220,11 +214,10 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={
-                compute_metrics.HISTOGRAM_DICTS_FILE:
-                    self.CreateHistogramsArtifact(
-                        histogram.Histogram('a', 'unitless')),
-            },
+            output_artifacts=[
+                self.CreateHistogramsArtifact(
+                    histogram.Histogram('a', 'unitless')),
+            ],
         ),
     )
 
@@ -259,11 +252,10 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={
-                compute_metrics.HISTOGRAM_DICTS_FILE:
-                    self.CreateHistogramsArtifact(
-                        histogram.Histogram('a', 'unitless')),
-            },
+            output_artifacts=[
+                self.CreateHistogramsArtifact(
+                    histogram.Histogram('a', 'unitless')),
+            ],
         ),
     )
 
@@ -361,23 +353,19 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertIn('traceUrls', hist.diagnostics)
 
   def testHistogramsOutputMeasurements(self):
-    measure_file = os.path.join(self.output_dir,
-                                processor.MEASUREMENTS_NAME)
-    with open(measure_file, 'w') as f:
-      json.dump({'measurements': {
-          'a': {'unit': 'ms', 'samples': [4, 6], 'description': 'desc_a'},
-          'b': {'unit': 'ms', 'samples': [5], 'description': 'desc_b'},
-      }}, f)
-
+    measurements = {
+        'a': {'unit': 'ms', 'samples': [4, 6], 'description': 'desc_a'},
+        'b': {'unit': 'ms', 'samples': [5], 'description': 'desc_b'},
+    }
     start_ts = 1500000000
     start_iso = datetime.datetime.utcfromtimestamp(start_ts).isoformat() + 'Z'
 
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={
-                processor.MEASUREMENTS_NAME: testing.Artifact(measure_file)
-            },
+            output_artifacts=[
+                self.CreateMeasurementsArtifact(measurements),
+            ],
             tags=['story_tag:test'],
             start_time=start_iso,
         ),
@@ -429,16 +417,14 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={
-                compute_metrics.HISTOGRAM_DICTS_FILE:
-                    self.CreateHistogramsArtifact(
-                        histogram.Histogram('a', 'unitless')),
-                processor.DIAGNOSTICS_NAME:
-                    self.CreateDiagnosticsArtifact(
-                        benchmarks=['benchmark'],
-                        osNames=['linux'],
-                        documentationUrls=[['documentation', 'url']]),
-            },
+            output_artifacts=[
+                self.CreateHistogramsArtifact(
+                    histogram.Histogram('a', 'unitless')),
+                self.CreateDiagnosticsArtifact(
+                    benchmarks=['benchmark'],
+                    osNames=['linux'],
+                    documentationUrls=[['documentation', 'url']]),
+            ],
             start_time='2009-02-13T23:31:30.987000Z',
         ),
     )
@@ -477,11 +463,10 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={
-                compute_metrics.HISTOGRAM_DICTS_FILE:
-                    self.CreateHistogramsArtifact(
-                        histogram.Histogram('a', 'unitless')),
-            },
+            output_artifacts=[
+                self.CreateHistogramsArtifact(
+                    histogram.Histogram('a', 'unitless')),
+            ],
         ),
     )
 
@@ -516,11 +501,10 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={
-                compute_metrics.HISTOGRAM_DICTS_FILE:
-                    self.CreateHistogramsArtifact(
-                        histogram.Histogram('a', 'unitless')),
-            },
+            output_artifacts=[
+                self.CreateHistogramsArtifact(
+                    histogram.Histogram('a', 'unitless')),
+            ],
         ),
     )
 
@@ -557,15 +541,13 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={
-                compute_metrics.HISTOGRAM_DICTS_FILE:
-                    self.CreateHistogramsArtifact(test_hist),
-                processor.DIAGNOSTICS_NAME:
-                    self.CreateDiagnosticsArtifact(
-                        benchmarks=['benchmark'],
-                        osNames=['linux'],
-                        documentationUrls=[['documentation', 'url']]),
-            },
+            output_artifacts=[
+                self.CreateHistogramsArtifact(test_hist),
+                self.CreateDiagnosticsArtifact(
+                    benchmarks=['benchmark'],
+                    osNames=['linux'],
+                    documentationUrls=[['documentation', 'url']]),
+            ],
             start_time='2009-02-13T23:31:30.987000Z',
         ),
     )
@@ -598,11 +580,10 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={
-                compute_metrics.HISTOGRAM_DICTS_FILE:
-                    self.CreateHistogramsArtifact(
-                        histogram.Histogram('a', 'unitless')),
-            },
+            output_artifacts=[
+                self.CreateHistogramsArtifact(
+                    histogram.Histogram('a', 'unitless')),
+            ],
         ),
     )
 
@@ -631,11 +612,10 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={
-                compute_metrics.HISTOGRAM_DICTS_FILE:
-                    self.CreateHistogramsArtifact(
-                        histogram.Histogram('a', 'unitless')),
-            },
+            output_artifacts=[
+                self.CreateHistogramsArtifact(
+                    histogram.Histogram('a', 'unitless')),
+            ],
         ),
     )
 

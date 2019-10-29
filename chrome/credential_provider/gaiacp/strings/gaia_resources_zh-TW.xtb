@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">你的帳戶已遭到鎖定。請與你的系統管理員聯絡。</translation>
 <translation id="2844349213149998955">無法以個人帳戶登入這個裝置。請使用公司帳戶登入。</translation>
 <translation id="3306357053520292004">這台電腦已有其他使用者使用這個帳戶登入。請改用其他帳戶登入。</translation>
+<translation id="3926852373333893095">僅限 G Suite Enterprise 使用者登入。</translation>
 <translation id="4057329986137569701">發生內部錯誤。</translation>
 <translation id="4267670563222825190">找不到帳戶的網域使用者。請與你的系統管理員聯絡。</translation>
 <translation id="4300229033992784001">你的帳戶密碼已變更。請輸入目前的 Windows 密碼，讓系統同步處理你的 Windows 帳戶與公司帳戶。</translation>
 <translation id="4706454071748629324">無法新增使用者。在這台電腦上，公司帳戶只能用於建立一位使用者。</translation>
 <translation id="6033715878377252112">Windows 小幫手適用的 Google 憑證提供者</translation>
 <translation id="6149399665202317746">Windows 適用的 Google 憑證提供者</translation>
+<translation id="6239180560789153226">你的裝置缺少救援資訊。請使用 Google 公司帳戶登入。</translation>
 <translation id="6312494990035843744">無法以公司帳戶登入這個網域，請改用其他帳戶。</translation>
 <translation id="6463752215771576050">無法為這部電腦註冊企業管理服務。請改用其他公司帳戶登入。</translation>
 <translation id="6657585470893396449">密碼</translation>
+<translation id="6937049691815837345">你的裝置需要註冊裝置管理功能，請使用 Google 公司帳戶登入。</translation>
 <translation id="7209941495304122410">輸入 Windows 密碼</translation>
 <translation id="7357241217513796177">請確認你已連上網路，然後再試一次。</translation>
 <translation id="7536769223115622137">新增公司帳戶</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">你的工作階段已過期。請使用 Google 公司帳戶登入。</translation>
 <translation id="9055998212250844221">Google 憑證提供者針對 Windows 建立的使用者帳戶</translation>
 <translation id="9135619837062629367">你無法以這個帳戶登入，請改用其他帳戶。</translation>
+<translation id="998002716857524853">請使用 G Suite 公司帳戶登入。</translation>
 </translationbundle>

@@ -53,6 +53,9 @@ ClientStatus CheckJavaScriptResult(
   return OkClientStatus();
 }
 
+// Fills a ClientStatus with appropriate details for a Chrome Autofill error.
+ClientStatus FillAutofillErrorStatus(ClientStatus status);
+
 // Safely gets an object id from a RemoteObject
 bool SafeGetObjectId(const runtime::RemoteObject* result, std::string* out);
 

@@ -83,37 +83,51 @@ class ImageProcessorParamTest
   std::unique_ptr<test::ImageProcessorClient> CreateImageProcessorClient(
       const test::Image& input_image,
       const std::vector<VideoFrame::StorageType>& input_storage_types,
-      const test::Image& output_image,
+      test::Image* const output_image,
       const std::vector<VideoFrame::StorageType>& output_storage_types) {
     Fourcc input_fourcc =
         Fourcc::FromVideoPixelFormat(input_image.PixelFormat());
     Fourcc output_fourcc =
-        Fourcc::FromVideoPixelFormat(output_image.PixelFormat());
+        Fourcc::FromVideoPixelFormat(output_image->PixelFormat());
     auto input_layout = test::CreateVideoFrameLayout(input_image.PixelFormat(),
                                                      input_image.Size());
     auto output_layout = test::CreateVideoFrameLayout(
-        output_image.PixelFormat(), output_image.Size());
+        output_image->PixelFormat(), output_image->Size());
     LOG_ASSERT(input_layout && output_layout);
     ImageProcessor::PortConfig input_config(
         input_fourcc, input_image.Size(), input_layout->planes(),
         input_image.Size(), input_storage_types);
     ImageProcessor::PortConfig output_config(
-        output_fourcc, output_image.Size(), output_layout->planes(),
-        output_image.Size(), output_storage_types);
+        output_fourcc, output_image->Size(), output_layout->planes(),
+        output_image->Size(), output_storage_types);
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
-    LOG_ASSERT(output_image.IsMetadataLoaded());
+    LOG_ASSERT(output_image->IsMetadataLoaded());
     std::vector<std::unique_ptr<test::VideoFrameProcessor>> frame_processors;
     // TODO(crbug.com/944823): Use VideoFrameValidator for RGB formats.
     // TODO(crbug.com/917951): We should validate a scaled image with SSIM.
     // Validating processed frames is currently not supported when a format is
     // not YUV or when scaling images.
     if (IsYuvPlanar(input_fourcc.ToVideoPixelFormat()) &&
-        IsYuvPlanar(output_fourcc.ToVideoPixelFormat()) &&
-        input_image.Size() == output_image.Size()) {
-      auto vf_validator = test::VideoFrameValidator::Create(
-          {output_image.Checksum()}, output_image.PixelFormat());
-      frame_processors.push_back(std::move(vf_validator));
+        IsYuvPlanar(output_fourcc.ToVideoPixelFormat())) {
+      if (input_image.Size() == output_image->Size()) {
+        auto vf_validator = test::VideoFrameValidator::Create(
+            {output_image->Checksum()}, output_image->PixelFormat());
+        frame_processors.push_back(std::move(vf_validator));
+      } else if (input_fourcc == output_fourcc) {
+        // Scaling case.
+        LOG_ASSERT(output_image->Load());
+        scoped_refptr<const VideoFrame> model_frame =
+            CreateVideoFrameFromImage(*output_image);
+        LOG_ASSERT(model_frame) << "Failed to create from image";
+        // Scaling is not deterministic process. There are various algorithms to
+        // scale images. We set a weaker tolerance value, 32, to avoid false
+        // negative.
+        constexpr uint32_t kImageProcessorTestTorelance = 32;
+        auto vf_validator = test::VideoFrameValidator::Create(
+            {model_frame}, kImageProcessorTestTorelance);
+        frame_processors.push_back(std::move(vf_validator));
+      }
     }
 
     if (g_save_images) {
@@ -151,7 +165,7 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_MemToMem) {
   }
 
   auto ip_client = CreateImageProcessorClient(
-      input_image, {VideoFrame::STORAGE_OWNED_MEMORY}, output_image,
+      input_image, {VideoFrame::STORAGE_OWNED_MEMORY}, &output_image,
       {VideoFrame::STORAGE_OWNED_MEMORY});
 
   ip_client->Process(input_image, output_image);
@@ -181,7 +195,7 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToMem) {
   }
 
   auto ip_client = CreateImageProcessorClient(
-      input_image, {VideoFrame::STORAGE_DMABUFS}, output_image,
+      input_image, {VideoFrame::STORAGE_DMABUFS}, &output_image,
       {VideoFrame::STORAGE_OWNED_MEMORY});
 
   ip_client->Process(input_image, output_image);
@@ -202,7 +216,7 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToDmabuf) {
 
   auto ip_client =
       CreateImageProcessorClient(input_image, {VideoFrame::STORAGE_DMABUFS},
-                                 output_image, {VideoFrame::STORAGE_DMABUFS});
+                                 &output_image, {VideoFrame::STORAGE_DMABUFS});
 
   ip_client->Process(input_image, output_image);
 

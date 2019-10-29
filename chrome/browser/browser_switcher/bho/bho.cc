@@ -40,23 +40,22 @@ CBrowserSwitcherBHO::~CBrowserSwitcherBHO() = default;
 // Implementation of IObjectWithSiteImpl::SetSite.
 STDMETHODIMP CBrowserSwitcherBHO::SetSite(IUnknown* site) {
   if (site != NULL) {
-    HRESULT hr = site->QueryInterface(IID_IWebBrowser2,
-                                      reinterpret_cast<void**>(&web_browser_));
+    HRESULT hr = site->QueryInterface(IID_PPV_ARGS(&web_browser_));
     if (SUCCEEDED(hr)) {
-      hr = DispEventAdvise(web_browser_);
+      hr = DispEventAdvise(web_browser_.Get());
       advised_ = true;
     }
   } else {  // site == NULL
     if (advised_) {
-      DispEventUnadvise(web_browser_);
+      DispEventUnadvise(web_browser_.Get());
       advised_ = false;
     }
-    web_browser_.Release();
+    web_browser_.Reset();
   }
   return IObjectWithSiteImpl<CBrowserSwitcherBHO>::SetSite(site);
 }
 
-// If enabled, monitors navigations and redirects them to Chrome if they are
+// If enabled,  navigations and redirects them to Chrome if they are
 // not intended to happen in IE according to the Legacy Browser Support policy.
 // This only applies to top-level documents (not to frames).
 void STDMETHODCALLTYPE
@@ -68,13 +67,11 @@ CBrowserSwitcherBHO::BeforeNavigate(IDispatch* disp,
                                     VARIANT* headers,
                                     VARIANT_BOOL* cancel) {
   if (web_browser_ != NULL && disp != NULL) {
-    ATL::CComPtr<IUnknown> unknown1;
-    ATL::CComPtr<IUnknown> unknown2;
-    if (SUCCEEDED(web_browser_->QueryInterface(
-            IID_IUnknown, reinterpret_cast<void**>(&unknown1))) &&
-        SUCCEEDED(disp->QueryInterface(IID_IUnknown,
-                                       reinterpret_cast<void**>(&unknown2)))) {
-      // check if this is the outter frame.
+    Microsoft::WRL::ComPtr<IUnknown> unknown1;
+    Microsoft::WRL::ComPtr<IUnknown> unknown2;
+    if (SUCCEEDED(web_browser_.As(&unknown1)) &&
+        SUCCEEDED(disp->QueryInterface(IID_PPV_ARGS(&unknown2)))) {
+      // check if this is the outer frame.
       if (unknown1 == unknown2) {
         bool result =
             CheckUrl((LPOLESTR)url->bstrVal, *cancel != VARIANT_FALSE);

@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="1442386063175183758">Pravé otevírací přeložení</translation>
 <translation id="1442987760062738829">Děrování</translation>
-<translation id="1450011005989029586">Porušení zabezpečení údajů na webu nebo v aplikaci, které používáte, vedlo k odhalení vašeho hesla. Chrome vám doporučuje okamžitě na webu <ph name="ORIGIN" /> <ph name="BOLD" />.</translation>
 <translation id="1455413310270022028">Guma</translation>
 <translation id="1463543813647160932">5:7</translation>
 <translation id="1472675084647422956">Zobrazit více</translation>
@@ -672,7 +671,6 @@
 <translation id="4258748452823770588">Chybný podpis</translation>
 <translation id="4261046003697461417">Do chráněných dokumentů nelze přidávat značky a poznámky</translation>
 <translation id="4265872034478892965">Povoleno administrátorem</translation>
-<translation id="4270615291506829403">změnit heslo</translation>
 <translation id="4275830172053184480">Restartovat zařízení</translation>
 <translation id="4277028893293644418">Resetovat heslo</translation>
 <translation id="4279811152705618813">Váš <ph name="DEVICE_TYPE" /> spravuje doména <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -751,7 +749,6 @@
 <translation id="4708268264240856090">Připojení bylo přerušeno</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Spustit Diagnostiku sítě systému Windows<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">Porušení zabezpečení údajů na webu nebo v aplikaci, které používáte, vedlo k odhalení vašeho hesla. Chrome vám doporučuje zkontrolovat nyní uložená hesla.</translation>
 <translation id="4726672564094551039">Znovu načíst zásady</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4731967714531604179">Prc2 (obálka)</translation>
@@ -1167,7 +1164,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="679355240208270552">Ignorováno, protože v zásadách výchozí vyhledávání není aktivováno.</translation>
 <translation id="681021252041861472">Povinné pole</translation>
 <translation id="6810899417690483278">ID přizpůsobení</translation>
-<translation id="6819440013020405090">Porušení zabezpečení údajů na webu nebo v aplikaci, které používáte, vedlo k odhalení vašeho hesla. Chrome doporučuje zkontrolovat uložená hesla a změnit heslo na webu <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Pokusili jste se přejít na web <ph name="DOMAIN" />, server však předložil certifikát podepsaný slabým algoritmem (například SHA-1). To znamená, že bezpečnostní pověření předložená serverem mohou být falešná a může se jednat o úplně jiný server, než předpokládáte (můžete komunikovat s útočníkem).</translation>
 <translation id="6826370046007623921">Ochrana před únikem informací</translation>
 <translation id="6831043979455480757">Přeložit</translation>
@@ -1210,7 +1206,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7064851114919012435">Kontaktní údaje</translation>
 <translation id="7075452647191940183">Požadavek je příliš velký</translation>
 <translation id="7079718277001814089">Tento web obsahuje malware</translation>
-<translation id="70850504851191913">Bylo nahlášeno porušení zabezpečení údajů</translation>
 <translation id="7087282848513945231">Okres</translation>
 <translation id="7090678807593890770">Vyhledejte na Googlu <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Skrýt</translation>

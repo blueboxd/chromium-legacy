@@ -42,19 +42,18 @@ ExternalInstallOptions ParseInstallOptionsFromPolicyEntry(
          default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue);
 
-  blink::mojom::DisplayMode display_mode;
+  blink::mojom::DisplayMode user_display_mode;
   if (!default_launch_container) {
-    display_mode = blink::mojom::DisplayMode::kBrowser;
+    user_display_mode = blink::mojom::DisplayMode::kBrowser;
   } else if (default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue) {
-    display_mode = blink::mojom::DisplayMode::kBrowser;
+    user_display_mode = blink::mojom::DisplayMode::kBrowser;
   } else {
-    // TODO(crbug.com/1009909): Support Minimal UI.
-    display_mode = blink::mojom::DisplayMode::kStandalone;
+    user_display_mode = blink::mojom::DisplayMode::kStandalone;
   }
 
   ExternalInstallOptions install_options{
-      GURL(url.GetString()), display_mode,
+      GURL(url.GetString()), user_display_mode,
       ExternalInstallSource::kExternalPolicy};
 
   install_options.add_to_applications_menu = true;

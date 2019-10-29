@@ -1062,6 +1062,17 @@
       ],
     },
     {
+      'name': 'ParentalSupervision',
+      'type': 'group',
+      'caption': '''Parental supervision settings''',
+      'desc': '''Controls parental supervision policies, that are applied to child accounts only.''',
+      'policies': [
+        'ParentAccessCodeConfig',
+        'PerAppTimeLimits',
+        'UsageTimeLimit',
+      ],
+    },
+    {
       'name': 'HomepageLocation',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'string',
@@ -10678,7 +10689,9 @@
 
           If you set this policy, users can temporarily override it by enabling or disabling the screen magnifier. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
-          If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier anytime and its status on the login screen is persisted between users.''',
+          If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier anytime and its status on the login screen is persisted between users.
+
+          Note: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME">DeviceLoginScreenScreenMagnifierType</ph> overrides this policy if the former is specified.''',
     },
     {
       'name': 'DeviceLoginScreenScreenMagnifierType',
@@ -18780,6 +18793,128 @@
 
       If you set the policy, users can't change it. If not set or set to false, it has no effect.'''
     },
+    {
+      'name': 'PerAppTimeLimits',
+      'owners': ['agawronska@chromium.org', 'cros-families-eng@google.com'],
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'app_limits': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'app_info': {
+                  'type': 'object',
+                  'properties': {
+                    'app_id': {
+                      'type': 'string'
+                    },
+                    'app_type': {
+                      'type': 'string',
+                      'enum': [
+                        'ARC',
+                        'BUILT-IN',
+                        'EXTENSION',
+                        'WEB',
+                        'CROSTINI'
+                      ]
+                    }
+                  }
+                },
+                'restriction': {
+                  'type': 'string',
+                  'enum': [
+                    'BLOCK',
+                    'TIME_LIMIT'
+                  ]
+                },
+                'daily_limit_mins': {
+                  'type': 'integer',
+                  'minimum': 0,
+                  'maximum': 1440,
+                },
+                'last_updated_millis': {
+                  'type': 'string',
+                  'description': '''UTC timestamp for the last time this entry was updated. Sent as a string because the timestamp would not fit in an integer''',
+                }
+              }
+            }
+          },
+          'reset_at': {
+            'type': 'object',
+            'description' : '''The time of the day in UTC timezone when usage quota is renewed.''',
+            'properties': {
+              'hour': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 23
+              },
+              'minute': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 59
+              }
+            }
+          }
+        }
+      },
+      'supported_on': ['chrome_os: 80-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True
+      },
+      'example_value': {
+        'app_limits': [
+          {
+            'app_info': {
+              'app_id': 'com.example.myapp',
+              'app_type': 'ARC'
+            },
+            'restriction': 'TIME_LIMIT',
+            'daily_limit_mins': 30,
+            'last_updated_millis': '1570223060437'
+          },
+          {
+            'app_info': {
+              'app_id': 'pjkljhegncpnkpknbcohdijeoejaedia',
+              'app_type': 'EXTENSION'
+            },
+            'restriction': 'TIME_LIMIT',
+            'daily_limit_mins': 10,
+            'last_updated_millis': '1570223000000'
+          },
+          {
+            'app_info': {
+              'app_id': 'iniodglblcgmngkgdipeiclkdjjpnlbn',
+              'app_type': 'BUILT-IN'
+            },
+            'restriction': 'BLOCK',
+            'last_updated_millis': '1570223000000'
+          }
+        ],
+        'reset_at': {
+          'hour': 6,
+          'minute': 0
+        }
+      },
+      'id': 641,
+      'caption': '''Per-App Time Limits''',
+      'tags': [],
+      'desc': '''Allows to set per-app usage restrictions.
+        Usage restrictions can be applied to the apps installed on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> for the given user.
+        Restrictions should be passed in |app_limits| list. Only one entry per-app is allowed. Apps not included in the list have no restrictions.
+        It is not possible to block apps that are essential for the operating system, the restrictions for such apps will be ignored.
+        App is uniquely identified by |app_id|. Since different types of apps can use different id format |app_type| needs to be specified next to |app_id|.
+        Per-App Time Limits only support |ARC| apps currently. Android package name is used as |app_id|.
+        Support for other types of applications will be added in the future, for now they can be specified in the policy, but the restrictions will take no effect.
+        There are two types of available restrictions: |BLOCK| and |TIME_LIMIT|.
+        |BLOCK| makes app unavailable for the user. If |daily_limit_mins| is specified with |BLOCK| restriction |daily_limit_mins| will be ignored.
+        |TIME_LIMITS| applies daily usage limit and makes app unavailable after the limit is reached on the given day. Usage limit is specified in |daily_limit_mins|. Usage limit is reset daily at the UTC time passed in |reset_at|.
+        This policy is only used for child users.
+        This policy is complementary to 'UsageTimeLimit'. Restrictions specified in 'UsageTimeLimit' like screen time and bedtime will be enforced regardless of 'PerAppTimeLimits'.'''
+    }
   ],
 
   'messages': {
@@ -19603,6 +19738,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 640,
+  'highest_id_currently_used': 641,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -20,6 +20,9 @@ enum class MessageType : int16_t {
   kAudio,
 };
 
+// Returns true if the full mixer is present on the system, false otherwise.
+bool HaveFullMixer();
+
 }  // namespace mixer_service
 }  // namespace media
 }  // namespace chromecast

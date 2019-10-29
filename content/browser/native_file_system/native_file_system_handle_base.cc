@@ -9,82 +9,8 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
-
-class NativeFileSystemHandleBase::UsageIndicatorTracker
-    : public WebContentsObserver {
- public:
-  UsageIndicatorTracker(int process_id,
-                        int frame_id,
-                        bool is_directory,
-                        const base::FilePath& directory_path)
-      : WebContentsObserver(
-            WebContentsImpl::FromRenderFrameHostID(process_id, frame_id)),
-        is_directory_(is_directory),
-        directory_path_(directory_path) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    // Disable back-forward cache as native file system's usage of
-    // RenderFrameHost::IsCurrent at the moment is not compatible with bfcache.
-    BackForwardCache::DisableForRenderFrameHost(
-        GlobalFrameRoutingId(process_id, frame_id), "NativeFileSystem");
-    if (web_contents()) {
-      web_contents()->IncrementNativeFileSystemHandleCount();
-      if (is_directory_)
-        web_contents()->AddNativeFileSystemDirectoryHandle(directory_path_);
-    }
-  }
-
-  ~UsageIndicatorTracker() override {
-    if (web_contents()) {
-      web_contents()->DecrementNativeFileSystemHandleCount();
-      if (is_directory_ && is_readable_)
-        web_contents()->RemoveNativeFileSystemDirectoryHandle(directory_path_);
-      if (is_writable_)
-        web_contents()->DecrementWritableNativeFileSystemHandleCount();
-    }
-  }
-
-  void UpdateStatus(bool readable, bool writable) {
-    SetReadable(readable);
-    SetWritable(writable);
-  }
-
-  void SetReadable(bool readable) {
-    if (readable == is_readable_ || !web_contents())
-      return;
-
-    is_readable_ = readable;
-    if (is_directory_) {
-      if (is_readable_)
-        web_contents()->AddNativeFileSystemDirectoryHandle(directory_path_);
-      else
-        web_contents()->RemoveNativeFileSystemDirectoryHandle(directory_path_);
-    }
-  }
-
-  void SetWritable(bool writable) {
-    if (writable == is_writable_ || !web_contents())
-      return;
-
-    is_writable_ = writable;
-    if (is_writable_)
-      web_contents()->IncrementWritableNativeFileSystemHandleCount();
-    else
-      web_contents()->DecrementWritableNativeFileSystemHandleCount();
-  }
-
-  WebContentsImpl* web_contents() const {
-    return static_cast<WebContentsImpl*>(WebContentsObserver::web_contents());
-  }
-
- private:
-  const bool is_directory_;
-  const base::FilePath directory_path_;
-  bool is_readable_ = true;
-  bool is_writable_ = false;
-};
 
 NativeFileSystemHandleBase::NativeFileSystemHandleBase(
     NativeFileSystemManagerImpl* manager,
@@ -106,7 +32,9 @@ NativeFileSystemHandleBase::NativeFileSystemHandleBase(
          url_.type() == storage::kFileSystemTypeTemporary ||
          url_.type() == storage::kFileSystemTypeTest)
       << url_.type();
-  if (url_.type() == storage::kFileSystemTypeNativeLocal) {
+
+  if (ShouldTrackUsage()) {
+    DCHECK_EQ(url_.type(), storage::kFileSystemTypeNativeLocal);
     DCHECK_EQ(url_.mount_type(), storage::kFileSystemTypeIsolated);
 
     handle_state_.read_grant->AddObserver(this);
@@ -115,23 +43,30 @@ NativeFileSystemHandleBase::NativeFileSystemHandleBase(
     if (handle_state_.read_grant != handle_state_.write_grant)
       handle_state_.write_grant->AddObserver(this);
 
-    base::FilePath directory_path;
+    Observe(WebContentsImpl::FromRenderFrameHostID(context_.process_id,
+                                                   context_.frame_id));
+
+    // Disable back-forward cache as native file system's usage of
+    // RenderFrameHost::IsCurrent at the moment is not compatible with bfcache.
+    BackForwardCache::DisableForRenderFrameHost(
+        GlobalFrameRoutingId(context_.process_id, context_.frame_id),
+        "NativeFileSystem");
+
     if (is_directory) {
       // For usage reporting purposes try to get the root path of the isolated
       // file system, i.e. the path the user picked in a directory picker.
       auto* isolated_context = storage::IsolatedContext::GetInstance();
-      if (!isolated_context->GetRegisteredPath(handle_state_.file_system.id(),
-                                               &directory_path)) {
+      if (!isolated_context->GetRegisteredPath(
+              handle_state_.file_system.id(), &directory_for_usage_tracking_)) {
         // If for some reason the isolated file system no longer exists, fall
-        // back to the path of the handle itself, which could be a child of the
-        // originally picked path.
-        directory_path = url.path();
+        // back to the path of the handle itself, which could be a child of
+        // the originally picked path.
+        directory_for_usage_tracking_ = url.path();
       }
     }
-    usage_indicator_tracker_ = base::SequenceBound<UsageIndicatorTracker>(
-        base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
-        context_.process_id, context_.frame_id, bool{is_directory},
-        base::FilePath(directory_path));
+
+    if (web_contents())
+      web_contents()->IncrementNativeFileSystemHandleCount();
     UpdateUsage();
   }
 }
@@ -142,6 +77,16 @@ NativeFileSystemHandleBase::~NativeFileSystemHandleBase() {
   // for URL type and/or the same grant being used for read and write access.
   handle_state_.read_grant->RemoveObserver(this);
   handle_state_.write_grant->RemoveObserver(this);
+
+  if (ShouldTrackUsage() && web_contents()) {
+    web_contents()->DecrementNativeFileSystemHandleCount();
+    if (!directory_for_usage_tracking_.empty() && was_readable_at_last_check_) {
+      web_contents()->RemoveNativeFileSystemDirectoryHandle(
+          directory_for_usage_tracking_);
+    }
+    if (was_writable_at_last_check_)
+      web_contents()->DecrementWritableNativeFileSystemHandleCount();
+  }
 }
 
 NativeFileSystemHandleBase::PermissionStatus
@@ -248,19 +193,32 @@ void NativeFileSystemHandleBase::DidRequestPermission(
 
 void NativeFileSystemHandleBase::UpdateUsage() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!usage_indicator_tracker_)
+  if (!ShouldTrackUsage() || !web_contents())
     return;
+
   bool is_readable =
       handle_state_.read_grant->GetStatus() == PermissionStatus::GRANTED;
+  if (is_readable != was_readable_at_last_check_) {
+    was_readable_at_last_check_ = is_readable;
+    if (!directory_for_usage_tracking_.empty()) {
+      if (is_readable) {
+        web_contents()->AddNativeFileSystemDirectoryHandle(
+            directory_for_usage_tracking_);
+      } else {
+        web_contents()->RemoveNativeFileSystemDirectoryHandle(
+            directory_for_usage_tracking_);
+      }
+    }
+  }
+
   bool is_writable = is_readable && handle_state_.write_grant->GetStatus() ==
                                         PermissionStatus::GRANTED;
-  if (is_writable != was_writable_at_last_check_ ||
-      is_readable != was_readable_at_last_check_) {
-    was_readable_at_last_check_ = is_readable;
+  if (is_writable != was_writable_at_last_check_) {
     was_writable_at_last_check_ = is_writable;
-    usage_indicator_tracker_.Post(FROM_HERE,
-                                  &UsageIndicatorTracker::UpdateStatus,
-                                  is_readable, is_writable);
+    if (is_writable)
+      web_contents()->IncrementWritableNativeFileSystemHandleCount();
+    else
+      web_contents()->DecrementWritableNativeFileSystemHandleCount();
   }
 }
 

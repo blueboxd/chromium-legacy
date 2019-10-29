@@ -289,12 +289,13 @@ void P2PSocketManager::GetHostAddress(
                  request_ptr, base::Passed(&callback)));
 }
 
-void P2PSocketManager::CreateSocket(P2PSocketType type,
-                                    const net::IPEndPoint& local_address,
-                                    const P2PPortRange& port_range,
-                                    const P2PHostAndIPEndPoint& remote_address,
-                                    mojom::P2PSocketClientPtr client,
-                                    mojom::P2PSocketRequest request) {
+void P2PSocketManager::CreateSocket(
+    P2PSocketType type,
+    const net::IPEndPoint& local_address,
+    const P2PPortRange& port_range,
+    const P2PHostAndIPEndPoint& remote_address,
+    mojo::PendingRemote<mojom::P2PSocketClient> client,
+    mojo::PendingReceiver<mojom::P2PSocket> receiver) {
   if (port_range.min_port > port_range.max_port ||
       (port_range.min_port == 0 && port_range.max_port != 0)) {
     trusted_socket_manager_client_->InvalidSocketPortRangeRequested();
@@ -311,7 +312,7 @@ void P2PSocketManager::CreateSocket(P2PSocketType type,
     return;
   }
   std::unique_ptr<P2PSocket> socket =
-      P2PSocket::Create(this, std::move(client), std::move(request), type,
+      P2PSocket::Create(this, std::move(client), std::move(receiver), type,
                         url_request_context_->net_log(),
                         proxy_resolving_socket_factory_.get(), &throttler_);
 

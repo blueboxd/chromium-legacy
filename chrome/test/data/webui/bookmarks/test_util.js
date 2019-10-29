@@ -170,7 +170,7 @@ function findFolderNode(rootNode, id) {
  * @return {Object}
  */
 function simulateChromeExtensionAPITest() {
-  let promises = [];
+  const promises = [];
   function pass(callback) {
     let resolve;
     assertEquals(undefined, chrome.runtime.lastError);

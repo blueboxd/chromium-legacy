@@ -97,15 +97,11 @@ ScriptPromise PushManager::subscribe(
     DCHECK(messaging_client);
 
     messaging_client->Subscribe(
-        registration_, options,
-        LocalFrame::HasTransientUserActivation(frame,
-                                               true /* check_if_main_thread */),
+        registration_, options, LocalFrame::HasTransientUserActivation(frame),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   } else {
     GetPushProvider(registration_)
-        ->Subscribe(options,
-                    LocalFrame::HasTransientUserActivation(
-                        nullptr, true /* check_if_main_thread */),
+        ->Subscribe(options, LocalFrame::HasTransientUserActivation(nullptr),
                     std::make_unique<PushSubscriptionCallbacks>(resolver,
                                                                 registration_));
   }

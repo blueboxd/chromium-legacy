@@ -241,8 +241,7 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
       PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(
-          document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr,
-          UserGestureToken::kNewGesture);
+          document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr);
   if ((drag_destination_action_ & kDragDestinationActionDHTML) &&
       document_is_handling_drag_) {
     bool prevented_default = false;

@@ -198,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 件以上の未読の通知}other{# 件以上の未読の通知}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1分}other{#分}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568"><ph name="ORIGIN" /> からの発信番号</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 時間前}other{# 時間前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{残り 1 秒}other{残り # 秒}}</translation>
 <translation id="8134065097954893699">ページを再読み込み</translation>

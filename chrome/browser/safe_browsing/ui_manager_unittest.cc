@@ -79,7 +79,7 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   SafeBrowsingUIManagerTest()
       : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {
-    ui_manager_ = new SafeBrowsingUIManager(NULL);
+    ui_manager_ = new SafeBrowsingUIManager(nullptr);
   }
 
   ~SafeBrowsingUIManagerTest() override {}

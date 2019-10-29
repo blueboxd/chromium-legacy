@@ -66,7 +66,6 @@
 <translation id="1407135791313364759">Öppna alla</translation>
 <translation id="1409426117486808224">Förenklad vy för öppna flikar</translation>
 <translation id="1409879593029778104">Nedladdningen av <ph name="FILE_NAME" /> hindrades eftersom filen redan finns.</translation>
-<translation id="1413136574162415971">Google kan kontrollera om dina lösenord har läckt ut vid ett dataintrång. Detta aktiveras när du är inloggad med ditt Google-konto och har aktiverat synkronisering.</translation>
 <translation id="1414981605391750300">Kontaktar Google. Det här kan ta någon minut …</translation>
 <translation id="1416550906796893042">Appversion</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
@@ -207,6 +206,7 @@
 <translation id="2498359688066513246">Hjälp och feedback</translation>
 <translation id="2501278716633472235">Föregående</translation>
 <translation id="2513403576141822879">Fler inställningar som rör sekretess, säkerhet och datainsamling finns under <ph name="BEGIN_LINK" />Synkronisering och Googles tjänster<ph name="END_LINK" /></translation>
+<translation id="2517472476991765520">Sök</translation>
 <translation id="2518590038762162553">I begränsat läge läses sidorna in snabbare och dataförbrukningen minskar med upp till 60 procent. Webbtrafiken skickas till Google från Chrome för att optimera sidorna du besöker. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Skickar webbadresserna till sidor du besöker till Google</translation>
 <translation id="2532336938189706096">Webbvy</translation>
@@ -877,7 +877,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7493994139787901920"><ph name="VERSION" /> (uppdaterades <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">Sparad data</translation>
 <translation id="7498271377022651285">Vänta …</translation>
-<translation id="7510943789645525906">Varnar om ett lösenord du använder har identifierats i samband med ett dataintrång</translation>
 <translation id="7514365320538308">Ladda ned</translation>
 <translation id="751961395872307827">Det gick inte att ansluta till webbplatsen</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -933,7 +932,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7886917304091689118">Körs i Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{En fil laddas ned.}other{# filer laddas ned.}}</translation>
 <translation id="7929962904089429003">Öppna menyn</translation>
-<translation id="7930681627240672853">Kontrollera om lösenordet är säkert</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> är inaktuell.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
@@ -949,7 +947,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8007176423574883786">Inaktiverad för den här enheten</translation>
 <translation id="8013372441983637696">Rensa även Chrome-data från enheten</translation>
 <translation id="8015452622527143194">Återställ allt på sidan till standardstorlek</translation>
-<translation id="8015780634880457457">Google kan kontrollera om dina lösenord har läckt ut vid ett dataintrång</translation>
 <translation id="802154636333426148">Nedladdningen misslyckades</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8035133914807600019">Ny mapp …</translation>

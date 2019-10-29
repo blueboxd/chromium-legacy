@@ -310,9 +310,9 @@ class ScopedCanConfigureNetwork {
         &needs_owner_auth_callback_);
   }
   ~ScopedCanConfigureNetwork() {
-    AppLaunchController::SetCanConfigureNetworkCallbackForTesting(NULL);
+    AppLaunchController::SetCanConfigureNetworkCallbackForTesting(nullptr);
     AppLaunchController::SetNeedOwnerAuthToConfigureNetworkCallbackForTesting(
-        NULL);
+        nullptr);
   }
 
   bool CanConfigureNetwork() { return can_configure_; }
@@ -360,7 +360,7 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   AppDataLoadWaiter(KioskAppManager* manager,
                     const std::string& app_id,
                     const std::string& version)
-      : runner_(NULL),
+      : runner_(nullptr),
         manager_(manager),
         wait_type_(WAIT_FOR_CRX_CACHE),
         loaded_(false),
@@ -522,8 +522,8 @@ class KioskTest : public OobeBaseTest {
   void TearDownOnMainThread() override {
     owner_settings_service_.reset();
     settings_helper_.RestoreRealDeviceSettingsProvider();
-    AppLaunchController::SetNetworkTimeoutCallbackForTesting(NULL);
-    AppLaunchSigninScreen::SetUserManagerForTesting(NULL);
+    AppLaunchController::SetNetworkTimeoutCallbackForTesting(nullptr);
+    AppLaunchSigninScreen::SetUserManagerForTesting(nullptr);
 
     OobeBaseTest::TearDownOnMainThread();
 
@@ -689,7 +689,7 @@ class KioskTest : public OobeBaseTest {
     runner->Run();
 
     CHECK(GetAppLaunchController()->network_wait_timedout());
-    AppLaunchController::SetNetworkTimeoutCallbackForTesting(NULL);
+    AppLaunchController::SetNetworkTimeoutCallbackForTesting(nullptr);
   }
 
   void EnableConsumerKioskMode() {
@@ -1583,7 +1583,7 @@ class KioskUpdateTest : public KioskTest {
    public:
     KioskAppExternalUpdateWaiter(KioskAppManager* manager,
                                  const std::string& app_id)
-        : runner_(NULL),
+        : runner_(nullptr),
           manager_(manager),
           app_id_(app_id),
           quit_(false),

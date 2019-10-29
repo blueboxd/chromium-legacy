@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Fiókja ki lett zárva a rendszerből. Kérjük, forduljon a rendszergazdához.</translation>
 <translation id="2844349213149998955">Ezen az eszközön nem engedélyezett a személyes fiókkal való bejelentkezés. Jelentkezzen be munkahelyi fiókkal.</translation>
 <translation id="3306357053520292004">A számítógép egyik felhasználója már hozzá lett adva ezzel a fiókkal. Jelentkezzen be másik fiókkal.</translation>
+<translation id="3926852373333893095">Csak G Suite Enterprise-felhasználók jelentkezhetnek be.</translation>
 <translation id="4057329986137569701">Belső hiba történt.</translation>
 <translation id="4267670563222825190">Nem található domainfelhasználó a fiókjához. Forduljon az adminisztrátorhoz.</translation>
 <translation id="4300229033992784001">A fiók jelszava megváltozott. Adja meg jelenlegi Windows-jelszavát Windows-fiókjának és munkahelyi fiókjának a szinkronizálásához.</translation>
 <translation id="4706454071748629324">Nem sikerült az új felhasználó hozzáadása. Ez a számítógép csak egy felhasználó létrehozását engedélyezi munkahelyi fiók használatával.</translation>
 <translation id="6033715878377252112">A Windows rendszerhez készült Google Credential Provider segítője</translation>
 <translation id="6149399665202317746">Google Credential Provider Windows rendszerhez</translation>
+<translation id="6239180560789153226">Eszközéről hiányoznak a helyreállítási adatok. Jelentkezzen be munkahelyi Google-fiókjával.</translation>
 <translation id="6312494990035843744">Ezen a domainen nem engedélyezett a munkahelyi fiókkal való bejelentkezés. Próbálkozzon másik fiókkal.</translation>
 <translation id="6463752215771576050">Ezt a számítógépet nem lehet regisztrálni vállalati kezelés céljából.  Jelentkezzen be másik munkahelyi fiókkal.</translation>
 <translation id="6657585470893396449">Jelszó</translation>
+<translation id="6937049691815837345">Az eszközt regisztrálni kell eszközkezeléssel. Jelentkezzen be munkahelyi Google-fiókkal.</translation>
 <translation id="7209941495304122410">Adja meg Windows-jelszavát</translation>
 <translation id="7357241217513796177">Győződjön meg róla, hogy rendelkezik hálózati kapcsolattal, majd próbálja újra.</translation>
 <translation id="7536769223115622137">Munkahelyi fiók hozzáadása</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">A munkamenet lejárt. Jelentkezzen be munkahelyi Google-fiókkal.</translation>
 <translation id="9055998212250844221">A felhasználói fiókot a Windows rendszerre készített Google Credential Provider hozta létre</translation>
 <translation id="9135619837062629367">Az ezzel a fiókkal való bejelentkezés nem engedélyezett. Próbálkozzon másik fiókkal.</translation>
+<translation id="998002716857524853">Bejelentkezés munkahelyi G Suite-fiókkal</translation>
 </translationbundle>

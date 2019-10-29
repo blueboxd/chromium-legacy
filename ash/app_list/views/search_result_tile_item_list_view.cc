@@ -33,6 +33,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -138,6 +139,15 @@ SearchResultBaseView* SearchResultTileItemListView::GetFirstResultView() {
 }
 
 int SearchResultTileItemListView::DoUpdate() {
+  if (!GetWidget() || !GetWidget()->IsVisible() || !GetWidget()->IsActive()) {
+    for (size_t i = 0; i < max_search_result_tiles_; ++i) {
+      SearchResultBaseView* result_view = GetResultViewAt(i);
+      result_view->SetResult(nullptr);
+      result_view->SetVisible(false);
+    }
+    return 0;
+  }
+
   std::vector<SearchResult*> display_results = GetDisplayResults();
 
   std::set<std::string> result_id_removed, result_id_added;
@@ -212,6 +222,14 @@ int SearchResultTileItemListView::DoUpdate() {
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kPlayStoreImpressionDelayInMs), this,
         &SearchResultTileItemListView::OnPlayStoreImpressionTimer);
+    // Set the starting time in result view for play store results.
+    base::TimeTicks result_display_start = base::TimeTicks::Now();
+    for (size_t i = 0; i < max_search_result_tiles_; ++i) {
+      SearchResult* result = GetResultViewAt(i)->result();
+      if (result && IsPlayStoreApp(result)) {
+        GetResultViewAt(i)->set_result_display_start_time(result_display_start);
+      }
+    }
   } else if (!found_playstore_results) {
     playstore_impression_timer_.Stop();
   }

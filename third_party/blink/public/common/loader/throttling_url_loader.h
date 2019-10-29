@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -148,11 +149,12 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
       network::mojom::URLResponseHeadPtr new_response_head);
   void PauseReadingBodyFromNet(URLLoaderThrottle* throttle);
   void ResumeReadingBodyFromNet(URLLoaderThrottle* throttle);
-  void InterceptResponse(
-      network::mojom::URLLoaderPtr new_loader,
-      network::mojom::URLLoaderClientRequest new_client_request,
-      network::mojom::URLLoaderPtr* original_loader,
-      network::mojom::URLLoaderClientRequest* original_client_request);
+  void InterceptResponse(network::mojom::URLLoaderPtr new_loader,
+                         mojo::PendingReceiver<network::mojom::URLLoaderClient>
+                             new_client_receiver,
+                         network::mojom::URLLoaderPtr* original_loader,
+                         mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+                             original_client_receiver);
 
   // Disconnects the client connection and releases the URLLoader.
   void DisconnectClient(base::StringPiece custom_description);

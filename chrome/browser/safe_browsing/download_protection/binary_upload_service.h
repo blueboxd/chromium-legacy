@@ -42,6 +42,8 @@ class BinaryUploadService {
       std::unique_ptr<BinaryFCMService> binary_fcm_service);
   ~BinaryUploadService();
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class Result {
     // Unknown result.
     UNKNOWN = 0,
@@ -60,6 +62,8 @@ class BinaryUploadService {
 
     // The BinaryUploadService failed to get an InstanceID token.
     FAILED_TO_GET_TOKEN = 5,
+
+    kMaxValue = FAILED_TO_GET_TOKEN,
   };
 
   // Callbacks used to pass along the results of scanning. The response protos
@@ -174,11 +178,16 @@ class BinaryUploadService {
   void ValidateDataUploadRequestCallback(BinaryUploadService::Result result,
                                          DeepScanningClientResponse response);
 
+  void RecordRequestMetrics(Request* request,
+                            Result result,
+                            const DeepScanningClientResponse& response);
+
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<BinaryFCMService> binary_fcm_service_;
 
   // Resources associated with an in-progress request.
   base::flat_map<Request*, std::unique_ptr<Request>> active_requests_;
+  base::flat_map<Request*, base::TimeTicks> start_times_;
   base::flat_map<Request*, std::unique_ptr<base::OneShotTimer>> active_timers_;
   base::flat_map<Request*, std::unique_ptr<MultipartUploadRequest>>
       active_uploads_;

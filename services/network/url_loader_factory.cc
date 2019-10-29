@@ -64,7 +64,7 @@ URLLoaderFactory::~URLLoaderFactory() {
 }
 
 void URLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<mojom::URLLoader> receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -151,7 +151,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
       context_->client(),
       base::BindOnce(&cors::CorsURLLoaderFactory::DestroyURLLoader,
                      base::Unretained(cors_url_loader_factory_)),
-      std::move(request), options, url_request, std::move(client),
+      std::move(receiver), options, url_request, std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       params_.get(), request_id, keepalive_request_size,
       resource_scheduler_client_, std::move(keepalive_statistics_recorder),

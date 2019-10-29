@@ -11,9 +11,11 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -95,6 +97,15 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
     const apps::AppLaunchParams& params) {
   if (!provider_->registrar().IsInstalled(params.app_id))
     return nullptr;
+
+  // System Web Apps go through their own launch path.
+  base::Optional<web_app::SystemAppType> system_app_type =
+      web_app::GetSystemWebAppTypeForAppId(profile(), params.app_id);
+  if (system_app_type) {
+    Browser* browser =
+        web_app::LaunchSystemWebApp(profile(), *system_app_type, GURL());
+    return browser->tab_strip_model()->GetActiveWebContents();
+  }
 
   Browser* browser = CreateWebApplicationWindow(profile(), params.app_id);
 

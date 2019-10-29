@@ -571,9 +571,8 @@ class SingleTestRunner(object):
         expected_output = None
         reference_test_names = []
         reftest_failures = []
-        if self._port.lookup_virtual_test_base(self._test_name):
-            args = self._port.lookup_virtual_reference_args(self._test_name)
-        else:
+        args = self._port.lookup_virtual_reference_args(self._test_name)
+        if not args:
             args = self._port.lookup_physical_reference_args(self._test_name)
 
         # sort self._reference_files to put mismatch tests first

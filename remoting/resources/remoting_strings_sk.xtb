@@ -39,7 +39,7 @@
 <translation id="2078880767960296260">Proces hostiteľa</translation>
 <translation id="20876857123010370">Režim trackpadu</translation>
 <translation id="2089514346391228378">Vzdialené pripojenia k tomuto počítaču boli povolené.</translation>
-<translation id="2198363917176605566">Ak chcete používať <ph name="PRODUCT_NAME" />, musíte povoliť nahrávanie obrazovky, aby bolo možné obsah obrazovky tohto Macu odosielať do vzdialeného počítača.
+<translation id="2198363917176605566">Ak chcete používať <ph name="PRODUCT_NAME" />, musíte povoliť nahrávanie obrazovky, aby bolo možné obsah obrazovky tohto Macu odosielať do vzdialeného zariadenia.
 
 Toto povolenie udelíte tak, že kliknutím na <ph name="BUTTON_NAME" /> nižšie otvoríte panel predvolieb nahrávania obrazovky a potom začiarknete políčko <ph name="SERVICE_SCRIPT_NAME" />.
 
@@ -229,7 +229,7 @@ Ak je políčko <ph name="SERVICE_SCRIPT_NAME" /> už začiarknuté, začiarknut
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Niečo iné.</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
-<translation id="6411861157501911556">Ak chcete používať <ph name="PRODUCT_NAME" />, musíte povoliť prístup, aby bolo možné vstup zo vzdialeného počítača vkladať v tomto Macu.
+<translation id="6411861157501911556">Ak chcete používať <ph name="PRODUCT_NAME" />, musíte povoliť prístup, aby bolo možné vstup zo vzdialeného zariadenia vkladať v tomto Macu.
 
 Toto povolenie udelíte tak, že kliknutím na <ph name="BUTTON_NAME" /> nižšie otvoríte panel predvolieb prístupu a začiarknete políčko <ph name="SERVICE_SCRIPT_NAME" />.
 
@@ -314,6 +314,7 @@ Ak je políčko <ph name="SERVICE_SCRIPT_NAME" /> už začiarknuté, začiarknut
 <translation id="837021510621780684">Z tohto počítača</translation>
 <translation id="8383794970363966105">Ak chcete používať funkciu Chromoting, musíte si na zariadení pridať účet Google.</translation>
 <translation id="8386846956409881180">Hostiteľ bol nakonfigurovaný pomocou neplatných poverení protokolu OAuth</translation>
+<translation id="8397385476380433240">Udelenie povolenia službe <ph name="PRODUCT_NAME" /></translation>
 <translation id="8406498562923498210">Vyberte reláciu, ktorú chcete spustiť v prostredí Vzdialenej plochy Chrome. (Upozorňujeme, že niektoré typy relácií nemusia podporovať súbežné spustenie Vzdialenej plochy Chrome a miestnej konzoly.)</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8445362773033888690">Zobraziť v Obchode Google Play</translation>

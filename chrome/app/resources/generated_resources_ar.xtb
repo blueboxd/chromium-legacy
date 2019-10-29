@@ -859,7 +859,6 @@
 <translation id="2224471211857467033">أحداث إمكانية الوصول</translation>
 <translation id="2224551243087462610">تعديل اسم المجلد</translation>
 <translation id="2226449515541314767">‏تم حظر هذا الموقع من التحكم تحكمًا كاملاً في أجهزة MIDI.</translation>
-<translation id="2226720438730111184">أخبرنا بما يحدث</translation>
 <translation id="2227179592712503583">إزالة الاقتراح</translation>
 <translation id="2229161054156947610">يتبقى أكثر من ساعة واحدة</translation>
 <translation id="222931766245975952">تم اقتطاع الملف</translation>
@@ -2957,7 +2956,6 @@
 <translation id="5360150013186312835">العرض في شريط الأدوات</translation>
 <translation id="5362741141255528695">حدد ملف المفتاح الخاص.</translation>
 <translation id="5363109466694494651">إجراء المحو الكامل والعودة</translation>
-<translation id="5365716706805792666">‏بإمكان Google التحقُّق مما إذا تم استخدام كلمات المرور في عملية اختراق البيانات. سيتم تفعيل هذه الميزة عند تسجيل الدخول باستخدام حسابك على Google.</translation>
 <translation id="5365881113273618889">يتضمَّن المجلَّد الذي اخترته ملفات حساسة. هل تريد بالتأكيد منح "<ph name="APP_NAME" />" إمكانية الوصول الدائم للكتابة في هذا المجلَّد؟</translation>
 <translation id="5367091008316207019">جارٍ قراءة الملف..</translation>
 <translation id="5368720394188453070">هاتفك مغلق. ألغ قفله للدخول.</translation>
@@ -3556,7 +3554,6 @@
 <translation id="6202304368170870640">يمكنك استخدام رقم تعريفك الشخصي لتسجيل الدخول أو فتح قفل جهازك.</translation>
 <translation id="6206311232642889873">نس&amp;خ صورة</translation>
 <translation id="6207200176136643843">إعادة الضبط على مستوى التكبير/التصغير التلقائي</translation>
-<translation id="620722923698527029">فتح هذه الأنواع من الروابط دائمًا في التطبيق المرتبط</translation>
 <translation id="6207282396926186323">‏تثبيت <ph name="APP_NAME" /> (تطبيق Linux)</translation>
 <translation id="6207937957461833379">البلد/المنطقة</translation>
 <translation id="6208521041562685716">جارٍ تفعيل بيانات الجوّال</translation>
@@ -4430,7 +4427,6 @@
 <translation id="7506541170099744506">لقد تم تسجيل جهاز <ph name="DEVICE_TYPE" /> بنجاح لإدارة المؤسسة.</translation>
 <translation id="7507930499305566459">شهادة الاستجابة للحالة</translation>
 <translation id="7508054832109420082">منح الإذن للطابعات</translation>
-<translation id="7510943789645525906">يُرسَل إليك تحذير في حال كانت كلمة المرور التي تستخدمها جزءًا من عملية اختراق البيانات.</translation>
 <translation id="7513029293694390567">يمكنك تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزّنة. وعندما تكون هذه الميزة غير مفعّلة، سيُطلب منك التحقّق من بيانات الاعتماد في كل مرة قبل تسجيل الدخول إلى موقع ويب.</translation>
 <translation id="7514239104543605883">نسخ إلى جهازك</translation>
 <translation id="7514365320538308">تنزيل</translation>
@@ -4619,7 +4615,6 @@
 
 
 <ph name="EXTENSION_NAME" /></translation>
-<translation id="7788383851298063850">أخبرنا بما يحدث</translation>
 <translation id="7788444488075094252">اللغات والإدخال</translation>
 <translation id="7788668840732459509">الموضع:</translation>
 <translation id="7789963078219276159">تم تغيير خلفية الصفحة الرئيسية إلى <ph name="CATEGORY" />.</translation>
@@ -4734,7 +4729,6 @@
 <translation id="7926423016278357561">لم يكن هذا أنا.</translation>
 <translation id="7928836894214140642">تتم الإدارة من خلال <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">ستظهر هنا طرق الدفع المحفوظة</translation>
-<translation id="7930681627240672853">التحقق من أمان كلمة المرور</translation>
 <translation id="79312157130859720">يشارك <ph name="APP_NAME" /> الشاشة والصوت.</translation>
 <translation id="7931318309563332511">غير معروف</translation>
 <translation id="793293630927785390">‏مربع الحوار "شبكة Wi-Fi جديدة"</translation>
@@ -4807,7 +4801,6 @@
 <translation id="8014154204619229810">يتم تشغيل أداة التحديث حاليًا. يمكنك التحديث في دقيقة واحدة للتحقق مرة أخرى.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> غير قادر على العودة إلى الإصدار المثبت مسبقًا. يُرجى إعادة محاولة إجراء المحو الكامل لبيانات جهازك.</translation>
 <translation id="8014210335923519270">‏تحسين <ph name="IDS_SHORT_PRODUCT_NAME" /> والأمان عن طريق إرسال معلومات النظام والاستخدام إلى Google</translation>
-<translation id="8015780634880457457">‏بإمكان Google التحقُّق مما إذا تم استخدام كلمات المرور في عملية اختراق البيانات.</translation>
 <translation id="8016266267177410919">التخزين المؤقت</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">تمّ تعديل الاختصار</translation>

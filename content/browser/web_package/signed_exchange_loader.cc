@@ -74,7 +74,6 @@ SignedExchangeLoader::SignedExchangeLoader(
     : outer_request_(outer_request),
       outer_response_head_(outer_response_head),
       forwarding_client_(std::move(forwarding_client)),
-      url_loader_client_binding_(this),
       url_loader_options_(url_loader_options),
       should_redirect_on_failure_(should_redirect_on_failure),
       devtools_proxy_(std::move(devtools_proxy)),
@@ -103,10 +102,10 @@ SignedExchangeLoader::SignedExchangeLoader(
     OnStartLoadingResponseBody(std::move(outer_response_body));
 
   // Bind the endpoint with |this| to get the body DataPipe.
-  url_loader_client_binding_.Bind(std::move(endpoints->url_loader_client));
+  url_loader_client_receiver_.Bind(std::move(endpoints->url_loader_client));
 
   // |client_| will be bound with a forwarding client by ConnectToClient().
-  pending_client_request_ = mojo::MakeRequest(&client_);
+  pending_client_receiver_ = mojo::MakeRequest(&client_);
 }
 
 SignedExchangeLoader::~SignedExchangeLoader() = default;
@@ -206,9 +205,10 @@ void SignedExchangeLoader::ResumeReadingBodyFromNet() {
 
 void SignedExchangeLoader::ConnectToClient(
     network::mojom::URLLoaderClientPtr client) {
-  DCHECK(pending_client_request_.is_pending());
-  mojo::FuseInterface(std::move(pending_client_request_),
-                      client.PassInterface());
+  DCHECK(pending_client_receiver_.is_valid());
+  mojo::FusePipes(std::move(pending_client_receiver_),
+                  mojo::PendingRemote<network::mojom::URLLoaderClient>(
+                      client.PassInterface()));
 }
 
 base::Optional<net::SHA256HashValue>

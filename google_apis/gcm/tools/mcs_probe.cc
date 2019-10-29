@@ -42,6 +42,7 @@
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
@@ -188,7 +189,8 @@ class MCSProbe {
 
  private:
   void RequestProxyResolvingSocketFactory(
-      network::mojom::ProxyResolvingSocketFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+          receiver);
   void CheckIn();
   void InitializeNetworkState();
 
@@ -380,9 +382,10 @@ void MCSProbe::ErrorCallback() {
 }
 
 void MCSProbe::RequestProxyResolvingSocketFactory(
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   return network_context_->CreateProxyResolvingSocketFactory(
-      std::move(request));
+      std::move(receiver));
 }
 
 void MCSProbe::CheckIn() {

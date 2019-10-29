@@ -377,6 +377,9 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "handwritinggesture",
       base::FeatureList::IsEnabled(features::kHandwritingGesture)));
   features->AppendString(GenerateFeatureFlag(
+      "usemojodecoder", base::FeatureList::IsEnabled(
+                            chromeos::features::kImeDecoderWithSandbox)));
+  features->AppendString(GenerateFeatureFlag(
       "hmminputlogic",
       base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicHmm)));
   features->AppendString(GenerateFeatureFlag(

@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/cookie/canonical_cookie.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -65,7 +66,7 @@ network::mojom::blink::CookieManagerGetOptionsPtr ToBackendOptions(
 }
 
 // Returns no value if and only if an exception is thrown.
-base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
+base::Optional<CanonicalCookie> ToCanonicalCookie(
     const KURL& cookie_url,
     const CookieStoreSetExtraOptions* options,
     ExceptionState& exception_state) {
@@ -138,10 +139,10 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
     same_site = network::mojom::CookieSameSite::NO_RESTRICTION;
   }
 
-  return WebCanonicalCookie::Create(
+  return CanonicalCookie::Create(
       name, value, domain, options->path(), base::Time() /*creation*/, expires,
       base::Time() /*last_access*/, secure, false /*http_only*/, same_site,
-      WebCanonicalCookie::kDefaultPriority);
+      CanonicalCookie::kDefaultPriority);
 }
 
 // Returns null if and only if an exception is thrown.
@@ -495,7 +496,7 @@ ScriptPromise CookieStore::DoRead(
 // static
 void CookieStore::GetAllForUrlToGetAllResult(
     ScriptPromiseResolver* resolver,
-    const Vector<WebCanonicalCookie>& backend_cookies) {
+    const Vector<CanonicalCookie>& backend_cookies) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
@@ -513,7 +514,7 @@ void CookieStore::GetAllForUrlToGetAllResult(
 // static
 void CookieStore::GetAllForUrlToGetResult(
     ScriptPromiseResolver* resolver,
-    const Vector<WebCanonicalCookie>& backend_cookies) {
+    const Vector<CanonicalCookie>& backend_cookies) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
@@ -532,8 +533,8 @@ void CookieStore::GetAllForUrlToGetResult(
 ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
                                    const CookieStoreSetExtraOptions* options,
                                    ExceptionState& exception_state) {
-  base::Optional<WebCanonicalCookie> canonical_cookie =
-      ToWebCanonicalCookie(default_cookie_url_, options, exception_state);
+  base::Optional<CanonicalCookie> canonical_cookie =
+      ToCanonicalCookie(default_cookie_url_, options, exception_state);
   if (!canonical_cookie) {
     DCHECK(exception_state.HadException());
     return ScriptPromise();

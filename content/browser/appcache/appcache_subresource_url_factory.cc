@@ -20,8 +20,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/request_mode.h"
@@ -47,7 +47,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
                           public network::mojom::URLLoaderClient {
  public:
   SubresourceLoader(
-      network::mojom::URLLoaderRequest url_loader_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -56,7 +56,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
       const net::MutableNetworkTrafficAnnotationTag& annotation,
       base::WeakPtr<AppCacheHost> appcache_host,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory)
-      : remote_binding_(this, std::move(url_loader_request)),
+      : remote_receiver_(this, std::move(url_loader_receiver)),
         remote_client_(std::move(client)),
         request_(request),
         routing_id_(routing_id),
@@ -67,8 +67,8 @@ class SubresourceLoader : public network::mojom::URLLoader,
         local_client_binding_(this),
         host_(appcache_host) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    remote_binding_.set_connection_error_handler(base::BindOnce(
-        &SubresourceLoader::OnConnectionError, base::Unretained(this)));
+    remote_receiver_.set_disconnect_handler(base::BindOnce(
+        &SubresourceLoader::OnMojoDisconnect, base::Unretained(this)));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&SubresourceLoader::Start, weak_factory_.GetWeakPtr()));
@@ -77,7 +77,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
  private:
   ~SubresourceLoader() override {}
 
-  void OnConnectionError() { delete this; }
+  void OnMojoDisconnect() { delete this; }
 
   void Start() {
     if (!host_) {
@@ -288,8 +288,8 @@ class SubresourceLoader : public network::mojom::URLLoader,
       remote_client_->OnComplete(status);
   }
 
-  // The binding and client pointer associated with the renderer.
-  mojo::Binding<network::mojom::URLLoader> remote_binding_;
+  // The receiver and client pointer associated with the renderer.
+  mojo::Receiver<network::mojom::URLLoader> remote_receiver_;
   network::mojom::URLLoaderClientPtr remote_client_;
 
   network::ResourceRequest request_;
@@ -351,7 +351,7 @@ void AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
           ->GetURLLoaderFactoryForBrowserProcessWithCORBEnabled();
   // This instance is effectively reference counted by the number of pipes open
   // to it and will get deleted when all clients drop their connections.
-  // Please see OnConnectionError() for details.
+  // Please see OnMojoDisconnect() for details.
   auto* impl = new AppCacheSubresourceURLFactory(
       std::move(network_loader_factory), host);
   impl->Clone(loader_factory->InitWithNewPipeAndPassReceiver());
@@ -362,7 +362,7 @@ void AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
 }
 
 void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest url_loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -408,7 +408,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     return;
   }
 
-  new SubresourceLoader(std::move(url_loader_request), routing_id, request_id,
+  new SubresourceLoader(std::move(url_loader_receiver), routing_id, request_id,
                         options, request, std::move(client), traffic_annotation,
                         appcache_host_, network_loader_factory_);
 }

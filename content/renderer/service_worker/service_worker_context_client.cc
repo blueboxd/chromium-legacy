@@ -487,8 +487,8 @@ void ServiceWorkerContextClient::SetupNavigationPreload(
           network::mojom::URLLoaderPtrInfo(
               std::move(preload_handle->url_loader),
               network::mojom::URLLoader::Version_),
-          network::mojom::URLLoaderClientRequest(
-              std::move(preload_handle->url_loader_client_request))));
+          mojo::PendingReceiver<network::mojom::URLLoaderClient>(
+              std::move(preload_handle->url_loader_client_receiver))));
   context_->preload_requests.AddWithID(std::move(preload_request),
                                        fetch_event_id);
 }

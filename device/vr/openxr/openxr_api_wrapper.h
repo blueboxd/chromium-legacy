@@ -58,7 +58,7 @@ class OpenXrApiWrapper {
   XrResult GetLuid(LUID* luid) const;
   std::string GetRuntimeName() const;
   bool GetStageParameters(XrExtent2Df* stage_bounds,
-                          gfx::Transform* local_from_stage) const;
+                          gfx::Transform* local_from_stage);
 
   static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
 
@@ -92,7 +92,7 @@ class OpenXrApiWrapper {
   bool HasFrameState() const;
 
   uint32_t GetRecommendedSwapchainSampleCount() const;
-  XrResult GetStageBounds(XrExtent2Df* stage_bounds) const;
+  XrResult UpdateStageBounds();
 
   bool session_ended_;
 
@@ -107,6 +107,7 @@ class OpenXrApiWrapper {
   XrSystemId system_;
   std::vector<XrViewConfigurationView> view_configs_;
   XrEnvironmentBlendMode blend_mode_;
+  XrExtent2Df stage_bounds_;
 
   // These objects are valid only while a session is active,
   // and stay constant throughout the lifetime of a session.

@@ -17,7 +17,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_updated_script_loader.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -42,7 +42,7 @@ ServiceWorkerScriptLoaderFactory::ServiceWorkerScriptLoaderFactory(
 ServiceWorkerScriptLoaderFactory::~ServiceWorkerScriptLoaderFactory() = default;
 
 void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -87,11 +87,11 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   if (resource_id != ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
     std::unique_ptr<ServiceWorkerResponseReader> response_reader =
         context_->storage()->CreateResponseReader(resource_id);
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<ServiceWorkerInstalledScriptLoader>(
             options, std::move(client), std::move(response_reader), version,
             resource_request.url),
-        std::move(request));
+        std::move(receiver));
     return;
   }
 
@@ -118,17 +118,17 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
               it->first, it->second.old_resource_id,
               base::BindOnce(
                   &ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished,
-                  weak_factory_.GetWeakPtr(), std::move(request), options,
+                  weak_factory_.GetWeakPtr(), std::move(receiver), options,
                   resource_request, std::move(client)));
           return;
         case ServiceWorkerSingleScriptUpdateChecker::Result::kFailed:
           // Network failure is treated as D.2
         case ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent:
           // Case D.2:
-          mojo::MakeStrongBinding(
+          mojo::MakeSelfOwnedReceiver(
               ServiceWorkerUpdatedScriptLoader::CreateAndStart(
                   options, resource_request, std::move(client), version),
-              std::move(request));
+              std::move(receiver));
           return;
         case ServiceWorkerSingleScriptUpdateChecker::Result::kNotCompared:
           // This is invalid, as scripts in compared script info must have been
@@ -140,12 +140,12 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   }
 
   // Case D.3:
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       ServiceWorkerNewScriptLoader::CreateAndStart(
           routing_id, request_id, options, resource_request, std::move(client),
           provider_host_->running_hosted_version(),
           loader_factory_for_new_scripts_, traffic_annotation),
-      std::move(request));
+      std::move(receiver));
 }
 
 void ServiceWorkerScriptLoaderFactory::Clone(
@@ -223,7 +223,7 @@ void ServiceWorkerScriptLoaderFactory::CopyScript(
 }
 
 void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     uint32_t options,
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
@@ -249,11 +249,11 @@ void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
       resource_request.url, resource_size, net::OK, std::string());
 
   // Use ServiceWorkerInstalledScriptLoader to load the new copy.
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<ServiceWorkerInstalledScriptLoader>(
           options, std::move(client),
           context_->storage()->CreateResponseReader(new_resource_id), version,
           resource_request.url),
-      std::move(request));
+      std::move(receiver));
 }
 }  // namespace content

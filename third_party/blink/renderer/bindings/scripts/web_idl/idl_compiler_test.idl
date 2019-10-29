@@ -12,7 +12,7 @@
 };
 
 namespace TestNamespace {
-  readonly attribute Promise<boolean> attr1;
-  readonly attribute DOMString attr2;
-  void op1();
+  [RaisesException] readonly attribute Promise<boolean> attr1;
+  readonly attribute TestInterfaceConstructor attr2;
+  void op1(long x, boolean y, TestInterfaceConstructor z);
 };

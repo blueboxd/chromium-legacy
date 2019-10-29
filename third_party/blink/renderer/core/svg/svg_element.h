@@ -55,7 +55,6 @@ class CORE_EXPORT SVGElement : public Element {
  public:
   ~SVGElement() override;
 
-  int tabIndex() const override;
   bool SupportsFocus() const override { return false; }
 
   // The TreeScope this element should resolve id's against. This differs from

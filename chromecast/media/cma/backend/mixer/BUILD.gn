@@ -10,15 +10,6 @@ declare_args() {
   mixer_output = ""
 }
 
-cast_source_set("mixer_control") {
-  sources = [
-    "mixer_control.h",
-  ]
-  deps = [
-    "//chromecast/public",
-  ]
-}
-
 cast_source_set("post_processor_paths") {
   sources = [
     "post_processor_paths.cc",
@@ -77,7 +68,6 @@ cast_source_set("mixer") {
 
   deps = [
     ":loopback",
-    ":mixer_control",
     ":post_processor_paths",
     "//base",
     "//chromecast/base",

@@ -17,6 +17,7 @@
 #include "content/browser/loader/download_utils_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/base/load_flags.h"
@@ -261,7 +262,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       const base::Optional<std::string>& renderer_request_id,
       std::unique_ptr<CreateLoaderParameters> create_loader_params,
       bool is_download,
-      network::mojom::URLLoaderRequest loader_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
       network::mojom::URLLoaderClientPtr client,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
       mojo::PendingRemote<network::mojom::CookieManager> cookie_manager);
@@ -366,7 +367,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   const bool is_download_;
 
   mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
-  mojo::Binding<network::mojom::URLLoader> loader_binding_;
+  mojo::Receiver<network::mojom::URLLoader> loader_receiver_{this};
 
   network::mojom::URLLoaderClientPtr client_;
   network::mojom::URLLoaderPtr loader_;
@@ -411,7 +412,7 @@ void DevToolsURLLoaderInterceptor::CreateJob(
     bool is_download,
     const base::Optional<std::string>& renderer_request_id,
     std::unique_ptr<CreateLoaderParameters> create_params,
-    network::mojom::URLLoaderRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     network::mojom::URLLoaderClientPtr client,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
     mojo::PendingRemote<network::mojom::CookieManager> cookie_manager) {
@@ -421,10 +422,10 @@ void DevToolsURLLoaderInterceptor::CreateJob(
 
   std::string id = base::StringPrintf("interception-job-%d", ++last_id);
   // This class will manage its own life time to match the loader client.
-  new InterceptionJob(this, std::move(id), frame_token, process_id,
-                      renderer_request_id, std::move(create_params),
-                      is_download, std::move(loader_request), std::move(client),
-                      std::move(target_factory), std::move(cookie_manager));
+  new InterceptionJob(
+      this, std::move(id), frame_token, process_id, renderer_request_id,
+      std::move(create_params), is_download, std::move(loader_receiver),
+      std::move(client), std::move(target_factory), std::move(cookie_manager));
 }
 
 InterceptionStage DevToolsURLLoaderInterceptor::GetInterceptionStage(
@@ -455,14 +456,15 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
 
  private:
   // network::mojom::URLLoaderFactory implementation
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override;
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
       override;
 
@@ -514,7 +516,7 @@ DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
 DevToolsURLLoaderFactoryProxy::~DevToolsURLLoaderFactoryProxy() {}
 
 void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -651,7 +653,7 @@ InterceptionJob::InterceptionJob(
     const base::Optional<std::string>& renderer_request_id,
     std::unique_ptr<CreateLoaderParameters> create_loader_params,
     bool is_download,
-    network::mojom::URLLoaderRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     network::mojom::URLLoaderClientPtr client,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
     mojo::PendingRemote<network::mojom::CookieManager> cookie_manager)
@@ -666,7 +668,6 @@ InterceptionJob::InterceptionJob(
       create_loader_params_(std::move(create_loader_params)),
       is_download_(is_download),
       client_binding_(this),
-      loader_binding_(this),
       client_(std::move(client)),
       target_factory_(std::move(target_factory)),
       cookie_manager_(std::move(cookie_manager)),
@@ -674,8 +675,8 @@ InterceptionJob::InterceptionJob(
       waiting_for_resolution_(false),
       redirect_count_(0),
       renderer_request_id_(renderer_request_id) {
-  loader_binding_.Bind(std::move(loader_request));
-  loader_binding_.set_connection_error_handler(
+  loader_receiver_.Bind(std::move(loader_receiver));
+  loader_receiver_.set_disconnect_handler(
       base::BindOnce(&InterceptionJob::Shutdown, base::Unretained(this)));
 
   auto& job_map = GetInterceptionJobMap();
@@ -1406,7 +1407,7 @@ DevToolsURLLoaderFactoryAdapter::DevToolsURLLoaderFactoryAdapter(
 DevToolsURLLoaderFactoryAdapter::~DevToolsURLLoaderFactoryAdapter() = default;
 
 void DevToolsURLLoaderFactoryAdapter::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

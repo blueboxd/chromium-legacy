@@ -2073,10 +2073,6 @@ TEST_F(PreviewsDeciderImplTest,
   std::vector<PreviewsEligibilityReason> checked_decisions = {
       PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
       PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
-      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-      PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
-      PreviewsEligibilityReason::USER_BLACKLISTED,
-      PreviewsEligibilityReason::HOST_BLACKLISTED,
       PreviewsEligibilityReason::RELOAD_DISALLOWED,
   };
 
@@ -2300,10 +2296,6 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowHintPreviewWithoutECT) {
   std::vector<PreviewsEligibilityReason> checked_decisions = {
       PreviewsEligibilityReason::URL_HAS_BASIC_AUTH,
       PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX,
-      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-      PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
-      PreviewsEligibilityReason::USER_BLACKLISTED,
-      PreviewsEligibilityReason::HOST_BLACKLISTED,
       PreviewsEligibilityReason::RELOAD_DISALLOWED,
   };
   PreviewsUserData user_data(kDefaultPageId);

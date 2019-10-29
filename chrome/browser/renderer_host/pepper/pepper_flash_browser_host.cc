@@ -53,7 +53,7 @@ scoped_refptr<content_settings::CookieSettings> GetCookieSettings(
         Profile::FromBrowserContext(render_process_host->GetBrowserContext());
     return CookieSettingsFactory::GetForProfile(profile);
   }
-  return NULL;
+  return nullptr;
 }
 
 void PepperBindConnectorRequest(

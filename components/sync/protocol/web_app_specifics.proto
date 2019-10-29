@@ -14,18 +14,19 @@ package sync_pb;
 // WebApp data. This is a synced part of
 // chrome/browser/web_applications/proto/web_app.proto data.
 message WebAppSpecifics {
-  // This enum should be synced with
+  // This enum should be a subset of the DisplayMode enum in
+  // chrome/browser/web_applications/proto/web_app.proto and
   // third_party/blink/public/mojom/manifest/display_mode.mojom
-  enum DisplayMode {
+  enum UserDisplayMode {
     // UNDEFINED is never serialized.
     BROWSER = 1;
-    MINIMAL_UI = 2;
+    // MINIMAL_UI is never serialized.
     STANDALONE= 3;
     // FULLSCREEN is never serialized.
   }
 
   optional string launch_url = 1;
   optional string name = 2;
-  optional DisplayMode display_mode = 3;
+  optional UserDisplayMode user_display_mode = 3;
   optional uint32 theme_color = 4;
 }

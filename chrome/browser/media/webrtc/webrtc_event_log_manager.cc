@@ -181,9 +181,10 @@ base::FilePath WebRtcEventLogManager::GetRemoteBoundWebRtcEventLogsDir(
 }
 
 WebRtcEventLogManager::WebRtcEventLogManager()
-    : task_runner_(base::CreateSequencedTaskRunner(
+    : task_runner_(base::CreateUpdateableSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskPriority::BEST_EFFORT,
+           base::ThreadPolicy::PREFER_BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       remote_logging_feature_enabled_(IsRemoteLoggingFeatureEnabled()),
       local_logs_observer_(nullptr),
@@ -481,6 +482,11 @@ void WebRtcEventLogManager::ClearCacheForBrowserContext(
   const auto browser_context_id = GetBrowserContextId(browser_context);
   DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
+  // |task_runner_| is USER_BLOCKING when there are pending tasks to clear the
+  // cache.
+  ++num_pending_clear_cache_;
+  task_runner_->UpdatePriority(base::TaskPriority::USER_BLOCKING);
+
   // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
   task_runner_->PostTaskAndReply(
@@ -488,7 +494,9 @@ void WebRtcEventLogManager::ClearCacheForBrowserContext(
       base::BindOnce(
           &WebRtcEventLogManager::ClearCacheForBrowserContextInternal,
           base::Unretained(this), browser_context_id, delete_begin, delete_end),
-      std::move(reply));
+      base::BindOnce(
+          &WebRtcEventLogManager::OnClearCacheForBrowserContextDoneInternal,
+          base::Unretained(this), std::move(reply)));
 }
 
 void WebRtcEventLogManager::GetHistory(
@@ -940,6 +948,18 @@ void WebRtcEventLogManager::ClearCacheForBrowserContextInternal(
                                                    delete_begin, delete_end);
 }
 
+void WebRtcEventLogManager::OnClearCacheForBrowserContextDoneInternal(
+    base::OnceClosure reply) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_GT(num_pending_clear_cache_, 0);
+  // |task_runner_| is BEST_EFFORT when there are no pending tasks to clear the
+  // cache.
+  --num_pending_clear_cache_;
+  if (num_pending_clear_cache_ == 0)
+    task_runner_->UpdatePriority(base::TaskPriority::BEST_EFFORT);
+  std::move(reply).Run();
+}
+
 void WebRtcEventLogManager::GetHistoryInternal(
     BrowserContextId browser_context_id,
     base::OnceCallback<void(const std::vector<UploadList::UploadInfo>&)>
@@ -1062,7 +1082,7 @@ void WebRtcEventLogManager::UploadConditionsHoldForTesting(
           base::Unretained(&remote_logs_manager_), std::move(callback)));
 }
 
-scoped_refptr<base::SequencedTaskRunner>&
+scoped_refptr<base::SequencedTaskRunner>
 WebRtcEventLogManager::GetTaskRunnerForTesting() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return task_runner_;

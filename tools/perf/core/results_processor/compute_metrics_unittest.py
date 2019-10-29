@@ -64,6 +64,7 @@ class ComputeMetricsTest(unittest.TestCase):
     histogram_dicts = test_result['_histograms'].AsDicts()
     self.assertEqual(histogram_dicts, [])
     self.assertEqual(test_result['status'], 'FAIL')
+    self.assertFalse(test_result['expected'])
 
   def testComputeTBMv2MetricsFailure(self):
     test_result = testing.TestResult(
@@ -87,6 +88,7 @@ class ComputeMetricsTest(unittest.TestCase):
     histogram_dicts = test_result['_histograms'].AsDicts()
     self.assertEqual(histogram_dicts, [])
     self.assertEqual(test_result['status'], 'FAIL')
+    self.assertFalse(test_result['expected'])
 
   def testComputeTBMv2MetricsSkipped(self):
     test_result = testing.TestResult(

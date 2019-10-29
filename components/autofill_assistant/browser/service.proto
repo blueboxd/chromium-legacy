@@ -516,8 +516,6 @@ message ProcessedActionStatusDetailsProto {
   optional ProcessedActionStatusProto original_status = 2;
 
   // More information included for autofill related errors.
-  //
-  // For now this is only filled for PRECONDITION_FAILED errors.
   optional AutofillErrorInfoProto autofill_error_info = 3;
 }
 
@@ -589,6 +587,9 @@ message AutofillErrorInfoProto {
 
   // Whether the client memory at |address_key_requested| pointed to null.
   optional bool address_pointee_was_null = 3;
+
+  // Error status of the Chrome autofill attempt.
+  optional ProcessedActionStatusProto autofill_error_status = 4;
 }
 
 // Next: 22

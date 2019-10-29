@@ -177,13 +177,13 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
       file_util::GetInstallTempDir(extensions_dir);
   if (install_temp_dir.empty()) {
     LOG(ERROR) << "Could not get path to profile temporary directory.";
-    return NULL;
+    return nullptr;
   }
 
   base::ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDirUnderPath(install_temp_dir)) {
     LOG(ERROR) << "Could not create temporary directory.";
-    return NULL;
+    return nullptr;
   }
 
   // Create the manifest
@@ -208,6 +208,8 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     root->SetDictionary(keys::kUrlHandlers, CreateURLHandlersForBookmarkApp(
                                                 web_app.scope, web_app.title));
   }
+
+  // TODO(crbug.com/1014346): Record display_mode.
 
   if (web_app.file_handler) {
     root->SetDictionary(keys::kFileHandlers, CreateFileHandlersForBookmarkApp(
@@ -239,14 +241,14 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   JSONFileValueSerializer serializer(manifest_path);
   if (!serializer.Serialize(*root)) {
     LOG(ERROR) << "Could not serialize manifest.";
-    return NULL;
+    return nullptr;
   }
 
   // Write the icon files.
   base::FilePath icons_dir = temp_dir.GetPath().AppendASCII(kIconsDirName);
   if (!base::CreateDirectory(icons_dir)) {
     LOG(ERROR) << "Could not create icons directory.";
-    return NULL;
+    return nullptr;
   }
   for (size_t i = 0; i < web_app.icons.size(); ++i) {
     // Skip unfetched bitmaps.
@@ -260,14 +262,14 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
                                            false,
                                            &image_data)) {
       LOG(ERROR) << "Could not create icon file.";
-      return NULL;
+      return nullptr;
     }
 
     const char* image_data_ptr = reinterpret_cast<const char*>(&image_data[0]);
     int size = base::checked_cast<int>(image_data.size());
     if (base::WriteFile(icon_file, image_data_ptr, size) != size) {
       LOG(ERROR) << "Could not write icon file.";
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -278,7 +280,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
       Extension::FROM_BOOKMARK | extra_creation_flags, &error);
   if (!extension.get()) {
     LOG(ERROR) << error;
-    return NULL;
+    return nullptr;
   }
 
   temp_dir.Take();  // The caller takes ownership of the directory.

@@ -23,10 +23,6 @@ OpenXrRenderLoop::~OpenXrRenderLoop() {
   Stop();
 }
 
-gfx::Size OpenXrRenderLoop::GetViewSize() const {
-  return openxr_->GetViewSize();
-}
-
 mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
   frame_data->frame_id = next_frame_id_;
@@ -56,23 +52,21 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
       frame_data->pose->position = position;
   }
 
-  bool updated_display_info = UpdateDisplayInfo();
   bool updated_eye_parameters = UpdateEyeParameters();
-  bool updated_stage_parameters = UpdateStageParameters();
 
   if (updated_eye_parameters) {
     frame_data->left_eye = current_display_info_->left_eye.Clone();
     frame_data->right_eye = current_display_info_->right_eye.Clone();
   }
 
+  bool updated_stage_parameters = UpdateStageParameters();
   if (updated_stage_parameters) {
     frame_data->stage_parameters_updated = true;
     frame_data->stage_parameters =
         current_display_info_->stage_parameters.Clone();
   }
 
-  if (updated_display_info || updated_eye_parameters ||
-      updated_stage_parameters) {
+  if (updated_eye_parameters || updated_stage_parameters) {
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(on_display_info_changed_,
                                   current_display_info_.Clone()));
@@ -108,10 +102,11 @@ bool OpenXrRenderLoop::StartRuntime() {
   // Starting session succeeded so we can set the member variable.
   // Any additional code added below this should never fail.
   openxr_ = std::move(openxr);
-  texture_helper_.SetDefaultSize(GetViewSize());
+  texture_helper_.SetDefaultSize(openxr_->GetViewSize());
 
   DCHECK(openxr_);
   DCHECK(input_helper_);
+  InitializeDisplayInfo();
 
   return true;
 }
@@ -143,69 +138,56 @@ bool OpenXrRenderLoop::SubmitCompositedFrame() {
 }
 
 // Return true if display info has changed.
-bool OpenXrRenderLoop::UpdateDisplayInfo() {
-  bool changed = false;
-
+void OpenXrRenderLoop::InitializeDisplayInfo() {
   if (!current_display_info_) {
     current_display_info_ = mojom::VRDisplayInfo::New();
-    current_display_info_->id = device::mojom::XRDeviceId::OPENXR_DEVICE_ID;
-
-    current_display_info_->capabilities = mojom::VRDisplayCapabilities::New();
-    current_display_info_->capabilities->can_provide_environment_integration =
-        false;
-
-    current_display_info_->webvr_default_framebuffer_scale = 1.0f;
-    current_display_info_->webxr_default_framebuffer_scale = 1.0f;
-
-    changed = true;
+    current_display_info_->right_eye = mojom::VREyeParameters::New();
+    current_display_info_->left_eye = mojom::VREyeParameters::New();
   }
 
-  std::string runtime_name = openxr_->GetRuntimeName();
-  if (current_display_info_->display_name != runtime_name) {
-    current_display_info_->display_name = runtime_name;
-    changed = true;
-  }
+  current_display_info_->id = device::mojom::XRDeviceId::OPENXR_DEVICE_ID;
+  current_display_info_->display_name = openxr_->GetRuntimeName();
 
-  bool has_position = openxr_->HasPosition();
-  if (current_display_info_->capabilities->has_position != has_position) {
-    current_display_info_->capabilities->has_position = has_position;
-    changed = true;
-  }
+  current_display_info_->capabilities = mojom::VRDisplayCapabilities::New();
+  current_display_info_->capabilities->can_provide_environment_integration =
+      false;
+  current_display_info_->capabilities->has_position = openxr_->HasPosition();
 
   // OpenXR is initialized when creating the instance and getting the system
   // was successful. If we are able to get a system, then we can present to
   // an external display.
-  bool openxr_initialized = openxr_->IsInitialized();
-  if (current_display_info_->capabilities->has_external_display !=
-          openxr_initialized ||
-      current_display_info_->capabilities->can_present != openxr_initialized) {
-    current_display_info_->capabilities->has_external_display =
-        openxr_initialized;
-    current_display_info_->capabilities->can_present = openxr_initialized;
-    changed = true;
-  }
+  current_display_info_->capabilities->has_external_display =
+      openxr_->IsInitialized();
+  current_display_info_->capabilities->can_present = openxr_->IsInitialized();
 
-  return changed;
+  current_display_info_->webvr_default_framebuffer_scale = 1.0f;
+  current_display_info_->webxr_default_framebuffer_scale = 1.0f;
+
+  gfx::Size view_size = openxr_->GetViewSize();
+  current_display_info_->left_eye->render_width = view_size.width();
+  current_display_info_->right_eye->render_width = view_size.width();
+  current_display_info_->left_eye->render_height = view_size.height();
+  current_display_info_->right_eye->render_height = view_size.height();
+
+  // display info can't be send without fov info because of the mojo definition.
+  current_display_info_->left_eye->field_of_view =
+      mojom::VRFieldOfView::New(45.0f, 45.0f, 45.0f, 45.0f);
+  current_display_info_->right_eye->field_of_view =
+      current_display_info_->left_eye->field_of_view.Clone();
+
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(on_display_info_changed_, current_display_info_.Clone()));
 }
 
 // return true if either left_eye or right_eye updated.
 bool OpenXrRenderLoop::UpdateEyeParameters() {
   bool changed = false;
 
-  if (!current_display_info_->left_eye) {
-    current_display_info_->left_eye = mojom::VREyeParameters::New();
-    changed = true;
-  }
-
-  if (!current_display_info_->right_eye) {
-    current_display_info_->right_eye = mojom::VREyeParameters::New();
-    changed = true;
-  }
-
   XrView left;
   XrView right;
   openxr_->GetHeadFromEyes(&left, &right);
-  gfx::Size view_size = GetViewSize();
+  gfx::Size view_size = openxr_->GetViewSize();
 
   changed |= UpdateEye(left, view_size, &current_display_info_->left_eye);
 

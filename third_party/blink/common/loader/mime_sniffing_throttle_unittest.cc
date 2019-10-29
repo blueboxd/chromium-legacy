@@ -98,24 +98,25 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
   }
   void PauseReadingBodyFromNet() override { NOTIMPLEMENTED(); }
   void ResumeReadingBodyFromNet() override { NOTIMPLEMENTED(); }
-  void InterceptResponse(
-      network::mojom::URLLoaderPtr new_loader,
-      network::mojom::URLLoaderClientRequest new_client_request,
-      network::mojom::URLLoaderPtr* original_loader,
-      network::mojom::URLLoaderClientRequest* original_client_request)
-      override {
+  void InterceptResponse(network::mojom::URLLoaderPtr new_loader,
+                         mojo::PendingReceiver<network::mojom::URLLoaderClient>
+                             new_client_receiver,
+                         network::mojom::URLLoaderPtr* original_loader,
+                         mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+                             original_client_receiver) override {
     is_intercepted_ = true;
 
     destination_loader_ptr_ = std::move(new_loader);
-    ASSERT_TRUE(mojo::FuseInterface(
-        std::move(new_client_request),
-        destination_loader_client_.CreateInterfacePtr().PassInterface()));
+    ASSERT_TRUE(mojo::FusePipes(
+        std::move(new_client_receiver),
+        mojo::PendingRemote<network::mojom::URLLoaderClient>(
+            destination_loader_client_.CreateInterfacePtr().PassInterface())));
 
     mojo::PendingRemote<network::mojom::URLLoader> pending_remote;
     pending_receiver_ = pending_remote.InitWithNewPipeAndPassReceiver();
     original_loader->Bind(std::move(pending_remote));
 
-    *original_client_request =
+    *original_client_receiver =
         source_loader_client_remote_.BindNewPipeAndPassReceiver();
   }
 

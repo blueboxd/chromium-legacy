@@ -50,7 +50,6 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   bool TypeShouldForceLegacyLayout() const final;
   const AtomicString& FormControlType() const override;
   bool RecalcWillValidate() const override { return false; }
-  int tabIndex() const final;
   bool MatchesValidityPseudoClasses() const final;
   bool IsValidElement() final;
   void ChildrenChanged(const ChildrenChange&) override;

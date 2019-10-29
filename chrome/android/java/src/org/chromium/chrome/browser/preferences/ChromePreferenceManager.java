@@ -123,6 +123,7 @@ public class ChromePreferenceManager {
     @Deprecated
     public static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
 
+    @Deprecated
     private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
     private static final String CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT =
             "contextual_search_tap_triggered_promo_count";
@@ -291,10 +292,14 @@ public class ChromePreferenceManager {
     /**
      * Deprecated keys for Chrome Home.
      */
+    @Deprecated
     private static final String CHROME_HOME_USER_ENABLED_KEY = "chrome_home_user_enabled";
+    @Deprecated
     private static final String CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN =
             "chrome_home_opt_out_snackbar_shown";
+    @Deprecated
     public static final String CHROME_HOME_INFO_PROMO_SHOWN_KEY = "chrome_home_info_promo_shown";
+    @Deprecated
     public static final String CHROME_HOME_SHARED_PREFERENCES_KEY = "chrome_home_enabled_date";
 
     /**
@@ -407,26 +412,6 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * @return The value for the website settings filter (the one that specifies
-     * which sites to show in the list).
-     */
-    public String getWebsiteSettingsFilterPreference() {
-        return mSharedPreferences.getString(
-                ChromePreferenceManager.PREF_WEBSITE_SETTINGS_FILTER, "");
-    }
-
-    /**
-     * Sets the filter value for website settings (which websites to show in the list).
-     * @param prefValue The type to restrict the filter to.
-     */
-    public void setWebsiteSettingsFilterPreference(String prefValue) {
-        SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putString(
-                ChromePreferenceManager.PREF_WEBSITE_SETTINGS_FILTER, prefValue);
-        sharedPreferencesEditor.apply();
-    }
-
-    /**
      * Returns Chrome major version number when signin promo was last shown, or 0 if version number
      * isn't known.
      */
@@ -531,15 +516,6 @@ public class ChromePreferenceManager {
      */
     public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
         removeKey(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
-    }
-
-    /**
-     * Clean up unused Chrome Home preferences.
-     */
-    public void clearObsoleteChromeHomePrefs() {
-        removeKey(CHROME_HOME_USER_ENABLED_KEY);
-        removeKey(CHROME_HOME_INFO_PROMO_SHOWN_KEY);
-        removeKey(CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN);
     }
 
     /**

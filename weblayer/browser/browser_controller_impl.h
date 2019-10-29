@@ -74,8 +74,6 @@ class BrowserControllerImpl : public BrowserController,
   void AddObserver(BrowserObserver* observer) override;
   void RemoveObserver(BrowserObserver* observer) override;
   NavigationController* GetNavigationController() override;
-  void ExecuteScript(const base::string16& script,
-                     JavaScriptResultCallback callback) override;
 #if !defined(OS_ANDROID)
   void AttachToView(views::WebView* web_view) override;
 #endif

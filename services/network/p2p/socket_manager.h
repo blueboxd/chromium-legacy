@@ -98,8 +98,8 @@ class P2PSocketManager
                     const net::IPEndPoint& local_address,
                     const P2PPortRange& port_range,
                     const P2PHostAndIPEndPoint& remote_address,
-                    mojom::P2PSocketClientPtr client,
-                    mojom::P2PSocketRequest request) override;
+                    mojo::PendingRemote<mojom::P2PSocketClient> client,
+                    mojo::PendingReceiver<mojom::P2PSocket> receiver) override;
 
   // mojom::P2PTrustedSocketManager overrides:
   void StartRtpDump(bool incoming, bool outgoing) override;

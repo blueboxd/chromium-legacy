@@ -222,35 +222,43 @@ There are two ways to run web tests with additional command-line arguments:
 
 * Using a *virtual test suite* defined in
   [web_tests/VirtualTestSuites](../../third_party/blink/web_tests/VirtualTestSuites).
-  A virtual test suite runs a subset of web tests under a specific path with
-  additional flags. For example, you could test a (hypothetical) new mode for
+  A virtual test suite runs a subset of web tests with additional flags, with
+  `virtual/<prefix>/...` in their paths. The tests can be virtual tests that
+  map to real base tests (directories or files) whose paths match any of the
+  specified bases, or any real tests under `web_tests/virtual/<prefix>/`
+  directory. For example, you could test a (hypothetical) new mode for
   repainting using the following virtual test suite:
 
   ```json
   {
     "prefix": "blocking_repaint",
-    "base": "fast/repaint",
-    "args": ["--blocking-repaint"],
+    "bases": ["compositing", "fast/repaint"],
+    "args": ["--blocking-repaint"]
   }
   ```
 
   This will create new "virtual" tests of the form
+  `virtual/blocking_repaint/compositing/...` and
   `virtual/blocking_repaint/fast/repaint/...` which correspond to the files
-  under `web_tests/fast/repaint` and pass `--blocking-repaint` to
-  content_shell when they are run.
+  under `web_tests/compositing` and `web_tests/fast/repaint`, respectively,
+  and pass `--blocking-repaint` to `content_shell` when they are run.
 
-  These virtual tests exist in addition to the original `fast/repaint/...`
-  tests. They can have their own expectations in TestExpectations, and their own
-  baselines.  The test harness will use the non-virtual baselines as a fallback.
-  However, the non-virtual expectations are not inherited: if
-  `fast/repaint/foo.html` is marked `[ Fail ]`, the test harness still expects
+  These virtual tests exist in addition to the original `compositing/...` and
+  `fast/repaint/...` tests. They can have their own expectations in
+  `web_tests/TestExpectations`, and their own baselines. The test harness will
+  use the non-virtual baselines as a fallback. However, the non-virtual
+  expectations are not inherited: if `fast/repaint/foo.html` is marked
+  `[ Fail ]`, the test harness still expects
   `virtual/blocking_repaint/fast/repaint/foo.html` to pass. If you expect the
   virtual test to also fail, it needs its own suppression.
 
-  The "prefix" value does not have to be unique. This is useful if you want to
-  run multiple directories with the same flags (but see the notes below about
-  performance). Using the same prefix for different sets of flags is not
-  recommended.
+  This will also let any real tests under `web_tests/virtual/blocking_repaint`
+  directory run with the `--blocking-repaint` flag.
+
+  The "prefix" value should be unique. Multiple directories with the same flags
+  should be listed in the same "bases" list. The "bases" list can be empty,
+  in case that we just want to run the real tests under `virtual/<prefix>`
+  with the flags without creating any virtual tests.
 
 For flags whose implementation is still in progress, virtual test suites and
 flag-specific expectations represent two alternative strategies for testing.
@@ -273,7 +281,10 @@ Consider the following when choosing between them:
   architectural changes that potentially impact all of the tests.
 
 * Note that using wildcards in virtual test path names (e.g.
-  `virtual/blocking_repaint/fast/repaint/*`) is not supported.
+  `virtual/blocking_repaint/fast/repaint/*`) is not supported, but you can
+  still use `virtual/blocking_repaint` to run all real and virtual tests
+  in the suite or `virtual/blocking_repaint/fast/repaint/dir` to run real
+  or virtual tests in the suite under a specific directory.
 
 ## Tracking Test Failures
 

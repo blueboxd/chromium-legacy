@@ -75,7 +75,7 @@ suite('controlled button', function() {
     assertNotEquals(
         'action-button', controlledButton.$$('cr-button').className);
 
-    let controlledActionButton = document.createElement('controlled-button');
+    const controlledActionButton = document.createElement('controlled-button');
     controlledActionButton.pref = uncontrolledPref;
     controlledActionButton.className = 'action-button';
     document.body.appendChild(controlledActionButton);

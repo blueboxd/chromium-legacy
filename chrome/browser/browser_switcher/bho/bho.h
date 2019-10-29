@@ -10,6 +10,7 @@
 #include <exdispid.h>  // NOLINT(build/include_order)
 #include <shlguid.h>   // NOLINT(build/include_order)
 #include <shlobj.h>    // NOLINT(build/include_order)
+#include <wrl/client.h>
 
 #include "chrome/browser/browser_switcher/bho/browser_switcher_core.h"
 #include "chrome/browser/browser_switcher/bho/ie_bho_idl.h"
@@ -81,7 +82,7 @@ class ATL_NO_VTABLE CBrowserSwitcherBHO
  private:
   bool CheckUrl(LPOLESTR url, bool cancel);
 
-  ATL::CComPtr<IWebBrowser2> web_browser_;
+  Microsoft::WRL::ComPtr<IWebBrowser2> web_browser_;
   bool advised_;
 
   BrowserSwitcherCore browser_switcher_;

@@ -43,7 +43,7 @@ suite('Bookmarks policies', function() {
 
   test('canEdit updates when changed', async function() {
     const commandManager = bookmarks.CommandManager.getInstance();
-    let action = await store.waitForAction('set-can-edit');
+    const action = await store.waitForAction('set-can-edit');
     assertFalse(store.data.prefs.canEdit);
     assertFalse(commandManager.canExecute(Command.DELETE, new Set(['11'])));
 

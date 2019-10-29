@@ -236,7 +236,7 @@ void OfflinePageURLLoader::ReadRawData() {
 void OfflinePageURLLoader::OnReceiveError(
     int error,
     const network::ResourceRequest& /* resource_request */,
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     network::mojom::URLLoaderClientPtr client) {
   client_ = std::move(client);
   Finish(error);
@@ -245,14 +245,14 @@ void OfflinePageURLLoader::OnReceiveError(
 void OfflinePageURLLoader::OnReceiveResponse(
     int64_t file_size,
     const network::ResourceRequest& /* resource_request */,
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     network::mojom::URLLoaderClientPtr client) {
   // TODO(crbug.com/876527): Figure out how offline page interception should
   // interact with URLLoaderThrottles. It might be incorrect to ignore
   // |resource_request| here, since it's the current request after
   // throttles.
   DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+  binding_.Bind(std::move(receiver));
   binding_.set_connection_error_handler(
       base::BindOnce(&OfflinePageURLLoader::OnConnectionError,
                      weak_ptr_factory_.GetWeakPtr()));

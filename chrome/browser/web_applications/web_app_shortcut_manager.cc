@@ -13,6 +13,11 @@ WebAppShortcutManager::WebAppShortcutManager(Profile* profile)
 
 WebAppShortcutManager::~WebAppShortcutManager() = default;
 
+bool WebAppShortcutManager::CanCreateShortcuts() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void WebAppShortcutManager::GetShortcutInfoForApp(
     const AppId& app_id,
     GetShortcutInfoCallback callback) {

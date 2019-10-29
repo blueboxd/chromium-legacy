@@ -66,7 +66,6 @@
 <translation id="1407135791313364759">Άνοιγμα όλων</translation>
 <translation id="1409426117486808224">Απλοποιημένη προβολή για ανοικτές καρτέλες</translation>
 <translation id="1409879593029778104">Η λήψη του αρχείου <ph name="FILE_NAME" /> απετράπη, επειδή το αρχείο υπάρχει ήδη.</translation>
-<translation id="1413136574162415971">Το Google μπορεί να ελέγχει εάν οι κωδικοί πρόσβασής σας ήταν μέρος της παραβίασης δεδομένων. Αυτή η λειτουργία θα ενεργοποιείται όταν συνδέεστε με τον Λογαριασμό σας Google και ενεργοποιείτε τον συγχρονισμό.</translation>
 <translation id="1414981605391750300">Επικοινωνία με Google… Αυτή η διαδικασία μπορεί να διαρκέσει μερικά λεπτά…</translation>
 <translation id="1416550906796893042">Έκδοση εφαρμογής</translation>
 <translation id="1430915738399379752">Εκτύπωση</translation>
@@ -207,6 +206,7 @@
 <translation id="2498359688066513246">Βοήθεια και σχόλια</translation>
 <translation id="2501278716633472235">Επιστροφή</translation>
 <translation id="2513403576141822879">Για περισσότερες ρυθμίσεις που σχετίζονται με το απόρρητο, την ασφάλεια και τη συλλογή δεδομένων, ανατρέξτε στην ενότητα <ph name="BEGIN_LINK" />Συγχρονισμός και υπηρεσίες Google<ph name="END_LINK" /></translation>
+<translation id="2517472476991765520">Σάρωση</translation>
 <translation id="2518590038762162553">Στη λειτουργία Lite, το Chrome φορτώνει τις σελίδες πιο γρήγορα και χρησιμοποιεί έως και 60% λιγότερα δεδομένα. Για να βελτιστοποιήσει τις σελίδες που επισκέπτεστε, το Chrome στέλνει την επισκεψιμότητα ιστού σας στο Google. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Αποστέλλει στην Google URL των σελίδων που επισκέπτεστε</translation>
 <translation id="2532336938189706096">Προβολή ιστού</translation>
@@ -877,7 +877,6 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ενημέρωση στις <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">δεδομένα που εξοικονομήθηκαν</translation>
 <translation id="7498271377022651285">Περιμένετε…</translation>
-<translation id="7510943789645525906">Σας προειδοποιεί σε περίπτωση που ο κωδικός πρόσβασης που χρησιμοποιείτε ήταν μέρος μιας παραβίασης δεδομένων.</translation>
 <translation id="7514365320538308">Λήψη</translation>
 <translation id="751961395872307827">Δεν είναι δυνατή η σύνδεση στον ιστότοπο</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -933,7 +932,6 @@
 <translation id="7886917304091689118">Εκτέλεση στο Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Λήψη αρχείου.}other{Λήψη # αρχείων.}}</translation>
 <translation id="7929962904089429003">Άνοιγμα μενού</translation>
-<translation id="7930681627240672853">Ελέγξτε την ασφάλεια του κωδικού πρόσβασης</translation>
 <translation id="7942131818088350342">Το <ph name="PRODUCT_NAME" /> δεν είναι ενημερωμένο.</translation>
 <translation id="7947953824732555851">Αποδοχή και σύνδεση</translation>
 <translation id="7963646190083259054">Πάροχος υπηρεσιών:</translation>
@@ -949,7 +947,6 @@
 <translation id="8007176423574883786">Έχει απενεργοποιηθεί για αυτήν τη συσκευή</translation>
 <translation id="8013372441983637696">Επίσης, να διαγραφούν τα δεδομένα Chrome από αυτήν τη συσκευή.</translation>
 <translation id="8015452622527143194">Επαναφορά στοιχείων σελίδας σε κανονικό μέγεθος</translation>
-<translation id="8015780634880457457">Το Google μπορεί να ελέγχει εάν οι κωδικοί πρόσβασής σας ήταν μέρος της παραβίασης δεδομένων.</translation>
 <translation id="802154636333426148">Η λήψη απέτυχε</translation>
 <translation id="8026334261755873520">Διαγραφή δεδομένων περιήγησης</translation>
 <translation id="8035133914807600019">Νέος φάκελος…</translation>

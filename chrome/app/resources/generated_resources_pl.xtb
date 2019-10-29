@@ -859,7 +859,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2224471211857467033">Zdarzenia związane z ułatwieniami dostępu</translation>
 <translation id="2224551243087462610">Edytuj nazwę folderu</translation>
 <translation id="2226449515541314767">Pełny dostęp do sterowania urządzeniami MIDI został dla tej witryny zablokowany.</translation>
-<translation id="2226720438730111184">Powiedz nam, co się dzieje</translation>
 <translation id="2227179592712503583">Usuń sugestię</translation>
 <translation id="2229161054156947610">Została ponad 1 godzina</translation>
 <translation id="222931766245975952">Plik obcięty</translation>
@@ -2960,7 +2959,6 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="5360150013186312835">Pokaż na pasku narzędzi</translation>
 <translation id="5362741141255528695">Wybierz plik kluczy prywatnych.</translation>
 <translation id="5363109466694494651">Wykonaj Powerwash i przywróć</translation>
-<translation id="5365716706805792666">Google może sprawdzić, czy bezpieczeństwo Twoich haseł zostało naruszone. Ta funkcja zostanie włączona, gdy zalogujesz się na swoje konto Google.</translation>
 <translation id="5365881113273618889">Wybrany folder zawiera poufne pliki. Czy na pewno chcesz, by aplikacja „<ph name="APP_NAME" />” miała do niego stały dostęp z uprawnieniami do zapisu?</translation>
 <translation id="5367091008316207019">Odczytuję plik..</translation>
 <translation id="5368720394188453070">Twój telefon jest zablokowany. Aby uzyskać do niego dostęp, odblokuj go.</translation>
@@ -3558,7 +3556,6 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="6202304368170870640">Kodu PIN możesz używać do logowania się lub do odblokowywania urządzenia.</translation>
 <translation id="6206311232642889873">Kop&amp;iuj grafikę</translation>
 <translation id="6207200176136643843">Przywróć domyślny poziom powiększenia</translation>
-<translation id="620722923698527029">Zawsze otwieraj ten typ linków w powiązanej aplikacji</translation>
 <translation id="6207282396926186323">Zainstaluj <ph name="APP_NAME" /> (aplikacja na Linuksa)</translation>
 <translation id="6207937957461833379">Kraj/region</translation>
 <translation id="6208521041562685716">Aktywuję mobilną transmisję danych</translation>
@@ -4432,7 +4429,6 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="7506541170099744506">Urządzenie <ph name="DEVICE_TYPE" /> zostało zarejestrowane na potrzeby zarządzania w firmie.</translation>
 <translation id="7507930499305566459">Certyfikat obiektu odpowiadającego w zakresie stanu</translation>
 <translation id="7508054832109420082">Przyznaj dostęp do drukarek</translation>
-<translation id="7510943789645525906">Ostrzeżemy Cię, jeśli Twoje hasło zostało ujawnione w wyniku naruszenia bezpieczeństwa danych</translation>
 <translation id="7513029293694390567">Automatycznie loguj się na stronach, używając zapisanych danych logowania. Jeśli ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o potwierdzenie.</translation>
 <translation id="7514239104543605883">Skopiuj na swoje urządzenie</translation>
 <translation id="7514365320538308">Pobierz</translation>
@@ -4621,7 +4617,6 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 
 
 <ph name="EXTENSION_NAME" /></translation>
-<translation id="7788383851298063850">Powiedz nam, co się dzieje</translation>
 <translation id="7788444488075094252">Języki i metody wprowadzania</translation>
 <translation id="7788668840732459509">Pozycja:</translation>
 <translation id="7789963078219276159">Zmieniono tło strony startowej na <ph name="CATEGORY" />.</translation>
@@ -4736,7 +4731,6 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="7926423016278357561">To nie ja.</translation>
 <translation id="7928836894214140642">Zarządzane przez domenę <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Tutaj pojawią się zapisane formy płatności</translation>
-<translation id="7930681627240672853">Sprawdź bezpieczeństwo haseł</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> udostępnia ekran i dźwięk.</translation>
 <translation id="7931318309563332511">Nieznany</translation>
 <translation id="793293630927785390">Okno nowej sieci Wi-Fi</translation>
@@ -4809,7 +4803,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8014154204619229810">Obecnie działa aktualizator. Odśwież za minutę, by sprawdzić ponownie.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> nie może przywrócić poprzednio zainstalowanej wersji. Spróbuj ponownie, by wykonać Powerwash na urządzeniu.</translation>
 <translation id="8014210335923519270">Pomóż nam ulepszyć działanie i zwiększyć bezpieczeństwo <ph name="IDS_SHORT_PRODUCT_NAME" />, wysyłając informacje o systemie i użytkowaniu do Google</translation>
-<translation id="8015780634880457457">Google może sprawdzić, czy bezpieczeństwo Twoich haseł zostało naruszone</translation>
 <translation id="8016266267177410919">Pamięć tymczasowa</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Skrót był edytowany</translation>

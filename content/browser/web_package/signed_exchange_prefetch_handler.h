@@ -12,7 +12,8 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -50,7 +51,8 @@ class SignedExchangePrefetchHandler final
       const network::ResourceResponseHead& response,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderPtr network_loader,
-      network::mojom::URLLoaderClientRequest network_client_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>
+          network_client_receiver,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       URLLoaderThrottlesGetter loader_throttles_getter,
       network::mojom::URLLoaderClient* forwarding_client,
@@ -59,13 +61,13 @@ class SignedExchangePrefetchHandler final
 
   ~SignedExchangePrefetchHandler() override;
 
-  // This connects |loader_request| to the SignedExchangeLoader, and returns the
-  // pending client request to the loader.
-  // The returned client request can be bound to the downstream client so that
-  // they can start directly receiving upcalls from the SignedExchangeLoader.
-  // After this point |this| can be destructed.
-  network::mojom::URLLoaderClientRequest FollowRedirect(
-      network::mojom::URLLoaderRequest loader_request);
+  // This connects |loader_receiver| to the SignedExchangeLoader, and returns
+  // the pending client receiver to the loader. The returned client receiver can
+  // be bound to the downstream client so that they can start directly receiving
+  // upcalls from the SignedExchangeLoader. After this point |this| can be
+  // destructed.
+  mojo::PendingReceiver<network::mojom::URLLoaderClient> FollowRedirect(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver);
 
   // Returns the header integrity value of the loaded signed exchange if
   // available. This is available after OnReceiveRedirect() of
@@ -93,7 +95,7 @@ class SignedExchangePrefetchHandler final
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
-  mojo::Binding<network::mojom::URLLoaderClient> loader_client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> loader_client_receiver_{this};
 
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader_;
 

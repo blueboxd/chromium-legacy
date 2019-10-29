@@ -102,8 +102,8 @@ P2PSocketUdp::PendingPacket::PendingPacket(const PendingPacket& other) =
 P2PSocketUdp::PendingPacket::~PendingPacket() = default;
 
 P2PSocketUdp::P2PSocketUdp(Delegate* Delegate,
-                           mojom::P2PSocketClientPtr client,
-                           mojom::P2PSocketRequest socket,
+                           mojo::PendingRemote<mojom::P2PSocketClient> client,
+                           mojo::PendingReceiver<mojom::P2PSocket> socket,
                            P2PMessageThrottler* throttler,
                            net::NetLog* net_log,
                            const DatagramServerSocketFactory& socket_factory)
@@ -113,8 +113,8 @@ P2PSocketUdp::P2PSocketUdp(Delegate* Delegate,
       socket_factory_(socket_factory) {}
 
 P2PSocketUdp::P2PSocketUdp(Delegate* Delegate,
-                           mojom::P2PSocketClientPtr client,
-                           mojom::P2PSocketRequest socket,
+                           mojo::PendingRemote<mojom::P2PSocketClient> client,
+                           mojo::PendingReceiver<mojom::P2PSocket> socket,
                            P2PMessageThrottler* throttler,
                            net::NetLog* net_log)
     : P2PSocketUdp(Delegate,

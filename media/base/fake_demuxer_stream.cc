@@ -138,7 +138,7 @@ void FakeDemuxerStream::Reset() {
   read_to_hold_ = -1;
 
   if (read_cb_)
-    std::move(read_cb_).Run(kAborted, NULL);
+    std::move(read_cb_).Run(kAborted, nullptr);
 }
 
 void FakeDemuxerStream::Error() {
@@ -185,7 +185,7 @@ void FakeDemuxerStream::DoRead() {
     // Config change.
     num_buffers_left_in_current_config_ = num_buffers_in_one_config_;
     UpdateVideoDecoderConfig();
-    std::move(read_cb_).Run(kConfigChanged, NULL);
+    std::move(read_cb_).Run(kConfigChanged, nullptr);
     return;
   }
 

@@ -7,6 +7,8 @@ import logging
 import os
 import time
 
+from core.results_processor import util
+
 from tracing.metrics import metric_runner
 
 
@@ -46,7 +48,7 @@ def _RunMetric(test_result):
       test_result['testPath'], time.time() - start))
 
   if mre_result.failures:
-    test_result['status'] = 'FAIL'
+    util.SetUnexpectedFailure(test_result)
     for f in mre_result.failures:
       logging.error('Failure recorded for test %s: %s',
                     test_result['testPath'], f)
@@ -85,7 +87,7 @@ def ComputeTBMv2Metrics(test_result):
   # details.
   # TODO(crbug.com/1010041): Return a non-zero exit code in this case.
   if trace_size_in_mib > 400:
-    test_result['status'] = 'FAIL'
+    util.SetUnexpectedFailure(test_result)
     logging.error('%s: Trace size is too big: %s MiB',
                   test_result['testPath'], trace_size_in_mib)
     return

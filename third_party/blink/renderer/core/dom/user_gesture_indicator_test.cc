@@ -10,40 +10,14 @@
 
 namespace blink {
 
-// Checks for the initial state of UserGestureIndicator.
 TEST(UserGestureIndicatorTest, InitialState) {
-  EXPECT_FALSE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_EQ(nullptr, UserGestureIndicator::CurrentToken());
-  EXPECT_FALSE(UserGestureIndicator::ConsumeUserGesture());
 }
 
 TEST(UserGestureIndicatorTest, ConstructedWithNewUserGesture) {
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
-      LocalFrame::NotifyUserActivation(nullptr, UserGestureToken::kNewGesture);
-
-  EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
-  EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
-
-  EXPECT_TRUE(UserGestureIndicator::ConsumeUserGesture());
-}
-
-TEST(UserGestureIndicatorTest, ConstructedWithUserGesture) {
-  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
       LocalFrame::NotifyUserActivation(nullptr);
-
-  EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
-
-  EXPECT_TRUE(UserGestureIndicator::ConsumeUserGesture());
-}
-
-TEST(UserGestureIndicatorTest, ConstructedWithNoUserGesture) {
-  UserGestureIndicator user_gesture_scope(nullptr);
-
-  EXPECT_FALSE(UserGestureIndicator::ProcessingUserGesture());
-  EXPECT_EQ(nullptr, UserGestureIndicator::CurrentToken());
-
-  EXPECT_FALSE(UserGestureIndicator::ConsumeUserGesture());
 }
 
 // Check that after UserGestureIndicator destruction state will be cleared.
@@ -51,62 +25,41 @@ TEST(UserGestureIndicatorTest, DestructUserGestureIndicator) {
   {
     std::unique_ptr<UserGestureIndicator> user_gesture_scope =
         LocalFrame::NotifyUserActivation(nullptr);
-
-    EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
     EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
   }
-
-  EXPECT_FALSE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_EQ(nullptr, UserGestureIndicator::CurrentToken());
-  EXPECT_FALSE(UserGestureIndicator::ConsumeUserGesture());
 }
 
 // Tests creation of scoped UserGestureIndicator objects.
 TEST(UserGestureIndicatorTest, ScopedNewUserGestureIndicators) {
   // Root GestureIndicator and GestureToken.
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
-      LocalFrame::NotifyUserActivation(nullptr, UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(nullptr);
 
-  EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
   {
     // Construct inner UserGestureIndicator.
     // It should share GestureToken with the root indicator.
     std::unique_ptr<UserGestureIndicator> inner_user_gesture =
-        LocalFrame::NotifyUserActivation(nullptr,
-                                         UserGestureToken::kNewGesture);
-
-    EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
+        LocalFrame::NotifyUserActivation(nullptr);
     EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
-
-    // Consume inner gesture.
-    EXPECT_TRUE(UserGestureIndicator::ConsumeUserGesture());
   }
 
-  EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
-  EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
-
-  // Consume root gesture.
-  EXPECT_TRUE(UserGestureIndicator::ConsumeUserGesture());
-  EXPECT_FALSE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
 }
 
 TEST(UserGestureIndicatorTest, MultipleGesturesWithTheSameToken) {
   std::unique_ptr<UserGestureIndicator> indicator =
-      LocalFrame::NotifyUserActivation(nullptr, UserGestureToken::kNewGesture);
-  EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
+      LocalFrame::NotifyUserActivation(nullptr);
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
   {
     // Construct an inner indicator that shares the same token.
     UserGestureIndicator inner_indicator(UserGestureIndicator::CurrentToken());
-    EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
     EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
   }
   // Though the inner indicator was destroyed, the outer is still present (and
   // the gesture hasn't been consumed), so it should still be processing a user
   // gesture.
-  EXPECT_TRUE(UserGestureIndicator::ProcessingUserGesture());
   EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
 }
 

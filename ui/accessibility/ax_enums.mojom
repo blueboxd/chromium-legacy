@@ -939,6 +939,7 @@ enum DescriptionFrom {
   kAttribute,
   kContents,
   kRelatedElement,
+  kTitle,
 };
 
 enum EventFrom {

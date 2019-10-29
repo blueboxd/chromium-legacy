@@ -66,7 +66,6 @@
 <translation id="1407135791313364759">فتح الكل</translation>
 <translation id="1409426117486808224">عرض مبسَّط لعلامات التبويب المفتوحة</translation>
 <translation id="1409879593029778104">مُنع تنزيل الملف <ph name="FILE_NAME" /> لأنه موجود بالفعل.</translation>
-<translation id="1413136574162415971">‏بإمكان Google التحقُّق مما إذا تم استخدام كلمات المرور في عملية اختراق البيانات. سيتم تفعيل هذه الميزة عند تسجيل الدخول باستخدام حسابك على Google وتفعيل المزامنة.</translation>
 <translation id="1414981605391750300">‏جارٍ الاتصال بـ Google. قد يستغرق ذلك دقيقة واحدة...</translation>
 <translation id="1416550906796893042">إصدار التطبيق</translation>
 <translation id="1430915738399379752">طباعة</translation>
@@ -207,6 +206,7 @@
 <translation id="2498359688066513246">المساعدة والتعليقات</translation>
 <translation id="2501278716633472235">الرجوع</translation>
 <translation id="2513403576141822879">‏لعرض مزيد من الإعدادات المتعلِّقة بالخصوصية والأمان وجمع البيانات، يُرجى الاطِّلاع على <ph name="BEGIN_LINK" />خدمات Google والمزامنة<ph name="END_LINK" /></translation>
+<translation id="2517472476991765520">فحص</translation>
 <translation id="2518590038762162553">‏في الوضع البسيط، يُحمِّل Chrome الصفحات بشكلٍ أسرع ويستخدم بيانات أقل بنسبة تصل إلى 60%. لتحسين مستوى أداء الصفحات التي تزورها، يرسل Chrome عدد زيارات الويب إلى Google. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">‏يتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
 <translation id="2532336938189706096">عرض الويب</translation>
@@ -877,7 +877,6 @@
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">حجم البيانات التي تم توفيرها</translation>
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
-<translation id="7510943789645525906">يُرسَل إليك تحذير في حال كانت كلمة المرور التي تستخدمها جزءًا من عملية اختراق البيانات.</translation>
 <translation id="7514365320538308">تنزيل</translation>
 <translation id="751961395872307827">يتعذّر الاتصال بالموقع</translation>
 <translation id="7521387064766892559">جافا سكريبت</translation>
@@ -933,7 +932,6 @@
 <translation id="7886917304091689118">‏قيد التشغيل في Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{جارٍ تنزيل ملف واحد.}zero{جارٍ تنزيل # ملف}two{جارٍ تنزيل ملفين (#).}few{جارٍ تنزيل # ملفات.}many{جارٍ تنزيل # ملفًا.}other{جارٍ تنزيل # ملف.}}</translation>
 <translation id="7929962904089429003">فتح القائمة</translation>
-<translation id="7930681627240672853">التحقق من أمان كلمة المرور</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7963646190083259054">المورّد:</translation>
@@ -949,7 +947,6 @@
 <translation id="8007176423574883786">تم إيقافه لهذا الجهاز</translation>
 <translation id="8013372441983637696">‏محو بيانات Chrome من هذا الجهاز أيضًا</translation>
 <translation id="8015452622527143194">إعادة كل محتويات الصفحة إلى الحجم التلقائي</translation>
-<translation id="8015780634880457457">‏بإمكان Google التحقُّق مما إذا تم استخدام كلمات المرور في عملية اختراق البيانات.</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8035133914807600019">مجلد جديد...</translation>

@@ -17,6 +17,8 @@
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "ipc/ipc_sync_channel.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -77,14 +79,12 @@ class MimeHandlerViewContainerBase::PluginResourceThrottle
     }
     network::mojom::URLLoaderPtr dummy_new_loader;
     mojo::MakeRequest(&dummy_new_loader);
-    network::mojom::URLLoaderClientPtr new_client;
-    network::mojom::URLLoaderClientRequest new_client_request =
-        mojo::MakeRequest(&new_client);
+    mojo::PendingRemote<network::mojom::URLLoaderClient> new_client;
 
     network::mojom::URLLoaderPtr original_loader;
-    network::mojom::URLLoaderClientRequest original_client;
+    mojo::PendingReceiver<network::mojom::URLLoaderClient> original_client;
     delegate_->InterceptResponse(std::move(dummy_new_loader),
-                                 std::move(new_client_request),
+                                 new_client.InitWithNewPipeAndPassReceiver(),
                                  &original_loader, &original_client);
 
     auto transferrable_loader = content::mojom::TransferrableURLLoader::New();

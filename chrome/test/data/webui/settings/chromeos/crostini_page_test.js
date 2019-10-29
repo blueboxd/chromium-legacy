@@ -105,19 +105,19 @@ suite('CrostiniPageTests', function() {
         showCrostiniExportImport: true,
       });
 
-      let eventPromise = new Promise((resolve) => {
-                           let v = cr.addWebUIListener(
-                               'crostini-installer-status-changed', () => {
-                                 resolve(v);
-                               });
-                         }).then((v) => {
+      const eventPromise = new Promise((resolve) => {
+                             const v = cr.addWebUIListener(
+                                 'crostini-installer-status-changed', () => {
+                                   resolve(v);
+                                 });
+                           }).then((v) => {
         assertTrue(cr.removeWebUIListener(v));
       });
 
       settings.navigateTo(settings.routes.CROSTINI);
       crostiniPage.$$('#crostini').click();
 
-      let pageLoadPromise = flushAsync().then(() => {
+      const pageLoadPromise = flushAsync().then(() => {
         subpage = crostiniPage.$$('settings-crostini-subpage');
         assertTrue(!!subpage);
       });

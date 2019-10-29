@@ -23,7 +23,7 @@ void WeakWrapperSharedURLLoaderFactory::Detach() {
 }
 
 void WeakWrapperSharedURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

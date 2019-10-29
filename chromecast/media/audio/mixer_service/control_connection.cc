@@ -71,17 +71,30 @@ void ControlConnection::SetVolumeLimit(AudioContentType type,
   }
 }
 
-void ControlConnection::ConfigurePostprocessor(const std::string& name,
-                                               const void* config,
-                                               int size_bytes) {
+void ControlConnection::ConfigurePostprocessor(std::string postprocessor_name,
+                                               std::string config) {
+  SendPostprocessorMessage(postprocessor_name, config);
+  postprocessor_config_.insert_or_assign(std::move(postprocessor_name),
+                                         std::move(config));
+}
+
+void ControlConnection::SendPostprocessorMessage(std::string postprocessor_name,
+                                                 std::string message) {
   if (!socket_) {
     return;
   }
-  Generic message;
-  auto* content = message.mutable_configure_postprocessor();
-  content->set_name(name);
-  content->set_config(static_cast<const char*>(config), size_bytes);
-  socket_->SendProto(message);
+
+  // Erase any ? and subsequent substring from the name.
+  auto q = postprocessor_name.find('?');
+  if (q != std::string::npos) {
+    postprocessor_name.erase(q);
+  }
+
+  Generic proto;
+  auto* content = proto.mutable_configure_postprocessor();
+  content->set_name(std::move(postprocessor_name));
+  content->set_config(std::move(message));
+  socket_->SendProto(proto);
 }
 
 void ControlConnection::ReloadPostprocessors() {
@@ -98,6 +111,15 @@ void ControlConnection::SetStreamCountCallback(StreamCountCallback callback) {
   if (socket_) {
     Generic message;
     message.mutable_request_stream_count()->set_subscribe(!callback.is_null());
+    socket_->SendProto(message);
+  }
+}
+
+void ControlConnection::SetNumOutputChannels(int num_channels) {
+  num_output_channels_ = num_channels;
+  if (socket_) {
+    Generic message;
+    message.mutable_set_num_output_channels()->set_channels(num_channels);
     socket_->SendProto(message);
   }
 }
@@ -134,6 +156,17 @@ void ControlConnection::OnConnected(std::unique_ptr<MixerSocket> socket) {
     Generic message;
     message.mutable_request_stream_count()->set_subscribe(true);
     socket_->SendProto(message);
+  }
+
+  if (num_output_channels_) {
+    Generic message;
+    message.mutable_set_num_output_channels()->set_channels(
+        num_output_channels_);
+    socket_->SendProto(message);
+  }
+
+  for (const auto& item : postprocessor_config_) {
+    SendPostprocessorMessage(item.first, item.second);
   }
 
   if (connect_callback_) {

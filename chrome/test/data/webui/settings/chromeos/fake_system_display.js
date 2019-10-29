@@ -62,14 +62,14 @@ cr.define('settings', function() {
       }
 
       if (info.mirroringSourceId != undefined) {
-        for (let d of this.fakeDisplays) {
+        for (const d of this.fakeDisplays) {
           d.mirroringSourceId = info.mirroringSourceId;
         }
       }
 
       if (info.isPrimary != undefined) {
         let havePrimary = info.isPrimary;
-        for (let d of this.fakeDisplays) {
+        for (const d of this.fakeDisplays) {
           if (d.id == id) {
             d.isPrimary = info.isPrimary;
           } else if (havePrimary) {
@@ -108,14 +108,14 @@ cr.define('settings', function() {
       let mirroringSourceId = '';
       if (info.mode == chrome.system.display.MirrorMode.NORMAL) {
         // Select the primary display as the mirroring source.
-        for (let d of this.fakeDisplays) {
+        for (const d of this.fakeDisplays) {
           if (d.isPrimary) {
             mirroringSourceId = d.id;
             break;
           }
         }
       }
-      for (let d of this.fakeDisplays) {
+      for (const d of this.fakeDisplays) {
         d.mirroringSourceId = mirroringSourceId;
       }
       callback();
@@ -139,13 +139,13 @@ cr.define('settings', function() {
     updateLayouts_() {
       this.fakeLayouts = [];
       let primaryId = '';
-      for (let d of this.fakeDisplays) {
+      for (const d of this.fakeDisplays) {
         if (d.isPrimary) {
           primaryId = d.id;
           break;
         }
       }
-      for (let d of this.fakeDisplays) {
+      for (const d of this.fakeDisplays) {
         this.fakeLayouts.push({
           id: d.id,
           parentId: d.isPrimary ? '' : primaryId,

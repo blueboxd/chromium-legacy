@@ -82,7 +82,9 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
     RegisterBackingStoreReference(object_slot);
     if (!object)
       return;
-    MarkHeaderNoTracing(HeapObjectHeader::FromPayload(object));
+    HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
+    MarkHeaderNoTracing(header);
+    AccountMarkedBytes(header);
   }
 
   // This callback mechanism is needed to account for backing store objects
@@ -101,7 +103,10 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
 
   int task_id() const { return task_id_; }
 
-  void AdjustMarkedBytes(HeapObjectHeader*, size_t);
+  // Account for object's live bytes. Should only be adjusted when
+  // actually tracing through an already marked object. Logically, this means
+  // accounting for the bytes when transitioning from grey to black.
+  ALWAYS_INLINE void AccountMarkedBytes(HeapObjectHeader*);
 
  protected:
   MarkingVisitorCommon(ThreadState*, MarkingMode, int task_id);
@@ -110,10 +115,6 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
   // Try to mark an object without tracing. Returns true when the object was not
   // marked upon calling.
   inline bool MarkHeaderNoTracing(HeapObjectHeader*);
-
-  // Account for |size| live bytes. Should only be adjusted when
-  // transitioning an object from unmarked to marked state.
-  ALWAYS_INLINE void AccountMarkedBytes(size_t size);
 
   void RegisterBackingStoreReference(void** slot);
 
@@ -128,8 +129,12 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
   int task_id_;
 };
 
-ALWAYS_INLINE void MarkingVisitorCommon::AccountMarkedBytes(size_t size) {
-  marked_bytes_ += size;
+ALWAYS_INLINE void MarkingVisitorCommon::AccountMarkedBytes(
+    HeapObjectHeader* header) {
+  marked_bytes_ +=
+      header->IsLargeObject()
+          ? reinterpret_cast<LargeObjectPage*>(PageFromObject(header))->size()
+          : header->size();
 }
 
 inline bool MarkingVisitorCommon::MarkHeaderNoTracing(
@@ -143,15 +148,7 @@ inline bool MarkingVisitorCommon::MarkHeaderNoTracing(
   // freed backing store.
   DCHECK(!header->IsFree());
 
-  if (header->TryMark<HeapObjectHeader::AccessMode::kAtomic>()) {
-    const size_t size =
-        header->IsLargeObject()
-            ? reinterpret_cast<LargeObjectPage*>(PageFromObject(header))->size()
-            : header->size();
-    AccountMarkedBytes(size);
-    return true;
-  }
-  return false;
+  return header->TryMark<HeapObjectHeader::AccessMode::kAtomic>();
 }
 
 // Base visitor used to mark Oilpan objects on any thread.

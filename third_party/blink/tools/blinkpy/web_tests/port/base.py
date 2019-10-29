@@ -743,15 +743,14 @@ class Port(object):
         """
         tests = self.real_tests(paths)
 
-        suites = self.virtual_test_suites()
         if paths:
-            tests.extend(self._virtual_tests_matching_paths(paths, suites))
+            tests.extend(self._virtual_tests_matching_paths(paths))
             if (any(wpt_path in path for wpt_path in self.WPT_DIRS for path in paths)
                     # TODO(robertma): Remove this special case when external/wpt is moved to wpt.
                     or any('external' in path for path in paths)):
                 tests.extend(self._wpt_test_urls_matching_paths(paths))
         else:
-            tests.extend(self._all_virtual_tests(suites))
+            tests.extend(self._all_virtual_tests())
             tests.extend([wpt_path + self.TEST_PATH_SEPARATOR + test for wpt_path in self.WPT_DIRS
                           for test in self._wpt_manifest(wpt_path).all_urls()])
 
@@ -887,7 +886,14 @@ class Port(object):
         """Returns True if the test name refers to an existing test or baseline."""
         # Used by test_expectations.py to determine if an entry refers to a
         # valid test and by printing.py to determine if baselines exist.
-        return self.is_wpt_test(test_name) or self.test_isfile(test_name) or self.test_isdir(test_name)
+        if self.is_wpt_test(test_name):
+            # A virtual WPT test must have valid virtual prefix and base.
+            if test_name.startswith('virtual/'):
+                return bool(self.lookup_virtual_test_base(test_name))
+            # Otherwise treat any WPT test as existing regardless of their real
+            # existence on the file system.
+            return True
+        return self.test_isfile(test_name) or self.test_isdir(test_name)
 
     def split_test(self, test_name):
         """Splits a test name into the 'directory' part and the 'basename' part."""
@@ -1045,9 +1051,9 @@ class Port(object):
 
     @memoized
     def args_for_test(self, test_name):
-        test_base = self.lookup_virtual_test_base(test_name)
-        if test_base:
-            return self.lookup_virtual_test_args(test_name)
+        virtual_args = self.lookup_virtual_test_args(test_name)
+        if virtual_args:
+            return virtual_args
         return self.lookup_physical_test_args(test_name)
 
     @memoized
@@ -1601,31 +1607,31 @@ class Port(object):
                 self._virtual_test_suites = []
                 for json_config in test_suite_json:
                     vts = VirtualTestSuite(**json_config)
-                    if vts in self._virtual_test_suites:
-                        raise ValueError('{} contains duplicate definition: {!r}'.format(
-                            path_to_virtual_test_suites, json_config))
+                    if any(vts.full_prefix == s.full_prefix for s in self._virtual_test_suites):
+                        raise ValueError('{} contains entries with the same prefix: {!r}. Please combine them'
+                                         .format(path_to_virtual_test_suites, json_config))
                     self._virtual_test_suites.append(vts)
             except ValueError as error:
                 raise ValueError('{} is not a valid JSON file: {}'.format(
                     path_to_virtual_test_suites, error))
         return self._virtual_test_suites
 
-    def _all_virtual_tests(self, suites):
+    def _all_virtual_tests(self):
         tests = []
-        for suite in suites:
+        for suite in self.virtual_test_suites():
             self._populate_virtual_suite(suite)
             tests.extend(suite.tests.keys())
         return tests
 
-    def _virtual_tests_matching_paths(self, paths, suites):
+    def _virtual_tests_matching_paths(self, paths):
         tests = []
-        paths_with_trailing_slash = [p.rstrip(self.TEST_PATH_SEPARATOR) + self.TEST_PATH_SEPARATOR for p in paths]
-        for suite in suites:
-            if (any(p.startswith(suite.name) for p in paths) or
-                    any(suite.name.startswith(p) for p in paths_with_trailing_slash)):
-                self._populate_virtual_suite(suite)
+        normalized_paths = [self.normalize_test_name(p) for p in paths]
+        for suite in self.virtual_test_suites():
+            if not any(p.startswith(suite.full_prefix) for p in normalized_paths):
+                continue
+            self._populate_virtual_suite(suite)
             for test in suite.tests:
-                if any(test.startswith(p) for p in paths):
+                if any(test.startswith(p) for p in normalized_paths):
                     tests.append(test)
 
         if any(self._path_has_wildcard(path) for path in paths):
@@ -1682,18 +1688,18 @@ class Port(object):
 
     def _populate_virtual_suite(self, suite):
         if not suite.tests:
-            base_tests = self.real_tests([suite.base])
-            base_tests.extend(self._wpt_test_urls_matching_paths([suite.base]))
+            base_tests = self.real_tests(suite.bases) if suite.bases else []
+            base_tests.extend(self._wpt_test_urls_matching_paths(suite.bases))
             suite.tests = {}
             for test in base_tests:
-                suite.tests[test.replace(suite.base, suite.name, 1)] = test
+                suite.tests[suite.full_prefix + test] = test
 
     def is_virtual_test(self, test_name):
         return bool(self.lookup_virtual_suite(test_name))
 
     def lookup_virtual_suite(self, test_name):
         for suite in self.virtual_test_suites():
-            if test_name.startswith(suite.name):
+            if test_name.startswith(suite.full_prefix):
                 return suite
         return None
 
@@ -1701,17 +1707,24 @@ class Port(object):
         suite = self.lookup_virtual_suite(test_name)
         if not suite:
             return None
-        return test_name.replace(suite.name, suite.base, 1)
+        assert test_name.startswith(suite.full_prefix)
+        maybe_base = self.normalize_test_name(test_name[len(suite.full_prefix):])
+        for base in suite.bases:
+            normalized_base = self.normalize_test_name(base)
+            if normalized_base.startswith(maybe_base) or maybe_base.startswith(normalized_base):
+                return maybe_base
+        return None
 
     def lookup_virtual_test_args(self, test_name):
+        normalized_test_name = self.normalize_test_name(test_name)
         for suite in self.virtual_test_suites():
-            if test_name.startswith(suite.name):
+            if normalized_test_name.startswith(suite.full_prefix):
                 return suite.args
         return []
 
     def lookup_virtual_reference_args(self, test_name):
         for suite in self.virtual_test_suites():
-            if test_name.startswith(suite.name):
+            if test_name.startswith(suite.full_prefix):
                 return suite.reference_args
         return []
 
@@ -1823,25 +1836,19 @@ class Port(object):
 
 class VirtualTestSuite(object):
 
-    def __init__(self, prefix=None, base=None, args=None, references_use_default_args=False):
-        assert base
+    def __init__(self, prefix=None, bases=None, args=None, references_use_default_args=False):
+        assert isinstance(bases, list)
         assert args
+        assert isinstance(args, list)
         assert '/' not in prefix, "Virtual test suites prefixes cannot contain /'s: %s" % prefix
-        self.name = 'virtual/' + prefix + '/' + base
-        self.base = base
+        self.full_prefix = 'virtual/' + prefix + '/'
+        self.bases = bases
         self.args = args
         self.reference_args = [] if references_use_default_args else args
         self.tests = {}
 
     def __repr__(self):
-        return "VirtualTestSuite('%s', '%s', %s, %s)" % (self.name, self.base, self.args, self.reference_args)
-
-    def __eq__(self, other):
-        return (
-            self.name == other.name and
-            self.base == other.base and
-            self.args == other.args and
-            self.reference_args == other.reference_args)
+        return "VirtualTestSuite('%s', %s, %s, %s)" % (self.full_prefix, self.bases, self.args, self.reference_args)
 
 
 class PhysicalTestSuite(object):

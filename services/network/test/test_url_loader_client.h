@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/c/system/data_pipe.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -54,9 +54,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
     return has_received_cached_metadata_;
   }
   bool has_received_completion() const { return has_received_completion_; }
-  bool has_received_connection_error() const {
-    return has_received_connection_error_;
-  }
+  bool has_received_disconnect() const { return has_received_disconnect_; }
   const mojom::URLResponseHeadPtr& response_head() const {
     return response_head_;
   }
@@ -92,13 +90,13 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void RunUntilCachedMetadataReceived();
   void RunUntilResponseBodyArrived();
   void RunUntilComplete();
-  void RunUntilConnectionError();
+  void RunUntilDisconnect();
   void RunUntilTransferSizeUpdated();
 
  private:
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
-  mojo::Binding<mojom::URLLoaderClient> binding_;
+  mojo::Receiver<mojom::URLLoaderClient> receiver_{this};
   mojom::URLResponseHeadPtr response_head_;
   net::RedirectInfo redirect_info_;
   std::string cached_metadata_;
@@ -109,14 +107,14 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   bool has_received_upload_progress_ = false;
   bool has_received_cached_metadata_ = false;
   bool has_received_completion_ = false;
-  bool has_received_connection_error_ = false;
+  bool has_received_disconnect_ = false;
 
   base::OnceClosure quit_closure_for_on_receive_response_;
   base::OnceClosure quit_closure_for_on_receive_redirect_;
   base::OnceClosure quit_closure_for_on_receive_cached_metadata_;
   base::OnceClosure quit_closure_for_on_start_loading_response_body_;
   base::OnceClosure quit_closure_for_on_complete_;
-  base::OnceClosure quit_closure_for_on_connection_error_;
+  base::OnceClosure quit_closure_for_disconnect_;
   base::OnceClosure quit_closure_for_on_transfer_size_updated_;
 
   int64_t body_transfer_size_ = 0;

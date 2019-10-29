@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
@@ -76,18 +77,26 @@ class RequiredFieldsFallbackHandler {
       base::RepeatingCallback<std::string(const RequiredField&,
                                           const FallbackData&)>
           field_value_getter,
-      base::OnceCallback<void(const ClientStatus&)> status_update_callback,
+      base::OnceCallback<void(const ClientStatus&,
+                              const base::Optional<ClientStatus>&)>
+          status_update_callback,
       ActionDelegate* delegate);
   ~RequiredFieldsFallbackHandler();
 
+  // Check if there are required fields. If so, verify them and fallback if
+  // they are empty. If not, update the status to the result of the autofill
+  // action.
+  void CheckAndFallbackRequiredFields(
+      const ClientStatus& initial_autofill_status,
+      std::unique_ptr<FallbackData> fallback_data);
+
+ private:
   // Check whether all required fields have a non-empty value. If it is the
   // case, update the status to success. If it's not and |fallback_data|
   // is null, update the status to failure. If |fallback_data| is non-null, use
   // it to attempt to fill the failed fields without Autofill.
-  void CheckAndFallbackRequiredFields(
-      std::unique_ptr<FallbackData> fallback_data);
+  void CheckAllRequiredFields(std::unique_ptr<FallbackData> fallback_data);
 
- private:
   // Triggers the check for a specific field.
   void CheckRequiredFieldsSequentially(
       bool allow_fallback,
@@ -113,11 +122,15 @@ class RequiredFieldsFallbackHandler {
                                std::unique_ptr<FallbackData> fallback_data,
                                const ClientStatus& status);
 
+  ClientStatus initial_autofill_status_;
+
   std::vector<RequiredField> required_fields_;
   base::RepeatingCallback<std::string(const RequiredField&,
                                       const FallbackData&)>
       field_value_getter_;
-  base::OnceCallback<void(const ClientStatus&)> status_update_callback_;
+  base::OnceCallback<void(const ClientStatus&,
+                          const base::Optional<ClientStatus>&)>
+      status_update_callback_;
   ActionDelegate* action_delegate_;
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
   base::WeakPtrFactory<RequiredFieldsFallbackHandler> weak_ptr_factory_{this};

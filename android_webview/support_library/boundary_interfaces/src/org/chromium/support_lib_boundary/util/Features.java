@@ -173,4 +173,7 @@ public class Features {
     // WebViewCompat.addWebMessageListener
     // WebViewCompat.removeWebMessageListener
     public static final String WEB_MESSAGE_LISTENER = "WEB_MESSAGE_LISTENER";
+
+    // WebViewProviderFactoryAdapter.setSupportLibraryVersion
+    public static final String SET_SUPPORT_LIBRARY_VERSION = "SET_SUPPORT_LIBRARY_VERSION";
 }

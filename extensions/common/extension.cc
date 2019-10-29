@@ -182,12 +182,12 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
 
   if (!InitExtensionID(manifest.get(), path, explicit_id, flags, &error)) {
     *utf8_error = base::UTF16ToUTF8(error);
-    return NULL;
+    return nullptr;
   }
 
   std::vector<InstallWarning> install_warnings;
   if (!manifest->ValidateManifest(utf8_error, &install_warnings)) {
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<Extension> extension = new Extension(path, std::move(manifest));
@@ -195,7 +195,7 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
 
   if (!extension->InitFromValue(flags, &error)) {
     *utf8_error = base::UTF16ToUTF8(error);
-    return NULL;
+    return nullptr;
   }
 
   return extension;
@@ -396,7 +396,7 @@ Extension::ManifestData* Extension::GetManifestData(const std::string& key)
   auto iter = manifest_data_.find(key);
   if (iter != manifest_data_.end())
     return iter->second.get();
-  return NULL;
+  return nullptr;
 }
 
 void Extension::SetManifestData(const std::string& key,
@@ -656,11 +656,11 @@ bool Extension::LoadExtent(const char* key,
                            const char* list_error,
                            const char* value_error,
                            base::string16* error) {
-  const base::Value* temp_pattern_value = NULL;
+  const base::Value* temp_pattern_value = nullptr;
   if (!manifest_->Get(key, &temp_pattern_value))
     return true;
 
-  const base::ListValue* pattern_list = NULL;
+  const base::ListValue* pattern_list = nullptr;
   if (!temp_pattern_value->GetAsList(&pattern_list)) {
     *error = base::ASCIIToUTF16(list_error);
     return false;

@@ -375,8 +375,7 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
                                                ->GetPointerLockController()
                                                .GetElement()
                                                ->GetDocument()
-                                               .GetFrame(),
-                                           UserGestureToken::kNewGesture);
+                                               .GetFrame());
       pointer_lock_gesture_token_ = gesture_indicator->CurrentToken();
       break;
     case WebInputEvent::kMouseUp:

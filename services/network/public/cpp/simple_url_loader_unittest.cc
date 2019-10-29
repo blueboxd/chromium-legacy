@@ -2010,18 +2010,19 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   // network::mojom::URLLoaderFactory implementation:
 
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest url_loader_request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& url_request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     ASSERT_FALSE(test_events_.empty());
     requested_urls_.push_back(url_request.url);
     url_loaders_.push_back(std::make_unique<MockURLLoader>(
-        task_environment_, std::move(url_loader_request), std::move(client),
+        task_environment_, std::move(url_loader_receiver), std::move(client),
         test_events_.front(), url_request.request_body));
     test_events_.pop_front();
 

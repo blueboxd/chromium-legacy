@@ -440,12 +440,17 @@ inline bool IsNonFocusableFocusScopeOwner(Element& element) {
 inline int AdjustedTabIndex(Element& element) {
   if (IsNonKeyboardFocusableShadowHost(element))
     return 0;
-  if (element.DelegatesFocus()) {
+  if (element.DelegatesFocus() || IsA<HTMLSlotElement>(element)) {
     // We can't use Element::tabIndex(), which returns -1 for invalid or
     // missing values.
     return element.GetIntegralAttribute(html_names::kTabindexAttr, 0);
   }
-  return element.tabIndex();
+  bool default_focusable =
+      element.SupportsFocus() ||
+      (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
+       IsScrollableNode(&element));
+  return element.GetIntegralAttribute(html_names::kTabindexAttr,
+                                      default_focusable ? 0 : -1);
 }
 
 inline bool ShouldVisit(Element& element) {

@@ -39,8 +39,7 @@ WorkerScriptLoader::WorkerScriptLoader(
       service_worker_handle_(std::move(service_worker_handle)),
       browser_context_getter_(browser_context_getter),
       default_loader_factory_(std::move(default_loader_factory)),
-      traffic_annotation_(traffic_annotation),
-      url_loader_client_binding_(this) {
+      traffic_annotation_(traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor;
@@ -126,7 +125,7 @@ void WorkerScriptLoader::MaybeStartLoader(
   if (single_request_factory) {
     // The interceptor elected to handle the request. Use it.
     network::mojom::URLLoaderClientPtr client;
-    url_loader_client_binding_.Bind(mojo::MakeRequest(&client));
+    url_loader_client_receiver_.Bind(mojo::MakeRequest(&client));
     url_loader_factory_ = std::move(single_request_factory);
     url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_), routing_id_, request_id_, options_,
@@ -151,9 +150,8 @@ void WorkerScriptLoader::LoadFromNetwork(bool reset_subresource_loader_params) {
 
   default_loader_used_ = true;
   network::mojom::URLLoaderClientPtr client;
-  if (url_loader_client_binding_)
-    url_loader_client_binding_.Unbind();
-  url_loader_client_binding_.Bind(mojo::MakeRequest(&client));
+  url_loader_client_receiver_.reset();
+  url_loader_client_receiver_.Bind(mojo::MakeRequest(&client));
   url_loader_factory_ = default_loader_factory_;
   url_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_), routing_id_, request_id_, options_,
@@ -190,7 +188,7 @@ void WorkerScriptLoader::FollowRedirect(
 
   // Restart the request.
   interceptor_index_ = 0;
-  url_loader_client_binding_.Unbind();
+  url_loader_client_receiver_.reset();
   redirect_info_.reset();
 
   Start();
@@ -281,7 +279,8 @@ bool WorkerScriptLoader::MaybeCreateLoaderForResponse(
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle* response_body,
     network::mojom::URLLoaderPtr* response_url_loader,
-    network::mojom::URLLoaderClientRequest* response_client_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+        response_client_receiver,
     blink::ThrottlingURLLoader* url_loader) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -297,7 +296,7 @@ bool WorkerScriptLoader::MaybeCreateLoaderForResponse(
     bool will_return_unsafe_redirect = false;
     if (interceptor->MaybeCreateLoaderForResponse(
             resource_request_, response_head, response_body,
-            response_url_loader, response_client_request, url_loader,
+            response_url_loader, response_client_receiver, url_loader,
             &skip_other_interceptors, &will_return_unsafe_redirect)) {
       // Both ServiceWorkerRequestHandler and AppCacheRequestHandler don't set
       // skip_other_interceptors nor will_return_unsafe_redirect.
@@ -328,7 +327,7 @@ void WorkerScriptLoader::CommitCompleted(
   // We're done. Ensure we no longer send messages to our client, and no longer
   // talk to the loader we're a client of.
   client_.reset();
-  url_loader_client_binding_.Close();
+  url_loader_client_receiver_.reset();
   url_loader_.reset();
 }
 

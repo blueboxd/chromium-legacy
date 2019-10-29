@@ -90,8 +90,7 @@ class NavigatorShareTest : public testing::Test {
 
   void Share(const ShareData& share_data) {
     std::unique_ptr<UserGestureIndicator> gesture =
-        LocalFrame::NotifyUserActivation(&GetFrame(),
-                                         UserGestureToken::kNewGesture);
+        LocalFrame::NotifyUserActivation(&GetFrame());
     Navigator* navigator = GetFrame().DomWindow()->navigator();
     ScriptPromise promise =
         NavigatorShare::share(GetScriptState(), *navigator, &share_data);

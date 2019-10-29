@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/profiles/profile_observer.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/drive/drive_notification_observer.h"
@@ -44,7 +43,6 @@ class DriveFs;
 namespace drive {
 
 class DebugInfoCollector;
-class DownloadHandler;
 class DriveServiceInterface;
 class EventLogger;
 class FileSystemInterface;
@@ -103,7 +101,6 @@ class DriveIntegrationServiceObserver {
 // created per-profile.
 class DriveIntegrationService : public KeyedService,
                                 public DriveNotificationObserver,
-                                public ProfileObserver,
                                 public drivefs::DriveFsHost::MountObserver,
                                 public chromeos::PowerManagerClient::Observer {
  public:
@@ -175,7 +172,6 @@ class DriveIntegrationService : public KeyedService,
     return debug_info_collector_.get();
   }
   FileSystemInterface* file_system() { return file_system_.get(); }
-  DownloadHandler* download_handler() { return download_handler_.get(); }
   JobListInterface* job_list() { return scheduler_.get(); }
 
   // Clears all the local cache file, the local resource metadata, and
@@ -248,9 +244,6 @@ class DriveIntegrationService : public KeyedService,
 
   bool DownloadDirectoryPreferenceIsInDrive();
 
-  // ProfileObserver:
-  void OnOffTheRecordProfileCreated(Profile* off_the_record) override;
-
   // Migrate pinned files from the old Drive integration to DriveFS.
   void MigratePinnedFiles();
 
@@ -286,7 +279,6 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<internal::ResourceMetadata, util::DestroyHelper>
       resource_metadata_;
   std::unique_ptr<FileSystemInterface> file_system_;
-  std::unique_ptr<DownloadHandler> download_handler_;
   std::unique_ptr<DebugInfoCollector> debug_info_collector_;
 
   base::ObserverList<DriveIntegrationServiceObserver>::Unchecked observers_;
@@ -303,7 +295,6 @@ class DriveIntegrationService : public KeyedService,
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>
       power_manager_observer_{this};
-  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

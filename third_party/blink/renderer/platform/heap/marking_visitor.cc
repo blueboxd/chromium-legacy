@@ -65,14 +65,6 @@ void MarkingVisitorCommon::RegisterBackingStoreCallback(
   }
 }
 
-void MarkingVisitorCommon::AdjustMarkedBytes(HeapObjectHeader* header,
-                                             size_t old_size) {
-  DCHECK(header->IsMarked<HeapObjectHeader::AccessMode::kAtomic>());
-  // Currently, only expansion of an object is supported during marking.
-  DCHECK_GE(header->size(), old_size);
-  marked_bytes_ += header->size() - old_size;
-}
-
 // static
 bool MarkingVisitor::WriteBarrierSlow(void* value) {
   if (!value || IsHashTableDeleteValue(value))
@@ -88,33 +80,28 @@ bool MarkingVisitor::WriteBarrierSlow(void* value) {
     return false;
 
   HeapObjectHeader* header;
-  size_t size;
   if (LIKELY(!base_page->IsLargeObjectPage())) {
     header = reinterpret_cast<HeapObjectHeader*>(
         static_cast<NormalPage*>(base_page)->FindHeaderFromAddress(
             reinterpret_cast<Address>(value)));
-    size = header->size();
   } else {
     LargeObjectPage* large_page = static_cast<LargeObjectPage*>(base_page);
     header = large_page->ObjectHeader();
-    size = large_page->size();
   }
   DCHECK(header->IsValid());
 
   if (!header->TryMark<HeapObjectHeader::AccessMode::kAtomic>())
     return false;
 
+  MarkingVisitor* visitor = thread_state->CurrentVisitor();
   if (UNLIKELY(IsInConstruction(header))) {
     // It is assumed that objects on not_fully_constructed_worklist_ are not
     // marked.
     header->Unmark();
-    thread_state->CurrentVisitor()->not_fully_constructed_worklist_.Push(
-        header->Payload());
+    visitor->not_fully_constructed_worklist_.Push(header->Payload());
     return true;
   }
 
-  MarkingVisitor* visitor = thread_state->CurrentVisitor();
-  visitor->AccountMarkedBytes(size);
   visitor->write_barrier_worklist_.Push(header);
   return true;
 }
@@ -152,7 +139,10 @@ void MarkingVisitor::DynamicallyMarkAddress(Address address) {
   DCHECK(!IsInConstruction(header));
   const GCInfo* gc_info =
       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
-  MarkHeader(header, gc_info->trace);
+  if (MarkHeaderNoTracing(header)) {
+    marking_worklist_.Push(
+        {reinterpret_cast<void*>(header->Payload()), gc_info->trace});
+  }
 }
 
 void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
@@ -168,7 +158,8 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   if (!header || header->IsMarked())
     return;
 
-  // Simple case for fully constructed objects.
+  // Simple case for fully constructed objects. This just adds the object to the
+  // regular marking worklist.
   const GCInfo* gc_info =
       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
   if (!IsInConstruction(header)) {
@@ -203,6 +194,7 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
     if (maybe_ptr)
       Heap().CheckAndMarkPointer(this, maybe_ptr);
   }
+  AccountMarkedBytes(header);
 }
 
 void MarkingVisitor::FlushMarkingWorklist() {

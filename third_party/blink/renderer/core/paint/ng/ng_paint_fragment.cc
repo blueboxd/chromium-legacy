@@ -605,24 +605,6 @@ void NGPaintFragment::ClearAssociationWithLayoutObject() {
   }
 }
 
-const NGPaintFragment* NGPaintFragment::GetForInlineContainer(
-    const LayoutObject* layout_object) {
-  DCHECK(layout_object && layout_object->IsInline());
-  if (LayoutBlockFlow* block_flow = layout_object->ContainingNGBlockFlow()) {
-    if (const NGPaintFragment* fragment = block_flow->PaintFragment())
-      return fragment;
-
-    // TODO(kojii): IsLayoutFlowThread should probably be done in
-    // ContainingNGBlockFlow(), but there seem to be both expectations today.
-    // This needs cleanup.
-    if (block_flow->IsLayoutFlowThread()) {
-      DCHECK(block_flow->Parent() && block_flow->Parent()->IsLayoutBlockFlow());
-      return block_flow->Parent()->PaintFragment();
-    }
-  }
-  return nullptr;
-}
-
 NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
     const LayoutObject* layout_object) {
   DCHECK(layout_object);

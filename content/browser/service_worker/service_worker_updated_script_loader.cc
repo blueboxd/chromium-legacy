@@ -182,7 +182,6 @@ ServiceWorkerUpdatedScriptLoader::ServiceWorkerUpdatedScriptLoader(
       resource_type_(static_cast<ResourceType>(original_request.resource_type)),
       options_(options),
       version_(std::move(version)),
-      network_client_binding_(this),
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                        base::SequencedTaskRunnerHandle::Get()),
@@ -210,8 +209,8 @@ ServiceWorkerUpdatedScriptLoader::ServiceWorkerUpdatedScriptLoader(
   DCHECK(cache_writer_);
 
   network_loader_ = std::move(info.paused_state->network_loader);
-  network_client_request_ =
-      std::move(info.paused_state->network_client_request);
+  pending_network_client_receiver_ =
+      std::move(info.paused_state->network_client_receiver);
   network_consumer_ = std::move(info.paused_state->network_consumer);
 
   network_loader_state_ = info.paused_state->network_loader_state;
@@ -445,7 +444,7 @@ void ServiceWorkerUpdatedScriptLoader::OnCacheWriterResumed(net::Error error) {
   // Continue to load the rest of the body from the network.
   DCHECK_EQ(body_writer_state_, WriterState::kWriting);
   DCHECK(network_consumer_);
-  network_client_binding_.Bind(std::move(network_client_request_));
+  network_client_receiver_.Bind(std::move(pending_network_client_receiver_));
   network_watcher_.Watch(
       network_consumer_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -621,7 +620,7 @@ void ServiceWorkerUpdatedScriptLoader::CommitCompleted(
   client_producer_watcher_.Cancel();
 
   network_loader_.reset();
-  network_client_binding_.Close();
+  network_client_receiver_.reset();
   network_consumer_.reset();
   network_watcher_.Cancel();
   cache_writer_.reset();

@@ -623,15 +623,14 @@ cr.define('device_page_tests', function() {
       const name = k => `prefs.settings.language.${k}.value`;
       const get = k => devicePage.get(name(k));
       const set = (k, v) => devicePage.set(name(k), v);
-      let collapse;
       // Open the keyboard subpage.
-      let keyboardPage =
+      const keyboardPage =
           await showAndGetDeviceSubpage('keyboard', settings.routes.KEYBOARD);
       // Initially, the optional keys are hidden.
       expectFalse(!!keyboardPage.$$('#capsLockKey'));
 
       // Pretend no internal keyboard is available.
-      let keyboardParams = {
+      const keyboardParams = {
         'showCapsLock': false,
         'showExternalMetaKey': false,
         'showAppleCommandKey': false,
@@ -696,7 +695,7 @@ cr.define('device_page_tests', function() {
       expectTrue(!!keyboardPage.$$('#externalCommandKey'));
       expectTrue(!!keyboardPage.$$('#assistantKey'));
 
-      collapse = keyboardPage.$$('iron-collapse');
+      const collapse = keyboardPage.$$('iron-collapse');
       assertTrue(!!collapse);
       expectTrue(collapse.opened);
 

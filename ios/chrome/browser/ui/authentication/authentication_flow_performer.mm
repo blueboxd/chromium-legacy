@@ -20,6 +20,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
@@ -27,8 +28,6 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/system_flags.h"
-#include "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
@@ -241,8 +240,10 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 }
 
 - (void)promptMergeCaseForIdentity:(ChromeIdentity*)identity
-                      browserState:(ios::ChromeBrowserState*)browserState
+                           browser:(Browser*)browser
                     viewController:(UIViewController*)viewController {
+  DCHECK(browser);
+  ios::ChromeBrowserState* browserState = browser->GetBrowserState();
   BOOL isSignedIn = YES;
   NSString* lastSignedInEmail =
       [AuthenticationServiceFactory::GetForBrowserState(browserState)
@@ -271,20 +272,23 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     return;
   }
   _navigationController = [SettingsNavigationController
-      importDataControllerForBrowserState:browserState
-                                 delegate:self
-                       importDataDelegate:self
-                                fromEmail:lastSignedInEmail
-                                  toEmail:[identity userEmail]
-                               isSignedIn:isSignedIn];
+      importDataControllerForBrowser:browser
+                            delegate:self
+                  importDataDelegate:self
+                           fromEmail:lastSignedInEmail
+                             toEmail:[identity userEmail]
+                          isSignedIn:isSignedIn];
   [[_delegate presentingViewController]
       presentViewController:_navigationController
                    animated:YES
                  completion:nil];
 }
 
-- (void)clearData:(ios::ChromeBrowserState*)browserState
-       dispatcher:(id<BrowsingDataCommands>)dispatcher {
+- (void)clearDataFromBrowser:(Browser*)browser
+              commandHandler:(id<BrowsingDataCommands>)handler {
+  DCHECK(browser);
+  ios::ChromeBrowserState* browserState = browser->GetBrowserState();
+
   DCHECK(!AuthenticationServiceFactory::GetForBrowserState(browserState)
               ->IsAuthenticated());
 
@@ -308,16 +312,14 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   // This CL works around this issue by waiting for 1 second between steps 1
   // and 2 above to allow the WKWebView to initiate the reload after the
   // cookies are cleared.
-  WebStateList* webStateList =
-      TabModelList::GetLastActiveTabModelForChromeBrowserState(browserState)
-          .webStateList;
+  WebStateList* webStateList = browser->GetWebStateList();
   web::WebState* activeWebState = webStateList->GetActiveWebState();
   bool activeWebStateHasGaiaOrigin =
       activeWebState && (activeWebState->GetVisibleURL().GetOrigin() ==
                          GaiaUrls::GetInstance()->gaia_url());
   int64_t dispatchDelaySecs = activeWebStateHasGaiaOrigin ? 1 : 0;
 
-  [dispatcher
+  [handler
       removeBrowsingDataForBrowserState:browserState
                              timePeriod:browsing_data::TimePeriod::ALL_TIME
                              removeMask:BrowsingDataRemoveMask::REMOVE_ALL

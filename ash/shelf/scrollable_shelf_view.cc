@@ -192,6 +192,7 @@ class ScrollableShelfView::ScrollableShelfArrowView
                         is_horizontal_alignment,
                         shelf,
                         shelf_button_delegate) {
+    SetInkDropMode(InkDropMode::OFF);
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   }
   ~ScrollableShelfArrowView() override = default;

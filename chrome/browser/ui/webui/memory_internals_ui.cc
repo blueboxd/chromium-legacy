@@ -321,8 +321,7 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
   // This function will be called with the child processes that are not
   // renderers. It will fill in the browser and renderer processes on the UI
   // thread (RenderProcessHost is UI-thread only) and return the full list.
-  base::Value process_list_value(base::Value::Type::LIST);
-  std::vector<base::Value>& process_list = process_list_value.GetList();
+  std::vector<base::Value> process_list;
 
   // Add browser process.
   process_list.push_back(MakeProcessInfo(base::GetCurrentProcId(), "Browser"));
@@ -351,20 +350,19 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
 
   // Append whether each process is being profiled.
   for (base::Value& value : process_list) {
-    std::vector<base::Value>& value_as_list = value.GetList();
-    DCHECK_EQ(value_as_list.size(), 2u);
+    DCHECK_EQ(value.GetList().size(), 2u);
 
     base::ProcessId pid =
-        static_cast<base::ProcessId>(value_as_list[0].GetInt());
+        static_cast<base::ProcessId>(value.GetList()[0].GetInt());
     bool is_profiled =
         std::binary_search(profiled_pids.begin(), profiled_pids.end(), pid);
-    value_as_list.push_back(base::Value(is_profiled));
+    value.Append(is_profiled);
   }
 
   // Pass the results in a dictionary.
   base::Value result(base::Value::Type::DICTIONARY);
   result.SetKey("message", base::Value(GetMessageString()));
-  result.SetKey("processes", std::move(process_list_value));
+  result.SetKey("processes", base::Value(std::move(process_list)));
 
   AllowJavascript();
   CallJavascriptFunction("returnProcessList", result);

@@ -45,6 +45,7 @@
 <translation id="1056775291175587022">ネットワークが見つかりません</translation>
 <translation id="1056898198331236512">警告</translation>
 <translation id="1058262162121953039">PUK</translation>
+<translation id="1061745542578250838"><ph name="FILE_NAME" /> は機密性の高い内容を含んでいるためブロックされました。</translation>
 <translation id="1061904396131502319">もうすぐ休憩の時間です</translation>
 <translation id="1067048845568873861">作成日</translation>
 <translation id="1067291318998134776">Linux（ベータ版）</translation>
@@ -279,6 +280,7 @@
 <translation id="1410197035576869800">アプリのアイコン</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> によるカメラへのアクセスを引き続き許可する</translation>
 <translation id="1414648216875402825">アップデートしようとしているバージョンの <ph name="PRODUCT_NAME" /> には開発中の機能が含まれており、不安定です。クラッシュや予期しないバグが発生します。続行する場合は十分にご注意ください。</translation>
+<translation id="1414866280542221544">このデバイスで有効にする</translation>
 <translation id="1415708812149920388">クリップボードの読み取りアクセスが拒否されました</translation>
 <translation id="1415990189994829608">このタイプのセッションでは、<ph name="EXTENSION_NAME" />（拡張機能 ID「<ph name="EXTENSION_ID" />」）は使用できません。</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -546,6 +548,7 @@
 <translation id="1776712937009046120">ユーザーを追加</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">「<ph name="DEVICE_NAME" />」でこのパスキーを入力してください:</translation>
+<translation id="1780152987505130652">グループを閉じる</translation>
 <translation id="1781291988450150470">現在の PIN</translation>
 <translation id="1781502536226964113">新しいタブ ページを開く</translation>
 <translation id="1781771911845953849">アカウントと同期</translation>
@@ -837,6 +840,7 @@
 <translation id="2202898655984161076">プリンタのリスト作成中に問題が発生しました。一部のプリンタが <ph name="CLOUD_PRINT_NAME" /> に正常に登録されていない可能性があります。</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />アドレスバー<ph name="END_LINK" />で使用される検索エンジン</translation>
 <translation id="2204034823255629767">すべての入力内容の読み取りと変更</translation>
+<translation id="2204397710290433380">ADB を無効にしますか？</translation>
 <translation id="220792432208469595">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この設定は所有者によって管理されています。[その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータは Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">「<ph name="DEVICE_NAME" />」の PIN コードを入力してください:</translation>
 <translation id="2213140827792212876">共有を解除します</translation>
@@ -855,7 +859,6 @@
 <translation id="2224471211857467033">ユーザー補助イベント</translation>
 <translation id="2224551243087462610">フォルダ名の編集</translation>
 <translation id="2226449515541314767">このサイトには MIDI デバイスのフル コントロールは許可されていません。</translation>
-<translation id="2226720438730111184">問題の詳細をお知らせください</translation>
 <translation id="2227179592712503583">候補を削除</translation>
 <translation id="2229161054156947610">あと 1 時間以上</translation>
 <translation id="222931766245975952">ファイルの一部が削除されました</translation>
@@ -1087,6 +1090,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> は <ph name="NETWORK_ID" /> に接続できませんでした。別のネットワークを選択するか、もう一度お試しください。</translation>
 <translation id="2553440850688409052">このプラグインを表示しない</translation>
 <translation id="2554553592469060349">選択したファイルが大きすぎます（最大サイズ: 3 MB）。</translation>
+<translation id="2557378327156922632">このファイルには機密性の高い内容が含まれています。</translation>
 <translation id="255747371423522804">既存のグループに追加</translation>
 <translation id="2558896001721082624">システム メニューにユーザー補助オプションを常に表示する</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> にログインしていません</translation>
@@ -1127,6 +1131,7 @@
 <translation id="26224892172169984">すべてのサイトに対してプロトコルの処理を許可しない</translation>
 <translation id="2624142942574147739">このページはカメラとマイクにアクセスしています。</translation>
 <translation id="2626799779920242286">しばらくしてからもう一度お試しください。</translation>
+<translation id="2629227353894235473">Android アプリの開発</translation>
 <translation id="2630681426381349926">開始するには Wi-Fi に接続</translation>
 <translation id="2631120081682787498">このタブを閉じてもよろしいですか？</translation>
 <translation id="2631498379019108537">シェルフに入力オプションを表示</translation>
@@ -1177,6 +1182,7 @@
 <translation id="2690024944919328218">言語オプションを表示</translation>
 <translation id="2691385045260836588">機種</translation>
 <translation id="2693176596243495071">不明なエラーが発生しました。後でもう一度お試しになるか、問題が解決しない場合は管理者にお問い合わせください。</translation>
+<translation id="2693982916035708855">スキャン完了、問題は見つかりませんでした。</translation>
 <translation id="2695749433451188613">インターネット印刷プロトコル（HTTPS）</translation>
 <translation id="2699911226086014512">PIN の操作に失敗しました。コード: <ph name="RETRIES" /></translation>
 <translation id="2701737434167469065">ログイン（<ph name="EMAIL" />）</translation>
@@ -1300,6 +1306,7 @@
 <translation id="2861301611394761800">システムの更新が完了しました。システムを再起動してください。</translation>
 <translation id="2861941300086904918">ネイティブ クライアント セキュリティ マネージャ</translation>
 <translation id="2864601841139725659">プロフィール画像の設定</translation>
+<translation id="2865919525181940183">現在画面に表示されているプログラムのスクリーンショット</translation>
 <translation id="2867768963760577682">固定されたタブとして開く</translation>
 <translation id="2868746137289129307">この拡張機能は古く、企業のポリシーによって無効にされました。新しいバージョンが利用可能になったときに自動的に有効になる可能性があります。</translation>
 <translation id="2870560284913253234">サイト</translation>
@@ -1322,6 +1329,7 @@
 <translation id="2889064240420137087">次のプログラムでリンクを開く...</translation>
 <translation id="2889925978073739256">サンドボックスの無効化プラグインを引き続きブロックする</translation>
 <translation id="2893168226686371498">既定のブラウザ</translation>
+<translation id="2894757982205307093">グループにタブを追加</translation>
 <translation id="289644616180464099">SIM カードはロックされています</translation>
 <translation id="2896909745808647285"><ph name="FILE_NAME" /> は暗号化されており、開けません。</translation>
 <translation id="289695669188700754">キー ID: <ph name="KEY_ID" /></translation>
@@ -1995,6 +2003,7 @@
 <translation id="3873315167136380065">この設定をオンにするには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />して同期パスフレーズを削除します</translation>
 <translation id="3873423927483480833">PIN を表示</translation>
 <translation id="3873915545594852654">ARC++ で問題が発生しました。</translation>
+<translation id="387924939625099872">ADB を無効にするには、<ph name="DEVICE_TYPE" /> を再起動してください。再起動すると、設定は出荷時の状態にリセットされ、すべてのユーザー アカウントとローカルデータは消去されます。</translation>
 <translation id="3879748587602334249">ダウンロード マネージャ</translation>
 <translation id="3886446263141354045">このサイトへのアクセス リクエストを <ph name="NAME" /> さんに送信しました</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> でメモをとる</translation>
@@ -2051,6 +2060,7 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" />（<ph name="DEVICE_ID" />）</translation>
 <translation id="394984172568887996">IE ブックマーク</translation>
 <translation id="3950820424414687140">ログイン</translation>
+<translation id="3952230510293296226">このファイルは機密性の高い内容を含んでいるためブロックされました。</translation>
 <translation id="3953834000574892725">マイ アカウント</translation>
 <translation id="3954354850384043518">ダウンロード中</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" />（<ph name="REFRESH_RATE" /> Hz）</translation>
@@ -2368,6 +2378,7 @@
 <translation id="4451757071857432900">煩わしい広告や誤解を招く広告が表示されるサイトでブロック（推奨）</translation>
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> で検索するか、URL を入力してください</translation>
 <translation id="4459169140545916303">最終同期: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> 日前</translation>
+<translation id="4460014764210899310">グループを解除</translation>
 <translation id="4462159676511157176">カスタム ネーム サーバー</translation>
 <translation id="4469477701382819144">煩わしい広告や誤解を招く広告が表示されるサイトでブロックされています</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> は「<ph name="FOLDERNAME" />」のファイルを編集できます</translation>
@@ -2627,6 +2638,7 @@
 <translation id="4871308555310586478">Chrome ウェブストア以外の場所からインストールされました。</translation>
 <translation id="4871322859485617074">PIN に無効な文字が含まれています</translation>
 <translation id="4871370605780490696">ブックマークを追加</translation>
+<translation id="4871719318659334896">グループを閉じる</translation>
 <translation id="4873312501243535625">メディア ファイル チェッカー</translation>
 <translation id="4876273079589074638">このクラッシュについて迅速に調査、解決できるよう、具体的な操作についてできるだけ詳しくご説明ください。</translation>
 <translation id="4876895919560854374">画面のロックとロック解除</translation>
@@ -2947,7 +2959,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5360150013186312835">ツールバーに表示</translation>
 <translation id="5362741141255528695">秘密鍵ファイルを選択します。</translation>
 <translation id="5363109466694494651">Powerwash を実行して以前のバージョンに戻す</translation>
-<translation id="5365716706805792666">Google ではお使いのパスワードがデータ侵害の対象になっていたかを確認できます。この機能は、Google アカウントでログインするとオンになります。</translation>
 <translation id="5365881113273618889">選択したフォルダには、機密ファイルが含まれています。このフォルダに対する永続的な書き込みアクセス権を「<ph name="APP_NAME" />」に付与してもよろしいですか？</translation>
 <translation id="5367091008316207019">ファイルを読み取っています...</translation>
 <translation id="5368720394188453070">スマートフォンがロックされています。ログインするにはロックを解除してしてください。</translation>
@@ -3307,6 +3318,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5860494867054883682">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="5862109781435984885">シェルフにタッチペン ツールを表示</translation>
 <translation id="5863445608433396414">デバッグ機能を有効にする</translation>
+<translation id="5863471434640009253">Android Debug Bridge（ADB）を有効にするには、まず <ph name="DEVICE_TYPE" /> を再起動してください。ADB を無効にする場合は、出荷時の設定へのリセットが必要になります。</translation>
 <translation id="5864471791310927901">DHCP を検索できませんでした</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" /> はディスク イメージから実行されています。パソコンにインストールすると、ディスク イメージなしで実行できるようになり、常に最新の状態に維持できます。</translation>
 <translation id="5865733239029070421">使用統計情報や障害レポートを Google に自動送信します</translation>
@@ -3375,6 +3387,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5958529069007801266">監視対象ユーザー</translation>
 <translation id="5959471481388474538">ネットワークは利用できません</translation>
 <translation id="595959584676692139">この拡張機能を使用するにはページを再読み込みします</translation>
+<translation id="5961320084471308154">ADB を有効にしますか？</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" />（最大 <ph name="NUM_KILOBYTES_LIVE" />）</translation>
 <translation id="5965661248935608907">この拡張機能では、ホーム ボタンのクリック時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> は「<ph name="FOLDERNAME" />」のファイルを表示できます</translation>
@@ -3505,6 +3518,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="6141988275892716286">ダウンロードの確認</translation>
 <translation id="6143186082490678276">ヘルプ</translation>
 <translation id="6144938890088808325">Chromebooks の改善にご協力ください</translation>
+<translation id="614611931938947795">このファイルは大きすぎてクラウドでのスキャンができないため、開けません。</translation>
 <translation id="6147020289383635445">印刷プレビューの表示に失敗しました。</translation>
 <translation id="6148576794665275391">開く</translation>
 <translation id="6149015141270619212">インターネットに接続できません</translation>
@@ -3542,7 +3556,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="6202304368170870640">デバイスのログインやロック解除に PIN を使用できます。</translation>
 <translation id="6206311232642889873">画像をコピー(&amp;Y)</translation>
 <translation id="6207200176136643843">リセットしてデフォルトのズームレベルに戻す</translation>
-<translation id="620722923698527029">このタイプのリンクは常に関連付けられたアプリで開く</translation>
 <translation id="6207282396926186323"><ph name="APP_NAME" />（Linux アプリ）のインストール</translation>
 <translation id="6207937957461833379">国/地域</translation>
 <translation id="6208521041562685716">モバイルデータを有効化しています</translation>
@@ -3836,6 +3849,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="6649563841575838401">アーカイブ形式がサポートされていないか、ファイルが壊れています。</translation>
 <translation id="665061930738760572">新しいウィンドウで開く(&amp;N)</translation>
 <translation id="6651237644330755633">ウェブサイトの識別でこの証明書を信頼します</translation>
+<translation id="6651823585377804376">ダウンロードに不正なソフトウェアが含まれています。</translation>
 <translation id="665355505818177700">Chrome と <ph name="MS_AD_NAME" /> の統合は x86_64 プラットフォームでのみサポートされています。ARM または x86 プラットフォームを使用している Chromebooks では、この機能はサポートされていません。</translation>
 <translation id="6655190889273724601">デベロッパー モード</translation>
 <translation id="6655458902729017087">アカウントを非表示にする</translation>
@@ -4415,7 +4429,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7506541170099744506">この <ph name="DEVICE_TYPE" /> は組織の管理対象として登録されました。</translation>
 <translation id="7507930499305566459">ステータス レスポンダ証明書</translation>
 <translation id="7508054832109420082">プリンタへのアクセスを許可する</translation>
-<translation id="7510943789645525906">使用しているパスワードがデータ侵害を受けた場合に警告する</translation>
 <translation id="7513029293694390567">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能が無効になっている場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
 <translation id="7514239104543605883">デバイスにコピー</translation>
 <translation id="7514365320538308">ダウンロード</translation>
@@ -4522,6 +4535,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7683373461016844951">利用を続けるには、[OK]、[ユーザーを追加] の順にクリックして、<ph name="DOMAIN" /> のメールアドレス用の新しいプロフィールを作成してください。</translation>
 <translation id="7684212569183643648">管理者によりインストールされています</translation>
 <translation id="7684559058815332124">キャプティブ ポータルのログインページにアクセス</translation>
+<translation id="7684718995427157417">アプリを作成してテストするには、Android Debug Bridge（ADB）を有効にします。この操作を行うと、Google が確認していない Android アプリのインストールが許可されます。無効にする場合は、出荷時の設定へのリセットが必要になります。</translation>
 <translation id="7685049629764448582">JavaScript メモリ</translation>
 <translation id="7685087414635069102">PIN が必要です</translation>
 <translation id="7685301384041462804">VR を開始する前に、信頼できるサイトかどうかを確認してください。</translation>
@@ -4563,6 +4577,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7731119595976065702">その他の言語...</translation>
 <translation id="7732111077498238432">ネットワークはポリシーによって管理されています</translation>
 <translation id="7737238973539693982">Linux（ベータ版）の削除</translation>
+<translation id="7737456446569756884">このデバイスでは、<ph name="MONTH_AND_YEAR" />までソフトウェアとセキュリティが自動更新されます。</translation>
 <translation id="7740996059027112821">標準</translation>
 <translation id="7744047395460924128">印刷履歴の表示</translation>
 <translation id="7746457520633464754">危険なアプリやサイトを検出するために、アクセスした一部のページの URL と限定的なシステム情報、一部のページ コンテンツが Chrome から Google に送信されます</translation>
@@ -4602,7 +4617,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 
 
 <ph name="EXTENSION_NAME" /></translation>
-<translation id="7788383851298063850">問題の詳細をお知らせください</translation>
 <translation id="7788444488075094252">言語と入力</translation>
 <translation id="7788668840732459509">位置:</translation>
 <translation id="7789963078219276159">スタートページの背景が<ph name="CATEGORY" />に変更されました。</translation>
@@ -4717,7 +4731,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7926423016278357561">これは私ではありません。</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> で管理</translation>
 <translation id="7930294771522048157">保存したお支払い方法がここに表示されます</translation>
-<translation id="7930681627240672853">パスワードの安全性を確認</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> が画面と音声を共有しています。</translation>
 <translation id="7931318309563332511">不明</translation>
 <translation id="793293630927785390">新しい Wi-Fi ネットワーク ダイアログ</translation>
@@ -4790,7 +4803,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8014154204619229810">現在アップデータを実行中です。しばらくしてから更新して、もう一度ご確認ください。</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> を以前のインストール バージョンに戻せません。デバイスでもう一度 Powerwash を実行してみてください。</translation>
 <translation id="8014210335923519270">システム情報と使用状況が Google に送信され、<ph name="IDS_SHORT_PRODUCT_NAME" /> とそのセキュリティの向上に役立てられます</translation>
-<translation id="8015780634880457457">Google ではお使いのパスワードがデータ侵害の対象になっていたかを確認できます</translation>
 <translation id="8016266267177410919">一時ストレージ</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">ショートカットを編集しました</translation>
@@ -5283,6 +5295,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8736288397686080465">このサイトはバックグラウンドで更新されました。</translation>
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> の代わりに「<ph name="PROTOCOL" />」リンクを開く</translation>
 <translation id="8737709691285775803">サクラ</translation>
+<translation id="8738766971144275885">このファイルは暗号化されており、開けません。</translation>
 <translation id="8742371904523228557"><ph name="ORIGIN" /> のコードは「<ph name="ONE_TIME_CODE" />」です</translation>
 <translation id="8743390665131937741">全画面のズームレベル:</translation>
 <translation id="8743864605301774756">1 時間前に更新されました</translation>
@@ -5314,6 +5327,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8780123805589053431">Google から画像の説明を取得</translation>
 <translation id="8780443667474968681">音声検索がオフになっています。</translation>
 <translation id="878069093594050299">この証明書は、以下の用途に使用できることが確認されています:</translation>
+<translation id="8781834595282316166">グループにタブを追加</translation>
 <translation id="8781980678064919987">ディスプレイを閉じたときにシャットダウンする</translation>
 <translation id="8782565991310229362">キオスク アプリケーションの起動がキャンセルされました。</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; さんがあなたと &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; プリンタを共有をすることを希望しています。</translation>
@@ -5371,6 +5385,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8850251000316748990">もっと見る...</translation>
 <translation id="885246833287407341">API 関数の引数</translation>
 <translation id="8853586775156634952">このカードはこのデバイスにのみ保存されます</translation>
+<translation id="8855501062415172277"><ph name="FILE_NAME" /> には機密性の高い内容が含まれています。</translation>
 <translation id="885701979325669005">ストレージ</translation>
 <translation id="8859057652521303089">言語の選択:</translation>
 <translation id="8859174528519900719">サブフレーム: <ph name="SUBFRAME_SITE" /></translation>
@@ -5565,6 +5580,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="9130015405878219958">入力されたモードが無効です。</translation>
 <translation id="9131487537093447019">Bluetooth デバイスとのメッセージの送受信。</translation>
 <translation id="9134304429738380103">利用する</translation>
+<translation id="9135090785674039430">オンにすると、サイトは Cookie を使用してあなたをウェブ上でトラッキングできなくなります。ウェブサイトによっては機能が損なわれる場合もあります。</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9137157311132182254">優先する検索エンジン</translation>
 <translation id="9137248913990643158">このアプリを使用するには、Chrome を起動してログインしてください。</translation>

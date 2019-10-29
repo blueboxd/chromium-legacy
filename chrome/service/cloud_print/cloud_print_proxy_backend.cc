@@ -33,6 +33,7 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "jingle/notifier/listener/push_client_observer.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
@@ -169,13 +170,15 @@ class CloudPrintProxyBackend::Core
   // Runs on Core thread.
   static void RequestProxyResolvingSocketFactoryOnCoreThread(
       base::WeakPtr<CloudPrintProxyBackend::Core> owner,
-      network::mojom::ProxyResolvingSocketFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+          receiver);
 
   // Runs on IO thread.
   static void RequestProxyResolvingSocketFactory(
       scoped_refptr<base::SingleThreadTaskRunner> core_runner,
       base::WeakPtr<CloudPrintProxyBackend::Core> owner,
-      network::mojom::ProxyResolvingSocketFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+          receiver);
 
   // Our parent CloudPrintProxyBackend
   CloudPrintProxyBackend* const backend_;
@@ -603,26 +606,28 @@ CloudPrintTokenStore* CloudPrintProxyBackend::Core::GetTokenStore() {
 void CloudPrintProxyBackend::Core::
     RequestProxyResolvingSocketFactoryOnCoreThread(
         base::WeakPtr<CloudPrintProxyBackend::Core> owner,
-        network::mojom::ProxyResolvingSocketFactoryRequest request) {
+        mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+            receiver) {
   if (!owner)
     return;
   DCHECK(owner->CurrentlyOnCoreThread());
   owner->GetURLLoaderFactory();  // initialize |url_loader_factory_owner_|
   owner->url_loader_factory_owner_->GetNetworkContext()
-      ->CreateProxyResolvingSocketFactory(std::move(request));
+      ->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
 // static
 void CloudPrintProxyBackend::Core::RequestProxyResolvingSocketFactory(
     scoped_refptr<base::SingleThreadTaskRunner> core_runner,
     base::WeakPtr<CloudPrintProxyBackend::Core> owner,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
   // This runs on IO thread; should not dereference |owner|.
   core_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&Core::RequestProxyResolvingSocketFactoryOnCoreThread,
-                     std::move(owner), std::move(request)));
+                     std::move(owner), std::move(receiver)));
 }
 
 void CloudPrintProxyBackend::Core::NotifyAuthenticated(

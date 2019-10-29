@@ -11,7 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "chromeos/components/drivefs/pending_connection_manager.h"
+#include "chromeos/components/mojo_bootstrap/pending_connection_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -96,7 +96,7 @@ base::FilePath FakeDriveFsLauncherClient::MaybeMountDriveFs(
   }
   const std::string datadir = base::StrCat({"drivefs-", datadir_suffix});
   mojo::PlatformChannel channel;
-  PendingConnectionManager::Get().OpenIpcChannel(
+  mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
       identity, channel.TakeLocalEndpoint().TakePlatformHandle().TakeFD());
   launcher_->LaunchDriveFs(
       base::FilePath("/tmp").Append(datadir),

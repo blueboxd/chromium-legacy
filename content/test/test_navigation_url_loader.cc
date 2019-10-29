@@ -15,6 +15,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/navigation_policy.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -73,15 +74,13 @@ void TestNavigationURLLoader::CallOnResponseStarted(
   // Create a bidirectionnal communication pipe between a URLLoader and a
   // URLLoaderClient. It will be closed at the end of this function. The sole
   // purpose of this is not to violate some DCHECKs when the navigation commits.
-  network::mojom::URLLoaderClientPtr url_loader_client_ptr;
-  network::mojom::URLLoaderClientRequest url_loader_client_request =
-      mojo::MakeRequest(&url_loader_client_ptr);
-  network::mojom::URLLoaderPtr url_loader_ptr;
-  network::mojom::URLLoaderRequest url_loader_request =
-      mojo::MakeRequest(&url_loader_ptr);
+  mojo::PendingRemote<network::mojom::URLLoaderClient> url_loader_client_remote;
+  mojo::PendingRemote<network::mojom::URLLoader> url_loader_remote;
+  ignore_result(url_loader_remote.InitWithNewPipeAndPassReceiver());
   auto url_loader_client_endpoints =
       network::mojom::URLLoaderClientEndpoints::New(
-          url_loader_ptr.PassInterface(), std::move(url_loader_client_request));
+          std::move(url_loader_remote),
+          url_loader_client_remote.InitWithNewPipeAndPassReceiver());
 
   delegate_->OnResponseStarted(
       std::move(url_loader_client_endpoints), response_head,

@@ -66,7 +66,6 @@
 <translation id="1407135791313364759">Otwórz wszystkie</translation>
 <translation id="1409426117486808224">Uproszczony widok otwartych kart</translation>
 <translation id="1409879593029778104">Plik <ph name="FILE_NAME" /> nie został pobrany, bo już istnieje.</translation>
-<translation id="1413136574162415971">Google może sprawdzić, czy bezpieczeństwo Twoich haseł zostało naruszone. Ta funkcja zostanie włączona, gdy zalogujesz się na swoje konto Google i włączysz synchronizację.</translation>
 <translation id="1414981605391750300">Łączę się z Google. Może to chwilę potrwać…</translation>
 <translation id="1416550906796893042">Wersja aplikacji</translation>
 <translation id="1430915738399379752">Drukuj</translation>
@@ -207,6 +206,7 @@
 <translation id="2498359688066513246">Pomoc i opinie</translation>
 <translation id="2501278716633472235">Wróć</translation>
 <translation id="2513403576141822879">Więcej ustawień związanych z prywatnością, bezpieczeństwem i zbieraniem danych znajdziesz w sekcji <ph name="BEGIN_LINK" />Synchronizacja i usługi Google<ph name="END_LINK" /></translation>
+<translation id="2517472476991765520">Skanuj</translation>
 <translation id="2518590038762162553">W wersji uproszczonej Chrome szybciej ładuje strony, używając nawet o 60% mniej danych. Aby optymalizować strony, które odwiedzasz, Chrome przesyła informacje o historii przeglądania do Google. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Adresy URL odwiedzanych stron będą wysyłane do Google</translation>
 <translation id="2532336938189706096">Widok sieci</translation>
@@ -877,7 +877,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7493994139787901920"><ph name="VERSION" /> (zaktualizowana <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">zaoszczędzonych danych</translation>
 <translation id="7498271377022651285">Czekaj…</translation>
-<translation id="7510943789645525906">Ostrzeżemy Cię, jeśli Twoje hasło zostało ujawnione w wyniku naruszenia bezpieczeństwa danych</translation>
 <translation id="7514365320538308">Pobierz</translation>
 <translation id="751961395872307827">Nie można połączyć się ze stroną</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -933,7 +932,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7886917304091689118">Otwarta w Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Pobieram plik.}few{Pobieram # pliki.}many{Pobieram # plików.}other{Pobieram # pliku.}}</translation>
 <translation id="7929962904089429003">Otwórz menu</translation>
-<translation id="7930681627240672853">Sprawdź bezpieczeństwo haseł</translation>
 <translation id="7942131818088350342">Przeglądarka <ph name="PRODUCT_NAME" /> jest nieaktualna.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="7963646190083259054">Dostawca:</translation>
@@ -949,7 +947,6 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8007176423574883786">Wyłączona na tym urządzeniu</translation>
 <translation id="8013372441983637696">Usuń też swoje dane Chrome z tego urządzenia</translation>
 <translation id="8015452622527143194">Powróć do normalnego rozmiaru całej treści strony</translation>
-<translation id="8015780634880457457">Google może sprawdzić, czy bezpieczeństwo Twoich haseł zostało naruszone</translation>
 <translation id="802154636333426148">Nie udało się pobrać</translation>
 <translation id="8026334261755873520">Wyczyść dane przeglądania</translation>
 <translation id="8035133914807600019">Nowy folder…</translation>

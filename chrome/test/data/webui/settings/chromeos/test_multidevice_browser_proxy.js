@@ -23,7 +23,7 @@ cr.define('multidevice', function() {
    * @return {!MultiDevicePageContentData}
    */
   function createFakePageContentData(mode, opt_hostDeviceName) {
-    let pageContentData = {mode: mode};
+    const pageContentData = {mode: mode};
     if ([
           settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
           settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,

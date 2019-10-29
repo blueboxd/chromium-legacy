@@ -7,7 +7,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/metrics/features.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #include "url/gurl.h"

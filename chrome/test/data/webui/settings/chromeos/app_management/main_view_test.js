@@ -37,7 +37,7 @@ suite('<app-management-main-view>', function() {
 
     const app = await fakeHandler.addApp();
 
-    let appItems = getAppItems();
+    const appItems = getAppItems();
     expectEquals(1, appItems.length);
     expectEquals(app.id, appItems[0].app.id);
 

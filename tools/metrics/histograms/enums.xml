@@ -18511,6 +18511,7 @@ Called by update_net_error_codes.py.-->
   <int value="638" label="DeviceShowNumericKeyboardForPassword"/>
   <int value="639" label="CrostiniAnsiblePlaybook"/>
   <int value="640" label="WebRtcLocalIpsAllowedUrls"/>
+  <int value="641" label="PerAppTimeLimits"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -36825,6 +36826,7 @@ from previous Chrome versions.
   <int value="-231426350" label="AutofillEnableToolbarStatusChip:enabled"/>
   <int value="-230824955" label="NTPMostLikelyFaviconsFromServer:enabled"/>
   <int value="-225505731" label="CCTModule:enabled"/>
+  <int value="-222296540" label="VirtualKeyboardBorderedKey:disabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
   <int value="-216219963" label="ash-shelf-color-scheme"/>
   <int value="-215534141" label="NativeWindowNavButtons:enabled"/>
@@ -38166,6 +38168,7 @@ from previous Chrome versions.
   <int value="1548942246" label="PassiveDocumentEventListeners:disabled"/>
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
+  <int value="1561781431" label="VirtualKeyboardBorderedKey:enabled"/>
   <int value="1563255033" label="memlog-stack-mode"/>
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
@@ -54129,6 +54132,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="SUCCESS_LANDING_REFERRER"/>
   <int value="4" label="INVALID_URL"/>
   <int value="5" label="NAVIGATION_EVENT_NOT_FOUND"/>
+</enum>
+
+<enum name="SafeBrowsingBinaryUploadResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Upload failure"/>
+  <int value="3" label="Timeout"/>
+  <int value="4" label="File too large"/>
+  <int value="5" label="Failed to get token"/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">

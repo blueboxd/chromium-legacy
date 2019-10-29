@@ -13,6 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
@@ -76,7 +77,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     ChromeIdentityServiceObserver,
     ChromeIdentityBrowserOpener,
     IdentityManagerObserverBridgeDelegate> {
-  ios::ChromeBrowserState* _browserState;  // weak
+  Browser* _browser;
   BOOL _closeSettingsOnAddAccount;
   std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
@@ -112,21 +113,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize dispatcher = _dispatcher;
 @synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-           closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount {
-  DCHECK(browserState);
-  DCHECK(!browserState->IsOffTheRecord());
+- (instancetype)initWithBrowser:(Browser*)browser
+      closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount {
+  DCHECK(browser);
+  DCHECK(!browser->GetBrowserState()->IsOffTheRecord());
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
   self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
-    _browserState = browserState;
+    _browser = browser;
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;
     _identityManagerObserver =
         std::make_unique<signin::IdentityManagerObserverBridge>(
-            IdentityManagerFactory::GetForBrowserState(_browserState), self);
+            IdentityManagerFactory::GetForBrowserState(
+                _browser->GetBrowserState()),
+            self);
     _avatarCache = [[ResizedAvatarCache alloc] init];
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));
@@ -194,7 +197,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model setHeader:[self header]
       forSectionWithIdentifier:SectionIdentifierAccounts];
   signin::IdentityManager* identityManager =
-      IdentityManagerFactory::GetForBrowserState(_browserState);
+      IdentityManagerFactory::GetForBrowserState(_browser->GetBrowserState());
   for (const auto& account : identityManager->GetAccountsWithRefreshTokens()) {
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                    ->GetChromeIdentityService()
@@ -310,9 +313,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
 
   if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-        initWithBrowserState:_browserState
-                  dispatcher:self.dispatcher];
+    self.signinInteractionCoordinator =
+        [[SigninInteractionCoordinator alloc] initWithBrowser:_browser
+                                                   dispatcher:self.dispatcher];
   }
 
   // |_authenticationOperationInProgress| is reset when the signin operation is
@@ -360,7 +363,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
   if ([self authService] -> IsAuthenticatedIdentityManaged()) {
     signin::IdentityManager* identityManager =
-        IdentityManagerFactory::GetForBrowserState(_browserState);
+        IdentityManagerFactory::GetForBrowserState(_browser->GetBrowserState());
     base::Optional<AccountInfo> accountInfo =
         identityManager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identityManager->GetPrimaryAccountInfo());
@@ -449,7 +452,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Access to authentication service
 
 - (AuthenticationService*)authService {
-  return AuthenticationServiceFactory::GetForBrowserState(_browserState);
+  return AuthenticationServiceFactory::GetForBrowserState(
+      _browser->GetBrowserState());
 }
 
 #pragma mark - ChromeIdentityBrowserOpener

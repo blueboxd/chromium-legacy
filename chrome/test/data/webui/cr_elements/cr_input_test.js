@@ -227,7 +227,7 @@ suite('cr-input', function() {
     assertEquals(0, underline.offsetWidth);
     assertEquals('hidden', getComputedStyle(errorLabel).visibility);
 
-    let whenTransitionEnd =
+    const whenTransitionEnd =
         test_util.eventToPromise('transitionend', underline);
 
     crInput.invalid = true;

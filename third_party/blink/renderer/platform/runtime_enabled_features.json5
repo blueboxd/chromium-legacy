@@ -1657,10 +1657,6 @@
       name: "UserActivationSameOriginVisibility",
     },
     {
-      name: "UserActivationV2",
-      status: "stable",
-    },
-    {
       name: "UserAgentClientHint",
       status: "experimental"
     },

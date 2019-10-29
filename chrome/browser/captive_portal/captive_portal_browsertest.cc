@@ -840,7 +840,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
         ->GetURLLoaderFactoryForBrowserProcess()
-        ->CreateLoaderAndStart(std::move(job.request), job.routing_id,
+        ->CreateLoaderAndStart(std::move(job.receiver), job.routing_id,
                                job.request_id, job.options,
                                std::move(job.url_request),
                                std::move(job.client), job.traffic_annotation);

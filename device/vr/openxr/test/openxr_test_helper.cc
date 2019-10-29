@@ -57,7 +57,7 @@ OpenXrTestHelper::OpenXrTestHelper()
       session_state_(XR_SESSION_STATE_UNKNOWN),
       swapchain_(XR_NULL_HANDLE),
       acquired_swapchain_texture_(0),
-      next_action_space_(0),
+      next_space_(0),
       next_predicted_display_time_(0) {}
 
 OpenXrTestHelper::~OpenXrTestHelper() = default;
@@ -71,7 +71,7 @@ void OpenXrTestHelper::Reset() {
   system_id_ = 0;
   d3d_device_ = nullptr;
   acquired_swapchain_texture_ = 0;
-  next_action_space_ = 0;
+  next_space_ = 0;
   next_predicted_display_time_ = 0;
 
   // vectors
@@ -230,7 +230,7 @@ XrResult OpenXrTestHelper::GetActionStatePose(XrAction action,
 }
 
 XrSpace OpenXrTestHelper::CreateReferenceSpace(XrReferenceSpaceType type) {
-  XrSpace cur_space = TreatIntegerAsHandle<XrSpace>(++next_action_space_);
+  XrSpace cur_space = TreatIntegerAsHandle<XrSpace>(++next_space_);
   switch (type) {
     case XR_REFERENCE_SPACE_TYPE_VIEW:
       reference_spaces_[cur_space] = "/reference_space/view";
@@ -296,7 +296,7 @@ XrActionSet OpenXrTestHelper::CreateActionSet(
 }
 
 XrSpace OpenXrTestHelper::CreateActionSpace(XrAction action) {
-  XrSpace cur_space = TreatIntegerAsHandle<XrSpace>(++next_action_space_);
+  XrSpace cur_space = TreatIntegerAsHandle<XrSpace>(++next_space_);
   action_spaces_[cur_space] = action;
   return cur_space;
 }
@@ -334,7 +334,6 @@ XrResult OpenXrTestHelper::BindActionAndPath(XrActionSuggestedBinding binding) {
             "not cupported with current test");
   current_action.binding = binding.binding;
   std::string path_string = PathToString(current_action.binding);
-  DLOG(ERROR) << path_string;
   return XR_SUCCESS;
 }
 
@@ -550,7 +549,18 @@ void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
   base::Optional<gfx::Transform> transform = base::nullopt;
 
   if (reference_spaces_.count(space) == 1) {
-    transform = GetPose();
+    if (reference_spaces_.at(space).compare("/reference_space/local") == 0) {
+      // this locate space call try to get tranform from stage to local which we
+      // only need to give it identity matrix.
+      transform = gfx::Transform();
+    } else if (reference_spaces_.at(space).compare("/reference_space/view") ==
+               0) {
+      // this locate space try to locate transform of head pose
+      transform = GetPose();
+    } else {
+      NOTREACHED()
+          << "Only locate reference space for local and view are implemented";
+    }
   } else if (action_spaces_.count(space) == 1) {
     XrAction cur_action = action_spaces_.at(space);
     ActionProperties cur_action_properties = actions_[cur_action];

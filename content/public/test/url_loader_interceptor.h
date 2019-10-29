@@ -67,7 +67,7 @@ class URLLoaderInterceptor {
     // browser process).
     int process_id;
     // The following are the parameters to CreateLoaderAndStart.
-    network::mojom::URLLoaderRequest request;
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver;
     int32_t routing_id;
     int32_t request_id;
     uint32_t options;
@@ -164,7 +164,7 @@ class URLLoaderInterceptor {
   // request through ResourceDispatcherHost (i.e. when the network service is
   // disabled).
   bool BeginNavigationCallback(
-      network::mojom::URLLoaderRequest* request,
+      mojo::PendingReceiver<network::mojom::URLLoader>* receiver,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,

@@ -251,8 +251,7 @@ void Notification::OnClick(OnClickCallback completed_closure) {
   Document* document = DynamicTo<Document>(context);
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (document && document->GetFrame()) {
-    gesture_indicator = LocalFrame::NotifyUserActivation(
-        document->GetFrame(), UserGestureToken::kNewGesture);
+    gesture_indicator = LocalFrame::NotifyUserActivation(document->GetFrame());
   }
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
   DispatchEvent(*Event::Create(event_type_names::kClick));

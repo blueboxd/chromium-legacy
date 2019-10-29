@@ -26,10 +26,6 @@ void LogArbitraryPolicyPerDownload(NavigationDownloadType type) {
 
 }  // namespace
 
-bool IsPerNavigationMojoInterfaceEnabled() {
-  return base::FeatureList::IsEnabled(features::kPerNavigationMojoInterface);
-}
-
 bool IsBackForwardCacheEnabled() {
   return base::FeatureList::IsEnabled(features::kBackForwardCache);
 }

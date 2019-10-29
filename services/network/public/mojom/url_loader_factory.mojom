@@ -39,7 +39,7 @@ interface URLLoaderFactory {
   // remove this.
   // |request_id| is for compatibility with the existing Chrome IPC.
   // A pair (routing_id, request_id) is assumed to be unique within one factory.
-  CreateLoaderAndStart(URLLoader& loader,
+  CreateLoaderAndStart(pending_receiver<URLLoader> loader,
                        int32 routing_id,
                        int32 request_id,
                        uint32 options,

@@ -167,6 +167,11 @@ message StreamCount {
   optional int32 sfx = 2;
 }
 
+// Sets the desired number of output channels used by the mixer.
+message NumOutputChannels {
+  optional int32 channels = 1;
+}
+
 // Indicates an error on an audio stream.
 message Error {
   enum Type {
@@ -198,4 +203,5 @@ message Generic {
   optional RequestStreamCount request_stream_count = 18;
   optional StreamCount stream_count = 19;
   optional Error error = 20;
+  optional NumOutputChannels set_num_output_channels = 21;
 }

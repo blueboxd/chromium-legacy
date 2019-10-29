@@ -87,14 +87,15 @@ class CacheMissNetworkURLLoaderFactory final
   ~CacheMissNetworkURLLoaderFactory() override = default;
 
   // network::mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& url_request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     network::URLLoaderCompletionStatus status;
     status.error_code = net::ERR_CACHE_MISS;
     client->OnComplete(status);
@@ -276,7 +277,7 @@ class SafeBrowsingBlockingPageTestBase
         is_incognito_(is_incognito) {
     ResetUserResponse();
     // The safe browsing UI manager does not need a service for this test.
-    ui_manager_ = new TestSafeBrowsingUIManager(NULL);
+    ui_manager_ = new TestSafeBrowsingUIManager(nullptr);
   }
 
   void SetUp() override {
@@ -323,12 +324,12 @@ class SafeBrowsingBlockingPageTestBase
 
   void TearDown() override {
     // Release the UI manager before the BrowserThreads are destroyed.
-    ui_manager_ = NULL;
+    ui_manager_ = nullptr;
     TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
-    SafeBrowsingBlockingPage::RegisterFactory(NULL);
+    SafeBrowsingBlockingPage::RegisterFactory(nullptr);
     // Clean up singleton reference (crbug.com/110594).
-    ThreatDetails::RegisterFactory(NULL);
+    ThreatDetails::RegisterFactory(nullptr);
 
     // Depends on LocalState from ChromeRenderViewHostTestHarness.
     if (SystemNetworkContextManager::GetInstance())
@@ -356,13 +357,13 @@ class SafeBrowsingBlockingPageTestBase
     SafeBrowsingBlockingPage::ShowBlockingPage(ui_manager_.get(), resource);
   }
 
-  // Returns the SafeBrowsingBlockingPage currently showing or NULL if none is
-  // showing.
+  // Returns the SafeBrowsingBlockingPage currently showing or nullptr if none
+  // is showing.
   SafeBrowsingBlockingPage* GetSafeBrowsingBlockingPage() {
     InterstitialPage* interstitial =
         InterstitialPage::GetInterstitialPage(web_contents());
     if (!interstitial)
-      return NULL;
+      return nullptr;
     return  static_cast<SafeBrowsingBlockingPage*>(
         interstitial->GetDelegateForTesting());
   }
@@ -1094,7 +1095,7 @@ class SafeBrowsingBlockingQuietPageTest
   SafeBrowsingBlockingQuietPageTest()
       : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {
     // The safe browsing UI manager does not need a service for this test.
-    ui_manager_ = new TestSafeBrowsingUIManager(NULL);
+    ui_manager_ = new TestSafeBrowsingUIManager(nullptr);
   }
 
   void SetUp() override {
@@ -1121,12 +1122,12 @@ class SafeBrowsingBlockingQuietPageTest
 
   void TearDown() override {
     // Release the UI manager before the BrowserThreads are destroyed.
-    ui_manager_ = NULL;
+    ui_manager_ = nullptr;
     TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
-    SafeBrowsingBlockingPage::RegisterFactory(NULL);
+    SafeBrowsingBlockingPage::RegisterFactory(nullptr);
     // Clean up singleton reference (crbug.com/110594).
-    ThreatDetails::RegisterFactory(NULL);
+    ThreatDetails::RegisterFactory(nullptr);
 
     // Depends on LocalState from ChromeRenderViewHostTestHarness.
     if (SystemNetworkContextManager::GetInstance())
@@ -1150,13 +1151,13 @@ class SafeBrowsingBlockingQuietPageTest
     SafeBrowsingBlockingPage::ShowBlockingPage(ui_manager_.get(), resource);
   }
 
-  // Returns the SafeBrowsingBlockingPage currently showing or NULL if none is
-  // showing.
+  // Returns the SafeBrowsingBlockingPage currently showing or nullptr if none
+  // is showing.
   TestSafeBrowsingBlockingPageQuiet* GetSafeBrowsingBlockingPage() {
     InterstitialPage* interstitial =
         InterstitialPage::GetInterstitialPage(web_contents());
     if (!interstitial)
-      return NULL;
+      return nullptr;
     return static_cast<TestSafeBrowsingBlockingPageQuiet*>(
         interstitial->GetDelegateForTesting());
   }

@@ -389,10 +389,6 @@ void WebRuntimeFeatures::EnableUserActivationSameOriginVisibility(bool enable) {
   RuntimeEnabledFeatures::SetUserActivationSameOriginVisibilityEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableUserActivationV2(bool enable) {
-  RuntimeEnabledFeatures::SetUserActivationV2Enabled(enable);
-}
-
 void WebRuntimeFeatures::EnableTouchEventFeatureDetection(bool enable) {
   RuntimeEnabledFeatures::SetTouchEventFeatureDetectionEnabled(enable);
 }

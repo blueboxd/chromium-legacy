@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"

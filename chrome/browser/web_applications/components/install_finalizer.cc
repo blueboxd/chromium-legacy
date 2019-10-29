@@ -30,7 +30,7 @@ bool InstallFinalizer::CanReparentTab(const AppId& app_id,
   // Reparent the web contents into its own window only if that is the
   // app's launch type.
   DCHECK(registrar_);
-  if (registrar_->GetAppDisplayMode(app_id) !=
+  if (registrar_->GetAppUserDisplayMode(app_id) !=
       blink::mojom::DisplayMode::kStandalone)
     return false;
 

@@ -11,7 +11,7 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/public/common/content_features.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -24,19 +24,20 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderPtr network_loader,
-    network::mojom::URLLoaderClientRequest network_client_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>
+        network_client_receiver,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     URLLoaderThrottlesGetter loader_throttles_getter,
     network::mojom::URLLoaderClient* forwarding_client,
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
     const std::string& accept_langs)
-    : loader_client_binding_(this), forwarding_client_(forwarding_client) {
+    : forwarding_client_(forwarding_client) {
   network::mojom::URLLoaderClientEndpointsPtr endpoints =
       network::mojom::URLLoaderClientEndpoints::New(
           std::move(network_loader).PassInterface(),
-          std::move(network_client_request));
+          std::move(network_client_receiver));
   network::mojom::URLLoaderClientPtr client;
-  loader_client_binding_.Bind(mojo::MakeRequest(&client));
+  loader_client_receiver_.Bind(MakeRequest(&client));
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       std::move(network_loader_factory);
 
@@ -63,16 +64,16 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
 
 SignedExchangePrefetchHandler::~SignedExchangePrefetchHandler() = default;
 
-network::mojom::URLLoaderClientRequest
+mojo::PendingReceiver<network::mojom::URLLoaderClient>
 SignedExchangePrefetchHandler::FollowRedirect(
-    network::mojom::URLLoaderRequest loader_request) {
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver) {
   DCHECK(signed_exchange_loader_);
   network::mojom::URLLoaderClientPtr client;
-  auto pending_request = mojo::MakeRequest(&client);
+  auto pending_receiver = mojo::MakeRequest(&client);
   signed_exchange_loader_->ConnectToClient(std::move(client));
-  mojo::MakeStrongBinding(std::move(signed_exchange_loader_),
-                          std::move(loader_request));
-  return pending_request;
+  mojo::MakeSelfOwnedReceiver(std::move(signed_exchange_loader_),
+                              std::move(loader_receiver));
+  return pending_receiver;
 }
 
 base::Optional<net::SHA256HashValue>

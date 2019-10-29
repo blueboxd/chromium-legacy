@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
-#include "chromeos/components/drivefs/pending_connection_manager.h"
+#include "chromeos/components/mojo_bootstrap/pending_connection_manager.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -20,7 +20,7 @@ DriveFsBootstrapListener::DriveFsBootstrapListener()
     : bootstrap_(invitation_.AttachMessagePipe("drivefs-bootstrap"),
                  mojom::DriveFsBootstrap::Version_),
       pending_token_(base::UnguessableToken::Create()) {
-  PendingConnectionManager::Get().ExpectOpenIpcChannel(
+  mojo_bootstrap::PendingConnectionManager::Get().ExpectOpenIpcChannel(
       pending_token_,
       base::BindOnce(&DriveFsBootstrapListener::AcceptMojoConnection,
                      base::Unretained(this)));
@@ -28,8 +28,8 @@ DriveFsBootstrapListener::DriveFsBootstrapListener()
 
 DriveFsBootstrapListener::~DriveFsBootstrapListener() {
   if (pending_token_) {
-    PendingConnectionManager::Get().CancelExpectedOpenIpcChannel(
-        pending_token_);
+    mojo_bootstrap::PendingConnectionManager::Get()
+        .CancelExpectedOpenIpcChannel(pending_token_);
     pending_token_ = {};
   }
 }

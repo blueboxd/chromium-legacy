@@ -502,7 +502,7 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
   if (!function) {
     LOG(ERROR) << "Unknown Extension API - " << params.name;
     SendAccessDenied(callback);
-    return NULL;
+    return nullptr;
   }
 
   function->SetArgs(params.arguments.Clone());

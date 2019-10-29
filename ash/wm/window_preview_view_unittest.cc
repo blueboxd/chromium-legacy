@@ -16,6 +16,23 @@ namespace {
 
 using WindowPreviewViewTest = AshTestBase;
 
+// Creates and returns a widget whose type is the given |type|, which is added
+// as a transient child of the given |parent_widget|.
+std::unique_ptr<views::Widget> CreateTransientChild(
+    views::Widget* parent_widget,
+    views::Widget::InitParams::Type type) {
+  auto widget = std::make_unique<views::Widget>();
+  views::Widget::InitParams params{type};
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect{40, 50};
+  params.context = params.parent = parent_widget->GetNativeWindow();
+  params.init_properties_container.SetProperty(
+      aura::client::kAppType, static_cast<int>(ash::AppType::ARC_APP));
+  widget->Init(std::move(params));
+  widget->Show();
+  return widget;
+}
+
 // Test that if we have two widgets whos windows are linked together by
 // transience, WindowPreviewView's internal collection will contain both those
 // two windows.
@@ -63,22 +80,7 @@ TEST_F(WindowPreviewViewTest, TransientChildAddedAndRemoved) {
 TEST_F(WindowPreviewViewTest, NoCrashWithTransientChildWithNoWindowState) {
   auto widget1 = CreateTestWidget();
 
-  auto create_transient_child = [](views::Widget* parent_widget,
-                                   views::Widget::InitParams::Type type)
-      -> std::unique_ptr<views::Widget> {
-    auto widget = std::make_unique<views::Widget>();
-    views::Widget::InitParams params{type};
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.bounds = gfx::Rect{40, 50};
-    params.context = params.parent = parent_widget->GetNativeWindow();
-    params.init_properties_container.SetProperty(
-        aura::client::kAppType, static_cast<int>(ash::AppType::ARC_APP));
-    widget->Init(std::move(params));
-    widget->Show();
-    return widget;
-  };
-
-  auto transient_child1 = create_transient_child(
+  auto transient_child1 = CreateTransientChild(
       widget1.get(), views::Widget::InitParams::TYPE_WINDOW);
 
   EXPECT_EQ(widget1->GetNativeWindow(),
@@ -93,11 +95,11 @@ TEST_F(WindowPreviewViewTest, NoCrashWithTransientChildWithNoWindowState) {
   // native window type WINDOW_TYPE_POPUP), while the TYPE_WINDOW one will be
   // added as a transient child before it is parented to a container. This
   // should not cause a crash.
-  auto transient_child2 = create_transient_child(
+  auto transient_child2 = CreateTransientChild(
       widget1.get(), views::Widget::InitParams::TYPE_POPUP);
-  auto transient_child3 = create_transient_child(
+  auto transient_child3 = CreateTransientChild(
       widget1.get(), views::Widget::InitParams::TYPE_BUBBLE);
-  auto transient_child4 = create_transient_child(
+  auto transient_child4 = CreateTransientChild(
       widget1.get(), views::Widget::InitParams::TYPE_WINDOW);
 
   EXPECT_EQ(widget1->GetNativeWindow(),
@@ -112,6 +114,25 @@ TEST_F(WindowPreviewViewTest, NoCrashWithTransientChildWithNoWindowState) {
   EXPECT_EQ(3u, test_api.GetMirrorViews().size());
   transient_child4.reset();
   EXPECT_EQ(2u, test_api.GetMirrorViews().size());
+}
+
+// Tests that if cycling stops before a transient popup child is destroyed
+// doesn't introduce a crash. https://crbug.com/1014543.
+TEST_F(WindowPreviewViewTest,
+       NoCrashWhenWindowCyclingIsCanceledWithATransientPopup) {
+  auto widget1 = CreateTestWidget();
+
+  auto preview_view = std::make_unique<WindowPreviewView>(
+      widget1->GetNativeWindow(), /*trilinear_filtering_on_init=*/false);
+  WindowPreviewViewTestApi test_api(preview_view.get());
+  ASSERT_EQ(1u, test_api.GetMirrorViews().size());
+
+  auto transient_popup = CreateTransientChild(
+      widget1.get(), views::Widget::InitParams::TYPE_POPUP);
+  ASSERT_EQ(1u, test_api.GetMirrorViews().size());
+
+  // Simulate canceling window cycling now, there should be no crashes.
+  preview_view.reset();
 }
 
 // Test that WindowPreviewView layouts the transient tree correctly when each

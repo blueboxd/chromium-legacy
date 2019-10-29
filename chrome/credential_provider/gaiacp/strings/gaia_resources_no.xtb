@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Kontoen er utestengt. Kontakt systemadministratoren.</translation>
 <translation id="2844349213149998955">Det er ikke tillatt å logge på med personlige kontoer på denne enheten. Logg på med en jobbkonto.</translation>
 <translation id="3306357053520292004">En bruker på denne datamaskinen er allerede lagt til med denne kontoen. Logg på med en annen konto.</translation>
+<translation id="3926852373333893095">Kun GSuite Enterprise-brukere har lov til å logge på.</translation>
 <translation id="4057329986137569701">Det oppsto en intern feil.</translation>
 <translation id="4267670563222825190">Fant ingen domenebruker for kontoen din. Kontakt administratoren din.</translation>
 <translation id="4300229033992784001">Passordet for kontoen din er endret. Skriv inn Windows-passordet ditt for å synkronisere Windows-kontoen og jobbkontoen din.</translation>
 <translation id="4706454071748629324">Kunne ikke legge til den nye brukeren. Denne datamaskinen tillater bare oppretting av én bruker per jobbkonto.</translation>
 <translation id="6033715878377252112">Hjelpebruker for Google-legitimasjonsleverandøren for Windows</translation>
 <translation id="6149399665202317746">Google-legitimasjonsleverandør for Windows</translation>
+<translation id="6239180560789153226">Enheten mangler gjenopprettingsinformasjon. Logg på med Google-jobbkontoen din.</translation>
 <translation id="6312494990035843744">Det er ikke tillatt å logge på med jobbkonto på dette domenet. Prøv en annen konto.</translation>
 <translation id="6463752215771576050">Kunne ikke registrere denne datamaskinen for bedriftsadministrering.  Logg på med en annen jobbkonto.</translation>
 <translation id="6657585470893396449">Passord</translation>
+<translation id="6937049691815837345">Enheten må registreres med enhetsadministrasjon. Logg på med Google-jobbkontoen din.</translation>
 <translation id="7209941495304122410">Skriv inn Windows-passordet</translation>
 <translation id="7357241217513796177">Sørg for at du er koblet til et nettverk, og prøv på nytt.</translation>
 <translation id="7536769223115622137">Legg til jobbkonto</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Økten er utløpt. Logg på med Google-jobbkontoen din.</translation>
 <translation id="9055998212250844221">Brukerkontoen ble opprettet av Google-legitimasjonsleverandøren for Windows</translation>
 <translation id="9135619837062629367">Det er ikke tillatt å logge på med denne kontoen. Prøv en annen konto.</translation>
+<translation id="998002716857524853">Logg på med GSuite-jobbkontoen din.</translation>
 </translationbundle>

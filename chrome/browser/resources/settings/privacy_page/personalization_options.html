@@ -69,13 +69,11 @@
     </settings-toggle-button>
 </if><!-- not chromeos -->
 </if><!-- _google_chrome -->
-    <template is="dom-if" if="[[unifiedConsentEnabled]]">
-      <settings-toggle-button
-          pref="{{prefs.url_keyed_anonymized_data_collection.enabled}}"
-          label="$i18n{urlKeyedAnonymizedDataCollection}"
-          sub-label="$i18n{urlKeyedAnonymizedDataCollectionDesc}">
-      </settings-toggle-button>
-    </template>
+    <settings-toggle-button
+        pref="{{prefs.url_keyed_anonymized_data_collection.enabled}}"
+        label="$i18n{urlKeyedAnonymizedDataCollection}"
+        sub-label="$i18n{urlKeyedAnonymizedDataCollectionDesc}">
+    </settings-toggle-button>
 <if expr="_google_chrome">
     <settings-toggle-button id="spellCheckControl"
         pref="{{prefs.spellcheck.use_spelling_service}}"
@@ -85,7 +83,7 @@
         hidden="[[!showSpellCheckControl_(prefs.spellcheck.dictionaries)]]">
     </settings-toggle-button>
 </if><!-- _google_chrome -->
-    <template is="dom-if" if="[[shouldShowDriveSuggest_(unifiedConsentEnabled,
+    <template is="dom-if" if="[[shouldShowDriveSuggest_(
         syncStatus, syncStatus.signedIn, syncStatus.statusAction)]]" restamp>
       <settings-toggle-button id="driveSuggestControl"
           pref="{{prefs.documentsuggest.enabled}}"

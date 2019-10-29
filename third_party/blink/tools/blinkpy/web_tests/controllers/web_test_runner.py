@@ -335,7 +335,10 @@ class Worker(object):
             driver.stop()
 
     def _clean_up_after_test(self, test_input, result):
-        test_name = test_input.test_name
+        test_description = test_input.test_name
+        test_args = self._port.args_for_test(test_input.test_name)
+        if test_args:
+            test_description += ' with args ' + ' '.join(test_args)
 
         if result.failures:
             # Check and kill the driver if we need to.
@@ -350,13 +353,13 @@ class Worker(object):
                 self._batch_count = 0
 
             # Print the error message(s).
-            _log.debug('%s %s failed:', self._name, test_name)
+            _log.debug('%s %s failed:', self._name, test_description)
             for f in result.failures:
                 _log.debug('%s  %s', self._name, f.message())
         elif result.type == test_expectations.SKIP:
-            _log.debug('%s %s skipped', self._name, test_name)
+            _log.debug('%s %s skipped', self._name, test_description)
         else:
-            _log.debug('%s %s passed', self._name, test_name)
+            _log.debug('%s %s passed', self._name, test_description)
 
 
 class TestShard(object):

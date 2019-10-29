@@ -14,9 +14,7 @@
 #include "content/browser/web_package/bundled_exchanges_reader.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_request_headers.h"
@@ -212,7 +210,7 @@ void BundledExchangesURLLoaderFactory::SetFallbackFactory(
 }
 
 void BundledExchangesURLLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -228,10 +226,10 @@ void BundledExchangesURLLoaderFactory::CreateLoaderAndStart(
     std::unique_ptr<network::mojom::URLLoader> url_loader = std::move(loader);
     mojo::MakeSelfOwnedReceiver(
         std::move(url_loader), mojo::PendingReceiver<network::mojom::URLLoader>(
-                                   std::move(loader_request)));
+                                   std::move(loader_receiver)));
   } else if (fallback_factory_) {
     fallback_factory_->CreateLoaderAndStart(
-        std::move(loader_request), routing_id, request_id, options,
+        std::move(loader_receiver), routing_id, request_id, options,
         resource_request, std::move(loader_client), traffic_annotation);
   } else {
     loader_client->OnComplete(

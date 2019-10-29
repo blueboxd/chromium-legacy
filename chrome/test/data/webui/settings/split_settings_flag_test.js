@@ -44,7 +44,7 @@ cr.define('split_settings_flag', function() {
           new Set(BROWSER_SETTINGS_SECTIONS);
       const allAttachedSettingsSectionElements =
           browserSettings.shadowRoot.querySelectorAll('settings-section');
-      for (let element of allAttachedSettingsSectionElements) {
+      for (const element of allAttachedSettingsSectionElements) {
         assertTrue(unattachedBrowserSettingsSections.delete(element.section));
       }
       assertEquals(unattachedBrowserSettingsSections.size, 0);

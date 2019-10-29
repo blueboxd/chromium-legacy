@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -72,8 +73,14 @@ void UseCreditCardAction::InternalProcessAction(
   FillFormWithData();
 }
 
-void UseCreditCardAction::EndAction(const ClientStatus& status) {
-  UpdateProcessedAction(status);
+void UseCreditCardAction::EndAction(
+    const ClientStatus& final_status,
+    const base::Optional<ClientStatus>& optional_details_status) {
+  UpdateProcessedAction(final_status);
+  if (optional_details_status.has_value() && !optional_details_status->ok()) {
+    processed_action_proto_->mutable_status_details()->MergeFrom(
+        optional_details_status->details());
+  }
   std::move(process_action_callback_).Run(std::move(processed_action_proto_));
 }
 
@@ -120,14 +127,8 @@ void UseCreditCardAction::OnGetFullCard(
 void UseCreditCardAction::OnFormFilled(
     std::unique_ptr<FallbackData> fallback_data,
     const ClientStatus& status) {
-  // In case Autofill failed, we fail the action.
-  if (!status.ok()) {
-    EndAction(status);
-    return;
-  }
-
   required_fields_fallback_handler_->CheckAndFallbackRequiredFields(
-      std::move(fallback_data));
+      status, std::move(fallback_data));
 }
 
 std::string UseCreditCardAction::GetFallbackValue(

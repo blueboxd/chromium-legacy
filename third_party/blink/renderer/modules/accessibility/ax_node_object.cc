@@ -2706,7 +2706,7 @@ bool AXNodeObject::OnNativeFocusAction() {
 bool AXNodeObject::OnNativeIncrementAction() {
   LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(frame);
   AlterSliderOrSpinButtonValue(true);
   return true;
 }
@@ -2714,7 +2714,7 @@ bool AXNodeObject::OnNativeIncrementAction() {
 bool AXNodeObject::OnNativeDecrementAction() {
   LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(frame);
   AlterSliderOrSpinButtonValue(false);
   return true;
 }
@@ -3580,7 +3580,7 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
   // title attribute, from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
   if (name_from != ax::mojom::NameFrom::kTitle) {
-    description_from = ax::mojom::DescriptionFrom::kAttribute;
+    description_from = ax::mojom::DescriptionFrom::kTitle;
     if (description_sources) {
       description_sources->push_back(
           DescriptionSource(found_description, kTitleAttr));

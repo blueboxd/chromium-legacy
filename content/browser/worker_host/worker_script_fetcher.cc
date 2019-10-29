@@ -11,6 +11,7 @@
 #include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
@@ -69,8 +70,7 @@ WorkerScriptFetcher::WorkerScriptFetcher(
     CreateAndStartCallback callback)
     : script_loader_factory_(std::move(script_loader_factory)),
       resource_request_(std::move(resource_request)),
-      callback_(std::move(callback)),
-      response_url_loader_binding_(this) {
+      callback_(std::move(callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -119,12 +119,13 @@ void WorkerScriptFetcher::OnStartLoadingResponseBody(
     // need to see if the request interceptors want to potentially create a new
     // loader for the response, e.g. AppCache's fallback.
     DCHECK(!response_url_loader_);
-    network::mojom::URLLoaderClientRequest response_client_request;
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>
+        response_client_receiver;
     if (script_loader->MaybeCreateLoaderForResponse(
             response_head_, &response_body, &response_url_loader_,
-            &response_client_request, url_loader_.get())) {
+            &response_client_receiver, url_loader_.get())) {
       DCHECK(response_url_loader_);
-      response_url_loader_binding_.Bind(std::move(response_client_request));
+      response_url_loader_receiver_.Bind(std::move(response_client_receiver));
       subresource_loader_params_ = script_loader->TakeSubresourceLoaderParams();
       url_loader_.reset();
       // OnReceiveResponse() will be called again.
@@ -150,11 +151,11 @@ void WorkerScriptFetcher::OnStartLoadingResponseBody(
     // a request interceptor created another loader |response_url_loader_| for
     // serving an alternative response.
     DCHECK(response_url_loader_);
-    DCHECK(response_url_loader_binding_.is_bound());
+    DCHECK(response_url_loader_receiver_.is_bound());
     main_script_load_params->url_loader_client_endpoints =
         network::mojom::URLLoaderClientEndpoints::New(
             response_url_loader_.PassInterface(),
-            response_url_loader_binding_.Unbind());
+            response_url_loader_receiver_.Unbind());
   }
 
   for (size_t i = 0; i < redirect_infos_.size(); ++i) {

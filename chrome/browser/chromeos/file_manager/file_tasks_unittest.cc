@@ -531,9 +531,9 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
 
   // Find apps for a "text/plain" file. Foo.app and Bar.app should be found.
   std::vector<extensions::EntryInfo> entries;
-  entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
-                           .AppendASCII("foo.txt"),
-                       "text/plain", false);
+  entries.emplace_back(
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("foo.txt"),
+      "text/plain", false);
 
   std::vector<FullTaskDescriptor> tasks;
   FindFileHandlerTasks(&test_profile_, entries, &tasks);
@@ -550,12 +550,12 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
   // Find apps for "text/plain" and "text/html" files. Only Foo.app should be
   // found.
   entries.clear();
-  entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
-                           .AppendASCII("foo.txt"),
-                       "text/plain", false);
-  entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
-                           .AppendASCII("foo.html"),
-                       "text/html", false);
+  entries.emplace_back(
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("foo.txt"),
+      "text/plain", false);
+  entries.emplace_back(
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("foo.html"),
+      "text/html", false);
   tasks.clear();
   FindFileHandlerTasks(&test_profile_, entries, &tasks);
   ASSERT_EQ(1U, tasks.size());
@@ -615,9 +615,9 @@ TEST_F(FileManagerFileTasksComplexTest,
 
   std::vector<FullTaskDescriptor> tasks;
   std::vector<extensions::EntryInfo> entries;
-  entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
-                           .AppendASCII("foo.csv"),
-                       "text/csv", false);
+  entries.emplace_back(
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("foo.csv"),
+      "text/csv", false);
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures({blink::features::kNativeFileSystemAPI,
@@ -781,9 +781,9 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
   // Find apps for "foo.txt". All apps should be found.
   std::vector<extensions::EntryInfo> entries;
   std::vector<GURL> file_urls;
-  entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
-                           .AppendASCII("foo.txt"),
-                       "text/plain", false);
+  entries.emplace_back(
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("foo.txt"),
+      "text/plain", false);
   file_urls.emplace_back("filesystem:chrome-extension://id/dir/foo.txt");
 
   std::vector<FullTaskDescriptor> tasks;
@@ -860,9 +860,9 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   // should be found.
   std::vector<extensions::EntryInfo> entries;
   std::vector<GURL> file_urls;
-  entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
-                           .AppendASCII("foo.gdoc"),
-                       "application/vnd.google-apps.document", false);
+  entries.emplace_back(
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("foo.gdoc"),
+      "application/vnd.google-apps.document", false);
   file_urls.emplace_back("filesystem:chrome-extension://id/dir/foo.gdoc");
 
   std::vector<FullTaskDescriptor> tasks;
@@ -1005,9 +1005,9 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTask_Generic) {
 
   // Test case with .txt file
   std::vector<extensions::EntryInfo> txt_entries;
-  txt_entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
-                               .AppendASCII("foo.txt"),
-                           "text/plain", false);
+  txt_entries.emplace_back(
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("foo.txt"),
+      "text/plain", false);
   std::vector<FullTaskDescriptor> txt_result;
   FindFileHandlerTasks(&test_profile_, txt_entries, &txt_result);
   EXPECT_EQ(4U, txt_result.size());
@@ -1026,9 +1026,9 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTask_Generic) {
 
   // Test case with .jpg file
   std::vector<extensions::EntryInfo> jpg_entries;
-  jpg_entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
-                               .AppendASCII("foo.jpg"),
-                           "image/jpeg", false);
+  jpg_entries.emplace_back(
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("foo.jpg"),
+      "image/jpeg", false);
   std::vector<FullTaskDescriptor> jpg_result;
   FindFileHandlerTasks(&test_profile_, jpg_entries, &jpg_result);
   EXPECT_EQ(3U, jpg_result.size());
@@ -1046,8 +1046,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTask_Generic) {
   // Test case with directories.
   std::vector<extensions::EntryInfo> dir_entries;
   dir_entries.emplace_back(
-      drive::util::GetDriveMountPointPath(&test_profile_).AppendASCII("dir"),
-      "", true);
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("dir"), "",
+      true);
   std::vector<FullTaskDescriptor> dir_result;
   FindFileHandlerTasks(&test_profile_, dir_entries, &dir_result);
   ASSERT_EQ(1U, dir_result.size());
@@ -1133,9 +1133,9 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTask_Verbs) {
   // but only one ADD_TO that is not a generic handler will be taken into
   // account, even though there are 2 ADD_TO matches for "text/plain".
   std::vector<extensions::EntryInfo> entries;
-  entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
-                           .AppendASCII("foo.txt"),
-                       "text/plain", false);
+  entries.emplace_back(
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("foo.txt"),
+      "text/plain", false);
 
   std::vector<FullTaskDescriptor> tasks;
   FindFileHandlerTasks(&test_profile_, entries, &tasks);
@@ -1159,9 +1159,9 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTask_Verbs) {
   // ADD_TO that is a good match will be taken into account, even though there
   // are 3 ADD_TO matches for "text/html".
   entries.clear();
-  entries.emplace_back(drive::util::GetDriveMountPointPath(&test_profile_)
-                           .AppendASCII("foo.html"),
-                       "text/html", false);
+  entries.emplace_back(
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("foo.html"),
+      "text/html", false);
   tasks.clear();
   FindFileHandlerTasks(&test_profile_, entries, &tasks);
 
@@ -1177,8 +1177,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTask_Verbs) {
   // Foo.app with only PACK_WITH should be found.
   entries.clear();
   entries.emplace_back(
-      drive::util::GetDriveMountPointPath(&test_profile_).AppendASCII("dir"),
-      "", true);
+      util::GetMyFilesFolderForProfile(&test_profile_).AppendASCII("dir"), "",
+      true);
   tasks.clear();
   FindFileHandlerTasks(&test_profile_, entries, &tasks);
 

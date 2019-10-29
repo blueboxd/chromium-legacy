@@ -471,8 +471,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
         break;
       case WebInputEvent::kMouseDown:
         event_type = event_type_names::kMousedown;
-        gesture_indicator = LocalFrame::NotifyUserActivation(
-            target->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
+        gesture_indicator =
+            LocalFrame::NotifyUserActivation(target->GetDocument().GetFrame());
         mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
         break;
       case WebInputEvent::kMouseUp:

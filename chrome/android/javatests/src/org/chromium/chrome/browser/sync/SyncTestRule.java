@@ -136,9 +136,24 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         return account;
     }
 
+    /**
+     * Set up a test account, sign in and enable sync. FirstSetupComplete bit will be set after
+     * this. For most purposes this function should be used as this emulates the basic sign in flow.
+     * @return the test account that is signed in.
+     */
     public Account setUpTestAccountAndSignIn() {
         Account account = setUpTestAccount();
         signinAndEnableSync(account);
+        return account;
+    }
+
+    /**
+     * Set up a test account, sign in but don't mark sync setup complete.
+     * @return the test account that is signed in.
+     */
+    public Account setUpTestAccountAndSignInWithSyncSetupAsIncomplete() {
+        Account account = setUpTestAccount();
+        signinAndEnableSyncInternal(account, false);
         return account;
     }
 
@@ -157,29 +172,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     public void signinAndEnableSync(final Account account) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.getSigninManager().signIn(
-                    account, new SigninManager.SignInCallback() {
-                        @Override
-                        public void onSignInComplete() {
-                            if (ChromeFeatureList.isEnabled(
-                                        ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
-                                mProfileSyncService.setFirstSetupComplete(
-                                        SyncFirstSetupCompleteSource.BASIC_FLOW);
-                            }
-                        }
-
-                        @Override
-                        public void onSignInAborted() {
-                            Assert.fail("Sign-in was aborted");
-                        }
-                    });
-            // Outside of tests, URL-keyed anonymized data collection is enabled by sign-in UI.
-            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
-        });
-        SyncTestUtil.waitForSyncActive();
-        SyncTestUtil.triggerSyncAndWaitForCompletion();
-        Assert.assertEquals(account, SigninTestUtil.getCurrentAccount());
+        signinAndEnableSyncInternal(account, true);
     }
 
     public void signOut() throws InterruptedException {
@@ -340,5 +333,36 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
             pref.setChecked(newValue);
         });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
+
+    private void signinAndEnableSyncInternal(final Account account, boolean setFirstSetupComplete) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            IdentityServicesProvider.getSigninManager().signIn(
+                    account, new SigninManager.SignInCallback() {
+                        @Override
+                        public void onSignInComplete() {
+                            if (ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                                    && setFirstSetupComplete) {
+                                mProfileSyncService.setFirstSetupComplete(
+                                        SyncFirstSetupCompleteSource.BASIC_FLOW);
+                            }
+                        }
+
+                        @Override
+                        public void onSignInAborted() {
+                            Assert.fail("Sign-in was aborted");
+                        }
+                    });
+            // Outside of tests, URL-keyed anonymized data collection is enabled by sign-in UI.
+            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
+        });
+        if (setFirstSetupComplete) {
+            SyncTestUtil.waitForSyncActive();
+            SyncTestUtil.triggerSyncAndWaitForCompletion();
+        } else {
+            SyncTestUtil.waitForSyncTransportActive();
+        }
+        Assert.assertEquals(account, SigninTestUtil.getCurrentAccount());
     }
 }

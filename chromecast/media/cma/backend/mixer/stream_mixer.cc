@@ -160,11 +160,6 @@ StreamMixer* StreamMixer::Get() {
   return mixer_instance.get();
 }
 
-// static
-MixerControl* MixerControl::Get() {
-  return StreamMixer::Get();
-}
-
 StreamMixer::StreamMixer()
     : StreamMixer(nullptr,
                   std::make_unique<base::Thread>("CMA mixer"),

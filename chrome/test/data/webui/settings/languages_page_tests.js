@@ -342,8 +342,8 @@ cr.define('languages_page_tests', function() {
         let translateTargetLabel = null;
         let item = null;
 
-        let listItems = languagesCollapse.querySelectorAll('.list-item');
-        let domRepeat = assert(languagesCollapse.querySelector('dom-repeat'));
+        const listItems = languagesCollapse.querySelectorAll('.list-item');
+        const domRepeat = assert(languagesCollapse.querySelector('dom-repeat'));
 
         let num_visibles = 0;
         Array.from(listItems).forEach(function(el) {

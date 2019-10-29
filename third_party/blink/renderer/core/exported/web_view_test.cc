@@ -75,6 +75,7 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -82,7 +83,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
@@ -3365,9 +3365,6 @@ class MockAutofillClient : public WebAutofillClient {
 
   void TextFieldDidChange(const WebFormControlElement&) override {
     ++text_changes_;
-
-    if (UserGestureIndicator::ProcessingUserGesture())
-      ++text_changes_from_user_gesture_;
   }
   void UserGestureObserved() override { ++user_gesture_notifications_count_; }
 
@@ -3382,14 +3379,12 @@ class MockAutofillClient : public WebAutofillClient {
   void ClearChangeCounts() { text_changes_ = 0; }
 
   int TextChanges() { return text_changes_; }
-  int TextChangesFromUserGesture() { return text_changes_from_user_gesture_; }
   int GetUserGestureNotificationsCount() {
     return user_gesture_notifications_count_;
   }
 
  private:
   int text_changes_ = 0;
-  int text_changes_from_user_gesture_ = 0;
   int user_gesture_notifications_count_ = 0;
   bool should_suppress_keyboard_ = false;
 };
@@ -4200,12 +4195,13 @@ TEST_F(WebViewTest, CompositionIsUserGesture) {
   frame->SetAutofillClient(&client);
   web_view->SetInitialFocus(false);
 
+  EXPECT_EQ(0, client.TextChanges());
   EXPECT_TRUE(
       frame->FrameWidget()->GetActiveWebInputMethodController()->SetComposition(
           WebString::FromUTF8(std::string("hello").c_str()),
           WebVector<WebImeTextSpan>(), WebRange(), 3, 3));
-  EXPECT_EQ(1, client.TextChangesFromUserGesture());
-  EXPECT_FALSE(UserGestureIndicator::ProcessingUserGesture());
+  EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture(frame));
+  EXPECT_EQ(1, client.TextChanges());
   EXPECT_TRUE(frame->HasMarkedText());
 
   frame->SetAutofillClient(nullptr);
@@ -4723,12 +4719,13 @@ TEST_F(WebViewTest, PasswordFieldEditingIsUserGesture) {
 
   WebVector<WebImeTextSpan> empty_ime_text_spans;
 
+  EXPECT_EQ(0, client.TextChanges());
   EXPECT_TRUE(
       frame->FrameWidget()->GetActiveWebInputMethodController()->CommitText(
           WebString::FromUTF8(std::string("hello").c_str()),
           empty_ime_text_spans, WebRange(), 0));
-  EXPECT_EQ(1, client.TextChangesFromUserGesture());
-  EXPECT_FALSE(UserGestureIndicator::ProcessingUserGesture());
+  EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture(frame));
+  EXPECT_EQ(1, client.TextChanges());
   frame->SetAutofillClient(nullptr);
 }
 

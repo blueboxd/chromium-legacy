@@ -185,4 +185,12 @@ static void JNI_AwDebug_SetNonWhiteListedKeyForTesting(JNIEnv* env) {
   crash_key.Set("AW_DEBUG_VALUE");
 }
 
+static void JNI_AwDebug_SetSupportLibraryWebkitVersionCrashKey(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& version) {
+  static ::crash_reporter::CrashKeyString<32> crash_key(
+      crash_keys::kSupportLibraryWebkitVersion);
+  crash_key.Set(ConvertJavaStringToUTF8(env, version));
+}
+
 }  // namespace android_webview

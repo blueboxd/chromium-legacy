@@ -15,8 +15,10 @@ DawnPlatform::DawnPlatform() = default;
 DawnPlatform::~DawnPlatform() = default;
 
 const unsigned char* DawnPlatform::GetTraceCategoryEnabledFlag(
-    const char* category_group) {
-  return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
+    dawn_platform::TraceCategory category) {
+  // For now, all Dawn trace categories are put under "gpu.dawn"
+  return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("gpu.dawn"));
 }
 
 double DawnPlatform::MonotonicallyIncreasingTime() {

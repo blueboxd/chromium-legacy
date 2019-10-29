@@ -20,6 +20,7 @@
 #include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -92,6 +93,7 @@ void ApkWebAppInstaller::Start(service_manager::Connector* connector,
     web_app_info_->theme_color =
         static_cast<SkColor>(web_app_info->theme_color);
   }
+  web_app_info_->display_mode = blink::mojom::DisplayMode::kStandalone;
   web_app_info_->open_as_window = true;
 
   // Set up the connection to the service manager to decode the raw PNG icon

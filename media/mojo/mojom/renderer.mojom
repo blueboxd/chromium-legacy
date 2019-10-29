@@ -27,7 +27,7 @@ interface Renderer {
   // should be set.
   // TODO(sandersd): These should be separate methods or a union type.
   Initialize(associated RendererClient client,
-             array<DemuxerStream>? streams,
+             array<pending_remote<DemuxerStream>>? streams,
              MediaUrlParams? media_url_params) => (bool success);
 
   // Discards any buffered data, executing callback when completed.

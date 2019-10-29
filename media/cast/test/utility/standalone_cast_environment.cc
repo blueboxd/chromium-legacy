@@ -13,7 +13,10 @@ namespace media {
 namespace cast {
 
 StandaloneCastEnvironment::StandaloneCastEnvironment()
-    : CastEnvironment(base::DefaultTickClock::GetInstance(), NULL, NULL, NULL),
+    : CastEnvironment(base::DefaultTickClock::GetInstance(),
+                      nullptr,
+                      nullptr,
+                      nullptr),
       main_thread_("StandaloneCastEnvironment Main"),
       audio_thread_("StandaloneCastEnvironment Audio"),
       video_thread_("StandaloneCastEnvironment Video") {

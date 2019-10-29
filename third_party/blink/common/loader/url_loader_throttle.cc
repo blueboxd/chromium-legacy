@@ -21,9 +21,10 @@ void URLLoaderThrottle::Delegate::ResumeReadingBodyFromNet() {}
 
 void URLLoaderThrottle::Delegate::InterceptResponse(
     network::mojom::URLLoaderPtr new_loader,
-    network::mojom::URLLoaderClientRequest new_client_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver,
     network::mojom::URLLoaderPtr* original_loader,
-    network::mojom::URLLoaderClientRequest* original_client_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+        original_client_receiver) {
   NOTIMPLEMENTED();
 }
 

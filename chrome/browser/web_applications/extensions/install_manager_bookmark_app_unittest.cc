@@ -530,7 +530,7 @@ TEST_F(InstallManagerBookmarkAppTest,
                                            /*is_installable=*/true);
 
     web_app::InstallManager::InstallParams params;
-    params.display_mode = blink::mojom::DisplayMode::kBrowser;
+    params.user_display_mode = blink::mojom::DisplayMode::kBrowser;
 
     const Extension* extension =
         InstallWebAppWithParams(WebappInstallSource::INTERNAL_DEFAULT, params);
@@ -543,7 +543,7 @@ TEST_F(InstallManagerBookmarkAppTest,
                                            /*is_installable=*/false);
 
     web_app::InstallManager::InstallParams params;
-    params.display_mode = blink::mojom::DisplayMode::kStandalone;
+    params.user_display_mode = blink::mojom::DisplayMode::kStandalone;
 
     const Extension* extension =
         InstallWebAppWithParams(WebappInstallSource::INTERNAL_DEFAULT, params);

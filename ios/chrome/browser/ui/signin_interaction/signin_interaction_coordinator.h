@@ -10,19 +10,18 @@
 #import "base/ios/block_types.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "ios/chrome/browser/signin/constants.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ApplicationCommands;
+class Browser;
 @protocol BrowserCommands;
-namespace ios {
-class ChromeBrowserState;
-}
 @class ChromeIdentity;
 
 // The coordinator for Sign In Interaction. This coordinator handles the
 // presentation and dismissal of the UI. This object should not be destroyed
 // while |active| is true, or UI dismissal or completion callbacks may not
 // execute. It is safe to destroy in the |completion| block.
-@interface SigninInteractionCoordinator : NSObject
+@interface SigninInteractionCoordinator : ChromeCoordinator
 
 // Indicates whether this coordinator is currently presenting UI.
 @property(nonatomic, assign, readonly, getter=isActive) BOOL active;
@@ -34,11 +33,19 @@ class ChromeBrowserState;
 // Designated initializer.
 // * |browserState| is the current browser state. Must not be nil.
 // * |dispatcher| is the dispatcher to be sent commands from this class.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:(id<ApplicationCommands, BrowserCommands>)
-                                         dispatcher NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBrowser:(Browser*)browser
+                     dispatcher:
+                         (id<ApplicationCommands, BrowserCommands>)dispatcher
+    NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
+// Creates a coordinator that uses |viewController| and |browser|.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // Starts user sign-in. If a sign in operation is already in progress, this
 // method does nothing.

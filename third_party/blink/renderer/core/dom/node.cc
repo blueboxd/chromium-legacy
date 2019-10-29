@@ -373,10 +373,6 @@ Node* Node::ToNode() {
   return this;
 }
 
-int Node::tabIndex() const {
-  return 0;
-}
-
 String Node::nodeValue() const {
   return String();
 }

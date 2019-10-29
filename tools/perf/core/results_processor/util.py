@@ -56,3 +56,9 @@ def IsoTimestampToEpoch(timestamp):
   except ValueError:
     dt = datetime.datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%SZ')
   return calendar.timegm(dt.timetuple()) + dt.microsecond / 1e6
+
+
+def SetUnexpectedFailure(test_result):
+  """Update fields of a test result in a case of processing failure."""
+  test_result['status'] = 'FAIL'
+  test_result['expected'] = False

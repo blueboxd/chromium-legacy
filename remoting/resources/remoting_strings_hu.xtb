@@ -314,6 +314,7 @@ Ha már be van jelölve az „<ph name="SERVICE_SCRIPT_NAME" />” melletti nég
 <translation id="837021510621780684">Erről a számítógépről</translation>
 <translation id="8383794970363966105">A Chromoting használatához adjon hozzá eszközéhez egy Google-fiókot.</translation>
 <translation id="8386846956409881180">A gazdagép beállítása érvénytelen OAuth hitelesítési adatokkal történt.</translation>
+<translation id="8397385476380433240">Engedély megadása a következőnek: <ph name="PRODUCT_NAME" /></translation>
 <translation id="8406498562923498210">Válassza ki a Chrome távoliasztal-szolgáltatás környezetében elindítandó munkamenetet. (Előfordulhat, hogy bizonyos munkamenettípusok Chrome távoliasztal-szolgáltatásban és helyi konzolon való egyidejű futtatása nem támogatott.)</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8445362773033888690">Megtekintés a Google Play Áruházban</translation>

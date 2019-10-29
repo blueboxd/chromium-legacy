@@ -14,10 +14,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "services/data_decoder/public/mojom/data_decoder_service.mojom.h"
 
 namespace data_decoder {
 
@@ -25,9 +22,10 @@ namespace data_decoder {
 // mojom::BundledExchangesParser service.
 class SafeBundledExchangesParser {
  public:
-  // |connector| can be null if SetBundledExchangesParserForTesting() will be
+  // |service| can be unbound if SetBundledExchangesParserForTesting() will be
   // called before calling Open*().
-  explicit SafeBundledExchangesParser(service_manager::Connector* connector);
+  explicit SafeBundledExchangesParser(
+      mojo::Remote<data_decoder::mojom::DataDecoderService> service);
   // Remaining callbacks on flight will be dropped.
   ~SafeBundledExchangesParser();
 
@@ -64,6 +62,7 @@ class SafeBundledExchangesParser {
                         mojom::BundleResponsePtr response,
                         mojom::BundleResponseParseErrorPtr error);
 
+  mojo::Remote<data_decoder::mojom::DataDecoderService> service_;
   mojo::Remote<mojom::BundledExchangesParserFactory> factory_;
   mojo::Remote<mojom::BundledExchangesParser> parser_;
   mojom::BundledExchangesParser::ParseMetadataCallback metadata_callback_;

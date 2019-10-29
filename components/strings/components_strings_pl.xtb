@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">Drukuj</translation>
 <translation id="1442386063175183758">Składanie od dołu do środka</translation>
 <translation id="1442987760062738829">Otwór</translation>
-<translation id="1450011005989029586">W wyniku naruszenia bezpieczeństwa danych w witrynie lub aplikacji doszło do ujawnienia Twojego hasła. Chrome zaleca: natychmiast <ph name="BOLD" /> na <ph name="ORIGIN" />.</translation>
 <translation id="1455413310270022028">Gumka</translation>
 <translation id="1463543813647160932">5 x 7</translation>
 <translation id="1472675084647422956">Pokaż więcej</translation>
@@ -691,7 +690,6 @@
 <translation id="4258748452823770588">Nieprawidłowy podpis</translation>
 <translation id="4261046003697461417">Nie można dodawać adnotacji do dokumentów chronionych</translation>
 <translation id="4265872034478892965">Dozwolone przez administratora</translation>
-<translation id="4270615291506829403">zmień hasło</translation>
 <translation id="4275830172053184480">Zrestartuj urządzenie</translation>
 <translation id="4277028893293644418">Resetuj hasło</translation>
 <translation id="4279811152705618813">Twoim urządzeniem (<ph name="DEVICE_TYPE" />) zarządza domena <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -771,7 +769,6 @@
 <translation id="4708268264240856090">Połączenie zostało przerwane</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Uruchom Diagnostykę sieci systemu Windows<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">W wyniku naruszenia bezpieczeństwa danych w witrynie lub aplikacji doszło do ujawnienia Twojego hasła. Chrome zaleca niezwłoczne sprawdzenie zapisanych haseł.</translation>
 <translation id="4726672564094551039">Odśwież zasady</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4731967714531604179">Prc2 (koperta)</translation>
@@ -1188,7 +1185,6 @@
 <translation id="679355240208270552">Ignorowana, ponieważ wyszukiwarka domyślna nie jest dozwolona przez zasadę.</translation>
 <translation id="681021252041861472">Pole wymagane</translation>
 <translation id="6810899417690483278">Identyfikator dostosowania</translation>
-<translation id="6819440013020405090">W wyniku naruszenia bezpieczeństwa danych w witrynie lub aplikacji doszło do ujawnienia Twojego hasła. Chrome zaleca sprawdzenie zapisanych haseł i zmianę hasła w witrynie <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Próbujesz wejść na <ph name="DOMAIN" />, ale serwer przedstawił certyfikat podpisany słabym algorytmem (takim jak SHA-1). Oznacza to, że dane uwierzytelniające podane przez serwer mogły zostać sfałszowane, a serwer może nie być tym, którego oczekujesz (możliwe, że komunikujesz się z intruzem).</translation>
 <translation id="6826370046007623921">Zapobieganie utracie danych</translation>
 <translation id="6831043979455480757">Tłumacz</translation>
@@ -1231,7 +1227,6 @@
 <translation id="7064851114919012435">Dane kontaktowe</translation>
 <translation id="7075452647191940183">Żądanie jest za duże</translation>
 <translation id="7079718277001814089">Ta strona zawiera złośliwe oprogramowanie</translation>
-<translation id="70850504851191913">Zgłoszono naruszenie bezpieczeństwa danych</translation>
 <translation id="7087282848513945231">Hrabstwo</translation>
 <translation id="7090678807593890770">Wyszukaj w Google: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Ukryj</translation>

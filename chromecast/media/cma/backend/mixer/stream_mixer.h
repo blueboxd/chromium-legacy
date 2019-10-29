@@ -22,7 +22,6 @@
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "chromecast/media/cma/backend/mixer/mixer_control.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/media/cma/backend/mixer/mixer_pipeline.h"
 #include "chromecast/public/cast_media_shlib.h"
@@ -64,7 +63,7 @@ class PostProcessingPipelineFactory;
 //    input sources, then the output sample rate is updated to match the input
 //    sample rate of the new source.
 //  * Otherwise, the output sample rate remains unchanged.
-class StreamMixer : public MixerControl {
+class StreamMixer {
  public:
   // Returns the mixer instance for this process. Caller must not delete the
   // returned instance!
@@ -72,7 +71,7 @@ class StreamMixer : public MixerControl {
 
   StreamMixer();
   // Only public to allow tests to create/destroy mixers.
-  ~StreamMixer() override;
+  ~StreamMixer();
 
   int num_output_channels() const { return num_output_channels_; }
 
@@ -116,6 +115,10 @@ class StreamMixer : public MixerControl {
   // connections.
   void UpdateStreamCounts();
 
+  // Sets the desired number of output channels that the mixer should use. The
+  // actual number of output channels may differ from this value.
+  void SetNumOutputChannels(int num_channels);
+
   // Test-only methods.
   StreamMixer(std::unique_ptr<MixerOutputStream> output,
               std::unique_ptr<base::Thread> mixer_thread,
@@ -149,9 +152,6 @@ class StreamMixer : public MixerControl {
     float limit = 1.0f;
     bool muted = false;
   };
-
-  // MixerControl implementation:
-  void SetNumOutputChannels(int num_channels) override;
 
   void SetNumOutputChannelsOnThread(int num_channels);
   void ResetPostProcessorsOnThread(CastMediaShlib::ResultCallback callback,

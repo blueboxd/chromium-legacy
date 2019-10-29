@@ -15,5 +15,5 @@ interface ScenicGpuService {
   //
   // TODO(spang): Consider providing a way for GPU to request ScenicGpuHost from
   // service manager instead of returning one from a callback.
-  Initialize(ScenicGpuHost scenic_gpu_host);
+  Initialize(pending_remote<ScenicGpuHost> scenic_gpu_host);
 };

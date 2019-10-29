@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">Sprache festlegen</translation>
 <translation id="1962969542251276847">Gesperrter Bildschirm</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">Hallo <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">Texteingabe</translation>
 <translation id="1993072747612765854">Weitere Informationen zum aktuellen <ph name="SYSTEM_APP_NAME" />-Update</translation>
 <translation id="1995660704900986789">Ausschalten</translation>
@@ -159,7 +160,6 @@
 <translation id="3139942575505304791">Desktop 1</translation>
 <translation id="315116470104423982">Mobilfunk</translation>
 <translation id="3151786313568798007">Ausrichtung</translation>
-<translation id="3152934361839663679">Ihr Gerät ist bereits mit der maximal zulässigen Anzahl an Monitoren verbunden. Aus diesem Grund wird einer der Bildschirme getrennt.</translation>
 <translation id="3153444934357957346">Bei der Mehrfachanmeldung sind maximal <ph name="MULTI_PROFILE_USER_LIMIT" /> Konten zulässig.</translation>
 <translation id="3154351730702813399">Der Geräteadministrator überwacht unter Umständen Ihre Browseraktivitäten.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Mit einem Gerät verbunden}other{Mit # Geräten verbunden}}</translation>

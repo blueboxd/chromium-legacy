@@ -1318,17 +1318,14 @@ class TestNetworkChangeManagerClient
  public:
   explicit TestNetworkChangeManagerClient(
       mojom::NetworkService* network_service)
-      : connection_type_(mojom::ConnectionType::CONNECTION_UNKNOWN),
-        binding_(this) {
+      : connection_type_(mojom::ConnectionType::CONNECTION_UNKNOWN) {
     mojo::Remote<mojom::NetworkChangeManager> manager_remote;
     network_service->GetNetworkChangeManager(
         manager_remote.BindNewPipeAndPassReceiver());
 
-    mojom::NetworkChangeManagerClientPtr client_ptr;
-    mojom::NetworkChangeManagerClientRequest client_request(
-        mojo::MakeRequest(&client_ptr));
-    binding_.Bind(std::move(client_request));
-    manager_remote->RequestNotifications(std::move(client_ptr));
+    mojo::PendingRemote<mojom::NetworkChangeManagerClient> client_remote;
+    receiver_.Bind(client_remote.InitWithNewPipeAndPassReceiver());
+    manager_remote->RequestNotifications(std::move(client_remote));
   }
 
   ~TestNetworkChangeManagerClient() override {}
@@ -1350,12 +1347,12 @@ class TestNetworkChangeManagerClient
     run_loop_.Run();
   }
 
-  void Flush() { binding_.FlushForTesting(); }
+  void Flush() { receiver_.FlushForTesting(); }
 
  private:
   base::RunLoop run_loop_;
   mojom::ConnectionType connection_type_;
-  mojo::Binding<mojom::NetworkChangeManagerClient> binding_;
+  mojo::Receiver<mojom::NetworkChangeManagerClient> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeManagerClient);
 };

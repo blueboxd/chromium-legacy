@@ -39,9 +39,10 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
 
  protected:
   void Initialize() override {
-    // Browser tests are expected not to tear-down various globals. (Must run
-    // before the base class is initialized.)
+    // Browser tests are expected not to tear-down various globals and may
+    // complete with the thread priority being above NORMAL.
     base::TestSuite::DisableCheckForLeakedGlobals();
+    base::TestSuite::DisableCheckForThreadPriorityAtTestEnd();
 
     ContentTestSuiteBase::Initialize();
 

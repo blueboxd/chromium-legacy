@@ -17,6 +17,8 @@ class WebAppShortcutManager : public AppShortcutManager {
   explicit WebAppShortcutManager(Profile* profile);
   ~WebAppShortcutManager() override;
 
+  bool CanCreateShortcuts() const override;
+
   void GetShortcutInfoForApp(const AppId& app_id,
                              GetShortcutInfoCallback callback) override;
 

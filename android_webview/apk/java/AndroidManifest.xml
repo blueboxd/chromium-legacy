@@ -28,6 +28,23 @@
         {% macro common(manifest_package, webview_lib) %}
             <meta-data android:name="com.android.webview.WebViewLibrary"
                        android:value="{{ webview_lib }}" />
+
+            <!-- WebView Developer UI Activties -->
+            <!--suppress HardcodedText -->
+            <activity android:name="org.chromium.android_webview.devui.MainActivity"
+                      android:label="WebView DevTools"
+                      android:theme="@android:style/Theme.DeviceDefault"
+                      android:launchMode="singleTask"
+                      android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
+            </activity>
+            <activity android:name="org.chromium.android_webview.devui.CrashesListActivity"
+                      android:label="WebView Crashes"
+                      android:theme="@android:style/Theme.DeviceDefault"
+                      android:launchMode="singleTop"
+                      android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
+            </activity>
+            <!-- End of WebView Developer UI Activties -->
+
             <activity android:name="com.android.webview.chromium.LicenseActivity"
                       android:label="@string/license_activity_title"
                       android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
@@ -37,11 +54,6 @@
                 </intent-filter>
                 <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
                            android:value="true" />
-            </activity>
-            <!--suppress HardcodedText -->
-            <activity android:name="org.chromium.android_webview.devui.CrashesListActivity"
-                      android:label="WebView Crashes"
-                      android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
             </activity>
             <provider android:name="com.android.webview.chromium.LicenseContentProvider"
                       android:exported="true"

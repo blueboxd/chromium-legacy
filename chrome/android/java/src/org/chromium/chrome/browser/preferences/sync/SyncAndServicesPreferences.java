@@ -86,8 +86,10 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private static final String PREF_SIGNIN = "sign_in";
     private static final String PREF_MANAGE_YOUR_GOOGLE_ACCOUNT = "manage_your_google_account";
 
-    private static final String PREF_SYNC_CATEGORY = "sync_category";
-    private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
+    @VisibleForTesting
+    public static final String PREF_SYNC_CATEGORY = "sync_category";
+    @VisibleForTesting
+    public static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
     private static final String PREF_SYNC_DISABLED_BY_ADMINISTRATOR =
             "sync_disabled_by_administrator";
     @VisibleForTesting
@@ -243,6 +245,16 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                && wasSigninFlowInterrupted()) {
+            // If the setup flow was previously interrupted, and now the user dismissed the page
+            // without turning sync on, then mark first setup as complete (so that we won't show the
+            // error again), but turn sync off.
+            assert !mSyncRequested.isChecked();
+            SyncPreferenceUtils.enableSync(false);
+            mProfileSyncService.setFirstSetupComplete(
+                    SyncFirstSetupCompleteSource.ADVANCED_FLOW_INTERRUPTED_LEAVE_SYNC_OFF);
+        }
         mSyncSetupInProgressHandle.close();
     }
 
@@ -629,16 +641,6 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
     @Override
     public boolean onBackPressed() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
-                && wasSigninFlowInterrupted()) {
-            // If the setup flow was previously interrupted, and now the user dismissed the page
-            // without turning sync on, then mark first setup as complete (so that we won't show the
-            // error again), but turn sync off.
-            assert !mSyncRequested.isChecked();
-            SyncPreferenceUtils.enableSync(false);
-            mProfileSyncService.setFirstSetupComplete(
-                    SyncFirstSetupCompleteSource.ADVANCED_FLOW_INTERRUPTED_LEAVE_SYNC_OFF);
-        }
         if (!mIsFromSigninScreen) return false; // Let parent activity handle it.
         showCancelSyncDialog();
         return true;

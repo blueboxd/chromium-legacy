@@ -12,7 +12,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
 #include "weblayer/browser/file_select_helper.h"
-#include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/public/browser_observer.h"
@@ -28,6 +27,7 @@
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
+#include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/java/jni/BrowserControllerImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
 #endif
@@ -47,7 +47,7 @@ struct UserData : public base::SupportsUserData::Data {
 #if defined(OS_ANDROID)
 BrowserController* g_last_browser_controller;
 
-void HandleJavaScriptResult(
+void JavaScriptResultCallback(
     const base::android::ScopedJavaGlobalRef<jobject>& callback,
     base::Value result) {
   std::string json;
@@ -137,12 +137,6 @@ NavigationController* BrowserControllerImpl::GetNavigationController() {
   return navigation_controller_.get();
 }
 
-void BrowserControllerImpl::ExecuteScript(const base::string16& script,
-                                          JavaScriptResultCallback callback) {
-  web_contents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
-      script, std::move(callback), ISOLATED_WORLD_ID_WEBLAYER);
-}
-
 #if !defined(OS_ANDROID)
 void BrowserControllerImpl::AttachToView(views::WebView* web_view) {
   web_view->SetWebContents(web_contents_.get());
@@ -185,8 +179,10 @@ void BrowserControllerImpl::ExecuteScript(
     const base::android::JavaParamRef<jstring>& script,
     const base::android::JavaParamRef<jobject>& callback) {
   base::android::ScopedJavaGlobalRef<jobject> jcallback(env, callback);
-  ExecuteScript(base::android::ConvertJavaStringToUTF16(script),
-                base::BindOnce(&HandleJavaScriptResult, jcallback));
+  web_contents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
+      base::android::ConvertJavaStringToUTF16(script),
+      base::BindOnce(&JavaScriptResultCallback, jcallback),
+      ISOLATED_WORLD_ID_WEBLAYER);
 }
 
 #endif

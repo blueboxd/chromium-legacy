@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_APP_INTERFACE_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_APP_INTERFACE_H_
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 // App interface for the Content Suggestions.
 @interface ContentSuggestionsAppInterface : NSObject
@@ -31,36 +31,6 @@
 // Add one particular suggestion, following the convention explained above, with
 // |suggestionNumber|.
 + (void)addSuggestionNumber:(NSInteger)suggestionNumber;
-
-// Returns the short name of the default search engine.
-+ (NSString*)defaultSearchEngine;
-
-// Resets the default search engine to |defaultSearchEngine|.
-// |defaultSearchEngine| should be its short name.
-+ (void)resetSearchEngineTo:(NSString*)defaultSearchEngine;
-
-// Sets the what's new promo to "Move to Dock".
-+ (void)setWhatsNewPromoToMoveToDock;
-
-// Resets the what's new promo.
-+ (void)resetWhatsNewPromo;
-
-// Returns the width the search field is supposed to have when the collection
-// has |collectionWidth|.
-+ (CGFloat)searchFieldWidthForCollectionWidth:(CGFloat)collectionWidth;
-
-// Returns the collection view.
-+ (UICollectionView*)collectionView;
-
-// Returns the fake omnibox.
-+ (UIView*)fakeOmnibox;
-
-// Swizzles the callback for the search button tap action so it is recorded.
-+ (void)swizzleSearchButtonLogging;
-
-// Resets the swizzle for the search button tap, and return the whether the
-// swizzled method was called.
-+ (BOOL)resetSearchButtonLogging;
 
 @end
 

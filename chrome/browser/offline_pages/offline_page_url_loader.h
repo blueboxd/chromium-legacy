@@ -11,6 +11,7 @@
 #include "chrome/browser/offline_pages/offline_page_request_handler.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -78,13 +79,14 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
       const override;
 
   void ReadRawData();
-  void OnReceiveResponse(int64_t file_size,
-                         const network::ResourceRequest& resource_request,
-                         network::mojom::URLLoaderRequest request,
-                         network::mojom::URLLoaderClientPtr client);
+  void OnReceiveResponse(
+      int64_t file_size,
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      network::mojom::URLLoaderClientPtr client);
   void OnReceiveError(int error,
                       const network::ResourceRequest& resource_request,
-                      network::mojom::URLLoaderRequest request,
+                      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
                       network::mojom::URLLoaderClientPtr client);
   void OnHandleReady(MojoResult result, const mojo::HandleSignalsState& state);
   void Finish(int error);

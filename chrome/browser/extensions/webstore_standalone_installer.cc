@@ -140,7 +140,7 @@ WebstoreStandaloneInstaller::GetLocalizedExtensionForDisplay() {
   if (!localized_extension_for_display_.get()) {
     DCHECK(manifest_.get());
     if (!manifest_.get())
-      return NULL;
+      return nullptr;
 
     std::string error;
     localized_extension_for_display_ =

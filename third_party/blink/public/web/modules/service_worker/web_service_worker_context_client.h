@@ -57,8 +57,8 @@ class WebString;
 struct WebFetchEventPreloadHandle {
   // For network::mojom::URLLoaderPtrInfo.
   mojo::ScopedMessagePipeHandle url_loader;
-  // For network::mojom::URLLoaderClientRequest.
-  mojo::ScopedMessagePipeHandle url_loader_client_request;
+  // For mojo::PendingReceiver<network::mojom::URLLoaderClient>.
+  mojo::ScopedMessagePipeHandle url_loader_client_receiver;
 };
 
 // WebServiceWorkerContextClient is a "client" of a service worker execution

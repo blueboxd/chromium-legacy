@@ -953,8 +953,11 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
 // to determine whether a navigation is cross-site.
 TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {
   // The assumptions this test makes aren't valid with --site-per-process.  For
-  // example, a cross-site URL won't ever commit in the old RFH.
-  if (AreAllSitesIsolatedForTesting() ||
+  // example, a cross-site URL won't ever commit in the old RFH.  The test also
+  // assumes that default SiteInstances are enabled, and that aggressive
+  // BrowsingInstance swapping (even on renderer-initiated navigations) is
+  // disabled.
+  if (AreAllSitesIsolatedForTesting() || !AreDefaultSiteInstancesEnabled() ||
       IsProactivelySwapBrowsingInstanceEnabled()) {
     return;
   }
@@ -963,14 +966,6 @@ TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {
   SiteInstanceImpl* instance1 = contents()->GetSiteInstance();
 
   const GURL url("http://www.google.com");
-
-  if (AreDefaultSiteInstancesEnabled()) {
-    // Explicitly set the site for this instance so that it cannot be
-    // converted into a default SiteInstance. This ensures that the navigation
-    // to |url2|, which does not require a dedicated process, will not be
-    // mapped to this instance.
-    instance1->SetSite(url);
-  }
 
   // Navigate to URL.
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url);
@@ -988,18 +983,21 @@ TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {
   EXPECT_FALSE(contents2->CrossProcessNavigationPending());
   navigation->Commit();
   SiteInstance* instance2 = contents2->GetSiteInstance();
-  EXPECT_NE(instance1, instance2);
+  // With default SiteInstances, navigations in both tabs should
+  // share the same default SiteInstance, since neither requires a dedicated
+  // process.
+  EXPECT_EQ(instance1, instance2);
+  EXPECT_TRUE(instance1->IsDefaultSiteInstance());
   EXPECT_FALSE(contents2->CrossProcessNavigationPending());
 
-  // Simulate a link click in first contents to second site.  Doesn't switch
-  // SiteInstances, because we don't intercept Blink navigations.
+  // Simulate a link click in first contents to second site.  This doesn't
+  // switch SiteInstances and stays in the default SiteInstance.
   NavigationSimulator::NavigateAndCommitFromDocument(url2, orig_rfh);
   SiteInstance* instance3 = contents()->GetSiteInstance();
   EXPECT_EQ(instance1, instance3);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
-  // Navigate to the new site.  Doesn't switch SiteInstancees, because we
-  // compare against the current URL, not the SiteInstance's site.
+  // Navigate same-site.  This also stays in the default SiteInstance.
   const GURL url3("http://mail.yahoo.com");
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url3);
   SiteInstance* instance4 = contents()->GetSiteInstance();

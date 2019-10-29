@@ -505,10 +505,10 @@ void WebAppInstallTask::OnDialogCompleted(
 
   InstallFinalizer::FinalizeOptions finalize_options;
   finalize_options.install_source = install_source_;
-  if (install_params_ &&
-      install_params_->display_mode != blink::mojom::DisplayMode::kUndefined) {
-    web_app_info_copy.open_as_window =
-        install_params_->display_mode != blink::mojom::DisplayMode::kBrowser;
+  if (install_params_ && install_params_->user_display_mode !=
+                             blink::mojom::DisplayMode::kUndefined) {
+    web_app_info_copy.open_as_window = install_params_->user_display_mode !=
+                                       blink::mojom::DisplayMode::kBrowser;
   }
 
   install_finalizer_->FinalizeInstall(

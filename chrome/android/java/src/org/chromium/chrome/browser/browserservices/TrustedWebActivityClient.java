@@ -17,14 +17,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.RemoteException;
 
-import androidx.annotation.Nullable;
-import androidx.browser.trusted.TrustedWebActivityService;
-import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
-import androidx.browser.trusted.TrustedWebActivityServiceWrapper;
-
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
@@ -37,6 +31,11 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import androidx.annotation.Nullable;
+import androidx.browser.trusted.TrustedWebActivityService;
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
+import androidx.browser.trusted.TrustedWebActivityServiceWrapper;
 
 /**
  * Uses a Trusted Web Activity client to display notifications.
@@ -190,8 +189,6 @@ public class TrustedWebActivityClient {
      */
     public static @Nullable Intent createLaunchIntentForTwa(Context appContext, String url,
             List<ResolveInfo> resolveInfosForUrl) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) return null;
-
         Origin origin = new Origin(url);
 
         // Trusted Web Activities only work with https so we can shortcut here.

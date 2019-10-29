@@ -46,8 +46,8 @@ interface P2PSocketManager {
                IPEndPoint local_address,
                P2PPortRange port_range,
                P2PHostAndIPEndPoint remote_address,
-               P2PSocketClient client,
-               P2PSocket& socket);
+               pending_remote<P2PSocketClient> client,
+               pending_receiver<P2PSocket> socket);
 };
 
 interface P2PSocket {
@@ -62,8 +62,8 @@ interface P2PSocketClient {
   SocketCreated(IPEndPoint local_address, IPEndPoint remote_address);
   SendComplete(P2PSendPacketMetrics send_metrics);
   IncomingTcpConnection(IPEndPoint socket_address,
-                        P2PSocket socket,
-                        P2PSocketClient& client);
+                        pending_remote<P2PSocket> socket,
+                        pending_receiver<P2PSocketClient> client);
   DataReceived(IPEndPoint socket_address,
                array<int8> data,
                mojo_base.mojom.TimeTicks timestamp);

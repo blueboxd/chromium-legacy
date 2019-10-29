@@ -24,9 +24,6 @@
 // Coordinator to present alerts.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 
-// The BrowserState for this coordinator.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-
 // The controller managed by this coordinator.
 @property(nonatomic, strong) SigninInteractionController* controller;
 
@@ -50,13 +47,12 @@
 
 @implementation SigninInteractionCoordinator
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:(id<ApplicationCommands, BrowserCommands>)
-                                         dispatcher {
-  self = [super init];
+- (instancetype)initWithBrowser:(Browser*)browser
+                     dispatcher:
+                         (id<ApplicationCommands, BrowserCommands>)dispatcher {
+  DCHECK(browser);
+  self = [super initWithBaseViewController:nil browser:browser];
   if (self) {
-    DCHECK(browserState);
-    _browserState = browserState;
     _dispatcher = dispatcher;
   }
   return self;
@@ -233,12 +229,12 @@
   self.presentingViewController = presentingViewController;
   self.topViewController = presentingViewController;
 
-  self.controller = [[SigninInteractionController alloc]
-      initWithBrowserState:self.browserState
-      presentationProvider:self
-               accessPoint:accessPoint
-               promoAction:promoAction
-                dispatcher:self.dispatcher];
+  self.controller =
+      [[SigninInteractionController alloc] initWithBrowser:self.browser
+                                      presentationProvider:self
+                                               accessPoint:accessPoint
+                                               promoAction:promoAction
+                                                dispatcher:self.dispatcher];
 }
 
 // Returns a callback that clears the state of the coordinator and runs
@@ -273,7 +269,7 @@
   self.advancedSigninSettingsCoordinator =
       [[AdvancedSigninSettingsCoordinator alloc]
           initWithBaseViewController:self.presentingViewController
-                        browserState:self.browserState];
+                             browser:self.browser];
   self.advancedSigninSettingsCoordinator.delegate = self;
   self.advancedSigninSettingsCoordinator.dispatcher = self.dispatcher;
   [self.advancedSigninSettingsCoordinator start];

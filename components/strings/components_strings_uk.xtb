@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">Друк</translation>
 <translation id="1442386063175183758">Зігнути за типом "ворота праворуч"</translation>
 <translation id="1442987760062738829">Пробити отвір</translation>
-<translation id="1450011005989029586">Ваш пароль розкрито через порушення безпеки даних на сайті чи в додатку, якими ви користуєтеся. Chrome радить <ph name="BOLD" /> на сайті <ph name="ORIGIN" />.</translation>
 <translation id="1455413310270022028">Гумка</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">Показати більше</translation>
@@ -676,7 +675,6 @@
 <translation id="4258748452823770588">Недійсний підпис</translation>
 <translation id="4261046003697461417">Для захищених документів створення приміток недоступне</translation>
 <translation id="4265872034478892965">Дозволено адміністратором</translation>
-<translation id="4270615291506829403">змінити пароль</translation>
 <translation id="4275830172053184480">Перезапустіть пристрій</translation>
 <translation id="4277028893293644418">Скинути пароль</translation>
 <translation id="4279811152705618813">Вашим пристроєм <ph name="DEVICE_TYPE" /> керує домен <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -755,7 +753,6 @@
 <translation id="4708268264240856090">З’єднання розірвано</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />провести діагностику мережі Windows<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">Ваш пароль розкрито через порушення безпеки даних на сайті чи в додатку, якими ви користуєтеся. Chrome радить негайно перевірити збережені паролі.</translation>
 <translation id="4726672564094551039">Перезавантажити правила</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4731967714531604179">Prc2 (конверт)</translation>
@@ -1172,7 +1169,6 @@
 <translation id="679355240208270552">Ігнорується, оскільки пошукову систему за умовчанням вимкнено правилом.</translation>
 <translation id="681021252041861472">Обов’язкове поле</translation>
 <translation id="6810899417690483278">Ідентифікатор налаштування</translation>
-<translation id="6819440013020405090">Ваш пароль розкрито через порушення безпеки даних на сайті чи в додатку, якими ви користуєтеся. Chrome радить перевірити збережені паролі та змінити пароль на сайті <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Ви спробували зв’язатися з доменом <ph name="DOMAIN" />, проте сервер надав сертифікат, підписаний із використанням слабкого алгоритму підпису (як-от SHA-1). Це означає, що облікові дані безпеки, надані сервером, можуть бути сфальсифікованими, а сервер – не тим, який вам потрібен (ви можете передавати свої дані зловмиснику).</translation>
 <translation id="6826370046007623921">Запобігання витокам даних</translation>
 <translation id="6831043979455480757">Перекласти</translation>
@@ -1215,7 +1211,6 @@
 <translation id="7064851114919012435">Контактна інформація</translation>
 <translation id="7075452647191940183">Запит завеликий</translation>
 <translation id="7079718277001814089">Цей сайт містить зловмисне програмне забезпечення</translation>
-<translation id="70850504851191913">Повідомлено про порушення безпеки даних</translation>
 <translation id="7087282848513945231">Країна</translation>
 <translation id="7090678807593890770">Пошукайте за запитом "<ph name="LINK" />" у Google</translation>
 <translation id="7108338896283013870">Сховати</translation>

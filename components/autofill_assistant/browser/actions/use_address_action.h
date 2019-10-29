@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/actions/required_fields_fallback_handler.h"
 
@@ -29,11 +30,12 @@ class UseAddressAction : public Action {
   ~UseAddressAction() override;
 
  private:
-
   // Overrides Action:
   void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void EndAction(const ClientStatus& status);
+  void EndAction(const ClientStatus& final_status,
+                 const base::Optional<ClientStatus>& optional_details_status =
+                     base::nullopt);
 
   // Fill the form using data in client memory. Return whether filling succeeded
   // or not through OnFormFilled.

@@ -87,13 +87,13 @@ selection_test(
 selection_test(
   '<div contenteditable dir="ltr">abc def hij <img src="../../../accessibility/resources/cake.png">| opq rst </div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc def |hij <img src="../../../accessibility/resources/cake.png"> opq rst </div>',
+  '<div contenteditable dir="ltr">abc def hij |<img src="../../../accessibility/resources/cake.png"> opq rst </div>',
   '18-13 left word');
 
 selection_test(
   '<div contenteditable dir="ltr">abc def hij <img src="../../../accessibility/resources/cake.png"> |opq rst </div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc def |hij <img src="../../../accessibility/resources/cake.png"> opq rst </div>',
+  '<div contenteditable dir="ltr">abc def hij |<img src="../../../accessibility/resources/cake.png"> opq rst </div>',
   '18-14 left word');
 
 selection_test(

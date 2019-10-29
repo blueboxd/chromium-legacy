@@ -46,6 +46,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/system_connector.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -89,23 +90,25 @@ invalidation::ProfileInvalidationProvider* GetInvalidationProvider(
 // Runs on UI thread.
 void RequestProxyResolvingSocketFactoryOnUIThread(
     base::WeakPtr<invalidation::TiclInvalidationService> owner,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   if (!owner)
     return;
   if (g_browser_process->system_network_context_manager()) {
     g_browser_process->system_network_context_manager()
         ->GetContext()
-        ->CreateProxyResolvingSocketFactory(std::move(request));
+        ->CreateProxyResolvingSocketFactory(std::move(receiver));
   }
 }
 
 // Runs on IO thread.
 void RequestProxyResolvingSocketFactory(
     base::WeakPtr<invalidation::TiclInvalidationService> owner,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
-                                owner, std::move(request)));
+                                owner, std::move(receiver)));
 }
 
 }  // namespace

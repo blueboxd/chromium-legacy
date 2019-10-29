@@ -87,7 +87,7 @@ void CorsURLLoaderFactory::DestroyURLLoader(mojom::URLLoader* loader) {
 }
 
 void CorsURLLoaderFactory::CreateLoaderAndStart(
-    mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<mojom::URLLoader> receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -101,7 +101,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
 
   if (context_->IsCorsEnabled() && !disable_web_security_) {
     auto loader = std::make_unique<CorsURLLoader>(
-        std::move(request), routing_id, request_id, options,
+        std::move(receiver), routing_id, request_id, options,
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
         resource_request, std::move(client), traffic_annotation,
@@ -113,7 +113,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     raw_loader->Start();
   } else {
     network_loader_factory_->CreateLoaderAndStart(
-        std::move(request), routing_id, request_id, options, resource_request,
+        std::move(receiver), routing_id, request_id, options, resource_request,
         std::move(client), traffic_annotation);
   }
 }

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/hash/md5.h"
+#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
@@ -15,6 +16,7 @@
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "components/device_event_log/device_event_log.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -42,9 +44,11 @@ class ServerPrintersFetcher::PrivateImplementation
  public:
   PrivateImplementation(const ServerPrintersFetcher* owner,
                         const GURL& server_url,
+                        const std::string& server_name,
                         ServerPrintersFetcher::OnPrintersFetchedCallback cb)
       : owner_(owner),
         server_url_(server_url),
+        server_name_(server_name),
         callback_(std::move(cb)),
         task_runner_(base::CreateSequencedTaskRunner(
             {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
@@ -75,6 +79,9 @@ class ServerPrintersFetcher::PrivateImplementation
   void OnComplete(bool success) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (!success) {
+      PRINTER_LOG(ERROR) << "Error when querying the print server "
+                         << server_name_
+                         << ": NetError=" << simple_url_loader_->NetError();
       // Some error occurred. Call the callback with an empty vector.
       PostResponse({});
       return;
@@ -87,11 +94,13 @@ class ServerPrintersFetcher::PrivateImplementation
         !client.ParseResponseAndSaveTo(&response)) {
       // Parser has failed. Dump errors to the log.
       std::string message = "Cannot parse response from the print server " +
-                            server_url_.spec() + ". Parser log:";
+                            server_name_ + ". Parser log:";
       for (const auto& entry : client.GetErrorLog()) {
         message += "\n * " + entry.message;
       }
       LOG(WARNING) << message;
+      PRINTER_LOG(ERROR) << "Error when querying the print server "
+                         << server_name_ << ": unparsable IPP response.";
       // Call the callback with an empty vector and exit.
       PostResponse({});
       return;
@@ -105,6 +114,9 @@ class ServerPrintersFetcher::PrivateImplementation
       InitializePrinter(&(printers[i].printer), name);
     }
     // Call the callback with queried printers.
+    PRINTER_LOG(DEBUG) << "The print server " << server_name_ << " returned "
+                       << printers.size() << " printer"
+                       << (printers.size() == 1 ? "." : "s.");
     PostResponse(std::move(printers));
   }
 
@@ -185,6 +197,7 @@ class ServerPrintersFetcher::PrivateImplementation
 
   const ServerPrintersFetcher* owner_;
   const GURL server_url_;
+  const std::string server_name_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_for_callback_;
   ServerPrintersFetcher::OnPrintersFetchedCallback callback_;
@@ -200,8 +213,12 @@ class ServerPrintersFetcher::PrivateImplementation
 };
 
 ServerPrintersFetcher::ServerPrintersFetcher(const GURL& server_url,
+                                             const std::string& server_name,
                                              OnPrintersFetchedCallback cb)
-    : pim_(new PrivateImplementation(this, server_url, std::move(cb)),
+    : pim_(new PrivateImplementation(this,
+                                     server_url,
+                                     server_name,
+                                     std::move(cb)),
            PimDeleter()) {}
 
 void ServerPrintersFetcher::PimDeleter::operator()(

@@ -113,10 +113,9 @@ TEST_F('HistoryFocusTest', 'All', function() {
     test('list focus and keyboard nav', async () => {
       app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
       let focused;
-      let items;
       await test_util.flushTasks();
       Polymer.dom.flush();
-      items = polymerSelectAll(element, 'history-item');
+      const items = polymerSelectAll(element, 'history-item');
 
       items[2].$.checkbox.focus();
       focused = items[2].$.checkbox.getFocusableElement();

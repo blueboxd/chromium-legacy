@@ -977,11 +977,9 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
   EXPECT_TRUE(host->GetSiteInstance()->HasSite());
   EXPECT_EQ(kUrl, host->GetSiteInstance()->GetSiteURL());
 
-  // There will be a navigating WebUI because GetFrameHostForNavigation was
-  // already called twice and the committed  WebUI should be set to be reused.
-  EXPECT_TRUE(manager->GetNavigatingWebUI());
-  EXPECT_EQ(host->web_ui(), manager->GetNavigatingWebUI());
-  EXPECT_EQ(host->web_ui(), host->pending_web_ui());
+  // There will be a WebUI because GetFrameHostForNavigation was already called
+  // twice.
+  EXPECT_TRUE(host->web_ui());
   EXPECT_TRUE(manager->current_frame_host()->web_ui());
 
   // Commit.
@@ -1054,8 +1052,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // No cross-process transition happens because we are already in the right
   // SiteInstance.  We should grant bindings immediately.
   EXPECT_EQ(host2, manager2->current_frame_host());
-  EXPECT_TRUE(manager2->GetNavigatingWebUI());
-  EXPECT_FALSE(host2->web_ui());
+  EXPECT_TRUE(host2->web_ui());
   EXPECT_TRUE(host2->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   manager2->DidNavigateFrame(host2, true /* was_caused_by_user_gesture */,
@@ -2479,17 +2476,13 @@ TEST_F(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
   ASSERT_TRUE(current_host);
   EXPECT_EQ(current_host, initial_host);
   EXPECT_TRUE(current_host->IsRenderFrameLive());
-  WebUIImpl* web_ui = manager->GetNavigatingWebUI();
-  EXPECT_TRUE(web_ui);
-  EXPECT_EQ(web_ui, current_host->pending_web_ui());
-  EXPECT_FALSE(current_host->web_ui());
+  EXPECT_TRUE(current_host->web_ui());
 
   // The RenderFrameHost committed.
   manager->DidNavigateFrame(current_host, true /* was_caused_by_user_gesture */,
                             false /* is_same_document_navigation */);
   EXPECT_EQ(current_host, manager->current_frame_host());
-  EXPECT_EQ(web_ui, current_host->web_ui());
-  EXPECT_FALSE(current_host->pending_web_ui());
+  EXPECT_TRUE(current_host->web_ui());
 }
 
 // Simulates two simultaneous navigations involving one WebUI where the current
@@ -2510,9 +2503,7 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
   reload->ReadyToCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
-  EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
   EXPECT_EQ(web_ui, host1->web_ui());
-  EXPECT_EQ(web_ui, host1->pending_web_ui());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
   // Navigation request to a non-WebUI page.
@@ -2525,25 +2516,16 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
 
   // The previous navigation should still be ongoing along with the new,
   // cross-site one.
-  // Note: Simultaneous navigations are weird: there are two ongoing
-  // navigations, a same-site using a WebUI and a cross-site not using one. So
-  // it's unclear what GetNavigatingWebUI should return in this case. As it
-  // currently favors the cross-site navigation it returns null.
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
+  EXPECT_FALSE(host2->web_ui());
   EXPECT_EQ(web_ui, host1->web_ui());
-  EXPECT_EQ(web_ui, host1->pending_web_ui());
 
   EXPECT_NE(host2, host1);
-  EXPECT_FALSE(host2->web_ui());
-  EXPECT_FALSE(host2->pending_web_ui());
   EXPECT_NE(web_ui, host2->web_ui());
 
   // The current RenderFrameHost commits; its WebUI should still be in place.
   reload->Commit();
   EXPECT_EQ(host1, manager->current_frame_host());
   EXPECT_EQ(web_ui, host1->web_ui());
-  EXPECT_FALSE(host1->pending_web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
 
   // Because the Navigation that committed was browser-initiated, it will not
   // have the user gesture bit set to true. This has the side-effect of not
@@ -2571,10 +2553,8 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI2) {
   reload->ReadyToCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
-  EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
-  EXPECT_EQ(web_ui, host1->web_ui());
-  EXPECT_EQ(web_ui, host1->pending_web_ui());
   EXPECT_FALSE(GetPendingFrameHost(manager));
+  EXPECT_EQ(web_ui, host1->web_ui());
 
   // Navigation request to a non-WebUI page.
   const GURL kUrl("http://google.com");
@@ -2586,25 +2566,16 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI2) {
 
   // The previous navigation should still be ongoing along with the new,
   // cross-site one.
-  // Note: Simultaneous navigations are weird: there are two ongoing
-  // navigations, a same-site using a WebUI and a cross-site not using one. So
-  // it's unclear what GetNavigatingWebUI should return in this case. As it
-  // currently favors the cross-site navigation it returns null.
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
+  EXPECT_FALSE(host2->web_ui());
   EXPECT_EQ(web_ui, host1->web_ui());
-  EXPECT_EQ(web_ui, host1->pending_web_ui());
 
   EXPECT_NE(host2, host1);
-  EXPECT_FALSE(host2->web_ui());
-  EXPECT_FALSE(host2->pending_web_ui());
   EXPECT_NE(web_ui, host2->web_ui());
 
   // The new RenderFrameHost commits; there should be no active WebUI.
   navigation->Commit();
   EXPECT_EQ(host2, manager->current_frame_host());
   EXPECT_FALSE(host2->web_ui());
-  EXPECT_FALSE(host2->pending_web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 }
 
@@ -2628,9 +2599,7 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
   reload->ReadyToCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
-  EXPECT_EQ(web_ui1, manager->GetNavigatingWebUI());
   EXPECT_EQ(web_ui1, host1->web_ui());
-  EXPECT_EQ(web_ui1, host1->pending_web_ui());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
   // Navigate to another WebUI page.
@@ -2643,33 +2612,26 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
 
   // The previous navigation should still be ongoing along with the new,
   // cross-site one.
-  // Note: simultaneous navigations are weird: there are two ongoing
-  // navigations, a same-site and a cross-site both going to WebUIs. So it's
-  // unclear what GetNavigatingWebUI should return in this case. As it currently
-  // favors the cross-site navigation it returns the speculative/pending
-  // RenderFrameHost's WebUI instance.
   EXPECT_EQ(web_ui1, host1->web_ui());
-  EXPECT_EQ(web_ui1, host1->pending_web_ui());
-  WebUIImpl* web_ui2 = manager->GetNavigatingWebUI();
+  EXPECT_TRUE(manager->speculative_frame_host());
+  WebUIImpl* web_ui2 = manager->speculative_frame_host()->web_ui();
   EXPECT_TRUE(web_ui2);
   EXPECT_NE(web_ui2, web_ui1);
 
   EXPECT_NE(host2, host1);
   EXPECT_EQ(web_ui2, host2->web_ui());
-  EXPECT_FALSE(host2->pending_web_ui());
 
   // The current RenderFrameHost commits; its WebUI should still be active.
   reload->Commit();
   EXPECT_EQ(host1, manager->current_frame_host());
   EXPECT_EQ(web_ui1, host1->web_ui());
-  EXPECT_FALSE(host1->pending_web_ui());
 
   // Because the Navigation that committed was browser-initiated, it will not
   // have the user gesture bit set to true. This has the side-effect of not
   // deleting the speculative RenderFrameHost at commit time.
   // TODO(clamy): The speculative RenderFrameHost should be deleted at commit
   // time if a browser-initiated navigation commits.
-  EXPECT_TRUE(manager->GetNavigatingWebUI());
+  EXPECT_TRUE(manager->speculative_frame_host()->web_ui());
   EXPECT_TRUE(GetPendingFrameHost(manager));
 }
 
@@ -2691,9 +2653,7 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
   reload->ReadyToCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
-  EXPECT_EQ(web_ui1, manager->GetNavigatingWebUI());
   EXPECT_EQ(web_ui1, host1->web_ui());
-  EXPECT_EQ(web_ui1, host1->pending_web_ui());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
   // Navigate to another WebUI page.
@@ -2706,26 +2666,18 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
 
   // The previous navigation should still be ongoing along with the new,
   // cross-site one.
-  // Note: simultaneous navigations are weird: there are two ongoing
-  // navigations, a same-site and a cross-site both going to WebUIs. So it's
-  // unclear what GetNavigatingWebUI should return in this case. As it currently
-  // favors the cross-site navigation it returns the speculative/pending
-  // RenderFrameHost's WebUI instance.
   EXPECT_EQ(web_ui1, host1->web_ui());
-  EXPECT_EQ(web_ui1, host1->pending_web_ui());
-  WebUIImpl* web_ui2 = manager->GetNavigatingWebUI();
+  WebUIImpl* web_ui2 = manager->speculative_frame_host()->web_ui();
   EXPECT_TRUE(web_ui2);
   EXPECT_NE(web_ui2, web_ui1);
 
   EXPECT_NE(host2, host1);
   EXPECT_EQ(web_ui2, host2->web_ui());
-  EXPECT_FALSE(host2->pending_web_ui());
 
   navigation->Commit();
   EXPECT_EQ(host2, manager->current_frame_host());
   EXPECT_EQ(web_ui2, host2->web_ui());
-  EXPECT_FALSE(host2->pending_web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
+  EXPECT_FALSE(manager->speculative_frame_host());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 }
 
@@ -2830,20 +2782,14 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   EXPECT_TRUE(host->IsRenderFrameLive());
   WebUIImpl* web_ui = host->web_ui();
   EXPECT_TRUE(web_ui);
-  EXPECT_FALSE(host->pending_web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
   // Prepare to commit, update the navigating RenderFrameHost.
   EXPECT_EQ(host, manager->GetFrameHostForNavigation(navigation_request.get()));
 
-  // There should be a pending WebUI set to reuse the current one.
-  EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_EQ(web_ui, host->pending_web_ui());
-  EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
-
   // No pending RenderFrameHost as the current one should be reused.
   EXPECT_FALSE(GetPendingFrameHost(manager));
+  EXPECT_EQ(web_ui, host->web_ui());
 
   // The RenderFrameHost committed.
   manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
@@ -2851,8 +2797,6 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   EXPECT_EQ(host, manager->current_frame_host());
   EXPECT_FALSE(GetPendingFrameHost(manager));
   EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_FALSE(host->pending_web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
 }
 
 // Tests that the correct intermediary and final navigation states are reached
@@ -2873,26 +2817,19 @@ TEST_F(RenderFrameHostManagerTest, NavigateSameSiteBetweenWebUIs) {
       NavigationSimulator::CreateBrowserInitiated(kUrl, contents());
   web_ui_navigation->Start();
 
-  // The current WebUI should still be in place and the pending WebUI should be
-  // set to reuse it.
-  EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
+  // The current WebUI should still be in place.
   EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_EQ(web_ui, host->pending_web_ui());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
   // Prepare to commit, update the navigating RenderFrameHost.
   web_ui_navigation->ReadyToCommit();
 
-  EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
   EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_EQ(web_ui, host->pending_web_ui());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
-  // The RenderFrameHost committed.
+  // The RenderFrameHost committed and used the same WebUI object.
   web_ui_navigation->Commit();
   EXPECT_EQ(web_ui, host->web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
-  EXPECT_FALSE(host->pending_web_ui());
 }
 
 // Tests that the correct intermediary and final navigation states are reached
@@ -2919,23 +2856,17 @@ TEST_F(RenderFrameHostManagerTest, NavigateCrossSiteBetweenWebUIs) {
   // The current WebUI should still be in place and there should be a new
   // active WebUI instance in the speculative RenderFrameHost.
   EXPECT_TRUE(manager->current_frame_host()->web_ui());
-  EXPECT_FALSE(manager->current_frame_host()->pending_web_ui());
   RenderFrameHostImpl* speculative_host = GetPendingFrameHost(manager);
   EXPECT_TRUE(speculative_host);
-  WebUIImpl* next_web_ui = manager->GetNavigatingWebUI();
+  WebUIImpl* next_web_ui = speculative_host->web_ui();
   EXPECT_TRUE(next_web_ui);
-  EXPECT_EQ(next_web_ui, speculative_host->web_ui());
-  EXPECT_EQ(next_web_ui, manager->GetNavigatingWebUI());
   EXPECT_NE(next_web_ui, manager->current_frame_host()->web_ui());
-  EXPECT_FALSE(speculative_host->pending_web_ui());
 
   // The RenderFrameHost committed.
   web_ui_navigation->Commit();
   EXPECT_EQ(speculative_host, manager->current_frame_host());
   EXPECT_EQ(next_web_ui, manager->current_frame_host()->web_ui());
   EXPECT_FALSE(GetPendingFrameHost(manager));
-  EXPECT_FALSE(speculative_host->pending_web_ui());
-  EXPECT_FALSE(manager->GetNavigatingWebUI());
 }
 
 // Tests that frame proxies receive updates when a frame's enforcement

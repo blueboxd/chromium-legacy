@@ -74,7 +74,7 @@ luci.console_view(
         ),
         luci.console_view_entry(
             builder = 'ci/chromeos-amd64-generic-rel (Goma RBE FYI)',
-            category = 'tot|chromium.chromiumos|simple|release|x64',
+            category = 'prod|chromium.chromiumos|simple|release|x64',
             short_name = 'rel',
         ),
     ],

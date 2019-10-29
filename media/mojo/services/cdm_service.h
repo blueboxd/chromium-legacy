@@ -14,8 +14,9 @@
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/services/deferred_destroy_strong_binding_set.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -55,7 +56,7 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   };
 
   CdmService(std::unique_ptr<Client> client,
-             service_manager::mojom::ServiceRequest request);
+             mojo::PendingReceiver<service_manager::mojom::Service> receiver);
   ~CdmService() final;
 
   // By default CdmService release is delayed. Overrides the delay with |delay|.
@@ -78,7 +79,7 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
   void OnDisconnected() final;
 
-  void Create(mojom::CdmServiceRequest request);
+  void Create(mojo::PendingReceiver<mojom::CdmService> receiver);
 
 // mojom::CdmService implementation.
 #if defined(OS_MACOSX)
@@ -98,7 +99,7 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   std::unique_ptr<CdmFactory> cdm_factory_;
   DeferredDestroyStrongBindingSet<mojom::CdmFactory> cdm_factory_bindings_;
   service_manager::BinderRegistry registry_;
-  mojo::BindingSet<mojom::CdmService> bindings_;
+  mojo::ReceiverSet<mojom::CdmService> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmService);
 };

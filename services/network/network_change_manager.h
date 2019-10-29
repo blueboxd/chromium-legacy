@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
@@ -39,7 +40,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkChangeManager
 
   // mojom::NetworkChangeManager implementation:
   void RequestNotifications(
-      mojom::NetworkChangeManagerClientPtr client_ptr) override;
+      mojo::PendingRemote<mojom::NetworkChangeManagerClient> client_remote)
+      override;
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   void OnNetworkChanged(
@@ -63,7 +65,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkChangeManager
 
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   mojo::ReceiverSet<mojom::NetworkChangeManager> receivers_;
-  std::vector<mojom::NetworkChangeManagerClientPtr> clients_;
+  std::vector<mojo::Remote<mojom::NetworkChangeManagerClient>> clients_;
   mojom::ConnectionType connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeManager);

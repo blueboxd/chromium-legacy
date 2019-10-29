@@ -54,14 +54,15 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
   ~WorkerScriptLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& resource_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override;
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& resource_request,
+      network::mojom::URLLoaderClientPtr client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
       override;
 
@@ -74,8 +75,9 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
   BrowserContextGetter browser_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
-  // This is owned by StrongBinding associated with the given URLLoaderRequest,
-  // and invalidated after request completion or failure.
+  // This is owned by SelfOwnedReceiver associated with the given
+  // mojo::PendingReceiver<URLLoader>, and invalidated after receiver completion
+  // or failure.
   base::WeakPtr<WorkerScriptLoader> script_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerScriptLoaderFactory);

@@ -1239,7 +1239,7 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallInstallableSite) {
   EXPECT_EQ(registrar().GetAppShortName(app_id), GetInstallableAppName());
 
   // Installed PWAs should launch in their own window.
-  EXPECT_EQ(registrar().GetAppDisplayMode(app_id),
+  EXPECT_EQ(registrar().GetAppUserDisplayMode(app_id),
             blink::mojom::DisplayMode::kStandalone);
 
   EXPECT_EQ(1, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
@@ -1254,7 +1254,7 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, CreateShortcutForInstallableSite) {
   web_app::AppId app_id = InstallShortcutAppForCurrentUrl();
   EXPECT_EQ(registrar().GetAppShortName(app_id), GetInstallableAppName());
   // Bookmark apps to PWAs should launch in a tab.
-  EXPECT_EQ(registrar().GetAppDisplayMode(app_id),
+  EXPECT_EQ(registrar().GetAppUserDisplayMode(app_id),
             blink::mojom::DisplayMode::kBrowser);
 
   EXPECT_EQ(0, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
@@ -1282,8 +1282,8 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, CanInstallOverTabPwa) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   web_app::AppId app_id = InstallPwaForCurrentUrl();
   // Change display mode to open in tab.
-  registry_controller().SetAppDisplayMode(app_id,
-                                          blink::mojom::DisplayMode::kBrowser);
+  registry_controller().SetAppUserDisplayMode(
+      app_id, blink::mojom::DisplayMode::kBrowser);
 
   Browser* new_browser =
       NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());
@@ -1300,7 +1300,7 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, CannotInstallOverWindowShortcutApp) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   web_app::AppId app_id = InstallShortcutAppForCurrentUrl();
   // Change launch container to open in window.
-  registry_controller().SetAppDisplayMode(
+  registry_controller().SetAppUserDisplayMode(
       app_id, blink::mojom::DisplayMode::kStandalone);
 
   Browser* new_browser =

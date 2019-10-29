@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
@@ -69,7 +69,7 @@ TEST_F(WebFileTasksTest, WebAppFileHandlingCanBeDisabled) {
 
   std::vector<extensions::EntryInfo> entries;
   entries.emplace_back(
-      drive::util::GetDriveMountPointPath(profile()).AppendASCII("foo.csv"),
+      util::GetMyFilesFolderForProfile(profile()).AppendASCII("foo.csv"),
       "text/csv", false);
 
   std::vector<FullTaskDescriptor> tasks;
@@ -123,7 +123,7 @@ TEST_F(WebFileTasksTest, FindWebFileHandlerTasks) {
   // Find apps for a "text/plain" file. Both Foo and Bar should be found.
   std::vector<extensions::EntryInfo> entries;
   entries.emplace_back(
-      drive::util::GetDriveMountPointPath(profile()).AppendASCII("foo.txt"),
+      util::GetMyFilesFolderForProfile(profile()).AppendASCII("foo.txt"),
       "text/plain", false);
 
   std::vector<FullTaskDescriptor> tasks;
@@ -137,7 +137,7 @@ TEST_F(WebFileTasksTest, FindWebFileHandlerTasks) {
 
   // Add a "text/html" file. Only Foo should be found.
   entries.emplace_back(
-      drive::util::GetDriveMountPointPath(profile()).AppendASCII("foo.html"),
+      util::GetMyFilesFolderForProfile(profile()).AppendASCII("foo.html"),
       "text/html", false);
   tasks.clear();
   FindWebTasks(profile(), entries, &tasks);
@@ -147,7 +147,7 @@ TEST_F(WebFileTasksTest, FindWebFileHandlerTasks) {
 
   // Add an "image/png" file. No tasks should be found.
   entries.emplace_back(
-      drive::util::GetDriveMountPointPath(profile()).AppendASCII("foo.png"),
+      util::GetMyFilesFolderForProfile(profile()).AppendASCII("foo.png"),
       "image/png", false);
   tasks.clear();
   FindWebTasks(profile(), entries, &tasks);
@@ -196,7 +196,7 @@ TEST_F(WebFileTasksTest, FindWebFileHandlerTask_Generic) {
 
   // All apps should be able to handle ".txt" files.
   entries.emplace_back(
-      drive::util::GetDriveMountPointPath(profile()).AppendASCII("foo.txt"),
+      util::GetMyFilesFolderForProfile(profile()).AppendASCII("foo.txt"),
       "text/plain", false);
   FindWebTasks(profile(), entries, &tasks);
   // Ensure stable order.
@@ -221,7 +221,7 @@ TEST_F(WebFileTasksTest, FindWebFileHandlerTask_Generic) {
 
   // Every app but Bar should be able to handle jpegs.
   entries.emplace_back(
-      drive::util::GetDriveMountPointPath(profile()).AppendASCII("foo.jpg"),
+      util::GetMyFilesFolderForProfile(profile()).AppendASCII("foo.jpg"),
       "image/jpeg", false);
   FindWebTasks(profile(), entries, &tasks);
   // Ensure stable order.,

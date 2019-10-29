@@ -80,6 +80,7 @@
 #include "third_party/blink/public/web/web_text_check_client.h"
 #include "third_party/blink/public/web/web_text_checking_completion.h"
 #include "third_party/blink/public/web/web_text_checking_result.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_serializer.h"
@@ -94,7 +95,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/range.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
@@ -579,29 +579,19 @@ TEST_F(WebFrameTest, RequestExecuteV8FunctionWhileSuspendedWithUserGesture) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
 
-  auto callback = [](const v8::FunctionCallbackInfo<v8::Value>& info) {
-    info.GetReturnValue().Set(v8::Boolean::New(
-        info.GetIsolate(), UserGestureIndicator::ProcessingUserGesture()));
-  };
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
 
   // Suspend scheduled tasks so the script doesn't run.
-  WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
   web_view_helper.GetWebView()->GetPage()->SetPaused(true);
-
-  v8::HandleScope scope(v8::Isolate::GetCurrent());
-  v8::Local<v8::Context> context =
-      web_view_helper.LocalMainFrame()->MainWorldScriptContext();
-
-  std::unique_ptr<UserGestureIndicator> indicator =
-      LocalFrame::NotifyUserActivation(main_frame->GetFrame(),
-                                       UserGestureToken::kNewGesture);
-  ScriptExecutionCallbackHelper callback_helper(context);
-  v8::Local<v8::Function> function =
-      v8::Function::New(context, callback).ToLocalChecked();
-  main_frame->RequestExecuteV8Function(
-      main_frame->MainWorldScriptContext(), function,
-      v8::Undefined(context->GetIsolate()), 0, nullptr, &callback_helper);
-
+  LocalFrame::NotifyUserActivation(
+      web_view_helper.LocalMainFrame()->GetFrame());
+  ScriptExecutionCallbackHelper callback_helper(
+      web_view_helper.LocalMainFrame()->MainWorldScriptContext());
+  WebScriptSource script_source("navigator.userActivation.isActive;");
+  web_view_helper.GetWebView()
+      ->MainFrameImpl()
+      ->RequestExecuteScriptAndReturnValue(script_source, false,
+                                           &callback_helper);
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
@@ -8319,7 +8309,7 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
-      LocalFrame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
+      LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
@@ -12432,8 +12422,7 @@ TEST_F(WebFrameTest, ShowVirtualKeyboardOnElementFocus) {
 
   // Simulate an input element focus leading to Element::focus() call with a
   // user gesture.
-  LocalFrame::NotifyUserActivation(local_frame->GetFrame(),
-                                   UserGestureToken::kNewGesture);
+  LocalFrame::NotifyUserActivation(local_frame->GetFrame());
   local_frame->ExecuteScript(
       WebScriptSource("window.focus();"
                       "document.querySelector('input').focus();"));

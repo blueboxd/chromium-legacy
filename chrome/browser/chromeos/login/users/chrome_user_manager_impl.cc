@@ -17,6 +17,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -218,14 +219,14 @@ bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
   return entry->value && entry->value->GetBool();
 }
 
-const base::Value::ListStorage* GetListPolicyValue(
+base::span<const base::Value> GetListPolicyValue(
     const policy::PolicyMap& policy_map,
     const char* policy_key) {
   const policy::PolicyMap::Entry* entry = policy_map.Get(policy_key);
   if (!entry || !entry->value || !entry->value->is_list())
-    return nullptr;
+    return {};
 
-  return &entry->value->GetList();
+  return entry->value->GetList();
 }
 
 bool AreRiskyPoliciesUsed(policy::DeviceLocalAccountPolicyBroker* broker) {
@@ -261,16 +262,16 @@ bool AreRiskyExtensionsForceInstalled(
     policy::DeviceLocalAccountPolicyBroker* broker) {
   const policy::PolicyMap& policy_map = broker->core()->store()->policy_map();
 
-  const base::Value::ListStorage* forcelist =
+  auto forcelist =
       GetListPolicyValue(policy_map, policy::key::kExtensionInstallForcelist);
 
   // Extension is risky if it's present in force-installed extensions and is not
   // whitelisted for public sessions.
 
-  if (!forcelist || forcelist->empty())
+  if (forcelist.empty())
     return false;
 
-  for (const base::Value& extension : *forcelist) {
+  for (const base::Value& extension : forcelist) {
     if (!extension.is_string())
       continue;
 

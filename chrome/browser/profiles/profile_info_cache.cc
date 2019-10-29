@@ -49,6 +49,10 @@ const char kIsOmittedFromProfileListKey[] = "is_omitted_from_profile_list";
 const char kSigninRequiredKey[] = "signin_required";
 const char kSupervisedUserId[] = "managed_user_id";
 const char kAccountIdKey[] = "account_id_key";
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+const char kLegacyProfileNameMigrated[] = "legacy.profile.name.migrated";
+bool migration_enabled_for_testing_ = false;
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 void DeleteBitmap(const base::FilePath& image_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -91,7 +95,10 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
     if (!info->GetBoolean(kIsUsingDefaultNameKey, &using_default_name)) {
       // If the preference hasn't been set, and the name is default, assume
       // that the user hasn't done this on purpose.
-      using_default_name = IsDefaultProfileName(name);
+      // |include_check_for_legacy_profile_name| is true as this is an old
+      // pre-existing profile and might have a legacy default profile name.
+      using_default_name = IsDefaultProfileName(
+          name, /*include_check_for_legacy_profile_name=*/true);
       info->SetBoolean(kIsUsingDefaultNameKey, using_default_name);
     }
 
@@ -105,9 +112,18 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   // If needed, start downloading the high-res avatars and migrate any legacy
   // profile names.
   if (!disable_avatar_download_for_testing_)
-    MigrateLegacyProfileNamesAndDownloadAvatars();
+    DownloadAvatars();
 
-  RecomputeProfileNamesIfNeeded();
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  bool migrate_legacy_profile_names =
+      (!prefs_->GetBoolean(kLegacyProfileNameMigrated) &&
+       ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName()) ||
+      migration_enabled_for_testing_;
+  if (migrate_legacy_profile_names) {
+    MigrateLegacyProfileNamesAndRecomputeIfNeeded();
+    prefs_->SetBoolean(kLegacyProfileNameMigrated, true);
+  }
+#endif  //! defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 }
 
 ProfileInfoCache::~ProfileInfoCache() {
@@ -148,7 +164,12 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
   info->SetString(kSupervisedUserId, supervised_user_id);
   info->SetBoolean(kIsOmittedFromProfileListKey, !supervised_user_id.empty());
   info->SetBoolean(ProfileAttributesEntry::kProfileIsEphemeral, false);
-  info->SetBoolean(kIsUsingDefaultNameKey, IsDefaultProfileName(name));
+  // Either the user has provided a name manually on purpose, and in this case
+  // we should not check for legacy profile names or this a new profile but then
+  // it is not a legacy name, so we dont need to check for legacy names.
+  info->SetBoolean(kIsUsingDefaultNameKey,
+                   IsDefaultProfileName(
+                       name, /*include_check_for_legacy_profile_name*/ false));
   // Assume newly created profiles use a default avatar.
   info->SetBoolean(kIsUsingDefaultAvatarKey, true);
   if (account_id.HasAccountIdKey())
@@ -649,6 +670,9 @@ const base::FilePath& ProfileInfoCache::GetUserDataDir() const {
 // static
 void ProfileInfoCache::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kProfileInfoCache);
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(kLegacyProfileNameMigrated, false);
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 }
 
 const base::DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(
@@ -695,49 +719,52 @@ const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
                                    image_path);
 }
 
-void ProfileInfoCache::RecomputeProfileNamesIfNeeded() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+void ProfileInfoCache::MigrateLegacyProfileNamesAndRecomputeIfNeeded() {
+  DCHECK(ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName());
   std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
-  if (entries.size() < 2)
-    return;
-
-  for (size_t i = 0; i < entries.size() - 1; i++) {
-    base::string16 name = entries[i]->GetLocalProfileName();
-    if (!IsDefaultProfileName(name))
+  for (size_t i = 0; i < entries.size(); i++) {
+    base::string16 profile_name = entries[i]->GetLocalProfileName();
+    if (!entries[i]->IsUsingDefaultName())
       continue;
 
+    // Migrate any legacy profile names ("First user", "Default Profile",
+    // "Saratoga", ...) to new style default names Person %n ("Person 1").
+    if (!IsDefaultProfileName(
+            profile_name, /*include_check_for_legacy_profile_name=*/false)) {
+      entries[i]->SetLocalProfileName(
+          ChooseNameForNewProfile(entries[i]->GetAvatarIconIndex()));
+      continue;
+    }
+
+    if (i == (entries.size() - 1))
+      continue;
+
+    // Current profile name is Person %n.
+    // Rename duplicate default profile names, e.g.: Person 1, Person 1 to
+    // Person 1, Person 2.
     for (size_t j = i + 1; j < entries.size(); j++) {
-      if (name == entries[j]->GetLocalProfileName()) {
+      if (profile_name == entries[j]->GetLocalProfileName()) {
         entries[j]->SetLocalProfileName(
             ChooseNameForNewProfile(entries[j]->GetAvatarIconIndex()));
       }
     }
   }
-#endif
 }
 
-void ProfileInfoCache::MigrateLegacyProfileNamesAndDownloadAvatars() {
+// static
+void ProfileInfoCache::EnableLegacyProfileMigrationForTesting() {
+  migration_enabled_for_testing_ = true;
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+void ProfileInfoCache::DownloadAvatars() {
   // Only do this on desktop platforms.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  // Migrate any legacy default profile names ("First user", "Default Profile")
-  // to new style default names ("Person 1").
-  const base::string16 default_profile_name = base::i18n::ToLower(
-      l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME));
-  const base::string16 default_legacy_profile_name = base::i18n::ToLower(
-      l10n_util::GetStringUTF16(IDS_LEGACY_DEFAULT_PROFILE_NAME));
-
   std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
     DownloadHighResAvatarIfNeeded(entry->GetAvatarIconIndex(),
                                   entry->GetPath());
-
-    // Rename the necessary profiles.
-    base::string16 name = base::i18n::ToLower(entry->GetLocalProfileName());
-    if (name == default_profile_name || name == default_legacy_profile_name) {
-      entry->SetIsUsingDefaultName(true);
-      entry->SetLocalProfileName(
-          ChooseNameForNewProfile(entry->GetAvatarIconIndex()));
-    }
   }
 #endif
 }

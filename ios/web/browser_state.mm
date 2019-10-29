@@ -139,10 +139,11 @@ leveldb_proto::ProtoDatabaseProvider* BrowserState::GetProtoDatabaseProvider() {
 }
 
 void BrowserState::GetProxyResolvingSocketFactory(
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   CreateNetworkContextIfNecessary();
 
-  network_context_->CreateProxyResolvingSocketFactory(std::move(request));
+  network_context_->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

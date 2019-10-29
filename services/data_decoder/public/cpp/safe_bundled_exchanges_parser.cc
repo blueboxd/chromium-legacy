@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace data_decoder {
 
@@ -16,10 +15,11 @@ constexpr char kConnectionError[] =
 }  // namespace
 
 SafeBundledExchangesParser::SafeBundledExchangesParser(
-    service_manager::Connector* connector) {
-  if (connector) {
-    connector->Connect(mojom::kServiceName,
-                       factory_.BindNewPipeAndPassReceiver());
+    mojo::Remote<data_decoder::mojom::DataDecoderService> service)
+    : service_(std::move(service)) {
+  if (service_.is_bound()) {
+    service_->BindBundledExchangesParserFactory(
+        factory_.BindNewPipeAndPassReceiver());
   }
 }
 

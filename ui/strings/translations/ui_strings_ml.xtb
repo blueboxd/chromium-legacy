@@ -198,6 +198,7 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{ഒന്നിലധികം വായിക്കാത്ത അറിയിപ്പ് ഉണ്ട്}other{#-ലധികം വായിക്കാത്ത അറിയിപ്പുകൾ ഉണ്ട്}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{ഒരു മിനിറ്റിൽ}other{# മിനിറ്റിൽ}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8090736967111090568"><ph name="ORIGIN" /> എന്നതിൽ നിന്നുള്ള എണ്ണം</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{ഒരു മണിക്കൂര്‍ മുമ്പ്}other{# മണിക്കൂർ മുമ്പ്}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{ഒരു സെക്കൻഡ് ശേഷിക്കുന്നു}other{# സെക്കൻഡ് ശേഷിക്കുന്നു}}</translation>
 <translation id="8134065097954893699">ഈ പേജ് റീലോഡ് ചെയ്യുന്നു</translation>

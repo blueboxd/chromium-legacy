@@ -547,7 +547,7 @@ cr.define('certificate_manager', function() {
       assertTrue(!!deleteButton);
 
       // Should be disabled when 'model.canBeDeleted' is false.
-      let model = createSampleCertificateSubnode();
+      const model = createSampleCertificateSubnode();
       model.canBeDeleted = false;
       subentry.model = model;
       assertTrue(deleteButton.hidden);
@@ -767,12 +767,12 @@ cr.define('certificate_manager', function() {
         Polymer.dom.flush();
         const certificateLists =
             page.shadowRoot.querySelectorAll('certificate-list');
-        let clientImportButton = certificateLists[0].$$('#import');
+        const clientImportButton = certificateLists[0].$$('#import');
         assertTrue(clientImportButton.hidden);
-        let clientImportAndBindButton =
+        const clientImportAndBindButton =
             certificateLists[0].$$('#importAndBind');
         assertTrue(clientImportAndBindButton.hidden);
-        let caImportButton = certificateLists[1].$$('#import');
+        const caImportButton = certificateLists[1].$$('#import');
         assertTrue(caImportButton.hidden);
       });
 
@@ -792,14 +792,14 @@ cr.define('certificate_manager', function() {
               'client-import-allowed-changed', true /* clientImportAllowed */);
           // Verify that import buttons are shown in the client certificate
           // tab.
-          let clientImportButton = certificateLists[0].$$('#import');
+          const clientImportButton = certificateLists[0].$$('#import');
           assertFalse(clientImportButton.hidden);
-          let clientImportAndBindButton =
+          const clientImportAndBindButton =
               certificateLists[0].$$('#importAndBind');
           assertFalse(clientImportAndBindButton.hidden);
           // Verify that import button is still hidden in the CA certificate
           // tab.
-          let caImportButton = certificateLists[1].$$('#import');
+          const caImportButton = certificateLists[1].$$('#import');
           assertTrue(caImportButton.hidden);
         });
       });
@@ -820,14 +820,14 @@ cr.define('certificate_manager', function() {
               'client-import-allowed-changed', false /* clientImportAllowed */);
           // Verify that import buttons are still hidden in the client
           // certificate tab.
-          let clientImportButton = certificateLists[0].$$('#import');
+          const clientImportButton = certificateLists[0].$$('#import');
           assertTrue(clientImportButton.hidden);
-          let clientImportAndBindButton =
+          const clientImportAndBindButton =
               certificateLists[0].$$('#importAndBind');
           assertTrue(clientImportAndBindButton.hidden);
           // Verify that import button is still hidden in the CA certificate
           // tab.
-          let caImportButton = certificateLists[1].$$('#import');
+          const caImportButton = certificateLists[1].$$('#import');
           assertTrue(caImportButton.hidden);
         });
       });
@@ -848,13 +848,13 @@ cr.define('certificate_manager', function() {
               'ca-import-allowed-changed', true /* clientImportAllowed */);
           // Verify that import buttons are still hidden in the client
           // certificate tab.
-          let clientImportButton = certificateLists[0].$$('#import');
+          const clientImportButton = certificateLists[0].$$('#import');
           assertTrue(clientImportButton.hidden);
-          let clientImportAndBindButton =
+          const clientImportAndBindButton =
               certificateLists[0].$$('#importAndBind');
           assertTrue(clientImportAndBindButton.hidden);
           // Verify that import button is shown in the CA certificate tab.
-          let caImportButton = certificateLists[1].$$('#import');
+          const caImportButton = certificateLists[1].$$('#import');
           assertFalse(caImportButton.hidden);
         });
       });
@@ -875,14 +875,14 @@ cr.define('certificate_manager', function() {
               'ca-import-allowed-changed', false /* clientImportAllowed */);
           // Verify that import buttons are still hidden in the client
           // certificate tab.
-          let clientImportButton = certificateLists[0].$$('#import');
+          const clientImportButton = certificateLists[0].$$('#import');
           assertTrue(clientImportButton.hidden);
-          let clientImportAndBindButton =
+          const clientImportAndBindButton =
               certificateLists[0].$$('#importAndBind');
           assertTrue(clientImportAndBindButton.hidden);
           // Verify that import button is still hidden in the CA certificate
           // tab.
-          let caImportButton = certificateLists[1].$$('#import');
+          const caImportButton = certificateLists[1].$$('#import');
           assertTrue(caImportButton.hidden);
         });
       });

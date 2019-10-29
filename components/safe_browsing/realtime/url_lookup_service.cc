@@ -56,7 +56,6 @@ void RealTimeUrlLookupService::StartLookup(
 
   std::string req_data;
   request->SerializeToString(&req_data);
-  // TODO(vakh): Add the correct chrome_policy field below.
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("safe_browsing_realtime_url_lookup",
                                           R"(
@@ -83,9 +82,9 @@ void RealTimeUrlLookupService::StartLookup(
             "and browsing better (Sends URLs of pages you visit to Google)' in "
             "Chromium settings under Privacy."
           chrome_policy {
-            SafeBrowsingEnabled {
+            SafeBrowsingRealTimeLookupEnabled {
               policy_options {mode: MANDATORY}
-              SafeBrowsingEnabled: false
+              SafeBrowsingRealTimeLookupEnabled: false
             }
           }
         })");

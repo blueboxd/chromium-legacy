@@ -72,8 +72,8 @@ class MostVisitedIframeSourceTest : public testing::Test {
   // those constraints.
   MostVisitedIframeSourceTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
-        instant_io_context_(NULL),
-        response_(NULL) {}
+        instant_io_context_(nullptr),
+        response_(nullptr) {}
 
   TestMostVisitedIframeSource* source() { return source_.get(); }
 
@@ -108,7 +108,7 @@ class MostVisitedIframeSourceTest : public testing::Test {
     source_->set_origin(kInstantOrigin);
     InstantIOContext::AddInstantProcessOnIO(instant_io_context_,
                                             kInstantRendererPID);
-    response_ = NULL;
+    response_ = nullptr;
   }
 
   void TearDown() override { source_.reset(); }

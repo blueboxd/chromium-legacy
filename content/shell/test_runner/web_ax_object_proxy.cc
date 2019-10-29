@@ -1994,6 +1994,8 @@ std::string WebAXObjectProxy::DescriptionFrom() {
       return "contents";
     case ax::mojom::DescriptionFrom::kRelatedElement:
       return "relatedElement";
+    case ax::mojom::DescriptionFrom::kTitle:
+      return "title";
   }
 
   NOTREACHED();

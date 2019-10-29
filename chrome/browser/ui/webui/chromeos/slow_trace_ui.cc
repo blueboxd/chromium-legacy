@@ -44,7 +44,7 @@ void SlowTraceSource::StartDataRequest(
   if (!manager ||
       pos == std::string::npos ||
       !base::StringToInt(path.substr(pos + 1), &trace_id)) {
-    callback.Run(NULL);
+    callback.Run(nullptr);
     return;
   }
   manager->GetTraceData(trace_id,

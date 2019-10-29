@@ -170,7 +170,7 @@ cr.define('settings_passwords_section', function() {
 
     // Test verifies that removing a password will update the elements.
     test('verifyPasswordListRemove', function() {
-      let passwordList = [
+      const passwordList = [
         FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 0),
         FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7, 1),
         FakeDataMaker.passwordEntry('website.com', 'mario', 70, 2)
@@ -196,7 +196,7 @@ cr.define('settings_passwords_section', function() {
 
     // Test verifies that adding a password will update the elements.
     test('verifyPasswordListAdd', function() {
-      let passwordList = [
+      const passwordList = [
         FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1, 0),
         FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7, 1),
       ];
@@ -307,7 +307,7 @@ cr.define('settings_passwords_section', function() {
     });
 
     test('verifyFilterPasswordsWithRemoval', function() {
-      let passwordList = [
+      const passwordList = [
         FakeDataMaker.passwordEntry('one.com', 'SHOW', 5, 0),
         FakeDataMaker.passwordEntry('two.com', 'shower', 3, 1),
         FakeDataMaker.passwordEntry('three.com/show', 'four', 1, 2),
@@ -642,7 +642,7 @@ cr.define('settings_passwords_section', function() {
       const progressCallback = passwordManager.progressCallback;
 
       // Use this to freeze the delayed progress bar and avoid flakiness.
-      let mockTimer = new MockTimer();
+      const mockTimer = new MockTimer();
       mockTimer.install();
 
       assertTrue(exportDialog.$$('#dialog_start').open);
@@ -670,7 +670,7 @@ cr.define('settings_passwords_section', function() {
       const progressCallback = passwordManager.progressCallback;
 
       // Use this to freeze the delayed progress bar and avoid flakiness.
-      let mockTimer = new MockTimer();
+      const mockTimer = new MockTimer();
       mockTimer.install();
 
       assertTrue(exportDialog.$$('#dialog_start').open);
@@ -702,7 +702,7 @@ cr.define('settings_passwords_section', function() {
           elementFactory.createExportPasswordsDialog(passwordManager);
       const progressCallback = passwordManager.progressCallback;
       // Use this to freeze the delayed progress bar and avoid flakiness.
-      let mockTimer = new MockTimer();
+      const mockTimer = new MockTimer();
 
       new Promise(resolve => {
         mockTimer.install();
@@ -741,7 +741,7 @@ cr.define('settings_passwords_section', function() {
           elementFactory.createExportPasswordsDialog(passwordManager);
       const progressCallback = passwordManager.progressCallback;
 
-      let mockTimer = new MockTimer();
+      const mockTimer = new MockTimer();
       mockTimer.install();
 
       // The initial dialog remains open for 100ms after export enters the
@@ -790,7 +790,7 @@ cr.define('settings_passwords_section', function() {
         done();
       };
 
-      let mockTimer = new MockTimer();
+      const mockTimer = new MockTimer();
       mockTimer.install();
 
       // The initial dialog remains open for 100ms after export enters the

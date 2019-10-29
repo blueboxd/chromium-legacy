@@ -203,26 +203,17 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // that contains a |UserGestureToken| with the given status.
   static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
       LocalFrame*,
-      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture,
       bool need_browser_verification = false);
 
   // Returns the transient user activation state of the |LocalFrame|, provided
   // it is non-null.  Otherwise returns |false|.
-  //
-  // The |check_if_main_thread| parameter determines if the token based gestures
-  // (legacy UAv1 code) must be used in a thread-safe manner.
-  static bool HasTransientUserActivation(LocalFrame*,
-                                         bool check_if_main_thread = false);
+  static bool HasTransientUserActivation(LocalFrame*);
 
   // Consumes the transient user activation state of the |LocalFrame|, provided
   // the frame pointer is non-null and the state hasn't been consumed since
   // activation.  Returns |true| if successfully consumed the state.
-  //
-  // The |check_if_main_thread| parameter determines if the token based gestures
-  // (legacy code) must be used in a thread-safe manner.
   static bool ConsumeTransientUserActivation(
       LocalFrame*,
-      bool check_if_main_thread = false,
       UserActivationUpdateSource update_source =
           UserActivationUpdateSource::kRenderer);
 

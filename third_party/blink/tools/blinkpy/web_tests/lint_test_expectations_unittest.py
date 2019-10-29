@@ -177,9 +177,10 @@ class CheckVirtualSuiteTest(unittest.TestCase):
 
     def test_check_virtual_test_suites_readme(self):
         self.port.virtual_test_suites = lambda: [
-            VirtualTestSuite(prefix='foo', base='test', args='--foo'),
-            VirtualTestSuite(prefix='bar', base='test', args='--bar'),
+            VirtualTestSuite(prefix='foo', bases=['test'], args=['--foo']),
+            VirtualTestSuite(prefix='bar', bases=['test'], args=['--bar']),
         ]
+        self.host.filesystem.maybe_make_directory(WEB_TEST_DIR + '/test')
 
         res = lint_test_expectations.check_virtual_test_suites(self.host, self.options)
         self.assertEqual(len(res), 2)
@@ -189,13 +190,34 @@ class CheckVirtualSuiteTest(unittest.TestCase):
         res = lint_test_expectations.check_virtual_test_suites(self.host, self.options)
         self.assertFalse(res)
 
-    def test_check_virtual_test_suites_inclusion(self):
+    def test_check_virtual_test_suites_redundant(self):
         self.port.virtual_test_suites = lambda: [
-            VirtualTestSuite(prefix='foo', base='test/sub', args='--foo'),
-            VirtualTestSuite(prefix='foo', base='test', args='--foo'),
+            VirtualTestSuite(prefix='foo', bases=['test/sub', 'test'], args=['--foo']),
         ]
 
         self.host.filesystem.exists = lambda _: True
+        self.host.filesystem.isdir = lambda _: True
+        res = lint_test_expectations.check_virtual_test_suites(self.host, self.options)
+        self.assertEqual(len(res), 1)
+
+    def test_check_virtual_test_suites_non_redundant(self):
+        self.port.virtual_test_suites = lambda: [
+            VirtualTestSuite(prefix='foo', bases=['test_a', 'test'], args=['--foo']),
+        ]
+
+        self.host.filesystem.exists = lambda _: True
+        self.host.filesystem.isdir = lambda _: True
+        res = lint_test_expectations.check_virtual_test_suites(self.host, self.options)
+        self.assertEqual(len(res), 0)
+
+    def test_check_virtual_test_suites_non_existent_base(self):
+        self.port.virtual_test_suites = lambda: [
+            VirtualTestSuite(prefix='foo', bases=['base1', 'base2', 'base3.html'], args=['-foo']),
+        ]
+
+        self.host.filesystem.maybe_make_directory(WEB_TEST_DIR + '/base1')
+        self.host.filesystem.files[WEB_TEST_DIR + '/base3.html'] = ''
+        self.host.filesystem.files[WEB_TEST_DIR + '/virtual/foo/README.md'] = ''
         res = lint_test_expectations.check_virtual_test_suites(self.host, self.options)
         self.assertEqual(len(res), 1)
 

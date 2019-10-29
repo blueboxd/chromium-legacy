@@ -133,16 +133,15 @@ void RemovePersistedPathFromPrefs(base::DictionaryValue* shared_paths,
                  << " for VM " << vm_name;
     return;
   }
-  auto& vms = found->GetList();
-  auto it = std::find(vms.begin(), vms.end(), base::Value(vm_name));
-  if (it == vms.end()) {
+  auto it = std::find(found->GetList().begin(), found->GetList().end(),
+                      base::Value(vm_name));
+  if (!found->EraseListIter(it)) {
     LOG(WARNING) << "VM not in prefs to ushare path " << path.value()
                  << " for VM " << vm_name;
     return;
   }
-  vms.erase(it);
   // If VM list is now empty, remove |path| from |shared_paths|.
-  if (vms.size() == 0) {
+  if (found->GetList().empty()) {
     shared_paths->RemoveKey(path.value());
   }
 }
@@ -485,13 +484,12 @@ void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
   std::vector<base::FilePath> children;
   for (const auto& it : shared_paths->DictItems()) {
     base::FilePath shared(it.first);
-    auto& vms = it.second.GetList();
-    auto vm_matches =
-        std::find(vms.begin(), vms.end(), base::Value(vm_name)) != vms.end();
+    auto& vms = it.second;
+    auto vm_matches = base::Contains(vms.GetList(), base::Value(vm_name));
     if (path == shared) {
       already_shared = true;
       if (!vm_matches) {
-        vms.emplace_back(vm_name);
+        vms.Append(vm_name);
       }
     } else if (path.IsParent(shared) && vm_matches) {
       children.emplace_back(shared);

@@ -258,7 +258,7 @@ bool SocketCreateFunction::Prepare() {
 }
 
 void SocketCreateFunction::Work() {
-  Socket* socket = NULL;
+  Socket* socket = nullptr;
   if (socket_type_ == kSocketTypeTCP) {
     socket = new TCPSocket(browser_context(), extension_->id());
   } else if (socket_type_ == kSocketTypeUDP) {
@@ -574,7 +574,7 @@ void SocketReadFunction::OnCompleted(int bytes_read,
 }
 
 SocketWriteFunction::SocketWriteFunction()
-    : socket_id_(0), io_buffer_(NULL), io_buffer_size_(0) {}
+    : socket_id_(0), io_buffer_(nullptr), io_buffer_size_(0) {}
 
 SocketWriteFunction::~SocketWriteFunction() {}
 
@@ -658,8 +658,7 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
 }
 
 SocketSendToFunction::SocketSendToFunction()
-    : socket_id_(0), io_buffer_(NULL), io_buffer_size_(0), port_(0) {
-}
+    : socket_id_(0), io_buffer_(nullptr), io_buffer_size_(0), port_(0) {}
 
 SocketSendToFunction::~SocketSendToFunction() {}
 

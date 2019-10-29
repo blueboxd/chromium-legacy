@@ -19,5 +19,5 @@ rootWebArea
 ++++genericContainer
 ++++++staticText name='aria-description5'
 ++++++++inlineTextBox name='aria-description5'
-++++textField description='title6' name='aria-placeholder6' descriptionFrom=attribute
+++++textField description='title6' name='aria-placeholder6' descriptionFrom=title
 ++++++genericContainer

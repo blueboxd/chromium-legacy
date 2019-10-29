@@ -12,10 +12,10 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -31,7 +31,7 @@ class Service;
 // can use to make outgoing interface requests.
 //
 // A ServiceBinding is considered to be "bound" after |Bind()| is invoked with a
-// valid ServiceRequest (or the equivalent constructor is used -- see below).
+// valid Service receiver (or the equivalent constructor is used -- see below).
 // Upon connection error or an explicit call to |Close()|, the ServiceBinding
 // will be considered "unbound" until another call to |Bind()| is made.
 //
@@ -54,14 +54,14 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
   // |service| is not owned and must outlive this ServiceBinding.
   explicit ServiceBinding(service_manager::Service* service);
 
-  // Same as above, but behaves as if |Bind(request)| is also called immediately
-  // after construction. See below.
+  // Same as above, but behaves as if |Bind(receiver)| is also called
+  // immediately after construction. See below.
   ServiceBinding(service_manager::Service* service,
-                 mojom::ServiceRequest request);
+                 mojo::PendingReceiver<mojom::Service> receiver);
 
   ~ServiceBinding() override;
 
-  bool is_bound() const { return binding_.is_bound(); }
+  bool is_bound() const { return receiver_.is_bound(); }
 
   const Identity& identity() const { return identity_; }
 
@@ -69,7 +69,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
   // identifying as the service to which this ServiceBinding is bound.
   Connector* GetConnector();
 
-  // Binds this ServiceBinding to a new ServiceRequest. Once a ServiceBinding
+  // Binds this ServiceBinding to a new Service receiver. Once a ServiceBinding
   // is bound, its target Service will begin receiving Service events. The
   // order of events received is:
   //
@@ -80,10 +80,10 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
   // The target Service will be able to receive these events until this
   // ServiceBinding is either unbound or destroyed.
   //
-  // If |request| is invalid, this call does nothing.
+  // If |receiver| is invalid, this call does nothing.
   //
   // Must only be called on an unbound ServiceBinding.
-  void Bind(mojom::ServiceRequest request);
+  void Bind(mojo::PendingReceiver<mojom::Service> receiver);
 
   // Asks the Service Manager nicely if it's OK for this service instance to
   // disappear now. If the Service Manager thinks it's OK, it will sever the
@@ -179,10 +179,10 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
   // A pending Connector request which will eventually be passed to the Service
   // Manager. Created preemptively by every unbound ServiceBinding so that
   // |connector()| may begin pipelining outgoing requests even before the
-  // ServiceBinding is bound to a ServiceRequest.
+  // ServiceBinding is bound to a Service receiver.
   mojom::ConnectorRequest pending_connector_request_;
 
-  mojo::Binding<mojom::Service> binding_;
+  mojo::Receiver<mojom::Service> receiver_{this};
   Identity identity_;
   std::unique_ptr<Connector> connector_;
 

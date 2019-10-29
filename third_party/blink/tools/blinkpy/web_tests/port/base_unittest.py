@@ -245,7 +245,7 @@ class PortTest(LoggingTestCase):
         virtual_test = 'virtual/flag/fast/test.html'
         port.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'VirtualTestSuites',
-            '[{ "prefix": "flag", "base": "fast", "args": ["--flag"]}]')
+            '[{ "prefix": "flag", "bases": ["fast"], "args": ["--flag"]}]')
 
         # The default baseline for base test
         self.assertEqual(port.expected_baselines(virtual_test, '.txt'),
@@ -640,15 +640,15 @@ class PortTest(LoggingTestCase):
                          ['virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.worker.html',
                           'virtual/virtual_wpt/external/wpt/console/console-is-a-namespace.any.html'])
 
-        self.assertEqual(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/']), dom_wpt)
-        self.assertEqual(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/ranges/']), dom_wpt)
+        self.assertEqual(sorted(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/'])), dom_wpt)
+        self.assertEqual(sorted(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/ranges/'])), dom_wpt)
         self.assertEqual(port.tests(['virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes.html']),
                          ['virtual/virtual_wpt_dom/external/wpt/dom/ranges/Range-attributes.html'])
 
         # wpt_internal should work the same.
         self.assertEqual(port.tests(['virtual/virtual_wpt_dom/wpt_internal']),
                          ['virtual/virtual_wpt_dom/wpt_internal/dom/bar.html'])
-        self.assertEqual(port.tests(['virtual/virtual_wpt_dom/']),
+        self.assertEqual(sorted(port.tests(['virtual/virtual_wpt_dom/'])),
                          dom_wpt + ['virtual/virtual_wpt_dom/wpt_internal/dom/bar.html'])
 
     def test_is_non_wpt_test_file(self):
@@ -800,6 +800,10 @@ class PortTest(LoggingTestCase):
         self.assertFalse(port.test_exists('virtual/does_not_exist.html'))
         self.assertTrue(port.test_exists('virtual/virtual_passes/passes/text.html'))
 
+        self.assertTrue(port.test_exists('virtual/virtual_empty_bases/physical1.html'))
+        self.assertTrue(port.test_exists('virtual/virtual_empty_bases/dir/physical2.html'))
+        self.assertFalse(port.test_exists('virtual/virtual_empty_bases/does_not_exist.html'))
+
     def test_test_isfile(self):
         port = self.make_port(with_tests=True)
         self.assertFalse(port.test_isfile('passes'))
@@ -809,6 +813,10 @@ class PortTest(LoggingTestCase):
         self.assertFalse(port.test_isfile('virtual'))
         self.assertTrue(port.test_isfile('virtual/virtual_passes/passes/text.html'))
         self.assertFalse(port.test_isfile('virtual/does_not_exist.html'))
+
+        self.assertTrue(port.test_isfile('virtual/virtual_empty_bases/physical1.html'))
+        self.assertTrue(port.test_isfile('virtual/virtual_empty_bases/dir/physical2.html'))
+        self.assertFalse(port.test_exists('virtual/virtual_empty_bases/does_not_exist.html'))
 
     def test_test_isdir(self):
         port = self.make_port(with_tests=True)
@@ -822,11 +830,18 @@ class PortTest(LoggingTestCase):
         self.assertFalse(port.test_isdir('virtual/does_not_exist/'))
         self.assertFalse(port.test_isdir('virtual/virtual_passes/passes/text.html'))
 
+        self.assertTrue(port.test_isdir('virtual/virtual_empty_bases/'))
+        self.assertTrue(port.test_isdir('virtual/virtual_empty_bases/dir'))
+        self.assertFalse(port.test_isdir('virtual/virtual_empty_bases/dir/physical2.html'))
+        self.assertFalse(port.test_isdir('virtual/virtual_empty_bases/does_not_exist/'))
+
     def test_tests(self):
         port = self.make_port(with_tests=True)
         tests = port.tests([])
         self.assertIn('passes/text.html', tests)
         self.assertIn('virtual/virtual_passes/passes/text.html', tests)
+        self.assertIn('virtual/virtual_empty_bases/physical1.html', tests)
+        self.assertIn('virtual/virtual_empty_bases/dir/physical2.html', tests)
 
         tests = port.tests(['passes'])
         self.assertIn('passes/text.html', tests)
@@ -846,10 +861,22 @@ class PortTest(LoggingTestCase):
         self.assertNotIn('passes/text.html', tests)
         self.assertIn('virtual/virtual_passes/passes/test-virtual-passes.html', tests)
         self.assertNotIn('virtual/virtual_passes/passes_two/test-virtual-passes.html', tests)
-
         self.assertNotIn('passes/test-virtual-passes.html', tests)
         self.assertNotIn('virtual/virtual_passes/passes/test-virtual-virtual/passes.html', tests)
         self.assertNotIn('virtual/virtual_passes/passes/virtual_passes/passes/test-virtual-passes.html', tests)
+
+        tests = port.tests(['virtual/virtual_passes/passes/test-virtual-passes.html'])
+        self.assertEquals(['virtual/virtual_passes/passes/test-virtual-passes.html'], tests)
+
+        tests = port.tests(['virtual/virtual_empty_bases'])
+        self.assertEquals(['virtual/virtual_empty_bases/physical1.html',
+                           'virtual/virtual_empty_bases/dir/physical2.html'], tests)
+
+        tests = port.tests(['virtual/virtual_empty_bases/dir'])
+        self.assertEquals(['virtual/virtual_empty_bases/dir/physical2.html'], tests)
+
+        tests = port.tests(['virtual/virtual_empty_bases/dir/physical2.html'])
+        self.assertEquals(['virtual/virtual_empty_bases/dir/physical2.html'], tests)
 
     def test_build_path(self):
         # Test for a protected method - pylint: disable=protected-access
@@ -875,18 +902,18 @@ class PortTest(LoggingTestCase):
         port = self.make_port()
         port.host.filesystem.write_text_file(
             port.host.filesystem.join(port.web_tests_dir(), 'VirtualTestSuites'),
-            '[{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]}]')
+            '[{"prefix": "bar", "bases": ["fast/bar"], "args": ["--bar"]}]')
 
         # If this call returns successfully, we found and loaded the web_tests/VirtualTestSuites.
         _ = port.virtual_test_suites()
 
-    def test_duplicate_virtual_test_suite_in_file(self):
+    def test_duplicate_virtual_prefix_in_file(self):
         port = self.make_port()
         port.host.filesystem.write_text_file(
             port.host.filesystem.join(port.web_tests_dir(), 'VirtualTestSuites'),
             '['
-            '{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]},'
-            '{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]}'
+            '{"prefix": "bar", "bases": ["fast/bar"], "args": ["--bar"]},'
+            '{"prefix": "bar", "bases": ["fast/foo"], "args": ["--bar"]}'
             ']')
 
         self.assertRaises(ValueError, port.virtual_test_suites)
@@ -897,6 +924,55 @@ class PortTest(LoggingTestCase):
             port.host.filesystem.join(port.web_tests_dir(), 'VirtualTestSuites'),
             '{[{[')
         self.assertRaises(ValueError, port.virtual_test_suites)
+
+    def test_lookup_virtual_test_base(self):
+        port = self.make_port(with_tests=True)
+        self.assertIsNone(port.lookup_virtual_test_base('non/virtual'))
+        self.assertIsNone(port.lookup_virtual_test_base('passes/text.html'))
+        self.assertIsNone(port.lookup_virtual_test_base('virtual/non-existing/test.html'))
+
+        # lookup_virtual_test_base() checks virtual prefix and bases, but doesn't
+        # check existence of test.
+        self.assertEqual('passes/text.html', port.lookup_virtual_test_base('virtual/virtual_passes/passes/text.html'))
+        self.assertEqual('passes/any.html', port.lookup_virtual_test_base('virtual/virtual_passes/passes/any.html'))
+        self.assertEqual('passes_two/any.html', port.lookup_virtual_test_base('virtual/virtual_passes/passes_two/any.html'))
+        self.assertEqual('passes/', port.lookup_virtual_test_base('virtual/virtual_passes/passes/'))
+        self.assertEqual('passes/', port.lookup_virtual_test_base('virtual/virtual_passes/passes'))
+        self.assertIsNone(port.lookup_virtual_test_base('virtual/virtual_passes/'))
+        self.assertIsNone(port.lookup_virtual_test_base('virtual/virtual_passes'))
+        # 'failures' is not a specified base of virtual/virtual_passes
+        self.assertIsNone(port.lookup_virtual_test_base('virtual/virtual_passes/failures/unexpected/text.html'))
+        self.assertEqual('failures/unexpected/text.html', port.lookup_virtual_test_base('virtual/virtual_failures/failures/unexpected/text.html'))
+        # 'failures/expected' is not a specified base of virtual/virtual_failures
+        self.assertIsNone(port.lookup_virtual_test_base('virtual/virtual_failures/failures/expected/image.html'))
+
+        # Matching base file.
+        self.assertEqual('passes/reftest.html', port.lookup_virtual_test_base('virtual/references_use_default_args/passes/reftest.html'))
+        self.assertEqual('passes/', port.lookup_virtual_test_base('virtual/references_use_default_args/passes'))
+
+        # Partial match of base with multiple levels.
+        self.assertEqual('failures/', port.lookup_virtual_test_base('virtual/virtual_failures/failures/'))
+        self.assertEqual('failures/', port.lookup_virtual_test_base('virtual/virtual_failures/failures'))
+        self.assertIsNone(port.lookup_virtual_test_base('virtual/virtual_failures/'))
+        self.assertIsNone(port.lookup_virtual_test_base('virtual/virtual_failures'))
+
+        # Empty bases.
+        self.assertIsNone(port.lookup_virtual_test_base('virtual/virtual_empty_bases/physical1.html'))
+        self.assertIsNone(port.lookup_virtual_test_base('virtual/virtual_empty_bases/passes/text.html'))
+        self.assertIsNone(port.lookup_virtual_test_base('virtual/virtual_empty_bases'))
+
+    def test_args_for_test(self):
+        port = self.make_port(with_tests=True)
+        self.assertEqual([], port.args_for_test('non/virtual'))
+        self.assertEqual([], port.args_for_test('passes/text.html'))
+        self.assertEqual([], port.args_for_test('virtual/non-existing/test.html'))
+
+        self.assertEqual(['--virtual-arg'], port.args_for_test('virtual/virtual_passes/passes/text.html'))
+        self.assertEqual(['--virtual-arg'], port.args_for_test('virtual/virtual_passes/passes/any.html'))
+        self.assertEqual(['--virtual-arg'], port.args_for_test('virtual/virtual_passes/passes/'))
+        self.assertEqual(['--virtual-arg'], port.args_for_test('virtual/virtual_passes/passes'))
+        self.assertEqual(['--virtual-arg'], port.args_for_test('virtual/virtual_passes/'))
+        self.assertEqual(['--virtual-arg'], port.args_for_test('virtual/virtual_passes'))
 
     def test_missing_virtual_test_suite_file(self):
         port = self.make_port()
@@ -993,6 +1069,7 @@ class PortTest(LoggingTestCase):
 
         self.assertEqual(full_webdriver_name, "abd::bar")
 
+
 class NaturalCompareTest(unittest.TestCase):
 
     def setUp(self):
@@ -1042,21 +1119,28 @@ class KeyCompareTest(unittest.TestCase):
 class VirtualTestSuiteTest(unittest.TestCase):
 
     def test_basic(self):
-        suite = VirtualTestSuite(prefix='suite', base='base/foo', args=['--args'])
-        self.assertEqual(suite.name, 'virtual/suite/base/foo')
-        self.assertEqual(suite.base, 'base/foo')
+        suite = VirtualTestSuite(prefix='suite', bases=['base/foo', 'base/bar'], args=['--args'])
+        self.assertEqual(suite.full_prefix, 'virtual/suite/')
+        self.assertEqual(suite.bases, ['base/foo', 'base/bar'])
+        self.assertEqual(suite.args, ['--args'])
+        self.assertEqual(suite.reference_args, suite.args)
+
+    def test_empty_bases(self):
+        suite = VirtualTestSuite(prefix='suite', bases=[], args=['--args'])
+        self.assertEqual(suite.full_prefix, 'virtual/suite/')
+        self.assertEqual(suite.bases, [])
         self.assertEqual(suite.args, ['--args'])
         self.assertEqual(suite.reference_args, suite.args)
 
     def test_default_reference_args(self):
-        suite = VirtualTestSuite(prefix='suite', base='base/foo', args=['--args'], references_use_default_args=True)
+        suite = VirtualTestSuite(prefix='suite', bases=['base/foo'], args=['--args'], references_use_default_args=True)
         self.assertEqual(suite.args, ['--args'])
         self.assertEqual(suite.reference_args, [])
 
     def test_non_default_reference_args(self):
-        suite = VirtualTestSuite(prefix='suite', base='base/foo', args=['--args'], references_use_default_args=False)
+        suite = VirtualTestSuite(prefix='suite', bases=['base/foo'], args=['--args'], references_use_default_args=False)
         self.assertEqual(suite.args, ['--args'])
         self.assertEqual(suite.reference_args, suite.args)
 
     def test_no_slash(self):
-        self.assertRaises(AssertionError, VirtualTestSuite, prefix='suite/bar', base='base/foo', args=['--args'])
+        self.assertRaises(AssertionError, VirtualTestSuite, prefix='suite/bar', bases=['base/foo'], args=['--args'])

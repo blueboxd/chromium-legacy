@@ -2238,3 +2238,16 @@ TEST_F('ChromeVoxBackgroundTest', 'ReadLinkURLTest', function() {
         .replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'NoRepeatTitle', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div role="button" aria-label="title" title="title"></div>
+  */}, function(root) {
+    mockFeedback.expectSpeech('title')
+        .expectSpeech('Button')
+        .expectNextSpeechUtteranceIsNot('title')
+        .expectSpeech('Press Search+Space to activate.')
+        .replay();
+  });
+});

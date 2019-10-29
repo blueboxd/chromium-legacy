@@ -61,8 +61,9 @@ class WebAppSyncBridge : public AppRegistryController,
 
   // AppRegistryController:
   void Init(base::OnceClosure callback) override;
-  void SetAppDisplayMode(const AppId& app_id,
-                         blink::mojom::DisplayMode display_mode) override;
+  void SetAppUserDisplayMode(
+      const AppId& app_id,
+      blink::mojom::DisplayMode user_display_mode) override;
   void SetAppIsLocallyInstalledForTesting(const AppId& app_id,
                                           bool is_locally_installed) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;

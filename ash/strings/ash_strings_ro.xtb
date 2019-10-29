@@ -79,6 +79,7 @@
 <translation id="1957958912175573503">Setează limba</translation>
 <translation id="1962969542251276847">Ecran de blocare</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1972950159383891558">Bună ziua, <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">Introducere text</translation>
 <translation id="1993072747612765854">Află mai multe despre cea mai recentă actualizare <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Oprește alimentarea</translation>
@@ -159,7 +160,6 @@
 <translation id="3139942575505304791">Desktop 1</translation>
 <translation id="315116470104423982">Date mobile</translation>
 <translation id="3151786313568798007">Orientare</translation>
-<translation id="3152934361839663679">Dispozitivul este conectat la numărul maxim de monitoare, așa că unul dintre ecrane a fost deconectat.</translation>
 <translation id="3153444934357957346">Conectarea multiplă acceptă maximum <ph name="MULTI_PROFILE_USER_LIMIT" /> conturi.</translation>
 <translation id="3154351730702813399">Este posibil ca administratorul dispozitivului să monitorizeze activitatea de navigare.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectat la un dispozitiv}few{Conectat la # dispozitive}other{Conectat la # de dispozitive}}</translation>

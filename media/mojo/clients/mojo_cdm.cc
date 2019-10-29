@@ -305,23 +305,23 @@ Decryptor* MojoCdm::GetDecryptor() {
   if (decryptor_)
     return decryptor_.get();
 
-  mojom::DecryptorPtr decryptor_ptr;
+  mojo::PendingRemote<mojom::Decryptor> decryptor_remote;
 
   // Can be called on a different thread.
   if (decryptor_ptr_info_.is_valid()) {
     DVLOG(1) << __func__ << ": Using Decryptor exposed by the CDM directly";
-    decryptor_ptr.Bind(std::move(decryptor_ptr_info_));
+    decryptor_remote = std::move(decryptor_ptr_info_);
   } else if (interface_factory_ && cdm_id_ != CdmContext::kInvalidCdmId) {
     // TODO(xhwang): Pass back info on whether Decryptor is supported by the
     // remote CDM.
     DVLOG(1) << __func__ << ": Using Decryptor associated with CDM ID "
              << cdm_id_ << ", typically hosted by CdmProxy in MediaService";
-    interface_factory_->CreateDecryptor(cdm_id_,
-                                        mojo::MakeRequest(&decryptor_ptr));
+    interface_factory_->CreateDecryptor(
+        cdm_id_, decryptor_remote.InitWithNewPipeAndPassReceiver());
   }
 
-  if (decryptor_ptr)
-    decryptor_.reset(new MojoDecryptor(std::move(decryptor_ptr)));
+  if (decryptor_remote)
+    decryptor_.reset(new MojoDecryptor(std::move(decryptor_remote)));
 
   return decryptor_.get();
 }

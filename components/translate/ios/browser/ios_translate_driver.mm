@@ -18,7 +18,7 @@
 #import "components/translate/ios/browser/js_translate_manager.h"
 #import "components/translate/ios/browser/language_detection_controller.h"
 #import "components/translate/ios/browser/translate_controller.h"
-#include "ios/chrome/browser/metrics/ukm_url_recorder.h"
+#include "components/ukm/ios/ukm_url_recorder.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/navigation/navigation_context.h"

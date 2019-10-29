@@ -18,6 +18,7 @@
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/common/extension.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -58,7 +59,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   network::mojom::URLLoaderPtr dummy_new_loader;
   mojo::MakeRequest(&dummy_new_loader);
   network::mojom::URLLoaderClientPtr new_client;
-  network::mojom::URLLoaderClientRequest new_client_request =
+  mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver =
       mojo::MakeRequest(&new_client);
 
   uint32_t data_pipe_size = 64U;
@@ -85,9 +86,9 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   new_client->OnComplete(status);
 
   network::mojom::URLLoaderPtr original_loader;
-  network::mojom::URLLoaderClientRequest original_client;
+  mojo::PendingReceiver<network::mojom::URLLoaderClient> original_client;
   delegate_->InterceptResponse(std::move(dummy_new_loader),
-                               std::move(new_client_request), &original_loader,
+                               std::move(new_client_receiver), &original_loader,
                                &original_client);
 
   // Make a deep copy of URLResponseHead before passing it cross-thread.

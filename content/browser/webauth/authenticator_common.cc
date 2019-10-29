@@ -526,6 +526,11 @@ AuthenticatorCommon::AuthenticatorCommon(
       timer_(std::move(timer)) {
   DCHECK(render_frame_host_);
   DCHECK(timer_);
+  // Disable the back-forward cache for any document that makes WebAuthn
+  // requests. Pages using privacy-sensitive APIs are generally exempt from
+  // back-forward cache for now as a precaution.
+  BackForwardCache::DisableForRenderFrameHost(render_frame_host,
+                                              "WebAuthenticationAPI");
 }
 
 AuthenticatorCommon::~AuthenticatorCommon() {

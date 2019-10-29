@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
@@ -226,9 +225,6 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
 
     base::FilePath local_path = url.path();
     base::FilePath virtual_path = url.virtual_path();
-
-    const bool is_drive_file = url.type() == storage::kFileSystemTypeDrive;
-    DCHECK(!is_drive_file || drive::util::IsUnderDriveMountPoint(local_path));
 
     const bool is_native_file =
         url.type() == storage::kFileSystemTypeNativeLocal ||

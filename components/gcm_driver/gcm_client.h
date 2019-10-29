@@ -17,6 +17,7 @@
 #include "components/gcm_driver/gcm_activity.h"
 #include "components/gcm_driver/registration_info.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom-forward.h"
 
 namespace base {
@@ -239,7 +240,7 @@ class GCMClient {
   //     wrapper on top of base::ThreadTaskRunnerHandle::Get() to provide power
   //     management featueres so that a delayed task posted to it can wake the
   //     system up from sleep to perform the task.
-  // |get_socket_factory_callback|: a callback that can accept a request for a
+  // |get_socket_factory_callback|: a callback that can accept a receiver for a
   //     network::mojom::ProxyResolvingSocketFactoryPtr. It needs to be safe to
   //     run on any thread.
   // |delegate|: the delegate whose methods will be called asynchronously in
@@ -249,8 +250,8 @@ class GCMClient {
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      base::RepeatingCallback<
-          void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+      base::RepeatingCallback<void(
+          mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
           get_socket_factory_callback,
       const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker_,

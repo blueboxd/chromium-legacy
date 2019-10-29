@@ -121,14 +121,17 @@ void WindowPreviewView::OnWindowParentChanged(aura::Window* window,
 
   DCHECK(parent);
   unparented_transient_children_.erase(window);
+  window->RemoveObserver(this);
   AddWindow(window);
 }
 
 void WindowPreviewView::AddWindow(aura::Window* window) {
+  DCHECK(!mirror_views_.contains(window));
+  DCHECK(!unparented_transient_children_.contains(window));
+  DCHECK(!window->HasObserver(this));
+
   if (window->type() == aura::client::WINDOW_TYPE_POPUP)
     return;
-
-  DCHECK(!mirror_views_.contains(window));
 
   if (!window->HasObserver(this))
     window->AddObserver(this);

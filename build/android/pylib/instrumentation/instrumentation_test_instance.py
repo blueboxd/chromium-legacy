@@ -54,7 +54,9 @@ _TEST_LIST_JUNIT4_RUNNERS = [
     'org.chromium.base.test.BaseChromiumAndroidJUnitRunner']
 
 _SKIP_PARAMETERIZATION = 'SkipCommandLineParameterization'
-_COMMANDLINE_PARAMETERIZATION = 'CommandLineParameter'
+_PARAMETERIZED_COMMAND_LINE_FLAGS = 'ParameterizedCommandLineFlags'
+_PARAMETERIZED_COMMAND_LINE_FLAGS_SWITCHES = (
+    'ParameterizedCommandLineFlags$Switches')
 _NATIVE_CRASH_RE = re.compile('(process|native) crash', re.IGNORECASE)
 _PICKLE_FORMAT_VERSION = 12
 
@@ -64,6 +66,12 @@ class MissingSizeAnnotationError(test_exception.TestException):
     super(MissingSizeAnnotationError, self).__init__(class_name +
         ': Test method is missing required size annotation. Add one of: ' +
         ', '.join('@' + a for a in _VALID_ANNOTATIONS))
+
+
+class CommandLineParameterizationException(test_exception.TestException):
+
+  def __init__(self, msg):
+    super(CommandLineParameterizationException, self).__init__(msg)
 
 
 class TestListPickleException(test_exception.TestException):
@@ -901,18 +909,51 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return inflated_tests
 
   def _ParameterizeTestsWithFlags(self, tests):
+
+    def _checkParameterization(annotations):
+      types = [
+          _PARAMETERIZED_COMMAND_LINE_FLAGS_SWITCHES,
+          _PARAMETERIZED_COMMAND_LINE_FLAGS,
+      ]
+      if types[0] in annotations and types[1] in annotations:
+        raise CommandLineParameterizationException(
+            'Multiple command-line parameterization types: {}.'.format(
+                ', '.join(types)))
+
+    def _switchesToFlags(switches):
+      return ['--{}'.format(s) for s in switches if s]
+
+    def _annotationToSwitches(clazz, methods):
+      if clazz == _PARAMETERIZED_COMMAND_LINE_FLAGS_SWITCHES:
+        return [methods['value']]
+      elif clazz == _PARAMETERIZED_COMMAND_LINE_FLAGS:
+        list_of_switches = []
+        for annotation in methods['value']:
+          for clazz, methods in annotation.iteritems():
+            list_of_switches += _annotationToSwitches(clazz, methods)
+        return list_of_switches
+      else:
+        return []
+
+    def _setTestFlags(test, flags):
+      if flags:
+        test['flags'] = flags
+      elif 'flags' in test:
+        del test['flags']
+
     new_tests = []
     for t in tests:
       annotations = t['annotations']
-      parameters = None
-      if (annotations.get(_COMMANDLINE_PARAMETERIZATION)
-          and _SKIP_PARAMETERIZATION not in annotations):
-        parameters = annotations[_COMMANDLINE_PARAMETERIZATION]['value']
-      if parameters:
-        t['flags'] = [parameters[0]]
-        for p in parameters[1:]:
+      list_of_switches = []
+      _checkParameterization(annotations)
+      if _SKIP_PARAMETERIZATION not in annotations:
+        for clazz, methods in annotations.iteritems():
+          list_of_switches += _annotationToSwitches(clazz, methods)
+      if list_of_switches:
+        _setTestFlags(t, _switchesToFlags(list_of_switches[0]))
+        for p in list_of_switches[1:]:
           parameterized_t = copy.copy(t)
-          parameterized_t['flags'] = ['--%s' % p]
+          _setTestFlags(parameterized_t, _switchesToFlags(p))
           new_tests.append(parameterized_t)
     return tests + new_tests
 

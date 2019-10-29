@@ -289,7 +289,8 @@ TEST_F(DragWindowFromShelfControllerTest, RestoreWindowToOriginalBounds) {
 
 // Test if overview is active and splitview is not active, fling in overview may
 // or may not head to the home screen.
-TEST_F(DragWindowFromShelfControllerTest, FlingInOverview) {
+// TODO(https://crbug.com/1019080) This test is flaky.
+TEST_F(DragWindowFromShelfControllerTest, DISABLED_FlingInOverview) {
   UpdateDisplay("400x400");
   auto window = CreateTestWindow();
 
@@ -519,7 +520,9 @@ TEST_F(DragWindowFromShelfControllerTest, CancelDragDismissOverview) {
   EXPECT_TRUE(window3->IsVisible());
 }
 
-TEST_F(DragWindowFromShelfControllerTest, CancelDragIfWindowDestroyed) {
+// TODO(https://crbug.com/1018498) This test is flaky.
+TEST_F(DragWindowFromShelfControllerTest,
+       DISABLED_CancelDragIfWindowDestroyed) {
   auto window = CreateTestWindow();
   StartDrag(window.get());
   Drag(gfx::Point(200, 200), 0.5f, 0.5f);

@@ -38,7 +38,7 @@ int64_t GetUserGestureStatusForUkmMetric(LocalFrame* frame) {
 
   int64_t result = 0;
 
-  if (LocalFrame::HasTransientUserActivation(frame, false))
+  if (LocalFrame::HasTransientUserActivation(frame))
     result |= 0x01;
   if (frame->HasBeenActivated())
     result |= 0x02;

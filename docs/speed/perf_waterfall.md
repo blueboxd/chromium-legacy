@@ -2,9 +2,10 @@
 
 ## Overview
 
-The [chromium.perf waterfall](https://ci.chromium.org/p/chrome/g/chrome.perf/console)
+The [chrome.perf waterfall](https://ci.chromium.org/p/chrome/g/chrome.perf/console)
 continuously builds and runs our performance tests on real Android, Windows,
-Mac, and Linux hardware. Results are reported to the
+Mac, and Linux hardware; see [list of platforms](perf_lab_platforms.md).
+Results are reported to the
 [Performance Dashboard](https://chromeperf.appspot.com/) for analysis. The
 [Perfbot Health Sheriffing Rotation](bot_health_sheriffing/main.md) ensures that the benchmarks stay green. The [Perf Sheriff Rotation](perf_regression_sheriffing.md) ensures that any regressions detected by those benchmarks are addressed quickly. Together, these rotations maintain
 [Chrome's Core Principles](https://www.chromium.org/developers/core-principles)

@@ -85,7 +85,7 @@ ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
     : type_(type),
       is_showing_details_for_retained_files_(false),
       is_showing_details_for_retained_devices_(false),
-      extension_(NULL),
+      extension_(nullptr),
       average_rating_(0.0),
       rating_count_(0),
       show_user_count_(false),
@@ -486,7 +486,7 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
     : profile_(contents
                    ? Profile::FromBrowserContext(contents->GetBrowserContext())
                    : nullptr),
-      extension_(NULL),
+      extension_(nullptr),
       install_ui_(extensions::CreateExtensionInstallUI(profile_)),
       show_params_(new ExtensionInstallPromptShowParams(contents)),
       did_call_show_dialog_(false) {}
@@ -494,7 +494,7 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
 ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
                                                gfx::NativeWindow native_window)
     : profile_(profile),
-      extension_(NULL),
+      extension_(nullptr),
       install_ui_(extensions::CreateExtensionInstallUI(profile)),
       show_params_(
           new ExtensionInstallPromptShowParams(profile, native_window)),
@@ -579,7 +579,7 @@ void ExtensionInstallPrompt::SetIcon(const SkBitmap* image) {
 }
 
 void ExtensionInstallPrompt::OnImageLoaded(const gfx::Image& image) {
-  SetIcon(image.IsEmpty() ? NULL : image.ToSkBitmap());
+  SetIcon(image.IsEmpty() ? nullptr : image.ToSkBitmap());
   ShowConfirmation();
 }
 

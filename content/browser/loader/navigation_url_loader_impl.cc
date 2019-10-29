@@ -69,6 +69,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/webplugininfo.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/cert/sct_status_flags.h"
@@ -287,7 +288,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
 void UnknownSchemeCallback(
     bool handled_externally,
     const network::ResourceRequest& /* resource_request */,
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     network::mojom::URLLoaderClientPtr client) {
   client->OnComplete(network::URLLoaderCompletionStatus(
       handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));
@@ -323,7 +324,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         resource_request_(std::move(resource_request)),
         url_(url),
         owner_(owner),
-        response_loader_binding_(this),
         proxied_factory_receiver_(std::move(proxied_factory_receiver)),
         proxied_factory_remote_(std::move(proxied_factory_remote)),
         known_schemes_(std::move(known_schemes)),
@@ -651,8 +651,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // In SXG cases we don't have |url_loader_| because it was reset when the
       // SXG interceptor intercepted the response in
       // MaybeCreateLoaderForResponse.
-      DCHECK(response_loader_binding_);
-      response_loader_binding_.Close();
+      DCHECK(response_loader_receiver_.is_bound());
+      response_loader_receiver_.reset();
       url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(factory), CreateURLLoaderThrottles(), frame_tree_node_id_,
           global_request_id_.request_id, options, resource_request_.get(),
@@ -837,7 +837,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       url_loader_client_endpoints =
           network::mojom::URLLoaderClientEndpoints::New(
               response_url_loader_.PassInterface(),
-              response_loader_binding_.Unbind());
+              response_loader_receiver_.Unbind());
     }
 
     // 304 responses should abort the navigation, rather than display the page.
@@ -1041,19 +1041,19 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
     for (size_t i = 0u; i < interceptors_.size(); ++i) {
       NavigationLoaderInterceptor* interceptor = interceptors_[i].get();
-      network::mojom::URLLoaderClientRequest response_client_request;
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>
+          response_client_receiver;
       bool skip_other_interceptors = false;
       bool will_return_unsafe_redirect = false;
       if (interceptor->MaybeCreateLoaderForResponse(
               *resource_request_, response, &response_body_,
-              &response_url_loader_, &response_client_request,
+              &response_url_loader_, &response_client_receiver,
               url_loader_.get(), &skip_other_interceptors,
               &will_return_unsafe_redirect)) {
         if (will_return_unsafe_redirect)
           bypass_redirect_checks_ = true;
-        if (response_loader_binding_.is_bound())
-          response_loader_binding_.Close();
-        response_loader_binding_.Bind(std::move(response_client_request));
+        response_loader_receiver_.reset();
+        response_loader_receiver_.Bind(std::move(response_client_receiver));
         default_loader_used_ = false;
         url_loader_.reset();     // Consumed above.
         response_body_.reset();  // Consumed above.
@@ -1161,9 +1161,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // current navigation.
   bool default_loader_used_ = false;
 
-  // URLLoaderClient binding for loaders created for responses received from the
-  // network loader.
-  mojo::Binding<network::mojom::URLLoaderClient> response_loader_binding_;
+  // URLLoaderClient receiver for loaders created for responses received from
+  // the network loader.
+  mojo::Receiver<network::mojom::URLLoaderClient> response_loader_receiver_{
+      this};
 
   // URLLoader instance for response loaders, i.e loaders created for handing
   // responses received from the network URLLoader.

@@ -136,6 +136,38 @@ class AccessibilityCanvasActionBrowserTest
   }
 };
 
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, DoDefaultAction) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <div id="button" role="button" tabIndex=0>Click</div>
+      <p></p>
+      <script>
+        document.getElementById('button').addEventListener('click', () => {
+          document.querySelector('p').setAttribute('aria-label', 'success');
+        });
+      </script>
+      )HTML");
+
+  BrowserAccessibility* target = FindNode(ax::mojom::Role::kButton, "Click");
+  ASSERT_NE(nullptr, target);
+
+  // Call DoDefaultAction.
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kClicked);
+  GetManager()->DoDefaultAction(*target);
+  waiter2.WaitForNotification();
+
+  // Ensure that the button was clicked - it should change the paragraph
+  // text to "success".
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "success");
+
+  // When calling DoDefault on a focusable element, the element should get
+  // focused, just like what happens when you click it with the mouse.
+  BrowserAccessibility* focus = GetManager()->GetFocus();
+  ASSERT_NE(nullptr, focus);
+  EXPECT_EQ(target->GetId(), focus->GetId());
+}
+
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusAction) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <button>One</button>

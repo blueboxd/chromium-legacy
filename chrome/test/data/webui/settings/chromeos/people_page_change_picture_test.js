@@ -109,7 +109,7 @@ cr.define('settings_people_page_change_picture', function() {
      */
     function getActiveElementPath() {
       let node = document.activeElement;
-      let path = [];
+      const path = [];
       while (node) {
         path.push(node);
         node = (node.shadowRoot || node).activeElement;

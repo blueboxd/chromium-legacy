@@ -193,8 +193,8 @@ function verifySearchQueryResults(
  * @return {!Promise}
  */
 function removePrinter(cupsPrintersBrowserProxy, savedPrintersElement, index) {
-  let printerList = cupsPrintersBrowserProxy.printerList.printerList;
-  let savedPrinterEntries = getPrinterEntries(savedPrintersElement);
+  const printerList = cupsPrintersBrowserProxy.printerList.printerList;
+  const savedPrinterEntries = getPrinterEntries(savedPrintersElement);
 
   clickThreeDotMenu(savedPrinterEntries[index]);
   savedPrintersElement.$$('#removeButton').click();
@@ -218,8 +218,8 @@ function removePrinter(cupsPrintersBrowserProxy, savedPrintersElement, index) {
  * @return {!Promise}
  */
 function removeAllPrinters(cupsPrintersBrowserProxy, savedPrintersElement) {
-  let printerList = cupsPrintersBrowserProxy.printerList.printerList;
-  let savedPrinterEntries = getPrinterEntries(savedPrintersElement);
+  const printerList = cupsPrintersBrowserProxy.printerList.printerList;
+  const savedPrinterEntries = getPrinterEntries(savedPrintersElement);
 
   if (!printerList.length) {
     return Promise.resolve();
@@ -399,14 +399,14 @@ suite('CupsSavedPrintersTests', function() {
           const savedPrintersList =
               savedPrintersElement.$$('settings-cups-printers-entry-list');
 
-          let printerListEntries = getPrinterEntries(savedPrintersElement);
+          const printerListEntries = getPrinterEntries(savedPrintersElement);
 
           verifyPrintersList(printerListEntries, printerList);
         });
   });
 
   test('SuccessfullyRemoveMultipleSavedPrinters', function() {
-    let savedPrinterEntries = [];
+    const savedPrinterEntries = [];
 
     createCupsPrinterPage([
       createCupsPrinterInfo('google', '4', 'id4'),
@@ -425,7 +425,7 @@ suite('CupsSavedPrintersTests', function() {
               cupsPrintersBrowserProxy, savedPrintersElement);
         })
         .then(() => {
-          let entryList = getPrinterEntries(savedPrintersElement);
+          const entryList = getPrinterEntries(savedPrintersElement);
           verifyPrintersList(entryList, printerList);
         });
   });
@@ -588,7 +588,7 @@ suite('CupsSavedPrintersTests', function() {
           savedPrintersElement = page.$$('settings-cups-saved-printers');
           assertTrue(!!savedPrintersElement);
 
-          let printerListEntries = getPrinterEntries(savedPrintersElement);
+          const printerListEntries = getPrinterEntries(savedPrintersElement);
           verifyPrintersList(printerListEntries, printerList);
 
           searchTerm = 'google';
@@ -647,7 +647,7 @@ suite('CupsSavedPrintersTests', function() {
           savedPrintersElement = page.$$('settings-cups-saved-printers');
           assertTrue(!!savedPrintersElement);
 
-          let printerListEntries = getPrinterEntries(savedPrintersElement);
+          const printerListEntries = getPrinterEntries(savedPrintersElement);
           verifyPrintersList(printerListEntries, printerList);
 
           searchTerm = 'google';
@@ -695,7 +695,7 @@ suite('CupsSavedPrintersTests', function() {
           savedPrintersElement = page.$$('settings-cups-saved-printers');
           assertTrue(!!savedPrintersElement);
 
-          let printerEntryListTestElement =
+          const printerEntryListTestElement =
               savedPrintersElement.$$('#printerEntryList');
 
           verifyVisiblePrinters(printerEntryListTestElement, [
@@ -1107,17 +1107,17 @@ suite('CupsNearbyPrintersTests', function() {
   });
 
   test('nearbyPrintersSortOrderAutoFirstThenDiscovered', function() {
-    let discoveredPrinterA =
+    const discoveredPrinterA =
         createCupsPrinterInfo('printerNameA', 'printerAddress1', 'printerId1');
-    let discoveredPrinterB =
+    const discoveredPrinterB =
         createCupsPrinterInfo('printerNameB', 'printerAddress2', 'printerId2');
-    let discoveredPrinterC =
+    const discoveredPrinterC =
         createCupsPrinterInfo('printerNameC', 'printerAddress3', 'printerId3');
-    let autoPrinterD =
+    const autoPrinterD =
         createCupsPrinterInfo('printerNameD', 'printerAddress4', 'printerId4');
-    let autoPrinterE =
+    const autoPrinterE =
         createCupsPrinterInfo('printerNameE', 'printerAddress5', 'printerId5');
-    let autoPrinterF =
+    const autoPrinterF =
         createCupsPrinterInfo('printerNameF', 'printerAddress6', 'printerId6');
 
     // Add printers in a non-alphabetical order to test sorting.
@@ -1315,7 +1315,7 @@ suite('CupsNearbyPrintersTests', function() {
   });
 
   test('NearbyPrintersSearchTermFiltersCorrectPrinters', function() {
-    let discoveredPrinterList = [
+    const discoveredPrinterList = [
       createCupsPrinterInfo('test1', 'printerAddress1', 'printerId1'),
       createCupsPrinterInfo('test2', 'printerAddress2', 'printerId2'),
       createCupsPrinterInfo('google', 'printerAddress3', 'printerId3'),

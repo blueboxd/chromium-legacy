@@ -48,21 +48,15 @@ cast_source_set("receiver_cma") {
 
 cast_source_set("receiver_creation") {
   sources = [
+    "receiver_creation.cc",
     "receiver_creation.h",
   ]
 
   deps = [
-    ":receiver",
+    ":receiver_cma",
+    "//base",
+    "//chromecast/media/audio:audio_io_thread",
+    "//chromecast/media/audio/mixer_service:buildflags",
+    "//chromecast/media/audio/mixer_service:common",
   ]
-
-  if (have_full_mixer) {
-    sources += [ "receiver_creation_none.cc" ]
-  } else {
-    sources += [ "receiver_creation_cma.cc" ]
-    deps += [
-      ":receiver_cma",
-      "//base",
-      "//chromecast/media/audio:audio_io_thread",
-    ]
-  }
 }

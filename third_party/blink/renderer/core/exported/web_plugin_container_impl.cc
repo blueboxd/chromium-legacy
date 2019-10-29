@@ -530,8 +530,7 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (popups_allowed) {
-    gesture_indicator =
-        LocalFrame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
+    gesture_indicator = LocalFrame::NotifyUserActivation(frame);
   }
 
   v8::HandleScope handle_scope(ToIsolate(frame));

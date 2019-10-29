@@ -44,7 +44,7 @@ AccessibilityTest.define('SettingsA11yAbout', {
         'object or string', 'Test', settings.routes.ABOUT.path);
 
     if (AccessibilityTest.isChromeOS) {
-      let aboutPageProxy = new TestAboutPageBrowserProxy();
+      const aboutPageProxy = new TestAboutPageBrowserProxy();
       // Regulatory info is added when the image is loaded async.
       // Add a fake string to mimic the image text.
       aboutPageProxy.setRegulatoryInfo('This is fake regulatory info');

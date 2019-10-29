@@ -141,6 +141,11 @@ crbug.com/1012590 [ Linux ] fast/overflow/rtl-scrollbar-drag-origin.html [ WontF
 # Linux layout tests do not have a Myanmar fallback font.
 [ Linux ] inspector-protocol/layout-fonts/fallback-myanmar.js [ WontFix ]
 
+# Windows 10 specific font fallback test.
+crbug.com/1018375 [ Linux ] inspector-protocol/layout-fonts/fallback-dingbats.js [ WontFix ]
+crbug.com/1018375 [ Mac ] inspector-protocol/layout-fonts/fallback-dingbats.js [ WontFix ]
+crbug.com/1018375 [ Win7 ] inspector-protocol/layout-fonts/fallback-dingbats.js [ WontFix ]
+
 # Mac only test for case-insensitive font-matching.
 [ Linux ] inspector-protocol/layout-fonts/mac-case-insensitive-matching.js [ WontFix ]
 [ Win ] inspector-protocol/layout-fonts/mac-case-insensitive-matching.js [ WontFix ]

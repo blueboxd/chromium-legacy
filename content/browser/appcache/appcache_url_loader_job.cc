@@ -69,7 +69,7 @@ void AppCacheURLLoaderJob::DeliverNetworkResponse() {
   // We signal our caller with an empy callback that it needs to perform
   // the network load.
   DCHECK(loader_callback_);
-  DCHECK(!binding_.is_bound());
+  DCHECK(!receiver_.is_bound());
   std::move(loader_callback_).Run({});
   DeleteSoon();
 }
@@ -114,7 +114,7 @@ void AppCacheURLLoaderJob::PauseReadingBodyFromNet() {}
 void AppCacheURLLoaderJob::ResumeReadingBodyFromNet() {}
 
 void AppCacheURLLoaderJob::DeleteIfNeeded() {
-  if (binding_.is_bound() || is_deleting_soon_)
+  if (receiver_.is_bound() || is_deleting_soon_)
     return;
   delete this;
 }
@@ -122,15 +122,15 @@ void AppCacheURLLoaderJob::DeleteIfNeeded() {
 void AppCacheURLLoaderJob::Start(
     base::OnceClosure continuation,
     const network::ResourceRequest& /* resource_request */,
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     network::mojom::URLLoaderClientPtr client) {
   // TODO(crbug.com/876531): Figure out how AppCache interception should
   // interact with URLLoaderThrottles. It might be incorrect to ignore
   // |resource_request| here, since it's the current request after throttles.
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
   client_ = std::move(client);
-  binding_.set_connection_error_handler(
+  receiver_.set_disconnect_handler(
       base::BindOnce(&AppCacheURLLoaderJob::DeleteSoon, GetDerivedWeakPtr()));
   if (continuation)
     std::move(continuation).Run();
@@ -144,7 +144,6 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
       start_time_tick_(base::TimeTicks::Now()),
       cache_id_(blink::mojom::kAppCacheNoCacheId),
       is_fallback_(false),
-      binding_(this),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                                base::SequencedTaskRunnerHandle::Get()),
@@ -155,7 +154,7 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
 
 void AppCacheURLLoaderJob::CallLoaderCallback(base::OnceClosure continuation) {
   DCHECK(loader_callback_);
-  DCHECK(!binding_.is_bound());
+  DCHECK(!receiver_.is_bound());
   std::move(loader_callback_)
       .Run(base::BindOnce(&AppCacheURLLoaderJob::Start, GetDerivedWeakPtr(),
                           std::move(continuation)));

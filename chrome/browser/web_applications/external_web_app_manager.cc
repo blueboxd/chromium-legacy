@@ -172,13 +172,12 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
       continue;
     }
     std::string launch_container_str = value->GetString();
-    auto display_mode = blink::mojom::DisplayMode::kBrowser;
+    auto user_display_mode = blink::mojom::DisplayMode::kBrowser;
     if (launch_container_str == kLaunchContainerTab) {
-      display_mode = blink::mojom::DisplayMode::kBrowser;
+      user_display_mode = blink::mojom::DisplayMode::kBrowser;
     } else if (launch_container_str == kLaunchContainerWindow) {
-      display_mode = blink::mojom::DisplayMode::kStandalone;
+      user_display_mode = blink::mojom::DisplayMode::kStandalone;
     } else {
-      // TODO(crbug.com/1009909): Support Minimal UI.
       LOG(ERROR) << file.value() << " had an invalid " << kLaunchContainer;
       continue;
     }
@@ -209,7 +208,7 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
     }
 
     ExternalInstallOptions install_options(
-        std::move(app_url), display_mode,
+        std::move(app_url), user_display_mode,
         ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = create_shortcuts;
     install_options.add_to_desktop = create_shortcuts;

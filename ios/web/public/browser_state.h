@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/supports_user_data.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -70,9 +71,10 @@ class BrowserState : public base::SupportsUserData {
   // Returns an provider to create ProtoDatabase tied to the profile directory.
   leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider();
 
-  // Binds a ProxyResolvingSocketFactory request to NetworkContext.
+  // Binds a ProxyResolvingSocketFactory receiver to NetworkContext.
   void GetProxyResolvingSocketFactory(
-      network::mojom::ProxyResolvingSocketFactoryRequest request);
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+          receiver);
 
   // Like URLLoaderFactory, but wrapped inside SharedURLLoaderFactory
   virtual scoped_refptr<network::SharedURLLoaderFactory>

@@ -55,11 +55,16 @@ public class AwDebug {
         AwDebugJni.get().setNonWhiteListedKeyForTesting();
     }
 
+    public static void setSupportLibraryWebkitVersionCrashKey(String version) {
+        AwDebugJni.get().setSupportLibraryWebkitVersionCrashKey(version);
+    }
+
     @NativeMethods
     interface Natives {
         boolean dumpWithoutCrashing(String dumpPath);
         void initCrashKeysForWebViewTesting();
         void setWhiteListedKeyForTesting();
         void setNonWhiteListedKeyForTesting();
+        void setSupportLibraryWebkitVersionCrashKey(String version);
     }
 }

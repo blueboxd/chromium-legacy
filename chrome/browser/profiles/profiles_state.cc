@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -83,35 +84,41 @@ void SetLastUsedProfile(const std::string& profile_dir) {
 
 #if !defined(OS_ANDROID)
 base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {
-  base::string16 display_name;
-
   if (profile_path == ProfileManager::GetGuestProfilePath()) {
-    display_name = l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
-  } else {
-    ProfileAttributesStorage& storage =
-        g_browser_process->profile_manager()->GetProfileAttributesStorage();
-
-    ProfileAttributesEntry* entry;
-    if (!storage.GetProfileAttributesWithPath(profile_path, &entry))
-      return l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
-
-    // Using the --new-avatar-menu flag, there's a couple of rules about what
-    // the avatar button displays. If there's a single profile, with a default
-    // name (i.e. of the form Person %d) not manually set, it should display
-    // IDS_SINGLE_PROFILE_DISPLAY_NAME. If the profile is signed in but is using
-    // a default name, use the profiles's email address. Otherwise, it
-    // will return the actual name of the profile.
-    const base::string16 profile_name = entry->GetName();
-    const base::string16 email = entry->GetUserName();
-    bool is_default_name = entry->IsUsingDefaultName() &&
-        storage.IsDefaultProfileName(profile_name);
-
-    if (storage.GetNumberOfProfiles() == 1u && is_default_name)
-      display_name = l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
-    else
-      display_name = (is_default_name && !email.empty()) ? email : profile_name;
+    return l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
   }
-  return display_name;
+
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+
+  ProfileAttributesEntry* entry;
+  if (!storage.GetProfileAttributesWithPath(profile_path, &entry))
+    return l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
+
+  const base::string16 profile_name_to_display = entry->GetName();
+  // If the user has set their local profile name on purpose.
+  bool is_default_name = entry->IsUsingDefaultName();
+  if (!is_default_name)
+    return profile_name_to_display;
+
+  // The profile is signed in and has a GAIA name.
+  const base::string16 gaia_name_to_display = entry->GetGAIANameToDisplay();
+  if (!gaia_name_to_display.empty())
+    return profile_name_to_display;
+
+  // For a single profile that does not have a GAIA name
+  // (most probably not signed in), with a default name
+  // (i.e. of the form Person %d) not manually set, it should display
+  // IDS_SINGLE_PROFILE_DISPLAY_NAME.
+  if (storage.GetNumberOfProfiles() == 1u)
+    return l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
+
+  // If the profile is signed in but does not have a GAIA name nor a custom
+  // local profile name, show the email address if it exists.
+  // Otherwise, show the profile name which is expected to be the local
+  // profile name.
+  const base::string16 email = entry->GetUserName();
+  return email.empty() ? profile_name_to_display : email;
 }
 
 #if !defined(OS_CHROMEOS)

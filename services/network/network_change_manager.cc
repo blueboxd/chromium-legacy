@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
 
@@ -32,17 +33,20 @@ void NetworkChangeManager::AddReceiver(
 }
 
 void NetworkChangeManager::RequestNotifications(
-    mojom::NetworkChangeManagerClientPtr client_ptr) {
-  client_ptr.set_connection_error_handler(
-      base::Bind(&NetworkChangeManager::NotificationPipeBroken,
-                 // base::Unretained is safe as destruction of the
-                 // NetworkChangeManager will also destroy the
-                 // |clients_| list (which this object will be
-                 // inserted into, below), which will destroy the
-                 // client_ptr, rendering this callback moot.
-                 base::Unretained(this), base::Unretained(client_ptr.get())));
-  client_ptr->OnInitialConnectionType(connection_type_);
-  clients_.push_back(std::move(client_ptr));
+    mojo::PendingRemote<mojom::NetworkChangeManagerClient>
+        client_pending_remote) {
+  mojo::Remote<mojom::NetworkChangeManagerClient> client_remote(
+      std::move(client_pending_remote));
+  client_remote.set_disconnect_handler(base::Bind(
+      &NetworkChangeManager::NotificationPipeBroken,
+      // base::Unretained is safe as destruction of the
+      // NetworkChangeManager will also destroy the
+      // |clients_| list (which this object will be
+      // inserted into, below), which will destroy the
+      // client_remote, rendering this callback moot.
+      base::Unretained(this), base::Unretained(client_remote.get())));
+  client_remote->OnInitialConnectionType(connection_type_);
+  clients_.push_back(std::move(client_remote));
 }
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -82,11 +86,11 @@ size_t NetworkChangeManager::GetNumClientsForTesting() const {
 
 void NetworkChangeManager::NotificationPipeBroken(
     mojom::NetworkChangeManagerClient* client) {
-  clients_.erase(
-      std::find_if(clients_.begin(), clients_.end(),
-                   [client](mojom::NetworkChangeManagerClientPtr& ptr) {
-                     return ptr.get() == client;
-                   }));
+  clients_.erase(std::find_if(
+      clients_.begin(), clients_.end(),
+      [client](mojo::Remote<mojom::NetworkChangeManagerClient>& remote) {
+        return remote.get() == client;
+      }));
 }
 
 void NetworkChangeManager::OnNetworkChanged(

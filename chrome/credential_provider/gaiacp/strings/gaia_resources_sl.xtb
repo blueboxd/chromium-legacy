@@ -11,15 +11,18 @@
 <translation id="2831078752570172210">Vaš račun je zaklenjen. Obrnite se na skrbnika sistema.</translation>
 <translation id="2844349213149998955">Prijava z osebnim računom v tej napravi ni dovoljena. Prijavite se s službenim računom.</translation>
 <translation id="3306357053520292004">V tem računalniku je že bil dodan uporabnik s tem računom. Prijavite se z drugim računom.</translation>
+<translation id="3926852373333893095">Prijavijo se lahko samo uporabniki storitve GSuite Enterprise.</translation>
 <translation id="4057329986137569701">Prišlo je do notranje napake.</translation>
 <translation id="4267670563222825190">Za vaš račun ni bilo mogoče najti nobenega uporabnika domene. Obrnite se na skrbnika.</translation>
 <translation id="4300229033992784001">Geslo računa je spremenjeno. Vnesite trenutno geslo za Windows, če želite sinhronizirati račun za Windows s službenim računom.</translation>
 <translation id="4706454071748629324">Ni bilo mogoče dodati novega uporabnika. V tem računalniku je s službenim računom dovoljeno ustvariti samo enega uporabnika.</translation>
 <translation id="6033715878377252112">Pomočnik za Googlov ponudnik poverilnic za Windows</translation>
 <translation id="6149399665202317746">Googlov ponudnik poverilnic za Windows</translation>
+<translation id="6239180560789153226">V napravi ni podatkov za obnovitev. Prijavite se z Googlovim službenim računom.</translation>
 <translation id="6312494990035843744">Prijava s službenim računom v tej domeni ni dovoljena. Poskusite z drugim računom.</translation>
 <translation id="6463752215771576050">Tega računalnika ni mogoče včlaniti za upravljanje v poslovnem okolju.  Prijavite se z drugim službenim računom.</translation>
 <translation id="6657585470893396449">Geslo</translation>
+<translation id="6937049691815837345">Napravo je treba včlaniti v upravljanje naprav. Prijavite se z Googlovim službenim računom.</translation>
 <translation id="7209941495304122410">Vnesite geslo za Windows</translation>
 <translation id="7357241217513796177">Prepričajte se, da imate omrežno povezavo, in poskusite znova.</translation>
 <translation id="7536769223115622137">Dodajanje službenega računa</translation>
@@ -30,4 +33,5 @@
 <translation id="8973975512230260387">Seja je potekla. Prijavite se z Googlovim službenim računom.</translation>
 <translation id="9055998212250844221">Uporabniški račun, ki ga je ustvaril Googlov ponudnik poverilnic za Windows</translation>
 <translation id="9135619837062629367">Prijava s tem računom ni dovoljena. Poskusite z drugim računom.</translation>
+<translation id="998002716857524853">Prijavite se s službenim računom za GSuite.</translation>
 </translationbundle>

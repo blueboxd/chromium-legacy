@@ -111,7 +111,6 @@
 <translation id="1430915738399379752">Ispis</translation>
 <translation id="1442386063175183758">Presavijanje s desne strane u obliku prozora</translation>
 <translation id="1442987760062738829">Bušenje</translation>
-<translation id="1450011005989029586">Vaša je zaporka ugrožena zbog povrede podataka na web-lokaciji ili u aplikaciji koju koristite. Chrome preporučuje da odmah <ph name="BOLD" /> na <ph name="ORIGIN" />.</translation>
 <translation id="1455413310270022028">Gumica</translation>
 <translation id="1463543813647160932">5 x 7</translation>
 <translation id="1472675084647422956">Prikaži više</translation>
@@ -690,12 +689,11 @@
 <translation id="4258748452823770588">Potpis nije valjan</translation>
 <translation id="4261046003697461417">Dodavanje bilješke zaštićenim dokumentima nije moguće</translation>
 <translation id="4265872034478892965">Dopustio administrator</translation>
-<translation id="4270615291506829403">promijenite zaporku</translation>
 <translation id="4275830172053184480">Ponovo pokrenite svoj uređaj</translation>
 <translation id="4277028893293644418">Poništi zaporku</translation>
 <translation id="4279811152705618813">Vašim uređajem <ph name="DEVICE_TYPE" /> upravlja <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ova je kartica spremljena na vašem Google računu}one{Ove su kartice spremljene na vašem Google računu}few{Ove su kartice spremljene na vašem Google računu}other{Ove su kartice spremljene na vašem Google računu}}</translation>
-<translation id="428847186335018806">Pregledajte datoteke koje preuzimate s Chromea ili prenosite na Chrome.</translation>
+<translation id="428847186335018806">Pregledajte datoteke koje preuzimate ili prenosite putem Chromea.</translation>
 <translation id="42981349822642051">Proširi</translation>
 <translation id="4300675098767811073">Višestruko bušenje s desne strane</translation>
 <translation id="4302965934281694568">Chou3 (omotnica)</translation>
@@ -770,7 +768,6 @@
 <translation id="4708268264240856090">Veza je prekinuta</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />pokrenuti Mrežnu dijagnostiku sustava Windows<ph name="END_LINK" /></translation>
-<translation id="4725851834065990915">Vaša je zaporka ugrožena zbog povrede podataka na web-lokaciji ili u aplikaciji koju koristite. Chrome vam preporučuje da odmah provjerite spremljene zaporke.</translation>
 <translation id="4726672564094551039">Ponovo učitaj pravila</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4731967714531604179">Prc2 (omotnica)</translation>
@@ -1187,7 +1184,6 @@
 <translation id="679355240208270552">Zanemareno jer zadano pretraživanje nije omogućeno pravilom.</translation>
 <translation id="681021252041861472">Obavezno polje</translation>
 <translation id="6810899417690483278">ID prilagođavanja</translation>
-<translation id="6819440013020405090">Vaša je zaporka ugrožena zbog povrede podataka na web-lokaciji ili u aplikaciji koju koristite. Chrome preporučuje da provjerite spremljene zaporke i promijenite zaporku na <ph name="ORIGIN" />.</translation>
 <translation id="6825578344716086703">Pokušali ste doseći domenu <ph name="DOMAIN" />, ali poslužitelj je predstavio certifikat potpisan slabim algoritmom potpisa (kao što je SHA-1). Znači da su sigurnosne vjerodajnice koje je poslužitelj predstavio možda krivotvorene, a poslužitelj možda nije poslužitelj koji očekujete (možda ste u komunikaciji s napadačem).</translation>
 <translation id="6826370046007623921">Sprječavanje gubitka podataka</translation>
 <translation id="6831043979455480757">Prevedi</translation>
@@ -1230,7 +1226,6 @@
 <translation id="7064851114919012435">Podaci za kontakt</translation>
 <translation id="7075452647191940183">Zahtjev je prevelik</translation>
 <translation id="7079718277001814089">Ova web-lokacija sadrži zlonamjerni softver</translation>
-<translation id="70850504851191913">Prijavljena je povreda podataka</translation>
 <translation id="7087282848513945231">Država</translation>
 <translation id="7090678807593890770">Potražite upit <ph name="LINK" /> na Googleu</translation>
 <translation id="7108338896283013870">Sakrij preglednik</translation>

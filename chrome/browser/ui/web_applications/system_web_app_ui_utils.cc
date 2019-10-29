@@ -37,6 +37,15 @@
 
 namespace web_app {
 
+base::Optional<SystemAppType> GetSystemWebAppTypeForAppId(
+    Profile* profile,
+    web_app::AppId app_id) {
+  auto* provider = WebAppProvider::Get(profile);
+  return provider ? provider->system_web_app_manager().GetSystemAppTypeForAppId(
+                        app_id)
+                  : base::Optional<SystemAppType>();
+}
+
 base::Optional<web_app::AppId> GetAppIdForSystemWebApp(Profile* profile,
                                                        SystemAppType app_type) {
   auto* provider = WebAppProvider::Get(profile);

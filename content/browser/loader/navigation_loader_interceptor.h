@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -97,8 +98,8 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   // may include URL fragment.  An example of where this is used is AppCache,
   // where the handler returns fallback content for the response passed in.
   // The URLLoader interface pointer is returned in the |loader| parameter.
-  // The interface request for the URLLoaderClient is returned in the
-  // |client_request| parameter.
+  // The mojo::PendingReceiver for the URLLoaderClient is returned in the
+  // |client_receiver| parameter.
   // The |url_loader| points to the ThrottlingURLLoader that currently controls
   // the request. It can be optionally consumed to get the current
   // URLLoaderClient and URLLoader so that the implementation can rebind them to
@@ -119,7 +120,7 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
       network::mojom::URLLoaderPtr* loader,
-      network::mojom::URLLoaderClientRequest* client_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
       blink::ThrottlingURLLoader* url_loader,
       bool* skip_other_interceptors,
       bool* will_return_unsafe_redirect);

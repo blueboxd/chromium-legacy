@@ -447,6 +447,10 @@ bool HTMLObjectElement::DidFinishLoading() const {
   return UseFallbackContent();
 }
 
+int HTMLObjectElement::DefaultTabIndex() const {
+  return 0;
+}
+
 const HTMLObjectElement* ToHTMLObjectElementFromListedElement(
     const ListedElement* element) {
   SECURITY_DCHECK(!element || !element->IsFormControlElement());

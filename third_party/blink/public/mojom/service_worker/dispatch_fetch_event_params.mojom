@@ -12,7 +12,7 @@ import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 // FetchEvent#preloadResponse.
 struct FetchEventPreloadHandle {
   network.mojom.URLLoader url_loader;
-  network.mojom.URLLoaderClient& url_loader_client_request;
+  pending_receiver<network.mojom.URLLoaderClient> url_loader_client_receiver;
 };
 
 // Parameters used for dispatching a FetchEvent.

@@ -22,6 +22,7 @@ content::WebUIDataSource* MediaAppGuestUI::CreateDataSource() {
                           IDR_MEDIA_APP_IMAGE_HANDLER_MODULE_JS);
   source->AddResourcePath("js/app_drop_target_module.js",
                           IDR_MEDIA_APP_DROP_TARGET_MODULE_JS);
+  source->DisableDenyXFrameOptions();
   return source;
 }
 

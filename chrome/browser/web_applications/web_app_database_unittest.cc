@@ -72,8 +72,16 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetThemeColor(theme_color);
     app->SetIsLocallyInstalled(!(suffix & 2));
     app->SetIsInSyncInstall(!(suffix & 4));
-    app->SetDisplayMode((suffix & 1) ? blink::mojom::DisplayMode::kBrowser
-                                     : blink::mojom::DisplayMode::kStandalone);
+    app->SetUserDisplayMode((suffix & 1)
+                                ? blink::mojom::DisplayMode::kBrowser
+                                : blink::mojom::DisplayMode::kStandalone);
+
+    const blink::mojom::DisplayMode display_modes[4] = {
+        blink::mojom::DisplayMode::kBrowser,
+        blink::mojom::DisplayMode::kMinimalUi,
+        blink::mojom::DisplayMode::kStandalone,
+        blink::mojom::DisplayMode::kFullscreen};
+    app->SetDisplayMode(display_modes[(suffix >> 4) & 3]);
 
     const std::string icon_url =
         base_url + "/icon" + base::NumberToString(suffix);
@@ -258,6 +266,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   app->SetLaunchUrl(launch_url);
   app->SetName(name);
   app->SetDisplayMode(display_mode);
+  app->SetUserDisplayMode(display_mode);
   app->SetIsLocallyInstalled(false);
 
   EXPECT_FALSE(app->HasAnySources());
@@ -286,6 +295,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(launch_url, app_copy->launch_url());
   EXPECT_EQ(name, app_copy->name());
   EXPECT_EQ(display_mode, app_copy->display_mode());
+  EXPECT_EQ(display_mode, app_copy->user_display_mode());
   EXPECT_FALSE(app_copy->is_locally_installed());
 
   for (int i = Source::kMinValue; i < Source::kMaxValue; ++i) {

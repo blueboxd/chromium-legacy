@@ -180,6 +180,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
 
   // OffscreenCanvas-specific methods
   virtual bool PushFrame() { return false; }
+  virtual bool IsDeferralEnabled() const { return false; }
   virtual ImageBitmap* TransferToImageBitmap(ScriptState*) { return nullptr; }
 
   bool WouldTaintOrigin(CanvasImageSource*);

@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/mock_personal_data_manager.h"
 #include "components/autofill_assistant/browser/web/mock_web_controller.h"
+#include "components/autofill_assistant/browser/web/web_controller_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -306,6 +307,75 @@ TEST_F(UseCreditCardActionTest, ForcedFallback) {
       .WillOnce(RunOnceCallback<3>(OkClientStatus()));
 
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
+}
+
+TEST_F(UseCreditCardActionTest, AutofillFailureWithoutRequiredFieldsIsFatal) {
+  ActionProto action_proto = CreateUseCreditCardAction();
+
+  autofill::CreditCard credit_card;
+  client_memory_.set_selected_card(
+      std::make_unique<autofill::CreditCard>(credit_card));
+  EXPECT_CALL(mock_action_delegate_, OnGetFullCard(_))
+      .WillOnce(RunOnceCallback<0>(credit_card, base::UTF8ToUTF16("123")));
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillCardForm(_, base::UTF8ToUTF16("123"),
+                             Selector({kFakeSelector}).MustBeVisible(), _))
+      .WillOnce(RunOnceCallback<3>(ClientStatus(OTHER_ACTION_STATUS)));
+
+  ProcessedActionProto processed_action;
+  EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&processed_action));
+
+  UseCreditCardAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+
+  EXPECT_EQ(processed_action.status(),
+            ProcessedActionStatusProto::OTHER_ACTION_STATUS);
+  EXPECT_EQ(processed_action.has_status_details(), false);
+}
+
+TEST_F(UseCreditCardActionTest,
+       AutofillFailureWithRequiredFieldsLaunchesFallback) {
+  ActionProto action_proto = CreateUseCreditCardAction();
+  AddRequiredField(
+      &action_proto,
+      UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE, "#cvc");
+
+  autofill::CreditCard credit_card;
+  client_memory_.set_selected_card(
+      std::make_unique<autofill::CreditCard>(credit_card));
+  EXPECT_CALL(mock_action_delegate_, OnGetFullCard(_))
+      .WillOnce(RunOnceCallback<0>(credit_card, base::UTF8ToUTF16("123")));
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillCardForm(_, base::UTF8ToUTF16("123"),
+                             Selector({kFakeSelector}).MustBeVisible(), _))
+      .WillOnce(RunOnceCallback<3>(
+          FillAutofillErrorStatus(ClientStatus(OTHER_ACTION_STATUS))));
+
+  // First validation fails.
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+  // Fill CVC.
+  Expectation set_cvc =
+      EXPECT_CALL(mock_action_delegate_,
+                  OnSetFieldValue(Selector({"#cvc"}), "123", _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  // Second validation succeeds.
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
+      .After(set_cvc)
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+
+  ProcessedActionProto processed_action;
+  EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&processed_action));
+
+  UseCreditCardAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+
+  EXPECT_EQ(processed_action.status(),
+            ProcessedActionStatusProto::ACTION_APPLIED);
+  EXPECT_EQ(processed_action.status_details()
+                .autofill_error_info()
+                .autofill_error_status(),
+            OTHER_ACTION_STATUS);
 }
 
 }  // namespace

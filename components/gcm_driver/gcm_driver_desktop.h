@@ -22,6 +22,7 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/gcm_driver/gcm_driver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
 class PrefService;
@@ -55,8 +56,8 @@ class GCMDriverDesktop : public GCMDriver,
       const std::string& user_agent,
       PrefService* prefs,
       const base::FilePath& store_path,
-      base::RepeatingCallback<
-          void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+      base::RepeatingCallback<void(
+          mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
           get_socket_factory_callback,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_for_ui,
       network::NetworkConnectionTracker* network_connection_tracker,

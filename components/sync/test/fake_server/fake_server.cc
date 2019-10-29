@@ -340,7 +340,14 @@ void FakeServer::InjectEntity(std::unique_ptr<LoopbackServerEntity> entity) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(entity->GetModelType() != syncer::AUTOFILL_WALLET_DATA)
       << "Wallet data must be injected via SetWalletData()";
+
+  const ModelType model_type = entity->GetModelType();
+
   loopback_server_->SaveEntity(std::move(entity));
+
+  // Notify observers so invalidations are mimic-ed.
+  OnCommit(/*committer_id=*/std::string(),
+           /*committed_model_types=*/{model_type});
 }
 
 void FakeServer::SetWalletData(
@@ -352,21 +359,42 @@ void FakeServer::SetWalletData(
         << "The sync server doesn not provide a client tag for wallet entries";
     DCHECK(!entity.id_string().empty()) << "server id required!";
   }
+
   wallet_entities_ = wallet_entities;
+
+  // TODO(crbug.com/1019108): This function should issue OnCommit() calls to
+  // observers in order to mimic invalidations, such that tests don't need to
+  // call TriggerSyncForModelTypes().
 }
 
 bool FakeServer::ModifyEntitySpecifics(
     const std::string& id,
     const sync_pb::EntitySpecifics& updated_specifics) {
-  return loopback_server_->ModifyEntitySpecifics(id, updated_specifics);
+  if (!loopback_server_->ModifyEntitySpecifics(id, updated_specifics)) {
+    return false;
+  }
+
+  // Notify observers so invalidations are mimic-ed.
+  OnCommit(/*committer_id=*/std::string(), /*committed_model_types=*/{
+               GetModelTypeFromSpecifics(updated_specifics)});
+
+  return true;
 }
 
 bool FakeServer::ModifyBookmarkEntity(
     const std::string& id,
     const std::string& parent_id,
     const sync_pb::EntitySpecifics& updated_specifics) {
-  return loopback_server_->ModifyBookmarkEntity(id, parent_id,
-                                                updated_specifics);
+  if (!loopback_server_->ModifyBookmarkEntity(id, parent_id,
+                                              updated_specifics)) {
+    return false;
+  }
+
+  // Notify observers so invalidations are mimic-ed.
+  OnCommit(/*committer_id=*/std::string(),
+           /*committed_model_types=*/{syncer::BOOKMARKS});
+
+  return true;
 }
 
 void FakeServer::ClearServerData() {

@@ -91,6 +91,9 @@ class CORE_EXPORT OffscreenCanvas final
   void SetDisableReadingFromCanvasTrue() {
     disable_reading_from_canvas_ = true;
   }
+  void SetNeedsMatrixClipRestore() override {
+    needs_matrix_clip_restore_ = true;
+  }
 
   CanvasResourceProvider* GetOrCreateResourceProvider();
   void DiscardResourceProvider() override;

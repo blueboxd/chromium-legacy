@@ -34,6 +34,16 @@ views::Label* CreateBubbleLabel(const base::string16& message, SkColor color);
 // Get the bubble container for |view| to place a LoginBaseBubbleView.
 views::View* GetBubbleContainer(views::View* view);
 
+ASH_EXPORT gfx::Point CalculateBubblePositionLeftRightStrategy(
+    gfx::Rect anchor,
+    gfx::Size bubble,
+    gfx::Rect bounds);
+
+ASH_EXPORT gfx::Point CalculateBubblePositionRigthLeftStrategy(
+    gfx::Rect anchor,
+    gfx::Size bubble,
+    gfx::Rect bounds);
+
 }  // namespace login_views_utils
 
 }  // namespace ash

@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/viz/service/viz_service_export.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom.h"
 
 namespace viz {
@@ -19,7 +21,8 @@ namespace viz {
 // produce the smallest difference.
 class VIZ_SERVICE_EXPORT VSyncParameterListener {
  public:
-  explicit VSyncParameterListener(mojom::VSyncParameterObserverPtr observer);
+  explicit VSyncParameterListener(
+      mojo::PendingRemote<mojom::VSyncParameterObserver> observer);
   ~VSyncParameterListener();
 
   void OnVSyncParametersUpdated(base::TimeTicks timebase,
@@ -33,7 +36,7 @@ class VIZ_SERVICE_EXPORT VSyncParameterListener {
 
   bool ShouldSendUpdate(base::TimeTicks timebase, base::TimeDelta interval);
 
-  mojom::VSyncParameterObserverPtr observer_;
+  mojo::Remote<mojom::VSyncParameterObserver> observer_;
 
   base::TimeDelta last_interval_;
   base::TimeDelta last_offset_;

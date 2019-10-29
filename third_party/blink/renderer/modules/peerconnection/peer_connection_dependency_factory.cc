@@ -370,6 +370,7 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
   P2PPortAllocator::Config port_config;
   uint16_t min_port = 0;
   uint16_t max_port = 0;
+  bool allow_mdns_obfuscation = true;
 
   // |media_permission| will be called to check mic/camera permission. If at
   // least one of them is granted, P2PPortAllocator is allowed to gather local
@@ -396,7 +397,8 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
     if (web_frame && web_frame->View()) {
       blink::WebString webrtc_ip_handling_policy;
       blink::Platform::Current()->GetWebRTCRendererPreferences(
-          web_frame, &webrtc_ip_handling_policy, &min_port, &max_port);
+          web_frame, &webrtc_ip_handling_policy, &min_port, &max_port,
+          &allow_mdns_obfuscation);
 
       // TODO(guoweis): |enable_multiple_routes| should be renamed to
       // |request_multiple_routes|. Whether local IP addresses could be
@@ -429,7 +431,8 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
               << ", multiple_routes: " << port_config.enable_multiple_routes
               << ", nonproxied_udp: " << port_config.enable_nonproxied_udp
               << ", min_udp_port: " << min_port
-              << ", max_udp_port: " << max_port;
+              << ", max_udp_port: " << max_port
+              << ", allow_mdns_obfuscation: " << allow_mdns_obfuscation;
     }
     if (port_config.enable_multiple_routes) {
       media_permission =
@@ -449,7 +452,8 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
   std::unique_ptr<rtc::NetworkManager> network_manager;
   if (port_config.enable_multiple_routes) {
     network_manager = std::make_unique<blink::FilteringNetworkManager>(
-        network_manager_.get(), requesting_origin, media_permission);
+        network_manager_.get(), requesting_origin, media_permission,
+        allow_mdns_obfuscation);
   } else {
     network_manager =
         std::make_unique<blink::EmptyNetworkManager>(network_manager_.get());

@@ -177,6 +177,10 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
             ? ApplicationModeForTabOpening::INCOGNITO
             : ApplicationModeForTabOpening::NORMAL;
     UrlLoadParams params = UrlLoadParams::InNewTab(webpageGURL);
+    if (![[startupInformation startupParameters] launchInIncognito] &&
+        [tabOpener URLIsOpenedInRegularMode:webpageGURL]) {
+      // Record metric.
+    }
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
                                    withUrlLoadParams:params
                                       dismissOmnibox:YES
@@ -311,6 +315,11 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
       GURL result(defaultURL->url_ref().ReplaceSearchTerms(
           search_args, templateURLService->search_terms_data()));
       params.web_params.url = result;
+    }
+
+    if (![[startupInformation startupParameters] launchInIncognito] &&
+        [tabOpener URLIsOpenedInRegularMode:params.web_params.url]) {
+      // Record metric.
     }
 
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode

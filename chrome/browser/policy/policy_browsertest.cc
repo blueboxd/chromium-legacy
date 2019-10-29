@@ -4141,6 +4141,49 @@ IN_PROC_BROWSER_TEST_F(WebRtcUdpPortRangeDisabledPolicyTest,
   EXPECT_TRUE(port_range.empty());
 }
 
+// Sets the proper policy before the browser is started.
+class WebRtcLocalIpsAllowedUrlsTest : public PolicyTest,
+                                      public testing::WithParamInterface<int> {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(key::kWebRtcLocalIpsAllowedUrls, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::ListValue>(GenerateUrlList()), nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+
+  base::Value::ListStorage GenerateUrlList() {
+    int num_urls = GetParam();
+    base::Value::ListStorage ret;
+    for (int i = 0; i < num_urls; ++i)
+      ret.push_back(base::Value(base::NumberToString(i) + ".example.com"));
+
+    return ret;
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(WebRtcLocalIpsAllowedUrlsTest, RunTest) {
+  const PrefService::Preference* pref =
+      user_prefs::UserPrefs::Get(browser()->profile())
+          ->FindPreference(prefs::kWebRtcLocalIpsAllowedUrls);
+  EXPECT_TRUE(pref->IsManaged());
+  const base::span<const base::Value> allowed_urls =
+      pref->GetValue()->GetList();
+  const auto& expected_urls = GenerateUrlList();
+  EXPECT_EQ(expected_urls.size(), allowed_urls.size());
+  for (const auto& allowed_url : allowed_urls) {
+    auto it =
+        std::find(expected_urls.begin(), expected_urls.end(), allowed_url);
+    EXPECT_TRUE(it != expected_urls.end());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         WebRtcLocalIpsAllowedUrlsTest,
+                         ::testing::Range(0, 3));
+
 // Tests the ComponentUpdater's EnabledComponentUpdates group policy by
 // calling the OnDemand interface. It uses the network interceptor to inspect
 // the presence of the updatedisabled="true" attribute in the update check

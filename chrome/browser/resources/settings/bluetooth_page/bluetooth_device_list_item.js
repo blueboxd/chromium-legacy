@@ -32,6 +32,8 @@ Polymer({
     },
   },
 
+  hostAttributes: {role: 'button'},
+
   /**
    * @param {!Event} event
    * @private

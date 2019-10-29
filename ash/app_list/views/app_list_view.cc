@@ -349,6 +349,16 @@ void AppListView::StateAnimationMetricsReporter::RecordMetricsInTablet(
           "EnterFullscreenSearch",
           value);
       break;
+    case TabletModeAnimationTransition::kFadeInOverview:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.HomeLauncherTransition.AnimationSmoothness.FadeInOverview",
+          value);
+      break;
+    case TabletModeAnimationTransition::kFadeOutOverview:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.HomeLauncherTransition.AnimationSmoothness.FadeOutOverview",
+          value);
+      break;
   }
 }
 

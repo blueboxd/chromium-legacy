@@ -628,6 +628,9 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
     case ax::mojom::Role::kAudio:
       return base::ASCIIToUTF16("audio");
 
+    case ax::mojom::Role::kCode:
+      return base::ASCIIToUTF16("code");
+
     case ax::mojom::Role::kColorWell:
       return base::ASCIIToUTF16("color picker");
 
@@ -652,6 +655,9 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
 
     case ax::mojom::Role::kDetails:
       return base::ASCIIToUTF16("details");
+
+    case ax::mojom::Role::kEmphasis:
+      return base::ASCIIToUTF16("emphasis");
 
     case ax::mojom::Role::kFigure:
       return base::ASCIIToUTF16("figure");
@@ -682,6 +688,9 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
 
     case ax::mojom::Role::kStatus:
       return base::ASCIIToUTF16("output");
+
+    case ax::mojom::Role::kStrong:
+      return base::ASCIIToUTF16("strong");
 
     case ax::mojom::Role::kTextField: {
       std::string input_type;

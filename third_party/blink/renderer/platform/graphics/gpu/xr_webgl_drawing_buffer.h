@@ -139,8 +139,8 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   const GLuint framebuffer_ = 0;
   GLuint resolved_framebuffer_ = 0;
   GLuint multisample_renderbuffer_ = 0;
-  scoped_refptr<ColorBuffer> back_color_buffer_ = 0;
-  scoped_refptr<ColorBuffer> front_color_buffer_ = 0;
+  scoped_refptr<ColorBuffer> back_color_buffer_;
+  scoped_refptr<ColorBuffer> front_color_buffer_;
   GLuint depth_stencil_buffer_ = 0;
   IntSize size_;
 

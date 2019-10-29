@@ -20,8 +20,8 @@
 
 // Whether an opt out store should be used or not.
 bool HeavyAdOptOutStoreDisabled() {
-  return base::GetFieldTrialParamByFeatureAsBool(features::kHeavyAdBlocklist,
-                                                 "OptOutStoreDisabled", false);
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kHeavyAdPrivacyMitigations, "OptOutStoreDisabled", false);
 }
 
 HeavyAdService::HeavyAdService() {
@@ -35,7 +35,7 @@ HeavyAdService::~HeavyAdService() {
 void HeavyAdService::Initialize(const base::FilePath& profile_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!base::FeatureList::IsEnabled(features::kHeavyAdBlocklist))
+  if (!base::FeatureList::IsEnabled(features::kHeavyAdPrivacyMitigations))
     return;
 
   std::unique_ptr<blacklist::OptOutStoreSQL> opt_out_store;

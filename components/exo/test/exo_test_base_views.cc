@@ -6,6 +6,7 @@
 
 #include "components/exo/vsync_timing_manager.h"
 #include "components/exo/wm_helper.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/wm/core/default_activation_client.h"
@@ -86,7 +87,8 @@ class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
 
   // Overridden from VSyncTimingManager::Delegate:
   void AddVSyncParameterObserver(
-      viz::mojom::VSyncParameterObserverPtr observer) override {}
+      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer)
+      override {}
 
  private:
   aura::Window* root_window_;

@@ -184,6 +184,9 @@ class CastContentBrowserClient
                        bool user_gesture,
                        bool opener_suppressed,
                        bool* no_javascript_access) override;
+  // New Mojo bindings should be added to
+  // cast_content_browser_client_receiver_bindings.cc, so that they go through
+  // security review.
   void ExposeInterfacesToRenderer(
       service_manager::BinderRegistry* registry,
       blink::AssociatedInterfaceRegistry* associated_registry,
@@ -226,6 +229,9 @@ class CastContentBrowserClient
   std::string GetUserAgent() override;
   bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;
+  // New Mojo bindings should be added to
+  // cast_content_browser_client_receiver_bindings.cc, so that they go through
+  // security review.
   void BindHostReceiverForRenderer(
       content::RenderProcessHost* render_process_host,
       mojo::GenericPendingReceiver receiver) override;

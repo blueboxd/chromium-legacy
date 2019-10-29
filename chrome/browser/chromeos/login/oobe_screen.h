@@ -56,6 +56,9 @@ struct OobeScreen {
   constexpr static StaticOobeScreenId SCREEN_SPECIAL_LOGIN{"login"};
   // Special "first screen" that initiates full OOBE flow.
   constexpr static StaticOobeScreenId SCREEN_SPECIAL_OOBE{"oobe"};
+  // Special "first screen" that initiates enabling ARC adb sideloading flow.
+  constexpr static StaticOobeScreenId SCREEN_ENABLE_ADB_SIDELOADING{
+      "adb-sideloading"};
   // Special test value that commands not to create any window yet.
   constexpr static StaticOobeScreenId SCREEN_TEST_NO_WINDOW{"test:nowindow"};
 

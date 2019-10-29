@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom.h"
 
 namespace exo {
@@ -34,7 +35,7 @@ class VSyncTimingManager : public viz::mojom::VSyncParameterObserver {
     virtual ~Delegate() = default;
 
     virtual void AddVSyncParameterObserver(
-        viz::mojom::VSyncParameterObserverPtr observer) = 0;
+        mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer) = 0;
   };
 
   explicit VSyncTimingManager(Delegate* delegate);
@@ -56,7 +57,7 @@ class VSyncTimingManager : public viz::mojom::VSyncParameterObserver {
 
   std::vector<Observer*> observers_;
 
-  mojo::Binding<viz::mojom::VSyncParameterObserver> binding_{this};
+  mojo::Receiver<viz::mojom::VSyncParameterObserver> receiver_{this};
 
   base::WeakPtrFactory<VSyncTimingManager> weak_ptr_factory_{this};
 

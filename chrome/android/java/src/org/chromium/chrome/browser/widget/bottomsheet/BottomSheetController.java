@@ -189,6 +189,9 @@ public class BottomSheetController implements Destroyable {
             @Override
             public void onSheetStateChanged(@SheetState int state) {
                 if (state != SheetState.HIDDEN || mIsSuppressed) return;
+                if (mBottomSheet.getCurrentSheetContent() != null) {
+                    mBottomSheet.getCurrentSheetContent().destroy();
+                }
                 mIsProcessingHideRequest = false;
                 showNextContent(true);
             }

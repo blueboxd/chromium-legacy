@@ -69,7 +69,7 @@ void MojoCdmHelper::QueryStatus(QueryStatusCB callback) {
   QueryStatusCB scoped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), false, 0, 0);
   ConnectToOutputProtection();
-  output_protection_ptr_->QueryStatus(std::move(scoped_callback));
+  output_protection_->QueryStatus(std::move(scoped_callback));
 }
 
 void MojoCdmHelper::EnableProtection(uint32_t desired_protection_mask,
@@ -77,8 +77,8 @@ void MojoCdmHelper::EnableProtection(uint32_t desired_protection_mask,
   EnableProtectionCB scoped_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false);
   ConnectToOutputProtection();
-  output_protection_ptr_->EnableProtection(desired_protection_mask,
-                                           std::move(scoped_callback));
+  output_protection_->EnableProtection(desired_protection_mask,
+                                       std::move(scoped_callback));
 }
 
 void MojoCdmHelper::ChallengePlatform(const std::string& service_id,
@@ -127,9 +127,10 @@ CdmAllocator* MojoCdmHelper::GetAllocator() {
 }
 
 void MojoCdmHelper::ConnectToOutputProtection() {
-  if (!output_protection_ptr_) {
-    service_manager::GetInterface<mojom::OutputProtection>(
-        interface_provider_, &output_protection_ptr_);
+  if (!output_protection_) {
+    interface_provider_->GetInterface(
+        mojom::OutputProtection::Name_,
+        output_protection_.BindNewPipeAndPassReceiver().PassPipe());
   }
 }
 

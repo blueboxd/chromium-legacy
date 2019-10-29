@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 #include "ui/ozone/public/mojom/device_cursor.mojom.h"
 #include "ui/ozone/public/overlay_surface_candidate.h"
@@ -35,7 +36,7 @@ class DrmThreadProxy {
 
   void BindThreadIntoMessagingProxy(InterThreadMessagingProxy* messaging_proxy);
 
-  void StartDrmThread(base::OnceClosure binding_drainer);
+  void StartDrmThread(base::OnceClosure receiver_drainer);
 
   std::unique_ptr<DrmWindowProxy> CreateDrmWindowProxy(
       gfx::AcceleratedWidget widget);
@@ -78,7 +79,8 @@ class DrmThreadProxy {
       const std::vector<OverlaySurfaceCandidate>& candidates,
       OverlayCapabilitiesCallback callback);
 
-  void AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request);
+  void AddDrmDeviceReceiver(
+      mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver);
 
  private:
   DrmThread drm_thread_;

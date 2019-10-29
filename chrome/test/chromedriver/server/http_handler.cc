@@ -617,17 +617,15 @@ HttpHandler::HttpHandler(
           WrapToCommand("TouchFlick", base::BindRepeating(&ExecuteFlick),
                         false /*w3c_standard_command*/)),
 
-      // No W3C equivalent.
+      // No W3C equivalent, see .https://crbug.com/chromedriver/3180
       CommandMapping(kGet, "session/:sessionId/location",
                      WrapToCommand("GetGeolocation",
-                                   base::BindRepeating(&ExecuteGetLocation),
-                                   false /*w3c_standard_command*/)),
+                                   base::BindRepeating(&ExecuteGetLocation))),
 
-      // No W3C equivalent.
+      // No W3C equivalent, see .https://crbug.com/chromedriver/3180
       CommandMapping(kPost, "session/:sessionId/location",
                      WrapToCommand("SetGeolocation",
-                                   base::BindRepeating(&ExecuteSetLocation),
-                                   false /*w3c_standard_command*/)),
+                                   base::BindRepeating(&ExecuteSetLocation))),
 
       // No W3C equivalent.
       CommandMapping(kGet, "session/:sessionId/local_storage",

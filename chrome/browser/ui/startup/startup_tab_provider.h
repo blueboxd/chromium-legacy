@@ -136,11 +136,9 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // TODO(hcarmona): it might be possible to deprecate use_later_run_variant.
   static GURL GetWelcomePageUrl(bool use_later_run_variant);
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  // Gets the URL for the Incompatible Applications subpage of the Chrome
-  // settings.
-  static GURL GetIncompatibleApplicationsUrl();
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  // In branded Windows builds, adds the URL for the Incompatible Applications
+  // subpage of the Chrome settings.
+  static void AddIncompatibleApplicationsUrl(StartupTabs* tabs);
 
   // Gets the URL for the page which offers to reset the user's profile
   // settings.

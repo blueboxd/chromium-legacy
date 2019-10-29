@@ -13,10 +13,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace IPC {
-class SyncMessageFilter;
-}
-
 namespace content {
 class RenderFrame;
 }  // namespace content
@@ -50,13 +46,11 @@ class WorkerContentSettingsClient : public blink::WebContentSettingsClient {
   void EnsureContentSettingsManager() const;
 
   // Loading document context for this worker.
-  const int routing_id_;
   bool is_unique_origin_ = false;
   url::Origin document_origin_;
   GURL site_for_cookies_;
   url::Origin top_frame_origin_;
   bool allow_running_insecure_content_;
-  scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
   const RendererContentSettingRules* content_setting_rules_;
 
   // Because instances of this class are created on the parent's thread (i.e,

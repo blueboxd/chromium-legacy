@@ -666,6 +666,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kClient:
       // No role description.
       break;
+    case ax::mojom::Role::kCode:
+      // No role description.
+      break;
     case ax::mojom::Role::kColorWell:
       message_id = IDS_AX_ROLE_COLOR_WELL;
       break;
@@ -848,6 +851,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       break;
     case ax::mojom::Role::kEmbeddedObject:
       message_id = IDS_AX_ROLE_EMBEDDED_OBJECT;
+      break;
+    case ax::mojom::Role::kEmphasis:
+      // No role description.
       break;
     case ax::mojom::Role::kFeed:
       message_id = IDS_AX_ROLE_FEED;
@@ -1082,6 +1088,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       break;
     case ax::mojom::Role::kStatus:
       message_id = IDS_AX_ROLE_STATUS;
+      break;
+    case ax::mojom::Role::kStrong:
+      // No role description.
       break;
     case ax::mojom::Role::kSwitch:
       message_id = IDS_AX_ROLE_SWITCH;

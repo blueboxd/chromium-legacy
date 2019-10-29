@@ -20,8 +20,7 @@ TEST(StyleElementTest, CreateSheetUsesCache) {
   document.documentElement()->SetInnerHTMLFromString(
       "<style id=style>a { top: 0; }</style>");
 
-  HTMLStyleElement& style_element =
-      ToHTMLStyleElement(*document.getElementById("style"));
+  auto& style_element = To<HTMLStyleElement>(*document.getElementById("style"));
   StyleSheetContents* sheet = style_element.sheet()->Contents();
 
   Comment* comment = document.createComment("hello!");

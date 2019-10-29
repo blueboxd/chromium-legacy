@@ -166,12 +166,12 @@ void MediaInterfaceProxy::CreateVideoDecoder(
 
 void MediaInterfaceProxy::CreateDefaultRenderer(
     const std::string& audio_device_id,
-    media::mojom::RendererRequest request) {
+    mojo::PendingReceiver<media::mojom::Renderer> receiver) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   InterfaceFactory* factory = media_interface_factory_ptr_->Get();
   if (factory)
-    factory->CreateDefaultRenderer(audio_device_id, std::move(request));
+    factory->CreateDefaultRenderer(audio_device_id, std::move(receiver));
 }
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
@@ -230,7 +230,7 @@ void MediaInterfaceProxy::CreateMediaPlayerRenderer(
 
 void MediaInterfaceProxy::CreateCdm(
     const std::string& key_system,
-    media::mojom::ContentDecryptionModuleRequest request) {
+    mojo::PendingReceiver<media::mojom::ContentDecryptionModule> receiver) {
   DCHECK(thread_checker_.CalledOnValidThread());
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   auto* factory = GetCdmFactory(key_system);
@@ -244,7 +244,7 @@ void MediaInterfaceProxy::CreateCdm(
 #endif
 
   if (factory)
-    factory->CreateCdm(key_system, std::move(request));
+    factory->CreateCdm(key_system, std::move(receiver));
 }
 
 void MediaInterfaceProxy::CreateDecryptor(

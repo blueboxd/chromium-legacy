@@ -254,10 +254,8 @@ public class AwImeTest {
     }
 
     // https://crbug.com/920061
-    // Flaky! - https://crbug.com/990208
     @Test
     @SmallTest
-    @DisabledTest
     public void testFocusAndViewSizeChangeCausesScroll() throws Throwable {
         loadBottomInputHtml();
         Rect currentRect = new Rect();
@@ -278,6 +276,9 @@ public class AwImeTest {
 
         DOMUtils.clickNode(webContents, "input_text", true /* goThroughAndroidRootView */,
                 false /* shouldScrollIntoView */);
+
+        CriteriaHelper.pollInstrumentationThread(
+                () -> "input_text".equals(DOMUtils.getFocusedNode(webContents)));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Expect that we may have a size change.

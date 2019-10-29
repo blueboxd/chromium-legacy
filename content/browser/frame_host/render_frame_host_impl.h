@@ -607,7 +607,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // until it is pending deletion. Pending deletion starts when SwapOut is
   // called on the frame or one of its ancestors.
   // BackForwardCache: Returns false when the frame is in the BackForwardCache.
-  bool is_active() {
+  bool is_active() const {
     return unload_state_ == UnloadState::NotRun && !is_in_back_forward_cache_;
   }
 
@@ -968,7 +968,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BackForwardCache after time to live.
   void StartBackForwardCacheEvictionTimer();
 
-  bool is_in_back_forward_cache() { return is_in_back_forward_cache_; }
+  bool is_in_back_forward_cache() const { return is_in_back_forward_cache_; }
 
   bool is_back_forward_cache_disabled() const {
     return is_back_forward_cache_disabled_;

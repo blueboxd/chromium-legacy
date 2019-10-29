@@ -1310,8 +1310,7 @@ bool Browser::ShouldAllowRunningInsecureContent(
     TabSpecificContentSettings* tab_settings =
         TabSpecificContentSettings::FromWebContents(web_contents);
     DCHECK(tab_settings);
-    tab_settings->OnContentBlockedWithDetail(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
-                                             base::UTF8ToUTF16(origin.host()));
+    tab_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
   }
   return allowed;
 }
@@ -1444,7 +1443,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
     return nullptr;
   }
 
-  ConfigureTabGroupForNavigation(source, &nav_params);
+  chrome::ConfigureTabGroupForNavigation(&nav_params);
 
   Navigate(&nav_params);
 
@@ -1510,6 +1509,7 @@ void Browser::AddNewContents(WebContents* source,
   // the same logic for determining if the popup tracker needs to be attached.
   if (source && ConsiderForPopupBlocking(disposition))
     PopupTracker::CreateForWebContents(new_contents.get(), source);
+
   chrome::AddWebContents(this, source, std::move(new_contents), disposition,
                          initial_rect);
 }
@@ -2459,31 +2459,6 @@ void Browser::RemoveScheduledUpdatesFor(WebContents* contents) {
   auto i = scheduled_updates_.find(contents);
   if (i != scheduled_updates_.end())
     scheduled_updates_.erase(i);
-}
-
-void Browser::ConfigureTabGroupForNavigation(content::WebContents* source,
-                                             NavigateParams* nav_params) {
-  if (!base::FeatureList::IsEnabled(features::kTabGroups))
-    return;
-
-  if (!source)
-    return;
-
-  if (!SupportsWindowFeature(WindowFeature::FEATURE_TABSTRIP))
-    return;
-
-  const int source_index = tab_strip_model_->GetIndexOfWebContents(source);
-
-  // If the source tab is pinned, don't create a group.
-  if (tab_strip_model_->IsTabPinned(source_index))
-    return;
-
-  if (nav_params->disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
-      nav_params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
-    nav_params->group = tab_strip_model_->GetTabGroupForTab(source_index);
-    if (!nav_params->group)
-      nav_params->group = tab_strip_model_->AddToNewGroup({source_index});
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

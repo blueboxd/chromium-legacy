@@ -10,7 +10,9 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/syncable_file_system_operation.h"
@@ -19,7 +21,6 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_stream_writer.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -41,37 +42,9 @@ bool CalledOnUIThread() {
 
 }  // namespace
 
-SyncFileSystemBackend::ProfileHolder::ProfileHolder(Profile* profile)
+SyncFileSystemBackend::SyncFileSystemBackend(Profile* profile)
     : profile_(profile) {
   DCHECK(CalledOnUIThread());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::Source<Profile>(profile_));
-}
-
-void SyncFileSystemBackend::ProfileHolder::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(CalledOnUIThread());
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-  DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
-  profile_ = nullptr;
-  registrar_.RemoveAll();
-}
-
-Profile* SyncFileSystemBackend::ProfileHolder::GetProfile() {
-  DCHECK(CalledOnUIThread());
-  return profile_;
-}
-
-SyncFileSystemBackend::SyncFileSystemBackend(Profile* profile)
-    : context_(nullptr),
-      skip_initialize_syncfs_service_for_testing_(false) {
-  DCHECK(CalledOnUIThread());
-  if (profile)
-    profile_holder_.reset(new ProfileHolder(profile));
-
   // Register the service name here to enable to crack an URL on SyncFileSystem
   // even if SyncFileSystemService has not started yet.
   RegisterSyncableFileSystem();
@@ -81,11 +54,6 @@ SyncFileSystemBackend::~SyncFileSystemBackend() {
   if (change_tracker_) {
     GetDelegate()->file_task_runner()->DeleteSoon(
         FROM_HERE, change_tracker_.release());
-  }
-
-  if (profile_holder_ && !CalledOnUIThread()) {
-    BrowserThread::DeleteSoon(
-        BrowserThread::UI, FROM_HERE, profile_holder_.release());
   }
 }
 
@@ -277,14 +245,14 @@ void SyncFileSystemBackend::InitializeSyncFileSystemService(
     return;
   }
 
-  if (!profile_holder_->GetProfile()) {
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile_)) {
     // Profile was destroyed.
     callback.Run(SYNC_FILE_ERROR_FAILED);
     return;
   }
 
-  SyncFileSystemService* service = SyncFileSystemServiceFactory::GetForProfile(
-          profile_holder_->GetProfile());
+  SyncFileSystemService* service =
+      SyncFileSystemServiceFactory::GetForProfile(profile_);
   DCHECK(service);
   service->InitializeForApp(context_, origin_url, callback);
 }

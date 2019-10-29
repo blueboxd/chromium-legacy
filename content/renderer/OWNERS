@@ -6,10 +6,6 @@ szager@chromium.org
 # structural changes, please get a review from a reviewer in this file.
 per-file BUILD.gn=*
 
-# Mac Sandbox profiles.
-per-file *.sb=set noparent
-per-file *.sb=rsesek@chromium.org
-
 # For surface ID propagation and synchronization
 per-file render_frame_proxy*=fsamuel@chromium.org
 per-file render_view_impl*=fsamuel@chromium.org

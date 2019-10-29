@@ -4995,6 +4995,9 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_COMBOBOX;
 
     case ax::mojom::Role::kAbbr:
+    case ax::mojom::Role::kCode:
+    case ax::mojom::Role::kEmphasis:
+    case ax::mojom::Role::kStrong:
     case ax::mojom::Role::kTime:
       return ROLE_SYSTEM_TEXT;
 
@@ -5356,6 +5359,9 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_TOGGLE_BUTTON;
       break;
     case ax::mojom::Role::kAbbr:
+    case ax::mojom::Role::kCode:
+    case ax::mojom::Role::kEmphasis:
+    case ax::mojom::Role::kStrong:
     case ax::mojom::Role::kTime:
       ia2_role = IA2_ROLE_TEXT_FRAME;
       break;
@@ -5429,6 +5435,9 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
 
     case ax::mojom::Role::kCell:
       return L"gridcell";
+
+    case ax::mojom::Role::kCode:
+      return L"code";
 
     case ax::mojom::Role::kCheckBox:
       return L"checkbox";
@@ -5551,6 +5560,9 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       } else {
         return L"document";
       }
+
+    case ax::mojom::Role::kEmphasis:
+      return L"emphasis";
 
     case ax::mojom::Role::kFeed:
       return L"group";
@@ -5761,6 +5773,9 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
     case ax::mojom::Role::kSpinButton:
       return L"spinbutton";
 
+    case ax::mojom::Role::kStrong:
+      return L"strong";
+
     case ax::mojom::Role::kSwitch:
       return L"checkbox";
 
@@ -5812,8 +5827,10 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"combobox";
 
     case ax::mojom::Role::kAbbr:
-    case ax::mojom::Role::kTime:
       return L"description";
+
+    case ax::mojom::Role::kTime:
+      return L"time";
 
     case ax::mojom::Role::kTimer:
       return L"timer";
@@ -6089,6 +6106,9 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
     case ax::mojom::Role::kClient:
       return UIA_PaneControlTypeId;
 
+    case ax::mojom::Role::kCode:
+      return UIA_TextControlTypeId;
+
     case ax::mojom::Role::kColorWell:
       return UIA_ButtonControlTypeId;
 
@@ -6204,6 +6224,9 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       } else {
         return UIA_DocumentControlTypeId;
       }
+
+    case ax::mojom::Role::kEmphasis:
+      return UIA_TextControlTypeId;
 
     case ax::mojom::Role::kFeed:
       return UIA_GroupControlTypeId;
@@ -6414,6 +6437,9 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
 
     case ax::mojom::Role::kStatus:
       return UIA_StatusBarControlTypeId;
+
+    case ax::mojom::Role::kStrong:
+      return UIA_TextControlTypeId;
 
     case ax::mojom::Role::kSplitter:
       return UIA_SeparatorControlTypeId;

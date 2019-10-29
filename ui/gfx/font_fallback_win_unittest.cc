@@ -18,6 +18,7 @@
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "ui/gfx/platform_font.h"
 #include "ui/gfx/test/font_fallback_test_data.h"
 
 #if defined(OS_WIN)
@@ -105,7 +106,12 @@ class GetFallbackFontTest
 
   bool DoesFontSupportCodePoints(Font font, const base::string16& text) {
     sk_sp<SkTypeface> skia_face =
-        SkTypeface::MakeFromName(font.GetFontName().c_str(), SkFontStyle());
+        font.platform_font()->GetNativeSkTypefaceIfAvailable();
+    if (!skia_face) {
+      // Performs a family match when the typeface is not available.
+      skia_face =
+          SkTypeface::MakeFromName(font.GetFontName().c_str(), SkFontStyle());
+    }
 
     size_t i = 0;
     const SkGlyphID kUnsupportedGlyph = 0;

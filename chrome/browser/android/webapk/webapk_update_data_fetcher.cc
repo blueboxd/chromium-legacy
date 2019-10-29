@@ -244,8 +244,6 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
         env, info_.share_target->params.title);
     java_share_params_text = base::android::ConvertUTF16ToJavaString(
         env, info_.share_target->params.text);
-    java_share_params_url = base::android::ConvertUTF16ToJavaString(
-        env, info_.share_target->params.url);
 
     java_share_params_is_method_post =
         (info_.share_target->method ==
@@ -274,7 +272,7 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
       static_cast<int>(info_.display), info_.orientation,
       OptionalSkColorToJavaColor(info_.theme_color),
       OptionalSkColorToJavaColor(info_.background_color), java_share_action,
-      java_share_params_title, java_share_params_text, java_share_params_url,
+      java_share_params_title, java_share_params_text,
       java_share_params_is_method_post, java_share_params_is_enctype_multipart,
       java_share_params_file_names, java_share_params_accepts);
 }

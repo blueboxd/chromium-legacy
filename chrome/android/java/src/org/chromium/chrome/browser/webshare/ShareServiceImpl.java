@@ -22,6 +22,7 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.safe_browsing.FileTypePolicies;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
+import org.chromium.chrome.browser.share.ShareSheetCoordinator;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.ui.base.WindowAndroid;
@@ -185,7 +186,7 @@ public class ShareServiceImpl implements ShareService {
                                                           .setCallback(innerCallback);
 
         if (files == null || files.length == 0) {
-            ShareHelper.share(paramsBuilder.build());
+            ShareSheetCoordinator.create().share(paramsBuilder.build());
             return;
         }
 

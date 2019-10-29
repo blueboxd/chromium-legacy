@@ -407,7 +407,7 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
 
 void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
                                                          bool update_clip) {
-  // Hide the corners if minimized, CaptionContainerView will handle showing the
+  // Hide the corners if minimized, OverviewItemView will handle showing the
   // rounded corners on the UI.
   const bool show_corners = show && !IsMinimized();
   // Add the mask which gives the overview item rounded corners, and add the

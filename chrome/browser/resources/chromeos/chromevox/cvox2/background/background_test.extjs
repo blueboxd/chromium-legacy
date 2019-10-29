@@ -2117,6 +2117,107 @@ TEST_F('ChromeVoxBackgroundTest', 'NonModalDialogHeadingJump', function() {
         .call(doCmd('previousHeading'))
         .expectSpeech('Heading outside dialog')
         .replay();
+    });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'NavigationByListTest', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <p>Start here</p>
+    <ul>
+      Drinks
+      <li>Coffee</li>
+      <li>Tea</li>
+    </ul>
+    <p>A random paragraph</p>
+    <ul></ul>
+    <ol>
+      Lunch
+      <li>Burgers</li>
+      <li>Fries</li>
+      <li>Soda</li>
+        <ul>
+          Nested list
+          <li>Element</li>
+        </ul>
+    </ol>
+    <p>Another random paragraph</p>
+    <dl>
+      Colors
+      <dt>Red</dt>
+      <dd>Description for red</dd>
+      <dt>Blue</dt>
+      <dd>Description for blue</dd>
+      <dt>Green</dt>
+      <dd>Description for green</dd>
+    </dl>
+  */}, function(root) {
+    mockFeedback.call(doCmd('jumpToTop'))
+      .call(doCmd('nextList'))
+      .expectSpeech('Drinks', 'List', 'with 2 items')
+      .call(doCmd('nextList'))
+      .expectSpeech('List' , 'with 0 items')
+      .call(doCmd('nextList'))
+      .expectSpeech('Lunch', 'List', 'with 3 items')
+      .call(doCmd('nextList'))
+      .expectSpeech('Nested list', 'List', 'with 1 item')
+      .call(doCmd('nextList'))
+      .expectSpeech('Colors', 'Description list', 'with 3 items')
+      .call(doCmd('nextList'))
+      // Ensure we wrap correctly.
+      .expectSpeech('Drinks', 'List', 'with 2 items')
+      .call(doCmd('nextObject'))
+      .call(doCmd('nextObject'))
+      .expectSpeech('Coffee')
+      // Ensure we wrap correctly and go to previous list, not top of current list.
+      .call(doCmd('previousList'))
+      .expectSpeech('Colors')
+      .call(doCmd('previousObject'))
+      .expectSpeech('Another random paragraph')
+      // Ensure we dive into the nested list.
+      .call(doCmd('previousList'))
+      .expectSpeech('Nested list', 'List', 'with 1 item')
+      .call(doCmd('previousList'))
+      .expectSpeech('Lunch')
+      .call(doCmd('nextObject'))
+      .call(doCmd('nextObject'))
+      .expectSpeech('Burgers')
+      // Ensure we go to the previous list, not the top of the current list.
+      .call(doCmd('previousList'))
+      .expectSpeech('List', 'with 0 items')
+      .call(doCmd('previousObject'))
+      .expectSpeech('A random paragraph')
+      .call(doCmd('previousList'))
+      .expectSpeech('Drinks', 'List', 'with 2 items')
+      .replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'NoListTest', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+  <button>Click me</button>
+  */}, function(root) {
+    mockFeedback.call(doCmd('nextList'))
+      .expectSpeech('No next list.')
+      .call(doCmd('previousList'))
+      .expectSpeech('No previous list.');
+    mockFeedback.replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'NavigateToLastHeading', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+  <h1>First</h1>
+  <h1>Second</h1>
+  <h1>Third</h1>
+  */}, function(root) {
+    mockFeedback.call(doCmd('jumpToTop'))
+      .expectSpeech('First', 'Heading 1')
+      .call(doCmd('previousHeading'))
+      .expectSpeech('Third', 'Heading 1')
+      .replay();
   });
 });
 

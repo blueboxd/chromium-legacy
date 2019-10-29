@@ -1003,26 +1003,6 @@
             ]
         }
     ],
-    "AutofillSaveCardBubbleStringExperiment": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledConfirmAndSaveCardVariation",
-                    "params": {
-                        "AutofillSaveCreditCardUsesImprovedMessaging": "Confirm & Save Card"
-                    },
-                    "enable_features": [
-                        "AutofillSaveCreditCardUsesImprovedMessaging"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillSaveCardShowNoThanks": [
         {
             "platforms": [
@@ -1459,6 +1439,25 @@
             "experiments": [
                 {
                     "name": "DetachTimeFg16x"
+                }
+            ]
+        }
+    ],
+    "CacheStorageEagerReading": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled2",
+                    "enable_features": [
+                        "CacheStorageEagerReading"
+                    ]
                 }
             ]
         }
@@ -4042,6 +4041,21 @@
             ]
         }
     ],
+    "OmniboxOnDeviceHeadSuggestIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Beta_OnDeviceHeadSuggest_Enabled",
+                    "enable_features": [
+                        "OmniboxOnDeviceHeadProvider"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxSteadyStateElisions": [
         {
             "platforms": [
@@ -4090,6 +4104,26 @@
                     },
                     "enable_features": [
                         "OptimizationHintsFetching"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OutOfBlinkCors": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OutOfBlinkCors"
                     ]
                 }
             ]

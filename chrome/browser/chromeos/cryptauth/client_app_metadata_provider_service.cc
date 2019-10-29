@@ -12,8 +12,10 @@
 #include "base/feature_list.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_util.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
@@ -86,6 +88,11 @@ cryptauthv2::ApplicationSpecificMetadata GenerateApplicationSpecificMetadata(
   metadata.set_device_software_version_code(software_version_code);
   metadata.set_device_software_package(device_sync::kCryptAuthGcmAppId);
   return metadata;
+}
+
+void LogInstanceIdTokenFetchRetries(int count) {
+  base::UmaHistogramExactLinear(
+      "CryptAuth.ClientAppMetadataInstanceIdTokenFetch.Retries", count, 2);
 }
 
 }  // namespace
@@ -221,8 +228,21 @@ void ClientAppMetadataProviderService::OnInstanceIdTokenFetched(
     const std::string& instance_id,
     const std::string& token,
     instance_id::InstanceID::Result result) {
+  // If the |token| doesn't begin with the |instance_id|, we have to re-create
+  // the entire InstanceID and remove the old one from storage.
+  if (token.find(':') != std::string::npos &&
+      !base::StartsWith(token, instance_id,
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+    GetInstanceId()->DeleteID(base::BindOnce(
+        &ClientAppMetadataProviderService::OnInstanceIdDeleted,
+        weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter, hardware_info));
+    return;
+  }
+  LogInstanceIdTokenFetchRetries(instance_id_recreated_ ? 1 : 0);
+
   std::string gcm_registration_id = *pending_gcm_registration_id_;
   pending_gcm_registration_id_.reset();
+  instance_id_recreated_ = false;
 
   UMA_HISTOGRAM_ENUMERATION(
       "CryptAuth.ClientAppMetadataInstanceIdTokenFetch.Result", result,
@@ -305,6 +325,28 @@ void ClientAppMetadataProviderService::OnInstanceIdTokenFetched(
 
   client_app_metadata_ = metadata;
   InvokePendingCallbacks();
+}
+
+void ClientAppMetadataProviderService::OnInstanceIdDeleted(
+    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
+    const base::SysInfo::HardwareInfo& hardware_info,
+    instance_id::InstanceID::Result result) {
+  instance_id_profile_service_->driver()->RemoveInstanceID(
+      device_sync::kCryptAuthGcmAppId);
+
+  if (instance_id_recreated_) {
+    LogInstanceIdTokenFetchRetries(2);
+    PA_LOG(WARNING) << "ClientAppMetadataProviderService::"
+                    << "OnInstanceIdDeleted(): Instance Id deleted twice in a "
+                    << "row, aborting; result: " << result << ".";
+    pending_gcm_registration_id_.reset();
+    instance_id_recreated_ = false;
+    InvokePendingCallbacks();
+    return;
+  }
+
+  instance_id_recreated_ = true;
+  OnHardwareInfoFetched(bluetooth_adapter, hardware_info);
 }
 
 instance_id::InstanceID* ClientAppMetadataProviderService::GetInstanceId() {

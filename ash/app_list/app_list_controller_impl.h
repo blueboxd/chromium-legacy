@@ -279,6 +279,10 @@ class ASH_EXPORT AppListControllerImpl
       int y_position_in_screen,
       float opacity,
       UpdateAnimationSettingsCallback callback) override;
+  void UpdateScaleAndOpacityForHomeLauncher(
+      float scale,
+      float opacity,
+      UpdateAnimationSettingsCallback callback) override;
   void UpdateAfterHomeLauncherShown() override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
   void NotifyHomeLauncherAnimationTransition(AnimationTrigger trigger,

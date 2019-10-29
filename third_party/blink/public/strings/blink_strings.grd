@@ -271,6 +271,9 @@ below:
       <message name="IDS_AX_ROLE_BANNER" desc="Accessibility role description for banner">
         banner
       </message>
+      <message name="IDS_AX_ROLE_CODE" desc="Accessibility role description for a section whose content represents a fragment of computer code">
+        code
+      </message>
       <!-- https://w3c.github.io/html-aam/#el-input-color -->
       <message name="IDS_AX_ROLE_COLOR_WELL" desc="Accessibility role description for a color picker">
         color picker
@@ -429,6 +432,9 @@ below:
       <message name="IDS_AX_ROLE_DOC_TOC" desc="Accessibility role description for table of contents">
         table of contents
       </message>
+      <message name="IDS_AX_ROLE_EMPHASIS" desc="Accessibility role description for one or more emphasized characters">
+        emphasis
+      </message>
       <message name="IDS_AX_ROLE_FEED" desc="Accessibility role description for a scrollable list of articles.">
         feed
       </message>
@@ -515,6 +521,9 @@ below:
       </message>
       <message name="IDS_AX_ROLE_STATUS" desc="Accessibility role description for status">
         status
+      </message>
+      <message name="IDS_AX_ROLE_STRONG" desc="Accessibility role description for content which is important, serious, or urgent">
+        strong
       </message>
       <message name="IDS_AX_ROLE_SWITCH" desc="Accessibility role description for switch">
         switch

@@ -1050,11 +1050,6 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
     in_split_view =
         split_view_controller && split_view_controller->InSplitViewMode();
   }
-
-  // If we're in split view, we never show the hotseat no matter what.
-  if (in_split_view)
-    return HotseatState::kHidden;
-
   switch (drag_status_) {
     case kDragNone: {
       switch (app_list_controller->home_launcher_animation_state()) {
@@ -1065,6 +1060,8 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
         case AppListControllerImpl::HomeLauncherAnimationState::kFinished:
           if (app_list_controller->IsVisible())
             return HotseatState::kShown;
+          if (in_split_view)
+            return HotseatState::kHidden;
           if (in_overview)
             return HotseatState::kExtended;
           if (visibility_state == SHELF_AUTO_HIDE) {
@@ -1601,26 +1598,21 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     }
 
     int hotseat_y = 0;
-    if (!Shell::Get()->overview_controller() ||
-        !Shell::Get()->overview_controller()->InOverviewSession() ||
-        window_drag_controller_) {
-      const int hotseat_extended_y =
-          Shell::Get()->shelf_config()->hotseat_size() +
-          Shell::Get()->shelf_config()->hotseat_bottom_padding();
-      const int hotseat_baseline =
-          (state_.hotseat_state == HotseatState::kExtended)
-              ? -hotseat_extended_y
-              : shelf_size;
-      bool use_hotseat_baseline =
-          (state_.hotseat_state == HotseatState::kExtended &&
-           visibility_state() == SHELF_AUTO_HIDE) ||
-          (state_.hotseat_state == HotseatState::kHidden &&
-           visibility_state() != SHELF_AUTO_HIDE);
-      hotseat_y = std::max(
-          -hotseat_extended_y,
-          static_cast<int>((use_hotseat_baseline ? hotseat_baseline : 0) +
-                           translate));
-    }
+    const int hotseat_extended_y =
+        Shell::Get()->shelf_config()->hotseat_size() +
+        Shell::Get()->shelf_config()->hotseat_bottom_padding();
+    const int hotseat_baseline =
+        (state_.hotseat_state == HotseatState::kExtended) ? -hotseat_extended_y
+                                                          : shelf_size;
+    bool use_hotseat_baseline =
+        (state_.hotseat_state == HotseatState::kExtended &&
+         visibility_state() == SHELF_AUTO_HIDE) ||
+        (state_.hotseat_state == HotseatState::kHidden &&
+         visibility_state() != SHELF_AUTO_HIDE);
+    hotseat_y = std::max(
+        -hotseat_extended_y,
+        static_cast<int>((use_hotseat_baseline ? hotseat_baseline : 0) +
+                         translate));
     target_bounds->hotseat_bounds_in_shelf.set_y(hotseat_y);
     return;
   }

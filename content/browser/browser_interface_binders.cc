@@ -82,6 +82,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "content/browser/android/date_time_chooser_android.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #endif
@@ -140,6 +141,16 @@ void BindTextDetection(
     mojo::PendingReceiver<shape_detection::mojom::TextDetection> receiver) {
   GetShapeDetectionService()->BindTextDetection(std::move(receiver));
 }
+
+#if defined(OS_ANDROID)
+void BindDateTimeChooserForFrame(
+    content::RenderFrameHost* host,
+    mojo::PendingReceiver<blink::mojom::DateTimeChooser> receiver) {
+  auto* date_time_chooser = DateTimeChooserAndroid::FromWebContents(
+      WebContents::FromRenderFrameHost(host));
+  date_time_chooser->OnDateTimeChooserReceiver(std::move(receiver));
+}
+#endif
 
 }  // namespace
 
@@ -300,6 +311,10 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&WakeLockServiceImpl::Create));
   map->Add<device::mojom::VRService>(
       base::BindRepeating(&WebvrServiceProvider::BindWebvrService));
+#if defined(OS_ANDROID)
+  map->Add<blink::mojom::DateTimeChooser>(
+      base::BindRepeating(&BindDateTimeChooserForFrame));
+#endif  // defined(OS_ANDROID)
 
   GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(map);
 }

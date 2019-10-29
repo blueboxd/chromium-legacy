@@ -32,13 +32,13 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
-#include "ash/wm/overview/caption_container_view.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_wallpaper_controller.h"
@@ -258,15 +258,15 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
   }
 
   views::Label* GetLabelView(OverviewItem* item) {
-    return item->caption_container_view_->title_label();
+    return item->overview_item_view_->title_label();
   }
 
   RoundedRectView* GetBackdropView(OverviewItem* item) {
-    return item->caption_container_view_->backdrop_view();
+    return item->overview_item_view_->backdrop_view();
   }
 
   WindowPreviewView* GetPreviewView(OverviewItem* item) {
-    return item->caption_container_view_->preview_view();
+    return item->overview_item_view_->preview_view();
   }
 
   // Tests that a window is contained within a given OverviewItem, and that both
@@ -2908,11 +2908,10 @@ TEST_P(OverviewSessionWithHomerviewGestureTest, FadeIn) {
   const gfx::Rect bounds = gfx::ToEnclosedRect(item->target_bounds());
   EXPECT_TRUE(GetGridBounds().Contains(bounds));
 
-  // Caption container view is expected to be shown immediately.
-  EXPECT_EQ(1.0f, item->caption_container_view()
-                      ->header_view()
-                      ->layer()
-                      ->GetTargetOpacity());
+  // Header is expected to be shown immediately.
+  EXPECT_EQ(
+      1.0f,
+      item->overview_item_view()->header_view()->layer()->GetTargetOpacity());
 
   EXPECT_EQ(OverviewSession::EnterExitOverviewType::kFadeInEnter,
             overview_session()->enter_exit_overview_type());

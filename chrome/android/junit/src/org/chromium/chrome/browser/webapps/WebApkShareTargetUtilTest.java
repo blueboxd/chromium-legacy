@@ -79,7 +79,7 @@ public class WebApkShareTargetUtilTest {
             if (mParamFileAccepts != null) {
                 paramFileAccepts = mParamFileAccepts.toArray(new String[0][]);
             }
-            return new WebApkInfo.ShareTarget(mAction, mParamTitle, mParamText, null,
+            return new WebApkInfo.ShareTarget(mAction, mParamTitle, mParamText,
                     ShareTarget.METHOD_POST.equalsIgnoreCase(mMethod),
                     ShareTarget.ENCODING_TYPE_MULTIPART.equalsIgnoreCase(mEncodingType),
                     paramFileNames, paramFileAccepts);

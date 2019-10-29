@@ -95,7 +95,7 @@ void HidConnection::Read(ReadCallback callback) {
   DCHECK(!client_);
   if (device_info_->max_input_report_size() == 0) {
     HID_LOG(USER) << "This device does not support input reports.";
-    std::move(callback).Run(false, NULL, 0);
+    std::move(callback).Run(false, nullptr, 0);
     return;
   }
 
@@ -138,17 +138,17 @@ void HidConnection::GetFeatureReport(uint8_t report_id, ReadCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (device_info_->max_feature_report_size() == 0) {
     HID_LOG(USER) << "This device does not support feature reports.";
-    std::move(callback).Run(false, NULL, 0);
+    std::move(callback).Run(false, nullptr, 0);
     return;
   }
   if (device_info_->has_report_id() != (report_id != 0)) {
     HID_LOG(USER) << "Invalid feature report ID.";
-    std::move(callback).Run(false, NULL, 0);
+    std::move(callback).Run(false, nullptr, 0);
     return;
   }
   if (IsReportIdProtected(report_id)) {
     HID_LOG(USER) << "Attempt to get a protected feature report.";
-    std::move(callback).Run(false, NULL, 0);
+    std::move(callback).Run(false, nullptr, 0);
     return;
   }
 

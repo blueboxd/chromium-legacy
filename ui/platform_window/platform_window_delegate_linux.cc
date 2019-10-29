@@ -33,4 +33,11 @@ void PlatformWindowDelegateLinux::GetWindowMask(const gfx::Size& size,
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+#if BUILDFLAG(USE_ATK)
+bool PlatformWindowDelegateLinux::OnAtkKeyEvent(AtkKeyEventStruct* atk_event) {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+#endif
+
 }  // namespace ui

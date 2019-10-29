@@ -14,7 +14,9 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/task/post_task.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -48,6 +50,9 @@
 namespace syncer {
 
 namespace {
+
+const base::Feature kProfileSyncServiceUsesTaskScheduler{
+    "ProfileSyncServiceUsesThreadPool", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The initial state of sync, for the Sync.InitialState histogram. Even if
 // this value is CAN_START, sync startup might fail for reasons that we may
@@ -424,17 +429,25 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {
   startup_controller_->OnDataTypeRequestsSyncStartup(type);
 }
 
-void ProfileSyncService::StartSyncThreadIfNeeded() {
-  if (sync_thread_) {
+void ProfileSyncService::InitializeBackendTaskRunnerIfNeeded() {
+  if (backend_task_runner_) {
     // Already started.
     return;
   }
 
-  sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
-  base::Thread::Options options;
-  options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-  bool success = sync_thread_->StartWithOptions(options);
-  DCHECK(success);
+  if (base::FeatureList::IsEnabled(kProfileSyncServiceUsesTaskScheduler)) {
+    backend_task_runner_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+         base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+  } else {
+    sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
+    base::Thread::Options options;
+    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+    bool success = sync_thread_->StartWithOptions(options);
+    DCHECK(success);
+
+    backend_task_runner_ = sync_thread_->task_runner();
+  }
 }
 
 void ProfileSyncService::StartUpSlowEngineComponents() {
@@ -449,10 +462,10 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
     last_actionable_error_ = SyncProtocolError();
   }
 
-  StartSyncThreadIfNeeded();
+  InitializeBackendTaskRunnerIfNeeded();
 
   SyncEngine::InitParams params;
-  params.sync_task_runner = sync_thread_->task_runner();
+  params.sync_task_runner = backend_task_runner_;
   params.host = this;
   params.registrar = std::make_unique<SyncBackendRegistrar>(
       debug_identifier_,
@@ -533,16 +546,16 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
     // happens, the data directory needs to be cleaned up here.
     if (reason == ShutdownReason::DISABLE_SYNC) {
       // Clearing the Directory via Directory::DeleteDirectoryFiles() requires
-      // the |sync_thread_| initialized. It also means there's IO involved which
-      // may we considerable overhead if triggered consistently upon browser
-      // startup (which is the case for certain codepaths such as the user being
-      // signed out). To avoid that, SyncPrefs is used to determine whether it's
-      // worth.
+      // the |backend_task_runner_| initialized. It also means there's IO
+      // involved which may we considerable overhead if triggered consistently
+      // upon browser startup (which is the case for certain codepaths such as
+      // the user being signed out). To avoid that, SyncPrefs is used to
+      // determine whether it's worth it.
       if (!sync_prefs_.GetCacheGuid().empty()) {
-        StartSyncThreadIfNeeded();
+        InitializeBackendTaskRunnerIfNeeded();
       }
-      if (sync_thread_) {
-        sync_thread_->task_runner()->PostTask(
+      if (backend_task_runner_) {
+        backend_task_runner_->PostTask(
             FROM_HERE,
             base::BindOnce(&syncable::Directory::DeleteDirectoryFiles,
                            sync_client_->GetSyncDataPath()));
@@ -1837,10 +1850,12 @@ void ProfileSyncService::SetPassphrasePrompted(bool prompted) {
   sync_prefs_.SetPassphrasePrompted(prompted);
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-ProfileSyncService::GetSyncThreadTaskRunnerForTest() const {
+void ProfileSyncService::FlushBackendTaskRunnerForTest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return sync_thread_ ? sync_thread_->task_runner() : nullptr;
+  base::RunLoop run_loop;
+
+  backend_task_runner_->PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 SyncEncryptionHandler::Observer*

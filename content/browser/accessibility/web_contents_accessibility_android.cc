@@ -1099,6 +1099,11 @@ void WebContentsAccessibilityAndroid::MoveAccessibilityFocus(
   // as that will result in loading inline text boxes for the whole tree.
   if (node != node->manager()->GetRoot())
     node->manager()->LoadInlineTextBoxes(*node);
+
+  // Auto-focus links, because some websites have skip links that are
+  // only visible when focused. See http://crbug.com/657157
+  if (node->IsLink())
+    node->manager()->SetFocus(*node);
 }
 
 bool WebContentsAccessibilityAndroid::IsSlider(JNIEnv* env,

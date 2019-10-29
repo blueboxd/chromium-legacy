@@ -133,6 +133,11 @@ void IOSChromePasswordManagerClient::AutomaticPasswordSave(
   NOTIMPLEMENTED();
 }
 
+void IOSChromePasswordManagerClient::PromptUserToEnableAutosignin() {
+  // TODO(crbug.com/435048): Implement this method.
+  NOTIMPLEMENTED();
+}
+
 bool IOSChromePasswordManagerClient::IsIncognito() const {
   return (delegate_.browserState)->IsOffTheRecord();
 }
@@ -251,15 +256,6 @@ password_manager::PasswordRequirementsService*
 IOSChromePasswordManagerClient::GetPasswordRequirementsService() {
   return IOSPasswordRequirementsServiceFactory::GetForBrowserState(
       delegate_.browserState, ServiceAccessType::EXPLICIT_ACCESS);
-}
-
-void IOSChromePasswordManagerClient::PromptUserToEnableAutosignin() {
-  // TODO(crbug.com/435048): Implement this method.
-}
-
-password_manager::PasswordManager*
-IOSChromePasswordManagerClient::GetPasswordManager() {
-  return delegate_.passwordManager;
 }
 
 bool IOSChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled()

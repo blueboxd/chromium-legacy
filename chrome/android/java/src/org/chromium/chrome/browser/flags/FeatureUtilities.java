@@ -526,8 +526,9 @@ public class FeatureUtilities {
     public static boolean isGridTabSwitcherEnabled() {
         // TODO(yusufo): AccessibilityLayout check should not be here and the flow should support
         // changing that setting while Chrome is alive.
-        // Having Tab Groups implies Grid Tab Switcher.
-        return isFlagEnabled(GRID_TAB_SWITCHER_ENABLED_KEY, false) || isTabGroupsAndroidEnabled();
+        // Having Tab Groups or Start implies Grid Tab Switcher.
+        return isFlagEnabled(GRID_TAB_SWITCHER_ENABLED_KEY, false) || isTabGroupsAndroidEnabled()
+                || isStartSurfaceEnabled();
     }
 
     /**

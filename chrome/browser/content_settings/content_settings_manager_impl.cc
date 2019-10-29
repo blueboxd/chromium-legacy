@@ -150,6 +150,20 @@ void ContentSettingsManagerImpl::AllowStorageAccess(
   std::move(callback).Run(allowed);
 }
 
+void ContentSettingsManagerImpl::OnContentBlocked(ContentSettingsType type) {
+  content::RenderFrameHost* frame =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame);
+  if (!web_contents)
+    return;
+
+  TabSpecificContentSettings* tab_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (tab_settings)
+    tab_settings->OnContentBlocked(type);
+}
+
 ContentSettingsManagerImpl::ContentSettingsManagerImpl(
     content::RenderFrameHost* render_frame_host)
     : render_process_id_(render_frame_host->GetProcess()->GetID()),

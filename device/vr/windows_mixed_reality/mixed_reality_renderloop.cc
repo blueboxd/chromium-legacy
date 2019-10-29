@@ -414,6 +414,14 @@ void MixedRealityRenderLoop::OnUserPresenceChanged() {
 }
 
 void MixedRealityRenderLoop::UpdateVisibilityState() {
+  // We could've had a task get queued up during or before a StopRuntime call.
+  // Which would lead to the holographic space being null. In that case, don't
+  // update the visibility state. We'll get the fresh state  when and if the
+  // runtime starts back up again.
+  if (!holographic_space_) {
+    return;
+  }
+
   switch (holographic_space_->UserPresence()) {
     // Indicates that the browsers immersive content is visible in the headset
     // receiving input, and the headset is being worn.

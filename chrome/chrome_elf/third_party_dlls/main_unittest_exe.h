@@ -6,11 +6,11 @@
 #define CHROME_CHROME_ELF_THIRD_PARTY_DLLS_MAIN_UNITTEST_EXE_H_
 
 namespace third_party_dlls {
-namespace main_unittest_exe {
 
 enum ExitCode {
   kDllLoadSuccess = 0,
   kDllLoadFailed = 1,
+
   // Unexpected failures are negative ints:
   kBadCommandLine = -1,
   kThirdPartyAlreadyInitialized = -2,
@@ -26,12 +26,11 @@ enum ExitCode {
 };
 
 enum TestId {
-  kTestOnlyInitialization = 1,
-  kTestSingleDllLoad = 2,
-  kTestLogPath = 3,
+  kTestOnlyInitialization = 1,  // Just initialization.
+  kTestSingleDllLoad = 2,       // Single DLL load.
+  kTestLogPath = 3,             // Single DLL load with log path scrutiny.
 };
 
-}  // namespace main_unittest_exe
 }  // namespace third_party_dlls
 
 #endif  // CHROME_CHROME_ELF_THIRD_PARTY_DLLS_MAIN_UNITTEST_EXE_H_

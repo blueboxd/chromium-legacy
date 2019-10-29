@@ -208,18 +208,26 @@ class MediaDrmProvisionHelper {
   MediaDrmProvisionHelper() {
     DVLOG(1) << __func__;
     DCHECK(media::MediaDrmBridge::IsPerOriginProvisioningSupported());
-
-    create_fetcher_cb_ =
-        base::BindRepeating(&content::CreateProvisionFetcher,
-                            g_browser_process->system_network_context_manager()
-                                ->GetSharedURLLoaderFactory());
   }
 
   void Provision(ProvisionedOriginIdCB callback) {
     DVLOG(1) << __func__;
 
+    auto* network_context_manager =
+        g_browser_process->system_network_context_manager();
+    if (!network_context_manager) {
+      // system_network_context_manager() returns nullptr in unit tests.
+      DLOG(WARNING) << "Failed to provision origin ID as no "
+                       "system_network_context_manager";
+      std::move(callback).Run(false, base::nullopt);
+      return;
+    }
+
     complete_callback_ = std::move(callback);
     origin_id_ = base::UnguessableToken::Create();
+    create_fetcher_cb_ = base::BindRepeating(
+        &content::CreateProvisionFetcher,
+        network_context_manager->GetSharedURLLoaderFactory());
 
     // Try provisioning for L3 first.
     media_drm_bridge_ = media::MediaDrmBridge::CreateWithoutSessionSupport(

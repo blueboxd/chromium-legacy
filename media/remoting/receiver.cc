@@ -106,7 +106,8 @@ void Receiver::Initialize(std::unique_ptr<pb::RpcMessage> message) {
   stream_provider_->Initialize(
       message->renderer_initialize_rpc().audio_demuxer_handle(),
       message->renderer_initialize_rpc().video_demuxer_handle(),
-      base::Bind(&Receiver::OnStreamInitialized, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&Receiver::OnStreamInitialized,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void Receiver::OnStreamInitialized() {

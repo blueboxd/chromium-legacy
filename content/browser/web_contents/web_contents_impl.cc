@@ -2154,7 +2154,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   manifest_manager_host_.reset(new ManifestManagerHost(this));
 
 #if defined(OS_ANDROID)
-  date_time_chooser_.reset(new DateTimeChooserAndroid(this));
+  DateTimeChooserAndroid::CreateForWebContents(this);
 #endif
 
   // BrowserPluginGuest::Init needs to be called after this WebContents has
@@ -3077,12 +3077,22 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
     return;
 
   // GetOutermostWebContents() returns |this| if there are no outer WebContents.
+  auto* outer_web_contents = GetOuterWebContents();
+  auto* outermost_web_contents = GetOutermostWebContents();
   RenderWidgetHostView* view =
-      GetOutermostWebContents()->GetRenderWidgetHostView();
+      outermost_web_contents->GetRenderWidgetHostView();
+  // It's not entirely obvious why we need the transform only in the case where
+  // the outer webcontents is not the same as the outermost webcontents. It may
+  // be due to the fact that oopifs that are children of the mainframe get
+  // correct values for their screenrects, but deeper cross-process frames do
+  // not. Hopefully this can be resolved with https://crbug.com/928825.
+  // Handling these cases separately is needed for http://crbug.com/1015298.
+  bool needs_transform = this != outermost_web_contents &&
+                         outermost_web_contents != outer_web_contents;
 
   gfx::Rect transformed_rect(initial_rect);
   RenderWidgetHostView* this_view = GetRenderWidgetHostView();
-  if (this_view != view) {
+  if (needs_transform) {
     // We need to transform the coordinates of initial_rect.
     gfx::Point origin =
         this_view->TransformPointToRootCoordSpace(initial_rect.origin());

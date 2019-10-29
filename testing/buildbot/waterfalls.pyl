@@ -1932,6 +1932,16 @@
           'gtest_tests': 'goma_mac_gtests',
         },
       },
+      'mac-code-coverage': {
+        'mixins': [
+          'code-coverage',
+          'mac_10.13',
+          'no_gpu',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+        },
+      },
       'mac-hermetic-upgrade-rel': {
         'additional_compile_targets': [
           'all'

@@ -50,7 +50,6 @@ source_set("importer") {
   deps = [
     "//base",
     "//chrome/app:generated_resources",
-    "//chrome/common:common_param_traits_macros",
     "//chrome/common:ini_parser",
     "//components/autofill/core/common",
     "//components/favicon_base",

@@ -30,7 +30,7 @@ SectionId SizeInfo::ShortSectionName(const char* section_name) {
     } else if (!strcmp(section_name, ".dex")) {
       ret = SectionId::kDex;
     } else if (!strcmp(section_name, ".dex.method")) {
-      ret = SectionId::kDex;
+      ret = SectionId::kDexMethod;
     } else if (!strcmp(section_name, ".other")) {
       ret = SectionId::kOther;
     } else if (!strcmp(section_name, ".rodata")) {
@@ -61,8 +61,8 @@ void TreeNode::WriteIntoJson(Json::Value* out, int depth) {
   (*out)["shortNameIndex"] = this->short_name_index;
   // TODO: Put correct information.
   std::string type;
-  if (containerType != ContainerType::kSymbol) {
-    type += static_cast<char>(containerType);
+  if (container_type != ContainerType::kSymbol) {
+    type += static_cast<char>(container_type);
   }
   SectionId biggest_section = this->node_stats.ComputeBiggestSection();
   type += static_cast<char>(biggest_section);
@@ -95,12 +95,12 @@ NodeStats::NodeStats(SectionId sectionId,
                      int32_t count,
                      int32_t highlight,
                      int32_t size) {
-  childStats[sectionId] = {count, highlight, size};
+  child_stats[sectionId] = {count, highlight, size};
 }
 
 void NodeStats::WriteIntoJson(Json::Value* out) const {
   (*out) = Json::Value(Json::objectValue);
-  for (const auto kv : this->childStats) {
+  for (const auto kv : this->child_stats) {
     const std::string sectionId = std::string(1, static_cast<char>(kv.first));
     const Stat stats = kv.second;
     (*out)[sectionId] = Json::Value(Json::objectValue);
@@ -111,8 +111,8 @@ void NodeStats::WriteIntoJson(Json::Value* out) const {
 }
 
 NodeStats& NodeStats::operator+=(const NodeStats& other) {
-  for (const auto& it : other.childStats) {
-    childStats[it.first] += it.second;
+  for (const auto& it : other.child_stats) {
+    child_stats[it.first] += it.second;
   }
   return *this;
 }
@@ -120,7 +120,7 @@ NodeStats& NodeStats::operator+=(const NodeStats& other) {
 SectionId NodeStats::ComputeBiggestSection() const {
   SectionId ret = SectionId::kNone;
   int32_t max = 0;
-  for (auto& pair : childStats) {
+  for (auto& pair : child_stats) {
     if (pair.second.size > max) {
       ret = pair.first;
       max = pair.second.size;

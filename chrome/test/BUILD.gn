@@ -2159,6 +2159,8 @@ if (!is_android) {
         "../browser/chromeos/login/screens/mock_demo_preferences_screen.h",
         "../browser/chromeos/login/screens/mock_demo_setup_screen.cc",
         "../browser/chromeos/login/screens/mock_demo_setup_screen.h",
+        "../browser/chromeos/login/screens/mock_enable_adb_sideloading_screen.cc",
+        "../browser/chromeos/login/screens/mock_enable_adb_sideloading_screen.h",
         "../browser/chromeos/login/screens/mock_enable_debugging_screen.cc",
         "../browser/chromeos/login/screens/mock_enable_debugging_screen.h",
         "../browser/chromeos/login/screens/mock_eula_screen.cc",

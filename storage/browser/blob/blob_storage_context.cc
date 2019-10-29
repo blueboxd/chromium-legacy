@@ -508,7 +508,7 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
       switch (copy.source_item->item()->type()) {
         case BlobDataItem::Type::kBytes: {
           DCHECK_EQ(dest_type, BlobDataItem::Type::kBytesDescription);
-          base::span<const char> src_data =
+          base::span<const uint8_t> src_data =
               copy.source_item->item()->bytes().subspan(copy.source_item_offset,
                                                         dest_size);
           copy.dest_item->item()->PopulateBytes(src_data);
@@ -689,7 +689,7 @@ void BlobStorageContext::RegisterFromMemory(
 
   std::unique_ptr<BlobDataBuilder> builder =
       std::make_unique<BlobDataBuilder>(uuid);
-  builder->AppendData(reinterpret_cast<const char*>(data.data()), data.size());
+  builder->AppendData(data.byte_span());
   std::unique_ptr<BlobDataHandle> handle = AddFinishedBlob(std::move(builder));
   BlobImpl::Create(std::move(handle), std::move(blob));
 }

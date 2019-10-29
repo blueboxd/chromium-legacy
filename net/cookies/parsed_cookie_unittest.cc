@@ -526,7 +526,7 @@ TEST(ParsedCookieTest, CookieSameSiteStringEnum) {
   EXPECT_EQ(CookieSameSiteString::kNone, actual);
 
   pc.SetSameSite("Extended");
-  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, pc.SameSite(&actual));
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, pc.SameSite(&actual));
   EXPECT_EQ(CookieSameSiteString::kExtended, actual);
 
   pc.SetSameSite("Bananas");

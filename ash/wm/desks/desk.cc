@@ -85,7 +85,7 @@ class DeskContainerObserver : public aura::WindowObserver {
   // aura::WindowObserver:
   void OnWindowAdded(aura::Window* new_window) override {
     // TODO(afakhry): Overview mode creates a new widget for each window under
-    // the same parent for the CaptionContainerView. We will be notified with
+    // the same parent for the OverviewItemView. We will be notified with
     // this window addition here. Consider ignoring these windows if they cause
     // problems.
     owner_->AddWindowToDesk(new_window);

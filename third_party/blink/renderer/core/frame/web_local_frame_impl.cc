@@ -927,10 +927,6 @@ void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
       WebFrameLoadType::kStandard);
 }
 
-void WebLocalFrameImpl::CheckCompleted() {
-  GetFrame()->GetDocument()->CheckCompleted();
-}
-
 void WebLocalFrameImpl::StopLoading() {
   if (!GetFrame())
     return;

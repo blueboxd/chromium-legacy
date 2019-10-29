@@ -53,10 +53,6 @@ sys.path.insert(0, os.path.join(SRC_DIR, 'build'))
 import find_depot_tools
 find_depot_tools.add_depot_tools_to_path()
 import roll_dep_svn
-from third_party import upload
-
-# Avoid depot_tools/third_party/upload.py print verbose messages.
-upload.verbosity = 0  # Errors only.
 
 CHROMIUM_GIT_URL = 'https://chromium.googlesource.com/chromium/src.git'
 CL_ISSUE_RE = re.compile('^Issue number: ([0-9]+) \((.*)\)$')

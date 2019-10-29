@@ -564,7 +564,7 @@ AvatarToolbarButton::State AvatarToolbarButton::GetState() const {
 
 #if !defined(OS_CHROMEOS)
   if (identity_manager->HasPrimaryAccount() && profile_->IsSyncAllowed() &&
-      error_controller_.HasAvatarError() && !highlight_animation_visible_) {
+      error_controller_.HasAvatarError()) {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.
     int unused;
@@ -612,23 +612,15 @@ void AvatarToolbarButton::OnUserIdentityChanged(
 }
 
 void AvatarToolbarButton::ShowHighlightAnimation() {
+  DCHECK_NE(GetState(), State::kIncognitoProfile);
+  DCHECK_NE(GetState(), State::kGuestSession);
   highlight_animation_visible_ = true;
-  // TODO(crbug.com/932818): Avatar highlight animation should not be shown when
-  // the sign-in animation is visible. We will figure out the direction moving
-  // forward when all the pieces come together.
-  // Button state should be checked before text is updated, but after the
-  // |highlight_animation_visible_| is set to true.
-  DCHECK(GetState() == State::kNormal || GetState() == State::kGenericProfile ||
-         GetState() == State::kAnimatedUserIdentity);
   UpdateText();
 }
 
 void AvatarToolbarButton::HideHighlightAnimation() {
-  // TODO(crbug.com/932818): Avatar highlight animation should not be shown when
-  // the sign-in animation is visible. We will figure out the direction moving
-  // forward when all the pieces come together.
-  DCHECK(GetState() == State::kNormal || GetState() == State::kGenericProfile ||
-         GetState() == State::kAnimatedUserIdentity);
+  DCHECK_NE(GetState(), State::kIncognitoProfile);
+  DCHECK_NE(GetState(), State::kGuestSession);
   highlight_animation_visible_ = false;
   UpdateText();
 

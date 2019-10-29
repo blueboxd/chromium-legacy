@@ -130,8 +130,9 @@ void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
       this, form_data, generation_element_id, password);
 }
 
-void ContentPasswordManagerDriver::TouchToFillDismissed() {
-  GetPasswordAutofillAgent()->TouchToFillDismissed();
+void ContentPasswordManagerDriver::TouchToFillClosed(
+    ShowVirtualKeyboard show_virtual_keyboard) {
+  GetPasswordAutofillAgent()->TouchToFillClosed(show_virtual_keyboard.value());
 }
 
 void ContentPasswordManagerDriver::FillSuggestion(

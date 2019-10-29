@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/lazy_instance.h"
+#include "base/observer_list.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
@@ -27,15 +28,26 @@ class JsChannelImpl : public mojom::JsChannel {
   DISALLOW_COPY_AND_ASSIGN(JsChannelImpl);
 };
 
-struct Instance {
-  int process_id;
-  int routing_id;
-  JsClientInstance* instance;
-};
+// The web contents and channel implementations don't know about each other
+// so keep some global state to allow access.
+struct JsChannelsGlobalState {
+  static JsChannelsGlobalState& Get();
 
-using EndpointList = std::vector<Instance>;
-static base::LazyInstance<EndpointList>::DestructorAtExit g_instance_list =
-    LAZY_INSTANCE_INITIALIZER;
+  struct Instance {
+    int process_id;
+    int routing_id;
+    JsClientInstance* instance;
+  };
+  std::vector<Instance> instance_list;
+  base::ObserverList<JsClientInstance::Observer> observer_list;
+};
+static base::LazyInstance<JsChannelsGlobalState>::DestructorAtExit
+    g_global_state = LAZY_INSTANCE_INITIALIZER;
+
+// static
+JsChannelsGlobalState& JsChannelsGlobalState::Get() {
+  return g_global_state.Get();
+}
 
 }  // namespace
 
@@ -74,19 +86,32 @@ JsClientInstance::JsClientInstance(
       base::BindRepeating([](JsClientInstance* self, uint32_t err,
                              const std::string& str) { delete self; },
                           base::Unretained(this)));
-  g_instance_list.Get().push_back({process_id, routing_id, this});
+  auto& state = JsChannelsGlobalState::Get();
+  state.instance_list.push_back({process_id, routing_id, this});
+  for (auto& o : state.observer_list)
+    o.OnJsClientInstanceRegistered(process_id, routing_id, this);
 }
 
 JsClientInstance::~JsClientInstance() {
-  auto& list = g_instance_list.Get();
+  auto& list = JsChannelsGlobalState::Get().instance_list;
   list.erase(std::find_if(list.begin(), list.end(), [this](const auto& e) {
     return e.instance == this;
   }));
 }
 
 // static
+void JsClientInstance::AddObserver(Observer* observer) {
+  JsChannelsGlobalState::Get().observer_list.AddObserver(observer);
+}
+
+// static
+void JsClientInstance::RemoveObserver(Observer* observer) {
+  JsChannelsGlobalState::Get().observer_list.RemoveObserver(observer);
+}
+
+// static
 JsClientInstance* JsClientInstance::Find(int process_id, int routing_id) {
-  for (auto& e : g_instance_list.Get()) {
+  for (auto& e : JsChannelsGlobalState::Get().instance_list) {
     if (e.process_id == process_id && e.routing_id == routing_id)
       return e.instance;
   }

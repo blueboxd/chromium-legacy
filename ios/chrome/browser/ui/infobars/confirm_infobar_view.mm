@@ -86,19 +86,35 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
 
 // Returns the font for the Infobar's main body text.
 UIFont* InfoBarLabelFont() {
-  return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  // Due to https://crbug.com/989761, disable dynamic type. Once migration to
+  // Messages is complete, this class will be deleted.
+  if (@available(iOS 13, *)) {
+    return [UIFont systemFontOfSize:17];
+  } else {
+    return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  }
 }
 
 // Returns the font for the Infobar's toggle switch's (if one exists) body text.
-// This text label is usually of a slightly smaller font size relative to
-// InfoBarLabelFont().
 UIFont* InfoBarSwitchLabelFont() {
-  return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  // Due to https://crbug.com/989761, disable dynamic type. Once migration to
+  // Messages is complete, this class will be deleted.
+  if (@available(iOS 13, *)) {
+    return [UIFont systemFontOfSize:17];
+  } else {
+    return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  }
 }
 
 // Returns the font for the label on Infobar's action buttons.
 UIFont* InfoBarButtonLabelFont() {
-  return [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  // Due to https://crbug.com/989761, disable dynamic type. Once migration to
+  // Messages is complete, this class will be deleted.
+  if (@available(iOS 13, *)) {
+    return [UIFont systemFontOfSize:17 weight:UIFontWeightSemibold];
+  } else {
+    return [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  }
 }
 
 UIImage* InfoBarCloseImage() {

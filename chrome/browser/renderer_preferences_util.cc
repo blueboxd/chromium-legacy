@@ -74,6 +74,18 @@ void ParsePortRange(const std::string& range,
   *max_port = static_cast<uint16_t>(max_port_uint);
 }
 
+// Extracts the string representation of URLs allowed for local IP exposure.
+std::vector<std::string> GetLocalIpsAllowedUrls(
+    const base::ListValue* allowed_urls) {
+  std::vector<std::string> ret;
+  if (allowed_urls) {
+    const auto& urls = allowed_urls->GetList();
+    for (const auto& url : urls)
+      ret.push_back(url.GetString());
+  }
+  return ret;
+}
+
 }  // namespace
 
 namespace renderer_preferences_util {
@@ -109,6 +121,9 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   ParsePortRange(webrtc_udp_port_range, &prefs->webrtc_udp_min_port,
                  &prefs->webrtc_udp_max_port);
 
+  const base::ListValue* allowed_urls =
+      pref_service->GetList(prefs::kWebRtcLocalIpsAllowedUrls);
+  prefs->webrtc_local_ips_allowed_urls = GetLocalIpsAllowedUrls(allowed_urls);
 #if defined(USE_AURA)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);
 #if defined(OS_CHROMEOS)

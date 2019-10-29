@@ -720,55 +720,6 @@ const FeatureEntry::FeatureVariation
          nullptr}};
 #endif  // OS_ANDROID
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-const FeatureEntry::FeatureParam
-    kAutofillSaveCreditCardUsesImprovedMessagingStoreCard[] = {
-        {autofill::features::
-             kAutofillSaveCreditCardUsesImprovedMessagingParamName,
-         autofill::features::
-             kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard}};
-const FeatureEntry::FeatureParam
-    kAutofillSaveCreditCardUsesImprovedMessagingStoreBillingDetails[] = {
-        {autofill::features::
-             kAutofillSaveCreditCardUsesImprovedMessagingParamName,
-         autofill::features::
-             kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails}};
-const FeatureEntry::FeatureParam
-    kAutofillSaveCreditCardUsesImprovedMessagingAddCard[] = {
-        {autofill::features::
-             kAutofillSaveCreditCardUsesImprovedMessagingParamName,
-         autofill::features::
-             kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard}};
-const FeatureEntry::FeatureParam
-    kAutofillSaveCreditCardUsesImprovedMessagingConfirmAndSaveCard[] = {
-        {autofill::features::
-             kAutofillSaveCreditCardUsesImprovedMessagingParamName,
-         autofill::features::
-             kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard}};
-
-const FeatureEntry::FeatureVariation
-    kAutofillSaveCreditCardUsesImprovedMessagingVariations[] = {
-        {"(store card variation)",
-         kAutofillSaveCreditCardUsesImprovedMessagingStoreCard,
-         base::size(kAutofillSaveCreditCardUsesImprovedMessagingStoreCard),
-         nullptr},
-        {"(store billing details variation)",
-         kAutofillSaveCreditCardUsesImprovedMessagingStoreBillingDetails,
-         base::size(
-             kAutofillSaveCreditCardUsesImprovedMessagingStoreBillingDetails),
-         nullptr},
-        {"(add card variation)",
-         kAutofillSaveCreditCardUsesImprovedMessagingAddCard,
-         base::size(kAutofillSaveCreditCardUsesImprovedMessagingAddCard),
-         nullptr},
-        {"(confirm & save card variation)",
-         kAutofillSaveCreditCardUsesImprovedMessagingConfirmAndSaveCard,
-         base::size(
-             kAutofillSaveCreditCardUsesImprovedMessagingConfirmAndSaveCard),
-         nullptr},
-};
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-
 const FeatureEntry::Choice kMemlogModeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
     {flag_descriptions::kMemlogModeMinimal, heap_profiling::kMemlogMode,
@@ -1158,10 +1109,6 @@ const FeatureEntry::FeatureParam kResamplingInputEventsLSQEnabled[] = {
     {"predictor", ui::input_prediction::kScrollPredictorNameLsq}};
 const FeatureEntry::FeatureParam kResamplingInputEventsKalmanEnabled[] = {
     {"predictor", ui::input_prediction::kScrollPredictorNameKalman}};
-const FeatureEntry::FeatureParam
-    kResamplingInputEventsKalmanHeuristicEnabled[] = {
-        {"predictor",
-         ui::input_prediction::kScrollPredictorNameKalmanHeuristic}};
 const FeatureEntry::FeatureParam kResamplingInputEventsLinearFirstEnabled[] = {
     {"predictor", ui::input_prediction::kScrollPredictorNameLinearFirst}};
 const FeatureEntry::FeatureParam kResamplingInputEventsLinearSecondEnabled[] = {
@@ -1178,9 +1125,6 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
      {ui::input_prediction::kScrollPredictorNameKalman,
       kResamplingInputEventsKalmanEnabled,
       base::size(kResamplingInputEventsKalmanEnabled), nullptr},
-     {ui::input_prediction::kScrollPredictorNameKalmanHeuristic,
-      kResamplingInputEventsKalmanHeuristicEnabled,
-      base::size(kResamplingInputEventsKalmanHeuristicEnabled), nullptr},
      {ui::input_prediction::kScrollPredictorNameLinearFirst,
       kResamplingInputEventsLinearFirstEnabled,
       base::size(kResamplingInputEventsLinearFirstEnabled), nullptr},
@@ -4277,18 +4221,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAudioWorkletRealtimeThreadDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kAudioWorkletRealtimeThread)},
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-    {"enable-autofill-save-credit-card-uses-improved-messaging",
-     flag_descriptions::kEnableAutofillSaveCreditCardUsesImprovedMessagingName,
-     flag_descriptions::
-         kEnableAutofillSaveCreditCardUsesImprovedMessagingDescription,
-     kOsWin | kOsMac | kOsLinux,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         autofill::features::kAutofillSaveCreditCardUsesImprovedMessaging,
-         kAutofillSaveCreditCardUsesImprovedMessagingVariations,
-         "AutofillSaveCreditCardUsesImprovedMessaging")},
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-
 #if defined(OS_CHROMEOS)
     {"release-notes", flag_descriptions::kReleaseNotesName,
      flag_descriptions::kReleaseNotesDescription, kOsCrOS,
@@ -4729,6 +4661,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGamesHubDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(games::features::kGamesHub)},
 #endif  // defined(OS_ANDROID)
+
+    {"enable-heavy-ad-intervention",
+     flag_descriptions::kHeavyAdInterventionName,
+     flag_descriptions::kHeavyAdInterventionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kHeavyAdIntervention)},
+
+    {"heavy-ad-privacy-mitigations-opt-out",
+     flag_descriptions::kHeavyAdPrivacyMitigationsOptOutName,
+     flag_descriptions::kHeavyAdPrivacyMitigationsOptOutDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kHeavyAdPrivacyMitigations)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

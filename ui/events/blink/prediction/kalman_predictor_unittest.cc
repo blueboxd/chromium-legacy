@@ -45,7 +45,7 @@ class KalmanPredictorTest : public InputPredictorTest {
 
   void SetUp() override {
     predictor_ = std::make_unique<ui::KalmanPredictor>(
-        ui::KalmanPredictor::HeuristicsMode::kHeuristicsDisabled);
+        ui::KalmanPredictor::PredictionOptions::kNone);
   }
 
   DISALLOW_COPY_AND_ASSIGN(KalmanPredictorTest);
@@ -149,7 +149,7 @@ TEST_F(KalmanPredictorTest, TimeInterval) {
 TEST_F(KalmanPredictorTest, HeuristicApproach) {
   std::unique_ptr<InputPredictor> heuristic_predictor =
       std::make_unique<ui::KalmanPredictor>(
-          ui::KalmanPredictor::HeuristicsMode::kHeuristicsEnabled);
+          ui::KalmanPredictor::PredictionOptions::kHeuristicsEnabled);
   std::vector<double> x_stabilizer = {-40, -32, -24, -16, -8, 0};
   std::vector<double> y_stabilizer = {-40, -32, -24, -16, -8, 0};
   std::vector<double> t_stabilizer = {-40, -32, -24, -16, -8, 0};
@@ -179,6 +179,25 @@ TEST_F(KalmanPredictorTest, HeuristicApproach) {
     heuristic_predictor->Update(data);
     predictor_->Update(data);
   }
+}
+
+// Test the kalman predictor prevention of rubber-banding.
+TEST_F(KalmanPredictorTest, DirectionalCutOff) {
+  predictor_ = std::make_unique<ui::KalmanPredictor>(
+      ui::KalmanPredictor::PredictionOptions::kDirectionCutOffEnabled);
+  std::vector<double> x = {98, 72, 50, 32, 18, 8, 2};
+  std::vector<double> y = {49, 36, 25, 16, 9, 4, 1};
+  std::vector<double> t = {8, 16, 24, 32, 40, 48, 56};
+  for (size_t i = 0; i < t.size(); i++) {
+    InputPredictor::InputData data = {gfx::PointF(x[i], y[i]),
+                                      FromMilliseconds(t[i])};
+    predictor_->Update(data);
+  }
+  // On t=64, position is (0,0), and in t=72 it is (2,1) again which means that
+  // direction has shifted in the opposite direction and prediction should be
+  // cut off.
+  auto result = predictor_->GeneratePrediction(FromMilliseconds(72));
+  EXPECT_FALSE(result);
 }
 
 }  // namespace test

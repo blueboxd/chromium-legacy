@@ -742,8 +742,7 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   const base::string16 plugin_name = base::ASCIIToUTF16("plugin_name");
 
-  content_settings->OnContentBlockedWithDetail(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                               plugin_name);
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS);
 
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(

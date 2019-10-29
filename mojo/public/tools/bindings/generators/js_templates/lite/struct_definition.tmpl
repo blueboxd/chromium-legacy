@@ -33,6 +33,11 @@ mojo.internal.Struct(
 {%- endfor %}
     ]);
 
+{% if generate_struct_deserializers %}
+{{module.namespace}}.{{struct.name}}_Deserialize =
+    mojo.internal.createStructDeserializer({{module.namespace}}.{{struct.name}}Spec.$);
+{% endif %}
+
 {%  if generate_closure_exports -%}
 goog.provide('{{module.namespace}}.{{struct.name}}');
 

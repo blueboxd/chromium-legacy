@@ -143,7 +143,7 @@ TEST(CanonicalCookieTest, Create) {
   cookie = CanonicalCookie::Create(url, "A=2; SameSite=Extended", creation_time,
                                    server_time);
   ASSERT_TRUE(cookie.get());
-  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, cookie->SameSite());
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookie->SameSite());
   cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", creation_time,
                                    server_time);
   ASSERT_TRUE(cookie.get());

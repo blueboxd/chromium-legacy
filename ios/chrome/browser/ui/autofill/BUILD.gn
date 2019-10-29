@@ -136,6 +136,7 @@ source_set("autofill_ui") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -144,6 +145,7 @@ source_set("eg_tests") {
   ]
   deps = [
     ":autofill_ui",
+    ":test_support",
     "//components/autofill/core/browser",
     "//components/autofill/ios/browser:autofill_test_bundle_data",
     "//components/autofill/ios/browser:test_support",
@@ -153,6 +155,7 @@ source_set("eg_tests") {
     "//ios/chrome/test:eg_test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web/public/js_messaging",
     "//ios/web/public/test/http_server",
     "//services/network:test_support",
@@ -161,6 +164,29 @@ source_set("eg_tests") {
     "UIKit.framework",
     "XCTest.framework",
   ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "save_profile_egtest.mm",
+  ]
+  deps = [
+    ":eg_test_support+eg2",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test/http_server",
+    "//testing/gtest",
+  ]
+  libs = [ "UIKit.framework" ]
 }
 
 source_set("test_support") {

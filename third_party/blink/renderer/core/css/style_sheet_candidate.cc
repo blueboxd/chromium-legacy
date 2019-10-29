@@ -86,7 +86,7 @@ StyleSheetCandidate::Type StyleSheetCandidate::TypeOf(Node& node) {
   if (node.IsHTMLElement()) {
     if (IsHTMLLinkElement(node))
       return kHTMLLink;
-    if (IsHTMLStyleElement(node))
+    if (IsA<HTMLStyleElement>(node))
       return kHTMLStyle;
 
     NOTREACHED();
@@ -105,7 +105,7 @@ StyleSheet* StyleSheetCandidate::Sheet() const {
     case kHTMLLink:
       return ToHTMLLinkElement(GetNode()).sheet();
     case kHTMLStyle:
-      return ToHTMLStyleElement(GetNode()).sheet();
+      return To<HTMLStyleElement>(GetNode()).sheet();
     case kSVGStyle:
       return ToSVGStyleElement(GetNode()).sheet();
     case kPi:

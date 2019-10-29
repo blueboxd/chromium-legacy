@@ -375,10 +375,12 @@ void SVGAngle::Add(SVGPropertyBase* other, SVGElement*) {
 
 void SVGAngle::Assign(const SVGAngle& other) {
   SVGMarkerOrientType other_orient_type = other.OrientType()->EnumValue();
-  if (other_orient_type == kSVGMarkerOrientAngle)
+  if (other_orient_type == kSVGMarkerOrientAngle) {
     NewValueSpecifiedUnits(other.UnitType(), other.ValueInSpecifiedUnits());
-  else
-    orient_type_->SetEnumValue(other_orient_type);
+    return;
+  }
+  value_in_specified_units_ = 0;
+  orient_type_->SetEnumValue(other_orient_type);
 }
 
 void SVGAngle::CalculateAnimatedValue(
@@ -389,46 +391,25 @@ void SVGAngle::CalculateAnimatedValue(
     SVGPropertyBase* to,
     SVGPropertyBase* to_at_end_of_duration,
     SVGElement*) {
-  bool is_to_animation = animation_element.GetAnimationMode() == kToAnimation;
-
-  SVGAngle* from_angle = is_to_animation ? this : ToSVGAngle(from);
+  SVGAngle* from_angle = ToSVGAngle(from);
   SVGAngle* to_angle = ToSVGAngle(to);
   SVGMarkerOrientType from_orient_type = from_angle->OrientType()->EnumValue();
   SVGMarkerOrientType to_orient_type = to_angle->OrientType()->EnumValue();
 
-  if (from_orient_type != to_orient_type) {
-    // Fall back to discrete animation.
+  // We can only interpolate between two SVGAngles with orient-type 'angle',
+  // all other cases will use discrete animation.
+  if (from_orient_type != to_orient_type ||
+      from_orient_type != kSVGMarkerOrientAngle) {
     Assign(percentage < 0.5f ? *from_angle : *to_angle);
     return;
   }
 
-  switch (from_orient_type) {
-    // From 'auto' to 'auto', or 'auto-start-reverse' to 'auto-start-reverse'
-    case kSVGMarkerOrientAuto:
-    case kSVGMarkerOrientAutoStartReverse:
-      OrientType()->SetEnumValue(from_orient_type);
-      return;
-
-    // Regular from angle to angle animation, with all features like additive
-    // etc.
-    case kSVGMarkerOrientAngle: {
-      float animated_value = Value();
-      SVGAngle* to_at_end_of_duration_angle = ToSVGAngle(to_at_end_of_duration);
-
-      animation_element.AnimateAdditiveNumber(
-          percentage, repeat_count, from_angle->Value(), to_angle->Value(),
-          to_at_end_of_duration_angle->Value(), animated_value);
-      OrientType()->SetEnumValue(kSVGMarkerOrientAngle);
-      SetValue(animated_value);
-    }
-      return;
-
-    // If the enumeration value is not angle or auto, its unknown.
-    default:
-      value_in_specified_units_ = 0;
-      OrientType()->SetEnumValue(kSVGMarkerOrientUnknown);
-      return;
-  }
+  float animated_value = Value();
+  animation_element.AnimateAdditiveNumber(
+      percentage, repeat_count, from_angle->Value(), to_angle->Value(),
+      ToSVGAngle(to_at_end_of_duration)->Value(), animated_value);
+  OrientType()->SetEnumValue(kSVGMarkerOrientAngle);
+  SetValue(animated_value);
 }
 
 float SVGAngle::CalculateDistance(SVGPropertyBase* other, SVGElement*) {

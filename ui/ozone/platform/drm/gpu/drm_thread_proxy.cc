@@ -68,8 +68,8 @@ void DrmThreadProxy::BindThreadIntoMessagingProxy(
   messaging_proxy->SetDrmThread(&drm_thread_);
 }
 
-void DrmThreadProxy::StartDrmThread(base::OnceClosure binding_drainer) {
-  drm_thread_.Start(std::move(binding_drainer),
+void DrmThreadProxy::StartDrmThread(base::OnceClosure receiver_drainer) {
+  drm_thread_.Start(std::move(receiver_drainer),
                     std::make_unique<GbmDeviceGenerator>());
 }
 
@@ -162,15 +162,15 @@ void DrmThreadProxy::CheckOverlayCapabilities(
                                 std::move(task), nullptr));
 }
 
-void DrmThreadProxy::AddBindingDrmDevice(
-    ozone::mojom::DrmDeviceRequest request) {
-  DCHECK(drm_thread_.task_runner()) << "DrmThreadProxy::AddBindingDrmDevice "
+void DrmThreadProxy::AddDrmDeviceReceiver(
+    mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver) {
+  DCHECK(drm_thread_.task_runner()) << "DrmThreadProxy::AddDrmDeviceReceiver "
                                        "drm_thread_ task runner missing";
 
   drm_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&DrmThread::AddBindingDrmDevice,
-                     base::Unretained(&drm_thread_), std::move(request)));
+      base::BindOnce(&DrmThread::AddDrmDeviceReceiver,
+                     base::Unretained(&drm_thread_), std::move(receiver)));
 }
 
 }  // namespace ui

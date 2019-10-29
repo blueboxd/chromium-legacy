@@ -133,5 +133,33 @@ views::View* GetBubbleContainer(views::View* view) {
   return container;
 }
 
+gfx::Point CalculateBubblePositionLeftRightStrategy(gfx::Rect anchor,
+                                                    gfx::Size bubble,
+                                                    gfx::Rect bounds) {
+  gfx::Rect result(anchor.x() - bubble.width(), anchor.y(), bubble.width(),
+                   bubble.height());
+  // Trying to show on the left side.
+  // If there is not enough space show on the right side.
+  if (result.x() < bounds.x()) {
+    result.Offset(anchor.width() + result.width(), 0);
+  }
+  result.AdjustToFit(bounds);
+  return result.origin();
+}
+
+gfx::Point CalculateBubblePositionRigthLeftStrategy(gfx::Rect anchor,
+                                                    gfx::Size bubble,
+                                                    gfx::Rect bounds) {
+  gfx::Rect result(anchor.x() + anchor.width(), anchor.y(), bubble.width(),
+                   bubble.height());
+  // Trying to show on the right side.
+  // If there is not enough space show on the left side.
+  if (result.right() > bounds.right()) {
+    result.Offset(-anchor.width() - result.width(), 0);
+  }
+  result.AdjustToFit(bounds);
+  return result.origin();
+}
+
 }  // namespace login_views_utils
 }  // namespace ash

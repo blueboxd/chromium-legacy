@@ -1891,7 +1891,8 @@ Element* InspectorStyleSheet::OwnerStyleElement() {
   if (!owner_element)
     return nullptr;
 
-  if (!IsHTMLStyleElement(owner_element) && !IsSVGStyleElement(owner_element))
+  if (!IsA<HTMLStyleElement>(owner_element) &&
+      !IsSVGStyleElement(owner_element))
     return nullptr;
   return owner_element;
 }

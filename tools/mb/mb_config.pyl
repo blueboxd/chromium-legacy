@@ -309,6 +309,7 @@
       'Mac deterministic': 'release_bot_mac_strip_minimal_symbols_deterministic',
       'Mac deterministic (dbg)': 'debug_bot_deterministic',
       'mac-autofill-captured-sites-rel': 'release_bot',
+      'mac-code-coverage': 'clang_code_coverage_nofuzzer',
 
       'android-mojo-webview-rel': 'android_release_bot_minimal_symbols_arm64',
       'Mojo ChromiumOS': 'chromeos_with_codecs_release_trybot',
@@ -1118,7 +1119,7 @@
 
     'android_release_bot_minimal_symbols_arm64_coverage': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'strip_debug_info', 'use_java_coverage', 'use_clang_coverage',
+      'strip_debug_info', 'use_java_coverage',
     ],
 
     'android_release_bot_minimal_symbols_arm64_webview_google': [

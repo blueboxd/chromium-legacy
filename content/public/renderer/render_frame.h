@@ -144,6 +144,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // menu is closed.
   virtual void CancelContextMenu(int request_id) = 0;
 
+  // Issues a request to show the virtual keyboard.
+  virtual void ShowVirtualKeyboard() = 0;
+
   // Create a new Pepper plugin depending on |info|. Returns NULL if no plugin
   // was found. |throttler| may be empty.
   virtual blink::WebPlugin* CreatePlugin(

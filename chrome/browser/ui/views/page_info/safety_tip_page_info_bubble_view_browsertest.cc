@@ -475,6 +475,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   if (ui_status() == UIStatus::kDisabled) {
     return;
   }
+
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 

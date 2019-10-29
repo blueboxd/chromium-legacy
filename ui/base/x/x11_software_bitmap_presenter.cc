@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <cstring>
 #include <memory>
 #include <utility>
 
@@ -127,6 +128,7 @@ X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
     : widget_(widget), display_(gfx::GetXDisplay()), gc_(nullptr) {
   DCHECK_NE(widget_, gfx::kNullAcceleratedWidget);
   gc_ = XCreateGC(display_, widget_, 0, nullptr);
+  memset(&attributes_, 0, sizeof(attributes_));
   if (!XGetWindowAttributes(display_, widget_, &attributes_)) {
     LOG(ERROR) << "XGetWindowAttributes failed for window " << widget_;
     return;
@@ -149,13 +151,15 @@ X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
 }
 
 X11SoftwareBitmapPresenter::~X11SoftwareBitmapPresenter() {
-  XFreeGC(display_, gc_);
+  if (gc_)
+    XFreeGC(display_, gc_);
 
-  shm_pool_->Teardown();
+  if (shm_pool_)
+    shm_pool_->Teardown();
 }
 
 bool X11SoftwareBitmapPresenter::ShmPoolReady() const {
-  return shm_pool_->Ready();
+  return shm_pool_ && shm_pool_->Ready();
 }
 
 bool X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
@@ -164,7 +168,7 @@ bool X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
   // happens for status icon windows that are typically 16x16px.  It's possible
   // to add a shm codepath, but it wouldn't be buying much since it would only
   // affect windows that are tiny and infrequently updated.
-  if (!composite_ && shm_pool_->Resize(pixel_size)) {
+  if (!composite_ && shm_pool_ && shm_pool_->Resize(pixel_size)) {
     needs_swap_ = false;
     return true;
   }
@@ -172,7 +176,7 @@ bool X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
 }
 
 SkCanvas* X11SoftwareBitmapPresenter::GetSkCanvas() {
-  if (shm_pool_->Ready())
+  if (ShmPoolReady())
     return shm_pool_->CurrentCanvas();
   return nullptr;
 }
@@ -186,7 +190,7 @@ void X11SoftwareBitmapPresenter::EndPaint(sk_sp<SkSurface> sk_surface,
 
   SkPixmap skia_pixmap;
 
-  if (shm_pool_->Ready()) {
+  if (ShmPoolReady()) {
     DCHECK(!sk_surface);
     // TODO(thomasanderson): Investigate direct rendering with DRI3 to avoid any
     // unnecessary X11 IPC or buffer copying.
@@ -279,7 +283,7 @@ void X11SoftwareBitmapPresenter::EndPaint(sk_sp<SkSurface> sk_surface,
 
 void X11SoftwareBitmapPresenter::OnSwapBuffers(
     SwapBuffersCallback swap_ack_callback) {
-  DCHECK(shm_pool_->Ready());
+  DCHECK(ShmPoolReady());
   if (needs_swap_)
     shm_pool_->SwapBuffers(std::move(swap_ack_callback));
   else

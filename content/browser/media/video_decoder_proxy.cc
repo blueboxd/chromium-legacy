@@ -44,7 +44,7 @@ void VideoDecoderProxy::CreateVideoDecoder(
 
 void VideoDecoderProxy::CreateDefaultRenderer(
     const std::string& audio_device_id,
-    media::mojom::RendererRequest request) {}
+    mojo::PendingReceiver<media::mojom::Renderer> receiver) {}
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 void VideoDecoderProxy::CreateCastRenderer(
@@ -69,7 +69,7 @@ void VideoDecoderProxy::CreateMediaPlayerRenderer(
 
 void VideoDecoderProxy::CreateCdm(
     const std::string& key_system,
-    media::mojom::ContentDecryptionModuleRequest request) {}
+    mojo::PendingReceiver<media::mojom::ContentDecryptionModule> receiver) {}
 
 void VideoDecoderProxy::CreateDecryptor(
     int cdm_id,

@@ -523,7 +523,7 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
 }
 
 void Compositor::AddVSyncParameterObserver(
-    viz::mojom::VSyncParameterObserverPtr observer) {
+    mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer) {
   if (context_factory_private_) {
     context_factory_private_->AddVSyncParameterObserver(this,
                                                         std::move(observer));

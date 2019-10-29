@@ -734,11 +734,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Attributes ----------------------------------------------------------------
 
-  // Returns the first ancestor, starting at this, whose class name is |name|.
-  // Returns null if no ancestor has the class name |name|.
-  const View* GetAncestorWithClassName(const std::string& name) const;
-  View* GetAncestorWithClassName(const std::string& name);
-
   // Recursively descends the view tree starting at this view, and returns
   // the first child that it encounters that has the given ID.
   // Returns NULL if no matching child view is found.
@@ -1326,32 +1321,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Scrolls the view's bounds or some subset thereof to be visible. By default
   // this function calls ScrollRectToVisible(GetLocalBounds()).
   void ScrollViewToVisible();
-
-  // The following methods are used by ScrollView to determine the amount
-  // to scroll relative to the visible bounds of the view. For example, a
-  // return value of 10 indicates the scroll_view should scroll 10 pixels in
-  // the appropriate direction.
-  //
-  // Each method takes the following parameters:
-  //
-  // is_horizontal: if true, scrolling is along the horizontal axis, otherwise
-  //                the vertical axis.
-  // is_positive: if true, scrolling is by a positive amount. Along the
-  //              vertical axis scrolling by a positive amount equates to
-  //              scrolling down.
-  //
-  // The return value should always be positive and gives the number of pixels
-  // to scroll. ScrollView interprets a return value of 0 (or negative)
-  // to scroll by a default amount.
-  //
-  // See VariableRowHeightScrollHelper and FixedRowHeightScrollHelper for
-  // implementations of common cases.
-  int GetPageScrollIncrement(ScrollView* scroll_view,
-                             bool is_horizontal,
-                             bool is_positive);
-  int GetLineScrollIncrement(ScrollView* scroll_view,
-                             bool is_horizontal,
-                             bool is_positive);
 
   void AddObserver(ViewObserver* observer);
   void RemoveObserver(ViewObserver* observer);

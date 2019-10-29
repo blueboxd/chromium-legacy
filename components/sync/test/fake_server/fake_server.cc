@@ -11,6 +11,7 @@
 
 #include "base/guid.h"
 #include "base/hash/hash.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,7 +21,9 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
+#include "components/sync/protocol/proto_value_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 
@@ -161,6 +164,13 @@ void PopulateWalletResults(
   }
 }
 
+std::string PrettyPrintValue(std::unique_ptr<base::DictionaryValue> value) {
+  std::string message;
+  base::JSONWriter::WriteWithOptions(
+      *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &message);
+  return message;
+}
+
 }  // namespace
 
 bool AreWalletDataProgressMarkersEquivalent(
@@ -185,87 +195,94 @@ net::HttpStatusCode FakeServer::HandleCommand(const std::string& request,
   bool parsed = message.ParseFromString(request);
   DCHECK(parsed) << "Unable to parse the ClientToServerMessage.";
 
+  LogForTestFailure(FROM_HERE, "REQUEST",
+                    PrettyPrintValue(syncer::ClientToServerMessageToValue(
+                        message, /*include_specifics=*/true)));
+
   sync_pb::ClientToServerResponse response_proto;
+  net::HttpStatusCode http_status_code =
+      HandleParsedCommand(message, &response_proto);
+
+  LogForTestFailure(FROM_HERE, "RESPONSE",
+                    PrettyPrintValue(syncer::ClientToServerResponseToValue(
+                        response_proto,
+                        /*include_specifics=*/true)));
+
+  *response = response_proto.SerializeAsString();
+  return http_status_code;
+}
+
+net::HttpStatusCode FakeServer::HandleParsedCommand(
+    const sync_pb::ClientToServerMessage& message,
+    sync_pb::ClientToServerResponse* response) {
+  DCHECK(response);
+  response->Clear();
+
   if (message.message_contents() == sync_pb::ClientToServerMessage::COMMIT &&
       commit_error_type_ != sync_pb::SyncEnums::SUCCESS &&
       ShouldSendTriggeredError()) {
-    response_proto.set_error_code(commit_error_type_);
-  } else if (error_type_ != sync_pb::SyncEnums::SUCCESS &&
-             ShouldSendTriggeredError()) {
-    response_proto.set_error_code(error_type_);
-  } else if (triggered_actionable_error_.get() && ShouldSendTriggeredError()) {
-    sync_pb::ClientToServerResponse_Error* error =
-        response_proto.mutable_error();
-    error->CopyFrom(*(triggered_actionable_error_.get()));
-  } else {
-    switch (message.message_contents()) {
-      case sync_pb::ClientToServerMessage::GET_UPDATES:
-        last_getupdates_message_ = message;
-        break;
-      case sync_pb::ClientToServerMessage::COMMIT:
-        last_commit_message_ = message;
-        break;
-      default:
-        break;
-        // Don't care.
-    }
-    // The loopback server does not know how to handle Wallet requests -- and
-    // should not. The FakeServer is handling those instead. The loopback server
-    // has a strong expectations about how progress tokens are structured. To
-    // not interfere with this, we remove wallet progress markers before passing
-    // the request to the loopback server and add them back again afterwards
-    // before handling those requests.
-    std::unique_ptr<sync_pb::DataTypeProgressMarker> wallet_marker =
-        RemoveWalletProgressMarkerIfExists(&message);
-    net::HttpStatusCode http_status_code =
-        SendToLoopbackServer(message.SerializeAsString(), response);
-    if (wallet_marker != nullptr) {
-      *message.mutable_get_updates()->add_from_progress_marker() =
-          *wallet_marker;
-      if (http_status_code == net::HTTP_OK) {
-        HandleWalletRequest(message, *wallet_marker, response);
-      }
-    }
-    if (http_status_code == net::HTTP_OK) {
-      InjectClientCommand(response);
-    }
-    return http_status_code;
+    response->set_error_code(commit_error_type_);
+    response->set_store_birthday(loopback_server_->GetStoreBirthday());
+    return net::HTTP_OK;
   }
 
-  response_proto.set_store_birthday(loopback_server_->GetStoreBirthday());
-  *response = response_proto.SerializeAsString();
-  return net::HTTP_OK;
-}
-
-void FakeServer::HandleWalletRequest(
-    const sync_pb::ClientToServerMessage& request,
-    const sync_pb::DataTypeProgressMarker& old_wallet_marker,
-    std::string* response_string) {
-  if (request.message_contents() !=
-      sync_pb::ClientToServerMessage::GET_UPDATES) {
-    return;
+  if (error_type_ != sync_pb::SyncEnums::SUCCESS &&
+      ShouldSendTriggeredError()) {
+    response->set_error_code(error_type_);
+    response->set_store_birthday(loopback_server_->GetStoreBirthday());
+    return net::HTTP_OK;
   }
-  sync_pb::ClientToServerResponse response_proto;
-  CHECK(response_proto.ParseFromString(*response_string));
-  PopulateWalletResults(wallet_entities_, old_wallet_marker,
-                        response_proto.mutable_get_updates());
-  *response_string = response_proto.SerializeAsString();
+
+  if (triggered_actionable_error_.get() && ShouldSendTriggeredError()) {
+    *response->mutable_error() = *triggered_actionable_error_;
+    response->set_store_birthday(loopback_server_->GetStoreBirthday());
+    return net::HTTP_OK;
+  }
+
+  switch (message.message_contents()) {
+    case sync_pb::ClientToServerMessage::GET_UPDATES:
+      last_getupdates_message_ = message;
+      break;
+    case sync_pb::ClientToServerMessage::COMMIT:
+      last_commit_message_ = message;
+      break;
+    default:
+      break;
+      // Don't care.
+  }
+
+  // The loopback server does not know how to handle Wallet requests -- and
+  // should not. The FakeServer is handling those instead. The loopback server
+  // has a strong expectations about how progress tokens are structured. To
+  // not interfere with this, we remove wallet progress markers before passing
+  // the request to the loopback server.
+  sync_pb::ClientToServerMessage message_without_wallet = message;
+  std::unique_ptr<sync_pb::DataTypeProgressMarker> wallet_marker =
+      RemoveWalletProgressMarkerIfExists(&message_without_wallet);
+
+  net::HttpStatusCode http_status_code =
+      SendToLoopbackServer(message_without_wallet, response);
+
+  if (wallet_marker != nullptr && http_status_code == net::HTTP_OK &&
+      message.message_contents() ==
+          sync_pb::ClientToServerMessage::GET_UPDATES) {
+    PopulateWalletResults(wallet_entities_, *wallet_marker,
+                          response->mutable_get_updates());
+  }
+
+  if (http_status_code == net::HTTP_OK &&
+      response->error_code() == sync_pb::SyncEnums::SUCCESS) {
+    *response->mutable_client_command() = client_command_;
+  }
+
+  return http_status_code;
 }
 
-net::HttpStatusCode FakeServer::SendToLoopbackServer(const std::string& request,
-                                                     std::string* response) {
+net::HttpStatusCode FakeServer::SendToLoopbackServer(
+    const sync_pb::ClientToServerMessage& message,
+    sync_pb::ClientToServerResponse* response) {
   base::ThreadRestrictions::SetIOAllowed(true);
-  return loopback_server_->HandleCommand(request, response);
-}
-
-void FakeServer::InjectClientCommand(std::string* response) {
-  sync_pb::ClientToServerResponse response_proto;
-  bool parse_ok = response_proto.ParseFromString(*response);
-  DCHECK(parse_ok) << "Unable to parse-back the server response";
-  if (response_proto.error_code() == sync_pb::SyncEnums::SUCCESS) {
-    *response_proto.mutable_client_command() = client_command_;
-    *response = response_proto.SerializeAsString();
-  }
+  return loopback_server_->HandleCommand(message, response);
 }
 
 bool FakeServer::GetLastCommitMessage(sync_pb::ClientToServerMessage* message) {
@@ -486,6 +503,15 @@ const std::set<std::string>& FakeServer::GetCommittedHistoryURLs() const {
 base::WeakPtr<FakeServer> FakeServer::AsWeakPtr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void FakeServer::LogForTestFailure(const base::Location& location,
+                                   const std::string& title,
+                                   const std::string& body) {
+  gtest_scoped_traces_.push_back(std::make_unique<testing::ScopedTrace>(
+      location.file_name(), location.line_number(),
+      base::StringPrintf("--- %s %d (reverse chronological order) ---\n%s",
+                         title.c_str(), request_counter_, body.c_str())));
 }
 
 }  // namespace fake_server

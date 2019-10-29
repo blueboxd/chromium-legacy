@@ -1027,11 +1027,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "enable-autofill-save-credit-card-uses-improved-messaging",
-    "owners": [ "siyua@chromium.org", "payments-autofill-team@google.com" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-autofill-updated-card-unmask-prompt-ui",
     "owners": ["siyua", "payments-autofill-team@google.com"],
     "expiry_milestone": 87
@@ -1359,6 +1354,11 @@
     // A debugging flag intended for end-users where there may not be any other
     // way to turn off graphics features.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-heavy-ad-intervention",
+    "owners": [ "johnidel", "jkarlin" ],
+    "expiry_milestone": 82
   },
   {
     "name": "enable-heuristic-stylus-palm-rejection",
@@ -2313,6 +2313,11 @@
     "name": "harfbuzz-pdf-subsetter",
     "owners": ["dhoss", "thestig"],
     "expiry_milestone": 80
+  },
+  {
+    "name": "heavy-ad-privacy-mitigations-opt-out",
+    "owners": [ "johnidel", "jkarlin" ],
+    "expiry_milestone": 82
   },
   {
     "name": "http-auth-committed-interstitials",

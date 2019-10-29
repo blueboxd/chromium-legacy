@@ -153,7 +153,7 @@ class MockNoiseProvider
     : public AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider {
  public:
   explicit MockNoiseProvider(int noise)
-      : HeavyAdThresholdNoiseProvider(), noise_(noise) {}
+      : HeavyAdThresholdNoiseProvider(true /* use_noise */), noise_(noise) {}
   ~MockNoiseProvider() override = default;
 
   int GetNetworkThresholdNoiseForFrame() const override { return noise_; }
@@ -2119,7 +2119,7 @@ TEST_F(AdsPageLoadMetricsObserverTest,
        HeavyAdBlocklistDisabled_InterventionNotBlocked) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures({features::kHeavyAdIntervention},
-                                {features::kHeavyAdBlocklist});
+                                {features::kHeavyAdPrivacyMitigations});
 
   // Fill up the blocklist to verify the blocklist logic is correctly ignored
   // when disabled.

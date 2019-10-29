@@ -196,16 +196,6 @@ jumbo_component("accessibility") {
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]
     }
-
-    if (use_x11) {
-      sources += [ "platform/atk_util_auralinux_x11.cc" ]
-
-      configs += [ "//build/config/linux:x11" ]
-      public_deps += [
-        "//ui/events/x",
-        "//ui/gfx/x",
-      ]
-    }
   }
 
   if (use_aura) {

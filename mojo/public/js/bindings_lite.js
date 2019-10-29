@@ -1331,6 +1331,22 @@ mojo.internal.Struct = function(objectToBlessAsType, name, packedSize, fields) {
 };
 
 /**
+ * @param {!mojo.internal.MojomType} structMojomType
+ * @return {!Function}
+ * @export
+ */
+mojo.internal.createStructDeserializer = function(structMojomType) {
+  return function(dataView) {
+    if (structMojomType.$ == undefined ||
+        structMojomType.$.structSpec == undefined) {
+      throw new Error("Invalid struct mojom type!");
+    }
+    const decoder = new mojo.internal.Decoder(dataView, []);
+    return decoder.decodeStructInline(structMojomType.$.structSpec);
+  };
+};
+
+/**
  * @param {!Object} objectToBlessAsUnion
  * @param {string} name
  * @param {!Object} fields

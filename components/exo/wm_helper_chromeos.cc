@@ -128,7 +128,7 @@ int WMHelperChromeOS::OnPerformDrop(const ui::DropTargetEvent& event,
 }
 
 void WMHelperChromeOS::AddVSyncParameterObserver(
-    viz::mojom::VSyncParameterObserverPtr observer) {
+    mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer) {
   GetPrimaryRoot()->layer()->GetCompositor()->AddVSyncParameterObserver(
       std::move(observer));
 }

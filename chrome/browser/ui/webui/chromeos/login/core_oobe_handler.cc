@@ -253,6 +253,19 @@ void CoreOobeHandler::ShowEnableDebuggingScreen() {
   }
 }
 
+void CoreOobeHandler::ShowEnableAdbSideloadingScreen() {
+  // Don't recreate WizardController if it already exists.
+  WizardController* wizard_controller = WizardController::default_controller();
+  if (wizard_controller && !wizard_controller->login_screen_started()) {
+    wizard_controller->AdvanceToScreen(
+        EnableAdbSideloadingScreenView::kScreenId);
+  } else {
+    DCHECK(LoginDisplayHost::default_host());
+    LoginDisplayHost::default_host()->StartWizard(
+        EnableAdbSideloadingScreenView::kScreenId);
+  }
+}
+
 void CoreOobeHandler::ShowActiveDirectoryPasswordChangeScreen(
     const std::string& username) {
   CallJS("cr.ui.Oobe.showActiveDirectoryPasswordChangeScreen", username);

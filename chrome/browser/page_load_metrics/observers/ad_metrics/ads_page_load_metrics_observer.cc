@@ -137,9 +137,13 @@ bool AdsPageLoadMetricsObserver::IsSubframeSameOriginToMainFrame(
 AdsPageLoadMetricsObserver::AggregateFrameInfo::AggregateFrameInfo()
     : bytes(0), network_bytes(0), num_frames(0) {}
 
+AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider::
+    HeavyAdThresholdNoiseProvider(bool use_noise)
+    : use_noise_(use_noise) {}
+
 int AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider::
     GetNetworkThresholdNoiseForFrame() const {
-  return base::RandInt(0, kMaxNetworkThresholdNoiseBytes);
+  return use_noise_ ? base::RandInt(0, kMaxNetworkThresholdNoiseBytes) : 0;
 }
 
 AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver(
@@ -148,10 +152,11 @@ AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver(
     : subresource_observer_(this),
       clock_(clock ? clock : base::DefaultTickClock::GetInstance()),
       heavy_ad_blocklist_(blocklist),
-      heavy_ad_blocklist_enabled_(
-          base::FeatureList::IsEnabled(features::kHeavyAdBlocklist)),
+      heavy_ad_privacy_mitigations_enabled_(
+          base::FeatureList::IsEnabled(features::kHeavyAdPrivacyMitigations)),
       heavy_ad_threshold_noise_provider_(
-          std::make_unique<HeavyAdThresholdNoiseProvider>()) {}
+          std::make_unique<HeavyAdThresholdNoiseProvider>(
+              heavy_ad_privacy_mitigations_enabled_ /* use_noise */)) {}
 
 AdsPageLoadMetricsObserver::~AdsPageLoadMetricsObserver() = default;
 
@@ -1090,7 +1095,7 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
 }
 
 bool AdsPageLoadMetricsObserver::IsBlocklisted() {
-  if (!heavy_ad_blocklist_enabled_)
+  if (!heavy_ad_privacy_mitigations_enabled_)
     return false;
 
   auto* blocklist = GetHeavyAdBlocklist();

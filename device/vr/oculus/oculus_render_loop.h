@@ -32,7 +32,6 @@ class OculusRenderLoop : public XRCompositorCommon {
  private:
   // XRDeviceAbstraction:
   mojom::XRFrameDataPtr GetNextFrameData() override;
-  mojom::XRGamepadDataPtr GetNextGamepadData() override;
   bool StartRuntime() override;
   void StopRuntime() override;
   void OnSessionStart() override;

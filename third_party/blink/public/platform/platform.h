@@ -610,10 +610,15 @@ class BLINK_PLATFORM_EXPORT Platform {
     return base::nullopt;
   }
 
+  // TODO(qingsi): Consolidate the legacy |ip_handling_policy| with
+  // |allow_mdns_obfuscation| following the latest spec on IP handling modes
+  // with mDNS introduced
+  // (https://tools.ietf.org/html/draft-ietf-rtcweb-ip-handling-12);
   virtual void GetWebRTCRendererPreferences(WebLocalFrame* web_frame,
                                             WebString* ip_handling_policy,
                                             uint16_t* udp_min_port,
-                                            uint16_t* udp_max_port) {}
+                                            uint16_t* udp_max_port,
+                                            bool* allow_mdns_obfuscation) {}
 
   virtual base::Optional<int> GetAgcStartupMinimumVolume() {
     return base::nullopt;

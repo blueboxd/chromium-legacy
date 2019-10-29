@@ -20,7 +20,7 @@ class VIEWS_EXPORT Separator : public View {
   METADATA_HEADER(Separator);
 
   // The separator's thickness in dip.
-  static const int kThickness;
+  static constexpr int kThickness = 1;
 
   Separator();
   ~Separator() override;

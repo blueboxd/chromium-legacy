@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/scoped_window_targeter.h"
+#include "ui/base/buildflags.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
@@ -83,6 +84,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void OnClosed() override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnActivationChanged(bool active) override;
+#if BUILDFLAG(USE_ATK)
+  bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event) override;
+#endif
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostLinuxTest, HitTest);

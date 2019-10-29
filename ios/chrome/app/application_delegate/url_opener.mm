@@ -89,6 +89,11 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
       if (callerApp == CALLER_APP_GOOGLE_CHROME)
         targetMode = ApplicationModeForTabOpening::CURRENT;
 
+      if (![params launchInIncognito] &&
+          [tabOpener URLIsOpenedInRegularMode:urlLoadParams.web_params.url]) {
+        // Record metric.
+      }
+
       [tabOpener
           dismissModalsAndOpenSelectedTabInMode:targetMode
                               withUrlLoadParams:urlLoadParams

@@ -737,7 +737,6 @@ void PasswordStore::PostLeakedCredentialsTaskAndReplyToConsumerWithResult(
 
 void PasswordStore::AddLoginInternal(const PasswordForm& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.AddLogin");
   BeginTransaction();
   PasswordStoreChangeList changes = AddLoginImpl(form);
   NotifyLoginsChanged(changes);
@@ -750,7 +749,6 @@ void PasswordStore::AddLoginInternal(const PasswordForm& form) {
 
 void PasswordStore::UpdateLoginInternal(const PasswordForm& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.UpdateLogin");
   BeginTransaction();
   PasswordStoreChangeList changes = UpdateLoginImpl(form);
   NotifyLoginsChanged(changes);
@@ -763,7 +761,6 @@ void PasswordStore::UpdateLoginInternal(const PasswordForm& form) {
 
 void PasswordStore::RemoveLoginInternal(const PasswordForm& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.RemoveLogin");
   BeginTransaction();
   PasswordStoreChangeList changes = RemoveLoginImpl(form);
   NotifyLoginsChanged(changes);
@@ -877,7 +874,6 @@ void PasswordStore::RemoveLeakedCredentialsByUrlAndTimeInternal(
 std::vector<std::unique_ptr<autofill::PasswordForm>>
 PasswordStore::GetLoginsImpl(const FormDigest& form) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.GetLogins");
   return FillMatchingLogins(form);
 }
 
@@ -968,7 +964,6 @@ void PasswordStore::ScheduleGetFilteredLoginsWithAffiliations(
 
 std::unique_ptr<PasswordForm> PasswordStore::GetLoginImpl(
     const PasswordForm& primary_key) {
-  SCOPED_UMA_HISTOGRAM_TIMER("PasswordManager.StorePerformance.GetLogin");
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<PasswordForm>> candidates(
       FillMatchingLogins(FormDigest(primary_key)));

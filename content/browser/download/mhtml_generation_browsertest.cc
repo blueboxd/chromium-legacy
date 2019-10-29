@@ -38,6 +38,8 @@
 #include "content/shell/browser/shell.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -110,11 +112,12 @@ const char kTestData[] =
 
 class MockWriterBase : public mojom::MhtmlFileWriter {
  public:
-  MockWriterBase() : binding_(this) {}
-  ~MockWriterBase() override {}
+  MockWriterBase() = default;
+  ~MockWriterBase() override = default;
 
-  void BindRequest(mojo::ScopedInterfaceEndpointHandle handle) {
-    binding_.Bind(mojom::MhtmlFileWriterAssociatedRequest(std::move(handle)));
+  void BindReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::MhtmlFileWriter>(
+        std::move(handle)));
   }
 
  protected:
@@ -139,7 +142,7 @@ class MockWriterBase : public mojom::MhtmlFileWriter {
     producer_pipe.reset();
   }
 
-  mojo::AssociatedBinding<mojom::MhtmlFileWriter> binding_;
+  mojo::AssociatedReceiver<mojom::MhtmlFileWriter> receiver_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWriterBase);
@@ -221,13 +224,13 @@ class RespondAndDisconnectMockWriter
 
     SendResponse(std::move(callback));
 
-    // Close the message pipe connection to invoke the connection error
-    // callback. The connection error handler from here will finalize
-    // the Job and attempt to call MHTMLGenerationManager::Job::CloseFile
-    // a second time. If this situation is handled correctly, the
-    // browser file should be invalidated and idempotent.
+    // Reset the message pipe connection to invoke the disconnect callback. The
+    // disconnect handler from here will finalize the Job and attempt to call
+    // MHTMLGenerationManager::Job::CloseFile a second time. If this situation
+    // is handled correctly, the browser file should be invalidated and
+    // idempotent.
     if (!compute_contents_hash) {
-      binding_.Unbind();
+      receiver_.reset();
       return;
     }
 
@@ -259,7 +262,7 @@ class RespondAndDisconnectMockWriter
                        scoped_refptr<RespondAndDisconnectMockWriter>(this)));
   }
 
-  void TaskZ() { binding_.Unbind(); }
+  void TaskZ() { receiver_.reset(); }
 
  private:
   friend base::RefCountedThreadSafe<RespondAndDisconnectMockWriter>;
@@ -298,7 +301,7 @@ class MHTMLGenerationTest
             ->GetRemoteAssociatedInterfaces();
     remote_interfaces->OverrideBinderForTesting(
         mojom::MhtmlFileWriter::Name_,
-        base::BindRepeating(&MockWriterBase::BindRequest,
+        base::BindRepeating(&MockWriterBase::BindReceiver,
                             base::Unretained(mock_writer)));
   }
 

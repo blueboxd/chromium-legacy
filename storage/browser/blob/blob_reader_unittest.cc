@@ -538,7 +538,7 @@ TEST_F(BlobReaderTest, SegmentedBufferAndMemory) {
     for (size_t j = 0; j < kItemSize; j++) {
       buf[j] = current_value++;
     }
-    b->AppendData(buf, kItemSize);
+    b->AppendData(std::string(buf, kItemSize));
   }
   this->InitializeReader(std::move(b));
 
@@ -1134,7 +1134,8 @@ TEST_F(BlobReaderTest, ReadFromIncompleteBlob) {
       BlobReader::Status::IO_PENDING,
       reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   EXPECT_FALSE(reader_->IsInMemory());
-  future_data.Populate(base::make_span(kData.data(), kDataSize), 0);
+  future_data.Populate(base::as_bytes(base::make_span(kData.data(), kDataSize)),
+                       0);
   context_.NotifyTransportComplete(kUuid);
   base::RunLoop().RunUntilIdle();
   CheckSizeCalculatedAsynchronously(kDataSize, size_result);

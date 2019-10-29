@@ -12,10 +12,11 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/layout/layout_manager.h"
 
 class BookmarkBarView;
-class Browser;
+class BrowserView;
 class BrowserViewLayoutDelegate;
 class ImmersiveModeController;
 class InfoBarContainerView;
@@ -26,7 +27,6 @@ class Point;
 }  // namespace gfx
 
 namespace views {
-class ClientView;
 class View;
 class Widget;
 }  // namespace views
@@ -49,8 +49,8 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // |browser_view| may be null in tests.
   BrowserViewLayout(std::unique_ptr<BrowserViewLayoutDelegate> delegate,
-                    Browser* browser,
-                    views::ClientView* browser_view,
+                    gfx::NativeView host_view,
+                    BrowserView* browser_view,
                     views::View* top_container,
                     views::View* tab_strip_region_view,
                     TabStrip* tab_strip,
@@ -81,6 +81,9 @@ class BrowserViewLayout : public views::LayoutManager {
   // Returns the bounding box, in widget coordinates,  for the find bar.
   gfx::Rect GetFindBarBoundingBox() const;
 
+  // Returns the view against which the dialog is positioned and parented.
+  gfx::NativeView GetHostView();
+
   // Tests to see if the specified |point| (in nonclient view's coordinates)
   // is within the views managed by the laymanager. Returns one of
   // HitTestCompat enum defined in ui/base/hit_test.h.
@@ -100,9 +103,6 @@ class BrowserViewLayout : public views::LayoutManager {
   FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, Layout);
   FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, LayoutDownloadShelf);
   class WebContentsModalDialogHostViews;
-
-  Browser* browser() { return browser_; }
-  const Browser* browser() const { return browser_; }
 
   // Layout the following controls, starting at |top|, returns the coordinate
   // of the bottom of the control, for laying out the next control.
@@ -136,11 +136,11 @@ class BrowserViewLayout : public views::LayoutManager {
   // The delegate interface. May be a mock in tests.
   const std::unique_ptr<BrowserViewLayoutDelegate> delegate_;
 
-  // The browser from the owning BrowserView.
-  Browser* const browser_;
+  // The view against which the web dialog is positioned and parented.
+  gfx::NativeView const host_view_;
 
   // The owning browser view.
-  views::ClientView* const browser_view_;
+  BrowserView* const browser_view_;
 
   // Child views that the layout manager manages.
   // NOTE: If you add a view, try to add it as a views::View, which makes

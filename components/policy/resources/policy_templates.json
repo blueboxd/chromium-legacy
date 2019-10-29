@@ -13044,6 +13044,28 @@
       If the policy is not set, or if it is set to the empty string or an invalid port range, WebRTC is allowed to use any available local UDP port.''',
     },
     {
+      'name': 'WebRtcLocalIpsAllowedUrls',
+      'owners': ['qingsi@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:80-', 'chrome_os:80-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '*example.com*'],
+      'id': 640,
+      'caption': '''URLs for which local IPs are exposed in WebRTC ICE candidates''',
+      'tags': [],
+      'desc': '''Patterns in this list will be matched against the security origin of the requesting URL.
+      If a match is found or chrome://flags/#enable-webrtc-hide-local-ips-with-mdns is Disabled, the local IP addresses are shown in WebRTC ICE candidates.
+      Otherwise, local IP addresses are concealed with mDNS hostnames.
+      Please note that this policy weakens the protection of local IPs if needed by administrators.''',
+    },
+    {
       'name': 'WebRestrictionsAuthority',
       'owners': ['file://components/policy/resources/OWNERS'],
       'id': 341,
@@ -19581,6 +19603,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 639,
+  'highest_id_currently_used': 640,
   'highest_atomic_group_id_currently_used': 38
 }

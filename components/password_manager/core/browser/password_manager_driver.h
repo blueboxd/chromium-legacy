@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 
 namespace autofill {
@@ -31,6 +32,9 @@ class PasswordManager;
 class PasswordManagerDriver
     : public base::SupportsWeakPtr<PasswordManagerDriver> {
  public:
+  using ShowVirtualKeyboard =
+      util::StrongAlias<class ShowVirtualKeyboardTag, bool>;
+
   PasswordManagerDriver() = default;
   virtual ~PasswordManagerDriver() = default;
 
@@ -62,7 +66,7 @@ class PasswordManagerDriver
                                          uint32_t generation_element_id,
                                          const base::string16& password) {}
 
-  virtual void TouchToFillDismissed() {}
+  virtual void TouchToFillClosed(ShowVirtualKeyboard show_virtual_keyboard) {}
 
   // Tells the driver to fill the form with the |username| and |password|.
   virtual void FillSuggestion(const base::string16& username,

@@ -64,9 +64,9 @@
         padding: 8px 0;
       }
     </style>
-    <dialog id="dialog" tabindex="0" on-close="onNativeDialogClose_" role="menu"
-        aria-label$="[[ariaLabel]]">
-      <div class="item-wrapper" role="none">
+    <dialog id="dialog" on-close="onNativeDialogClose_"
+        role="application" aria-roledescription$="[[roleDescription]]">
+      <div id="wrapper" class="item-wrapper" role="menu" tabindex="-1">
         <slot id="contentNode"></slot>
       </div>
     </dialog>

@@ -19,6 +19,9 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/view_class_properties.h"
 
 namespace {
 
@@ -114,8 +117,8 @@ class ColorPickerElementView : public views::Button,
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
     // Paint a colored circle surrounded by a bit of empty space.
-
     gfx::RectF bounds(GetContentsBounds());
+
     // We should be a circle.
     DCHECK_EQ(bounds.width(), bounds.height());
 
@@ -202,15 +205,14 @@ ColorPickerView::ColorPickerView(
     view->SetGroup(0);
   }
 
-  const int element_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                  views::DISTANCE_RELATED_BUTTON_HORIZONTAL) /
-                              2;
-
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-      element_spacing));
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+  auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetDefault(views::kFlexBehaviorKey,
+                  views::FlexSpecification::ForSizeRule(
+                      views::MinimumFlexSizeRule::kPreferred,
+                      views::MaximumFlexSizeRule::kUnbounded)
+                      .WithAlignment(views::LayoutAlignment::kCenter)
+                      .WithWeight(1));
 }
 
 ColorPickerView::~ColorPickerView() {

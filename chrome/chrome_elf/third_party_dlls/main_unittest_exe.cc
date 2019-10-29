@@ -22,8 +22,6 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/product_install_details.h"
 
-using namespace third_party_dlls::main_unittest_exe;
-
 namespace {
 
 // Function object which invokes LocalFree on its parameter, which must be
@@ -33,13 +31,11 @@ struct LocalFreeDeleter {
 };
 
 // Attempt to load a given DLL.
-ExitCode LoadDll(std::wstring name) {
+third_party_dlls::ExitCode LoadDll(std::wstring name) {
   base::FilePath dll_path(name);
   base::ScopedNativeLibrary dll(dll_path);
-  if (!dll.is_valid())
-    return kDllLoadFailed;
-
-  return kDllLoadSuccess;
+  return dll.is_valid() ? third_party_dlls::kDllLoadSuccess
+                        : third_party_dlls::kDllLoadFailed;
 }
 
 // Utility function to protect the local registry.
@@ -60,10 +56,7 @@ bool MatchPath(const wchar_t* arg_path, const third_party_dlls::LogEntry& log) {
     return false;
   }
 
-  if (drive_path.value().compare(arg_path) != 0)
-    return false;
-
-  return true;
+  return drive_path.value().compare(arg_path) == 0;
 }
 
 }  // namespace
@@ -91,27 +84,26 @@ int main() {
   std::unique_ptr<wchar_t*[], LocalFreeDeleter> argv(
       ::CommandLineToArgvW(::GetCommandLineW(), &argument_count));
   if (!argv)
-    return kBadCommandLine;
+    return third_party_dlls::kBadCommandLine;
 
   if (IsThirdPartyInitialized())
-    return kThirdPartyAlreadyInitialized;
+    return third_party_dlls::kThirdPartyAlreadyInitialized;
 
   install_static::InitializeProductDetailsForPrimaryModule();
   install_static::InitializeProcessType();
 
   // Get the required arguments, path to blacklist file and test id to run.
   if (argument_count < 3)
-    return kMissingArgument;
+    return third_party_dlls::kMissingArgument;
 
   const wchar_t* blacklist_path = argv[1];
-  if (!blacklist_path || ::wcslen(blacklist_path) == 0) {
-    return kBadBlacklistPath;
-  }
+  if (!blacklist_path || ::wcslen(blacklist_path) == 0)
+    return third_party_dlls::kBadBlacklistPath;
 
   const wchar_t* arg2 = argv[2];
   int test_id = ::_wtoi(arg2);
   if (!test_id)
-    return kUnsupportedTestId;
+    return third_party_dlls::kUnsupportedTestId;
 
   // Override blacklist path before initializing.
   third_party_dlls::OverrideFilePathForTesting(blacklist_path);
@@ -121,51 +113,49 @@ int main() {
   RegRedirect(&rom);
 
   if (!third_party_dlls::Init())
-    return kThirdPartyInitFailure;
+    return third_party_dlls::kThirdPartyInitFailure;
 
-  // Switch on test id.
   switch (test_id) {
-    // Just initialization.
-    case kTestOnlyInitialization:
+    case third_party_dlls::kTestOnlyInitialization:
       break;
-    // Single DLL load.
-    case kTestSingleDllLoad:
-    // Single DLL load with log path scrutiny.
-    case kTestLogPath: {
+
+    case third_party_dlls::kTestSingleDllLoad:
+    case third_party_dlls::kTestLogPath: {
       if (argument_count < 4)
-        return kMissingArgument;
+        return third_party_dlls::kMissingArgument;
       const wchar_t* dll_name = argv[3];
       if (!dll_name || ::wcslen(dll_name) == 0)
-        return kBadArgument;
-      ExitCode code = LoadDll(dll_name);
+        return third_party_dlls::kBadArgument;
+      third_party_dlls::ExitCode code = LoadDll(dll_name);
 
       // Get logging.  Ensure the log is as expected.
       uint32_t bytes = 0;
       DrainLog(nullptr, 0, &bytes);
       if (!bytes)
-        return kEmptyLog;
-      auto buffer = std::unique_ptr<uint8_t[]>(new uint8_t[bytes]);
+        return third_party_dlls::kEmptyLog;
+      auto buffer = std::make_unique<uint8_t[]>(bytes);
       bytes = DrainLog(&buffer[0], bytes, nullptr);
       third_party_dlls::LogEntry* entry =
           reinterpret_cast<third_party_dlls::LogEntry*>(&buffer[0]);
       if (!bytes || bytes < third_party_dlls::GetLogEntrySize(entry->path_len))
-        return kBadLogEntrySize;
+        return third_party_dlls::kBadLogEntrySize;
 
-      if ((code == kDllLoadFailed &&
+      if ((code == third_party_dlls::kDllLoadFailed &&
            entry->type != third_party_dlls::kBlocked) ||
-          (code == kDllLoadSuccess &&
+          (code == third_party_dlls::kDllLoadSuccess &&
            entry->type != third_party_dlls::kAllowed)) {
-        return kUnexpectedLog;
+        return third_party_dlls::kUnexpectedLog;
       }
 
-      if (test_id == kTestLogPath && !MatchPath(dll_name, *entry))
-        return kUnexpectedSectionPath;
+      if (test_id == third_party_dlls::kTestLogPath &&
+          !MatchPath(dll_name, *entry))
+        return third_party_dlls::kUnexpectedSectionPath;
 
       return code;
     }
-    // Unsupported argument.
+
     default:
-      return kUnsupportedTestId;
+      return third_party_dlls::kUnsupportedTestId;
   }
 
   return 0;

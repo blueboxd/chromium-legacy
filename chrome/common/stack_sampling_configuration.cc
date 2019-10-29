@@ -71,6 +71,21 @@ bool ShouldEnableProfilerForNextRendererProcess() {
   return base::RandInt(0, 4) == 0;
 }
 
+#if defined(OS_WIN)
+// Checks if Trend Micro DLLs are loaded in process, so we can disable the
+// profiler to avoid hitting their performance bug. See
+// https://crbug.com/1018291.
+bool IsTrendMicroInProcess() {
+#if defined(ARCH_CPU_X86_64)
+  return (::GetModuleHandle(L"tmmon64.dll") ||
+          ::GetModuleHandle(L"tmmonmgr64.dll"));
+#else   // defined(ARCH_CPU_X86_64)
+  return (::GetModuleHandle(L"tmmon.dll") ||
+          ::GetModuleHandle(L"tmmonmgr.dll"));
+#endif  // defined(ARCH_CPU_X86_64)
+}
+#endif  // defined(OS_WIN)
+
 }  // namespace
 
 StackSamplingConfiguration::StackSamplingConfiguration()
@@ -120,6 +135,10 @@ bool StackSamplingConfiguration::GetSyntheticFieldTrial(
   switch (configuration_) {
     case PROFILE_DISABLED:
       *group_name = "Disabled";
+      break;
+
+    case PROFILE_DISABLED_TREND_MICRO:
+      *group_name = "DisabledTrendMicro";
       break;
 
     case PROFILE_CONTROL:
@@ -198,6 +217,13 @@ StackSamplingConfiguration::GenerateConfiguration() {
   // simultaneously can cause crashes and has no known use case.
   if (GetModuleHandleA(base::win::kApplicationVerifierDllName))
     return PROFILE_DISABLED;
+
+  // Do not start the profiler if Trend Micro DLLs are loaded in process to
+  // avoid hitting their performance bug.
+  // TODO(https://crbug.com/1018291): Remove once Trend Micro's fixes have
+  // propagated to customers.
+  if (IsTrendMicroInProcess())
+    return PROFILE_DISABLED_TREND_MICRO;
 #endif
 
   switch (chrome::GetChannel()) {

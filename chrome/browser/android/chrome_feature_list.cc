@@ -33,6 +33,7 @@
 #include "components/payments/core/features.h"
 #include "components/previews/core/previews_features.h"
 #include "components/safe_browsing/features.h"
+#include "components/security_state/core/features.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -224,6 +225,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &password_manager::features::kPasswordManagerOnboardingAndroid,
     &password_manager::features::kLeakDetection,
     &safe_browsing::kCaptureSafetyNetId,
+    &security_state::features::kMarkHttpAsFeature,
     &signin::kMiceFeature,
     &switches::kSyncManualStartAndroid,
     &subresource_filter::kSafeBrowsingSubresourceFilter,

@@ -98,9 +98,9 @@ DrmThread::~DrmThread() {
   Stop();
 }
 
-void DrmThread::Start(base::OnceClosure binding_completer,
+void DrmThread::Start(base::OnceClosure receiver_completer,
                       std::unique_ptr<DrmDeviceGenerator> device_generator) {
-  complete_early_binding_requests_ = std::move(binding_completer);
+  complete_early_receiver_requests_ = std::move(receiver_completer);
   device_generator_ = std::move(device_generator);
 
   base::Thread::Options thread_options;
@@ -134,9 +134,9 @@ void DrmThread::Init() {
   DCHECK(task_runner())
       << "DrmThread::Init -- thread doesn't have a task_runner";
 
-  // DRM thread is running now so can safely handle binding requests. So drain
-  // the queue of as-yet unhandled binding requests if there are any.
-  std::move(complete_early_binding_requests_).Run();
+  // DRM thread is running now so can safely handle receiver requests. So drain
+  // the queue of as-yet unhandled receiver requests if there are any.
+  std::move(complete_early_receiver_requests_).Run();
 }
 
 void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
@@ -379,9 +379,10 @@ void DrmThread::SetGammaCorrection(
   display_manager_->SetGammaCorrection(display_id, degamma_lut, gamma_lut);
 }
 
-void DrmThread::AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request) {
-  TRACE_EVENT0("drm", "DrmThread::AddBindingDrmDevice");
-  drm_bindings_.AddBinding(this, std::move(request));
+void DrmThread::AddDrmDeviceReceiver(
+    mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver) {
+  TRACE_EVENT0("drm", "DrmThread::AddDrmDeviceReceiver");
+  drm_receivers_.Add(this, std::move(receiver));
 }
 
 void DrmThread::ProcessPendingTasks() {

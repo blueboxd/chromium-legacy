@@ -160,6 +160,12 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
   SaveLocalPasswordForm(GURL(base::SysNSStringToUTF8(URLSpec)));
 }
 
++ (NSInteger)profilesCount {
+  autofill::PersonalDataManager* personalDataManager =
+      [self personalDataManager];
+  return personalDataManager->GetProfiles().size();
+}
+
 + (void)clearProfilesStore {
   ios::ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();

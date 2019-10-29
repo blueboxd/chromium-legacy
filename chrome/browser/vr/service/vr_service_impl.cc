@@ -105,6 +105,7 @@ VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
       render_frame_host_(render_frame_host),
       in_focused_frame_(render_frame_host->GetView()->HasFocus()) {
   DCHECK(render_frame_host_);
+  DVLOG(2) << __func__;
 
   runtime_manager_ = XRRuntimeManager::GetOrCreateInstance();
   runtime_manager_->AddService(this);
@@ -118,17 +119,27 @@ VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
 // Constructor for testing.
 VRServiceImpl::VRServiceImpl(util::PassKey<XRRuntimeManagerTest>)
     : render_frame_host_(nullptr) {
+  DVLOG(2) << __func__;
   runtime_manager_ = XRRuntimeManager::GetOrCreateInstance();
   runtime_manager_->AddService(this);
 }
 
 VRServiceImpl::~VRServiceImpl() {
+  DVLOG(2) << __func__;
+  // Ensure that any active magic window sessions are disconnected to avoid
+  // collisions when a new session starts. See https://crbug.com/1017959, the
+  // disconnect handler doesn't get called automatically on page navigation.
+  for (auto it = magic_window_controllers_.begin();
+       it != magic_window_controllers_.end(); ++it) {
+    OnInlineSessionDisconnected(it.id());
+  }
   runtime_manager_->RemoveService(this);
 }
 
 void VRServiceImpl::Create(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<device::mojom::VRService> receiver) {
+  DVLOG(2) << __func__;
   std::unique_ptr<VRServiceImpl> vr_service_impl =
       std::make_unique<VRServiceImpl>(render_frame_host);
 
@@ -140,6 +151,7 @@ void VRServiceImpl::Create(
 void VRServiceImpl::InitializationComplete() {
   // After initialization has completed, we can correctly answer
   // supportsSession, and can provide correct display capabilities.
+  DVLOG(2) << __func__;
   initialization_complete_ = true;
 
   ResolvePendingRequests();
@@ -152,6 +164,7 @@ void VRServiceImpl::SetClient(
     return;
   }
 
+  DVLOG(2) << __func__;
   service_client_.Bind(std::move(service_client));
 }
 
@@ -172,6 +185,7 @@ void VRServiceImpl::OnDisplayInfoChanged() {
 }
 
 void VRServiceImpl::RuntimesChanged() {
+  DVLOG(2) << __func__;
   OnDisplayInfoChanged();
 
   if (service_client_) {
@@ -245,6 +259,8 @@ void VRServiceImpl::OnInlineSessionCreated(
   controller->SetFrameDataRestricted(!in_focused_frame_);
 
   auto id = magic_window_controllers_.Add(std::move(controller));
+  DVLOG(2) << __func__ << ": session_id=" << id.GetUnsafeValue()
+           << " runtime_id=" << session_runtime_id;
 
   // Note: We might be recording an inline session that was created by WebVR.
   GetSessionMetricsHelper()->RecordInlineSessionStart(id.GetUnsafeValue());
@@ -255,6 +271,7 @@ void VRServiceImpl::OnInlineSessionCreated(
 
 void VRServiceImpl::OnInlineSessionDisconnected(
     mojo::RemoteSetElementId session_id) {
+  DVLOG(2) << __func__ << ": session_id=" << session_id.GetUnsafeValue();
   // Notify metrics helper that inline session was stopped.
   auto* metrics_helper = GetSessionMetricsHelper();
   metrics_helper->RecordInlineSessionStop(session_id.GetUnsafeValue());
@@ -280,6 +297,8 @@ void VRServiceImpl::OnSessionCreated(
     device::mojom::VRService::RequestSessionCallback callback,
     const std::set<device::mojom::XRSessionFeature>& enabled_features,
     device::mojom::XRSessionPtr session) {
+  DVLOG(2) << __func__ << ": session_runtime_id=" << session_runtime_id;
+
   if (!session) {
     std::move(callback).Run(
         device::mojom::RequestSessionResult::NewFailureReason(
@@ -307,6 +326,7 @@ void VRServiceImpl::OnSessionCreated(
 void VRServiceImpl::RequestSession(
     device::mojom::XRSessionOptionsPtr options,
     device::mojom::VRService::RequestSessionCallback callback) {
+  DVLOG(2) << __func__;
   DCHECK(options);
 
   // Queue the request to get to when initialization has completed.
@@ -479,6 +499,7 @@ void VRServiceImpl::DoRequestSession(
     device::mojom::VRService::RequestSessionCallback callback,
     BrowserXRRuntime* runtime,
     std::set<device::mojom::XRSessionFeature> enabled_features) {
+  DVLOG(2) << __func__;
   // Get the runtime we'll be creating a session with.
   DCHECK(runtime);
 
@@ -590,6 +611,7 @@ void VRServiceImpl::GetImmersiveVRDisplayInfo(
 }
 
 void VRServiceImpl::OnExitPresent() {
+  DVLOG(2) << __func__;
   for (auto& client : session_clients_)
     client->OnExitPresent();
 }
@@ -603,12 +625,14 @@ void VRServiceImpl::OnVisibilityStateChanged(
 
 void VRServiceImpl::OnActivate(device::mojom::VRDisplayEventReason reason,
                                base::OnceCallback<void(bool)> on_handled) {
+  DVLOG(2) << __func__;
   if (display_client_) {
     display_client_->OnActivate(reason, std::move(on_handled));
   }
 }
 
 void VRServiceImpl::OnDeactivate(device::mojom::VRDisplayEventReason reason) {
+  DVLOG(2) << __func__;
   if (display_client_) {
     display_client_->OnDeactivate(reason);
   }

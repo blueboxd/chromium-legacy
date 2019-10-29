@@ -7,7 +7,6 @@
 #include <assert.h>
 #include <windows.h>
 
-#include "chrome/chrome_elf/chrome_elf_security.h"
 #include "chrome/chrome_elf/crash/crash_helper.h"
 #include "chrome/chrome_elf/third_party_dlls/beacon.h"
 #include "chrome/chrome_elf/third_party_dlls/main.h"
@@ -70,9 +69,6 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
     // If this is not the browser process, all done.
     if (install_static::IsNonBrowserProcess())
       return TRUE;
-
-    // Disable legacy hooking.
-    elf_security::EarlyBrowserSecurity();
 
     __try {
       // Initialize the blocking of third-party DLLs if the initialization of

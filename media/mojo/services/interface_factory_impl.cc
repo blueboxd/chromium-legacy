@@ -95,7 +95,7 @@ void InterfaceFactoryImpl::CreateVideoDecoder(
 
 void InterfaceFactoryImpl::CreateDefaultRenderer(
     const std::string& audio_device_id,
-    mojo::InterfaceRequest<mojom::Renderer> request) {
+    mojo::PendingReceiver<mojom::Renderer> receiver) {
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
   auto renderer = mojo_media_client_->CreateRenderer(
@@ -112,15 +112,14 @@ void InterfaceFactoryImpl::CreateDefaultRenderer(
 
   MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
 
-  mojo::BindingId binding_id = renderer_bindings_.AddBinding(
-      std::move(mojo_renderer_service), std::move(request));
+  mojo::ReceiverId receiver_id = renderer_receivers_.Add(
+      std::move(mojo_renderer_service), std::move(receiver));
 
   // base::Unretained() is safe because the callback will be fired by
-  // |mojo_renderer_service|, which is owned by |renderer_bindings_|.
-  mojo_renderer_service_ptr->set_bad_message_cb(
-      base::Bind(base::IgnoreResult(
-                     &mojo::StrongBindingSet<mojom::Renderer>::RemoveBinding),
-                 base::Unretained(&renderer_bindings_), binding_id));
+  // |mojo_renderer_service|, which is owned by |renderer_receivers_|.
+  mojo_renderer_service_ptr->set_bad_message_cb(base::Bind(
+      base::IgnoreResult(&mojo::UniqueReceiverSet<mojom::Renderer>::Remove),
+      base::Unretained(&renderer_receivers_), receiver_id));
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 }
 
@@ -143,15 +142,14 @@ void InterfaceFactoryImpl::CreateCastRenderer(
 
   MojoRendererService* mojo_renderer_service_ptr = mojo_renderer_service.get();
 
-  mojo::BindingId binding_id = renderer_bindings_.AddBinding(
+  mojo::ReceiverId receiver_id = renderer_receivers_.Add(
       std::move(mojo_renderer_service), std::move(receiver));
 
   // base::Unretained() is safe because the callback will be fired by
-  // |mojo_renderer_service|, which is owned by |renderer_bindings_|.
+  // |mojo_renderer_service|, which is owned by |renderer_receivers_|.
   mojo_renderer_service_ptr->set_bad_message_cb(base::BindRepeating(
-      base::IgnoreResult(
-          &mojo::StrongBindingSet<mojom::Renderer>::RemoveBinding),
-      base::Unretained(&renderer_bindings_), binding_id));
+      base::IgnoreResult(&mojo::UniqueReceiverSet<mojom::Renderer>::Remove),
+      base::Unretained(&renderer_receivers_), receiver_id));
 }
 #endif
 
@@ -176,16 +174,16 @@ void InterfaceFactoryImpl::CreateFlingingRenderer(
 
 void InterfaceFactoryImpl::CreateCdm(
     const std::string& /* key_system */,
-    mojo::InterfaceRequest<mojom::ContentDecryptionModule> request) {
+    mojo::PendingReceiver<mojom::ContentDecryptionModule> receiver) {
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   CdmFactory* cdm_factory = GetCdmFactory();
   if (!cdm_factory)
     return;
 
-  cdm_bindings_.AddBinding(
+  cdm_receivers_.Add(
       std::make_unique<MojoCdmService>(cdm_factory, &cdm_service_context_),
-      std::move(request));
+      std::move(receiver));
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 }
 
@@ -241,12 +239,12 @@ bool InterfaceFactoryImpl::IsEmpty() {
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  if (!renderer_bindings_.empty())
+  if (!renderer_receivers_.empty())
     return false;
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
-  if (!cdm_bindings_.empty())
+  if (!cdm_receivers_.empty())
     return false;
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
@@ -277,11 +275,11 @@ void InterfaceFactoryImpl::SetBindingConnectionErrorHandler() {
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  renderer_bindings_.set_connection_error_handler(connection_error_cb);
+  renderer_receivers_.set_disconnect_handler(connection_error_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
-  cdm_bindings_.set_connection_error_handler(connection_error_cb);
+  cdm_receivers_.set_disconnect_handler(connection_error_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)

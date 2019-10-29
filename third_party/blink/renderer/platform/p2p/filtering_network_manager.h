@@ -45,7 +45,8 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   BLINK_PLATFORM_EXPORT FilteringNetworkManager(
       rtc::NetworkManager* network_manager,
       const GURL& requesting_origin,
-      media::MediaPermission* media_permission);
+      media::MediaPermission* media_permission,
+      bool allow_mdns_obfuscation);
 
   BLINK_PLATFORM_EXPORT ~FilteringNetworkManager() override;
 
@@ -117,6 +118,10 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   base::TimeTicks start_updating_time_;
 
   GURL requesting_origin_;
+
+  // When the mDNS obfuscation is allowed, access to the mDNS responder provided
+  // by the base network manager is provided to conceal IPs with mDNS hostnames.
+  bool allow_mdns_obfuscation_ = true;
 
   base::WeakPtrFactory<FilteringNetworkManager> weak_ptr_factory_{this};
 

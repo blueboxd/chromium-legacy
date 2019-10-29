@@ -16,6 +16,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelPrope
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_DIALOG_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_MAIN_CONTENT_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.MENU_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.PRIMARY_COLOR;
@@ -23,6 +24,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelPrope
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TINT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_CURSOR_VISIBILITY;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TITLE_TEXT_WATCHER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.UNGROUP_BAR_STATUS;
 
@@ -133,6 +135,10 @@ class TabGridPanelViewBinder {
             if (!model.get(IS_TITLE_TEXT_FOCUSED)) {
                 viewHolder.toolbarView.clearTitleTextFocus();
             }
+        } else if (IS_POPUP_WINDOW_FOCUSABLE == propertyKey) {
+            viewHolder.dialogView.setPopupWindowFocusable(model.get(IS_POPUP_WINDOW_FOCUSABLE));
+        } else if (TITLE_TEXT_ON_TOUCH_LISTENER == propertyKey) {
+            viewHolder.toolbarView.setTitleOnTouchListener(model.get(TITLE_TEXT_ON_TOUCH_LISTENER));
         }
     }
 }

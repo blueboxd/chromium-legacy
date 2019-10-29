@@ -9,7 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "base/optional.h"
+#include "device/gamepad/public/cpp/gamepads.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/openvr/src/headers/openvr.h"
 
 namespace device {
@@ -24,12 +26,11 @@ struct OpenVRInputSourceData {
 
 class OpenVRGamepadHelper {
  public:
-  static mojom::XRGamepadDataPtr GetGamepadData(vr::IVRSystem* system);
   static OpenVRInputSourceData GetXRInputSourceData(
       vr::IVRSystem* system,
       uint32_t controller_id,
       vr::VRControllerState_t controller_state,
-      device::mojom::XRHandedness handedness);
+      mojom::XRHandedness handedness);
 };
 
 }  // namespace device

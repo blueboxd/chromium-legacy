@@ -60,9 +60,6 @@ crbug.com/874620 [ opengl win nvidia ] conformance2/glsl3/const-struct-from-arra
 # Too slow (take about one hour to run)
 crbug.com/619403 deqp/functional/gles3/builtinprecision/* [ Skip ]
 
-# Timing out on multiple platforms right now.
-crbug.com/757097 conformance/glsl/bugs/sampler-array-struct-function-arg.html [ Skip ]
-
 # Flakes heavily on many OpenGL configurations
 crbug.com/832238 [ no-angle ] conformance2/transform_feedback/too-small-buffers.html [ Failure ]
 
@@ -101,7 +98,6 @@ crbug.com/792210 [ nvidia ] conformance/glsl/bugs/in-parameter-passed-as-inout-a
 # Intel flaky issues
 crbug.com/945942 [ win passthrough intel ] conformance/uniforms/no-over-optimization-on-uniform-array-00.html [ RetryOnFailure ]
 crbug.com/620379 [ d3d11 win intel ] deqp/functional/gles3/lifetime.html [ RetryOnFailure ]
-crbug.com/614418 [ d3d11 win intel ] deqp/functional/gles3/textureformat/unsized_3d.html [ RetryOnFailure ]
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
 
 # It's unfortunate that these suppressions need to be so broad, but it
@@ -115,6 +111,9 @@ crbug.com/628395 [ d3d11 win intel ] deqp/* [ RetryOnFailure ]
 crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_* [ Failure ]
 crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
 crbug.com/angleproject/2994 [ opengl win passthrough intel ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
+
+# Intel driver issues
+crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
 
 # Passthrough command decoder / Windows / OpenGL / Intel
 # This case causes no-over-optimization-on-uniform-array fail.
@@ -585,11 +584,6 @@ crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-3d-size-limit.ht
 crbug.com/950552 [ linux intel mesa_lt_19.1.2 ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
 
 # Linux only.
-crbug.com/627525 [ linux ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/627525 [ linux ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
-crbug.com/627525 [ linux ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
-crbug.com/627525 [ linux ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/627525 [ linux ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
 crbug.com/905006 [ linux nvidia ] conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html [ Failure ]
 
 # Linux Multi-vendor failures.

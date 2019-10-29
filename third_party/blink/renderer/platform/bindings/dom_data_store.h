@@ -173,8 +173,7 @@ class DOMDataStore final : public GarbageCollected<DOMDataStore> {
   bool ContainsWrapper(const ScriptWrappable* object) {
     if (is_main_world_)
       return object->ContainsWrapper();
-    return wrapper_map_.find(const_cast<ScriptWrappable*>(object)) !=
-           wrapper_map_.end();
+    return wrapper_map_.find(object) != wrapper_map_.end();
   }
 
   virtual void Trace(Visitor*);
@@ -216,7 +215,7 @@ class DOMDataStore final : public GarbageCollected<DOMDataStore> {
   bool is_main_world_;
   // Ephemeron map: WrappedReference will be kept alive as long as
   // ScriptWrappable is alive.
-  HeapHashMap<WeakMember<ScriptWrappable>, Member<WrappedReference>>
+  HeapHashMap<WeakMember<const ScriptWrappable>, Member<WrappedReference>>
       wrapper_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMDataStore);

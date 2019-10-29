@@ -261,7 +261,15 @@ enum TabletModeAnimationTransition {
   kEnterFullscreenAllApps,
 
   // Enter the kFullscreenSearch state (usually by activating the search box).
-  kEnterFullscreenSearch
+  kEnterFullscreenSearch,
+
+  // Enter the overview mode in tablet, with overview fading in instead of
+  // sliding (as is the case with kEnterOverviewMode).
+  kFadeInOverview,
+
+  // Exit the overview mode in tablet, with overview fading out instead of
+  // sliding (as is the case with kExitOverviewMode).
+  kFadeOutOverview,
 };
 
 // Parameters to call RecordAppListAppLaunched. Passed to code that does not

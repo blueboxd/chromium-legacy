@@ -9,6 +9,8 @@ jumbo_static_library("common") {
   sources = [
     "content_settings.cc",
     "content_settings.h",
+    "content_settings_param_traits.cc",
+    "content_settings_param_traits.h",
     "content_settings_pattern.cc",
     "content_settings_pattern.h",
     "content_settings_pattern_parser.cc",
@@ -30,6 +32,7 @@ jumbo_static_library("common") {
 
   deps = [
     "//base",
+    "//ipc",
     "//mojo/public/cpp/base",
     "//mojo/public/cpp/bindings:struct_traits",
     "//net",

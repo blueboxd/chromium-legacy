@@ -279,7 +279,11 @@ public class BottomSheet
         int getVerticalScrollOffset();
 
         /**
-         * Called to destroy the {@link BottomSheetContent} when it is no longer in use.
+         * Called to destroy the {@link BottomSheetContent} when it is dismissed. The means the
+         * sheet is in the {@link SheetState#HIDDEN} state without being suppressed. This method
+         * does not necessarily need to be used but exists for convenience. Cleanup can be done
+         * manually via the owning component (likely watching for the sheet hidden event using an
+         * observer).
          */
         void destroy();
 

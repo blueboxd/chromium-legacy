@@ -218,7 +218,8 @@
         </div>
       </div>
       <template is="dom-if" if="[[!syncStatus.signedIn]]" restamp>
-        <cr-action-menu id="menu" auto-reposition>
+        <cr-action-menu id="menu" auto-reposition
+            role-description="$i18n{menu}">
           <template is="dom-repeat" items="[[storedAccounts_]]">
             <button class="dropdown-item" on-click="onAccountTap_">
               <img class="account-icon small" alt=""

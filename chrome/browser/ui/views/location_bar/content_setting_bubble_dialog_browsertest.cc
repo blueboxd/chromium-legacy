@@ -94,8 +94,7 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
       break;
     }
     case CONTENT_SETTINGS_TYPE_PLUGINS: {
-      const base::string16 plugin_name = base::ASCIIToUTF16("plugin_name");
-      content_settings->OnContentBlockedWithDetail(content_type, plugin_name);
+      content_settings->OnContentBlocked(content_type);
       break;
     }
 

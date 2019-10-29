@@ -264,6 +264,7 @@ class Generator(generator.Generator):
       "unions": self.module.unions,
       "generate_fuzzing": self.generate_fuzzing,
       "generate_closure_exports": for_compile,
+      "generate_struct_deserializers": self.js_generate_struct_deserializers,
    }
 
   @staticmethod

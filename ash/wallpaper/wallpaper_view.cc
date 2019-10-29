@@ -34,7 +34,14 @@ namespace {
 // in the compositor.
 class LayerControlView : public views::View {
  public:
-  explicit LayerControlView(views::View* view) {
+  LayerControlView(views::View* view, bool needs_shield) {
+    if (needs_shield) {
+      auto* shield = new views::View();
+      AddChildView(shield);
+      shield->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+      shield->layer()->SetColor(SK_ColorBLACK);
+      shield->layer()->set_name("WallpaperViewShield");
+    }
     AddChildView(view);
     view->SetPaintToLayer();
   }
@@ -51,14 +58,15 @@ class LayerControlView : public views::View {
     display::ManagedDisplayInfo info =
         Shell::Get()->display_manager()->GetDisplayInfo(display.id());
 
-    DCHECK_EQ(1u, children().size());
-    views::View* child = children().front();
-    child->SetBounds(0, 0, display.size().width(), display.size().height());
-    gfx::Transform transform;
-    // Apply RTL transform explicitly becacuse Views layer code
-    // doesn't handle RTL.  crbug.com/458753.
-    transform.Translate(-child->GetMirroredX(), 0);
-    child->SetTransform(transform);
+    for (auto* child : children()) {
+      // views::View* child = children().front();
+      child->SetBounds(0, 0, display.size().width(), display.size().height());
+      gfx::Transform transform;
+      // Apply RTL transform explicitly becacuse Views layer code
+      // doesn't handle RTL.  crbug.com/458753.
+      transform.Translate(-child->GetMirroredX(), 0);
+      child->SetTransform(transform);
+    }
   }
 
  private:
@@ -179,14 +187,17 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
   views::Widget* wallpaper_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.name = "WallpaperView";
+  params.name = "WallpaperViewWidget";
+  params.layer_type = ui::LAYER_NOT_DRAWN;
   if (controller->GetWallpaper().isNull())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = root_window->GetChildById(container_id);
   wallpaper_widget->Init(std::move(params));
   // Owned by views.
   WallpaperView* wallpaper_view = new WallpaperView(blur, opacity);
-  wallpaper_widget->SetContentsView(new LayerControlView(wallpaper_view));
+  wallpaper_widget->SetContentsView(new LayerControlView(
+      wallpaper_view,
+      Shell::Get()->session_controller()->IsUserSessionBlocked()));
   *out_wallpaper_view = wallpaper_view;
   int animation_type =
       controller->ShouldShowInitialAnimation()

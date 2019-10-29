@@ -67,6 +67,8 @@ class CookieSettingsTest : public testing::Test {
         kHttpsSubdomainSite("https://www.example.com"),
         kHttpsSite8080("https://example.com:8080"),
         kAllHttpsSitesPattern(ContentSettingsPattern::FromString("https://*")) {
+    feature_list_.InitAndDisableFeature(
+        net::features::kSameSiteByDefaultCookies);
   }
 
   ~CookieSettingsTest() override { settings_map_->ShutdownOnUIThread(); }
@@ -115,6 +117,9 @@ class CookieSettingsTest : public testing::Test {
   const GURL kHttpsSubdomainSite;
   const GURL kHttpsSite8080;
   ContentSettingsPattern kAllHttpsSitesPattern;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(CookieSettingsTest, TestWhitelistedScheme) {

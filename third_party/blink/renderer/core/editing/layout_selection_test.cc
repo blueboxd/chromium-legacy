@@ -105,7 +105,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
                                    const Node& node,
                                    wtf_size_t depth) {
     ostream << RepeatString("  ", depth).Utf8();
-    if (IsHTMLStyleElement(node)) {
+    if (IsA<HTMLStyleElement>(node)) {
       ostream << "<style> ";
       return;
     }

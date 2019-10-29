@@ -412,8 +412,9 @@ class ExtensionMessageBubbleTestWithParam
 // Test that the bubble correctly treats dismissal due to deactivation.
 // Currently, the NTP bubble is the only one that has flexible behavior (toggled
 // by a feature).
+// TODO(https://crbug.com/836332): Re-enable once not flaky.
 TEST_P(ExtensionMessageBubbleTestWithParam,
-       BubbleCorrectlyReshowsOnDeactivationDismissal) {
+       DISABLED_BubbleCorrectlyReshowsOnDeactivationDismissal) {
   const bool kAcknowledgeOnDeactivate = GetParam();
   base::test::ScopedFeatureList feature_list;
   if (kAcknowledgeOnDeactivate) {
@@ -889,8 +890,9 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
 
 // Tests that a displayed extension bubble will be closed after its associated
 // enabled extension is uninstalled.
+// TODO(https://crbug.com/836332): Re-enable once not flaky.
 TEST_F(ExtensionMessageBubbleTest,
-       TestBubbleClosedAfterEnabledExtensionUninstall) {
+       DISABLED_TestBubbleClosedAfterEnabledExtensionUninstall) {
   Init();
   ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::UNPACKED));
 
@@ -922,8 +924,9 @@ TEST_F(ExtensionMessageBubbleTest,
 // Tests that a displayed extension bubble will be closed after its associated
 // disabled extension is uninstalled. Here a suspicious bubble controller is
 // tested, which can display bubbles for disabled extensions.
+// TODO(https://crbug.com/836332): Re-enable once not flaky.
 TEST_F(ExtensionMessageBubbleTest,
-       TestBubbleClosedAfterDisabledExtensionUninstall) {
+       DISABLED_TestBubbleClosedAfterDisabledExtensionUninstall) {
   Init();
   ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::COMMAND_LINE));
 
@@ -1019,7 +1022,8 @@ TEST_F(ExtensionMessageBubbleTest, TestBubbleShownForMultipleExtensions) {
 
 // The feature this is meant to test is only enacted on Windows, but it should
 // pass on all platforms.
-TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
+// TODO(https://crbug.com/836332): Re-enable once not flaky.
+TEST_F(ExtensionMessageBubbleTest, DISABLED_NtpOverriddenControllerTest) {
   Init();
   // Load two extensions overriding new tab page and one overriding something
   // unrelated (to check for interference). Extension 2 should still win
@@ -1132,7 +1136,9 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
 // an NTP overriding extension is installed for a single profile. Note that the
 // NTP bubble is only implemented on Windows and ChromeOs, but this test should
 // still pass on Linux and Mac.
-TEST_F(ExtensionMessageBubbleTest, ShowNtpBubblePerProfilePerExtensionTest) {
+// TODO(https://crbug.com/836332): Re-enable once not flaky.
+TEST_F(ExtensionMessageBubbleTest,
+       DISABLED_ShowNtpBubblePerProfilePerExtensionTest) {
   Init();
   ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::UNPACKED));
   std::unique_ptr<TestExtensionMessageBubbleController> controller(
@@ -1337,8 +1343,9 @@ TEST_F(ExtensionMessageBubbleTest, TestBubbleOutlivesBrowser) {
 #define MAYBE_TestUninstallExtensionAfterBrowserDestroyed \
   DISABLED_TestUninstallExtensionAfterBrowserDestroyed
 #else
+// TODO(https://crbug.com/836332): Re-enable once not flaky.
 #define MAYBE_TestUninstallExtensionAfterBrowserDestroyed \
-  TestUninstallExtensionAfterBrowserDestroyed
+  DISABLED_TestUninstallExtensionAfterBrowserDestroyed
 #endif  // defined(OS_CHROMEOS)
 
 // Tests that when an extension -- associated with a bubble controller -- is

@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/observer_list_types.h"
 #include "chromecast/common/mojom/js_channel.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -44,10 +45,20 @@ class JsChannelService : public mojom::JsChannelBindingProvider {
 
 class JsClientInstance {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnJsClientInstanceRegistered(int process_id,
+                                              int routing_id,
+                                              JsClientInstance* instance) = 0;
+  };
+
   void AddChannel(const std::string& channel, JsChannelCallback callback);
   void RemoveChannel(const std::string& channel);
 
   static JsClientInstance* Find(int process_id, int routing_id);
+
+  static void AddObserver(Observer* observer);
+  static void RemoveObserver(Observer* observer);
 
  private:
   friend class JsChannelService;

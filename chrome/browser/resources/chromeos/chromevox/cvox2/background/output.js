@@ -163,6 +163,9 @@ Output.ROLE_INFO_ = {
   contentInfo: {msgId: 'role_contentinfo', inherits: 'abstractContainer'},
   date: {msgId: 'input_type_date', inherits: 'abstractContainer'},
   definition: {msgId: 'role_definition', inherits: 'abstractContainer'},
+  descriptionList: {msgId: 'role_description_list', inherits: 'abstractList'},
+  descriptionListDetail:
+      {msgId: 'role_description_list_detail', inherits: 'abstractItem'},
   dialog:
       {msgId: 'role_dialog', outputContextFirst: true, ignoreAncestry: true},
   directory: {msgId: 'role_directory', inherits: 'abstractContainer'},

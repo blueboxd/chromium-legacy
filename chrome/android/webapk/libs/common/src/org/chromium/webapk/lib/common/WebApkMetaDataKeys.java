@@ -40,7 +40,6 @@ public final class WebApkMetaDataKeys {
     public static final String SHARE_ENCTYPE = "org.chromium.webapk.shell_apk.shareEnctype";
     public static final String SHARE_PARAM_TITLE = "org.chromium.webapk.shell_apk.shareParamTitle";
     public static final String SHARE_PARAM_TEXT = "org.chromium.webapk.shell_apk.shareParamText";
-    public static final String SHARE_PARAM_URL = "org.chromium.webapk.shell_apk.shareParamUrl";
     public static final String SHARE_PARAM_NAMES = "org.chromium.webapk.shell_apk.shareParamNames";
     public static final String SHARE_PARAM_ACCEPTS =
             "org.chromium.webapk.shell_apk.shareParamAccepts";

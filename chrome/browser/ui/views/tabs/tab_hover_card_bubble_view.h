@@ -40,6 +40,8 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
 
   void UpdateAnchorBounds(gfx::Rect anchor_bounds);
 
+  bool IsVisible();
+
   void FadeOutToHide();
 
   bool IsFadingOut() const;

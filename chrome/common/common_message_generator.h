@@ -4,7 +4,6 @@
 
 // Multiply-included file, hence no include guard.
 
-#include "chrome/common/common_param_traits_macros.h"
 #include "chrome/common/instant_mojom_traits.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
 #undef CHROME_COMMON_MAC_APP_SHIM_PARAM_TRAITS_H_

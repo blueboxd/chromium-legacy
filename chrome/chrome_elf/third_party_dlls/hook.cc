@@ -501,12 +501,10 @@ bool GetDataFromImageForTesting(PVOID mapped_image,
 
 }  // namespace third_party_dlls
 
-using namespace third_party_dlls;
-
 void DisableHook() {
-  g_hook_disabled.store(true, std::memory_order_relaxed);
+  third_party_dlls::g_hook_disabled.store(true, std::memory_order_relaxed);
 }
 
 int32_t GetApplyHookResult() {
-  return g_apply_hook_result.load(std::memory_order_relaxed);
+  return third_party_dlls::g_apply_hook_result.load(std::memory_order_relaxed);
 }

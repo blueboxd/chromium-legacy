@@ -23,6 +23,10 @@ struct IcuEnvironment {
 IcuEnvironment icu_env;
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // This is an arbitrary size, and arguably even small for a JSON input,
+  // but we have to cut it off somewhere.
+  if (size > 4096)
+    return 0;
   std::unique_ptr<std::string> response_body =
       std::make_unique<std::string>(reinterpret_cast<const char*>(data), size);
   std::unique_ptr<base::Value> value(

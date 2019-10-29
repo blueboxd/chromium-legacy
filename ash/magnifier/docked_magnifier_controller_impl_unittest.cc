@@ -397,7 +397,7 @@ TEST_P(DockedMagnifierTest, OverviewTabbing) {
   OverviewItem* item = GetOverviewItemForWindow(window.get());
   ASSERT_TRUE(item);
   const auto label_bounds_in_screen =
-      item->caption_container_view()->title_label()->GetBoundsInScreen();
+      item->overview_item_view()->title_label()->GetBoundsInScreen();
   const gfx::Point expected_point_of_interest(
       label_bounds_in_screen.x(), label_bounds_in_screen.CenterPoint().y());
   TestMagnifierLayerTransform(expected_point_of_interest, root_window);

@@ -17,6 +17,8 @@
 #include "components/url_formatter/elide_url.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 
+using ShowVirtualKeyboard =
+    password_manager::PasswordManagerDriver::ShowVirtualKeyboard;
 using password_manager::CredentialPair;
 using password_manager::PasswordManagerDriver;
 
@@ -61,13 +63,17 @@ void TouchToFillController::OnCredentialSelected(
 
   password_manager::metrics_util::LogFilledCredentialIsFromAndroidApp(
       password_manager::IsValidAndroidFacetURI(credential.origin_url.spec()));
-  driver_->TouchToFillDismissed();
+  driver_->TouchToFillClosed(ShowVirtualKeyboard(false));
   std::exchange(driver_, nullptr)
       ->FillSuggestion(credential.username, credential.password);
 }
 
 void TouchToFillController::OnManagePasswordsSelected() {
-  OnDismiss();
+  if (!driver_)
+    return;
+
+  std::exchange(driver_, nullptr)
+      ->TouchToFillClosed(ShowVirtualKeyboard(false));
   password_client_->NavigateToManagePasswordsPage(
       password_manager::ManagePasswordsReferrer::kTouchToFill);
 }
@@ -76,7 +82,7 @@ void TouchToFillController::OnDismiss() {
   if (!driver_)
     return;
 
-  std::exchange(driver_, nullptr)->TouchToFillDismissed();
+  std::exchange(driver_, nullptr)->TouchToFillClosed(ShowVirtualKeyboard(true));
 }
 
 gfx::NativeView TouchToFillController::GetNativeView() {

@@ -7,8 +7,6 @@
 
 #include <cstddef>
 
-#include "build/build_config.h"
-
 // A particular type of content to care about.  We give the user various types
 // of controls over each of these.
 // When adding/removing values from this enum, be sure to update the

@@ -48,31 +48,11 @@ using base::test::ios::kWaitForPageLoadTimeout;
 namespace web {
 namespace {
 
-// A text string from the test HTML page in the session storage returned  by
-// GetTestSessionStorage().
-const char kTestSessionStoragePageText[] = "pony";
-
 // A text string that is included in |kTestPageHTML|.
 const char kTextInTestPageHTML[] = "this_is_a_test_string";
 
 // A test page HTML containing |kTextInTestPageHTML|.
 const char kTestPageHTML[] = "<html><body>this_is_a_test_string</body><html>";
-
-// Returns a session storage with a single committed entry of a test HTML page.
-CRWSessionStorage* GetTestSessionStorage() {
-  base::FilePath path;
-  base::PathService::Get(base::DIR_MODULE, &path);
-  path = path.Append(
-      FILE_PATH_LITERAL("ios/testing/data/http_server_files/pony.html"));
-  GURL testFileUrl(base::StringPrintf("file://%s", path.value().c_str()));
-
-  CRWSessionStorage* result = [[CRWSessionStorage alloc] init];
-  result.lastCommittedItemIndex = 0;
-  CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-  [item setVirtualURL:testFileUrl];
-  [result setItemStorages:@[ item ]];
-  return result;
-}
 }  // namespace
 
 using wk_navigation_util::IsWKInternalUrl;
@@ -576,19 +556,6 @@ TEST_P(WebStateTest, CallReloadDuringSessionRestore) {
   }));
 }
 
-// Tests that if a saved session is provided when creating a new WebState, it is
-// restored after the first NavigationManager::LoadIfNecessary() call.
-TEST_P(WebStateTest, RestoredFromHistory) {
-  auto web_state = WebState::CreateWithStorageSession(
-      WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
-
-  ASSERT_FALSE(test::IsWebViewContainingText(web_state.get(),
-                                             kTestSessionStoragePageText));
-  web_state->GetNavigationManager()->LoadIfNecessary();
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
-                                                 kTestSessionStoragePageText));
-}
-
 // Verifies that each page title is restored.
 TEST_P(WebStateTest, RestorePageTitles) {
   // Create session storage.
@@ -626,26 +593,6 @@ TEST_P(WebStateTest, RestorePageTitles) {
   }
 }
 
-// Tests that NavigationManager::LoadIfNecessary() restores the page after
-// disabling and re-enabling web usage.
-TEST_P(WebStateTest, DisableAndReenableWebUsage) {
-  auto web_state = WebState::CreateWithStorageSession(
-      WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
-  web_state->GetNavigationManager()->LoadIfNecessary();
-  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
-                                                 kTestSessionStoragePageText));
-
-  web_state->SetWebUsageEnabled(false);
-  web_state->SetWebUsageEnabled(true);
-
-  // NavigationManager::LoadIfNecessary() should restore the page.
-  ASSERT_FALSE(test::IsWebViewContainingText(web_state.get(),
-                                             kTestSessionStoragePageText));
-  web_state->GetNavigationManager()->LoadIfNecessary();
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
-                                                 kTestSessionStoragePageText));
-}
-
 // Tests that loading an HTML page after a failed navigation works.
 TEST_P(WebStateTest, LoadChromeThenHTML) {
   GURL app_specific_url(
@@ -667,6 +614,14 @@ TEST_P(WebStateTest, LoadChromeThenHTML) {
                         @"text/html", GURL("https://www.chromium.org"));
   EXPECT_TRUE(
       test::WaitForWebViewContainingText(web_state(), kTextInTestPageHTML));
+}
+
+// Tests that loading an arbitrary file URL is a no-op.
+TEST_P(WebStateTest, LoadFileURL) {
+  GURL file_url("file:///path/to/file.html");
+  web::NavigationManager::WebLoadParams load_params(file_url);
+  web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+  EXPECT_FALSE(web_state()->IsLoading());
 }
 
 // Tests that reloading after loading HTML page will load the online page.

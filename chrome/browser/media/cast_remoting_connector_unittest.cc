@@ -38,10 +38,6 @@ using media::mojom::RemotingSourcePtr;
 using media::mojom::RemotingSourceRequest;
 using media::mojom::RemotingStartFailReason;
 using media::mojom::RemotingStopReason;
-using media::mojom::MirrorServiceRemoterPtr;
-using media::mojom::MirrorServiceRemoterRequest;
-using media::mojom::MirrorServiceRemotingSourcePtr;
-using media::mojom::MirrorServiceRemotingSourceRequest;
 
 using ::testing::_;
 using ::testing::AtLeast;

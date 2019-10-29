@@ -19,14 +19,10 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_view.h"
-
-using testing::_;
-using testing::DeleteArg;
 
 namespace {
 
@@ -67,11 +63,21 @@ class MockContentSettingsManagerImpl
     ++allow_storage_access_count_;
     std::move(callback).Run(true);
   }
+  void OnContentBlocked(ContentSettingsType type) override {
+    ++on_content_blocked_count_;
+    on_content_blocked_type_ = type;
+  }
 
   int allow_storage_access_count() const { return allow_storage_access_count_; }
+  int on_content_blocked_count() const { return on_content_blocked_count_; }
+  ContentSettingsType on_content_blocked_type() const {
+    return on_content_blocked_type_;
+  }
 
  private:
   int allow_storage_access_count_ = 0;
+  int on_content_blocked_count_ = 0;
+  ContentSettingsType on_content_blocked_type_ = CONTENT_SETTINGS_TYPE_DEFAULT;
 };
 
 class MockContentSettingsAgentImpl : public ContentSettingsAgentImpl {
@@ -79,11 +85,6 @@ class MockContentSettingsAgentImpl : public ContentSettingsAgentImpl {
   MockContentSettingsAgentImpl(content::RenderFrame* render_frame,
                                service_manager::BinderRegistry* registry);
   ~MockContentSettingsAgentImpl() override {}
-
-  bool Send(IPC::Message* message) override;
-
-  MOCK_METHOD2(OnContentBlocked,
-               void(ContentSettingsType, const base::string16&));
 
   const GURL& image_url() const { return image_url_; }
   const std::string& image_origin() const { return image_origin_; }
@@ -114,16 +115,6 @@ MockContentSettingsAgentImpl::MockContentSettingsAgentImpl(
       std::make_unique<MockContentSettingsManagerImpl>(),
       mock_manager_remote.BindNewPipeAndPassReceiver());
   SetContentSettingsManagerForTesting(std::move(mock_manager_remote));
-}
-
-bool MockContentSettingsAgentImpl::Send(IPC::Message* message) {
-  IPC_BEGIN_MESSAGE_MAP(MockContentSettingsAgentImpl, *message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ContentBlocked, OnContentBlocked)
-    IPC_MESSAGE_UNHANDLED(ADD_FAILURE())
-  IPC_END_MESSAGE_MAP()
-
-  // Our super class deletes the message.
-  return RenderFrameObserver::Send(message);
 }
 
 // Evaluates a boolean |predicate| every time a provisional load is committed in
@@ -176,13 +167,16 @@ class ContentSettingsAgentImplBrowserTest : public ChromeRenderViewTest {
 TEST_F(ContentSettingsAgentImplBrowserTest, DidBlockContentType) {
   MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame(),
                                           registry_.get());
-  EXPECT_CALL(mock_agent, OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES,
-                                           base::string16()));
   mock_agent.DidBlockContentType(CONTENT_SETTINGS_TYPE_COOKIES);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, mock_agent.mock_manager()->on_content_blocked_count());
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_COOKIES,
+            mock_agent.mock_manager()->on_content_blocked_type());
 
   // Blocking the same content type a second time shouldn't send a notification.
   mock_agent.DidBlockContentType(CONTENT_SETTINGS_TYPE_COOKIES);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_agent);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, mock_agent.mock_manager()->on_content_blocked_count());
 }
 
 // Tests that multiple invokations of AllowDOMStorage result in a single IPC.
@@ -204,6 +198,9 @@ TEST_F(ContentSettingsAgentImplBrowserTest, AllowDOMStorage) {
 
 // Regression test for http://crbug.com/35011
 TEST_F(ContentSettingsAgentImplBrowserTest, JSBlockSentAfterPageLoad) {
+  MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame(),
+                                          registry_.get());
+
   // 1. Load page with JS.
   const char kHtml[] =
       "<html>"
@@ -233,18 +230,17 @@ TEST_F(ContentSettingsAgentImplBrowserTest, JSBlockSentAfterPageLoad) {
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
 
-  const auto HasSentChromeViewHostMsgContentBlocked =
-      [](content::MockRenderThread* render_thread) {
-        return !!render_thread->sink().GetFirstMessageMatching(
-            ChromeViewHostMsg_ContentBlocked::ID);
+  const auto HasSentOnContentBlocked =
+      [](MockContentSettingsManagerImpl* mock_manager) {
+        return mock_manager->on_content_blocked_count() > 0;
       };
 
   // 3. Reload page. Verify that the notification that javascript was blocked
   // has not yet been sent at the time when the navigation commits.
   CommitTimeConditionChecker checker(
       view_->GetMainRenderFrame(),
-      base::Bind(HasSentChromeViewHostMsgContentBlocked,
-                 base::Unretained(render_thread_.get())),
+      base::Bind(HasSentOnContentBlocked,
+                 base::Unretained(mock_agent.mock_manager())),
       false);
 
   std::string url_str = "data:text/html;charset=utf-8,";
@@ -253,7 +249,7 @@ TEST_F(ContentSettingsAgentImplBrowserTest, JSBlockSentAfterPageLoad) {
   Reload(url);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(HasSentChromeViewHostMsgContentBlocked(render_thread_.get()));
+  EXPECT_TRUE(HasSentOnContentBlocked(mock_agent.mock_manager()));
 }
 
 TEST_F(ContentSettingsAgentImplBrowserTest, PluginsTemporarilyAllowed) {
@@ -308,10 +304,11 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ImagesBlockedByDefault) {
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(view_->GetMainRenderFrame());
   agent->SetContentSettingRules(&content_setting_rules);
-  EXPECT_CALL(mock_agent,
-              OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, base::string16()));
   EXPECT_FALSE(agent->AllowImage(true, mock_agent.image_url()));
-  ::testing::Mock::VerifyAndClearExpectations(&agent);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, mock_agent.mock_manager()->on_content_blocked_count());
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_IMAGES,
+            mock_agent.mock_manager()->on_content_blocked_type());
 
   // Create an exception which allows the image.
   image_setting_rules.insert(
@@ -323,11 +320,9 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ImagesBlockedByDefault) {
               content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
           std::string(), false));
 
-  EXPECT_CALL(mock_agent,
-              OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, base::string16()))
-      .Times(0);
   EXPECT_TRUE(agent->AllowImage(true, mock_agent.image_url()));
-  ::testing::Mock::VerifyAndClearExpectations(&agent);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, mock_agent.mock_manager()->on_content_blocked_count());
 }
 
 TEST_F(ContentSettingsAgentImplBrowserTest, ImagesAllowedByDefault) {
@@ -350,11 +345,9 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ImagesAllowedByDefault) {
   ContentSettingsAgentImpl* agent =
       ContentSettingsAgentImpl::Get(view_->GetMainRenderFrame());
   agent->SetContentSettingRules(&content_setting_rules);
-  EXPECT_CALL(mock_agent,
-              OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, base::string16()))
-      .Times(0);
   EXPECT_TRUE(agent->AllowImage(true, mock_agent.image_url()));
-  ::testing::Mock::VerifyAndClearExpectations(&agent);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, mock_agent.mock_manager()->on_content_blocked_count());
 
   // Create an exception which blocks the image.
   image_setting_rules.insert(
@@ -365,13 +358,16 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ImagesAllowedByDefault) {
           base::Value::FromUniquePtrValue(
               content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
           std::string(), false));
-  EXPECT_CALL(mock_agent,
-              OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, base::string16()));
   EXPECT_FALSE(agent->AllowImage(true, mock_agent.image_url()));
-  ::testing::Mock::VerifyAndClearExpectations(&agent);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, mock_agent.mock_manager()->on_content_blocked_count());
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_IMAGES,
+            mock_agent.mock_manager()->on_content_blocked_type());
 }
 
 TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsBlockScripts) {
+  MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame(),
+                                          registry_.get());
   // Set the content settings for scripts.
   RendererContentSettingRules content_setting_rules;
   ContentSettingsForOneType& script_setting_rules =
@@ -390,11 +386,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsBlockScripts) {
   LoadHTML(kScriptHtml);
 
   // Verify that the script was blocked.
-  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-      ChromeViewHostMsg_ContentBlocked::ID));
+  EXPECT_EQ(1, mock_agent.mock_manager()->on_content_blocked_count());
 }
 
 TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsAllowScripts) {
+  MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame(),
+                                          registry_.get());
   // Set the content settings for scripts.
   RendererContentSettingRules content_setting_rules;
   ContentSettingsForOneType& script_setting_rules =
@@ -413,12 +410,13 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsAllowScripts) {
   LoadHTML(kScriptHtml);
 
   // Verify that the script was not blocked.
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      ChromeViewHostMsg_ContentBlocked::ID));
+  EXPECT_EQ(0, mock_agent.mock_manager()->on_content_blocked_count());
 }
 
 TEST_F(ContentSettingsAgentImplBrowserTest,
        ContentSettingsAllowScriptsWithSrc) {
+  MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame(),
+                                          registry_.get());
   // Set the content settings for scripts.
   RendererContentSettingRules content_setting_rules;
   ContentSettingsForOneType& script_setting_rules =
@@ -437,8 +435,7 @@ TEST_F(ContentSettingsAgentImplBrowserTest,
   LoadHTML(kScriptWithSrcHtml);
 
   // Verify that the script was not blocked.
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      ChromeViewHostMsg_ContentBlocked::ID));
+  EXPECT_EQ(0, mock_agent.mock_manager()->on_content_blocked_count());
 }
 
 // Regression test for crbug.com/232410: Load a page with JS blocked. Then,
@@ -518,8 +515,7 @@ TEST_F(ContentSettingsAgentImplBrowserTest,
   LoadHTML(kScriptHtml);
 
   // Verify that the script was not blocked.
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      ChromeViewHostMsg_ContentBlocked::ID));
+  EXPECT_EQ(0, mock_agent.mock_manager()->on_content_blocked_count());
 
   // Block JavaScript.
   RendererContentSettingRules content_setting_rules;
@@ -571,15 +567,12 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsInterstitialPages) {
   LoadHTML(kScriptHtml);
 
   // Verify that the script was allowed.
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      ChromeViewHostMsg_ContentBlocked::ID));
+  EXPECT_EQ(0, mock_agent.mock_manager()->on_content_blocked_count());
 
   // Verify that images are allowed.
-  EXPECT_CALL(mock_agent,
-              OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES, base::string16()))
-      .Times(0);
   EXPECT_TRUE(agent->AllowImage(true, mock_agent.image_url()));
-  ::testing::Mock::VerifyAndClearExpectations(&agent);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, mock_agent.mock_manager()->on_content_blocked_count());
 }
 
 TEST_F(ContentSettingsAgentImplBrowserTest, AutoplayContentSettings) {
@@ -604,7 +597,6 @@ TEST_F(ContentSettingsAgentImplBrowserTest, AutoplayContentSettings) {
   agent->SetContentSettingRules(&content_setting_rules);
 
   EXPECT_TRUE(agent->AllowAutoplay(false));
-  ::testing::Mock::VerifyAndClearExpectations(&agent);
 
   // Add rule to block autoplay.
   autoplay_setting_rules.insert(
@@ -617,5 +609,4 @@ TEST_F(ContentSettingsAgentImplBrowserTest, AutoplayContentSettings) {
           std::string(), false));
 
   EXPECT_FALSE(agent->AllowAutoplay(true));
-  ::testing::Mock::VerifyAndClearExpectations(&agent);
 }

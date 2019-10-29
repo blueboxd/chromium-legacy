@@ -206,6 +206,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2737
         'ChromeDriverTest.testTakeElementScreenshot',
         'ChromeDriverTest.testTakeElementScreenshotInIframe',
+        # setWindowBounds not supported on Android
+        'ChromeDriverTest.testTakeLargeElementScreenshot',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2786
         'ChromeDriverTest.testActionsTouchTap',
         'ChromeDriverTest.testTouchDownMoveUpElement',
@@ -215,15 +217,22 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testNewWindowDoesNotFocus',
         'ChromeDriverTest.testNewTabDoesNotFocus',
         # Android does not support the virtual authenticator environment.
-        'ChromeDriverSecureContextTest.testAddVirtualAuthenticator',
-        'ChromeDriverSecureContextTest.testRemoveVirtualAuthenticator',
-        'ChromeDriverSecureContextTest.testAddCredential',
-        'ChromeDriverSecureContextTest.testGetCredentials',
-        'ChromeDriverSecureContextTest.testRemoveCredential',
-        'ChromeDriverSecureContextTest.testRemoveAllCredentials',
-        'ChromeDriverSecureContextTest.testSetUserVerified',
+        'ChromeDriverSecureContextTest.*',
         # Covered by Desktop tests; can't create 2 browsers in Android
         'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
+        # Browser context management is not supported by Android
+        'ChromeDriverTest.testClipboardPermissions',
+        'ChromeDriverTest.testMidiPermissions',
+        'ChromeDriverTest.testMultiplePermissions',
+        'ChromeDriverTest.testNewWindowSameDomainHasSamePermissions',
+        'ChromeDriverTest.testPermissionStates',
+        'ChromeDriverTest.testPermissionsOpaqueOriginsThrowError',
+        'ChromeDriverTest.testPermissionsSameOrigin',
+        'ChromeDriverTest.testPermissionsSameOriginDoesNotAffectOthers',
+        'ChromeDriverTest.testPersistentStoragePermissions',
+        'ChromeDriverTest.testPushAndNotificationsPermissions',
+        'ChromeDriverTest.testSensorPermissions',
+        'ChromeDriverTest.testSettingPermissionDoesNotAffectOthers',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (

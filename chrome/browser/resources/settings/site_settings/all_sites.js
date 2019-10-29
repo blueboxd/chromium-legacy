@@ -132,14 +132,6 @@ Polymer({
           /** @type {!CustomEvent<!{item: !SiteGroup, index: number}>} */ (e);
       this.selectedItem_ = event.detail;
     });
-    this.addEventListener('site-entry-storage-updated', () => {
-      this.debounce('site-entry-storage-updated', () => {
-        if (this.sortMethods_ &&
-            this.$.sortMethod.value == settings.SortMethod.STORAGE) {
-          this.onSortMethodChanged_();
-        }
-      }, 500);
-    });
     this.sortMethod_ = this.$.sortMethod.value;
   },
 

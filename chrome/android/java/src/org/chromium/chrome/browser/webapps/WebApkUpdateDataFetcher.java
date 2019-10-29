@@ -107,7 +107,7 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
             String badgeIconMurmur2Hash, Bitmap badgeIconBitmap, String[] iconUrls,
             @WebDisplayMode int displayMode, int orientation, long themeColor, long backgroundColor,
             String shareAction, String shareParamsTitle, String shareParamsText,
-            String shareParamsUrl, boolean isShareMethodPost, boolean isShareEncTypeMultipart,
+            boolean isShareMethodPost, boolean isShareEncTypeMultipart,
             String[] shareParamsFileNames, String[][] shareParamsAccepts) {
         Context appContext = ContextUtils.getApplicationContext();
 
@@ -126,8 +126,8 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
         WebApkInfo.ShareTarget shareTarget = TextUtils.isEmpty(shareAction)
                 ? new WebApkInfo.ShareTarget()
                 : new WebApkInfo.ShareTarget(shareAction, shareParamsTitle, shareParamsText,
-                        shareParamsUrl, isShareMethodPost, isShareEncTypeMultipart,
-                        shareParamsFileNames, shareParamsAccepts);
+                        isShareMethodPost, isShareEncTypeMultipart, shareParamsFileNames,
+                        shareParamsAccepts);
 
         int defaultBackgroundColor = SplashLayout.getDefaultBackgroundColor(appContext);
         WebApkInfo info = WebApkInfo.create(mOldInfo.url(), scopeUrl,

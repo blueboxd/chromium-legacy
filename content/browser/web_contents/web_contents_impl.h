@@ -91,7 +91,6 @@ namespace content {
 enum class PictureInPictureResult;
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
-class DateTimeChooserAndroid;
 class DisplayCutoutHostImpl;
 class FindRequestManager;
 class InterstitialPageImpl;
@@ -1720,12 +1719,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // created render views/widgets.
   gfx::Size device_emulation_size_;
   gfx::Size view_size_before_emulation_;
-
-#if defined(OS_ANDROID)
-  // Date time chooser opened by this tab.
-  // Only used in Android since all other platforms use a multi field UI.
-  std::unique_ptr<DateTimeChooserAndroid> date_time_chooser_;
-#endif
 
   // Holds information about a current color chooser dialog, if one is visible.
   class ColorChooser;

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/test/accessibility_controller_test_api.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -548,7 +549,10 @@ class AccessibilityManagerLoginTest : public OobeBaseTest {
         user_manager::UserManager::Get()
             ->FindUser(account_id)
             ->username_hash());
-    session_manager::SessionManager::Get()->SessionStarted();
+
+    auto* session_manager = session_manager::SessionManager::Get();
+    session_manager->NotifyUserProfileLoaded(account_id);
+    session_manager->SessionStarted();
   }
 
   void SetBrailleDisplayAvailability(bool available) {
@@ -636,6 +640,30 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerLoginTest, MAYBE_Login) {
 
   SetMonoAudioEnabled(true);
   EXPECT_TRUE(IsMonoAudioEnabled());
+}
+
+// Tests that ash and browser process has the same states after sign-in.
+IN_PROC_BROWSER_TEST_F(AccessibilityManagerLoginTest, AshState) {
+  WaitForSigninScreen();
+  CreateSession(test_account_id_);
+  StartUserSession(test_account_id_);
+
+  auto ash_a11y_controller_test_api =
+      ash::AccessibilityControllerTestApi::Create();
+
+  // Ash and browser has the same state.
+  EXPECT_FALSE(IsLargeCursorEnabled());
+  EXPECT_FALSE(ash_a11y_controller_test_api->IsLargeCursorEnabled());
+
+  // Changes from the browser side is reflected in both browser and ash.
+  SetLargeCursorEnabled(true);
+  EXPECT_TRUE(IsLargeCursorEnabled());
+  EXPECT_TRUE(ash_a11y_controller_test_api->IsLargeCursorEnabled());
+
+  // Changes from ash is also reflect in both browser and ash.
+  ash_a11y_controller_test_api->SetLargeCursorEnabled(false);
+  EXPECT_FALSE(IsLargeCursorEnabled());
+  EXPECT_FALSE(ash_a11y_controller_test_api->IsLargeCursorEnabled());
 }
 
 class AccessibilityManagerUserTypeTest

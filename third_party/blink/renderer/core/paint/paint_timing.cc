@@ -163,13 +163,13 @@ void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {
   RegisterNotifySwapTime(PaintEvent::kFirstContentfulPaint);
 
   // Restart commits that may have been deferred.
-  if (!GetFrame() || !GetFrame()->IsMainFrame())
+  LocalFrame* frame = GetFrame();
+  if (!frame || !frame->IsMainFrame())
     return;
-  GetFrame()->GetPage()->GetChromeClient().StopDeferringCommits(
-      *GetFrame(), cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
+  frame->View()->OnFirstContentfulPaint();
 
-  if (GetFrame()->GetFrameScheduler())
-    GetFrame()->GetFrameScheduler()->OnFirstContentfulPaint();
+  if (frame->GetFrameScheduler())
+    frame->GetFrameScheduler()->OnFirstContentfulPaint();
 }
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {

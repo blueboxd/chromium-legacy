@@ -76,6 +76,10 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mTitleTextView.clearFocus();
     }
 
+    void setTitleOnTouchListener(View.OnTouchListener listener) {
+        mTitleTextView.setOnTouchListener(listener);
+    }
+
     ViewGroup getViewContainer() {
         return mContainerView;
     }

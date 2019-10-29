@@ -8,12 +8,13 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -84,7 +85,7 @@ class MediaToolbarButtonControllerTest : public testing::Test {
 
   void SetUp() override {
     controller_ = std::make_unique<MediaToolbarButtonController>(
-        base::UnguessableToken::Create(), nullptr, &delegate_);
+        base::UnguessableToken::Create(), nullptr, &delegate_, &media_router_);
   }
 
  protected:
@@ -174,11 +175,17 @@ class MediaToolbarButtonControllerTest : public testing::Test {
         media_message_center::kCountHistogramName, count, size);
   }
 
+  void SimulateMediaRoutesUpdate(
+      const std::vector<media_router::MediaRoute>& routes) {
+    controller_->media_routes_observer_->OnRoutesUpdated(routes, {});
+  }
+
   MockMediaToolbarButtonControllerDelegate& delegate() { return delegate_; }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_;
   MockMediaToolbarButtonControllerDelegate delegate_;
+  media_router::MockMediaRouter media_router_;
   std::unique_ptr<MediaToolbarButtonController> controller_;
   base::HistogramTester histogram_tester_;
 
@@ -398,4 +405,19 @@ TEST_F(MediaToolbarButtonControllerTest, DismissesMediaSession) {
   EXPECT_CALL(dialog_delegate, HideMediaSession(id.ToString()));
   SimulateDismissButtonClicked(id);
   testing::Mock::VerifyAndClearExpectations(&delegate());
+}
+
+TEST_F(MediaToolbarButtonControllerTest, ShowButtonForCastSession) {
+  media_router::MediaRoute media_route("id",
+                                       media_router::MediaSource("source_id"),
+                                       "sink_id", "description", true, true);
+  media_route.set_controller_type(media_router::RouteControllerType::kGeneric);
+
+  EXPECT_CALL(delegate(), Enable());
+  EXPECT_CALL(delegate(), Show());
+  SimulateMediaRoutesUpdate({media_route});
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  EXPECT_CALL(delegate(), Hide());
+  SimulateMediaRoutesUpdate({});
 }

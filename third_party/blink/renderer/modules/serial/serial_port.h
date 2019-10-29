@@ -96,6 +96,11 @@ class SerialPort final : public ScriptWrappable,
   Member<WritableStream> writable_;
   Member<SerialPortUnderlyingSink> underlying_sink_;
 
+  // Indicates that the read or write streams have encountered a fatal error and
+  // should not be reopened.
+  bool read_fatal_ = false;
+  bool write_fatal_ = false;
+
   // Indicates that the port is being closed and so the streams should not be
   // reopened on demand.
   bool closing_ = false;

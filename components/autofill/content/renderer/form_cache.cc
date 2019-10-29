@@ -41,8 +41,8 @@ using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
-using blink::WebLocalFrame;
 using blink::WebInputElement;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebSelectElement;
 using blink::WebString;
@@ -159,7 +159,7 @@ void LogDeprecationMessages(const WebFormControlElement& element) {
   std::string autocomplete_attribute =
       element.GetAttribute("autocomplete").Utf8();
 
-  static const char* const deprecated[] = { "region", "locality" };
+  static const char* const deprecated[] = {"region", "locality"};
   for (const char* str : deprecated) {
     if (autocomplete_attribute.find(str) == std::string::npos)
       continue;
@@ -558,7 +558,7 @@ bool FormCache::ShouldShowAutocompleteConsoleWarnings(
 }
 
 void FormCache::PruneInitialValueCaches(
-    const std::set<uint32_t> ids_to_retain) {
+    const std::set<uint32_t>& ids_to_retain) {
   // Prune initial_select_values_.
   for (auto iter = initial_select_values_.begin();
        iter != initial_select_values_.end();) {

@@ -1,0 +1,8 @@
+[document web]
+++[static] xml-roles:time
+++++[text] name='role'
+++[static] xml-roles:time
+++++[text] name='element (no name)'
+++[text] name=' '
+++[static] name='include me' xml-roles:time
+++++[text] name='element (with name)'

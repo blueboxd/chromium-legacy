@@ -4327,6 +4327,12 @@ LocalFrameUkmAggregator& LocalFrameView::EnsureUkmAggregator() {
   return *ukm_aggregator_;
 }
 
+void LocalFrameView::OnFirstContentfulPaint() {
+  GetPage()->GetChromeClient().StopDeferringCommits(
+      *frame_, cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
+  EnsureUkmAggregator().DidReachFirstContentfulPaint();
+}
+
 void LocalFrameView::RegisterForLifecycleNotifications(
     LifecycleNotificationObserver* observer) {
   lifecycle_observers_.insert(observer);

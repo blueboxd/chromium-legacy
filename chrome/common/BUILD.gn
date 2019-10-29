@@ -94,16 +94,6 @@ source_set("ini_parser") {
   ]
 }
 
-source_set("common_param_traits_macros") {
-  sources = [
-    "common_param_traits_macros.h",
-  ]
-  deps = [
-    "//components/content_settings/core/common",
-    "//ipc",
-  ]
-}
-
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 static_library("common") {
@@ -124,8 +114,6 @@ static_library("common") {
     "client_hints/client_hints.h",
     "common_message_generator.cc",
     "common_message_generator.h",
-    "common_param_traits.cc",
-    "common_param_traits.h",
     "component_flash_hint_file_linux.cc",
     "component_flash_hint_file_linux.h",
     "conflicts/module_watcher_win.cc",
@@ -206,7 +194,6 @@ static_library("common") {
     ":buildflags",
     ":channel_info",
     ":client_hints_mojom",
-    ":common_param_traits_macros",
     ":ini_parser",
     ":mojo_bindings",
     ":offline_page_auto_fetcher_mojom",

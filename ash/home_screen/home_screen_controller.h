@@ -11,7 +11,9 @@
 #include "ash/home_screen/home_screen_presenter.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/wm/overview/overview_observer.h"
+#include "ash/wm/overview/overview_session.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace ash {
 
@@ -83,10 +85,11 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // Presenter that manages home screen animations.
   HomeScreenPresenter home_screen_presenter_{this};
 
-  // Each time overview mode is exited, set this variable based on whether
-  // overview mode is sliding out, so the home launcher knows what to do when
-  // overview mode exit animations are finished.
-  bool use_slide_to_exit_overview_ = false;
+  // The last overview mode exit type - cached when the overview exit starts, so
+  // it can be used to decide how to update home screen  when overview mode exit
+  // animations are finished (at which point this information will not be
+  // available).
+  base::Optional<OverviewSession::EnterExitOverviewType> overview_exit_type_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeScreenController);
 };

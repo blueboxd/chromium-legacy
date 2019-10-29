@@ -64,6 +64,7 @@ GTEST_CONVERSION_WHITELIST = [
   'media_perftests',
   'net_perftests',
   'passthrough_command_buffer_perftests',
+  'performance_browser_tests',
   'services_perftests',
   'tracing_perftests',
   'validating_command_buffer_perftests',

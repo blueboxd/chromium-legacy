@@ -101,25 +101,25 @@ scoped_refptr<AutoThreadTaskRunner> AutoThread::CreateWithLoopAndComInitTypes(
 #endif
 
 AutoThread::AutoThread(const char* name)
-  : startup_data_(NULL),
+    : startup_data_(nullptr),
 #if defined(OS_WIN)
-    com_init_type_(COM_INIT_NONE),
+      com_init_type_(COM_INIT_NONE),
 #endif
-    thread_(),
-    name_(name),
-    was_quit_properly_(false) {
+      thread_(),
+      name_(name),
+      was_quit_properly_(false) {
   thread_checker_.DetachFromThread();
 }
 
 AutoThread::AutoThread(const char* name, AutoThreadTaskRunner* joiner)
-  : startup_data_(NULL),
+    : startup_data_(nullptr),
 #if defined(OS_WIN)
-    com_init_type_(COM_INIT_NONE),
+      com_init_type_(COM_INIT_NONE),
 #endif
-    thread_(),
-    name_(name),
-    was_quit_properly_(false),
-    joiner_(joiner) {
+      thread_(),
+      name_(name),
+      was_quit_properly_(false),
+      joiner_(joiner) {
   thread_checker_.DetachFromThread();
 }
 
@@ -146,8 +146,8 @@ scoped_refptr<AutoThreadTaskRunner> AutoThread::StartWithType(
 
   if (!base::PlatformThread::Create(0, this, &thread_)) {
     DLOG(ERROR) << "failed to create thread";
-    startup_data_ = NULL;
-    return NULL;
+    startup_data_ = nullptr;
+    return nullptr;
   }
 
   // Wait for the thread to start and initialize single_thread_task_executor
@@ -159,8 +159,8 @@ scoped_refptr<AutoThreadTaskRunner> AutoThread::StartWithType(
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   startup_data.event.Wait();
 
-  // set it to NULL so we don't keep a pointer to some object on the stack.
-  startup_data_ = NULL;
+  // set it to null so we don't keep a pointer to some object on the stack.
+  startup_data_ = nullptr;
 
   DCHECK(startup_data.task_runner.get());
   return startup_data.task_runner;

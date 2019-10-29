@@ -937,7 +937,10 @@ group("gn_visibility") {
 
 if (!is_ios) {
   # This group includes all of the targets needed to build and test Blink,
-  # including running the layout tests (see below).
+  # including running web tests (see below). This target is defined here because
+  # previously //third_party/WebKit, now //third_party/blink, couldn't depend on
+  # //content/shell. This might not longer be true, see
+  # https://crbug.com/1018659.
   group("blink_tests") {
     testonly = true
 
@@ -991,6 +994,24 @@ if (!is_ios) {
   }
 
   # https://www.chromium.org/developers/testing/webkit-layout-tests
+
+  # The _exparchive at the end of the name indicates to the isolate recipe
+  # that the isolate should be archived separately using the `exparchive`
+  # command, rather than as part of the normal `batcharchive` command.
+  group("blink_web_tests_exparchive") {
+    testonly = true
+    deps = [
+      ":blink_web_tests",
+    ]
+    data_deps = [
+      ":blink_web_tests",
+    ]
+  }
+
+  # This target contains only a small subset of the web tests,
+  # and is useful for testing with the regular isolate mechanism.
+  # To run the full web test suite you need to use
+  # :blink_web_tests_exparchive, above, instead.
   generate_wrapper("blink_web_tests") {
     testonly = true
     wrapper_script = "${root_build_dir}/bin/run_blink_web_tests"

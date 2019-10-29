@@ -223,7 +223,7 @@ void RootCompositorFrameSinkImpl::SetSupportedRefreshRates(
 #endif  // defined(OS_ANDROID)
 
 void RootCompositorFrameSinkImpl::AddVSyncParameterObserver(
-    mojom::VSyncParameterObserverPtr observer) {
+    mojo::PendingRemote<mojom::VSyncParameterObserver> observer) {
   vsync_listener_ =
       std::make_unique<VSyncParameterListener>(std::move(observer));
 }

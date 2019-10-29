@@ -1504,7 +1504,36 @@
     <ph name="BR">&lt;br&gt;</ph>
     <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph>  The system will reboot during the process.
   </message>
-
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_SETUP_TITLE" desc="Title of the enable ARC ADB Sideloading screen upon reboot">
+    Do you want to proceed?
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_SETUP_MESSAGE" desc="Setup message in dialog for enabling ARC ADB Sideloading.">
+    Continuing will enable ADB for creating and testing Android apps. Note that ADB allows installation of test apps that haven't been verified by Google.
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_SETUP_ILLUSTRATION_TITLE" desc="Accessible title of ARC ADB sideloading illustration depicting the setup screen.">
+    Enabling adb to create apps illustration
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_ERROR_TITLE" desc="Title message when enabling of ARC ADB Sideloading fails.">
+    Couldn't enable ADB
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_ERROR_MESSAGE" desc="Error message when enabling of ARC ADB Sideloading fails.">
+    Go to Linux settings and try again
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_ERROR_ILLUSTRATION_TITLE" desc="Accessible title of ARC ADB sideloading illustration depicting the error screen.">
+    Failed to enable ADB illustration
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_LEARN_MORE" desc="Learn more link text in the enable ARC ADB Sideloading dialog.">
+    Learn more
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_CONFIRM_BUTTON" desc="Button for confirming an action in a dialog for ARC ADB Sideloading.">
+    Confirm
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_CANCEL_BUTTON" desc="Button for canceling an action in a dialog for ARC ADB Sideloading.">
+    Cancel
+  </message>
+  <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_OK_BUTTON" desc="Button for acknowledging in a dialog for ARC ADB Sideloading.">
+    OK
+  </message>
   <message name="IDS_RESET_SCREEN_WARNING_MSG" desc="Warning text shown on reset screen above the exclamation icon.">
     Reset this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device
   </message>

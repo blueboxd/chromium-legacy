@@ -18510,6 +18510,7 @@ Called by update_net_error_codes.py.-->
   <int value="637" label="BlockExternalExtensions"/>
   <int value="638" label="DeviceShowNumericKeyboardForPassword"/>
   <int value="639" label="CrostiniAnsiblePlaybook"/>
+  <int value="640" label="WebRtcLocalIpsAllowedUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -25194,6 +25195,10 @@ Called by update_net_error_codes.py.-->
   <int value="3069" label="MovedOrResizedPopup"/>
   <int value="3070" label="MovedOrResizedPopup2sAfterCreation"/>
   <int value="3071" label="DOMWindowOpenPositioningFeatures"/>
+  <int value="3072" label="MouseEventScreenX"/>
+  <int value="3073" label="MouseEventScreenY"/>
+  <int value="3074"
+      label="CredentialManagerIsUserVerifyingPlatformAuthenticatorAvailable"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35455,6 +35460,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1943507605" label="enable-new-video-renderer"/>
   <int value="-1943313820" label="SystemKeyboardLock:disabled"/>
   <int value="-1942730618" label="WebAuthenticationTouchId:disabled"/>
+  <int value="-1942518189" label="HeavyAdIntervention:disabled"/>
   <int value="-1942419166" label="SyncPseudoUSSApps:disabled"/>
   <int value="-1942057472" label="ExperimentalAccessibilityLabels:enabled"/>
   <int value="-1941852572" label="floating-virtual-keyboard"/>
@@ -36205,6 +36211,7 @@ from previous Chrome versions.
   <int value="-1037128156" label="HomeLauncherGestures:disabled"/>
   <int value="-1034344165" label="V8NoTurbo:disabled"/>
   <int value="-1033738911" label="enable-mac-views-dialogs"/>
+  <int value="-1032884201" label="HeavyAdPrivacyMitigations:enabled"/>
   <int value="-1031350684" label="PdfIsolation:disabled"/>
   <int value="-1029920490" label="IdleTimeSpellChecking:enabled"/>
   <int value="-1028733699" label="MacViewsWebUIDialogs:disabled"/>
@@ -37387,6 +37394,7 @@ from previous Chrome versions.
   <int value="538468149" label="OfflinePagesCT:enabled"/>
   <int value="538600423" label="OmniboxDocumentProvider:enabled"/>
   <int value="538685995" label="InstallableInkDrop:enabled"/>
+  <int value="542960889" label="HeavyAdIntervention:enabled"/>
   <int value="546043947" label="ImplicitRootScroller:enabled"/>
   <int value="546520086" label="enable-data-reduction-proxy-savings-promo"/>
   <int value="546710806" label="disable-easy-signin"/>
@@ -38146,6 +38154,7 @@ from previous Chrome versions.
   <int value="1531741496" label="DragFromShelfToHomeOrOverview:disabled"/>
   <int value="1534222388" label="EnableEphemeralFlashPermission:enabled"/>
   <int value="1534386287" label="SendTabToSelfWhenSignedIn:enabled"/>
+  <int value="1534561775" label="HeavyAdPrivacyMitigations:disabled"/>
   <int value="1536921097" label="NavigationMojoResponse:disabled"/>
   <int value="1538685213" label="DownloadHomeV2:enabled"/>
   <int value="1538690515" label="OneGoogleBarOnLocalNtp:enabled"/>
@@ -62042,7 +62051,9 @@ Full version information for the fingerprint enum values:
   <int value="7" label="Can not create extracted file on disk"/>
   <int value="8" label="Can not write the extracted file on disk"/>
   <int value="9" label="Can not set the extract time to file"/>
-  <int value="10" label="Can not close extracted file"/>
+  <int value="10" label="Can not close extracted file (Deprecated)"/>
+  <int value="11" label="Can not create file memory mapping"/>
+  <int value="12" label="File CRC mismatch"/>
 </enum>
 
 <enum name="UnsupportedContainers">

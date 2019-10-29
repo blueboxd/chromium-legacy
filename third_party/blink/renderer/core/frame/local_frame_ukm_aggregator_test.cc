@@ -61,7 +61,8 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
   void VerifyEntries(unsigned expected_num_entries,
                      unsigned expected_primary_metric,
                      unsigned expected_sub_metric,
-                     unsigned expected_percentage) {
+                     unsigned expected_percentage,
+                     bool expected_before_fcp) {
     EXPECT_EQ(recorder().entries_count(), expected_num_entries);
     auto entries = recorder().GetEntriesByName("Blink.UpdateTime");
     EXPECT_EQ(entries.size(), expected_num_entries);
@@ -85,6 +86,10 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
             entry, GetPercentageMetricName(i));
         EXPECT_NEAR(*metric_percentage, expected_percentage, 0.001);
       }
+      EXPECT_TRUE(
+          ukm::TestUkmRecorder::EntryHasMetric(entry, "MainFrameIsBeforeFCP"));
+      EXPECT_EQ(expected_before_fcp, *ukm::TestUkmRecorder::GetEntryMetric(
+                                         entry, "MainFrameIsBeforeFCP"));
     }
   }
 
@@ -138,13 +143,13 @@ TEST_F(LocalFrameUkmAggregatorTest, FirstFrameIsRecorded) {
       floor(100.0 / (float)LocalFrameUkmAggregator::kCount);
 
   VerifyEntries(1u, expected_primary_metric, expected_sub_metric,
-                expected_percentage);
+                expected_percentage, true);
 
   // Reset the aggregator. Should not record any more.
   ResetAggregator();
 
   VerifyEntries(1u, expected_primary_metric, expected_sub_metric,
-                expected_percentage);
+                expected_percentage, true);
 }
 
 TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
@@ -156,6 +161,9 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
 
   // The records should be recorded in the first frame after every interval,
   // and no sooner.
+
+  // If we claim we are past FCP, the event should indicate that.
+  aggregator().DidReachFirstContentfulPaint();
 
   // Set the first sample interval to 2.
   FramesToNextEventForTest(2);
@@ -179,7 +187,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   float expected_percentage =
       floor(millisecond_per_step * 100.0 / (float)millisecond_per_frame);
   VerifyEntries(1u, millisecond_per_frame, millisecond_per_step,
-                expected_percentage);
+                expected_percentage, false);
 
   // Another step does not get us past the sample interval.
   start_time = Now();
@@ -194,7 +202,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   VerifyEntries(1u, millisecond_per_frame, millisecond_per_step,
-                expected_percentage);
+                expected_percentage, false);
 
   // Another step should tick us past the sample interval.
   // Note that the sample is a single frame, so even if we've taken
@@ -211,7 +219,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   VerifyEntries(2u, millisecond_per_frame, millisecond_per_step,
-                expected_percentage);
+                expected_percentage, false);
 
   // Step one more frame so we don't sample again.
   start_time = Now();
@@ -227,7 +235,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
 
   // Should be no more samples.
   VerifyEntries(2u, millisecond_per_frame, millisecond_per_step,
-                expected_percentage);
+                expected_percentage, false);
 
   // And one more step to generate one more sample
   start_time = Now();
@@ -244,7 +252,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   // We should have 3 more events, once for the prior interval and 2 for the
   // new interval.
   VerifyEntries(3u, millisecond_per_frame, millisecond_per_step,
-                expected_percentage);
+                expected_percentage, false);
 }
 
 TEST_F(LocalFrameUkmAggregatorTest, LatencyDataIsPopulated) {

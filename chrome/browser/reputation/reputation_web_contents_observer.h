@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_REPUTATION_REPUTATION_WEB_CONTENTS_OBSERVER_H_
 #define CHROME_BROWSER_REPUTATION_REPUTATION_WEB_CONTENTS_OBSERVER_H_
 
-#include <set>
-
 #include "base/callback_forward.h"
 #include "chrome/browser/reputation/reputation_service.h"
 #include "chrome/browser/reputation/safety_tip_ui.h"
@@ -53,11 +51,7 @@ class ReputationWebContentsObserver
 
   // A ReputationCheckCallback. Called by the reputation service when a
   // reputation result is available.
-  void HandleReputationCheckResult(
-      security_state::SafetyTipStatus safety_tip_status,
-      bool user_ignored,
-      const GURL& url,
-      const GURL& suggested_url);
+  void HandleReputationCheckResult(ReputationCheckResult result);
 
   // A helper method that calls and resets
   // |reputation_check_callback_for_testing_| if it is set.

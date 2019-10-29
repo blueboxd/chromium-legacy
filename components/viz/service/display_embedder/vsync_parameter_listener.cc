@@ -11,7 +11,7 @@ namespace viz {
 constexpr base::TimeDelta VSyncParameterListener::kMaxTimebaseSkew;
 
 VSyncParameterListener::VSyncParameterListener(
-    mojom::VSyncParameterObserverPtr observer)
+    mojo::PendingRemote<mojom::VSyncParameterObserver> observer)
     : observer_(std::move(observer)) {}
 
 VSyncParameterListener::~VSyncParameterListener() = default;

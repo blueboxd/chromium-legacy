@@ -15,12 +15,13 @@
 #include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/prefs/testing_pref_service.h"
-#include "testing/gmock_mutant.h"
 
 namespace offline_pages {
 namespace {
 
 using testing::_;
+using testing::Invoke;
+using testing::WithArg;
 const char kClientID1[] = "client-id-1";
 
 ntp_snippets::Category ArticlesCategory() {
@@ -88,20 +89,17 @@ class ThumbnailFetcherImplTest : public testing::Test {
     return suggestions_provider_;
   }
 
-  void ExpectFetchThumbnail(const std::string& thumbnail_data) {
+  void ExpectFetchThumbnail(std::string thumbnail_data) {
+    scoped_refptr<base::TestMockTimeTaskRunner> task_runner = task_runner_;
     EXPECT_CALL(*suggestions_provider(),
                 FetchSuggestionImageDataMock(SuggestionID1(), _))
-        .WillOnce(
-            testing::Invoke(testing::CallbackToFunctor(base::BindRepeating(
-                [](const std::string& thumbnail_data,
-                   scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
-                   const ntp_snippets::ContentSuggestion::ID& id,
-                   ntp_snippets::ImageDataFetchedCallback* callback) {
-                  task_runner->PostTask(
-                      FROM_HERE,
-                      base::BindOnce(std::move(*callback), thumbnail_data));
-                },
-                thumbnail_data, task_runner_))));
+        .WillOnce(WithArg<1>(
+            Invoke([task_runner, thumbnail_data](
+                       ntp_snippets::ImageDataFetchedCallback* callback) {
+              task_runner->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(std::move(*callback), thumbnail_data));
+            })));
   }
 
   std::unique_ptr<TestContentSuggestionsService> content_suggestions_;

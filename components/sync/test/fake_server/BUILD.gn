@@ -34,6 +34,7 @@ static_library("fake_server") {
   ]
 
   public_deps = [
+    "//testing/gmock",
     "//third_party/protobuf:protobuf_lite",
   ]
 

@@ -199,7 +199,7 @@ _DISABLED_TESTS = frozenset({
 # data to the chrome perf dashboard. So the smoke tests below cap the max
 # number of values that each story tested would produce when running on the
 # waterfall.
-MAX_VALUES_PERT_TEST_CASE = 1000
+MAX_VALUES_PER_TEST_CASE = 1000
 
 
 def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
@@ -274,7 +274,7 @@ def GenerateBenchmarkOptions(output_dir, benchmark_cls):
       environment=chromium_config.GetDefaultChromiumConfig())
   options.pageset_repeat = 1  # For smoke testing only run each page once.
   options.output_formats = ['histograms']
-  options.max_values_per_test_case = MAX_VALUES_PERT_TEST_CASE
+  options.max_values_per_test_case = MAX_VALUES_PER_TEST_CASE
 
   # Enable browser logging in the smoke test only. Hopefully, this will detect
   # all crashes and hence remove the need to enable logging in actual perf

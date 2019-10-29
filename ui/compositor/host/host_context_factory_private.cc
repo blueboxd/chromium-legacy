@@ -302,7 +302,7 @@ void HostContextFactoryPrivate::SetOutputIsSecure(Compositor* compositor,
 
 void HostContextFactoryPrivate::AddVSyncParameterObserver(
     Compositor* compositor,
-    viz::mojom::VSyncParameterObserverPtr observer) {
+    mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer) {
   auto iter = compositor_data_map_.find(compositor);
   if (iter == compositor_data_map_.end())
     return;

@@ -129,7 +129,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void FillIntoFocusedField(bool is_password,
                             const base::string16& credential) override;
   void SetLoggingState(bool active) override;
-  void TouchToFillDismissed() override;
+  void TouchToFillClosed(bool show_virtual_keyboard) override;
   void AnnotateFieldsWithParsingResult(
       const ParsingResult& parsing_result) override;
 

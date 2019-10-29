@@ -108,7 +108,8 @@ class WallpaperWidgetController::WidgetHandler
   float blur_sigma() const { return widget_->GetLayer()->layer_blur(); }
 
   void SetBlur(float blur_sigma) {
-    widget_->GetLayer()->SetLayerBlur(blur_sigma);
+    wallpaper_view_->layer()->SetLayerBlur(blur_sigma);
+
     const bool old_has_blur_cache = has_blur_cache_;
     has_blur_cache_ = blur_sigma > 0.0f;
     if (!old_has_blur_cache && has_blur_cache_) {

@@ -172,8 +172,10 @@ namespace {
 // Version 11 renames the "firstpartyonly" column to "samesite", and changes any
 // stored values of kCookieSameSiteNoRestriction into
 // kCookieSameSiteUnspecified to reflect the fact that those cookies were set
-// without a SameSite attribute specified. A value of kCookieSameSiteExtended
-// for "samesite" is now also supported.
+// without a SameSite attribute specified. Support for a value of
+// kCookieSameSiteExtended for "samesite" was added, however, that value is now
+// deprecated and is mapped to CookieSameSite::UNSPECIFIED when loading from the
+// database.
 //
 // Version 10 removes the uniqueness constraint on the creation time (which
 // was not propagated up the stack and caused problems in
@@ -508,9 +510,8 @@ CookieSameSite DBCookieSameSiteToCookieSameSite(DBCookieSameSite value) {
     case kCookieSameSiteStrict:
       samesite = CookieSameSite::STRICT_MODE;
       break;
+    // SameSite=Extended is deprecated, so we map to UNSPECIFIED.
     case kCookieSameSiteExtended:
-      samesite = CookieSameSite::EXTENDED_MODE;
-      break;
     case kCookieSameSiteUnspecified:
       samesite = CookieSameSite::UNSPECIFIED;
       break;

@@ -484,7 +484,7 @@
           "--disable-breakpad",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"

@@ -42,6 +42,11 @@ class WEB_ENGINE_EXPORT CookieManagerImpl : public fuchsia::web::CookieManager {
       fidl::StringPtr name,
       fidl::InterfaceRequest<fuchsia::web::CookiesIterator> cookies) final;
 
+  // Used by tests to monitor for the Mojo CookieManager disconnecting
+  void set_on_mojo_disconnected_for_test(base::OnceClosure on_disconnected) {
+    on_mojo_disconnected_for_test_ = std::move(on_disconnected);
+  }
+
  private:
   // (Re)connects |cookie_manager_| if not currently connected.
   void EnsureCookieManager();
@@ -51,6 +56,8 @@ class WEB_ENGINE_EXPORT CookieManagerImpl : public fuchsia::web::CookieManager {
 
   const GetNetworkContextCallback get_network_context_;
   mojo::Remote<network::mojom::CookieManager> cookie_manager_;
+
+  base::OnceClosure on_mojo_disconnected_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManagerImpl);
 };

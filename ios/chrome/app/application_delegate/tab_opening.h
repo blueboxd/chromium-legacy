@@ -11,6 +11,7 @@
 #include "ui/base/page_transition_types.h"
 
 @class AppState;
+class GURL;
 @class TabModel;
 @protocol StartupInformation;
 struct UrlLoadParams;
@@ -51,6 +52,9 @@ enum class ApplicationModeForTabOpening { NORMAL, INCOGNITO, CURRENT };
 // a third party app. Returns whether or not this operation was successful.
 - (BOOL)shouldCompletePaymentRequestOnCurrentTab:
     (id<StartupInformation>)startupInformation;
+
+// Whether the |URL| is already opened, in regular mode.
+- (BOOL)URLIsOpenedInRegularMode:(const GURL&)URL;
 
 @end
 

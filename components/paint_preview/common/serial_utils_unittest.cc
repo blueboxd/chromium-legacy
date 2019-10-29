@@ -28,9 +28,6 @@ TEST(PaintPreviewSerialUtils, TestPictureProcs) {
   EXPECT_TRUE(
       picture_ctx.insert(std::make_pair(content_id, kFrameGuid)).second);
 
-  DeserializationContext deserial_ctx;
-  EXPECT_TRUE(deserial_ctx.insert(std::make_pair(content_id, pic)).second);
-
   TypefaceUsageMap usage_map;
   TypefaceSerializationContext typeface_ctx(&usage_map);
 
@@ -38,16 +35,22 @@ TEST(PaintPreviewSerialUtils, TestPictureProcs) {
   EXPECT_EQ(serial_procs.fPictureCtx, &picture_ctx);
   EXPECT_EQ(serial_procs.fTypefaceCtx, &typeface_ctx);
 
+  DeserializationContext deserial_ctx;
   SkDeserialProcs deserial_procs = MakeDeserialProcs(&deserial_ctx);
   EXPECT_EQ(deserial_procs.fPictureCtx, &deserial_ctx);
 
-  // Check that serializing then deserialize the picture works.
+  // Check that serializing then deserialize the picture works produces a
+  // correct clip rect.
   sk_sp<SkData> serial_pic_data =
       serial_procs.fPictureProc(pic.get(), serial_procs.fPictureCtx);
   sk_sp<SkPicture> deserial_pic = deserial_procs.fPictureProc(
       serial_pic_data->data(), serial_pic_data->size(),
       deserial_procs.fPictureCtx);
-  EXPECT_EQ(deserial_pic->uniqueID(), content_id);
+  EXPECT_TRUE(deserial_ctx.count(content_id));
+  EXPECT_EQ(deserial_ctx[content_id].x(), pic->cullRect().x());
+  EXPECT_EQ(deserial_ctx[content_id].y(), pic->cullRect().y());
+  EXPECT_EQ(deserial_ctx[content_id].width(), pic->cullRect().width());
+  EXPECT_EQ(deserial_ctx[content_id].height(), pic->cullRect().height());
 }
 
 TEST(PaintPreviewSerialUtils, TestSerialPictureNotInMap) {
@@ -63,29 +66,6 @@ TEST(PaintPreviewSerialUtils, TestSerialPictureNotInMap) {
   auto pic = MakeEmptyPicture();
   EXPECT_EQ(serial_procs.fPictureProc(pic.get(), serial_procs.fPictureCtx),
             nullptr);
-}
-
-TEST(PaintPreviewSerialUtils, TestDeserialPictureNotInMap) {
-  uint32_t empty_content_id = 5;
-  DeserializationContext deserial_ctx;
-  EXPECT_TRUE(
-      deserial_ctx.insert(std::make_pair(empty_content_id, nullptr)).second);
-  SkDeserialProcs deserial_procs = MakeDeserialProcs(&deserial_ctx);
-  EXPECT_EQ(deserial_procs.fPictureCtx, &deserial_ctx);
-
-  sk_sp<SkPicture> deserial_pic =
-      deserial_procs.fPictureProc(nullptr, 0U, deserial_procs.fPictureCtx);
-  EXPECT_NE(deserial_pic, nullptr);  // Produce empty pic rather than nullptr.
-
-  uint32_t missing_content_id = 5;
-  deserial_pic = deserial_procs.fPictureProc(&missing_content_id,
-                                             sizeof(missing_content_id),
-                                             deserial_procs.fPictureCtx);
-  EXPECT_NE(deserial_pic, nullptr);  // Produce empty pic rather than nullptr.
-
-  deserial_pic = deserial_procs.fPictureProc(
-      &empty_content_id, sizeof(empty_content_id), deserial_procs.fPictureCtx);
-  EXPECT_NE(deserial_pic, nullptr);  // Produce empty pic rather than nullptr.
 }
 
 TEST(PaintPreviewSerialUtils, TestSerialTypeface) {

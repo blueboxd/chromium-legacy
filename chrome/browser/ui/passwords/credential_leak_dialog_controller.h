@@ -41,10 +41,6 @@ class CredentialLeakDialogController : public PasswordBaseDialogController {
   // Checks whether the dialog should show cancel button.
   virtual bool ShouldShowCancelButton() const = 0;
 
-  // Returns the range of the bold part of the leak dialog message when
-  // credentials were leaked only on current site.
-  virtual gfx::Range GetChangePasswordBoldRange() const = 0;
-
  protected:
   ~CredentialLeakDialogController() override = default;
 };

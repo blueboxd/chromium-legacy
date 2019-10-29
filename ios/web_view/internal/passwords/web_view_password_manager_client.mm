@@ -111,6 +111,11 @@ void WebViewPasswordManagerClient::AutomaticPasswordSave(
   NOTIMPLEMENTED();
 }
 
+void WebViewPasswordManagerClient::PromptUserToEnableAutosignin() {
+  // TODO(crbug.com/435048): Implement this method.
+  NOTIMPLEMENTED();
+}
+
 bool WebViewPasswordManagerClient::IsIncognito() const {
   return delegate_.browserState->IsOffTheRecord();
 }
@@ -207,15 +212,6 @@ scoped_refptr<network::SharedURLLoaderFactory>
 WebViewPasswordManagerClient::GetURLLoaderFactory() {
   NOTREACHED();
   return nullptr;
-}
-
-void WebViewPasswordManagerClient::PromptUserToEnableAutosignin() {
-  // TODO(crbug.com/435048): Implement this method.
-}
-
-password_manager::PasswordManager*
-WebViewPasswordManagerClient::GetPasswordManager() {
-  return delegate_.passwordManager;
 }
 
 bool WebViewPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {

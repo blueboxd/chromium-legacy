@@ -529,7 +529,7 @@ void GetRestrictedCookieManager(
 }
 
 // Helper method to download a URL on UI thread.
-void DownloadUrlOnUIThread(
+void StartDownload(
     std::unique_ptr<download::DownloadUrlParameters> parameters,
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -555,37 +555,16 @@ void DownloadUrlOnUIThread(
                                 std::move(blob_url_loader_factory));
 }
 
-// Called on the IO thread when the data URL in the BlobDataHandle
+// Called on the UI thread when the data URL in the BlobDataHandle
 // is read.
 void OnDataURLRetrieved(
     std::unique_ptr<download::DownloadUrlParameters> parameters,
     GURL data_url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!data_url.is_valid())
+    return;
   parameters->set_url(std::move(data_url));
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&DownloadUrlOnUIThread, std::move(parameters),
-                                mojo::NullRemote()));
-}
-// Called on the IO thread when the BlobDataHandle for the data URL
-// is retrieved.
-void OnDataURLBlobRetrieved(
-    std::unique_ptr<download::DownloadUrlParameters> parameters,
-    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DataURLBlobReader::ReadDataURLFromBlob(
-      std::move(blob_data_handle),
-      base::BindOnce(&OnDataURLRetrieved, std::move(parameters)));
-}
-
-// Called to retrieve the data URL on the IO thread.
-void RetrieveDataURLOnIOThread(
-    std::unique_ptr<download::DownloadUrlParameters> parameters,
-    mojo::PendingRemote<blink::mojom::Blob> data_url_blob,
-    scoped_refptr<ChromeBlobStorageContext> blob_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  blob_context->context()->GetBlobDataFromBlobRemote(
-      std::move(data_url_blob),
-      base::BindOnce(&OnDataURLBlobRetrieved, std::move(parameters)));
+  StartDownload(std::move(parameters), mojo::NullRemote());
 }
 
 // TODO(crbug.com/977040): Remove when no longer needed.
@@ -1694,10 +1673,15 @@ void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
 
 void RenderFrameHostImpl::AccessibilityPerformAction(
     const ui::AXActionData& action_data) {
+  if (!is_active())
+    return;
   Send(new AccessibilityMsg_PerformAction(routing_id_, action_data));
 }
 
 bool RenderFrameHostImpl::AccessibilityViewHasFocus() const {
+  if (!is_active())
+    return false;
+
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return view->HasFocus();
@@ -1705,12 +1689,18 @@ bool RenderFrameHostImpl::AccessibilityViewHasFocus() const {
 }
 
 void RenderFrameHostImpl::AccessibilityViewSetFocus() {
+  if (!is_active())
+    return;
+
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     view->Focus();
 }
 
 gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() const {
+  if (!is_active())
+    return gfx::Rect();
+
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return view->GetViewBounds();
@@ -1718,6 +1708,9 @@ gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() const {
 }
 
 float RenderFrameHostImpl::AccessibilityGetDeviceScaleFactor() const {
+  if (!is_active())
+    return 1.0f;
+
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return GetScaleFactorForView(view);
@@ -1748,7 +1741,7 @@ RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
   // Only the main frame's current frame host is connected to the native
   // widget tree for accessibility, so return null if this is queried on
   // any other frame.
-  if (frame_tree_node()->parent() || !IsCurrent())
+  if (!is_active() || frame_tree_node()->parent() || !IsCurrent())
     return gfx::kNullAcceleratedWidget;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -1760,6 +1753,9 @@ RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
 
 gfx::NativeViewAccessible
 RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
+  if (!is_active())
+    return nullptr;
+
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
   if (view)
@@ -1769,6 +1765,9 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
 
 gfx::NativeViewAccessible
 RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
+  if (!is_active())
+    return nullptr;
+
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
   if (view)
@@ -1777,10 +1776,14 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
 }
 
 WebContents* RenderFrameHostImpl::AccessibilityWebContents() {
+  if (!is_active())
+    return nullptr;
   return delegate()->GetAsWebContents();
 }
 
 bool RenderFrameHostImpl::AccessibilityIsMainFrame() const {
+  if (!is_active())
+    return false;
   return frame_tree_node()->IsMainFrame();
 }
 
@@ -3763,12 +3766,12 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
 
 void RenderFrameHostImpl::OnAccessibilityLocationChanges(
     const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
-  if (accessibility_reset_token_)
+  if (accessibility_reset_token_ || !is_active())
     return;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       render_view_host_->GetWidget()->GetView());
-  if (view && is_active()) {
+  if (view) {
     ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
     if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
       BrowserAccessibilityManager* manager =
@@ -3795,7 +3798,7 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
 void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
     const AccessibilityHostMsg_FindInPageResultParams& params) {
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs) && is_active()) {
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager) {
@@ -3808,7 +3811,7 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
 
 void RenderFrameHostImpl::OnAccessibilityFindInPageTermination() {
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs) && is_active()) {
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager)
@@ -3837,7 +3840,7 @@ void RenderFrameHostImpl::OnAccessibilityChildFrameHitTestResult(
     NOTREACHED();
   }
 
-  if (!child_frame)
+  if (!child_frame || !child_frame->is_active())
     return;
 
   ui::AXActionData action_data;
@@ -4139,18 +4142,14 @@ void RenderFrameHostImpl::DownloadUrl(
   parameters->set_initiator(initiator);
   parameters->set_download_source(download::DownloadSource::FROM_RENDERER);
 
-  BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
   if (data_url_blob) {
-    scoped_refptr<ChromeBlobStorageContext> blob_context =
-        ChromeBlobStorageContext::GetFor(browser_context);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&RetrieveDataURLOnIOThread, std::move(parameters),
-                       std::move(data_url_blob), blob_context));
+    DataURLBlobReader::ReadDataURLFromBlob(
+        std::move(data_url_blob),
+        base::BindOnce(&OnDataURLRetrieved, std::move(parameters)));
     return;
   }
 
-  DownloadUrlOnUIThread(std::move(parameters), std::move(blob_url_token));
+  StartDownload(std::move(parameters), std::move(blob_url_token));
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

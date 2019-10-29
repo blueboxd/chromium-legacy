@@ -507,15 +507,17 @@ void SessionControllerImpl::SetSessionState(SessionState state) {
 }
 
 void SessionControllerImpl::AddUserSession(const UserSession& user_session) {
-  const AccountId account_id(user_session.user_info.account_id);
-
   if (primary_session_id_ == 0u)
     primary_session_id_ = user_session.session_id;
 
   user_sessions_.push_back(std::make_unique<UserSession>(user_session));
 
-  OnProfilePrefServiceInitialized(account_id,
-                                  GetUserPrefServiceForUser(account_id));
+  const AccountId account_id(user_session.user_info.account_id);
+  PrefService* user_prefs = GetUserPrefServiceForUser(account_id);
+  // |user_prefs| could be null in tests.
+  if (user_prefs)
+    OnProfilePrefServiceInitialized(account_id, user_prefs);
+
   UpdateLoginStatus();
   for (auto& observer : observers_)
     observer.OnUserSessionAdded(account_id);

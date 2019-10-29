@@ -34,6 +34,7 @@ class ContentSettingsManagerImpl : public mojom::ContentSettingsManager {
                           const GURL& site_for_cookies,
                           const url::Origin& top_frame_origin,
                           base::OnceCallback<void(bool)> callback) override;
+  void OnContentBlocked(ContentSettingsType type) override;
 
  private:
   explicit ContentSettingsManagerImpl(

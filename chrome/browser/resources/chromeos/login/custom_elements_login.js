@@ -25,6 +25,7 @@
 // <include src="offline_ad_login.js">
 // <include src="active_directory_password_change.js">
 // <include src="oobe_a11y_option.js">
+// <include src="oobe_adb_sideloading_screen.js">
 // <include src="oobe_buttons.js">
 // <include src="oobe_change_picture.js">
 // <include src="oobe_dialog.js">

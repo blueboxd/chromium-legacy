@@ -25,6 +25,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 
@@ -368,6 +369,19 @@ public class TabGridDialogMediatorUnitTest {
         verify(mTabGroupTitleEditor, never()).storeTabGroupTitle(anyInt(), anyString());
         verify(mTabGroupTitleEditor, never()).updateTabGroupTitle(any(Tab.class), anyString());
         assertThat(mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(TAB1_TITLE));
+    }
+
+    @Test
+    public void onTitleTextTouchEvent() {
+        View.OnTouchListener listener =
+                mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER);
+
+        assertThat(mModel.get(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE), equalTo(false));
+
+        listener.onTouch(mTitleTextView, mock(MotionEvent.class));
+
+        assertThat(mModel.get(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE), equalTo(true));
+        verify(mTitleTextView).performClick();
     }
 
     @Test

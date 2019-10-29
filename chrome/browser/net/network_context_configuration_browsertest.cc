@@ -553,6 +553,12 @@ class NetworkContextConfigurationBrowserTest
       request->site_for_cookies = GURL("http://example.com");
     else
       request->site_for_cookies = server->base_url();
+
+    url::Origin origin = url::Origin::Create(request->site_for_cookies);
+    request->trusted_params = network::ResourceRequest::TrustedParams();
+    request->trusted_params->network_isolation_key =
+        net::NetworkIsolationKey(origin, origin);
+
     content::SimpleURLLoaderTestHelper simple_loader_helper;
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
         network::SimpleURLLoader::Create(std::move(request),
@@ -783,6 +789,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
       std::make_unique<network::ResourceRequest>();
   request->url = https_server.GetURL("/echoheader?Cookie");
   request->site_for_cookies = GURL(chrome::kChromeUIPrintURL);
+  url::Origin origin = url::Origin::Create(request->site_for_cookies);
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
       network::SimpleURLLoader::Create(std::move(request),

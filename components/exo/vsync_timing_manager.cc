@@ -31,7 +31,7 @@ void VSyncTimingManager::RemoveObserver(Observer* obs) {
 
   // There are no more observers so stop receiving IPCs.
   if (observers_.empty())
-    binding_.Close();
+    receiver_.reset();
 }
 
 void VSyncTimingManager::OnUpdateVSyncParameters(base::TimeTicks timebase,
@@ -41,14 +41,14 @@ void VSyncTimingManager::OnUpdateVSyncParameters(base::TimeTicks timebase,
 }
 
 void VSyncTimingManager::InitializeConnection() {
-  viz::mojom::VSyncParameterObserverPtr ptr;
-  binding_.Bind(MakeRequest(&ptr));
+  mojo::PendingRemote<viz::mojom::VSyncParameterObserver> remote =
+      receiver_.BindNewPipeAndPassRemote();
 
-  // Unretained is safe because |this| owns |binding_| and will outlive it.
-  binding_.set_connection_error_handler(base::BindOnce(
+  // Unretained is safe because |this| owns |receiver_| and will outlive it.
+  receiver_.set_disconnect_handler(base::BindOnce(
       &VSyncTimingManager::OnConnectionError, base::Unretained(this)));
 
-  delegate_->AddVSyncParameterObserver(std::move(ptr));
+  delegate_->AddVSyncParameterObserver(std::move(remote));
 }
 
 void VSyncTimingManager::MaybeInitializeConnection() {
@@ -56,12 +56,12 @@ void VSyncTimingManager::MaybeInitializeConnection() {
   // connection error, in which case we don't need to reconnect. Alternatively,
   // the last observer might have been unregistered and then a new observer
   // registered, in which case we already reconnected.
-  if (!observers_.empty() || binding_.is_bound())
+  if (!observers_.empty() || receiver_.is_bound())
     InitializeConnection();
 }
 
 void VSyncTimingManager::OnConnectionError() {
-  binding_.Close();
+  receiver_.reset();
 
   // Try to add a new observer after a short delay. If adding a new observer
   // fails we'll retry again until successful. The delay avoids spamming

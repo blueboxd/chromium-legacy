@@ -92,7 +92,9 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
         @Override
         public void clearView(RecyclerView recyclerView, ViewHolder viewHolder) {
             super.clearView(recyclerView, viewHolder);
-            if (viewHolder.getAdapterPosition() != mStart) {
+            // no need to commit change if recycler view is not attached to window, e.g.:
+            // dragging is terminated by destroying activity
+            if (viewHolder.getAdapterPosition() != mStart && recyclerView.isAttachedToWindow()) {
                 // Commit the position change for the dragged item when it's dropped and
                 // recyclerView has finished layout computing
                 recyclerView.post(() -> setOrder(mElements));

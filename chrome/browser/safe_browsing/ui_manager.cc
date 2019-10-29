@@ -160,28 +160,6 @@ void SafeBrowsingUIManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void SafeBrowsingUIManager::DisplayBlockingPage(
-    const UnsafeResource& resource) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BaseUIManager::DisplayBlockingPage(resource);
-  if (!resource.IsMainPageLoadBlocked() && !IsWhitelisted(resource) &&
-      SafeBrowsingInterstitialsAreCommittedNavigations()) {
-    content::WebContents* contents = resource.web_contents_getter.Run();
-    content::NavigationEntry* entry = resource.GetNavigationEntryForResource();
-    // entry can be null if we are on a brand new tab, and a resource is added
-    // via javascript without a navigation.
-    GURL blocked_url = entry ? entry->GetURL() : resource.url;
-    SafeBrowsingBlockingPage* blocking_page =
-        SafeBrowsingBlockingPage::CreateBlockingPage(this, contents,
-                                                     blocked_url, resource);
-    SafeBrowsingSubresourceTabHelper::CreateForWebContents(contents);
-    contents->GetController().LoadPostCommitErrorPage(
-        contents->GetMainFrame(), blocked_url, blocking_page->GetHTMLContents(),
-        net::ERR_BLOCKED_BY_CLIENT);
-    delete blocking_page;
-  }
-}
-
 const std::string SafeBrowsingUIManager::app_locale() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return g_browser_process->GetApplicationLocale();
@@ -235,6 +213,17 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
 GURL SafeBrowsingUIManager::GetMainFrameWhitelistUrlForResourceForTesting(
     const security_interstitials::UnsafeResource& resource) {
   return GetMainFrameWhitelistUrlForResource(resource);
+}
+
+BaseBlockingPage* SafeBrowsingUIManager::CreateBlockingPageForSubresource(
+    content::WebContents* contents,
+    const GURL& blocked_url,
+    const UnsafeResource& unsafe_resource) {
+  SafeBrowsingSubresourceTabHelper::CreateForWebContents(contents);
+  SafeBrowsingBlockingPage* blocking_page =
+      SafeBrowsingBlockingPage::CreateBlockingPage(this, contents, blocked_url,
+                                                   unsafe_resource);
+  return blocking_page;
 }
 
 }  // namespace safe_browsing

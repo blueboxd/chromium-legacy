@@ -55,8 +55,9 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
       mojo::PendingReceiver<media::mojom::AudioDecoder> receiver) final;
   void CreateVideoDecoder(
       mojo::PendingReceiver<media::mojom::VideoDecoder> receiver) final;
-  void CreateDefaultRenderer(const std::string& audio_device_id,
-                             media::mojom::RendererRequest request) final;
+  void CreateDefaultRenderer(
+      const std::string& audio_device_id,
+      mojo::PendingReceiver<media::mojom::Renderer> receiver) final;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
   void CreateCastRenderer(
       const base::UnguessableToken& overlay_plane_id,
@@ -76,7 +77,8 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
           renderer_extension_request) final;
 #endif  // defined(OS_ANDROID)
   void CreateCdm(const std::string& key_system,
-                 media::mojom::ContentDecryptionModuleRequest request) final;
+                 mojo::PendingReceiver<media::mojom::ContentDecryptionModule>
+                     receiver) final;
   void CreateDecryptor(
       int cdm_id,
       mojo::PendingReceiver<media::mojom::Decryptor> receiver) final;

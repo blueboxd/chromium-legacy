@@ -54,6 +54,7 @@
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/discover_screen.h"
+#include "chrome/browser/chromeos/login/screens/enable_adb_sideloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -192,6 +193,17 @@ const chromeos::StaticOobeScreenId kResumableScreens[] = {
     chromeos::MultiDeviceSetupScreenView::kScreenId,
 };
 
+const chromeos::StaticOobeScreenId kScreensWithHiddenStatusArea[] = {
+    chromeos::ArcKioskSplashScreenView::kScreenId,
+    chromeos::EnableAdbSideloadingScreenView::kScreenId,
+    chromeos::EnableDebuggingScreenView::kScreenId,
+    chromeos::KioskAutolaunchScreenView::kScreenId,
+    chromeos::KioskEnableScreenView::kScreenId,
+    chromeos::ResetView::kScreenId,
+    chromeos::SupervisionTransitionScreenView::kScreenId,
+    chromeos::WrongHWIDScreenView::kScreenId,
+};
+
 // The HID detection screen is only allowed for form factors without built-in
 // inputs: Chromebases, Chromebits, and Chromeboxes (crbug.com/965765).
 bool CanShowHIDDetectionScreen() {
@@ -209,6 +221,14 @@ bool CanShowHIDDetectionScreen() {
 bool IsResumableScreen(chromeos::OobeScreenId screen) {
   for (const auto& resumable_screen : kResumableScreens) {
     if (screen == resumable_screen)
+      return true;
+  }
+  return false;
+}
+
+bool ShouldHideStatusArea(chromeos::OobeScreenId screen) {
+  for (const auto& s : kScreensWithHiddenStatusArea) {
+    if (screen == s)
       return true;
   }
   return false;
@@ -464,6 +484,10 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       oobe_ui->GetView<DemoPreferencesScreenHandler>(),
       base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                           weak_factory_.GetWeakPtr())));
+  append(std::make_unique<EnableAdbSideloadingScreen>(
+      oobe_ui->GetView<EnableAdbSideloadingScreenHandler>(),
+      base::BindRepeating(&WizardController::OnEnableAdbSideloadingScreenExit,
+                          weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnableDebuggingScreen>(
       oobe_ui->GetView<EnableDebuggingScreenHandler>(),
       base::BindRepeating(&WizardController::OnEnableDebuggingScreenExit,
@@ -597,6 +621,10 @@ void WizardController::ShowKioskEnableScreen() {
 
 void WizardController::ShowKioskAutolaunchScreen() {
   SetCurrentScreen(GetScreen(KioskAutolaunchScreenView::kScreenId));
+}
+
+void WizardController::ShowEnableAdbSideloadingScreen() {
+  SetCurrentScreen(GetScreen(EnableAdbSideloadingScreenView::kScreenId));
 }
 
 void WizardController::ShowEnableDebuggingScreen() {
@@ -948,6 +976,12 @@ void WizardController::OnEnrollmentDone() {
     AutoLaunchKioskApp();
   else
     ShowLoginScreen(LoginScreenContext());
+}
+
+void WizardController::OnEnableAdbSideloadingScreenExit() {
+  OnScreenExit(EnableAdbSideloadingScreenView::kScreenId, 0 /* exit_code */);
+
+  OnDeviceModificationCanceled();
 }
 
 void WizardController::OnEnableDebuggingScreenExit() {
@@ -1348,16 +1382,8 @@ void WizardController::UpdateStatusAreaVisibilityForScreen(
     // in. Keep it visible if the user goes back to the existing welcome screen.
     GetLoginDisplayHost()->SetStatusAreaVisible(
         screen_manager_->HasScreen(WelcomeView::kScreenId));
-  } else if (screen == ResetView::kScreenId ||
-             screen == KioskEnableScreenView::kScreenId ||
-             screen == KioskAutolaunchScreenView::kScreenId ||
-             screen == EnableDebuggingScreenView::kScreenId ||
-             screen == WrongHWIDScreenView::kScreenId ||
-             screen == SupervisionTransitionScreenView::kScreenId ||
-             screen == ArcKioskSplashScreenView::kScreenId) {
-    GetLoginDisplayHost()->SetStatusAreaVisible(false);
   } else {
-    GetLoginDisplayHost()->SetStatusAreaVisible(true);
+    GetLoginDisplayHost()->SetStatusAreaVisible(!ShouldHideStatusArea(screen));
   }
 }
 
@@ -1416,6 +1442,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen) {
     ShowKioskEnableScreen();
   } else if (screen == KioskAutolaunchScreenView::kScreenId) {
     ShowKioskAutolaunchScreen();
+  } else if (screen == EnableAdbSideloadingScreenView::kScreenId) {
+    ShowEnableAdbSideloadingScreen();
   } else if (screen == EnableDebuggingScreenView::kScreenId) {
     ShowEnableDebuggingScreen();
   } else if (screen == EnrollmentScreenView::kScreenId) {

@@ -61,6 +61,8 @@ net::CertStatus PasswordManagerClient::GetMainFrameCertStatus() const {
   return 0;
 }
 
+void PasswordManagerClient::PromptUserToEnableAutosignin() {}
+
 bool PasswordManagerClient::IsIncognito() const {
   return false;
 }

@@ -397,7 +397,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingBasic) {
   // Tests that the overview item gets highlighted after the new desk button.
   SendKey(ui::VKEY_TAB);
   auto* item2 = GetOverviewItemForWindow(window2.get());
-  EXPECT_EQ(item2->caption_container_view(), GetHighlightedView());
+  EXPECT_EQ(item2->overview_item_view(), GetHighlightedView());
   EXPECT_TRUE(OverviewHighlightShown());
 
   // Tests that after tabbing through the overview items, we go back to the
@@ -423,7 +423,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingReverse) {
   // item.
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   auto* item1 = GetOverviewItemForWindow(window1.get());
-  EXPECT_EQ(item1->caption_container_view(), GetHighlightedView());
+  EXPECT_EQ(item1->overview_item_view(), GetHighlightedView());
 
   // Tests that after reverse tabbing through the overview items, we highlight
   // the new desk button.
@@ -441,7 +441,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingReverse) {
   // Tests that we return to the last overview item after reverse tabbing from
   // the first mini view.
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  EXPECT_EQ(item1->caption_container_view(), GetHighlightedView());
+  EXPECT_EQ(item1->overview_item_view(), GetHighlightedView());
 }
 
 // Tests that tabbing with desk items and multiple displays works as expected.
@@ -480,10 +480,10 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   // first display.
   SendKey(ui::VKEY_TAB);
   auto* item2 = GetOverviewItemForWindow(window2.get());
-  EXPECT_EQ(item2->caption_container_view(), GetHighlightedView());
+  EXPECT_EQ(item2->overview_item_view(), GetHighlightedView());
   SendKey(ui::VKEY_TAB);
   auto* item1 = GetOverviewItemForWindow(window1.get());
-  EXPECT_EQ(item1->caption_container_view(), GetHighlightedView());
+  EXPECT_EQ(item1->overview_item_view(), GetHighlightedView());
 
   // Tests that the next tab will bring us to the first mini view on the
   // second display.
@@ -497,7 +497,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   EXPECT_EQ(desk_bar_view2->new_desk_button(), GetHighlightedView());
   SendKey(ui::VKEY_TAB);
   auto* item3 = GetOverviewItemForWindow(window3.get());
-  EXPECT_EQ(item3->caption_container_view(), GetHighlightedView());
+  EXPECT_EQ(item3->overview_item_view(), GetHighlightedView());
 
   // Tests that after tabbing through the items on the second display, the
   // next tab will bring us to the first mini view on the third display.
@@ -511,7 +511,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   EXPECT_EQ(desk_bar_view3->new_desk_button(), GetHighlightedView());
   SendKey(ui::VKEY_TAB);
   auto* item4 = GetOverviewItemForWindow(window4.get());
-  EXPECT_EQ(item4->caption_container_view(), GetHighlightedView());
+  EXPECT_EQ(item4->overview_item_view(), GetHighlightedView());
 
   // Tests that after tabbing through the items on the third display, the next
   // tab will bring us to the first mini view on the first display.
@@ -548,7 +548,7 @@ TEST_F(DesksOverviewHighlightControllerTest,
 
   SendKey(ui::VKEY_TAB);
   auto* item1 = GetOverviewItemForWindow(window1.get());
-  EXPECT_TRUE(CoveredByOverviewHighlight(item1->caption_container_view()));
+  EXPECT_TRUE(CoveredByOverviewHighlight(item1->overview_item_view()));
 
   const auto* desk_bar_view2 = GetDesksBarViewForRoot(roots[1]);
   SendKey(ui::VKEY_TAB);
@@ -559,7 +559,7 @@ TEST_F(DesksOverviewHighlightControllerTest,
   EXPECT_FALSE(OverviewHighlightShown());
   SendKey(ui::VKEY_TAB);
   auto* item2 = GetOverviewItemForWindow(window2.get());
-  EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
+  EXPECT_TRUE(CoveredByOverviewHighlight(item2->overview_item_view()));
 
   const auto* desk_bar_view3 = GetDesksBarViewForRoot(roots[2]);
   SendKey(ui::VKEY_TAB);
@@ -585,16 +585,16 @@ TEST_F(DesksOverviewHighlightControllerTest,
   SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   auto* item2 = GetOverviewItemForWindow(window2.get());
-  EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
+  EXPECT_TRUE(CoveredByOverviewHighlight(item2->overview_item_view()));
 
   // Tests that if we delete items on the right and left of item2, the overview
   // highlight bounds still contains item2's bounds.
   auto* item1 = GetOverviewItemForWindow(widget1->GetNativeWindow());
   item1->CloseWindow();
-  EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
+  EXPECT_TRUE(CoveredByOverviewHighlight(item2->overview_item_view()));
   auto* item3 = GetOverviewItemForWindow(widget3->GetNativeWindow());
   item3->CloseWindow();
-  EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
+  EXPECT_TRUE(CoveredByOverviewHighlight(item2->overview_item_view()));
 }
 
 TEST_F(DesksOverviewHighlightControllerTest,

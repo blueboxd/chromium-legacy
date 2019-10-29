@@ -1241,7 +1241,7 @@ void PasswordAutofillAgent::SetLoggingState(bool active) {
   logging_state_active_ = active;
 }
 
-void PasswordAutofillAgent::TouchToFillDismissed() {
+void PasswordAutofillAgent::TouchToFillClosed(bool show_virtual_keyboard) {
   touch_to_fill_state_ = TouchToFillState::kWasShown;
 
   // Clear the autofill state from the username and password element. Note that
@@ -1261,6 +1261,9 @@ void PasswordAutofillAgent::TouchToFillDismissed() {
 
   if (!password_element.IsNull())
     password_element.SetAutofillState(password_autofill_state_);
+
+  if (show_virtual_keyboard)
+    render_frame()->ShowVirtualKeyboard();
 }
 
 void PasswordAutofillAgent::AnnotateFieldsWithParsingResult(

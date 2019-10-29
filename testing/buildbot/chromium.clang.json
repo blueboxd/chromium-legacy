@@ -21301,7 +21301,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -23312,7 +23312,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"

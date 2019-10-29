@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -146,6 +147,9 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Set visibility of bubble frame border. Used for disabling the border during
   // animation.
   void SetFrameVisible(bool visible);
+
+  // Returns the insets for the bubble.
+  gfx::Insets GetInsets();
 
   // Controller of UnifiedSystemTrayView. As the view is owned by views
   // hierarchy, we have to own the controller here.

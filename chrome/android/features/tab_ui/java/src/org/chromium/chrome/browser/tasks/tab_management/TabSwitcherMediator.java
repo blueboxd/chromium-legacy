@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.tab_ui.R;
@@ -250,7 +249,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
         // Container view takes care of padding and margin in start surface.
         if (mode != TabListCoordinator.TabListMode.CAROUSEL) {
-            int topControlsHeight = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
+            // The start surface checks in this block are for top controls height and shadow margin
+            //  to be set correctly for displaying the omnibox above the tab switcher.
+            int topControlsHeight = FeatureUtilities.isStartSurfaceEnabled()
                     ? 0
                     : fullscreenManager.getTopControlsHeight();
             mContainerViewModel.set(TOP_CONTROLS_HEIGHT, topControlsHeight);
@@ -261,8 +262,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
                             R.dimen.toolbar_height_no_shadow);
             mContainerViewModel.set(SHADOW_TOP_MARGIN,
-                    ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher() ? 0
-                                                                                   : toolbarHeight);
+                    FeatureUtilities.isStartSurfaceEnabled() ? 0 : toolbarHeight);
         }
 
         mContainerView = containerView;

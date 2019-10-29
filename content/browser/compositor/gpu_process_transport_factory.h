@@ -21,6 +21,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/public/cpp/gpu/command_buffer_metrics.h"
 #include "services/viz/public/cpp/gpu/shared_worker_context_provider_factory.h"
 #include "ui/compositor/compositor.h"
@@ -105,7 +106,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override;
   void AddVSyncParameterObserver(
       ui::Compositor* compositor,
-      viz::mojom::VSyncParameterObserverPtr observer) override;
+      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer)
+      override;
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;

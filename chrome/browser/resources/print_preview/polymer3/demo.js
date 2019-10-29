@@ -58,7 +58,7 @@ class HelloPolymer3Element extends PolymerElement {
         <cr-icon-button iron-icon="cr:more-vert" on-click="showActionMenu_">
         </cr-icon-button>
       </cr-toolbar>
-      <cr-action-menu>
+      <cr-action-menu role-description="Menu">
         <button class="dropdown-item">Hello</button>
         <button class="dropdown-item">Action</button>
         <button class="dropdown-item">Menu</button>

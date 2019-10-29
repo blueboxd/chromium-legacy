@@ -17,6 +17,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/video_codecs.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -58,7 +59,8 @@ class KeySystemSupportTest : public testing::Test {
  protected:
   void SetUp() final {
     DVLOG(1) << __func__;
-    KeySystemSupportImpl::Create(mojo::MakeRequest(&key_system_support_));
+    KeySystemSupportImpl::Create(
+        key_system_support_.BindNewPipeAndPassReceiver());
   }
 
   // TODO(xhwang): Add tests for hardware secure video codecs and encryption
@@ -91,7 +93,7 @@ class KeySystemSupportTest : public testing::Test {
     return is_available;
   }
 
-  media::mojom::KeySystemSupportPtr key_system_support_;
+  mojo::Remote<media::mojom::KeySystemSupport> key_system_support_;
   BrowserTaskEnvironment task_environment_;
 
   // Updated by IsSupported().

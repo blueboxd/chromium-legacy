@@ -88,9 +88,7 @@ void ConfigureGcpCrashReporting(const base::CommandLine& command_line) {
       process_type.empty(), "GCPW DLL", "", dll_main_cmd_line.GetProgram(),
       {base::UTF16ToUTF8(dll_main_cmd_line.GetArgs()[0])});
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   SetCommonCrashKeys(command_line);
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 }  // namespace credential_provider

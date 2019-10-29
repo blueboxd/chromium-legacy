@@ -233,7 +233,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
                                 .setShareDirectly(true)
                                 .setSaveLastUsed(false)
                                 .build();
-                ShareHelper.share(shareParams);
+                ShareHelper.shareDirectly(shareParams);
             } else {
                 mOnShareImageDirectly.run();
             }

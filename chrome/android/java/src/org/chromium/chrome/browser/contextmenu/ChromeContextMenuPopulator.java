@@ -25,8 +25,8 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.LensUtils;
-import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
+import org.chromium.chrome.browser.share.ShareSheetCoordinator;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -543,7 +543,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                             .setShareDirectly(false)
                             .setSaveLastUsed(true)
                             .build();
-            ShareHelper.share(linkShareParams);
+            ShareSheetCoordinator.create().share(linkShareParams);
         } else if (itemId == R.id.contextmenu_search_with_google_lens) {
             ContextMenuUma.record(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
             helper.searchWithGoogleLens(mDelegate.isIncognito());

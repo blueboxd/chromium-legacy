@@ -299,6 +299,7 @@ CommandHandler.onCommand = function(command) {
   var didNavigate = false;
   var tryScrolling = true;
   var skipSettingSelection = false;
+  var skipInitialAncestry = true;
   switch (command) {
     case 'nextCharacter':
       didNavigate = true;
@@ -521,6 +522,16 @@ CommandHandler.onCommand = function(command) {
 
       var useNode = node || originalNode;
       pred = AutomationPredicate.roles([node.role]);
+      break;
+    case 'nextList':
+      pred = AutomationPredicate.makeListPredicate(current.start.node);
+      predErrorMsg = 'no_next_list';
+      break;
+    case 'previousList':
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.makeListPredicate(current.start.node);
+      predErrorMsg = 'no_previous_list';
+      skipInitialAncestry = false;
       break;
     case 'jumpToTop':
       var node = AutomationUtil.findNodePost(
@@ -1007,7 +1018,8 @@ CommandHandler.onCommand = function(command) {
 
       if (!node) {
         node = AutomationUtil.findNextNode(
-            bound, dir, pred, {skipInitialAncestry: true, root: rootPred});
+            bound, dir, pred,
+            {skipInitialAncestry: skipInitialAncestry, root: rootPred});
       }
 
       if (node && !skipSync) {
@@ -1044,8 +1056,7 @@ CommandHandler.onCommand = function(command) {
                       root, dir, AutomationPredicate.leaf) ||
               bound;
         }
-        node = AutomationUtil.findNextNode(
-            bound, dir, pred, {skipInitialAncestry: true, root: rootPred});
+        node = AutomationUtil.findNextNode(bound, dir, pred, {root: rootPred});
 
         if (node && !skipSync) {
           node = AutomationUtil.findNodePre(

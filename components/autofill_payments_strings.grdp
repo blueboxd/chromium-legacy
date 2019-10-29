@@ -202,53 +202,6 @@
     Chrome is offering to save your cards in your Google Account because you are signed in. You can change this behavior in settings. The cardholder name comes from your account.
   </message>
 
-  <!-- Chrome Autofill Upstream Copy Tests -->
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_STORE_CARD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
-    Store card in Google Account?
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_STORE_BILLING_DETAILS" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
-    Store billing details in Google Account?
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_ADD_CARD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
-    Add card to Google Account?
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_CONFIRM_AND_SAVE_CARD" desc="Title text for the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The title is used as one variation of the string experiment. The prompt can be either a bubble or an infobar.">
-    Confirm &amp; save card to Google Account?
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_STORE_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
-    To pay faster next time, store your card and billing address in your Google Account and on this device.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_ADD_CARD_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
-    To pay faster next time, add your card and billing address to your Google Account and to this device.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_CONFIRM_AND_SAVE_CARD_WITH_DEVICE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment.">
-    To pay faster next time, save your card and billing address to your Google Account and to this device.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_STORE" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
-    To pay faster next time, store your card and billing address in your Google Account.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_ADD_CARD" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
-    To pay faster next time, add your card and billing address to your Google Account.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_CONFIRM_AND_SAVE_CARD" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments. The explanation is used as one variation of the string experiment. It will be used when local saving of an uploaded card is disabled.">
-    To pay faster next time, save your card and billing address to your Google Account.
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_STORE" desc="Text to show for the Autofill save credit card prompt ok button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
-    Yes, store
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_DECLINE_COPY_TEST_STORE" desc="Text to show for the Autofill save credit card prompt no-thanks button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
-    Don't store
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_ADD" desc="Text to show for the Autofill save credit card prompt ok button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
-    Yes, add
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_DECLINE_COPY_TEST_ADD" desc="Text to show for the Autofill save credit card prompt no-thanks button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
-    No, don't add
-  </message>
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_CONFIRM_AND_SAVE" desc="Text to show for the Autofill save credit card prompt ok button. The label is used as one variation of the Chrome Upstream string experiment. The prompt can be either a bubble or an infobar.">
-    Confirm &amp; save
-  </message>
-
   <!-- Autofill Local card migration bubble or dialog -->
   <if expr="not is_ios and not is_android">
     <message name="IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME" desc="The accessible name for the Google Pay logo in the local card migration bubble or dialog.">

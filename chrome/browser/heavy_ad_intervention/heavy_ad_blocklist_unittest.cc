@@ -55,7 +55,7 @@ class HeavyAdBlocklistTest : public testing::Test {
       const std::map<std::string, std::string>& params) {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kHeavyAdBlocklist, params);
+        features::kHeavyAdPrivacyMitigations, params);
     blocklist_ = std::make_unique<TestHeavyAdBlocklist>(nullptr, &test_clock_,
                                                         &blacklist_delegate_);
   }

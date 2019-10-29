@@ -80,6 +80,8 @@ Polymer({
   setPlay: function(shouldPlay) {
     if (this.isAnimationLoaded_) {
       this.worker_.postMessage({control: {play: shouldPlay}});
+    } else {
+      this.autoplay = shouldPlay;
     }
   },
 

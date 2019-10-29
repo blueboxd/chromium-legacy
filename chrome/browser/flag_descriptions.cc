@@ -575,12 +575,6 @@ const char kEnableAutofillSaveCardShowNoThanksName[] =
 const char kEnableAutofillSaveCardShowNoThanksDescription[] =
     "If enabled, adds a [No thanks] button to credit card save prompts.";
 
-const char kEnableAutofillSaveCreditCardUsesImprovedMessagingName[] =
-    "Enable new title and button label for credit card upload bubble";
-const char kEnableAutofillSaveCreditCardUsesImprovedMessagingDescription[] =
-    "If enabled, four variations of new messaging will be used in credit card "
-    "upload bubble.";
-
 const char kEnableAutofillUpdatedCardUnmaskPromptUiName[] =
     "Enable new card unmask prompt UI";
 const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[] =
@@ -1169,6 +1163,17 @@ const char kHardwareMediaKeyHandlingDescription[] =
 const char kHarfBuzzPDFSubsetterName[] = "HarfBuzz PDF Subsetter";
 const char kHarfBuzzPDFSubsetterDescription[] =
     "Changes the PDF subsetter from sftnly to HarfBuzz.";
+
+const char kHeavyAdPrivacyMitigationsOptOutName[] =
+    "Disable heavy ad privacy mitigations";
+const char kHeavyAdPrivacyMitigationsOptOutDescription[] =
+    "Disables privacy mitigations for the heavy ad intervention. This makes "
+    "the intervention deterministic."
+    "This is intended to be used for debugging only.";
+
+const char kHeavyAdInterventionName[] = "Heavy Ad Intervention";
+const char kHeavyAdInterventionDescription[] =
+    "Unloads ads that use too many device resources.";
 
 const char kHideActiveAppsFromShelfName[] =
     "Hide running apps (that are not pinned) from the shelf";

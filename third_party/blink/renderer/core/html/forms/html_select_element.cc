@@ -92,6 +92,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
       size_(0),
       last_on_change_option_(nullptr),
       is_multiple_(false),
+      is_in_non_contiguous_selection_(false),
       active_selection_state_(false),
       should_recalc_list_items_(false),
       is_autofilled_by_preview_(false),
@@ -645,6 +646,7 @@ void HTMLSelectElement::UpdateListBoxSelection(bool deselect_other_options,
     ++i;
   }
 
+  UpdateMultiSelectListBoxFocus();
   SetNeedsValidityCheck();
   if (scroll)
     ScrollToSelection();
@@ -680,6 +682,20 @@ void HTMLSelectElement::ListBoxOnChange() {
     DispatchInputEvent();
     DispatchChangeEvent();
   }
+}
+
+void HTMLSelectElement::UpdateMultiSelectListBoxFocus() {
+  if (!is_multiple_)
+    return;
+
+  for (auto* const option : GetOptionList()) {
+    if (option->IsDisabledFormControl() || !option->GetLayoutObject())
+      continue;
+    bool is_focused =
+        (option == active_selection_end_) && is_in_non_contiguous_selection_;
+    option->SetMultiSelectFocusedState(is_focused);
+  }
+  ScrollToSelection();
 }
 
 void HTMLSelectElement::DispatchInputAndChangeEventForMenuList() {
@@ -1669,6 +1685,21 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
         return;
     }
 
+    bool is_control_key = false;
+#if defined(OS_MACOSX)
+    is_control_key = ToKeyboardEvent(event).metaKey();
+#else
+    is_control_key = ToKeyboardEvent(event).ctrlKey();
+#endif
+
+    if (is_multiple_ && ToKeyboardEvent(event).keyCode() == ' ' &&
+        is_control_key && active_selection_end_) {
+      // Use ctrl+space to toggle selection change.
+      ToggleSelection(*active_selection_end_);
+      event.SetDefaultHandled();
+      return;
+    }
+
     if (end_option && handled) {
       // Save the selection so it can be compared to the new selection
       // when dispatching change events immediately after making the new
@@ -1677,12 +1708,14 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
 
       SetActiveSelectionEnd(end_option);
 
+      is_in_non_contiguous_selection_ = is_multiple_ && is_control_key;
       bool select_new_item =
           !is_multiple_ || ToKeyboardEvent(event).shiftKey() ||
-          !IsSpatialNavigationEnabled(GetDocument().GetFrame());
+          (!IsSpatialNavigationEnabled(GetDocument().GetFrame()) &&
+           !is_in_non_contiguous_selection_);
       if (select_new_item)
         active_selection_state_ = true;
-      // If the anchor is unitialized, or if we're going to deselect all
+      // If the anchor is uninitialized, or if we're going to deselect all
       // other options, then set the anchor index equal to the end index.
       bool deselect_others =
           !is_multiple_ ||
@@ -1694,9 +1727,12 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       }
 
       ScrollToOption(end_option);
-      if (select_new_item) {
-        UpdateListBoxSelection(deselect_others);
-        ListBoxOnChange();
+      if (select_new_item || is_in_non_contiguous_selection_) {
+        if (select_new_item) {
+          UpdateListBoxSelection(deselect_others);
+          ListBoxOnChange();
+        }
+        UpdateMultiSelectListBoxFocus();
       } else {
         ScrollToSelection();
       }
@@ -1714,7 +1750,8 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
         Form()->SubmitImplicitly(event, false);
       event.SetDefaultHandled();
     } else if (is_multiple_ && key_code == ' ' &&
-               IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
+               (IsSpatialNavigationEnabled(GetDocument().GetFrame()) ||
+                is_in_non_contiguous_selection_)) {
       HTMLOptionElement* option = active_selection_end_;
       // If there's no active selection,
       // act as if "ArrowDown" had been pressed.
@@ -1722,13 +1759,17 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
         option = NextSelectableOption(LastSelectedOption());
       if (option) {
         // Use space to toggle selection change.
-        active_selection_state_ = !active_selection_state_;
-        UpdateSelectedState(option, true /*multi*/, false /*shift*/);
-        ListBoxOnChange();
+        ToggleSelection(*option);
         event.SetDefaultHandled();
       }
     }
   }
+}
+
+void HTMLSelectElement::ToggleSelection(HTMLOptionElement& option) {
+  active_selection_state_ = !active_selection_state_;
+  UpdateSelectedState(&option, true /*multi*/, false /*shift*/);
+  ListBoxOnChange();
 }
 
 void HTMLSelectElement::DefaultEventHandler(Event& event) {

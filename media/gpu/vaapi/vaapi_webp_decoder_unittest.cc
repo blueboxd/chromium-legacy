@@ -13,18 +13,16 @@
 // See http://code.google.com/p/googletest/issues/detail?id=371
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/bind.h"
-#include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
-#include "media/base/test_data_util.h"
 #include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 #include "media/gpu/vaapi/test_utils.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
+#include "media/gpu/vaapi/vaapi_image_decoder_test_common.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_webp_decoder.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -73,14 +71,10 @@ struct WebpDecodeDeleter {
 
 }  // namespace
 
-class VaapiWebPDecoderTest
-    : public testing::TestWithParam<vaapi_test_utils::TestParam> {
+class VaapiWebPDecoderTest : public VaapiImageDecoderTestCommon {
  protected:
-  VaapiWebPDecoderTest() {
-    const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-    if (cmd_line && cmd_line->HasSwitch("test_data_path"))
-      test_data_path_ = cmd_line->GetSwitchValueASCII("test_data_path");
-  }
+  VaapiWebPDecoderTest()
+      : VaapiImageDecoderTestCommon(std::make_unique<VaapiWebPDecoder>()) {}
 
   void SetUp() override {
     if (!VaapiWrapper::IsDecodeSupported(VAProfileVP8Version0_3)) {
@@ -88,34 +82,21 @@ class VaapiWebPDecoderTest
       GTEST_SKIP();
     }
 
-    ASSERT_TRUE(decoder_.Initialize(base::BindRepeating(
-        []() { LOG(FATAL) << "Oh noes! Decoder failed"; })));
-  }
-
-  // Find the location of the specified test file. If a file with specified path
-  // is not found, treat the file as being relative to the test file directory.
-  // This is either a custom test data path provided by --test_data_path, or the
-  // default test data path (//media/test/data).
-  base::FilePath FindTestDataFilePath(const std::string& file_name) {
-    const base::FilePath file_path = base::FilePath(file_name);
-    if (base::PathExists(file_path))
-      return file_path;
-    if (!test_data_path_.empty())
-      return base::FilePath(test_data_path_).Append(file_path);
-    return GetTestDataFilePath(file_name);
+    VaapiImageDecoderTestCommon::SetUp();
   }
 
   std::unique_ptr<NativePixmapAndSizeInfo> Decode(
       base::span<const uint8_t> encoded_image,
       VaapiImageDecodeStatus* status = nullptr) {
-    const VaapiImageDecodeStatus decode_status = decoder_.Decode(encoded_image);
-    EXPECT_EQ(!!decoder_.GetScopedVASurface(),
+    const VaapiImageDecodeStatus decode_status =
+        Decoder()->Decode(encoded_image);
+    EXPECT_EQ(!!Decoder()->GetScopedVASurface(),
               decode_status == VaapiImageDecodeStatus::kSuccess);
 
     // Still try to export the surface when decode fails.
     VaapiImageDecodeStatus export_status;
     std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
-        decoder_.ExportAsNativePixmapDmaBuf(&export_status);
+        Decoder()->ExportAsNativePixmapDmaBuf(&export_status);
     EXPECT_EQ(!!exported_pixmap,
               export_status == VaapiImageDecodeStatus::kSuccess);
 
@@ -127,10 +108,6 @@ class VaapiWebPDecoderTest
     }
     return exported_pixmap;
   }
-
- protected:
-  std::string test_data_path_;
-  VaapiWebPDecoder decoder_;
 };
 
 TEST_P(VaapiWebPDecoderTest, DecodeAndExportAsNativePixmapDmaBuf) {
@@ -149,7 +126,7 @@ TEST_P(VaapiWebPDecoderTest, DecodeAndExportAsNativePixmapDmaBuf) {
   std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
       Decode(encoded_image, &status);
   ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, status);
-  EXPECT_FALSE(decoder_.GetScopedVASurface());
+  EXPECT_FALSE(Decoder()->GetScopedVASurface());
   ASSERT_TRUE(exported_pixmap);
   ASSERT_TRUE(exported_pixmap->pixmap);
   ASSERT_EQ(gfx::BufferFormat::YUV_420_BIPLANAR,

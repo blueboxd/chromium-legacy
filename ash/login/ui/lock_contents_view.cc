@@ -96,6 +96,10 @@ constexpr int kMediumDensityMarginLeftOfAuthUserPortraitDp = 0;
 constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersLandscapeDp = 220;
 constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp = 84;
 
+// Horizontal and vertical padding of auth error bubble.
+constexpr int kHorizontalPaddingAuthErrorBubbleDp = 8;
+constexpr int kVerticalPaddingAuthErrorBubbleDp = 8;
+
 // Spacing between the auth error text and the learn more button.
 constexpr int kLearnMoreButtonVerticalSpacingDp = 6;
 
@@ -140,6 +144,40 @@ class AuthErrorLearnMoreButton : public views::Button,
   LoginErrorBubble* parent_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthErrorLearnMoreButton);
+};
+
+class AuthErrorBubble : public LoginErrorBubble {
+ public:
+  AuthErrorBubble() = default;
+
+  // ash::LoginBaseBubbleView
+  gfx::Point CalculatePosition() override {
+    if (!GetAnchorView())
+      return gfx::Point();
+
+    gfx::Point anchor_position = GetAnchorView()->bounds().origin();
+    ConvertPointToTarget(GetAnchorView()->parent() /*source*/,
+                         GetAnchorView()->GetWidget()->GetRootView() /*target*/,
+                         &anchor_position);
+    auto bounds = GetAnchorView()->GetWidget()->GetRootView()->GetLocalBounds();
+    const int work_area_height =
+        display::Screen::GetScreen()
+            ->GetDisplayNearestWindow(
+                GetAnchorView()->GetWidget()->GetNativeWindow())
+            .work_area()
+            .height();
+    bounds.set_height(std::min(bounds.height(), work_area_height));
+
+    gfx::Size bubble_size(width() + 2 * kHorizontalPaddingAuthErrorBubbleDp,
+                          height() + kVerticalPaddingAuthErrorBubbleDp);
+    auto result = login_views_utils::CalculateBubblePositionRigthLeftStrategy(
+        {anchor_position, GetAnchorView()->size()}, bubble_size, bounds);
+    // Get position of the bubble surrounded by paddings.
+    result.Offset(kHorizontalPaddingAuthErrorBubbleDp, 0);
+    ConvertPointToTarget(GetAnchorView()->GetWidget()->GetRootView() /*source*/,
+                         parent() /*target*/, &result);
+    return result;
+  }
 };
 
 // Focuses the first or last focusable child of |root|. If |reverse| is false,
@@ -455,7 +493,7 @@ LockContentsView::LockContentsView(
   warning_banner_bubble_->SetPersistent(true);
   AddChildView(warning_banner_bubble_);
 
-  auth_error_bubble_ = new LoginErrorBubble();
+  auth_error_bubble_ = new AuthErrorBubble();
   AddChildView(auth_error_bubble_);
 
   OnLockScreenNoteStateChanged(initial_note_action_state);

@@ -669,6 +669,13 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
     if (abort_on_container_created_) {
       Abort();
     }
+    if (abort_then_stop_vm_) {
+      Abort();
+      vm_tools::concierge::VmStoppedSignal signal;
+      signal.set_owner_id(CryptohomeIdForProfile(profile()));
+      signal.set_name(kVmName);
+      crostini_manager()->OnVmStopped(signal);
+    }
   }
 
   void OnContainerStarted(CrostiniResult result) override {
@@ -732,6 +739,7 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
   bool abort_on_container_setup_ = false;
   bool abort_on_ssh_keys_fetched_ = false;
   bool abort_on_container_mounted_ = false;
+  bool abort_then_stop_vm_ = false;
 
   // Used by SshfsMount().
   bool abort_on_mount_event_ = false;
@@ -969,6 +977,20 @@ TEST_F(CrostiniManagerRestartTest, AbortOnMountEventWithError) {
   EXPECT_EQ(0, restart_crostini_callback_count_);
 
   chromeos::disks::DiskMountManager::Shutdown();
+}
+
+TEST_F(CrostiniManagerRestartTest, AbortThenStopVm) {
+  abort_then_stop_vm_ = true;
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_EQ(0, restart_crostini_callback_count_);
 }
 
 TEST_F(CrostiniManagerRestartTest, OnlyMountTerminaPenguin) {

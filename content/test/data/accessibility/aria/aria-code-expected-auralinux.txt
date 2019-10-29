@@ -1,0 +1,7 @@
+[document web]
+++[static] xml-roles:code
+++++[text] name='role'
+++[text] name='element (no name)'
+++[text] name=' '
+++[static] name='include me'
+++++[text] name='element (with name)'

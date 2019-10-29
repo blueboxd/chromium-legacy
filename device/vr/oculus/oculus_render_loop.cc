@@ -72,14 +72,6 @@ mojom::XRFrameDataPtr OculusRenderLoop::GetNextFrameData() {
   return frame_data;
 }
 
-mojom::XRGamepadDataPtr OculusRenderLoop::GetNextGamepadData() {
-  if (!session_) {
-    return nullptr;
-  }
-
-  return OculusGamepadHelper::GetGamepadData(session_);
-}
-
 bool OculusRenderLoop::StartRuntime() {
   if (!session_) {
     ovrInitParams initParams = {ovrInit_RequestVersion | ovrInit_MixedRendering,

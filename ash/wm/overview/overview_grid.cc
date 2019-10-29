@@ -639,9 +639,9 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
 
   // This can also be called when shutting down |this|, at which the item will
   // be cleaning up and its associated view may be nullptr.
-  if (overview_session_ && (*iter)->caption_container_view()) {
+  if (overview_session_ && (*iter)->overview_item_view()) {
     overview_session_->highlight_controller()->OnViewDestroyingOrDisabling(
-        (*iter)->caption_container_view());
+        (*iter)->overview_item_view());
   }
 
   // Erase from the list first because deleting OverviewItem can lead to
@@ -817,7 +817,7 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
 
     overview_session_->highlight_controller()->UpdateTabDragHighlight(
         target_window->GetRootWindow(),
-        item->caption_container_view()->GetBoundsInScreen());
+        item->overview_item_view()->GetBoundsInScreen());
     return;
   }
 

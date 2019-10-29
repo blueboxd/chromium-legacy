@@ -22,6 +22,13 @@ class EligibleHostDevicesProvider {
   // BETTER_TOGETHER_HOST feature.
   virtual multidevice::RemoteDeviceRefList GetEligibleHostDevices() const = 0;
 
+  // Returns all eligible host devices sorted by the last time they were used
+  // as determined by the server.
+  // TODO(themaxli): This should return a new type (instead of a list of
+  // RemoteDeviceRef) which includes OnlineStatus for display in the UI
+  virtual multidevice::RemoteDeviceRefList GetEligibleActiveHostDevices()
+      const = 0;
+
  protected:
   EligibleHostDevicesProvider() = default;
 

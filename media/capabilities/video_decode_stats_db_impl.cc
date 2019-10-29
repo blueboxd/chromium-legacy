@@ -348,10 +348,7 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
   // Make sure we never write bogus stats into the DB! While its possible the DB
   // may experience some corruption (disk), we should have detected that above
   // and discarded any bad data prior to this upcoming save.
-  // TODO(chcunningham): Make this a DCHECK before we cut M79 for stable. Its
-  // not a show stopper to have corrupt DB, so CHECK is too aggressive. We just
-  // want pre-stable channel users to verify we've eliminated any bugs.
-  CHECK(AreStatsUsable(stats_proto.get()));
+  DCHECK(AreStatsUsable(stats_proto.get()));
 
   // Push the update to the DB.
   using DBType = leveldb_proto::ProtoDatabase<DecodeStatsProto>;

@@ -920,6 +920,30 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsEnabled,
   EXPECT_EQ(group_id, browser()->tab_strip_model()->GetTabGroupForTab(1));
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsEnabled,
+                       TargetBlankLinkOpensInGroup) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Add a grouped tab.
+  TabStripModel* const model = browser()->tab_strip_model();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/frame_tree/anchor_to_same_site_location.html"));
+  const TabGroupId group_id = model->AddToNewGroup({0});
+
+  // Click a target=_blank link.
+  WebContents* const contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(ExecuteScript(
+      contents, "simulateClick(\"test-anchor-with-blank-target\", {})"));
+
+  // The new tab should have inherited the tab group from the first tab.
+  EXPECT_EQ(group_id, browser()->tab_strip_model()->GetTabGroupForTab(1));
+}
+
+// TODO(crbug.com/997344): Test the above two scenarios with implicitly-created
+// links, if still applicable.
+
 // BeforeUnloadAtQuitWithTwoWindows is a regression test for
 // http://crbug.com/11842. It opens two windows, one of which has a
 // beforeunload handler and attempts to exit cleanly.

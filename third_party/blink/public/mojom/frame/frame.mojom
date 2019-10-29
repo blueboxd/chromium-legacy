@@ -88,6 +88,10 @@ interface LocalFrame {
   // Add message to the frame console.
   AddMessageToConsole(ConsoleMessageLevel level, string message,
                     bool discard_duplicates);
+
+  // Sent to a frame when one of its remote children finishes loading, so that the
+  // frame can update its loading state.
+  CheckCompleted();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

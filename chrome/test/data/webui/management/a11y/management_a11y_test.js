@@ -22,6 +22,14 @@ var CrManagementA11yTest = class extends PolymerTest {
     return 'chrome://management/';
   }
 
+  /** @override */
+  get extraLibraries() {
+    return [
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
+    ];
+  }
+
   // Default accessibility audit options. Specify in test definition to use.
   static get axeOptions() {
     return {

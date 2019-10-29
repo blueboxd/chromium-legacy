@@ -20,10 +20,6 @@ per-file *browser_main_loop*=gab@chromium.org
 per-file *browser_task_environment*=gab@chromium.org
 per-file *browser_thread*=gab@chromium.org
 
-# Mac Sandbox profiles.
-per-file *.sb=set noparent
-per-file *.sb=rsesek@chromium.org
-
 # For Fuchsia-specific changes:
 per-file *_fuchsia*=file://build/fuchsia/OWNERS
 

@@ -72,7 +72,7 @@ BlobDataItem::DataHandle::~DataHandle() = default;
 
 // static
 scoped_refptr<BlobDataItem> BlobDataItem::CreateBytes(
-    base::span<const char> bytes) {
+    base::span<const uint8_t> bytes) {
   auto item =
       base::WrapRefCounted(new BlobDataItem(Type::kBytes, 0, bytes.size()));
   item->bytes_.assign(bytes.begin(), bytes.end());
@@ -189,7 +189,7 @@ void BlobDataItem::AllocateBytes() {
   type_ = Type::kBytes;
 }
 
-void BlobDataItem::PopulateBytes(base::span<const char> data) {
+void BlobDataItem::PopulateBytes(base::span<const uint8_t> data) {
   DCHECK_EQ(type_, Type::kBytesDescription);
   DCHECK_EQ(length_, data.size());
   type_ = Type::kBytes;

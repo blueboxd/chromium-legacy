@@ -197,7 +197,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "autofill.mojom.PasswordManagerDriver",
                   "blink.mojom.CacheStorage",
                   "blink.mojom.ColorChooserFactory",
-                  "blink.mojom.DateTimeChooser",
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.GeolocationService",

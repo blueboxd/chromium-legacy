@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/caption_container_view.h"
+#include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "ash/wm/window_state_observer.h"
@@ -35,7 +35,7 @@ class OverviewGrid;
 class RoundedLabelWidget;
 
 // This class represents an item in overview mode.
-class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
+class ASH_EXPORT OverviewItem : public OverviewItemView::EventDelegate,
                                 public views::ButtonListener,
                                 public aura::WindowObserver,
                                 public WindowStateObserver {
@@ -194,7 +194,7 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // If kNewOverviewLayout is on, use this function for handling events.
   void HandleGestureEventForTabletModeLayout(ui::GestureEvent* event);
 
-  // CaptionContainerView::EventDelegate:
+  // OverviewItemView::EventDelegate:
   void HandleMouseEvent(const ui::MouseEvent& event) override;
   void HandleGestureEvent(ui::GestureEvent* event) override;
   bool ShouldIgnoreGestureEvents() override;
@@ -223,9 +223,7 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   views::Widget* item_widget() { return item_widget_.get(); }
 
-  CaptionContainerView* caption_container_view() {
-    return caption_container_view_;
-  }
+  OverviewItemView* overview_item_view() { return overview_item_view_; }
 
   OverviewGrid* overview_grid() { return overview_grid_; }
 
@@ -327,7 +325,7 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // it visible while dragging around.
   void StartDrag();
 
-  // TODO(sammiequon): Current events go from CaptionContainerView to
+  // TODO(sammiequon): Current events go from OverviewItemView to
   // OverviewItem to OverviewSession to OverviewWindowDragController. We may be
   // able to shorten this pipeline.
   void HandlePressEvent(const gfx::PointF& location_in_screen,
@@ -362,13 +360,13 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   bool in_bounds_update_ = false;
 
   // A widget stacked under the |transform_window_|. The widget has
-  // |caption_container_view_| as its contents view. The widget is backed by a
+  // |overview_item_view_| as its contents view. The widget is backed by a
   // NOT_DRAWN layer since most of its surface is transparent.
   std::unique_ptr<views::Widget> item_widget_;
 
   // The view associated with |item_widget_|. Contains a title, close button and
   // maybe a backdrop. Forwards certain events to |this|.
-  CaptionContainerView* caption_container_view_ = nullptr;
+  OverviewItemView* overview_item_view_ = nullptr;
 
   OverviewCloseButton* close_button_ = nullptr;
 

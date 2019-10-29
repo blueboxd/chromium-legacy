@@ -58,14 +58,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest, CallWithDataOnly) {
   MakeTypicalPeerConnectionCall("callWithDataOnly();");
 }
 
-#if defined(MEMORY_SANITIZER)
-// Fails under MemorySanitizer: http://crbug.com/405951
-#define MAYBE_CallWithSctpDataOnly DISABLED_CallWithSctpDataOnly
-#else
-#define MAYBE_CallWithSctpDataOnly CallWithSctpDataOnly
-#endif
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest,
-                       MAYBE_CallWithSctpDataOnly) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest, CallWithSctpDataOnly) {
   MakeTypicalPeerConnectionCall("callWithSctpDataOnly();");
 }
 

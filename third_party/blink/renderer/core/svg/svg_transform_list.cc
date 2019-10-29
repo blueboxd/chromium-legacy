@@ -455,16 +455,13 @@ void SVGTransformList::CalculateAnimatedValue(
     SVGPropertyBase* to_value,
     SVGPropertyBase* to_at_end_of_duration_value,
     SVGElement* context_element) {
-  bool is_to_animation = animation_element.GetAnimationMode() == kToAnimation;
-
   // Spec: To animations provide specific functionality to get a smooth change
   // from the underlying value to the 'to' attribute value, which conflicts
   // mathematically with the requirement for additive transform animations to be
   // post-multiplied. As a consequence, in SVG 1.1 the behavior of to animations
   // for 'animateTransform' is undefined.
   // FIXME: This is not taken into account yet.
-  SVGTransformList* from_list =
-      is_to_animation ? this : ToSVGTransformList(from_value);
+  SVGTransformList* from_list = ToSVGTransformList(from_value);
   SVGTransformList* to_list = ToSVGTransformList(to_value);
   SVGTransformList* to_at_end_of_duration_list =
       ToSVGTransformList(to_at_end_of_duration_value);
@@ -488,6 +485,7 @@ void SVGTransformList::CalculateAnimatedValue(
 
   // Never resize the animatedTransformList to the toList size, instead either
   // clear the list or append to it.
+  bool is_to_animation = animation_element.GetAnimationMode() == kToAnimation;
   if (!IsEmpty() && (!animation_element.IsAdditive() || is_to_animation))
     Clear();
 

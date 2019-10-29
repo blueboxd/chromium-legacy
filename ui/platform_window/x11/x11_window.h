@@ -27,11 +27,6 @@ class X11_WINDOW_EXPORT XEventDelegate {
   // these.
   virtual void OnXWindowSelectionEvent(XEvent* xev) = 0;
   virtual void OnXWindowDragDropEvent(XEvent* xev) = 0;
-
-  // TODO(crbug.com/981606): DesktopWindowTreeHostX11 forward raw |XEvent|s to
-  // ATK components that currently live in views layer.  Remove once ATK code
-  // is reworked to be reusable.
-  virtual void OnXWindowRawKeyEvent(XEvent* xev) = 0;
 };
 
 // PlatformWindow implementation for X11. PlatformEvents are XEvents.
@@ -114,7 +109,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
   void OnXWindowCreated() override;
 
  private:
-  void ProcessXInput2Event(XEvent* xev);
+  bool HandleAsAtkEvent(XEvent* xev);
 
   // PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;
@@ -133,7 +128,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
   void OnXWindowEvent(ui::Event* event) override;
   void OnXWindowSelectionEvent(XEvent* xev) override;
   void OnXWindowDragDropEvent(XEvent* xev) override;
-  void OnXWindowRawKeyEvent(XEvent* xev) override;
   base::Optional<gfx::Size> GetMinimumSizeForXWindow() override;
   base::Optional<gfx::Size> GetMaximumSizeForXWindow() override;
   void GetWindowMaskForXWindow(const gfx::Size& size,

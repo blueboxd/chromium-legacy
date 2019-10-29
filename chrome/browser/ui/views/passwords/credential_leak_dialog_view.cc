@@ -62,10 +62,8 @@ std::unique_ptr<NonAccessibleImageView> CreateIllustration(
 
 // Creates the content containing the title and description for the dialog
 // rendered below the illustration.
-std::unique_ptr<views::View> CreateContent(
-    const base::string16& title,
-    const base::string16& description,
-    gfx::Range bold_change_password_range) {
+std::unique_ptr<views::View> CreateContent(const base::string16& title,
+                                           const base::string16& description) {
   auto content = std::make_unique<views::View>();
   content->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -83,12 +81,6 @@ std::unique_ptr<views::View> CreateContent(
 
   auto description_label =
       std::make_unique<views::StyledLabel>(description, nullptr);
-  if (!bold_change_password_range.is_empty()) {
-    views::StyledLabel::RangeStyleInfo style;
-    style.custom_font = description_label->GetDefaultFontList().Derive(
-        0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
-    description_label->AddStyleRange(bold_change_password_range, style);
-  }
   content->AddChildView(std::move(description_label));
 
   return content;
@@ -182,8 +174,7 @@ void CredentialLeakDialogView::InitWindow() {
       CreateIllustration(GetNativeTheme()->ShouldUseDarkColors());
   image_view_ = illustration.get();
   std::unique_ptr<views::View> content =
-      CreateContent(controller_->GetTitle(), controller_->GetDescription(),
-                    controller_->GetChangePasswordBoldRange());
+      CreateContent(controller_->GetTitle(), controller_->GetDescription());
   AddChildView(std::move(illustration));
   AddChildView(std::move(content));
 }

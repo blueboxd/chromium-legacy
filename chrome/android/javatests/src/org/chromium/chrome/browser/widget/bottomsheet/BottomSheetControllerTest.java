@@ -213,6 +213,24 @@ public class BottomSheetControllerTest {
     @Test
     @MediumTest
     @Feature({"BottomSheetController"})
+    public void testContentDestroyedOnHidden() throws TimeoutException {
+        requestContentInSheet(mLowPriorityContent, true);
+        int destroyCallCount = mLowPriorityContent.destroyCallbackHelper.getCallCount();
+
+        // Enter the tab switcher and select a different tab.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mBottomSheet.setSheetState(BottomSheet.SheetState.HIDDEN, false); });
+
+        mLowPriorityContent.destroyCallbackHelper.waitForCallback(destroyCallCount);
+        assertEquals("The bottom sheet should be hidden.", BottomSheet.SheetState.HIDDEN,
+                mBottomSheet.getSheetState());
+        assertEquals("The bottom sheet is showing incorrect content.", null,
+                mBottomSheet.getCurrentSheetContent());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"BottomSheetController"})
     public void testOpenTabInBackground() throws TimeoutException {
         requestContentInSheet(mLowPriorityContent, true);
         expandSheet();

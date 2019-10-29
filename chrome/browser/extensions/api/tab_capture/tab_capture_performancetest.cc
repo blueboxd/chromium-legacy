@@ -21,7 +21,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 
@@ -38,6 +38,25 @@ constexpr int kMinDataPointsForFullRun = 100;  // ~5 sec at 24fps.
 
 // Minimum number of events required for data analysis in a non-performance run.
 constexpr int kMinDataPointsForQuickRun = 3;
+
+// Metric names are camelcase instead of using underscores since they need to
+// be used to get trace events.
+constexpr char kMetricPrefixTabCapture[] = "TabCapture.";
+constexpr char kMetricCaptureMs[] = "Capture";
+constexpr char kMetricCaptureFailRatePercent[] = "CaptureFailRate";
+constexpr char kMetricCaptureLatencyMs[] = "CaptureLatency";
+constexpr char kMetricCommitAndDrawCompositorFrameMs[] =
+    "RenderWidget::DidCommitAndDrawCompositorFrame";
+
+perf_test::PerfResultReporter SetUpTabCaptureReporter(
+    const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixTabCapture, story);
+  reporter.RegisterImportantMetric(kMetricCaptureMs, "ms");
+  reporter.RegisterImportantMetric(kMetricCaptureFailRatePercent, "percent");
+  reporter.RegisterImportantMetric(kMetricCaptureLatencyMs, "ms");
+  reporter.RegisterImportantMetric(kMetricCommitAndDrawCompositorFrameMs, "ms");
+  return reporter;
+}
 
 // A convenience macro to run a gtest expectation in the "full performance run"
 // setting, or else a warning that something is not being entirely tested in the
@@ -79,6 +98,12 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
       suffix += "_webrtc";
     if (HasFlag(kSmallWindow))
       suffix += "_small";
+    // Make sure we always have a story.
+    if (suffix.size() == 0) {
+      suffix = "_baseline_story";
+    }
+    // Strip off the leading _.
+    suffix.erase(0, 1);
     return suffix;
   }
 
@@ -128,8 +153,8 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
     double std_dev_ms = stats.standard_deviation_us / 1000.0;
     std::string mean_and_error = base::StringPrintf("%f,%f", mean_ms,
                                                     std_dev_ms);
-    perf_test::PrintResultMeanAndError(kTestName, GetSuffixForTestFlags(),
-                                       event_name, mean_and_error, "ms", true);
+    auto reporter = SetUpTabCaptureReporter(GetSuffixForTestFlags());
+    reporter.AddResultMeanAndError(event_name, mean_and_error);
     return have_rate_stats;
   }
 
@@ -168,10 +193,10 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
         (count == 0)
             ? NAN
             : (sqrt(std::max(0.0, count * sqr_sum - sum * sum)) / count);
-    perf_test::PrintResultMeanAndError(
-        kTestName, GetSuffixForTestFlags(), event_name + "Latency",
-        base::StringPrintf("%f,%f", mean_us / 1000.0, std_dev_us / 1000.0),
-        "ms", true);
+    auto reporter = SetUpTabCaptureReporter(GetSuffixForTestFlags());
+    reporter.AddResultMeanAndError(
+        event_name + "Latency",
+        base::StringPrintf("%f,%f", mean_us / 1000.0, std_dev_us / 1000.0));
     return count > 0;
   }
 
@@ -217,9 +242,8 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
       }
       fail_percent *= fail_count / events_to_analyze.size();
     }
-    perf_test::PrintResult(
-        kTestName, GetSuffixForTestFlags(), event_name + "FailRate",
-        base::StringPrintf("%f", fail_percent), "percent", true);
+    auto reporter = SetUpTabCaptureReporter(GetSuffixForTestFlags());
+    reporter.AddResult(event_name + "FailRate", fail_percent);
     return !events_to_analyze.empty();
   }
 
@@ -229,11 +253,7 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
   std::string test_page_html_;
 
   // Naming of performance measurement written to stdout.
-  static const char kTestName[];
 };
-
-// static
-const char TabCapturePerformanceTest::kTestName[] = "TabCapturePerformance";
 
 }  // namespace
 
@@ -269,22 +289,25 @@ IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
   // Note that any changes to drawing or compositing in the renderer,
   // including changes to Blink (e.g., Canvas drawing), layout, etc.; will
   // have an impact on this result.
-  EXPECT_FOR_PERFORMANCE_RUN(PrintRateResults(
-      analyzer.get(), "RenderWidget::DidCommitAndDrawCompositorFrame"));
+  EXPECT_FOR_PERFORMANCE_RUN(
+      PrintRateResults(analyzer.get(), kMetricCommitAndDrawCompositorFrameMs));
 
   // This prints out the average time between capture events in the browser
   // process. This should roughly match the renderer's draw+composite rate.
-  EXPECT_FOR_PERFORMANCE_RUN(PrintRateResults(analyzer.get(), "Capture"));
+  EXPECT_FOR_PERFORMANCE_RUN(
+      PrintRateResults(analyzer.get(), kMetricCaptureMs));
 
   // Analyze mean/stddev of the capture latency. This is a measure of how long
   // each capture took, from initiation until read-back from the GPU into a
   // media::VideoFrame was complete. Lower is better.
-  EXPECT_FOR_PERFORMANCE_RUN(PrintLatencyResults(analyzer.get(), "Capture"));
+  EXPECT_FOR_PERFORMANCE_RUN(
+      PrintLatencyResults(analyzer.get(), kMetricCaptureMs));
 
   // Analyze percentage of failed captures. This measures how often captures
   // were initiated, but not completed successfully. Lower is better, and zero
   // is ideal.
-  EXPECT_FOR_PERFORMANCE_RUN(PrintFailRateResults(analyzer.get(), "Capture"));
+  EXPECT_FOR_PERFORMANCE_RUN(
+      PrintFailRateResults(analyzer.get(), kMetricCaptureMs));
 }
 
 #if defined(OS_CHROMEOS)

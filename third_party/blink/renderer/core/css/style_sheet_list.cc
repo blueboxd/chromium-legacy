@@ -67,7 +67,7 @@ HTMLStyleElement* StyleSheetList::GetNamedItem(const AtomicString& name) const {
   // practice anyway ;)
   // FIXME: We should figure out if we should change this or fix the spec.
   Element* element = tree_scope_->getElementById(name);
-  return IsHTMLStyleElement(element) ? ToHTMLStyleElement(element) : nullptr;
+  return DynamicTo<HTMLStyleElement>(element);
 }
 
 CSSStyleSheet* StyleSheetList::AnonymousNamedGetter(const AtomicString& name) {

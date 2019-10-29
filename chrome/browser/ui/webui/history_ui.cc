@@ -76,6 +76,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       {"historyMenuItem", IDS_HISTORY_HISTORY_MENU_ITEM},
       {"itemsSelected", IDS_HISTORY_ITEMS_SELECTED},
       {"loading", IDS_HISTORY_LOADING},
+      {"menu", IDS_MENU},
       {"menuPromo", IDS_HISTORY_MENU_PROMO},
       {"moreFromSite", IDS_HISTORY_MORE_FROM_SITE},
       {"openAll", IDS_HISTORY_OTHER_SESSIONS_OPEN_ALL},

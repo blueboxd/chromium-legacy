@@ -312,6 +312,11 @@ const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
 const base::Feature kGlobalMediaControls{"GlobalMediaControls",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Show Cast sessions in Global Media Controls. It is no-op if
+// kGlobalMediaControls is not enabled.
+const base::Feature kGlobalMediaControlsForCast{
+    "GlobalMediaControlsForCast", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
 // TODO(nisse): Delete once we have switched over to always using the
@@ -326,6 +331,10 @@ const base::Feature kSpecCompliantCanPlayThrough{
 // Use shared block-based buffering for media.
 const base::Feature kUseNewMediaCache{"use-new-media-cache",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables using the media history store to store media engagement metrics.
+const base::Feature kUseMediaHistoryStore{"UseMediaHistoryStore",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use R16 texture for 9-16 bit channel instead of half-float conversion by CPU.
 const base::Feature kUseR16Texture{"use-r16-texture",
@@ -577,6 +586,10 @@ const base::Feature kMediaLearningExperiment{"MediaLearningExperiment",
 // only; does not change media behavior.
 const base::Feature kMediaLearningFramework{"MediaLearningFramework",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable aggregate power measurement for media playback.
+const base::Feature kMediaPowerExperiment{"MediaPowerExperiment",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables flash to be ducked by audio focus. This is enabled on Chrome OS which
 // has audio focus enabled.

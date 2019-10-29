@@ -137,11 +137,6 @@ bool OpenVRDevice::IsApiAvailable() {
   return vr::VR_IsRuntimeInstalled();
 }
 
-mojo::PendingRemote<mojom::IsolatedXRGamepadProviderFactory>
-OpenVRDevice::BindGamepadFactory() {
-  return gamepad_provider_factory_receiver_.BindNewPipeAndPassRemote();
-}
-
 mojo::PendingRemote<mojom::XRCompositorHost>
 OpenVRDevice::BindCompositorHost() {
   return compositor_host_receiver_.BindNewPipeAndPassRemote();
@@ -175,13 +170,6 @@ void OpenVRDevice::RequestSession(
     if (!render_loop_->IsRunning()) {
       std::move(callback).Run(nullptr, mojo::NullRemote());
       return;
-    }
-
-    if (provider_receiver_) {
-      render_loop_->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
-                                    base::Unretained(render_loop_.get()),
-                                    std::move(provider_receiver_)));
     }
 
     if (overlay_receiver_) {
@@ -274,18 +262,6 @@ bool OpenVRDevice::IsAvailable() {
   return vr::VR_IsRuntimeInstalled() && vr::VR_IsHmdPresent();
 }
 
-void OpenVRDevice::GetIsolatedXRGamepadProvider(
-    mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver) {
-  if (render_loop_->IsRunning()) {
-    render_loop_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
-                                  base::Unretained(render_loop_.get()),
-                                  std::move(provider_receiver)));
-  } else {
-    provider_receiver_ = std::move(provider_receiver);
-  }
-}
-
 void OpenVRDevice::CreateImmersiveOverlay(
     mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver) {
   if (render_loop_->IsRunning()) {
@@ -308,10 +284,6 @@ void OpenVRDevice::OnPresentingControllerMojoConnectionError() {
   render_loop_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&XRCompositorCommon::ExitPresent,
                                 base::Unretained(render_loop_.get())));
-  // Don't stop the render loop here. We need to keep the gamepad provider alive
-  // so that we don't lose a pending mojo gamepad_callback_.
-  // TODO(https://crbug.com/875187): Alternatively, we could recreate the
-  // provider on the next session, or look into why the callback gets lost.
   OnExitPresent();
   exclusive_controller_receiver_.reset();
 }

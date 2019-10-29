@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -76,6 +77,7 @@ import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.share.ShareSheetCoordinator;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -88,7 +90,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
@@ -760,11 +761,15 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         final OnClickListener shareButtonListener = v -> {
             recordBottomToolbarUseForIPH();
             RecordUserAction.record("MobileBottomToolbarShareButton");
+            Tab tab = null;
+            Activity activity = null;
             boolean isIncognito = false;
             if (mTabModelSelector != null) {
-                isIncognito = mTabModelSelector.getCurrentTab().isIncognito();
+                tab = mTabModelSelector.getCurrentTab();
+                activity = tab.getActivity();
+                isIncognito = tab.isIncognito();
             }
-            mActivity.onShareMenuItemSelected(false, isIncognito);
+            ShareSheetCoordinator.create().onShareSelected(activity, tab, false, isIncognito);
         };
 
         mBottomControlsCoordinator = new BottomControlsCoordinator(mActivity.getFullscreenManager(),
@@ -949,8 +954,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         mLocationBarModel.initializeWithNative();
         mLocationBarModel.setShouldShowOmniboxInOverviewMode(
-                ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher());
-
+                FeatureUtilities.isStartSurfaceEnabled());
 
         assert controlsVisibilityDelegate != null;
         mControlsVisibilityDelegate = controlsVisibilityDelegate;

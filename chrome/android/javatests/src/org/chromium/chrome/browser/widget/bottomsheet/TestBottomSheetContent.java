@@ -12,12 +12,16 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** A simple sheet content to test with. This only displays two empty white views. */
 public class TestBottomSheetContent implements BottomSheetContent {
+    /** {@link CallbackHelper} to ensure the destroy method is called. */
+    public final CallbackHelper destroyCallbackHelper = new CallbackHelper();
+
     /** Empty view that represents the toolbar. */
     private View mToolbarView;
 
@@ -82,7 +86,9 @@ public class TestBottomSheetContent implements BottomSheetContent {
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+        destroyCallbackHelper.notifyCalled();
+    }
 
     @Override
     public int getPriority() {

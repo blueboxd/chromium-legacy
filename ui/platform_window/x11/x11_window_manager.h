@@ -23,7 +23,8 @@ class X11_WINDOW_EXPORT X11WindowManager {
   static X11WindowManager* GetInstance();
 
   // Sets a given X11Window as the recipient for events and calls
-  // OnLostCapture for another |event_grabber_| if it has been set previously.
+  // OnLostCapture for another |located_events_grabber_| if it has been set
+  // previously.
   void GrabEvents(X11Window* window);
 
   // Unsets a given X11Window as the recipient for events and calls
@@ -31,7 +32,7 @@ class X11_WINDOW_EXPORT X11WindowManager {
   void UngrabEvents(X11Window* window);
 
   // Gets the current X11PlatformWindow recipient of mouse events.
-  X11Window* event_grabber() const { return event_grabber_; }
+  X11Window* located_events_grabber() const { return located_events_grabber_; }
 
   // Gets the window corresponding to the AcceleratedWidget |widget|.
   void AddWindow(X11Window* window);
@@ -45,7 +46,7 @@ class X11_WINDOW_EXPORT X11WindowManager {
   }
 
  private:
-  X11Window* event_grabber_ = nullptr;
+  X11Window* located_events_grabber_ = nullptr;
   X11Window* window_mouse_currently_on_ = nullptr;
 
   base::flat_map<gfx::AcceleratedWidget, X11Window*> windows_;

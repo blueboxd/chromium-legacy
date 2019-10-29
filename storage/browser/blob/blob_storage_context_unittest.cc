@@ -87,7 +87,7 @@ class BlobStorageContextTest : public testing::Test {
 
   std::unique_ptr<BlobDataHandle> SetupBasicBlob(const std::string& id) {
     auto builder = std::make_unique<BlobDataBuilder>(id);
-    builder->AppendData("1", 1);
+    builder->AppendData(std::string("1"));
     builder->set_content_type("text/plain");
     return context_->AddFinishedBlob(std::move(builder));
   }
@@ -159,7 +159,7 @@ TEST_F(BlobStorageContextTest, BuildBlobAsync) {
 
   EXPECT_EQ(10u, context_->memory_controller().memory_usage());
 
-  future_data.Populate(base::make_span("abcdefghij", 10), 0);
+  future_data.Populate(base::as_bytes(base::make_span("abcdefghij", 10)), 0);
   context_->NotifyTransportComplete(kId);
 
   // Check we're done.
@@ -595,7 +595,7 @@ TEST_F(BlobStorageContextTest, CompoundBlobs) {
 
   BlobDataBuilder canonicalized_blob_data2(kId2);
   canonicalized_blob_data2.AppendData("Data3");
-  canonicalized_blob_data2.AppendData("a2___", 2);
+  canonicalized_blob_data2.AppendData("a2");
   canonicalized_blob_data2.AppendFile(
       base::FilePath(FILE_PATH_LITERAL("File1.txt")), 10, 98, time1);
   canonicalized_blob_data2.AppendFile(
@@ -718,7 +718,7 @@ size_t AppendDataInBuilder(
     future_datas->emplace_back(builder->AppendFutureData(5u));
     size += 5u;
     if (index % 3 == 1) {
-      builder->AppendData("abcdefghij", 4u);
+      builder->AppendData("abcd");
       size += 4u;
     }
     if (index % 3 == 0) {
@@ -752,9 +752,9 @@ void PopulateDataInBuilder(
     size_t index,
     base::TaskRunner* file_runner) {
   if (index % 2 != 0) {
-    (*future_datas)[0].Populate(base::make_span("abcde", 5), 0);
+    (*future_datas)[0].Populate(base::as_bytes(base::make_span("abcde", 5)), 0);
     if (index % 3 == 0) {
-      (*future_datas)[1].Populate(base::make_span("1", 1), 0);
+      (*future_datas)[1].Populate(base::as_bytes(base::make_span("1", 1)), 0);
     }
   } else if (index % 3 == 0) {
     scoped_refptr<ShareableFileReference> file_ref =

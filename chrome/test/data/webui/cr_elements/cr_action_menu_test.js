@@ -274,7 +274,7 @@ suite('CrActionMenu', function() {
     menu.showAt(dots);
     items[0].focus();
     dispatchMouseoverEvent(menu);
-    assertEquals(dialog, getDeepActiveElement());
+    assertEquals(dialog.querySelector('[role="menu"]'), getDeepActiveElement());
   });
 
   test('moving mouse on a disabled item should focus the menu', () => {
@@ -282,7 +282,7 @@ suite('CrActionMenu', function() {
     items[2].toggleAttribute('disabled', true);
     items[0].focus();
     dispatchMouseoverEvent(items[2]);
-    assertEquals(dialog, getDeepActiveElement());
+    assertEquals(dialog.querySelector('[role="menu"]'), getDeepActiveElement());
   });
 
   test('mouse movements should override keyboard focus', () => {

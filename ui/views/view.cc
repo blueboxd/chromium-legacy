@@ -713,19 +713,6 @@ void View::SetLayoutManager(std::nullptr_t) {
 
 // Attributes ------------------------------------------------------------------
 
-const View* View::GetAncestorWithClassName(const std::string& name) const {
-  for (const View* view = this; view; view = view->parent_) {
-    if (!strcmp(view->GetClassName(), name.c_str()))
-      return view;
-  }
-  return nullptr;
-}
-
-View* View::GetAncestorWithClassName(const std::string& name) {
-  return const_cast<View*>(const_cast<const View*>(this)->
-      GetAncestorWithClassName(name));
-}
-
 const View* View::GetViewByID(int id) const {
   if (id == id_)
     return const_cast<View*>(this);
@@ -1583,16 +1570,6 @@ void View::ScrollRectToVisible(const gfx::Rect& rect) {
 
 void View::ScrollViewToVisible() {
   ScrollRectToVisible(GetLocalBounds());
-}
-
-int View::GetPageScrollIncrement(ScrollView* scroll_view,
-                                 bool is_horizontal, bool is_positive) {
-  return 0;
-}
-
-int View::GetLineScrollIncrement(ScrollView* scroll_view,
-                                 bool is_horizontal, bool is_positive) {
-  return 0;
 }
 
 void View::AddObserver(ViewObserver* observer) {

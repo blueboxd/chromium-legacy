@@ -21,13 +21,16 @@
 // Saves an example form in the store for the passed URL spec.
 + (void)savePasswordFormForURLSpec:(NSString*)URLSpec;
 
+// Returns the number of profiles (addresses) in the data manager.
++ (NSInteger)profilesCount;
+
 // Clears the profiles (addresses) in the data manager.
 + (void)clearProfilesStore;
 
 // Saves a sample profile (address) in the data manager.
 + (void)saveExampleProfile;
 
-// Resturns the name of the sample profile.
+// Returns the name of the sample profile.
 + (NSString*)exampleProfileName;
 
 // Removes the stored credit cards.

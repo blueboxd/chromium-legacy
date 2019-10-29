@@ -98,7 +98,7 @@ struct NodeStats {
   NodeStats& operator+=(const NodeStats& other);
   SectionId ComputeBiggestSection() const;
 
-  std::map<SectionId, Stat> childStats;
+  std::map<SectionId, Stat> child_stats;
 };
 
 struct TreeNode {
@@ -120,7 +120,7 @@ struct TreeNode {
     childStats,
   */
 
-  ContainerType containerType = ContainerType::kSymbol;
+  ContainerType container_type = ContainerType::kSymbol;
 
   std::vector<TreeNode*> children;
   TreeNode* parent = nullptr;

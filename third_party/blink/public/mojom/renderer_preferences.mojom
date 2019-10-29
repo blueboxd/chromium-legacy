@@ -87,6 +87,8 @@ struct RendererPreferences {
   uint16 webrtc_udp_min_port = 0;
   uint16 webrtc_udp_max_port = 0;
 
+  array<string> webrtc_local_ips_allowed_urls;
+
   // The user agent given to WebKit when it requests one and the user agent is
   // being overridden for the current navigation.
   string user_agent_override;

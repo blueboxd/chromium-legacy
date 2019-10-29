@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -657,10 +658,12 @@ void RendererBlinkPlatformImpl::GetWebRTCRendererPreferences(
     blink::WebLocalFrame* web_frame,
     blink::WebString* ip_handling_policy,
     uint16_t* udp_min_port,
-    uint16_t* udp_max_port) {
+    uint16_t* udp_max_port,
+    bool* allow_mdns_obfuscation) {
   DCHECK(ip_handling_policy);
   DCHECK(udp_min_port);
   DCHECK(udp_max_port);
+  DCHECK(allow_mdns_obfuscation);
 
   auto* render_frame = RenderFrameImpl::FromWebFrame(web_frame);
   if (!render_frame)
@@ -670,6 +673,16 @@ void RendererBlinkPlatformImpl::GetWebRTCRendererPreferences(
       render_frame->GetRendererPreferences().webrtc_ip_handling_policy);
   *udp_min_port = render_frame->GetRendererPreferences().webrtc_udp_min_port;
   *udp_max_port = render_frame->GetRendererPreferences().webrtc_udp_max_port;
+  const std::vector<std::string>& allowed_urls =
+      render_frame->GetRendererPreferences().webrtc_local_ips_allowed_urls;
+  const std::string url(web_frame->GetSecurityOrigin().ToString().Utf8());
+  for (const auto& allowed_url : allowed_urls) {
+    if (base::MatchPattern(url, allowed_url)) {
+      *allow_mdns_obfuscation = false;
+      return;
+    }
+  }
+  *allow_mdns_obfuscation = true;
 }
 
 base::Optional<int> RendererBlinkPlatformImpl::GetAgcStartupMinimumVolume() {

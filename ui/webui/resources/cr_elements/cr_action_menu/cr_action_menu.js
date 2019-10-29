@@ -164,7 +164,8 @@ Polymer({
       value: false,
     },
 
-    ariaLabel: String,
+    /* Descriptor of the menu. Should be something along the lines of "menu" */
+    roleDescription: String,
   },
 
   listeners: {
@@ -289,7 +290,7 @@ Polymer({
   onMouseover_: function(e) {
     const query = '.dropdown-item:not([disabled])';
     const item = e.composedPath().find(el => el.matches && el.matches(query));
-    (item || this.$.dialog).focus();
+    (item || this.$.wrapper).focus();
   },
 
   /**
@@ -358,7 +359,7 @@ Polymer({
           anchorAlignmentX: AnchorAlignment.BEFORE_END,
         },
         opt_config)));
-    this.$.dialog.focus();
+    this.$.wrapper.focus();
   },
 
   /**

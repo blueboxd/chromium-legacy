@@ -557,7 +557,7 @@ bool ShouldUseViewsTaskManager() {
                                     column:[[tableColumn identifier] intValue]];
     buttonCell.attributedTitle = [[[NSAttributedString alloc]
         initWithString:title
-            attributes:@{NSForegroundColorAttributeName : [NSColor blackColor]}]
+            attributes:@{NSForegroundColorAttributeName : [NSColor labelColor]}]
         autorelease];
     buttonCell.image =
         taskManagerMac_->GetImageForRow(viewToModelMap_[rowIndex]);

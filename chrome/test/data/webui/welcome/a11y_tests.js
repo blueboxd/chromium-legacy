@@ -23,7 +23,8 @@ WelcomeA11y = class extends PolymerTest {
   /** @override */
   get extraLibraries() {
     return [
-      ...super.extraLibraries,
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
       '//ui/webui/resources/js/util.js',
     ];
   }

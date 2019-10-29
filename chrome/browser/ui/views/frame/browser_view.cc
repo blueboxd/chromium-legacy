@@ -56,6 +56,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/find_bar/find_bar.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -374,6 +376,27 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
 
   float GetTopControlsSlideBehaviorShownRatio() const override {
     return browser_view_->GetTopControlsSlideBehaviorShownRatio();
+  }
+
+  bool SupportsWindowFeature(Browser::WindowFeature feature) const override {
+    return browser_view_->browser()->SupportsWindowFeature(feature);
+  }
+
+  gfx::NativeView GetHostView() const override {
+    return browser_view_->GetWidget()->GetNativeView();
+  }
+
+  bool BrowserIsTypeNormal() const override {
+    return browser_view_->browser()->is_type_normal();
+  }
+
+  bool HasFindBarController() const override {
+    return browser_view_->browser()->HasFindBarController();
+  }
+
+  void MoveWindowForFindBarIfNecessary() const override {
+    auto* const controller = browser_view_->browser()->GetFindBarController();
+    return controller->find_bar()->MoveWindowIfNecessary();
   }
 
  private:
@@ -2597,11 +2620,11 @@ void BrowserView::InitViews() {
   }
 
   auto browser_view_layout = std::make_unique<BrowserViewLayout>(
-      std::make_unique<BrowserViewLayoutDelegateImpl>(this), browser(), this,
-      top_container_, tab_strip_region_view_, tabstrip_, webui_tab_strip_view,
-      toolbar_, infobar_container_, contents_container_,
-      immersive_mode_controller_.get(), web_footer_experiment,
-      contents_separator_);
+      std::make_unique<BrowserViewLayoutDelegateImpl>(this),
+      GetWidget()->GetNativeView(), this, top_container_,
+      tab_strip_region_view_, tabstrip_, webui_tab_strip_view, toolbar_,
+      infobar_container_, contents_container_, immersive_mode_controller_.get(),
+      web_footer_experiment, contents_separator_);
   SetLayoutManager(std::move(browser_view_layout));
 
   EnsureFocusOrder();

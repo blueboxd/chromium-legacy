@@ -102,11 +102,7 @@ bool GcpCrashReporterClient::IsRunningUnattended() {
 }
 
 bool GcpCrashReporterClient::GetCollectStatsConsent() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return GetGCPWCollectStatsConsent();
-#else
-  return false;
-#endif
 }
 
 bool GcpCrashReporterClient::EnableBreakpadForProcess(

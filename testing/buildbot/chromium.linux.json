@@ -2142,7 +2142,7 @@
           "--num-retries=3",
           "--platform=fuchsia"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -3832,7 +3832,7 @@
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
         "isolate_coverage_data": true,
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -3867,7 +3867,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=swiftshader"
         ],
         "isolate_coverage_data": true,
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -3989,7 +3989,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader"
         ],
         "isolate_coverage_data": true,
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -4013,7 +4013,7 @@
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
         "isolate_coverage_data": true,
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -5637,7 +5637,7 @@
           "--num-retries=3",
           "--debug"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -7297,7 +7297,7 @@
           "src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -7331,7 +7331,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization",
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=swiftshader"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -7448,7 +7448,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization",
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -7489,7 +7489,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"

@@ -18,6 +18,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/optional.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -26,6 +27,7 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/public/activation_client.h"
@@ -257,18 +259,17 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
     view_->ResetTransitionMetricsReporter();
   }
 
-  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+  base::Optional<ui::ScopedLayerAnimationSettings> settings;
   if (!callback.is_null()) {
-    settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
-        layer->GetAnimator());
-    callback.Run(settings.get());
+    settings.emplace(layer->GetAnimator());
+    callback.Run(&settings.value());
   }
   layer->SetOpacity(opacity);
 
   // Only record animation metrics for transformation animation. Because the
   // animation triggered by setting opacity should have the same metrics values
   // with the transformation animation.
-  if (settings.get()) {
+  if (settings.has_value()) {
     settings->SetAnimationMetricsReporter(
         view_->GetStateTransitionMetricsReporter());
   }
@@ -277,6 +278,42 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
 
   // Update child views' y positions to target state to avoid stale positions.
   view_->app_list_main_view()->contents_view()->UpdateYPositionAndOpacity();
+}
+
+void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
+    float scale,
+    float opacity,
+    UpdateHomeLauncherAnimationSettingsCallback callback) {
+  if (!view_)
+    return;
+
+  ui::Layer* layer = view_->GetWidget()->GetNativeWindow()->layer();
+  if (!delegate_->IsTabletMode()) {
+    // In clamshell mode, set the opacity of the AppList immediately to
+    // instantly hide it. Opacity of the AppList is reset when it is shown
+    // again.
+    layer->SetOpacity(opacity);
+    return;
+  }
+
+  if (layer->GetAnimator()->is_animating()) {
+    layer->GetAnimator()->StopAnimating();
+
+    // Reset the animation metrics reporter when the animation is interrupted.
+    view_->ResetTransitionMetricsReporter();
+  }
+
+  base::Optional<ui::ScopedLayerAnimationSettings> settings;
+  if (!callback.is_null()) {
+    settings.emplace(layer->GetAnimator());
+    callback.Run(&settings.value());
+  }
+
+  gfx::Transform transform =
+      gfx::GetScaleTransform(gfx::Rect(layer->size()).CenterPoint(), scale);
+  layer->SetTransform(transform);
+
+  layer->SetOpacity(opacity);
 }
 
 void AppListPresenterImpl::ShowEmbeddedAssistantUI(bool show) {

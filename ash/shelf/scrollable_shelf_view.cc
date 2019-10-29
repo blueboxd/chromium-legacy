@@ -738,10 +738,18 @@ void ScrollableShelfView::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void ScrollableShelfView::OnGestureEvent(ui::GestureEvent* event) {
-  if (ShouldHandleGestures(*event))
-    HandleGestureEvent(event);
-  else if (shelf_view_->HandleGestureEvent(event))
+  if (ShouldHandleGestures(*event) && ProcessGestureEvent(*event)) {
+    // |event| is consumed by ScrollableShelfView.
+    event->SetHandled();
+  } else if (shelf_view_->HandleGestureEvent(event)) {
+    // |event| is consumed by ShelfView.
     event->StopPropagation();
+  } else if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+    // |event| is consumed by neither ScrollableShelfView nor ShelfView. So the
+    // gesture end event will not be propagated to this view. Then we need to
+    // reset the class members related with scroll status explicitly.
+    ResetScrollStatus();
+  }
 }
 
 const char* ScrollableShelfView::GetClassName() const {
@@ -1005,21 +1013,16 @@ bool ScrollableShelfView::ShouldHandleGestures(const ui::GestureEvent& event) {
     layout_strategy_before_main_axis_scrolling_ = layout_strategy_;
   }
 
-  if (event.type() == ui::ET_GESTURE_END) {
-    scroll_status_ = kNotInScroll;
-
-    if (should_handle_gestures) {
-      scroll_offset_before_main_axis_scrolling_ = gfx::Vector2dF();
-      layout_strategy_before_main_axis_scrolling_ = kNotShowArrowButtons;
-    }
-  }
+  if (event.type() == ui::ET_GESTURE_END)
+    ResetScrollStatus();
 
   return should_handle_gestures;
 }
 
-void ScrollableShelfView::HandleGestureEvent(ui::GestureEvent* event) {
-  if (ProcessGestureEvent(*event))
-    event->SetHandled();
+void ScrollableShelfView::ResetScrollStatus() {
+  scroll_status_ = kNotInScroll;
+  scroll_offset_before_main_axis_scrolling_ = gfx::Vector2dF();
+  layout_strategy_before_main_axis_scrolling_ = kNotShowArrowButtons;
 }
 
 bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {

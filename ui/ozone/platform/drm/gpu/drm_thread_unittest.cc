@@ -4,9 +4,12 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
@@ -41,9 +44,9 @@ class DrmThreadTest : public testing::Test {
     drm_thread_.Start(base::DoNothing(),
                       std::make_unique<FakeDrmDeviceGenerator>());
     drm_thread_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&DrmThread::AddBindingDrmDevice,
+        FROM_HERE, base::BindOnce(&DrmThread::AddDrmDeviceReceiver,
                                   base::Unretained(&drm_thread_),
-                                  mojo::MakeRequest(&drm_device_ptr_)));
+                                  drm_device_.BindNewPipeAndPassReceiver()));
     drm_thread_.FlushForTesting();
   }
 
@@ -73,12 +76,12 @@ class DrmThreadTest : public testing::Test {
     base::FilePath file_path("/dev/null");
     base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_WRITE |
                                    base::File::FLAG_READ);
-    drm_device_ptr_->AddGraphicsDevice(file_path, std::move(file));
+    drm_device_->AddGraphicsDevice(file_path, std::move(file));
   }
 
   base::test::TaskEnvironment env_;
   DrmThread drm_thread_;
-  ozone::mojom::DrmDevicePtr drm_device_ptr_;
+  mojo::Remote<ozone::mojom::DrmDevice> drm_device_;
 };
 
 TEST_F(DrmThreadTest, RunTaskAfterWindowReady) {
@@ -118,7 +121,7 @@ TEST_F(DrmThreadTest, RunTaskAfterWindowReady) {
   ASSERT_FALSE(called2);
 
   // Now create |widget1|. The first task should run.
-  drm_device_ptr_->CreateWindow(widget1, bounds);
+  drm_device_->CreateWindow(widget1, bounds);
   drm_thread_.FlushForTesting();
   ASSERT_TRUE(called1);
   ASSERT_FALSE(event->IsSignaled());
@@ -134,7 +137,7 @@ TEST_F(DrmThreadTest, RunTaskAfterWindowReady) {
 
   // Destroy |widget1| and post a task blocked on it. The task should still run
   // immediately even though the window is destroyed.
-  drm_device_ptr_->DestroyWindow(widget1);
+  drm_device_->DestroyWindow(widget1);
   PostStubTask(widget1, &called1);
   drm_thread_.FlushForTesting();
   ASSERT_TRUE(called1);
@@ -142,7 +145,7 @@ TEST_F(DrmThreadTest, RunTaskAfterWindowReady) {
   ASSERT_FALSE(called2);
 
   // Create |widget2|. The two blocked tasks should run.
-  drm_device_ptr_->CreateWindow(widget2, bounds);
+  drm_device_->CreateWindow(widget2, bounds);
   drm_thread_.FlushForTesting();
   ASSERT_TRUE(event->IsSignaled());
   ASSERT_TRUE(called2);
@@ -160,7 +163,7 @@ TEST_F(DrmThreadTest, RunTaskAfterWindowReady) {
   ASSERT_TRUE(event->IsSignaled());
 
   // Destroy |widget2| to avoid failures during tear down.
-  drm_device_ptr_->DestroyWindow(widget2);
+  drm_device_->DestroyWindow(widget2);
   drm_thread_.FlushForTesting();
 }
 

@@ -44,7 +44,7 @@ constexpr int kShadowElevation = 4;
 // when we attempt to mirror those layers.
 struct LayerData {
   // If true, the layer won't be mirrored in the desk's mirrored contents. For
-  // example windows created by overview mode to hold the CaptionContainerView,
+  // example windows created by overview mode to hold the OverviewItemView,
   // or minimized windows' layers, should all be skipped.
   bool should_skip_layer = false;
 

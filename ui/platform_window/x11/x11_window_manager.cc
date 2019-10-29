@@ -33,20 +33,20 @@ X11WindowManager* X11WindowManager::GetInstance() {
 }
 
 void X11WindowManager::GrabEvents(X11Window* window) {
-  DCHECK_NE(event_grabber_, window);
+  DCHECK_NE(located_events_grabber_, window);
 
   // Grabbing the mouse is asynchronous. However, we synchronously start
   // forwarding all mouse events received by Chrome to the
   // aura::WindowEventDispatcher which has capture. This makes capture
   // synchronous for all intents and purposes if either:
-  // - |event_grabber_| is set to have capture.
+  // - |located_events_grabber_| is set to have capture.
   // OR
   // - The topmost window underneath the mouse is managed by Chrome.
-  auto* old_grabber = event_grabber_;
+  auto* old_grabber = located_events_grabber_;
 
-  // Update |event_grabber_| prior to calling OnXWindowLostCapture() to
+  // Update |located_events_grabber_| prior to calling OnXWindowLostCapture() to
   // avoid releasing pointer grab.
-  event_grabber_ = window;
+  located_events_grabber_ = window;
   if (old_grabber)
     old_grabber->OnXWindowLostCapture();
 
@@ -54,12 +54,12 @@ void X11WindowManager::GrabEvents(X11Window* window) {
 }
 
 void X11WindowManager::UngrabEvents(X11Window* window) {
-  DCHECK_EQ(event_grabber_, window);
+  DCHECK_EQ(located_events_grabber_, window);
   // Release mouse grab asynchronously. A window managed by Chrome is likely
   // the topmost window underneath the mouse so the capture release being
   // asynchronous is likely inconsequential.
-  auto* old_grabber = event_grabber_;
-  event_grabber_ = nullptr;
+  auto* old_grabber = located_events_grabber_;
+  located_events_grabber_ = nullptr;
   old_grabber->OnXWindowLostCapture();
 }
 

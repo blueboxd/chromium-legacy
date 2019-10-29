@@ -36,7 +36,7 @@
         <cr-icon-button class="icon-more-vert" on-click="onMenuButtonTap_"
             tabindex$="[[tabindex]]" title="$i18n{moreActions}"
             on-keydown="ignoreEnterKey_"></cr-icon-button>
-        <cr-action-menu id="dotsMenu">
+        <cr-action-menu id="dotsMenu" role-description="$i18n{menu}">
           <button class="dropdown-item"
               on-click="onConnectActionTap_">
             [[getConnectActionText_(device.connected)]]

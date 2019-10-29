@@ -19,6 +19,7 @@
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_cdm_file_io.h"
 #include "media/mojo/services/mojo_cdm_proxy.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace service_manager {
 namespace mojom {
@@ -73,7 +74,7 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   // the browser crashed, so there's no point in trying to reconnect.
   mojom::CdmStoragePtr cdm_storage_ptr_;
   std::unique_ptr<CdmAllocator> allocator_;
-  mojom::OutputProtectionPtr output_protection_ptr_;
+  mojo::Remote<mojom::OutputProtection> output_protection_;
   mojom::PlatformVerificationPtr platform_verification_ptr_;
 
   FileReadCB file_read_cb_;

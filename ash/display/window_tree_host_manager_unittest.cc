@@ -50,7 +50,7 @@
 namespace ash {
 namespace {
 
-const char kWallpaperView[] = "WallpaperView";
+const char kWallpaperView[] = "WallpaperViewWidget";
 
 template <typename T>
 class Resetter {

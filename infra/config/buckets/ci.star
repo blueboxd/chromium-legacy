@@ -156,6 +156,7 @@ def android_builder(
 
 android_builder(
     name = 'Android ASAN (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -185,11 +186,13 @@ android_builder(
 
 android_builder(
     name = 'Android arm Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
     execution_timeout = 4 * time.hour,
 )
 
 android_builder(
     name = 'Android arm64 Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 4 * time.hour,
 )
@@ -1221,9 +1224,8 @@ def fyi_coverage_builder(
 
 fyi_coverage_builder(
     name = 'android-code-coverage',
-    ssd = True,
-    use_clang_coverage = True,
     use_java_coverage = True,
+    ssd = True,
 )
 
 fyi_coverage_builder(
@@ -1257,10 +1259,12 @@ fyi_coverage_builder(
 )
 
 fyi_coverage_builder(
-    name = 'mac-code-coverage-generation',
+    name = 'mac-code-coverage',
+    builderless = True,
     cores = 24,
     goma_backend = goma.backend.RBE_PROD,
-    os = None,
+    os = os.MAC_ANY,
+    ssd = True,
     use_clang_coverage = True,
 )
 

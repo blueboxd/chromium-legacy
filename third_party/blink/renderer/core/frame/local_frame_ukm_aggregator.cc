@@ -273,6 +273,7 @@ void LocalFrameUkmAggregator::UpdateEventTimeAndRecordEventIfNeeded() {
 void LocalFrameUkmAggregator::RecordEvent() {
   ukm::builders::Blink_UpdateTime builder(source_id_);
   builder.SetMainFrame(primary_metric_.interval_duration.InMicroseconds());
+  builder.SetMainFrameIsBeforeFCP(is_before_fcp_);
   for (unsigned i = 0; i < (unsigned)kCount; ++i) {
     MetricId id = static_cast<MetricId>(i);
     auto& absolute_record = absolute_metric_records_[(unsigned)id];

@@ -54,18 +54,18 @@ void MediaInterfaceFactory::CreateVideoDecoder(
 
 void MediaInterfaceFactory::CreateDefaultRenderer(
     const std::string& audio_device_id,
-    media::mojom::RendererRequest request) {
+    mojo::PendingReceiver<media::mojom::Renderer> receiver) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&MediaInterfaceFactory::CreateDefaultRenderer,
-                       weak_this_, audio_device_id, std::move(request)));
+                       weak_this_, audio_device_id, std::move(receiver)));
     return;
   }
 
   DVLOG(1) << __func__;
   GetMediaInterfaceFactory()->CreateDefaultRenderer(audio_device_id,
-                                                    std::move(request));
+                                                    std::move(receiver));
 }
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
@@ -131,16 +131,16 @@ void MediaInterfaceFactory::CreateFlingingRenderer(
 
 void MediaInterfaceFactory::CreateCdm(
     const std::string& key_system,
-    media::mojom::ContentDecryptionModuleRequest request) {
+    mojo::PendingReceiver<media::mojom::ContentDecryptionModule> receiver) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaInterfaceFactory::CreateCdm, weak_this_,
-                                  key_system, std::move(request)));
+                                  key_system, std::move(receiver)));
     return;
   }
 
   DVLOG(1) << __func__ << ": key_system = " << key_system;
-  GetMediaInterfaceFactory()->CreateCdm(key_system, std::move(request));
+  GetMediaInterfaceFactory()->CreateCdm(key_system, std::move(receiver));
 }
 
 void MediaInterfaceFactory::CreateDecryptor(

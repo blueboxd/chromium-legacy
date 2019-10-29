@@ -13,7 +13,6 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -121,34 +120,54 @@ bool HomeScreenController::IsHomeScreenVisible() const {
 }
 
 void HomeScreenController::OnOverviewModeStarting() {
-  // Only animate the home screen when overview mode is using slide animation.
-  bool animate = Shell::Get()
-                     ->overview_controller()
-                     ->overview_session()
-                     ->enter_exit_overview_type() ==
-                 OverviewSession::EnterExitOverviewType::kSlideInEnter;
-  home_screen_presenter_.ScheduleOverviewModeAnimation(true /* start */,
-                                                       animate);
+  const OverviewSession::EnterExitOverviewType overview_enter_type =
+      Shell::Get()
+          ->overview_controller()
+          ->overview_session()
+          ->enter_exit_overview_type();
+
+  const bool animate =
+      overview_enter_type ==
+          OverviewSession::EnterExitOverviewType::kSlideInEnter ||
+      overview_enter_type ==
+          OverviewSession::EnterExitOverviewType::kFadeInEnter;
+  const HomeScreenPresenter::TransitionType transition =
+      overview_enter_type ==
+              OverviewSession::EnterExitOverviewType::kFadeInEnter
+          ? HomeScreenPresenter::TransitionType::kScaleHomeOut
+          : HomeScreenPresenter::TransitionType::kSlideHomeOut;
+
+  home_screen_presenter_.ScheduleOverviewModeAnimation(transition, animate);
 }
 
 void HomeScreenController::OnOverviewModeEnding(
     OverviewSession* overview_session) {
-  // Animate the launcher if overview mode is sliding out. Let
-  // OnOverviewModeEndingAnimationComplete handle showing the launcher after
-  // overview mode finishes animating. Overview however is nullptr by the
-  // time the animations are finished, so we need to check the animation type
-  // here.
-  use_slide_to_exit_overview_ =
-      overview_session->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kSlideOutExit;
+  // The launcher should be shown after overview mode finishes animating, in
+  // OnOverviewModeEndingAnimationComplete(). Overview however is nullptr by the
+  // time the animations are finished, so cache the exit type here.
+  overview_exit_type_ =
+      base::make_optional(overview_session->enter_exit_overview_type());
 }
 
 void HomeScreenController::OnOverviewModeEndingAnimationComplete(
     bool canceled) {
   if (canceled)
     return;
-  home_screen_presenter_.ScheduleOverviewModeAnimation(
-      false /* start */, use_slide_to_exit_overview_);
+  DCHECK(overview_exit_type_.has_value());
+
+  const bool animate =
+      *overview_exit_type_ ==
+          OverviewSession::EnterExitOverviewType::kSlideOutExit ||
+      *overview_exit_type_ ==
+          OverviewSession::EnterExitOverviewType::kFadeOutExit;
+  const HomeScreenPresenter::TransitionType transition =
+      *overview_exit_type_ ==
+              OverviewSession::EnterExitOverviewType::kFadeOutExit
+          ? HomeScreenPresenter::TransitionType::kScaleHomeIn
+          : HomeScreenPresenter::TransitionType::kSlideHomeIn;
+  overview_exit_type_ = base::nullopt;
+
+  home_screen_presenter_.ScheduleOverviewModeAnimation(transition, animate);
 }
 
 void HomeScreenController::OnWallpaperPreviewStarted() {

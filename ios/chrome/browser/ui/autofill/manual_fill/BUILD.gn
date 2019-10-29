@@ -236,6 +236,7 @@ source_set("eg2_tests") {
   ]
   testonly = true
   sources = [
+    "address_view_controller_egtest.mm",
     "card_view_controller_egtest.mm",
     "fallback_coordinator_egtest.mm",
     "fallback_view_controller_egtest.mm",

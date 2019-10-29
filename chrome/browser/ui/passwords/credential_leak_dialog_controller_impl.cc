@@ -89,11 +89,6 @@ bool CredentialLeakDialogControllerImpl::ShouldShowCancelButton() const {
   return password_manager::ShouldShowCancelButton(leak_type_);
 }
 
-gfx::Range CredentialLeakDialogControllerImpl::GetChangePasswordBoldRange()
-    const {
-  return password_manager::GetChangePasswordBoldRange(leak_type_, origin_);
-}
-
 void CredentialLeakDialogControllerImpl::ResetDialog() {
   if (credential_leak_dialog_) {
     credential_leak_dialog_->ControllerGone();

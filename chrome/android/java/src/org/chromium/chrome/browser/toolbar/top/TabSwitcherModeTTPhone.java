@@ -106,8 +106,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
             mNewTabViewButton.setOnClickListener(this);
         }
 
-        if ((usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled()
-                    || FeatureUtilities.isStartSurfaceEnabled())
+        if ((usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled())
                 && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
             updateTabSwitchingElements(true);
         }
@@ -390,8 +389,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
                             .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                     "tab_grid_layout_android_new_tab")
                             .equals("NewTabVariation")
-                || FeatureUtilities.isBottomToolbarEnabled()
-                || !FeatureUtilities.isStartSurfaceEnabled() || mIncognitoToggleTabLayout == null) {
+                || FeatureUtilities.isBottomToolbarEnabled() || mIncognitoToggleTabLayout == null) {
             return;
         }
         boolean hasIncognitoTabs = hasIncognitoTabs();

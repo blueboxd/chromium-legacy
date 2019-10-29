@@ -67,7 +67,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       const std::vector<float>& supported_refresh_rates) override;
 #endif
   void AddVSyncParameterObserver(
-      mojom::VSyncParameterObserverPtr observer) override;
+      mojo::PendingRemote<mojom::VSyncParameterObserver> observer) override;
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;

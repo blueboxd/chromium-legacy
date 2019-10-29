@@ -18,6 +18,15 @@ extern const base::Feature kResamplingScrollEvents;
 COMPONENT_EXPORT(BLINK_FEATURES)
 extern const base::Feature kFilteringScrollPrediction;
 
+// Enables changing the influence of acceleration based on change of direction.
+COMPONENT_EXPORT(BLINK_FEATURES)
+extern const base::Feature kKalmanHeuristics;
+
+// Enables discarding the prediction if the predicted direction is opposite from
+// the current direction.
+COMPONENT_EXPORT(BLINK_FEATURES)
+extern const base::Feature kKalmanDirectionCutOff;
+
 // This feature allows native ET_MOUSE_EXIT events to be passed
 // through to blink as mouse leave events. Traditionally these events were
 // converted to mouse move events due to a number of inconsistencies on

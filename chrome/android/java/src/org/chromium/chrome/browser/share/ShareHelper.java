@@ -323,27 +323,15 @@ public class ShareHelper {
     }
 
     /**
-     * Creates and shows a share intent picker dialog or starts a share intent directly with the
-     * activity that was most recently used to share based on shareDirectly value.
-     *
-     * This function will save |screenshot| under {app's root}/files/images/screenshot (or
-     * /sdcard/DCIM/browser-images/screenshot if ADK is lower than JB MR2).
-     * Cleaning up doesn't happen automatically, and so an app should call clearSharedScreenshots()
-     * explicitly when needed.
-     *
+     * Share directly with the last used share target.
      * @param params The container holding the share parameters.
      */
-    public static void share(ShareParams params) {
-        if (params.shareDirectly()) {
-            ComponentName component = getLastShareComponentName(params.getSourcePackageName());
-            if (component == null) return;
-            assert params.getCallback() == null;
-            makeIntentAndShare(params, component);
-        } else if (TargetChosenReceiver.isSupported()) {
-            makeIntentAndShare(params, null);
-        } else {
-            showShareDialog(params);
-        }
+    public static void shareDirectly(ShareParams params) {
+        assert params.shareDirectly();
+        ComponentName component = getLastShareComponentName(params.getSourcePackageName());
+        if (component == null) return;
+        assert params.getCallback() == null;
+        makeIntentAndShare(params, component);
     }
 
     /**
@@ -512,7 +500,7 @@ public class ShareHelper {
      *
      * @param params The container holding the share parameters.
      */
-    private static void showShareDialog(final ShareParams params) {
+    static void showShareDialog(final ShareParams params) {
         Activity activity = params.getWindow().getActivity().get();
         final TargetChosenCallback callback = params.getCallback();
         Intent intent = getShareLinkAppCompatibilityIntent();
@@ -572,7 +560,7 @@ public class ShareHelper {
         }
     }
 
-    private static void makeIntentAndShare(ShareParams params, @Nullable ComponentName component) {
+    static void makeIntentAndShare(ShareParams params, @Nullable ComponentName component) {
         Intent intent = getShareLinkIntent(params);
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         intent.setComponent(component);

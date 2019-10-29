@@ -31,6 +31,8 @@ class HistoryService;
 
 namespace safe_browsing {
 
+class BaseBlockingPage;
+
 struct HitReport;
 
 // Construction needs to happen on the main thread.
@@ -89,8 +91,6 @@ class SafeBrowsingUIManager : public BaseUIManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* remove);
 
-  void DisplayBlockingPage(const UnsafeResource& resource) override;
-
   const std::string app_locale() const override;
   history::HistoryService* history_service(
       content::WebContents* web_contents) override;
@@ -121,6 +121,13 @@ class SafeBrowsingUIManager : public BaseUIManager {
 
   static GURL GetMainFrameWhitelistUrlForResourceForTesting(
       const safe_browsing::SafeBrowsingUIManager::UnsafeResource& resource);
+
+  // Creates a blocking page, used for interstitials triggered by subresources.
+  // Override is using a different blocking page.
+  BaseBlockingPage* CreateBlockingPageForSubresource(
+      content::WebContents* contents,
+      const GURL& blocked_url,
+      const UnsafeResource& unsafe_resource) override;
 
   // Safebrowsing service.
   scoped_refptr<SafeBrowsingService> sb_service_;

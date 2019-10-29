@@ -13,8 +13,9 @@
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/demuxer_memory_limit.h"
-#include "media/base/encryption_scheme.h"
+#include "media/base/encryption_pattern.h"
 #include "media/base/media_util.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/mp4/rcheck.h"
@@ -55,7 +56,10 @@ struct TrackRunInfo {
   std::vector<uint8_t> aux_info_sizes;  // Populated if default_size == 0.
   int aux_info_total_size;
 
-  EncryptionScheme encryption_scheme;
+  EncryptionMode encryption_mode;
+#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
+  EncryptionPattern encryption_pattern;
+#endif  // BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
 
   std::vector<CencSampleEncryptionInfoEntry> fragment_sample_encryption_info;
 
@@ -370,18 +374,18 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       }
 
       if (!sinf->HasSupportedScheme()) {
-        tri.encryption_scheme = Unencrypted();
+        tri.encryption_mode = EncryptionMode::kUnencrypted;
       } else {
 #if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
-        tri.encryption_scheme = EncryptionScheme(
-            sinf->IsCbcsEncryptionScheme()
-                ? EncryptionScheme::CIPHER_MODE_AES_CBC
-                : EncryptionScheme::CIPHER_MODE_AES_CTR,
+        tri.encryption_mode = sinf->IsCbcsEncryptionScheme()
+                                  ? EncryptionMode::kCbcs
+                                  : EncryptionMode::kCenc;
+        tri.encryption_pattern =
             EncryptionPattern(track_encryption->default_crypt_byte_block,
-                              track_encryption->default_skip_byte_block));
+                              track_encryption->default_skip_byte_block);
 #else
         DCHECK(!sinf->IsCbcsEncryptionScheme());
-        tri.encryption_scheme = AesCtrEncryptionScheme();
+        tri.encryption_mode = EncryptionMode::kCenc;
 #endif
       }
 
@@ -755,16 +759,16 @@ std::unique_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
       std::string iv(reinterpret_cast<const char*>(
                          sample_encryption_entry.initialization_vector),
                      base::size(sample_encryption_entry.initialization_vector));
-      switch (run_itr_->encryption_scheme.mode()) {
-        case EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
+      switch (run_itr_->encryption_mode) {
+        case EncryptionMode::kUnencrypted:
           return nullptr;
-        case EncryptionScheme::CIPHER_MODE_AES_CTR:
+        case EncryptionMode::kCenc:
           return DecryptConfig::CreateCencConfig(
               key_id, iv, sample_encryption_entry.subsamples);
-        case EncryptionScheme::CIPHER_MODE_AES_CBC:
+        case EncryptionMode::kCbcs:
           return DecryptConfig::CreateCbcsConfig(
               key_id, iv, sample_encryption_entry.subsamples,
-              run_itr_->encryption_scheme.pattern());
+              run_itr_->encryption_pattern);
       }
     }
 #endif

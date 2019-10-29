@@ -95,7 +95,6 @@ public class TwaSharingController {
         String action = shareTarget.action;
         String paramTitle = params.title;
         String paramText = params.text;
-        String paramUrl = ""; // Not supported on Android
         String method = shareTarget.method;
         boolean isPost = method != null && "POST".equals(method.toUpperCase(Locale.ENGLISH));
         String encodingType = shareTarget.encodingType;
@@ -110,8 +109,8 @@ public class TwaSharingController {
             filesArray[i] = file.name;
             acceptsArray[i] =  file.acceptedTypes.toArray(new String[file.acceptedTypes.size()]);
         }
-        return new WebApkInfo.ShareTarget(action, paramTitle, paramText, paramUrl, isPost,
-                isMultipart, filesArray, acceptsArray);
+        return new WebApkInfo.ShareTarget(
+                action, paramTitle, paramText, isPost, isMultipart, filesArray, acceptsArray);
     }
 
     private boolean sendPost(ShareData shareData, WebApkInfo.ShareTarget target) {

@@ -653,6 +653,15 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(html_names::kArticleTag))
     return ax::mojom::Role::kArticle;
 
+  if (GetNode()->HasTagName(html_names::kCodeTag))
+    return ax::mojom::Role::kCode;
+
+  if (GetNode()->HasTagName(html_names::kEmTag))
+    return ax::mojom::Role::kEmphasis;
+
+  if (GetNode()->HasTagName(html_names::kStrongTag))
+    return ax::mojom::Role::kStrong;
+
   if (GetNode()->HasTagName(html_names::kDelTag))
     return ax::mojom::Role::kContentDeletion;
 

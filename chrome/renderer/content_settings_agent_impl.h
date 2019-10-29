@@ -76,11 +76,6 @@ class ContentSettingsAgentImpl
   // Sends an IPC notification that the specified content type was blocked.
   void DidBlockContentType(ContentSettingsType settings_type);
 
-  // Sends an IPC notification that the specified content type was blocked
-  // with additional metadata.
-  void DidBlockContentType(ContentSettingsType settings_type,
-                           const base::string16& details);
-
   // blink::WebContentSettingsClient:
   bool AllowDatabase() override;
   void RequestFileSystemAccessAsync(

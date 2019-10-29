@@ -12,7 +12,6 @@ import("//build/config/locales.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/trichrome.gni")
-import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
@@ -411,20 +410,9 @@ grit("generate_components_strings") {
   }
 }
 
-source_set("webview_entry_point") {
-  deps = [
-    ":common",
-    "//base",
-    "//weblayer:weblayer_lib",
-  ]
-  sources = [
-    "lib/webview_entry_point.cc",
-  ]
-}
-
 shared_library("libwebviewchromium") {
   deps = [
-    ":webview_entry_point",
+    "//android_webview/lib:webview_entry_point",
     "//components/about_ui:about_ui_android",
   ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
@@ -457,7 +445,7 @@ template("webview_library") {
   chrome_common_shared_library(target_name) {
     forward_variables_from(invoker, "*")
     deps = [
-      ":webview_entry_point",
+      "//android_webview/lib:webview_entry_point",
     ]
     is_webview = true
   }
@@ -493,46 +481,6 @@ if (enable_resource_whitelist_generation) {
       "$root_out_dir/lib.unstripped/libwebviewchromium$shlib_extension",
     ]
     output = system_webview_pak_whitelist
-  }
-}
-
-source_set("common") {
-  sources = [
-    "lib/aw_main_delegate.cc",
-    "lib/aw_main_delegate.h",
-    "lib/webview_jni_onload.cc",
-    "lib/webview_jni_onload.h",
-  ]
-
-  deps = [
-    ":browser_jni_headers",
-    "//android_webview/apk",
-    "//android_webview/browser",
-    "//android_webview/browser/gfx",
-    "//android_webview/common",
-    "//android_webview/gpu",
-    "//android_webview/renderer",
-    "//components/autofill/core/common",
-    "//components/crash/android:crashpad_main",
-    "//components/gwp_asan/buildflags",
-    "//components/safe_browsing/android:safe_browsing_api_handler",
-    "//components/services/heap_profiling/public/cpp",
-    "//components/spellcheck:buildflags",
-    "//components/spellcheck/common",
-    "//components/version_info",
-    "//components/version_info/android:channel_getter",
-    "//content/public/app:both",
-    "//content/public/browser",
-    "//content/public/common:content_descriptor_keys",
-    "//gin",
-    "//gpu/command_buffer/service",
-    "//gpu/ipc:gl_in_process_context",
-    "//ui/events:gesture_detection",
-    "//weblayer:weblayer_lib",
-  ]
-
-  if (enable_gwp_asan) {
-    deps += [ "//components/gwp_asan/client" ]
   }
 }
 

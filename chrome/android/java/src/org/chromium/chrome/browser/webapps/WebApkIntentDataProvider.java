@@ -533,8 +533,6 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
                             shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_TITLE),
                     IntentUtils.safeGetString(
                             shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_TEXT),
-                    IntentUtils.safeGetString(
-                            shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_URL),
                     isShareMethodPost, isShareEncTypeMultipart, fileNames, fileAccepts);
 
             return new Pair<>(shareTargetActivityName, target);

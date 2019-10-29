@@ -887,11 +887,6 @@ class Browser : public TabStripModelObserver,
   // Removes all entries from scheduled_updates_ whose source is contents.
   void RemoveScheduledUpdatesFor(content::WebContents* contents);
 
-  // Configures |nav_params| to create a new tab group with the source, if
-  // applicable.
-  void ConfigureTabGroupForNavigation(content::WebContents* source,
-                                      NavigateParams* nav_params);
-
   // Getters for UI ///////////////////////////////////////////////////////////
 
   // TODO(beng): remove, and provide AutomationProvider a better way to access

@@ -57,6 +57,7 @@ VROrientationDevice::VROrientationDevice(mojom::SensorProvider* sensor_provider,
                                          base::OnceClosure ready_callback)
     : VRDeviceBase(mojom::XRDeviceId::ORIENTATION_DEVICE_ID),
       ready_callback_(std::move(ready_callback)) {
+  DVLOG(2) << __func__;
   sensor_provider->GetSensor(kOrientationSensorType,
                              base::BindOnce(&VROrientationDevice::SensorReady,
                                             base::Unretained(this)));
@@ -64,7 +65,9 @@ VROrientationDevice::VROrientationDevice(mojom::SensorProvider* sensor_provider,
   SetVRDisplayInfo(CreateVRDisplayInfo(GetId()));
 }
 
-VROrientationDevice::~VROrientationDevice() = default;
+VROrientationDevice::~VROrientationDevice() {
+  DVLOG(2) << __func__;
+}
 
 void VROrientationDevice::SensorReady(
     device::mojom::SensorCreationResult,
@@ -76,6 +79,7 @@ void VROrientationDevice::SensorReady(
     return;
   }
 
+  DVLOG(2) << __func__;
   constexpr size_t kReadBufferSize = sizeof(device::SensorReadingSharedBuffer);
 
   DCHECK_EQ(0u, params->buffer_offset % kReadBufferSize);
@@ -132,6 +136,7 @@ void VROrientationDevice::HandleSensorError() {
 void VROrientationDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
+  DVLOG(2) << __func__;
   DCHECK(!options->immersive);
 
   // TODO(http://crbug.com/695937): Perform a check to see if sensors are
@@ -156,6 +161,7 @@ void VROrientationDevice::RequestSession(
 }
 
 void VROrientationDevice::EndMagicWindowSession(VROrientationSession* session) {
+  DVLOG(2) << __func__;
   base::EraseIf(magic_window_sessions_,
                 [session](const std::unique_ptr<VROrientationSession>& item) {
                   return item.get() == session;

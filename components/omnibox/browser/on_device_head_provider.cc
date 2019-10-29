@@ -108,11 +108,20 @@ bool OnDeviceHeadProvider::IsOnDeviceHeadProviderAllowed(
   if (!client()->SearchSuggestEnabled())
     return false;
 
-  // Make sure user is not in incognito, unless on device head provider is
-  // enabled for incognito.
-  if (client()->IsOffTheRecord() &&
-      !OmniboxFieldTrial::IsOnDeviceHeadProviderEnabledForIncognito())
-    return false;
+  // This flag specifies whether we should serve incognito or non incognito
+  // request, value can be:
+  // 1. incognito-not-allowed (or empty string): only serve non incognito
+  //    request; this is the default behavior;
+  // 2. incognito-only: only serve incognito request;
+  // 3. always-serve: always serve regardless of incognito.
+  const std::string mode = base::GetFieldTrialParamValueByFeature(
+      omnibox::kOnDeviceHeadProvider, "IncognitoServeMode");
+  if (mode != "always-serve") {
+    if (client()->IsOffTheRecord() && mode != "incognito-only")
+      return false;
+    if (!client()->IsOffTheRecord() && mode == "incognito-only")
+      return false;
+  }
 
   // Reject on focus request.
   if (input.from_omnibox_focus())
@@ -156,8 +165,14 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
     // from server, if we issue both requests simultaneously.
     // Therefore, we might want to delay the On Device suggest requests (and
     // also apply a timeout to search default loader) to mitigate this issue.
-    int delay = base::GetFieldTrialParamByFeatureAsInt(
-        omnibox::kOnDeviceHeadProvider, "DelayOnDeviceHeadSuggestRequestMs", 0);
+    // Note this delay is not needed for incognito where server suggestion is
+    // not served.
+    int delay = 0;
+    if (!client()->IsOffTheRecord()) {
+      delay = base::GetFieldTrialParamByFeatureAsInt(
+          omnibox::kOnDeviceHeadProvider, "DelayOnDeviceHeadSuggestRequestMs",
+          0);
+    }
     task_runner_->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&OnDeviceHeadProvider::DoSearch,

@@ -25,8 +25,10 @@ SigninEmailConfirmationUI::SigninEmailConfirmationUI(content::WebUI* web_ui)
       chrome::kChromeUISigninEmailConfirmationHost);
   source->UseStringsJs();
   source->SetDefaultResource(IDR_SIGNIN_EMAIL_CONFIRMATION_HTML);
-  source->AddResourcePath("signin_email_confirmation.js",
-                          IDR_SIGNIN_EMAIL_CONFIRMATION_JS);
+  source->AddResourcePath("signin_email_confirmation_app.html",
+                          IDR_SIGNIN_EMAIL_CONFIRMATION_APP_HTML);
+  source->AddResourcePath("signin_email_confirmation_app.js",
+                          IDR_SIGNIN_EMAIL_CONFIRMATION_APP_JS);
   source->AddResourcePath("signin_shared_old_css.html",
                           IDR_SIGNIN_SHARED_OLD_CSS_HTML);
 

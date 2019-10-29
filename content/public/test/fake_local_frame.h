@@ -32,6 +32,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message,
                            bool discard_duplicates) override;
+  void CheckCompleted() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

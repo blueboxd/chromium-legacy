@@ -85,12 +85,6 @@
 #include "ui/display/screen.h"
 #include "ui/gl/gl_switches.h"
 
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
-#include "chromecast/media/service/cast_mojo_media_client.h"
-#include "media/mojo/mojom/constants.mojom.h"  // nogncheck
-#include "media/mojo/services/media_service.h"  // nogncheck
-#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
-
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
@@ -137,70 +131,11 @@
 #endif
 
 #if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
-#include "chromecast/browser/webview/js_channel_service.h"
 #include "chromecast/browser/webview/webview_controller.h"
-#include "chromecast/common/mojom/js_channel.mojom.h"
 #endif  // BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
 
 namespace chromecast {
 namespace shell {
-
-namespace {
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
-static void CreateMediaService(CastContentBrowserClient* browser_client,
-                               service_manager::mojom::ServiceRequest request) {
-  std::unique_ptr<::media::MediaService> service;
-  auto mojo_media_client = std::make_unique<media::CastMojoMediaClient>(
-      browser_client->GetCmaBackendFactory(),
-      base::Bind(&CastContentBrowserClient::CreateCdmFactory,
-                 base::Unretained(browser_client)),
-      browser_client->GetVideoModeSwitcher(),
-      browser_client->GetVideoResolutionPolicy());
-  service = std::make_unique<::media::MediaService>(
-      std::move(mojo_media_client), std::move(request));
-  service_manager::Service::RunAsyncUntilTermination(std::move(service));
-}
-#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
-
-#if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
-void CreateOriginId(cdm::MediaDrmStorageImpl::OriginIdObtainedCB callback) {
-  // TODO(crbug.com/917527): Update this to actually get a pre-provisioned
-  // origin ID.
-  std::move(callback).Run(true, base::UnguessableToken::Create());
-}
-
-void AllowEmptyOriginIdCB(base::OnceCallback<void(bool)> callback) {
-  std::move(callback).Run(false);
-}
-
-void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
-                           ::media::mojom::MediaDrmStorageRequest request) {
-  DVLOG(1) << __func__;
-  PrefService* pref_service = CastBrowserProcess::GetInstance()->pref_service();
-  DCHECK(pref_service);
-
-  if (render_frame_host->GetLastCommittedOrigin().opaque()) {
-    DVLOG(1) << __func__ << ": Unique origin.";
-    return;
-  }
-
-  // The object will be deleted on connection error, or when the frame navigates
-  // away.
-  new cdm::MediaDrmStorageImpl(
-      render_frame_host, pref_service, base::BindRepeating(&CreateOriginId),
-      base::BindRepeating(&AllowEmptyOriginIdCB), std::move(request));
-}
-#endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
-
-#if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
-void StartExternalMojoBrokerService(
-    service_manager::mojom::ServiceRequest request) {
-  service_manager::Service::RunAsyncUntilTermination(
-      std::make_unique<external_mojo::BrokerService>(std::move(request)));
-}
-#endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
-
-}  // namespace
 
 CastContentBrowserClient::CastContentBrowserClient(
     CastFeatureListCreator* cast_feature_list_creator)
@@ -731,71 +666,12 @@ bool CastContentBrowserClient::CanCreateWindow(
   return false;
 }
 
-void CastContentBrowserClient::ExposeInterfacesToRenderer(
-    service_manager::BinderRegistry* registry,
-    blink::AssociatedInterfaceRegistry* associated_registry,
-    content::RenderProcessHost* render_process_host) {
-  registry->AddInterface(
-      base::Bind(&media::MediaCapsImpl::AddReceiver,
-                 base::Unretained(cast_browser_main_parts_->media_caps())),
-      base::ThreadTaskRunnerHandle::Get());
-
-#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-  if (!memory_pressure_controller_) {
-    memory_pressure_controller_.reset(new MemoryPressureControllerImpl());
-  }
-
-  registry->AddInterface(
-      base::Bind(&MemoryPressureControllerImpl::AddReceiver,
-                 base::Unretained(memory_pressure_controller_.get())),
-      base::ThreadTaskRunnerHandle::Get());
-#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-}
-
-void CastContentBrowserClient::ExposeInterfacesToMediaService(
-    service_manager::BinderRegistry* registry,
-    content::RenderFrameHost* render_frame_host) {
-#if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
-  registry->AddInterface(
-      base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
-#endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
-
-  std::string application_session_id;
-  bool mixer_audio_enabled;
-  GetApplicationMediaInfo(&application_session_id, &mixer_audio_enabled,
-                          render_frame_host);
-  registry->AddInterface(base::BindRepeating(
-      &media::CreateApplicationMediaInfoManager, render_frame_host,
-      std::move(application_session_id), mixer_audio_enabled));
-}
-
 void CastContentBrowserClient::GetApplicationMediaInfo(
     std::string* application_session_id,
     bool* mixer_audio_enabled,
     content::RenderFrameHost* render_frame_host) {
   *application_session_id = "";
   *mixer_audio_enabled = true;
-}
-
-void CastContentBrowserClient::RunServiceInstance(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
-  if (identity.name() == ::media::mojom::kMediaRendererServiceName) {
-    service_manager::mojom::ServiceRequest request(std::move(*receiver));
-    GetMediaTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CreateMediaService, this, std::move(request)));
-    return;
-  }
-#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
-
-#if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
-  if (identity.name() == external_mojo::BrokerService::kServiceName) {
-    StartExternalMojoBrokerService(std::move(*receiver));
-    return;
-  }
-#endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 }
 
 base::Optional<service_manager::Manifest>
@@ -973,7 +849,7 @@ void CastContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_frame_id,
     NonNetworkURLLoaderFactoryMap* factories) {
   if (render_frame_id == MSG_ROUTING_NONE) {
-    NOTREACHED() << "Service worker not supported.";
+    LOG(ERROR) << "Service worker not supported.";
     return;
   }
   content::RenderFrameHost* frame_host =
@@ -1020,20 +896,6 @@ bool CastContentBrowserClient::DoesSiteRequireDedicatedProcess(
 #else
   return false;
 #endif
-}
-
-void CastContentBrowserClient::BindHostReceiverForRenderer(
-    content::RenderProcessHost* render_process_host,
-    mojo::GenericPendingReceiver receiver) {
-#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
-  if (auto r = receiver.As<::chromecast::mojom::JsChannelBindingProvider>()) {
-    JsChannelService::Create(render_process_host, std::move(r),
-                             base::ThreadTaskRunnerHandle::Get());
-    return;
-  }
-#endif
-  ContentBrowserClient::BindHostReceiverForRenderer(render_process_host,
-                                                    std::move(receiver));
 }
 
 std::string CastContentBrowserClient::GetUserAgent() {

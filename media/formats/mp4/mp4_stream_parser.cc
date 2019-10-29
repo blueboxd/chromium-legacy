@@ -44,6 +44,7 @@ const int kMaxVideoKeyframeMismatchLogs = 10;
 
 // Caller should be prepared to handle return of Unencrypted() in case of
 // unsupported scheme.
+// TODO(crbug.com/825041): Remove pattern from this function.
 EncryptionScheme GetEncryptionScheme(const ProtectionSchemeInfo& sinf) {
   if (!sinf.HasSupportedScheme())
     return Unencrypted();

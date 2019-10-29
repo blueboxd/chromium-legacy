@@ -104,7 +104,7 @@ class Panel {
   /**
    * Sets the actions in the menu panel to the actions in |actions| from
    * the menu with the given |menuId|.
-   * @param {!Array<string>} actions
+   * @param {!Array<SAConstants.MenuAction>} actions
    * @param {!SAConstants.MenuId} menuId
    * @public
    */

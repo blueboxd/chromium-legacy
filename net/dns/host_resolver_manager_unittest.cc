@@ -3052,7 +3052,7 @@ class TestMdnsListenerDelegate : public HostResolver::MdnsListener::Delegate {
       HostResolver::MdnsListener::Delegate::UpdateType update_type,
       DnsQueryType result_type,
       IPEndPoint address) override {
-    address_results_.insert({{update_type, result_type}, std::move(address)});
+    address_results_.insert({{update_type, result_type}, address});
   }
 
   void OnTextResult(
@@ -3558,10 +3558,10 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
                          uint16_t qtype,
                          const IPAddress& result_ip,
                          bool delay) {
-    rules->emplace_back(prefix, qtype, false /* secure */,
-                        MockDnsClientRule::Result(
-                            BuildTestDnsResponse(prefix, std::move(result_ip))),
-                        delay);
+    rules->emplace_back(
+        prefix, qtype, false /* secure */,
+        MockDnsClientRule::Result(BuildTestDnsResponse(prefix, result_ip)),
+        delay);
   }
 
   static void AddDnsRule(MockDnsClientRuleList* rules,
@@ -3570,11 +3570,10 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
                          IPAddress result_ip,
                          std::string cannonname,
                          bool delay) {
-    rules->emplace_back(
-        prefix, qtype, false /* secure */,
-        MockDnsClientRule::Result(BuildTestDnsResponseWithCname(
-            prefix, std::move(result_ip), std::move(cannonname))),
-        delay);
+    rules->emplace_back(prefix, qtype, false /* secure */,
+                        MockDnsClientRule::Result(BuildTestDnsResponseWithCname(
+                            prefix, result_ip, std::move(cannonname))),
+                        delay);
   }
 
   static void AddSecureDnsRule(MockDnsClientRuleList* rules,

@@ -171,7 +171,8 @@ class FilteringNetworkManagerTest : public testing::Test,
     SetNewNetworkForBaseNetworkManager();
     if (multiple_routes_requested) {
       network_manager_ = std::make_unique<FilteringNetworkManager>(
-          base_network_manager_.get(), GURL(), media_permission_.get());
+          base_network_manager_.get(), GURL(), media_permission_.get(),
+          allow_mdns_obfuscation_);
       network_manager_->Initialize();
     } else {
       network_manager_ = std::make_unique<blink::EmptyNetworkManager>(
@@ -242,12 +243,14 @@ class FilteringNetworkManagerTest : public testing::Test,
 
   void OnNetworksChanged() { callback_called_ = true; }
   void clear_callback_called() { callback_called_ = false; }
+  void set_allow_mdns_obfuscation(bool val) { allow_mdns_obfuscation_ = val; }
 
   bool callback_called_ = false;
   std::unique_ptr<rtc::NetworkManager> network_manager_;
   std::unique_ptr<MockNetworkManager> base_network_manager_;
 
   std::unique_ptr<MockMediaPermission> media_permission_;
+  bool allow_mdns_obfuscation_ = true;
 
   std::vector<rtc::Network> networks_;
   int next_new_network_id_ = 0;
@@ -435,7 +438,8 @@ TEST_F(FilteringNetworkManagerTest, AllowMultipleRoutesByNetworksChanged) {
 
 // Test that the networks provided by the GetNetworks() and
 // GetAnyAddressNetworks() are not associated with an mDNS responder if the
-// enumeration permission is granted.
+// enumeration permission is granted, even if the mDNS obfuscation of local IPs
+// is allowed (which is by default).
 TEST_F(FilteringNetworkManagerTest, NullMdnsResponderAfterPermissionGranted) {
   SetupNetworkManager(true);
 
@@ -466,7 +470,8 @@ TEST_F(FilteringNetworkManagerTest, NullMdnsResponderAfterPermissionGranted) {
 }
 
 // Test the networks on the default routes given by GetAnyAddressNetworks() are
-// associated with an mDNS responder if the enumeration is blocked.
+// associated with an mDNS responder if the enumeration is blocked and the mDNS
+// obfuscation of local IPs is allowed (which is by default).
 TEST_F(FilteringNetworkManagerTest,
        ProvideMdnsResponderForDefaultRouteAfterPermissionDenied) {
   SetupNetworkManager(true);
@@ -484,6 +489,28 @@ TEST_F(FilteringNetworkManagerTest,
   for (const rtc::Network* network : networks) {
     EXPECT_EQ(network_manager_->GetMdnsResponder(),
               network->GetMdnsResponder());
+  }
+}
+
+// This is a similar test to the previous one but tests that the networks
+// provided by the GetNetworks() and GetAnyAddressNetworks() are not associated
+// with an mDNS responder if the mDNS obfuscation of local IPs is not allowed.
+TEST_F(FilteringNetworkManagerTest,
+       NullMdnsResponderWhenMdnsObfuscationDisallowedAfterPermissionDenied) {
+  set_allow_mdns_obfuscation(false);
+  SetupNetworkManager(true);
+  // By default, the enumeration is blocked if we provide |media_permission_|;
+  EXPECT_EQ(rtc::NetworkManager::ENUMERATION_BLOCKED,
+            network_manager_->enumeration_permission());
+
+  NetworkList networks;
+  network_manager_->GetNetworks(&networks);
+  EXPECT_TRUE(networks.empty());
+
+  network_manager_->GetAnyAddressNetworks(&networks);
+  EXPECT_THAT(networks, SizeIs(2u));
+  for (const rtc::Network* network : networks) {
+    EXPECT_EQ(nullptr, network->GetMdnsResponder());
   }
 }
 

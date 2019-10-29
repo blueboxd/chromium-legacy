@@ -66,6 +66,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private static final String ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE =
             "ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE";
     private static final int WINDOW_CONTENT_CHANGED_DELAY_MS = 500;
+    private static final int SCROLLED_TO_ANCHOR_DELAY_MS = 500;
 
     // Constants from AccessibilityNodeInfo defined in the M SDK.
     // Source: https://developer.android.com/reference/android/R.id.html
@@ -100,6 +101,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     protected int mAccessibilityFocusId;
     protected int mSelectionNodeId;
     private Runnable mSendWindowContentChangedRunnable;
+    private Runnable mScrolledToAnchorRunnable;
     private View mAutofillPopupView;
     private CaptioningController mCaptioningController;
 
@@ -1048,8 +1050,27 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     @CalledByNative
-    private void handleScrolledToAnchor(int id) {
-        moveAccessibilityFocusToId(id);
+    private void handleScrolledToAnchor(final int id) {
+        // "Scrolled to anchor" means that the user followed a same-page link;
+        // the id here is of the element that was scrolled into view, and that
+        // should be where accessibility focus lands.
+        //
+        // However, in practice there's a race condition because following a
+        // same-page link often results in a focus change from the same-page link
+        // that was focused previously.
+        //
+        // As a result, it works better to move accessibility focus to the new
+        // location after a short delay, after the focus change.
+        if (mScrolledToAnchorRunnable != null) return;
+        mScrolledToAnchorRunnable = new Runnable() {
+            @Override
+            public void run() {
+                moveAccessibilityFocusToId(id);
+                mScrolledToAnchorRunnable = null;
+            }
+        };
+
+        mView.postDelayed(mScrolledToAnchorRunnable, SCROLLED_TO_ANCHOR_DELAY_MS);
     }
 
     @CalledByNative

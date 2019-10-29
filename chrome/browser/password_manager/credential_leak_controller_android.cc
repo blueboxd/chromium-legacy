@@ -77,10 +77,6 @@ base::string16 CredentialLeakControllerAndroid::GetTitle() const {
   return password_manager::GetTitle(leak_type_);
 }
 
-gfx::Range CredentialLeakControllerAndroid::GetDescriptionBoldRange() const {
-  return password_manager::GetChangePasswordBoldRange(leak_type_, origin_);
-}
-
 bool CredentialLeakControllerAndroid::ShouldCheckPasswords() const {
   return password_manager::ShouldCheckPasswords(leak_type_);
 }

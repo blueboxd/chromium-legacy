@@ -31,9 +31,7 @@ class NoneNeededTransportStrategy : public BlobTransportStrategy {
       const mojo::Remote<blink::mojom::BytesProvider>& data) override {
     DCHECK(bytes->embedded_data);
     DCHECK_EQ(bytes->length, bytes->embedded_data->size());
-    builder_->AppendData(
-        reinterpret_cast<const char*>(bytes->embedded_data->data()),
-        bytes->length);
+    builder_->AppendData(base::make_span(*bytes->embedded_data));
   }
 
   void BeginTransport(
@@ -85,10 +83,7 @@ class ReplyTransportStrategy : public BlobTransportStrategy {
           .Run(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
       return;
     }
-    bool populate_result = future_data.Populate(
-        base::make_span(reinterpret_cast<const char*>(data.data()),
-                        data.size()),
-        0);
+    bool populate_result = future_data.Populate(base::make_span(data), 0);
     DCHECK(populate_result);
 
     if (++num_resolved_requests_ == requests_.size())
@@ -216,7 +211,7 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
       num_bytes =
           std::min<uint32_t>(num_bytes, limits_.max_bytes_data_item_size -
                                             offset_in_builder_element);
-      base::span<char> output_buffer =
+      base::span<uint8_t> output_buffer =
           future_data[relative_element_index].GetDataToPopulate(
               offset_in_builder_element, num_bytes);
       DCHECK(output_buffer.data());

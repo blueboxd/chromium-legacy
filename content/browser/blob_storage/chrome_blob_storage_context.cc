@@ -169,15 +169,14 @@ ChromeBlobStorageContext::MojoContext() const {
 }
 
 std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
-    const char* data,
-    size_t length,
+    base::span<const uint8_t> data,
     const std::string& content_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::string uuid(base::GenerateGUID());
   auto blob_data_builder = std::make_unique<storage::BlobDataBuilder>(uuid);
   blob_data_builder->set_content_type(content_type);
-  blob_data_builder->AppendData(data, length);
+  blob_data_builder->AppendData(data);
 
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
       context_->AddFinishedBlob(std::move(blob_data_builder));

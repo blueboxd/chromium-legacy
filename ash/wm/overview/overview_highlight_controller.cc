@@ -307,7 +307,7 @@ OverviewItem* OverviewHighlightController::GetHighlightedItem() const {
 
   for (auto& grid : overview_session_->grid_list()) {
     for (auto& item : grid->window_list()) {
-      if (highlighted_view_->GetView() == item->caption_container_view())
+      if (highlighted_view_->GetView() == item->overview_item_view())
         return item.get();
     }
   }
@@ -370,7 +370,7 @@ OverviewHighlightController::GetTraversableViews() const {
     }
 
     for (auto& item : grid->window_list())
-      traversable_views.push_back(item->caption_container_view());
+      traversable_views.push_back(item->overview_item_view());
   }
   return traversable_views;
 }

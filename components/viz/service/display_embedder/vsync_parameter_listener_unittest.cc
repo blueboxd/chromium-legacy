@@ -5,6 +5,7 @@
 #include "components/viz/service/display_embedder/vsync_parameter_listener.h"
 
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -54,7 +55,7 @@ class VSyncParameterListenerTestRunner {
   // Checks if VSyncParameterListener will send an update when it sees
   // |timebase_| and then |timebase_| + |timebase_difference_us|.
   bool WillSendUpdate(int64_t timebase_difference_us) {
-    VSyncParameterListener listener(/*observer=*/nullptr);
+    VSyncParameterListener listener{/*observer=*/mojo::NullRemote()};
     EXPECT_TRUE(listener.ShouldSendUpdate(timebase_, interval_));
 
     return listener.ShouldSendUpdate(

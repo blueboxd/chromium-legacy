@@ -537,6 +537,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kWebRTCUDPPortRange,
     base::Value::Type::STRING },
 #if !defined(OS_ANDROID)
+  { key::kWebRtcLocalIpsAllowedUrls,
+    prefs::kWebRtcLocalIpsAllowedUrls,
+    base::Value::Type::LIST},
   { key::kWebRtcEventLogCollectionAllowed,
     prefs::kWebRtcEventLogCollectionAllowed,
     base::Value::Type::BOOLEAN },

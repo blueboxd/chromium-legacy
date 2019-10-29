@@ -734,7 +734,7 @@ void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
 
 void GpuProcessTransportFactory::AddVSyncParameterObserver(
     ui::Compositor* compositor,
-    viz::mojom::VSyncParameterObserverPtr observer) {
+    mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer) {
   auto it = per_compositor_data_.find(compositor);
   if (it == per_compositor_data_.end())
     return;

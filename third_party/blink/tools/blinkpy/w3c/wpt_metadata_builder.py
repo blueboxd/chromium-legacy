@@ -12,6 +12,7 @@ running the WPT test suite.
 import argparse
 import logging
 import os
+import re
 
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.web_tests.models import test_expectations
@@ -20,12 +21,14 @@ _log = logging.getLogger(__name__)
 
 
 class WPTMetadataBuilder(object):
-    def __init__(self, expectations):
+    def __init__(self, expectations, port):
         """
         Args:
             expectations: a blinkpy.web_tests.models.test_expectations.TestExpectations object
+            port: a blinkpy.web_tests.port.Port object
         """
         self.expectations = expectations
+        self.port = port
         self.metadata_output_dir = ""
 
     def run(self, args=None):
@@ -52,16 +55,23 @@ class WPTMetadataBuilder(object):
             import shutil
             shutil.rmtree(self.metadata_output_dir)
 
-        for test_name in self.get_test_names_for_metadata():
-            filename, file_contents = self.get_metadata_filename_and_contents(test_name)
+        failing_baseline_tests = self.get_test_names_to_fail()
+        _log.info("Found %d tests with failing baselines", len(failing_baseline_tests))
+        for test_name in failing_baseline_tests:
+            filename, file_contents = self.get_metadata_filename_and_contents(test_name, 'FAIL')
             if not filename or not file_contents:
                 continue
+            self._write_to_file(filename, file_contents)
 
-            # Write the contents to the file name
-            if not os.path.exists(os.path.dirname(filename)):
-                os.makedirs(os.path.dirname(filename))
-            with open(filename, "w") as metadata_file:
-                metadata_file.write(file_contents)
+        skipped_tests = self.get_test_names_to_skip()
+        _log.info("Found %d tests with skip expectations", len(skipped_tests))
+        for test_name in skipped_tests:
+            if test_name in failing_baseline_tests:
+                _log.error("Test %s has a baseline but is also skipped" % test_name)
+            filename, file_contents = self.get_metadata_filename_and_contents(test_name, 'SKIP')
+            if not filename or not file_contents:
+                continue
+            self._write_to_file(filename, file_contents)
 
         # Finally, output a stamp file with the same name as the output
         # directory. The stamp file is empty, it's only used for its mtime.
@@ -69,7 +79,14 @@ class WPTMetadataBuilder(object):
         with open(self.metadata_output_dir + ".stamp", "w"):
             pass
 
-    def get_test_names_for_metadata(self):
+    def _write_to_file(self, filename, file_contents):
+        # Write the contents to the file name
+        if not os.path.exists(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename))
+        with open(filename, "w") as metadata_file:
+            metadata_file.write(file_contents)
+
+    def get_test_names_to_skip(self):
         """Determines which tests in the expectation file need metadata.
 
         Returns:
@@ -78,7 +95,30 @@ class WPTMetadataBuilder(object):
         return self.expectations.get_tests_with_result_type(
             test_expectations.SKIP)
 
-    def get_metadata_filename_and_contents(self, test_name):
+    def get_test_names_to_fail(self):
+        """Determines which tests should be expected to fail.
+
+        This is currently just tests that have failing baselines defined.
+
+        Returns:
+            A list of test names that need metadata.
+        """
+        all_tests = self.port.tests(paths=['external/wpt'])
+        failing_baseline_tests = []
+        for test in all_tests:
+            test_baseline = self.port.expected_text(test)
+            if not test_baseline:
+                continue
+            if re.search("^FAIL", test_baseline, re.MULTILINE):
+                failing_baseline_tests.append(test)
+            else:
+                # Treat this as an error because we don't want it to happen.
+                # Either the non-FAIL statuses need to be handled here, or the
+                # baseline is all PASS which should just be deleted.
+                _log.error("Test %s has a non-FAIL baseline" % test)
+        return failing_baseline_tests
+
+    def get_metadata_filename_and_contents(self, test_name, test_status):
         """Determines the metadata filename and contents for the specified test.
 
         The metadata filename is derived from the test name but will differ if
@@ -87,12 +127,17 @@ class WPTMetadataBuilder(object):
 
         Args:
             test_name: A test name from the expectation file.
+            test_status: The expected status of this test. Possible values:
+                'SKIP' - skip this test (or directory).
+                'FAIL' - the test is expected to fail, not applicable to dirs.
 
         Returns:
             A pair of strings, the first is the path to the metadata file and
             the second is the contents to write to that file. Or None if the
             test does not need a metadata file.
         """
+        assert test_status in ('SKIP', 'FAIL')
+
         # Ignore expectations for non-WPT tests
         if not test_name or not test_name.startswith('external/wpt'):
             return None, None
@@ -114,7 +159,7 @@ class WPTMetadataBuilder(object):
             metadata_filename = os.path.join(metadata_filename, "__dir__.ini")
             _log.debug("Creating a dir-wide ini file %s", metadata_filename)
 
-            metadata_file_contents = "disabled: build_wpt_metadata.py"
+            metadata_file_contents = self._get_dir_disabled_string()
         else:
             # For individual tests, we create one file per test, with the name
             # of the test in the file as well. This name can contain variants.
@@ -132,10 +177,24 @@ class WPTMetadataBuilder(object):
             test_name_parts[-1] += ".ini"
             metadata_filename = os.path.join(self.metadata_output_dir,
                                              *test_name_parts)
-            _log.debug("Creating a test ini file %s", metadata_filename)
+            _log.debug("Creating a test ini file %s with status %s",
+                       metadata_filename, test_status)
 
             # The contents of the metadata file is two lines:
             # 1. the test name inside square brackets
             # 2. an indented line with the test status and reason
-            metadata_file_contents = ("[%s]\n  disabled: build_wpt_metadata.py" % test_name)
+            if test_status == 'SKIP':
+                metadata_file_contents = self._get_test_disabled_string(test_name)
+            elif test_status == 'FAIL':
+                metadata_file_contents = self._get_test_failed_string(test_name)
+
         return metadata_filename, metadata_file_contents
+
+    def _get_dir_disabled_string(self):
+        return "disabled: wpt_metadata_builder.py"
+
+    def _get_test_disabled_string(self, test_name):
+        return "[%s]\n  disabled: wpt_metadata_builder.py" % test_name
+
+    def _get_test_failed_string(self, test_name):
+        return "[%s]\n  expected: FAIL # wpt_metadata_builder.py" % test_name

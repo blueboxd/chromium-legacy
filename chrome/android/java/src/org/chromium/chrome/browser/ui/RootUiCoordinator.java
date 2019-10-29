@@ -10,6 +10,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.appmenu.AppMenuBlocker;
@@ -25,6 +26,7 @@ import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
+import org.chromium.chrome.browser.share.ShareSheetCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -43,6 +45,7 @@ public class RootUiCoordinator
     protected ChromeActivity mActivity;
     protected @Nullable AppMenuCoordinator mAppMenuCoordinator;
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
+    private ActivityTabProvider mActivityTabProvider;
 
     protected @Nullable FindToolbarManager mFindToolbarManager;
     private @Nullable FindToolbarObserver mFindToolbarObserver;
@@ -68,6 +71,7 @@ public class RootUiCoordinator
 
         mMenuOrKeyboardActionController = mActivity.getMenuOrKeyboardActionController();
         mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(this);
+        mActivityTabProvider = mActivity.getActivityTabProvider();
 
         mLayoutManagerSupplierCallback = this::onLayoutManagerAvailable;
         mActivity.getLayoutManagerSupplier().addObserver(mLayoutManagerSupplierCallback);
@@ -126,6 +130,19 @@ public class RootUiCoordinator
         VrModuleProvider.registerVrModeObserver(mVrModeObserver);
     }
 
+    /**
+     * Triggered when the share menu item is selected.
+     * This creates and shows a share intent picker dialog or starts a share intent directly.
+     * @param shareDirectly Whether it should share directly with the activity that was most
+     *                      recently used to share.
+     * @param isIncognito Whether currentTab is incognito.
+     */
+    @VisibleForTesting
+    public void onShareMenuItemSelected(final boolean shareDirectly, final boolean isIncognito) {
+        ShareSheetCoordinator.create().onShareSelected(
+                mActivity, mActivityTabProvider.get(), shareDirectly, isIncognito);
+    }
+
     // MenuOrKeyboardActionHandler implementation
 
     @Override
@@ -146,6 +163,9 @@ public class RootUiCoordinator
                 RecordUserAction.record("MobileShortcutFindInPage");
             }
             return true;
+        } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
+            onShareMenuItemSelected(id == R.id.direct_share_menu_id,
+                    mActivity.getTabModelSelector().isIncognitoSelected());
         }
 
         return false;

@@ -37,7 +37,6 @@ class CredentialLeakDialogControllerImpl
   base::string16 GetTitle() const override;
   bool ShouldCheckPasswords() const override;
   bool ShouldShowCancelButton() const override;
-  gfx::Range GetChangePasswordBoldRange() const override;
 
  private:
   // Release |credential_leak_dialog_| and close the open dialog.

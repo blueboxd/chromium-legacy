@@ -152,8 +152,6 @@ void AddStatusCodeForTesting(ThirdPartyStatus code) {
 
 }  // namespace third_party_dlls
 
-using namespace third_party_dlls;
-
 bool IsThirdPartyInitialized() {
-  return g_third_party_initialized;
+  return third_party_dlls::g_third_party_initialized;
 }

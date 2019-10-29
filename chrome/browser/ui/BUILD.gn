@@ -1737,6 +1737,8 @@ jumbo_static_library("ui") {
       "webui/chromeos/login/discover/modules/discover_module_welcome.h",
       "webui/chromeos/login/discover_screen_handler.cc",
       "webui/chromeos/login/discover_screen_handler.h",
+      "webui/chromeos/login/enable_adb_sideloading_screen_handler.cc",
+      "webui/chromeos/login/enable_adb_sideloading_screen_handler.h",
       "webui/chromeos/login/enable_debugging_screen_handler.cc",
       "webui/chromeos/login/enable_debugging_screen_handler.h",
       "webui/chromeos/login/encryption_migration_screen_handler.cc",

@@ -1076,6 +1076,13 @@ java_prebuilt("com_squareup_javapoet_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("javax_annotation_jsr250_api_java") {
+  jar_path = "libs/javax_annotation_jsr250_api/jsr250-api-1.0.jar"
+  output_name = "javax_annotation_jsr250_api"
+  supports_android = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("javax_inject_javax_inject_java") {
   jar_path = "libs/javax_inject_javax_inject/javax.inject-1.jar"
   output_name = "javax_inject_javax_inject"
@@ -1785,16 +1792,6 @@ java_prebuilt("com_google_j2objc_j2objc_annotations_java") {
   jar_path =
       "libs/com_google_j2objc_j2objc_annotations/j2objc-annotations-1.1.jar"
   output_name = "com_google_j2objc_j2objc_annotations"
-
-  # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
-  visibility = [ ":*" ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-java_prebuilt("javax_annotation_jsr250_api_java") {
-  jar_path = "libs/javax_annotation_jsr250_api/jsr250-api-1.0.jar"
-  output_name = "javax_annotation_jsr250_api"
 
   # To remove visibility constraint, add this dependency to
   # //tools/android/roll/android_deps/build.gradle.

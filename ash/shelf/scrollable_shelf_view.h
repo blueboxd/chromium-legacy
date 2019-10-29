@@ -219,8 +219,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Returns whether the received gesture event should be handled here.
   bool ShouldHandleGestures(const ui::GestureEvent& event);
 
-  // Handles the gesture event.
-  void HandleGestureEvent(ui::GestureEvent* event);
+  // Resets the attributes related with gesture scroll to their default values.
+  void ResetScrollStatus();
 
   // Handles events for scrolling the shelf. Returns whether the event has been
   // consumed.

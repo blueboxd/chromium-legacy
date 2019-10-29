@@ -28,7 +28,7 @@ luci.console_view(
             short_name = 'lcr',
         ),
         luci.console_view_entry(
-            builder = 'ci/mac-code-coverage-generation',
+            builder = 'ci/mac-code-coverage',
             category = 'code_coverage',
             short_name = 'mac',
         ),

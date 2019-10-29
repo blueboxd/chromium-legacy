@@ -129,19 +129,23 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
             final Runnable rescheduleRunnable) {
         if (isNativeLoadedInFullBrowserMode()) {
             mRunningInServiceManagerOnlyMode = false;
-            recordMetrics();
+            BackgroundTaskSchedulerExternalUma.reportNativeTaskStarted(
+                    mTaskId, mRunningInServiceManagerOnlyMode);
+            recordMemoryUsageWithRandomDelay(mRunningInServiceManagerOnlyMode);
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, startWithNativeRunnable);
             return;
         }
 
         boolean wasInServiceManagerOnlyMode = isNativeLoadedInServiceManagerOnlyMode();
         mRunningInServiceManagerOnlyMode = supportsServiceManagerOnly();
+        BackgroundTaskSchedulerExternalUma.reportNativeTaskStarted(
+                mTaskId, mRunningInServiceManagerOnlyMode);
 
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
                 PostTask.postTask(UiThreadTaskTraits.DEFAULT, startWithNativeRunnable);
-                recordMetrics();
+                recordMemoryUsageWithRandomDelay(mRunningInServiceManagerOnlyMode);
             }
             @Override
             public boolean startServiceManagerOnly() {
@@ -255,12 +259,6 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
     /** Whether the native part of the browser is loaded in Service Manager Only Mode. */
     private boolean isNativeLoadedInServiceManagerOnlyMode() {
         return getBrowserStartupController().isRunningInServiceManagerMode();
-    }
-
-    private void recordMetrics() {
-        BackgroundTaskSchedulerExternalUma.reportNativeTaskStarted(
-                mTaskId, mRunningInServiceManagerOnlyMode);
-        recordMemoryUsageWithRandomDelay(mRunningInServiceManagerOnlyMode);
     }
 
     @VisibleForTesting

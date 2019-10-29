@@ -201,8 +201,9 @@ public class SearchEngineAdapter extends BaseAdapter
         }
 
         if (mSelectedSearchEnginePosition == -1) {
-            throw new IllegalStateException(
-                    "Default search engine index did not match any available search engines.");
+            throw new IllegalStateException("Default search engine, "
+                    + defaultSearchEngineTemplateUrl
+                    + ", index did not match any available search engines.");
         }
 
         mInitialEnginePosition = mSelectedSearchEnginePosition;

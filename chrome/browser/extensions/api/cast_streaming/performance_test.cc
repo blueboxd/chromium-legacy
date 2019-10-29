@@ -18,6 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/default_tick_clock.h"
@@ -46,7 +47,7 @@
 #include "net/base/rand_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/udp_server_socket.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace {
 
@@ -61,6 +62,64 @@ constexpr int kMinDataPointsForFullRun = 100;  // 1s of audio, ~5s at 24fps.
 
 // Minimum number of events required for data analysis in a non-performance run.
 constexpr int kMinDataPointsForQuickRun = 3;
+
+constexpr char kMetricPrefixCastV2[] = "CastV2.";
+constexpr char kMetricTimeBetweenCapturesMs[] = "time_between_captures";
+constexpr char kMetricAvSyncMs[] = "av_sync";
+constexpr char kMetricAbsAvSyncMs[] = "abs_av_sync";
+constexpr char kMetricAudioJitterMs[] = "audio_jitter";
+constexpr char kMetricVideoJitterMs[] = "video_jitter";
+constexpr char kMetricPlayoutResolutionLines[] = "playout_resolution";
+constexpr char kMetricResolutionChangesCount[] = "resolution_changes";
+constexpr char kMetricFrameDropRatePercent[] = "frame_drop_rate";
+constexpr char kMetricTotalLatencyMs[] = "total_latency";
+constexpr char kMetricCaptureDurationMs[] = "capture_duration";
+constexpr char kMetricSendToRendererMs[] = "send_to_renderer";
+constexpr char kMetricEncodeMs[] = "encode";
+constexpr char kMetricTransmitMs[] = "transmit";
+constexpr char kMetricDecodeMs[] = "decode";
+constexpr char kMetricCastLatencyMs[] = "cast_latency";
+
+perf_test::PerfResultReporter SetUpCastV2Reporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixCastV2, story);
+  reporter.RegisterImportantMetric(kMetricTimeBetweenCapturesMs, "ms");
+  reporter.RegisterImportantMetric(kMetricAvSyncMs, "ms");
+  reporter.RegisterImportantMetric(kMetricAbsAvSyncMs, "ms");
+  reporter.RegisterImportantMetric(kMetricAudioJitterMs, "ms");
+  reporter.RegisterImportantMetric(kMetricVideoJitterMs, "ms");
+  reporter.RegisterImportantMetric(kMetricPlayoutResolutionLines, "lines");
+  reporter.RegisterImportantMetric(kMetricResolutionChangesCount, "count");
+  reporter.RegisterImportantMetric(kMetricFrameDropRatePercent, "percent");
+  reporter.RegisterImportantMetric(kMetricTotalLatencyMs, "ms");
+  reporter.RegisterImportantMetric(kMetricCaptureDurationMs, "ms");
+  reporter.RegisterImportantMetric(kMetricSendToRendererMs, "ms");
+  reporter.RegisterImportantMetric(kMetricEncodeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricTransmitMs, "ms");
+  reporter.RegisterImportantMetric(kMetricDecodeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricCastLatencyMs, "ms");
+  return reporter;
+}
+
+std::string VectorToString(const std::vector<double>& values) {
+  CHECK(values.size());
+  std::string csv;
+  for (const auto& val : values) {
+    csv += base::NumberToString(val) + ",";
+  }
+  // Strip off trailing comma.
+  csv.pop_back();
+  return csv;
+}
+
+void MaybeAddResultList(const perf_test::PerfResultReporter& reporter,
+                        const std::string& metric,
+                        const std::vector<double>& values) {
+  if (values.size() == 0) {
+    LOG(ERROR) << "No events for " << metric;
+    return;
+  }
+  reporter.AddResultList(metric, VectorToString(values));
+}
 
 // A convenience macro to run a gtest expectation in the "full performance run"
 // setting, or else a warning that something is not being entirely tested in the
@@ -166,22 +225,6 @@ class MeanAndError {
     return base::StringPrintf("%f,%f", mean_, std_dev_);
   }
 
-  void Print(const std::string& measurement,
-             const std::string& modifier,
-             const std::string& trace,
-             const std::string& unit) {
-    if (num_values_ > 0) {
-      perf_test::PrintResultMeanAndError(measurement,
-                                         modifier,
-                                         trace,
-                                         AsString(),
-                                         unit,
-                                         true);
-    } else {
-      LOG(ERROR) << "No events for " << measurement << modifier << " " << trace;
-    }
-  }
-
  private:
   size_t num_values_;
   double mean_;
@@ -192,7 +235,7 @@ class MeanAndError {
 // It computes the average error of deltas and the average delta.
 // If data[x] == x * A + B, then this function returns zero.
 // The unit is milliseconds.
-static MeanAndError AnalyzeJitter(const std::vector<TimeData>& data) {
+static std::vector<double> AnalyzeJitter(const std::vector<TimeData>& data) {
   VLOG(0) << "Jitter analysis on " << data.size() << " values.";
   std::vector<double> deltas;
   double sum = 0.0;
@@ -212,7 +255,7 @@ static MeanAndError AnalyzeJitter(const std::vector<TimeData>& data) {
     }
   }
 
-  return MeanAndError(deltas);
+  return deltas;
 }
 
 // An in-process Cast receiver that examines the audio/video frames being
@@ -253,7 +296,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     }
   }
 
-  void Analyze(const std::string& name, const std::string& modifier) {
+  void Analyze(const std::string& story) {
     // First, find the minimum rtp timestamp for each audio and video frame.
     // Note that the data encoded in the audio stream contains video frame
     // numbers. So in a 30-fps video stream, there will be 1/30s of "1", then
@@ -280,15 +323,20 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     EXPECT_FOR_PERFORMANCE_RUN(min_data_points <=
                                static_cast<int>(deltas.size()));
 
-    MeanAndError av_sync(deltas);
-    av_sync.Print(name, modifier, "av_sync", "ms");
+    auto reporter = SetUpCastV2Reporter(story);
+    MaybeAddResultList(reporter, kMetricAvSyncMs, deltas);
     // Close to zero is better (av_sync can be negative).
-    av_sync.SetMeanAsAbsoluteValue();
-    av_sync.Print(name, modifier, "abs_av_sync", "ms");
+    if (deltas.size()) {
+      MeanAndError av_sync(deltas);
+      av_sync.SetMeanAsAbsoluteValue();
+      reporter.AddResultMeanAndError(kMetricAbsAvSyncMs, av_sync.AsString());
+    }
     // lower is better.
-    AnalyzeJitter(audio_events_).Print(name, modifier, "audio_jitter", "ms");
+    MaybeAddResultList(reporter, kMetricAudioJitterMs,
+                       AnalyzeJitter(audio_events_));
     // lower is better.
-    AnalyzeJitter(video_events_).Print(name, modifier, "video_jitter", "ms");
+    MaybeAddResultList(reporter, kMetricVideoJitterMs,
+                       AnalyzeJitter(video_events_));
 
     // Mean resolution of video at receiver. Lower stddev is better, while the
     // mean should be something reasonable given the network constraints
@@ -305,8 +353,8 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
                      std::back_inserter(slice_for_analysis),
                      [](int lines) { return static_cast<double>(lines); });
     }
-    MeanAndError(slice_for_analysis)
-        .Print(name, modifier, "playout_resolution", "lines");
+    MaybeAddResultList(reporter, kMetricPlayoutResolutionLines,
+                       slice_for_analysis);
 
     // Number of resolution changes. Lower is better (and 1 is ideal). Zero
     // indicates a lack of data.
@@ -320,8 +368,8 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
       }
     }
     EXPECT_FOR_PERFORMANCE_RUN(change_count > 0);
-    perf_test::PrintResult(name, modifier, "resolution_changes",
-                           base::NumberToString(change_count), "count", true);
+    reporter.AddResult(kMetricResolutionChangesCount,
+                       static_cast<size_t>(change_count));
   }
 
  private:
@@ -395,7 +443,7 @@ class CastV2PerformanceTest : public TabCapturePerformanceTestBase,
     std::string suffix;
     // Note: Add "_gpu" tag for backwards-compatibility with existing
     // Performance Dashboard timeseries data.
-    suffix += "_gpu";
+    suffix += "gpu";
     if (HasFlag(kSmallWindow))
       suffix += "_small";
     if (HasFlag(k24fps))
@@ -506,25 +554,21 @@ class CastV2PerformanceTest : public TabCapturePerformanceTestBase,
   // Given a vector of vector of data, extract the difference between
   // two columns (|col_a| and |col_b|) and output the result as a
   // performance metric.
-  void OutputMeasurement(const std::string& test_name,
-                         const std::vector<std::vector<double>>& data,
-                         const std::string& measurement_name,
+  void OutputMeasurement(const std::vector<std::vector<double>>& data,
+                         const std::string& metric,
                          int col_a,
                          int col_b) {
     std::vector<double> tmp;
     for (size_t i = 0; i < data.size(); i++) {
       tmp.push_back((data[i][col_b] - data[i][col_a]) / 1000.0);
     }
-    return MeanAndError(tmp).Print(test_name,
-                                   GetSuffixForTestFlags(),
-                                   measurement_name,
-                                   "ms");
+    auto reporter = SetUpCastV2Reporter(GetSuffixForTestFlags());
+    MaybeAddResultList(reporter, metric, tmp);
   }
 
   // Analyze the latency of each frame as it goes from capture to playout. The
   // event tracing system is used to track the frames.
-  void AnalyzeLatency(const std::string& test_name,
-                      trace_analyzer::TraceAnalyzer* analyzer) {
+  void AnalyzeLatency(trace_analyzer::TraceAnalyzer* analyzer) {
     // Retrieve and index all "checkpoint" events related to frames progressing
     // from start to finish.
     trace_analyzer::TraceEventVector capture_events;
@@ -598,9 +642,8 @@ class CastV2PerformanceTest : public TabCapturePerformanceTestBase,
         (capture_event_count == 0)
             ? NAN
             : (100.0 * traced_frames.size() / capture_event_count);
-    perf_test::PrintResult(
-        test_name, GetSuffixForTestFlags(), "frame_drop_rate",
-        base::StringPrintf("%f", 100 - success_percent), "percent", true);
+    auto reporter = SetUpCastV2Reporter(GetSuffixForTestFlags());
+    reporter.AddResult(kMetricFrameDropRatePercent, 100 - success_percent);
 
     // Report the latency between various pairs of checkpoints in the pipeline.
     // Lower latency is better for all of these measurements.
@@ -615,17 +658,18 @@ class CastV2PerformanceTest : public TabCapturePerformanceTestBase,
     //   6 = Receiver: frame fully received from network
     //   7 = Receiver: frame decoded
     //   8 = Receiver: frame played out
-    OutputMeasurement(test_name, traced_frames, "total_latency", 0, 8);
-    OutputMeasurement(test_name, traced_frames, "capture_duration", 0, 1);
-    OutputMeasurement(test_name, traced_frames, "send_to_renderer", 1, 3);
-    OutputMeasurement(test_name, traced_frames, "encode", 3, 5);
-    OutputMeasurement(test_name, traced_frames, "transmit", 5, 6);
-    OutputMeasurement(test_name, traced_frames, "decode", 6, 7);
-    OutputMeasurement(test_name, traced_frames, "cast_latency", 3, 8);
+    OutputMeasurement(traced_frames, kMetricTotalLatencyMs, 0, 8);
+    OutputMeasurement(traced_frames, kMetricCaptureDurationMs, 0, 1);
+    OutputMeasurement(traced_frames, kMetricSendToRendererMs, 1, 3);
+    OutputMeasurement(traced_frames, kMetricEncodeMs, 3, 5);
+    OutputMeasurement(traced_frames, kMetricTransmitMs, 5, 6);
+    OutputMeasurement(traced_frames, kMetricDecodeMs, 6, 7);
+    OutputMeasurement(traced_frames, kMetricCastLatencyMs, 3, 8);
   }
 
-  MeanAndError AnalyzeTraceDistance(trace_analyzer::TraceAnalyzer* analyzer,
-                                    const std::string& event_name) {
+  std::vector<double> AnalyzeTraceDistance(
+      trace_analyzer::TraceAnalyzer* analyzer,
+      const std::string& event_name) {
     trace_analyzer::TraceEventVector events;
     QueryTraceEvents(analyzer, event_name, &events);
 
@@ -636,7 +680,7 @@ class CastV2PerformanceTest : public TabCapturePerformanceTestBase,
       double delta_micros = events[i]->timestamp - events[i - 1]->timestamp;
       deltas.push_back(delta_micros / 1000.0);
     }
-    return MeanAndError(deltas);
+    return deltas;
   }
 
  protected:
@@ -649,13 +693,7 @@ class CastV2PerformanceTest : public TabCapturePerformanceTestBase,
   // capture frame rate is always fixed at 30 FPS. This allows testing of the
   // entire system when it is forced to perform a 60→30 frame rate conversion.
   static constexpr int kMaxCaptureFrameRate = 30;
-
-  // Naming of performance measurement written to stdout.
-  static const char kTestName[];
 };
-
-// static
-const char CastV2PerformanceTest::kTestName[] = "CastV2Performance";
 
 }  // namespace
 
@@ -761,14 +799,14 @@ IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, DISABLED_Performance) {
   // this score cannot get any better than 33.33 ms). However, the measurement
   // is important since it provides a valuable check that capture can keep up
   // with the content's framerate.
-  MeanAndError capture_data = AnalyzeTraceDistance(analyzer.get(), "Capture");
   // Lower is better.
-  capture_data.Print(kTestName, GetSuffixForTestFlags(),
-                     "time_between_captures", "ms");
+  auto reporter = SetUpCastV2Reporter(GetSuffixForTestFlags());
+  MaybeAddResultList(reporter, kMetricTimeBetweenCapturesMs,
+                     AnalyzeTraceDistance(analyzer.get(), "Capture"));
 
-  receiver->Analyze(kTestName, GetSuffixForTestFlags());
+  receiver->Analyze(GetSuffixForTestFlags());
 
-  AnalyzeLatency(kTestName, analyzer.get());
+  AnalyzeLatency(analyzer.get());
 }
 
 #if !defined(OS_CHROMEOS) || !defined(MEMORY_SANITIZER)

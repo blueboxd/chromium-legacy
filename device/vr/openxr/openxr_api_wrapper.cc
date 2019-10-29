@@ -436,7 +436,7 @@ XrResult OpenXrApiWrapper::UpdateProjectionLayers() {
     XrCompositionLayerProjectionView& layer_projection_view =
         layer_projection_views_[view_index];
 
-    layer_projection_view.type = XR_TYPE_COMPOSITION_LAYER_PROJECTION;
+    layer_projection_view.type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
     layer_projection_view.pose = view.pose;
     layer_projection_view.fov = view.fov;
     layer_projection_view.subImage.swapchain = color_swapchain_;

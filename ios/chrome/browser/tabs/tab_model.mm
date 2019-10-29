@@ -576,11 +576,20 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
   _webStateList->PerformBatchOperation(
       base::BindOnce(^(WebStateList* web_state_list) {
+        // Don't trigger the initial load for these restored WebStates since the
+        // number of WKWebViews is unbounded and may lead to an OOM crash.
+        WebStateListWebUsageEnabler* webUsageEnabler =
+            WebStateListWebUsageEnablerFactory::GetInstance()
+                ->GetForBrowserState(_browserState);
+        const bool wasTriggersInitialLoadSet =
+            webUsageEnabler->TriggersInitialLoad();
+        webUsageEnabler->SetTriggersInitialLoad(false);
         web::WebState::CreateParams createParams(_browserState);
         DeserializeWebStateList(
             web_state_list, window,
             base::BindRepeating(&web::WebState::CreateWithStorageSession,
                                 createParams));
+        webUsageEnabler->SetTriggersInitialLoad(wasTriggersInitialLoadSet);
       }));
 
   DCHECK_GT(_webStateList->count(), oldCount);

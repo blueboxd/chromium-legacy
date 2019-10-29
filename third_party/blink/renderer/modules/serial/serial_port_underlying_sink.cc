@@ -102,6 +102,7 @@ void SerialPortUnderlyingSink::SignalErrorOnClose(DOMException* exception) {
   if (pending_write_) {
     pending_write_->Reject(exception);
     pending_write_ = nullptr;
+    serial_port_->UnderlyingSinkClosed();
   }
 }
 

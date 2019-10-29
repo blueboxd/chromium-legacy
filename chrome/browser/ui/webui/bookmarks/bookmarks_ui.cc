@@ -71,6 +71,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
       {"folderLabel", IDS_BOOKMARK_MANAGER_FOLDER_LABEL},
       {"itemsSelected", IDS_BOOKMARK_MANAGER_ITEMS_SELECTED},
       {"listAxLabel", IDS_BOOKMARK_MANAGER_LIST_AX_LABEL},
+      {"menu", IDS_MENU},
       {"menuAddBookmark", IDS_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK},
       {"menuAddFolder", IDS_BOOKMARK_MANAGER_MENU_ADD_FOLDER},
       {"menuCut", IDS_BOOKMARK_MANAGER_MENU_CUT},

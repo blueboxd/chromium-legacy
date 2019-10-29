@@ -60,6 +60,8 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
       contents_.get(), cast_contents_init);
   cast_web_contents_->AddObserver(this);
 
+  content::WebContentsObserver::Observe(contents_.get());
+
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
   auto ax_id = contents_->GetMainFrame()->GetAXTreeID().ToString();

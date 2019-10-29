@@ -422,8 +422,7 @@ StoragePartition* BrowserContext::GetDefaultStoragePartition(
 
 // static
 void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
-                                            const char* data,
-                                            size_t length,
+                                            base::span<const uint8_t> data,
                                             const std::string& content_type,
                                             BlobCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -433,8 +432,7 @@ void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
-                     base::WrapRefCounted(blob_context), data, length,
-                     content_type),
+                     base::WrapRefCounted(blob_context), data, content_type),
       std::move(callback));
 }
 

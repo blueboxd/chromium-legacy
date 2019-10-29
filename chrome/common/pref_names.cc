@@ -1462,6 +1462,9 @@ const char kWebRTCIPHandlingPolicy[] = "webrtc.ip_handling_policy";
 const char kWebRTCUDPPortRange[] = "webrtc.udp_port_range";
 // Whether WebRTC event log collection by Google domains is allowed.
 const char kWebRtcEventLogCollectionAllowed[] = "webrtc.event_logs_collection";
+// Holds URL patterns that specify URLs for which local IP addresses are exposed
+// in ICE candidates.
+const char kWebRtcLocalIpsAllowedUrls[] = "webrtc.local_ips_allowed_urls";
 
 #if !defined(OS_ANDROID)
 // Whether or not this profile has been shown the Welcome page.

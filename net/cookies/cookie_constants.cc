@@ -91,7 +91,7 @@ CookieSameSite StringToCookieSameSite(const std::string& same_site,
     samesite = CookieSameSite::STRICT_MODE;
     *samesite_string = CookieSameSiteString::kStrict;
   } else if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteExtended)) {
-    samesite = CookieSameSite::EXTENDED_MODE;
+    // Extended isn't supported anymore -- we just parse it for UMA stats.
     *samesite_string = CookieSameSiteString::kExtended;
   } else if (same_site == "") {
     *samesite_string = CookieSameSiteString::kEmptyString;

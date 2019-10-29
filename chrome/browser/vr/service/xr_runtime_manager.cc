@@ -117,6 +117,7 @@ void XRRuntimeManager::ExitImmersivePresentation() {
 
 void XRRuntimeManager::AddService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DVLOG(2) << __func__;
 
   // Loop through any currently active runtimes and send Connected messages to
   // the service. Future runtimes that come online will send a Connected message
@@ -131,6 +132,7 @@ void XRRuntimeManager::AddService(VRServiceImpl* service) {
 
 void XRRuntimeManager::RemoveService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DVLOG(2) << __func__;
   services_.erase(service);
 
   for (const auto& runtime : runtimes_) {

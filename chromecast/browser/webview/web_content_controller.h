@@ -6,12 +6,14 @@
 #define CHROMECAST_BROWSER_WEBVIEW_WEB_CONTENT_CONTROLLER_H_
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "chromecast/browser/webview/js_channel_service.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/events/gestures/gesture_recognizer_impl.h"
 
 namespace aura {
@@ -19,7 +21,7 @@ class Window;
 }  // namespace aura
 
 namespace content {
-class WebContents;
+class RenderFrameHost;
 }  // namespace content
 
 namespace chromecast {
@@ -27,7 +29,9 @@ namespace chromecast {
 class WebContentJsChannels;
 
 // Processes proto commands to control WebContents
-class WebContentController : public exo::SurfaceObserver {
+class WebContentController : public exo::SurfaceObserver,
+                             public content::WebContentsObserver,
+                             public JsClientInstance::Observer {
  public:
   class Client {
    public:
@@ -47,6 +51,8 @@ class WebContentController : public exo::SurfaceObserver {
   void AttachTo(aura::Window* window, int window_id);
 
  protected:
+  // Subclasses are expected to add/remove this as a WebContentsObserver on
+  // whatever WebContents this manages.
   virtual content::WebContents* GetWebContents() = 0;
   Client* client_;  // Not owned.
   bool has_navigation_delegate_ = false;
@@ -71,13 +77,30 @@ class WebContentController : public exo::SurfaceObserver {
   void HandleSetAutoMediaPlaybackPolicy(
       const webview::SetAutoMediaPlaybackPolicyRequest& request);
   viz::SurfaceId GetSurfaceId();
+  void ChannelModified(content::RenderFrameHost* frame,
+                       const std::string& channel,
+                       bool added);
+  JsChannelCallback GetJsChannelCallback();
+  void SendInitialChannelSet(JsClientInstance* instance);
 
   // exo::SurfaceObserver
   void OnSurfaceDestroying(exo::Surface* surface) override;
 
+  // content::WebContentsObserver
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+
+  // JsClientInstance::Observer
+  void OnJsClientInstanceRegistered(int process_id,
+                                    int routing_id,
+                                    JsClientInstance* instance) override;
+
   ui::GestureRecognizerImpl gesture_recognizer_;
 
   exo::Surface* surface_ = nullptr;
+
+  std::set<std::string> current_javascript_channel_set_;
+  std::set<content::RenderFrameHost*> current_render_frame_set_;
 
   base::WeakPtrFactory<WebContentController> weak_ptr_factory_{this};
 

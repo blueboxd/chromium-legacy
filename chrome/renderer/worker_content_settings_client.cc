@@ -8,7 +8,6 @@
 #include "chrome/renderer/content_settings_agent_impl.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "ipc/ipc_sync_message_filter.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -17,10 +16,7 @@
 #include "url/origin.h"
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(
-    content::RenderFrame* render_frame)
-    : routing_id_(render_frame->GetRoutingID()),
-      sync_message_filter_(
-          content::RenderThread::Get()->GetSyncMessageFilter()) {
+    content::RenderFrame* render_frame) {
   blink::WebLocalFrame* frame = render_frame->GetWebFrame();
   const blink::WebDocument& document = frame->GetDocument();
   if (document.GetSecurityOrigin().IsUnique() ||
@@ -41,13 +37,11 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(
     const WorkerContentSettingsClient& other)
-    : routing_id_(other.routing_id_),
-      is_unique_origin_(other.is_unique_origin_),
+    : is_unique_origin_(other.is_unique_origin_),
       document_origin_(other.document_origin_),
       site_for_cookies_(other.site_for_cookies_),
       top_frame_origin_(other.top_frame_origin_),
       allow_running_insecure_content_(other.allow_running_insecure_content_),
-      sync_message_filter_(other.sync_message_filter_),
       content_setting_rules_(other.content_setting_rules_) {
   other.EnsureContentSettingsManager();
   other.content_settings_manager_->Clone(
@@ -83,8 +77,9 @@ bool WorkerContentSettingsClient::AllowRunningInsecureContent(
     const blink::WebSecurityOrigin& context,
     const blink::WebURL& url) {
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
-    sync_message_filter_->Send(new ChromeViewHostMsg_ContentBlocked(
-        routing_id_, CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, base::string16()));
+    EnsureContentSettingsManager();
+    content_settings_manager_->OnContentBlocked(
+        CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
     return false;
   }
 
@@ -107,8 +102,9 @@ bool WorkerContentSettingsClient::AllowScriptFromSource(
   }
 
   if (!allow) {
-    sync_message_filter_->Send(new ChromeViewHostMsg_ContentBlocked(
-        routing_id_, CONTENT_SETTINGS_TYPE_JAVASCRIPT, base::string16()));
+    EnsureContentSettingsManager();
+    content_settings_manager_->OnContentBlocked(
+        CONTENT_SETTINGS_TYPE_JAVASCRIPT);
     return false;
   }
 

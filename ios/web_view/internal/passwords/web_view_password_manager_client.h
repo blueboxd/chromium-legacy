@@ -56,8 +56,7 @@ class WebState;
 namespace ios_web_view {
 // An //ios/web_view implementation of password_manager::PasswordManagerClient.
 class WebViewPasswordManagerClient
-    : public password_manager::PasswordManagerClient,
-      public password_manager::PasswordManagerClientHelperDelegate {
+    : public password_manager::PasswordManagerClient {
  public:
   explicit WebViewPasswordManagerClient(
       id<CWVPasswordManagerClientDelegate> delegate);
@@ -87,6 +86,7 @@ class WebViewPasswordManagerClient
   void AutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           saved_form_manager) override;
+  void PromptUserToEnableAutosignin() override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
   const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
@@ -117,10 +117,6 @@ class WebViewPasswordManagerClient
   bool IsNewTabPage() const override;
 
  private:
-  // password_manager::PasswordManagerClientHelperDelegate implementation.
-  void PromptUserToEnableAutosignin() override;
-  password_manager::PasswordManager* GetPasswordManager() override;
-
   __weak id<CWVPasswordManagerClientDelegate> delegate_;
 
   const WebViewPasswordFeatureManager password_feature_manager_;

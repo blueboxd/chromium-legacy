@@ -110,6 +110,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
   // NetworkChangeNotifier::IPAddressObserver implementation.
   void OnIPAddressChanged() override {
     DCHECK(thread_checker_.CalledOnValidThread());
+    pending_connection_type_ = GetConnectionType();
     base::TimeDelta delay = last_announced_connection_type_ == CONNECTION_NONE
         ? params_.ip_address_offline_delay_ : params_.ip_address_online_delay_;
     // Cancels any previous timer.

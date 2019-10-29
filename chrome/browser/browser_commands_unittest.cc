@@ -206,7 +206,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   // Select the second tab and make it go forward in a new background tab.
   browser()->tab_strip_model()->ActivateTabAt(
       1, {TabStripModel::GestureType::kOther});
-  // TODO(brettw) bug 11055: It should not be necessary to commit the load here,
+  // TODO(crbug.com/11055): It should not be necessary to commit the load here,
   // but because of this bug, it will assert later if we don't. When the bug is
   // fixed, one of the three commits here related to this bug should be removed
   // (to test both codepaths).
@@ -233,7 +233,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   // thing above, just validate that it's opening properly.
   browser()->tab_strip_model()->ActivateTabAt(
       2, {TabStripModel::GestureType::kOther});
-  // TODO(brettw) bug 11055: see the comment above about why we need this.
+  // TODO(crbug.com/11055): see the comment above about why we need this.
   CommitPendingLoad(&second->GetController());
   chrome::GoBack(browser(), WindowOpenDisposition::NEW_FOREGROUND_TAB);
   ASSERT_EQ(3, browser()->tab_strip_model()->active_index());
@@ -242,7 +242,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
                 GetVisibleURL());
 
   // Same thing again for forward.
-  // TODO(brettw) bug 11055: see the comment above about why we need this.
+  // TODO(crbug.com/11055): see the comment above about why we need this.
   CommitPendingLoad(&
       browser()->tab_strip_model()->GetActiveWebContents()->GetController());
   chrome::GoForward(browser(), WindowOpenDisposition::NEW_FOREGROUND_TAB);
@@ -250,6 +250,39 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   ASSERT_EQ(url2,
             browser()->tab_strip_model()->GetActiveWebContents()->
                 GetVisibleURL());
+}
+
+// Tests back/forward in new tab (Control + Back/Forward button in the UI)
+// with Tab Groups enabled.
+TEST_F(BrowserCommandsTest, BackForwardInNewTabWithGroup) {
+  GURL url1("http://foo/1");
+  GURL url2("http://foo/2");
+
+  // Make a tab with the two pages navigated in it.
+  AddTab(browser(), url1);
+  NavigateAndCommitActiveTab(url2);
+
+  // Add the tab to a Tab Group.
+  const TabGroupId group_id = browser()->tab_strip_model()->AddToNewGroup({0});
+
+  // Go back in a new background tab.
+  chrome::GoBack(browser(), WindowOpenDisposition::NEW_BACKGROUND_TAB);
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+
+  // The new tab should have inherited the tab group from the old tab.
+  EXPECT_EQ(group_id, browser()->tab_strip_model()->GetTabGroupForTab(1));
+
+  // Select the second tab and make it go forward in a new background tab.
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
+  // TODO(crbug.com/11055): see the comment above about why we need this.
+  CommitPendingLoad(
+      &browser()->tab_strip_model()->GetActiveWebContents()->GetController());
+  chrome::GoForward(browser(), WindowOpenDisposition::NEW_BACKGROUND_TAB);
+
+  // The new tab should have inherited the tab group from the old tab.
+  EXPECT_EQ(group_id, browser()->tab_strip_model()->GetTabGroupForTab(2));
 }
 
 TEST_F(BrowserCommandsTest, OnMaxZoomIn) {

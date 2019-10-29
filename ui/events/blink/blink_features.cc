@@ -12,6 +12,12 @@ const base::Feature kResamplingScrollEvents{"ResamplingScrollEvents",
 const base::Feature kFilteringScrollPrediction{
     "FilteringScrollPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kKalmanHeuristics{"KalmanHeuristics",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kKalmanDirectionCutOff{"KalmanDirectionCutOff",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSendMouseLeaveEvents{"SendMouseLeaveEvents",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 

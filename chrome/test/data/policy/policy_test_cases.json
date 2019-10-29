@@ -2834,6 +2834,14 @@
     ]
   },
 
+  "WebRtcLocalIpsAllowedUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "WebRtcLocalIpsAllowedUrls": ["https://www.example.com", "*example.com*"]},
+    "pref_mappings": [
+      { "pref": "webrtc.local_ips_allowed_urls" }
+    ]
+  },
+
   "ComponentUpdatesEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "ComponentUpdatesEnabled": true },

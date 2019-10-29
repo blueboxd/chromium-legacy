@@ -1404,7 +1404,7 @@ void UserSessionManager::InitProfilePreferences(
             AccountManager::AccountKey{
                 gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA},
             user->GetDisplayEmail() /* raw_email */,
-            user_context.GetRefreshToken(), false /* revoke_old_token */);
+            user_context.GetRefreshToken());
       }
       // else: If |user_context| does not contain a refresh token, then we are
       // restoring an existing Profile, in which case the account will be
@@ -1491,6 +1491,9 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
         chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
         content::NotificationService::AllSources(),
         content::Details<Profile>(profile));
+
+    session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
+        ProfileHelper::Get()->GetUserByProfile(profile)->GetAccountId());
 
     if (delegate_)
       delegate_->OnProfilePrepared(profile, false);

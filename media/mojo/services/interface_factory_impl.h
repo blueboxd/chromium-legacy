@@ -23,6 +23,7 @@
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -47,8 +48,9 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
       mojo::PendingReceiver<mojom::AudioDecoder> receiver) final;
   void CreateVideoDecoder(
       mojo::PendingReceiver<mojom::VideoDecoder> receiver) final;
-  void CreateDefaultRenderer(const std::string& audio_device_id,
-                             mojom::RendererRequest request) final;
+  void CreateDefaultRenderer(
+      const std::string& audio_device_id,
+      mojo::PendingReceiver<mojom::Renderer> receiver) final;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
   void CreateCastRenderer(
       const base::UnguessableToken& overlay_plane_id,
@@ -67,8 +69,9 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
           client_extension,
       mojo::PendingReceiver<mojom::Renderer> receiver) final;
 #endif  // defined(OS_ANDROID)
-  void CreateCdm(const std::string& key_system,
-                 mojom::ContentDecryptionModuleRequest request) final;
+  void CreateCdm(
+      const std::string& key_system,
+      mojo::PendingReceiver<mojom::ContentDecryptionModule> receiver) final;
   void CreateDecryptor(int cdm_id,
                        mojo::PendingReceiver<mojom::Decryptor> receiver) final;
   void CreateCdmProxy(const base::Token& cdm_guid,
@@ -105,12 +108,12 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
 #if BUILDFLAG(ENABLE_MOJO_RENDERER) || BUILDFLAG(ENABLE_CAST_RENDERER)
   // TODO(xhwang): Use MojoMediaLog for Renderer.
   NullMediaLog media_log_;
-  mojo::StrongBindingSet<mojom::Renderer> renderer_bindings_;
+  mojo::UniqueReceiverSet<mojom::Renderer> renderer_receivers_;
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER) || BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   std::unique_ptr<CdmFactory> cdm_factory_;
-  mojo::StrongBindingSet<mojom::ContentDecryptionModule> cdm_bindings_;
+  mojo::UniqueReceiverSet<mojom::ContentDecryptionModule> cdm_receivers_;
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)

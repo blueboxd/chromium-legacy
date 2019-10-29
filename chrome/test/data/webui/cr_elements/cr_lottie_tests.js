@@ -129,6 +129,24 @@ cr.define('cr_lottie_test', function() {
     await waitForPlayingEventAgain;
   });
 
+  test('TestPlayBeforeInit', async () => {
+    assertTrue(crLottieElement.autoplay);
+
+    crLottieElement.setPlay(false);
+    assertFalse(crLottieElement.autoplay);
+
+    crLottieElement.setPlay(true);
+    assertTrue(crLottieElement.autoplay);
+
+    const waitForInitializeEvent =
+        test_util.eventToPromise('cr-lottie-initialized', crLottieElement);
+    await waitForInitializeEvent;
+
+    const waitForPlayingEvent =
+        test_util.eventToPromise('cr-lottie-playing', crLottieElement);
+    await waitForPlayingEvent;
+  });
+
   test('TestRenderFrame', async () => {
     // Offscreen canvas has a race issue when used in this test framework. To
     // ensure that we capture a frame from the animation and not an empty frame,

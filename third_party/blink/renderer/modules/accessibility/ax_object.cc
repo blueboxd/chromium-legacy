@@ -102,6 +102,7 @@ const RoleEntry kRoles[] = {
     {"button", ax::mojom::Role::kButton},
     {"caption", ax::mojom::Role::kCaption},
     {"cell", ax::mojom::Role::kCell},
+    {"code", ax::mojom::Role::kCode},
     {"checkbox", ax::mojom::Role::kCheckBox},
     {"columnheader", ax::mojom::Role::kColumnHeader},
     {"combobox", ax::mojom::Role::kComboBoxGrouping},
@@ -156,6 +157,7 @@ const RoleEntry kRoles[] = {
     // End DPub roles.
     // -------------------------------------------------
     {"document", ax::mojom::Role::kDocument},
+    {"emphasis", ax::mojom::Role::kEmphasis},
     {"feed", ax::mojom::Role::kFeed},
     {"figure", ax::mojom::Role::kFigure},
     {"form", ax::mojom::Role::kForm},
@@ -209,6 +211,7 @@ const RoleEntry kRoles[] = {
     {"slider", ax::mojom::Role::kSlider},
     {"spinbutton", ax::mojom::Role::kSpinButton},
     {"status", ax::mojom::Role::kStatus},
+    {"strong", ax::mojom::Role::kStrong},
     {"switch", ax::mojom::Role::kSwitch},
     {"tab", ax::mojom::Role::kTab},
     {"table", ax::mojom::Role::kTable},
@@ -217,6 +220,7 @@ const RoleEntry kRoles[] = {
     {"term", ax::mojom::Role::kTerm},
     {"text", ax::mojom::Role::kStaticText},
     {"textbox", ax::mojom::Role::kTextField},
+    {"time", ax::mojom::Role::kTime},
     {"timer", ax::mojom::Role::kTimer},
     {"toolbar", ax::mojom::Role::kToolbar},
     {"tooltip", ax::mojom::Role::kTooltip},
@@ -252,6 +256,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kCell, "Cell"},
     {ax::mojom::Role::kCheckBox, "CheckBox"},
     {ax::mojom::Role::kClient, "Client"},
+    {ax::mojom::Role::kCode, "Code"},
     {ax::mojom::Role::kColorWell, "ColorWell"},
     {ax::mojom::Role::kColumnHeader, "ColumnHeader"},
     {ax::mojom::Role::kColumn, "Column"},
@@ -318,6 +323,7 @@ const InternalRoleEntry kInternalRoles[] = {
     // --------------------------------------------------------------
     {ax::mojom::Role::kDocument, "Document"},
     {ax::mojom::Role::kEmbeddedObject, "EmbeddedObject"},
+    {ax::mojom::Role::kEmphasis, "Emphasis"},
     {ax::mojom::Role::kFeed, "feed"},
     {ax::mojom::Role::kFigcaption, "Figcaption"},
     {ax::mojom::Role::kFigure, "Figure"},
@@ -402,6 +408,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kSplitter, "Splitter"},
     {ax::mojom::Role::kStaticText, "StaticText"},
     {ax::mojom::Role::kStatus, "Status"},
+    {ax::mojom::Role::kStrong, "Strong"},
     {ax::mojom::Role::kSwitch, "Switch"},
     {ax::mojom::Role::kTab, "Tab"},
     {ax::mojom::Role::kTabList, "TabList"},
@@ -3425,6 +3432,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kBanner:
     case ax::mojom::Role::kBlockquote:
     case ax::mojom::Role::kCaret:
+    case ax::mojom::Role::kCode:
     case ax::mojom::Role::kClient:
     case ax::mojom::Role::kColorWell:
     case ax::mojom::Role::kColumn:
@@ -3474,6 +3482,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kDocToc:
     case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kEmbeddedObject:
+    case ax::mojom::Role::kEmphasis:
     case ax::mojom::Role::kFeed:
     case ax::mojom::Role::kFigure:
     case ax::mojom::Role::kForm:
@@ -3513,6 +3522,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kSpinButton:
     case ax::mojom::Role::kStatus:
     case ax::mojom::Role::kSliderThumb:
+    case ax::mojom::Role::kStrong:
     case ax::mojom::Role::kSvgRoot:
     case ax::mojom::Role::kTable:
     case ax::mojom::Role::kTableHeaderContainer:

@@ -42,7 +42,7 @@ class MediaStream final : public DemuxerStream {
   Liveness liveness() const override;
   bool SupportsConfigChanges() override;
 
-  void Initialize(const base::Closure& init_done_cb);
+  void Initialize(base::OnceClosure init_done_cb);
   void FlushUntil(int count);
   void AppendBuffer(scoped_refptr<DecoderBuffer> buffer);
 
@@ -73,9 +73,9 @@ class MediaStream final : public DemuxerStream {
   const int remote_handle_;
   const int rpc_handle_;
 
-  // Set when Initialize() is called, and will be run only once after
-  // initialization is done.
-  base::Closure init_done_callback_;
+  // Set when Initialize() is called, and will be run after initialization is
+  // done.
+  base::OnceClosure init_done_callback_;
 
   // The read until count in the last ReadUntil RPC message.
   int last_read_until_count_ = 0;
@@ -128,13 +128,13 @@ MediaStream::~MediaStream() {
   rpc_broker_->UnregisterMessageReceiverCallback(rpc_handle_);
 }
 
-void MediaStream::Initialize(const base::Closure& init_done_cb) {
+void MediaStream::Initialize(base::OnceClosure init_done_cb) {
   DCHECK(init_done_cb);
   if (!init_done_callback_.is_null()) {
     OnError("Duplicate initialization");
     return;
   }
-  init_done_callback_ = init_done_cb;
+  init_done_callback_ = std::move(init_done_cb);
 
   DVLOG(3) << __func__ << "Issues RpcMessage::RPC_DS_INITIALIZE with "
            << "remote_handle=" << remote_handle_
@@ -398,7 +398,7 @@ StreamProvider::~StreamProvider() = default;
 
 void StreamProvider::Initialize(int remote_audio_handle,
                                 int remote_video_handle,
-                                const base::Closure& callback) {
+                                base::OnceClosure callback) {
   DVLOG(3) << __func__ << ": remote_audio_handle=" << remote_audio_handle
            << " remote_video_handle=" << remote_video_handle;
   if (!init_done_callback_.is_null()) {
@@ -411,13 +411,13 @@ void StreamProvider::Initialize(int remote_audio_handle,
     return;
   }
 
-  init_done_callback_ = callback;
+  init_done_callback_ = std::move(callback);
   if (remote_audio_handle != RpcBroker::kInvalidHandle) {
     audio_stream_.reset(new MediaStream(
         rpc_broker_, DemuxerStream::AUDIO, remote_audio_handle,
         base::BindOnce(&StreamProvider::OnError, weak_factory_.GetWeakPtr(),
                        "Media stream error")));
-    audio_stream_->Initialize(base::Bind(
+    audio_stream_->Initialize(base::BindOnce(
         &StreamProvider::AudioStreamInitialized, weak_factory_.GetWeakPtr()));
   }
   if (remote_video_handle != RpcBroker::kInvalidHandle) {
@@ -425,7 +425,7 @@ void StreamProvider::Initialize(int remote_audio_handle,
         rpc_broker_, DemuxerStream::VIDEO, remote_video_handle,
         base::BindOnce(&StreamProvider::OnError, weak_factory_.GetWeakPtr(),
                        "Media stream error")));
-    video_stream_->Initialize(base::Bind(
+    video_stream_->Initialize(base::BindOnce(
         &StreamProvider::VideoStreamInitialized, weak_factory_.GetWeakPtr()));
   }
 }

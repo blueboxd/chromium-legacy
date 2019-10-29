@@ -1030,12 +1030,30 @@
         }
       }
     },
-     {
+    {
       "command": "readLinkURL",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
           "keyCode": [65, 76]
+        }
+      }
+    },
+    {
+      "command": "nextList",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [78, 76]
+        }
+      }
+    },
+    {
+      "command": "previousList",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [80, 76]
         }
       }
     }

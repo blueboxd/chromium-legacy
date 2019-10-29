@@ -13804,7 +13804,7 @@
           "48000",
           "--enable-sanitizer"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -13836,7 +13836,7 @@
           "48000",
           "--enable-leak-detection"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -13868,7 +13868,7 @@
           "66000",
           "--enable-sanitizer"
         ],
-        "isolate_name": "blink_web_tests",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"

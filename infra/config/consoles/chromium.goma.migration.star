@@ -478,7 +478,7 @@ luci.console_view(
             short_name = 'pie',
         ),
         luci.console_view_entry(
-            builder = 'ci/mac-code-coverage-generation',
+            builder = 'ci/mac-code-coverage',
             category = 'week3c|mac',
             short_name = 'code',
         ),
@@ -690,6 +690,21 @@ luci.console_view(
             builder = 'ci/Linux TSan Builder',
             category = 'week14a|linux',
             short_name = 'tsan',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android ASAN (dbg)',
+            category = 'week14b|android',
+            short_name = 'asan',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android arm Builder (dbg)',
+            category = 'week14b|android',
+            short_name = 'arm',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android arm64 Builder (dbg)',
+            category = 'week14b|android',
+            short_name = 'arm64',
         ),
         luci.console_view_entry(
             builder = 'ci/Win ASan Release',

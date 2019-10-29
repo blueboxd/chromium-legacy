@@ -31,7 +31,7 @@ ContextMenuParams::ContextMenuParams()
       edit_flags(0),
       referrer_policy(network::mojom::ReferrerPolicy::kDefault),
       source_type(ui::MENU_SOURCE_NONE),
-      input_field_type(blink::WebContextMenuData::kInputFieldTypeNone),
+      input_field_type(blink::ContextMenuDataInputFieldType::kNone),
       selection_start_offset(0) {}
 
 ContextMenuParams::ContextMenuParams(const ContextMenuParams& other) = default;

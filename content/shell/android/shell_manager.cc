@@ -57,10 +57,7 @@ void JNI_ShellManager_LaunchShell(JNIEnv* env,
   ShellBrowserContext* browserContext =
       ShellContentBrowserClient::Get()->browser_context();
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
-  Shell::CreateNewWindow(browserContext,
-                         url,
-                         NULL,
-                         gfx::Size());
+  Shell::CreateNewWindow(browserContext, url, nullptr, gfx::Size());
 }
 
 void DestroyShellManager() {

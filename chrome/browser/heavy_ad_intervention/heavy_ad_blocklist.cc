@@ -20,8 +20,8 @@ const char kHostsInMemory[] = "hosts-in-memory";
 const char kTypeVersion[] = "type-version";
 
 int GetBlocklistParamValue(const std::string& param, int default_value) {
-  return base::GetFieldTrialParamByFeatureAsInt(features::kHeavyAdBlocklist,
-                                                param, default_value);
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kHeavyAdPrivacyMitigations, param, default_value);
 }
 
 }  // namespace

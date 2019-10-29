@@ -204,7 +204,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   content::BrowserContext* context_;
   signin::IdentityManager* identity_manager_ = nullptr;
   EventRouter* event_router_ = nullptr;
-  safe_browsing::BinaryUploadService* binary_upload_service_;
+  safe_browsing::BinaryUploadService* binary_upload_service_ = nullptr;
   std::unique_ptr<policy::CloudPolicyClient> client_;
   PrefChangeRegistrar registrar_;
 

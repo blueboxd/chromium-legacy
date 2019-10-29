@@ -175,7 +175,6 @@ public class TabGridDialogParent
         mScrimView = new ScrimView(context, null, mTabGridDialogParentView);
         mPopupWindow = new PopupWindow(mTabGridDialogParentView,
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        mPopupWindow.setFocusable(true);
         updateDialogWithOrientation(context, context.getResources().getConfiguration().orientation);
     }
 
@@ -754,6 +753,17 @@ public class TabGridDialogParent
      */
     void updateUngroupBarTextAppearance(int textAppearance) {
         mUngroupBarTextAppearance = textAppearance;
+    }
+
+    /**
+     * Update whether the PopupWindow is focusable or not.
+     *
+     * @param focusable whether the PopupWindow is focusable.
+     */
+    @VisibleForTesting
+    void setPopupWindowFocusable(boolean focusable) {
+        mPopupWindow.setFocusable(focusable);
+        mPopupWindow.update();
     }
 
     @VisibleForTesting

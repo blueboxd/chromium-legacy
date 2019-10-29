@@ -1139,9 +1139,7 @@ void AXPlatformNodeBase::UpdateComputedHypertext() {
     return;
   }
 
-  int child_count = GetChildCount();
-
-  if (!child_count) {
+  if (!GetChildCount()) {
     if (IsRichTextField()) {
       // We don't want to expose any associated label in IA2 Hypertext.
       return;
@@ -1157,10 +1155,8 @@ void AXPlatformNodeBase::UpdateComputedHypertext() {
   // the character index of each embedded object character to the id of the
   // child object it points to.
   base::string16 hypertext;
-  for (int i = 0; i < child_count; ++i) {
-    const auto* child = FromNativeViewAccessible(ChildAtIndex(i));
-
-    DCHECK(child);
+  for (AXPlatformNodeBase* child = GetFirstChild(); child;
+       child = child->GetNextSibling()) {
     // Similar to Firefox, we don't expose text-only objects in IA2 hypertext.
     if (child->IsTextOnlyObject()) {
       hypertext_.hypertext +=

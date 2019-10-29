@@ -156,7 +156,7 @@ bool SerializerMarkupAccumulator::ShouldIgnoreElement(
     return true;
   }
   // This is done in serializing document.StyleSheets.
-  if (IsHTMLStyleElement(element))
+  if (IsA<HTMLStyleElement>(element))
     return true;
   return delegate_.ShouldIgnoreElement(element);
 }
@@ -216,7 +216,7 @@ void SerializerMarkupAccumulator::AppendStylesheets(Document* document,
     StyleSheet* sheet = sheets.item(i);
     if (!sheet->IsCSSStyleSheet() || sheet->disabled())
       continue;
-    if (style_element_only && !IsHTMLStyleElement(sheet->ownerNode()))
+    if (style_element_only && !IsA<HTMLStyleElement>(sheet->ownerNode()))
       continue;
 
     StringBuilder pseudo_sheet_url_builder;
@@ -410,7 +410,7 @@ void FrameSerializer::AddResourceForElement(Document& document,
           document.CompleteURL(link->FastGetAttribute(html_names::kHrefAttr));
       SerializeCSSStyleSheet(*sheet, sheet_url);
     }
-  } else if (const auto* style = ToHTMLStyleElementOrNull(element)) {
+  } else if (const auto* style = DynamicTo<HTMLStyleElement>(element)) {
     if (CSSStyleSheet* sheet = style->sheet())
       SerializeCSSStyleSheet(*sheet, NullURL());
   } else if (IsHTMLPlugInElement(element)) {

@@ -449,6 +449,10 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   }
 }
 
+bool TabHoverCardBubbleView::IsVisible() {
+  return widget_->IsVisible();
+}
+
 void TabHoverCardBubbleView::FadeOutToHide() {
   delayed_show_timer_.Stop();
   RegisterToThumbnailImageUpdates(nullptr);

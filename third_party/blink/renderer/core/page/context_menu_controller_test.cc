@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
@@ -502,7 +503,7 @@ TEST_F(ContextMenuControllerTest, EditingActionsEnabledInSVGDocument) {
   WebContextMenuData context_menu_data =
       GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(context_menu_data.media_type, ContextMenuDataMediaType::kNone);
-  EXPECT_EQ(context_menu_data.edit_flags, WebContextMenuData::kCanCopy);
+  EXPECT_EQ(context_menu_data.edit_flags, ContextMenuDataEditFlags::kCanCopy);
   EXPECT_EQ(context_menu_data.selected_text, "able tex");
 
   // <div contenteditable=true>
@@ -513,9 +514,11 @@ TEST_F(ContextMenuControllerTest, EditingActionsEnabledInSVGDocument) {
   context_menu_data = GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(context_menu_data.media_type, ContextMenuDataMediaType::kNone);
   EXPECT_EQ(context_menu_data.edit_flags,
-            WebContextMenuData::kCanCut | WebContextMenuData::kCanCopy |
-                WebContextMenuData::kCanPaste | WebContextMenuData::kCanDelete |
-                WebContextMenuData::kCanEditRichly);
+            ContextMenuDataEditFlags::kCanCut |
+                ContextMenuDataEditFlags::kCanCopy |
+                ContextMenuDataEditFlags::kCanPaste |
+                ContextMenuDataEditFlags::kCanDelete |
+                ContextMenuDataEditFlags::kCanEditRichly);
 }
 
 TEST_F(ContextMenuControllerTest, EditingActionsEnabledInXMLDocument) {
@@ -542,7 +545,7 @@ TEST_F(ContextMenuControllerTest, EditingActionsEnabledInXMLDocument) {
   WebContextMenuData context_menu_data =
       GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(context_menu_data.media_type, ContextMenuDataMediaType::kNone);
-  EXPECT_EQ(context_menu_data.edit_flags, WebContextMenuData::kCanCopy);
+  EXPECT_EQ(context_menu_data.edit_flags, ContextMenuDataEditFlags::kCanCopy);
   EXPECT_EQ(context_menu_data.selected_text, "Blue text");
 }
 

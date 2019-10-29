@@ -15,11 +15,13 @@ import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTest
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.support.test.filters.MediumTest;
 
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.TrustedWebUtils;
+import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,12 +29,12 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -42,18 +44,17 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.net.NetError;
+import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -69,15 +70,10 @@ public class TrustedWebActivityTest {
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
     public EmbeddedTestServerRule mEmbeddedTestServerRule = new EmbeddedTestServerRule();
 
-    public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
-    public MockCertVerifierRuleAndroid mCertVerifierRule =
-            new MockCertVerifierRuleAndroid(mNativeLibraryTestRule, 0 /* net::OK */);
 
     @Rule
     public RuleChain mRuleChain = RuleChain.emptyRuleChain()
                                           .around(mCustomTabActivityTestRule)
-                                          .around(mNativeLibraryTestRule)
-                                          .around(mCertVerifierRule)
                                           .around(mEmbeddedTestServerRule);
 
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
@@ -93,6 +89,12 @@ public class TrustedWebActivityTest {
 
         mEmbeddedTestServerRule.setServerUsesHttps(true); // TWAs only work with HTTPS.
         mTestPage = mEmbeddedTestServerRule.getServer().getURL(TEST_PAGE);
+
+        // Map non-localhost-URLs to localhost. Navigations to non-localhost URLs will throw a
+        // certificate error.
+        Uri mapToUri = Uri.parse(mEmbeddedTestServerRule.getServer().getURL("/"));
+        CommandLine.getInstance().appendSwitchWithValue(
+                ContentSwitches.HOST_RESOLVER_RULES, "MAP * " + mapToUri.getAuthority());
     }
 
     @Test
@@ -180,36 +182,33 @@ public class TrustedWebActivityTest {
      * in the intent).
      */
     @Test
-    @DisabledTest(message = "crbug.com/1016743")
-    //@MediumTest
+    @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testStatusBarColorCertificateError() throws ExecutionException, TimeoutException {
         final String pageWithThemeColor = mEmbeddedTestServerRule.getServer().getURL(
                 "/chrome/test/data/android/theme_color_test.html");
-        final String pageWithThemeColorCertError = mEmbeddedTestServerRule.getServer().getURL(
-                "/chrome/test/data/android/theme_color_test2.html");
+        final String pageWithThemeColorCertError =
+                "https://certificateerror.com/chrome/test/data/android/theme_color_test2.html";
 
         // Initially don't set certificate error so that we can later wait for the status bar color
         // to change back to the default color.
         Intent intent = createTrustedWebActivityIntent(pageWithThemeColor);
         intent.putExtra(CustomTabsIntent.EXTRA_TOOLBAR_COLOR, Color.GREEN);
+        addTrustedOriginToIntent(intent, pageWithThemeColorCertError);
         launchCustomTabActivity(intent);
         CustomTabActivity activity = mCustomTabActivityTestRule.getActivity();
         waitForThemeColor(activity, Color.RED);
         assertStatusBarColor(activity, Color.RED);
 
-        mCertVerifierRule.setResult(NetError.ERR_CERT_INVALID);
+        spoofVerification(PACKAGE_NAME, pageWithThemeColorCertError);
         ChromeTabUtils.loadUrlOnUiThread(activity.getActivityTab(), pageWithThemeColorCertError);
 
-        int expectedColor = Color.BLACK;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            expectedColor = TestThreadUtils.runOnUiThreadBlocking(() -> {
-                return TabThemeColorHelper.getDefaultColor(activity.getActivityTab());
-            });
-        }
-
-        waitForThemeColor(activity, expectedColor);
+        int defaultColor = TestThreadUtils.runOnUiThreadBlocking(
+                () -> { return TabThemeColorHelper.getDefaultColor(activity.getActivityTab()); });
+        int expectedColor =
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? defaultColor : Color.BLACK;
+        waitForThemeColor(activity, defaultColor);
         assertStatusBarColor(activity, expectedColor);
     }
 
@@ -258,20 +257,21 @@ public class TrustedWebActivityTest {
      * (and origin verification succeeds).
      */
     @Test
-    @DisabledTest(message = "crbug.com/1016743")
-    //@MediumTest
+    @MediumTest
     public void testToolbarVisibleCertificateError() throws ExecutionException, TimeoutException {
         final String pageWithoutCertError =
                 mEmbeddedTestServerRule.getServer().getURL("/chrome/test/data/android/about.html");
-        final String pageWithCertError = mEmbeddedTestServerRule.getServer().getURL(
-                "/chrome/test/data/android/theme_color_test.html");
+        final String pageWithCertError =
+                "https://certificateerror.com/chrome/test/data/android/theme_color_test.html";
 
         // Initially don't set certificate error so that we can later wait for the toolbar to hide.
+        Intent intent = createTrustedWebActivityIntent(pageWithoutCertError);
+        addTrustedOriginToIntent(intent, pageWithCertError);
         launchCustomTabActivity(createTrustedWebActivityIntent(pageWithoutCertError));
         Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
         assertFalse(getCanShowToolbarState(tab));
 
-        mCertVerifierRule.setResult(NetError.ERR_CERT_INVALID);
+        spoofVerification(PACKAGE_NAME, pageWithCertError);
         ChromeTabUtils.loadUrlOnUiThread(tab, pageWithCertError);
 
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -280,6 +280,13 @@ public class TrustedWebActivityTest {
                 return getCanShowToolbarState(tab);
             }
         }, 10000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+    }
+
+    public void addTrustedOriginToIntent(Intent intent, String trustedOrigin) {
+        ArrayList<String> additionalTrustedOrigins = new ArrayList<>();
+        additionalTrustedOrigins.add(trustedOrigin);
+        intent.putExtra(TrustedWebActivityIntentBuilder.EXTRA_ADDITIONAL_TRUSTED_ORIGINS,
+                additionalTrustedOrigins);
     }
 
     public boolean getCanShowToolbarState(Tab tab) {

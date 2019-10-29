@@ -139,6 +139,20 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
     }
 
     @Test
+    @SmallTest
+    @UiThreadTest
+    public void testSetPopupWindowFocusable() {
+        PopupWindow popupWindow = mTabGridDialogParent.getPopupWindowForTesting();
+        popupWindow.setFocusable(false);
+
+        mTabGridDialogParent.setPopupWindowFocusable(true);
+        Assert.assertTrue(popupWindow.isFocusable());
+
+        mTabGridDialogParent.setPopupWindowFocusable(false);
+        Assert.assertFalse(popupWindow.isFocusable());
+    }
+
+    @Test
     @MediumTest
     public void testUpdateUngroupBar() {
         mTabGridDialogContainer.removeAllViews();

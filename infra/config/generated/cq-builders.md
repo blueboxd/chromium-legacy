@@ -322,7 +322,7 @@ by CQ. These are often used to test new configurations before they are added
 as required builders.
 
 * [android-marshmallow-arm64-coverage-rel](https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-arm64-coverage-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-marshmallow-arm64-coverage-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-marshmallow-arm64-coverage-rel))
-  * Experiment percentage: 20
+  * Experiment percentage: 10
 
 * [android-pie-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-pie-arm64-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-pie-arm64-rel))
   * Experiment percentage: 50

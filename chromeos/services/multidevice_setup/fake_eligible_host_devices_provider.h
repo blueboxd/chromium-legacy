@@ -28,6 +28,8 @@ class FakeEligibleHostDevicesProvider : public EligibleHostDevicesProvider {
  private:
   // EligibleHostDevicesProvider:
   multidevice::RemoteDeviceRefList GetEligibleHostDevices() const override;
+  multidevice::RemoteDeviceRefList GetEligibleActiveHostDevices()
+      const override;
 
   multidevice::RemoteDeviceRefList eligible_host_devices_;
 

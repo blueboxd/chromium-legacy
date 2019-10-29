@@ -175,6 +175,7 @@ Display::Display(
       scheduler_(std::move(scheduler)),
       current_task_runner_(std::move(current_task_runner)),
       swapped_trace_id_(GetStartingTraceId()),
+      last_swap_ack_trace_id_(swapped_trace_id_),
       last_presented_trace_id_(swapped_trace_id_) {
   DCHECK(output_surface_);
   DCHECK(frame_sink_id_.is_valid());
@@ -616,7 +617,7 @@ bool Display::DrawAndSwap() {
   if (should_swap) {
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
-                                 swapped_trace_id_, "Swap");
+                                 swapped_trace_id_, "WaitForSwap");
     swapped_since_resize_ = true;
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
@@ -626,9 +627,6 @@ bool Display::DrawAndSwap() {
     renderer_->SwapBuffers(std::move(frame.metadata.latency_info));
     if (scheduler_)
       scheduler_->DidSwapBuffers();
-    TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
-                                 "Graphics.Pipeline.DrawAndSwap",
-                                 swapped_trace_id_, "WaitForPresentation");
   } else {
     TRACE_EVENT_INSTANT0("viz", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
 
@@ -676,6 +674,14 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
   // have been done in DrawAndSwap(), and should not be popped until
   // DidReceiveSwapBuffersAck.
   DCHECK(!pending_presentation_group_timings_.empty());
+
+  ++last_swap_ack_trace_id_;
+  TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
+      "viz,benchmark", "Graphics.Pipeline.DrawAndSwap", last_swap_ack_trace_id_,
+      "Swap", timings.swap_start);
+  TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
+      "viz,benchmark", "Graphics.Pipeline.DrawAndSwap", last_swap_ack_trace_id_,
+      "WaitForPresentation", timings.swap_end);
 
   if (scheduler_) {
     scheduler_->DidReceiveSwapBuffersAck();

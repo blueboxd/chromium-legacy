@@ -33,8 +33,13 @@ class HomeScreenDelegate {
     // Launcher animation is triggered by window activation.
     kHideForWindow,
 
-    // Launcher animation is triggered by entering/exiting overview mode.
-    kOverviewMode
+    // Launcher animation is triggered by entering/exiting overview mode where
+    // overview UI slides up/down.
+    kOverviewModeSlide,
+
+    // Launcher animation is triggered by entering/exiting overview mode where
+    // overview UI fades in/out.
+    kOverviewModeFade
   };
 
   virtual ~HomeScreenDelegate() = default;
@@ -51,6 +56,14 @@ class HomeScreenDelegate {
   // is non-null, it should be called with animation settings.
   virtual void UpdateYPositionAndOpacityForHomeLauncher(
       int y_position_in_screen,
+      float opacity,
+      UpdateAnimationSettingsCallback callback) = 0;
+
+  // Scales the home launcher view maintaining the view center point, and
+  // updates its opacity. If |callback| is non-null, the update should be
+  // animated, and the |callback| should be called with the animation settings.
+  virtual void UpdateScaleAndOpacityForHomeLauncher(
+      float scale,
       float opacity,
       UpdateAnimationSettingsCallback callback) = 0;
 

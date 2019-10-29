@@ -47,6 +47,9 @@ declare_args() {
   # You can also pass the value via "--args" parameter for "gn gen" command by
   # using the syntax --args='additional_target_cpus=["arm"] target_cpu="arm64"'.
   additional_target_cpus = []
+
+  # TODO(crbug.com/1015730): true if use_goma = true.
+  ios_enable_relative_sdk_path = false
 }
 
 # Official builds may not use goma.
@@ -92,9 +95,15 @@ if (ios_sdk_path == "") {
   ios_sdk_info_args += [ ios_sdk_name ]
   script_name = "//build/config/mac/sdk_info.py"
   _ios_sdk_result = exec_script(script_name, ios_sdk_info_args, "scope")
-  ios_sdk_path = _ios_sdk_result.sdk_path
+  if (ios_enable_relative_sdk_path) {
+    ios_sdk_path = rebase_path(_ios_sdk_result.sdk_path, root_build_dir)
+    ios_sdk_platform_path =
+        rebase_path(_ios_sdk_result.sdk_platform_path, root_build_dir)
+  } else {
+    ios_sdk_path = _ios_sdk_result.sdk_path
+    ios_sdk_platform_path = _ios_sdk_result.sdk_platform_path
+  }
   ios_sdk_version = _ios_sdk_result.sdk_version
-  ios_sdk_platform_path = _ios_sdk_result.sdk_platform_path
   ios_sdk_build = _ios_sdk_result.sdk_build
   xcode_version = _ios_sdk_result.xcode_version
   xcode_version_int = _ios_sdk_result.xcode_version_int

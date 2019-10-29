@@ -4,10 +4,12 @@
 
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
+#include "chromeos/constants/chromeos_features.h"
 
 namespace chromeos {
 
@@ -58,6 +60,11 @@ EligibleHostDevicesProviderImpl::GetEligibleHostDevices() const {
   return eligible_devices_from_last_sync_;
 }
 
+multidevice::RemoteDeviceRefList
+EligibleHostDevicesProviderImpl::GetEligibleActiveHostDevices() const {
+  return eligible_active_devices_from_last_sync_;
+}
+
 void EligibleHostDevicesProviderImpl::OnNewDevicesSynced() {
   UpdateEligibleDevicesSet();
 }
@@ -73,6 +80,90 @@ void EligibleHostDevicesProviderImpl::UpdateEligibleDevicesSet() {
       eligible_devices_from_last_sync_.push_back(remote_device);
     }
   }
+
+  if (base::FeatureList::IsEnabled(
+          features::kCryptAuthV2DeviceActivityStatus)) {
+    eligible_active_devices_from_last_sync_.clear();
+    eligible_active_devices_from_last_sync_ = eligible_devices_from_last_sync_;
+
+    device_sync_client_->GetDevicesActivityStatus(
+        base::Bind(&EligibleHostDevicesProviderImpl::OnGetDevicesActivityStatus,
+                   base::Unretained(this)));
+  }
+}
+
+void EligibleHostDevicesProviderImpl::OnGetDevicesActivityStatus(
+    device_sync::mojom::NetworkRequestResult network_result,
+    base::Optional<std::vector<device_sync::mojom::DeviceActivityStatusPtr>>
+        devices_activity_status_optional) {
+  if (network_result != device_sync::mojom::NetworkRequestResult::kSuccess ||
+      !devices_activity_status_optional) {
+    return;
+  }
+
+  base::flat_map<std::string, device_sync::mojom::DeviceActivityStatusPtr>
+      id_to_activity_status_map;
+  for (device_sync::mojom::DeviceActivityStatusPtr& device_activity_status_ptr :
+       *devices_activity_status_optional) {
+    id_to_activity_status_map.insert({device_activity_status_ptr->device_id,
+                                      std::move(device_activity_status_ptr)});
+  }
+
+  // Sort the list preferring online devices, then last activity time, then
+  // last update time.
+  std::sort(
+      eligible_active_devices_from_last_sync_.begin(),
+      eligible_active_devices_from_last_sync_.end(),
+      [&id_to_activity_status_map](const auto& first_device,
+                                   const auto& second_device) {
+        // This is actually wrong; we should be using the instance ID here and
+        // not the public key since that's the ID DeviceActivityStatus uses.
+        // TODO(themaxli): update this when instance ID is available on
+        // RemoteDeviceRef.
+        auto it1 = id_to_activity_status_map.find(first_device.public_key());
+        auto it2 = id_to_activity_status_map.find(second_device.public_key());
+        if (it1 == id_to_activity_status_map.end() &&
+            it2 == id_to_activity_status_map.end()) {
+          return first_device.last_update_time_millis() >
+                 second_device.last_update_time_millis();
+        }
+
+        if (it1 == id_to_activity_status_map.end()) {
+          return false;
+        }
+
+        if (it2 == id_to_activity_status_map.end()) {
+          return true;
+        }
+
+        const device_sync::mojom::DeviceActivityStatusPtr&
+            first_activity_status = std::get<1>(*it1);
+        const device_sync::mojom::DeviceActivityStatusPtr&
+            second_activity_status = std::get<1>(*it2);
+
+        if (first_activity_status->connectivity_status ==
+                cryptauthv2::ConnectivityStatus::ONLINE &&
+            second_activity_status->connectivity_status !=
+                cryptauthv2::ConnectivityStatus::ONLINE) {
+          return true;
+        }
+
+        if (second_activity_status->connectivity_status ==
+                cryptauthv2::ConnectivityStatus::ONLINE &&
+            first_activity_status->connectivity_status !=
+                cryptauthv2::ConnectivityStatus::ONLINE) {
+          return false;
+        }
+
+        if (first_activity_status->last_activity_time !=
+            second_activity_status->last_activity_time) {
+          return first_activity_status->last_activity_time >
+                 second_activity_status->last_activity_time;
+        }
+
+        return first_device.last_update_time_millis() >
+               second_device.last_update_time_millis();
+      });
 }
 
 }  // namespace multidevice_setup

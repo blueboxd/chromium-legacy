@@ -2043,6 +2043,12 @@ be describing additional metrics about the same event.
       results, in microseconds.
     </summary>
   </metric>
+  <metric name="MainFrameIsBeforeFCP" enum="Boolean">
+    <summary>
+      True if the lifecycle update in this event occurred before FCP (First
+      Contentful Paint) was registered.
+    </summary>
+  </metric>
   <metric name="Paint">
     <summary>
       The time taken to paint for the main frame in microseconds during the

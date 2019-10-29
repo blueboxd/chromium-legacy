@@ -226,7 +226,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
   // Record a main frame time metric, that also computes the ratios for the
   // sub-metrics and generates UMA samples. UKM is only reported when
-  // BeginMainFrame() returned true. All counters are cleared when this method
+  // BeginMainFrame() had been called. All counters are cleared when this method
   // is called.
   void RecordEndOfFrameMetrics(base::TimeTicks start, base::TimeTicks end);
 
@@ -239,6 +239,10 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
   // Mark the beginning of a main frame update.
   void BeginMainFrame();
+
+  // Inform the aggregator that we have reached First Contentful Paint.
+  // The UKM event reports this.
+  void DidReachFirstContentfulPaint() { is_before_fcp_ = false; }
 
   bool InMainFrame() { return in_main_frame_update_; }
 
@@ -314,6 +318,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // Set by BeginMainFrame() and cleared in RecordMEndOfFrameMetrics.
   // Main frame metrics are only recorded if this is true.
   bool in_main_frame_update_ = false;
+
+  // Record whether or not it is before the First Contentful Paint.
+  bool is_before_fcp_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFrameUkmAggregator);
 };

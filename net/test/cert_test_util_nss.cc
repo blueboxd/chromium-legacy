@@ -75,19 +75,19 @@ scoped_refptr<X509Certificate> ImportClientCertAndKeyFromFile(
     ScopedCERTCertificate* nss_cert) {
   if (!ImportSensitiveKeyFromFile(dir, key_filename, slot)) {
     LOG(ERROR) << "Could not import private key from file " << key_filename;
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<X509Certificate> cert(ImportCertFromFile(dir, cert_filename));
 
   if (!cert.get()) {
     LOG(ERROR) << "Failed to parse cert from file " << cert_filename;
-    return NULL;
+    return nullptr;
   }
 
   *nss_cert = ImportClientCertToSlot(cert, slot);
   if (!*nss_cert)
-    return NULL;
+    return nullptr;
 
   // |cert| continues to point to the original X509Certificate before the
   // import to |slot|. However this should not make a difference as NSS handles

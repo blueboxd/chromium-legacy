@@ -672,6 +672,11 @@ class CORE_EXPORT LocalFrameView final
   // Return the UKM aggregator for this frame, creating it if necessary.
   LocalFrameUkmAggregator& EnsureUkmAggregator();
 
+  // Report the First Contentful Paint signal to the LocalFrameView.
+  // This causes Deferred Commits to be restarted and tells the UKM
+  // aggregator that FCP has been reached.
+  void OnFirstContentfulPaint();
+
 #if DCHECK_IS_ON()
   void SetIsUpdatingDescendantDependentFlags(bool val) {
     is_updating_descendant_dependent_flags_ = val;

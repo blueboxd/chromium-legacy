@@ -9,6 +9,7 @@
  * logic in js_modulizer.py only to address the cr.js case, which is not worth
  * it.
  */
+import {assert} from './assert.m.js';
 import {PromiseResolver} from './promise_resolver.m.js';
 
 /** @typedef {{eventName: string, uid: number}} */
@@ -172,6 +173,8 @@ export function removeWebUIListener(listener) {
 
 // Globally expose functions that must be called from C++.
 window.cr = window.cr || {};
+assert(!window.cr.webUIResponse);
+assert(!window.cr.webUIListenerCallback);
 window.cr.webUIResponse = webUIResponse;
 window.cr.webUIListenerCallback = webUIListenerCallback;
 

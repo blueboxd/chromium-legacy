@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/mojom/device_cursor.mojom.h"
 #include "ui/ozone/public/mojom/drm_device.mojom.h"
@@ -37,16 +38,16 @@ class DrmDeviceConnector : public GpuPlatformSupportHost {
       GpuHostBindInterfaceCallback binder,
       GpuHostTerminateCallback terminate_callback) override;
 
-  // BindInterface arranges for the drm_device_ptr to be connected.
+  // BindInterfaceDrmDevice arranges for the drm_device to be connected.
   void BindInterfaceDrmDevice(
-      ui::ozone::mojom::DrmDevicePtr* drm_device_ptr) const;
+      mojo::PendingRemote<ui::ozone::mojom::DrmDevice>* drm_device) const;
 
   // Called in the single-threaded mode instead of OnGpuServiceLaunched() to
   // establish the connection.
-  void ConnectSingleThreaded(ui::ozone::mojom::DrmDevicePtr drm_device_ptr);
+  void ConnectSingleThreaded(
+      mojo::PendingRemote<ui::ozone::mojom::DrmDevice> drm_device);
 
  private:
-
   // This will be used if we are operating under content/gpu without a service
   // manager.
   GpuHostBindInterfaceCallback binder_callback_;

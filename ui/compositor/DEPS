@@ -4,6 +4,7 @@ include_rules = [
   "+components/viz/host",
   "+components/viz/service",
   "+gpu/command_buffer/client/gles2_interface.h",
+  "+mojo/public/cpp/bindings/pending_remote.h",
   "+services/viz/privileged/mojom/compositing",
   "+skia/ext/refptr.h",
   "+third_party/khronos/GLES2/gl2.h",

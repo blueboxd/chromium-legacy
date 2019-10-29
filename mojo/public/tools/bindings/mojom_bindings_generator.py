@@ -219,6 +219,8 @@ class MojomProcessor(object):
             variant=args.variant, bytecode_path=args.bytecode_path,
             for_blink=args.for_blink,
             js_bindings_mode=args.js_bindings_mode,
+            js_generate_struct_deserializers=\
+                    args.js_generate_struct_deserializers,
             export_attribute=args.export_attribute,
             export_header=args.export_header,
             generate_non_variant_code=args.generate_non_variant_code,
@@ -470,6 +472,10 @@ def main():
       help="This option only affects the JavaScript bindings. The value could "
       "be \"new\" to generate new-style lite JS bindings in addition to the "
       "old, or \"old\" to only generate old bindings.")
+  generate_parser.add_argument(
+      "--js_generate_struct_deserializers", action="store_true",
+      help="Generate javascript deserialize methods for structs in "
+      "mojom-lite.js file")
   generate_parser.add_argument(
       "--export_attribute", default="",
       help="Optional attribute to specify on class declaration to export it "

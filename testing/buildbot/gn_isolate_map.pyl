@@ -363,7 +363,7 @@
     "label": "//third_party/blink/renderer/controller:blink_unittests",
     "type": "console_test_launcher",
   },
-  "blink_web_tests": {
+  "blink_web_tests_exparchive": {
     "args": [
       "../../third_party/blink/tools/run_web_tests.py",
       "--seed",
@@ -379,7 +379,7 @@
       "--results-directory",
       "${ISOLATED_OUTDIR}/layout-test-results",
     ],
-    "label": "//:blink_web_tests",
+    "label": "//:blink_web_tests_exparchive",
     "script": "//testing/scripts/run_isolated_script_test.py",
     "type": "script",
   },
@@ -3007,6 +3007,19 @@
   "webcrypto_rsa_import_key_spki_fuzzer": {
     "label": "//components/webcrypto:webcrypto_rsa_import_key_spki_fuzzer",
     "type": "fuzzer",
+  },
+  "webkit_layout_tests": {
+    "args": [
+      "../../third_party/blink/tools/run_web_tests.py",
+      "--clobber-old-results",
+      "--debug-rwt-logging",
+      "--no-show-results",
+      "--results-directory",
+      "${ISOLATED_OUTDIR}/layout-test-results",
+    ],
+    "label": "//:blink_web_tests",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
   },
   "webusb_descriptors_fuzzer": {
     "label": "//services/device/usb:webusb_descriptors_fuzzer",

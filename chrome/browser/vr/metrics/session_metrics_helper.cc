@@ -168,6 +168,7 @@ SessionMetricsHelper* SessionMetricsHelper::CreateForWebContents(
 
 SessionMetricsHelper::SessionMetricsHelper(content::WebContents* contents,
                                            Mode initial_mode) {
+  DVLOG(2) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(contents);
 
@@ -192,7 +193,9 @@ SessionMetricsHelper::SessionMetricsHelper(content::WebContents* contents,
   UpdateMode();
 }
 
-SessionMetricsHelper::~SessionMetricsHelper() = default;
+SessionMetricsHelper::~SessionMetricsHelper() {
+  DVLOG(2) << __func__;
+}
 
 void SessionMetricsHelper::UpdateMode() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

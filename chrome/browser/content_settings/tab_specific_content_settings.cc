@@ -273,12 +273,6 @@ bool TabSpecificContentSettings::IsContentAllowed(
 }
 
 void TabSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
-  OnContentBlockedWithDetail(type, base::string16());
-}
-
-void TabSpecificContentSettings::OnContentBlockedWithDetail(
-    ContentSettingsType type,
-    const base::string16& details) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   DCHECK(type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
@@ -656,8 +650,7 @@ void TabSpecificContentSettings::ClearNavigationRelatedContentSettings() {
 }
 
 void TabSpecificContentSettings::FlashDownloadBlocked() {
-  OnContentBlockedWithDetail(CONTENT_SETTINGS_TYPE_PLUGINS,
-                             base::UTF8ToUTF16(content::kFlashPluginName));
+  OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS);
 }
 
 void TabSpecificContentSettings::ClearPopupsBlocked() {
@@ -752,18 +745,6 @@ void TabSpecificContentSettings::RenderFrameForInterstitialPageCreated(
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &content_settings_agent);
   content_settings_agent->SetAsInterstitial();
-}
-
-bool TabSpecificContentSettings::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(TabSpecificContentSettings, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ContentBlocked,
-                        OnContentBlockedWithDetail)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void TabSpecificContentSettings::DidStartNavigation(

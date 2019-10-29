@@ -75,12 +75,6 @@ password_manager::metrics_util::LeakDialogType GetLeakDialogType(
 // Returns the URL used to launch the password checkup.
 GURL GetPasswordCheckupURL();
 
-// Returns the range of the bold part of the leak dialog message when
-// credentials were leaked only on current site.
-gfx::Range GetChangePasswordBoldRange(
-    password_manager::CredentialLeakType leak_type,
-    const GURL& origin);
-
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_DIALOG_UTILS_H_

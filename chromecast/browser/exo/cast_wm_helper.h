@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "components/exo/vsync_timing_manager.h"
 #include "components/exo/wm_helper.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/display/display_observer.h"
@@ -109,7 +110,8 @@ class CastWMHelper : public WMHelper, public VSyncTimingManager::Delegate {
 
   // Overridden from VSyncTimingManager::Delegate:
   void AddVSyncParameterObserver(
-      viz::mojom::VSyncParameterObserverPtr observer) override;
+      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer)
+      override;
 
  private:
   class CastDisplayObserver : public display::DisplayObserver {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_TABSTRIP_H_
 
 #include "base/optional.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -51,6 +52,10 @@ void AddWebContents(Browser* browser,
 void CloseWebContents(Browser* browser,
                       content::WebContents* contents,
                       bool add_to_history);
+
+// Configures |nav_params| to create a new tab group with the source, if
+// applicable.
+void ConfigureTabGroupForNavigation(NavigateParams* nav_params);
 
 }  // namespace chrome
 

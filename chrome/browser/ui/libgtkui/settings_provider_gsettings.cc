@@ -47,8 +47,10 @@ SettingsProviderGSettings::SettingsProviderGSettings(GtkUi* delegate)
                                      ? kCinnamonPreferencesSchema
                                      : kGnomePreferencesSchema;
 
-  if (!g_settings_schema_source_lookup(g_settings_schema_source_get_default(),
-                                       settings_schema, FALSE) ||
+  GSettingsSchema* button_schema = g_settings_schema_source_lookup(
+      g_settings_schema_source_get_default(), settings_schema, FALSE);
+  if (!button_schema ||
+      !g_settings_schema_has_key(button_schema, kButtonLayoutKey) ||
       !(button_settings_ = g_settings_new(settings_schema))) {
     ParseAndStoreButtonValue(kDefaultButtonString);
   } else {
@@ -59,9 +61,11 @@ SettingsProviderGSettings::SettingsProviderGSettings(GtkUi* delegate)
         G_CALLBACK(OnDecorationButtonLayoutChangedThunk), this);
   }
 
+  GSettingsSchema* click_schema = g_settings_schema_source_lookup(
+      g_settings_schema_source_get_default(), kGnomePreferencesSchema, FALSE);
   // If this fails, the default action has already been set in gtk_ui.cc.
-  if (g_settings_schema_source_lookup(g_settings_schema_source_get_default(),
-                                      kGnomePreferencesSchema, FALSE) &&
+  if (click_schema &&
+      g_settings_schema_has_key(click_schema, kMiddleClickActionKey) &&
       (click_settings_ = g_settings_new(kGnomePreferencesSchema))) {
     OnMiddleClickActionChanged(click_settings_, kMiddleClickActionKey);
     signal_middle_click_id_ =

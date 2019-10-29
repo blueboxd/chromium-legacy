@@ -8,6 +8,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
@@ -17,10 +18,12 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.PopupWindow;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -436,6 +439,40 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
 
         Assert.assertFalse(mTitleTextView.isFocused());
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testSetPopupWindowFocusable() {
+        PopupWindow popupWindow = mTabGridDialogParent.getPopupWindowForTesting();
+        Assert.assertFalse(popupWindow.isFocusable());
+
+        mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, true);
+        Assert.assertTrue(popupWindow.isFocusable());
+
+        mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, false);
+        Assert.assertFalse(popupWindow.isFocusable());
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testSetTitleTextOnTouchListener() {
+        AtomicBoolean titleTextTouched = new AtomicBoolean();
+        titleTextTouched.set(false);
+
+        View.OnTouchListener listener = (view, event) -> {
+            titleTextTouched.set(true);
+            return false;
+        };
+        mModel.set(TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER, listener);
+        // Create a dummy MotionEvent.
+        MotionEvent e = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_DOWN, 0, 0, 0);
+        mTitleTextView.dispatchTouchEvent(e);
+
+        Assert.assertTrue(titleTextTouched.get());
     }
 
     @Override

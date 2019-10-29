@@ -102,9 +102,7 @@ void SVGRect::CalculateAnimatedValue(
     SVGPropertyBase* to_value,
     SVGPropertyBase* to_at_end_of_duration_value,
     SVGElement*) {
-  SVGRect* from_rect = animation_element.GetAnimationMode() == kToAnimation
-                           ? this
-                           : ToSVGRect(from_value);
+  SVGRect* from_rect = ToSVGRect(from_value);
   SVGRect* to_rect = ToSVGRect(to_value);
   SVGRect* to_at_end_of_duration_rect = ToSVGRect(to_at_end_of_duration_value);
 

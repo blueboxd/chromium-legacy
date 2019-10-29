@@ -19,6 +19,11 @@ group("wpt_tests_isolate") {
     # the test runner codebase, manifest file, and the tests themselves.
     "//third_party/blink/web_tests/external/",
 
+    # Include a single file from wpt_internal only to initialize that directory.
+    # We don't need to run these tests but still need to create a MANIFEST here.
+    # See crbug.com/1018829 for more details.
+    "//third_party/blink/web_tests/wpt_internal/README",
+
     # Include the various Test Expectations files.
     "//third_party/blink/web_tests/ASANExpectations",
     "//third_party/blink/web_tests/LeakExpectations",

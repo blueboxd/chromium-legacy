@@ -110,6 +110,14 @@ class APP_LIST_EXPORT AppListPresenterImpl
       float opacity,
       UpdateHomeLauncherAnimationSettingsCallback callback);
 
+  // Scales the home launcher view maintaining the view center point, and
+  // updates its opacity. If |callback| is non-null, the update should be
+  // animated, and the |callback| should be called with the animation settings.
+  void UpdateScaleAndOpacityForHomeLauncher(
+      float scale,
+      float opacity,
+      UpdateHomeLauncherAnimationSettingsCallback callback);
+
   // Shows or hides the Assistant page.
   // |show| is true to show and false to hide.
   void ShowEmbeddedAssistantUI(bool show);

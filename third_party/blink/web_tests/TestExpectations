@@ -26,12 +26,6 @@ crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-o
 crbug.com/860713 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure Timeout ]
 crbug.com/860713 external/wpt/bluetooth/requestDevice/request-from-sandboxed-iframe.https.html [ Failure Timeout ]
 
-# The following tests fail with UserActivationSameOriginVisibility plus UAv2.
-crbug.com/922725 external/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.tentative.html [ Failure ]
-crbug.com/922725 external/wpt/html/user-activation/activation-api-iframe-no-activate.tenative.html [ Failure ]
-crbug.com/922725 fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
-crbug.com/922725 virtual/android/fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
-
 # The following tests would pass with User Activation Delegation.
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-with-click.tentative.html [ Failure ]
 crbug.com/928838 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Failure ]

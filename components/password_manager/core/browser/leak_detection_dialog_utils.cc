@@ -78,12 +78,8 @@ base::string16 GetDescription(CredentialLeakType leak_type,
                               const GURL& origin) {
   const base::string16 formatted = GetFormattedUrl(origin);
   if (!ShouldCheckPasswords(leak_type)) {
-    std::vector<size_t> offsets;
-    base::string16 bold_message = l10n_util::GetStringUTF16(
-        IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_BOLD_MESSAGE);
     return l10n_util::GetStringFUTF16(
-        IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE, bold_message, formatted,
-        &offsets);
+        IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE, formatted);
   } else if (password_manager::IsPasswordSaved(leak_type)) {
     return l10n_util::GetStringUTF16(
         IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE);
@@ -121,22 +117,6 @@ GURL GetPasswordCheckupURL() {
   if (value.empty())
     return GURL(password_manager::kPasswordCheckupURL);
   return GURL(value);
-}
-
-gfx::Range GetChangePasswordBoldRange(CredentialLeakType leak_type,
-                                      const GURL& origin) {
-  if (ShouldCheckPasswords(leak_type))
-    return gfx::Range();
-
-  std::vector<size_t> offsets;
-  const base::string16 bold_message = l10n_util::GetStringUTF16(
-      IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_BOLD_MESSAGE);
-  const base::string16 change_password_message = l10n_util::GetStringFUTF16(
-      IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE, bold_message,
-      GetFormattedUrl(origin), &offsets);
-  return offsets.empty()
-             ? gfx::Range()
-             : gfx::Range(offsets[0], offsets[0] + bold_message.length());
 }
 
 }  // namespace password_manager

@@ -3748,6 +3748,18 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Used to describe the link behind a url." name="IDS_CHROMEVOX_URL_BEHIND_LINK">
         Link URL: <ph name="link_url">$1</ph>
       </message>
+      <message desc="Describes an HTML description list element." name="IDS_CHROMEVOX_ROLE_DESCRIPTION_LIST">
+        Description list
+      </message>
+      <message desc="Describes an HTML description list detail element." name="IDS_CHROMEVOX_ROLE_DESCRIPTION_LIST_DETAIL">
+        Description list detail
+      </message>
+      <message desc="This is an abbreviated HTML description list element shown on a braille display. When translating, try to find a contracted form of the translation for 'description list' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible."  name="IDS_CHROMEVOX_ROLE_DESCRIPTION_LIST_BRL">
+        dscrplst
+      </message>
+      <message desc="This is an abbreviated HTML description list detail element shown on a braille display. When translating, try to find a contracted form of the translation for 'description list detail' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_DESCRIPTION_LIST_DETAIL_BRL">
+        dscrplst dtl
+      </message>
     </messages>
   </release>
 </grit>

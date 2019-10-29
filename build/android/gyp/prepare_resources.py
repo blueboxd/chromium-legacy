@@ -19,7 +19,7 @@ from util import manifest_utils
 from util import resource_utils
 
 _AAPT_IGNORE_PATTERN = ':'.join([
-    'OWNERS',  # Allow OWNERS files within res/
+    '*OWNERS',  # Allow OWNERS files within res/
     '*.py',  # PRESUBMIT.py sometimes exist.
     '*.pyc',
     '*~',  # Some editors create these as temp files.

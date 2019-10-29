@@ -196,6 +196,7 @@ class PageInfoBubbleViewTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
+    content::BrowserSideNavigationSetUp();
     views_helper_.test_views_delegate()->set_layout_provider(
         ChromeLayoutProvider::CreateLayoutProvider());
     views::Widget::InitParams parent_params;
@@ -210,7 +211,10 @@ class PageInfoBubbleViewTest : public testing::Test {
         web_contents);
   }
 
-  void TearDown() override { parent_window_->CloseNow(); }
+  void TearDown() override {
+    parent_window_->CloseNow();
+    content::BrowserSideNavigationTearDown();
+  }
 
  protected:
   ScopedWebContentsTestHelper web_contents_helper_;
@@ -683,7 +687,6 @@ TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
 // Tests opening the bubble between navigation start and finish. The bubble
 // should be updated to reflect the secure state after the navigation commits.
 TEST_F(PageInfoBubbleViewTest, OpenPageInfoBubbleAfterNavigationStart) {
-  content::BrowserSideNavigationSetUp();
   SecurityStateTabHelper::CreateForWebContents(
       web_contents_helper_.web_contents());
   std::unique_ptr<content::NavigationSimulator> navigation =
@@ -728,7 +731,6 @@ TEST_F(PageInfoBubbleViewTest, EnsureCloseCallback) {
 }
 
 TEST_F(PageInfoBubbleViewTest, CertificateButtonShowsEvCertDetails) {
-  content::BrowserSideNavigationSetUp();
   SecurityStateTabHelper::CreateForWebContents(
       web_contents_helper_.web_contents());
   std::unique_ptr<content::NavigationSimulator> navigation =

@@ -10,7 +10,6 @@
 #include "base/android/jni_string.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/unicodestring.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/android/content_jni_headers/DateTimeChooserAndroid_jni.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -45,13 +44,9 @@ base::string16 SanitizeSuggestionString(const base::string16& string) {
 namespace content {
 
 // DateTimeChooserAndroid implementation
-DateTimeChooserAndroid::DateTimeChooserAndroid(WebContentsImpl* web_contents)
+DateTimeChooserAndroid::DateTimeChooserAndroid(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      date_time_chooser_receiver_(this) {
-  binders_.Add(
-      base::BindRepeating(&DateTimeChooserAndroid::OnDateTimeChooserReceiver,
-                          base::Unretained(this)));
-}
+      date_time_chooser_receiver_(this) {}
 
 DateTimeChooserAndroid::~DateTimeChooserAndroid() {
 }
@@ -116,11 +111,6 @@ void DateTimeChooserAndroid::CancelDialog(JNIEnv* env,
   std::move(open_date_time_response_callback_).Run(false, 0.0);
 }
 
-void DateTimeChooserAndroid::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  binders_.TryBind(interface_name, interface_pipe);
-}
+WEB_CONTENTS_USER_DATA_KEY_IMPL(DateTimeChooserAndroid)
 
 }  // namespace content

@@ -418,7 +418,6 @@ include_rules = [
   "+third_party/blink/public/platform/web_mouse_wheel_event.h",
   "+third_party/blink/public/platform/web_touch_event.h",
   "+third_party/blink/public/public_buildflags.h",
-  "+third_party/blink/public/web/web_context_menu_data.h",
   "+third_party/blink/public/web/web_media_player_action.h",
 ]
 

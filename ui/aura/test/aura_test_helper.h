@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -69,6 +70,11 @@ class AuraTestHelper {
   Env* GetEnv();
 
  private:
+#if defined(OS_WIN)
+  // Deletes existing NativeWindowOcclusionTrackerWin instance.
+  void DeleteNativeWindowOcclusionTrackerWin();
+#endif  // defined(OS_WIN)
+
   bool setup_called_ = false;
   bool teardown_called_ = false;
   ui::ContextFactory* context_factory_to_restore_ = nullptr;

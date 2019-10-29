@@ -145,6 +145,8 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/context_menu_data/edit_flags.h"
+#include "third_party/blink/public/common/context_menu_data/input_field_type.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -200,6 +202,7 @@
 #endif
 
 using base::UserMetricsAction;
+using blink::ContextMenuDataEditFlags;
 using blink::ContextMenuDataMediaType;
 using blink::PluginAction;
 using blink::WebContextMenuData;
@@ -564,12 +567,12 @@ void OnProfileCreated(const GURL& link_url,
 }
 
 bool DoesInputFieldTypeSupportEmoji(
-    blink::WebContextMenuData::InputFieldType text_input_type) {
+    blink::ContextMenuDataInputFieldType text_input_type) {
   // Disable emoji for input types that definitely do not support emoji.
   switch (text_input_type) {
-    case blink::WebContextMenuData::kInputFieldTypeNumber:
-    case blink::WebContextMenuData::kInputFieldTypeTelephone:
-    case blink::WebContextMenuData::kInputFieldTypeOther:
+    case blink::ContextMenuDataInputFieldType::kNumber:
+    case blink::ContextMenuDataInputFieldType::kTelephone:
+    case blink::ContextMenuDataInputFieldType::kOther:
       return false;
     default:
       return true;
@@ -2012,16 +2015,16 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              params_.frame_url.GetOrigin() != chrome::kChromeUIPrintURL;
 
     case IDC_CONTENT_CONTEXT_UNDO:
-      return !!(params_.edit_flags & WebContextMenuData::kCanUndo);
+      return !!(params_.edit_flags & ContextMenuDataEditFlags::kCanUndo);
 
     case IDC_CONTENT_CONTEXT_REDO:
-      return !!(params_.edit_flags & WebContextMenuData::kCanRedo);
+      return !!(params_.edit_flags & ContextMenuDataEditFlags::kCanRedo);
 
     case IDC_CONTENT_CONTEXT_CUT:
-      return !!(params_.edit_flags & WebContextMenuData::kCanCut);
+      return !!(params_.edit_flags & ContextMenuDataEditFlags::kCanCut);
 
     case IDC_CONTENT_CONTEXT_COPY:
-      return !!(params_.edit_flags & WebContextMenuData::kCanCopy);
+      return !!(params_.edit_flags & ContextMenuDataEditFlags::kCanCopy);
 
     case IDC_CONTENT_CONTEXT_PASTE:
       return IsPasteEnabled();
@@ -2030,10 +2033,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return IsPasteAndMatchStyleEnabled();
 
     case IDC_CONTENT_CONTEXT_DELETE:
-      return !!(params_.edit_flags & WebContextMenuData::kCanDelete);
+      return !!(params_.edit_flags & ContextMenuDataEditFlags::kCanDelete);
 
     case IDC_CONTENT_CONTEXT_SELECTALL:
-      return !!(params_.edit_flags & WebContextMenuData::kCanSelectAll);
+      return !!(params_.edit_flags & ContextMenuDataEditFlags::kCanSelectAll);
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       return IsOpenLinkOTREnabled();
@@ -2536,7 +2539,8 @@ bool RenderViewContextMenu::IsTranslateEnabled() const {
   // target languages are identical.  This is to give a way to user to
   // translate a page that might contains text fragments in a different
   // language.
-  return ((params_.edit_flags & WebContextMenuData::kCanTranslate) != 0) &&
+  return ((params_.edit_flags & ContextMenuDataEditFlags::kCanTranslate) !=
+          0) &&
          !original_lang.empty() &&  // Did we receive the page language yet?
          !chrome_translate_client->GetLanguageState().IsPageTranslated() &&
          !embedder_web_contents_->GetInterstitialPage() &&
@@ -2612,7 +2616,7 @@ bool RenderViewContextMenu::IsSavePageEnabled() const {
 }
 
 bool RenderViewContextMenu::IsPasteEnabled() const {
-  if (!(params_.edit_flags & WebContextMenuData::kCanPaste))
+  if (!(params_.edit_flags & ContextMenuDataEditFlags::kCanPaste))
     return false;
 
   std::vector<base::string16> types;
@@ -2623,7 +2627,7 @@ bool RenderViewContextMenu::IsPasteEnabled() const {
 }
 
 bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
-  if (!(params_.edit_flags & WebContextMenuData::kCanPaste))
+  if (!(params_.edit_flags & ContextMenuDataEditFlags::kCanPaste))
     return false;
 
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(

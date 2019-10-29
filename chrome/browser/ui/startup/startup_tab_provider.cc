@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
@@ -226,10 +227,8 @@ StartupTabs StartupTabProviderImpl::GetNewTabPageTabsForState(
 StartupTabs StartupTabProviderImpl::GetPostCrashTabsForState(
     bool has_incompatible_applications) {
   StartupTabs tabs;
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   if (has_incompatible_applications)
-    tabs.emplace_back(GetIncompatibleApplicationsUrl(), false);
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+    AddIncompatibleApplicationsUrl(&tabs);
   return tabs;
 }
 
@@ -241,14 +240,14 @@ GURL StartupTabProviderImpl::GetWelcomePageUrl(bool use_later_run_variant) {
              : url;
 }
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 // static
-GURL StartupTabProviderImpl::GetIncompatibleApplicationsUrl() {
+void StartupTabProviderImpl::AddIncompatibleApplicationsUrl(StartupTabs* tabs) {
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   UMA_HISTOGRAM_BOOLEAN("IncompatibleApplicationsPage.AddedPostCrash", true);
   GURL url(chrome::kChromeUISettingsURL);
-  return url.Resolve("incompatibleApplications");
+  tabs->emplace_back(url.Resolve("incompatibleApplications"), false);
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 // static
 GURL StartupTabProviderImpl::GetTriggeredResetSettingsUrl() {

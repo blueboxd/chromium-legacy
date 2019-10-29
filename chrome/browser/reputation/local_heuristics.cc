@@ -99,25 +99,25 @@ bool ShouldTriggerSafetyTipFromKeywordInURL(
       url, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
       net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 
-  // Getting a registry length of 0 means that our URL has an uknown registry.
+  // Getting a registry length of 0 means that our URL has an unknown registry.
   if (registry_length == 0) {
     return false;
   }
 
-  // "eTLD + 1 - 1": "www.google.com" -> "google.com" -> "google"
+  // "eTLD + 1 - 1": "www.google.com" -> "google.com" -> "google".
   std::string eTLD_plusminus =
       eTLD_plus_one.substr(0, eTLD_plus_one.size() - registry_length - 1);
 
-  // We should never end up with a "." in our eTLD + 1 - 1
+  // We should never end up with a "." in our eTLD + 1 - 1.
   DCHECK_EQ(eTLD_plusminus.find("."), std::string::npos);
   // Any problems that would result in an empty eTLD + 1 - 1 should have been
-  // caught bia the |eTLD_plus_one| check.
+  // caught via the |eTLD_plus_one| check.
 
   const std::vector<std::string> eTLD_plusminus_parts = base::SplitString(
       eTLD_plusminus, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   // We only care about finding a keyword here if there's more than one part to
-  // the tokenized eTLD+1-1.
+  // the tokenized eTLD + 1 - 1.
   if (eTLD_plusminus_parts.size() <= 1) {
     return false;
   }

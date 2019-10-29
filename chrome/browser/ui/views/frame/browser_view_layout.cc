@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -91,10 +90,6 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
     return gfx::Point(middle_x - size.width() / 2, top);
   }
 
-  bool ShouldActivateDialog() const override {
-    return chrome::FindLastActive() == browser_view_layout_->browser_;
-  }
-
   gfx::Size GetMaximumDialogSize() override {
     views::View* view = browser_view_layout_->contents_container_;
     gfx::Rect content_area = view->ConvertRectToWidget(view->GetLocalBounds());
@@ -104,9 +99,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
 
  private:
   gfx::NativeView GetHostView() const override {
-    gfx::NativeWindow window =
-        browser_view_layout_->browser()->window()->GetNativeWindow();
-    return views::Widget::GetWidgetForNativeWindow(window)->GetNativeView();
+    return browser_view_layout_->host_view_;
   }
 
   // Add/remove observer.
@@ -129,8 +122,8 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
 
 BrowserViewLayout::BrowserViewLayout(
     std::unique_ptr<BrowserViewLayoutDelegate> delegate,
-    Browser* browser,
-    views::ClientView* browser_view,
+    gfx::NativeView host_view,
+    BrowserView* browser_view,
     views::View* top_container,
     views::View* tab_strip_region_view,
     TabStrip* tab_strip,
@@ -142,7 +135,7 @@ BrowserViewLayout::BrowserViewLayout(
     views::View* web_footer_experiment,
     views::View* contents_separator)
     : delegate_(std::move(delegate)),
-      browser_(browser),
+      host_view_(host_view),
       browser_view_(browser_view),
       top_container_(top_container),
       tab_strip_region_view_(tab_strip_region_view),
@@ -175,14 +168,14 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
   constexpr int kMainBrowserContentsMinimumHeight = 1;
 
   const bool has_tabstrip =
-      browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
+      delegate_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
   const bool has_toolbar =
-      browser()->SupportsWindowFeature(Browser::FEATURE_TOOLBAR);
+      delegate_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR);
   const bool has_location_bar =
-      browser()->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
+      delegate_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
   const bool has_bookmarks_bar =
       bookmark_bar_ && bookmark_bar_->GetVisible() &&
-      browser()->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
+      delegate_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
 
   gfx::Size tabstrip_size(has_tabstrip ? tab_strip_->GetMinimumSize()
                                        : gfx::Size());
@@ -196,7 +189,7 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
   // TODO(pkotwicz): Adjust the minimum height for the find bar.
 
   gfx::Size contents_size(contents_container_->GetMinimumSize());
-  contents_size.SetToMax(browser()->is_type_normal()
+  contents_size.SetToMax(delegate_->BrowserIsTypeNormal()
                              ? gfx::Size(kMainBrowserContentsMinimumWidth,
                                          kMainBrowserContentsMinimumHeight)
                              : kContentsMinimumSize);
@@ -224,14 +217,11 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
   // The "user-perceived content area" excludes the detached bookmark bar (in
   // the New Tab case) and any infobars since they are not _visually_ connected
   // to the Toolbar.
-
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
-
   gfx::Rect bounding_box;
   if (!immersive_mode_controller_->IsEnabled() ||
       immersive_mode_controller_->IsRevealed()) {
     bounding_box =
-        browser_view->toolbar_button_provider()->GetFindBarBoundingBox(
+        browser_view_->toolbar_button_provider()->GetFindBarBoundingBox(
             contents_container_->height());
   }
   if (!bounding_box.IsEmpty())
@@ -244,9 +234,9 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
   // Under ChromeOS, the top_container_ may include the title bar for hosted
   // apps. Just make sure something of consequence is visible before it's height
   // is used.
-  const int top_container_height = (browser_view->tabstrip()->GetVisible() ||
-                                    browser_view->toolbar()->GetVisible() ||
-                                    browser_view->IsBookmarkBarVisible())
+  const int top_container_height = (browser_view_->tabstrip()->GetVisible() ||
+                                    browser_view_->toolbar()->GetVisible() ||
+                                    browser_view_->IsBookmarkBarVisible())
                                        ? top_container_->height()
                                        : 0;
   if (base::i18n::IsRTL())
@@ -254,6 +244,10 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
   else
     bounding_box.Inset(0, top_container_height, gfx::scrollbar_size(), 0);
   return bounding_box;
+}
+
+gfx::NativeView BrowserViewLayout::GetHostView() {
+  return delegate_->GetHostView();
 }
 
 int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
@@ -359,8 +353,8 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   // code calls back into us to find the bounding box the find bar
   // must be laid out within, and that code depends on the
   // TabContentsContainer's bounds being up to date.
-  if (browser()->HasFindBarController())
-    browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary();
+  if (delegate_->HasFindBarController())
+    delegate_->MoveWindowForFindBarIfNecessary();
 
   // Adjust the fullscreen exit bubble bounds for |top_container_|'s new bounds.
   // This makes the fullscreen exit bubble look like it animates with
@@ -533,8 +527,8 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
   if (delegate_->DownloadShelfNeedsLayout()) {
-    bool visible = browser()->SupportsWindowFeature(
-        Browser::FEATURE_DOWNLOADSHELF);
+    bool visible =
+        delegate_->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF);
     DCHECK(download_shelf_);
     int height = visible ? download_shelf_->GetPreferredSize().height() : 0;
     download_shelf_->SetVisible(visible);
@@ -567,6 +561,6 @@ bool BrowserViewLayout::IsInfobarVisible() const {
   // Cast to a views::View to access GetPreferredSize().
   views::View* infobar_container = infobar_container_;
   // NOTE: Can't check if the size IsEmpty() since it's always 0-width.
-  return browser_->SupportsWindowFeature(Browser::FEATURE_INFOBAR) &&
-      (infobar_container->GetPreferredSize().height() != 0);
+  return delegate_->SupportsWindowFeature(Browser::FEATURE_INFOBAR) &&
+         (infobar_container->GetPreferredSize().height() != 0);
 }

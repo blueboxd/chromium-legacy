@@ -226,6 +226,7 @@ BrowserXRRuntime::BrowserXRRuntime(
     : id_(id),
       runtime_(std::move(runtime)),
       display_info_(ValidateVRDisplayInfo(display_info.get(), id)) {
+  DVLOG(2) << __func__ << ": id=" << id;
   // Unretained is safe because we are calling through an InterfacePtr we own,
   // so we won't be called after runtime_ is destroyed.
   runtime_->ListenToDeviceChanges(
@@ -234,9 +235,12 @@ BrowserXRRuntime::BrowserXRRuntime(
                      base::Unretained(this)));
 }
 
-BrowserXRRuntime::~BrowserXRRuntime() = default;
+BrowserXRRuntime::~BrowserXRRuntime() {
+  DVLOG(2) << __func__ << ": id=" << id_;
+}
 
 void BrowserXRRuntime::ExitActiveImmersiveSession() {
+  DVLOG(2) << __func__;
   auto* service = GetServiceWithActiveImmersiveSession();
   if (service) {
     service->ExitPresent();
@@ -411,6 +415,7 @@ void BrowserXRRuntime::OnVisibilityStateChanged(
 }
 
 void BrowserXRRuntime::OnInitialized() {
+  DVLOG(2) << __func__;
   for (auto& callback : pending_initialization_callbacks_) {
     std::move(callback).Run(display_info_.Clone());
   }
@@ -418,10 +423,12 @@ void BrowserXRRuntime::OnInitialized() {
 }
 
 void BrowserXRRuntime::OnServiceAdded(VRServiceImpl* service) {
+  DVLOG(2) << __func__ << ": id=" << id_;
   services_.insert(service);
 }
 
 void BrowserXRRuntime::OnServiceRemoved(VRServiceImpl* service) {
+  DVLOG(2) << __func__ << ": id=" << id_;
   DCHECK(service);
   services_.erase(service);
   if (service == presenting_service_) {
@@ -436,6 +443,7 @@ void BrowserXRRuntime::OnServiceRemoved(VRServiceImpl* service) {
 }
 
 void BrowserXRRuntime::ExitPresent(VRServiceImpl* service) {
+  DVLOG(2) << __func__ << ": id=" << id_;
   if (service == presenting_service_) {
     StopImmersiveSession();
   }
@@ -454,6 +462,7 @@ void BrowserXRRuntime::RequestSession(
     VRServiceImpl* service,
     const device::mojom::XRRuntimeSessionOptionsPtr& options,
     RequestSessionCallback callback) {
+  DVLOG(2) << __func__ << ": id=" << id_;
   // base::Unretained is safe because we won't be called back after runtime_ is
   // destroyed.
   runtime_->RequestSession(
@@ -471,6 +480,7 @@ void BrowserXRRuntime::OnRequestSessionResult(
     mojo::PendingRemote<device::mojom::XRSessionController>
         immersive_session_controller) {
   if (session && service) {
+    DVLOG(2) << __func__ << ": id=" << id_;
     if (options->immersive) {
       presenting_service_ = service.get();
       immersive_session_controller_.Bind(
@@ -499,6 +509,7 @@ void BrowserXRRuntime::OnRequestSessionResult(
 }
 
 void BrowserXRRuntime::OnImmersiveSessionError() {
+  DVLOG(2) << __func__ << ": id=" << id_;
   StopImmersiveSession();
 }
 
@@ -517,6 +528,7 @@ void BrowserXRRuntime::UpdateListeningForActivate(VRServiceImpl* service) {
 void BrowserXRRuntime::InitializeAndGetDisplayInfo(
     content::RenderFrameHost* render_frame_host,
     device::mojom::VRService::GetImmersiveVRDisplayInfoCallback callback) {
+  DVLOG(2) << __func__ << ": id=" << id_;
   device::mojom::VRDisplayInfoPtr device_info = GetVRDisplayInfo();
   if (device_info) {
     std::move(callback).Run(std::move(device_info));

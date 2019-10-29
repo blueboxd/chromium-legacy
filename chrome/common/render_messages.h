@@ -63,12 +63,6 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SetIsShowingDownloadButtonInErrorPage,
 // Misc messages
 // These are messages sent from the renderer to the browser process.
 
-// Tells the browser that content in the current page was blocked due to the
-// user's content settings.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_ContentBlocked,
-                    ContentSettingsType /* type of blocked content */,
-                    base::string16 /* details on blocked content */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Sent by the renderer to check if crash reporting is enabled.
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,

@@ -110,11 +110,6 @@ bool OculusDevice::IsApiAvailable() {
   return result.IsOculusServiceRunning;
 }
 
-mojo::PendingRemote<mojom::IsolatedXRGamepadProviderFactory>
-OculusDevice::BindGamepadFactory() {
-  return gamepad_provider_factory_receiver_.BindNewPipeAndPassRemote();
-}
-
 mojo::PendingRemote<mojom::XRCompositorHost>
 OculusDevice::BindCompositorHost() {
   return compositor_host_receiver_.BindNewPipeAndPassRemote();
@@ -148,15 +143,6 @@ void OculusDevice::RequestSession(
       std::move(callback).Run(nullptr, mojo::NullRemote());
       StartOvrSession();
       return;
-    }
-
-    // If we have a pending gamepad provider receiver when starting the render
-    // loop, post the receiver over to the render loop to be bound.
-    if (provider_receiver_) {
-      render_loop_->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
-                                    base::Unretained(render_loop_.get()),
-                                    std::move(provider_receiver_)));
     }
 
     if (overlay_receiver_) {
@@ -281,22 +267,6 @@ void OculusDevice::StopOvrSession() {
     ovr_Destroy(session_);
     session_ = nullptr;
     ovr_Shutdown();
-  }
-}
-
-void OculusDevice::GetIsolatedXRGamepadProvider(
-    mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> provider_receiver) {
-  // We bind the provider_receiver on the render loop thread, so gamepad data is
-  // updated at the rendering rate.
-  // If we haven't started the render loop yet, postpone binding the receiver
-  // until we do.
-  if (render_loop_->IsRunning()) {
-    render_loop_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
-                                  base::Unretained(render_loop_.get()),
-                                  std::move(provider_receiver)));
-  } else {
-    provider_receiver_ = std::move(provider_receiver);
   }
 }
 

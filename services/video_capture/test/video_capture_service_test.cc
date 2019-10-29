@@ -14,9 +14,10 @@
 namespace video_capture {
 
 VideoCaptureServiceTest::SharedMemoryVirtualDeviceContext::
-    SharedMemoryVirtualDeviceContext(mojom::ProducerRequest producer_request)
+    SharedMemoryVirtualDeviceContext(
+        mojo::PendingReceiver<mojom::Producer> producer_receiver)
     : mock_producer(
-          std::make_unique<MockProducer>(std::move(producer_request))) {}
+          std::make_unique<MockProducer>(std::move(producer_receiver))) {}
 
 VideoCaptureServiceTest::SharedMemoryVirtualDeviceContext::
     ~SharedMemoryVirtualDeviceContext() = default;

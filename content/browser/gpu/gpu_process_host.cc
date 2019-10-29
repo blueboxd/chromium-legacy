@@ -37,7 +37,6 @@
 #include "components/viz/common/switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/field_trial_recorder.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
@@ -46,7 +45,6 @@
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/field_trial_recorder.mojom.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/common/view_messages.h"
@@ -75,9 +73,6 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "ui/base/ui_base_features.h"
@@ -87,11 +82,6 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/latency/latency_info.h"
-
-#if defined(OS_ANDROID)
-#include "content/public/browser/android/java_interfaces.h"
-#include "media/mojo/mojom/android_overlay.mojom.h"
-#endif
 
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_policy.h"
@@ -431,14 +421,6 @@ class GpuSandboxedProcessLauncherDelegate
 #endif  // OS_WIN
 };
 
-#if defined(OS_ANDROID)
-void BindAndroidOverlayProvider(
-    mojo::PendingReceiver<media::mojom::AndroidOverlayProvider> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::GetGlobalJavaInterfaces()->GetInterface(std::move(receiver));
-}
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_WIN)
 void RecordAppContainerStatus(int error_code, bool crashed_before) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -582,30 +564,6 @@ void GpuProcessHost::BindInterface(
   }
   process_->child_connection()->BindInterface(interface_name,
                                               std::move(interface_pipe));
-}
-
-void GpuProcessHost::BindHostReceiver(
-    mojo::GenericPendingReceiver generic_receiver) {
-  if (auto field_trial_receiver =
-          generic_receiver.As<mojom::FieldTrialRecorder>()) {
-    mojo::PendingReceiver<mojom::FieldTrialRecorder> receiver(
-        std::move(field_trial_receiver));
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&FieldTrialRecorder::Create, std::move(receiver)));
-    return;
-  }
-
-#if defined(OS_ANDROID)
-  if (auto r = generic_receiver.As<media::mojom::AndroidOverlayProvider>()) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&BindAndroidOverlayProvider, std::move(r)));
-    return;
-  }
-#endif
-
-  GetContentClient()->browser()->BindGpuHostReceiver(
-      std::move(generic_receiver));
 }
 
 void GpuProcessHost::RunService(

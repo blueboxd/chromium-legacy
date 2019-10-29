@@ -56,19 +56,6 @@ public final class ReturnToChromeExperimentsUtil {
     }
 
     /**
-     * Whether we should display the omnibox on the tab switcher in addition to the
-     *  tab switcher toolbar.
-     *
-     * @return true if the tab grid and the start surface features are both ON, else false.
-     */
-    public static boolean shouldShowOmniboxOnTabSwitcher() {
-        return ChromeFeatureList.isInitialized()
-                && (FeatureUtilities.isGridTabSwitcherEnabled()
-                        || FeatureUtilities.isTabGroupsAndroidEnabled())
-                && FeatureUtilities.isStartSurfaceEnabled();
-    }
-
-    /**
      * Check if we should handle the navigation. If so, create a new tab and load the URL.
      *
      * @param url The URL to load.
@@ -111,7 +98,7 @@ public final class ReturnToChromeExperimentsUtil {
      * @return The ChromeActivity if it is presenting the omnibox on the tab switcher, else null.
      */
     private static ChromeActivity getActivityPresentingOverviewWithOmnibox() {
-        if (!shouldShowOmniboxOnTabSwitcher()) return null;
+        if (!FeatureUtilities.isStartSurfaceEnabled()) return null;
 
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (!(activity instanceof ChromeActivity)) return null;

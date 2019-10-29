@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
+#include "chrome/browser/chromeos/login/screens/enable_adb_sideloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
@@ -161,6 +162,7 @@ class WizardController {
   void ShowDemoModePreferencesScreen();
   void ShowResetScreen();
   void ShowKioskAutolaunchScreen();
+  void ShowEnableAdbSideloadingScreen();
   void ShowEnableDebuggingScreen();
   void ShowKioskEnableScreen();
   void ShowTermsOfServiceScreen();
@@ -202,6 +204,7 @@ class WizardController {
   void OnAutoEnrollmentCheckScreenExit();
   void OnEnrollmentScreenExit(EnrollmentScreen::Result result);
   void OnEnrollmentDone();
+  void OnEnableAdbSideloadingScreenExit();
   void OnEnableDebuggingScreenExit();
   void OnKioskEnableScreenExit();
   void OnKioskAutolaunchScreenExit(KioskAutolaunchScreen::Result result);

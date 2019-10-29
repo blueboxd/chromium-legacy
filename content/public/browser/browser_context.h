@@ -163,8 +163,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // as well. Note that retrieving a blob ptr out of BlobHandle can only be
   // done on IO. |callback| returns a nullptr on failure.
   static void CreateMemoryBackedBlob(BrowserContext* browser_context,
-                                     const char* data,
-                                     size_t length,
+                                     base::span<const uint8_t> data,
                                      const std::string& content_type,
                                      BlobCallback callback);
 

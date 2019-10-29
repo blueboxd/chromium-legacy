@@ -2,28 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#import <EarlGrey/GREYKeyboard.h>
-
-#include "base/ios/ios_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
-#include "components/keyed_service/core/service_access_type.h"
-#import "ios/chrome/browser/autofill/form_suggestion_constants.h"
-#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
-#import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -32,8 +17,7 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::CancelButton;
-using chrome_test_util::GetOriginalBrowserState;
+using base::test::ios::kWaitForActionTimeout;
 using chrome_test_util::ManualFallbackFormSuggestionViewMatcher;
 using chrome_test_util::ManualFallbackKeyboardIconMatcher;
 using chrome_test_util::ManualFallbackManageProfilesMatcher;
@@ -42,7 +26,6 @@ using chrome_test_util::ManualFallbackProfilesTableViewMatcher;
 using chrome_test_util::ManualFallbackProfileTableViewWindowMatcher;
 using chrome_test_util::NavigationBarCancelButton;
 using chrome_test_util::SettingsProfileMatcher;
-using ios::ChromeBrowserState;
 
 namespace {
 
@@ -51,66 +34,28 @@ constexpr char kFormElementCity[] = "city";
 
 constexpr char kFormHTMLFile[] = "/profile_form.html";
 
-// Saves an example profile in the store.
-void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
-  using base::test::ios::WaitUntilConditionOrTimeout;
-  using base::test::ios::kWaitForActionTimeout;
-
-  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  size_t previousProfileCount = personalDataManager->GetProfiles().size();
-  personalDataManager->AddProfile(profile);
-  GREYAssert(WaitUntilConditionOrTimeout(
-                 kWaitForActionTimeout,
-                 ^bool() {
-                   return previousProfileCount <
-                          personalDataManager->GetProfiles().size();
-                 }),
-             @"Failed to add profile.");
-}
-
-void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
-  for (const auto* profile : personalDataManager->GetProfiles()) {
-    personalDataManager->RemoveByGUID(profile->guid());
-  }
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForActionTimeout,
-                 ^bool() {
-                   return 0 == personalDataManager->GetProfiles().size();
-                 }),
-             @"Failed to clean profiles.");
+// Waits for the keyboard to appear. Returns NO on timeout.
+BOOL WaitForKeyboardToAppear() {
+  GREYCondition* waitForKeyboard = [GREYCondition
+      conditionWithName:@"Wait for keyboard"
+                  block:^BOOL {
+                    return [ChromeEarlGrey isKeyboardShownWithError:nil];
+                  }];
+  return [waitForKeyboard waitWithTimeout:kWaitForActionTimeout];
 }
 
 }  // namespace
 
 // Integration Tests for Mannual Fallback Addresses View Controller.
-@interface AddressViewControllerTestCase : ChromeTestCase {
-  // The PersonalDataManager instance for the current browser state.
-  autofill::PersonalDataManager* _personalDataManager;
-}
-
+@interface AddressViewControllerTestCase : ChromeTestCase
 @end
 
 @implementation AddressViewControllerTestCase
 
-+ (void)setUp {
-  [super setUp];
-  // If the previous run was manually stopped then the profile will be in the
-  // store and the test will fail. We clean it here for those cases.
-  ios::ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  autofill::PersonalDataManager* personalDataManager =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
-  ClearProfiles(personalDataManager);
-}
-
 - (void)setUp {
   [super setUp];
-  ChromeBrowserState* browserState = GetOriginalBrowserState();
-  _personalDataManager =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
-  _personalDataManager->SetSyncingForTest(true);
-  // Store one address.
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface clearProfilesStore];
+  [AutofillAppInterface saveExampleProfile];
 
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
@@ -119,7 +64,7 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
 }
 
 - (void)tearDown {
-  ClearProfiles(_personalDataManager);
+  [AutofillAppInterface clearProfilesStore];
   [super tearDown];
 }
 
@@ -303,21 +248,21 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
 // Tests that the address icon is hidden when no addresses are available.
 - (void)testAddressIconIsNotVisibleWhenAddressStoreEmpty {
   // Delete the profile that is added on |-setUp|.
-  ClearProfiles(_personalDataManager);
+  [AutofillAppInterface clearProfilesStore];
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Wait for the keyboard to appear.
-  [GREYKeyboard waitForKeyboardToAppear];
+  WaitForKeyboardToAppear();
 
   // Assert the address icon is not visible.
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
       assertWithMatcher:grey_notVisible()];
 
   // Store one address.
-  AddAutofillProfile(_personalDataManager);
+  [AutofillAppInterface saveExampleProfile];
 
   // Tap another field to trigger form activity.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]

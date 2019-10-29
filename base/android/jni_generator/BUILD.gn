@@ -106,6 +106,7 @@ java_annotation_processor("jni_processor") {
   deps = [
     "//base:jni_java",
     "//third_party/android_deps:com_squareup_javapoet_java",
+    "//third_party/android_deps:javax_annotation_jsr250_api_java",
     "//third_party/auto:auto_service_java",
     "//third_party/guava:guava_java",
   ]

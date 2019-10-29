@@ -32,7 +32,8 @@
     </style>
     <cr-lazy-render id="dropdown">
       <template>
-        <cr-action-menu on-mousedown="onMenuMousedown_">
+        <cr-action-menu on-mousedown="onMenuMousedown_"
+            role-description="$i18n{menu}">
           <template is="dom-repeat" items="[[menuCommands_]]" as="command">
             <button class="dropdown-item"
                 command$="[[command]]"

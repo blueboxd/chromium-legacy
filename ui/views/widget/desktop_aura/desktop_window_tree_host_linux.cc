@@ -19,6 +19,10 @@
 #include "ui/views/widget/desktop_aura/window_event_filter_linux.h"
 #include "ui/views/widget/widget.h"
 
+#if BUILDFLAG(USE_ATK)
+#include "ui/accessibility/platform/atk_util_auralinux.h"
+#endif
+
 DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostLinux*)
 
 namespace views {
@@ -300,6 +304,15 @@ void DesktopWindowTreeHostLinux::OnActivationChanged(bool active) {
   }
   DesktopWindowTreeHostPlatform::OnActivationChanged(active);
 }
+
+#if BUILDFLAG(USE_ATK)
+bool DesktopWindowTreeHostLinux::OnAtkKeyEvent(AtkKeyEventStruct* atk_event) {
+  if (!IsActive() && !HasCapture())
+    return false;
+  return ui::AtkUtilAuraLinux::HandleAtkKeyEvent(atk_event) ==
+         ui::DiscardAtkKeyEvent::Discard;
+}
+#endif
 
 void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
     const Widget::InitParams& params,

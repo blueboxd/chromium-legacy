@@ -239,7 +239,7 @@ void VirtualDeviceEnabledDeviceFactory::EmitDevicesChangedEvent() {
 }
 
 void VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected(
-    mojom::DevicesChangedObserverPtr::Proxy* observer) {
+    mojom::DevicesChangedObserver* observer) {
   for (auto iter = devices_changed_observers_.begin();
        iter != devices_changed_observers_.end(); ++iter) {
     if (iter->get() == observer) {

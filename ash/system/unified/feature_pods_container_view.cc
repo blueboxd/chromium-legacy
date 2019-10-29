@@ -234,7 +234,7 @@ int FeaturePodsContainerView::CalculateRowsFromHeight(int height) {
   // Only use the max number of rows when there is enough space
   // to show the fully expanded message center and quick settings.
   if (available_height > (kUnifiedFeaturePodMaxRows * row_height) &&
-      available_height % (kUnifiedFeaturePodMaxRows * row_height) >
+      available_height - (kUnifiedFeaturePodMaxRows * row_height) >
           kMessageCenterCollapseThreshold) {
     return kUnifiedFeaturePodMaxRows;
   }
@@ -244,7 +244,7 @@ int FeaturePodsContainerView::CalculateRowsFromHeight(int height) {
   // with the expanded quick settings.
   int feature_pod_rows = kUnifiedFeaturePodMaxRows - 1;
   if (available_height > (feature_pod_rows * row_height) &&
-      available_height % (feature_pod_rows * row_height) >
+      available_height - (feature_pod_rows * row_height) >
           kStackedNotificationBarHeight) {
     return feature_pod_rows;
   }

@@ -17,10 +17,12 @@ namespace blink {
 FilteringNetworkManager::FilteringNetworkManager(
     rtc::NetworkManager* network_manager,
     const GURL& requesting_origin,
-    media::MediaPermission* media_permission)
+    media::MediaPermission* media_permission,
+    bool allow_mdns_obfuscation)
     : network_manager_(network_manager),
       media_permission_(media_permission),
-      requesting_origin_(requesting_origin) {
+      requesting_origin_(requesting_origin),
+      allow_mdns_obfuscation_(allow_mdns_obfuscation) {
   DETACH_FROM_THREAD(thread_checker_);
   set_enumeration_permission(ENUMERATION_BLOCKED);
 
@@ -95,7 +97,10 @@ webrtc::MdnsResponderInterface* FilteringNetworkManager::GetMdnsResponder()
     const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (enumeration_permission() == ENUMERATION_ALLOWED)
+  // mDNS responder is set to null if we have the enumeration permission or the
+  // mDNS obfuscation of IPs is disallowed.
+  if (enumeration_permission() == ENUMERATION_ALLOWED ||
+      !allow_mdns_obfuscation_)
     return nullptr;
 
   return network_manager_->GetMdnsResponder();

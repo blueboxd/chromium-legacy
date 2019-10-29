@@ -477,10 +477,7 @@ def _ParseOptions(argv):
     # Get the path of the jdk folder by searching for the 'jar' executable. We
     # cannot search for the 'javac' executable because goma provides a custom
     # version of 'javac'.
-    jar_path = os.path.realpath(distutils.spawn.find_executable('jar'))
-    jdk_dir = os.path.dirname(os.path.dirname(jar_path))
-    rt_jar = os.path.join(jdk_dir, 'jre', 'lib', 'rt.jar')
-    options.bootclasspath.append(rt_jar)
+    options.bootclasspath.append(build_utils.RT_JAR_PATH)
 
   additional_jar_files = []
   for arg in options.additional_jar_files or []:

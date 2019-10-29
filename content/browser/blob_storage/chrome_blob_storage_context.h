@@ -64,8 +64,7 @@ class CONTENT_EXPORT ChromeBlobStorageContext
 
   // Returns a NULL scoped_ptr on failure.
   std::unique_ptr<BlobHandle> CreateMemoryBackedBlob(
-      const char* data,
-      size_t length,
+      base::span<const uint8_t> data,
       const std::string& content_type);
 
   // Returns a SharedURLLoaderFactory capable of creating URLLoaders for exactly

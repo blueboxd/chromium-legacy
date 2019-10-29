@@ -28,8 +28,8 @@ constexpr base::TimeDelta InputPredictor::kTimeInterval;
 constexpr base::TimeDelta InputPredictor::kMinTimeInterval;
 constexpr base::TimeDelta KalmanPredictor::kMaxTimeInQueue;
 
-KalmanPredictor::KalmanPredictor(HeuristicsMode heuristics_mode)
-    : heuristics_mode_(heuristics_mode) {}
+KalmanPredictor::KalmanPredictor(unsigned int prediction_options)
+    : prediction_options_(prediction_options) {}
 
 KalmanPredictor::~KalmanPredictor() = default;
 
@@ -84,9 +84,16 @@ std::unique_ptr<InputPredictor::InputData> KalmanPredictor::GeneratePrediction(
   gfx::Vector2dF velocity = PredictVelocity();
   gfx::Vector2dF acceleration = PredictAcceleration();
 
+  if (prediction_options_ & kDirectionCutOffEnabled) {
+    gfx::Vector2dF future_velocity =
+        velocity + ScaleVector2d(acceleration, pred_dt);
+    if (gfx::DotProduct(velocity, future_velocity) <= 0)
+      return nullptr;
+  }
+
   position += ScaleVector2d(velocity, kVelocityInfluence * pred_dt);
 
-  if (heuristics_mode_ == HeuristicsMode::kHeuristicsEnabled) {
+  if (prediction_options_ & kHeuristicsEnabled) {
     float points_angle = 0.0f;
     for (size_t i = 2; i < last_points_.size(); i++) {
       gfx::Vector2dF first_dir =

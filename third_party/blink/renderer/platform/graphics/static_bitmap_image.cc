@@ -111,6 +111,9 @@ bool StaticBitmapImage::CopyToByteArray(
   if (!src_image)
     return true;
 
+  if (dst.size() == 0)
+    return true;
+
   SkColorType color_type =
       (color_params.GetSkColorType() == kRGBA_F16_SkColorType)
           ? kRGBA_F16_SkColorType

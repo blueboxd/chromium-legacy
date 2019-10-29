@@ -67,6 +67,22 @@ const char kExpectedMimeType[] = "text/html";
 
 const char kFailedTitle[] = "failed_title";
 
+// Location of a test page.
+const char kTestPageURL[] = "/pony.html";
+
+// A text string from the test HTML page at |kTestPageURL|.
+const char kTestSessionStoragePageText[] = "pony";
+
+// Returns a session storage with a single committed entry of a test HTML page.
+CRWSessionStorage* GetTestSessionStorage(const GURL& testUrl) {
+  CRWSessionStorage* result = [[CRWSessionStorage alloc] init];
+  result.lastCommittedItemIndex = 0;
+  CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
+  [item setVirtualURL:testUrl];
+  [result setItemStorages:@[ item ]];
+  return result;
+}
+
 // WebStateObserverTest is parameterized on this enum to test both
 // LegacyNavigationManagerImpl and WKBasedNavigationManagerImpl.
 enum NavigationManagerChoice {
@@ -2888,6 +2904,41 @@ TEST_P(WebStateObserverTest, RestoreSessionOnline) {
   EXPECT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_TRUE(navigation_manager()->CanGoForward());
   ASSERT_FALSE(navigation_manager()->CanGoBack());
+}
+
+// Tests that if a saved session is provided when creating a new WebState, it is
+// restored after the first NavigationManager::LoadIfNecessary() call.
+TEST_P(WebStateObserverTest, RestoredFromHistory) {
+  auto web_state = WebState::CreateWithStorageSession(
+      WebState::CreateParams(GetBrowserState()),
+      GetTestSessionStorage(test_server_->GetURL(kTestPageURL)));
+
+  ASSERT_FALSE(test::IsWebViewContainingText(web_state.get(),
+                                             kTestSessionStoragePageText));
+  web_state->GetNavigationManager()->LoadIfNecessary();
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
+                                                 kTestSessionStoragePageText));
+}
+
+// Tests that NavigationManager::LoadIfNecessary() restores the page after
+// disabling and re-enabling web usage.
+TEST_P(WebStateObserverTest, DisableAndReenableWebUsage) {
+  auto web_state = WebState::CreateWithStorageSession(
+      WebState::CreateParams(GetBrowserState()),
+      GetTestSessionStorage(test_server_->GetURL(kTestPageURL)));
+  web_state->GetNavigationManager()->LoadIfNecessary();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
+                                                 kTestSessionStoragePageText));
+
+  web_state->SetWebUsageEnabled(false);
+  web_state->SetWebUsageEnabled(true);
+
+  // NavigationManager::LoadIfNecessary() should restore the page.
+  ASSERT_FALSE(test::IsWebViewContainingText(web_state.get(),
+                                             kTestSessionStoragePageText));
+  web_state->GetNavigationManager()->LoadIfNecessary();
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
+                                                 kTestSessionStoragePageText));
 }
 
 // Tests successful navigation to a PDF file:// URL.

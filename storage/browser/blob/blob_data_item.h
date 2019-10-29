@@ -82,7 +82,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
     friend class base::RefCounted<DataHandle>;
   };
 
-  static scoped_refptr<BlobDataItem> CreateBytes(base::span<const char> bytes);
+  static scoped_refptr<BlobDataItem> CreateBytes(
+      base::span<const uint8_t> bytes);
   static scoped_refptr<BlobDataItem> CreateBytesDescription(size_t length);
   static scoped_refptr<BlobDataItem> CreateFile(base::FilePath path);
   static scoped_refptr<BlobDataItem> CreateFile(
@@ -111,7 +112,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
   uint64_t offset() const { return offset_; }
   uint64_t length() const { return length_; }
 
-  base::span<const char> bytes() const {
+  base::span<const uint8_t> bytes() const {
     DCHECK_EQ(type_, Type::kBytes);
     return base::make_span(bytes_);
   }
@@ -158,13 +159,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
   BlobDataItem(Type type, uint64_t offset, uint64_t length);
   virtual ~BlobDataItem();
 
-  base::span<char> mutable_bytes() {
+  base::span<uint8_t> mutable_bytes() {
     DCHECK_EQ(type_, Type::kBytes);
     return base::make_span(bytes_);
   }
 
   void AllocateBytes();
-  void PopulateBytes(base::span<const char> data);
+  void PopulateBytes(base::span<const uint8_t> data);
   void ShrinkBytes(size_t new_length);
 
   void PopulateFile(base::FilePath path,
@@ -181,9 +182,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
   uint64_t offset_;
   uint64_t length_;
 
-  std::vector<char> bytes_;  // For Type::kBytes.
-  base::FilePath path_;      // For Type::kFile.
-  GURL filesystem_url_;      // For Type::kFileFilesystem.
+  std::vector<uint8_t> bytes_;  // For Type::kBytes.
+  base::FilePath path_;         // For Type::kFile.
+  GURL filesystem_url_;         // For Type::kFileFilesystem.
   base::Time
       expected_modification_time_;  // For Type::kFile and kFileFilesystem.
 

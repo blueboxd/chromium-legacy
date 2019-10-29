@@ -976,7 +976,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchInputTransferAcrossActivation) {
   // Create and dispatch a synthetic scroll to trigger activation.
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  params.anchor = gfx::PointF(50, 150);
+  params.anchor =
+      gfx::PointF(50, main_frame->GetView()->GetViewBounds().height() - 100);
   params.distances.push_back(-gfx::Vector2d(0, 100));
 
   std::unique_ptr<SyntheticSmoothScrollGesture> gesture =
@@ -999,7 +1000,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchInputTransferAcrossActivation) {
 // Touch input transfer is only implemented in the content layer for Aura.
 #if defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
-                       DISABLED_TouchInputTransferAcrossReactivation) {
+                       TouchInputTransferAcrossReactivation) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "portal.test",
@@ -1026,6 +1027,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
     portal = portal_created_observer.WaitUntilPortalCreated();
   }
   navigation_observer.Wait();
+  WaitForHitTestData(main_frame);
 
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);
@@ -1033,8 +1035,10 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   // Create and dispatch a synthetic scroll to trigger activation.
   SyntheticSmoothScrollGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  params.anchor = gfx::PointF(50, 150);
-  params.distances.push_back(-gfx::Vector2d(0, 1000));
+  params.anchor =
+      gfx::PointF(50, main_frame->GetView()->GetViewBounds().height() - 100);
+  params.distances.push_back(-gfx::Vector2d(0, 250));
+  params.speed_in_pixels_s = 200;
 
   std::unique_ptr<SyntheticSmoothScrollGesture> gesture =
       std::make_unique<SyntheticSmoothScrollGesture>(params);
@@ -1055,7 +1059,10 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   // The starting page should have scrolled.
   // NOTE: This assumes that the scroll gesture is long enough that touch events
   // are still sent after the predecessor is reactivated.
-  EXPECT_NE(0, EvalJs(main_frame, "window.scrollY"));
+  int scroll_y_after_portal_activate =
+      EvalJs(main_frame, "scrollYAfterPortalActivate").ExtractInt();
+  EXPECT_LT(scroll_y_after_portal_activate,
+            EvalJs(main_frame, "window.scrollY"));
 }
 #endif
 

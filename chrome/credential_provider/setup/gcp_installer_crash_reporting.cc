@@ -40,9 +40,9 @@ void ConfigureGcpInstallerCrashReporting(
   crash_reporter::InitializeCrashpadWithEmbeddedHandler(true, "GCPW Installer",
                                                         "", base::FilePath());
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   SetCommonCrashKeys(command_line);
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   static crash_reporter::CrashKeyString<64> operation("operation");
 
   bool is_uninstall =

@@ -805,8 +805,47 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
 
   ASSERT_EQ(1u, cookie_map.count(kStrictName));
   EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie_map[kStrictName]->SameSite());
+}
 
-  cookies.clear();
+TEST_F(SQLitePersistentCookieStoreTest, SameSiteExtendedTreatedAsUnspecified) {
+  constexpr char kDomain[] = "sessioncookie.com";
+  constexpr char kExtendedName[] = "extended";
+  constexpr char kCookieValue[] = "value";
+  constexpr char kCookiePath[] = "/";
+
+  InitializeStore(false, true);
+
+  // Add an extended-samesite persistent cookie by first adding a strict-same
+  // site cookie, then turning that into the legacy extended-samesite state with
+  // direct SQL DB access.
+  store_->AddCookie(CanonicalCookie(
+      kExtendedName, kCookieValue, kDomain, kCookiePath,
+      base::Time::Now() - base::TimeDelta::FromMinutes(1),
+      base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
+      false, CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT));
+
+  // Force the store to write its data to the disk.
+  DestroyStore();
+
+  // Open db
+  sql::Database connection;
+  ASSERT_TRUE(connection.Open(temp_dir_.GetPath().Append(kCookieFilename)));
+  std::string update_stmt(
+      "UPDATE cookies SET samesite=3"  // 3 is Extended.
+      " WHERE samesite=2"              // 2 is Strict.
+  );
+  ASSERT_TRUE(connection.Execute(update_stmt.c_str()));
+  connection.Close();
+
+  // Create a store that loads session cookie and test that the
+  // SameSite=Extended attribute values is ignored.
+  CanonicalCookieVector cookies;
+  CreateAndLoad(false, true, &cookies);
+  ASSERT_EQ(1U, cookies.size());
+
+  // Validate that the cookie has the correct SameSite.
+  EXPECT_EQ(kExtendedName, cookies[0]->Name());
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookies[0]->SameSite());
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {

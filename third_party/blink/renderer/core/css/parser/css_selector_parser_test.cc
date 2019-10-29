@@ -340,6 +340,7 @@ TEST(CSSSelectorParserTest, InternalPseudo) {
                               "::-internal-media-controls-text-track-list",
                               ":-internal-is-html",
                               ":-internal-list-box",
+                              ":-internal-multi-select-focus",
                               ":-internal-shadow-host-has-appearance",
                               ":-internal-spatial-navigation-focus",
                               ":-internal-spatial-navigation-interest",

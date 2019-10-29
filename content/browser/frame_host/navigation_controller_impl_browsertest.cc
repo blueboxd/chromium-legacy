@@ -7119,6 +7119,50 @@ IN_PROC_BROWSER_TEST_F(
             EvalJs(web_contents, "self.origin"));
 }
 
+// This test simulates what happens when OnCommitTimeout is triggered after
+// ResetForCrossDocumentRestart. See https://crbug.com/1006677.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       OnCommitTimeoutAfterResetForCrossDocumentRestart) {
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  // Navigate to a simple page and then perform a same document navigation.
+  GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  GURL same_document_url(
+      embedded_test_server()->GetURL("a.com", "/title1.html#foo"));
+  EXPECT_TRUE(NavigateToURL(shell(), same_document_url));
+  EXPECT_EQ(2, web_contents->GetController().GetEntryCount());
+
+  // Create a HistoryNavigationBeforeCommitInjector, which will perform a
+  // GoBack() just before a cross-origin, same process navigation commits.
+  GURL cross_origin_url(
+      embedded_test_server()->GetURL("suborigin.a.com", "/title2.html"));
+  HistoryNavigationBeforeCommitInjector trigger(web_contents, cross_origin_url);
+
+  // Trigger OnCommitTimeout by setting commit timeout to 1 microsecond.
+  NavigationRequest::SetCommitTimeoutForTesting(
+      base::TimeDelta::FromMicroseconds(1));
+
+  // Navigate cross-origin, waiting for the commit to occur.
+  UrlCommitObserver cross_origin_commit_observer(root, cross_origin_url);
+  UrlCommitObserver history_commit_observer(root, start_url);
+  shell()->LoadURL(cross_origin_url);
+  cross_origin_commit_observer.Wait();
+  EXPECT_EQ(cross_origin_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(2, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Wait for the history navigation to commit.
+  history_commit_observer.Wait();
+  EXPECT_EQ(start_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Reset the timeout.
+  NavigationRequest::SetCommitTimeoutForTesting(base::TimeDelta());
+}
+
 // This test simulates a same-document navigation, being restarted as a
 // cross-document one. It starts a network loader, but fails and an error page
 // is committed instead. The RenderFrameHost selected initially for the initial

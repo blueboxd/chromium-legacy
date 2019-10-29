@@ -114,6 +114,7 @@ dependencies {
 
     compile "com.android.support:multidex:1.0.0"
 
+    buildCompile "javax.annotation:jsr250-api:1.0"
     buildCompile "javax.inject:javax.inject:1"
 
     // Dagger

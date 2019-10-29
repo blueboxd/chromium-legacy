@@ -52,16 +52,18 @@ PrefetchURLLoader::PrefetchURLLoader(
       client_binding_(this),
       forwarding_client_(std::move(client)),
       url_loader_throttles_getter_(url_loader_throttles_getter),
-      browser_context_(browser_context),
       signed_exchange_prefetch_metric_recorder_(
           std::move(signed_exchange_prefetch_metric_recorder)),
       accept_langs_(accept_langs),
       recursive_prefetch_token_generator_(
-          std::move(recursive_prefetch_token_generator)) {
+          std::move(recursive_prefetch_token_generator)),
+      is_signed_exchange_handling_enabled_(
+          signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+              browser_context)) {
   DCHECK(network_loader_factory_);
   RecordPrefetchRedirectHistogram(PrefetchRedirect::kPrefetchMade);
 
-  if (IsSignedExchangeHandlingEnabled()) {
+  if (is_signed_exchange_handling_enabled_) {
     // Set the SignedExchange accept header.
     // (https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#internet-media-type-applicationsigned-exchange).
     resource_request_.headers.SetHeader(
@@ -71,7 +73,7 @@ PrefetchURLLoader::PrefetchURLLoader(
       prefetched_signed_exchange_cache_adapter_ =
           std::make_unique<PrefetchedSignedExchangeCacheAdapter>(
               std::move(prefetched_signed_exchange_cache),
-              BrowserContext::GetBlobStorageContext(browser_context_),
+              BrowserContext::GetBlobStorageContext(browser_context),
               resource_request.url, this);
     }
   }
@@ -146,7 +148,7 @@ void PrefetchURLLoader::ResumeReadingBodyFromNet() {
 
 void PrefetchURLLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response) {
-  if (IsSignedExchangeHandlingEnabled() &&
+  if (is_signed_exchange_handling_enabled_ &&
       signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
           resource_request_.url, response)) {
     DCHECK(!signed_exchange_prefetch_handler_);
@@ -277,11 +279,6 @@ void PrefetchURLLoader::OnNetworkConnectionError() {
   // The network loader has an error; we should let the client know it's closed
   // by dropping this, which will in turn make this loader destroyed.
   forwarding_client_.reset();
-}
-
-bool PrefetchURLLoader::IsSignedExchangeHandlingEnabled() {
-  return signed_exchange_utils::IsSignedExchangeHandlingEnabled(
-      browser_context_);
 }
 
 }  // namespace content

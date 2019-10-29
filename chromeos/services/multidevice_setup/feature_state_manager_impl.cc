@@ -390,7 +390,8 @@ bool FeatureStateManagerImpl::RequiresFurtherSetup(mojom::Feature feature) {
     return false;
   }
 
-  return !android_sms_pairing_state_tracker_->IsAndroidSmsPairingComplete();
+  return android_sms_pairing_state_tracker_ &&
+         !android_sms_pairing_state_tracker_->IsAndroidSmsPairingComplete();
 }
 
 mojom::FeatureState FeatureStateManagerImpl::GetEnabledOrDisabledState(

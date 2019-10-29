@@ -194,6 +194,9 @@ source_set("browser") {
     "//components/cdm/browser",
     "//components/content_capture/android",
     "//components/content_capture/browser",
+
+    # Called via JNI in CrashpadMain
+    "//components/crash/android:crashpad_main",
     "//components/crash/content/app",
     "//components/crash/content/browser",
     "//components/embedder_support/android:web_contents_delegate",

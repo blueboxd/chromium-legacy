@@ -473,6 +473,7 @@ extern const char kWebRTCNonProxiedUdpEnabled[];
 extern const char kWebRTCIPHandlingPolicy[];
 extern const char kWebRTCUDPPortRange[];
 extern const char kWebRtcEventLogCollectionAllowed[];
+extern const char kWebRtcLocalIpsAllowedUrls[];
 
 #if !defined(OS_ANDROID)
 extern const char kHasSeenWelcomePage[];

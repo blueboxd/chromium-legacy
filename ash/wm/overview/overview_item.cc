@@ -283,7 +283,7 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
     MaximizeIfSnapped(GetWindow());
   }
 
-  caption_container_view_->ResetEventDelegate();
+  overview_item_view_->ResetEventDelegate();
   close_button_->ResetListener();
   transform_window_.RestoreWindow(reset_transform);
 
@@ -309,7 +309,7 @@ void OverviewItem::EnsureVisible() {
 
 void OverviewItem::Shutdown() {
   item_widget_.reset();
-  caption_container_view_ = nullptr;
+  overview_item_view_ = nullptr;
 }
 
 void OverviewItem::PrepareForOverview() {
@@ -369,7 +369,7 @@ OverviewItem::UpdateYPositionAndOpacity(
 }
 
 void OverviewItem::UpdateItemContentViewForMinimizedWindow() {
-  caption_container_view_->UpdatePreviewView();
+  overview_item_view_->RefreshPreviewView();
 }
 
 float OverviewItem::GetItemScale(const gfx::Size& size) {
@@ -457,8 +457,8 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
           // launcher.
           if (new_animation_type ==
               OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER) {
-            caption_container_view_->SetHeaderVisibility(
-                CaptionContainerView::HeaderVisibility::kVisible);
+            overview_item_view_->SetHeaderVisibility(
+                OverviewItemView::HeaderVisibility::kVisible);
           }
         }
       }
@@ -498,8 +498,8 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
 }
 
 void OverviewItem::SendAccessibleSelectionEvent() {
-  caption_container_view_->NotifyAccessibilityEvent(
-      ax::mojom::Event::kSelection, true);
+  overview_item_view_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
+                                                true);
 }
 
 void OverviewItem::AnimateAndCloseWindow(bool up) {
@@ -507,7 +507,7 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
 
   animating_to_close_ = true;
   overview_session_->PositionWindows(/*animate=*/true);
-  caption_container_view_->ResetEventDelegate();
+  overview_item_view_->ResetEventDelegate();
   close_button_->ResetListener();
 
   int translation_y = kSwipeToCloseCloseTranslationDp * (up ? -1 : 1);
@@ -603,19 +603,19 @@ void OverviewItem::HideCannotSnapWarning() {
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   is_being_dragged_ = (item == this);
-  caption_container_view_->SetHeaderVisibility(
+  overview_item_view_->SetHeaderVisibility(
       is_being_dragged_
-          ? CaptionContainerView::HeaderVisibility::kInvisible
-          : CaptionContainerView::HeaderVisibility::kCloseButtonInvisibleOnly);
+          ? OverviewItemView::HeaderVisibility::kInvisible
+          : OverviewItemView::HeaderVisibility::kCloseButtonInvisibleOnly);
 }
 
 void OverviewItem::OnSelectorItemDragEnded(bool snap) {
   if (snap) {
     if (!is_being_dragged_)
-      caption_container_view_->HideCloseInstantlyAndThenShowItSlowly();
+      overview_item_view_->HideCloseInstantlyAndThenShowItSlowly();
   } else {
-    caption_container_view_->SetHeaderVisibility(
-        CaptionContainerView::HeaderVisibility::kVisible);
+    overview_item_view_->SetHeaderVisibility(
+        OverviewItemView::HeaderVisibility::kVisible);
   }
   is_being_dragged_ = false;
 }
@@ -638,7 +638,7 @@ void OverviewItem::UpdateWindowDimensionsType() {
   const bool show_backdrop =
       GetWindowDimensionsType() !=
       ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
-  caption_container_view_->SetBackdropVisibility(show_backdrop);
+  overview_item_view_->SetBackdropVisibility(show_backdrop);
 }
 
 gfx::Rect OverviewItem::GetBoundsOfSelectedItem() {
@@ -797,7 +797,7 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
                             transform_window_.GetTransformedBounds()))
                       : base::nullopt);
   if (transform_window_.IsMinimized()) {
-    caption_container_view_->UpdatePreviewRoundedCorners(
+    overview_item_view_->UpdatePreviewRoundedCorners(
         should_show_rounded_corners,
         views::LayoutProvider::Get()->GetCornerRadiusMetric(
             views::EMPHASIS_LOW));
@@ -809,8 +809,8 @@ void OverviewItem::OnStartingAnimationComplete() {
   if (transform_window_.IsMinimized()) {
     // Fade the title in if minimized. The rest of |item_widget_| should
     // already be shown.
-    caption_container_view_->SetHeaderVisibility(
-        CaptionContainerView::HeaderVisibility::kVisible);
+    overview_item_view_->SetHeaderVisibility(
+        OverviewItemView::HeaderVisibility::kVisible);
   } else {
     FadeInWidgetAndMaybeSlideOnEnter(
         item_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
@@ -819,7 +819,7 @@ void OverviewItem::OnStartingAnimationComplete() {
   const bool show_backdrop =
       GetWindowDimensionsType() !=
       ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
-  caption_container_view_->SetBackdropVisibility(show_backdrop);
+  overview_item_view_->SetBackdropVisibility(show_backdrop);
   UpdateCannotSnapWarningVisibility();
 }
 
@@ -1021,7 +1021,7 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
 
   if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION) {
     if (window == main_window) {
-      caption_container_view_->UpdatePreviewView();
+      overview_item_view_->RefreshPreviewView();
     } else {
       // Transient window is repositioned. The new position within the
       // overview item needs to be recomputed.
@@ -1064,7 +1064,7 @@ void OverviewItem::OnWindowTitleChanged(aura::Window* window) {
   if (window != GetWindow())
     return;
 
-  caption_container_view_->SetTitle(window->GetTitle());
+  overview_item_view_->SetTitle(window->GetTitle());
 }
 
 void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
@@ -1088,7 +1088,7 @@ void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
   }
 
   const bool minimized = transform_window_.IsMinimized();
-  caption_container_view_->SetShowPreview(minimized);
+  overview_item_view_->SetShowPreview(minimized);
   if (!minimized)
     EnsureVisible();
   overview_grid_->PositionWindows(/*animate=*/false);
@@ -1103,7 +1103,7 @@ float OverviewItem::GetCloseButtonVisibilityForTesting() const {
 }
 
 float OverviewItem::GetTitlebarOpacityForTesting() const {
-  return caption_container_view_->header_view()->layer()->opacity();
+  return overview_item_view_->header_view()->layer()->opacity();
 }
 
 gfx::Rect OverviewItem::GetShadowBoundsForTesting() {
@@ -1270,9 +1270,9 @@ void OverviewItem::CreateWindowLabel() {
   item_widget_->GetLayer()->Add(shadow_->layer());
 
   close_button_ = new OverviewCloseButton(this);
-  caption_container_view_ = new CaptionContainerView(
+  overview_item_view_ = new OverviewItemView(
       this, GetWindow(), transform_window_.IsMinimized(), close_button_);
-  item_widget_->SetContentsView(caption_container_view_);
+  item_widget_->SetContentsView(overview_item_view_);
   item_widget_->Show();
   item_widget_->SetOpacity(0.f);
   item_widget_->GetLayer()->SetMasksToBounds(false);

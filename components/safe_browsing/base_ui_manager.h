@@ -27,6 +27,8 @@ class HistoryService;
 
 namespace safe_browsing {
 
+class BaseBlockingPage;
+
 // Construction needs to happen on the main thread.
 class BaseUIManager
     : public base::RefCountedThreadSafe<BaseUIManager> {
@@ -148,6 +150,13 @@ class BaseUIManager
   virtual bool SafeBrowsingInterstitialsAreCommittedNavigations();
 
   friend class base::RefCountedThreadSafe<BaseUIManager>;
+
+  // Creates a blocking page, used for interstitials triggered by subresources.
+  // Should be overridden with a blocking page implementation.
+  virtual BaseBlockingPage* CreateBlockingPageForSubresource(
+      content::WebContents* contents,
+      const GURL& blocked_url,
+      const UnsafeResource& unsafe_resource);
 
   // Stores unsafe resources so they can be fetched from a navigation throttle
   // in the committed interstitials flow. Implemented as a pair vector since

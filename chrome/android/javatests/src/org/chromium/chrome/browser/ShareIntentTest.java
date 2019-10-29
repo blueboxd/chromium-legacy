@@ -24,8 +24,9 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.share.ShareMenuActionHandler;
+import org.chromium.chrome.browser.share.ShareSheetCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -131,6 +132,11 @@ public class ShareIntentTest {
         public Window getWindow() {
             return mActivity.getWindow();
         }
+
+        @Override
+        public ActivityTabProvider getActivityTabProvider() {
+            return mActivity.getActivityTabProvider();
+        }
     }
 
     @Test
@@ -143,10 +149,12 @@ public class ShareIntentTest {
             // package and class names do not matter.
             return new MockChromeActivity(mActivityTestRule.getActivity());
         });
+        RootUiCoordinator rootUiCoordinator = TestThreadUtils.runOnUiThreadBlocking(
+                () -> { return new RootUiCoordinator(mockActivity); });
         ShareHelper.setLastShareComponentName(
                 new ComponentName("test.package", "test.activity"), null);
         // Skips the capture of screenshot and notifies with an empty file.
-        ShareMenuActionHandler.setScreenshotCaptureSkippedForTesting(true);
+        ShareSheetCoordinator.setScreenshotCaptureSkippedForTesting(true);
 
         WindowAndroid window = TestThreadUtils.runOnUiThreadBlocking(() -> {
             return new WindowAndroid(mActivityTestRule.getActivity()) {
@@ -160,7 +168,8 @@ public class ShareIntentTest {
                 () -> { mockActivity.getActivityTab().updateWindowAndroid(window); });
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mockActivity.onShareMenuItemSelected(
+                ()
+                        -> rootUiCoordinator.onShareMenuItemSelected(
                                 true /* shareDirectly */, false /* isIncognito */));
 
         mockActivity.waitForFileCheck();
@@ -175,6 +184,6 @@ public class ShareIntentTest {
 
     @After
     public void tearDown() {
-        ShareMenuActionHandler.setScreenshotCaptureSkippedForTesting(false);
+        ShareSheetCoordinator.setScreenshotCaptureSkippedForTesting(false);
     }
 }

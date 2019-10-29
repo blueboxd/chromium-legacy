@@ -30,7 +30,6 @@ extern const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2;
 extern const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillSaveCardShowNoThanks;
-extern const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging;
 extern const base::Feature kAutofillUpdatedCardUnmaskPromptUi;
 extern const base::Feature kAutofillUpstream;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
@@ -38,16 +37,6 @@ extern const base::Feature kAutofillUpstreamAlwaysRequestCardholderName;
 extern const base::Feature kAutofillUpstreamBlankCardholderNameField;
 extern const base::Feature kAutofillUpstreamEditableCardholderName;
 extern const base::Feature kAutofillUpstreamEditableExpirationDate;
-
-extern const char kAutofillSaveCreditCardUsesImprovedMessagingParamName[];
-extern const char
-    kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard[];
-extern const char
-    kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails[];
-extern const char
-    kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard[];
-extern const char
-    kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard[];
 
 // Return whether a [No thanks] button and new messaging is shown in the save
 // card bubbles. This will be called only on desktop platforms.

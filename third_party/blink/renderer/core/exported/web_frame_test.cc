@@ -44,6 +44,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -12485,7 +12486,8 @@ bool TestSelectAll(const std::string& html) {
       WebCoalescedInputEvent(mouse_event));
   RunPendingTasks();
   web_view_helper.Reset();
-  return frame.GetMenuData().edit_flags & WebContextMenuData::kCanSelectAll;
+  return frame.GetMenuData().edit_flags &
+         ContextMenuDataEditFlags::kCanSelectAll;
 }
 
 TEST_F(WebFrameTest, ContextMenuDataSelectAll) {
@@ -12555,7 +12557,7 @@ TEST_F(WebFrameTest, ContextMenuDataPasswordSelectedText) {
   RunPendingTasks();
   web_view_helper.Reset();
   EXPECT_EQ(frame.GetMenuData().input_field_type,
-            blink::WebContextMenuData::kInputFieldTypePassword);
+            blink::ContextMenuDataInputFieldType::kPassword);
   EXPECT_FALSE(frame.GetMenuData().selected_text.IsEmpty());
 }
 

@@ -252,6 +252,10 @@ TEST_F(FeaturePodsContainerViewTest, PaginationDynamicRows) {
   const int kNumberOfFeaturePods = kUnifiedFeaturePodItemsInRow * 3;
   const int padding =
       kUnifiedFeaturePodTopPadding + kUnifiedFeaturePodBottomPadding;
+  int row_height =
+      kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding;
+  int min_height_for_three_rows = kUnifiedFeaturePodMaxRows * row_height +
+                                  padding + kMessageCenterCollapseThreshold;
 
   EnablePagination();
   AddButtons(kNumberOfFeaturePods);
@@ -264,11 +268,9 @@ TEST_F(FeaturePodsContainerViewTest, PaginationDynamicRows) {
     expected_number_of_pages += 1;
   EXPECT_EQ(expected_number_of_pages, pagination_model()->total_pages());
 
-  // Expect 2 rows of feature pods when there is enough height to display them.
-  container()->SetMaxHeight(padding +
-                            (2 * (kUnifiedFeaturePodSize.height() +
-                                  kUnifiedFeaturePodVerticalPadding)) +
-                            kMessageCenterCollapseThreshold);
+  // Expect 2 rows of feature pods when there is enough height to display them
+  // but less than enough to display 3 rows.
+  container()->SetMaxHeight(min_height_for_three_rows - 1);
   expected_number_of_pages =
       kNumberOfFeaturePods / (2 * kUnifiedFeaturePodItemsInRow);
   if (kNumberOfFeaturePods % (2 * kUnifiedFeaturePodItemsInRow))
@@ -277,13 +279,14 @@ TEST_F(FeaturePodsContainerViewTest, PaginationDynamicRows) {
 
   // Expect 3 rows of feature pods at max even when the max height is very
   // large.
-  container()->SetMaxHeight(150 * (kUnifiedFeaturePodSize.height()));
+  container()->SetMaxHeight(min_height_for_three_rows + 1);
   expected_number_of_pages =
       kNumberOfFeaturePods / (3 * kUnifiedFeaturePodItemsInRow);
   if (kNumberOfFeaturePods % (3 * kUnifiedFeaturePodItemsInRow))
     expected_number_of_pages += 1;
   EXPECT_EQ(expected_number_of_pages, pagination_model()->total_pages());
 }
+
 TEST_F(FeaturePodsContainerViewTest, PaginationGestureHandling) {
   const int kNumberOfPages = 8;
 

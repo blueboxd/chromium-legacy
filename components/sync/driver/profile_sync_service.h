@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/invalidation/public/identity_provider.h"
@@ -252,9 +252,8 @@ class ProfileSyncService : public SyncService,
 
   bool IsDataTypeControllerRunningForTest(ModelType type) const;
 
-  // Sometimes we need to wait for tasks on the sync thread in tests.
-  scoped_refptr<base::SingleThreadTaskRunner> GetSyncThreadTaskRunnerForTest()
-      const;
+  // Sometimes we need to wait for tasks on the |backend_task_runner_| in tests.
+  void FlushBackendTaskRunnerForTest() const;
 
   // Some tests rely on injecting calls to the encryption observer.
   SyncEncryptionHandler::Observer* GetEncryptionObserverForTest();
@@ -339,8 +338,9 @@ class ProfileSyncService : public SyncService,
 
   void ClearUnrecoverableError();
 
-  // Initializes and starts |sync_thread_|.
-  void StartSyncThreadIfNeeded();
+  // Initializes |backend_task_runner_| which is backed by |sync_thread_| or the
+  // ThreadPool depending on the ProfileSyncServiceUsesThreadPool experiment.
+  void InitializeBackendTaskRunnerIfNeeded();
 
   // Kicks off asynchronous initialization of the SyncEngine.
   void StartUpSlowEngineComponents();
@@ -404,7 +404,12 @@ class ProfileSyncService : public SyncService,
   // until browser shutdown and reused if sync is turned off and on again. It is
   // joined during the shutdown process, but there is an abort mechanism in
   // place to prevent slow HTTP requests from blocking browser shutdown.
+  // TODO(https://crbug.com/1014464): Remove once we have switched to
+  // Threadpool.
   std::unique_ptr<base::Thread> sync_thread_;
+
+  // TODO(crbug.com/923287): Move out of this class. Possibly to SyncEngineImpl.
+  scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // Our asynchronous engine to communicate with sync components living on
   // other threads.

@@ -103,6 +103,9 @@ AutomationPredicate.link = AutomationPredicate.roles([Role.LINK]);
 AutomationPredicate.row = AutomationPredicate.roles([Role.ROW]);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.table = AutomationPredicate.roles([Role.GRID, Role.TABLE]);
+/** @type {AutomationPredicate.Unary} */
+AutomationPredicate.listLike =
+    AutomationPredicate.roles([Role.LIST, Role.DESCRIPTION_LIST]);
 
 /**
  * @param {!AutomationNode} node
@@ -674,6 +677,26 @@ AutomationPredicate.text = AutomationPredicate.roles(
 AutomationPredicate.ignoreDuringJump = function(node) {
   return node.role == Role.GENERIC_CONTAINER || node.role == Role.STATIC_TEXT ||
       node.role == Role.INLINE_TEXT_BOX;
+};
+
+/**
+ * Returns a predicate that will match against a list-like node. The returned
+ * predicate should not match the first list-like ancestor of |node| (or |node|
+ * itself, if it is list-like).
+ * @param {AutomationNode} node
+ * @return {AutomationPredicate.Unary}
+ */
+AutomationPredicate.makeListPredicate = function(node) {
+  // Scan upward for a list-like ancestor. We do not want to match against this
+  // node.
+  var avoidNode = node;
+  while (avoidNode && !AutomationPredicate.listLike(avoidNode)) {
+    avoidNode = avoidNode.parent;
+  }
+
+  return function(autoNode) {
+    return AutomationPredicate.listLike(autoNode) && (autoNode !== avoidNode);
+  };
 };
 
 });  // goog.scope

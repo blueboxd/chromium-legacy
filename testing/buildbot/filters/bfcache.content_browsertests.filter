@@ -40,9 +40,6 @@
 -SitePerProcessBrowserTest.SubframePendingAndBackToSameSiteInstance
 -SitePerProcessBrowserTest.SwapOutACKArrivesPriorToProcessShutdownRequest
 
-# https://crbug.com/1004786 Android only
--SitePerProcessBrowserTest.TestChildProcessImportance
-
 # Expect the swapped out RenderFrameHost to have a replacement proxy. This won't
 # happen when the BackForwardCache is used to store the old document.
 -RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill

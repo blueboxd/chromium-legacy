@@ -66,7 +66,6 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     const JavaParamRef<jstring>& java_share_target_action,
     const JavaParamRef<jstring>& java_share_target_param_title,
     const JavaParamRef<jstring>& java_share_target_param_text,
-    const JavaParamRef<jstring>& java_share_target_param_url,
     const jboolean java_share_target_param_is_method_post,
     const jboolean java_share_target_param_is_enctype_multipart,
     const JavaParamRef<jobjectArray>& java_share_target_param_file_names,
@@ -107,8 +106,6 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
         ConvertJavaStringToUTF16(java_share_target_param_title);
     info.share_target->params.text =
         ConvertJavaStringToUTF16(java_share_target_param_text);
-    info.share_target->params.url =
-        ConvertJavaStringToUTF16(java_share_target_param_url);
     info.share_target->method =
         java_share_target_param_is_method_post == JNI_TRUE
             ? blink::Manifest::ShareTarget::Method::kPost

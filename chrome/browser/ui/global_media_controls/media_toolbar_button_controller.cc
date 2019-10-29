@@ -64,12 +64,46 @@ void MediaToolbarButtonController::Session::WebContentsDestroyed() {
   owner_->RemoveItem(id_);
 }
 
+MediaToolbarButtonController::MediaRoutesObserver::MediaRoutesObserver(
+    media_router::MediaRouter* router,
+    base::RepeatingClosure routes_changed_callback)
+    : media_router::MediaRoutesObserver(router),
+      routes_changed_callback_(std::move(routes_changed_callback)) {}
+
+MediaToolbarButtonController::MediaRoutesObserver::~MediaRoutesObserver() =
+    default;
+
+void MediaToolbarButtonController::MediaRoutesObserver::OnRoutesUpdated(
+    const std::vector<media_router::MediaRoute>& routes,
+    const std::vector<media_router::MediaRoute::Id>& joinable_route_ids) {
+  bool has_routes_now =
+      std::find_if(routes.begin(), routes.end(),
+                   [](const media_router::MediaRoute& route) {
+                     return route.for_display() &&
+                            route.controller_type() ==
+                                media_router::RouteControllerType::kGeneric;
+                   }) != routes.end();
+  if (has_routes_ != has_routes_now) {
+    has_routes_ = has_routes_now;
+    routes_changed_callback_.Run();
+  }
+}
+
 MediaToolbarButtonController::MediaToolbarButtonController(
     const base::UnguessableToken& source_id,
     service_manager::Connector* connector,
-    MediaToolbarButtonControllerDelegate* delegate)
+    MediaToolbarButtonControllerDelegate* delegate,
+    media_router::MediaRouter* media_router)
     : connector_(connector), delegate_(delegate) {
   DCHECK(delegate_);
+
+  if (media_router) {
+    media_routes_observer_ = std::make_unique<MediaRoutesObserver>(
+        media_router,
+        base::BindRepeating(
+            &MediaToolbarButtonController::UpdateToolbarButtonState,
+            base::Unretained(this)));
+  }
 
   // |connector| can be null in tests.
   if (!connector_)
@@ -281,7 +315,8 @@ void MediaToolbarButtonController::OnReceivedAudioFocusRequests(
 }
 
 void MediaToolbarButtonController::UpdateToolbarButtonState() {
-  if (!active_controllable_session_ids_.empty()) {
+  if (!active_controllable_session_ids_.empty() ||
+      (media_routes_observer_ && media_routes_observer_->has_routes())) {
     if (delegate_display_state_ != DisplayState::kShown) {
       delegate_->Enable();
       delegate_->Show();

@@ -395,7 +395,7 @@ void RenderFrameProxyHost::OnOpenURL(
 
 void RenderFrameProxyHost::OnCheckCompleted() {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
-  target_rfh->Send(new FrameMsg_CheckCompleted(target_rfh->GetRoutingID()));
+  target_rfh->GetAssociatedLocalFrame()->CheckCompleted();
 }
 
 void RenderFrameProxyHost::OnRouteMessageEvent(

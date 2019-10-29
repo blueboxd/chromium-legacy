@@ -1775,11 +1775,11 @@ TEST_F(PasswordAutofillAgentTest, DontShowTouchToFillOnSecurePageIfParamIsSet) {
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
 }
 
-TEST_F(PasswordAutofillAgentTest, TouchToFillDismissed) {
+TEST_F(PasswordAutofillAgentTest, TouchToFillClosed) {
   SimulateOnFillPasswordForm(fill_data_);
 
   auto previous_state = password_element_.GetAutofillState();
-  // Touch to fill will be shown multiple times until TouchToFillDismissed()
+  // Touch to fill will be shown multiple times until TouchToFillClosed()
   // gets called.
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
@@ -1790,7 +1790,7 @@ TEST_F(PasswordAutofillAgentTest, TouchToFillDismissed) {
   base::RunLoop().RunUntilIdle();
 
   // Make sure that resetting Touch To Fill resets the Autofill state.
-  password_autofill_agent_->TouchToFillDismissed();
+  password_autofill_agent_->TouchToFillClosed(true);
   EXPECT_FALSE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
   EXPECT_FALSE(password_autofill_agent_->ShouldSuppressKeyboard());

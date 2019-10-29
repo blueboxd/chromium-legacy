@@ -53,6 +53,7 @@ constexpr StaticOobeScreenId
     OobeScreen::SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE;
 constexpr StaticOobeScreenId OobeScreen::SCREEN_SPECIAL_LOGIN;
 constexpr StaticOobeScreenId OobeScreen::SCREEN_SPECIAL_OOBE;
+constexpr StaticOobeScreenId OobeScreen::SCREEN_ENABLE_ADB_SIDELOADING;
 constexpr StaticOobeScreenId OobeScreen::SCREEN_TEST_NO_WINDOW;
 constexpr StaticOobeScreenId OobeScreen::SCREEN_UNKNOWN;
 

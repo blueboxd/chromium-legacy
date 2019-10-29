@@ -988,16 +988,10 @@
     Automatically sign in to websites using stored credentials. If disabled, you will be asked for confirmation every time before signing in to a website.
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL" desc="Label for a checkbox that allows users to choose whether chrome should check that credentials have been part of a leak.">
-    Check password safety
-  </message>
-  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_IN_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-in users.">
-    Warns you if a password you use was part of a data breach
-  </message>
-  <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_DISABLED_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-out users who have disabled the feature.">
-    Google can check if your passwords were part of a data breach
+    Warn you if passwords are compromised
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_ENABLED_DESC" desc="Text that describes the 'Password Leak Detection' functionality to signed-out users who have not disabled the feature.">
-    Google can check if your passwords were part of a data breach. This will be turned on when you sign in with your Google Account.
+    When you sign in to your Google Account, this feature is turned on
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_SAVED_HEADING" desc="The title for a list of username/site/password items. These items are already saved by the browser and can be deleted/edited.">
     Saved Passwords

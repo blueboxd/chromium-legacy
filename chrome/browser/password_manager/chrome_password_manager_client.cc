@@ -774,6 +774,18 @@ net::CertStatus ChromePasswordManagerClient::GetMainFrameCertStatus() const {
   return entry->GetSSL().cert_status;
 }
 
+void ChromePasswordManagerClient::PromptUserToEnableAutosignin() {
+#if defined(OS_ANDROID)
+  // Dialog is deleted by the Java counterpart after user interacts with it.
+  AutoSigninFirstRunDialogAndroid* auto_signin_first_run_dialog =
+      new AutoSigninFirstRunDialogAndroid(web_contents());
+  auto_signin_first_run_dialog->ShowDialog();
+#else
+  PasswordsClientUIDelegateFromWebContents(web_contents())
+      ->OnPromptEnableAutoSignin();
+#endif
+}
+
 bool ChromePasswordManagerClient::IsIncognito() const {
   return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }
@@ -1144,18 +1156,6 @@ bool ChromePasswordManagerClient::CanShowBubbleOnURL(const GURL& url) {
           scheme != content::kChromeDevToolsScheme);
 }
 
-void ChromePasswordManagerClient::PromptUserToEnableAutosignin() {
-#if defined(OS_ANDROID)
-  // Dialog is deleted by the Java counterpart after user interacts with it.
-  AutoSigninFirstRunDialogAndroid* auto_signin_first_run_dialog =
-      new AutoSigninFirstRunDialogAndroid(web_contents());
-  auto_signin_first_run_dialog->ShowDialog();
-#else
-  PasswordsClientUIDelegateFromWebContents(web_contents())
-      ->OnPromptEnableAutoSignin();
-#endif
-}
-
 void ChromePasswordManagerClient::ShowManualPasswordGenerationPopup(
     base::WeakPtr<password_manager::ContentPasswordManagerDriver> driver,
     const base::Optional<
@@ -1235,11 +1235,6 @@ void ChromePasswordManagerClient::FocusedInputChanged(
       ->FocusedInputChanged(focused_field_type,
                             base::AsWeakPtr(content_driver));
 #endif  // defined(OS_ANDROID)
-}
-
-password_manager::PasswordManager*
-ChromePasswordManagerClient::GetPasswordManager() {
-  return &password_manager_;
 }
 
 const password_manager::PasswordFeatureManager*

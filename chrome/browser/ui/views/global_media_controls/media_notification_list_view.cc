@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
@@ -13,23 +14,19 @@ namespace {
 
 constexpr int kMediaListMaxHeight = 478;
 
-// Color for border between notifications.
-constexpr SkColor kMediaListSeparatorColor = SkColorSetA(SK_ColorBLACK, 31);
-
 // Thickness of separator border.
 constexpr int kMediaListSeparatorThickness = 2;
 
-std::unique_ptr<views::Border> CreateMediaListSeparatorBorder() {
+std::unique_ptr<views::Border> CreateMediaListSeparatorBorder(SkColor color) {
   return views::CreateSolidSidedBorder(/*top=*/kMediaListSeparatorThickness,
                                        /*left=*/0,
                                        /*bottom=*/0,
-                                       /*right=*/0, kMediaListSeparatorColor);
+                                       /*right=*/0, color);
 }
 
 }  // anonymous namespace
 
 MediaNotificationListView::MediaNotificationListView() {
-  SetBackgroundColor(SK_ColorTRANSPARENT);
   SetContents(std::make_unique<views::View>());
   contents()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -51,8 +48,11 @@ void MediaNotificationListView::ShowNotification(
 
   // If this isn't the first notification, then create a top-sided separator
   // border.
-  if (!notifications_.empty())
-    notification->SetBorder(CreateMediaListSeparatorBorder());
+  if (!notifications_.empty()) {
+    SkColor separator_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_MenuSeparatorColor);
+    notification->SetBorder(CreateMediaListSeparatorBorder(separator_color));
+  }
 
   notifications_[id] = contents()->AddChildView(std::move(notification));
 

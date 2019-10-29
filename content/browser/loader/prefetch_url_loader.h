@@ -123,8 +123,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   void OnNetworkConnectionError();
 
-  bool IsSignedExchangeHandlingEnabled();
-
   const int frame_tree_node_id_;
 
   // Set in the constructor and updated when redirected.
@@ -140,7 +138,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   network::mojom::URLLoaderClientPtr forwarding_client_;
 
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
-  BrowserContext* browser_context_;
 
   std::unique_ptr<mojo::DataPipeDrainer> pipe_drainer_;
 
@@ -158,6 +155,10 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   const std::string accept_langs_;
 
   RecursivePrefetchTokenGenerator recursive_prefetch_token_generator_;
+
+  // TODO(kinuko): This value can become stale if the preference is updated.
+  // Make this listen to the changes if it becomes a real concern.
+  bool is_signed_exchange_handling_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoader);
 };

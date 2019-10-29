@@ -553,8 +553,6 @@ void NativeWidgetMacNSWindowHost::DestroyCompositor() {
     // NativeWidgetNSWindowBridge.
     DCHECK_EQ(this, layer()->owner());
     layer()->CompleteAllAnimations();
-    layer()->SuppressPaint();
-    layer()->set_delegate(nullptr);
   }
   DestroyLayer();
   if (!compositor_)

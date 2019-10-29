@@ -186,6 +186,7 @@ js_library("assert.m") {
 
 js_library("cr.m") {
   deps = [
+    ":assert.m",
     ":promise_resolver.m",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]

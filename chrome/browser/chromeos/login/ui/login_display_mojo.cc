@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/enable_adb_sideloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
@@ -120,6 +121,8 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
       host_->StartWizard(ResetView::kScreenId);
     } else if (local_state->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
       host_->StartWizard(EnableDebuggingScreenView::kScreenId);
+    } else if (local_state->GetBoolean(prefs::kEnableAdbSideloadingRequested)) {
+      host_->StartWizard(EnableAdbSideloadingScreenView::kScreenId);
     } else if (!KioskAppManager::Get()->GetAutoLaunchApp().empty() &&
                KioskAppManager::Get()->IsAutoLaunchRequested()) {
       VLOG(0) << "Showing auto-launch warning";

@@ -37,11 +37,11 @@ from benchmarks import v8_browsing
 # data to the chrome perf dashboard. So the smoke tests below cap the max
 # number of values that each story tested would produce when running on the
 # waterfall.
-MAX_VALUES_PERT_TEST_CASE = 1000
+MAX_VALUES_PER_TEST_CASE = 1000
 
 
 def SmokeTestGenerator(benchmark_class, num_pages=1):
-  """Generates a somke test for the first N pages from a benchmark.
+  """Generates a smoke test for the first N pages from a benchmark.
 
   Args:
     benchmark_class: a benchmark class to smoke test.
@@ -70,7 +70,7 @@ def SmokeTestGenerator(benchmark_class, num_pages=1):
           environment=chromium_config.GetDefaultChromiumConfig())
       options.pageset_repeat = 1  # For smoke testing only run the page once.
       options.output_formats = ['histograms']
-      options.max_values_per_test_case = MAX_VALUES_PERT_TEST_CASE
+      options.max_values_per_test_case = MAX_VALUES_PER_TEST_CASE
       return_code = benchmark_class().Run(options)
       if return_code == -1:
         self.skipTest('The benchmark was not run.')

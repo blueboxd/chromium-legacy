@@ -98,6 +98,7 @@
     cell,
     checkBox,
     client,
+    code,
     colorWell,
     column,
     columnHeader,
@@ -164,6 +165,7 @@
     // --------------------------------------------------------------
     document,
     embeddedObject,
+    emphasis,
     feed,
     figcaption,
     figure,
@@ -247,6 +249,7 @@
     splitter,
     staticText,
     status,
+    strong,
     svgRoot,
     switch,
     tab,

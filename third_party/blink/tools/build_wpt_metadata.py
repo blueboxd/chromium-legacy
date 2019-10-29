@@ -21,7 +21,7 @@ def main(args):
     host = Host()
     port = host.port_factory.get(options=optparse.Values(vars(known_args)))
     expectations = TestExpectations(port)
-    metadata_builder = WPTMetadataBuilder(expectations)
+    metadata_builder = WPTMetadataBuilder(expectations, port)
     sys.exit(metadata_builder.run(rest_args))
 
 if __name__ == '__main__':

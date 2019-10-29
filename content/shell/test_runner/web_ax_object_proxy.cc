@@ -65,6 +65,8 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Caption");
     case ax::mojom::Role::kCell:
       return result.append("Cell");
+    case ax::mojom::Role::kCode:
+      return result.append("Code");
     case ax::mojom::Role::kCheckBox:
       return result.append("CheckBox");
     case ax::mojom::Role::kColorWell:
@@ -187,6 +189,8 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Document");
     case ax::mojom::Role::kEmbeddedObject:
       return result.append("EmbeddedObject");
+    case ax::mojom::Role::kEmphasis:
+      return result.append("Emphasis");
     case ax::mojom::Role::kFigcaption:
       return result.append("Figcaption");
     case ax::mojom::Role::kFigure:
@@ -331,6 +335,9 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("StaticText");
     case ax::mojom::Role::kStatus:
       return result.append("Status");
+    case ax::mojom::Role::kStrong:
+      return result.append("Strong");
+      ;
     case ax::mojom::Role::kSwitch:
       return result.append("Switch");
     case ax::mojom::Role::kTabList:

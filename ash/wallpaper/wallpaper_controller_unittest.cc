@@ -1913,10 +1913,22 @@ TEST_F(WallpaperControllerTest, WallpaperBlur) {
 }
 
 TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  gfx::ImageSkia image = CreateImage(600, 400, kWallpaperColor);
+  controller_->ShowWallpaperImage(
+      image, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
+      /*preview_mode=*/false, /*always_on_top=*/false);
+
   TestWallpaperControllerObserver observer(controller_);
 
   ASSERT_TRUE(controller_->IsBlurAllowed());
   ASSERT_FALSE(controller_->IsWallpaperBlurred());
+
+  ASSERT_EQ(1u, wallpaper_view()->layer()->parent()->children().size());
+  EXPECT_EQ(ui::LAYER_TEXTURED,
+            wallpaper_view()->layer()->parent()->children()[0]->type());
 
   // Simulate lock and unlock sequence.
   controller_->UpdateWallpaperBlur(true);
@@ -1925,12 +1937,20 @@ TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
 
   SetSessionState(SessionState::LOCKED);
   EXPECT_TRUE(controller_->IsWallpaperBlurred());
+  ASSERT_EQ(2u, wallpaper_view()->layer()->parent()->children().size());
+  EXPECT_EQ(ui::LAYER_SOLID_COLOR,
+            wallpaper_view()->layer()->parent()->children()[0]->type());
+  EXPECT_EQ(ui::LAYER_TEXTURED,
+            wallpaper_view()->layer()->parent()->children()[1]->type());
 
   // Change of state to ACTIVE triggers post lock animation and
   // UpdateWallpaperBlur(false)
   SetSessionState(SessionState::ACTIVE);
   EXPECT_FALSE(controller_->IsWallpaperBlurred());
   EXPECT_EQ(2, observer.blur_changed_count());
+  ASSERT_EQ(1u, wallpaper_view()->layer()->parent()->children().size());
+  EXPECT_EQ(ui::LAYER_TEXTURED,
+            wallpaper_view()->layer()->parent()->children()[0]->type());
 }
 
 TEST_F(WallpaperControllerTest, OnlyShowDevicePolicyWallpaperOnLoginScreen) {

@@ -5,6 +5,7 @@
 #include "ui/platform_window/x11/x11_window.h"
 
 #include "base/trace_event/trace_event.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/display/screen.h"
@@ -19,6 +20,10 @@
 
 #if defined(USE_OZONE)
 #include "ui/events/ozone/events_ozone.h"
+#endif
+
+#if BUILDFLAG(USE_ATK)
+#include "ui/platform_window/x11/atk_event_conversion.h"
 #endif
 
 namespace ui {
@@ -205,7 +210,7 @@ void X11Window::ReleaseCapture() {
 }
 
 bool X11Window::HasCapture() const {
-  return X11WindowManager::GetInstance()->event_grabber() == this;
+  return X11WindowManager::GetInstance()->located_events_grabber() == this;
 }
 
 void X11Window::ToggleFullscreen() {
@@ -437,6 +442,20 @@ bool X11Window::IsTranslucentWindowOpacitySupported() const {
   return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
 }
 
+bool X11Window::HandleAsAtkEvent(XEvent* xev) {
+#if !BUILDFLAG(USE_ATK)
+  // TODO(crbug.com/1014934): Support ATK in Ozone/X11.
+  NOTREACHED();
+  return false;
+#else
+  DCHECK(xev);
+  if (xev->type != KeyPress && xev->type != KeyRelease)
+    return false;
+  auto atk_key_event = AtkKeyEventFromXEvent(xev);
+  return platform_window_delegate_->OnAtkKeyEvent(atk_key_event.get());
+#endif
+}
+
 bool X11Window::CanDispatchEvent(const PlatformEvent& xev) {
 #if defined(USE_X11)
   return XWindow::IsTargetedBy(*xev);
@@ -452,7 +471,8 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
   TRACE_EVENT1("views", "X11PlatformWindow::Dispatch", "event->type",
                event->type);
 
-  ProcessEvent(event);
+  if (!HandleAsAtkEvent(event))
+    ProcessEvent(event);
   return POST_DISPATCH_STOP_PROPAGATION;
 #else
   OnXWindowEvent(event);
@@ -521,38 +541,39 @@ void X11Window::OnXWindowLostPointerGrab() {
 
 void X11Window::OnXWindowEvent(ui::Event* event) {
   DCHECK_NE(window(), x11::None);
+  DCHECK(event);
 
   auto* window_manager = X11WindowManager::GetInstance();
   DCHECK(window_manager);
 
-  // If another X11PlatformWindow has capture == set self as the event grabber,
-  // the |event| must be rerouted to that grabber. Otherwise, just send the
-  // event.
-  auto* event_grabber = window_manager->event_grabber();
-  if (!event_grabber || event_grabber == this) {
-    if (event->IsMouseEvent())
-      window_manager->MouseOnWindow(this);
-#if defined(USE_OZONE)
-    DispatchEventFromNativeUiEvent(
-        event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
-                              base::Unretained(platform_window_delegate())));
-#else
-    platform_window_delegate_->DispatchEvent(event);
-#endif
+  // If |event| is a located event (mouse, touch, etc) and another X11 window
+  // is set as the current located events grabber, the |event| must be
+  // re-routed to that grabber. Otherwise, just send the event.
+  auto* located_events_grabber = window_manager->located_events_grabber();
+  if (event->IsLocatedEvent() && located_events_grabber &&
+      located_events_grabber != this) {
+    if (event->IsMouseEvent() ||
+        (event->IsTouchEvent() && event->type() == ui::ET_TOUCH_PRESSED)) {
+      // Another X11Window has installed itself as capture. Translate the
+      // event's location and dispatch to the other.
+      ConvertEventLocationToTargetLocation(located_events_grabber->GetBounds(),
+                                           GetBounds(),
+                                           event->AsLocatedEvent());
+    }
+    located_events_grabber->OnXWindowEvent(event);
     return;
   }
 
-  DCHECK(event_grabber);
+  if (event->IsMouseEvent())
+    window_manager->MouseOnWindow(this);
 
-  if (event->IsMouseEvent() ||
-      (event->IsTouchEvent() && event->type() == ui::ET_TOUCH_PRESSED)) {
-    // Another X11PlatformWindow has installed itself as capture. Translate the
-    // event's location and dispatch to the other.
-    ConvertEventLocationToTargetLocation(event_grabber->GetBounds(),
-                                         GetBounds(), event->AsLocatedEvent());
-  }
-
-  event_grabber->OnXWindowEvent(event);
+#if defined(USE_OZONE)
+  DispatchEventFromNativeUiEvent(
+      event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                            base::Unretained(platform_window_delegate())));
+#else
+  platform_window_delegate_->DispatchEvent(event);
+#endif
 }
 
 void X11Window::OnXWindowSelectionEvent(XEvent* xev) {
@@ -563,11 +584,6 @@ void X11Window::OnXWindowSelectionEvent(XEvent* xev) {
 void X11Window::OnXWindowDragDropEvent(XEvent* xev) {
   if (x_event_delegate_)
     x_event_delegate_->OnXWindowDragDropEvent(xev);
-}
-
-void X11Window::OnXWindowRawKeyEvent(XEvent* xev) {
-  if (x_event_delegate_)
-    x_event_delegate_->OnXWindowRawKeyEvent(xev);
 }
 
 base::Optional<gfx::Size> X11Window::GetMinimumSizeForXWindow() {

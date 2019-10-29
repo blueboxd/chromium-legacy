@@ -21,7 +21,7 @@
 #include "media/base/key_systems.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/buildflags.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 
@@ -136,11 +136,11 @@ void GetHardwareSecureDecryptionCaps(
 
 // static
 void KeySystemSupportImpl::Create(
-    media::mojom::KeySystemSupportRequest request) {
+    mojo::PendingReceiver<media::mojom::KeySystemSupport> receiver) {
   DVLOG(3) << __func__;
   // The created object is bound to (and owned by) |request|.
-  mojo::MakeStrongBinding(std::make_unique<KeySystemSupportImpl>(),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<KeySystemSupportImpl>(),
+                              std::move(receiver));
 }
 
 // static

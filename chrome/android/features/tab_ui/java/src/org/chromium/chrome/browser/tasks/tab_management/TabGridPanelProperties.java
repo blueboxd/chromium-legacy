@@ -71,11 +71,17 @@ class TabGridPanelProperties {
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey IS_TITLE_TEXT_FOCUSED =
             new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel.WritableBooleanPropertyKey IS_POPUP_WINDOW_FOCUSABLE =
+            new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel
+            .WritableObjectPropertyKey<View.OnTouchListener> TITLE_TEXT_ON_TOUCH_LISTENER =
+            new PropertyModel.WritableObjectPropertyKey<View.OnTouchListener>();
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {COLLAPSE_CLICK_LISTENER,
             ADD_CLICK_LISTENER, HEADER_TITLE, CONTENT_TOP_MARGIN, PRIMARY_COLOR, TINT,
             IS_DIALOG_VISIBLE, SCRIMVIEW_OBSERVER, ANIMATION_PARAMS, UNGROUP_BAR_STATUS,
             DIALOG_BACKGROUND_RESOUCE_ID, DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
             DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID, DIALOG_UNGROUP_BAR_TEXT_APPEARANCE,
             INITIAL_SCROLL_INDEX, IS_MAIN_CONTENT_VISIBLE, MENU_CLICK_LISTENER, TITLE_TEXT_WATCHER,
-            TITLE_TEXT_ON_FOCUS_LISTENER, TITLE_CURSOR_VISIBILITY, IS_TITLE_TEXT_FOCUSED};
+            TITLE_TEXT_ON_FOCUS_LISTENER, TITLE_CURSOR_VISIBILITY, IS_TITLE_TEXT_FOCUSED,
+            IS_POPUP_WINDOW_FOCUSABLE, TITLE_TEXT_ON_TOUCH_LISTENER};
 }

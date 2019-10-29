@@ -193,7 +193,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                            const DrawRPDQParams* rpdq_params,
                            DrawQuadParams* params);
-  void DrawTextureQuad(const TextureDrawQuad* quad, DrawQuadParams* params);
+  void DrawTextureQuad(const TextureDrawQuad* quad,
+                       const DrawRPDQParams* rpdq_params,
+                       DrawQuadParams* params);
   void DrawTileDrawQuad(const TileDrawQuad* quad,
                         const DrawRPDQParams* rpdq_params,
                         DrawQuadParams* params);

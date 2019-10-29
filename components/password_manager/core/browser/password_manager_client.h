@@ -237,6 +237,10 @@ class PasswordManagerClient {
   // Obtains the cert status for the main frame.
   virtual net::CertStatus GetMainFrameCertStatus() const;
 
+  // Shows the dialog where the user can accept or decline the global autosignin
+  // setting as a first run experience.
+  virtual void PromptUserToEnableAutosignin();
+
   // If this browsing session should not be persisted.
   virtual bool IsIncognito() const;
 

@@ -279,6 +279,26 @@ XrResult xrEndFrame(XrSession session, const XrFrameEndInfo* frame_end_info) {
   RETURN_IF_XR_FAILED(
       g_test_helper.ValidatePredictedDisplayTime(frame_end_info->displayTime));
 
+  for (uint32_t i = 0; i < frame_end_info->layerCount; i++) {
+    const XrCompositionLayerProjection* multi_projection_layer_ptr =
+        reinterpret_cast<const XrCompositionLayerProjection*>(
+            frame_end_info->layers[i]);
+    RETURN_IF(multi_projection_layer_ptr->type !=
+                  XR_TYPE_COMPOSITION_LAYER_PROJECTION,
+              XR_ERROR_VALIDATION_FAILURE,
+              "XrCompositionLayerProjection type invalid");
+
+    RETURN_IF(
+        multi_projection_layer_ptr->viewCount != OpenXrTestHelper::kViewCount,
+        XR_ERROR_VALIDATION_FAILURE,
+        "XrCompositionLayerProjection viewCount invalid");
+    for (uint32_t j = 0; j < multi_projection_layer_ptr->viewCount; j++) {
+      RETURN_IF(multi_projection_layer_ptr->views[j].type !=
+                    XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW,
+                XR_ERROR_VALIDATION_FAILURE,
+                "XrCompositionLayerProjectionView type invalid");
+    }
+  }
   g_test_helper.OnPresentedFrame();
 
   return XR_SUCCESS;

@@ -10,49 +10,25 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/flat_map.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "components/url_pattern_index/url_pattern_index.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
+class GURL;
 namespace extensions {
-struct WebRequestInfo;
 
 namespace declarative_net_request {
 struct RequestAction;
+struct RequestParams;
 class RulesetSource;
 
 namespace flat {
 struct ExtensionIndexedRuleset;
 struct UrlRuleMetadata;
 }  // namespace flat
-
-class RulesetMatcher;
-
-// Struct to hold parameters for a network request.
-struct RequestParams {
-  // |info| must outlive this instance.
-  explicit RequestParams(const WebRequestInfo& info);
-  RequestParams();
-  ~RequestParams();
-
-  // This is a pointer to a GURL. Hence the GURL must outlive this struct.
-  const GURL* url = nullptr;
-  url::Origin first_party_origin;
-  url_pattern_index::flat::ElementType element_type =
-      url_pattern_index::flat::ElementType_OTHER;
-  bool is_third_party = false;
-
-  // A map of RulesetMatchers to results of |HasMatchingAllowRule| for this
-  // request. Used as a cache to prevent extra calls to |HasMatchingAllowRule|.
-  mutable base::flat_map<const RulesetMatcher*, bool> allow_rule_cache;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestParams);
-};
 
 // RulesetMatcher encapsulates the Declarative Net Request API ruleset
 // corresponding to a single RulesetSource. This uses the url_pattern_index

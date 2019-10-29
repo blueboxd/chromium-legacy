@@ -88,6 +88,12 @@ static bool MatchesListBoxPseudoClass(const Element& element) {
   return html_select_element && !html_select_element->UsesMenuList();
 }
 
+static bool MatchesMultiSelectFocusPseudoClass(const Element& element) {
+  auto* option_element = DynamicTo<HTMLOptionElement>(element);
+  return option_element && option_element->IsMultiSelectFocused() &&
+         IsFrameFocused(element);
+}
+
 static bool MatchesTagName(
     const Element& element,
     const QualifiedName& tag_q_name,
@@ -1132,6 +1138,9 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoListBox:
       DCHECK(is_ua_rule_);
       return MatchesListBoxPseudoClass(element);
+    case CSSSelector::kPseudoMultiSelectFocus:
+      DCHECK(is_ua_rule_);
+      return MatchesMultiSelectFocusPseudoClass(element);
     case CSSSelector::kPseudoHostHasAppearance:
       DCHECK(is_ua_rule_);
       if (ShadowRoot* root = element.ContainingShadowRoot()) {

@@ -1001,6 +1001,26 @@ INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsBidi,
                          ::testing::ValuesIn(kBidiRunListCases),
                          RenderTextTestWithRunListCase::ParamInfoToString);
 
+const RunListCase kBracketsRunListCases[] = {
+    {"matched_parens", L"(a)", "[0][1][2]"},
+    {"double_matched_parens", L"((a))", "[0->1][2][3->4]"},
+    {"double_matched_parens2", L"((aaa))", "[0->1][2->4][5->6]"},
+    {"square_brackets", L"[...]x", "[0][1->3][4][5]"},
+    {"curly_brackets", L"{}x{}", "[0->1][2][3->4]"},
+    {"style_brackets", L"\u300c...\u300dx", "[0][1->3][4][5]"},
+    {"tibetan_brackets", L"\u0f3a\u0f3b\u0f20\u0f20\u0f3c\u0f3d",
+     "[0->1][2->3][4->5]"},
+    {"angle_brackets", L"\u3008\u3007\u3007\u3009", "[0][1->2][3]"},
+    {"double_angle_brackets", L"\u300A\u3007\u3007\u300B", "[0][1->2][3]"},
+    {"corner_angle_brackets", L"\u300C\u3007\u3007\u300D", "[0][1->2][3]"},
+    {"fullwidth_parens", L"\uff08\uff01\uff09", "[0][1][2]"},
+};
+
+INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsBrackets,
+                         RenderTextTestWithRunListCase,
+                         ::testing::ValuesIn(kBracketsRunListCases),
+                         RenderTextTestWithRunListCase::ParamInfoToString);
+
 TEST_F(RenderTextTest, ElidedText) {
   // TODO(skanuj) : Add more test cases for following
   // - RenderText styles.

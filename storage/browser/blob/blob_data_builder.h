@@ -46,11 +46,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataBuilder {
 
   // Copies the given data into the blob.
   void AppendData(const std::string& data) {
-    AppendData(data.c_str(), data.size());
+    AppendData(base::as_bytes(base::make_span(data.c_str(), data.size())));
   }
 
   // Copies the given data into the blob.
-  void AppendData(const char* data, size_t length);
+  void AppendData(base::span<const uint8_t> data);
 
   // Represents a piece of unpopulated data.
   class COMPONENT_EXPORT(STORAGE_BROWSER) FutureData {
@@ -65,14 +65,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataBuilder {
     // Returns true if:
     // * The offset and length are valid, and
     // * data is a valid pointer.
-    bool Populate(base::span<const char> data, size_t offset = 0) const;
+    bool Populate(base::span<const uint8_t> data, size_t offset = 0) const;
 
     // Same as Populate, but rather than passing in the data to be
     // copied, this method returns a pointer where the caller can copy |length|
     // bytes of data to.
     // Returns nullptr if:
     // * The offset and length are not valid.
-    base::span<char> GetDataToPopulate(size_t offset, size_t length) const;
+    base::span<uint8_t> GetDataToPopulate(size_t offset, size_t length) const;
 
    private:
     friend class BlobDataBuilder;

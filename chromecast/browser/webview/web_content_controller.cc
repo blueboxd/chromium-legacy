@@ -27,9 +27,11 @@ namespace chromecast {
 
 WebContentController::WebContentController(Client* client) : client_(client) {
   js_channels_ = std::make_unique<WebContentJsChannels>(client_);
+  JsClientInstance::AddObserver(this);
 }
 
 WebContentController::~WebContentController() {
+  JsClientInstance::RemoveObserver(this);
   if (surface_) {
     surface_->RemoveSurfaceObserver(this);
     surface_->SetEmbeddedSurfaceId(base::RepeatingCallback<viz::SurfaceId()>());
@@ -254,41 +256,21 @@ void WebContentController::HandleEvaluateJavascript(
 
 void WebContentController::HandleAddJavascriptChannels(
     const webview::AddJavascriptChannelsRequest& request) {
-  auto* rfh = GetWebContents()->GetMainFrame();
-  if (!rfh) {
-    LOG(WARNING) << "No current RenderFrameHost";
-    return;
-  }
-
-  auto* client =
-      JsClientInstance::Find(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  if (!client) {
-    LOG(WARNING) << "Requested to add JS channels but no mojo client found";
-    return;
-  }
-
   for (auto& channel : request.channels()) {
-    client->AddChannel(channel,
-                       base::BindRepeating(&WebContentJsChannels::SendMessage,
-                                           js_channels_->AsWeakPtr()));
+    current_javascript_channel_set_.insert(channel);
+    for (auto* frame : current_render_frame_set_) {
+      ChannelModified(frame, channel, true);
+    }
   }
 }
 
 void WebContentController::HandleRemoveJavascriptChannels(
     const webview::RemoveJavascriptChannelsRequest& request) {
-  auto* rfh = GetWebContents()->GetMainFrame();
-  if (!rfh)
-    return;
-
-  auto* client =
-      JsClientInstance::Find(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  if (!client) {
-    LOG(WARNING) << "Requested to remove JS channels but no mojo client found";
-    return;
-  }
-
   for (auto& channel : request.channels()) {
-    client->RemoveChannel(channel);
+    current_javascript_channel_set_.erase(channel);
+    for (auto* frame : current_render_frame_set_) {
+      ChannelModified(frame, channel, false);
+    }
   }
 }
 
@@ -393,6 +375,63 @@ void WebContentController::OnSurfaceDestroying(exo::Surface* surface) {
   DCHECK_EQ(surface, surface_);
   surface->RemoveSurfaceObserver(this);
   surface_ = nullptr;
+}
+
+void WebContentController::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  current_render_frame_set_.insert(render_frame_host);
+  auto* instance =
+      JsClientInstance::Find(render_frame_host->GetProcess()->GetID(),
+                             render_frame_host->GetRoutingID());
+  // If the instance doesn't exist yet the JsClientInstance observer will see
+  // it later on.
+  if (instance)
+    SendInitialChannelSet(instance);
+}
+
+void WebContentController::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  current_render_frame_set_.erase(render_frame_host);
+}
+
+void WebContentController::OnJsClientInstanceRegistered(
+    int process_id,
+    int routing_id,
+    JsClientInstance* instance) {
+  if (current_render_frame_set_.find(content::RenderFrameHost::FromID(
+          process_id, routing_id)) != current_render_frame_set_.end()) {
+    // If the frame exists in the set then it cannot have been handled by
+    // RenderFrameCreated.
+    SendInitialChannelSet(instance);
+  }
+}
+
+void WebContentController::ChannelModified(content::RenderFrameHost* frame,
+                                           const std::string& channel,
+                                           bool added) {
+  auto* instance = JsClientInstance::Find(frame->GetProcess()->GetID(),
+                                          frame->GetRoutingID());
+  if (instance) {
+    if (added) {
+      instance->AddChannel(channel, GetJsChannelCallback());
+    } else {
+      instance->RemoveChannel(channel);
+    }
+  } else {
+    LOG(WARNING) << "Cannot change channel " << channel << " for "
+                 << frame->GetLastCommittedURL().possibly_invalid_spec();
+  }
+}
+
+JsChannelCallback WebContentController::GetJsChannelCallback() {
+  return base::BindRepeating(&WebContentJsChannels::SendMessage,
+                             js_channels_->AsWeakPtr());
+}
+
+void WebContentController::SendInitialChannelSet(JsClientInstance* instance) {
+  JsChannelCallback callback = GetJsChannelCallback();
+  for (auto& channel : current_javascript_channel_set_)
+    instance->AddChannel(channel, callback);
 }
 
 WebContentJsChannels::WebContentJsChannels(WebContentController::Client* client)

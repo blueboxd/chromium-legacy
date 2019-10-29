@@ -117,7 +117,7 @@ int CastWMHelper::OnPerformDrop(const ui::DropTargetEvent& event,
 }
 
 void CastWMHelper::AddVSyncParameterObserver(
-    viz::mojom::VSyncParameterObserverPtr observer) {
+    mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer) {
   cast_window_manager_aura_->GetRootWindow()
       ->layer()
       ->GetCompositor()

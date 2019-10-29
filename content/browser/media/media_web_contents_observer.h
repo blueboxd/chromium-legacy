@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "content/browser/media/media_power_experiment_manager.h"
 #include "content/browser/media/session/media_session_controllers_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/media_player_id.h"
@@ -161,6 +162,16 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // Convenience method that casts web_contents() to a WebContentsImpl*.
   WebContentsImpl* web_contents_impl() const;
 
+  // Notify |id| about |is_starting|.  Note that |id| might no longer be in the
+  // active players list, which is fine.
+  void OnExperimentStateChanged(MediaPlayerId id, bool is_starting);
+
+  // Remove all players from |player_map|.
+  void RemoveAllPlayers(ActiveMediaPlayerMap* player_map);
+
+  // Remove all players.
+  void RemoveAllPlayers();
+
   // Helper class for recording audible metrics.
   AudibleMetrics* audible_metrics_;
 
@@ -173,6 +184,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   bool has_audio_wake_lock_for_testing_ = false;
 
   MediaSessionControllersManager session_controllers_manager_;
+  MediaPowerExperimentManager* power_experiment_manager_ = nullptr;
+
+  base::WeakPtrFactory<MediaWebContentsObserver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserver);
 };

@@ -274,6 +274,15 @@ action_foreach("validation_test_data_list") {
   ]
 }
 
+mojom("test_deserializer_interface") {
+  testonly = true
+  generate_java = true
+  sources = [
+    "deserializer.test-mojom",
+  ]
+  js_generate_struct_deserializers = true
+}
+
 mojom("test_interfaces") {
   testonly = true
   generate_java = true
@@ -300,6 +309,7 @@ mojom("test_interfaces") {
   ]
   public_deps = [
     ":echo",
+    ":test_deserializer_interface",
     ":test_mojom_import",
     ":test_mojom_import2",
     "//mojo/public/mojom/base",

@@ -283,11 +283,7 @@ class TabSpecificContentSettings
   // blocked.
   void SetPepperBrokerAllowed(bool allowed);
 
-  // Message handlers.
-  // Only public for tests.
   void OnContentBlocked(ContentSettingsType type);
-  void OnContentBlockedWithDetail(ContentSettingsType type,
-                                  const base::string16& details);
   void OnContentAllowed(ContentSettingsType type);
 
   // These methods are invoked on the UI thread forwarded from the
@@ -359,8 +355,6 @@ class TabSpecificContentSettings
   // content::WebContentsObserver overrides.
   void RenderFrameForInterstitialPageCreated(
       content::RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void ReadyToCommitNavigation(

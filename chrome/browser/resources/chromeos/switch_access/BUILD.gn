@@ -205,6 +205,7 @@ js_type_check("closure_compile") {
 
 js_library("auto_scan_manager") {
   deps = [
+    ":switch_access_constants",
     ":switch_access_interface",
   ]
 }
@@ -222,6 +223,7 @@ js_library("back_button_node") {
   ]
   deps = [
     ":rect_helper",
+    ":switch_access_constants",
     ":switch_access_node",
   ]
   externs_list = [
@@ -234,10 +236,11 @@ js_library("commands") {
   deps = [
     ":switch_access_interface",
   ]
+  externs_list = [ "$externs_path/accessibility_private.js" ]
 }
 
 js_library("event_helper") {
-  externs_list = [ "$externs_path/automation.js" ]
+  externs_list = [ "$externs_path/accessibility_private.js" ]
 }
 
 js_library("focus_ring_manager") {
@@ -254,12 +257,19 @@ js_library("keyboard_node") {
     "nodes/keyboard_node.js",
   ]
   deps = [
+    ":event_helper",
     ":node_wrapper",
     ":rect_helper",
+    ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
+    "../chromevox:constants",
+    "../chromevox:tree_walker",
   ]
-  externs_list = [ "$externs_path/automation.js" ]
+  externs_list = [
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+  ]
 }
 
 js_library("menu_manager") {
@@ -268,17 +278,27 @@ js_library("menu_manager") {
     ":menu_panel_interface",
     ":node_wrapper",
     ":rect_helper",
-    ":switch_access_interface",
+    ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
+    ":text_navigation_manager",
+    "../chromevox:constants",
+    "../chromevox:tree_walker",
   ]
-  externs_list = [ "$externs_path/accessibility_private.js" ]
+  externs_list = [
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+    "$externs_path/clipboard.js",
+  ]
 }
 
 js_library("menu_panel") {
   deps = [
+    ":menu_manager",
+    ":switch_access_constants",
     ":switch_access_interface",
   ]
+  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("menu_panel_interface") {
@@ -286,21 +306,15 @@ js_library("menu_panel_interface") {
 
 js_library("navigation_manager") {
   deps = [
-    ":event_helper",
     ":focus_ring_manager",
     ":keyboard_node",
     ":menu_manager",
     ":menu_panel_interface",
     ":node_wrapper",
-    ":rect_helper",
     ":switch_access_constants",
-    ":switch_access_interface",
     ":switch_access_node",
     ":switch_access_predicate",
     ":system_menu_node",
-    ":text_navigation_manager",
-    "../chromevox:constants",
-    "../chromevox:tree_walker",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -314,23 +328,27 @@ js_library("node_wrapper") {
   ]
   deps = [
     ":back_button_node",
+    ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
+    "../chromevox:constants",
+    "../chromevox:tree_walker",
   ]
-  externs_list = [ "$externs_path/automation.js" ]
+  externs_list = [
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+  ]
 }
 
 js_library("preferences") {
   deps = [
+    ":switch_access_constants",
     ":switch_access_interface",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
 js_library("rect_helper") {
-  deps = [
-    ":switch_access_constants",
-  ]
   externs_list = [ "$externs_path/accessibility_private.js" ]
 }
 
@@ -338,14 +356,17 @@ js_library("switch_access") {
   deps = [
     ":auto_scan_manager",
     ":commands",
+    ":menu_manager",
     ":menu_panel_interface",
     ":navigation_manager",
     ":preferences",
+    ":switch_access_constants",
+    ":switch_access_interface",
+    "../chromevox:constants",
+    "../chromevox:tree_walker",
   ]
   externs_list = [
     "$externs_path/automation.js",
-    "$externs_path/chrome_extensions.js",
-    "$externs_path/clipboard.js",
     "$externs_path/command_line_private.js",
   ]
 }
@@ -363,10 +384,20 @@ js_library("switch_access_node") {
   sources = [
     "nodes/switch_access_node.js",
   ]
-  externs_list = [ "$externs_path/automation.js" ]
+  deps = [
+    ":switch_access_constants",
+  ]
+  externs_list = [
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+  ]
 }
 
 js_library("switch_access_predicate") {
+  deps = [
+    ":switch_access_constants",
+    ":switch_access_node",
+  ]
   externs_list = [ "$externs_path/automation.js" ]
 }
 
@@ -375,7 +406,9 @@ js_library("system_menu_node") {
     "nodes/system_menu_node.js",
   ]
   deps = [
+    ":event_helper",
     ":node_wrapper",
+    ":switch_access_constants",
     ":switch_access_node",
   ]
   externs_list = [ "$externs_path/automation.js" ]
@@ -384,7 +417,9 @@ js_library("system_menu_node") {
 js_library("text_navigation_manager") {
   deps = [
     ":event_helper",
-    ":switch_access_constants",
   ]
-  externs_list = [ "$externs_path/accessibility_private.js" ]
+  externs_list = [
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+  ]
 }

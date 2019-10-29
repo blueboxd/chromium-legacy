@@ -965,9 +965,7 @@ void SkiaRenderer::DrawQuadInternal(const DrawQuad* quad,
                           params);
       break;
     case DrawQuad::Material::kTextureContent:
-      // TODO(michaelludwig) - Support texture quads bypassing a renderpass
-      DCHECK(rpdq_params == nullptr);
-      DrawTextureQuad(TextureDrawQuad::MaterialCast(quad), params);
+      DrawTextureQuad(TextureDrawQuad::MaterialCast(quad), rpdq_params, params);
       break;
     case DrawQuad::Material::kTiledContent:
       DrawTileDrawQuad(TileDrawQuad::MaterialCast(quad), rpdq_params, params);
@@ -1279,12 +1277,23 @@ const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
     return nullptr;
 
   const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
-  // TODO(michaelludwig) - With additional caveats, kTexture can be drawn direct
+  // For simplicity in their draw implementations, debug borders, picture quads,
+  // and nested render passes cannot bypass a render pass
+  // (their draw functions do not accept DrawRPDQParams either).
   if (quad->material == DrawQuad::Material::kRenderPass ||
       quad->material == DrawQuad::Material::kDebugBorder ||
-      quad->material == DrawQuad::Material::kPictureContent ||
-      quad->material == DrawQuad::Material::kTextureContent)
+      quad->material == DrawQuad::Material::kPictureContent)
     return nullptr;
+
+  if (quad->material == DrawQuad::Material::kTextureContent) {
+    // Per-vertex opacities complicate bypassing the RP and alpha blending the
+    // texture with image filters, so punt under that rare circumstance.
+    const TextureDrawQuad* tex = TextureDrawQuad::MaterialCast(quad);
+    if (tex->vertex_opacity[0] < 1.f || tex->vertex_opacity[1] < 1.f ||
+        tex->vertex_opacity[2] < 1.f || tex->vertex_opacity[3] < 1.f) {
+      return nullptr;
+    }
+  }
 
   // In order to concatenate the bypass'ed quads transform with RP itself, it
   // needs to be invertible.
@@ -1720,6 +1729,7 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
 }
 
 void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
+                                   const DrawRPDQParams* rpdq_params,
                                    DrawQuadParams* params) {
   ScopedSkImageBuilder builder(
       this, quad->resource_id(),
@@ -1750,21 +1760,33 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
       quad->vertex_opacity[0] < 1.f || quad->vertex_opacity[1] < 1.f ||
       quad->vertex_opacity[2] < 1.f || quad->vertex_opacity[3] < 1.f;
 
-  if (!blend_background && !vertex_alpha) {
+  if (!blend_background && !vertex_alpha && !rpdq_params) {
     // This is a simple texture draw and can go into the batching system
-    DCHECK(!MustFlushBatchedQuads(quad, nullptr, *params));
+    DCHECK(!MustFlushBatchedQuads(quad, rpdq_params, *params));
     AddQuadToBatch(image, valid_texel_bounds, params);
     return;
   }
   // This needs a color filter for background blending and/or a mask filter
   // to simulate the vertex opacity, which requires configuring a full SkPaint
-  // and is incompatible with anything batched
+  // and is incompatible with anything batched, but since MustFlushBatchedQuads
+  // was optimistic for TextureQuad's, we're responsible for flushing now.
   if (!batched_quads_.empty())
     FlushBatchedQuads();
 
   SkPaint paint = params->paint();
-  float quad_alpha = params->opacity;
-  params->opacity = 1.f;
+  float quad_alpha;
+  if (rpdq_params) {
+    // The added color filters for background blending will not apply the
+    // layer's opacity, but make sure there's no vertex_alpha since
+    // CanPassBeDrawnDirectly() should have caught that case.
+    DCHECK(!vertex_alpha);
+    quad_alpha = 1.f;
+  } else {
+    // We will entirely handle the quad's opacity with the mask or color filter
+    quad_alpha = params->opacity;
+    params->opacity = 1.f;
+  }
+
   if (vertex_alpha) {
     // If they are all the same value, combine it with the overall opacity,
     // otherwise use a mask filter to emulate vertex opacity interpolation
@@ -1827,10 +1849,13 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
     paint.setColorFilter(std::move(cf));
   }
 
-  // Override the default paint opacity since it may not be params.opacity
-  paint.setAlphaf(quad_alpha);
+  if (!rpdq_params) {
+    // Reset the paint's alpha, since it started as params.opacity and that
+    // is now applied outside of the paint's alpha.
+    paint.setAlphaf(quad_alpha);
+  }
 
-  DrawSingleImage(image, valid_texel_bounds, nullptr, &paint, params);
+  DrawSingleImage(image, valid_texel_bounds, rpdq_params, &paint, params);
 }
 
 void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,

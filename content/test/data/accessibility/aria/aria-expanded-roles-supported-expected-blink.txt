@@ -19,7 +19,7 @@ rootWebArea
 ++++dialog
 ++++list
 ++++document
-++++genericContainer
+++++emphasis
 ++++feed
 ++++figure
 ++++form
@@ -65,7 +65,7 @@ rootWebArea
 ++++slider
 ++++spinButton
 ++++status
-++++genericContainer
+++++strong
 ++++genericContainer
 ++++genericContainer
 ++++switch expanded
@@ -75,7 +75,7 @@ rootWebArea
 ++++tabPanel
 ++++term
 ++++textField
-++++genericContainer
+++++time
 ++++timer
 ++++toolbar
 ++++tooltip

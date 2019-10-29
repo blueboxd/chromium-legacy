@@ -245,14 +245,14 @@ class SARootNode {
   }
 
   /**
-   * @param {AutomationNode} automationNode
+   * @param {chrome.automation.AutomationNode} automationNode
    * @return {boolean}
    */
   isEquivalentTo(automationNode) {
     return false;
   }
 
-  /** @return {AutomationNode} */
+  /** @return {chrome.automation.AutomationNode} */
   get automationNode() {}
 
   /** Called when a group is exiting. */

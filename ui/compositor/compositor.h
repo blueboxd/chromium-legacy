@@ -24,6 +24,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -155,7 +156,7 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   // Adds an observer for vsync parameter changes.
   virtual void AddVSyncParameterObserver(
       Compositor* compositor,
-      viz::mojom::VSyncParameterObserverPtr observer) = 0;
+      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer) = 0;
 };
 
 // This class abstracts the creation of the 3D context for the compositor. It is
@@ -314,7 +315,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval);
   void AddVSyncParameterObserver(
-      viz::mojom::VSyncParameterObserverPtr observer);
+      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer);
 
   // Sets the widget for the compositor to render into.
   void SetAcceleratedWidget(gfx::AcceleratedWidget widget);

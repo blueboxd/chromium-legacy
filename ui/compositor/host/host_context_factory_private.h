@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "services/viz/privileged/mojom/compositing/external_begin_frame_controller.mojom.h"
 #include "ui/compositor/compositor.h"
@@ -89,7 +90,8 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
   void SetOutputIsSecure(Compositor* compositor, bool secure) override;
   void AddVSyncParameterObserver(
       Compositor* compositor,
-      viz::mojom::VSyncParameterObserverPtr observer) override;
+      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer)
+      override;
 
  private:
   struct CompositorData {

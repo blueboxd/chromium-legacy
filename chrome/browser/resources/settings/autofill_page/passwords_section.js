@@ -367,8 +367,9 @@ Polymer({
    * @private
    */
   computeUserSignedIn_: function() {
-    return (!!this.syncStatus_ && !!this.syncStatus_.signedIn) ||
-      (!!this.storedAccounts_ && this.storedAccounts_.length > 0);
+    return (!!this.syncStatus_ && !!this.syncStatus_.signedIn) ?
+        !this.syncStatus_.hasError :
+        (!!this.storedAccounts_ && this.storedAccounts_.length > 0);
   },
 
   /**
@@ -401,12 +402,12 @@ Polymer({
    */
   getPasswordsLeakDetectionSubLabel_: function() {
     if (this.userSignedIn_) {
-      return this.i18n('passwordsLeakDetectionSignedInDescription');
+      return '';
     }
     if (this.getPref('profile.password_manager_leak_detection').value) {
       return this.i18n('passwordsLeakDetectionSignedOutEnabledDescription');
     }
-    return this.i18n('passwordsLeakDetectionSignedOutDisabledDescription');
+    return '';
   },
 
   /**
@@ -546,6 +547,6 @@ Polymer({
   showImportOrExportPasswords_: function(
       showExportPasswords, showImportPasswords) {
     return showExportPasswords || showImportPasswords;
-  }
+  },
 });
 })();

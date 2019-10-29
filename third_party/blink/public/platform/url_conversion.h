@@ -16,8 +16,8 @@ class WebString;
 
 BLINK_PLATFORM_EXPORT GURL WebStringToGURL(const WebString&);
 
-// Convert a data url to to message pipe handle so that it can be passed across
-// processes.
+// Convert a data url to a message pipe handle that corresponds to a remote
+// blob, so that it can be passed across processes.
 BLINK_PLATFORM_EXPORT mojo::ScopedMessagePipeHandle DataURLToMessagePipeHandle(
     const WebString&);
 

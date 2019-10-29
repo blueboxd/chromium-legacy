@@ -44,25 +44,34 @@ class PerfResultReporter {
                          const std::string& units);
   void RegisterImportantMetric(const std::string& metric_suffix,
                                const std::string& units);
-  void AddResult(const std::string& metric_suffix, size_t value);
-  void AddResult(const std::string& metric_suffix, double value);
-  void AddResult(const std::string& metric_suffix, const std::string& value);
+  void AddResult(const std::string& metric_suffix, size_t value) const;
+  void AddResult(const std::string& metric_suffix, double value) const;
+  void AddResult(const std::string& metric_suffix,
+                 const std::string& value) const;
   // A special version of AddResult that will automatically convert the given
   // TimeDelta into a double with the correct units for the registered metric.
-  void AddResult(const std::string& metric_suffix,
-                 const base::TimeDelta& value);
+  void AddResult(const std::string& metric_suffix, base::TimeDelta value) const;
 
   void AddResultList(const std::string& metric_suffix,
-                     const std::string& values);
+                     const std::string& values) const;
+
+  // Users should prefer AddResultList if possible, as otherwise the min/max
+  // values reported on the perf dashboard aren't useful.
+  // |mean_and_error| should be a comma-separated string of mean then
+  // error/stddev, e.g. "2.4,0.5".
+  void AddResultMeanAndError(const std::string& metric_suffix,
+                             const std::string& mean_and_error);
 
   // Returns true and fills the pointer if the metric is registered, otherwise
   // returns false.
-  bool GetMetricInfo(const std::string& metric_suffix, MetricInfo* out);
+  bool GetMetricInfo(const std::string& metric_suffix, MetricInfo* out) const;
 
  private:
   void RegisterMetric(const std::string& metric_suffix,
                       const std::string& units,
                       bool important);
+
+  MetricInfo GetMetricInfoOrFail(const std::string& metric_suffix) const;
 
   std::string metric_basename_;
   std::string story_name_;

@@ -178,18 +178,9 @@ bool ContentSettingsAgentImpl::IsPluginTemporarilyAllowed(
 
 void ContentSettingsAgentImpl::DidBlockContentType(
     ContentSettingsType settings_type) {
-  DidBlockContentType(settings_type, base::string16());
-}
-
-void ContentSettingsAgentImpl::DidBlockContentType(
-    ContentSettingsType settings_type,
-    const base::string16& details) {
-  // Send multiple ContentBlocked messages if details are provided.
   bool newly_blocked = content_blocked_.insert(settings_type).second;
-  if (newly_blocked || !details.empty()) {
-    Send(new ChromeViewHostMsg_ContentBlocked(routing_id(), settings_type,
-                                              details));
-  }
+  if (newly_blocked)
+    content_settings_manager_->OnContentBlocked(settings_type);
 }
 
 void ContentSettingsAgentImpl::SetContentSettingsManagerForTesting(

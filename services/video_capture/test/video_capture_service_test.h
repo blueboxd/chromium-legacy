@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
@@ -29,7 +30,8 @@ class VideoCaptureServiceTest : public testing::Test {
 
  protected:
   struct SharedMemoryVirtualDeviceContext {
-    SharedMemoryVirtualDeviceContext(mojom::ProducerRequest producer_request);
+    SharedMemoryVirtualDeviceContext(
+        mojo::PendingReceiver<mojom::Producer> producer_receiver);
     ~SharedMemoryVirtualDeviceContext();
 
     std::unique_ptr<MockProducer> mock_producer;

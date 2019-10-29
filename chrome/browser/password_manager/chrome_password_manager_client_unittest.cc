@@ -178,7 +178,7 @@ class FakePasswordAutofillAgent
     called_set_logging_state_ = true;
     logging_state_active_ = active;
   }
-  void TouchToFillDismissed() override {}
+  void TouchToFillClosed(bool show_virtual_keyboard) override {}
 
   // Records whether SetLoggingState() gets called.
   bool called_set_logging_state_;

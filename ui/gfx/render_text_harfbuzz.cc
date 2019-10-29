@@ -40,6 +40,7 @@
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/harfbuzz_font_skia.h"
+#include "ui/gfx/platform_font.h"
 #include "ui/gfx/range/range_f.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/switches.h"
@@ -53,10 +54,6 @@
 #if defined(OS_ANDROID)
 #include "base/android/locale_utils.h"
 #endif  // defined(OS_ANDROID)
-
-#if defined(OS_WIN)
-#include "ui/gfx/platform_font.h"
-#endif
 
 #include <hb.h>
 
@@ -94,13 +91,11 @@ bool IsUnusualBlockCode(UBlockCode block_code) {
          block_code == UBLOCK_MISCELLANEOUS_SYMBOLS;
 }
 
-// Returns true if |character| is a bracket. This is used to avoid "matching"
+// Returns true if |codepoint| is a bracket. This is used to avoid "matching"
 // brackets picking different font fallbacks, thereby appearing mismatched.
-bool IsBracket(UChar32 character) {
-  // 0x300c and 0x300d are「foo」 style brackets.
-  constexpr UChar32 kBrackets[] = {'(', ')', '{',       '}',
-                                   '<', '>', L'\u300c', L'\u300d'};
-  return base::Contains(kBrackets, character);
+bool IsBracket(UChar32 codepoint) {
+  return u_getIntPropertyValue(codepoint, UCHAR_BIDI_PAIRED_BRACKET_TYPE) !=
+         U_BPT_NONE;
 }
 
 // If the given scripts match, returns the one that isn't USCRIPT_INHERITED,
@@ -830,15 +825,9 @@ bool TextRunHarfBuzz::FontParams::SetRenderParamsRematchFont(
 bool TextRunHarfBuzz::FontParams::SetRenderParamsOverrideSkiaFaceFromFont(
     const Font& fallback_font,
     const FontRenderParams& new_render_params) {
-  sk_sp<SkTypeface> new_skia_face;
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/1008407): Extend this to additional platforms that
-  // use PlatformFontSkia.
   PlatformFont* platform_font = fallback_font.platform_font();
-  if (platform_font) {
-    new_skia_face = platform_font->GetNativeSkTypefaceIfAvailable();
-  }
-#endif
+  sk_sp<SkTypeface> new_skia_face =
+      platform_font->GetNativeSkTypefaceIfAvailable();
 
   // If pass-through of the Skia native handle fails for PlatformFonts other
   // than PlatformFontSkia, perform rematching.

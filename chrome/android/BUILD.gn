@@ -1469,7 +1469,7 @@ template("libmonochrome_apk_or_bundle_tmpl") {
       "../browser/android/monochrome_entry_point.cc",
     ]
     deps = [
-      "//android_webview:common",
+      "//android_webview/lib",
       "//components/about_ui:about_ui_android",
       "//components/crash/android:crashpad_main",
       "//weblayer:weblayer_lib",

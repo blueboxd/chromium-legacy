@@ -37,4 +37,13 @@ jumbo_component("x11") {
     "x11_window_manager.cc",
     "x11_window_manager.h",
   ]
+
+  if (use_atk) {
+    sources += [
+      "atk_event_conversion.cc",
+      "atk_event_conversion.h",
+    ]
+    configs += [ "//build/config/linux/atk" ]
+    deps += [ "//ui/events/x" ]
+  }
 }

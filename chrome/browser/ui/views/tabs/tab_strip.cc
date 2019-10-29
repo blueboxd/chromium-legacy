@@ -3145,8 +3145,10 @@ void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
 }
 
 void TabStrip::OnMouseExited(const ui::MouseEvent& event) {
-  if (base::FeatureList::IsEnabled(features::kTabHoverCards) && hover_card_)
+  if (base::FeatureList::IsEnabled(features::kTabHoverCards) && hover_card_ &&
+      hover_card_->IsVisible()) {
     hover_card_->set_last_mouse_exit_timestamp(base::TimeTicks::Now());
+  }
   UpdateHoverCard(nullptr);
 }
 

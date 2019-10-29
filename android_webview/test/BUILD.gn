@@ -150,7 +150,7 @@ shared_library("libstandalonelibwebviewchromium") {
   ldflags = [ "-Wl,-shared,-Bsymbolic" ]
   deps = [
     ":webview_instrumentation_test_native_jni_impl",
-    "//android_webview:webview_entry_point",
+    "//android_webview/lib:webview_entry_point",
     "//base",
     "//components/heap_profiling:test_support",
     "//components/minidump_uploader",

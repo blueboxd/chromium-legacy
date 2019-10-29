@@ -126,6 +126,7 @@ enum Role {
   kCell,
   kCheckBox,
   kClient,
+  kCode,
   kColorWell,
   kColumn,
   kColumnHeader,
@@ -192,6 +193,7 @@ enum Role {
   // --------------------------------------------------------------
   kDocument,
   kEmbeddedObject,
+  kEmphasis,
   kFeed,
   kFigcaption,
   kFigure,
@@ -278,6 +280,7 @@ enum Role {
   kSplitter,
   kStaticText,
   kStatus,
+  kStrong,
   kSvgRoot,
   kSwitch,
   kTab,

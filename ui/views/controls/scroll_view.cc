@@ -663,19 +663,6 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
 int ScrollView::GetScrollIncrement(ScrollBar* source, bool is_page,
                                    bool is_positive) {
   bool is_horizontal = source->IsHorizontal();
-  int amount = 0;
-  if (contents_) {
-    if (is_page) {
-      amount = contents_->GetPageScrollIncrement(
-          this, is_horizontal, is_positive);
-    } else {
-      amount = contents_->GetLineScrollIncrement(
-          this, is_horizontal, is_positive);
-    }
-    if (amount > 0)
-      return amount;
-  }
-  // No view, or the view didn't return a valid amount.
   if (is_page) {
     return is_horizontal ? contents_viewport_->width() :
                            contents_viewport_->height();

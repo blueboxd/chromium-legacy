@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
@@ -14,13 +15,13 @@
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/separator.h"
 
 namespace {
 
-static const int kToolbarHeight = 30 - views::Separator::kThickness;
+constexpr int kToolbarHeight = 30 - views::Separator::kThickness;
 
 class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
  public:
@@ -68,6 +69,22 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   float GetTopControlsSlideBehaviorShownRatio() const override {
     return top_controls_shown_ratio_;
   }
+  bool SupportsWindowFeature(
+      const Browser::WindowFeature feature) const override {
+    static const base::NoDestructor<base::flat_set<Browser::WindowFeature>>
+        supported_features({
+            Browser::FEATURE_TABSTRIP,
+            Browser::FEATURE_TOOLBAR,
+            Browser::FEATURE_LOCATIONBAR,
+            Browser::FEATURE_BOOKMARKBAR,
+            Browser::FEATURE_DOWNLOADSHELF,
+        });
+    return base::Contains(*supported_features, feature);
+  }
+  gfx::NativeView GetHostView() const override { return nullptr; }
+  bool BrowserIsTypeNormal() const override { return true; }
+  bool HasFindBarController() const override { return false; }
+  void MoveWindowForFindBarIfNecessary() const override {}
 
  private:
   bool tab_strip_visible_ = true;
@@ -117,7 +134,7 @@ class MockImmersiveModeController : public ImmersiveModeController {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tests of BrowserViewLayout. Runs tests without constructing a BrowserView.
-class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
+class BrowserViewLayoutTest : public ChromeViewsTestBase {
  public:
   BrowserViewLayoutTest()
       : delegate_(nullptr),
@@ -140,9 +157,8 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
   InfoBarContainerView* infobar_container() { return infobar_container_; }
   views::View* contents_container() { return contents_container_; }
 
-  // BrowserWithTestWindowTest overrides:
   void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
+    ChromeViewsTestBase::SetUp();
 
     root_view_.reset(CreateFixedSizeView(gfx::Size(800, 600)));
 
@@ -157,7 +173,6 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     // Save 1 DIP for the separator.
     toolbar_ =
         CreateFixedSizeView(gfx::Size(800, 30 - views::Separator::kThickness));
-    top_container_->AddChildView(toolbar_);
     top_container_->AddChildView(toolbar_);
     separator_ =
         top_container_->AddChildView(std::make_unique<views::Separator>());
@@ -182,7 +197,8 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     // TODO(jamescook): Attach |layout_| to |root_view_|?
     delegate_ = new MockBrowserViewLayoutDelegate();
     layout_ = std::make_unique<BrowserViewLayout>(
-        std::unique_ptr<BrowserViewLayoutDelegate>(delegate_), browser(),
+        std::unique_ptr<BrowserViewLayoutDelegate>(delegate_),
+        nullptr,  // NativeView.
         nullptr,  // BrowserView.
         top_container_, tab_strip_region_view, tab_strip_, nullptr, toolbar_,
         infobar_container_, contents_container_,
@@ -211,7 +227,6 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
 
 // Test basic construction and initialization.
 TEST_F(BrowserViewLayoutTest, BrowserViewLayout) {
-  EXPECT_TRUE(layout()->browser());
   EXPECT_TRUE(layout()->GetWebContentsModalDialogHost());
   EXPECT_FALSE(layout()->IsInfobarVisible());
 }

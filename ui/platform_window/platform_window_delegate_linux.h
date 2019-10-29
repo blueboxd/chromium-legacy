@@ -5,7 +5,12 @@
 #ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_DELEGATE_LINUX_H_
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_DELEGATE_LINUX_H_
 
+#include "ui/base/buildflags.h"
 #include "ui/platform_window/platform_window_delegate_base.h"
+
+#if BUILDFLAG(USE_ATK)
+using AtkKeyEventStruct = struct _AtkKeyEventStruct;
+#endif
 
 class SkPath;
 
@@ -42,6 +47,10 @@ class PlatformWindowDelegateLinux : public PlatformWindowDelegateBase {
   // Returns a mask to be used to clip the window for the given
   // size. This is used to create the non-rectangular window shape.
   virtual void GetWindowMask(const gfx::Size& size, SkPath* window_mask);
+
+#if BUILDFLAG(USE_ATK)
+  virtual bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event);
+#endif
 };
 
 }  // namespace ui

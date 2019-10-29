@@ -381,8 +381,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
                 info.badgeIcon().bitmap(), iconUrls, iconHashes, info.displayMode(),
                 info.orientation(), info.toolbarColor(), info.backgroundColor(),
                 info.shareTarget().getAction(), info.shareTarget().getParamTitle(),
-                info.shareTarget().getParamText(), info.shareTarget().getParamUrl(),
-                info.shareTarget().isShareMethodPost(),
+                info.shareTarget().getParamText(), info.shareTarget().isShareMethodPost(),
                 info.shareTarget().isShareEncTypeMultipart(), info.shareTarget().getFileNames(),
                 info.shareTarget().getFileAccepts(), info.manifestUrl(), info.webApkPackageName(),
                 versionCode, isManifestStale, updateReason, callback);
@@ -396,11 +395,10 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
                 Bitmap badgeIcon, String[] iconUrls, String[] iconHashes,
                 @WebDisplayMode int displayMode, int orientation, long themeColor,
                 long backgroundColor, String shareTargetAction, String shareTargetParamTitle,
-                String shareTargetParamText, String shareTargetParamUrl,
-                boolean shareTargetParamIsMethodPost, boolean shareTargetParamIsEncTypeMultipart,
-                String[] shareTargetParamFileNames, Object[] shareTargetParamAccepts,
-                String manifestUrl, String webApkPackage, int webApkVersion,
-                boolean isManifestStale, @WebApkUpdateReason int updateReason,
+                String shareTargetParamText, boolean shareTargetParamIsMethodPost,
+                boolean shareTargetParamIsEncTypeMultipart, String[] shareTargetParamFileNames,
+                Object[] shareTargetParamAccepts, String manifestUrl, String webApkPackage,
+                int webApkVersion, boolean isManifestStale, @WebApkUpdateReason int updateReason,
                 Callback<Boolean> callback);
         public void updateWebApkFromFile(String updateRequestPath, WebApkUpdateCallback callback);
     }

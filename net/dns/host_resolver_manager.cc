@@ -831,8 +831,8 @@ class HostResolverManager::ProcTask {
       AttemptCompletionCallback completion_callback) {
     AddressList results;
     int os_error = 0;
-    int error = resolver_proc->Resolve(std::move(hostname), address_family,
-                                       flags, &results, &os_error);
+    int error = resolver_proc->Resolve(hostname, address_family, flags,
+                                       &results, &os_error);
 
     network_task_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(completion_callback), results,
@@ -1123,8 +1123,9 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     if (results.addresses() && results.addresses().value().size() > 1 &&
         results.addresses().value()[0].GetFamily() == ADDRESS_FAMILY_IPV6) {
       // Sort addresses if needed.  Sort could complete synchronously.
+      AddressList addresses = results.addresses().value();
       client_->GetAddressSorter()->Sort(
-          results.addresses().value(),
+          addresses,
           base::BindOnce(&DnsTask::OnSortComplete, AsWeakPtr(),
                          tick_clock_->NowTicks(), std::move(results), secure_));
       return;
@@ -2296,7 +2297,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       for (auto* node = requests_.head(); node != requests_.end();
            node = node->next()) {
         if (!node->value()->parameters().is_speculative)
-          node->value()->set_stale_info(std::move(stale_info).value());
+          node->value()->set_stale_info(stale_info.value());
       }
     }
     CompleteRequests(results, base::TimeDelta(), false /* allow_cache */,

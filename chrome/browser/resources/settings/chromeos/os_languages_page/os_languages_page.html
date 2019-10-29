@@ -237,7 +237,8 @@
 
       <cr-lazy-render id="menu">
         <template>
-          <cr-action-menu class="complex" on-close="onCloseMenu_">
+          <cr-action-menu class="complex" on-close="onCloseMenu_"
+              role-description="$i18n{menu}">
             <cr-checkbox id="uiLanguageItem" class="dropdown-item"
                 hidden="[[isGuest_]]"
                 disabled="[[disableUILanguageCheckbox_(

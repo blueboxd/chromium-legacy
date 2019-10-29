@@ -116,7 +116,7 @@ class SwitchAccess {
    */
   moveForward() {
     if (this.navigationManager_) this.navigationManager_.moveForward();
-    this.onMoveForwardForTesting_ && this.onMoveForwardForTesting_();
+    if (this.onMoveForwardForTesting_) this.onMoveForwardForTesting_();
   }
 
   /**

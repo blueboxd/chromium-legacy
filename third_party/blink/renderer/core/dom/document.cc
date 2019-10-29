@@ -5784,7 +5784,7 @@ void Document::AddListenerTypeIfNeeded(const AtomicString& event_type,
     AddListenerType(kScrollListener);
   } else if (event_type == event_type_names::kLoad) {
     if (Node* node = event_target.ToNode()) {
-      if (IsHTMLStyleElement(*node)) {
+      if (IsA<HTMLStyleElement>(*node)) {
         AddListenerType(kLoadListenerAtCapturePhaseOrAtStyleElement);
         return;
       }

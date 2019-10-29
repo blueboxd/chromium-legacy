@@ -325,6 +325,7 @@ public class TabGridDialogMediator {
             mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, isShowing);
             if (!isShowing) {
                 saveCurrentGroupModifiedTitle();
+                mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, false);
             }
         };
         KeyboardVisibilityDelegate.getInstance().addKeyboardVisibilityListener(
@@ -348,6 +349,14 @@ public class TabGridDialogMediator {
         View.OnFocusChangeListener onFocusChangeListener =
                 (v, hasFocus) -> mIsUpdatingTitle = hasFocus;
         mModel.set(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER, onFocusChangeListener);
+
+        View.OnTouchListener onTouchListener = (v, event) -> {
+            // When touching title text field, make the PopupWindow focusable and request focus.
+            mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, true);
+            v.performClick();
+            return false;
+        };
+        mModel.set(TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER, onTouchListener);
     }
 
     private void setupScrimViewObserver() {

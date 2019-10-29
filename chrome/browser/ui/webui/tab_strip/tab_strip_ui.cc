@@ -39,10 +39,12 @@
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/common/url_constants.h"
 #include "third_party/skia/include/core/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -424,6 +426,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
 
 TabStripUI::TabStripUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
+  content::HostZoomMap::Get(web_ui->GetWebContents()->GetSiteInstance())
+      ->SetZoomLevelForHostAndScheme(content::kChromeUIScheme,
+                                     chrome::kChromeUITabStripHost, 0);
+
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUITabStripHost);

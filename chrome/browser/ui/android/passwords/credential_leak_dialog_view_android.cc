@@ -35,14 +35,11 @@ void CredentialLeakDialogViewAndroid::Show(ui::WindowAndroid* window_android) {
   java_object_.Reset(Java_CredentialLeakDialogBridge_create(
       env, window_android->GetJavaObject(), reinterpret_cast<intptr_t>(this)));
 
-  gfx::Range bold_range = controller_->GetDescriptionBoldRange();
-
   Java_CredentialLeakDialogBridge_showDialog(
       env, java_object_,
       base::android::ConvertUTF16ToJavaString(env, controller_->GetTitle()),
       base::android::ConvertUTF16ToJavaString(env,
                                               controller_->GetDescription()),
-      bold_range.start(), bold_range.end(),
       base::android::ConvertUTF16ToJavaString(
           env, controller_->GetAcceptButtonLabel()),
       controller_->ShouldShowCancelButton()

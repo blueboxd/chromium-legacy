@@ -73,7 +73,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   // Overridden from ui::XEventDelegate.
   void OnXWindowSelectionEvent(XEvent* xev) override;
   void OnXWindowDragDropEvent(XEvent* xev) override;
-  void OnXWindowRawKeyEvent(XEvent* xev) override;
 
   // Casts PlatformWindow into XWindow and returns the result. This is a temp
   // solution to access XWindow, which is subclassed by the X11Window, which is

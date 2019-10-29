@@ -57,7 +57,7 @@ class VirtualDeviceEnabledDeviceFactory : public DeviceFactory {
       const std::string& device_id);
   void EmitDevicesChangedEvent();
   void OnDevicesChangedObserverDisconnected(
-      mojom::DevicesChangedObserverPtr::Proxy* observer);
+      mojom::DevicesChangedObserver* observer);
 
   std::map<std::string, VirtualDeviceEntry> virtual_devices_by_id_;
   const std::unique_ptr<DeviceFactory> device_factory_;

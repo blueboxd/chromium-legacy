@@ -461,18 +461,13 @@ public class SavePasswordsPreferences
                 PrefServiceBridge.getInstance().setPasswordLeakDetectionEnabled((boolean) newValue);
                 return true;
             });
-            mAutoLeakDetectionSwitch.setSummary(
-                    R.string.passwords_leak_detection_switch_signed_in_description);
         } else {
             mAutoLeakDetectionSwitch.setChecked(false);
             mAutoLeakDetectionSwitch.setEnabled(false);
             mAutoLeakDetectionSwitch.setOnPreferenceClickListener(null);
             if (PrefServiceBridge.getInstance().isPasswordLeakDetectionEnabled()) {
                 mAutoLeakDetectionSwitch.setSummary(
-                        R.string.passwords_leak_detection_switch_signed_out_full_description);
-            } else {
-                mAutoLeakDetectionSwitch.setSummary(
-                        R.string.passwords_leak_detection_switch_signed_out_partial_description);
+                        R.string.passwords_leak_detection_switch_signed_out_enable_description);
             }
         }
     }

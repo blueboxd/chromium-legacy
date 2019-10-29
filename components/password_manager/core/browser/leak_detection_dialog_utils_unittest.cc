@@ -78,8 +78,7 @@ TEST(CredentialLeakDialogUtilsTest, GetCheckPasswordsDescription) {
     if (kLeakTypesTestCases[i].leak_message_id ==
         IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE) {
       SCOPED_TRACE(testing::Message() << i);
-      base::string16 expected_message;
-      expected_message = l10n_util::GetStringUTF16(
+      base::string16 expected_message = l10n_util::GetStringUTF16(
           IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE);
       EXPECT_EQ(expected_message,
                 GetDescription(kLeakTypesTestCases[i].leak_type, origin));
@@ -93,8 +92,7 @@ TEST(CredentialLeakDialogUtilsTest, GetChangeAndCheckPasswordsDescription) {
     if (kLeakTypesTestCases[i].leak_message_id ==
         IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE) {
       SCOPED_TRACE(testing::Message() << i);
-      base::string16 expected_message;
-      expected_message = l10n_util::GetStringFUTF16(
+      base::string16 expected_message = l10n_util::GetStringFUTF16(
           IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE,
           url_formatter::FormatOriginForSecurityDisplay(
               url::Origin::Create(origin),
@@ -111,16 +109,11 @@ TEST(CredentialLeakDialogUtilsTest, GetChangePasswordDescription) {
     if (kLeakTypesTestCases[i].leak_message_id ==
         IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE) {
       SCOPED_TRACE(testing::Message() << i);
-      base::string16 expected_message;
-      std::vector<size_t> offsets;
-      base::string16 bold_message = l10n_util::GetStringUTF16(
-          IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_BOLD_MESSAGE);
-      expected_message = l10n_util::GetStringFUTF16(
-          IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE, bold_message,
+      base::string16 expected_message = l10n_util::GetStringFUTF16(
+          IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
           url_formatter::FormatOriginForSecurityDisplay(
               url::Origin::Create(origin),
-              url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS),
-          &offsets);
+              url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
       EXPECT_EQ(expected_message,
                 GetDescription(kLeakTypesTestCases[i].leak_type, origin));
     }

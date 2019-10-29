@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace paint_preview {
 
@@ -33,8 +34,8 @@ struct TypefaceSerializationContext {
   base::flat_set<SkFontID> finished;  // Should be empty on first use.
 };
 
-// Maps a content ID to a SkPicture.
-using DeserializationContext = base::flat_map<uint32_t, sk_sp<SkPicture>>;
+// Maps a content ID to a clip rect.
+using DeserializationContext = base::flat_map<uint32_t, gfx::Rect>;
 
 // Creates a no-op SkPicture.
 sk_sp<SkPicture> MakeEmptyPicture();

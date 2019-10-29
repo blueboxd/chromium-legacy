@@ -173,13 +173,6 @@ void OpenVRRenderLoop::OnSessionStart() {
   LogViewerType(type);
 }
 
-mojom::XRGamepadDataPtr OpenVRRenderLoop::GetNextGamepadData() {
-  if (!openvr_) {
-    return nullptr;
-  }
-  return OpenVRGamepadHelper::GetGamepadData(openvr_->GetSystem());
-}
-
 mojom::VRPosePtr OpenVRRenderLoop::GetPose() {
   vr::TrackedDevicePose_t rendering_poses[vr::k_unMaxTrackedDeviceCount];
 

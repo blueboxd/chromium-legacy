@@ -13,6 +13,8 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
@@ -42,7 +44,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
                        DrmOverlayManagerHost* overlay_manager);
 
   void OnGpuServiceLaunchedOnIOThread(
-      ui::ozone::mojom::DrmDevicePtr drm_device_ptr,
+      mojo::PendingRemote<ui::ozone::mojom::DrmDevice> drm_device,
       scoped_refptr<base::SingleThreadTaskRunner> ui_runner);
 
   // Invoked by DrmDeviceConnector on loss of GPU service.
@@ -102,10 +104,6 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
 
   void HostOnGpuServiceLaunched();
 
-  // BindInterface arranges for the drm_device_ptr to be wired up.
-  void BindInterfaceDrmDevice(
-      ui::ozone::mojom::DrmDevicePtr* drm_device_ptr) const;
-
   void OnDrmServiceStarted();
 
   // TODO(rjkroege): Get rid of the need for this method in a subsequent CL.
@@ -130,11 +128,11 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void GpuSetHDCPStateCallback(int64_t display_id, bool success) const;
 
   void OnGpuServiceLaunchedOnUIThread(
-      ui::ozone::mojom::DrmDevicePtrInfo drm_device_ptr_info);
+      mojo::PendingRemote<ui::ozone::mojom::DrmDevice> drm_device);
 
   // Mojo implementation of the DrmDevice. Will be bound on the "main" thread.
-  ui::ozone::mojom::DrmDevicePtr drm_device_ptr_;
-  ui::ozone::mojom::DrmDevicePtr drm_device_ptr_on_io_thread_;
+  mojo::Remote<ui::ozone::mojom::DrmDevice> drm_device_;
+  mojo::Remote<ui::ozone::mojom::DrmDevice> drm_device_on_io_thread_;
 
   DrmDisplayHostManager* display_manager_;  // Not owned.
   DrmOverlayManagerHost* overlay_manager_;  // Not owned.

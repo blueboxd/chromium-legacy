@@ -104,7 +104,7 @@ bool MarkingVisitor::WriteBarrierSlow(void* value) {
   if (!header->TryMark<HeapObjectHeader::AccessMode::kAtomic>())
     return false;
 
-  if (UNLIKELY(header->IsInConstruction())) {
+  if (UNLIKELY(IsInConstruction(header))) {
     // It is assumed that objects on not_fully_constructed_worklist_ are not
     // marked.
     header->Unmark();
@@ -149,7 +149,7 @@ MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
 void MarkingVisitor::DynamicallyMarkAddress(Address address) {
   HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(address);
   DCHECK(header);
-  DCHECK(!header->IsInConstruction());
+  DCHECK(!IsInConstruction(header));
   const GCInfo* gc_info =
       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
   MarkHeader(header, gc_info->trace);
@@ -171,7 +171,7 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   // Simple case for fully constructed objects.
   const GCInfo* gc_info =
       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
-  if (!header->IsInConstruction()) {
+  if (!IsInConstruction(header)) {
     MarkHeader(header, gc_info->trace);
     return;
   }

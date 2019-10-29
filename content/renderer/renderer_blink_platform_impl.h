@@ -149,7 +149,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void GetWebRTCRendererPreferences(blink::WebLocalFrame* web_frame,
                                     blink::WebString* ip_handling_policy,
                                     uint16_t* udp_min_port,
-                                    uint16_t* udp_max_port) override;
+                                    uint16_t* udp_max_port,
+                                    bool* allow_mdns_obfuscation) override;
   base::Optional<int> GetAgcStartupMinimumVolume() override;
   void TrackGetUserMedia(
       const blink::WebUserMediaRequest& web_request) override;

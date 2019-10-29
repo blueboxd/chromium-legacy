@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/reputation/reputation_service.h"
 #include "components/security_state/core/features.h"
 #include "content/public/browser/navigation_entry.h"
 
@@ -135,22 +136,20 @@ void ReputationWebContentsObserver::MaybeShowSafetyTip() {
 }
 
 void ReputationWebContentsObserver::HandleReputationCheckResult(
-    security_state::SafetyTipStatus safety_tip_status,
-    bool user_ignored,
-    const GURL& url,
-    const GURL& suggested_url) {
+    ReputationCheckResult result) {
   UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipShown",
-                            safety_tip_status);
+                            result.safety_tip_status);
 
-  if (safety_tip_status == security_state::SafetyTipStatus::kNone ||
-      safety_tip_status == security_state::SafetyTipStatus::kBadKeyword) {
+  if (result.safety_tip_status == security_state::SafetyTipStatus::kNone ||
+      result.safety_tip_status ==
+          security_state::SafetyTipStatus::kBadKeyword) {
     MaybeCallReputationCheckCallback();
     return;
   }
 
-  if (user_ignored) {
+  if (result.user_previously_ignored) {
     UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipIgnoredPageLoad",
-                              safety_tip_status);
+                              result.safety_tip_status);
     MaybeCallReputationCheckCallback();
     return;
   }
@@ -158,7 +157,8 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   // Set this field independent of whether the feature to show the UI is
   // enabled/disabled. Metrics code uses this field and we want to record
   // metrics regardless of the feature being enabled/disabled.
-  last_navigation_safety_tip_info_ = {safety_tip_status, suggested_url};
+  last_navigation_safety_tip_info_ = {result.safety_tip_status,
+                                      result.suggested_url};
 
   // A navigation entry should always exist because reputation checks are only
   // triggered when a committed navigation finishes.
@@ -175,8 +175,10 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
     return;
   }
   ShowSafetyTipDialog(
-      web_contents(), safety_tip_status, url, suggested_url,
-      base::BindOnce(OnSafetyTipClosed, safety_tip_status, base::Time::Now()));
+      web_contents(), result.safety_tip_status, result.url,
+      result.suggested_url,
+      base::BindOnce(OnSafetyTipClosed, result.safety_tip_status,
+                     base::Time::Now()));
 }
 
 void ReputationWebContentsObserver::MaybeCallReputationCheckCallback() {

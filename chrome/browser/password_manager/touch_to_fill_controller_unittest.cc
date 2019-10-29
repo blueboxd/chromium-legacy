@@ -16,6 +16,8 @@
 
 namespace {
 
+using ShowVirtualKeyboard =
+    password_manager::PasswordManagerDriver::ShowVirtualKeyboard;
 using password_manager::CredentialPair;
 using ::testing::_;
 using ::testing::ElementsAreArray;
@@ -31,7 +33,7 @@ constexpr char kExampleCom[] = "https://example.com/";
 struct MockPasswordManagerDriver : password_manager::StubPasswordManagerDriver {
   MOCK_METHOD2(FillSuggestion,
                void(const base::string16&, const base::string16&));
-  MOCK_METHOD0(TouchToFillDismissed, void());
+  MOCK_METHOD1(TouchToFillClosed, void(ShowVirtualKeyboard));
   MOCK_CONST_METHOD0(GetLastCommittedURL, const GURL&());
 };
 
@@ -84,7 +86,7 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill) {
   base::HistogramTester tester;
   EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("alice"),
                                        base::ASCIIToUTF16("p4ssw0rd")));
-  EXPECT_CALL(driver(), TouchToFillDismissed);
+  EXPECT_CALL(driver(), TouchToFillClosed(ShowVirtualKeyboard(false)));
   touch_to_fill_controller().OnCredentialSelected(credentials[0]);
   tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
                             false, 1);
@@ -120,7 +122,7 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
   base::HistogramTester tester;
   EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("bob"),
                                        base::ASCIIToUTF16("s3cr3t")));
-  EXPECT_CALL(driver(), TouchToFillDismissed);
+  EXPECT_CALL(driver(), TouchToFillClosed(ShowVirtualKeyboard(false)));
   touch_to_fill_controller().OnCredentialSelected(credentials[1]);
   tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
                             true, 1);
@@ -135,6 +137,6 @@ TEST_F(TouchToFillControllerTest, Dismiss) {
                            ElementsAreArray(credentials)));
   touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
 
-  EXPECT_CALL(driver(), TouchToFillDismissed);
+  EXPECT_CALL(driver(), TouchToFillClosed(ShowVirtualKeyboard(true)));
   touch_to_fill_controller().OnDismiss();
 }

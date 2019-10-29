@@ -894,9 +894,7 @@ cr.define('settings_passwords_section', function() {
       assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
       assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
       assertEquals(
-          loadTimeData.getString(
-              'passwordsLeakDetectionSignedOutDisabledDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
+          '', passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
     });
 
     test('leakDetectionToggleSignedOutWithTruePref', function() {
@@ -939,8 +937,7 @@ cr.define('settings_passwords_section', function() {
         assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
         assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
         assertEquals(
-            loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-            passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
+            '', passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
       });
 
       test('leakDetectionToggleSignedInNotSyncingWithTruePref', function() {
@@ -962,8 +959,7 @@ cr.define('settings_passwords_section', function() {
         assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
         assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
         assertEquals(
-            loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-            passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
+            '', passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
       });
     }
 
@@ -981,8 +977,7 @@ cr.define('settings_passwords_section', function() {
       assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
       assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
       assertEquals(
-          loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
+          '', passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
     });
 
     test('leakDetectionToggleSignedInAndSyncingWithTruePref', function() {
@@ -997,8 +992,7 @@ cr.define('settings_passwords_section', function() {
       assertFalse(passwordsSection.$.passwordsLeakDetectionCheckbox.disabled);
       assertTrue(passwordsSection.$.passwordsLeakDetectionCheckbox.checked);
       assertEquals(
-          loadTimeData.getString('passwordsLeakDetectionSignedInDescription'),
-          passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
+          '', passwordsSection.$.passwordsLeakDetectionCheckbox.subLabel);
     });
   });
 });

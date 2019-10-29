@@ -38,4 +38,9 @@ group("run_perf_test") {
   data_deps = [
     ":test_scripts_shared",
   ]
+
+  if (is_android) {
+    # Required when running with bundles (to run "bundletool").
+    data_deps += [ "//third_party/jdk:java_data" ]
+  }
 }

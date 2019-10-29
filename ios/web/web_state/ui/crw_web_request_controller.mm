@@ -670,6 +670,16 @@ enum class BackForwardNavigationType {
     web::NavigationItem* item = self.currentNavItem;
     GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
     GURL virtualURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+
+    // Do not attempt to navigate to file URLs that are typed into the
+    // omnibox.
+    if (navigationURL.SchemeIsFile() &&
+        !web::GetWebClient()->IsAppSpecificURL(virtualURL) &&
+        !IsRestoreSessionUrl(navigationURL)) {
+      [_delegate webRequestControllerStopLoading:self];
+      return;
+    }
+
     // Set |item| to nullptr here to avoid any use-after-free issues, as it can
     // be cleared by the call to -registerLoadRequestForURL below.
     item = nullptr;

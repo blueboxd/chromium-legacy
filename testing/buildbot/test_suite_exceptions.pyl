@@ -2133,6 +2133,8 @@
       'Win7 FYI Debug (AMD)',
       # Fails on the bot, http://crbug.com/868143
       'Win7 FYI Release (AMD)',
+      # Randomly hangs indefinitely https://crbug.com/1018896.
+      'Win10 FYI x64 Release (AMD RX 550)',
     ],
   },
 }

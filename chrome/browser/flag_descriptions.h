@@ -346,10 +346,6 @@ extern const char
 extern const char kEnableAutofillSaveCardShowNoThanksName[];
 extern const char kEnableAutofillSaveCardShowNoThanksDescription[];
 
-extern const char kEnableAutofillSaveCreditCardUsesImprovedMessagingName[];
-extern const char
-    kEnableAutofillSaveCreditCardUsesImprovedMessagingDescription[];
-
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMac[];
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 
@@ -702,6 +698,12 @@ extern const char kHarfBuzzPDFSubsetterDescription[];
 
 extern const char kHarfbuzzRendertextName[];
 extern const char kHarfbuzzRendertextDescription[];
+
+extern const char kHeavyAdPrivacyMitigationsOptOutName[];
+extern const char kHeavyAdPrivacyMitigationsOptOutDescription[];
+
+extern const char kHeavyAdInterventionName[];
+extern const char kHeavyAdInterventionDescription[];
 
 extern const char kHorizontalTabSwitcherAndroidName[];
 extern const char kHorizontalTabSwitcherAndroidDescription[];

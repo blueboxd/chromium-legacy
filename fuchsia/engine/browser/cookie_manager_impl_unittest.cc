@@ -61,8 +61,7 @@ class CookieManagerImplTest : public testing::Test {
       network_service_->CreateNetworkContext(
           network_context_.BindNewPipeAndPassReceiver(),
           network::mojom::NetworkContextParams::New());
-      network_context_.set_disconnect_handler(
-          base::BindLambdaForTesting([&]() { network_context_.reset(); }));
+      network_context_.reset_on_disconnect();
     }
     return network_context_.get();
   }
@@ -348,30 +347,26 @@ TEST_F(CookieManagerImplTest, UpdateBatching) {
   }
 }
 
-// TODO(https://crbug.com/1018178): Flakes on GetAllCookies().has_value().
-TEST_F(CookieManagerImplTest, DISABLED_ReconnectToNetworkContext) {
+TEST_F(CookieManagerImplTest, ReconnectToNetworkContext) {
   // Attach a cookie observer, which we expect should become disconnected with
   // an appropriate error if the NetworkService goes away.
-  base::RunLoop global_changes_disconnect_loop;
-  fuchsia::web::CookiesIteratorPtr global_changes;
-  global_changes.set_error_handler([&](zx_status_t status) {
-    EXPECT_EQ(ZX_ERR_UNAVAILABLE, status);
-    global_changes_disconnect_loop.Quit();
-  });
-  cookie_manager_.ObserveCookieChanges(nullptr, nullptr,
-                                       global_changes.NewRequest());
+  base::RunLoop mojo_disconnect_loop;
+  cookie_manager_.set_on_mojo_disconnected_for_test(
+      mojo_disconnect_loop.QuitClosure());
 
   // Verify that GetAllCookies() returns a valid list of cookies (as opposed to
   // not returning a list at all) initially.
   EXPECT_TRUE(GetAllCookies().has_value());
 
-  // Tear-down and re-create the NetworkService, causing the CookieManager's
-  // connection to it to be dropped.
+  // Tear-down and re-create the NetworkService and |network_context_|, causing
+  // the CookieManager's connection to it to be dropped.
   network_service_.reset();
+  network_context_.reset();
   network_service_ = network::NetworkService::CreateForTesting();
 
-  // Expect that |global_changes| is disconnected at this point.
-  global_changes_disconnect_loop.Run();
+  // Wait for the |cookie_manager_| to observe the NetworkContext disconnect,
+  // so that GetAllCookies() can re-connect.
+  mojo_disconnect_loop.Run();
 
   // If the CookieManager fails to re-connect then GetAllCookies() will receive
   // no data (as opposed to receiving an empty list of cookies).

@@ -2278,7 +2278,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
-    IPC_MESSAGE_HANDLER(FrameMsg_CheckCompleted, OnCheckCompleted)
     IPC_MESSAGE_HANDLER(FrameMsg_ReportContentSecurityPolicyViolation,
                         OnReportContentSecurityPolicyViolation)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
@@ -2884,10 +2883,6 @@ void RenderFrameImpl::OnTextTrackSettingsChanged(
       WebString::FromUTF8(params.text_track_text_size));
 }
 
-void RenderFrameImpl::OnCheckCompleted() {
-  frame_->CheckCompleted();
-}
-
 void RenderFrameImpl::PostMessageEvent(int32_t source_routing_id,
                                        const base::string16& source_origin,
                                        const base::string16& target_origin,
@@ -3032,6 +3027,10 @@ int RenderFrameImpl::ShowContextMenu(ContextMenuClient* client,
 void RenderFrameImpl::CancelContextMenu(int request_id) {
   DCHECK(pending_context_menus_.Lookup(request_id));
   pending_context_menus_.Remove(request_id);
+}
+
+void RenderFrameImpl::ShowVirtualKeyboard() {
+  GetLocalRootRenderWidget()->ShowVirtualKeyboard();
 }
 
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(

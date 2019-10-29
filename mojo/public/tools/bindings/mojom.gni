@@ -294,6 +294,9 @@ if (enable_mojom_typemapping) {
 #   use_typescript_sources (optional)
 #       Uses the Typescript generator to generate JavaScript bindings.
 #
+#   js_generate_struct_deserializers (optiona)
+#       Generates JS deerialize methods for structs.
+#
 # The following parameters are used to support the component build. They are
 # needed so that bindings which are linked with a component can use the same
 # export settings for classes. The first three are for the chromium variant, and
@@ -1282,6 +1285,11 @@ template("mojom") {
           "javascript",
           "--js_bindings_mode=new",
         ]
+
+        if (defined(invoker.js_generate_struct_deserializers) &&
+            invoker.js_generate_struct_deserializers) {
+          args += [ "--js_generate_struct_deserializers" ]
+        }
 
         if (!defined(invoker.scramble_message_ids) ||
             invoker.scramble_message_ids) {

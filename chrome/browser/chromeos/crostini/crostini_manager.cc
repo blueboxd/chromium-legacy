@@ -139,8 +139,7 @@ class CrostiniManager::CrostiniRestarter
       std::move(completed_callback_).Run(CrostiniResult::NOT_ALLOWED);
       return;
     }
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
+    if (ReturnEarlyIfAborted()) {
       return;
     }
     is_running_ = true;
@@ -170,6 +169,9 @@ class CrostiniManager::CrostiniRestarter
 
   // crostini::VmShutdownObserver
   void OnVmShutdown(const std::string& vm_name) override {
+    if (ReturnEarlyIfAborted()) {
+      return;
+    }
     if (vm_name == vm_name_) {
       LOG(WARNING) << "Unexpected VM shutdown during restart for " << vm_name;
       FinishRestart(CrostiniResult::RESTART_FAILED_VM_STOPPED);
@@ -182,6 +184,13 @@ class CrostiniManager::CrostiniRestarter
     completed_callback_.Reset();
     abort_callback_ = std::move(callback);
     ReportRestarterResult(CrostiniResult::RESTART_ABORTED);
+  }
+
+  bool ReturnEarlyIfAborted() {
+    if (is_aborted_ && abort_callback_) {
+      std::move(abort_callback_).Run();
+    }
+    return is_aborted_;
   }
 
   void OnContainerDownloading(int download_percent) {
@@ -237,8 +246,7 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnComponentLoaded(result);
     }
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
+    if (ReturnEarlyIfAborted()) {
       return;
     }
     if (result != CrostiniResult::SUCCESS) {
@@ -257,8 +265,7 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnConciergeStarted(is_started);
     }
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
+    if (ReturnEarlyIfAborted()) {
       return;
     }
     if (!is_started) {
@@ -287,8 +294,7 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnDiskImageCreated(success, status, disk_size_available);
     }
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
+    if (ReturnEarlyIfAborted()) {
       return;
     }
     if (!success) {
@@ -306,8 +312,7 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnVmStarted(success);
     }
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
+    if (ReturnEarlyIfAborted()) {
       return;
     }
     if (!success) {
@@ -348,8 +353,7 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnContainerCreated(result);
     }
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
+    if (ReturnEarlyIfAborted()) {
       return;
     }
     if (result != CrostiniResult::SUCCESS) {
@@ -370,8 +374,7 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnContainerSetup(success);
     }
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
+    if (ReturnEarlyIfAborted()) {
       return;
     }
     if (!success) {
@@ -392,8 +395,7 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnContainerStarted(result);
     }
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
+    if (ReturnEarlyIfAborted()) {
       return;
     }
     if (result != CrostiniResult::SUCCESS) {
@@ -435,8 +437,7 @@ class CrostiniManager::CrostiniRestarter
     for (auto& observer : observer_list_) {
       observer.OnSshKeysFetched(success);
     }
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
+    if (ReturnEarlyIfAborted()) {
       return;
     }
     if (!success) {
@@ -485,8 +486,7 @@ class CrostiniManager::CrostiniRestarter
                  << ", mount_path=" << mount_info.mount_path
                  << ", mount_type=" << mount_info.mount_type
                  << ", mount_condition=" << mount_info.mount_condition;
-      if (is_aborted_) {
-        std::move(abort_callback_).Run();
+      if (ReturnEarlyIfAborted()) {
         return;
       }
       FinishRestart(CrostiniResult::SSHFS_MOUNT_ERROR);
@@ -509,8 +509,7 @@ class CrostiniManager::CrostiniRestarter
 
     // Abort not checked until exiting this function.  On abort, do not
     // continue, but still remove observer and add volume as per above.
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
+    if (ReturnEarlyIfAborted()) {
       return;
     }
 

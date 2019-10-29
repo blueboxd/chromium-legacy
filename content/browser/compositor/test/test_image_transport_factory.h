@@ -18,6 +18,7 @@
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "components/viz/test/test_image_factory.h"
 #include "content/browser/compositor/image_transport_factory.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom.h"
 #include "ui/compositor/compositor.h"
 
@@ -84,7 +85,8 @@ class TestImageTransportFactory : public ui::ContextFactory,
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
   void AddVSyncParameterObserver(
       ui::Compositor* compositor,
-      viz::mojom::VSyncParameterObserverPtr observer) override {}
+      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer)
+      override {}
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;

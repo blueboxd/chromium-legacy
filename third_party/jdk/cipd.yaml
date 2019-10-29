@@ -7,5 +7,8 @@
 package: chromium/third_party/jdk
 description: Java Development Kit
 root: ./
+# TODO(https://crbug.com/977242): Remove this and go back to symlinks once
+# swarming isolation works properly with symlinks.
+install_mode: copy
 data:
   - dir: current

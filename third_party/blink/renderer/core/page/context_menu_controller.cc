@@ -30,6 +30,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -137,44 +138,44 @@ static KURL UrlFromFrame(LocalFrame* frame) {
 }
 
 static int ComputeEditFlags(Document& selected_document, Editor& editor) {
-  int edit_flags = WebContextMenuData::kCanDoNone;
+  int edit_flags = ContextMenuDataEditFlags::kCanDoNone;
   if (editor.CanUndo())
-    edit_flags |= WebContextMenuData::kCanUndo;
+    edit_flags |= ContextMenuDataEditFlags::kCanUndo;
   if (editor.CanRedo())
-    edit_flags |= WebContextMenuData::kCanRedo;
+    edit_flags |= ContextMenuDataEditFlags::kCanRedo;
   if (editor.CanCut())
-    edit_flags |= WebContextMenuData::kCanCut;
+    edit_flags |= ContextMenuDataEditFlags::kCanCut;
   if (editor.CanCopy())
-    edit_flags |= WebContextMenuData::kCanCopy;
+    edit_flags |= ContextMenuDataEditFlags::kCanCopy;
   if (editor.CanPaste())
-    edit_flags |= WebContextMenuData::kCanPaste;
+    edit_flags |= ContextMenuDataEditFlags::kCanPaste;
   if (editor.CanDelete())
-    edit_flags |= WebContextMenuData::kCanDelete;
+    edit_flags |= ContextMenuDataEditFlags::kCanDelete;
   if (editor.CanEditRichly())
-    edit_flags |= WebContextMenuData::kCanEditRichly;
+    edit_flags |= ContextMenuDataEditFlags::kCanEditRichly;
   if (selected_document.IsHTMLDocument() ||
       selected_document.IsXHTMLDocument()) {
-    edit_flags |= WebContextMenuData::kCanTranslate;
+    edit_flags |= ContextMenuDataEditFlags::kCanTranslate;
     if (selected_document.queryCommandEnabled("selectAll", ASSERT_NO_EXCEPTION))
-      edit_flags |= WebContextMenuData::kCanSelectAll;
+      edit_flags |= ContextMenuDataEditFlags::kCanSelectAll;
   }
   return edit_flags;
 }
 
-static WebContextMenuData::InputFieldType ComputeInputFieldType(
+static ContextMenuDataInputFieldType ComputeInputFieldType(
     HitTestResult& result) {
   if (auto* input = ToHTMLInputElementOrNull(result.InnerNode())) {
     if (input->type() == input_type_names::kPassword)
-      return WebContextMenuData::kInputFieldTypePassword;
+      return ContextMenuDataInputFieldType::kPassword;
     if (input->type() == input_type_names::kNumber)
-      return WebContextMenuData::kInputFieldTypeNumber;
+      return ContextMenuDataInputFieldType::kNumber;
     if (input->type() == input_type_names::kTel)
-      return WebContextMenuData::kInputFieldTypeTelephone;
+      return ContextMenuDataInputFieldType::kTelephone;
     if (input->IsTextField())
-      return WebContextMenuData::kInputFieldTypePlainText;
-    return WebContextMenuData::kInputFieldTypeOther;
+      return ContextMenuDataInputFieldType::kPlainText;
+    return ContextMenuDataInputFieldType::kOther;
   }
-  return WebContextMenuData::kInputFieldTypeNone;
+  return ContextMenuDataInputFieldType::kNone;
 }
 
 static WebRect ComputeSelectionRect(LocalFrame* selected_frame) {
@@ -340,25 +341,25 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         WebString text = plugin->SelectionAsText();
         if (!text.IsEmpty()) {
           data.selected_text = text;
-          data.edit_flags |= WebContextMenuData::kCanCopy;
+          data.edit_flags |= ContextMenuDataEditFlags::kCanCopy;
         }
         bool plugin_can_edit_text = plugin->CanEditText();
         if (plugin_can_edit_text) {
           data.is_editable = true;
-          if (!!(data.edit_flags & WebContextMenuData::kCanCopy))
-            data.edit_flags |= WebContextMenuData::kCanCut;
-          data.edit_flags |= WebContextMenuData::kCanPaste;
+          if (!!(data.edit_flags & ContextMenuDataEditFlags::kCanCopy))
+            data.edit_flags |= ContextMenuDataEditFlags::kCanCut;
+          data.edit_flags |= ContextMenuDataEditFlags::kCanPaste;
 
           if (plugin->HasEditableText())
-            data.edit_flags |= WebContextMenuData::kCanSelectAll;
+            data.edit_flags |= ContextMenuDataEditFlags::kCanSelectAll;
 
           if (plugin->CanUndo())
-            data.edit_flags |= WebContextMenuData::kCanUndo;
+            data.edit_flags |= ContextMenuDataEditFlags::kCanUndo;
           if (plugin->CanRedo())
-            data.edit_flags |= WebContextMenuData::kCanRedo;
+            data.edit_flags |= ContextMenuDataEditFlags::kCanRedo;
         }
         // Disable translation for plugins.
-        data.edit_flags &= ~WebContextMenuData::kCanTranslate;
+        data.edit_flags &= ~ContextMenuDataEditFlags::kCanTranslate;
 
         // Figure out the media flags.
         data.media_flags |= WebContextMenuData::kMediaCanSave;

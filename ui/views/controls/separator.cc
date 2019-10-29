@@ -11,9 +11,6 @@
 
 namespace views {
 
-// static
-const int Separator::kThickness = 1;
-
 Separator::Separator() = default;
 
 Separator::~Separator() = default;

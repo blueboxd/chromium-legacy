@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
@@ -68,6 +69,9 @@ void AddWebContents(Browser* browser,
   // was created without a user gesture, we have to set |user_gesture| to true,
   // so it gets correctly focused.
   params.user_gesture = true;
+
+  ConfigureTabGroupForNavigation(&params);
+
   Navigate(&params);
 }
 
@@ -83,6 +87,36 @@ void CloseWebContents(Browser* browser,
   browser->tab_strip_model()->CloseWebContentsAt(
       index, add_to_history ? TabStripModel::CLOSE_CREATE_HISTORICAL_TAB
                             : TabStripModel::CLOSE_NONE);
+}
+
+void ConfigureTabGroupForNavigation(NavigateParams* nav_params) {
+  if (!base::FeatureList::IsEnabled(features::kTabGroups))
+    return;
+
+  if (!nav_params->source_contents)
+    return;
+
+  if (!nav_params->browser || !nav_params->browser->SupportsWindowFeature(
+                                  Browser::WindowFeature::FEATURE_TABSTRIP)) {
+    return;
+  }
+
+  TabStripModel* model = nav_params->browser->tab_strip_model();
+  const int source_index =
+      model->GetIndexOfWebContents(nav_params->source_contents);
+
+  // If the source tab is pinned, don't create a group.
+  if (model->IsTabPinned(source_index))
+    return;
+
+  if (nav_params->disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+      nav_params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
+    nav_params->group = model->GetTabGroupForTab(source_index);
+    // TODO(crbug.com / 997344): Re-evaluate implicit link creation, and either
+    // remove this or add tests.
+    if (!nav_params->group)
+      nav_params->group = model->AddToNewGroup({source_index});
+  }
 }
 
 }  // namespace chrome

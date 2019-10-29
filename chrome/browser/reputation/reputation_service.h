@@ -19,14 +19,33 @@
 class Profile;
 struct DomainInfo;
 
-// Callback type used for retrieving reputation status. |ignored| indicates
-// whether the user has dismissed the warning and thus should not be warned
-// again. |url| is the URL applicable for this result,
+// All potential heuristics that can trigger. Used temporarily to keep track of
+// which heuristics trigger during a reputation check, and later used to decide
+// which metrics get recorded.
+struct TriggeredHeuristics {
+  bool blocklist_heuristic_triggered = false;
+  bool lookalike_heuristic_triggered = false;
+  bool keywords_heuristic_triggered = false;
+};
+
+// Wrapper used to store the results of a reputation check. Specifically, this
+// is passed to the callback given to GetReputationStatus.
+// |user_previously_ignored| indicates whether the use has dismissed the warning
+// previously, and thus should not be warned again. |url| is the URL applicable
+// for this result.
+struct ReputationCheckResult {
+  security_state::SafetyTipStatus safety_tip_status =
+      security_state::SafetyTipStatus::kNone;
+  bool user_previously_ignored = false;
+  GURL url;
+  GURL suggested_url;
+  TriggeredHeuristics triggered_heuristics;
+};
+
+// Callback type used for retrieving reputation status. The results of the
+// reputation check are given in |result|.
 using ReputationCheckCallback =
-    base::OnceCallback<void(security_state::SafetyTipStatus,
-                            bool ignored,
-                            const GURL& url,
-                            const GURL& suggested_url)>;
+    base::OnceCallback<void(ReputationCheckResult result)>;
 
 // Provides reputation information on URLs for Safety Tips.
 class ReputationService : public KeyedService {

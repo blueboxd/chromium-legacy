@@ -305,24 +305,21 @@ void LoopbackServer::SaveEntity(std::unique_ptr<LoopbackServerEntity> entity) {
   entities_[entity->GetId()] = std::move(entity);
 }
 
-net::HttpStatusCode LoopbackServer::HandleCommand(const string& request,
-                                                  std::string* response) {
+net::HttpStatusCode LoopbackServer::HandleCommand(
+    const sync_pb::ClientToServerMessage& message,
+    sync_pb::ClientToServerResponse* response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  response->clear();
+  DCHECK(response);
 
-  sync_pb::ClientToServerMessage message;
-  bool parsed = message.ParseFromString(request);
-  DCHECK(parsed) << "Unable to parse the ClientToServerMessage.";
-
-  sync_pb::ClientToServerResponse response_proto;
+  response->Clear();
 
   if (bag_of_chips_.has_value()) {
-    *response_proto.mutable_new_bag_of_chips() = *bag_of_chips_;
+    *response->mutable_new_bag_of_chips() = *bag_of_chips_;
   }
 
   if (message.has_store_birthday() &&
       message.store_birthday() != GetStoreBirthday()) {
-    response_proto.set_error_code(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);
+    response->set_error_code(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);
   } else {
     bool success = false;
     std::vector<ModelType> datatypes_to_migrate;
@@ -330,25 +327,26 @@ net::HttpStatusCode LoopbackServer::HandleCommand(const string& request,
       case sync_pb::ClientToServerMessage::GET_UPDATES:
         success = HandleGetUpdatesRequest(
             message.get_updates(), message.store_birthday(),
-            message.invalidator_client_id(),
-            response_proto.mutable_get_updates(), &datatypes_to_migrate);
+            message.invalidator_client_id(), response->mutable_get_updates(),
+            &datatypes_to_migrate);
         break;
       case sync_pb::ClientToServerMessage::COMMIT:
         success = HandleCommitRequest(message.commit(),
                                       message.invalidator_client_id(),
-                                      response_proto.mutable_commit());
+                                      response->mutable_commit());
         break;
       case sync_pb::ClientToServerMessage::CLEAR_SERVER_DATA:
         ClearServerData();
-        response_proto.mutable_clear_server_data();
+        response->mutable_clear_server_data();
         success = true;
         break;
       default:
+        response->Clear();
         return net::HTTP_BAD_REQUEST;
     }
 
     if (success) {
-      response_proto.set_error_code(sync_pb::SyncEnums::SUCCESS);
+      response->set_error_code(sync_pb::SyncEnums::SUCCESS);
     } else if (datatypes_to_migrate.empty()) {
       UMA_HISTOGRAM_ENUMERATION(
           "Sync.Local.RequestTypeOnError", message.message_contents(),
@@ -358,15 +356,14 @@ net::HttpStatusCode LoopbackServer::HandleCommand(const string& request,
       DLOG(WARNING) << "Migration required for " << datatypes_to_migrate.size()
                     << " datatypes";
       for (ModelType type : datatypes_to_migrate) {
-        response_proto.add_migrated_data_type_id(
+        response->add_migrated_data_type_id(
             GetSpecificsFieldNumberFromModelType(type));
       }
-      response_proto.set_error_code(sync_pb::SyncEnums::MIGRATION_DONE);
+      response->set_error_code(sync_pb::SyncEnums::MIGRATION_DONE);
     }
   }
 
-  response_proto.set_store_birthday(GetStoreBirthday());
-  *response = response_proto.SerializeAsString();
+  response->set_store_birthday(GetStoreBirthday());
 
   // TODO(pastarmovj): This should be done asynchronously.
   SaveStateToFile(persistent_file_);

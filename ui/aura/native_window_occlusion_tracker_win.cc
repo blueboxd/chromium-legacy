@@ -90,6 +90,11 @@ void NativeWindowOcclusionTrackerWin::OnWindowDestroying(Window* window) {
   Disable(window);
 }
 
+NativeWindowOcclusionTrackerWin**
+NativeWindowOcclusionTrackerWin::GetInstanceForTesting() {
+  return &g_tracker;
+}
+
 NativeWindowOcclusionTrackerWin::NativeWindowOcclusionTrackerWin()
     :  // Use a COMSTATaskRunner so that registering and unregistering
        // event hooks will happen on the same thread, as required by Windows,
@@ -111,10 +116,10 @@ NativeWindowOcclusionTrackerWin::NativeWindowOcclusionTrackerWin()
 }
 
 NativeWindowOcclusionTrackerWin::~NativeWindowOcclusionTrackerWin() {
-  // This shouldn't be reached, because if it is, |occlusion_calculator_| will
-  // be deleted on the ui thread, which is problematic if there tasks scheduled
-  // on the background thread.
-  NOTREACHED();
+  // This shouldn't be reached in production code, because if it is,
+  // |occlusion_calculator_| will be deleted on the ui thread, which is
+  // problematic if there tasks scheduled on the background thread.
+  // Tests are allowed to delete the instance after running all pending tasks.
 }
 
 // static

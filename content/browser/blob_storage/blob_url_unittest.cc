@@ -233,8 +233,9 @@ class BlobURLTest : public testing::Test {
   }
 
   void BuildComplicatedData(std::string* expected_result) {
-    blob_data_->AppendData(kTestData1 + 1, 2);
-    *expected_result = std::string(kTestData1 + 1, 2);
+    auto str1 = std::string(kTestData1 + 1, 2);
+    blob_data_->AppendData(str1);
+    *expected_result = str1;
 
     blob_data_->AppendFile(temp_file1_, 2, 3, temp_file_modification_time1_);
     *expected_result += std::string(kTestFileData1 + 2, 3);
@@ -249,8 +250,9 @@ class BlobURLTest : public testing::Test {
                                      file_system_context_);
     *expected_result += std::string(kTestFileSystemFileData1 + 3, 4);
 
-    blob_data_->AppendData(kTestData2 + 4, 5);
-    *expected_result += std::string(kTestData2 + 4, 5);
+    auto str2 = std::string(kTestData2 + 4, 5);
+    blob_data_->AppendData(str2);
+    *expected_result += str2;
 
     blob_data_->AppendFile(temp_file2_, 5, 6, temp_file_modification_time2_);
     *expected_result += std::string(kTestFileData2 + 5, 6);

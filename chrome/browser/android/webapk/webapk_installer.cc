@@ -236,8 +236,6 @@ std::unique_ptr<std::string> BuildProtoInBackground(
         base::UTF16ToUTF8(shortcut_info.share_target->params.title));
     share_target_params->set_text(
         base::UTF16ToUTF8(shortcut_info.share_target->params.text));
-    share_target_params->set_url(
-        base::UTF16ToUTF8(shortcut_info.share_target->params.url));
 
     for (const ShareTargetParamsFile& share_target_params_file :
          shortcut_info.share_target->params.files) {

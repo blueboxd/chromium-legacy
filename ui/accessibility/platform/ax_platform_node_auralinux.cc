@@ -2646,6 +2646,9 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kTextFieldWithComboBox:
       return ATK_ROLE_COMBO_BOX;
     case ax::mojom::Role::kAbbr:
+    case ax::mojom::Role::kCode:
+    case ax::mojom::Role::kEmphasis:
+    case ax::mojom::Role::kStrong:
     case ax::mojom::Role::kTime:
       return kStaticRole;
     case ax::mojom::Role::kTimer:

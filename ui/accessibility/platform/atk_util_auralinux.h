@@ -48,10 +48,6 @@ class AX_EXPORT AtkUtilAuraLinux {
 
   static DiscardAtkKeyEvent HandleAtkKeyEvent(AtkKeyEventStruct* key_event);
 
-#if defined(USE_X11)
-  static DiscardAtkKeyEvent HandleKeyEvent(XEvent* xevent);
-#endif
-
  private:
   friend struct base::DefaultSingletonTraits<AtkUtilAuraLinux>;
 

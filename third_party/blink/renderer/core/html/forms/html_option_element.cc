@@ -258,6 +258,21 @@ void HTMLOptionElement::SetSelectedState(bool selected) {
   }
 }
 
+void HTMLOptionElement::SetMultiSelectFocusedState(bool focused) {
+  if (is_multi_select_focused_ == focused)
+    return;
+
+  if (auto* select = OwnerSelectElement()) {
+    DCHECK(select->IsMultiple());
+    is_multi_select_focused_ = focused;
+    PseudoStateChanged(CSSSelector::kPseudoMultiSelectFocus);
+  }
+}
+
+bool HTMLOptionElement::IsMultiSelectFocused() const {
+  return is_multi_select_focused_;
+}
+
 void HTMLOptionElement::SetDirty(bool value) {
   is_dirty_ = value;
 }

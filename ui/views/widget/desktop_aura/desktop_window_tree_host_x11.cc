@@ -62,24 +62,7 @@
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_util.h"
 
-#if BUILDFLAG(USE_ATK)
-#include "ui/accessibility/platform/atk_util_auralinux.h"
-#endif
-
 namespace views {
-
-namespace {
-
-bool ShouldDiscardKeyEvent(XEvent* xev) {
-#if BUILDFLAG(USE_ATK)
-  return ui::AtkUtilAuraLinux::HandleKeyEvent(xev) ==
-         ui::DiscardAtkKeyEvent::Discard;
-#else
-  return false;
-#endif
-}
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, public:
@@ -198,32 +181,6 @@ void DesktopWindowTreeHostX11::OnXWindowDragDropEvent(XEvent* xev) {
     drag_drop_client_->OnXdndFinished(xev->xclient);
   } else if (message_type == gfx::GetAtom("XdndDrop")) {
     drag_drop_client_->OnXdndDrop(xev->xclient);
-  }
-}
-
-void DesktopWindowTreeHostX11::OnXWindowRawKeyEvent(XEvent* xev) {
-  switch (xev->type) {
-    case KeyPress:
-      if (!ShouldDiscardKeyEvent(xev)) {
-        ui::KeyEvent keydown_event(xev);
-        DesktopWindowTreeHostLinux::DispatchEvent(&keydown_event);
-      }
-      break;
-    case KeyRelease:
-
-      // There is no way to deactivate a window in X11 so ignore input if
-      // window is supposed to be 'inactive'.
-      if (!IsActive() && !HasCapture())
-        break;
-
-      if (!ShouldDiscardKeyEvent(xev)) {
-        ui::KeyEvent keyup_event(xev);
-        DesktopWindowTreeHostLinux::DispatchEvent(&keyup_event);
-      }
-      break;
-    default:
-      NOTREACHED() << xev->type;
-      break;
   }
 }
 

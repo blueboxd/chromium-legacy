@@ -240,11 +240,15 @@ WebContents* GetTabAndRevertIfNecessaryHelper(Browser* browser,
       WebContents* raw_new_tab = new_tab.get();
       if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
         new_tab->WasHidden();
+      const int index =
+          browser->tab_strip_model()->GetIndexOfWebContents(current_tab);
+      const auto group = browser->tab_strip_model()->GetTabGroupForTab(index);
       browser->tab_strip_model()->AddWebContents(
           std::move(new_tab), -1, ui::PAGE_TRANSITION_LINK,
           (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
               ? TabStripModel::ADD_ACTIVE
-              : TabStripModel::ADD_NONE);
+              : TabStripModel::ADD_NONE,
+          group);
       return raw_new_tab;
     }
     case WindowOpenDisposition::NEW_WINDOW: {

@@ -20,20 +20,6 @@
 namespace autofill {
 namespace features {
 
-const char kAutofillSaveCreditCardUsesImprovedMessagingParamName[] =
-    "AutofillSaveCreditCardUsesImprovedMessaging";
-
-const char kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard[] =
-    "Store Card";
-const char
-    kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails
-        [] = "Store Billing Details";
-const char kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard[] =
-    "Add Card";
-const char
-    kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard[] =
-        "Confirm & Save Card";
-
 // Features
 
 // Controls whether or not Autofill client will populate form with CPAN and
@@ -93,12 +79,6 @@ const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
 // iOS without bringing the extended title string change with it.
 const base::Feature kAutofillSaveCardShowNoThanks{
     "AutofillSaveCardShowNoThanks", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls what title and bubble label for the credit card upload bubble are
-// shown to users.
-const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging{
-    "AutofillSaveCreditCardUsesImprovedMessaging",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to show updated UI for the card unmask prompt.
 const base::Feature kAutofillUpdatedCardUnmaskPromptUi{

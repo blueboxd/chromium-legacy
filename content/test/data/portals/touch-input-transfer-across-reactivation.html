@@ -12,10 +12,12 @@
 <body>
   <div id="scroller"></div>
   <script>
+    let scrollYAfterPortalActivate = 0;
     document.body.addEventListener('touchstart', e => {
       var portal = document.querySelector('portal');
       portal.activate().then(() => {
         document.body.removeChild(portal);
+        scrollYAfterPortalActivate = window.scrollY;
       });
     }, {passive: false, once: true});
   </script>

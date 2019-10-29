@@ -69,8 +69,7 @@ using password_manager::CredentialLeakType;
 // An iOS implementation of password_manager::PasswordManagerClient.
 // TODO(crbug.com/958833): write unit tests for this class.
 class IOSChromePasswordManagerClient
-    : public password_manager::PasswordManagerClient,
-      public password_manager::PasswordManagerClientHelperDelegate {
+    : public password_manager::PasswordManagerClient {
  public:
   explicit IOSChromePasswordManagerClient(
       id<PasswordManagerClientDelegate> delegate);
@@ -100,6 +99,7 @@ class IOSChromePasswordManagerClient
   void AutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           saved_form_manager) override;
+  void PromptUserToEnableAutosignin() override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
   const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
@@ -137,10 +137,6 @@ class IOSChromePasswordManagerClient
   bool IsNewTabPage() const override;
 
  private:
-  // password_manager::PasswordManagerClientHelperDelegate implementation.
-  void PromptUserToEnableAutosignin() override;
-  password_manager::PasswordManager* GetPasswordManager() override;
-
   __weak id<PasswordManagerClientDelegate> delegate_;
 
   const password_manager::PasswordFeatureManagerImpl password_feature_manager_;

@@ -1108,9 +1108,11 @@ void XWindow::ProcessEvent(XEvent* xev) {
     }
 #if !defined(USE_OZONE)
     case KeyPress:
-    case KeyRelease:
-      OnXWindowRawKeyEvent(xev);
+    case KeyRelease: {
+      ui::KeyEvent key_event(xev);
+      OnXWindowEvent(&key_event);
       break;
+    }
     case ButtonPress:
     case ButtonRelease: {
       ui::EventType event_type = ui::EventTypeFromNative(xev);

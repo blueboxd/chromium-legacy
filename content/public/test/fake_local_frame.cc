@@ -33,6 +33,8 @@ void FakeLocalFrame::AddMessageToConsole(
     const std::string& message,
     bool discard_duplicates) {}
 
+void FakeLocalFrame::CheckCompleted() {}
+
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::LocalFrame>(

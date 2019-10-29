@@ -66,9 +66,14 @@ static void SuspendAllMediaPlayersInRenderFrame(
 MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       audible_metrics_(GetAudibleMetrics()),
-      session_controllers_manager_(this) {}
+      session_controllers_manager_(this),
+      power_experiment_manager_(MediaPowerExperimentManager::Instance()),
+      weak_factory_(this) {}
 
-MediaWebContentsObserver::~MediaWebContentsObserver() = default;
+MediaWebContentsObserver::~MediaWebContentsObserver() {
+  // Remove all players so that the experiment manager is notified.
+  RemoveAllPlayers();
+}
 
 void MediaWebContentsObserver::WebContentsDestroyed() {
   AudioStreamMonitor* audio_stream_monitor =
@@ -77,6 +82,9 @@ void MediaWebContentsObserver::WebContentsDestroyed() {
   audible_metrics_->WebContentsDestroyed(
       web_contents(), audio_stream_monitor->WasRecentlyAudible() &&
                           !web_contents()->IsAudioMuted());
+
+  // Remove all players so that the experiment manager is notified.
+  RemoveAllPlayers();
 }
 
 void MediaWebContentsObserver::RenderFrameDeleted(
@@ -179,6 +187,7 @@ bool MediaWebContentsObserver::IsPlayerActive(
 void MediaWebContentsObserver::OnMediaDestroyed(
     RenderFrameHost* render_frame_host,
     int delegate_id) {
+  // TODO(liberato): Should we skip power manager notifications in this case?
   OnMediaPaused(render_frame_host, delegate_id, true);
 }
 
@@ -351,11 +360,21 @@ void MediaWebContentsObserver::AddMediaPlayerEntry(
     const MediaPlayerId& id,
     ActiveMediaPlayerMap* player_map) {
   (*player_map)[id.render_frame_host].insert(id.delegate_id);
+  if (power_experiment_manager_) {
+    power_experiment_manager_->PlayerStarted(
+        id,
+        base::BindRepeating(&MediaWebContentsObserver::OnExperimentStateChanged,
+                            weak_factory_.GetWeakPtr(), id));
+  }
 }
 
 bool MediaWebContentsObserver::RemoveMediaPlayerEntry(
     const MediaPlayerId& id,
     ActiveMediaPlayerMap* player_map) {
+  // If the power experiment is running, then notify it.
+  if (power_experiment_manager_)
+    power_experiment_manager_->PlayerStopped(id);
+
   auto it = player_map->find(id.render_frame_host);
   if (it == player_map->end())
     return false;
@@ -380,8 +399,17 @@ void MediaWebContentsObserver::RemoveAllMediaPlayerEntries(
   if (it == player_map->end())
     return;
 
-  for (int delegate_id : it->second)
-    removed_players->insert(MediaPlayerId(render_frame_host, delegate_id));
+  for (int delegate_id : it->second) {
+    MediaPlayerId id(render_frame_host, delegate_id);
+    removed_players->insert(id);
+
+    // Since the player is being destroyed, don't bother to notify it if it's
+    // no longer the active experiment.
+    if (power_experiment_manager_) {
+      power_experiment_manager_->PlayerStopped(
+          id, MediaPowerExperimentManager::NotificationMode::kSkip);
+    }
+  }
 
   player_map->erase(it);
 }
@@ -396,5 +424,30 @@ void MediaWebContentsObserver::SuspendAllMediaPlayers() {
       base::BindRepeating(&SuspendAllMediaPlayersInRenderFrame));
 }
 #endif  // defined(OS_ANDROID)
+
+void MediaWebContentsObserver::OnExperimentStateChanged(MediaPlayerId id,
+                                                        bool is_starting) {
+  // TODO(liberato): Notify the player.
+}
+
+void MediaWebContentsObserver::RemoveAllPlayers(
+    ActiveMediaPlayerMap* player_map) {
+  if (power_experiment_manager_) {
+    for (auto& iter : *player_map) {
+      for (auto delegate_id : iter.second) {
+        MediaPlayerId id(iter.first, delegate_id);
+        power_experiment_manager_->PlayerStopped(
+            id, MediaPowerExperimentManager::NotificationMode::kSkip);
+      }
+    }
+  }
+
+  player_map->clear();
+}
+
+void MediaWebContentsObserver::RemoveAllPlayers() {
+  RemoveAllPlayers(&active_audio_players_);
+  RemoveAllPlayers(&active_video_players_);
+}
 
 }  // namespace content

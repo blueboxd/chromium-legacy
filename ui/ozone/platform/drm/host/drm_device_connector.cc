@@ -8,29 +8,10 @@
 
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/ozone/platform/drm/host/host_drm_device.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
-
-namespace {
-// TODO(rjkroege): In the future when ozone/drm is always mojo-based, remove
-// this utility code.
-using BinderCallback = ui::GpuPlatformSupportHost::GpuHostBindInterfaceCallback;
-
-void BindInterfaceInGpuProcess(const std::string& interface_name,
-                               mojo::ScopedMessagePipeHandle interface_pipe,
-                               const BinderCallback& binder_callback) {
-  return binder_callback.Run(interface_name, std::move(interface_pipe));
-}
-
-template <typename Interface>
-void BindInterfaceInGpuProcess(mojo::InterfaceRequest<Interface> request,
-                               const BinderCallback& binder_callback) {
-  BindInterfaceInGpuProcess(
-      Interface::Name_, std::move(request.PassMessagePipe()), binder_callback);
-}
-
-}  // namespace
 
 namespace ui {
 
@@ -69,10 +50,10 @@ void DrmDeviceConnector::OnGpuServiceLaunched(
   binder_callback_ = std::move(binder);
   host_id_ = host_id;
 
-  ui::ozone::mojom::DrmDevicePtr drm_device_ptr;
-  BindInterfaceDrmDevice(&drm_device_ptr);
+  mojo::PendingRemote<ui::ozone::mojom::DrmDevice> drm_device;
+  BindInterfaceDrmDevice(&drm_device);
 
-  host_drm_device_->OnGpuServiceLaunchedOnIOThread(std::move(drm_device_ptr),
+  host_drm_device_->OnGpuServiceLaunchedOnIOThread(std::move(drm_device),
                                                    ui_runner);
 }
 
@@ -82,15 +63,15 @@ void DrmDeviceConnector::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DrmDeviceConnector::BindInterfaceDrmDevice(
-    ui::ozone::mojom::DrmDevicePtr* drm_device_ptr) const {
-  auto request = mojo::MakeRequest(drm_device_ptr);
-  BindInterfaceInGpuProcess(std::move(request), binder_callback_);
+    mojo::PendingRemote<ui::ozone::mojom::DrmDevice>* drm_device) const {
+  binder_callback_.Run(ui::ozone::mojom::DrmDevice::Name_,
+                       drm_device->InitWithNewPipeAndPassReceiver().PassPipe());
 }
 
 void DrmDeviceConnector::ConnectSingleThreaded(
-    ui::ozone::mojom::DrmDevicePtr drm_device_ptr) {
+    mojo::PendingRemote<ui::ozone::mojom::DrmDevice> drm_device) {
   host_drm_device_->OnGpuServiceLaunchedOnIOThread(
-      std::move(drm_device_ptr), base::ThreadTaskRunnerHandle::Get());
+      std::move(drm_device), base::ThreadTaskRunnerHandle::Get());
 }
 
 }  // namespace ui

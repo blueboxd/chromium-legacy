@@ -12,10 +12,6 @@ generate_jni("apk_jni_headers") {
   ]
 }
 
-# Empty target to avoid breaking Clank.
-java_group("webview_license_provider_java") {
-}
-
 # Contains classes needed by the webview apk, but not used when loading the apk
 # as a library.
 android_library("apk_java") {

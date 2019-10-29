@@ -21,6 +21,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/security_state/core/security_state.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 #include "url/url_constants.h"
 
@@ -51,7 +52,7 @@ class ReputationServiceFactory : public BrowserContextKeyedServiceFactory {
             "ReputationServiceFactory",
             BrowserContextDependencyManager::GetInstance()) {}
 
-  ~ReputationServiceFactory() override {}
+  ~ReputationServiceFactory() override = default;
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
@@ -205,13 +206,19 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     const std::vector<DomainInfo>& engaged_sites) {
   const DomainInfo navigated_domain = GetDomainInfo(url);
 
+  ReputationCheckResult result;
+
+  // We evaluate every heuristic for metrics, but only display the first result
+  // for the UI. We use |done_checking_reputation_status| to track when we've
+  // settled on the safety tip to show in the UI, so as to not overwrite this
+  // decision with other heuristics that may trigger later.
+  bool done_checking_reputation_status = false;
+
   // 0. Server-side warning suppression.
   // If the URL is on the allowlist list, do nothing else. This is only used to
   // mitigate false positives, so no further processing should be done.
   if (ShouldSuppressWarning(url)) {
-    std::move(callback).Run(security_state::SafetyTipStatus::kNone,
-                            IsIgnored(url), url, GURL());
-    return;
+    done_checking_reputation_status = true;
   }
 
   // 1. Engagement check
@@ -225,47 +232,55 @@ void ReputationService::GetReputationStatusWithEngagedSites(
                              engaged_domain.domain_and_registry);
                    });
   if (already_engaged != engaged_sites.end()) {
-    std::move(callback).Run(security_state::SafetyTipStatus::kNone,
-                            IsIgnored(url), url, GURL());
-    return;
+    done_checking_reputation_status = true;
   }
 
   // 2. Server-side blocklist check.
   security_state::SafetyTipStatus status = GetSafetyTipUrlBlockType(url);
   if (status != security_state::SafetyTipStatus::kNone) {
-    std::move(callback).Run(status, IsIgnored(url), url, GURL());
-    return;
+    if (!done_checking_reputation_status) {
+      result.safety_tip_status = status;
+    }
+
+    result.triggered_heuristics.blocklist_heuristic_triggered = true;
+    done_checking_reputation_status = true;
   }
 
   // 3. Protect against bad false positives by allowing top domains.
   // Empty domain_and_registry happens on private domains.
   if (navigated_domain.domain_and_registry.empty() ||
       IsTopDomain(navigated_domain)) {
-    std::move(callback).Run(security_state::SafetyTipStatus::kNone,
-                            IsIgnored(url), url, GURL());
-    return;
+    done_checking_reputation_status = true;
   }
 
   // 4. Lookalike heuristics.
   GURL safe_url;
-  if (ShouldTriggerSafetyTipFromLookalike(url, navigated_domain, engaged_sites,
+  if (already_engaged == engaged_sites.end() &&
+      ShouldTriggerSafetyTipFromLookalike(url, navigated_domain, engaged_sites,
                                           &safe_url)) {
-    std::move(callback).Run(security_state::SafetyTipStatus::kLookalike,
-                            IsIgnored(url), url, safe_url);
-    return;
+    if (!done_checking_reputation_status) {
+      result.suggested_url = safe_url;
+      result.safety_tip_status = security_state::SafetyTipStatus::kLookalike;
+    }
+
+    result.triggered_heuristics.lookalike_heuristic_triggered = true;
+    done_checking_reputation_status = true;
   }
 
   // 5. Keyword heuristics.
   if (ShouldTriggerSafetyTipFromKeywordInURL(
           url, navigated_domain, top500_domains::kTop500Keywords, 500)) {
-    std::move(callback).Run(security_state::SafetyTipStatus::kBadKeyword,
-                            IsIgnored(url), url, GURL());
-    return;
+    if (!done_checking_reputation_status) {
+      result.safety_tip_status = security_state::SafetyTipStatus::kBadKeyword;
+    }
+
+    result.triggered_heuristics.keywords_heuristic_triggered = true;
+    done_checking_reputation_status = true;
   }
 
-  // TODO(crbug/984725): 6. Additional client-side heuristics.
-  std::move(callback).Run(security_state::SafetyTipStatus::kNone,
-                          IsIgnored(url), url, GURL());
+  result.user_previously_ignored = IsIgnored(url);
+  result.url = url;
+  std::move(callback).Run(result);
 }
 
 security_state::SafetyTipStatus GetSafetyTipUrlBlockType(const GURL& url) {

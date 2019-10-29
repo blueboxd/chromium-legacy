@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -49,16 +46,6 @@ class SingleClientDirectorySyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientDirectorySyncTest);
 };
 
-void WaitForExistingTasksOnTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  base::RunLoop run_loop;
-  // Post a task to |loop| that will, in turn, post a task back to the current
-  // sequenced task runner to quit the nested loop.
-  task_runner->PostTaskAndReply(FROM_HERE, base::DoNothing(),
-                                run_loop.QuitClosure());
-  run_loop.Run();
-}
-
 // A status change checker that waits for an unrecoverable sync error to occur.
 class SyncUnrecoverableErrorChecker : public SingleClientStatusChangeChecker {
  public:
@@ -86,8 +73,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
                                                 run_loop.QuitClosure());
   run_loop.Run();
   // Wait for the directory deletion to finish.
-  WaitForExistingTasksOnTaskRunner(
-      sync_service->GetSyncThreadTaskRunnerForTest());
+  sync_service->FlushBackendTaskRunnerForTest();
   EXPECT_FALSE(FolderContainsFiles(directory_path));
 }
 
@@ -105,9 +91,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   // completes.
   syncer::ProfileSyncService* sync_service = GetSyncService(0);
   sync_service->FlushDirectory();
-  scoped_refptr<base::SingleThreadTaskRunner> sync_thread_task_runner =
-      sync_service->GetSyncThreadTaskRunnerForTest();
-  WaitForExistingTasksOnTaskRunner(sync_thread_task_runner);
+  sync_service->FlushBackendTaskRunnerForTest();
 
   // Now corrupt the database.
   FilePath directory_path = sync_service->GetSyncClientForTest()
@@ -141,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
   // Wait until the sync loop has processed any existing tasks and see that the
   // directory no longer exists.
-  WaitForExistingTasksOnTaskRunner(sync_thread_task_runner);
+  sync_service->FlushBackendTaskRunnerForTest();
   ASSERT_FALSE(FolderContainsFiles(directory_path));
 }
 

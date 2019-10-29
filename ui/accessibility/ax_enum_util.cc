@@ -309,6 +309,8 @@ const char* ToString(ax::mojom::Role role) {
       return "checkBox";
     case ax::mojom::Role::kClient:
       return "client";
+    case ax::mojom::Role::kCode:
+      return "code";
     case ax::mojom::Role::kColorWell:
       return "colorWell";
     case ax::mojom::Role::kColumnHeader:
@@ -431,6 +433,8 @@ const char* ToString(ax::mojom::Role role) {
       return "document";
     case ax::mojom::Role::kEmbeddedObject:
       return "embeddedObject";
+    case ax::mojom::Role::kEmphasis:
+      return "emphasis";
     case ax::mojom::Role::kFeed:
       return "feed";
     case ax::mojom::Role::kFigcaption:
@@ -567,6 +571,8 @@ const char* ToString(ax::mojom::Role role) {
       return "rubyAnnotation";
     case ax::mojom::Role::kSection:
       return "section";
+    case ax::mojom::Role::kStrong:
+      return "strong";
     case ax::mojom::Role::kSvgRoot:
       return "svgRoot";
     case ax::mojom::Role::kScrollBar:
@@ -685,6 +691,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kCheckBox;
   if (0 == strcmp(role, "client"))
     return ax::mojom::Role::kClient;
+  if (0 == strcmp(role, "code"))
+    return ax::mojom::Role::kCode;
   if (0 == strcmp(role, "colorWell"))
     return ax::mojom::Role::kColorWell;
   if (0 == strcmp(role, "columnHeader"))
@@ -807,6 +815,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kDocument;
   if (0 == strcmp(role, "embeddedObject"))
     return ax::mojom::Role::kEmbeddedObject;
+  if (0 == strcmp(role, "emphasis"))
+    return ax::mojom::Role::kEmphasis;
   if (0 == strcmp(role, "feed"))
     return ax::mojom::Role::kFeed;
   if (0 == strcmp(role, "figcaption"))
@@ -967,6 +977,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kStatus;
   if (0 == strcmp(role, "switch"))
     return ax::mojom::Role::kSwitch;
+  if (0 == strcmp(role, "strong"))
+    return ax::mojom::Role::kStrong;
   if (0 == strcmp(role, "tabList"))
     return ax::mojom::Role::kTabList;
   if (0 == strcmp(role, "tabPanel"))

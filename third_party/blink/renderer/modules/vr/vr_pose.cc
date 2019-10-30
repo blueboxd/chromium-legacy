@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/platform/float_point_3d.h"
 
 namespace blink {
 
@@ -40,15 +41,15 @@ DOMFloat32Array* Vector3dFToFloat32Array(
 }
 
 DOMFloat32Array* WebPoint3DToFloat32Array(
-    const base::Optional<WebFloatPoint3D>& p) {
+    const base::Optional<FloatPoint3D>& p) {
   if (!p)
     return nullptr;
 
   auto* dom_array = DOMFloat32Array::Create(3);
   float* data = dom_array->Data();
-  data[0] = p->x;
-  data[1] = p->y;
-  data[2] = p->z;
+  data[0] = p->X();
+  data[1] = p->Y();
+  data[2] = p->Z();
 
   return dom_array;
 }

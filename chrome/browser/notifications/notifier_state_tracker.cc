@@ -77,7 +77,7 @@ bool NotifierStateTracker::IsNotifierEnabled(
           disabled_extension_ids_.end();
     case message_center::NotifierType::WEB_PAGE:
       return PermissionManager::Get(profile_)
-                 ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                 ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS,
                                        notifier_id.url, notifier_id.url)
                  .content_setting == CONTENT_SETTING_ALLOW;
     case message_center::NotifierType::SYSTEM_COMPONENT:

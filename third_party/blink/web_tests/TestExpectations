@@ -42,6 +42,8 @@ crbug.com/887140 hdr/color-jpeg-with-color-profile.html [ Failure ]
 crbug.com/887140 hdr/color-profile-video.html [ Failure ]
 crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
 
+crbug.com/1014421 external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Timeout ]
+
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
 #
@@ -2648,9 +2650,7 @@ crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking
 crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Timeout ]
+
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
@@ -2660,9 +2660,6 @@ crbug.com/626703 [ Win ] external/wpt/fetch/corb/script-resource-with-nonsniffab
 crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-values/attr-in-max.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-disabled.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries_resized.html [ Failure ]
@@ -5744,6 +5741,12 @@ crbug.com/1018027 virtual/threaded-no-composited-antialiasing/animations/custom-
 crbug.com/1018027 virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-to-unregistered-animating.html [ Pass Crash ]
 crbug.com/1018064 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 
+# Sheriff 2019-10-30
+crbug.com/1018027 virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-to-registered.html [ Pass Crash ]
+crbug.com/1014810 [ Mac ] virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
+crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
+crbug.com/1019663 external/wpt/web-nfc/NDEFReader_options.https.html [ Failure Pass ]
+
 # Temporarily disabled for landing coverage changes in DevTools
 crbug.com/1009396 http/tests/devtools/coverage/coverage-export.js [ Pass Failure ]
 crbug.com/1009396 http/tests/devtools/coverage/coverage-repeated.js [ Pass Failure ]
@@ -5760,3 +5763,6 @@ crbug.com/1016772 http/tests/devtools/sources/debugger-ui/source-url-comment.js 
 
 # Temporarily disabled for landing initiator chain changes in DevTools
 crbug.com/842488 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]
+
+# Temporarily disabled to a breakpoint non-determinism issue.
+crbug.com/1019613 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ Pass Failure ]

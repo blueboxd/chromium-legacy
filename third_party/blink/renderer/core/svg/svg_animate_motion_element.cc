@@ -209,8 +209,11 @@ void SVGAnimateMotionElement::CalculateAnimatedValue(float percentage,
 
   if (GetAnimationMode() != kPathAnimation) {
     FloatPoint to_point_at_end_of_duration = to_point_;
-    if (IsAccumulated() && repeat_count && has_to_point_at_end_of_duration_)
-      to_point_at_end_of_duration = to_point_at_end_of_duration_;
+    if (GetAnimationMode() != kToAnimation) {
+      if (repeat_count && IsAccumulated() && has_to_point_at_end_of_duration_) {
+        to_point_at_end_of_duration = to_point_at_end_of_duration_;
+      }
+    }
 
     float animated_x = 0;
     AnimateAdditiveNumber(percentage, repeat_count, from_point_.X(),
@@ -234,7 +237,7 @@ void SVGAnimateMotionElement::CalculateAnimatedValue(float percentage,
   animation_path_.PointAndNormalAtLength(position_on_path, position, angle);
 
   // Handle accumulate="sum".
-  if (IsAccumulated() && repeat_count) {
+  if (repeat_count && IsAccumulated()) {
     FloatPoint position_at_end_of_duration =
         animation_path_.PointAtLength(animation_path_.length());
     position.Move(position_at_end_of_duration.X() * repeat_count,

@@ -4673,6 +4673,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kFtpProtocol)},
 #endif
 
+#if defined(OS_CHROMEOS)
+    {"crostini-use-buster-image",
+     flag_descriptions::kCrostiniUseBusterImageName,
+     flag_descriptions::kCrostiniUseBusterImageDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseBusterImage)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

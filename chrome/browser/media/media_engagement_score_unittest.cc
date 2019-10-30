@@ -293,7 +293,7 @@ TEST_F(MediaEngagementScoreTest, ContentSettings) {
       MediaEngagementScore::kSignificantAudioContextPlaybacksKey,
       example_audio_context_playbacks);
   settings_map->SetWebsiteSettingDefaultScope(
-      origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+      origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
       content_settings::ResourceIdentifier(), std::move(score_dict));
 
   // Make sure we read that data back correctly.
@@ -326,7 +326,7 @@ TEST_F(MediaEngagementScoreTest, ContentSettings) {
   int stored_audio_context_playbacks;
   std::unique_ptr<base::DictionaryValue> values =
       base::DictionaryValue::From(settings_map->GetWebsiteSetting(
-          origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+          origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
           content_settings::ResourceIdentifier(), nullptr));
   values->GetInteger(MediaEngagementScore::kVisitsKey, &stored_visits);
   values->GetInteger(MediaEngagementScore::kMediaPlaybacksKey,
@@ -388,7 +388,7 @@ TEST_F(MediaEngagementScoreTest, HighScoreLegacy_High) {
     dict->SetInteger(MediaEngagementScore::kVisitsKey, 20);
     dict->SetInteger(MediaEngagementScore::kMediaPlaybacksKey, 6);
     settings_map->SetWebsiteSettingDefaultScope(
-        origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+        origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
         content_settings::ResourceIdentifier(), std::move(dict));
   }
 
@@ -411,7 +411,7 @@ TEST_F(MediaEngagementScoreTest, HighScoreLegacy_Low) {
     dict->SetInteger(MediaEngagementScore::kVisitsKey, 20);
     dict->SetInteger(MediaEngagementScore::kMediaPlaybacksKey, 4);
     settings_map->SetWebsiteSettingDefaultScope(
-        origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+        origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
         content_settings::ResourceIdentifier(), std::move(dict));
   }
 
@@ -439,7 +439,7 @@ TEST_F(MediaEngagementScoreTest, HighScoreUpdated) {
     dict->SetBoolean(MediaEngagementScore::kHasHighScoreKey, true);
 
     settings_map->SetWebsiteSettingDefaultScope(
-        origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+        origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
         content_settings::ResourceIdentifier(), std::move(dict));
   }
 
@@ -453,7 +453,7 @@ TEST_F(MediaEngagementScoreTest, HighScoreUpdated) {
   {
     std::unique_ptr<base::DictionaryValue> dict =
         base::DictionaryValue::From(settings_map->GetWebsiteSetting(
-            origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+            origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
             content_settings::ResourceIdentifier(), nullptr));
 
     bool stored_high_score = false;
@@ -568,7 +568,7 @@ TEST_F(MediaEngagementScoreTest, MigrateMediaElementPlaybacks) {
     dict->SetInteger(MediaEngagementScore::kMediaPlaybacksKey, media_playbacks);
 
     settings_map->SetWebsiteSettingDefaultScope(
-        origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+        origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
         content_settings::ResourceIdentifier(), std::move(dict));
   }
 
@@ -584,7 +584,7 @@ TEST_F(MediaEngagementScoreTest, MigrateMediaElementPlaybacks) {
   {
     std::unique_ptr<base::DictionaryValue> dict =
         base::DictionaryValue::From(settings_map->GetWebsiteSetting(
-            origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+            origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
             content_settings::ResourceIdentifier(), nullptr));
 
     int stored_media_playbacks = 0;
@@ -619,7 +619,7 @@ TEST_F(MediaEngagementScoreTest,
                      audio_context_playbacks);
 
     settings_map->SetWebsiteSettingDefaultScope(
-        origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+        origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
         content_settings::ResourceIdentifier(), std::move(dict));
   }
 
@@ -636,7 +636,7 @@ TEST_F(MediaEngagementScoreTest,
   {
     std::unique_ptr<base::DictionaryValue> dict =
         base::DictionaryValue::From(settings_map->GetWebsiteSetting(
-            origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+            origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
             content_settings::ResourceIdentifier(), nullptr));
 
     EXPECT_NE(nullptr, dict->FindKey(MediaEngagementScore::kMediaPlaybacksKey));
@@ -665,7 +665,7 @@ TEST_F(MediaEngagementScoreTest,
                      media_element_playbacks);
 
     settings_map->SetWebsiteSettingDefaultScope(
-        origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+        origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
         content_settings::ResourceIdentifier(), std::move(dict));
   }
 
@@ -681,7 +681,7 @@ TEST_F(MediaEngagementScoreTest,
   {
     std::unique_ptr<base::DictionaryValue> dict =
         base::DictionaryValue::From(settings_map->GetWebsiteSetting(
-            origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+            origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
             content_settings::ResourceIdentifier(), nullptr));
 
     int stored_media_playbacks = 0;
@@ -731,7 +731,7 @@ TEST_F(MediaEngagementScoreTest, DoNotStoreDeprecatedFields) {
       std::make_unique<base::DictionaryValue>();
   score_dict->SetInteger(kVisitsWithMediaTag, 10);
   settings_map->SetWebsiteSettingDefaultScope(
-      origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+      origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
       content_settings::ResourceIdentifier(), std::move(score_dict));
 
   // Run the data through media engagement score.
@@ -743,7 +743,7 @@ TEST_F(MediaEngagementScoreTest, DoNotStoreDeprecatedFields) {
   // Check the deprecated fields have been dropped.
   std::unique_ptr<base::DictionaryValue> values =
       base::DictionaryValue::From(settings_map->GetWebsiteSetting(
-          origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+          origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
           content_settings::ResourceIdentifier(), nullptr));
   EXPECT_FALSE(values->HasKey(kVisitsWithMediaTag));
 }

@@ -404,8 +404,8 @@ PipelineStatistics PipelineController::GetStatistics() const {
 }
 
 void PipelineController::SetCdm(CdmContext* cdm_context,
-                                const CdmAttachedCB& cdm_attached_cb) {
-  pipeline_->SetCdm(cdm_context, cdm_attached_cb);
+                                CdmAttachedCB cdm_attached_cb) {
+  pipeline_->SetCdm(cdm_context, std::move(cdm_attached_cb));
 }
 
 void PipelineController::OnEnabledAudioTracksChanged(

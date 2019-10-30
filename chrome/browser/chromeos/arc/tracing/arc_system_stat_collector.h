@@ -86,6 +86,7 @@ class ArcSystemStatCollector {
   struct SystemReadersContext;
 
   struct RuntimeFrame {
+    base::TimeTicks timestamp;
     // read, written sectors and total time in milliseconds.
     int64_t zram_stat[base::size(kZramStatColumns) - 1] = {0};
     // total, available.
@@ -96,6 +97,12 @@ class ArcSystemStatCollector {
     int64_t cpu_temperature = std::numeric_limits<int>::min();
     // CPU Frequency.
     int64_t cpu_frequency = 0;
+    // CPU energy in micro-joules for Intel platforms.
+    int64_t cpu_energy = 0;
+    // GPU energy in micro-joules for some Intel platforms.
+    int64_t gpu_energy = 0;
+    // Memory energy in micro-joules for some Intel platforms.
+    int64_t memory_energy = 0;
   };
 
   // Schedules reading System stat files in |ReadSystemStatOnBackgroundThread|

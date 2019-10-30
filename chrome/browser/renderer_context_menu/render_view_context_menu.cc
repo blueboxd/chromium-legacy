@@ -148,9 +148,9 @@
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/context_menu_data/input_field_type.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
+#include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/common/plugin/plugin_action.h"
 #include "third_party/blink/public/public_buildflags.h"
-#include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -204,9 +204,9 @@
 using base::UserMetricsAction;
 using blink::ContextMenuDataEditFlags;
 using blink::ContextMenuDataMediaType;
+using blink::MediaPlayerAction;
 using blink::PluginAction;
 using blink::WebContextMenuData;
-using blink::WebMediaPlayerAction;
 using blink::WebString;
 using blink::WebURL;
 using content::BrowserContext;
@@ -2879,9 +2879,8 @@ void RenderViewContextMenu::ExecPlayPause() {
   else
     base::RecordAction(UserMetricsAction("MediaContextMenu_Pause"));
 
-  MediaPlayerActionAt(
-      gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::Type::kPlay, play));
+  MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
+                      MediaPlayerAction(MediaPlayerAction::Type::kPlay, play));
 }
 
 void RenderViewContextMenu::ExecMute() {
@@ -2891,25 +2890,24 @@ void RenderViewContextMenu::ExecMute() {
   else
     base::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"));
 
-  MediaPlayerActionAt(
-      gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::Type::kMute, mute));
+  MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
+                      MediaPlayerAction(MediaPlayerAction::Type::kMute, mute));
 }
 
 void RenderViewContextMenu::ExecLoop() {
   base::RecordAction(UserMetricsAction("MediaContextMenu_Loop"));
   MediaPlayerActionAt(
       gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::Type::kLoop,
-                           !IsCommandIdChecked(IDC_CONTENT_CONTEXT_LOOP)));
+      MediaPlayerAction(MediaPlayerAction::Type::kLoop,
+                        !IsCommandIdChecked(IDC_CONTENT_CONTEXT_LOOP)));
 }
 
 void RenderViewContextMenu::ExecControls() {
   base::RecordAction(UserMetricsAction("MediaContextMenu_Controls"));
   MediaPlayerActionAt(
       gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::Type::kControls,
-                           !IsCommandIdChecked(IDC_CONTENT_CONTEXT_CONTROLS)));
+      MediaPlayerAction(MediaPlayerAction::Type::kControls,
+                        !IsCommandIdChecked(IDC_CONTENT_CONTEXT_CONTROLS)));
 }
 
 void RenderViewContextMenu::ExecRotateCW() {
@@ -3039,13 +3037,13 @@ void RenderViewContextMenu::ExecPictureInPicture() {
 
   MediaPlayerActionAt(
       gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::Type::kPictureInPicture,
-                           !picture_in_picture_active));
+      MediaPlayerAction(MediaPlayerAction::Type::kPictureInPicture,
+                        !picture_in_picture_active));
 }
 
 void RenderViewContextMenu::MediaPlayerActionAt(
     const gfx::Point& location,
-    const WebMediaPlayerAction& action) {
+    const MediaPlayerAction& action) {
   RenderFrameHost* frame_host = GetRenderFrameHost();
   if (frame_host)
     frame_host->ExecuteMediaPlayerActionAtLocation(location, action);

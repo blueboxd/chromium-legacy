@@ -123,7 +123,7 @@ bool FlashDeprecationInfoBarDelegate::Accept() {
     return true;
 
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DEFAULT);
+      ContentSettingsType::PLUGINS, CONTENT_SETTING_DEFAULT);
   return true;
 }
 

@@ -215,7 +215,7 @@ void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
   // Collect the existing rules and create channels for them.
   {
     std::unique_ptr<content_settings::RuleIterator> it(
-        pref_provider->GetRuleIterator(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+        pref_provider->GetRuleIterator(ContentSettingsType::NOTIFICATIONS,
                                        std::string(), false /* incognito */));
 
     while (it && it->HasNext()) {
@@ -229,7 +229,7 @@ void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
   for (const auto& rule : rules) {
     pref_provider->SetWebsiteSetting(
         rule.primary_pattern, rule.secondary_pattern,
-        CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+        ContentSettingsType::NOTIFICATIONS,
         content_settings::ResourceIdentifier(), nullptr);
   }
 
@@ -267,7 +267,7 @@ NotificationChannelsProviderAndroid::GetRuleIterator(
     ContentSettingsType content_type,
     const content_settings::ResourceIdentifier& resource_identifier,
     bool incognito) const {
-  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS || incognito ||
+  if (content_type != ContentSettingsType::NOTIFICATIONS || incognito ||
       !platform_supports_channels_) {
     return nullptr;
   }
@@ -294,7 +294,7 @@ NotificationChannelsProviderAndroid::UpdateCachedChannels() const {
                        &NotificationChannelsProviderAndroid::NotifyObservers,
                        provider->weak_factory_.GetWeakPtr(),
                        ContentSettingsPattern(), ContentSettingsPattern(),
-                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
+                       ContentSettingsType::NOTIFICATIONS, std::string()));
     provider->cached_channels_ = std::move(updated_channels_map);
     provider->initialized_cached_channels_ = true;
   }
@@ -307,7 +307,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
     ContentSettingsType content_type,
     const content_settings::ResourceIdentifier& resource_identifier,
     std::unique_ptr<base::Value>&& value) {
-  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
+  if (content_type != ContentSettingsType::NOTIFICATIONS ||
       !platform_supports_channels_) {
     return false;
   }
@@ -353,7 +353,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
 
 void NotificationChannelsProviderAndroid::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {
-  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
+  if (content_type != ContentSettingsType::NOTIFICATIONS ||
       !platform_supports_channels_) {
     return;
   }
@@ -377,7 +377,7 @@ base::Time NotificationChannelsProviderAndroid::GetWebsiteSettingLastModified(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const content_settings::ResourceIdentifier& resource_identifier) {
-  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
+  if (content_type != ContentSettingsType::NOTIFICATIONS ||
       !platform_supports_channels_) {
     return base::Time();
   }
@@ -408,7 +408,7 @@ void NotificationChannelsProviderAndroid::CreateChannelIfRequired(
     cached_channels_.emplace(origin_string, std::move(channel));
 
     NotifyObservers(ContentSettingsPattern(), ContentSettingsPattern(),
-                    CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string());
+                    ContentSettingsType::NOTIFICATIONS, std::string());
   } else {
     auto old_channel_status =
         bridge_->GetChannelStatus(channel_entry->second.id);

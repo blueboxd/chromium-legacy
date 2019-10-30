@@ -114,19 +114,19 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   // particular order, but only if their value is different from the default.
   // This order comes from https://crbug.com/610358.
   std::vector<ContentSettingsType> permissions_to_display;
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_IMAGES);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_POPUPS);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_ADS);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_AUTOPLAY);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_SOUND);
+  permissions_to_display.push_back(ContentSettingsType::GEOLOCATION);
+  permissions_to_display.push_back(ContentSettingsType::MEDIASTREAM_CAMERA);
+  permissions_to_display.push_back(ContentSettingsType::MEDIASTREAM_MIC);
+  permissions_to_display.push_back(ContentSettingsType::NOTIFICATIONS);
+  permissions_to_display.push_back(ContentSettingsType::IMAGES);
+  permissions_to_display.push_back(ContentSettingsType::JAVASCRIPT);
+  permissions_to_display.push_back(ContentSettingsType::POPUPS);
+  permissions_to_display.push_back(ContentSettingsType::ADS);
+  permissions_to_display.push_back(ContentSettingsType::AUTOPLAY);
+  permissions_to_display.push_back(ContentSettingsType::SOUND);
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   if (cmd->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
-    permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING);
+    permissions_to_display.push_back(ContentSettingsType::BLUETOOTH_SCANNING);
 
   std::map<ContentSettingsType, ContentSetting>
       user_specified_settings_to_display;
@@ -176,13 +176,13 @@ base::Optional<ContentSetting> PageInfoControllerAndroid::GetSettingToDisplay(
 
   // Handle exceptions for permissions which need to be displayed even if they
   // are set to the default.
-  if (permission.type == CONTENT_SETTINGS_TYPE_ADS) {
+  if (permission.type == ContentSettingsType::ADS) {
     // The subresource filter permission should always display the default
     // setting if it is showing up in Page Info. Logic for whether the
     // setting should show up in Page Info is in ShouldShowPermission in
     // page_info.cc.
     return permission.default_setting;
-  } else if (permission.type == CONTENT_SETTINGS_TYPE_SOUND) {
+  } else if (permission.type == ContentSettingsType::SOUND) {
     // The sound content setting should always show up when the tab has played
     // audio since last navigation.
     if (web_contents_->WasEverAudible())

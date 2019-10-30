@@ -88,8 +88,7 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
   }
 
   if (is_notification_prompt_cooldown_active_ &&
-      request->GetContentSettingsType() ==
-          CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+      request->GetContentSettingsType() == ContentSettingsType::NOTIFICATIONS) {
     // Short-circuit by canceling rather than denying to avoid creating a large
     // number of content setting exceptions on Desktop / disabled notification
     // channels on Android.
@@ -138,12 +137,6 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
         base::UserMetricsAction("PermissionBubbleIFrameRequestQueued"));
   }
   queued_requests_.push_back(request);
-
-  // If we're displaying a quiet permission request, kill it in favor of this
-  // permission request.
-  if (ShouldShowQuietPermissionPrompt()) {
-    FinalizeBubble(PermissionAction::IGNORED);
-  }
 
   if (!IsBubbleVisible())
     ScheduleShowBubble();
@@ -325,7 +318,7 @@ void PermissionRequestManager::Deny() {
           features::kBlockRepeatedNotificationPermissionPrompts) &&
       std::any_of(requests_.begin(), requests_.end(), [](const auto* request) {
         return request->GetContentSettingsType() ==
-               CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+               ContentSettingsType::NOTIFICATIONS;
       })) {
     is_notification_prompt_cooldown_active_ = true;
   }
@@ -446,7 +439,7 @@ void PermissionRequestManager::FinalizeBubble(
     // TODO(timloh): We only support dismiss and ignore embargo for permissions
     // which use PermissionRequestImpl as the other subclasses don't support
     // GetContentSettingsType.
-    if (request->GetContentSettingsType() == CONTENT_SETTINGS_TYPE_DEFAULT)
+    if (request->GetContentSettingsType() == ContentSettingsType::DEFAULT)
       continue;
 
     PermissionEmbargoStatus embargo_status =
@@ -558,21 +551,17 @@ void PermissionRequestManager::RemoveObserver(Observer* observer) {
 }
 
 bool PermissionRequestManager::ShouldShowQuietPermissionPrompt() {
-  if (!requests_.size() ||
-      requests_.front()->GetPermissionRequestType() !=
-          PermissionRequestType::PERMISSION_NOTIFICATIONS) {
+  if (!requests_.size())
     return false;
-  }
 
-  const auto ui_flavor = QuietNotificationsPromptConfig::UIFlavorToUse();
 #if !defined(OS_ANDROID)
-  return ui_flavor == QuietNotificationsPromptConfig::STATIC_ICON ||
-         ui_flavor == QuietNotificationsPromptConfig::ANIMATED_ICON;
+  const auto ui_flavor = QuietNotificationsPromptConfig::UIFlavorToUse();
+  return (requests_.front()->GetPermissionRequestType() ==
+              PermissionRequestType::PERMISSION_NOTIFICATIONS &&
+          (ui_flavor == QuietNotificationsPromptConfig::STATIC_ICON ||
+           ui_flavor == QuietNotificationsPromptConfig::ANIMATED_ICON));
 #else   // OS_ANDROID
-  return ui_flavor == QuietNotificationsPromptConfig::QUIET_NOTIFICATION ||
-         ui_flavor == QuietNotificationsPromptConfig::HEADS_UP_NOTIFICATION ||
-         ui_flavor == QuietNotificationsPromptConfig::MINI_INFOBAR;
-
+  return false;
 #endif  // OS_ANDROID
 }
 

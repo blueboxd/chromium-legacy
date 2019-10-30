@@ -28,7 +28,7 @@ void ShowBubble(Browser* browser) {
       std::make_unique<test::PermissionRequestManagerTestApi>(browser);
   EXPECT_TRUE(test_api->manager());
 
-  test_api->AddSimpleRequest(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  test_api->AddSimpleRequest(ContentSettingsType::GEOLOCATION);
 
   // The PermissionRequestManager displays prompts asynchronously.
   EXPECT_FALSE(test_api->GetPromptWindow());

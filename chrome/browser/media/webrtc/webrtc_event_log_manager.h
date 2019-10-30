@@ -368,9 +368,11 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // tasks are allowed.
   scoped_refptr<base::UpdateableSequencedTaskRunner> task_runner_;
 
-  // The number of pending tasks to clear the cache. The priority of
-  // |task_runner_| is increased to USER_BLOCKING when this is non-zero.
-  int num_pending_clear_cache_ = 0;
+  // The number of user-blocking tasks.
+  // The priority of |task_runner_| is increased to USER_BLOCKING when this is
+  // non-zero, and reduced to BEST_EFFORT when zero.
+  // This object is only to be accessed on the UI thread.
+  size_t num_user_blocking_tasks_;
 
   // Indicates whether remote-bound logging is generally allowed, although
   // possibly not for all profiles. This makes it possible for remote-bound to

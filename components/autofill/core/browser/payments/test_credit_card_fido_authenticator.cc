@@ -22,12 +22,14 @@ TestCreditCardFIDOAuthenticator::~TestCreditCardFIDOAuthenticator() {}
 
 void TestCreditCardFIDOAuthenticator::GetAssertion(
     PublicKeyCredentialRequestOptionsPtr request_options) {
-  request_options_ = std::move(request_options);
+  request_options_ = request_options->Clone();
+  CreditCardFIDOAuthenticator::GetAssertion(std::move(request_options));
 }
 
 void TestCreditCardFIDOAuthenticator::MakeCredential(
     PublicKeyCredentialCreationOptionsPtr creation_options) {
-  creation_options_ = std::move(creation_options);
+  creation_options_ = creation_options->Clone();
+  CreditCardFIDOAuthenticator::MakeCredential(std::move(creation_options));
 }
 
 // static

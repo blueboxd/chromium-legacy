@@ -107,7 +107,7 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
     GURL origin = alicepay_.GetURL("alicepay.com", "/app1/").GetOrigin();
     HostContentSettingsMapFactory::GetForProfile(browser()->profile())
         ->SetContentSettingDefaultScope(origin, origin,
-                                        CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER,
+                                        ContentSettingsType::PAYMENT_HANDLER,
                                         std::string(), CONTENT_SETTING_BLOCK);
   }
 

@@ -24,7 +24,7 @@ class CastExtensionsRendererClient;
 }  // namespace extensions
 
 namespace network_hints {
-class PrescientNetworkingDispatcher;
+class WebPrescientNetworkingImpl;
 }  // namespace network_hints
 
 namespace chromecast {
@@ -92,8 +92,8 @@ class CastContentRendererClient
   // mojom::ApplicationMediaCapabilitiesObserver implementation:
   void OnSupportedBitstreamAudioCodecsChanged(int codecs) override;
 
-  std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
-      prescient_networking_dispatcher_;
+  std::unique_ptr<network_hints::WebPrescientNetworkingImpl>
+      web_prescient_networking_impl_;
   std::unique_ptr<media::MediaCapsObserverImpl> media_caps_observer_;
   std::unique_ptr<media::SupportedCodecProfileLevelsMemo> supported_profiles_;
   mojo::Receiver<mojom::ApplicationMediaCapabilitiesObserver>

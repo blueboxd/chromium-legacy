@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
+#include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -147,6 +148,7 @@ class WebAppInstallTaskTest : public WebAppTest {
         profile(), shortcut_manager_.get(), install_finalizer_.get(),
         std::move(data_retriever));
 
+    url_loader_ = std::make_unique<TestWebAppUrlLoader>();
     controller().Init();
 
 #if defined(OS_CHROMEOS)
@@ -174,6 +176,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     intent_helper_bridge_.reset();
     arc_test_.TearDown();
 #endif
+    url_loader_.reset();
     install_task_.reset();
     install_finalizer_.reset();
     ui_manager_.reset();
@@ -278,6 +281,21 @@ class WebAppInstallTaskTest : public WebAppTest {
     return result;
   }
 
+  InstallResult LoadAndInstallWebAppFromManifestWithFallback(const GURL& url) {
+    InstallResult result;
+    base::RunLoop run_loop;
+    install_task_->LoadAndInstallWebAppFromManifestWithFallback(
+        url, web_contents(), &url_loader(), WebappInstallSource::SYNC,
+        base::BindLambdaForTesting(
+            [&](const AppId& installed_app_id, InstallResultCode code) {
+              result.app_id = installed_app_id;
+              result.code = code;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return result;
+  }
+
   AppId InstallWebAppFromManifestWithFallback() {
     InstallResult result = InstallWebAppFromManifestWithFallbackAndGetResults();
     DCHECK_EQ(InstallResultCode::kSuccessNewInstall, result.code);
@@ -339,6 +357,7 @@ class WebAppInstallTaskTest : public WebAppTest {
 
   WebAppRegistrar& registrar() { return controller().registrar(); }
   TestAppShortcutManager& test_shortcut_manager() { return *shortcut_manager_; }
+  TestWebAppUrlLoader& url_loader() { return *url_loader_; }
 
   std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppInstallTask> install_task_;
@@ -358,6 +377,7 @@ class WebAppInstallTaskTest : public WebAppTest {
 
  private:
   std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
+  std::unique_ptr<TestWebAppUrlLoader> url_loader_;
   TestInstallFinalizer* test_install_finalizer_ = nullptr;
 };
 
@@ -1194,6 +1214,49 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_ExpectAppId) {
     EXPECT_EQ(InstallResultCode::kExpectedAppIdCheckFailed, result.code);
     EXPECT_EQ(app_id2, result.app_id);
     EXPECT_FALSE(registrar().GetAppById(app_id2));
+  }
+}
+
+TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
+  const GURL url = GURL("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(url);
+  {
+    CreateDefaultDataToRetrieve(url);
+    url_loader().SetNextLoadUrlResult(
+        url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+
+    InstallResult result = LoadAndInstallWebAppFromManifestWithFallback(url);
+    EXPECT_EQ(InstallResultCode::kInstallURLRedirected, result.code);
+    EXPECT_TRUE(result.app_id.empty());
+    EXPECT_FALSE(registrar().GetAppById(app_id));
+  }
+  {
+    CreateDefaultDataToRetrieve(url);
+    url_loader().SetNextLoadUrlResult(
+        url, WebAppUrlLoader::Result::kFailedPageTookTooLong);
+
+    InstallResult result = LoadAndInstallWebAppFromManifestWithFallback(url);
+    EXPECT_EQ(InstallResultCode::kInstallURLLoadFailed, result.code);
+    EXPECT_TRUE(result.app_id.empty());
+    EXPECT_FALSE(registrar().GetAppById(app_id));
+  }
+  {
+    CreateDefaultDataToRetrieve(url);
+    url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
+
+    InstallResult result = LoadAndInstallWebAppFromManifestWithFallback(url);
+    EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+    EXPECT_EQ(app_id, result.app_id);
+    EXPECT_TRUE(registrar().GetAppById(app_id));
+  }
+  {
+    CreateDefaultDataToRetrieve(url);
+    url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
+
+    InstallResult result = LoadAndInstallWebAppFromManifestWithFallback(url);
+    EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, result.code);
+    EXPECT_EQ(app_id, result.app_id);
+    EXPECT_TRUE(registrar().GetAppById(app_id));
   }
 }
 

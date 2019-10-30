@@ -292,7 +292,7 @@ void CastRenderer::OnVideoInitializationFinished(
 }
 
 void CastRenderer::SetCdm(::media::CdmContext* cdm_context,
-                          const ::media::CdmAttachedCB& cdm_attached_cb) {
+                          ::media::CdmAttachedCB cdm_attached_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(cdm_context);
 
@@ -306,7 +306,7 @@ void CastRenderer::SetCdm(::media::CdmContext* cdm_context,
     pipeline_->SetCdm(cast_cdm_context);
   }
 
-  cdm_attached_cb.Run(true);
+  std::move(cdm_attached_cb).Run(true);
 }
 
 void CastRenderer::Flush(base::OnceClosure flush_cb) {

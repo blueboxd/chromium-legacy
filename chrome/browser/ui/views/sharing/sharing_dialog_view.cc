@@ -100,14 +100,16 @@ std::unique_ptr<views::View> CreateOriginView(const SharingDialogData& data) {
   DCHECK(data.initiating_origin);
   DCHECK_NE(0, data.origin_text_id);
   auto label = std::make_unique<views::Label>(
-      l10n_util::GetStringFUTF16(data.origin_text_id,
-                                 url_formatter::FormatOriginForSecurityDisplay(
-                                     *data.initiating_origin)),
+      l10n_util::GetStringFUTF16(
+          data.origin_text_id,
+          url_formatter::FormatOriginForSecurityDisplay(
+              *data.initiating_origin,
+              url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS)),
       ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
       views::style::STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetElideBehavior(gfx::ELIDE_HEAD);
-  label->SetMultiLine(false);
+  label->SetAllowCharacterBreak(true);
+  label->SetMultiLine(true);
   return label;
 }
 
@@ -144,10 +146,26 @@ int SharingDialogView::GetDialogButtons() const {
 }
 
 std::unique_ptr<views::View> SharingDialogView::CreateFootnoteView() {
-  if (GetDialogType() != SharingDialogType::kDialogWithoutDevicesWithApp)
+  constexpr int kLabelSpacing = 8;
+
+  bool show_help_text =
+      GetDialogType() == SharingDialogType::kDialogWithoutDevicesWithApp;
+  bool show_origin =
+      data_.initiating_origin &&
+      !data_.initiating_origin->IsSameOriginWith(
+          web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+  if (!show_help_text && !show_origin)
     return nullptr;
 
-  return CreateHelpText(data_, this);
+  auto footnote_view = std::make_unique<views::View>();
+  footnote_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), kLabelSpacing));
+  if (show_help_text)
+    footnote_view->AddChildView(CreateHelpText(data_, this));
+  if (show_origin)
+    footnote_view->AddChildView(CreateOriginView(data_));
+
+  return footnote_view;
 }
 
 void SharingDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
@@ -293,21 +311,6 @@ void SharingDialogView::InitListView() {
     dialog_button->set_tag(tag++);
     dialog_button->SetBorder(views::CreateEmptyBorder(app_border));
     dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));
-  }
-
-  // Origin:
-  if (data_.initiating_origin &&
-      !data_.initiating_origin->IsSameOriginWith(
-          web_contents()->GetMainFrame()->GetLastCommittedOrigin())) {
-    auto* provider = ChromeLayoutProvider::Get();
-    const gfx::Insets dialog_insets =
-        provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
-    const gfx::Insets origin_border = gfx::Insets(
-        kSharingDialogSpacing, dialog_insets.left(), 0, dialog_insets.right());
-
-    std::unique_ptr<views::View> origin_view = CreateOriginView(data_);
-    origin_view->SetBorder(views::CreateEmptyBorder(origin_border));
-    AddChildView(std::move(origin_view));
   }
 }
 

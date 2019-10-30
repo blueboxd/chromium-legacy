@@ -120,11 +120,9 @@ PatternPair ParsePatternString(const std::string& pattern_str) {
 void GetRendererContentSettingRules(const HostContentSettingsMap* map,
                                     RendererContentSettingRules* rules) {
 #if !defined(OS_ANDROID)
-  map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_IMAGES,
-      ResourceIdentifier(),
-      &(rules->image_rules));
-  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+  map->GetSettingsForOneType(ContentSettingsType::IMAGES, ResourceIdentifier(),
+                             &(rules->image_rules));
+  map->GetSettingsForOneType(ContentSettingsType::MIXEDSCRIPT,
                              ResourceIdentifier(),
                              &(rules->mixed_content_rules));
 #else
@@ -143,18 +141,14 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
           ContentSettingToValue(CONTENT_SETTING_BLOCK)),
       std::string(), map->IsOffTheRecord()));
 #endif
-  map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-      ResourceIdentifier(),
-      &(rules->script_rules));
-  map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_AUTOPLAY,
-      ResourceIdentifier(),
-      &(rules->autoplay_rules));
-  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS,
+  map->GetSettingsForOneType(ContentSettingsType::JAVASCRIPT,
+                             ResourceIdentifier(), &(rules->script_rules));
+  map->GetSettingsForOneType(ContentSettingsType::AUTOPLAY,
+                             ResourceIdentifier(), &(rules->autoplay_rules));
+  map->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                              ResourceIdentifier(),
                              &(rules->client_hints_rules));
-  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS, ResourceIdentifier(),
+  map->GetSettingsForOneType(ContentSettingsType::POPUPS, ResourceIdentifier(),
                              &(rules->popup_redirect_rules));
 }
 

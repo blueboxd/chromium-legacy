@@ -571,6 +571,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "crostini-use-buster-image",
+    "owners": [ "davidmunro", "benwells" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "crostini-webui-installer",
     "owners": [ "lxj", "timloh", "benwells" ],
     "expiry_milestone": 82

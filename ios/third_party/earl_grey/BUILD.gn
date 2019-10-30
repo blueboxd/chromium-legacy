@@ -296,10 +296,6 @@ ios_framework_bundle("earl_grey") {
     "//ios/third_party/ochamcrest:ochamcrest+link",
   ]
 
-  # EG1 is no longer maintained and will be dropped once the migration to EG2
-  # is complete.
-  cflags_objc = [ "-Wno-deprecated-declarations" ]
-
   libs = [
     "CoreData.framework",
     "CoreGraphics.framework",

@@ -58,7 +58,8 @@ bool FileSystemBackend::CanHandleURL(const storage::FileSystemURL& url) {
          url.type() == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
          url.type() == storage::kFileSystemTypeArcContent ||
          url.type() == storage::kFileSystemTypeArcDocumentsProvider ||
-         url.type() == storage::kFileSystemTypeDriveFs;
+         url.type() == storage::kFileSystemTypeDriveFs ||
+         url.type() == storage::kFileSystemTypeSmbFs;
 }
 
 FileSystemBackend::FileSystemBackend(
@@ -113,6 +114,7 @@ bool FileSystemBackend::CanHandleType(storage::FileSystemType type) const {
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
     case storage::kFileSystemTypeDriveFs:
+    case storage::kFileSystemTypeSmbFs:
       return true;
     default:
       return false;
@@ -280,6 +282,7 @@ storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
       return file_system_provider_delegate_->GetAsyncFileUtil(type);
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
+    case storage::kFileSystemTypeSmbFs:
       return local_file_util_.get();
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
       return mtp_delegate_->GetAsyncFileUtil(type);
@@ -340,7 +343,8 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
   }
   if (url.type() == storage::kFileSystemTypeNativeLocal ||
       url.type() == storage::kFileSystemTypeRestrictedNativeLocal ||
-      url.type() == storage::kFileSystemTypeDriveFs) {
+      url.type() == storage::kFileSystemTypeDriveFs ||
+      url.type() == storage::kFileSystemTypeSmbFs) {
     return storage::FileSystemOperation::Create(
         url, context,
         std::make_unique<storage::FileSystemOperationContext>(
@@ -382,6 +386,8 @@ bool FileSystemBackend::HasInplaceCopyImplementation(
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeArcContent:
+    // TODO(crbug.com/939235): Implement in-place copy in SmbFs.
+    case storage::kFileSystemTypeSmbFs:
       return false;
     default:
       NOTREACHED();
@@ -408,6 +414,7 @@ FileSystemBackend::CreateFileStreamReader(
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeDriveFs:
+    case storage::kFileSystemTypeSmbFs:
       return std::unique_ptr<storage::FileStreamReader>(
           storage::FileStreamReader::CreateForLocalFile(
               base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
@@ -445,6 +452,7 @@ FileSystemBackend::CreateFileStreamWriter(
           url, offset, context);
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeDriveFs:
+    case storage::kFileSystemTypeSmbFs:
       return storage::FileStreamWriter::CreateForLocalFile(
           base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
                                   base::TaskPriority::USER_VISIBLE})
@@ -492,6 +500,7 @@ void FileSystemBackend::GetRedirectURLForContents(
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
     case storage::kFileSystemTypeDriveFs:
+    case storage::kFileSystemTypeSmbFs:
       callback.Run(GURL());
       return;
     default:

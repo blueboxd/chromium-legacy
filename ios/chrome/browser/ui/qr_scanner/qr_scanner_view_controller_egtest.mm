@@ -569,7 +569,13 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
 // Tests that a UIAlertController is presented by the QRScannerViewController if
 // the camera state changes after the QRScannerViewController is presented.
+// TODO(crbug.com/1019211): Re-enable test on iOS12.
 - (void)testDialogIsDisplayedIfCameraStateChanges {
+#if defined(CHROME_EARL_GREY_2)
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
+  }
+#endif
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -602,7 +608,13 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 }
 
 // Tests that a new dialog replaces an old dialog if the camera state changes.
+// TODO(crbug.com/1019211): Re-enable test on iOS12.
 - (void)testDialogIsReplacedIfCameraStateChanges {
+#if defined(CHROME_EARL_GREY_2)
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
+  }
+#endif
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -641,7 +653,13 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 }
 
 // Tests that an error dialog is dismissed if the camera becomes available.
+// TODO(crbug.com/1019211): Re-enable test on iOS12.
 - (void)testDialogDismissedIfCameraBecomesAvailable {
+#if defined(CHROME_EARL_GREY_2)
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails iOS 12.2");
+  }
+#endif  // defined(CHROME_EARL_GREY_2)
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];

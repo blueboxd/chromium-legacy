@@ -362,8 +362,21 @@ IPC_STRUCT_END()
 // node, depending on which mode the RenderFrame is in.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)
 
+#if BUILDFLAG(ENABLE_PRINTING)
+// Tells the RenderFrame to switch the CSS to print media type, renders every
+// requested pages and switch back the CSS to display media type.
+IPC_MESSAGE_ROUTED0(PrintMsg_PrintPages)
+#endif
+
 // Print content of an out-of-process subframe.
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintFrameContent, PrintMsg_PrintFrame_Params)
+
+// Tells the RenderFrame that printing is done so it can clean up.
+IPC_MESSAGE_ROUTED1(PrintMsg_PrintingDone,
+                    bool /* success */)
+
+// Tells the RenderFrame whether printing is enabled or not.
+IPC_MESSAGE_ROUTED1(PrintMsg_SetPrintingEnabled, bool /* enabled */)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // Tells the RenderFrame to switch the CSS to print media type, renders every

@@ -62,70 +62,70 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     // and require a mapping from their Javascript string representation in
     // chrome/browser/resources/settings/site_settings/constants.js to their C++
     // ContentSettingsType provided here.
-    {CONTENT_SETTINGS_TYPE_COOKIES, "cookies"},
-    {CONTENT_SETTINGS_TYPE_IMAGES, "images"},
-    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript"},
-    {CONTENT_SETTINGS_TYPE_PLUGINS, "plugins"},
-    {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
-    {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
-    {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
-    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic"},
-    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "media-stream-camera"},
-    {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
-    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
-    {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex"},
-    {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protected-content"},
-    {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync"},
-    {CONTENT_SETTINGS_TYPE_ADS, "ads"},
-    {CONTENT_SETTINGS_TYPE_SOUND, "sound"},
-    {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, "clipboard"},
-    {CONTENT_SETTINGS_TYPE_SENSORS, "sensors"},
-    {CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER, "payment-handler"},
-    {CONTENT_SETTINGS_TYPE_USB_GUARD, "usb-devices"},
-    {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, kUsbChooserDataGroupType},
-    {CONTENT_SETTINGS_TYPE_IDLE_DETECTION, "idle-detection"},
-    {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, "serial-ports"},
-    {CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, kSerialChooserDataGroupType},
-    {CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING, "bluetooth-scanning"},
-    {CONTENT_SETTINGS_TYPE_HID_GUARD, "hid-devices"},
-    {CONTENT_SETTINGS_TYPE_HID_CHOOSER_DATA, kHidChooserDataGroupType},
-    {CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+    {ContentSettingsType::COOKIES, "cookies"},
+    {ContentSettingsType::IMAGES, "images"},
+    {ContentSettingsType::JAVASCRIPT, "javascript"},
+    {ContentSettingsType::PLUGINS, "plugins"},
+    {ContentSettingsType::POPUPS, "popups"},
+    {ContentSettingsType::GEOLOCATION, "location"},
+    {ContentSettingsType::NOTIFICATIONS, "notifications"},
+    {ContentSettingsType::MEDIASTREAM_MIC, "media-stream-mic"},
+    {ContentSettingsType::MEDIASTREAM_CAMERA, "media-stream-camera"},
+    {ContentSettingsType::PROTOCOL_HANDLERS, "register-protocol-handler"},
+    {ContentSettingsType::PPAPI_BROKER, "ppapi-broker"},
+    {ContentSettingsType::AUTOMATIC_DOWNLOADS, "multiple-automatic-downloads"},
+    {ContentSettingsType::MIDI_SYSEX, "midi-sysex"},
+    {ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER, "protected-content"},
+    {ContentSettingsType::BACKGROUND_SYNC, "background-sync"},
+    {ContentSettingsType::ADS, "ads"},
+    {ContentSettingsType::SOUND, "sound"},
+    {ContentSettingsType::CLIPBOARD_READ, "clipboard"},
+    {ContentSettingsType::SENSORS, "sensors"},
+    {ContentSettingsType::PAYMENT_HANDLER, "payment-handler"},
+    {ContentSettingsType::USB_GUARD, "usb-devices"},
+    {ContentSettingsType::USB_CHOOSER_DATA, kUsbChooserDataGroupType},
+    {ContentSettingsType::IDLE_DETECTION, "idle-detection"},
+    {ContentSettingsType::SERIAL_GUARD, "serial-ports"},
+    {ContentSettingsType::SERIAL_CHOOSER_DATA, kSerialChooserDataGroupType},
+    {ContentSettingsType::BLUETOOTH_SCANNING, "bluetooth-scanning"},
+    {ContentSettingsType::HID_GUARD, "hid-devices"},
+    {ContentSettingsType::HID_CHOOSER_DATA, kHidChooserDataGroupType},
+    {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
      "native-file-system-write"},
-    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script"},
+    {ContentSettingsType::MIXEDSCRIPT, "mixed-script"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in
     // Content Settings but do not require a separate string.
-    {CONTENT_SETTINGS_TYPE_DEFAULT, nullptr},
-    {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, nullptr},
-    {CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, nullptr},
-    {CONTENT_SETTINGS_TYPE_APP_BANNER, nullptr},
-    {CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, nullptr},
-    {CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, nullptr},
-    {CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD, nullptr},
-    {CONTENT_SETTINGS_TYPE_AUTOPLAY, nullptr},
-    {CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, nullptr},
-    {CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA, nullptr},
-    {CONTENT_SETTINGS_TYPE_ADS_DATA, nullptr},
-    {CONTENT_SETTINGS_TYPE_MIDI, nullptr},
-    {CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, nullptr},
-    {CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, nullptr},
-    {CONTENT_SETTINGS_TYPE_CLIENT_HINTS, nullptr},
-    {CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS, nullptr},
-    {CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE, nullptr},
-    {CONTENT_SETTINGS_TYPE_PLUGINS_DATA, nullptr},
-    {CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH, nullptr},
-    {CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY, nullptr},
-    {CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC, nullptr},
-    {CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN, nullptr},
-    {CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM, nullptr},
-    {CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, nullptr},
-    {CONTENT_SETTINGS_TYPE_INSTALLED_WEB_APP_METADATA, nullptr},
+    {ContentSettingsType::DEFAULT, nullptr},
+    {ContentSettingsType::AUTO_SELECT_CERTIFICATE, nullptr},
+    {ContentSettingsType::SSL_CERT_DECISIONS, nullptr},
+    {ContentSettingsType::APP_BANNER, nullptr},
+    {ContentSettingsType::SITE_ENGAGEMENT, nullptr},
+    {ContentSettingsType::DURABLE_STORAGE, nullptr},
+    {ContentSettingsType::BLUETOOTH_GUARD, nullptr},
+    {ContentSettingsType::AUTOPLAY, nullptr},
+    {ContentSettingsType::IMPORTANT_SITE_INFO, nullptr},
+    {ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA, nullptr},
+    {ContentSettingsType::ADS_DATA, nullptr},
+    {ContentSettingsType::MIDI, nullptr},
+    {ContentSettingsType::PASSWORD_PROTECTION, nullptr},
+    {ContentSettingsType::MEDIA_ENGAGEMENT, nullptr},
+    {ContentSettingsType::CLIENT_HINTS, nullptr},
+    {ContentSettingsType::ACCESSIBILITY_EVENTS, nullptr},
+    {ContentSettingsType::CLIPBOARD_WRITE, nullptr},
+    {ContentSettingsType::PLUGINS_DATA, nullptr},
+    {ContentSettingsType::BACKGROUND_FETCH, nullptr},
+    {ContentSettingsType::INTENT_PICKER_DISPLAY, nullptr},
+    {ContentSettingsType::PERIODIC_BACKGROUND_SYNC, nullptr},
+    {ContentSettingsType::WAKE_LOCK_SCREEN, nullptr},
+    {ContentSettingsType::WAKE_LOCK_SYSTEM, nullptr},
+    {ContentSettingsType::LEGACY_COOKIE_ACCESS, nullptr},
+    {ContentSettingsType::INSTALLED_WEB_APP_METADATA, nullptr},
 };
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.
-                  static_cast<int>(CONTENT_SETTINGS_NUM_TYPES) + 1,
+                  static_cast<int32_t>(ContentSettingsType::NUM_TYPES) + 1,
               "kContentSettingsTypeGroupNames should have "
               "CONTENT_SETTINGS_NUM_TYPES elements");
 
@@ -183,12 +183,12 @@ SiteSettingSource CalculateSiteSettingSource(
   if (info.source == content_settings::SETTING_SOURCE_EXTENSION)
     return SiteSettingSource::kExtension;  // Source #4.
 
-  if (content_type == CONTENT_SETTINGS_TYPE_ADS &&
+  if (content_type == ContentSettingsType::ADS &&
       base::FeatureList::IsEnabled(
           subresource_filter::kSafeBrowsingSubresourceFilter)) {
     HostContentSettingsMap* map =
         HostContentSettingsMapFactory::GetForProfile(profile);
-    if (map->GetWebsiteSetting(origin, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA,
+    if (map->GetWebsiteSetting(origin, GURL(), ContentSettingsType::ADS_DATA,
                                /*resource_identifier=*/std::string(),
                                /*setting_info=*/nullptr) != nullptr) {
       return SiteSettingSource::kAdsFilterBlacklist;  // Source #5.
@@ -196,7 +196,7 @@ SiteSettingSource CalculateSiteSettingSource(
   }
 
   // Protected Content will be blocked if the |kEnableDRM| pref is off.
-  if (content_type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER &&
+  if (content_type == ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER &&
       !profile->GetPrefs()->GetBoolean(prefs::kEnableDRM)) {
     return SiteSettingSource::kDrmDisabled;  // Source #6.
   }
@@ -240,7 +240,7 @@ std::string GetSourceStringForChooserException(
   PermissionResult permission_result(CONTENT_SETTING_DEFAULT,
                                      PermissionStatusSource::UNSPECIFIED);
 
-  // The |origin| parameter is only used for |CONTENT_SETTINGS_TYPE_ADS| with
+  // The |origin| parameter is only used for |ContentSettingsType::ADS| with
   // the |kSafeBrowsingSubresourceFilter| feature flag enabled, so an empty GURL
   // is used.
   SiteSettingSource calculated_source = CalculateSiteSettingSource(
@@ -291,7 +291,7 @@ ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
   }
 
   NOTREACHED() << name << " is not a recognized content settings type.";
-  return CONTENT_SETTINGS_TYPE_DEFAULT;
+  return ContentSettingsType::DEFAULT;
 }
 
 std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
@@ -304,7 +304,8 @@ std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
     }
   }
 
-  NOTREACHED() << type << " is not a recognized content settings type.";
+  NOTREACHED() << static_cast<int32_t>(type)
+               << " is not a recognized content settings type.";
   return std::string();
 }
 
@@ -493,8 +494,8 @@ void GetExceptionsFromHostContentSettingsMap(
 
   // For camera and microphone, we do not have policy exceptions, but we do have
   // the policy-set allowed URLs, which should be displayed in the same manner.
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+  if (type == ContentSettingsType::MEDIASTREAM_MIC ||
+      type == ContentSettingsType::MEDIASTREAM_CAMERA) {
     auto& policy_exceptions = all_provider_exceptions
         [HostContentSettingsMap::GetProviderTypeFromSource(
             SiteSettingSourceToString(SiteSettingSource::kPolicy))];
@@ -564,12 +565,12 @@ void GetPolicyAllowedUrls(
     const extensions::ExtensionRegistry* extension_registry,
     content::WebUI* web_ui,
     bool incognito) {
-  DCHECK(type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-         type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+  DCHECK(type == ContentSettingsType::MEDIASTREAM_MIC ||
+         type == ContentSettingsType::MEDIASTREAM_CAMERA);
 
   PrefService* prefs = Profile::FromWebUI(web_ui)->GetPrefs();
   const base::ListValue* policy_urls =
-      prefs->GetList(type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
+      prefs->GetList(type == ContentSettingsType::MEDIASTREAM_MIC
                          ? prefs::kAudioCaptureAllowedUrls
                          : prefs::kVideoCaptureAllowedUrls);
 

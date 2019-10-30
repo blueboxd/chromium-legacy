@@ -48,8 +48,6 @@
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
-#include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
@@ -87,7 +85,6 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -116,14 +113,10 @@
 #include "base/win/windows_version.h"
 #endif
 
-#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
-
 using blink::Platform;
 using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;
 using blink::WebMediaStreamTrack;
-using blink::WebRTCPeerConnectionHandler;
-using blink::WebRTCPeerConnectionHandlerClient;
 using blink::WebSize;
 using blink::WebString;
 using blink::WebURL;
@@ -534,27 +527,6 @@ bool RendererBlinkPlatformImpl::RTCSmoothnessAlgorithmEnabled() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<WebRTCPeerConnectionHandler>
-RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
-    WebRTCPeerConnectionHandlerClient* client,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  // TODO(crbug.com/787254): Move this method body back to
-  // PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler
-  // when it the file gets Onion soup'ed.
-
-  // Save histogram data so we can see how much PeerConnection is used.
-  // The histogram counts the number of calls to the JS API
-  // RTCPeerConnection.
-  UpdateWebRTCMethodCount(blink::WebRTCAPIName::kRTCPeerConnection);
-
-  auto* rtc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  return std::make_unique<RTCPeerConnectionHandler>(
-      client, rtc_dependency_factory, task_runner);
-}
-
-//------------------------------------------------------------------------------
-
 scoped_refptr<base::SingleThreadTaskRunner>
 RendererBlinkPlatformImpl::GetWebRtcWorkerThread() {
   auto* rtc_dependency_factory =
@@ -695,11 +667,6 @@ base::Optional<int> RendererBlinkPlatformImpl::GetAgcStartupMinimumVolume() {
     return base::Optional<int>();
   }
   return base::Optional<int>(startup_min_volume);
-}
-
-void RendererBlinkPlatformImpl::TrackGetUserMedia(
-    const blink::WebUserMediaRequest& web_request) {
-  PeerConnectionTracker::GetInstance()->TrackGetUserMedia(web_request);
 }
 
 bool RendererBlinkPlatformImpl::IsWebRtcHWH264DecodingEnabled(

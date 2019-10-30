@@ -113,6 +113,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
       return line_.descendants_count;
     return 0;
   }
+  bool HasChildren() const { return DescendantsCount() > 1; }
 
   // Returns |NGPhysicalBoxFragment| if one is associated with this item.
   const NGPhysicalBoxFragment* BoxFragment() const {

@@ -23,6 +23,9 @@ class ArcValueEventTrimmer {
   // May be add the next event, in case it is not trimmed out.
   void MaybeAdd(int64_t timestamp, int value);
 
+  // Resets values it they represent the constant |value|.
+  void ResetIfConstant(int value);
+
  private:
   // In case value has changed, insert last trimmed value.
   void Flush();

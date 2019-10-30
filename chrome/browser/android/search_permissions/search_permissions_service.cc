@@ -170,8 +170,8 @@ SearchPermissionsService::SearchPermissionsService(Profile* profile)
 bool SearchPermissionsService::IsPermissionControlledByDSE(
     ContentSettingsType type,
     const url::Origin& requesting_origin) {
-  if (type != CONTENT_SETTINGS_TYPE_GEOLOCATION &&
-      type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+  if (type != ContentSettingsType::GEOLOCATION &&
+      type != ContentSettingsType::NOTIFICATIONS) {
     return false;
   }
 
@@ -194,8 +194,8 @@ void SearchPermissionsService::ResetDSEPermission(ContentSettingsType type) {
 }
 
 void SearchPermissionsService::ResetDSEPermissions() {
-  ResetDSEPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  ResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  ResetDSEPermission(ContentSettingsType::GEOLOCATION);
+  ResetDSEPermission(ContentSettingsType::NOTIFICATIONS);
 }
 
 void SearchPermissionsService::Shutdown() {
@@ -225,12 +225,12 @@ void SearchPermissionsService::OnDSEChanged() {
 
   ContentSetting geolocation_setting_to_restore =
       UpdatePermissionAndReturnPrevious(
-          CONTENT_SETTINGS_TYPE_GEOLOCATION, old_dse_origin, new_dse_origin,
+          ContentSettingsType::GEOLOCATION, old_dse_origin, new_dse_origin,
           pref.geolocation_setting_to_restore, old_dse_name != new_dse_name);
   ContentSetting notifications_setting_to_restore =
       pref.notifications_setting_to_restore;
   notifications_setting_to_restore = UpdatePermissionAndReturnPrevious(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, old_dse_origin, new_dse_origin,
+      ContentSettingsType::NOTIFICATIONS, old_dse_origin, new_dse_origin,
       pref.notifications_setting_to_restore, old_dse_name != new_dse_name);
 
   // Write the pref for restoring the old values when the DSE changes.
@@ -299,7 +299,7 @@ ContentSetting SearchPermissionsService::UpdatePermissionAndReturnPrevious(
   }
 
   // Reset the disclosure if needed.
-  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION && dse_name_changed &&
+  if (type == ContentSettingsType::GEOLOCATION && dse_name_changed &&
       dse_setting == CONTENT_SETTING_ALLOW) {
     SearchGeolocationDisclosureTabHelper::ResetDisclosure(profile_);
   }
@@ -319,11 +319,11 @@ void SearchPermissionsService::InitializeSettingsIfNeeded() {
       PrefValue pref = GetDSEPref();
       GURL old_dse_origin(pref.dse_origin);
       RestoreOldSettingAndReturnPrevious(old_dse_origin,
-                                         CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                         ContentSettingsType::GEOLOCATION,
                                          pref.geolocation_setting_to_restore);
       if (pref.notifications_setting_to_restore != CONTENT_SETTING_DEFAULT) {
         RestoreOldSettingAndReturnPrevious(
-            old_dse_origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+            old_dse_origin, ContentSettingsType::NOTIFICATIONS,
             pref.notifications_setting_to_restore);
       }
       pref_service_->ClearPref(prefs::kDSEPermissionsSettings);
@@ -343,7 +343,7 @@ void SearchPermissionsService::InitializeSettingsIfNeeded() {
   // Initialize the pref for geolocation if it hasn't been initialized yet.
   if (!pref_service_->HasPrefPath(prefs::kDSEPermissionsSettings)) {
     ContentSetting geolocation_setting_to_restore =
-        GetContentSetting(dse_origin, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+        GetContentSetting(dse_origin, ContentSettingsType::GEOLOCATION);
     ContentSetting dse_geolocation_setting = geolocation_setting_to_restore;
 
     bool reset_disclosure = true;
@@ -377,7 +377,7 @@ void SearchPermissionsService::InitializeSettingsIfNeeded() {
     }
 
     // Update the content setting with the auto-grants for the DSE.
-    SetContentSetting(dse_origin, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    SetContentSetting(dse_origin, ContentSettingsType::GEOLOCATION,
                       dse_geolocation_setting);
 
     if (reset_disclosure)
@@ -395,7 +395,7 @@ void SearchPermissionsService::InitializeSettingsIfNeeded() {
   PrefValue pref = GetDSEPref();
   if (pref.notifications_setting_to_restore == CONTENT_SETTING_DEFAULT) {
     ContentSetting notifications_setting_to_restore =
-        GetContentSetting(dse_origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+        GetContentSetting(dse_origin, ContentSettingsType::NOTIFICATIONS);
     ContentSetting dse_notifications_setting = notifications_setting_to_restore;
     // If the user hasn't explicitly allowed or blocked notifications for the
     // DSE, initialize it to allowed.
@@ -406,7 +406,7 @@ void SearchPermissionsService::InitializeSettingsIfNeeded() {
     }
 
     // Update the content setting with the auto-grants for the DSE.
-    SetContentSetting(dse_origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    SetContentSetting(dse_origin, ContentSettingsType::NOTIFICATIONS,
                       dse_notifications_setting);
 
     // Write the pref for restoring the old values when the DSE changes.

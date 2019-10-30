@@ -33,9 +33,15 @@ UseCreditCardAction::UseCreditCardAction(ActionDelegate* delegate,
   prompt_ = proto.use_card().prompt();
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto : proto_.use_card().required_fields()) {
+    if (required_field_proto.card_field() ==
+        UseCreditCardProto::RequiredField::UNDEFINED) {
+      DVLOG(1) << "card_field enum not set, skipping required field";
+      continue;
+    }
+
     required_fields.emplace_back();
     RequiredField& required_field = required_fields.back();
-    required_field.card_field = required_field_proto.card_field();
+    required_field.fallback_key = (int)required_field_proto.card_field();
     required_field.selector = Selector(required_field_proto.element());
     required_field.simulate_key_presses =
         required_field_proto.simulate_key_presses();
@@ -45,13 +51,8 @@ UseCreditCardAction::UseCreditCardAction(ActionDelegate* delegate,
   }
 
   required_fields_fallback_handler_ =
-      std::make_unique<RequiredFieldsFallbackHandler>(
-          required_fields,
-          base::BindRepeating(&UseCreditCardAction::GetFallbackValue,
-                              base::Unretained(this)),
-          base::BindOnce(&UseCreditCardAction::EndAction,
-                         base::Unretained(this)),
-          delegate);
+      std::make_unique<RequiredFieldsFallbackHandler>(required_fields,
+                                                      delegate);
   selector_ = Selector(proto.use_card().form_field_element());
   selector_.MustBeVisible();
   DCHECK(!selector_.empty());
@@ -109,15 +110,7 @@ void UseCreditCardAction::OnGetFullCard(
     return;
   }
 
-  auto fallback_data = std::make_unique<FallbackData>();
-  fallback_data->cvc = base::UTF16ToUTF8(cvc);
-  fallback_data->expiration_month = card->expiration_month();
-  fallback_data->expiration_year = card->expiration_year();
-  fallback_data->card_holder_name =
-      base::UTF16ToUTF8(card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
-  fallback_data->card_number =
-      base::UTF16ToUTF8(card->GetRawInfo(autofill::CREDIT_CARD_NUMBER));
-
+  auto fallback_data = CreateFallbackData(cvc, *card);
   delegate_->FillCardForm(
       std::move(card), cvc, selector_,
       base::BindOnce(&UseCreditCardAction::OnFormFilled,
@@ -128,52 +121,47 @@ void UseCreditCardAction::OnFormFilled(
     std::unique_ptr<FallbackData> fallback_data,
     const ClientStatus& status) {
   required_fields_fallback_handler_->CheckAndFallbackRequiredFields(
-      status, std::move(fallback_data));
+      status, std::move(fallback_data),
+      base::BindOnce(&UseCreditCardAction::EndAction,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-std::string UseCreditCardAction::GetFallbackValue(
-    const RequiredField& required_field,
-    const FallbackData& fallback_data) {
-  auto field = required_field.card_field;
-  switch (field) {
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE:
-      return fallback_data.cvc;
+std::unique_ptr<FallbackData> UseCreditCardAction::CreateFallbackData(
+    const base::string16& cvc,
+    const autofill::CreditCard& card) {
+  auto fallback_data = std::make_unique<FallbackData>();
+  fallback_data->field_values.emplace(
+      (int)UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE,
+      base::UTF16ToUTF8(cvc));
 
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MONTH:
-      if (fallback_data.expiration_month > 0)
-        return base::StringPrintf("%02d", fallback_data.expiration_month);
-      break;
-
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_2_DIGIT_YEAR:
-      if (fallback_data.expiration_year > 0)
-        return base::StringPrintf("%02d", fallback_data.expiration_year % 100);
-      break;
-
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_4_DIGIT_YEAR:
-      if (fallback_data.expiration_year > 0)
-        return base::NumberToString(fallback_data.expiration_year);
-      break;
-
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME:
-      return fallback_data.card_holder_name;
-      break;
-
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER:
-      return fallback_data.card_number;
-      break;
-
-    case UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MM_YY:
-      if (fallback_data.expiration_month > 0 &&
-          fallback_data.expiration_year > 0)
-        return base::StrCat(
-            {base::StringPrintf("%02d", fallback_data.expiration_month), "/",
-             base::StringPrintf("%02d", fallback_data.expiration_year % 100)});
-      break;
-
-    case UseCreditCardProto::RequiredField::UNDEFINED:
-      NOTREACHED();
-      return "";
+  if (card.expiration_month() > 0) {
+    fallback_data->field_values.emplace(
+        (int)UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MONTH,
+        base::StringPrintf("%02d", card.expiration_month()));
   }
-  return "";
+
+  if (card.expiration_year() > 0) {
+    fallback_data->field_values.emplace(
+        (int)UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_2_DIGIT_YEAR,
+        base::StringPrintf("%02d", card.expiration_year() % 100));
+    fallback_data->field_values.emplace(
+        (int)UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_4_DIGIT_YEAR,
+        base::StringPrintf("%04d", card.expiration_year()));
+    if (card.expiration_month() > 0) {
+      fallback_data->field_values.emplace(
+          (int)UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MM_YY,
+          base::StrCat(
+              {base::StringPrintf("%02d", card.expiration_month()), "/",
+               base::StringPrintf("%02d", card.expiration_year() % 100)}));
+    }
+  }
+
+  fallback_data->field_values.emplace(
+      (int)UseCreditCardProto::RequiredField::CREDIT_CARD_CARD_HOLDER_NAME,
+      base::UTF16ToUTF8(card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL)));
+  fallback_data->field_values.emplace(
+      (int)UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER,
+      base::UTF16ToUTF8(card.GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
+  return fallback_data;
 }
 }  // namespace autofill_assistant

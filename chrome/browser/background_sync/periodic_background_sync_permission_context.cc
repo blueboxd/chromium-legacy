@@ -21,7 +21,7 @@
 PeriodicBackgroundSyncPermissionContext::
     PeriodicBackgroundSyncPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC,
+                            ContentSettingsType::PERIODIC_BACKGROUND_SYNC,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 PeriodicBackgroundSyncPermissionContext::
@@ -76,8 +76,7 @@ PeriodicBackgroundSyncPermissionContext::GetPermissionStatusInternal(
   DCHECK(host_content_settings_map);
 
   auto content_setting = host_content_settings_map->GetContentSetting(
-      requesting_origin, embedding_origin,
-      CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+      requesting_origin, embedding_origin, ContentSettingsType::BACKGROUND_SYNC,
       /* resource_identifier= */ std::string());
   DCHECK(content_setting == CONTENT_SETTING_BLOCK ||
          content_setting == CONTENT_SETTING_ALLOW);

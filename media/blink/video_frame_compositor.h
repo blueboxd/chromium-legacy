@@ -63,6 +63,12 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Used to report back the time when the new frame has been processed.
   using OnNewProcessedFrameCB = base::OnceCallback<void(base::TimeTicks)>;
 
+  using OnNewFramePresentedCB =
+      base::OnceCallback<void(scoped_refptr<VideoFrame> presented_frame,
+                              base::TimeTicks presentation_time,
+                              base::TimeTicks expected_presentation_time,
+                              uint32_t presentation_counter)>;
+
   // |task_runner| is the task runner on which this class will live,
   // though it may be constructed on any thread.
   VideoFrameCompositor(
@@ -126,6 +132,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Must be called on the compositor thread.
   virtual void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb);
 
+  void SetOnFramePresentedCallback(OnNewFramePresentedCB present_cb);
+
   // Updates the rotation information for frames given to |submitter_|.
   void UpdateRotation(VideoRotation rotation);
 
@@ -172,6 +180,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
 
   // Handles setting of |current_frame_|.
   bool ProcessNewFrame(scoped_refptr<VideoFrame> frame,
+                       base::TimeTicks presentation_time,
                        bool repaint_duplicate_frame);
 
   void SetCurrentFrame(scoped_refptr<VideoFrame> frame);
@@ -215,6 +224,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
 
   base::TimeTicks last_background_render_;
   OnNewProcessedFrameCB new_processed_frame_cb_;
+  OnNewFramePresentedCB new_presented_frame_cb_;
   cc::UpdateSubmissionStateCB update_submission_state_callback_;
 
   // Set on the compositor thread, but also read on the media thread. Lock is
@@ -226,6 +236,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   base::Lock callback_lock_;
   VideoRendererSink::RenderCallback* callback_ GUARDED_BY(callback_lock_) =
       nullptr;
+
+  uint32_t presentation_counter_ = 0u;
 
   // AutoOpenCloseEvent for begin/end events.
   std::unique_ptr<base::trace_event::AutoOpenCloseEvent<kTracingCategory>>

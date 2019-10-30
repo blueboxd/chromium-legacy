@@ -63,7 +63,7 @@ include_rules = [
   "+third_party/blink/public/web/web_drag_status.h",
   "+third_party/blink/public/web/web_frame_owner_properties.h",
   "+third_party/blink/public/web/web_ime_text_span.h",
-  "+third_party/blink/public/web/web_media_player_action.h",
+  "+third_party/blink/public/common/media/media_player_action.h",
   "+third_party/blink/public/web/WebSharedWorkerCreationContextType.h",
   "+third_party/blink/public/web/WebSharedWorkerCreationErrors.h",
   "+third_party/blink/public/web/web_text_direction.h",

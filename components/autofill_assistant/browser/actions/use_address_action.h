@@ -47,16 +47,9 @@ class UseAddressAction : public Action {
                         fallback_data,
                     const ClientStatus& status);
 
-  // Gets the fallback value.
-  std::string GetFallbackValue(
-      const RequiredFieldsFallbackHandler::RequiredField& required_field,
-      const RequiredFieldsFallbackHandler::FallbackData& fallback_data);
-
-  // Get the value of |address_field| associated to profile |profile|. Return
-  // empty string if there is no data available.
-  base::string16 GetFieldValue(
-      const autofill::AutofillProfile* profile,
-      const UseAddressProto::RequiredField::AddressField& address_field);
+  // Create fallback data.
+  std::unique_ptr<RequiredFieldsFallbackHandler::FallbackData>
+  CreateFallbackData(const autofill::AutofillProfile& profile);
 
   // Usage of the autofilled address.
   std::string name_;

@@ -63,6 +63,9 @@ class BackForwardCacheMetrics
     kMaxValue = kCacheFlushed,
   };
 
+  using NotRestoredReasons =
+      std::bitset<static_cast<size_t>(NotRestoredReason::kMaxValue) + 1ul>;
+
   // Please keep in sync with BackForwardCacheHistoryNavigationOutcome in
   // tools/metrics/histograms/enums.xml. These values should not be renumbered.
   enum class HistoryNavigationOutcome {
@@ -128,7 +131,8 @@ class BackForwardCacheMetrics
 
   // Marks when the page is not cached, or evicted. This information is useful
   // e.g., to prioritize the tasks to improve cache-hit rate.
-  void MarkNotRestoredWithReason(NotRestoredReason reason);
+  void MarkNotRestoredWithReasons(const NotRestoredReasons& reasons);
+  void MarkNotRestoredWithBlocklistedFeatures(uint64_t blocklisted_features);
 
   // Marks the frame disabled the back forward cache with the reason.
   void MarkDisableForRenderFrameHost(const base::StringPiece& reason);
@@ -174,8 +178,8 @@ class BackForwardCacheMetrics
   base::Optional<base::TimeTicks> started_navigation_timestamp_;
   base::Optional<base::TimeTicks> navigated_away_from_main_document_timestamp_;
 
-  std::bitset<static_cast<size_t>(NotRestoredReason::kMaxValue) + 1ul>
-      not_restored_reasons_;
+  NotRestoredReasons not_restored_reasons_;
+  uint64_t blocklisted_features_ = 0;
 
   // The reasons given at BackForwardCache::DisableForRenderFrameHost. These are
   // a further breakdown of NotRestoredReason::kDisableForRenderFrameHostCalled.

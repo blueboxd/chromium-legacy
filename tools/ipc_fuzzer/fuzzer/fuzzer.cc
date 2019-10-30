@@ -1226,15 +1226,6 @@ struct FuzzTraits<net::IPEndPoint> {
   }
 };
 
-template <>
-struct FuzzTraits<network_hints::LookupRequest> {
-  static bool Fuzz(network_hints::LookupRequest* p, Fuzzer* fuzzer) {
-    if (!FuzzParam(&p->hostname_list, fuzzer))
-      return false;
-    return true;
-  }
-};
-
 // PP_ traits.
 template <>
 struct FuzzTraits<PP_Bool> {

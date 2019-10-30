@@ -78,7 +78,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -1185,12 +1185,11 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
   LayoutText* layout_text = ToLayoutText(layout_object);
 
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    auto fragments = NGPaintFragment::InlineFragmentsFor(layout_object);
-    if (fragments.IsInLayoutNGInlineFormattingContext()) {
-      for (const NGPaintFragment* fragment : fragments) {
-        const auto& text_fragment =
-            To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
-        const ShapeResultView* shape_result = text_fragment.TextShapeResult();
+    if (layout_object->IsInLayoutNGInlineFormattingContext()) {
+      NGInlineCursor cursor;
+      cursor.MoveTo(*layout_object);
+      for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
+        const ShapeResultView* shape_result = cursor.CurrentTextShapeResult();
         if (!shape_result)
           continue;
         Vector<ShapeResult::RunFontData> run_font_data_list;

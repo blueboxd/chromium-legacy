@@ -22,8 +22,6 @@ class MockPermissionRequest : public PermissionRequest {
   MockPermissionRequest(const std::string& text,
                         const std::string& accept_label,
                         const std::string& deny_label);
-  MockPermissionRequest(const std::string& text,
-                        ContentSettingsType content_settings_type_);
 
   ~MockPermissionRequest() override;
 
@@ -41,7 +39,6 @@ class MockPermissionRequest : public PermissionRequest {
   void RequestFinished() override;
   PermissionRequestType GetPermissionRequestType() const override;
   PermissionRequestGestureType GetGestureType() const override;
-  ContentSettingsType GetContentSettingsType() const override;
 
   bool granted();
   bool cancelled();
@@ -53,14 +50,12 @@ class MockPermissionRequest : public PermissionRequest {
                         const std::string& deny_label,
                         const GURL& url,
                         PermissionRequestType request_type,
-                        PermissionRequestGestureType gesture_type,
-                        ContentSettingsType content_settings_type);
+                        PermissionRequestGestureType gesture_type);
   bool granted_;
   bool cancelled_;
   bool finished_;
   PermissionRequestType request_type_;
   PermissionRequestGestureType gesture_type_;
-  ContentSettingsType content_settings_type_;
 
   base::string16 text_;
   base::string16 accept_label_;

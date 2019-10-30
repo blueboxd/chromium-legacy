@@ -126,7 +126,10 @@ enum FileSystemType {
   // Indicates a DriveFS filesystem which provides access to Google Drive.
   kFileSystemTypeDriveFs,
 
-  kFileSystemTypeLast = kFileSystemTypeDriveFs,
+  // Indicates an SmbFs filesystem which provides access to SMB file shares.
+  kFileSystemTypeSmbFs,
+
+  kFileSystemTypeLast = kFileSystemTypeSmbFs,
 
   // --------------------------------------------------------------------
   // Marks the end of internal type enum. (This is not the actual fs type)

@@ -216,9 +216,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       const blink::WebVector<WebContentSecurityPolicy>&) override;
   void DidChangeFrameOwnerProperties(HTMLFrameOwnerElement*) override;
 
-  void DispatchWillStartUsingPeerConnectionHandler(
-      WebRTCPeerConnectionHandler*) override;
-
   bool ShouldBlockWebGL() override;
 
   std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()

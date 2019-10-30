@@ -57,6 +57,18 @@ class BackingVisitor : public Visitor {
       header->Mark();
   }
 
+  bool VisitEphemeronKeyValuePair(
+      void* key,
+      void* value,
+      bool strong_handling,
+      EphemeronTracingCallback key_trace_callback,
+      EphemeronTracingCallback value_trace_callback) final {
+    const bool key_is_dead = key_trace_callback(this, key);
+    if (key_is_dead && !strong_handling)
+      return true;
+    return value_trace_callback(this, value);
+  }
+
   // Unused overrides.
   void VisitWeak(void* object,
                  void* object_weak_ref,
@@ -70,7 +82,8 @@ class BackingVisitor : public Visitor {
                                TraceDescriptor,
                                TraceDescriptor,
                                WeakCallback,
-                               void*) final {}
+                               void*,
+                               bool) final {}
   void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void* slot, MovingObjectCallback) final {}
   void RegisterWeakCallback(void* closure, WeakCallback) final {}

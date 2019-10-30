@@ -195,7 +195,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     host_content_settings_map_->ClearSettingsForOneType(
-        ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+        ContentSettingsType::NOTIFICATIONS);
     fake_cookie_manager_ = std::make_unique<FakeCookieManager>();
     auto test_pwa_delegate =
         std::make_unique<TestPwaDelegate>(fake_cookie_manager_.get());
@@ -400,8 +400,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
   ContentSetting GetNotificationSetting(const GURL& url) {
     std::unique_ptr<base::Value> notification_settings_value =
         host_content_settings_map_->GetWebsiteSetting(
-            url, GURL() /* top_level_url */,
-            ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+            url, GURL() /* top_level_url */, ContentSettingsType::NOTIFICATIONS,
             content_settings::ResourceIdentifier(), nullptr);
     return static_cast<ContentSetting>(notification_settings_value->GetInt());
   }

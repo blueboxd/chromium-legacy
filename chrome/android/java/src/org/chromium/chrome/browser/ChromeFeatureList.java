@@ -226,6 +226,8 @@ public abstract class ChromeFeatureList {
             "ContextualSearchTapDisableOverride";
     public static final String CONTEXTUAL_SEARCH_TRANSLATION_MODEL =
             "ContextualSearchTranslationModel";
+    public static final String COOKIES_WITHOUT_SAME_SITE_MUST_BE_SECURE =
+            "CookiesWithoutSameSiteMustBeSecure";
     public static final String DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING =
             "DarkenWebsitesCheckboxInThemesSetting";
     public static final String DIRECT_ACTIONS = "DirectActions";
@@ -311,6 +313,7 @@ public abstract class ChromeFeatureList {
     public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
     public static final String REORDER_BOOKMARKS = "ReorderBookmarks";
     public static final String REVAMPED_CONTEXT_MENU = "RevampedContextMenu";
+    public static final String SAME_SITE_BY_DEFAULT_COOKIES = "SameSiteByDefaultCookies";
     public static final String SCROLL_TO_EXPAND_PAYMENT_HANDLER = "ScrollToExpandPaymentHandler";
     public static final String SEND_TAB_TO_SELF = "SyncSendTabToSelf";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
@@ -364,6 +367,8 @@ public abstract class ChromeFeatureList {
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
     public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH =
             "ServiceManagerForBackgroundPrefetch";
+    public static final String SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY =
+            "SplitCacheByNetworkIsolationKey";
 
     @NativeMethods
     interface Natives {

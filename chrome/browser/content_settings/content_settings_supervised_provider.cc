@@ -22,24 +22,26 @@ struct ContentSettingsFromSupervisedSettingsEntry {
 
 const ContentSettingsFromSupervisedSettingsEntry
     kContentSettingsFromSupervisedSettingsMap[] = {
-  {
-    supervised_users::kGeolocationDisabled,
-    CONTENT_SETTINGS_TYPE_GEOLOCATION,
-    CONTENT_SETTING_BLOCK,
-  }, {
-    supervised_users::kCameraMicDisabled,
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-    CONTENT_SETTING_BLOCK,
-  }, {
-    supervised_users::kCameraMicDisabled,
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-    CONTENT_SETTING_BLOCK,
-  }, {
-    supervised_users::kCookiesAlwaysAllowed,
-    CONTENT_SETTINGS_TYPE_COOKIES,
-    CONTENT_SETTING_ALLOW,
-  }
-};
+        {
+            supervised_users::kGeolocationDisabled,
+            ContentSettingsType::GEOLOCATION,
+            CONTENT_SETTING_BLOCK,
+        },
+        {
+            supervised_users::kCameraMicDisabled,
+            ContentSettingsType::MEDIASTREAM_CAMERA,
+            CONTENT_SETTING_BLOCK,
+        },
+        {
+            supervised_users::kCameraMicDisabled,
+            ContentSettingsType::MEDIASTREAM_MIC,
+            CONTENT_SETTING_BLOCK,
+        },
+        {
+            supervised_users::kCookiesAlwaysAllowed,
+            ContentSettingsType::COOKIES,
+            CONTENT_SETTING_ALLOW,
+        }};
 
 }  // namespace
 

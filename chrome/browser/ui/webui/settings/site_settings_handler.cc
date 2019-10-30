@@ -98,11 +98,11 @@ extensions::APIPermission::APIPermission::ID APIPermissionFromGroupName(
   // something better than if's.
 
   if (site_settings::ContentSettingsTypeFromGroupName(type) ==
-      CONTENT_SETTINGS_TYPE_GEOLOCATION)
+      ContentSettingsType::GEOLOCATION)
     return extensions::APIPermission::APIPermission::kGeolocation;
 
   if (site_settings::ContentSettingsTypeFromGroupName(type) ==
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      ContentSettingsType::NOTIFICATIONS)
     return extensions::APIPermission::APIPermission::kNotifications;
 
   return extensions::APIPermission::APIPermission::kInvalid;
@@ -523,7 +523,7 @@ void SiteSettingsHandler::OnContentSettingChanged(
   // autoplay status.
   if (primary_pattern == ContentSettingsPattern() &&
       secondary_pattern == ContentSettingsPattern() &&
-      content_type == CONTENT_SETTINGS_TYPE_SOUND) {
+      content_type == ContentSettingsType::SOUND) {
     SendBlockAutoplayStatus();
   }
 }
@@ -631,7 +631,7 @@ void SiteSettingsHandler::HandleSetDefaultValueForContentType(
       map->GetDefaultContentSetting(type, nullptr);
   map->SetDefaultContentSetting(type, default_setting);
 
-  if (type == CONTENT_SETTINGS_TYPE_SOUND &&
+  if (type == ContentSettingsType::SOUND &&
       previous_setting != default_setting) {
     if (default_setting == CONTENT_SETTING_BLOCK) {
       base::RecordAction(
@@ -697,7 +697,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   // Retrieve a list of embargoed settings to check separately. This ensures
   // that only settings included in |content_types| will be listed in all sites.
   ContentSettingsForOneType embargo_settings;
-  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
+  map->GetSettingsForOneType(ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
                              std::string(), &embargo_settings);
   PermissionManager* permission_manager = PermissionManager::Get(profile);
   for (const ContentSettingPatternSource& e : embargo_settings) {
@@ -952,9 +952,9 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
     }
     map->SetContentSettingDefaultScope(origin, origin, content_type,
                                        std::string(), setting);
-    if (content_type == CONTENT_SETTINGS_TYPE_SOUND) {
+    if (content_type == ContentSettingsType::SOUND) {
       ContentSetting default_setting =
-          map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND, nullptr);
+          map->GetDefaultContentSetting(ContentSettingsType::SOUND, nullptr);
       bool mute = (setting == CONTENT_SETTING_BLOCK) ||
                   (setting == CONTENT_SETTING_DEFAULT &&
                    default_setting == CONTENT_SETTING_BLOCK);
@@ -994,7 +994,7 @@ void SiteSettingsHandler::HandleClearFlashPref(const base::ListValue* args) {
       HostContentSettingsMapFactory::GetForProfile(profile_);
   const GURL origin(origin_string);
   map->SetWebsiteSettingDefaultScope(origin, origin,
-                                     CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                     ContentSettingsType::PLUGINS_DATA,
                                      std::string(), nullptr);
 }
 
@@ -1038,9 +1038,9 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
   map->SetContentSettingCustomScope(primary_pattern, secondary_pattern,
                                     content_type, "", CONTENT_SETTING_DEFAULT);
 
-  if (content_type == CONTENT_SETTINGS_TYPE_SOUND) {
+  if (content_type == ContentSettingsType::SOUND) {
     ContentSetting default_setting =
-        map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND, nullptr);
+        map->GetDefaultContentSetting(ContentSettingsType::SOUND, nullptr);
     if (default_setting == CONTENT_SETTING_BLOCK) {
       base::RecordAction(base::UserMetricsAction(
           "SoundContentSetting.MuteBy.PatternException"));
@@ -1098,9 +1098,9 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
   map->SetContentSettingCustomScope(primary_pattern, secondary_pattern,
                                     content_type, "", setting);
 
-  if (content_type == CONTENT_SETTINGS_TYPE_SOUND) {
+  if (content_type == ContentSettingsType::SOUND) {
     ContentSetting default_setting =
-        map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND, nullptr);
+        map->GetDefaultContentSetting(ContentSettingsType::SOUND, nullptr);
     bool mute = (setting == CONTENT_SETTING_BLOCK) ||
                 (setting == CONTENT_SETTING_DEFAULT &&
                  default_setting == CONTENT_SETTING_BLOCK);

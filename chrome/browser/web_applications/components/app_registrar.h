@@ -71,7 +71,7 @@ class AppRegistrar {
   // Requires app registry to be in a ready state.
   virtual int CountUserInstalledApps() const = 0;
 
-  // TODO(ericwilligers): GetAppShortName should return base::string16.
+  // All names are UTF8 encoded.
   virtual std::string GetAppShortName(const AppId& app_id) const = 0;
   virtual std::string GetAppDescription(const AppId& app_id) const = 0;
   virtual base::Optional<SkColor> GetAppThemeColor(

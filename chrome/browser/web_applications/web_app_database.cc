@@ -93,8 +93,6 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   local_data->set_name(web_app.name());
 
-  local_data->set_display_mode(
-      ToWebAppProtoDisplayMode(web_app.display_mode()));
   sync_data->set_user_display_mode(
       ToWebAppSpecificsUserDisplayMode(web_app.user_display_mode()));
 
@@ -110,6 +108,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   local_data->set_is_locally_installed(web_app.is_locally_installed());
 
   // Optional fields:
+  if (web_app.display_mode() != blink::mojom::DisplayMode::kUndefined) {
+    local_data->set_display_mode(
+        ToWebAppProtoDisplayMode(web_app.display_mode()));
+  }
   local_data->set_description(web_app.description());
   if (!web_app.scope().is_empty())
     local_data->set_scope(web_app.scope().spec());
@@ -125,8 +127,9 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   for (const WebApp::IconInfo& icon : web_app.icons()) {
     WebAppIconInfoProto* icon_proto = local_data->add_icons();
-    icon_proto->set_url(icon.url.spec());
     icon_proto->set_size_in_px(icon.size_in_px);
+    if (!icon.url.is_empty())
+      icon_proto->set_url(icon.url.spec());
   }
 
   return local_data;
@@ -179,12 +182,6 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetName(local_data.name());
 
-  if (!local_data.has_display_mode()) {
-    DLOG(ERROR) << "WebApp proto parse error: no display_mode field";
-    return nullptr;
-  }
-  web_app->SetDisplayMode(ToMojomDisplayMode(local_data.display_mode()));
-
   if (!sync_data.has_user_display_mode()) {
     DLOG(ERROR) << "WebApp proto parse error: no user_display_mode field";
     return nullptr;
@@ -199,6 +196,9 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   web_app->SetIsLocallyInstalled(local_data.is_locally_installed());
 
   // Optional fields:
+  if (local_data.has_display_mode())
+    web_app->SetDisplayMode(ToMojomDisplayMode(local_data.display_mode()));
+
   if (local_data.has_description())
     web_app->SetDescription(local_data.description());
 
@@ -230,14 +230,19 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   for (int i = 0; i < local_data.icons_size(); ++i) {
     const WebAppIconInfoProto& icon_proto = local_data.icons(i);
 
-    GURL icon_url(icon_proto.url());
-    if (icon_url.is_empty() || !icon_url.is_valid()) {
-      DLOG(ERROR) << "WebApp IconInfo proto url parse error: "
-                  << icon_url.possibly_invalid_spec();
-      return nullptr;
+    WebApp::IconInfo icon_info;
+    icon_info.size_in_px = icon_proto.size_in_px();
+    if (icon_proto.has_url()) {
+      GURL icon_url(icon_proto.url());
+      if (icon_url.is_empty() || !icon_url.is_valid()) {
+        DLOG(ERROR) << "WebApp IconInfo proto url parse error: "
+                    << icon_url.possibly_invalid_spec();
+        return nullptr;
+      }
+      icon_info.url = icon_url;
     }
 
-    icons.push_back({icon_url, icon_proto.size_in_px()});
+    icons.push_back(std::move(icon_info));
   }
   web_app->SetIcons(std::move(icons));
 

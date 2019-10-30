@@ -32,7 +32,6 @@ crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrol
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Pass ]
 
 Bug(none) virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
-Bug(none) virtual/android/rootscroller/fixed-chaining-with-implicit-pointer-events-none.html [ Failure ]
 Bug(none) virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-hidden.html [ Crash ]
 Bug(none) virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Crash ]
 Bug(none) virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Crash ]
@@ -77,7 +76,6 @@ crbug.com/979367 compositing/overflow/overflow-scroll-background-fractional-offs
 Bug(none) compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-background-transparent-to-opaque.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-content-fractional-offset.html [ Failure ]
-Bug(none) compositing/overflow/overflow-scroll-with-negative-offset-translucent-outline.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-with-opaque-background-will-change.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-with-opaque-background.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-with-transparent-background.html [ Failure ]
@@ -453,3 +451,9 @@ crbug.com/966981 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.h
 # Added to land BGPT-fixes
 crbug.com/979002 virtual/threaded-prefer-compositing/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]
 crbug.com/981749 virtual/threaded-prefer-compositing/fast/scrolling/scroll-chaining-from-position-fixed.html [ Failure ]
+
+# These tests are failing due to subpixel differences but can be rebaselined.
+Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/color/color-suggestion-picker-appearance.html [ Failure ]
+Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/color/color-suggestion-picker-appearance-with-scrollbar.html [ Failure ]
+Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/select/select-multiple-appearance-basic.html [ Failure ]
+Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/time-picker/time-picker-appearance.html [ Failure ]

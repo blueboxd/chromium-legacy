@@ -149,36 +149,36 @@ struct PermissionsUIInfo {
 base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
   DCHECK(base::FeatureList::GetInstance() != nullptr);
   static const PermissionsUIInfo kPermissionsUIInfo[] = {
-    {CONTENT_SETTINGS_TYPE_COOKIES, 0},
-    {CONTENT_SETTINGS_TYPE_IMAGES, IDS_PAGE_INFO_TYPE_IMAGES},
-    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_PAGE_INFO_TYPE_JAVASCRIPT},
-    {CONTENT_SETTINGS_TYPE_POPUPS, IDS_PAGE_INFO_TYPE_POPUPS_REDIRECTS},
+    {ContentSettingsType::COOKIES, 0},
+    {ContentSettingsType::IMAGES, IDS_PAGE_INFO_TYPE_IMAGES},
+    {ContentSettingsType::JAVASCRIPT, IDS_PAGE_INFO_TYPE_JAVASCRIPT},
+    {ContentSettingsType::POPUPS, IDS_PAGE_INFO_TYPE_POPUPS_REDIRECTS},
 #if BUILDFLAG(ENABLE_PLUGINS)
-    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_PAGE_INFO_TYPE_FLASH},
+    {ContentSettingsType::PLUGINS, IDS_PAGE_INFO_TYPE_FLASH},
 #endif
-    {CONTENT_SETTINGS_TYPE_GEOLOCATION, IDS_PAGE_INFO_TYPE_LOCATION},
-    {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, IDS_PAGE_INFO_TYPE_NOTIFICATIONS},
-    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, IDS_PAGE_INFO_TYPE_MIC},
-    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, IDS_PAGE_INFO_TYPE_CAMERA},
-    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+    {ContentSettingsType::GEOLOCATION, IDS_PAGE_INFO_TYPE_LOCATION},
+    {ContentSettingsType::NOTIFICATIONS, IDS_PAGE_INFO_TYPE_NOTIFICATIONS},
+    {ContentSettingsType::MEDIASTREAM_MIC, IDS_PAGE_INFO_TYPE_MIC},
+    {ContentSettingsType::MEDIASTREAM_CAMERA, IDS_PAGE_INFO_TYPE_CAMERA},
+    {ContentSettingsType::AUTOMATIC_DOWNLOADS,
      IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL},
-    {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, IDS_PAGE_INFO_TYPE_MIDI_SYSEX},
-    {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC},
-    {CONTENT_SETTINGS_TYPE_AUTOPLAY, IDS_PAGE_INFO_TYPE_AUTOPLAY},
-    {CONTENT_SETTINGS_TYPE_ADS, IDS_PAGE_INFO_TYPE_ADS},
-    {CONTENT_SETTINGS_TYPE_SOUND, IDS_PAGE_INFO_TYPE_SOUND},
-    {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_PAGE_INFO_TYPE_CLIPBOARD},
-    {CONTENT_SETTINGS_TYPE_SENSORS,
+    {ContentSettingsType::MIDI_SYSEX, IDS_PAGE_INFO_TYPE_MIDI_SYSEX},
+    {ContentSettingsType::BACKGROUND_SYNC, IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC},
+    {ContentSettingsType::AUTOPLAY, IDS_PAGE_INFO_TYPE_AUTOPLAY},
+    {ContentSettingsType::ADS, IDS_PAGE_INFO_TYPE_ADS},
+    {ContentSettingsType::SOUND, IDS_PAGE_INFO_TYPE_SOUND},
+    {ContentSettingsType::CLIPBOARD_READ, IDS_PAGE_INFO_TYPE_CLIPBOARD},
+    {ContentSettingsType::SENSORS,
      base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
          ? IDS_PAGE_INFO_TYPE_SENSORS
          : IDS_PAGE_INFO_TYPE_MOTION_SENSORS},
-    {CONTENT_SETTINGS_TYPE_USB_GUARD, IDS_PAGE_INFO_TYPE_USB},
+    {ContentSettingsType::USB_GUARD, IDS_PAGE_INFO_TYPE_USB},
 #if !defined(OS_ANDROID)
-    {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
+    {ContentSettingsType::SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
 #endif
-    {CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+    {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
      IDS_PAGE_INFO_TYPE_NATIVE_FILE_SYSTEM_WRITE},
-    {CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
+    {ContentSettingsType::BLUETOOTH_SCANNING,
      IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING},
   };
   return kPermissionsUIInfo;
@@ -238,7 +238,7 @@ ContentSetting GetEffectiveSetting(Profile* profile,
 PageInfoUI::CookieInfo::CookieInfo() : allowed(-1), blocked(-1) {}
 
 PageInfoUI::PermissionInfo::PermissionInfo()
-    : type(CONTENT_SETTINGS_TYPE_DEFAULT),
+    : type(ContentSettingsType::DEFAULT),
       setting(CONTENT_SETTING_DEFAULT),
       default_setting(CONTENT_SETTING_DEFAULT),
       source(content_settings::SETTING_SOURCE_NONE),
@@ -392,7 +392,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
     case content_settings::SETTING_SOURCE_USER:
       if (setting == CONTENT_SETTING_DEFAULT) {
 #if !defined(OS_ANDROID)
-        if (type == CONTENT_SETTINGS_TYPE_SOUND &&
+        if (type == ContentSettingsType::SOUND &&
             base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings)) {
           // If the block autoplay enabled preference is enabled and the
           // sound default setting is ALLOW, we will return a custom string
@@ -416,7 +416,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
     case content_settings::SETTING_SOURCE_POLICY:
     case content_settings::SETTING_SOURCE_EXTENSION:
 #if !defined(OS_ANDROID)
-      if (type == CONTENT_SETTINGS_TYPE_SOUND &&
+      if (type == ContentSettingsType::SOUND &&
           base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings)) {
         button_text_ids = kSoundPermissionButtonTextIDUserManaged;
         break;
@@ -469,7 +469,7 @@ base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
     }
   }
 
-  if (permission.type == CONTENT_SETTINGS_TYPE_ADS)
+  if (permission.type == ContentSettingsType::ADS)
     message_id = IDS_PAGE_INFO_PERMISSION_ADS_SUBTITLE;
 
   if (message_id == kInvalidResourceID)
@@ -551,68 +551,68 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
                                                    SkColor related_text_color) {
   const gfx::VectorIcon* icon = &gfx::kNoneIcon;
   switch (info.type) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
+    case ContentSettingsType::COOKIES:
       icon = &kCookieIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_IMAGES:
+    case ContentSettingsType::IMAGES:
       icon = &kPhotoIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+    case ContentSettingsType::JAVASCRIPT:
       icon = &kCodeIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_POPUPS:
+    case ContentSettingsType::POPUPS:
       icon = &kLaunchIcon;
       break;
 #if BUILDFLAG(ENABLE_PLUGINS)
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
+    case ContentSettingsType::PLUGINS:
       icon = &kExtensionIcon;
       break;
 #endif
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+    case ContentSettingsType::GEOLOCATION:
       icon = &vector_icons::kLocationOnIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case ContentSettingsType::NOTIFICATIONS:
       icon = &vector_icons::kNotificationsIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case ContentSettingsType::MEDIASTREAM_MIC:
       icon = &vector_icons::kMicIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+    case ContentSettingsType::MEDIASTREAM_CAMERA:
       icon = &vector_icons::kVideocamIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+    case ContentSettingsType::AUTOMATIC_DOWNLOADS:
       icon = &kFileDownloadIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case ContentSettingsType::MIDI_SYSEX:
       icon = &vector_icons::kMidiIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
+    case ContentSettingsType::BACKGROUND_SYNC:
       icon = &kSyncIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_ADS:
+    case ContentSettingsType::ADS:
       icon = &kAdsIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_SOUND:
+    case ContentSettingsType::SOUND:
       icon = &kVolumeUpIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
+    case ContentSettingsType::CLIPBOARD_READ:
       icon = &kPageInfoContentPasteIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_SENSORS:
+    case ContentSettingsType::SENSORS:
       icon = &kSensorsIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_USB_GUARD:
+    case ContentSettingsType::USB_GUARD:
       icon = &vector_icons::kUsbIcon;
       break;
 #if !defined(OS_ANDROID)
-    case CONTENT_SETTINGS_TYPE_SERIAL_GUARD:
+    case ContentSettingsType::SERIAL_GUARD:
       icon = &vector_icons::kSerialPortIcon;
       break;
 #endif
-    case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
+    case ContentSettingsType::BLUETOOTH_SCANNING:
       icon = &vector_icons::kBluetoothScanningIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD:
+    case ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD:
       icon = &kSaveOriginalFileIcon;
       break;
     default:
@@ -643,10 +643,10 @@ const gfx::ImageSkia PageInfoUI::GetChosenObjectIcon(
     SkColor related_text_color) {
   const gfx::VectorIcon* icon = &gfx::kNoneIcon;
   switch (object.ui_info.content_settings_type) {
-    case CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA:
+    case ContentSettingsType::USB_CHOOSER_DATA:
       icon = &vector_icons::kUsbIcon;
       break;
-    case CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA:
+    case ContentSettingsType::SERIAL_CHOOSER_DATA:
       icon = &vector_icons::kSerialPortIcon;
       break;
     default:

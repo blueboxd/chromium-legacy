@@ -179,18 +179,19 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   prompt_observer.WaitForManagementState();
 }
 
+// Flaky. https://crbug.com/1013743
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       PromptForXHRWithoutOnSubmit) {
+                       DISABLED_PromptForXHRWithoutOnSubmit) {
   NavigateToFile("/password/password_xhr_submit.html");
 
   // Verify that if XHR navigation occurs and the form is properly filled out,
   // we try and save the password even though onsubmit hasn't been called.
   FillElementWithValue("username_field", "user");
   FillElementWithValue("password_field", "1234");
-  // Make sure that the keystrokes were processed.
-  WaitForElementValue("password_field", "1234");
+  NavigationObserver observer(WebContents());
   ASSERT_TRUE(content::ExecuteScript(WebContents(), "send_xhr()"));
-  BubbleObserver(WebContents()).WaitForAutomaticSavePrompt();
+  observer.Wait();
+  EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
@@ -226,8 +227,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
+// Flaky. https://crbug.com/1013743
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       PromptForFetchWithNewPasswordsWithoutOnSubmit) {
+                       DISABLED_PromptForFetchWithNewPasswordsWithoutOnSubmit) {
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Verify that if Fetch navigation occurs and the form is properly filled out,
@@ -237,10 +239,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   FillElementWithValue("signup_username_field", "user");
   FillElementWithValue("signup_password_field", "1234");
   FillElementWithValue("confirmation_password_field", "1234");
-  // Make sure that the keystrokes were processed.
-  WaitForElementValue("confirmation_password_field", "1234");
+  NavigationObserver observer(WebContents());
   ASSERT_TRUE(content::ExecuteScript(WebContents(), "send_fetch()"));
-  BubbleObserver(WebContents()).WaitForAutomaticSavePrompt();
+  observer.Wait();
+  EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
 // Disabled for flakiness crbug.com/849582.

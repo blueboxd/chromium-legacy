@@ -21,6 +21,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -40,6 +41,7 @@ class SharedClipboardMessageHandlerTest : public testing::Test {
     sharing_service_ = std::make_unique<MockSharingService>();
     message_handler_ = std::make_unique<SharedClipboardMessageHandlerDesktop>(
         sharing_service_.get(), notification_display_service_.get());
+    ui::TestClipboard::CreateForCurrentThread();
   }
 
   void TearDown() override {

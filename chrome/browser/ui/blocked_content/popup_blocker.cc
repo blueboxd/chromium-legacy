@@ -46,7 +46,7 @@ PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (url.is_valid() &&
       HostContentSettingsMapFactory::GetForProfile(profile)->GetContentSetting(
-          url, url, CONTENT_SETTINGS_TYPE_POPUPS, std::string()) ==
+          url, url, ContentSettingsType::POPUPS, std::string()) ==
           CONTENT_SETTING_ALLOW) {
     return PopupBlockType::kNotBlocked;
   }

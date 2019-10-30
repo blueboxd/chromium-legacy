@@ -30,7 +30,7 @@
 namespace site_settings {
 
 namespace {
-constexpr ContentSettingsType kContentType = CONTENT_SETTINGS_TYPE_GEOLOCATION;
+constexpr ContentSettingsType kContentType = ContentSettingsType::GEOLOCATION;
 }
 
 class SiteSettingsHelperTest : public testing::Test {
@@ -187,7 +187,7 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
   // Note this is not testing |kContentType|, because this setting is only valid
   // for protected content.
   content_setting = GetContentSettingForOrigin(
-      &profile, map, origin, CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+      &profile, map, origin, ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
       &source, extension_registry, &display_name);
   EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kDrmDisabled), source);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, content_setting);
@@ -317,7 +317,7 @@ void ExpectValidSiteExceptionObject(const base::Value& actual_site_object,
 
 TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
   const std::string kUsbChooserGroupName =
-      ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+      ContentSettingsTypeToGroupName(ContentSettingsType::USB_CHOOSER_DATA);
   const std::string& kPolicySource =
       SiteSettingSourceToString(SiteSettingSource::kPolicy);
   const std::string& kPreferenceSource =
@@ -509,7 +509,7 @@ void ExpectDisplayNameEq(const base::Value& actual_exception_object,
 TEST_F(SiteSettingsHelperChooserExceptionTest,
        GetChooserExceptionListFromProfile) {
   const std::string kUsbChooserGroupName =
-      ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+      ContentSettingsTypeToGroupName(ContentSettingsType::USB_CHOOSER_DATA);
   const ChooserTypeNameEntry* chooser_type =
       ChooserTypeFromGroupName(kUsbChooserGroupName);
   const std::string& kPolicySource =

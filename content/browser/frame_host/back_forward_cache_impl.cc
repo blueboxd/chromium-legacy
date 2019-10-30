@@ -38,11 +38,6 @@ static constexpr size_t kBackForwardCacheLimit = 1;
 // The default time to live in seconds for documents in BackForwardCache.
 static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 15;
 
-// Converts a WebSchedulerTrackedFeature to a bit for use in a bitmask.
-constexpr uint64_t ToFeatureBit(WebSchedulerTrackedFeature feature) {
-  return 1ull << static_cast<uint32_t>(feature);
-}
-
 void SetPageFrozenImpl(
     RenderFrameHostImpl* render_frame_host,
     bool frozen,
@@ -91,49 +86,49 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
   // TODO(https://crbug.com/1015784): Finalize disallowed feature list, and test
   // for each disallowed feature.
   constexpr uint64_t kAlwaysDisallowedFeatures =
-      ToFeatureBit(WebSchedulerTrackedFeature::kWebRTC) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kContainsPlugins) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kOutstandingNetworkRequest) |
-      ToFeatureBit(
+      FeatureToBit(WebSchedulerTrackedFeature::kWebRTC) |
+      FeatureToBit(WebSchedulerTrackedFeature::kContainsPlugins) |
+      FeatureToBit(WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet) |
+      FeatureToBit(WebSchedulerTrackedFeature::kOutstandingNetworkRequest) |
+      FeatureToBit(
           WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction) |
-      ToFeatureBit(
+      FeatureToBit(
           WebSchedulerTrackedFeature::kHasScriptableFramesInMultipleTabs) |
-      ToFeatureBit(
+      FeatureToBit(
           WebSchedulerTrackedFeature::kRequestedNotificationsPermission) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |
-      ToFeatureBit(
+      FeatureToBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |
+      FeatureToBit(
           WebSchedulerTrackedFeature::kRequestedAudioCapturePermission) |
-      ToFeatureBit(
+      FeatureToBit(
           WebSchedulerTrackedFeature::kRequestedVideoCapturePermission) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kRequestedSensorsPermission) |
-      ToFeatureBit(
+      FeatureToBit(WebSchedulerTrackedFeature::kRequestedSensorsPermission) |
+      FeatureToBit(
           WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kBroadcastChannel) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kIndexedDBConnection) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kWebGL) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kWebVR) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kWebXR) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kSharedWorker) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kWebXR) |
-      ToFeatureBit(WebSchedulerTrackedFeature::kWebLocks);
+      FeatureToBit(WebSchedulerTrackedFeature::kBroadcastChannel) |
+      FeatureToBit(WebSchedulerTrackedFeature::kIndexedDBConnection) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebGL) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebVR) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebXR) |
+      FeatureToBit(WebSchedulerTrackedFeature::kSharedWorker) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebXR) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebLocks);
 
   uint64_t result = kAlwaysDisallowedFeatures;
 
   if (!IsServiceWorkerSupported()) {
     result |=
-        ToFeatureBit(WebSchedulerTrackedFeature::kServiceWorkerControlledPage);
+        FeatureToBit(WebSchedulerTrackedFeature::kServiceWorkerControlledPage);
   }
 
   if (!IsGeolocationSupported()) {
-    result |= ToFeatureBit(
+    result |= FeatureToBit(
         WebSchedulerTrackedFeature::kRequestedGeolocationPermission);
   }
 
   // We do not cache documents which have cache-control: no-store header on
   // their main resource.
   if (!rfh->GetParent()) {
-    result |= ToFeatureBit(
+    result |= FeatureToBit(
         WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore);
   }
 

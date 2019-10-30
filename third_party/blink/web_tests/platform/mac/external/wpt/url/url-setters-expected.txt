@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 592 tests; 299 PASS, 293 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 595 tests; 305 PASS, 290 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS URL: Setting <a://example.net>.protocol = '' The empty string is not a valid scheme. Setter leaves the URL unchanged.
 PASS <a>: Setting <a://example.net>.protocol = '' The empty string is not a valid scheme. Setter leaves the URL unchanged.
@@ -232,9 +232,12 @@ FAIL <area>: Setting <a:/foo>.host = 'example.net' Path-only URLs can gain a hos
 PASS URL: Setting <http://example.net>.host = '0x7F000001:8080' IPv4 address syntax is normalized
 PASS <a>: Setting <http://example.net>.host = '0x7F000001:8080' IPv4 address syntax is normalized
 PASS <area>: Setting <http://example.net>.host = '0x7F000001:8080' IPv4 address syntax is normalized
-FAIL URL: Setting <http://example.net>.host = '[::0:01]:2' IPv6 address syntax is normalized assert_equals: expected "http://[::1]:2/" but got "http://[:0/"
-FAIL <a>: Setting <http://example.net>.host = '[::0:01]:2' IPv6 address syntax is normalized assert_equals: expected "http://[::1]:2/" but got "http://[:0/"
-FAIL <area>: Setting <http://example.net>.host = '[::0:01]:2' IPv6 address syntax is normalized assert_equals: expected "http://[::1]:2/" but got "http://[:0/"
+PASS URL: Setting <http://example.net>.host = '[::0:01]:2' IPv6 address syntax is normalized
+PASS <a>: Setting <http://example.net>.host = '[::0:01]:2' IPv6 address syntax is normalized
+PASS <area>: Setting <http://example.net>.host = '[::0:01]:2' IPv6 address syntax is normalized
+PASS URL: Setting <http://example.net>.host = '[2001:db8::2]:4002' IPv6 literal address with port, crbug.com/1012416
+PASS <a>: Setting <http://example.net>.host = '[2001:db8::2]:4002' IPv6 literal address with port, crbug.com/1012416
+PASS <area>: Setting <http://example.net>.host = '[2001:db8::2]:4002' IPv6 literal address with port, crbug.com/1012416
 PASS URL: Setting <http://example.net>.host = 'example.com:80' Default port number is removed
 PASS <a>: Setting <http://example.net>.host = 'example.com:80' Default port number is removed
 PASS <area>: Setting <http://example.net>.host = 'example.com:80' Default port number is removed
@@ -292,18 +295,18 @@ FAIL <area>: Setting <http://example.net/path>.host = 'example.com:65536' Port n
 FAIL URL: Setting <http://example.net/>.host = '[google.com]' Broken IPv6 assert_equals: expected "http://example.net/" but got "http://[google.com]/"
 FAIL <a>: Setting <http://example.net/>.host = '[google.com]' Broken IPv6 assert_equals: expected "http://example.net/" but got "http://[google.com]/"
 FAIL <area>: Setting <http://example.net/>.host = '[google.com]' Broken IPv6 assert_equals: expected "http://example.net/" but got "http://[google.com]/"
-FAIL URL: Setting <http://example.net/>.host = '[::1.2.3.4x]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL <a>: Setting <http://example.net/>.host = '[::1.2.3.4x]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL <area>: Setting <http://example.net/>.host = '[::1.2.3.4x]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL URL: Setting <http://example.net/>.host = '[::1.2.3.]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL <a>: Setting <http://example.net/>.host = '[::1.2.3.]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL <area>: Setting <http://example.net/>.host = '[::1.2.3.]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL URL: Setting <http://example.net/>.host = '[::1.2.]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL <a>: Setting <http://example.net/>.host = '[::1.2.]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL <area>: Setting <http://example.net/>.host = '[::1.2.]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL URL: Setting <http://example.net/>.host = '[::1.]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL <a>: Setting <http://example.net/>.host = '[::1.]' assert_equals: expected "http://example.net/" but got "http://[:0/"
-FAIL <area>: Setting <http://example.net/>.host = '[::1.]' assert_equals: expected "http://example.net/" but got "http://[:0/"
+FAIL URL: Setting <http://example.net/>.host = '[::1.2.3.4x]' assert_equals: expected "http://example.net/" but got "http://[::1.2.3.4x]/"
+FAIL <a>: Setting <http://example.net/>.host = '[::1.2.3.4x]' assert_equals: expected "http://example.net/" but got "http://[::1.2.3.4x]/"
+FAIL <area>: Setting <http://example.net/>.host = '[::1.2.3.4x]' assert_equals: expected "http://example.net/" but got "http://[::1.2.3.4x]/"
+FAIL URL: Setting <http://example.net/>.host = '[::1.2.3.]' assert_equals: expected "http://example.net/" but got "http://[::102:3]/"
+FAIL <a>: Setting <http://example.net/>.host = '[::1.2.3.]' assert_equals: expected "http://example.net/" but got "http://[::102:3]/"
+FAIL <area>: Setting <http://example.net/>.host = '[::1.2.3.]' assert_equals: expected "http://example.net/" but got "http://[::102:3]/"
+FAIL URL: Setting <http://example.net/>.host = '[::1.2.]' assert_equals: expected "http://example.net/" but got "http://[::100:2]/"
+FAIL <a>: Setting <http://example.net/>.host = '[::1.2.]' assert_equals: expected "http://example.net/" but got "http://[::100:2]/"
+FAIL <area>: Setting <http://example.net/>.host = '[::1.2.]' assert_equals: expected "http://example.net/" but got "http://[::100:2]/"
+FAIL URL: Setting <http://example.net/>.host = '[::1.]' assert_equals: expected "http://example.net/" but got "http://[::1]/"
+FAIL <a>: Setting <http://example.net/>.host = '[::1.]' assert_equals: expected "http://example.net/" but got "http://[::1]/"
+FAIL <area>: Setting <http://example.net/>.host = '[::1.]' assert_equals: expected "http://example.net/" but got "http://[::1]/"
 FAIL URL: Setting <file://y/>.host = 'x:123' assert_equals: expected "file://y/" but got "file://x/"
 FAIL <a>: Setting <file://y/>.host = 'x:123' assert_equals: expected "file://y/" but got "file://x/"
 FAIL <area>: Setting <file://y/>.host = 'x:123' assert_equals: expected "file://y/" but got "file://x/"

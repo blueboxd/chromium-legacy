@@ -534,17 +534,16 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
             resource = R.string.website_settings_add_site_description_background_sync;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)) {
             resource = PrefServiceBridge.getInstance().isCategoryEnabled(
-                               ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT)
+                               ContentSettingsType.JAVASCRIPT)
                     ? R.string.website_settings_add_site_description_javascript_block
                     : R.string.website_settings_add_site_description_javascript_allow;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
-            resource = PrefServiceBridge.getInstance().isCategoryEnabled(
-                               ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND)
+            resource = PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.SOUND)
                     ? R.string.website_settings_add_site_description_sound_block
                     : R.string.website_settings_add_site_description_sound_allow;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
-            resource = PrefServiceBridge.getInstance().isCategoryEnabled(
-                               ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES)
+            resource =
+                    PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.COOKIES)
                     ? R.string.website_settings_add_site_description_cookies_block
                     : R.string.website_settings_add_site_description_cookies_allow;
         }
@@ -621,12 +620,12 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOPLAY)
                 && !PrefServiceBridge.getInstance().isCategoryEnabled(
-                           ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY)) {
+                        ContentSettingsType.AUTOPLAY)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)
                 && (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)
                         || !PrefServiceBridge.getInstance().isCategoryEnabled(
-                                ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT))) {
+                                ContentSettingsType.JAVASCRIPT))) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
                 && ChromeFeatureList.isEnabled(
@@ -634,11 +633,11 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
                 && !PrefServiceBridge.getInstance().isCategoryEnabled(
-                        ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC)) {
+                        ContentSettingsType.BACKGROUND_SYNC)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)
                 && !PrefServiceBridge.getInstance().isCategoryEnabled(
-                        ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS)) {
+                        ContentSettingsType.AUTOMATIC_DOWNLOADS)) {
             exception = true;
         }
         if (exception) {
@@ -988,8 +987,8 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                         THIRD_PARTY_COOKIES_TOGGLE_KEY);
         thirdPartyCookiesPref.setChecked(
                 PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled());
-        thirdPartyCookiesPref.setEnabled(PrefServiceBridge.getInstance().isCategoryEnabled(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES));
+        thirdPartyCookiesPref.setEnabled(
+                PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.COOKIES));
         thirdPartyCookiesPref.setManagedPreferenceDelegate(
                 preference -> PrefServiceBridge.getInstance().isBlockThirdPartyCookiesManaged());
     }
@@ -1000,7 +999,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                         NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
         if (preference != null) {
             preference.setEnabled(PrefServiceBridge.getInstance().isCategoryEnabled(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+                    ContentSettingsType.NOTIFICATIONS));
         }
     }
 

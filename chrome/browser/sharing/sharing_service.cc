@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
-#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -27,9 +26,9 @@
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/sharing_utils.h"
 #include "chrome/browser/sharing/sms/sms_fetch_request_handler.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/sync/driver/sync_service.h"
@@ -37,7 +36,6 @@
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "components/sync_device_info/local_device_info_util.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_android.h"
@@ -47,79 +45,6 @@
 #endif  // defined(OS_ANDROID)
 
 namespace {
-// Util function to return a string denoting the type of device.
-std::string GetDeviceType(sync_pb::SyncEnums::DeviceType type) {
-  int device_type_message_id = -1;
-
-  switch (type) {
-    case sync_pb::SyncEnums::TYPE_LINUX:
-    case sync_pb::SyncEnums::TYPE_WIN:
-    case sync_pb::SyncEnums::TYPE_CROS:
-    case sync_pb::SyncEnums::TYPE_MAC:
-      device_type_message_id = IDS_BROWSER_SHARING_DEVICE_TYPE_COMPUTER;
-      break;
-
-    case sync_pb::SyncEnums::TYPE_UNSET:
-    case sync_pb::SyncEnums::TYPE_OTHER:
-      device_type_message_id = IDS_BROWSER_SHARING_DEVICE_TYPE_DEVICE;
-      break;
-
-    case sync_pb::SyncEnums::TYPE_PHONE:
-      device_type_message_id = IDS_BROWSER_SHARING_DEVICE_TYPE_PHONE;
-      break;
-
-    case sync_pb::SyncEnums::TYPE_TABLET:
-      device_type_message_id = IDS_BROWSER_SHARING_DEVICE_TYPE_TABLET;
-      break;
-  }
-
-  return l10n_util::GetStringUTF8(device_type_message_id);
-}
-
-struct DeviceNames {
-  std::string full_name;
-  std::string short_name;
-};
-
-// Returns full and short names for |device|.
-DeviceNames GetDeviceNames(const syncer::DeviceInfo* device) {
-  DCHECK(device);
-  DeviceNames device_names;
-
-  base::SysInfo::HardwareInfo hardware_info = device->hardware_info();
-
-  // The model might be empty if other device is still on M78 or lower with sync
-  // turned on.
-  if (hardware_info.model.empty()) {
-    device_names.full_name = device_names.short_name = device->client_name();
-    return device_names;
-  }
-
-  sync_pb::SyncEnums::DeviceType type = device->device_type();
-
-  // For chromeOS, return manufacturer + model.
-  if (type == sync_pb::SyncEnums::TYPE_CROS) {
-    device_names.short_name = device_names.full_name =
-        base::StrCat({hardware_info.manufacturer, " ", hardware_info.model});
-    return device_names;
-  }
-
-  if (hardware_info.manufacturer == "Apple Inc.") {
-    // Internal names of Apple devices are formatted as MacbookPro2,3 or
-    // iPhone2,1 or Ipad4,1.
-    device_names.short_name = hardware_info.model.substr(
-        0, hardware_info.model.find_first_of("0123456789,"));
-    device_names.full_name = hardware_info.model;
-    return device_names;
-  }
-
-  device_names.short_name =
-      base::StrCat({hardware_info.manufacturer, " ", GetDeviceType(type)});
-  device_names.full_name =
-      base::StrCat({device_names.short_name, " ", hardware_info.model});
-  return device_names;
-}
-
 // Clones device with new device name.
 std::unique_ptr<syncer::DeviceInfo> CloneDevice(
     const syncer::DeviceInfo* device,
@@ -174,8 +99,7 @@ SharingService::SharingService(
       &ping_message_handler_);
 
   ack_message_handler_ =
-      std::make_unique<AckMessageHandler>(base::BindRepeating(
-          &SharingService::OnAckReceived, weak_ptr_factory_.GetWeakPtr()));
+      std::make_unique<AckMessageHandler>(&response_callback_helper_);
   fcm_handler_->AddSharingHandler(
       chrome_browser_sharing::SharingMessage::kAckMessage,
       ack_message_handler_.get());
@@ -246,8 +170,9 @@ std::unique_ptr<syncer::DeviceInfo> SharingService::GetDeviceByGuid(
 
   std::unique_ptr<syncer::DeviceInfo> device_info =
       device_info_tracker_->GetDeviceInfo(guid);
-  return CloneDevice(device_info.get(),
-                     GetDeviceNames(device_info.get()).full_name);
+  device_info->set_client_name(
+      GetSharingDeviceNames(device_info.get()).full_name);
+  return device_info;
 }
 
 SharingService::SharingDeviceList SharingService::GetDeviceCandidates(
@@ -297,9 +222,9 @@ void SharingService::SendMessageToDevice(
     const std::string& device_guid,
     base::TimeDelta response_timeout,
     chrome_browser_sharing::SharingMessage message,
-    SendMessageCallback callback) {
+    ResponseCallbackHelper::ResponseCallback callback) {
   std::string message_guid = base::GenerateGUID();
-  send_message_callbacks_.emplace(message_guid, std::move(callback));
+  response_callback_helper_.RegisterCallback(message_guid, std::move(callback));
   chrome_browser_sharing::MessageType message_type =
       SharingPayloadCaseToMessageType(message.payload_case());
 
@@ -334,7 +259,7 @@ void SharingService::SendMessageToDevice(
   }
 
   std::unique_ptr<syncer::DeviceInfo> sender_device_info = CloneDevice(
-      local_device_info, GetDeviceNames(local_device_info).full_name);
+      local_device_info, GetSharingDeviceNames(local_device_info).full_name);
   sender_device_info->set_sharing_info(
       sync_prefs_->GetLocalSharingInfo(local_device_info));
 
@@ -373,36 +298,8 @@ void SharingService::OnMessageSent(
     chrome_browser_sharing::MessageType message_type,
     SharingSendMessageResult result,
     base::Optional<std::string> message_id) {
-  if (result != SharingSendMessageResult::kSuccessful) {
-    InvokeSendMessageCallback(message_guid, message_type, result,
-                              /*response=*/nullptr);
-    return;
-  }
-
-  send_message_times_.emplace(*message_id, start_time);
-  message_guids_.emplace(*message_id, message_guid);
-}
-
-void SharingService::OnAckReceived(
-    chrome_browser_sharing::MessageType message_type,
-    std::string message_id,
-    std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
-  auto times_iter = send_message_times_.find(message_id);
-  if (times_iter != send_message_times_.end()) {
-    LogSharingMessageAckTime(message_type,
-                             base::TimeTicks::Now() - times_iter->second);
-    send_message_times_.erase(times_iter);
-  }
-
-  auto iter = message_guids_.find(message_id);
-  if (iter == message_guids_.end())
-    return;
-
-  std::string message_guid = std::move(iter->second);
-  message_guids_.erase(iter);
-  InvokeSendMessageCallback(message_guid, message_type,
-                            SharingSendMessageResult::kSuccessful,
-                            std::move(response));
+  response_callback_helper_.OnFCMMessageSent(
+      start_time, message_guid, message_type, result, std::move(message_id));
 }
 
 void SharingService::InvokeSendMessageCallback(
@@ -410,14 +307,8 @@ void SharingService::InvokeSendMessageCallback(
     chrome_browser_sharing::MessageType message_type,
     SharingSendMessageResult result,
     std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
-  auto iter = send_message_callbacks_.find(message_guid);
-  if (iter == send_message_callbacks_.end())
-    return;
-
-  SendMessageCallback callback = std::move(iter->second);
-  send_message_callbacks_.erase(iter);
-  std::move(callback).Run(result, std::move(response));
-  LogSendSharingMessageResult(message_type, result);
+  response_callback_helper_.RunCallback(message_guid, message_type, result,
+                                        std::move(response));
 }
 
 void SharingService::OnDeviceInfoChange() {
@@ -643,19 +534,19 @@ SharingService::SharingDeviceList SharingService::RenameAndDeduplicateDevices(
                      device2->last_updated_timestamp();
             });
 
-  std::unordered_map<std::string, DeviceNames> device_candidate_names;
+  std::unordered_map<std::string, SharingDeviceNames> device_candidate_names;
   std::unordered_set<std::string> full_device_names;
   std::unordered_map<std::string, int> short_device_name_counter;
 
   // To prevent adding candidates with same full name as local device.
   full_device_names.insert(
-      GetDeviceNames(local_device_info_provider_->GetLocalDeviceInfo())
+      GetSharingDeviceNames(local_device_info_provider_->GetLocalDeviceInfo())
           .full_name);
   // To prevent M78- instances of Chrome with same device model from showing up.
   full_device_names.insert(*personalizable_local_device_name_);
 
   for (const auto& device : devices) {
-    DeviceNames device_names = GetDeviceNames(device.get());
+    SharingDeviceNames device_names = GetSharingDeviceNames(device.get());
 
     // Only insert the first occurrence of each device name.
     auto inserted = full_device_names.insert(device_names.full_name);
@@ -668,17 +559,18 @@ SharingService::SharingDeviceList SharingService::RenameAndDeduplicateDevices(
 
   // Rename filtered devices.
   SharingDeviceList device_candidates;
-  for (const auto& device : devices) {
+  for (auto& device : devices) {
     auto it = device_candidate_names.find(device->guid());
     if (it == device_candidate_names.end())
       continue;
 
-    const DeviceNames& device_names = it->second;
+    const SharingDeviceNames& device_names = it->second;
     bool is_short_name_unique =
         short_device_name_counter[device_names.short_name] == 1;
-    device_candidates.push_back(CloneDevice(
-        device.get(), is_short_name_unique ? device_names.short_name
-                                           : device_names.full_name));
+
+    device->set_client_name(is_short_name_unique ? device_names.short_name
+                                                 : device_names.full_name);
+    device_candidates.push_back(std::move(device));
   }
 
   return device_candidates;

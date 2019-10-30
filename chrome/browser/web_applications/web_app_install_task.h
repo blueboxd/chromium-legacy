@@ -16,6 +16,7 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
+#include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class GURL;
@@ -68,6 +69,16 @@ class WebAppInstallTask : content::WebContentsObserver {
       InstallManager::WebAppInstallDialogCallback dialog_callback,
       InstallManager::OnceInstallCallback callback);
 
+  // Load |launch_url| and do silent background install with
+  // |InstallWebAppFromManifestWithFallback|. Posts |LoadUrl| task to
+  // |url_loader| immediately. Doesn't memorize |url_loader| pointer.
+  void LoadAndInstallWebAppFromManifestWithFallback(
+      const GURL& launch_url,
+      content::WebContents* web_contents,
+      WebAppUrlLoader* url_loader,
+      WebappInstallSource install_source,
+      InstallManager::OnceInstallCallback callback);
+
   // Starts a web app installation process using prefilled
   // |web_application_info| which holds all the data needed for installation.
   // InstallManager doesn't fetch a manifest.
@@ -112,7 +123,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   void CheckInstallPreconditions();
   void RecordInstallEvent(ForInstallableSite for_installable_site);
 
-  // Calling the callback may destroy |this| task. Callers shoudln't work with
+  // Calling the callback may destroy |this| task. Callers shouldn't work with
   // any |this| class members after calling it.
   void CallInstallCallback(const AppId& app_id, InstallResultCode code);
 
@@ -123,6 +134,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   // install_callback_.
   bool ShouldStopInstall() const;
 
+  void OnWebAppUrlLoaded(WebAppUrlLoader::Result result);
   void OnGetWebApplicationInfo(
       bool force_shortcut_app,
       std::unique_ptr<WebApplicationInfo> web_app_info);

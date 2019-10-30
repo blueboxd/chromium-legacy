@@ -109,6 +109,10 @@ Polymer({
     }
 
     if (newRouteId === null) {
+      if (this.selectedChild_ === null) {
+        return;
+      }
+
       this.parentNode.removeChild(this.selectedChild_);
       this.selectedChild_ = null;
       return;

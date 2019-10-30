@@ -764,11 +764,31 @@ void GetMinimumIncrement(AtkValue* atk_value, GValue* value) {
                                  value);
 }
 
+#if defined(ATK_212)
+void SetValue(AtkValue* atk_value, const double new_value) {
+  g_return_if_fail(ATK_VALUE(atk_value));
+
+  AtkObject* atk_object = ATK_OBJECT(atk_value);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return;
+
+  AXActionData data;
+  data.action = ax::mojom::Action::kSetValue;
+  data.value = base::NumberToString(new_value);
+  obj->GetDelegate()->AccessibilityPerformAction(data);
+}
+#endif  // defined(ATK_212)
+
 void Init(AtkValueIface* iface) {
   iface->get_current_value = GetCurrentValue;
   iface->get_maximum_value = GetMaximumValue;
   iface->get_minimum_value = GetMinimumValue;
   iface->get_minimum_increment = GetMinimumIncrement;
+
+#if defined(ATK_212)
+  iface->set_value = SetValue;
+#endif  // defined(ATK_212)
 }
 
 const GInterfaceInfo Info = {reinterpret_cast<GInterfaceInitFunc>(Init),
@@ -3425,10 +3445,8 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
   // If this is a non-web-content text entry, then we need to trigger text
   // change signals when the value changes. This is handled by browser
   // accessibility for web content.
-  if (IsPlainTextField() || !GetDelegate()->IsWebContent()) {
+  if (IsPlainTextField() && !GetDelegate()->IsWebContent())
     UpdateHypertext();
-    return;
-  }
 
   if (!IsRangeValueSupported(GetData()))
     return;

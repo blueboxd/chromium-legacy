@@ -204,16 +204,16 @@ static jboolean JNI_PrefServiceBridge_IsContentSettingEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     int content_settings_type) {
-  // Before we migrate functions over to this central function, we must verify
-  // that the functionality provided below is correct.
-  DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_ADS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING);
   ContentSettingsType type =
       static_cast<ContentSettingsType>(content_settings_type);
+  // Before we migrate functions over to this central function, we must verify
+  // that the functionality provided below is correct.
+  DCHECK(type == ContentSettingsType::JAVASCRIPT ||
+         type == ContentSettingsType::POPUPS ||
+         type == ContentSettingsType::ADS ||
+         type == ContentSettingsType::CLIPBOARD_READ ||
+         type == ContentSettingsType::USB_GUARD ||
+         type == ContentSettingsType::BLUETOOTH_SCANNING);
   return GetBooleanForContentSetting(type);
 }
 
@@ -222,18 +222,21 @@ static void JNI_PrefServiceBridge_SetContentSettingEnabled(
     const JavaParamRef<jobject>& obj,
     int content_settings_type,
     jboolean allow) {
+  ContentSettingsType type =
+      static_cast<ContentSettingsType>(content_settings_type);
+
   // Before we migrate functions over to this central function, we must verify
   // that the new category supports ALLOW/BLOCK pairs and, if not, handle them.
-  DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_ADS ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING);
+  DCHECK(type == ContentSettingsType::JAVASCRIPT ||
+         type == ContentSettingsType::POPUPS ||
+         type == ContentSettingsType::ADS ||
+         type == ContentSettingsType::USB_GUARD ||
+         type == ContentSettingsType::BLUETOOTH_SCANNING);
 
   ContentSetting value = CONTENT_SETTING_BLOCK;
   if (allow) {
-    if (content_settings_type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
-        content_settings_type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING) {
+    if (type == ContentSettingsType::USB_GUARD ||
+        type == ContentSettingsType::BLUETOOTH_SCANNING) {
       value = CONTENT_SETTING_ASK;
     } else {
       value = CONTENT_SETTING_ALLOW;
@@ -242,8 +245,7 @@ static void JNI_PrefServiceBridge_SetContentSettingEnabled(
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
-      static_cast<ContentSettingsType>(content_settings_type), value);
+  host_content_settings_map->SetDefaultContentSetting(type, value);
 }
 
 static void JNI_PrefServiceBridge_SetContentSettingForPattern(
@@ -305,49 +307,49 @@ static void JNI_PrefServiceBridge_SetContentSetting(
 static jboolean JNI_PrefServiceBridge_GetAcceptCookiesEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
+  return GetBooleanForContentSetting(ContentSettingsType::COOKIES);
 }
 
 static jboolean JNI_PrefServiceBridge_GetAcceptCookiesUserModifiable(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return IsContentSettingUserModifiable(CONTENT_SETTINGS_TYPE_COOKIES);
+  return IsContentSettingUserModifiable(ContentSettingsType::COOKIES);
 }
 
 static jboolean JNI_PrefServiceBridge_GetAcceptCookiesManagedByCustodian(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return IsContentSettingManagedByCustodian(CONTENT_SETTINGS_TYPE_COOKIES);
+  return IsContentSettingManagedByCustodian(ContentSettingsType::COOKIES);
 }
 
 static jboolean JNI_PrefServiceBridge_GetAutoplayEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_AUTOPLAY);
+  return GetBooleanForContentSetting(ContentSettingsType::AUTOPLAY);
 }
 
 static jboolean JNI_PrefServiceBridge_GetSensorsEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_SENSORS);
+  return GetBooleanForContentSetting(ContentSettingsType::SENSORS);
 }
 
 static jboolean JNI_PrefServiceBridge_GetSoundEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_SOUND);
+  return GetBooleanForContentSetting(ContentSettingsType::SOUND);
 }
 
 static jboolean JNI_PrefServiceBridge_GetBackgroundSyncEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC);
+  return GetBooleanForContentSetting(ContentSettingsType::BACKGROUND_SYNC);
 }
 
 static jboolean JNI_PrefServiceBridge_GetAutomaticDownloadsEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS);
+  return GetBooleanForContentSetting(ContentSettingsType::AUTOMATIC_DOWNLOADS);
 }
 
 static jboolean JNI_PrefServiceBridge_GetBlockThirdPartyCookiesEnabled(
@@ -493,7 +495,7 @@ static jboolean JNI_PrefServiceBridge_GetSafeBrowsingManaged(
 static jboolean JNI_PrefServiceBridge_GetNotificationsEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  return GetBooleanForContentSetting(ContentSettingsType::NOTIFICATIONS);
 }
 
 static jboolean JNI_PrefServiceBridge_GetNotificationsVibrateEnabled(
@@ -505,31 +507,31 @@ static jboolean JNI_PrefServiceBridge_GetNotificationsVibrateEnabled(
 static jboolean JNI_PrefServiceBridge_GetAllowLocationEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  return GetBooleanForContentSetting(ContentSettingsType::GEOLOCATION);
 }
 
 static jboolean JNI_PrefServiceBridge_GetLocationAllowedByPolicy(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  if (!IsContentSettingManaged(CONTENT_SETTINGS_TYPE_GEOLOCATION))
+  if (!IsContentSettingManaged(ContentSettingsType::GEOLOCATION))
     return false;
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   return content_settings->GetDefaultContentSetting(
-             CONTENT_SETTINGS_TYPE_GEOLOCATION, nullptr) ==
+             ContentSettingsType::GEOLOCATION, nullptr) ==
          CONTENT_SETTING_ALLOW;
 }
 
 static jboolean JNI_PrefServiceBridge_GetAllowLocationUserModifiable(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return IsContentSettingUserModifiable(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  return IsContentSettingUserModifiable(ContentSettingsType::GEOLOCATION);
 }
 
 static jboolean JNI_PrefServiceBridge_GetAllowLocationManagedByCustodian(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return IsContentSettingManagedByCustodian(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  return IsContentSettingManagedByCustodian(ContentSettingsType::GEOLOCATION);
 }
 
 static jboolean JNI_PrefServiceBridge_GetResolveNavigationErrorEnabled(
@@ -724,7 +726,7 @@ static void JNI_PrefServiceBridge_SetAutoplayEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_AUTOPLAY,
+      ContentSettingsType::AUTOPLAY,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
@@ -735,7 +737,7 @@ static void JNI_PrefServiceBridge_SetClipboardEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
+      ContentSettingsType::CLIPBOARD_READ,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
@@ -746,7 +748,7 @@ static void JNI_PrefServiceBridge_SetSensorsEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SENSORS,
+      ContentSettingsType::SENSORS,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
@@ -757,7 +759,7 @@ static void JNI_PrefServiceBridge_SetSoundEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SOUND,
+      ContentSettingsType::SOUND,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 
   if (allow) {
@@ -776,7 +778,7 @@ static void JNI_PrefServiceBridge_SetAllowCookiesEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_COOKIES,
+      ContentSettingsType::COOKIES,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
@@ -787,7 +789,7 @@ static void JNI_PrefServiceBridge_SetBackgroundSyncEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+      ContentSettingsType::BACKGROUND_SYNC,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
@@ -798,7 +800,7 @@ static void JNI_PrefServiceBridge_SetAutomaticDownloadsEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+      ContentSettingsType::AUTOMATIC_DOWNLOADS,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
@@ -840,7 +842,7 @@ static void JNI_PrefServiceBridge_SetAllowLocationEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      ContentSettingsType::GEOLOCATION,
       is_enabled ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
@@ -851,7 +853,7 @@ static void JNI_PrefServiceBridge_SetCameraEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+      ContentSettingsType::MEDIASTREAM_CAMERA,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
@@ -862,7 +864,7 @@ static void JNI_PrefServiceBridge_SetMicEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+      ContentSettingsType::MEDIASTREAM_MIC,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
@@ -873,7 +875,7 @@ static void JNI_PrefServiceBridge_SetNotificationsEnabled(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      ContentSettingsType::NOTIFICATIONS,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
@@ -926,7 +928,8 @@ static void JNI_PrefServiceBridge_MigrateJavascriptPreference(
   bool retval = javascript_pref->GetValue()->GetAsBoolean(&javascript_enabled);
   DCHECK(retval);
   JNI_PrefServiceBridge_SetContentSettingEnabled(
-      env, obj, CONTENT_SETTINGS_TYPE_JAVASCRIPT, javascript_enabled);
+      env, obj, static_cast<int>(ContentSettingsType::JAVASCRIPT),
+      javascript_enabled);
   GetPrefService()->ClearPref(prefs::kWebKitJavascriptEnabled);
 }
 
@@ -941,41 +944,40 @@ static void JNI_PrefServiceBridge_SetPasswordEchoEnabled(
 static jboolean JNI_PrefServiceBridge_GetCameraEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+  return GetBooleanForContentSetting(ContentSettingsType::MEDIASTREAM_CAMERA);
 }
 
 static jboolean JNI_PrefServiceBridge_GetCameraUserModifiable(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return IsContentSettingUserModifiable(
-             CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+      ContentSettingsType::MEDIASTREAM_CAMERA);
 }
 
 static jboolean JNI_PrefServiceBridge_GetCameraManagedByCustodian(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return IsContentSettingManagedByCustodian(
-             CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+      ContentSettingsType::MEDIASTREAM_CAMERA);
 }
 
 static jboolean JNI_PrefServiceBridge_GetMicEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  return GetBooleanForContentSetting(ContentSettingsType::MEDIASTREAM_MIC);
 }
 
 static jboolean JNI_PrefServiceBridge_GetMicUserModifiable(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return IsContentSettingUserModifiable(
-             CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  return IsContentSettingUserModifiable(ContentSettingsType::MEDIASTREAM_MIC);
 }
 
 static jboolean JNI_PrefServiceBridge_GetMicManagedByCustodian(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return IsContentSettingManagedByCustodian(
-             CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+      ContentSettingsType::MEDIASTREAM_MIC);
 }
 
 static void JNI_PrefServiceBridge_SetNetworkPredictionEnabled(
@@ -1153,13 +1155,13 @@ void PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(
 
 // static
 void PrefServiceBridge::GetAndroidPermissionsForContentSetting(
-    ContentSettingsType content_type,
+    ContentSettingsType content_settings_type,
     std::vector<std::string>* out) {
   JNIEnv* env = AttachCurrentThread();
   base::android::AppendJavaStringArrayToStringVector(
       env,
       Java_PrefServiceBridge_getAndroidPermissionsForContentSetting(
-          env, content_type),
+          env, static_cast<int>(content_settings_type)),
       out);
 }
 

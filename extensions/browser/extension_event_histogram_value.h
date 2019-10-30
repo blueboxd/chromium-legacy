@@ -464,6 +464,7 @@ enum HistogramValue {
   PRINTING_METRICS_ON_PRINT_JOB_FINISHED = 442,
   AUTOTESTPRIVATE_ON_CLIPBOARD_DATA_CHANGED = 443,
   AUTOFILL_PRIVATE_ON_PERSONAL_DATA_CHANGED = 444,
+  PRINTING_ON_JOB_STATUS_CHANGED = 445,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

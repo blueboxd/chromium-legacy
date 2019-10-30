@@ -43,6 +43,22 @@ TEST_F(ArcValueEventTest, Trimmer) {
   EXPECT_EQ(ArcValueEvent(107, ArcValueEvent::Type::kMemUsed, 2), events[5]);
 }
 
+TEST_F(ArcValueEventTest, TrimmerResetConstant) {
+  ValueEvents events;
+  {
+    ArcValueEventTrimmer trimmer(&events, ArcValueEvent::Type::kMemUsed);
+    trimmer.MaybeAdd(100 /* timestamp */, 0 /* value */);
+    trimmer.MaybeAdd(200 /* timestamp */, 0 /* value */);
+    EXPECT_EQ(1U, events.size());
+    trimmer.ResetIfConstant(1 /* value */);
+    EXPECT_EQ(1U, events.size());
+    trimmer.ResetIfConstant(0 /* value */);
+    EXPECT_TRUE(events.empty());
+  }
+  // Flush does not change latest state.
+  EXPECT_TRUE(events.empty());
+}
+
 TEST_F(ArcValueEventTest, Serialize) {
   const ValueEvents events{
       {100 /* timestamp */, ArcValueEvent::Type::kMemTotal, 10 /* value */},

@@ -25,7 +25,7 @@
   ios::HostContentSettingsMapFactory::GetForBrowserState(browserState)
       ->SetContentSettingCustomScope(
           exceptionPattern, ContentSettingsPattern::Wildcard(),
-          CONTENT_SETTINGS_TYPE_POPUPS, std::string(), policy);
+          ContentSettingsType::POPUPS, std::string(), policy);
 }
 
 @end

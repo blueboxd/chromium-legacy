@@ -16,6 +16,8 @@
 #include "base/thread_annotations.h"
 #include "base/threading/thread_checker.h"
 #include "gpu/vulkan/buildflags.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "ui/ozone/platform/scenic/sysmem_buffer_manager.h"
 #include "ui/ozone/public/gl_ozone.h"
@@ -28,7 +30,8 @@ class ScenicSurface;
 
 class ScenicSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  explicit ScenicSurfaceFactory(mojom::ScenicGpuHost* gpu_host);
+  explicit ScenicSurfaceFactory(
+      mojo::PendingRemote<mojom::ScenicGpuHost> gpu_host);
   ~ScenicSurfaceFactory() override;
 
   // SurfaceFactoryOzone implementation.
@@ -92,7 +95,7 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
       GUARDED_BY(surface_lock_);
   base::Lock surface_lock_;
 
-  mojom::ScenicGpuHost* const gpu_host_;
+  mojo::Remote<mojom::ScenicGpuHost> const gpu_host_;
   std::unique_ptr<GLOzone> egl_implementation_;
 
   fuchsia::ui::scenic::ScenicPtr scenic_;

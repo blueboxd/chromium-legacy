@@ -49,6 +49,7 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   enum class Source {
     PRINT_PREVIEW,
     ARC,
+    EXTENSION,
   };
 #endif  // defined(OS_CHROMEOS)
 

@@ -65,7 +65,7 @@ class PermissionBubbleViewsInteractiveUITest : public InProcessBrowserTest {
         std::make_unique<test::PermissionRequestManagerTestApi>(browser());
     EXPECT_TRUE(test_api_->manager());
 
-    test_api_->AddSimpleRequest(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+    test_api_->AddSimpleRequest(ContentSettingsType::GEOLOCATION);
 
     EXPECT_TRUE([browser()->window()->GetNativeWindow().GetNativeNSWindow()
                      isKeyWindow]);

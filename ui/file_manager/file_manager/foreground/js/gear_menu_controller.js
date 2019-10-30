@@ -15,6 +15,9 @@ class GearMenuController {
   constructor(
       gearButton, toggleRipple, gearMenu, providersMenu, directoryModel,
       commandHandler, providersModel) {
+    /** @private @const {!cr.ui.MultiMenuButton} */
+    this.gearButton_ = gearButton;
+
     /** @private @const {!FilesToggleRipple} */
     this.toggleRipple_ = toggleRipple;
 
@@ -95,6 +98,10 @@ class GearMenuController {
     if (event.volumeChanged) {
       this.refreshRemainingSpace_(true);
     }  // Show loading caption.
+
+    if (this.gearButton_.isMenuShown()) {
+      this.gearButton_.menu.updateCommands(this.gearButton_);
+    }
   }
 
   /**

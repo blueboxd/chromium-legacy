@@ -213,7 +213,7 @@ bool IsSiteMuted(const TabStripModel& tab_strip, const int index) {
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  return settings->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_SOUND,
+  return settings->GetContentSetting(url, url, ContentSettingsType::SOUND,
                                      std::string()) == CONTENT_SETTING_BLOCK;
 }
 

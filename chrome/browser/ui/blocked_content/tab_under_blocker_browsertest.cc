@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest, ControlledBySetting) {
     HostContentSettingsMap* settings_map =
         HostContentSettingsMapFactory::GetForProfile(browser()->profile());
     settings_map->SetContentSettingDefaultScope(
-        top_level_url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
+        top_level_url, GURL(), ContentSettingsType::POPUPS, std::string(),
         CONTENT_SETTING_ALLOW);
     content::TestNavigationObserver tab_under_observer(opener, 1);
     const GURL cross_origin_url =

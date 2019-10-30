@@ -140,6 +140,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
@@ -851,7 +852,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         Tab tab = getActivityTab();
         if (hasFocus) {
             if (tab != null) {
-                tab.onActivityShown();
+                if (tab.isHidden()) {
+                    tab.show(TabSelectionType.FROM_USER);
+                } else {
+                    // The visible Tab's renderer process may have died after the activity was
+                    // paused. Ensure that it's restored appropriately.
+                    tab.loadIfNeeded();
+                }
                 // When resuming the activity, force an update to the fullscreen state to ensure a
                 // subactivity did not change the fullscreen configuration of this ChromeTab's
                 // renderer in the case where it was shared.
@@ -862,7 +869,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             boolean stopped = ApplicationStatus.getStateForActivity(this) == ActivityState.STOPPED;
             if (stopped) {
                 VrModuleProvider.getDelegate().onActivityHidden(this);
-                if (tab != null) tab.onActivityHidden();
+                if (tab != null) tab.hide(Tab.TabHidingType.ACTIVITY_HIDDEN);
             }
         }
 
@@ -990,7 +997,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         Tab tab = getActivityTab();
         if (!hasWindowFocus()) {
             VrModuleProvider.getDelegate().onActivityHidden(this);
-            if (tab != null) tab.onActivityHidden();
+            if (tab != null) tab.hide(Tab.TabHidingType.ACTIVITY_HIDDEN);
         }
 
         if (GSAState.getInstance(this).isGsaAvailable() && !SysUtils.isLowEndDevice()) {

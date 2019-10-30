@@ -12,13 +12,27 @@ namespace paint_preview {
 
 namespace {
 
+// Supported by MSVC, g++, and clang++. Ensures no gaps in packing.
+#pragma pack(push, 1)
+struct SerializedRectData {
+  uint32_t content_id;
+  int64_t x;
+  int64_t y;
+  int64_t width;
+  int64_t height;
+};
+#pragma pack(pop)
+
 // Serializes a SkPicture representing a subframe as a custom data placeholder.
 sk_sp<SkData> SerializeSubframe(SkPicture* picture, void* ctx) {
   const PictureSerializationContext* context =
       reinterpret_cast<PictureSerializationContext*>(ctx);
-  uint32_t content_id = picture->uniqueID();
-  if (context->count(content_id))
-    return SkData::MakeWithCopy(&content_id, sizeof(content_id));
+  SerializedRectData rect_data = {
+      picture->uniqueID(), picture->cullRect().x(), picture->cullRect().y(),
+      picture->cullRect().width(), picture->cullRect().height()};
+
+  if (context->count(picture->uniqueID()))
+    return SkData::MakeWithCopy(&rect_data, sizeof(rect_data));
   // Defers picture serialization behavior to Skia.
   return nullptr;
 }
@@ -44,23 +58,23 @@ sk_sp<SkData> SerializeTypeface(SkTypeface* typeface, void* ctx) {
   return subset_data;
 }
 
-// Deserializies a SkPicture within the main SkPicture. These represent
-// subframes and require special decoding as they are custom data rather than a
-// valid SkPicture.
+// Deserializies a clip rect for a subframe within the main SkPicture. These
+// represent subframes and require special decoding as they are custom data
+// rather than a valid SkPicture.
 // Precondition: the version of the SkPicture should be checked prior to
 // invocation to ensure deserialization will succeed.
 sk_sp<SkPicture> DeserializeSubframe(const void* data,
                                      size_t length,
                                      void* ctx) {
-  uint32_t content_id;
-  if (length < sizeof(content_id))
+  SerializedRectData rect_data;
+  if (length < sizeof(rect_data))
     return MakeEmptyPicture();
-  memcpy(&content_id, data, sizeof(content_id));
+  memcpy(&rect_data, data, sizeof(rect_data));
   auto* context = reinterpret_cast<DeserializationContext*>(ctx);
-  auto it = context->find(content_id);
-  if (it == context->end() || !it->second)
-    return MakeEmptyPicture();
-  return it->second;
+  context->insert(
+      {rect_data.content_id,
+       gfx::Rect(rect_data.x, rect_data.y, rect_data.width, rect_data.height)});
+  return MakeEmptyPicture();
 }
 
 }  // namespace

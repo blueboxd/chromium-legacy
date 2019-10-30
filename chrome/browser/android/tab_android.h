@@ -101,11 +101,6 @@ class TabAndroid {
   void SetWindowSessionID(SessionID window_id);
   void SetSyncId(int sync_id);
 
-  // Returns true if this tab is currently presented in the context of custom
-  // tabs. Tabs can be moved between different activities so the returned value
-  // might change over the lifetime of the tab.
-  bool IsCurrentlyACustomTab();
-
   // Methods called from Java via JNI -----------------------------------------
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

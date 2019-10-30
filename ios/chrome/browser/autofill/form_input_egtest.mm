@@ -2,24 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "components/autofill/ios/browser/js_suggestion_manager.h"
-#import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
-#import "ios/web/public/test/earl_grey/web_view_actions.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -32,6 +26,7 @@
 using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
+using chrome_test_util::TapWebElementWithId;
 using chrome_test_util::WebViewMatcher;
 
 namespace {
@@ -46,7 +41,8 @@ NSString* GetFocusedElementId() {
                   "  return document.activeElement.id;"
                   "})();";
   NSError* error = nil;
-  NSString* result = chrome_test_util::ExecuteJavaScript(js, &error);
+  NSString* result = [ChromeEarlGreyAppInterface executeJavaScript:js
+                                                             error:&error];
   GREYAssertTrue(!error, @"Unexpected error when executing JavaScript.");
   return result;
 }
@@ -70,10 +66,6 @@ void AssertElementIsFocused(const std::string& element_id) {
 @end
 
 @implementation FormInputTestCase
-
-- (void)tearDown {
-  [super tearDown];
-}
 
 // Tests finding the correct "next" and "previous" form assist controls in the
 // iOS built-in form assist view.
@@ -99,10 +91,7 @@ void AssertElementIsFocused(const std::string& element_id) {
 
     // Brings up the keyboard by tapping on one of the form's field.
     [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
-        performAction:web::WebViewTapElement(
-                          chrome_test_util::GetCurrentWebState(),
-                          [ElementSelector
-                              selectorWithElementID:kFormElementId1])];
+        performAction:TapWebElementWithId(kFormElementId1)];
 
     id<GREYMatcher> nextButtonMatcher =
         chrome_test_util::ButtonWithAccessibilityLabelId(
@@ -145,22 +134,6 @@ void AssertElementIsFocused(const std::string& element_id) {
     [[EarlGrey selectElementWithMatcher:closeButtonMatcher]
         performAction:grey_tap()];
   }
-}
-
-// Tests that trying to programmatically dismiss the keyboard when it isn't
-// visible doesn't crash the browser.
-- (void)testCloseKeyboardWhenNotVisible {
-  FormInputAccessoryViewHandler* accessoryViewDelegate =
-      [[FormInputAccessoryViewHandler alloc] init];
-  GREYAssertNotNil(accessoryViewDelegate,
-                   @"The Accessory View Delegate should not be non nil.");
-  [accessoryViewDelegate closeKeyboardWithoutButtonPress];
-  CRWJSInjectionReceiver* injectionReceiver =
-      chrome_test_util::GetCurrentWebState()->GetJSInjectionReceiver();
-  accessoryViewDelegate.JSSuggestionManager =
-      base::mac::ObjCCastStrict<JsSuggestionManager>(
-          [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
-  [accessoryViewDelegate closeKeyboardWithoutButtonPress];
 }
 
 @end

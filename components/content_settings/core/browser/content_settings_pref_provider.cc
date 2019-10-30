@@ -128,7 +128,7 @@ PrefProvider::PrefProvider(PrefService* prefs,
               info->type(), prefs_, &pref_change_registrar_, info->pref_name(),
               off_the_record_,
               base::Bind(&PrefProvider::Notify, base::Unretained(this)))));
-    } else if (info->type() == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    } else if (info->type() == ContentSettingsType::PLUGINS) {
       // TODO(https://crbug.com/850062): Remove after M71, two milestones after
       // migration of the Flash permissions to ephemeral provider.
       flash_content_settings_pref_ = std::make_unique<ContentSettingsPref>(
@@ -226,7 +226,7 @@ void PrefProvider::ClearAllContentSettingsRules(
   // migration of the Flash permissions to ephemeral provider.
   // |flash_content_settings_pref_| is not null only if Flash permissions are
   // ephemeral and handled in EphemeralProvider.
-  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+  if (content_type == ContentSettingsType::PLUGINS &&
       flash_content_settings_pref_) {
     flash_content_settings_pref_->ClearAllContentSettingsRules();
   }

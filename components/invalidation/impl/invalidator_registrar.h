@@ -27,33 +27,32 @@ class INVALIDATION_EXPORT InvalidatorRegistrar {
   InvalidatorRegistrar();
 
   // It is an error to have registered handlers on destruction.
-  ~InvalidatorRegistrar();
+  virtual ~InvalidatorRegistrar();
 
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
-  // and it must already be registered.
+  // and it must not already be registered.
   void RegisterHandler(InvalidationHandler* handler);
 
   // Stops sending notifications to |handler|.  |handler| must not be NULL, and
-  // it must already be registered.  Note that this doesn't unregister the IDs
-  // associated with |handler|.
+  // it must already be registered.  Note that this doesn't unregister the
+  // topics associated with |handler| from the server.
   void UnregisterHandler(InvalidationHandler* handler);
 
   // Updates the set of topics associated with |handler|.  |handler| must
   // not be NULL, and must already be registered.  A topic must be registered
-  // for at most one handler. If topic is already registered function returns
-  // false.
+  // for at most one handler. If any of the |topics| is already registered
+  // to a different handler, returns false.
   virtual bool UpdateRegisteredTopics(InvalidationHandler* handler,
                                       const Topics& topics) WARN_UNUSED_RESULT;
 
   virtual Topics GetRegisteredTopics(InvalidationHandler* handler) const;
 
-  // Returns the set of all IDs that are registered to some handler (even
-  // handlers that have been unregistered).
+  // Returns the set of all topics that are registered to some handler.
   virtual Topics GetAllRegisteredIds() const;
 
   // Sorts incoming invalidations into a bucket for each handler and then
   // dispatches the batched invalidations to the corresponding handler.
-  // Invalidations for IDs with no corresponding handler are dropped, as are
+  // Invalidations for topics with no corresponding handler are dropped, as are
   // invalidations for handlers that are not added.
   void DispatchInvalidationsToHandlers(
       const TopicInvalidationMap& invalidation_map);
@@ -74,21 +73,18 @@ class INVALIDATION_EXPORT InvalidatorRegistrar {
 
   // Gets a new map for the name of invalidator handlers and their
   // objects id. This is used by the InvalidatorLogger to be able
-  // to display every registered handlers and its objectsIds.
+  // to display every registered handler and its topics.
   std::map<std::string, Topics> GetSanitizedHandlersIdsMap();
 
   bool IsHandlerRegistered(const InvalidationHandler* handler) const;
-  bool HasRegisteredHandlers() const;
 
   // Needed for death tests.
   void DetachFromThreadForTest();
 
  private:
-  typedef std::map<InvalidationHandler*, Topics> HandlerTopicsMap;
-
   base::ThreadChecker thread_checker_;
   base::ObserverList<InvalidationHandler, true>::Unchecked handlers_;
-  HandlerTopicsMap handler_to_topics_map_;
+  std::map<InvalidationHandler*, Topics> handler_to_topics_map_;
   InvalidatorState state_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidatorRegistrar);

@@ -14,7 +14,7 @@
 BackgroundFetchPermissionContext::BackgroundFetchPermissionContext(
     Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH,
+                            ContentSettingsType::BACKGROUND_FETCH,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 bool BackgroundFetchPermissionContext::IsRestrictedToSecureOrigins() const {
@@ -58,7 +58,7 @@ ContentSetting BackgroundFetchPermissionContext::GetPermissionStatusInternal(
   // {CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK, CONTENT_SETTING_BLOCK}.
   return host_content_settings_map->GetContentSetting(
       requesting_origin, requesting_origin,
-      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+      ContentSettingsType::AUTOMATIC_DOWNLOADS,
       std::string() /* resource_identifier */);
 }
 

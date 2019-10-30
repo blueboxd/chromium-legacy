@@ -238,6 +238,30 @@ var valueAttributes = {
     scale: 1.0 / 1000.0,
     width: 1.0
   },
+  // kCpuPower.
+  10: {
+    color: '#dd2c00',
+    minRange: 0.0,
+    name: 'CPU milli-watts.',
+    scale: 1.0,
+    width: 1.0
+  },
+  // kGpuPower.
+  11: {
+    color: '#dd2c00',
+    minRange: 0.0,
+    name: 'GPU milli-watts.',
+    scale: 1.0,
+    width: 1.0
+  },
+  // kMemoryPower.
+  12: {
+    color: '#dd2c00',
+    minRange: 0.0,
+    name: 'Memory milli-watts.',
+    scale: 1.0,
+    width: 1.0
+  },
 };
 
 /**
@@ -1669,6 +1693,9 @@ function setGraphicBuffersModel(model) {
       [new Events(
           model.system.memory, 9 /* kCpuFrequency */, 9 /* kCpuFrequency */)],
       true /* smooth */);
+  cpusBands.addChartSources(
+      [new Events(model.system.memory, 10 /* kCpuPower */, 10 /* kCpuPower */)],
+      true /* smooth */);
   cpusBands.setVSync(vsyncEvents);
 
   var memoryTitle =
@@ -1697,6 +1724,10 @@ function setGraphicBuffersModel(model) {
   memoryBands.addChartSources(
       [new Events(model.system.memory, 6 /* kGemSize */, 6 /* kGemSize */)],
       true /* smooth */);
+  memoryBands.addChartSources(
+      [new Events(
+          model.system.memory, 12 /* kMemoryPower */, 12 /* kMemoryPower */)],
+      true /* smooth */);
   memoryBands.setVSync(vsyncEvents);
 
   var chromeTitle =
@@ -1721,6 +1752,9 @@ function setGraphicBuffersModel(model) {
       [new Events(
           model.system.memory, 7 /* kGpuFrequency */, 7 /* kGpuFrequency */)],
       false /* smooth */);
+  chromeBands.addChartSources(
+      [new Events(model.system.memory, 11 /* kGpuPower */, 11 /* kGpuPower */)],
+      true /* smooth */);
 
 
   var androidTitle =

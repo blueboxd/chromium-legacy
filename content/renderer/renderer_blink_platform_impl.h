@@ -126,10 +126,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const media::AudioSourceParameters& params) override;
   viz::ContextProvider* SharedMainThreadContextProvider() override;
   bool RTCSmoothnessAlgorithmEnabled() override;
-  std::unique_ptr<blink::WebRTCPeerConnectionHandler>
-  CreateRTCPeerConnectionHandler(
-      blink::WebRTCPeerConnectionHandlerClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() override;
   base::Optional<double> GetWebRtcMaxCaptureFrameRate() override;
   scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(
@@ -152,8 +148,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                                     uint16_t* udp_max_port,
                                     bool* allow_mdns_obfuscation) override;
   base::Optional<int> GetAgcStartupMinimumVolume() override;
-  void TrackGetUserMedia(
-      const blink::WebUserMediaRequest& web_request) override;
   bool IsWebRtcHWH264DecodingEnabled(
       webrtc::VideoCodecType video_coded_type) override;
   bool IsWebRtcHWEncodingEnabled() override;

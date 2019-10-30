@@ -80,6 +80,9 @@ void CompositingInputsUpdater::ApplyAncestorInfoToSelfAndAncestorsRecursively(
                                                  info);
   geometry_map_.PushMappingsToAncestor(layer, layer->Parent());
   UpdateAncestorInfo(layer, update_type, info);
+  if (layer != compositing_inputs_root_ &&
+      (layer->IsRootLayer() || layer->GetLayoutObject().HasOverflowClip()))
+    info.last_overflow_clip_layer = layer;
 }
 
 void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
@@ -130,6 +133,8 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
     geometry_map_.PushMappingsToAncestor(layer, layer->Parent());
     UpdateAncestorInfo(layer, update_type, info);
   }
+  if (layer->IsRootLayer() || layout_object.HasOverflowClip())
+    info.last_overflow_clip_layer = layer;
 
   PaintLayerCompositor* compositor =
       layer->GetLayoutObject().View()->Compositor();
@@ -249,9 +254,6 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
       enclosing_stacking_composited_layer;
   info.enclosing_squashing_composited_layer =
       enclosing_squashing_composited_layer;
-
-  if (layer->IsRootLayer() || layout_object.HasOverflowClip())
-    info.last_overflow_clip_layer = layer;
 
   // Handles sibling scroll problem, i.e. a non-stacking context scroller
   // needs to propagate scroll to its descendants that are siblings in

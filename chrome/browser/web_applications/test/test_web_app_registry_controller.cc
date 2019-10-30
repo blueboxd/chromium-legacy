@@ -53,7 +53,11 @@ void TestWebAppRegistryController::UnregisterAll() {
 }
 
 void TestWebAppRegistryController::InstallWebAppsAfterSync(
-    std::vector<WebApp*> web_apps) {}
+    std::vector<WebApp*> web_apps,
+    RepeatingInstallCallback callback) {
+  for (WebApp* web_app : web_apps)
+    callback.Run(web_app->app_id(), InstallResultCode::kSuccessNewInstall);
+}
 
 void TestWebAppRegistryController::UninstallWebAppsAfterSync(
     std::vector<std::unique_ptr<WebApp>> web_apps) {}

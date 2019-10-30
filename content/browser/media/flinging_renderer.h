@@ -48,7 +48,7 @@ class CONTENT_EXPORT FlingingRenderer : public media::Renderer,
                   media::RendererClient* client,
                   media::PipelineStatusCallback init_cb) override;
   void SetCdm(media::CdmContext* cdm_context,
-              const media::CdmAttachedCB& cdm_attached_cb) override;
+              media::CdmAttachedCB cdm_attached_cb) override;
   void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
   void SetPlaybackRate(double playback_rate) override;

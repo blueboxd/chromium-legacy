@@ -111,7 +111,6 @@ class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
-class WebRTCPeerConnectionHandler;
 class WebRemotePlaybackClient;
 struct WebResourceTimingInfo;
 class WebServiceWorkerProvider;
@@ -345,9 +344,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const blink::WebVector<WebContentSecurityPolicy>&) {}
 
   virtual void DidChangeFrameOwnerProperties(HTMLFrameOwnerElement*) {}
-
-  virtual void DispatchWillStartUsingPeerConnectionHandler(
-      WebRTCPeerConnectionHandler*) {}
 
   virtual bool ShouldBlockWebGL() { return false; }
 

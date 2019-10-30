@@ -1210,7 +1210,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
           current_browser()->profile());
   GURL server_root = embedded_test_server()->GetURL("/");
   content_settings_map->SetContentSettingDefaultScope(
-      server_root, server_root, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+      server_root, server_root, ContentSettingsType::PLUGINS, std::string(),
       CONTENT_SETTING_ALLOW);
 
   PrerenderTestURL("/prerender/prerender_plugin_delay_load.html",
@@ -1234,7 +1234,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPluginPowerSaver) {
           current_browser()->profile());
   GURL server_root = embedded_test_server()->GetURL("/");
   content_settings_map->SetContentSettingDefaultScope(
-      server_root, server_root, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+      server_root, server_root, ContentSettingsType::PLUGINS, std::string(),
       CONTENT_SETTING_ALLOW);
 
   PrerenderTestURL("/prerender/prerender_plugin_power_saver.html",
@@ -1274,7 +1274,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
           current_browser()->profile());
   GURL server_root = embedded_test_server()->GetURL("/");
   content_settings_map->SetContentSettingDefaultScope(
-      server_root, server_root, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+      server_root, server_root, ContentSettingsType::PLUGINS, std::string(),
       CONTENT_SETTING_ALLOW);
 
   PrerenderTestURL("/prerender/prerender_iframe_plugin_delay_load.html",

@@ -2686,7 +2686,7 @@ public class CustomTabActivityTest {
                                    instanceof CustomTabDelegateFactory);
         assertEquals("The tab should never be hidden during the reparenting process", 0,
                 tabHiddenHelper.getCallCount());
-        Assert.assertFalse(tabToBeReparented.isCurrentlyACustomTab());
+        Assert.assertFalse(TabTestUtils.isCustomTab(tabToBeReparented));
         tabToBeReparented.removeObserver(observer);
         RewindableIterator<TabObserver> observers = TabTestUtils.getTabObservers(tabToBeReparented);
         while (observers.hasNext()) {

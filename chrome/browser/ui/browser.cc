@@ -1296,7 +1296,7 @@ bool Browser::ShouldAllowRunningInsecureContent(
         HostContentSettingsMapFactory::GetForProfile(profile);
     return content_settings->GetContentSetting(
                web_contents->GetLastCommittedURL(), GURL(),
-               CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+               ContentSettingsType::MIXEDSCRIPT,
                std::string()) == CONTENT_SETTING_ALLOW;
   }
   MixedContentSettingsTabHelper* mixed_content_settings =
@@ -1310,7 +1310,7 @@ bool Browser::ShouldAllowRunningInsecureContent(
     TabSpecificContentSettings* tab_settings =
         TabSpecificContentSettings::FromWebContents(web_contents);
     DCHECK(tab_settings);
-    tab_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
+    tab_settings->OnContentBlocked(ContentSettingsType::MIXEDSCRIPT);
   }
   return allowed;
 }
@@ -1927,7 +1927,7 @@ void Browser::RequestPpapiBrokerPermission(
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
   ContentSetting setting = content_settings->GetContentSetting(
-      url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string());
+      url, url, ContentSettingsType::PPAPI_BROKER, std::string());
 
   if (setting == CONTENT_SETTING_ASK) {
     base::RecordAction(base::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));

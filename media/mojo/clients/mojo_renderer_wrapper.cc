@@ -37,8 +37,8 @@ void MojoRendererWrapper::SetVolume(float volume) {
 }
 
 void MojoRendererWrapper::SetCdm(media::CdmContext* cdm_context,
-                                 const media::CdmAttachedCB& cdm_attached_cb) {
-  mojo_renderer_->SetCdm(cdm_context, cdm_attached_cb);
+                                 media::CdmAttachedCB cdm_attached_cb) {
+  mojo_renderer_->SetCdm(cdm_context, std::move(cdm_attached_cb));
 }
 
 base::TimeDelta MojoRendererWrapper::GetMediaTime() {

@@ -46,7 +46,8 @@ public class SigninPromoController {
     private static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS =
             "signin_promo_impressions_count_settings";
 
-    private static final int MAX_IMPRESSIONS_BOOKMARKS = 20;
+    @VisibleForTesting
+    public static final int MAX_IMPRESSIONS_BOOKMARKS = 20;
     private static final int MAX_IMPRESSIONS_SETTINGS = 20;
 
     private @Nullable DisplayableProfileData mProfileData;
@@ -352,7 +353,14 @@ public class SigninPromoController {
     }
 
     @VisibleForTesting
-    public static int getMaxImpressionsBookmarksForTests() {
-        return MAX_IMPRESSIONS_BOOKMARKS;
+    public static void setSigninPromoImpressionsCountBookmarksForTest(int count) {
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+        preferences.edit().putInt(SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS, count).apply();
+    }
+
+    @VisibleForTesting
+    public static int getSigninPromoImpressionsCountBookmarksForTest() {
+        return ContextUtils.getAppSharedPreferences().getInt(
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS, 0);
     }
 }

@@ -437,6 +437,8 @@ struct LinkedHashSetTraits
   static const WeakHandlingFlag kWeakHandlingFlag =
       ValueTraits::kWeakHandlingFlag;
 
+  static const bool kIsWeak = ValueTraits::kIsWeak;
+
   static constexpr bool kHasMovingCallback = true;
 
   template <typename HashTable, typename Visitor>

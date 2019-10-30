@@ -1049,11 +1049,7 @@ void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
     last_ancestor = current;
     current->child_needs_compositing_inputs_update_ = true;
     if (Compositor() &&
-        current->GetLayoutObject().ShouldApplyStrictContainment() &&
-        // TODO(rego) this condition should be removeable but doing so causes
-        // security asan errors (crbug.com/985646) as well as ubsan errors
-        // (crbug.com/986008).
-        !current->GetLayoutObject().IsStickyPositioned())
+        current->GetLayoutObject().ShouldApplyStrictContainment())
       break;
   }
 

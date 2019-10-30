@@ -38,15 +38,14 @@
 namespace web_app {
 
 // static
-std::unique_ptr<web_app::AppBrowserController>
+std::unique_ptr<AppBrowserController>
 AppBrowserController::MaybeCreateWebAppController(Browser* browser) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  const AppId app_id =
-      web_app::GetAppIdFromApplicationName(browser->app_name());
+  const AppId app_id = GetAppIdFromApplicationName(browser->app_name());
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    auto* provider = web_app::WebAppProvider::Get(browser->profile());
+    auto* provider = WebAppProvider::Get(browser->profile());
     if (provider && provider->registrar().IsInstalled(app_id))
-      return std::make_unique<web_app::WebAppBrowserController>(browser);
+      return std::make_unique<WebAppBrowserController>(browser);
   }
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(browser->profile())
@@ -55,7 +54,7 @@ AppBrowserController::MaybeCreateWebAppController(Browser* browser) {
     if (base::FeatureList::IsEnabled(
             features::kDesktopPWAsUnifiedUiController) &&
         extension->from_bookmark()) {
-      return std::make_unique<web_app::WebAppBrowserController>(browser);
+      return std::make_unique<WebAppBrowserController>(browser);
     }
     return std::make_unique<extensions::HostedAppBrowserController>(browser);
   }
@@ -217,8 +216,7 @@ bool AppBrowserController::IsHostedApp() const {
   return false;
 }
 
-web_app::WebAppBrowserController*
-AppBrowserController::AsWebAppBrowserController() {
+WebAppBrowserController* AppBrowserController::AsWebAppBrowserController() {
   return nullptr;
 }
 
@@ -240,7 +238,7 @@ bool AppBrowserController::IsForSystemWebApp() const {
   if (!GetAppId())
     return false;
 
-  return web_app::WebAppProvider::Get(browser()->profile())
+  return WebAppProvider::Get(browser()->profile())
       ->system_web_app_manager()
       .IsSystemWebApp(*GetAppId());
 }

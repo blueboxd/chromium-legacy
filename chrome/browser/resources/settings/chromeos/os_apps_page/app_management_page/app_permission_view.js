@@ -44,8 +44,9 @@ Polymer({
     }
 
     const appId = settings.getQueryParameters().get('id');
+    const apps = this.getState().apps;
 
-    if (!this.getState().apps[appId]) {
+    if (!apps[appId] && Object.entries(apps).length !== 0) {
       // TODO(crbug.com/1010398): this call does not open the main page.
       app_management.util.openMainPage();
       return;

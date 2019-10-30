@@ -76,7 +76,7 @@ class SiteEngagementChangeWaiter : public content_settings::Observer {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const std::string& resource_identifier) override {
-    if (content_type == CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT)
+    if (content_type == ContentSettingsType::SITE_ENGAGEMENT)
       Proceed();
   }
 

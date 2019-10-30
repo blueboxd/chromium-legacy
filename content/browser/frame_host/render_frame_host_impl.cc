@@ -1358,7 +1358,7 @@ RenderFrameHostImpl::PauseSubresourceLoading() {
 
 void RenderFrameHostImpl::ExecuteMediaPlayerActionAtLocation(
     const gfx::Point& location,
-    const blink::WebMediaPlayerAction& action) {
+    const blink::MediaPlayerAction& action) {
   gfx::PointF point_in_view = GetView()->TransformRootPointToViewCoordSpace(
       gfx::PointF(location.x(), location.y()));
   Send(new FrameMsg_MediaPlayerActionAt(routing_id_, point_in_view, action));
@@ -3718,8 +3718,11 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
   // TODO(hajimehoshi): Record the 'race condition' by JavaScript execution when
   // |is_in_back_forward_cache()| is false.
   BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
-  if (is_in_back_forward_cache() && metrics)
-    metrics->MarkNotRestoredWithReason(reason);
+  if (is_in_back_forward_cache() && metrics) {
+    BackForwardCacheMetrics::NotRestoredReasons reasons;
+    reasons.set(static_cast<size_t>(reason));
+    metrics->MarkNotRestoredWithReasons(reasons);
+  }
 
   if (!in_back_forward_cache) {
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(

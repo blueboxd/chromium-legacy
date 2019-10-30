@@ -10,22 +10,13 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "chrome/browser/sharing/response_callback_helper.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
-
-namespace chrome_browser_sharing {
-enum MessageType : int;
-class ResponseMessage;
-}  // namespace chrome_browser_sharing
 
 // Class to managae ack message and notify observers.
 class AckMessageHandler : public SharingMessageHandler {
  public:
-  using AckReceivedCallback = base::RepeatingCallback<void(
-      chrome_browser_sharing::MessageType message_type,
-      std::string message_id,
-      std::unique_ptr<chrome_browser_sharing::ResponseMessage> response)>;
-
-  explicit AckMessageHandler(AckReceivedCallback ack_received_callback);
+  explicit AckMessageHandler(ResponseCallbackHelper* response_callback_helper);
   ~AckMessageHandler() override;
 
   // SharingMessageHandler implementation:
@@ -33,7 +24,7 @@ class AckMessageHandler : public SharingMessageHandler {
                  SharingMessageHandler::DoneCallback done_callback) override;
 
  private:
-  AckReceivedCallback ack_received_callback_;
+  ResponseCallbackHelper* response_callback_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AckMessageHandler);
 };

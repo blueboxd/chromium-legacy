@@ -4,11 +4,12 @@
 
 #include "third_party/blink/renderer/modules/vr/vr_frame_data.h"
 
+#include <cmath>
+
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/vr/vr_eye_parameters.h"
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
-
-#include <cmath>
+#include "third_party/blink/renderer/platform/float_point_3d.h"
 
 namespace {
 
@@ -48,10 +49,10 @@ void ProjectionFromFieldOfView(blink::DOMFloat32Array* out_array,
 }
 
 // Create a matrix from a rotation and translation.
-void MatrixfromRotationTranslation(
+void MatrixFromRotationTranslation(
     blink::DOMFloat32Array* out_array,
     const base::Optional<gfx::Quaternion>& rotation,
-    const base::Optional<blink::WebFloatPoint3D>& translation) {
+    const base::Optional<blink::FloatPoint3D>& translation) {
   // Quaternion math
   float x = rotation ? rotation->x() : 0.0f;
   float y = rotation ? rotation->y() : 0.0f;
@@ -84,9 +85,9 @@ void MatrixfromRotationTranslation(
   out[9] = yz - wx;
   out[10] = 1 - (xx + yy);
   out[11] = 0;
-  out[12] = translation ? translation->x : 0.0f;
-  out[13] = translation ? translation->y : 0.0f;
-  out[14] = translation ? translation->z : 0.0f;
+  out[12] = translation ? translation->X() : 0.0f;
+  out[13] = translation ? translation->Y() : 0.0f;
+  out[14] = translation ? translation->Z() : 0.0f;
   out[15] = 1;
 }
 
@@ -213,10 +214,10 @@ bool VRFrameData::Update(const device::mojom::blink::VRPosePtr& pose,
 
   // Build the view matrices
   left_view_matrix_ = EnsureMatrix(left_view_matrix_);
-  MatrixfromRotationTranslation(left_view_matrix_, pose->orientation,
+  MatrixFromRotationTranslation(left_view_matrix_, pose->orientation,
                                 pose->position);
   right_view_matrix_ = EnsureMatrix(right_view_matrix_);
-  MatrixfromRotationTranslation(right_view_matrix_, pose->orientation,
+  MatrixFromRotationTranslation(right_view_matrix_, pose->orientation,
                                 pose->position);
 
   if (left_eye && right_eye) {

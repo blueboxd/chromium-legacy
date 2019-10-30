@@ -156,12 +156,12 @@ public class NotificationsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setCategoryEnabled(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, false);
+                    ContentSettingsType.NOTIFICATIONS, false);
             fragment.onResume();
             Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(false));
 
             PrefServiceBridge.getInstance().setCategoryEnabled(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, true);
+                    ContentSettingsType.NOTIFICATIONS, true);
             fragment.onResume();
             Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(true));
         });
@@ -176,6 +176,6 @@ public class NotificationsPreferencesTest {
     /** Gets the summary text that should be used for site specific notifications. */
     private String getNotificationsSummary(boolean enabled) {
         return mActivity.getResources().getString(ContentSettingsResources.getCategorySummary(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, enabled));
+                ContentSettingsType.NOTIFICATIONS, enabled));
     }
 }

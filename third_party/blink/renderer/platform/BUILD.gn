@@ -1636,8 +1636,6 @@ jumbo_static_library("test_support") {
     "testing/testing_platform_support.h",
     "testing/testing_platform_support_with_mock_scheduler.cc",
     "testing/testing_platform_support_with_mock_scheduler.h",
-    "testing/testing_platform_support_with_web_rtc.cc",
-    "testing/testing_platform_support_with_web_rtc.h",
     "testing/unit_test_helpers.cc",
     "testing/unit_test_helpers.h",
     "testing/url_test_helpers.cc",

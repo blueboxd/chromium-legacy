@@ -70,13 +70,13 @@ class FlashPermissionBrowserTest : public PermissionsBrowserTest {
     // This browser test verifies the Flash permission prompt behavior. The
     // permission prompt only appears when Flash permission is set to DETECT.
     HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-        ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+        ->SetDefaultContentSetting(ContentSettingsType::PLUGINS,
                                    CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
   }
 
   void TearDownOnMainThread() override {
     HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-        ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+        ->SetDefaultContentSetting(ContentSettingsType::PLUGINS,
                                    CONTENT_SETTING_DEFAULT);
 
     PermissionsBrowserTest::TearDownOnMainThread();

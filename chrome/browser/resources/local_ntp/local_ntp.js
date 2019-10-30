@@ -47,6 +47,9 @@ const AutocompleteResultStatus = {
   SKIPPED: 1,
 };
 
+/** @type {string} */
+let lastInput;
+
 /** @typedef {{inline: string, text: string}} */
 let RealboxOutput;
 
@@ -1072,39 +1075,35 @@ function onDeleteAutocompleteMatch(result) {
     return;
   }
 
-  const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
-  const selected = matchEls.findIndex(matchEl => {
-    return matchEl.classList.contains(CLASSES.SELECTED);
-  });
-
-  const wasFocused =
-      matchEls[selected] && matchEls[selected].contains(document.activeElement);
+  $(IDS.REALBOX).focus();
 
   populateAutocompleteMatches(result.matches);
 
   if (result.matches.length === 0) {
-    if (wasFocused) {
-      $(IDS.REALBOX).focus();
-    }
+    updateRealboxOutput({inline: '', text: ''});
     return;
   }
 
-  const newMatchEls = Array.from($(IDS.REALBOX_MATCHES).children);
-  const newSelected = Math.max(Math.min(newMatchEls.length - 1, selected), 0);
-  const newSelectedEl = newMatchEls[newSelected];
+  const firstMatch = autocompleteMatches[0];
+  if (firstMatch.allowedToBeDefaultMatch) {
+    const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
+    selectMatchEl(matchEls[0]);
 
-  selectMatchEl(newSelectedEl);
-
-  if (wasFocused) {
-    const removeIcon = newSelectedEl.querySelector(`.${CLASSES.REMOVE_ICON}`);
-    assert(removeIcon || newSelectedEl).focus();
+    const fill = firstMatch.fillIntoEdit;
+    const inline = firstMatch.inlineAutocompletion;
+    const textEnd = fill.length - inline.length;
+    updateRealboxOutput({
+      moveCursorToEnd: true,
+      inline: inline,
+      text: assert(fill.substr(0, textEnd)),
+    });
+  } else {
+    updateRealboxOutput({
+      moveCursorToEnd: true,
+      inline: '',
+      text: lastInput,
+    });
   }
-
-  updateRealboxOutput({
-    moveCursorToEnd: true,
-    inline: '',
-    text: assert(autocompleteMatches[newSelected].fillIntoEdit),
-  });
 }
 
 /**
@@ -1208,7 +1207,7 @@ function onRealboxInput() {
   updateRealboxOutput({inline: '', text: realboxValue});
 
   if (realboxValue.trim()) {
-    window.chrome.embeddedSearch.searchBox.queryAutocomplete(realboxValue);
+    queryAutocomplete(realboxValue);
   } else {
     setRealboxMatchesVisible(false);
     setRealboxWrapperListenForKeydown(false);
@@ -1219,7 +1218,7 @@ function onRealboxInput() {
 /** @param {Event} e */
 function onRealboxWrapperFocusIn(e) {
   if (e.target.matches(`#${IDS.REALBOX}`) && !$(IDS.REALBOX).value) {
-    window.chrome.embeddedSearch.searchBox.queryAutocomplete('');
+    queryAutocomplete('');
   } else if (e.target.matches(`#${IDS.REALBOX_MATCHES} *`)) {
     let target = e.target;
     while (target && target.nodeName !== 'A') {
@@ -1274,7 +1273,7 @@ function onRealboxWrapperKeydown(e) {
         inline: lastOutput.inline.substr(1),
         text: assert(lastOutput.text + key),
       });
-      window.chrome.embeddedSearch.searchBox.queryAutocomplete(lastOutput.text);
+      queryAutocomplete(lastOutput.text);
       e.preventDefault();
       return;
     }
@@ -1526,6 +1525,14 @@ function populateAutocompleteMatches(matches) {
   setRealboxMatchesVisible(hasMatches);
   setRealboxWrapperListenForKeydown(hasMatches);
   setAutocompleteMatches(matches);
+}
+
+/**
+ * @param {string} input
+ */
+function queryAutocomplete(input) {
+  lastInput = input;
+  window.chrome.embeddedSearch.searchBox.queryAutocomplete(input);
 }
 
 /**

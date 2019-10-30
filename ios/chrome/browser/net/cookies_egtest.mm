@@ -8,6 +8,7 @@
 
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -109,6 +110,13 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 // incognito tabs but not available in normal tabs. Cookies set in incognito
 // tabs are also deleted when all incognito tabs are closed.
 - (void)testClearIncognitoFromMain {
+#if defined(CHROME_EARL_GREY_2)
+  // TODO(crbug.com/1019670): This test fails on iOS 12 under EG2.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
+  }
+#endif
+
   // Loads a dummy page in normal tab. Sets a normal test cookie. Verifies that
   // the incognito test cookie is not found.
   [ChromeEarlGrey
@@ -156,6 +164,13 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 // incognito tabs and then when new incognito tab is created the cookie will
 // not reappear.
 - (void)testClearIncognitoFromIncognito {
+#if defined(CHROME_EARL_GREY_2)
+  // TODO(crbug.com/1019670): This test fails on iOS 12 under EG2.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
+  }
+#endif
+
   // Loads a page in normal tab.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
@@ -197,6 +212,13 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 
 // Tests that a cookie set in normal tab is not available in an incognito tab.
 - (void)testSwitchToIncognito {
+#if defined(CHROME_EARL_GREY_2)
+  // TODO(crbug.com/1019670): This test fails on iOS 12 under EG2.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
+  }
+#endif
+
   // Sets cookie in normal tab.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalSetCookie)];
@@ -231,6 +253,13 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 // Tests that a cookie set in incognito tab is only available in another
 // incognito tab. They are not available in a normal tab.
 - (void)testSwitchToMain {
+#if defined(CHROME_EARL_GREY_2)
+  // TODO(crbug.com/1019670): This test fails on iOS 12 under EG2.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
+  }
+#endif
+
   // Loads a page in normal tab and then switches to a new incognito tab. Sets
   // cookie in incognito tab.
   [ChromeEarlGrey
@@ -267,6 +296,13 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 
 // Tests that a cookie set in a normal tab can be found in another normal tab.
 - (void)testShareCookiesBetweenTabs {
+#if defined(CHROME_EARL_GREY_2)
+  // TODO(crbug.com/1019670): This test fails on iOS 12 under EG2.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
+  }
+#endif
+
   // Loads page and sets cookie in first normal tab.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalSetCookie)];

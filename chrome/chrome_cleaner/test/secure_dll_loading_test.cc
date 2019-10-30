@@ -80,19 +80,16 @@ void PrintChildProcessLogs(const base::FilePath& log_dir,
 class SecureDLLLoadingTest : public testing::TestWithParam<base::string16> {
  protected:
   void SetUp() override {
+    ASSERT_TRUE(log_dir_.CreateUniqueTempDir());
     base::FilePath out_dir;
     ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &out_dir));
     exe_path_ = out_dir.Append(GetParam() + L".exe");
     empty_dll_path_ = out_dir.Append(chrome_cleaner::kEmptyDll);
   }
 
-  base::Process LaunchProcess(bool disable_secure_dll_loading) {
-    base::ScopedTempDir log_dir;
-    if (!log_dir.CreateUniqueTempDir()) {
-      ADD_FAILURE() << "Precondition failed: could not create log dir";
-      return base::Process();
-    }
+  void TearDown() override { ASSERT_TRUE(log_dir_.Delete()); }
 
+  base::Process LaunchProcess(bool disable_secure_dll_loading) {
     std::unique_ptr<base::WaitableEvent> init_done_notifier =
         chrome_cleaner::CreateInheritableEvent(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -105,7 +102,7 @@ class SecureDLLLoadingTest : public testing::TestWithParam<base::string16> {
             base::win::HandleToUint32(init_done_notifier->handle())));
     command_line.AppendSwitch(chrome_cleaner::kLoadEmptyDLLSwitch);
     command_line.AppendSwitchPath(chrome_cleaner::kTestLoggingPathSwitch,
-                                  log_dir.GetPath());
+                                  log_dir_.GetPath());
 
 #if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
     if (disable_secure_dll_loading)
@@ -136,7 +133,7 @@ class SecureDLLLoadingTest : public testing::TestWithParam<base::string16> {
       PLOG_IF(ERROR, !::GetExitCodeProcess(process.Handle(), &exit_code));
       ADD_FAILURE() << "Process exited with " << exit_code
                     << " before signalling init_done_notifier";
-      PrintChildProcessLogs(log_dir.GetPath(), GetParam());
+      PrintChildProcessLogs(log_dir_.GetPath(), GetParam());
     } else {
       EXPECT_EQ(wait_result, WAIT_OBJECT_0);
     }
@@ -157,6 +154,7 @@ class SecureDLLLoadingTest : public testing::TestWithParam<base::string16> {
   }
 
  private:
+  base::ScopedTempDir log_dir_;
   base::FilePath exe_path_;
   base::FilePath empty_dll_path_;
 };

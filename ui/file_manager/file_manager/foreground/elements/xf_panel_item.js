@@ -283,9 +283,6 @@ class PanelItem extends HTMLElement {
     let indicator = null;
     /** @type {Element} */
     let textNode;
-    if (oldValue === newValue) {
-      return;
-    }
     // TODO(adanilo) Chop out each attribute handler into a function.
     switch (name) {
       case 'count':

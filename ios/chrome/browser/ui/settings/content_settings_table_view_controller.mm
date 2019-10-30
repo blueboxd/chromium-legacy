@@ -98,7 +98,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         ios::HostContentSettingsMapFactory::GetForBrowserState(browserState);
     _disablePopupsSetting = [[ContentSettingBackedBoolean alloc]
         initWithHostContentSettingsMap:settingsMap
-                             settingID:CONTENT_SETTINGS_TYPE_POPUPS
+                             settingID:ContentSettingsType::POPUPS
                               inverted:YES];
     [_disablePopupsSetting setObserver:self];
   }

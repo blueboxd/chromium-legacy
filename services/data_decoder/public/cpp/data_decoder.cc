@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
+#include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/json/json_reader.h"
@@ -28,51 +29,56 @@ namespace {
 constexpr base::TimeDelta kServiceProcessIdleTimeout{
     base::TimeDelta::FromSeconds(5)};
 
-#if !defined(OS_ANDROID)
-// Encapsulates an in-process JSON parsing request. This provides shared
+// Encapsulates an in-process data decoder parsing request. This provides shared
 // ownership of the caller's callback so that it may be invoked exactly once by
-// *either* the successful response handler *or* the JsonParser's disconnection
-// handler. This also owns a Remote<mojom::JsonParser> which is kept alive for
-// the duration of the request.
-class ValueParseRequest : public base::RefCounted<ValueParseRequest> {
+// *either* the successful response handler *or* the parsers's disconnection
+// handler. This also owns a Remote<T> which is kept alive for the duration of
+// the request.
+template <typename T>
+class ValueParseRequest : public base::RefCounted<ValueParseRequest<T>> {
  public:
   explicit ValueParseRequest(DataDecoder::ValueParseCallback callback)
       : callback_(std::move(callback)) {}
 
-  mojo::Remote<mojom::JsonParser>& json_parser() { return json_parser_; }
+  mojo::Remote<T>& remote() { return remote_; }
   DataDecoder::ValueParseCallback& callback() { return callback_; }
+
+  // Creates a pipe and binds it to the remote(), and sets up the
+  // disconnect handler to invoke callback() with an error.
+  mojo::PendingReceiver<T> BindRemote() {
+    auto receiver = remote_.BindNewPipeAndPassReceiver();
+    remote_.set_disconnect_handler(
+        base::BindOnce(&ValueParseRequest::OnRemoteDisconnected, this));
+    return receiver;
+  }
+
+  // Handles a successful parse from the service.
+  void OnServiceValueOrError(base::Optional<base::Value> value,
+                             const base::Optional<std::string>& error) {
+    DataDecoder::ValueOrError result;
+    if (value)
+      result.value = std::move(value);
+    else
+      result.error = error.value_or("unknown error");
+    std::move(callback()).Run(std::move(result));
+  }
 
  private:
   friend class base::RefCounted<ValueParseRequest>;
 
   ~ValueParseRequest() = default;
 
-  mojo::Remote<mojom::JsonParser> json_parser_;
+  void OnRemoteDisconnected() {
+    std::move(callback())
+        .Run(DataDecoder::ValueOrError::Error(
+            "Data Decoder terminated unexpectedly"));
+  }
+
+  mojo::Remote<T> remote_;
   DataDecoder::ValueParseCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ValueParseRequest);
 };
-
-// Handles a successful JSON parse from the service.
-void OnServiceValueOrError(scoped_refptr<ValueParseRequest> request,
-                           base::Optional<base::Value> value,
-                           const base::Optional<std::string>& error) {
-  DataDecoder::ValueOrError result;
-  if (value)
-    result.value = std::move(value);
-  else
-    result.error = error.value_or("unknown error");
-  std::move(request->callback()).Run(std::move(result));
-}
-
-// Handles unexpected disconnection from the service during a JSON parse
-// request. This typically means the service crashed.
-void OnJsonParserDisconnected(scoped_refptr<ValueParseRequest> request) {
-  std::move(request->callback())
-      .Run(DataDecoder::ValueOrError::Error(
-          "Data Decoder terminated unexpectedly"));
-}
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -145,13 +151,13 @@ void DataDecoder::ParseJson(const std::string& json,
                 },
                 std::move(callback)));
 #else
-  auto request = base::MakeRefCounted<ValueParseRequest>(std::move(callback));
-  GetService()->BindJsonParser(
-      request->json_parser().BindNewPipeAndPassReceiver());
-  request->json_parser().set_disconnect_handler(
-      base::BindOnce(&OnJsonParserDisconnected, request));
-  request->json_parser()->Parse(
-      json, base::BindOnce(&OnServiceValueOrError, request));
+  auto request = base::MakeRefCounted<ValueParseRequest<mojom::JsonParser>>(
+      std::move(callback));
+  GetService()->BindJsonParser(request->BindRemote());
+  request->remote()->Parse(
+      json, base::BindOnce(
+                &ValueParseRequest<mojom::JsonParser>::OnServiceValueOrError,
+                request));
 #endif
 }
 
@@ -170,6 +176,34 @@ void DataDecoder::ParseJsonIsolated(const std::string& json,
                   std::move(callback).Run(std::move(result));
                 },
                 std::move(decoder), std::move(callback)));
+}
+
+void DataDecoder::ParseXml(const std::string& xml,
+                           ValueParseCallback callback) {
+  auto request = base::MakeRefCounted<ValueParseRequest<mojom::XmlParser>>(
+      std::move(callback));
+  GetService()->BindXmlParser(request->BindRemote());
+  request->remote()->Parse(
+      xml, base::BindOnce(
+               &ValueParseRequest<mojom::XmlParser>::OnServiceValueOrError,
+               request));
+}
+
+// static
+void DataDecoder::ParseXmlIsolated(const std::string& xml,
+                                   ValueParseCallback callback) {
+  auto decoder = std::make_unique<DataDecoder>();
+  auto* raw_decoder = decoder.get();
+
+  // We bind the DataDecoder's ownership into the result callback to ensure that
+  // it stays alive until the operation is complete.
+  raw_decoder->ParseXml(
+      xml, base::BindOnce(
+               [](std::unique_ptr<DataDecoder>, ValueParseCallback callback,
+                  ValueOrError result) {
+                 std::move(callback).Run(std::move(result));
+               },
+               std::move(decoder), std::move(callback)));
 }
 
 }  // namespace data_decoder

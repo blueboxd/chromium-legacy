@@ -204,7 +204,8 @@
               aria-labelledby="ppdLabel" invalid="[[invalidPPD_]]"
               error-message="$i18n{selectDriverErrorMessage}" tabindex="-1">
           </cr-input>
-          <cr-button class="browse-button" on-click="onBrowseFile_">
+          <cr-button class="browse-button" on-click="onBrowseFile_"
+              aria-label="$i18n{selectDriverButtonAriaLabel}">
             $i18n{selectDriverButtonText}
           </cr-button>
         </div>

@@ -42,6 +42,12 @@ class InstallFinalizer {
                                const FinalizeOptions& options,
                                InstallFinalizedCallback callback) = 0;
 
+  // For the new USS-based system only. Generate missing sync placeholder data
+  // and icons using |sync_data| fields.
+  virtual void FinalizeFallbackInstallAfterSync(
+      const AppId& app_id,
+      InstallFinalizedCallback callback) = 0;
+
   // Write the new WebApp data to disk and update the app.
   virtual void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                               InstallFinalizedCallback callback) = 0;

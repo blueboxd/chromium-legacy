@@ -75,9 +75,9 @@ public class NotificationsPreferences extends PreferenceFragmentCompat {
                             : R.string.notifications_content_suggestions_summary_disabled);
         }
 
-        mFromWebsitesPref.setSummary(ContentSettingsResources.getCategorySummary(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                PrefServiceBridge.getInstance().isCategoryEnabled(
-                        ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS)));
+        mFromWebsitesPref.setSummary(
+                ContentSettingsResources.getCategorySummary(ContentSettingsType.NOTIFICATIONS,
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.NOTIFICATIONS)));
     }
 }

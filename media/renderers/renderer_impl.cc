@@ -166,7 +166,7 @@ void RendererImpl::Initialize(MediaResource* media_resource,
 }
 
 void RendererImpl::SetCdm(CdmContext* cdm_context,
-                          const CdmAttachedCB& cdm_attached_cb) {
+                          CdmAttachedCB cdm_attached_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(cdm_context);
@@ -174,12 +174,12 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
 
   if (cdm_context_) {
     DVLOG(1) << "Switching CDM not supported.";
-    cdm_attached_cb.Run(false);
+    std::move(cdm_attached_cb).Run(false);
     return;
   }
 
   cdm_context_ = cdm_context;
-  cdm_attached_cb.Run(true);
+  std::move(cdm_attached_cb).Run(true);
 
   if (state_ != STATE_INIT_PENDING_CDM)
     return;

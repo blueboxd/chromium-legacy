@@ -166,10 +166,32 @@ void WebAppInstallManager::Shutdown() {
 }
 
 void WebAppInstallManager::InstallWebAppsAfterSync(
-    std::vector<WebApp*> web_apps) {
-  // TODO(crbug.com/860583): Implement sync-initiated app installs. Use
-  // WebAppInstallTask::ExpectAppId functionality here.
-  NOTIMPLEMENTED();
+    std::vector<WebApp*> web_apps,
+    RepeatingInstallCallback callback) {
+  for (WebApp* web_app : web_apps) {
+    DCHECK(web_app->is_in_sync_install());
+
+    auto task = std::make_unique<WebAppInstallTask>(
+        profile(), shortcut_manager(), finalizer(),
+        data_retriever_factory_.Run());
+
+    task->ExpectAppId(web_app->app_id());
+
+    OnceInstallCallback sync_install_callback =
+        base::BindOnce(&WebAppInstallManager::OnWebAppInstalledAfterSync,
+                       base::Unretained(this), web_app->app_id(), callback);
+
+    base::OnceClosure start_task = base::BindOnce(
+        &WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback,
+        base::Unretained(task.get()), web_app->launch_url(),
+        EnsureWebContentsCreated(), base::Unretained(url_loader_.get()),
+        WebappInstallSource::SYNC,
+        base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
+                       base::Unretained(this), task.get(),
+                       std::move(sync_install_callback)));
+
+    EnqueueTask(std::move(task), std::move(start_task));
+  }
 }
 
 void WebAppInstallManager::UninstallWebAppsAfterSync(
@@ -239,6 +261,23 @@ void WebAppInstallManager::OnQueuedTaskCompleted(WebAppInstallTask* task,
     web_contents_ready_ = false;
   } else {
     MaybeStartQueuedTask();
+  }
+}
+
+void WebAppInstallManager::OnWebAppInstalledAfterSync(
+    const AppId& app_in_sync_install_id,
+    OnceInstallCallback callback,
+    const AppId& installed_app_id,
+    InstallResultCode code) {
+  // TODO(loyso): Record |code| for this specific case in
+  // Webapp.SyncInitiatedFullInstallResult UMA.
+  if (IsSuccess(code)) {
+    DCHECK_EQ(app_in_sync_install_id, installed_app_id);
+    std::move(callback).Run(installed_app_id, code);
+  } else {
+    // Install failed. Do the fallback install to generate icons.
+    finalizer()->FinalizeFallbackInstallAfterSync(app_in_sync_install_id,
+                                                  std::move(callback));
   }
 }
 

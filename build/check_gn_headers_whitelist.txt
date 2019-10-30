@@ -247,7 +247,6 @@ third_party/blink/renderer/platform/text/TabSize.h
 third_party/blink/renderer/platform/text/TextDirection.h
 third_party/blink/renderer/platform/transforms/TransformOperation.h
 third_party/blink/public/platform/WebSourceLocation.h
-third_party/blink/public/platform/WebTouchInfo.h
 third_party/blink/public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h
 third_party/cacheinvalidation/src/google/cacheinvalidation/impl/build_constants.h
 third_party/expat/files/lib/ascii.h

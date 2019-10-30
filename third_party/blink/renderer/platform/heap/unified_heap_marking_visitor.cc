@@ -52,6 +52,7 @@ UnifiedHeapMarkingVisitor::UnifiedHeapMarkingVisitor(ThreadState* thread_state,
                                     isolate,
                                     WorklistTaskId::MutatorThread) {}
 
+// static
 void UnifiedHeapMarkingVisitor::WriteBarrier(
     const TraceWrapperV8Reference<v8::Value>& object) {
   if (object.IsEmpty() || !ThreadState::IsAnyIncrementalMarking())
@@ -64,6 +65,7 @@ void UnifiedHeapMarkingVisitor::WriteBarrier(
   thread_state->CurrentVisitor()->Trace(object);
 }
 
+// static
 void UnifiedHeapMarkingVisitor::WriteBarrier(
     v8::Isolate* isolate,
     const WrapperTypeInfo* wrapper_type_info,
@@ -80,6 +82,11 @@ void UnifiedHeapMarkingVisitor::WriteBarrier(
   wrapper_type_info->Trace(thread_state->CurrentVisitor(), object);
 }
 
+void UnifiedHeapMarkingVisitor::Visit(
+    const TraceWrapperV8Reference<v8::Value>& v) {
+  VisitImpl(v);
+}
+
 ConcurrentUnifiedHeapMarkingVisitor::ConcurrentUnifiedHeapMarkingVisitor(
     ThreadState* thread_state,
     MarkingMode mode,
@@ -91,6 +98,11 @@ ConcurrentUnifiedHeapMarkingVisitor::ConcurrentUnifiedHeapMarkingVisitor(
 void ConcurrentUnifiedHeapMarkingVisitor::FlushWorklists() {
   ConcurrentMarkingVisitor::FlushWorklists();
   v8_references_worklist_.FlushToGlobal();
+}
+
+void ConcurrentUnifiedHeapMarkingVisitor::Visit(
+    const TraceWrapperV8Reference<v8::Value>& v) {
+  VisitImpl(v);
 }
 
 }  // namespace blink

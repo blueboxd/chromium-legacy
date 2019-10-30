@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/xr/type_converters.h"
 
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+
 namespace mojo {
 
 base::Optional<blink::XRPlane::Orientation>
@@ -45,9 +47,9 @@ TypeConverter<blink::TransformationMatrix, device::mojom::blink::VRPosePtr>::
   }
 
   if (pose->position) {
-    decomp.translate_x = pose->position->x;
-    decomp.translate_y = pose->position->y;
-    decomp.translate_z = pose->position->z;
+    decomp.translate_x = pose->position->X();
+    decomp.translate_y = pose->position->Y();
+    decomp.translate_z = pose->position->Z();
   }
 
   result.Recompose(decomp);

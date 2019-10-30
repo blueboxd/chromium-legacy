@@ -625,6 +625,8 @@ jumbo_static_library("test_support") {
     "image/image_unittest_util.h",
     "image/image_unittest_util_ios.mm",
     "image/image_unittest_util_mac.mm",
+    "test/font_fallback_test_data.cc",
+    "test/font_fallback_test_data.h",
     "test/gfx_util.cc",
     "test/gfx_util.h",
     "test/icc_profiles.cc",
@@ -648,13 +650,6 @@ jumbo_static_library("test_support") {
     sources += [ "render_text_test_api.h" ]
 
     deps += [ "//third_party:freetype_harfbuzz" ]
-  }
-
-  if (is_win) {
-    sources += [
-      "test/font_fallback_test_data.cc",
-      "test/font_fallback_test_data.h",
-    ]
   }
 }
 
@@ -702,6 +697,8 @@ test("gfx_unittests") {
       "color_utils_unittest.cc",
       "font_fallback_linux_unittest.cc",
       "font_fallback_mac_unittest.cc",
+      "font_fallback_unittest.cc",
+      "font_fallback_win_unittest.cc",
       "font_list_unittest.cc",
       "geometry/axis_transform2d_unittest.cc",
       "geometry/box_unittest.cc",
@@ -730,6 +727,7 @@ test("gfx_unittests") {
       "paint_vector_icon_unittest.cc",
       "path_mac_unittest.mm",
       "platform_font_mac_unittest.mm",
+      "platform_font_win_unittest.cc",
       "range/range_mac_unittest.mm",
       "range/range_unittest.cc",
       "range/range_win_unittest.cc",
@@ -740,6 +738,7 @@ test("gfx_unittests") {
       "skia_util_unittest.cc",
       "skia_vector_animation_unittest.cc",
       "skrect_conversion_unittest.cc",
+      "system_fonts_win_unittest.cc",
       "transform_util_unittest.cc",
       "utf16_indexing_unittest.cc",
     ]
@@ -808,13 +807,10 @@ test("gfx_unittests") {
 
   if (is_win) {
     sources += [
-      "font_fallback_win_unittest.cc",
       "icon_util_unittest.cc",
       "icon_util_unittests.rc",
       "icon_util_unittests_resource.h",
       "path_win_unittest.cc",
-      "platform_font_win_unittest.cc",
-      "system_fonts_win_unittest.cc",
       "win/crash_id_helper_unittest.cc",
       "win/direct_write_unittest.cc",
       "win/text_analysis_source_unittest.cc",

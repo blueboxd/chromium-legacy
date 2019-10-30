@@ -195,7 +195,7 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
   Profile* profile = Profile::FromBrowserContext(
       web_view_guest()->browser_context());
   PermissionManager::Get(profile)->RequestPermission(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, web_contents->GetMainFrame(),
+      ContentSettingsType::GEOLOCATION, web_contents->GetMainFrame(),
       web_view_guest()
           ->embedder_web_contents()
           ->GetLastCommittedURL()

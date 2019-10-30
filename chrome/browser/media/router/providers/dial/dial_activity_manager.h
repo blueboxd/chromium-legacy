@@ -123,7 +123,7 @@ class DialActivityManager {
   // |callback| will be invoked with |true| if the launch succeeded, or |false|
   // if the launch failed.
   // If |message.do_launch| is |false|, then app launch will be skipped, and
-  // |calback| will be invoked with |true|.
+  // |callback| will be invoked with |true|.
   // This method is only valid to call if there is an activity for |route_id|.
   // This method is a no-op if there is already a pending launch request, or
   // if the app is already launched.

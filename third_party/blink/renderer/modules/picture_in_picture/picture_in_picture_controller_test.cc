@@ -10,10 +10,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -339,8 +339,7 @@ TEST_F(PictureInPictureControllerTest, PerformMediaPlayerAction) {
 
   frame->PerformMediaPlayerAction(
       WebPoint(bounds.X(), bounds.Y()),
-      WebMediaPlayerAction(WebMediaPlayerAction::Type::kPictureInPicture,
-                           true));
+      MediaPlayerAction(MediaPlayerAction::Type::kPictureInPicture, true));
 }
 
 }  // namespace blink

@@ -195,6 +195,7 @@ external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/support/xhtml-mathml-
 # CSS3 attribute / attr references have not been implemented (except for content)
 crbug.com/246571 external/wpt/css/css-values/attr-color-invalid-cast.html [ WontFix ]
 crbug.com/246571 external/wpt/css/css-values/attr-color-valid.html [ WontFix ]
+crbug.com/246571 external/wpt/css/css-values/attr-in-max.html [ WontFix ]
 crbug.com/246571 external/wpt/css/css-values/attr-length-invalid-cast.html [ WontFix ]
 crbug.com/246571 external/wpt/css/css-values/attr-length-valid.html [ WontFix ]
 crbug.com/246571 external/wpt/css/css-values/attr-length-valid-zero.html [ WontFix ]

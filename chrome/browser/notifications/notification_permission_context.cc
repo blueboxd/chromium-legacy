@@ -186,7 +186,7 @@ void NotificationPermissionContext::UpdatePermission(Profile* profile,
     case CONTENT_SETTING_DEFAULT:
       HostContentSettingsMapFactory::GetForProfile(profile)
           ->SetContentSettingDefaultScope(
-              origin, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+              origin, GURL(), ContentSettingsType::NOTIFICATIONS,
               content_settings::ResourceIdentifier(), setting);
       break;
 
@@ -197,7 +197,7 @@ void NotificationPermissionContext::UpdatePermission(Profile* profile,
 
 NotificationPermissionContext::NotificationPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                            ContentSettingsType::NOTIFICATIONS,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 NotificationPermissionContext::~NotificationPermissionContext() {}

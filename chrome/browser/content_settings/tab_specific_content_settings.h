@@ -151,14 +151,14 @@ class TabSpecificContentSettings
                                    bool blocked_by_policy);
 
   // Resets the |content_settings_status_|, except for
-  // information which are needed for navigation: CONTENT_SETTINGS_TYPE_COOKIES
-  // for cookies and service workers, and CONTENT_SETTINGS_TYPE_JAVASCRIPT for
+  // information which are needed for navigation: ContentSettingsType::COOKIES
+  // for cookies and service workers, and ContentSettingsType::JAVASCRIPT for
   // service workers.
   // Only public for tests.
   void ClearContentSettingsExceptForNavigationRelatedSettings();
 
-  // Resets navigation related information (CONTENT_SETTINGS_TYPE_COOKIES and
-  // CONTENT_SETTINGS_TYPE_JAVASCRIPT).
+  // Resets navigation related information (ContentSettingsType::COOKIES and
+  // ContentSettingsType::JAVASCRIPT).
   // Only public for tests.
   void ClearNavigationRelatedContentSettings();
 

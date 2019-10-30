@@ -265,6 +265,7 @@ class APIPermission {
     kLoginScreenStorage = 221,
     kLoginState = 222,
     kPrintingMetrics = 223,
+    kPrinting = 224,
     // Last entry: Add new entries above and ensure to update the
     // "ExtensionPermission3" enum in tools/metrics/histograms/enums.xml
     // (by running update_extension_permission.py).

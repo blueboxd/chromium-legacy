@@ -23,7 +23,7 @@ bool PluginsEnterpriseSettingEnabled(
     HostContentSettingsMap* host_content_settings_map) {
   std::string provider_id;
   host_content_settings_map->GetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, &provider_id);
+      ContentSettingsType::PLUGINS, &provider_id);
   return HostContentSettingsMap::GetProviderTypeFromSource(provider_id) ==
          HostContentSettingsMap::POLICY_PROVIDER;
 }
@@ -32,7 +32,7 @@ bool PluginsEnterpriseSettingEnabled(
 
 FlashPermissionContext::FlashPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_PLUGINS,
+                            ContentSettingsType::PLUGINS,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 FlashPermissionContext::~FlashPermissionContext() {}

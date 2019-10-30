@@ -81,7 +81,7 @@ std::unique_ptr<base::DictionaryValue> GetOriginAppBannerData(
 
   std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
-          origin_url, origin_url, CONTENT_SETTINGS_TYPE_APP_BANNER,
+          origin_url, origin_url, ContentSettingsType::APP_BANNER,
           std::string(), NULL));
   if (!dict)
     return std::make_unique<base::DictionaryValue>();
@@ -121,7 +121,7 @@ class AppPrefs {
     DCHECK(dict_);
     dict_ = nullptr;
     settings_->SetWebsiteSettingDefaultScope(
-        origin_, GURL(), CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
+        origin_, GURL(), ContentSettingsType::APP_BANNER, std::string(),
         std::move(origin_dict_));
   }
 
@@ -254,7 +254,7 @@ void AppBannerSettingsHelper::ClearHistoryForURLs(
       HostContentSettingsMapFactory::GetForProfile(profile);
   for (const GURL& origin_url : origin_urls) {
     settings->SetWebsiteSettingDefaultScope(origin_url, GURL(),
-                                            CONTENT_SETTINGS_TYPE_APP_BANNER,
+                                            ContentSettingsType::APP_BANNER,
                                             std::string(), nullptr);
     settings->FlushLossyWebsiteSettings();
   }

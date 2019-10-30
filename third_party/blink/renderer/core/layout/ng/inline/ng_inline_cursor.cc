@@ -20,21 +20,22 @@ void NGInlineCursor::MoveToItem(const ItemsSpan::iterator& iter) {
   current_item_ = iter == items_.end() ? nullptr : iter->get();
 }
 
-void NGInlineCursor::SetRoot(ItemsSpan items) {
+void NGInlineCursor::SetRoot(const NGFragmentItems& fragment_items,
+                             ItemsSpan items) {
   DCHECK(items.data() || !items.size());
   DCHECK_EQ(root_paint_fragment_, nullptr);
   DCHECK_EQ(current_paint_fragment_, nullptr);
+  fragment_items_ = &fragment_items;
   items_ = items;
   MoveToItem(items_.begin());
 }
 
 void NGInlineCursor::SetRoot(const NGFragmentItems& items) {
-  SetRoot(items.Items());
+  SetRoot(items, items.Items());
 }
 
 void NGInlineCursor::SetRoot(const NGPaintFragment& root_paint_fragment) {
   DCHECK(&root_paint_fragment);
-  DCHECK(!root_paint_fragment.Parent()) << root_paint_fragment;
   root_paint_fragment_ = &root_paint_fragment;
   current_paint_fragment_ = root_paint_fragment.FirstChild();
 }
@@ -60,8 +61,12 @@ NGInlineCursor::NGInlineCursor(const LayoutBlockFlow& block_flow) {
   // See external/wpt/css/css-scroll-anchoring/wrapped-text.html
 }
 
-NGInlineCursor::NGInlineCursor(const NGFragmentItems& items)
-    : fragment_items_(&items) {
+NGInlineCursor::NGInlineCursor(const NGFragmentItems& fragment_items,
+                               ItemsSpan items) {
+  SetRoot(fragment_items, items);
+}
+
+NGInlineCursor::NGInlineCursor(const NGFragmentItems& items) {
   SetRoot(items);
 }
 
@@ -95,11 +100,21 @@ bool NGInlineCursor::operator==(const NGInlineCursor& other) const {
 }
 
 const LayoutBlockFlow* NGInlineCursor::GetLayoutBlockFlow() const {
-  if (root_paint_fragment_)
-    return To<LayoutBlockFlow>(root_paint_fragment_->GetLayoutObject());
-  for (const auto& item : items_) {
-    if (item->GetLayoutObject() && item->GetLayoutObject()->IsInline())
-      return item->GetLayoutObject()->RootInlineFormattingContext();
+  if (IsPaintFragmentCursor()) {
+    // |root_paint_fragment_| is either |LayoutBlockFlow| or |LayoutInline|.
+    const LayoutObject* layout_object = root_paint_fragment_->GetLayoutObject();
+    if (const LayoutBlockFlow* block_flow =
+            DynamicTo<LayoutBlockFlow>(layout_object))
+      return block_flow;
+    DCHECK(layout_object->IsLayoutInline());
+    return layout_object->RootInlineFormattingContext();
+  }
+  if (IsItemCursor()) {
+    for (const auto& item : items_) {
+      const LayoutObject* layout_object = item->GetLayoutObject();
+      if (layout_object && layout_object->IsInline())
+        return layout_object->RootInlineFormattingContext();
+    }
   }
   NOTREACHED();
   return nullptr;
@@ -108,12 +123,26 @@ const LayoutBlockFlow* NGInlineCursor::GetLayoutBlockFlow() const {
 bool NGInlineCursor::HasChildren() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->FirstChild();
-  if (current_item_) {
-    // Note: |DescendantsCount() == 1| means box/line without children.
-    return current_item_->DescendantsCount() > 1;
-  }
+  if (current_item_)
+    return current_item_->HasChildren();
   NOTREACHED();
   return false;
+}
+
+NGInlineCursor NGInlineCursor::CursorForDescendants() const {
+  if (current_paint_fragment_)
+    return NGInlineCursor(*current_paint_fragment_);
+  if (current_item_) {
+    unsigned descendants_count = current_item_->DescendantsCount();
+    if (descendants_count > 1) {
+      DCHECK(fragment_items_);
+      return NGInlineCursor(*fragment_items_, ItemsSpan(&*(item_iter_ + 1),
+                                                        descendants_count - 1));
+    }
+    return NGInlineCursor();
+  }
+  NOTREACHED();
+  return NGInlineCursor();
 }
 
 bool NGInlineCursor::HasSoftWrapToNextLine() const {
@@ -410,6 +439,19 @@ unsigned NGInlineCursor::CurrentTextEndOffset() const {
     return current_item_->EndOffset();
   NOTREACHED();
   return 0u;
+}
+
+const ShapeResultView* NGInlineCursor::CurrentTextShapeResult() const {
+  DCHECK(IsText());
+  if (current_paint_fragment_) {
+    return To<NGPhysicalTextFragment>(
+               current_paint_fragment_->PhysicalFragment())
+        .TextShapeResult();
+  }
+  if (current_item_)
+    return current_item_->TextShapeResult();
+  NOTREACHED();
+  return nullptr;
 }
 
 PhysicalRect NGInlineCursor::CurrentLocalRect(unsigned start_offset,

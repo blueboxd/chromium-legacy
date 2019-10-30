@@ -91,7 +91,10 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
     public ContextualSearchCaptionControl(OverlayPanel panel, Context context, ViewGroup container,
             DynamicResourceLoader resourceLoader, boolean shouldShowExpandedCaption) {
         super(panel, R.layout.contextual_search_caption_view, R.id.contextual_search_caption_view,
-                context, container, resourceLoader, R.dimen.contextual_search_padded_button_width,
+                context, container, resourceLoader,
+                (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                                ? R.dimen.contextual_search_end_padding
+                                : R.dimen.contextual_search_padded_button_width),
                 R.dimen.contextual_search_padded_button_width);
         mShouldShowExpandedCaption = shouldShowExpandedCaption;
     }

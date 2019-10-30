@@ -258,15 +258,14 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   const auto launch_url = GURL("https://example.com/");
   const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
   const std::string name = "Name";
-  const auto display_mode = blink::mojom::DisplayMode::kBrowser;
+  const auto user_display_mode = blink::mojom::DisplayMode::kBrowser;
 
   auto app = std::make_unique<WebApp>(app_id);
 
   // Required fields:
   app->SetLaunchUrl(launch_url);
   app->SetName(name);
-  app->SetDisplayMode(display_mode);
-  app->SetUserDisplayMode(display_mode);
+  app->SetUserDisplayMode(user_display_mode);
   app->SetIsLocallyInstalled(false);
 
   EXPECT_FALSE(app->HasAnySources());
@@ -276,6 +275,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   }
 
   // Let optional fields be empty:
+  EXPECT_EQ(app->display_mode(), blink::mojom::DisplayMode::kUndefined);
   EXPECT_TRUE(app->description().empty());
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
@@ -294,8 +294,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_EQ(app_id, app_copy->app_id());
   EXPECT_EQ(launch_url, app_copy->launch_url());
   EXPECT_EQ(name, app_copy->name());
-  EXPECT_EQ(display_mode, app_copy->display_mode());
-  EXPECT_EQ(display_mode, app_copy->user_display_mode());
+  EXPECT_EQ(user_display_mode, app_copy->user_display_mode());
   EXPECT_FALSE(app_copy->is_locally_installed());
 
   for (int i = Source::kMinValue; i < Source::kMaxValue; ++i) {
@@ -305,6 +304,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app_copy->HasAnySources());
 
   // No optional fields.
+  EXPECT_EQ(app_copy->display_mode(), blink::mojom::DisplayMode::kUndefined);
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());

@@ -66,7 +66,7 @@ TEST_F(BlockedPopupTabHelperTest, ShouldBlockPopup) {
           chrome_browser_state_.get()));
   settings_map->SetContentSettingCustomScope(
       ContentSettingsPattern::FromURL(source_url1),
-      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_POPUPS,
+      ContentSettingsPattern::Wildcard(), ContentSettingsType::POPUPS,
       std::string(), CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(GetBlockedPopupTabHelper()->ShouldBlockPopup(source_url1));
@@ -74,7 +74,7 @@ TEST_F(BlockedPopupTabHelperTest, ShouldBlockPopup) {
   EXPECT_TRUE(GetBlockedPopupTabHelper()->ShouldBlockPopup(source_url2));
 
   // Allow all popups.
-  settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS,
+  settings_map->SetDefaultContentSetting(ContentSettingsType::POPUPS,
                                          CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(GetBlockedPopupTabHelper()->ShouldBlockPopup(source_url1));

@@ -483,17 +483,20 @@ void SVGTransformList::CalculateAnimatedValue(
     effective_from = MakeGarbageCollected<SVGTransform>(
         to_transform->TransformType(), SVGTransform::kConstructZeroTransform);
 
-  // Never resize the animatedTransformList to the toList size, instead either
-  // clear the list or append to it.
-  bool is_to_animation = animation_element.GetAnimationMode() == kToAnimation;
-  if (!IsEmpty() && (!animation_element.IsAdditive() || is_to_animation))
-    Clear();
-
   SVGTransform* current_transform =
       SVGTransformDistance(effective_from, to_transform)
           .ScaledDistance(percentage)
           .AddToSVGTransform(effective_from);
-  if (animation_element.IsAccumulated() && repeat_count) {
+  if (animation_element.GetAnimationMode() == kToAnimation) {
+    Initialize(current_transform);
+    return;
+  }
+  // Never resize the animatedTransformList to the toList size, instead either
+  // clear the list or append to it.
+  if (!IsEmpty() && !animation_element.IsAdditive())
+    Clear();
+
+  if (repeat_count && animation_element.IsAccumulated()) {
     SVGTransform* effective_to_at_end =
         !to_at_end_of_duration_list->IsEmpty()
             ? to_at_end_of_duration_list->at(0)

@@ -4,11 +4,14 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_bounded_reference_space.h"
 
+#include <memory>
+
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 
 namespace blink {
 
@@ -56,7 +59,7 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
 
       for (const auto& bound : *(display_info->stage_parameters->bounds)) {
         FloatPoint3D p =
-            bounds_transform.MapPoint(FloatPoint3D(bound.x, 0.0, bound.z));
+            bounds_transform.MapPoint(FloatPoint3D(bound.X(), 0.0, bound.Z()));
         bounds_geometry_.push_back(
             DOMPointReadOnly::Create(p.X(), p.Y(), p.Z(), 1.0));
       }

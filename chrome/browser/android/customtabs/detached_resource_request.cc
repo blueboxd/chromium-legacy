@@ -83,7 +83,18 @@ DetachedResourceRequest::DetachedResourceRequest(
       referrer_policy, site_for_cookies_, url_);
   resource_request->referrer_policy = referrer_policy;
   resource_request->site_for_cookies = site_for_cookies_;
-  resource_request->request_initiator = url::Origin::Create(site_for_cookies_);
+
+  url::Origin site_for_cookies_origin = url::Origin::Create(site_for_cookies_);
+  resource_request->request_initiator = site_for_cookies_origin;
+
+  // Since |site_for_cookies_| has gone through digital asset links
+  // verification, it should be ok to use it to compute the network isolation
+  // key.
+  resource_request->trusted_params = network::ResourceRequest::TrustedParams();
+  resource_request->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(site_for_cookies_origin,
+                               site_for_cookies_origin);
+
   resource_request->resource_type =
       static_cast<int>(content::ResourceType::kSubResource);
   resource_request->do_not_prompt_for_login = true;

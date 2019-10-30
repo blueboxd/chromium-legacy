@@ -21,6 +21,7 @@
 
 namespace {
 
+// Save space for the separator.
 constexpr int kToolbarHeight = 30 - views::Separator::kThickness;
 
 class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
@@ -40,6 +41,9 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   void set_bookmark_bar_visible(bool visible) {
     bookmark_bar_visible_ = visible;
   }
+  void set_content_separator_enabled(bool visible) {
+    content_separator_enabled_ = visible;
+  }
   void set_top_controls_slide_enabled(bool enabled) {
     top_controls_slide_enabled_ = enabled;
   }
@@ -56,6 +60,9 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   int GetThemeBackgroundXInset() const override { return 0; }
   bool IsToolbarVisible() const override { return toolbar_visible_; }
   bool IsBookmarkBarVisible() const override { return bookmark_bar_visible_; }
+  bool IsContentsSeparatorEnabled() const override {
+    return content_separator_enabled_;
+  }
   bool DownloadShelfNeedsLayout() const override {
     return download_shelf_needs_layout_;
   }
@@ -90,6 +97,7 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   bool tab_strip_visible_ = true;
   bool toolbar_visible_ = true;
   bool bookmark_bar_visible_ = true;
+  bool content_separator_enabled_ = true;
   bool download_shelf_needs_layout_ = false;
   bool top_controls_slide_enabled_ = false;
   float top_controls_shown_ratio_ = 1.f;
@@ -170,9 +178,7 @@ class BrowserViewLayoutTest : public ChromeViewsTestBase {
     tab_strip_ = new TabStrip(std::make_unique<FakeBaseTabStripController>());
     top_container_->AddChildView(tab_strip_region_view);
     tab_strip_region_view->AddChildView(tab_strip_);
-    // Save 1 DIP for the separator.
-    toolbar_ =
-        CreateFixedSizeView(gfx::Size(800, 30 - views::Separator::kThickness));
+    toolbar_ = CreateFixedSizeView(gfx::Size(800, kToolbarHeight));
     top_container_->AddChildView(toolbar_);
     separator_ =
         top_container_->AddChildView(std::make_unique<views::Separator>());
@@ -257,6 +263,17 @@ TEST_F(BrowserViewLayoutTest, Layout) {
             separator()->bounds());
   EXPECT_EQ(gfx::Rect(0, 30, 800, 0), infobar_container()->bounds());
   EXPECT_EQ(gfx::Rect(0, 30, 800, 570), contents_container()->bounds());
+
+  // Disable the contents separator.
+  delegate()->set_content_separator_enabled(false);
+  layout()->Layout(root_view());
+
+  // Now the separator is not visible and the content grows vertically.
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), tab_strip()->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 800, kToolbarHeight), toolbar()->bounds());
+  EXPECT_FALSE(separator()->GetVisible());
+  EXPECT_EQ(gfx::Rect(0, 29, 800, 0), infobar_container()->bounds());
+  EXPECT_EQ(gfx::Rect(0, 29, 800, 571), contents_container()->bounds());
 
   // TODO(jamescook): Tab strip and bookmark bar.
 }

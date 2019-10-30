@@ -13,8 +13,6 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
 
 using testing::_;
 
@@ -65,34 +63,6 @@ TEST_F(SchedulingAffectingFeaturesTest, WebSocketStopsThrottling) {
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
 
   MainFrame().ExecuteScript(WebString("socket.close();"));
-
-  EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
-  EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
-              testing::UnorderedElementsAre());
-}
-
-TEST_F(SchedulingAffectingFeaturesTest, WebRTCStopsThrottling) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithWebRTC> platform;
-
-  SimRequest main_resource("https://example.com/", "text/html");
-
-  LoadURL("https://example.com/");
-
-  EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
-  EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
-              testing::UnorderedElementsAre());
-
-  main_resource.Complete(
-      "<script>"
-      "  var data_channel = new RTCPeerConnection();"
-      "</script>");
-
-  EXPECT_TRUE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
-  EXPECT_THAT(
-      GetNonTrivialMainFrameFeatures(),
-      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebRTC));
-
-  MainFrame().ExecuteScript(WebString("data_channel.close();"));
 
   EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
   EXPECT_THAT(GetNonTrivialMainFrameFeatures(),

@@ -703,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_NoBeep) {
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::FromString(
           "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"),
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string(), CONTENT_SETTING_BLOCK);
+      ContentSettingsType::JAVASCRIPT, std::string(), CONTENT_SETTING_BLOCK);
 
   RunTestsInJsModule("nobeep_test.js", "test-beep.pdf");
 }

@@ -14,8 +14,8 @@ WakeLockPermissionContext::WakeLockPermissionContext(
                             content_settings_type,
                             blink::mojom::FeaturePolicyFeature::kWakeLock),
       content_settings_type_(content_settings_type) {
-  DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM);
+  DCHECK(content_settings_type == ContentSettingsType::WAKE_LOCK_SCREEN ||
+         content_settings_type == ContentSettingsType::WAKE_LOCK_SYSTEM);
 }
 
 WakeLockPermissionContext::~WakeLockPermissionContext() {}
@@ -25,9 +25,9 @@ ContentSetting WakeLockPermissionContext::GetPermissionStatusInternal(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   switch (content_settings_type_) {
-    case CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN:
+    case ContentSettingsType::WAKE_LOCK_SCREEN:
       return CONTENT_SETTING_ALLOW;
-    case CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM:
+    case ContentSettingsType::WAKE_LOCK_SYSTEM:
       return CONTENT_SETTING_BLOCK;
     default:
       NOTREACHED();

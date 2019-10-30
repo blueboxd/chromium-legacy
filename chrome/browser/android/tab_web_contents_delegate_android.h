@@ -133,6 +133,11 @@ class TabWebContentsDelegateAndroid
   bool IsPictureInPictureEnabled() const;
   bool IsNightModeEnabled() const;
   bool CanShowAppBanners() const;
+
+  // Returns true if this tab is currently presented in the context of custom
+  // tabs. Tabs can be moved between different activities so the returned value
+  // might change over the lifetime of the tab.
+  bool IsCustomTab() const;
   const GURL GetManifestScope() const;
 
  private:

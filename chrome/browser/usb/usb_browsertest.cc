@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(WebUsbTest, RequestDeviceWithGuardBlocked) {
   auto* map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   map->SetContentSettingDefaultScope(origin(), origin(),
-                                     CONTENT_SETTINGS_TYPE_USB_GUARD,
+                                     ContentSettingsType::USB_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
   EXPECT_EQ("NotFoundError: No device selected.",

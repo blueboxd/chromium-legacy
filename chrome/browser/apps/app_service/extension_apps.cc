@@ -69,10 +69,10 @@ namespace {
 
 // Only supporting important permissions for now.
 const ContentSettingsType kSupportedPermissionTypes[] = {
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-    CONTENT_SETTINGS_TYPE_GEOLOCATION,
-    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    ContentSettingsType::MEDIASTREAM_MIC,
+    ContentSettingsType::MEDIASTREAM_CAMERA,
+    ContentSettingsType::GEOLOCATION,
+    ContentSettingsType::NOTIFICATIONS,
 };
 
 std::string GetSourceFromAppListSource(ash::ShelfLaunchSource source) {

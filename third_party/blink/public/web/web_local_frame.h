@@ -61,7 +61,7 @@ struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
 struct WebContentSecurityPolicyViolation;
 struct WebIsolatedWorldInfo;
-struct WebMediaPlayerAction;
+struct MediaPlayerAction;
 struct WebPoint;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
@@ -749,7 +749,7 @@ class WebLocalFrame : public WebFrame {
   // Performs the specified media player action on the media element at the
   // given location.
   virtual void PerformMediaPlayerAction(const WebPoint&,
-                                        const WebMediaPlayerAction&) = 0;
+                                        const MediaPlayerAction&) = 0;
 
   virtual void SetLifecycleState(mojom::FrameLifecycleState state) = 0;
 

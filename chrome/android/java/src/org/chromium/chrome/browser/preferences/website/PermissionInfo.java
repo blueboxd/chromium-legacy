@@ -150,24 +150,24 @@ public class PermissionInfo implements Serializable {
     public static @ContentSettingsType int getContentSettingsType(@Type int type) {
         switch (type) {
             case Type.CAMERA:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
+                return ContentSettingsType.MEDIASTREAM_CAMERA;
             case Type.CLIPBOARD:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ;
+                return ContentSettingsType.CLIPBOARD_READ;
             case Type.GEOLOCATION:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION;
+                return ContentSettingsType.GEOLOCATION;
             case Type.MICROPHONE:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC;
+                return ContentSettingsType.MEDIASTREAM_MIC;
             case Type.MIDI:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
+                return ContentSettingsType.MIDI_SYSEX;
             case Type.NOTIFICATION:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+                return ContentSettingsType.NOTIFICATIONS;
             case Type.PROTECTED_MEDIA_IDENTIFIER:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+                return ContentSettingsType.PROTECTED_MEDIA_IDENTIFIER;
             case Type.SENSORS:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS;
+                return ContentSettingsType.SENSORS;
             default:
                 assert false;
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_DEFAULT;
+                return ContentSettingsType.DEFAULT;
         }
     }
 }

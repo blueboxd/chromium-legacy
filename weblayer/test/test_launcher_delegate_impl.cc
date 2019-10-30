@@ -17,7 +17,6 @@ int TestLauncherDelegateImpl::RunTestSuite(int argc, char** argv) {
   // Browser tests are expected not to tear-down various globals and may
   // complete with the thread priority being above NORMAL.
   test_suite.DisableCheckForLeakedGlobals();
-  test_suite.DisableCheckForThreadPriorityAtTestEnd();
   return test_suite.Run();
 }
 

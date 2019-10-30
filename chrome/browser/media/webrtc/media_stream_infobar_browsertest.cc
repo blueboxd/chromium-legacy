@@ -140,9 +140,9 @@ IN_PROC_BROWSER_TEST_F(MediaStreamPermissionTest,
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
 
-  settings_map->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  settings_map->ClearSettingsForOneType(ContentSettingsType::MEDIASTREAM_MIC);
   settings_map->ClearSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+      ContentSettingsType::MEDIASTREAM_CAMERA);
 
   GetUserMediaAndDeny(tab_contents);
 }

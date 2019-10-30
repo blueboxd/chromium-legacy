@@ -35,9 +35,8 @@ int main(int argc, char** argv) {
   angle::InitTestHarness(&argc, argv);
   base::TestSuite test_suite(argc, argv);
 
-  // The process and thread priorities are modified by
-  // StabilizeCPUForBenchmarking()/SetLowPriorityProcess().
-  test_suite.DisableCheckForThreadAndProcessPriority();
+  // The process priority is lowered by the constructor of tcu::ANGLEPlatform().
+  test_suite.DisableCheckForProcessPriority();
 
   int rt = base::LaunchUnitTestsSerially(
       argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));

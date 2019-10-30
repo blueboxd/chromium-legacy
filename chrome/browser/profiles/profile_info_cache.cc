@@ -115,6 +115,8 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
     DownloadAvatars();
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  LoadGAIAPictureIfNeeded();
+
   bool migrate_legacy_profile_names =
       (!prefs_->GetBoolean(kLegacyProfileNameMigrated) &&
        ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName()) ||
@@ -720,6 +722,20 @@ const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+void ProfileInfoCache::LoadGAIAPictureIfNeeded() {
+  std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
+  for (ProfileAttributesEntry* entry : entries) {
+    if (entry->GetSigninState() == SigninState::kNotSignedIn)
+      continue;
+
+    bool is_using_GAIA_picture = entry->GetBool(kUseGAIAPictureKey);
+    bool is_using_default_avatar = entry->IsUsingDefaultAvatar();
+    // Load from disk into memory GAIA picture if it exists.
+    if (is_using_GAIA_picture || is_using_default_avatar)
+      entry->GetGAIAPicture();
+  }
+}
+
 void ProfileInfoCache::MigrateLegacyProfileNamesAndRecomputeIfNeeded() {
   DCHECK(ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName());
   std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();

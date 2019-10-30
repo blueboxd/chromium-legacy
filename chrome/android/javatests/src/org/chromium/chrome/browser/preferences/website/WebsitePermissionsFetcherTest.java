@@ -287,34 +287,34 @@ public class WebsitePermissionsFetcherTest {
 
         // Add content setting exception types.
         String preferenceSource = "preference";
-        // If the CONTENT_SETTINGS_NUM_TYPES value changes *and* a new value has been exposed on
+        // If the ContentSettingsType.NUM_TYPES value changes *and* a new value has been exposed on
         // Android, then please update this code block to include a test for your new type.
         // Otherwise, just update count in the assert.
-        Assert.assertEquals(54, ContentSettingsType.CONTENT_SETTINGS_NUM_TYPES);
+        Assert.assertEquals(54, ContentSettingsType.NUM_TYPES);
         websitePreferenceBridge.addContentSettingException(
-                new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES,
-                        googleOrigin, ContentSettingValues.DEFAULT, preferenceSource));
+                new ContentSettingException(ContentSettingsType.COOKIES, googleOrigin,
+                        ContentSettingValues.DEFAULT, preferenceSource));
         websitePreferenceBridge.addContentSettingException(
-                new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS,
-                        googleOrigin, ContentSettingValues.DEFAULT, preferenceSource));
+                new ContentSettingException(ContentSettingsType.POPUPS, googleOrigin,
+                        ContentSettingValues.DEFAULT, preferenceSource));
         websitePreferenceBridge.addContentSettingException(
-                new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS,
-                        googleOrigin, ContentSettingValues.DEFAULT, preferenceSource));
+                new ContentSettingException(ContentSettingsType.ADS, googleOrigin,
+                        ContentSettingValues.DEFAULT, preferenceSource));
         websitePreferenceBridge.addContentSettingException(
-                new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-                        googleOrigin, ContentSettingValues.DEFAULT, preferenceSource));
+                new ContentSettingException(ContentSettingsType.JAVASCRIPT, googleOrigin,
+                        ContentSettingValues.DEFAULT, preferenceSource));
         websitePreferenceBridge.addContentSettingException(
-                new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND,
-                        googleOrigin, ContentSettingValues.DEFAULT, preferenceSource));
-        websitePreferenceBridge.addContentSettingException(new ContentSettingException(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, googleOrigin,
-                ContentSettingValues.DEFAULT, preferenceSource));
-        websitePreferenceBridge.addContentSettingException(new ContentSettingException(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, googleOrigin,
-                ContentSettingValues.DEFAULT, preferenceSource));
+                new ContentSettingException(ContentSettingsType.SOUND, googleOrigin,
+                        ContentSettingValues.DEFAULT, preferenceSource));
         websitePreferenceBridge.addContentSettingException(
-                new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY,
-                        googleOrigin, ContentSettingValues.DEFAULT, preferenceSource));
+                new ContentSettingException(ContentSettingsType.BACKGROUND_SYNC, googleOrigin,
+                        ContentSettingValues.DEFAULT, preferenceSource));
+        websitePreferenceBridge.addContentSettingException(
+                new ContentSettingException(ContentSettingsType.AUTOMATIC_DOWNLOADS, googleOrigin,
+                        ContentSettingValues.DEFAULT, preferenceSource));
+        websitePreferenceBridge.addContentSettingException(
+                new ContentSettingException(ContentSettingsType.AUTOPLAY, googleOrigin,
+                        ContentSettingValues.DEFAULT, preferenceSource));
 
         // Add storage info.
         int storageSize = 256;
@@ -326,8 +326,8 @@ public class WebsitePermissionsFetcherTest {
 
         // Add chooser info types.
         websitePreferenceBridge.addChosenObjectInfo(
-                new ChosenObjectInfo(ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
-                        googleOrigin, googleOrigin, "Gadget", "Object", false));
+                new ChosenObjectInfo(ContentSettingsType.USB_CHOOSER_DATA, googleOrigin,
+                        googleOrigin, "Gadget", "Object", false));
 
         fetcher.fetchAllPreferences((sites) -> {
             Assert.assertEquals(1, sites.size());
@@ -383,7 +383,7 @@ public class WebsitePermissionsFetcherTest {
             ArrayList<ChosenObjectInfo> chosenObjectInfos =
                     new ArrayList<>(site.getChosenObjectInfo());
             Assert.assertEquals(1, chosenObjectInfos.size());
-            Assert.assertEquals(ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
+            Assert.assertEquals(ContentSettingsType.USB_CHOOSER_DATA,
                     chosenObjectInfos.get(0).getContentSettingsType());
         });
     }

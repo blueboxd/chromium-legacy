@@ -1174,10 +1174,13 @@ bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintRenderFrameHelper, message)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
+    IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintFrameContent, OnPrintFrameContent)
+    IPC_MESSAGE_HANDLER(PrintMsg_SetPrintingEnabled, OnSetPrintingEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1197,27 +1200,6 @@ void PrintRenderFrameHelper::BindPrintRenderFrameReceiver(
   receivers_.Add(this, std::move(receiver));
 }
 
-void PrintRenderFrameHelper::PrintRequestedPages() {
-  ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
-  if (ipc_nesting_level_ > 1)
-    return;
-
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  frame->DispatchBeforePrintEvent();
-  // Don't print if the RenderFrame is gone.
-  if (render_frame_gone_)
-    return;
-
-  // If we are printing a PDF extension frame, find the plugin node and print
-  // that instead.
-  auto plugin = delegate_->GetPdfElement(frame);
-  Print(frame, plugin, PrintRequestType::kRegular);
-  if (!render_frame_gone_)
-    frame->DispatchAfterPrintEvent();
-  // WARNING: |this| may be gone at this point. Do not do any more work here and
-  // just return.
-}
-
 void PrintRenderFrameHelper::PrintForSystemDialog() {
   ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
   if (ipc_nesting_level_ > 1)
@@ -1227,9 +1209,10 @@ void PrintRenderFrameHelper::PrintForSystemDialog() {
     NOTREACHED();
     return;
   }
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
   Print(frame, print_preview_context_.source_node(),
         PrintRequestType::kRegular);
-  if (!render_frame_gone_)
+  if (weak_this)
     frame->DispatchAfterPrintEvent();
   // WARNING: |this| may be gone at this point. Do not do any more work here and
   // just return.
@@ -1267,17 +1250,24 @@ void PrintRenderFrameHelper::OnPrintPreviewDialogClosed() {
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-void PrintRenderFrameHelper::PrintingDone(bool success) {
-  ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
+void PrintRenderFrameHelper::OnPrintPages() {
   if (ipc_nesting_level_ > 1)
     return;
-  notify_browser_of_print_failure_ = false;
-  DidFinishPrinting(success ? OK : FAIL_PRINT);
-}
 
-void PrintRenderFrameHelper::SetPrintingEnabled(bool enabled) {
-  ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
-  is_printing_enabled_ = enabled;
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  frame->DispatchBeforePrintEvent();
+  if (!weak_this)
+    return;
+
+  // If we are printing a PDF extension frame, find the plugin node and print
+  // that instead.
+  auto plugin = delegate_->GetPdfElement(frame);
+  Print(frame, plugin, PrintRequestType::kRegular);
+  if (weak_this)
+    frame->DispatchAfterPrintEvent();
+  // WARNING: |this| may be gone at this point. Do not do any more work here and
+  // just return.
 }
 
 void PrintRenderFrameHelper::GetPageSizeAndContentAreaFromPageLayout(
@@ -1567,6 +1557,19 @@ int PrintRenderFrameHelper::GetFitToPageScaleFactor(
   return static_cast<int>(100.0f * std::min(scale_width, scale_height));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
+void PrintRenderFrameHelper::OnPrintingDone(bool success) {
+  if (ipc_nesting_level_ > 1)
+    return;
+  notify_browser_of_print_failure_ = false;
+  if (!success)
+    LOG(ERROR) << "Failure in OnPrintingDone";
+  DidFinishPrinting(success ? OK : FAIL_PRINT);
+}
+
+void PrintRenderFrameHelper::OnSetPrintingEnabled(bool enabled) {
+  is_printing_enabled_ = enabled;
+}
 
 void PrintRenderFrameHelper::OnPrintFrameContent(
     const PrintMsg_PrintFrame_Params& params) {

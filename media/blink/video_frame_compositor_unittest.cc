@@ -99,6 +99,11 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
 
   VideoFrameCompositor* compositor() { return compositor_.get(); }
 
+  VideoFrameCompositor::OnNewFramePresentedCB GetNewFramePresentedCB() {
+    return base::BindOnce(&VideoFrameCompositorTest::OnNewFramePresented,
+                          base::Unretained(this));
+  }
+
  protected:
   bool IsSurfaceLayerForVideoEnabled() { return GetParam(); }
 
@@ -136,6 +141,19 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
     compositor()->GetCurrentFrame();
     compositor()->PutCurrentFrame();
   }
+
+  void OnNewFramePresented(scoped_refptr<VideoFrame> presented_frame,
+                           base::TimeTicks presentation_time,
+                           base::TimeTicks expected_presentation_time,
+                           uint32_t presentation_counter) {
+    last_presentation_counter_ = presentation_counter;
+    last_presented_frame_ = presented_frame;
+    EXPECT_NE(presentation_time, base::TimeTicks());
+    EXPECT_NE(expected_presentation_time, base::TimeTicks());
+  }
+
+  uint32_t last_presentation_counter_ = 0u;
+  scoped_refptr<VideoFrame> last_presented_frame_;
 
   base::TimeDelta preferred_render_interval_;
   base::SimpleTestTickClock tick_clock_;
@@ -188,6 +206,48 @@ TEST_P(VideoFrameCompositorTest, PaintSingleFrame) {
   scoped_refptr<VideoFrame> actual = compositor()->GetCurrentFrame();
   EXPECT_EQ(expected, actual);
   EXPECT_EQ(1, submitter_->did_receive_frame_count());
+}
+
+TEST_P(VideoFrameCompositorTest, RenderFiresPrensentationCallback) {
+  // Advance the clock so we can differentiate between base::TimeTicks::Now()
+  // and base::TimeTicks().
+  tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
+
+  scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
+  EXPECT_CALL(*this, Render(_, _, true)).WillRepeatedly(Return(opaque_frame));
+  compositor()->SetOnFramePresentedCallback(GetNewFramePresentedCB());
+  StartVideoRendererSink();
+  StopVideoRendererSink(true);
+  EXPECT_EQ(last_presented_frame_, opaque_frame);
+}
+
+TEST_P(VideoFrameCompositorTest, MultiplePresentationCallbacks) {
+  // Advance the clock so we can differentiate between base::TimeTicks::Now()
+  // and base::TimeTicks().
+  tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
+
+  scoped_refptr<VideoFrame> opaque_frame_1 = CreateOpaqueFrame();
+  scoped_refptr<VideoFrame> opaque_frame_2 = CreateOpaqueFrame();
+  scoped_refptr<VideoFrame> opaque_frame_3 = CreateOpaqueFrame();
+
+  // Set a dummy value to be overriden.
+  constexpr uint32_t kStartValue = 12345;
+  last_presentation_counter_ = kStartValue;
+  compositor()->SetOnFramePresentedCallback(GetNewFramePresentedCB());
+  compositor()->PaintSingleFrame(opaque_frame_1);
+  EXPECT_NE(last_presentation_counter_, kStartValue);
+  EXPECT_EQ(last_presented_frame_, opaque_frame_1);
+
+  // Callbacks are one-shot, and shouldn't change the values we last received.
+  compositor()->PaintSingleFrame(opaque_frame_2);
+  EXPECT_EQ(last_presented_frame_, opaque_frame_1);
+
+  // The presentation counter should have gone up twice.
+  uint32_t temp_counter = last_presentation_counter_;
+  compositor()->SetOnFramePresentedCallback(GetNewFramePresentedCB());
+  compositor()->PaintSingleFrame(opaque_frame_3);
+  EXPECT_EQ(last_presented_frame_, opaque_frame_3);
+  EXPECT_EQ(last_presentation_counter_, temp_counter + 2);
 }
 
 TEST_P(VideoFrameCompositorTest, VideoRendererSinkFrameDropped) {

@@ -43,7 +43,6 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -960,11 +959,6 @@ void LocalFrameClientImpl::DidChangeFrameOwnerProperties(
           frame_element->MarginHeight(), frame_element->AllowFullscreen(),
           frame_element->AllowPaymentRequest(), frame_element->IsDisplayNone(),
           frame_element->RequiredCsp()));
-}
-
-void LocalFrameClientImpl::DispatchWillStartUsingPeerConnectionHandler(
-    WebRTCPeerConnectionHandler* handler) {
-  web_frame_->Client()->WillStartUsingPeerConnectionHandler(handler);
 }
 
 bool LocalFrameClientImpl::ShouldBlockWebGL() {

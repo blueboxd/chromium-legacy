@@ -146,6 +146,11 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         public boolean hasExternalActivityStarted() {
             return mHasActivityStarted;
         }
+
+        @Override
+        public boolean isOnCustomTab() {
+            return true;
+        }
     }
 
     private static class CustomTabWebContentsDelegate

@@ -10,6 +10,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/tab_web_contents_delegate_android.h"
 #endif
 
 // static
@@ -44,8 +45,9 @@ WebappInstallSource InstallableMetrics::GetInstallSource(
     InstallTrigger trigger) {
   bool is_custom_tab = false;
 #if defined(OS_ANDROID)
-  is_custom_tab =
-      TabAndroid::FromWebContents(web_contents)->IsCurrentlyACustomTab();
+  auto* delegate = static_cast<android::TabWebContentsDelegateAndroid*>(
+      web_contents->GetDelegate());
+  is_custom_tab = delegate->IsCustomTab();
 #endif
 
   switch (trigger) {

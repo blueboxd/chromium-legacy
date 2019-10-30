@@ -301,7 +301,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   PauseSubresourceLoading() override;
   void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point&,
-      const blink::WebMediaPlayerAction& action) override;
+      const blink::MediaPlayerAction& action) override;
   bool CreateNetworkServiceDefaultFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver) override;

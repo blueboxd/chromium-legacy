@@ -29,7 +29,7 @@ using bookmarks::BookmarkModel;
 DurableStoragePermissionContext::DurableStoragePermissionContext(
     Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
+                            ContentSettingsType::DURABLE_STORAGE,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 void DurableStoragePermissionContext::DecidePermission(
@@ -109,7 +109,7 @@ void DurableStoragePermissionContext::UpdateContentSetting(
 
   HostContentSettingsMapFactory::GetForProfile(profile())
       ->SetContentSettingDefaultScope(requesting_origin, GURL(),
-                                      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
+                                      ContentSettingsType::DURABLE_STORAGE,
                                       std::string(), content_setting);
 }
 

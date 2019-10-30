@@ -22,7 +22,7 @@
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
 #include "chromecast/renderer/on_load_script_injector.h"
 #include "chromecast/renderer/queryable_data_bindings.h"
-#include "components/network_hints/renderer/prescient_networking_dispatcher.h"
+#include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -119,9 +119,6 @@ void CastContentRendererClient::RenderThreadStarted() {
       new MemoryPressureObserverImpl(&memory_pressure_proxy));
   memory_pressure_controller->AddObserver(std::move(memory_pressure_proxy));
 #endif
-
-  prescient_networking_dispatcher_.reset(
-      new network_hints::PrescientNetworkingDispatcher());
 
 #if !defined(OS_FUCHSIA)
   // TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
@@ -300,7 +297,11 @@ bool CastContentRendererClient::IsSupportedBitstreamAudioCodec(
 
 blink::WebPrescientNetworking*
 CastContentRendererClient::GetPrescientNetworking() {
-  return prescient_networking_dispatcher_.get();
+  if (!web_prescient_networking_impl_) {
+    web_prescient_networking_impl_ =
+        std::make_unique<network_hints::WebPrescientNetworkingImpl>();
+  }
+  return web_prescient_networking_impl_.get();
 }
 
 bool CastContentRendererClient::DeferMediaLoad(

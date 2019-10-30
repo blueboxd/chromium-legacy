@@ -308,7 +308,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void PrintPagesForTesting(cc::PaintCanvas*, const WebSize&) override;
   WebRect GetSelectionBoundsRectForTesting() const override;
   void PerformMediaPlayerAction(const WebPoint&,
-                                const WebMediaPlayerAction&) override;
+                                const MediaPlayerAction&) override;
   void SetLifecycleState(mojom::FrameLifecycleState state) override;
   void WasHidden() override;
   void WasShown() override;

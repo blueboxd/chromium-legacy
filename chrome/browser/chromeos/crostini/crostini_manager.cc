@@ -1050,7 +1050,12 @@ void CrostiniManager::CreateLxdContainer(std::string vm_name,
   request.set_container_name(std::move(container_name));
   request.set_owner_id(owner_id_);
   request.set_image_server(kCrostiniDefaultImageServerUrl);
-  request.set_image_alias(kCrostiniDefaultImageAlias);
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kCrostiniUseBusterImage)) {
+    request.set_image_alias(kCrostiniBusterImageAlias);
+  } else {
+    request.set_image_alias(kCrostiniStretchImageAlias);
+  }
   GetCiceroneClient()->CreateLxdContainer(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnCreateLxdContainer,

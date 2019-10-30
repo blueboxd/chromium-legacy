@@ -54,7 +54,6 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/media/service/cast_renderer.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
-#include "components/network_hints/browser/network_hints_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -327,16 +326,6 @@ CastContentBrowserClient::CreateBrowserMainParts(
 
 void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
-  // Forcibly trigger I/O-thread URLRequestContext initialization before
-  // getting HostResolver.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(
-          &net::URLRequestContextGetter::GetURLRequestContext,
-          base::Unretained(url_request_context_factory_->GetSystemGetter())),
-      base::Bind(&CastContentBrowserClient::AddNetworkHintsMessageFilter,
-                 base::Unretained(this), host->GetID()));
-
 #if defined(OS_ANDROID)
   // Cast on Android always allows persisting data.
   //
@@ -360,21 +349,6 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(
       new CastExtensionMessageFilter(render_process_id, browser_context));
 #endif
-}
-
-void CastContentBrowserClient::AddNetworkHintsMessageFilter(
-    int render_process_id,
-    net::URLRequestContext* context) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromID(render_process_id);
-  if (!host)
-    return;
-
-  scoped_refptr<content::BrowserMessageFilter> network_hints_message_filter(
-      new network_hints::NetworkHintsMessageFilter(render_process_id));
-  host->AddFilter(network_hints_message_filter.get());
 }
 
 bool CastContentBrowserClient::IsHandledURL(const GURL& url) {

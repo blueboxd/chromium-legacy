@@ -35,6 +35,7 @@
 #include <string>
 #include <utility>
 
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -53,6 +54,8 @@
 #include "third_party/blink/public/platform/web_rtc_session_description_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
@@ -89,6 +92,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_offer_options.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_error_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
@@ -134,6 +138,9 @@ const char kSignalingStateClosedMessage[] =
     "The RTCPeerConnection's signalingState is 'closed'.";
 const char kModifiedSdpMessage[] =
     "The SDP does not match the previously generated SDP for this type";
+
+base::LazyInstance<RTCPeerConnection::RtcPeerConnectionHandlerFactoryCallback>::
+    Leaky g_create_rpc_peer_connection_handler_callback_;
 
 // The maximum number of PeerConnections that can exist simultaneously.
 const int64_t kMaxPeerConnections = 500;
@@ -738,8 +745,17 @@ RTCPeerConnection::RTCPeerConnection(
     return;
   }
 
-  peer_handler_ = Platform::Current()->CreateRTCPeerConnectionHandler(
-      this, document->GetTaskRunner(TaskType::kInternalMedia));
+  // Tests might need a custom RtcPeerConnectionHandler implementation.
+  if (!g_create_rpc_peer_connection_handler_callback_.Get().is_null()) {
+    peer_handler_ =
+        std::move(g_create_rpc_peer_connection_handler_callback_.Get()).Run();
+  } else {
+    peer_handler_ =
+        PeerConnectionDependencyFactory::GetInstance()
+            ->CreateRTCPeerConnectionHandler(
+                this, document->GetTaskRunner(TaskType::kInternalMedia));
+  }
+
   if (!peer_handler_) {
     closed_ = true;
     stopped_ = true;
@@ -749,8 +765,12 @@ RTCPeerConnection::RTCPeerConnection(
     return;
   }
 
-  document->GetFrame()->Client()->DispatchWillStartUsingPeerConnectionHandler(
-      peer_handler_.get());
+  // TODO(crbug.com/787254): Can the frame be associated when
+  // calling RtcPeerConnectionHandler::Initialize()?
+  auto* web_local_frame =
+      static_cast<WebLocalFrame*>(WebFrame::FromFrame(document->GetFrame()));
+  if (web_local_frame)
+    peer_handler_->AssociateWithFrame(web_local_frame);
 
   if (!peer_handler_->Initialize(configuration, constraints)) {
     closed_ = true;
@@ -3304,6 +3324,13 @@ void RTCPeerConnection::Trace(blink::Visitor* visitor) {
 base::TimeTicks RTCPeerConnection::WebRtcTimestampToBlinkTimestamp(
     base::TimeTicks webrtc_monotonic_time) const {
   return webrtc_monotonic_time + blink_webrtc_time_diff_;
+}
+
+// static
+void RTCPeerConnection::SetRtcPeerConnectionHandlerFactoryForTesting(
+    RtcPeerConnectionHandlerFactoryCallback callback) {
+  DCHECK(g_create_rpc_peer_connection_handler_callback_.Get().is_null());
+  g_create_rpc_peer_connection_handler_callback_.Get() = std::move(callback);
 }
 
 int RTCPeerConnection::PeerConnectionCount() {

@@ -161,6 +161,12 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
             }));
   }
 
+  void FinalizeFallbackInstallAfterSync(
+      const AppId& app_id,
+      InstallFinalizedCallback callback) override {
+    NOTREACHED();
+  }
+
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                       InstallFinalizedCallback callback) override {
     NOTREACHED();

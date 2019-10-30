@@ -102,6 +102,14 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   crx_installer->InstallWebApp(web_app_info);
 }
 
+void BookmarkAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
+    const web_app::AppId& app_id,
+    InstallFinalizedCallback callback) {
+  // TODO(crbug.com/1018630): Install synced bookmark apps using a freshly
+  // fetched manifest instead of sync data.
+  NOTREACHED();
+}
+
 void BookmarkAppInstallFinalizer::FinalizeUpdate(
     const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback) {

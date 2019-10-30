@@ -21,6 +21,12 @@ declare_args() {
   xcode_build = ""
   machine_os_build = ""
 
+  # Set DEVELOPER_DIR while running sdk_info.py.
+  # Due to https://crbug.com/1018739, the path must not contains filtered
+  # out patterns or the build will fail. In particular src/build/mac does
+  # not work (see build/BUILDCONFIG.gn for pattern that would cause issue).
+  ios_sdk_developer_dir = ""
+
   # The iOS Code signing identity to use
   # TODO(GYP), TODO(sdfresne): Consider having a separate
   # ios_enable_code_signing_flag=<bool> flag to make the invocation clearer.
@@ -93,6 +99,12 @@ if (ios_sdk_path == "") {
 
   ios_sdk_info_args = [ "--get_sdk_info" ]
   ios_sdk_info_args += [ ios_sdk_name ]
+  if (ios_sdk_developer_dir != "") {
+    ios_sdk_info_args += [
+      "--developer_dir",
+      ios_sdk_developer_dir,
+    ]
+  }
   script_name = "//build/config/mac/sdk_info.py"
   _ios_sdk_result = exec_script(script_name, ios_sdk_info_args, "scope")
   if (ios_enable_relative_sdk_path) {

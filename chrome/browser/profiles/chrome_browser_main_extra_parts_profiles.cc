@@ -114,6 +114,7 @@
 #include "chrome/browser/chromeos/bluetooth/debug_logs_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h"
+#include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
 #include "chrome/browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_engagement_metrics_service.h"
@@ -287,6 +288,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   chromeos::smb_client::SmbServiceFactory::GetInstance();
   crostini::CrostiniRegistryServiceFactory::GetInstance();
   extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
+  extensions::PrintingAPIHandler::GetFactoryInstance();
   extensions::PrintJobFinishedEventDispatcher::GetFactoryInstance();
   extensions::VerifyTrustAPI::GetFactoryInstance();
   TetherServiceFactory::GetInstance();

@@ -17,6 +17,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -85,7 +86,7 @@ public class CustomTabActivityTestRule extends ChromeActivityTestRule<CustomTabA
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         Assert.assertNotNull(tab);
         Assert.assertNotNull(tab.getView());
-        Assert.assertTrue(tab.isCurrentlyACustomTab());
+        Assert.assertTrue(TabTestUtils.isCustomTab(tab));
     }
 
     @Override

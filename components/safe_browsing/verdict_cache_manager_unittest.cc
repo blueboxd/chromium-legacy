@@ -188,7 +188,7 @@ TEST_F(VerdictCacheManagerTest, TestParseInvalidVerdictEntry) {
 
   content_setting_map_->SetWebsiteSettingDefaultScope(
       GURL("http://www.google.com/"), GURL(),
-      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      ContentSettingsType::PASSWORD_PROTECTION, std::string(),
       std::move(cache_dictionary));
 
   ReusedPasswordAccountType password_type;
@@ -396,7 +396,7 @@ TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdictWithInvalidEntry) {
 
   content_setting_map_->SetWebsiteSettingDefaultScope(
       GURL("http://www.google.com/"), GURL(),
-      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      ContentSettingsType::PASSWORD_PROTECTION, std::string(),
       std::move(cache_dictionary));
 
   ReusedPasswordAccountType password_type;
@@ -411,7 +411,7 @@ TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdictWithInvalidEntry) {
   EXPECT_EQ(2U,
             content_setting_map_
                 ->GetWebsiteSetting(GURL("http://www.google.com/"), GURL(),
-                                    CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+                                    ContentSettingsType::PASSWORD_PROTECTION,
                                     std::string(), nullptr)
                 ->FindDictKey("1")
                 ->DictSize());
@@ -422,7 +422,7 @@ TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdictWithInvalidEntry) {
   EXPECT_EQ(1U,
             content_setting_map_
                 ->GetWebsiteSetting(GURL("http://www.google.com/"), GURL(),
-                                    CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+                                    ContentSettingsType::PASSWORD_PROTECTION,
                                     std::string(), nullptr)
                 ->FindDictKey("1")
                 ->DictSize());

@@ -240,7 +240,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     HostContentSettingsMap* content_settings_map =
         HostContentSettingsMapFactory::GetForProfile(browser()->profile());
     content_settings_map->SetContentSettingDefaultScope(
-        server_root, server_root, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+        server_root, server_root, ContentSettingsType::PLUGINS, std::string(),
         CONTENT_SETTING_ALLOW);
   }
 

@@ -137,7 +137,7 @@ class MEDIA_EXPORT PipelineController {
   base::TimeDelta GetMediaDuration() const;
   bool DidLoadingProgress();
   PipelineStatistics GetStatistics() const;
-  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
+  void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb);
   void OnEnabledAudioTracksChanged(
       const std::vector<MediaTrack::Id>& enabled_track_ids);
   void OnSelectedVideoTrackChanged(

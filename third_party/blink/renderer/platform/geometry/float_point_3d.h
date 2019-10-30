@@ -111,7 +111,7 @@ class PLATFORM_EXPORT FloatPoint3D {
   float DistanceTo(const FloatPoint3D& a) const;
 
   operator SkPoint3() const { return SkPoint3::Make(x_, y_, z_); }
-  operator gfx::Point3F() const;
+  operator gfx::Point3F() const { return gfx::Point3F(x_, y_, z_); }
 
   String ToString() const;
 

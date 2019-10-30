@@ -31,7 +31,7 @@ TEST_F(PermissionUtilTest, ScopedRevocationReporter) {
       ContentSettingsPattern::FromURLNoWildcard(host);
   ContentSettingsPattern host_containing_wildcards_pattern =
       ContentSettingsPattern::FromString("https://[*.]example.com/");
-  ContentSettingsType type = CONTENT_SETTINGS_TYPE_GEOLOCATION;
+  ContentSettingsType type = ContentSettingsType::GEOLOCATION;
   PermissionSourceUI source_ui = PermissionSourceUI::SITE_SETTINGS;
 
   // Allow->Block triggers a revocation.

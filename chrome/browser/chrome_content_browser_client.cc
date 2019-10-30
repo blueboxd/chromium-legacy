@@ -1374,7 +1374,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
   int id = host->GetID();
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  host->AddFilter(new ChromeRenderMessageFilter(id, profile));
+  host->AddFilter(new ChromeRenderMessageFilter());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   host->AddFilter(new cast::CastTransportHostFilter());
 #endif
@@ -2309,7 +2309,7 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
   content_settings::SettingInfo info;
   std::unique_ptr<base::Value> value =
       io_data->GetHostContentSettingsMap()->GetWebsiteSetting(
-          first_party_url, first_party_url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+          first_party_url, first_party_url, ContentSettingsType::JAVASCRIPT,
           std::string(), &info);
   ContentSetting setting = content_settings::ValueToContentSetting(value.get());
   bool allow_javascript = (setting == CONTENT_SETTING_ALLOW);
@@ -2358,7 +2358,7 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
   content_settings::SettingInfo info;
   std::unique_ptr<base::Value> value =
       HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
-          first_party_url, first_party_url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+          first_party_url, first_party_url, ContentSettingsType::JAVASCRIPT,
           std::string(), &info);
   ContentSetting setting = content_settings::ValueToContentSetting(value.get());
   bool allow_javascript = (setting == CONTENT_SETTING_ALLOW);
@@ -2541,7 +2541,7 @@ ChromeContentBrowserClient::AllowWebBluetooth(
 
   if (content_settings->GetContentSetting(
           requesting_origin.GetURL(), embedding_origin.GetURL(),
-          CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD,
+          ContentSettingsType::BLUETOOTH_GUARD,
           std::string()) == CONTENT_SETTING_BLOCK) {
     return AllowWebBluetoothResult::BLOCK_POLICY;
   }
@@ -2683,7 +2683,7 @@ ParseCertificatePrincipalPattern(const base::Value* pattern) {
 }
 
 // Attempts to auto-select a client certificate according to the value of
-// |CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE| content setting for
+// |ContentSettingsType::AUTO_SELECT_CERTIFICATE| content setting for
 // |requesting_url|. If no certificate was auto-selected, returns nullptr.
 std::unique_ptr<net::ClientCertIdentity> AutoSelectCertificate(
     Profile* profile,
@@ -2694,8 +2694,7 @@ std::unique_ptr<net::ClientCertIdentity> AutoSelectCertificate(
   std::unique_ptr<base::Value> setting =
       host_content_settings_map->GetWebsiteSetting(
           requesting_url, requesting_url,
-          CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(),
-          nullptr);
+          ContentSettingsType::AUTO_SELECT_CERTIFICATE, std::string(), nullptr);
 
   if (!setting || !setting->is_dict())
     return nullptr;
@@ -2709,7 +2708,7 @@ std::unique_ptr<net::ClientCertIdentity> AutoSelectCertificate(
     // Therefore, delete the invalid value.
     host_content_settings_map->SetWebsiteSettingDefaultScope(
         requesting_url, requesting_url,
-        CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), nullptr);
+        ContentSettingsType::AUTO_SELECT_CERTIFICATE, std::string(), nullptr);
     return nullptr;
   }
 
@@ -5364,7 +5363,7 @@ bool ChromeContentBrowserClient::IsBluetoothScanningBlocked(
 
   if (content_settings->GetContentSetting(
           requesting_origin.GetURL(), embedding_origin.GetURL(),
-          CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
+          ContentSettingsType::BLUETOOTH_SCANNING,
           std::string()) == CONTENT_SETTING_BLOCK) {
     return true;
   }
@@ -5382,7 +5381,7 @@ void ChromeContentBrowserClient::BlockBluetoothScanning(
 
   content_settings->SetContentSettingDefaultScope(
       requesting_origin.GetURL(), embedding_origin.GetURL(),
-      CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING, std::string(),
+      ContentSettingsType::BLUETOOTH_SCANNING, std::string(),
       CONTENT_SETTING_BLOCK);
 }
 

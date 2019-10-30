@@ -88,26 +88,26 @@ public class ContentSettingException implements Serializable {
     public static @ContentSettingsType int getContentSettingsType(@Type int type) {
         switch (type) {
             case Type.ADS:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS;
+                return ContentSettingsType.ADS;
             case Type.AUTOMATIC_DOWNLOADS:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS;
+                return ContentSettingsType.AUTOMATIC_DOWNLOADS;
             case Type.AUTOPLAY:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
+                return ContentSettingsType.AUTOPLAY;
             case Type.BACKGROUND_SYNC:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
+                return ContentSettingsType.BACKGROUND_SYNC;
             case Type.BLUETOOTH_SCANNING:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING;
+                return ContentSettingsType.BLUETOOTH_SCANNING;
             case Type.COOKIE:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES;
+                return ContentSettingsType.COOKIES;
             case Type.JAVASCRIPT:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
+                return ContentSettingsType.JAVASCRIPT;
             case Type.POPUP:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS;
+                return ContentSettingsType.POPUPS;
             case Type.SOUND:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND;
+                return ContentSettingsType.SOUND;
             default:
                 assert false;
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_DEFAULT;
+                return ContentSettingsType.DEFAULT;
         }
     }
 }

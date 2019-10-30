@@ -4,6 +4,7 @@
 # the BackForwardCache.
 -FrameServiceBaseTest.DidFinishNavigation
 
+# https://crbug.com/1019077
 # Expects the process used by the previous document to exit.
 -RenderFrameHostManagerTest.DeleteFrameAfterSwapOutACK
 
@@ -17,8 +18,3 @@
 
 # NavigationSimulator.CommitErrorPage() is not supported.
 -RenderProcessHostUnitTest.DoNotReuseError
-
-# Test expect a proxy for the old RFH's SiteInstance after a normal navigation
-# to exist.
--WebContentsImplTest.CrossSiteBoundaries
--WebContentsImplTest.NavigateFromSitelessUrl

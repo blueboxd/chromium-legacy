@@ -24,6 +24,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
+#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
@@ -38,6 +39,7 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/modules/p2p/port_allocator.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/p2p/empty_network_manager.h"
 #include "third_party/blink/renderer/platform/p2p/filtering_network_manager.h"
 #include "third_party/blink/renderer/platform/p2p/ipc_network_manager.h"
@@ -137,8 +139,12 @@ std::unique_ptr<blink::WebRTCPeerConnectionHandler>
 PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return blink::Platform::Current()->CreateRTCPeerConnectionHandler(
-      client, std::move(task_runner));
+  // Save histogram data so we can see how much PeerConnection is used.
+  // The histogram counts the number of calls to the JS API
+  // RTCPeerConnection.
+  UpdateWebRTCMethodCount(blink::WebRTCAPIName::kRTCPeerConnection);
+
+  return std::make_unique<RTCPeerConnectionHandler>(client, this, task_runner);
 }
 
 const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&

@@ -1271,8 +1271,10 @@ FloatSize RadiusToCorner(const FloatPoint& point,
     }
   }
 
-  if (shape == kCircleEndShape)
+  if (shape == kCircleEndShape) {
+    distance = clampTo<float>(distance);
     return FloatSize(distance, distance);
+  }
 
   DCHECK_EQ(shape, kEllipseEndShape);
   // If the end shape is an ellipse, the gradient-shape has the same ratio of

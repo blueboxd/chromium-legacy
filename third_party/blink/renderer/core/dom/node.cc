@@ -3244,7 +3244,6 @@ void Node::Trace(Visitor* visitor) {
   // trace only one of them.
   if (HasRareData())
     visitor->Trace(RareData());
-  visitor->Trace(GetEventTargetData());
   visitor->Trace(tree_scope_);
   EventTarget::Trace(visitor);
 }

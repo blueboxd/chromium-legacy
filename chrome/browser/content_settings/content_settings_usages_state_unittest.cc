@@ -180,19 +180,19 @@ class ContentSettingsUsagesStateTests : public testing::Test {
 };
 
 TEST_F(ContentSettingsUsagesStateTests, ClearOnNewOriginForGeolocation) {
-  ClearOnNewOrigin(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  ClearOnNewOrigin(ContentSettingsType::GEOLOCATION);
 }
 
 TEST_F(ContentSettingsUsagesStateTests, ClearOnNewOriginForMidi) {
-  ClearOnNewOrigin(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+  ClearOnNewOrigin(ContentSettingsType::MIDI_SYSEX);
 }
 
 TEST_F(ContentSettingsUsagesStateTests, ShowPortOnSameHostForGeolocation) {
-  ShowPortOnSameHost(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  ShowPortOnSameHost(ContentSettingsType::GEOLOCATION);
 }
 
 TEST_F(ContentSettingsUsagesStateTests, ShowPortOnSameHostForMidi) {
-  ShowPortOnSameHost(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+  ShowPortOnSameHost(ContentSettingsType::MIDI_SYSEX);
 }
 
 }  // namespace

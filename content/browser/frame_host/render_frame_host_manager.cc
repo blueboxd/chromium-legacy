@@ -538,15 +538,11 @@ void RenderFrameHostManager::SwapOutOldFrame(
       // TODO(hajimehoshi): For code readability, BackForwardCacheMetrics should
       // take CanStoreDocumentResult directly and rename
       // MarkNotRestoredWithReason to DidNotStoreDocument.
-      for (int i = 0;
-           i <= static_cast<int>(
-                    BackForwardCacheMetrics::NotRestoredReason::kMaxValue);
-           i++) {
-        if (can_store.not_stored_reasons.test(static_cast<size_t>(i))) {
-          old_page_back_forward_cache_metrics->MarkNotRestoredWithReason(
-              static_cast<BackForwardCacheMetrics::NotRestoredReason>(i));
-        }
-      }
+      old_page_back_forward_cache_metrics->MarkNotRestoredWithReasons(
+          can_store.not_stored_reasons);
+      old_page_back_forward_cache_metrics
+          ->MarkNotRestoredWithBlocklistedFeatures(
+              can_store.blocklisted_features);
     }
   }
 

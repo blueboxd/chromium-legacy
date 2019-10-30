@@ -110,7 +110,7 @@ class FlashContentSettingsChangeWaiter : public content_settings::Observer {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const std::string& resource_identifier) override {
-    if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS)
+    if (content_type == ContentSettingsType::PLUGINS)
       Proceed();
   }
 
@@ -147,7 +147,7 @@ class ContentSettingSourceSetter {
 
   const char* GetPrefNameForDefaultPermissionSetting() {
     switch (content_type_) {
-      case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      case ContentSettingsType::NOTIFICATIONS:
         return prefs::kManagedDefaultNotificationsSetting;
       default:
         // Add support as needed.
@@ -168,11 +168,11 @@ class SiteSettingsHandlerTest : public testing::Test {
  public:
   SiteSettingsHandlerTest()
       : kNotifications(site_settings::ContentSettingsTypeToGroupName(
-            CONTENT_SETTINGS_TYPE_NOTIFICATIONS)),
+            ContentSettingsType::NOTIFICATIONS)),
         kCookies(site_settings::ContentSettingsTypeToGroupName(
-            CONTENT_SETTINGS_TYPE_COOKIES)),
+            ContentSettingsType::COOKIES)),
         kFlash(site_settings::ContentSettingsTypeToGroupName(
-            CONTENT_SETTINGS_TYPE_PLUGINS)),
+            ContentSettingsType::PLUGINS)),
         handler_(&profile_) {
 #if defined(OS_CHROMEOS)
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
@@ -217,7 +217,7 @@ class SiteSettingsHandlerTest : public testing::Test {
   void SetSoundContentSettingDefault(ContentSetting value) {
     HostContentSettingsMap* content_settings =
         HostContentSettingsMapFactory::GetForProfile(profile());
-    content_settings->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND,
+    content_settings->SetDefaultContentSetting(ContentSettingsType::SOUND,
                                                value);
   }
 
@@ -537,9 +537,9 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   const GURL url1("http://example.com");
   const GURL url2("https://other.example.com");
   map->SetContentSettingDefaultScope(url1, url1,
-                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                     ContentSettingsType::NOTIFICATIONS,
                                      std::string(), CONTENT_SETTING_BLOCK);
-  map->SetContentSettingDefaultScope(url2, url2, CONTENT_SETTINGS_TYPE_PLUGINS,
+  map->SetContentSettingDefaultScope(url2, url2, ContentSettingsType::PLUGINS,
                                      std::string(), CONTENT_SETTING_ALLOW);
   handler()->HandleGetAllSites(&get_all_sites_args);
 
@@ -567,7 +567,7 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
 
   // Add an additional exception belonging to a different eTLD+1.
   const GURL url3("https://example2.net");
-  map->SetContentSettingDefaultScope(url3, url3, CONTENT_SETTINGS_TYPE_PLUGINS,
+  map->SetContentSettingDefaultScope(url3, url3, ContentSettingsType::PLUGINS,
                                      std::string(), CONTENT_SETTING_BLOCK);
   handler()->HandleGetAllSites(&get_all_sites_args);
 
@@ -603,11 +603,11 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   const GURL url4("https://example2.co.uk");
   for (int i = 0; i < 3; ++i) {
     auto_blocker->RecordDismissAndEmbargo(url4,
-                                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+                                          ContentSettingsType::NOTIFICATIONS);
   }
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
-      auto_blocker->GetEmbargoResult(url4, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      auto_blocker->GetEmbargoResult(url4, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
   handler()->HandleGetAllSites(&get_all_sites_args);
 
@@ -641,16 +641,16 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   // still appears.
   for (int i = 0; i < 3; ++i) {
     auto_blocker->RecordDismissAndEmbargo(url3,
-                                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+                                          ContentSettingsType::NOTIFICATIONS);
   }
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
-      auto_blocker->GetEmbargoResult(url3, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      auto_blocker->GetEmbargoResult(url3, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
   clock.Advance(base::TimeDelta::FromDays(8));
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
-      auto_blocker->GetEmbargoResult(url3, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      auto_blocker->GetEmbargoResult(url3, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
 
   handler()->HandleGetAllSites(&get_all_sites_args);
@@ -670,16 +670,16 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   const GURL url5("http://test.example5.com");
   for (int i = 0; i < 3; ++i) {
     auto_blocker->RecordDismissAndEmbargo(url5,
-                                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+                                          ContentSettingsType::NOTIFICATIONS);
   }
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
-      auto_blocker->GetEmbargoResult(url5, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      auto_blocker->GetEmbargoResult(url5, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
   clock.Advance(base::TimeDelta::FromDays(8));
   EXPECT_EQ(
       CONTENT_SETTING_ASK,
-      auto_blocker->GetEmbargoResult(url5, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      auto_blocker->GetEmbargoResult(url5, ContentSettingsType::NOTIFICATIONS)
           .content_setting);
 
   handler()->HandleGetAllSites(&get_all_sites_args);
@@ -887,8 +887,7 @@ TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Source"),
             static_cast<int64_t>(PermissionSourceUI::SITE_SETTINGS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
-            static_cast<int64_t>(
-                ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+            static_cast<int64_t>(ContentSettingsType::NOTIFICATIONS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
             static_cast<int64_t>(PermissionAction::REVOKED));
 }
@@ -900,7 +899,7 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
   // Use a non-default port to verify the display name does not strip this off.
   const std::string google("https://www.google.com:183");
   ContentSettingSourceSetter source_setter(profile(),
-                                           CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+                                           ContentSettingsType::NOTIFICATIONS);
 
   base::ListValue get_origin_permissions_args;
   get_origin_permissions_args.AppendString(kCallbackId);
@@ -1025,7 +1024,7 @@ TEST_F(SiteSettingsHandlerTest, ChangingFlashSettingForSiteIsRemembered) {
       HostContentSettingsMapFactory::GetForProfile(profile());
   // Make sure the site being tested doesn't already have this marker set.
   EXPECT_EQ(nullptr,
-            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+            map->GetWebsiteSetting(url, url, ContentSettingsType::PLUGINS_DATA,
                                    std::string(), nullptr));
 
   // Change the Flash setting.
@@ -1045,14 +1044,14 @@ TEST_F(SiteSettingsHandlerTest, ChangingFlashSettingForSiteIsRemembered) {
   // Check that this site has now been marked for displaying Flash always, then
   // clear it and check this works.
   EXPECT_NE(nullptr,
-            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+            map->GetWebsiteSetting(url, url, ContentSettingsType::PLUGINS_DATA,
                                    std::string(), nullptr));
   base::ListValue clear_args;
   clear_args.AppendString(origin_with_port);
   handler()->HandleSetOriginPermissions(&set_args);
   handler()->HandleClearFlashPref(&clear_args);
   EXPECT_EQ(nullptr,
-            map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+            map->GetWebsiteSetting(url, url, ContentSettingsType::PLUGINS_DATA,
                                    std::string(), nullptr));
 }
 #endif
@@ -1231,7 +1230,7 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
  public:
   SiteSettingsHandlerInfobarTest()
       : kNotifications(site_settings::ContentSettingsTypeToGroupName(
-            CONTENT_SETTINGS_TYPE_NOTIFICATIONS)) {}
+            ContentSettingsType::NOTIFICATIONS)) {}
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
@@ -1730,7 +1729,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleGetChooserExceptionListForUsb) {
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
-          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+          ContentSettingsType::USB_CHOOSER_DATA);
 
   const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
       kUsbChooserGroupName, /*expected_total_calls=*/1u);
@@ -1741,7 +1740,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleGetChooserExceptionListForUsbOffTheRecord) {
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
-          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+          ContentSettingsType::USB_CHOOSER_DATA);
   SetUpOffTheRecordUsbChooserContext();
   web_ui()->ClearTrackedCalls();
 
@@ -1777,7 +1776,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
        HandleResetChooserExceptionForSiteForUsb) {
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
-          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
+          ContentSettingsType::USB_CHOOSER_DATA);
   const auto kAndroidOrigin = url::Origin::Create(kAndroidUrl);
   const auto kChromiumOrigin = url::Origin::Create(kChromiumUrl);
   const std::string kAndroidOriginStr = kAndroidUrl.GetOrigin().spec();
@@ -1800,8 +1799,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
       UsbChooserContext::DeviceInfoToValue(*persistent_device_info_)));
 
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
-                             CONTENT_SETTINGS_TYPE_USB_GUARD,
-                             CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+                             ContentSettingsType::USB_GUARD,
+                             ContentSettingsType::USB_CHOOSER_DATA));
   EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidOrigin, kChromiumOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 
@@ -1847,8 +1846,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   }
 
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
-                             CONTENT_SETTINGS_TYPE_USB_GUARD,
-                             CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+                             ContentSettingsType::USB_GUARD,
+                             ContentSettingsType::USB_CHOOSER_DATA));
   EXPECT_CALL(observer_, OnPermissionRevoked(kChromiumOrigin, kChromiumOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 
@@ -1888,8 +1887,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   }
 
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
-                             CONTENT_SETTINGS_TYPE_USB_GUARD,
-                             CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+                             ContentSettingsType::USB_GUARD,
+                             ContentSettingsType::USB_CHOOSER_DATA));
   EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidOrigin, kAndroidOrigin));
   handler()->HandleResetChooserExceptionForSite(&args);
 

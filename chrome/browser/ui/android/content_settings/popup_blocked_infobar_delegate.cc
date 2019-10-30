@@ -78,7 +78,7 @@ PopupBlockedInfoBarDelegate::PopupBlockedInfoBarDelegate(
     : ConfirmInfoBarDelegate(), num_popups_(num_popups), url_(url), map_(map) {
   content_settings::SettingInfo setting_info;
   std::unique_ptr<base::Value> setting = map->GetWebsiteSetting(
-      url, url, CONTENT_SETTINGS_TYPE_POPUPS, std::string(), &setting_info);
+      url, url, ContentSettingsType::POPUPS, std::string(), &setting_info);
   can_show_popups_ =
       setting_info.source != content_settings::SETTING_SOURCE_POLICY;
 }
@@ -115,7 +115,7 @@ bool PopupBlockedInfoBarDelegate::Accept() {
   DCHECK(can_show_popups_);
 
   // Create exceptions.
-  map_->SetNarrowestContentSetting(url_, url_, CONTENT_SETTINGS_TYPE_POPUPS,
+  map_->SetNarrowestContentSetting(url_, url_, ContentSettingsType::POPUPS,
                                    CONTENT_SETTING_ALLOW);
 
   // Launch popups.

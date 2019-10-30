@@ -227,7 +227,7 @@ class CookieTreeHostNode : public CookieTreeNode {
   std::string canonicalized_host() const { return canonicalized_host_; }
 
   // Creates an content exception for this origin of type
-  // CONTENT_SETTINGS_TYPE_COOKIES.
+  // ContentSettingsType::COOKIES.
   void CreateContentException(content_settings::CookieSettings* cookie_settings,
                               ContentSetting setting) const;
 

@@ -78,8 +78,8 @@ enum ArcPermissionType {
 // This enum takes the important permission values from the
 // contents_settings_type.h ContentSettingsType enum.
 enum PwaPermissionType {
-  CONTENT_SETTINGS_TYPE_GEOLOCATION = 5,
-  CONTENT_SETTINGS_TYPE_NOTIFICATIONS = 6,
-  CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC = 9,
-  CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA = 10,
+  GEOLOCATION = 5,
+  NOTIFICATIONS = 6,
+  MEDIASTREAM_MIC = 9,
+  MEDIASTREAM_CAMERA = 10,
 };

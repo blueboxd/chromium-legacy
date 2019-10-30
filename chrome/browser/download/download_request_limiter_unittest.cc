@@ -131,7 +131,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     HostContentSettingsMapFactory::GetForProfile(
         Profile::FromBrowserContext(contents->GetBrowserContext()))
         ->SetContentSettingDefaultScope(
-            host, GURL(), CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+            host, GURL(), ContentSettingsType::AUTOMATIC_DOWNLOADS,
             std::string(), setting);
   }
 

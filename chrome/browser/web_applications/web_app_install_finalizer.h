@@ -29,6 +29,9 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
+  void FinalizeFallbackInstallAfterSync(
+      const AppId& app_id,
+      InstallFinalizedCallback callback) override;
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                       InstallFinalizedCallback callback) override;
   void UninstallExternalWebApp(const GURL& app_url,
@@ -45,6 +48,10 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void OnDatabaseCommitCompleted(InstallFinalizedCallback callback,
                                  const AppId& app_id,
                                  bool success);
+  void OnFallbackInstallFinalized(const AppId& app_in_sync_install_id,
+                                  InstallFinalizedCallback callback,
+                                  const AppId& installed_app_id,
+                                  InstallResultCode code);
 
   WebAppSyncBridge* const sync_bridge_;
   WebAppIconManager* const icon_manager_;

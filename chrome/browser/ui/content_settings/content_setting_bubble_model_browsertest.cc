@@ -70,14 +70,14 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, MainFrame) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   EXPECT_TRUE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+      ContentSettingsType::MIXEDSCRIPT));
 
   // Emulate link clicking on the mixed script bubble.
   std::unique_ptr<ContentSettingBubbleModel> model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser()->content_setting_bubble_model_delegate(),
           browser()->tab_strip_model()->GetActiveWebContents(),
-          CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+          ContentSettingsType::MIXEDSCRIPT));
   model->OnCustomLinkClicked();
 
   // Wait for reload
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, MainFrame) {
   observer.Wait();
 
   EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+      ContentSettingsType::MIXEDSCRIPT));
 }
 
 class ContentSettingsMixedScriptIgnoreCertErrorsTest
@@ -131,14 +131,14 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsMixedScriptIgnoreCertErrorsTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   EXPECT_TRUE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+      ContentSettingsType::MIXEDSCRIPT));
 
   // Emulate link clicking on the mixed script bubble.
   std::unique_ptr<ContentSettingBubbleModel> model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser()->content_setting_bubble_model_delegate(),
           browser()->tab_strip_model()->GetActiveWebContents(),
-          CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+          ContentSettingsType::MIXEDSCRIPT));
   model->SetRapporServiceImplForTesting(&rappor_service);
   model->OnCustomLinkClicked();
 
@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsMixedScriptIgnoreCertErrorsTest,
   observer.Wait();
 
   EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+      ContentSettingsType::MIXEDSCRIPT));
 
   // Check that the UMA and Rappor counts are as expected.
   histograms.ExpectBucketCount(
@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptTest, Iframe) {
   // of active subresources in an iframe, so the content type should not
   // be marked as blocked.
   EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+      ContentSettingsType::MIXEDSCRIPT));
 }
 
 class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelPopupTest,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser()->content_setting_bubble_model_delegate(),
           browser()->tab_strip_model()->GetActiveWebContents(),
-          CONTENT_SETTINGS_TYPE_POPUPS));
+          ContentSettingsType::POPUPS));
   std::unique_ptr<FakeOwner> owner =
       FakeOwner::Create(*model, kDisallowButtonIndex);
 
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptOopifTest,
   // executed.
   ui_test_utils::NavigateToURL(browser(), main_url);
   EXPECT_TRUE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+      ContentSettingsType::MIXEDSCRIPT));
 
   std::string title;
   content::WebContents* web_contents =
@@ -351,13 +351,13 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMixedScriptOopifTest,
   std::unique_ptr<ContentSettingBubbleModel> model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser()->content_setting_bubble_model_delegate(), web_contents,
-          CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+          ContentSettingsType::MIXEDSCRIPT));
   model->OnCustomLinkClicked();
 
   // Wait for reload and verify that mixed content is allowed.
   observer.Wait();
   EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
-      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+      ContentSettingsType::MIXEDSCRIPT));
 
   // Ensure that the script actually executed by checking the title of the
   // document in the subframe.

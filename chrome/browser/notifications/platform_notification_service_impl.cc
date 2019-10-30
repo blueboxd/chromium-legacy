@@ -166,7 +166,7 @@ void PlatformNotificationServiceImpl::OnContentSettingChanged(
     const std::string& resource_identifier) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+  if (content_type != ContentSettingsType::NOTIFICATIONS)
     return;
 
   auto recorder = base::MakeRefCounted<RevokeDeleteCountRecorder>();

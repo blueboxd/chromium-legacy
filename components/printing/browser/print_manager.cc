@@ -4,11 +4,9 @@
 
 #include "components/printing/browser/print_manager.h"
 
-#include "base/bind.h"
 #include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/render_frame_host.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace printing {
 
@@ -110,19 +108,6 @@ void PrintManager::OnPrintingFailed(int cookie) {
 #if defined(OS_ANDROID)
   PdfWritingDone(0);
 #endif
-}
-
-const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>&
-PrintManager::GetPrintRenderFrame(content::RenderFrameHost* rfh) {
-  // When print preview is closed, the remote is disconnected from the receiver.
-  // Reset a disconnected remote before using it again.
-  if (print_render_frame_.is_bound() && !print_render_frame_.is_connected())
-    print_render_frame_.reset();
-
-  if (!print_render_frame_.is_bound())
-    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame_);
-
-  return print_render_frame_;
 }
 
 void PrintManager::PrintingRenderFrameDeleted() {

@@ -40,7 +40,7 @@ class ProfileContentSettingObserver : public content_settings::Observer {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const std::string& resource_identifier) override {
-    if (content_type != CONTENT_SETTINGS_TYPE_PLUGINS)
+    if (content_type != ContentSettingsType::PLUGINS)
       return;
 
     // We must purge the plugin list cache when the plugin content setting

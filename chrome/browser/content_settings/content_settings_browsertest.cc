@@ -617,8 +617,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
 
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(&observer));
 
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
-      IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
+                  ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
 // TODO(jww): This should be removed after strict secure cookies is enabled for
@@ -664,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
   GURL url("data:text/html,<title>Data URL</title><script>alert(1)</script>");
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+      ->SetDefaultContentSetting(ContentSettingsType::JAVASCRIPT,
                                  CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -673,8 +673,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(base::UTF8ToUTF16("Data URL"), web_contents->GetTitle());
 
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
-      IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
+                  ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
 }
 
 // Tests that if redirect across origins occurs, the new process still gets the
@@ -698,8 +698,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
-      IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
+                  ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
 class ContentSettingsWorkerModulesBrowserTest : public ContentSettingsTest {
@@ -822,7 +822,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest,
   content_settings_map->SetWebsiteSettingCustomScope(
       ContentSettingsPattern::FromURLNoWildcard(http_url),
       ContentSettingsPattern::FromURLNoWildcard(module_url),
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string(),
+      ContentSettingsType::JAVASCRIPT, std::string(),
       std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
 
   content::WebContents* web_contents =
@@ -839,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest,
   // The import must be blocked.
   ui_test_utils::WaitForViewVisibility(
       browser(), VIEW_ID_CONTENT_SETTING_JAVASCRIPT, true);
-  EXPECT_TRUE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  EXPECT_TRUE(tab_settings->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
@@ -987,8 +987,8 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
 
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
     EXPECT_EQ(!expect_loaded,
-              TabSpecificContentSettings::FromWebContents(web_contents)->
-                  IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+              TabSpecificContentSettings::FromWebContents(web_contents)
+                  ->IsContentBlocked(ContentSettingsType::PLUGINS));
   }
 
   void RunJavaScriptBlockedTest(const char* path,
@@ -1030,8 +1030,8 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     }
 
     EXPECT_EQ(expect_is_javascript_content_blocked,
-              tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
-    EXPECT_FALSE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+              tab_settings->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+    EXPECT_FALSE(tab_settings->IsContentBlocked(ContentSettingsType::PLUGINS));
   }
 
  private:
@@ -1044,7 +1044,7 @@ class PepperContentSettingsSpecialCasesPluginsBlockedTest
   void SetUpOnMainThread() override {
     PepperContentSettingsSpecialCasesTest::SetUpOnMainThread();
     HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-        ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+        ->SetDefaultContentSetting(ContentSettingsType::PLUGINS,
                                    CONTENT_SETTING_BLOCK);
   }
 };
@@ -1058,10 +1058,10 @@ class PepperContentSettingsSpecialCasesJavaScriptBlockedTest
     HostContentSettingsMap* content_settings_map =
         HostContentSettingsMapFactory::GetForProfile(browser()->profile());
     content_settings_map->SetContentSettingDefaultScope(
-        server_root, server_root, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+        server_root, server_root, ContentSettingsType::PLUGINS, std::string(),
         CONTENT_SETTING_ALLOW);
     content_settings_map->SetDefaultContentSetting(
-        CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+        ContentSettingsType::JAVASCRIPT, CONTENT_SETTING_BLOCK);
   }
 };
 
@@ -1071,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Flash) {
   GURL server_root = https_server_.GetURL("/");
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(server_root, server_root,
-                                      CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      ContentSettingsType::PLUGINS,
                                       std::string(), CONTENT_SETTING_ALLOW);
 
   RunLoadPepperPluginTest(content::kFlashPluginSwfMimeType, true);

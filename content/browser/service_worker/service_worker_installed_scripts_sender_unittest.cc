@@ -350,7 +350,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendBody) {
 TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendMetaData) {
   const GURL kMainScriptURL = version()->script_url();
   std::string long_meta_data = "I'm the meta data!";
-  long_meta_data.resize(1E6, '!');
+  long_meta_data.resize(3E6, '!');
   std::map<GURL, ExpectedScriptInfo> kExpectedScriptInfoMap = {
       {kMainScriptURL,
        {1,

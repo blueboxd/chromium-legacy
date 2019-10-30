@@ -15,10 +15,6 @@ interface PrintRenderer {
 // printing grunt work for RenderView.
 interface PrintRenderFrame {
   // Tells the RenderFrame to switch the CSS to print media type, render every
-  // requested page, and then switch back the CSS to display media type.
-  PrintRequestedPages();
-
-  // Tells the RenderFrame to switch the CSS to print media type, render every
   // requested page using the print preview document's frame/node, and then
   // switch the CSS back to display media type.
   PrintForSystemDialog();
@@ -32,10 +28,4 @@ interface PrintRenderFrame {
   // Tells the RenderFrame that the print preview dialog was closed.
   [EnableIf=enable_print_preview]
   OnPrintPreviewDialogClosed();
-
-  // Tells the RenderFrame whether printing is enabled or not.
-  SetPrintingEnabled(bool enabled);
-
-  // Tells the RenderFrame that printing is done so it can clean up.
-  PrintingDone(bool success);
 };

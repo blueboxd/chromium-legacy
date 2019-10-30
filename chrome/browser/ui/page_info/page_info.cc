@@ -112,30 +112,30 @@ namespace {
 // ORDER OF THESE ITEMS IS IMPORTANT and comes from https://crbug.com/610358. To
 // propose changing it, email security-dev@chromium.org.
 ContentSettingsType kPermissionType[] = {
-    CONTENT_SETTINGS_TYPE_GEOLOCATION,
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-    CONTENT_SETTINGS_TYPE_SENSORS,
-    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+    ContentSettingsType::GEOLOCATION,
+    ContentSettingsType::MEDIASTREAM_CAMERA,
+    ContentSettingsType::MEDIASTREAM_MIC,
+    ContentSettingsType::SENSORS,
+    ContentSettingsType::NOTIFICATIONS,
+    ContentSettingsType::JAVASCRIPT,
 #if !defined(OS_ANDROID)
-    CONTENT_SETTINGS_TYPE_PLUGINS,
-    CONTENT_SETTINGS_TYPE_IMAGES,
+    ContentSettingsType::PLUGINS,
+    ContentSettingsType::IMAGES,
 #endif
-    CONTENT_SETTINGS_TYPE_POPUPS,
-    CONTENT_SETTINGS_TYPE_ADS,
-    CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
-    CONTENT_SETTINGS_TYPE_SOUND,
-    CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-    CONTENT_SETTINGS_TYPE_AUTOPLAY,
-    CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-    CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
-    CONTENT_SETTINGS_TYPE_USB_GUARD,
+    ContentSettingsType::POPUPS,
+    ContentSettingsType::ADS,
+    ContentSettingsType::BACKGROUND_SYNC,
+    ContentSettingsType::SOUND,
+    ContentSettingsType::AUTOMATIC_DOWNLOADS,
+    ContentSettingsType::AUTOPLAY,
+    ContentSettingsType::MIDI_SYSEX,
+    ContentSettingsType::CLIPBOARD_READ,
+    ContentSettingsType::USB_GUARD,
 #if !defined(OS_ANDROID)
-    CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
-    CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+    ContentSettingsType::SERIAL_GUARD,
+    ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
 #endif
-    CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
+    ContentSettingsType::BLUETOOTH_SCANNING,
 };
 
 // Checks whether this permission is currently the factory default, as set by
@@ -164,9 +164,9 @@ bool ShouldShowPermission(
     HostContentSettingsMap* content_settings,
     content::WebContents* web_contents,
     TabSpecificContentSettings* tab_specific_content_settings) {
-  // Note |CONTENT_SETTINGS_TYPE_ADS| will show up regardless of its default
+  // Note |ContentSettingsType::ADS| will show up regardless of its default
   // value when it has been activated on the current origin.
-  if (info.type == CONTENT_SETTINGS_TYPE_ADS) {
+  if (info.type == ContentSettingsType::ADS) {
     if (!base::FeatureList::IsEnabled(
             subresource_filter::kSafeBrowsingSubresourceFilter)) {
       return false;
@@ -175,11 +175,11 @@ bool ShouldShowPermission(
     // The setting for subresource filtering should not show up if the site is
     // not activated, both on android and desktop platforms.
     return content_settings->GetWebsiteSetting(
-               site_url, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(),
+               site_url, GURL(), ContentSettingsType::ADS_DATA, std::string(),
                nullptr) != nullptr;
   }
 
-  if (info.type == CONTENT_SETTINGS_TYPE_SOUND) {
+  if (info.type == ContentSettingsType::SOUND) {
     // The sound content setting should always show up when the tab has played
     // audio.
     if (web_contents && web_contents->WasEverAudible())
@@ -189,28 +189,28 @@ bool ShouldShowPermission(
 #if defined(OS_ANDROID)
   // Special geolocation DSE settings apply only on Android, so make sure it
   // gets checked there regardless of default setting on Desktop.
-  if (info.type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
+  if (info.type == ContentSettingsType::GEOLOCATION)
     return true;
 
   // The Native File System write permission is desktop only at the moment.
-  if (info.type == CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD)
+  if (info.type == ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD)
     return false;
 #else
   // Flash is shown if the user has ever changed its setting for |site_url|.
-  if (info.type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+  if (info.type == ContentSettingsType::PLUGINS &&
       content_settings->GetWebsiteSetting(site_url, site_url,
-                                          CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
+                                          ContentSettingsType::PLUGINS_DATA,
                                           std::string(), nullptr) != nullptr) {
     return true;
   }
 
   // Autoplay is Android-only at the moment.
-  if (info.type == CONTENT_SETTINGS_TYPE_AUTOPLAY)
+  if (info.type == ContentSettingsType::AUTOPLAY)
     return false;
 
   // Display the Native File System write permission if the Native File System
   // API is currently being used.
-  if (info.type == CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD &&
+  if (info.type == ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD &&
       web_contents->HasNativeFileSystemHandles()) {
     return true;
   }
@@ -299,12 +299,12 @@ ChooserContextBase* GetSerialChooserContext(Profile* profile) {
 // Settings UI. THE ORDER OF THESE ITEMS IS IMPORTANT. To propose changing it,
 // email security-dev@chromium.org.
 const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
-    {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, &GetUsbChooserContext,
+    {ContentSettingsType::USB_CHOOSER_DATA, &GetUsbChooserContext,
      IDS_PAGE_INFO_USB_DEVICE_SECONDARY_LABEL,
      IDS_PAGE_INFO_USB_DEVICE_ALLOWED_BY_POLICY_LABEL,
      IDS_PAGE_INFO_DELETE_USB_DEVICE, &UsbChooserContext::GetObjectName},
 #if !defined(OS_ANDROID)
-    {CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, &GetSerialChooserContext,
+    {ContentSettingsType::SERIAL_CHOOSER_DATA, &GetSerialChooserContext,
      IDS_PAGE_INFO_SERIAL_PORT_SECONDARY_LABEL,
      /*allowed_by_policy_description_string_id=*/-1,
      IDS_PAGE_INFO_DELETE_SERIAL_PORT, &SerialChooserContext::GetObjectName},
@@ -508,7 +508,7 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
         "WebsiteSettings.OriginInfo.PermissionChanged.Allowed", histogram_value,
         num_values);
 
-    if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    if (type == ContentSettingsType::PLUGINS) {
       rappor::SampleDomainAndRegistryFromGURL(
           g_browser_process->rappor_service(),
           "ContentSettings.Plugins.AddedAllowException", site_url_);
@@ -523,9 +523,9 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
   // total count of permission changes in another histogram makes it easier to
   // compare it against other kinds of actions in Page Info.
   RecordPageInfoAction(PAGE_INFO_CHANGED_PERMISSION);
-  if (type == CONTENT_SETTINGS_TYPE_SOUND) {
+  if (type == ContentSettingsType::SOUND) {
     ContentSetting default_setting =
-        content_settings_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND,
+        content_settings_->GetDefaultContentSetting(ContentSettingsType::SOUND,
                                                     nullptr);
     bool mute = (setting == CONTENT_SETTING_BLOCK) ||
                 (setting == CONTENT_SETTING_DEFAULT &&
@@ -552,7 +552,7 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
                                                 setting);
 
   // When the sound setting is changed, no reload is necessary.
-  if (type != CONTENT_SETTINGS_TYPE_SOUND)
+  if (type != ContentSettingsType::SOUND)
     show_info_bar_ = true;
 
   // Refresh the UI to reflect the new setting.
@@ -1067,7 +1067,7 @@ std::vector<ContentSettingsType> PageInfo::GetAllPermissionsForTesting() {
   std::vector<ContentSettingsType> permission_list;
   for (size_t i = 0; i < base::size(kPermissionType); ++i) {
 #if !defined(OS_ANDROID)
-    if (kPermissionType[i] == CONTENT_SETTINGS_TYPE_AUTOPLAY)
+    if (kPermissionType[i] == ContentSettingsType::AUTOPLAY)
       continue;
 #endif
     permission_list.push_back(kPermissionType[i]);

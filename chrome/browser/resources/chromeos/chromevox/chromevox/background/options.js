@@ -11,7 +11,6 @@ goog.provide('cvox.OptionsPage');
 
 goog.require('BluetoothBrailleDisplayUI');
 goog.require('ConsoleTts');
-goog.require('EventStreamLogger');
 goog.require('Msgs');
 goog.require('PanelCommand');
 goog.require('cvox.BrailleTable');
@@ -19,7 +18,6 @@ goog.require('cvox.BrailleTranslatorManager');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.ChromeVoxPrefs');
-goog.require('cvox.CommandStore');
 goog.require('cvox.ExtensionBridge');
 
 /**
@@ -105,17 +103,22 @@ cvox.OptionsPage.init = function() {
         }
       });
 
-  var registerEventStreamFiltersListener = function() {
-    $('toggleEventStreamFilters').addEventListener('click', function(evt) {
-      if ($('eventStreamFilters').hidden) {
-        $('eventStreamFilters').hidden = false;
-        $('toggleEventStreamFilters').textContent = hideEventStreamFilters;
-      } else {
-        $('eventStreamFilters').hidden = true;
-        $('toggleEventStreamFilters').textContent = showEventStreamFilters;
-      }
-    });
-  };
+  $('toggleEventStreamFilters').addEventListener('click', function(evt) {
+    if ($('eventStreamFilters').hidden) {
+      $('eventStreamFilters').hidden = false;
+      $('toggleEventStreamFilters').textContent = hideEventStreamFilters;
+    } else {
+      $('eventStreamFilters').hidden = true;
+      $('toggleEventStreamFilters').textContent = showEventStreamFilters;
+    }
+  });
+
+  $('enableAllEventStreamFilters').addEventListener('click', () => {
+    cvox.OptionsPage.setAllEventStreamLoggingFilters(true);
+  });
+  $('disableAllEventStreamFilters').addEventListener('click', () => {
+    cvox.OptionsPage.setAllEventStreamLoggingFilters(false);
+  });
 
   $('chromeVoxDeveloperOptions').addEventListener('expanded-changed', () => {
     const hidden = !$('chromeVoxDeveloperOptions').expanded;
@@ -131,14 +134,6 @@ cvox.OptionsPage.init = function() {
     chrome.tabs.create(logPage);
   });
 
-  // Hide developer options by default.
-  $('developerSpeechLogging').hidden = true;
-  $('developerEarconLogging').hidden = true;
-  $('developerBrailleLogging').hidden = true;
-  $('developerEventStream').hidden = true;
-  $('showDeveloperLog').hidden = true;
-
-  registerEventStreamFiltersListener();
   Msgs.addTranslatedMessagesToDom(document);
   cvox.OptionsPage.hidePlatformSpecifics();
 
@@ -404,6 +399,30 @@ cvox.OptionsPage.disableEventStreamFilterCheckBoxes = function(disable) {
 };
 
 /**
+ * Set all event stream logging filter to on or off.
+ * @param {boolean} enabled
+ */
+cvox.OptionsPage.setAllEventStreamLoggingFilters = function(enabled) {
+  for (let checkbox of document.querySelectorAll(
+           '.option-eventstream > input')) {
+    if (checkbox.checked != enabled) {
+      cvox.OptionsPage.setEventStreamFilter(checkbox.name, enabled);
+    }
+  }
+};
+
+/**
+ * Set the specified event logging filter to on or off.
+ * @param {name} string
+ * @param {enabled} boolean
+ */
+cvox.OptionsPage.setEventStreamFilter = function(name, enabled) {
+  cvox.OptionsPage.prefs.setPref(name, enabled);
+  chrome.extension.getBackgroundPage()
+      .EventStreamLogger.instance.notifyEventStreamFilterChanged(name, enabled);
+};
+
+/**
  * Event listener, called when an event occurs in the page that might
  * affect one of the preference controls.
  * @param {Event} event The event.
@@ -419,10 +438,7 @@ cvox.OptionsPage.eventListener = function(event) {
       if (target.name == 'enableEventStreamLogging')
         cvox.OptionsPage.disableEventStreamFilterCheckBoxes(!target.checked);
     } else if (target.className.indexOf('eventstream') != -1) {
-      cvox.OptionsPage.prefs.setPref(target.name, target.checked);
-      chrome.extension.getBackgroundPage()
-          .EventStreamLogger.instance.notifyEventStreamFilterChanged(
-              target.name, target.checked);
+      cvox.OptionsPage.setEventStreamFilter(target.name, target.checked);
     } else if (target.classList.contains('pref')) {
       if (target.tagName == 'INPUT' && target.type == 'checkbox') {
         cvox.OptionsPage.prefs.setPref(target.name, target.checked);

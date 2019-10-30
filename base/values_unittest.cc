@@ -524,6 +524,23 @@ TEST(ValuesTest, Append) {
   EXPECT_TRUE(value.GetList().back().is_list());
 }
 
+TEST(ValuesTest, Insert) {
+  ListValue value;
+  auto GetList = [&value]() -> decltype(auto) { return value.GetList(); };
+  auto GetConstList = [&value] {
+    const ListValue& const_value = value;
+    return const_value.GetList();
+  };
+
+  auto storage_iter = value.Insert(GetList().end(), Value(true));
+  EXPECT_TRUE(GetList().begin() == storage_iter);
+  EXPECT_TRUE(storage_iter->is_bool());
+
+  auto span_iter = value.Insert(GetConstList().begin(), Value(123));
+  EXPECT_TRUE(GetConstList().begin() == span_iter);
+  EXPECT_TRUE(span_iter->is_int());
+}
+
 TEST(ValuesTest, EraseListIter) {
   ListValue value;
   value.Append(1);

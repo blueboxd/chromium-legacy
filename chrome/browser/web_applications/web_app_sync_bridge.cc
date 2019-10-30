@@ -399,7 +399,8 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
 
   // Do a full follow up install for all remote entities that don’t exist
   // locally.
-  install_delegate_->InstallWebAppsAfterSync(std::move(apps_to_install));
+  install_delegate_->InstallWebAppsAfterSync(std::move(apps_to_install),
+                                             base::DoNothing());
 
   // Do a full follow up uninstall for all deleted remote entities that exist
   // locally and not needed by other sources. We need to clean up disk data

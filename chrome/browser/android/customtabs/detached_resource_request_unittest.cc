@@ -128,7 +128,8 @@ std::unique_ptr<HttpResponse> SetCookieAndNoContent(
     return nullptr;
 
   auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-  response->AddCustomHeader("Set-Cookie", kCookieFromNoContent);
+  response->AddCustomHeader("Set-Cookie", std::string(kCookieFromNoContent) +
+                                              ";SameSite=None;Secure");
   response->set_code(net::HTTP_NO_CONTENT);
   return response;
 }
@@ -199,18 +200,15 @@ class DetachedResourceRequestTest : public ::testing::Test {
   void SetUp() override {
     profile_ = std::make_unique<TestingProfile>();
     test_server_ = std::make_unique<net::EmbeddedTestServer>();
-    embedded_test_server()->RegisterRequestHandler(
-        base::BindRepeating(&SetCookieAndRedirect));
-    embedded_test_server()->RegisterRequestHandler(
-        base::BindRepeating(&SetCookieAndNoContent));
-    embedded_test_server()->RegisterRequestHandler(
-        base::BindRepeating(&ManyRedirects));
-    embedded_test_server()->RegisterRequestHandler(
-        base::BindRepeating(&LargeHeadersAndResponseSize));
-    embedded_test_server()->RegisterRequestHandler(
-        base::BindRepeating(&LargeResponseAndCookie));
-    embedded_test_server()->AddDefaultHandlers(
-        base::FilePath("chrome/test/data"));
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    second_https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    second_https_server_->SetSSLConfig(
+        net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+    RegisterHandlers(embedded_test_server());
+    RegisterHandlers(https_server());
+    RegisterHandlers(second_https_server());
     host_resolver_ = std::make_unique<content::TestHostResolver>();
     host_resolver_->host_resolver()->AddRule("*", "127.0.0.1");
   }
@@ -220,9 +218,29 @@ class DetachedResourceRequestTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void RegisterHandlers(net::EmbeddedTestServer* server) {
+    server->RegisterRequestHandler(base::BindRepeating(&SetCookieAndRedirect));
+    server->RegisterRequestHandler(base::BindRepeating(&SetCookieAndNoContent));
+    server->RegisterRequestHandler(base::BindRepeating(&ManyRedirects));
+    server->RegisterRequestHandler(
+        base::BindRepeating(&LargeHeadersAndResponseSize));
+    server->RegisterRequestHandler(
+        base::BindRepeating(&LargeResponseAndCookie));
+    server->AddDefaultHandlers(base::FilePath("chrome/test/data"));
+  }
+
  protected:
+  // http://127.0.0.1:...
   net::EmbeddedTestServer* embedded_test_server() const {
     return test_server_.get();
+  }
+
+  // https://127.0.0.1:...
+  net::EmbeddedTestServer* https_server() const { return https_server_.get(); }
+
+  // https://localhost:...
+  net::EmbeddedTestServer* second_https_server() const {
+    return second_https_server_.get();
   }
 
   content::BrowserContext* browser_context() const { return profile_.get(); }
@@ -231,22 +249,23 @@ class DetachedResourceRequestTest : public ::testing::Test {
     base::RunLoop first_request_waiter;
     base::RunLoop second_request_waiter;
 
-    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+    https_server()->RegisterRequestMonitor(base::BindRepeating(
         &WatchPathAndReportHeaders, kSetCookieAndRedirect, nullptr, nullptr,
         first_request_waiter.QuitClosure()));
-    embedded_test_server()->RegisterRequestMonitor(
+    https_server()->RegisterRequestMonitor(
         base::BindRepeating(&WatchPathAndReportHeaders, kHttpNoContent, nullptr,
                             nullptr, second_request_waiter.QuitClosure()));
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(https_server()->Start());
 
-    GURL redirected_url(embedded_test_server()->GetURL(kHttpNoContent));
+    GURL redirected_url(https_server()->GetURL(kHttpNoContent));
     std::string relative_url =
         base::StringPrintf("%s?%s=%s&%s=%s", kSetCookieAndRedirect, kCookieKey,
-                           "acookie", kUrlKey, redirected_url.spec().c_str());
+                           "acookie; SameSite=None; Secure", kUrlKey,
+                           redirected_url.spec().c_str());
 
-    GURL url(embedded_test_server()->GetURL(relative_url));
+    GURL url(https_server()->GetURL(relative_url));
     GURL site_for_cookies = third_party ? GURL("http://cats.google.com")
-                                        : embedded_test_server()->base_url();
+                                        : https_server()->base_url();
 
     std::string cookie = content::GetCookies(browser_context(), url);
     ASSERT_EQ("", cookie);
@@ -291,6 +310,8 @@ class DetachedResourceRequestTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<content::TestHostResolver> host_resolver_;
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  std::unique_ptr<net::EmbeddedTestServer> second_https_server_;
 };
 
 TEST_F(DetachedResourceRequestTest, Simple) {
@@ -512,9 +533,9 @@ TEST_F(DetachedResourceRequestTest, CanSetThirdPartyCookie) {
 
 TEST_F(DetachedResourceRequestTest, NoContentCanSetCookie) {
   base::RunLoop request_completion_waiter;
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server()->Start());
 
-  GURL url(embedded_test_server()->GetURL(kSetCookieAndNoContent));
+  GURL url(https_server()->GetURL(kSetCookieAndNoContent));
   GURL site_for_cookies("http://cats.google.com/");
 
   std::string cookie = content::GetCookies(browser_context(), url);
@@ -558,22 +579,22 @@ TEST_F(DetachedResourceRequestTest, MultipleOrigins) {
   base::RunLoop second_request_waiter;
   base::RunLoop detached_request_waiter;
 
-  embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+  https_server()->RegisterRequestMonitor(base::BindRepeating(
       &WatchPathAndReportHeaders, kSetCookieAndRedirect, nullptr, nullptr,
       first_request_waiter.QuitClosure()));
-  embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+  second_https_server()->RegisterRequestMonitor(base::BindRepeating(
       &WatchPathAndReportHeaders, kSetCookieAndNoContent, nullptr, nullptr,
       second_request_waiter.QuitClosure()));
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(second_https_server()->Start());
 
-  GURL redirected_origin("http://notgoogle.com");
-  GURL redirected_url(embedded_test_server()->GetURL(redirected_origin.host(),
-                                                     kSetCookieAndNoContent));
-  std::string relative_url =
-      base::StringPrintf("%s?%s=%s&%s=%s", kSetCookieAndRedirect, kCookieKey,
-                         "acookie", kUrlKey, redirected_url.spec().c_str());
+  GURL redirected_origin = second_https_server()->base_url();
+  GURL redirected_url(second_https_server()->GetURL(kSetCookieAndNoContent));
+  std::string relative_url = base::StringPrintf(
+      "%s?%s=%s&%s=%s", kSetCookieAndRedirect, kCookieKey,
+      "acookie;SameSite=None;Secure", kUrlKey, redirected_url.spec().c_str());
 
-  GURL url(embedded_test_server()->GetURL(relative_url));
+  GURL url(https_server()->GetURL(relative_url));
   GURL site_for_cookies = GURL("http://cats.google.com");
 
   std::string cookie = content::GetCookies(browser_context(), url);

@@ -68,6 +68,9 @@ class WebAppSyncBridge : public AppRegistryController,
                                           bool is_locally_installed) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;
 
+  // An access to read-only registry. Does an upcast to read-only type.
+  const WebAppRegistrar& registrar() const { return *registrar_; }
+
  private:
   void CheckRegistryUpdateData(const RegistryUpdateData& update_data) const;
 

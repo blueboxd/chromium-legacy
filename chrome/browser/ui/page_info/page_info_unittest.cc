@@ -258,62 +258,62 @@ TEST_F(PageInfoTest, NonFactoryDefaultAndRecentlyChangedPermissionsShown) {
   // Geolocation is always allowed to pass through to Android-specific logic to
   // check for DSE settings (so expect 1 item), but isn't actually shown later
   // on because this test isn't testing with a default search engine origin.
-  expected_visible_permissions.insert(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  expected_visible_permissions.insert(ContentSettingsType::GEOLOCATION);
 #endif
   EXPECT_EQ(expected_visible_permissions.size(),
             last_permission_info_list().size());
 
   // Change some default-ask settings away from the default.
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::GEOLOCATION,
                                        CONTENT_SETTING_ALLOW);
-  expected_visible_permissions.insert(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  expected_visible_permissions.insert(ContentSettingsType::GEOLOCATION);
+  page_info()->OnSitePermissionChanged(ContentSettingsType::NOTIFICATIONS,
                                        CONTENT_SETTING_ALLOW);
-  expected_visible_permissions.insert(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+  expected_visible_permissions.insert(ContentSettingsType::NOTIFICATIONS);
+  page_info()->OnSitePermissionChanged(ContentSettingsType::MEDIASTREAM_MIC,
                                        CONTENT_SETTING_ALLOW);
-  expected_visible_permissions.insert(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+  expected_visible_permissions.insert(ContentSettingsType::MEDIASTREAM_MIC);
   EXPECT_EQ(expected_visible_permissions.size(),
             last_permission_info_list().size());
 
-  expected_visible_permissions.insert(CONTENT_SETTINGS_TYPE_POPUPS);
+  expected_visible_permissions.insert(ContentSettingsType::POPUPS);
   // Change a default-block setting to a user-preference block instead.
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_POPUPS,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::POPUPS,
                                        CONTENT_SETTING_BLOCK);
   EXPECT_EQ(expected_visible_permissions.size(),
             last_permission_info_list().size());
 
-  expected_visible_permissions.insert(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+  expected_visible_permissions.insert(ContentSettingsType::JAVASCRIPT);
   // Change a default-allow setting away from the default.
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::JAVASCRIPT,
                                        CONTENT_SETTING_BLOCK);
   EXPECT_EQ(expected_visible_permissions.size(),
             last_permission_info_list().size());
 
   // Make sure changing a setting to its default causes it to show up, since it
   // has been recently changed.
-  expected_visible_permissions.insert(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+  expected_visible_permissions.insert(ContentSettingsType::MEDIASTREAM_CAMERA);
+  page_info()->OnSitePermissionChanged(ContentSettingsType::MEDIASTREAM_CAMERA,
                                        CONTENT_SETTING_DEFAULT);
   EXPECT_EQ(expected_visible_permissions.size(),
             last_permission_info_list().size());
 
   // Set the Javascript setting to default should keep it shown.
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::JAVASCRIPT,
                                        CONTENT_SETTING_DEFAULT);
   EXPECT_EQ(expected_visible_permissions.size(),
             last_permission_info_list().size());
 
   // Change the default setting for Javascript away from the factory default.
   page_info()->content_settings_->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+      ContentSettingsType::JAVASCRIPT, CONTENT_SETTING_BLOCK);
   page_info()->PresentSitePermissions();
   EXPECT_EQ(expected_visible_permissions.size(),
             last_permission_info_list().size());
 
   // Change it back to ALLOW, which is its factory default, but has a source
   // from the user preference (i.e. it counts as non-factory default).
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::JAVASCRIPT,
                                        CONTENT_SETTING_ALLOW);
   EXPECT_EQ(expected_visible_permissions.size(),
             last_permission_info_list().size());
@@ -330,24 +330,24 @@ TEST_F(PageInfoTest, OnPermissionsChanged) {
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile());
   ContentSetting setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+      url(), url(), ContentSettingsType::POPUPS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 #if BUILDFLAG(ENABLE_PLUGINS)
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
+      url(), url(), ContentSettingsType::PLUGINS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 #endif
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string());
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string());
+      url(), url(), ContentSettingsType::NOTIFICATIONS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string());
+      url(), url(), ContentSettingsType::MEDIASTREAM_MIC, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string());
+      url(), url(), ContentSettingsType::MEDIASTREAM_CAMERA, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
 
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
@@ -363,41 +363,41 @@ TEST_F(PageInfoTest, OnPermissionsChanged) {
 #endif
 
   // Execute code under tests.
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_POPUPS,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::POPUPS,
                                        CONTENT_SETTING_ALLOW);
 #if BUILDFLAG(ENABLE_PLUGINS)
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_PLUGINS,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::PLUGINS,
                                        CONTENT_SETTING_BLOCK);
 #endif
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::GEOLOCATION,
                                        CONTENT_SETTING_ALLOW);
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::NOTIFICATIONS,
                                        CONTENT_SETTING_ALLOW);
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::MEDIASTREAM_MIC,
                                        CONTENT_SETTING_ALLOW);
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::MEDIASTREAM_CAMERA,
                                        CONTENT_SETTING_ALLOW);
 
   // Verify that the site permissions were changed correctly.
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+      url(), url(), ContentSettingsType::POPUPS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 #if BUILDFLAG(ENABLE_PLUGINS)
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
+      url(), url(), ContentSettingsType::PLUGINS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 #endif
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string());
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string());
+      url(), url(), ContentSettingsType::NOTIFICATIONS, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string());
+      url(), url(), ContentSettingsType::MEDIASTREAM_MIC, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url(), url(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string());
+      url(), url(), ContentSettingsType::MEDIASTREAM_CAMERA, std::string());
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 }
 
@@ -912,7 +912,7 @@ TEST_F(PageInfoTest, ShowInfoBar) {
   EXPECT_CALL(*mock_ui(), SetPermissionInfoStub()).Times(2);
 
   EXPECT_EQ(0u, infobar_service()->infobar_count());
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::GEOLOCATION,
                                        CONTENT_SETTING_ALLOW);
   bool unused;
   page_info()->OnUIClosing(&unused);
@@ -923,7 +923,7 @@ TEST_F(PageInfoTest, ShowInfoBar) {
 
 TEST_F(PageInfoTest, NoInfoBarWhenSoundSettingChanged) {
   EXPECT_EQ(0u, infobar_service()->infobar_count());
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_SOUND,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::SOUND,
                                        CONTENT_SETTING_BLOCK);
   bool unused;
   page_info()->OnUIClosing(&unused);
@@ -932,9 +932,9 @@ TEST_F(PageInfoTest, NoInfoBarWhenSoundSettingChanged) {
 
 TEST_F(PageInfoTest, ShowInfoBarWhenSoundSettingAndAnotherSettingChanged) {
   EXPECT_EQ(0u, infobar_service()->infobar_count());
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::JAVASCRIPT,
                                        CONTENT_SETTING_BLOCK);
-  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_SOUND,
+  page_info()->OnSitePermissionChanged(ContentSettingsType::SOUND,
                                        CONTENT_SETTING_BLOCK);
   bool unused;
   page_info()->OnUIClosing(&unused);
@@ -1383,7 +1383,7 @@ TEST_F(PageInfoTest, LegacyTLSTimeOpenMetrics) {
 TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
   auto showing_setting = [](const PermissionInfoList& permissions) {
     return PermissionInfoListContainsPermission(permissions,
-                                                CONTENT_SETTINGS_TYPE_ADS);
+                                                ContentSettingsType::ADS);
   };
 
   // By default, the setting should not appear at all.
@@ -1402,7 +1402,7 @@ TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile());
   content_settings->SetWebsiteSettingDefaultScope(
-      url(), GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(),
+      url(), GURL(), ContentSettingsType::ADS_DATA, std::string(),
       std::make_unique<base::DictionaryValue>());
   page_info();
   EXPECT_TRUE(showing_setting(last_permission_info_list()));
@@ -1435,13 +1435,13 @@ class UnifiedAutoplaySoundSettingsPageInfoTest
 
   base::string16 GetDefaultSoundSettingString() {
     return PageInfoUI::PermissionActionToUIString(
-        profile(), CONTENT_SETTINGS_TYPE_SOUND, CONTENT_SETTING_DEFAULT,
+        profile(), ContentSettingsType::SOUND, CONTENT_SETTING_DEFAULT,
         default_setting_, content_settings::SettingSource::SETTING_SOURCE_USER);
   }
 
   base::string16 GetSoundSettingString(ContentSetting setting) {
     return PageInfoUI::PermissionActionToUIString(
-        profile(), CONTENT_SETTINGS_TYPE_SOUND, setting, default_setting_,
+        profile(), ContentSettingsType::SOUND, setting, default_setting_,
         content_settings::SettingSource::SETTING_SOURCE_USER);
   }
 
@@ -1532,7 +1532,7 @@ TEST_F(UnifiedAutoplaySoundSettingsPageInfoTest, NotSoundSetting_Noop) {
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_DEFAULT),
       PageInfoUI::PermissionActionToUIString(
-          profile(), CONTENT_SETTINGS_TYPE_ADS, CONTENT_SETTING_DEFAULT,
+          profile(), ContentSettingsType::ADS, CONTENT_SETTING_DEFAULT,
           CONTENT_SETTING_ALLOW,
           content_settings::SettingSource::SETTING_SOURCE_USER));
 }

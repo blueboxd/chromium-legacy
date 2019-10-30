@@ -139,8 +139,7 @@ class PrintRenderFrameHelper
   friend class PrintRenderFrameHelperTestBase;
   FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperPreviewTest,
                            BlockScriptInitiatedPrinting);
-  FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperTest,
-                           PrintRequestedPages);
+  FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperTest, OnPrintPages);
   FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperTest,
                            BlockScriptInitiatedPrinting);
   FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperTest,
@@ -212,7 +211,6 @@ class PrintRenderFrameHelper
       mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame> receiver);
 
   // printing::mojom::PrintRenderFrame:
-  void PrintRequestedPages() override;
   void PrintForSystemDialog() override;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void InitiatePrintPreview(
@@ -220,14 +218,14 @@ class PrintRenderFrameHelper
       bool has_selection) override;
   void OnPrintPreviewDialogClosed() override;
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void PrintingDone(bool success) override;
-  void SetPrintingEnabled(bool enabled) override;
 
   // Message handlers ---------------------------------------------------------
+  void OnPrintPages();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnPrintPreview(const base::DictionaryValue& settings);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnPrintFrameContent(const PrintMsg_PrintFrame_Params& params);
+  void OnPrintingDone(bool success);
 
   // Get |page_size| and |content_area| information from
   // |page_layout_in_points|.
@@ -259,6 +257,9 @@ class PrintRenderFrameHelper
   // Helper method to calculate the scale factor for fit-to-page.
   int GetFitToPageScaleFactor(const gfx::Rect& printable_area_in_points);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
+  // Enable/Disable printing.
+  void OnSetPrintingEnabled(bool enabled);
 
   // Main printing code -------------------------------------------------------
 

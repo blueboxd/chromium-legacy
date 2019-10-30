@@ -49,6 +49,9 @@ bool LoadValueEvents(const base::Value* value, ValueEvents* value_events) {
       case ArcValueEvent::Type::kGpuFrequency:
       case ArcValueEvent::Type::kCpuTemperature:
       case ArcValueEvent::Type::kCpuFrequency:
+      case ArcValueEvent::Type::kCpuPower:
+      case ArcValueEvent::Type::kGpuPower:
+      case ArcValueEvent::Type::kMemoryPower:
         break;
       default:
         return false;

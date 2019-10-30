@@ -367,8 +367,8 @@ TEST_F(EditableComboboxTest, LeftOrRightKeysMoveInTextfield) {
   EXPECT_EQ(ASCIIToUTF16("abcde"), combobox_->GetText());
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// Flaky on Windows and Mac. https://crbug.com/965601
+#if defined(OS_WIN)
+// Flaky on Windows. https://crbug.com/965601
 #define MAYBE_UpOrDownKeysMoveInMenu DISABLED_UpOrDownKeysMoveInMenu
 #else
 #define MAYBE_UpOrDownKeysMoveInMenu UpOrDownKeysMoveInMenu
@@ -509,8 +509,8 @@ TEST_F(EditableComboboxTest, EnterClosesMenuWhileSelectingHighlightedMenuItem) {
   EXPECT_EQ(ASCIIToUTF16("item[0]"), combobox_->GetText());
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// Flaky on Windows and Mac. https://crbug.com/965601
+#if defined(OS_WIN)
+// Flaky on Windows. https://crbug.com/965601
 #define MAYBE_F4ClosesMenuWhileSelectingHighlightedMenuItem \
   DISABLED_F4ClosesMenuWhileSelectingHighlightedMenuItem
 #else
@@ -576,8 +576,8 @@ TEST_F(EditableComboboxTest, SpaceIsReflectedInTextfield) {
   EXPECT_EQ(ASCIIToUTF16("a  b"), combobox_->GetText());
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// Flaky on Windows and Mac. https://crbug.com/965601
+#if defined(OS_WIN)
+// Flaky on Windows. https://crbug.com/965601
 #define MAYBE_MenuCanAdaptToContentChange DISABLED_MenuCanAdaptToContentChange
 #else
 #define MAYBE_MenuCanAdaptToContentChange MenuCanAdaptToContentChange

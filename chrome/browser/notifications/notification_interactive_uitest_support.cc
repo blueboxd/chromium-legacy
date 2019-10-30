@@ -162,13 +162,13 @@ void NotificationsTest::AllowOrigin(const GURL& origin) {
 void NotificationsTest::AllowAllOrigins() {
   // Reset all origins
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      ->ClearSettingsForOneType(ContentSettingsType::NOTIFICATIONS);
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW);
 }
 
 void NotificationsTest::SetDefaultContentSetting(ContentSetting setting) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
+      ->SetDefaultContentSetting(ContentSettingsType::NOTIFICATIONS, setting);
 }
 
 std::string NotificationsTest::CreateNotification(Browser* browser,
@@ -267,7 +267,7 @@ bool NotificationsTest::CancelNotification(const char* notification_id,
 void NotificationsTest::GetDisabledContentSettings(
     ContentSettingsForOneType* settings) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      ->GetSettingsForOneType(ContentSettingsType::NOTIFICATIONS,
                               content_settings::ResourceIdentifier(), settings);
 
   for (auto it = settings->begin(); it != settings->end();) {

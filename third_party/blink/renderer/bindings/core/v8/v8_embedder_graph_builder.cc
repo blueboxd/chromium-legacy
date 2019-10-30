@@ -181,21 +181,25 @@ class GC_PLUGIN_IGNORE(
   void VisitRoot(void*, TraceDescriptor, const base::Location&) final;
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
   void Visit(void*, TraceDescriptor) final;
-  void VisitBackingStoreStrongly(void* object,
-                                 void** object_slot,
-                                 TraceDescriptor desc) final;
+  void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) final;
+  void VisitBackingStoreWeakly(void*,
+                               void**,
+                               TraceDescriptor,
+                               TraceDescriptor,
+                               WeakCallback,
+                               void*,
+                               bool) final;
+  bool VisitEphemeronKeyValuePair(void*,
+                                  void*,
+                                  bool,
+                                  EphemeronTracingCallback,
+                                  EphemeronTracingCallback) final;
 
   // Unused Visitor overrides.
   void VisitWeak(void* object,
                  void* object_weak_ref,
                  TraceDescriptor desc,
                  WeakCallback callback) final {}
-  void VisitBackingStoreWeakly(void*,
-                               void**,
-                               TraceDescriptor,
-                               TraceDescriptor,
-                               WeakCallback,
-                               void*) final {}
   void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void*, MovingObjectCallback) final {}
   void RegisterWeakCallback(void*, WeakCallback) final {}
@@ -320,8 +324,8 @@ class GC_PLUGIN_IGNORE(
     TraceCallback trace_callback_;
   };
 
-  // A VisitationDoneItem unmarks the pending state of an object and creates an
-  // edge from a parent in case there is one.
+  // A VisitationDoneItem unmarks the pending state of an object and creates
+  // an edge from a parent in case there is one.
   class VisitationDoneItem final : public WorklistItemBase {
    public:
     VisitationDoneItem(State* parent, State* to_process)
@@ -333,6 +337,38 @@ class GC_PLUGIN_IGNORE(
       }
       to_process()->UnmarkPending();
     }
+  };
+
+  class EphemeronItem final {
+   public:
+    EphemeronItem(Traceable key,
+                  Traceable value,
+                  Visitor::EphemeronTracingCallback key_tracing_callback,
+                  Visitor::EphemeronTracingCallback value_tracing_callback)
+        : key_(key),
+          value_(value),
+          key_tracing_callback_(key_tracing_callback),
+          value_tracing_callback_(value_tracing_callback) {}
+
+    void Process(V8EmbedderGraphBuilder* builder) {
+      Traceable key = nullptr;
+      {
+        TraceKeysScope scope(builder, &key);
+        key_tracing_callback_(builder, const_cast<void*>(key_));
+      }
+      DCHECK(key);
+      DCHECK(builder->GetStateNotNull(key));
+      {
+        TraceValuesScope scope(builder, key);
+        value_tracing_callback_(builder, const_cast<void*>(value_));
+      }
+    }
+
+   private:
+    Traceable key_;
+    Traceable value_;
+    Visitor::EphemeronTracingCallback key_tracing_callback_;
+    Visitor::EphemeronTracingCallback value_tracing_callback_;
   };
 
   State* GetOrCreateState(Traceable traceable,
@@ -387,6 +423,50 @@ class GC_PLUGIN_IGNORE(
     }
   }
 
+  class TraceKeysScope final {
+    STACK_ALLOCATED();
+    DISALLOW_COPY_AND_ASSIGN(TraceKeysScope);
+
+   public:
+    explicit TraceKeysScope(V8EmbedderGraphBuilder* graph_builder,
+                            Traceable* key_holder)
+        : graph_builder_(graph_builder), key_holder_(key_holder) {
+      DCHECK(!graph_builder_->trace_keys_scope_);
+      graph_builder_->trace_keys_scope_ = this;
+    }
+    ~TraceKeysScope() {
+      DCHECK(graph_builder_->trace_keys_scope_);
+      graph_builder_->trace_keys_scope_ = nullptr;
+    }
+
+    void SetKey(Traceable key) {
+      DCHECK(!*key_holder_);
+      *key_holder_ = key;
+    }
+
+   private:
+    V8EmbedderGraphBuilder* const graph_builder_;
+    Traceable* key_holder_;
+  };
+
+  class TraceValuesScope final {
+    STACK_ALLOCATED();
+    DISALLOW_COPY_AND_ASSIGN(TraceValuesScope);
+
+   public:
+    explicit TraceValuesScope(V8EmbedderGraphBuilder* graph_builder,
+                              Traceable key)
+        : graph_builder_(graph_builder) {
+      graph_builder_->current_parent_ = key;
+    }
+    ~TraceValuesScope() { graph_builder_->current_parent_ = nullptr; }
+
+   private:
+    V8EmbedderGraphBuilder* const graph_builder_;
+  };
+
+  TraceKeysScope* trace_keys_scope_ = nullptr;
+
   v8::Isolate* const isolate_;
   Graph* const graph_;
   NodeBuilder* const node_builder_;
@@ -401,6 +481,8 @@ class GC_PLUGIN_IGNORE(
   // The worklist that collects ScriptWrappables with unknown information
   // about attached/detached state during persistent handle iteration.
   Deque<std::unique_ptr<VisitationItem>> unknown_worklist_;
+  // The worklist that collects Ephemeron entries for later processing.
+  Deque<std::unique_ptr<EphemeronItem>> ephemeron_worklist_;
 };
 
 V8EmbedderGraphBuilder::V8EmbedderGraphBuilder(v8::Isolate* isolate,
@@ -476,6 +558,7 @@ void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
   DCHECK(worklist_.empty());
   DCHECK(detached_worklist_.empty());
   DCHECK(unknown_worklist_.empty());
+  DCHECK(ephemeron_worklist_.empty());
 }
 
 void V8EmbedderGraphBuilder::VisitPersistentHandleInternal(
@@ -563,6 +646,10 @@ void V8EmbedderGraphBuilder::VisitRoot(void* object,
 
 void V8EmbedderGraphBuilder::Visit(void* object,
                                    TraceDescriptor wrapper_descriptor) {
+  if (trace_keys_scope_) {
+    trace_keys_scope_->SetKey(object);
+    return;
+  }
   const void* traceable = wrapper_descriptor.base_object_payload;
   const GCInfo* info = GCInfoTable::Get().GCInfoFromIndex(
       HeapObjectHeader::FromPayload(traceable)->GcInfoIndex());
@@ -628,6 +715,33 @@ void V8EmbedderGraphBuilder::VisitBackingStoreStrongly(void* object,
   desc.callback(this, desc.base_object_payload);
 }
 
+void V8EmbedderGraphBuilder::VisitBackingStoreWeakly(
+    void* object,
+    void** object_slot,
+    TraceDescriptor strong_desc,
+    TraceDescriptor weak_desc,
+    WeakCallback callback,
+    void* parameter,
+    bool is_ephemeron) {
+  if (is_ephemeron) {
+    // Heap snapshot is always run after a GC so we know there are no dead
+    // entries in the backing store, thus it safe to trace it strongly.
+    VisitBackingStoreStrongly(object, object_slot, strong_desc);
+  }
+}
+
+bool V8EmbedderGraphBuilder::VisitEphemeronKeyValuePair(
+    void* key,
+    void* value,
+    bool strong_handling,
+    EphemeronTracingCallback key_trace_callback,
+    EphemeronTracingCallback value_trace_callback) {
+  DCHECK(strong_handling);
+  ephemeron_worklist_.push_back(std::unique_ptr<EphemeronItem>{
+      new EphemeronItem(key, value, key_trace_callback, value_trace_callback)});
+  return true;
+}
+
 void V8EmbedderGraphBuilder::VisitPendingActivities() {
   // Ownership of the new node is transferred to the graph_.
   EmbedderNode* root =
@@ -658,12 +772,27 @@ void V8EmbedderGraphBuilder::VisitBlinkRoots() {
 }
 
 void V8EmbedderGraphBuilder::VisitTransitiveClosure() {
-  // Depth-first search.
-  while (!worklist_.empty()) {
-    std::unique_ptr<WorklistItemBase> item = std::move(worklist_.back());
-    worklist_.pop_back();
-    item->Process(this);
-  }
+  // The following loop process the worklist and ephemerons. Since regular
+  // tracing can record new ephemerons, and tracing an ephemeron can add
+  // items to the regular worklist, we need to repeatedly process the worklist
+  // until a fixed point is reached.
+  do {
+    // Step 1: Go through all items in the worklist using depth-first search.
+    while (!worklist_.empty()) {
+      std::unique_ptr<WorklistItemBase> item = std::move(worklist_.back());
+      worklist_.pop_back();
+      item->Process(this);
+    }
+
+    // Step 2: Go through ephemeron items. Only process an ephemeron item if
+    // its key was already observed.
+    while (!ephemeron_worklist_.empty()) {
+      std::unique_ptr<EphemeronItem> item =
+          std::move(ephemeron_worklist_.front());
+      ephemeron_worklist_.pop_front();
+      item->Process(this);
+    }
+  } while (!worklist_.empty());
 }
 
 }  // namespace

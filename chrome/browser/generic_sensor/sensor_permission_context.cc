@@ -15,7 +15,7 @@
 
 SensorPermissionContext::SensorPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_SENSORS,
+                            ContentSettingsType::SENSORS,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 SensorPermissionContext::~SensorPermissionContext() {}
@@ -29,9 +29,9 @@ void SensorPermissionContext::UpdateTabContext(const PermissionRequestID& id,
     return;
 
   if (allowed)
-    content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_settings->OnContentAllowed(ContentSettingsType::SENSORS);
   else
-    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_settings->OnContentBlocked(ContentSettingsType::SENSORS);
 }
 
 bool SensorPermissionContext::IsRestrictedToSecureOrigins() const {

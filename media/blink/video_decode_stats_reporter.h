@@ -146,7 +146,7 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
   const base::TimeDelta kRecordingInterval;
   const base::TimeDelta kTinyFpsWindowDuration;
 
-  // Pointer to the remote recorder. The recorder runs in the browser process
+  // mojo::Remote for the recorder. The recorder runs in the browser process
   // and finalizes the record in the event of fast render process tear down.
   mojo::Remote<mojom::VideoDecodeStatsRecorder> recorder_remote_;
 

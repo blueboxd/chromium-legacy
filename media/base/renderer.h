@@ -39,7 +39,7 @@ class MEDIA_EXPORT Renderer {
   // Associates the |cdm_context| with this Renderer for decryption (and
   // decoding) of media data, then fires |cdm_attached_cb| with the result.
   virtual void SetCdm(CdmContext* cdm_context,
-                      const CdmAttachedCB& cdm_attached_cb) = 0;
+                      CdmAttachedCB cdm_attached_cb) = 0;
 
   // The following functions must be called after Initialize().
 

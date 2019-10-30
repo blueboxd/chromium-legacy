@@ -105,7 +105,7 @@ bool GetSettingManagedByUser(const GURL& url,
       HostContentSettingsMapFactory::GetForProfile(profile);
   SettingSource source;
   ContentSetting setting;
-  if (type == CONTENT_SETTINGS_TYPE_COOKIES) {
+  if (type == ContentSettingsType::COOKIES) {
     CookieSettingsFactory::GetForProfile(profile)->GetCookieSetting(
         url, url, &source, &setting);
   } else {
@@ -204,23 +204,23 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
       TabSpecificContentSettings::FromWebContents(web_contents());
 
   static const ContentSettingsTypeIdEntry kBlockedTitleIDs[] = {
-      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_TITLE},
-      {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_TITLE},
-      {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_TITLE},
-      {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_TITLE},
-      {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+      {ContentSettingsType::COOKIES, IDS_BLOCKED_COOKIES_TITLE},
+      {ContentSettingsType::IMAGES, IDS_BLOCKED_IMAGES_TITLE},
+      {ContentSettingsType::JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_TITLE},
+      {ContentSettingsType::PLUGINS, IDS_BLOCKED_PLUGINS_TITLE},
+      {ContentSettingsType::MIXEDSCRIPT,
        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE},
-      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_TITLE},
-      {CONTENT_SETTINGS_TYPE_SOUND, IDS_BLOCKED_SOUND_TITLE},
-      {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_TITLE},
-      {CONTENT_SETTINGS_TYPE_SENSORS, IDS_BLOCKED_SENSORS_TITLE},
+      {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_TITLE},
+      {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_TITLE},
+      {ContentSettingsType::CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_TITLE},
+      {ContentSettingsType::SENSORS, IDS_BLOCKED_SENSORS_TITLE},
   };
   // Fields as for kBlockedTitleIDs, above.
   static const ContentSettingsTypeIdEntry kAccessedTitleIDs[] = {
-      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_TITLE},
-      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
-      {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_TITLE},
-      {CONTENT_SETTINGS_TYPE_SENSORS, IDS_ALLOWED_SENSORS_TITLE},
+      {ContentSettingsType::COOKIES, IDS_ACCESSED_COOKIES_TITLE},
+      {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
+      {ContentSettingsType::CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_TITLE},
+      {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_TITLE},
   };
   const ContentSettingsTypeIdEntry* title_ids = kBlockedTitleIDs;
   size_t num_title_ids = base::size(kBlockedTitleIDs);
@@ -241,25 +241,25 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
   // TODO(https://crbug.com/978882): Make the two arrays below static again once
   // we no longer need to check base::FeatureList.
   const ContentSettingsTypeIdEntry kBlockedMessageIDs[] = {
-      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_MESSAGE},
-      {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_MESSAGE},
-      {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_MESSAGE},
-      // {CONTENT_SETTINGS_TYPE_POPUPS, No message. intentionally left out},
-      {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+      {ContentSettingsType::COOKIES, IDS_BLOCKED_COOKIES_MESSAGE},
+      {ContentSettingsType::IMAGES, IDS_BLOCKED_IMAGES_MESSAGE},
+      {ContentSettingsType::JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_MESSAGE},
+      // {ContentSettingsType::POPUPS, No message. intentionally left out},
+      {ContentSettingsType::MIXEDSCRIPT,
        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
-      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_MESSAGE},
-      {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_MESSAGE},
-      {CONTENT_SETTINGS_TYPE_SENSORS,
+      {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_MESSAGE},
+      {ContentSettingsType::CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_MESSAGE},
+      {ContentSettingsType::SENSORS,
        base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
            ? IDS_BLOCKED_SENSORS_MESSAGE
            : IDS_BLOCKED_MOTION_SENSORS_MESSAGE},
   };
   // Fields as for kBlockedMessageIDs, above.
   const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
-      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_MESSAGE},
-      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
-      {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_MESSAGE},
-      {CONTENT_SETTINGS_TYPE_SENSORS,
+      {ContentSettingsType::COOKIES, IDS_ACCESSED_COOKIES_MESSAGE},
+      {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
+      {ContentSettingsType::CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_MESSAGE},
+      {ContentSettingsType::SENSORS,
        base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
            ? IDS_ALLOWED_SENSORS_MESSAGE
            : IDS_ALLOWED_MOTION_SENSORS_MESSAGE},
@@ -285,12 +285,12 @@ void ContentSettingSimpleBubbleModel::OnManageButtonClicked() {
   if (delegate())
     delegate()->ShowContentSettingsPage(content_type());
 
-  if (content_type() == CONTENT_SETTINGS_TYPE_PLUGINS) {
+  if (content_type() == ContentSettingsType::PLUGINS) {
     content_settings::RecordPluginsAction(
         content_settings::PLUGINS_ACTION_CLICKED_MANAGE_PLUGIN_BLOCKING);
   }
 
-  if (content_type() == CONTENT_SETTINGS_TYPE_POPUPS) {
+  if (content_type() == ContentSettingsType::POPUPS) {
     content_settings::RecordPopupsAction(
         content_settings::POPUPS_ACTION_CLICKED_MANAGE_POPUPS_BLOCKING);
   }
@@ -298,8 +298,8 @@ void ContentSettingSimpleBubbleModel::OnManageButtonClicked() {
 
 void ContentSettingSimpleBubbleModel::SetCustomLink() {
   static const ContentSettingsTypeIdEntry kCustomIDs[] = {
-    {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_INFO},
-    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDS_ALLOW_INSECURE_CONTENT_BUTTON},
+      {ContentSettingsType::COOKIES, IDS_BLOCKED_COOKIES_INFO},
+      {ContentSettingsType::MIXEDSCRIPT, IDS_ALLOW_INSECURE_CONTENT_BUTTON},
   };
   int custom_link_id =
       GetIdForContentType(kCustomIDs, base::size(kCustomIDs), content_type());
@@ -335,7 +335,7 @@ ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
     WebContents* web_contents)
     : ContentSettingSimpleBubbleModel(delegate,
                                       web_contents,
-                                      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
+                                      ContentSettingsType::MIXEDSCRIPT) {
   content_settings::RecordMixedScriptAction(
       content_settings::MIXED_SCRIPT_ACTION_DISPLAYED_BUBBLE);
   set_custom_link_enabled(true);
@@ -397,7 +397,7 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
     ProtocolHandlerRegistry* registry)
     : ContentSettingSimpleBubbleModel(delegate,
                                       web_contents,
-                                      CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS),
+                                      ContentSettingsType::PROTOCOL_HANDLERS),
       registry_(registry),
       pending_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_handler_(ProtocolHandler::EmptyProtocolHandler()) {
@@ -522,7 +522,7 @@ ContentSettingMidiSysExBubbleModel::ContentSettingMidiSysExBubbleModel(
     WebContents* web_contents)
     : ContentSettingSimpleBubbleModel(delegate,
                                       web_contents,
-                                      CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+                                      ContentSettingsType::MIDI_SYSEX) {
   SetDomainsAndCustomLink();
 }
 
@@ -577,9 +577,9 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
   for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
     PermissionUtil::ScopedRevocationReporter(
         GetProfile(), map_entry.first, embedder_url,
-        CONTENT_SETTINGS_TYPE_MIDI_SYSEX, PermissionSourceUI::PAGE_ACTION);
+        ContentSettingsType::MIDI_SYSEX, PermissionSourceUI::PAGE_ACTION);
     map->SetContentSettingDefaultScope(map_entry.first, embedder_url,
-                                       CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                                       ContentSettingsType::MIDI_SYSEX,
                                        std::string(), CONTENT_SETTING_DEFAULT);
   }
 }
@@ -609,7 +609,7 @@ ContentSettingDomainListBubbleModel::ContentSettingDomainListBubbleModel(
     : ContentSettingSimpleBubbleModel(delegate,
                                       web_contents,
                                       content_type) {
-  DCHECK_EQ(CONTENT_SETTINGS_TYPE_GEOLOCATION, content_type)
+  DCHECK_EQ(ContentSettingsType::GEOLOCATION, content_type)
       << "SetDomains currently only supports geolocation content type";
   SetDomainsAndCustomLink();
 }
@@ -665,9 +665,9 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
   for (const std::pair<GURL, ContentSetting>& map_entry : state_map) {
     PermissionUtil::ScopedRevocationReporter(
         GetProfile(), map_entry.first, embedder_url,
-        CONTENT_SETTINGS_TYPE_GEOLOCATION, PermissionSourceUI::PAGE_ACTION);
+        ContentSettingsType::GEOLOCATION, PermissionSourceUI::PAGE_ACTION);
     map->SetContentSettingDefaultScope(map_entry.first, embedder_url,
-                                       CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                       ContentSettingsType::GEOLOCATION,
                                        std::string(), CONTENT_SETTING_DEFAULT);
   }
 }
@@ -693,7 +693,7 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
     WebContents* web_contents)
     : ContentSettingSimpleBubbleModel(delegate,
                                       web_contents,
-                                      CONTENT_SETTINGS_TYPE_PLUGINS) {
+                                      ContentSettingsType::PLUGINS) {
   const GURL& url = web_contents->GetURL();
   bool managed_by_user =
       GetSettingManagedByUser(url, content_type(), GetProfile(), nullptr);
@@ -724,7 +724,7 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
 
 void ContentSettingPluginBubbleModel::OnLearnMoreClicked() {
   if (delegate())
-    delegate()->ShowLearnMorePage(CONTENT_SETTINGS_TYPE_PLUGINS);
+    delegate()->ShowLearnMorePage(ContentSettingsType::PLUGINS);
 
   content_settings::RecordPluginsAction(
       content_settings::PLUGINS_ACTION_CLICKED_LEARN_MORE);
@@ -791,7 +791,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   // popup, and the popup TabSpecificContentSettings is unaware of the frame
   // busting block. Since the popup bubble won't happen without blocking, it's
   // safe to manually set this.
-  if (content_type() == CONTENT_SETTINGS_TYPE_POPUPS)
+  if (content_type() == ContentSettingsType::POPUPS)
     allowed = false;
 
   DCHECK(!allowed || content_settings->IsContentAllowed(content_type()));
@@ -800,21 +800,21 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   radio_group.url = url;
 
   static const ContentSettingsTypeIdEntry kBlockedAllowIDs[] = {
-      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_UNBLOCK},
-      {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_UNBLOCK},
-      {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_UNBLOCK},
-      {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_UNBLOCK},
-      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_UNBLOCK},
-      {CONTENT_SETTINGS_TYPE_SOUND, IDS_BLOCKED_SOUND_UNBLOCK},
-      {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_UNBLOCK},
-      {CONTENT_SETTINGS_TYPE_SENSORS, IDS_BLOCKED_SENSORS_UNBLOCK},
+      {ContentSettingsType::COOKIES, IDS_BLOCKED_COOKIES_UNBLOCK},
+      {ContentSettingsType::IMAGES, IDS_BLOCKED_IMAGES_UNBLOCK},
+      {ContentSettingsType::JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_UNBLOCK},
+      {ContentSettingsType::POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_UNBLOCK},
+      {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_UNBLOCK},
+      {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_UNBLOCK},
+      {ContentSettingsType::CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_UNBLOCK},
+      {ContentSettingsType::SENSORS, IDS_BLOCKED_SENSORS_UNBLOCK},
   };
   // Fields as for kBlockedAllowIDs, above.
   static const ContentSettingsTypeIdEntry kAllowedAllowIDs[] = {
-      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ALLOWED_COOKIES_NO_ACTION},
-      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_NO_ACTION},
-      {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_NO_ACTION},
-      {CONTENT_SETTINGS_TYPE_SENSORS, IDS_ALLOWED_SENSORS_NO_ACTION},
+      {ContentSettingsType::COOKIES, IDS_ALLOWED_COOKIES_NO_ACTION},
+      {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_NO_ACTION},
+      {ContentSettingsType::CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_NO_ACTION},
+      {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_NO_ACTION},
   };
 
   base::string16 radio_allow_label;
@@ -830,20 +830,20 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   }
 
   static const ContentSettingsTypeIdEntry kBlockedBlockIDs[] = {
-      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_NO_ACTION},
-      {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_NO_ACTION},
-      {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_NO_ACTION},
-      {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_NO_ACTION},
-      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_NO_ACTION},
-      {CONTENT_SETTINGS_TYPE_SOUND, IDS_BLOCKED_SOUND_NO_ACTION},
-      {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_NO_ACTION},
-      {CONTENT_SETTINGS_TYPE_SENSORS, IDS_BLOCKED_SENSORS_NO_ACTION},
+      {ContentSettingsType::COOKIES, IDS_BLOCKED_COOKIES_NO_ACTION},
+      {ContentSettingsType::IMAGES, IDS_BLOCKED_IMAGES_NO_ACTION},
+      {ContentSettingsType::JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_NO_ACTION},
+      {ContentSettingsType::POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_NO_ACTION},
+      {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_NO_ACTION},
+      {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_NO_ACTION},
+      {ContentSettingsType::CLIPBOARD_READ, IDS_BLOCKED_CLIPBOARD_NO_ACTION},
+      {ContentSettingsType::SENSORS, IDS_BLOCKED_SENSORS_NO_ACTION},
   };
   static const ContentSettingsTypeIdEntry kAllowedBlockIDs[] = {
-      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ALLOWED_COOKIES_BLOCK},
-      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_BLOCK},
-      {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_BLOCK},
-      {CONTENT_SETTINGS_TYPE_SENSORS, IDS_ALLOWED_SENSORS_BLOCK},
+      {ContentSettingsType::COOKIES, IDS_ALLOWED_COOKIES_BLOCK},
+      {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_BLOCK},
+      {ContentSettingsType::CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_BLOCK},
+      {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_BLOCK},
   };
 
   base::string16 radio_block_label;
@@ -904,7 +904,7 @@ ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
     WebContents* web_contents)
     : ContentSettingSingleRadioGroup(delegate,
                                      web_contents,
-                                     CONTENT_SETTINGS_TYPE_COOKIES) {
+                                     ContentSettingsType::COOKIES) {
   set_custom_link_enabled(true);
 }
 
@@ -955,7 +955,7 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
     WebContents* web_contents)
     : ContentSettingSingleRadioGroup(delegate,
                                      web_contents,
-                                     CONTENT_SETTINGS_TYPE_POPUPS),
+                                     ContentSettingsType::POPUPS),
       url_list_observer_(this) {
   set_title(l10n_util::GetStringUTF16(IDS_BLOCKED_POPUPS_TITLE));
 
@@ -1087,8 +1087,8 @@ void ContentSettingMediaStreamBubbleModel::OnManageButtonClicked() {
     delegate()->ShowMediaSettingsPage();
   } else {
     delegate()->ShowContentSettingsPage(
-        CameraAccessed() ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA
-                         : CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+        CameraAccessed() ? ContentSettingsType::MEDIASTREAM_CAMERA
+                         : ContentSettingsType::MEDIASTREAM_MIC);
   }
 }
 
@@ -1221,10 +1221,9 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
 
   radio_group.default_item =
       (MicrophoneAccessed() && content_settings->IsContentBlocked(
-                                   CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) ||
-              (CameraAccessed() &&
-               content_settings->IsContentBlocked(
-                   CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA))
+                                   ContentSettingsType::MEDIASTREAM_MIC)) ||
+              (CameraAccessed() && content_settings->IsContentBlocked(
+                                       ContentSettingsType::MEDIASTREAM_CAMERA))
           ? 1
           : 0;
   radio_group.radio_items = {radio_allow_label, radio_block_label};
@@ -1246,20 +1245,20 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
   if (MicrophoneAccessed()) {
     PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
         GetProfile(), tab_content_settings->media_stream_access_origin(),
-        GURL(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+        GURL(), ContentSettingsType::MEDIASTREAM_MIC,
         PermissionSourceUI::PAGE_ACTION);
     map->SetContentSettingDefaultScope(
         tab_content_settings->media_stream_access_origin(), GURL(),
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), setting);
+        ContentSettingsType::MEDIASTREAM_MIC, std::string(), setting);
   }
   if (CameraAccessed()) {
     PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
         GetProfile(), tab_content_settings->media_stream_access_origin(),
-        GURL(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+        GURL(), ContentSettingsType::MEDIASTREAM_CAMERA,
         PermissionSourceUI::PAGE_ACTION);
     map->SetContentSettingDefaultScope(
         tab_content_settings->media_stream_access_origin(), GURL(),
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), setting);
+        ContentSettingsType::MEDIASTREAM_CAMERA, std::string(), setting);
   }
 }
 
@@ -1470,7 +1469,7 @@ void ContentSettingSubresourceFilterBubbleModel::OnLearnMoreClicked() {
   DCHECK(delegate());
   ChromeSubresourceFilterClient::LogAction(
       SubresourceFilterAction::kClickedLearnMore);
-  delegate()->ShowLearnMorePage(CONTENT_SETTINGS_TYPE_ADS);
+  delegate()->ShowLearnMorePage(ContentSettingsType::ADS);
 }
 
 void ContentSettingSubresourceFilterBubbleModel::CommitChanges() {
@@ -1506,7 +1505,7 @@ void ContentSettingDownloadsBubbleModel::CommitChanges() {
     auto* map = HostContentSettingsMapFactory::GetForProfile(GetProfile());
     map->SetNarrowestContentSetting(
         bubble_content().radio_group.url, bubble_content().radio_group.url,
-        CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, setting);
+        ContentSettingsType::AUTOMATIC_DOWNLOADS, setting);
   }
 }
 
@@ -1547,7 +1546,7 @@ void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
       return;
   }
   radio_group.user_managed = GetSettingManagedByUser(
-      download_origin, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, GetProfile(),
+      download_origin, ContentSettingsType::AUTOMATIC_DOWNLOADS, GetProfile(),
       nullptr);
   set_radio_group(radio_group);
 }
@@ -1577,7 +1576,7 @@ void ContentSettingDownloadsBubbleModel::SetManageText() {
 void ContentSettingDownloadsBubbleModel::OnManageButtonClicked() {
   if (delegate())
     delegate()->ShowContentSettingsPage(
-        CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS);
+        ContentSettingsType::AUTOMATIC_DOWNLOADS);
 }
 
 // ContentSettingFramebustBlockBubbleModel -------------------------------------
@@ -1586,7 +1585,7 @@ ContentSettingFramebustBlockBubbleModel::
                                             WebContents* web_contents)
     : ContentSettingSingleRadioGroup(delegate,
                                      web_contents,
-                                     CONTENT_SETTINGS_TYPE_POPUPS),
+                                     ContentSettingsType::POPUPS),
       url_list_observer_(this) {
   set_title(l10n_util::GetStringUTF16(IDS_REDIRECT_BLOCKED_MESSAGE));
   auto* helper = FramebustBlockTabHelper::FromWebContents(web_contents);
@@ -1653,7 +1652,7 @@ ContentSettingNotificationsBubbleModel::AsNotificationsBubbleModel() {
 
 void ContentSettingNotificationsBubbleModel::OnManageButtonClicked() {
   if (delegate())
-    delegate()->ShowContentSettingsPage(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    delegate()->ShowContentSettingsPage(ContentSettingsType::NOTIFICATIONS);
 
   base::RecordAction(
       base::UserMetricsAction("Notifications.Quiet.ManageClicked"));
@@ -1682,55 +1681,56 @@ ContentSettingBubbleModel::CreateContentSettingBubbleModel(
     WebContents* web_contents,
     ContentSettingsType content_type) {
   DCHECK(web_contents);
-  if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
+  if (content_type == ContentSettingsType::COOKIES) {
     return std::make_unique<ContentSettingCookiesBubbleModel>(delegate,
                                                               web_contents);
   }
-  if (content_type == CONTENT_SETTINGS_TYPE_POPUPS) {
+  if (content_type == ContentSettingsType::POPUPS) {
     return std::make_unique<ContentSettingPopupBubbleModel>(delegate,
                                                             web_contents);
   }
-  if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+  if (content_type == ContentSettingsType::GEOLOCATION) {
     return std::make_unique<ContentSettingDomainListBubbleModel>(
         delegate, web_contents, content_type);
   }
-  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+  if (content_type == ContentSettingsType::PLUGINS) {
     return std::make_unique<ContentSettingPluginBubbleModel>(delegate,
                                                              web_contents);
   }
-  if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
+  if (content_type == ContentSettingsType::MIXEDSCRIPT) {
     return std::make_unique<ContentSettingMixedScriptBubbleModel>(delegate,
                                                                   web_contents);
   }
-  if (content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+  if (content_type == ContentSettingsType::PROTOCOL_HANDLERS) {
     ProtocolHandlerRegistry* registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(
             web_contents->GetBrowserContext());
     return std::make_unique<ContentSettingRPHBubbleModel>(
         delegate, web_contents, registry);
   }
-  if (content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+  if (content_type == ContentSettingsType::MIDI_SYSEX) {
     return std::make_unique<ContentSettingMidiSysExBubbleModel>(delegate,
                                                                 web_contents);
   }
-  if (content_type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {
+  if (content_type == ContentSettingsType::AUTOMATIC_DOWNLOADS) {
     return std::make_unique<ContentSettingDownloadsBubbleModel>(delegate,
                                                                 web_contents);
   }
-  if (content_type == CONTENT_SETTINGS_TYPE_ADS) {
+  if (content_type == ContentSettingsType::ADS) {
     return std::make_unique<ContentSettingSubresourceFilterBubbleModel>(
         delegate, web_contents);
   }
-  if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
-      content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-      content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER ||
-      content_type == CONTENT_SETTINGS_TYPE_SOUND ||
-      content_type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ ||
-      content_type == CONTENT_SETTINGS_TYPE_SENSORS) {
+  if (content_type == ContentSettingsType::IMAGES ||
+      content_type == ContentSettingsType::JAVASCRIPT ||
+      content_type == ContentSettingsType::PPAPI_BROKER ||
+      content_type == ContentSettingsType::SOUND ||
+      content_type == ContentSettingsType::CLIPBOARD_READ ||
+      content_type == ContentSettingsType::SENSORS) {
     return std::make_unique<ContentSettingSingleRadioGroup>(
         delegate, web_contents, content_type);
   }
-  NOTREACHED() << "No bubble for the content type " << content_type << ".";
+  NOTREACHED() << "No bubble for the content type "
+               << static_cast<int32_t>(content_type) << ".";
   return nullptr;
 }
 

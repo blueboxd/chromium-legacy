@@ -53,7 +53,7 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env,
   std::vector<int> content_settings_types;
   for (size_t i = 0; i < permission_prompt_->PermissionCount(); ++i) {
     content_settings_types.push_back(
-        permission_prompt_->GetContentSettingType(i));
+        static_cast<int>(permission_prompt_->GetContentSettingType(i)));
   }
 
   j_delegate_.Reset(Java_PermissionDialogDelegate_create(

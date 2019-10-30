@@ -79,7 +79,7 @@ bool WorkerContentSettingsClient::AllowRunningInsecureContent(
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
     EnsureContentSettingsManager();
     content_settings_manager_->OnContentBlocked(
-        CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
+        ContentSettingsType::MIXEDSCRIPT);
     return false;
   }
 
@@ -104,7 +104,7 @@ bool WorkerContentSettingsClient::AllowScriptFromSource(
   if (!allow) {
     EnsureContentSettingsManager();
     content_settings_manager_->OnContentBlocked(
-        CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+        ContentSettingsType::JAVASCRIPT);
     return false;
   }
 

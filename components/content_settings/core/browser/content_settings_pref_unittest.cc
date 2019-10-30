@@ -167,7 +167,7 @@ TEST(ContentSettingsPref, CanonicalizationWhileReadingFromPrefs) {
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs);
   ContentSettingsPref content_settings_pref(
-      CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, &prefs, &registrar,
+      ContentSettingsType::MEDIA_ENGAGEMENT, &prefs, &registrar,
       kTestContentSettingPrefName, false, base::DoNothing());
 
   // Verify that the |value_map| contains the expected content setting patterns
@@ -257,7 +257,7 @@ TEST(ContentSettingsPref, LegacyPersistedPluginSetting) {
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs);
   ContentSettingsPref content_settings_pref(
-      CONTENT_SETTINGS_TYPE_PLUGINS, &prefs, &registrar,
+      ContentSettingsType::PLUGINS, &prefs, &registrar,
       kPluginsContentSettingPrefName, false, base::DoNothing());
 
   // For kPattern1 retrieving the setting without a resource id returns the

@@ -26,6 +26,7 @@ class Node;
 struct PhysicalOffset;
 struct PhysicalRect;
 struct PhysicalSize;
+class ShapeResultView;
 
 // This class traverses fragments in an inline formatting context.
 //
@@ -38,8 +39,12 @@ class CORE_EXPORT NGInlineCursor {
   STACK_ALLOCATED();
 
  public:
+  using ItemsSpan = base::span<const std::unique_ptr<NGFragmentItem>>;
+
   explicit NGInlineCursor(const LayoutBlockFlow& block_flow);
   explicit NGInlineCursor(const NGFragmentItems& items);
+  explicit NGInlineCursor(const NGFragmentItems& fragment_items,
+                          ItemsSpan items);
   explicit NGInlineCursor(const NGPaintFragment& root_paint_fragment);
   NGInlineCursor(const NGInlineCursor& other);
   NGInlineCursor();
@@ -75,6 +80,11 @@ class CORE_EXPORT NGInlineCursor {
 
   // True if fragment at the current position has children.
   bool HasChildren() const;
+
+  // Returns a new |NGInlineCursor| whose root is the current item. The returned
+  // cursor can traverse descendants of the current item. If the current item
+  // has no children, returns an empty cursor.
+  NGInlineCursor CursorForDescendants() const;
 
   // True if current position has soft wrap to next line. It is error to call
   // other than line.
@@ -150,6 +160,10 @@ class CORE_EXPORT NGInlineCursor {
   unsigned CurrentTextStartOffset() const;
   unsigned CurrentTextEndOffset() const;
 
+  // Returns |ShapeResultView| of the current position. It is error to call
+  // other than text.
+  const ShapeResultView* CurrentTextShapeResult() const;
+
   // The layout box of text in (start, end) range in local coordinate.
   // Start and end offsets must be between |CurrentTextStartOffset()| and
   // |CurrentTextEndOffset()|. It is error to call other than text.
@@ -224,8 +238,6 @@ class CORE_EXPORT NGInlineCursor {
   // NextSkippingChildren, Previous, etc.
 
  private:
-  using ItemsSpan = base::span<const std::unique_ptr<NGFragmentItem>>;
-
   // Returns break token for line box. It is error to call other than line box.
   const NGInlineBreakToken& CurrentInlineBreakToken() const;
 
@@ -248,7 +260,7 @@ class CORE_EXPORT NGInlineCursor {
   void InternalMoveTo(const LayoutObject& layout_object);
 
   void SetRoot(const NGFragmentItems& items);
-  void SetRoot(ItemsSpan items);
+  void SetRoot(const NGFragmentItems& fragment_items, ItemsSpan items);
   void SetRoot(const NGPaintFragment& root_paint_fragment);
 
   void MoveToItem(const ItemsSpan::iterator& iter);

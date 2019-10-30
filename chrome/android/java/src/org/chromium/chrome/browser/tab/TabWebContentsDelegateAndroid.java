@@ -287,6 +287,15 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
         return null;
     }
 
+    /**
+     * Checks if the associated tab is currently presented in the context of custom tabs.
+     * @return true if this is currently a custom tab.
+     */
+    @CalledByNative
+    protected boolean isCustomTab() {
+        return false;
+    }
+
     @NativeMethods
     interface Natives {
         void onRendererUnresponsive(WebContents webContents);

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
@@ -186,6 +188,7 @@ WebRtcEventLogManager::WebRtcEventLogManager()
            base::TaskPriority::BEST_EFFORT,
            base::ThreadPolicy::PREFER_BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      num_user_blocking_tasks_(0),
       remote_logging_feature_enabled_(IsRemoteLoggingFeatureEnabled()),
       local_logs_observer_(nullptr),
       remote_logs_observer_(nullptr),
@@ -482,10 +485,10 @@ void WebRtcEventLogManager::ClearCacheForBrowserContext(
   const auto browser_context_id = GetBrowserContextId(browser_context);
   DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
-  // |task_runner_| is USER_BLOCKING when there are pending tasks to clear the
-  // cache.
-  ++num_pending_clear_cache_;
-  task_runner_->UpdatePriority(base::TaskPriority::USER_BLOCKING);
+  DCHECK_LT(num_user_blocking_tasks_, std::numeric_limits<size_t>::max());
+  if (++num_user_blocking_tasks_ == 1) {
+    task_runner_->UpdatePriority(base::TaskPriority::USER_BLOCKING);
+  }
 
   // |this| is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
@@ -951,12 +954,10 @@ void WebRtcEventLogManager::ClearCacheForBrowserContextInternal(
 void WebRtcEventLogManager::OnClearCacheForBrowserContextDoneInternal(
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_GT(num_pending_clear_cache_, 0);
-  // |task_runner_| is BEST_EFFORT when there are no pending tasks to clear the
-  // cache.
-  --num_pending_clear_cache_;
-  if (num_pending_clear_cache_ == 0)
+  DCHECK_GT(num_user_blocking_tasks_, 0u);
+  if (--num_user_blocking_tasks_ == 0) {
     task_runner_->UpdatePriority(base::TaskPriority::BEST_EFFORT);
+  }
   std::move(reply).Run();
 }
 

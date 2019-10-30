@@ -103,6 +103,7 @@ blink::mojom::FileSystemType ToMojoFileSystemType(
     case storage::FileSystemType::kFileSystemTypeArcContent:
     case storage::FileSystemType::kFileSystemTypeArcDocumentsProvider:
     case storage::FileSystemType::kFileSystemTypeDriveFs:
+    case storage::FileSystemType::kFileSystemTypeSmbFs:
     case storage::FileSystemType::kFileSystemInternalTypeEnumEnd:
       NOTREACHED();
       return blink::mojom::FileSystemType::kTemporary;

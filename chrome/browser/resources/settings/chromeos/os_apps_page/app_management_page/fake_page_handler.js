@@ -13,10 +13,10 @@ cr.define('app_management', function() {
      */
     static createWebPermissions(options) {
       const permissionIds = [
-        PwaPermissionType.CONTENT_SETTINGS_TYPE_GEOLOCATION,
-        PwaPermissionType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-        PwaPermissionType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-        PwaPermissionType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+        PwaPermissionType.GEOLOCATION,
+        PwaPermissionType.NOTIFICATIONS,
+        PwaPermissionType.MEDIASTREAM_MIC,
+        PwaPermissionType.MEDIASTREAM_CAMERA,
       ];
 
       const permissions = {};

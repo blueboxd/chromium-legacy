@@ -257,7 +257,7 @@ void GeolocationPermissionContextTests::SetUp() {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
   geolocation_permission_context_ = static_cast<GeolocationPermissionContext*>(
       PermissionManager::Get(profile())->GetPermissionContext(
-          CONTENT_SETTINGS_TYPE_GEOLOCATION));
+          ContentSettingsType::GEOLOCATION));
   SetupRequestManager(web_contents());
 
 #if defined(OS_ANDROID)
@@ -341,9 +341,7 @@ void GeolocationPermissionContextTests::RequestManagerDocumentLoadCompleted(
 ContentSetting GeolocationPermissionContextTests::GetGeolocationContentSetting(
     GURL frame_0, GURL frame_1) {
   return HostContentSettingsMapFactory::GetForProfile(profile())
-      ->GetContentSetting(frame_0,
-                          frame_1,
-                          CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      ->GetContentSetting(frame_0, frame_1, ContentSettingsType::GEOLOCATION,
                           std::string());
 }
 
@@ -353,7 +351,7 @@ void GeolocationPermissionContextTests::SetGeolocationContentSetting(
     ContentSetting content_setting) {
   return HostContentSettingsMapFactory::GetForProfile(profile())
       ->SetContentSettingDefaultScope(frame_0, frame_1,
-                                      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                      ContentSettingsType::GEOLOCATION,
                                       std::string(), content_setting);
 }
 
@@ -1072,7 +1070,7 @@ TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
   // The DSE should be auto-granted geolocation.
   ASSERT_EQ(CONTENT_SETTING_ALLOW,
             PermissionManager::Get(profile())
-                ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatus(ContentSettingsType::GEOLOCATION,
                                       requesting_frame, requesting_frame)
                 .content_setting);
 
@@ -1081,7 +1079,7 @@ TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
   // A DSE setting of ALLOW should not flow through to incognito.
   ASSERT_EQ(CONTENT_SETTING_ASK,
             PermissionManager::Get(otr_profile)
-                ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatus(ContentSettingsType::GEOLOCATION,
                                       requesting_frame, requesting_frame)
                 .content_setting);
 }

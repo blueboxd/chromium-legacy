@@ -214,3 +214,56 @@ bundle_data("terms_resources") {
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
+
+source_set("test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "keyboard_observer_helper_app_interface.h",
+    "keyboard_observer_helper_app_interface.mm",
+  ]
+  deps = [
+    ":util",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test/app:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+  ]
+}
+
+source_set("eg_app_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "keyboard_observer_helper_app_interface.h",
+    "keyboard_observer_helper_app_interface.mm",
+  ]
+  deps = [
+    ":util",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test/app:test_support",
+  ]
+}
+
+source_set("eg_test_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "keyboard_observer_helper_app_interface.h",
+  ]
+  deps = [
+    ":util",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+  ]
+}

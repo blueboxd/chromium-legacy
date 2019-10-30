@@ -272,9 +272,6 @@ class CastContentBrowserClient
   virtual scoped_refptr<net::X509Certificate> DeviceCert();
   virtual scoped_refptr<net::SSLPrivateKey> DeviceKey();
 
-  void AddNetworkHintsMessageFilter(int render_process_id,
-                                    net::URLRequestContext* context);
-
   void SelectClientCertificateOnIOThread(
       GURL requesting_url,
       const std::string& session_id,

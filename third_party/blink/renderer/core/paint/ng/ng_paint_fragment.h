@@ -181,8 +181,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   IntRect VisualRect() const override;
   IntRect PartialInvalidationVisualRect() const override;
 
-  PhysicalRect ComputeLocalSelectionRectForReplaced() const;
-
   // Set ShouldDoFullPaintInvalidation flag in the corresponding LayoutObject.
   void SetShouldDoFullPaintInvalidation();
 
@@ -419,6 +417,8 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
 PhysicalRect ComputeLocalSelectionRectForText(
     const NGInlineCursor& cursor,
     const LayoutSelectionStatus& selection_status);
+
+PhysicalRect ComputeLocalSelectionRectForReplaced(const NGInlineCursor& cursor);
 
 }  // namespace blink
 

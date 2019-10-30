@@ -25,18 +25,6 @@ namespace web_app {
 
 namespace {
 
-// Returns icon sizes to be generated from downloaded icons.
-std::set<int> SizesToGenerate() {
-  return std::set<int>({
-      icon_size::k32,
-      icon_size::k64,
-      icon_size::k48,
-      icon_size::k96,
-      icon_size::k128,
-      icon_size::k256,
-  });
-}
-
 // Get a list of non-empty square icons from |web_app_info|.
 void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
                                std::vector<BitmapAndSource>* square_icons) {
@@ -88,8 +76,10 @@ void UpdateWebAppIconsWithoutChangingLinks(
   for (auto& icon : web_app_info->icons) {
     if (!icon.url.is_empty() && icon.data.empty()) {
       const auto& it = size_map.find(icon.width);
-      if (it != size_map.end() && it->second.source_url == icon.url)
+      if (it != size_map.end() && it->second.source_url == icon.url) {
+        icon.height = icon.width;
         icon.data = it->second.bitmap;
+      }
     }
   }
 

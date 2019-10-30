@@ -162,4 +162,11 @@ interface ExternalNavigationDelegate {
      * @return Whether the package is a valid WebAPK package.
      */
     boolean isValidWebApk(String packageName);
+
+    /**
+     * @return Whether the current tab is custom tab or not.
+     */
+    default boolean isOnCustomTab() {
+        return false;
+    }
 }

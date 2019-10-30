@@ -54,11 +54,12 @@ using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
 // by resizing larger icons down to smaller sizes, and generating icons for
 // sizes where resizing is not possible. |icons_map| is optional.
 //
-// Sync: It is important that the linked app information in any web app that
-// gets created from sync matches the linked app information that came from
-// sync. If there are any changes, they will be synced back to other devices
-// and could potentially create a never ending sync cycle. If |is_for_sync| is
-// true then icon links won't be changed.
+// Historically, |is_for_sync| is a hack for the old |ExtensionSyncService|
+// system to avoid sync wars. It is important that the linked app information in
+// any web app that gets created from sync matches the linked app information
+// that came from sync. If there are any changes, they will be synced back to
+// other devices and could potentially create a never ending sync cycle. If
+// |is_for_sync| is true then icon links won't be changed.
 void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
                                          const IconsMap* icons_map,
                                          bool is_for_sync);

@@ -38,7 +38,7 @@
 
 namespace blink {
 class AssociatedInterfaceProvider;
-struct WebMediaPlayerAction;
+struct MediaPlayerAction;
 namespace mojom {
 enum class FeaturePolicyFeature;
 }  // namespace mojom
@@ -357,7 +357,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Run the given action on the media player location at the given point.
   virtual void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location,
-      const blink::WebMediaPlayerAction& action) = 0;
+      const blink::MediaPlayerAction& action) = 0;
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|.
   // If this returns true, any redirect safety checks should be bypassed in

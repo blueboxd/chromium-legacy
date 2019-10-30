@@ -49,23 +49,23 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
 
     if (!has_all_permissions) {
       if (message_id == -1) {
-        if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+        if (content_settings_type == ContentSettingsType::GEOLOCATION) {
           message_id = IDS_INFOBAR_MISSING_LOCATION_PERMISSION_TEXT;
         } else if (content_settings_type ==
-                   CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
+                   ContentSettingsType::MEDIASTREAM_MIC) {
           message_id = IDS_INFOBAR_MISSING_MICROPHONE_PERMISSION_TEXT;
         } else if (content_settings_type ==
-                   CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+                   ContentSettingsType::MEDIASTREAM_CAMERA) {
           message_id = IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT;
         } else {
           NOTREACHED();
         }
       } else if (message_id == IDS_INFOBAR_MISSING_CAMERA_PERMISSION_TEXT) {
-        DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+        DCHECK(content_settings_type == ContentSettingsType::MEDIASTREAM_MIC);
         message_id = IDS_INFOBAR_MISSING_MICROPHONE_CAMERA_PERMISSIONS_TEXT;
       } else if (message_id == IDS_INFOBAR_MISSING_MICROPHONE_PERMISSION_TEXT) {
         DCHECK(content_settings_type ==
-               CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+               ContentSettingsType::MEDIASTREAM_CAMERA);
         message_id = IDS_INFOBAR_MISSING_MICROPHONE_CAMERA_PERMISSIONS_TEXT;
       } else {
         NOTREACHED();

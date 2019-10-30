@@ -1010,7 +1010,7 @@ public class ExternalNavigationHandler {
     private boolean shouldStayInWebApkCCT(
             ExternalNavigationParams params, List<ResolveInfo> handlers) {
         Tab tab = params.getTab();
-        if (tab == null || !tab.isCurrentlyACustomTab() || tab.getActivity() == null) {
+        if (tab == null || !mDelegate.isOnCustomTab() || tab.getActivity() == null) {
             return false;
         }
 

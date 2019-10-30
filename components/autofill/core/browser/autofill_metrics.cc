@@ -968,6 +968,41 @@ void AutofillMetrics::LogCardUnmaskPreflightDuration(
 }
 
 // static
+void AutofillMetrics::LogWebauthnOptChangeCalled(
+    bool request_to_opt_in,
+    bool is_checkout_flow,
+    WebauthnOptInParameters metric) {
+  if (!request_to_opt_in) {
+    DCHECK(!is_checkout_flow);
+    base::UmaHistogramBoolean(
+        "Autofill.BetterAuth.OptOutCalled.FromSettingsPage", true);
+    return;
+  }
+
+  std::string histogram_name = "Autofill.BetterAuth.OptInCalled.";
+  histogram_name += is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage";
+  base::UmaHistogramEnumeration(histogram_name, metric);
+}
+
+// static
+void AutofillMetrics::LogWebauthnOptInPromoShown(bool is_checkout_flow) {
+  std::string suffix =
+      is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage";
+  base::UmaHistogramBoolean("Autofill.BetterAuth.OptInPromoShown." + suffix,
+                            true);
+}
+
+// static
+void AutofillMetrics::LogWebauthnOptInPromoUserDecision(
+    bool is_checkout_flow,
+    WebauthnOptInPromoUserDecisionMetric metric) {
+  std::string suffix =
+      (is_checkout_flow ? "FromCheckoutFlow" : "FromSettingsPage");
+  base::UmaHistogramEnumeration(
+      "Autofill.BetterAuth.OptInPromoUserDecision." + suffix, metric);
+}
+
+// static
 void AutofillMetrics::LogCardUnmaskTypeDecision(
     CardUnmaskTypeDecisionMetric metric) {
   base::UmaHistogramEnumeration("Autofill.BetterAuth.CardUnmaskTypeDecision",

@@ -138,7 +138,7 @@ TEST_F(DecryptingRendererTest, ClearStreams_OtherCdm) {
 
   EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(RunOnceCallback<2>(PIPELINE_OK));
-  EXPECT_CALL(*renderer_, SetCdm(_, _)).WillOnce(RunCallback<1>(true));
+  EXPECT_CALL(*renderer_, OnSetCdm(_, _)).WillOnce(RunOnceCallback<1>(true));
   EXPECT_CALL(renderer_init_cb_, Run(PIPELINE_OK));
   EXPECT_CALL(set_cdm_cb_, Run(true));
 
@@ -185,7 +185,7 @@ TEST_F(DecryptingRendererTest, EncryptedStreams_OtherCdm) {
 
   EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(RunOnceCallback<2>(PIPELINE_OK));
-  EXPECT_CALL(*renderer_, SetCdm(_, _)).WillOnce(RunCallback<1>(true));
+  EXPECT_CALL(*renderer_, OnSetCdm(_, _)).WillOnce(RunOnceCallback<1>(true));
   EXPECT_CALL(renderer_init_cb_, Run(PIPELINE_OK));
   EXPECT_CALL(set_cdm_cb_, Run(true));
 
@@ -221,7 +221,7 @@ TEST_F(DecryptingRendererTest, EncryptedStreams_OtherCdm_CdmSetBeforeInit) {
 
   EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(RunOnceCallback<2>(PIPELINE_OK));
-  EXPECT_CALL(*renderer_, SetCdm(_, _)).WillOnce(RunCallback<1>(true));
+  EXPECT_CALL(*renderer_, OnSetCdm(_, _)).WillOnce(RunOnceCallback<1>(true));
   EXPECT_CALL(renderer_init_cb_, Run(PIPELINE_OK));
   EXPECT_CALL(set_cdm_cb_, Run(true));
 
@@ -239,7 +239,7 @@ TEST_F(DecryptingRendererTest, EncryptedAndClearStream_OtherCdm) {
 
   EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
       .WillOnce(RunOnceCallback<2>(PIPELINE_OK));
-  EXPECT_CALL(*renderer_, SetCdm(_, _)).WillOnce(RunCallback<1>(true));
+  EXPECT_CALL(*renderer_, OnSetCdm(_, _)).WillOnce(RunOnceCallback<1>(true));
   EXPECT_CALL(renderer_init_cb_, Run(PIPELINE_OK));
   EXPECT_CALL(set_cdm_cb_, Run(true));
 

@@ -98,8 +98,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   base::TimeDelta GetMediaDuration() const override;
   bool DidLoadingProgress() override;
   PipelineStatistics GetStatistics() const override;
-  void SetCdm(CdmContext* cdm_context,
-              const CdmAttachedCB& cdm_attached_cb) override;
+  void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) override;
 
   // |enabled_track_ids| contains track ids of enabled audio tracks.
   void OnEnabledAudioTracksChanged(

@@ -361,6 +361,11 @@ class MODULES_EXPORT RTCPeerConnection final
   base::TimeTicks WebRtcTimestampToBlinkTimestamp(
       base::TimeTicks webrtc_monotonic_time) const;
 
+  using RtcPeerConnectionHandlerFactoryCallback =
+      base::RepeatingCallback<std::unique_ptr<WebRTCPeerConnectionHandler>()>;
+  static void SetRtcPeerConnectionHandlerFactoryForTesting(
+      RtcPeerConnectionHandlerFactoryCallback);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetAudioTrack);
   FRIEND_TEST_ALL_PREFIXES(RTCPeerConnectionTest, GetVideoTrack);
@@ -536,6 +541,7 @@ class MODULES_EXPORT RTCPeerConnection final
   HeapHashMap<webrtc::IceTransportInterface*, WeakMember<RTCIceTransport>>
       ice_transports_by_native_transport_;
 
+  // TODO(crbug.com/787254): Use RTCPeerConnectionHandler.
   std::unique_ptr<WebRTCPeerConnectionHandler> peer_handler_;
 
   TaskHandle dispatch_scheduled_events_task_handle_;

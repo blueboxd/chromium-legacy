@@ -48,8 +48,8 @@ TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
   EXPECT_FALSE(context->HasPortPermission(origin, origin, *port));
 
   EXPECT_CALL(observer(), OnChooserObjectPermissionChanged(
-                              CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
-                              CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA));
+                              ContentSettingsType::SERIAL_GUARD,
+                              ContentSettingsType::SERIAL_CHOOSER_DATA));
 
   context->GrantPortPermission(origin, origin, *port);
   EXPECT_TRUE(context->HasPortPermission(origin, origin, *port));
@@ -69,8 +69,8 @@ TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
   EXPECT_FALSE(objects[0]->incognito);
 
   EXPECT_CALL(observer(), OnChooserObjectPermissionChanged(
-                              CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
-                              CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA));
+                              ContentSettingsType::SERIAL_GUARD,
+                              ContentSettingsType::SERIAL_CHOOSER_DATA));
   EXPECT_CALL(observer(), OnPermissionRevoked(origin, origin));
 
   context->RevokeObjectPermission(origin, origin, objects[0]->value);
@@ -93,7 +93,7 @@ TEST_F(SerialChooserContextTest, GuardPermission) {
 
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetContentSettingDefaultScope(origin.GetURL(), origin.GetURL(),
-                                     CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
+                                     ContentSettingsType::SERIAL_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(context->HasPortPermission(origin, origin, *port));
 

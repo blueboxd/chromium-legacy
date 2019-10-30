@@ -52,10 +52,10 @@ class UseCreditCardAction : public Action {
                         fallback_data,
                     const ClientStatus& status);
 
-  // Gets the fallback value.
-  std::string GetFallbackValue(
-      const RequiredFieldsFallbackHandler::RequiredField& required_field,
-      const RequiredFieldsFallbackHandler::FallbackData& fallback_data);
+  // Create fallback data.
+  std::unique_ptr<RequiredFieldsFallbackHandler::FallbackData>
+  CreateFallbackData(const base::string16& cvc,
+                     const autofill::CreditCard& card);
 
   std::string prompt_;
   Selector selector_;

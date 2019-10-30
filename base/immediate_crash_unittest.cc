@@ -143,10 +143,22 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
 
   // Look for two IMMEDIATE_CRASH() opcode sequences.
   for (int i = 0; i < 2; ++i) {
+
+#if defined(OS_WIN)
+
+    // BRK #F000
+    EXPECT_EQ(0XD43E0000, *++it);
+    // BRK #1
+    EXPECT_EQ(0XD4200020, *++it);
+
+#else
+
     // BRK #0
     EXPECT_EQ(0XD4200000, *++it);
     // HLT #0
     EXPECT_EQ(0xD4400000, *++it);
+
+#endif  //  defined(OS_WIN)
   }
 
 #endif  // defined(ARCH_CPU_X86_FAMILY)

@@ -134,8 +134,8 @@ void UsbChooserContext::DeviceObserver::OnDeviceManagerConnectionError() {}
 
 UsbChooserContext::UsbChooserContext(Profile* profile)
     : ChooserContextBase(profile,
-                         CONTENT_SETTINGS_TYPE_USB_GUARD,
-                         CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
+                         ContentSettingsType::USB_GUARD,
+                         ContentSettingsType::USB_CHOOSER_DATA),
       is_incognito_(profile->IsOffTheRecord()) {
 #if defined(OS_CHROMEOS)
   bool is_signin_profile = chromeos::ProfileHelper::IsSigninProfile(profile);

@@ -27,7 +27,7 @@ class AppPrefs {
     if (!settings_)
       return;
     origin_data_ = settings_->GetWebsiteSetting(
-        origin, GURL(), CONTENT_SETTINGS_TYPE_INSTALLED_WEB_APP_METADATA,
+        origin, GURL(), ContentSettingsType::INSTALLED_WEB_APP_METADATA,
         std::string(), nullptr);
   }
 
@@ -55,7 +55,7 @@ class AppPrefs {
   void Save(const GURL& origin) {
     DCHECK(IsAvailable());
     settings_->SetWebsiteSettingDefaultScope(
-        origin, GURL(), CONTENT_SETTINGS_TYPE_INSTALLED_WEB_APP_METADATA,
+        origin, GURL(), ContentSettingsType::INSTALLED_WEB_APP_METADATA,
         std::string(), std::move(origin_data_));
   }
 

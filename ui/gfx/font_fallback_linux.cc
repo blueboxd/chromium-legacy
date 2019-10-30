@@ -298,15 +298,19 @@ bool GetFallbackFont(const Font& font,
   for (const auto& entry : cache_entry->second) {
     // Validate that every character has a known glyph in the font.
     size_t missing_glyphs = 0;
+    size_t matching_glyphs = 0;
     size_t i = 0;
     while (i < text.length()) {
       UChar32 c = 0;
       U16_NEXT(text.data(), i, text.length(), c);
-      if (!entry.HasGlyphForCharacter(c))
+      if (entry.HasGlyphForCharacter(c)) {
+        ++matching_glyphs;
+      } else {
         ++missing_glyphs;
+      }
     }
 
-    if (missing_glyphs < fewest_missing_glyphs) {
+    if (matching_glyphs > 0 && missing_glyphs < fewest_missing_glyphs) {
       fewest_missing_glyphs = missing_glyphs;
       prefered_entry = &entry;
     }

@@ -326,6 +326,11 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
         return mActivity != null ? mActivity.getNightModeStateProvider().isInNightMode() : false;
     }
 
+    @Override
+    protected boolean isCustomTab() {
+        return mActivity != null && mActivity.isCustomTab();
+    }
+
     private class RepostFormWarningHelper extends EmptyTabObserver {
         private ModalDialogManager mModalDialogManager;
         private PropertyModel mDialogModel;

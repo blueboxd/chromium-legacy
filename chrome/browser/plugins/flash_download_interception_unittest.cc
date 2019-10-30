@@ -38,7 +38,7 @@ class FlashDownloadInterceptionTest : public ChromeRenderViewHostTestHarness {
 
   void SetFlashContentSetting(ContentSetting setting) {
     host_content_settings_map()->SetContentSettingDefaultScope(
-        source_url_, source_url_, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+        source_url_, source_url_, ContentSettingsType::PLUGINS, std::string(),
         setting);
   }
 

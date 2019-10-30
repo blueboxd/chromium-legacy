@@ -176,7 +176,7 @@ void End2EndTestRenderer::Initialize(MediaResource* media_resource,
 }
 
 void End2EndTestRenderer::SetCdm(CdmContext* cdm_context,
-                                 const CdmAttachedCB& cdc_attached_cb) {
+                                 CdmAttachedCB cdc_attached_cb) {
   // TODO(xjz): Add the implementation when media remoting starts supporting
   // encrypted contents.
   NOTIMPLEMENTED() << "Media Remoting doesn't support EME for now.";

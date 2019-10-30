@@ -53,7 +53,7 @@ namespace blink {
 template <typename T>
 class GarbageCollected;
 template <typename T>
-class TraceTrait;
+struct TraceTrait;
 class ThreadState;
 class Visitor;
 template <typename T>
@@ -159,6 +159,20 @@ class PLATFORM_EXPORT Visitor {
     }
   };
 
+  template <
+      typename Traits,
+      bool =
+          WTF::IsSubclassOfTemplate<Traits, WTF::KeyValuePairHashTraits>::value>
+  struct IsEphemeron {
+    static constexpr bool value = false;
+  };
+
+  template <typename Traits>
+  struct IsEphemeron<Traits, true> {
+    static constexpr bool value =
+        (Traits::KeyTraits::kIsWeak != Traits::ValueTraits::kIsWeak);
+  };
+
   template <typename HashTable, typename T>
   void TraceBackingStoreWeakly(T* backing_store,
                                T** backing_store_slot,
@@ -179,7 +193,8 @@ class PLATFORM_EXPORT Visitor {
             WTF::IsTraceableInCollectionTrait<
                 typename HashTable::ValueTraits>::value >
                 ::GetWeakTraceDescriptor(backing_store),
-        callback, parameter);
+        callback, parameter,
+        IsEphemeron<typename HashTable::ValueTraits>::value);
   }
 
   template <typename T>
@@ -243,6 +258,16 @@ class PLATFORM_EXPORT Visitor {
                          &TraceMethodDelegate<T, method>::Trampoline);
   }
 
+  using EphemeronTracingCallback = bool (*)(Visitor*, void*);
+  virtual bool VisitEphemeronKeyValuePair(
+      void* key,
+      void* value,
+      bool strong_handling,
+      EphemeronTracingCallback key_trace_callback,
+      EphemeronTracingCallback value_trace_callback) {
+    return true;
+  }
+
   // Cross-component tracing interface.
 
   template <typename V8Type>
@@ -269,7 +294,8 @@ class PLATFORM_EXPORT Visitor {
                                        TraceDescriptor,
                                        TraceDescriptor,
                                        WeakCallback,
-                                       void*) = 0;
+                                       void*,
+                                       bool) = 0;
   virtual void VisitBackingStoreOnly(void*, void**) = 0;
 
   // Visits cross-component references to V8.

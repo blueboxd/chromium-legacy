@@ -394,27 +394,23 @@ void VRUiHostImpl::InitCapturingStates() {
   content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
   potential_capturing_.audio_capture_enabled =
       permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, rfh,
-              origin)
+          ->GetPermissionStatusForFrame(ContentSettingsType::MEDIASTREAM_MIC,
+                                        rfh, origin)
           .content_setting == CONTENT_SETTING_ALLOW;
   potential_capturing_.video_capture_enabled =
       permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-              rfh, origin)
+          ->GetPermissionStatusForFrame(ContentSettingsType::MEDIASTREAM_CAMERA,
+                                        rfh, origin)
           .content_setting == CONTENT_SETTING_ALLOW;
   potential_capturing_.location_access_enabled =
       permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_GEOLOCATION, rfh,
-              origin)
+          ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION, rfh,
+                                        origin)
           .content_setting == CONTENT_SETTING_ALLOW;
   potential_capturing_.midi_connected =
       permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_MIDI_SYSEX, rfh,
-              origin)
+          ->GetPermissionStatusForFrame(ContentSettingsType::MIDI_SYSEX, rfh,
+                                        origin)
           .content_setting == CONTENT_SETTING_ALLOW;
 
   indicators_shown_start_time_ = base::Time::Now();
@@ -457,7 +453,7 @@ void VRUiHostImpl::PollCapturingState() {
           TabSpecificContentSettings::CAMERA_BLOCKED);
 
     active_capturing.midi_connected =
-        settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+        settings->IsContentAllowed(ContentSettingsType::MIDI_SYSEX);
   }
 
   // Screen capture.

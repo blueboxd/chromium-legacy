@@ -127,24 +127,19 @@ public class AndroidPermissionRequester {
                 if (allRequestable && !deniedContentSettings.isEmpty() && activity != null) {
                     int deniedStringId = -1;
                     if (deniedContentSettings.size() == 2
+                            && deniedContentSettings.contains(ContentSettingsType.MEDIASTREAM_MIC)
                             && deniedContentSettings.contains(
-                                       ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
-                            && deniedContentSettings.contains(
-                                       ContentSettingsType
-                                               .CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
+                                    ContentSettingsType.MEDIASTREAM_CAMERA)) {
                         deniedStringId =
                                 R.string.infobar_missing_microphone_camera_permissions_text;
                     } else if (deniedContentSettings.size() == 1) {
-                        if (deniedContentSettings.contains(
-                                    ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION)) {
+                        if (deniedContentSettings.contains(ContentSettingsType.GEOLOCATION)) {
                             deniedStringId = R.string.infobar_missing_location_permission_text;
                         } else if (deniedContentSettings.contains(
-                                           ContentSettingsType
-                                                   .CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) {
+                                           ContentSettingsType.MEDIASTREAM_MIC)) {
                             deniedStringId = R.string.infobar_missing_microphone_permission_text;
                         } else if (deniedContentSettings.contains(
-                                           ContentSettingsType
-                                                   .CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
+                                           ContentSettingsType.MEDIASTREAM_CAMERA)) {
                             deniedStringId = R.string.infobar_missing_camera_permission_text;
                         }
                     }

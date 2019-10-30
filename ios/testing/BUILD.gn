@@ -24,6 +24,18 @@ source_set("verify_custom_webkit") {
   ]
 }
 
+source_set("hardware_keyboarr_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "hardware_keyboard_util.h",
+    "hardware_keyboard_util.mm",
+  ]
+  deps = [
+    "//base/test:test_support",
+  ]
+}
+
 source_set("nserror_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

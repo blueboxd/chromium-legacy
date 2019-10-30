@@ -178,7 +178,9 @@ constexpr char kCrostiniCroshBuiltinAppId[] =
 constexpr char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
 constexpr char kCrostiniDefaultImageServerUrl[] =
     "https://storage.googleapis.com/cros-containers/%d";
-constexpr char kCrostiniDefaultImageAlias[] = "debian/stretch";
+constexpr char kCrostiniStretchImageAlias[] = "debian/stretch";
+constexpr char kCrostiniBusterImageAlias[] = "debian/buster";
+
 constexpr base::FilePath::CharType kHomeDirectory[] =
     FILE_PATH_LITERAL("/home");
 

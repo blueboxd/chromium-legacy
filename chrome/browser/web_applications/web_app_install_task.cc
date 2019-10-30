@@ -117,6 +117,25 @@ void WebAppInstallTask::InstallWebAppFromManifestWithFallback(
                      base::Unretained(this), force_shortcut_app));
 }
 
+void WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback(
+    const GURL& launch_url,
+    content::WebContents* contents,
+    WebAppUrlLoader* url_loader,
+    WebappInstallSource install_source,
+    InstallManager::OnceInstallCallback install_callback) {
+  DCHECK(AreWebAppsUserInstallable(profile_));
+  CheckInstallPreconditions();
+
+  Observe(contents);
+  background_installation_ = true;
+  install_callback_ = std::move(install_callback);
+  install_source_ = install_source;
+
+  url_loader->LoadUrl(launch_url, contents,
+                      base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoaded,
+                                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void WebAppInstallTask::InstallWebAppFromInfo(
     std::unique_ptr<WebApplicationInfo> web_application_info,
     ForInstallableSite for_installable_site,
@@ -136,6 +155,7 @@ void WebAppInstallTask::InstallWebAppFromInfo(
 
   InstallFinalizer::FinalizeOptions options;
   options.install_source = install_source;
+  options.locally_installed = true;
 
   install_finalizer_->FinalizeInstall(*web_application_info, options,
                                       std::move(callback));
@@ -249,6 +269,26 @@ bool WebAppInstallTask::ShouldStopInstall() const {
   // WebAppInstallTask::WebContentsDestroyed will get called eventually and the
   // callback will be invoked at that point.
   return !web_contents() || web_contents()->IsBeingDestroyed();
+}
+
+void WebAppInstallTask::OnWebAppUrlLoaded(WebAppUrlLoader::Result result) {
+  if (ShouldStopInstall())
+    return;
+
+  if (result == WebAppUrlLoader::Result::kRedirectedUrlLoaded) {
+    CallInstallCallback(AppId(), InstallResultCode::kInstallURLRedirected);
+    return;
+  }
+
+  if (result != WebAppUrlLoader::Result::kUrlLoaded) {
+    CallInstallCallback(AppId(), InstallResultCode::kInstallURLLoadFailed);
+    return;
+  }
+
+  data_retriever_->GetWebApplicationInfo(
+      web_contents(),
+      base::BindOnce(&WebAppInstallTask::OnGetWebApplicationInfo,
+                     base::Unretained(this), /*force_shortcut_app*/ false));
 }
 
 void WebAppInstallTask::OnGetWebApplicationInfo(
@@ -451,9 +491,11 @@ void WebAppInstallTask::OnIconsRetrievedShowDialog(
 
   DCHECK(web_app_info);
 
-  FilterAndResizeIconsGenerateMissing(
-      web_app_info.get(), &icons_map,
-      /*is_for_sync=*/install_source_ == WebappInstallSource::SYNC);
+  // The old BookmarkApp Sync System uses |WebAppInstallTask::OnIconsRetrieved|.
+  // The new WebApp USS System has no sync wars and it doesn't need to preserve
+  // icons. |is_for_sync| is always false for USS.
+  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map,
+                                      /*is_for_sync=*/false);
 
   if (background_installation_) {
     DCHECK(!dialog_callback_);
@@ -505,6 +547,7 @@ void WebAppInstallTask::OnDialogCompleted(
 
   InstallFinalizer::FinalizeOptions finalize_options;
   finalize_options.install_source = install_source_;
+  finalize_options.locally_installed = true;
   if (install_params_ && install_params_->user_display_mode !=
                              blink::mojom::DisplayMode::kUndefined) {
     web_app_info_copy.open_as_window = install_params_->user_display_mode !=

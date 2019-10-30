@@ -331,7 +331,7 @@ bool SVGAnimationElement::IsAdditive() const {
 bool SVGAnimationElement::IsAccumulated() const {
   DEFINE_STATIC_LOCAL(const AtomicString, sum, ("sum"));
   const AtomicString& value = FastGetAttribute(svg_names::kAccumulateAttr);
-  return value == sum && GetAnimationMode() != kToAnimation;
+  return value == sum;
 }
 
 void SVGAnimationElement::CalculateKeyTimesForCalcModePaced() {
@@ -630,7 +630,8 @@ void SVGAnimationElement::UpdateAnimation(float percent,
     if (CheckAnimationParameters()) {
       animation_valid_ = AnimationValidity::kValid;
 
-      if (IsAdditive() || IsAccumulated()) {
+      if (IsAdditive() ||
+          (IsAccumulated() && GetAnimationMode() != kToAnimation)) {
         UseCounter::Count(&GetDocument(),
                           WebFeature::kSVGSMILAdditiveAnimation);
       }
@@ -675,8 +676,9 @@ void SVGAnimationElement::UpdateAnimation(float percent,
 }
 
 bool SVGAnimationElement::OverwritesUnderlyingAnimationValue() const {
-  return !IsAdditive() && !IsAccumulated() &&
-         GetAnimationMode() != kToAnimation &&
+  if (IsAdditive() || IsAccumulated())
+    return false;
+  return GetAnimationMode() != kToAnimation &&
          GetAnimationMode() != kByAnimation &&
          GetAnimationMode() != kNoAnimation;
 }

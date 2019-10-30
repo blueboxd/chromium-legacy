@@ -8,6 +8,11 @@ include_rules = [
     "+third_party/blink/renderer/modules/peerconnection",
     "+third_party/blink/renderer/modules/p2p",
 
+    "+base/hash/md5.h",
+    "+base/lazy_instance.h",
+    # TODO(crbug.com/787254): Replace StringPrintf uses here.
+    "+base/strings/stringprintf.h",
+    "+base/values.h",
     "+crypto/openssl_util.h",
     "+jingle/glue/thread_wrapper.h",
     "+media/base",
@@ -25,6 +30,7 @@ specific_include_rules = {
         "+base/run_loop.h",
         "+base/test/bind_test_util.h",
         "+base/test/test_timeouts.h",
+        "+base/threading/thread.h",
         "+ui/gfx/color_space.h",
     ],
 }

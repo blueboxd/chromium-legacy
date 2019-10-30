@@ -28,7 +28,7 @@ std::vector<ash::NotifierMetadata> WebPageNotifierController::GetNotifierList(
 
   ContentSettingsForOneType settings;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      ContentSettingsType::NOTIFICATIONS,
       content_settings::ResourceIdentifier(), &settings);
 
   favicon::FaviconService* const favicon_service =
@@ -52,7 +52,7 @@ std::vector<ash::NotifierMetadata> WebPageNotifierController::GetNotifierList(
         NotifierStateTrackerFactory::GetForProfile(profile);
     content_settings::SettingInfo info;
     HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
-        url, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(), &info);
+        url, GURL(), ContentSettingsType::NOTIFICATIONS, std::string(), &info);
     notifiers.emplace_back(
         notifier_id, name,
         notifier_state_tracker->IsNotifierEnabled(notifier_id),
@@ -81,7 +81,7 @@ void WebPageNotifierController::SetNotifierEnabled(
   // TODO(mukai): fix this.
   ContentSetting default_setting =
       HostContentSettingsMapFactory::GetForProfile(profile)
-          ->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL);
+          ->GetDefaultContentSetting(ContentSettingsType::NOTIFICATIONS, NULL);
 
   DCHECK(default_setting == CONTENT_SETTING_ALLOW ||
          default_setting == CONTENT_SETTING_BLOCK ||
@@ -124,7 +124,7 @@ void WebPageNotifierController::SetNotifierEnabled(
       HostContentSettingsMapFactory::GetForProfile(profile)
           ->SetContentSettingCustomScope(
               pattern, ContentSettingsPattern::Wildcard(),
-              CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+              ContentSettingsType::NOTIFICATIONS,
               content_settings::ResourceIdentifier(), CONTENT_SETTING_DEFAULT);
     }
   }

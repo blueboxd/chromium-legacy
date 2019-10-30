@@ -12,7 +12,7 @@ PermissionRequestGestureType PermissionRequest::GetGestureType() const {
 }
 
 ContentSettingsType PermissionRequest::GetContentSettingsType() const {
-  return CONTENT_SETTINGS_TYPE_DEFAULT;
+  return ContentSettingsType::DEFAULT;
 }
 
 #if defined(OS_ANDROID)

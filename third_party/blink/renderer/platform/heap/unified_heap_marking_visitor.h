@@ -47,16 +47,14 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitor
     : public MarkingVisitor,
       public UnifiedHeapMarkingVisitorBase {
  public:
-  UnifiedHeapMarkingVisitor(ThreadState*, MarkingMode, v8::Isolate*);
-  ~UnifiedHeapMarkingVisitor() override = default;
-
   // Write barriers for annotating a write during incremental marking.
   static void WriteBarrier(const TraceWrapperV8Reference<v8::Value>&);
   static void WriteBarrier(v8::Isolate*, const WrapperTypeInfo*, void*);
 
-  void Visit(const TraceWrapperV8Reference<v8::Value>& v) final {
-    VisitImpl(v);
-  }
+  UnifiedHeapMarkingVisitor(ThreadState*, MarkingMode, v8::Isolate*);
+  ~UnifiedHeapMarkingVisitor() override = default;
+
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UnifiedHeapMarkingVisitor);
@@ -74,9 +72,7 @@ class PLATFORM_EXPORT ConcurrentUnifiedHeapMarkingVisitor
                                       int task_id);
   ~ConcurrentUnifiedHeapMarkingVisitor() override = default;
 
-  void Visit(const TraceWrapperV8Reference<v8::Value>& v) final {
-    VisitImpl(v);
-  }
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
 
   void FlushWorklists() override;
 

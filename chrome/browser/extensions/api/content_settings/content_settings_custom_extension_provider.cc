@@ -52,10 +52,8 @@ void CustomExtensionProvider::OnContentSettingChanged(
   if (incognito_ != incognito)
     return;
   // TODO(markusheintz): Be more concise.
-  NotifyObservers(ContentSettingsPattern(),
-                  ContentSettingsPattern(),
-                  CONTENT_SETTINGS_TYPE_DEFAULT,
-                  std::string());
+  NotifyObservers(ContentSettingsPattern(), ContentSettingsPattern(),
+                  ContentSettingsType::DEFAULT, std::string());
 }
 
 }  // namespace content_settings

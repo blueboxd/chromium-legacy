@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/protected_memory_cfi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
@@ -972,6 +973,71 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMinimumIncrement) {
   g_value_unset(&increment);
   g_object_unref(root_obj);
 }
+
+#if ATK_CHECK_VERSION(2, 12, 0)
+typedef bool (*SetValueFunction)(AtkValue* component, double value);
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueChangedSignal) {
+  // There's a chance we may be compiled with a newer version of ATK and then
+  // run with an older one, so we need to do a runtime check for this method
+  // that is available in ATK 2.12 instead of linking directly.
+  static PROTECTED_MEMORY_SECTION base::ProtectedMemory<SetValueFunction>
+      g_atk_value_set_value;
+  static base::ProtectedMemory<SetValueFunction>::Initializer
+      init_atk_value_set_value(&g_atk_value_set_value,
+                               reinterpret_cast<SetValueFunction>(
+                                   dlsym(RTLD_DEFAULT, "atk_value_set_value")));
+  if (!*g_atk_value_set_value) {
+    LOG(WARNING) << "Skipping TestAtkValueChangedSignal"
+                    " because ATK version < 2.12 detected.";
+    return;
+  }
+
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kSlider;
+  root.AddFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange, 5.0);
+  Init(root);
+
+  AtkObject* root_object(GetRootAtkObject());
+  ASSERT_TRUE(ATK_IS_OBJECT(root_object));
+  ASSERT_TRUE(ATK_IS_VALUE(root_object));
+  g_object_ref(root_object);
+
+  bool saw_value_change = false;
+  g_signal_connect(
+      root_object, "property-change::accessible-value",
+      G_CALLBACK(+[](AtkObject*, void* property, bool* saw_value_change) {
+        *saw_value_change = true;
+      }),
+      &saw_value_change);
+
+  base::UnsanitizedCfiCall(g_atk_value_set_value)(ATK_VALUE(root_object), 24.0);
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kValueChanged);
+
+  GValue current_value = G_VALUE_INIT;
+  atk_value_get_current_value(ATK_VALUE(root_object), &current_value);
+  EXPECT_EQ(G_TYPE_FLOAT, G_VALUE_TYPE(&current_value));
+  EXPECT_EQ(24.0, g_value_get_float(&current_value));
+  EXPECT_TRUE(saw_value_change);
+
+  saw_value_change = false;
+  base::UnsanitizedCfiCall(g_atk_value_set_value)(ATK_VALUE(root_object),
+                                                  100.0);
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kValueChanged);
+
+  g_value_unset(&current_value);
+  atk_value_get_current_value(ATK_VALUE(root_object), &current_value);
+  EXPECT_EQ(G_TYPE_FLOAT, G_VALUE_TYPE(&current_value));
+  EXPECT_EQ(100.0, g_value_get_float(&current_value));
+  EXPECT_TRUE(saw_value_change);
+
+  g_value_unset(&current_value);
+  g_object_unref(root_object);
+}
+#endif  // ATK_CHECK_VERSION(2, 12, 0)
 
 //
 // AtkHyperlinkImpl interface

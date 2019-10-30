@@ -126,13 +126,9 @@ PrintViewManagerBase::~PrintViewManagerBase() {
 bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
   DisconnectFromCurrentPrintJob();
 
-  // Don't print / print preview interstitials or crashed tabs.
-  if (IsInterstitialOrCrashed())
-    return false;
-
   SetPrintingRFH(rfh);
-  GetPrintRenderFrame(rfh)->PrintRequestedPages();
-  return true;
+  int32_t id = rfh->GetRoutingID();
+  return PrintNowInternal(rfh, std::make_unique<PrintMsg_PrintPages>(id));
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -615,8 +611,11 @@ void PrintViewManagerBase::ReleasePrintJob() {
   if (!print_job_)
     return;
 
-  if (rfh)
-    GetPrintRenderFrame(rfh)->PrintingDone(printing_succeeded_);
+  if (rfh) {
+    auto msg = std::make_unique<PrintMsg_PrintingDone>(rfh->GetRoutingID(),
+                                                       printing_succeeded_);
+    rfh->Send(msg.release());
+  }
 
   registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                     content::Source<PrintJob>(print_job_.get()));
@@ -724,7 +723,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
 
 void PrintViewManagerBase::SendPrintingEnabled(bool enabled,
                                                content::RenderFrameHost* rfh) {
-  GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
+  rfh->Send(new PrintMsg_SetPrintingEnabled(rfh->GetRoutingID(), enabled));
 }
 
 }  // namespace printing

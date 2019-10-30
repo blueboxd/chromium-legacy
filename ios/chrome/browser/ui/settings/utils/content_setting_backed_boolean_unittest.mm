@@ -21,7 +21,7 @@
 
 namespace {
 
-const ContentSettingsType kTestContentSettingID = CONTENT_SETTINGS_TYPE_POPUPS;
+const ContentSettingsType kTestContentSettingID = ContentSettingsType::POPUPS;
 
 class ContentSettingBackedBooleanTest : public PlatformTest {
  public:

@@ -59,7 +59,7 @@ std::unique_ptr<RuleIterator> InstalledWebappProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
-  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS || incognito) {
+  if (content_type != ContentSettingsType::NOTIFICATIONS || incognito) {
     return nullptr;
   }
 
@@ -88,9 +88,6 @@ void InstalledWebappProvider::ShutdownOnUIThread() {
 }
 
 void InstalledWebappProvider::Notify() {
-  NotifyObservers(
-      ContentSettingsPattern(),
-      ContentSettingsPattern(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      std::string());
+  NotifyObservers(ContentSettingsPattern(), ContentSettingsPattern(),
+                  ContentSettingsType::NOTIFICATIONS, std::string());
 }

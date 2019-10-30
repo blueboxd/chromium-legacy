@@ -427,7 +427,8 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
     top = std::max(toolbar_->bounds().bottom(), LayoutBookmarkBar(top));
   }
 
-  if ((toolbar_->GetVisible() || bookmark_bar_) && top > 0) {
+  if (delegate_->IsContentsSeparatorEnabled() &&
+      (toolbar_->GetVisible() || bookmark_bar_) && top > 0) {
     contents_separator_->SetVisible(true);
     const int separator_height =
         contents_separator_->GetPreferredSize().height();

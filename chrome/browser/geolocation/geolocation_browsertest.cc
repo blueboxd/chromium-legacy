@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPrompt) {
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetHostContentSettingsMap()->GetContentSetting(
-                current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                current_url(), current_url(), ContentSettingsType::GEOLOCATION,
                 std::string()));
 
   // Ensure a second request doesn't create a prompt in this tab.
@@ -462,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, ErrorOnPermissionDenied) {
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetHostContentSettingsMap()->GetContentSetting(
-                current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                current_url(), current_url(), ContentSettingsType::GEOLOCATION,
                 std::string()));
 
   // Ensure a second request doesn't create a prompt in this tab.
@@ -482,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForSecondTab) {
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForDeniedOrigin) {
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      current_url(), current_url(), ContentSettingsType::GEOLOCATION,
       std::string(), CONTENT_SETTING_BLOCK);
 
   // Check that the request wasn't shown but we get an error for this origin.
@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForDeniedOrigin) {
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForAllowedOrigin) {
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      current_url(), current_url(), ContentSettingsType::GEOLOCATION,
       std::string(), CONTENT_SETTING_ALLOW);
   // The request is not shown, there is no error, and the position gets to the
   // script.

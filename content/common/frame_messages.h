@@ -57,6 +57,7 @@
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
@@ -73,7 +74,6 @@
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
-#include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/rect.h"
@@ -142,8 +142,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::TriggeringEventInfo,
                           blink::TriggeringEventInfo::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
                           blink::UserActivationUpdateType::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
-                          blink::WebMediaPlayerAction::Type::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::MediaPlayerAction::Type,
+                          blink::MediaPlayerAction::Type::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
                               blink::kFirstScrollDirection,
                               blink::kLastScrollDirection)
@@ -663,7 +663,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::PepperRendererInstanceData)
 IPC_STRUCT_TRAITS_END()
 #endif
 
-IPC_STRUCT_TRAITS_BEGIN(blink::WebMediaPlayerAction)
+IPC_STRUCT_TRAITS_BEGIN(blink::MediaPlayerAction)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(enable)
 IPC_STRUCT_TRAITS_END()
@@ -939,7 +939,7 @@ IPC_MESSAGE_ROUTED2(FrameMsg_BubbleLogicalScroll,
 // at the given point in the view coordinate space.
 IPC_MESSAGE_ROUTED2(FrameMsg_MediaPlayerActionAt,
                     gfx::PointF /* location */,
-                    blink::WebMediaPlayerAction)
+                    blink::MediaPlayerAction)
 
 // Sent to the proxy or frame in parent frame's process to ask for rendering
 // fallback contents. This only happens for frame owners which render their own

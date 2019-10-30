@@ -106,6 +106,7 @@ class InstallManager {
                                        WebappInstallSource install_source,
                                        OnceInstallCallback callback) = 0;
 
+  // For the old ExtensionSyncService-based system only:
   // Starts background installation or an update of a web app from the sync
   // system. |web_application_info| contains received sync data. Icons will be
   // downloaded from the icon URLs provided in |web_application_info|.

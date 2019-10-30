@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/bit_cast.h"
+#include "base/containers/checked_iterators.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -400,6 +401,21 @@ void Value::Append(StringPiece16 value) {
 void Value::Append(Value&& value) {
   CHECK(is_list());
   list_.emplace_back(std::move(value));
+}
+
+Value::ListStorage::iterator Value::Insert(ListStorage::const_iterator pos,
+                                           Value&& value) {
+  CHECK(is_list());
+  return list_.insert(pos, std::move(value));
+}
+
+CheckedContiguousIterator<Value> Value::Insert(
+    CheckedContiguousConstIterator<Value> pos,
+    Value&& value) {
+  CHECK(is_list());
+  const auto offset = pos - make_span(list_).begin();
+  list_.insert(list_.begin() + offset, std::move(value));
+  return make_span(list_).begin() + offset;
 }
 
 bool Value::EraseListIter(ListStorage::const_iterator iter) {

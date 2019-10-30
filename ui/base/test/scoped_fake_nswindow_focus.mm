@@ -77,6 +77,12 @@ void ClearFocus() {
   g_order_out_impl_(self, _cmd, sender);
 }
 
+- (void)resignKeyWindow {
+}
+
+- (void)resignMainWindow {
+}
+
 @end
 
 namespace ui {
@@ -91,6 +97,10 @@ ScopedFakeNSWindowFocus::ScopedFakeNSWindowFocus()
           new ScopedObjCClassSwizzler([NSWindow class],
                                       [FakeNSWindowFocusDonor class],
                                       @selector(makeMainWindow))),
+      resign_main_swizzler_(
+          new ScopedObjCClassSwizzler([NSWindow class],
+                                      [FakeNSWindowFocusDonor class],
+                                      @selector(resignMainWindow))),
       is_key_swizzler_(
           new ScopedObjCClassSwizzler([NSWindow class],
                                       [FakeNSWindowFocusDonor class],
@@ -99,6 +109,10 @@ ScopedFakeNSWindowFocus::ScopedFakeNSWindowFocus()
           new ScopedObjCClassSwizzler([NSWindow class],
                                       [FakeNSWindowFocusDonor class],
                                       @selector(makeKeyWindow))),
+      resign_key_swizzler_(
+          new ScopedObjCClassSwizzler([NSWindow class],
+                                      [FakeNSWindowFocusDonor class],
+                                      @selector(resignKeyWindow))),
       order_out_swizzler_(
           new ScopedObjCClassSwizzler([NSWindow class],
                                       [FakeNSWindowFocusDonor class],

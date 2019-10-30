@@ -136,6 +136,19 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
         << location.ToString();
   }
 
+  void ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature feature,
+      base::Location location) {
+    base::HistogramBase::Sample sample = base::HistogramBase::Sample(feature);
+    AddSampleToBuckets(&expected_blocklisted_features_, sample);
+
+    EXPECT_EQ(expected_blocklisted_features_,
+              histogram_tester_.GetAllSamples(
+                  "BackForwardCache.HistoryNavigationOutcome."
+                  "BlocklistedFeature"))
+        << location.ToString();
+  }
+
   void ExpectDisabledWithReason(const std::string& reason,
                                 base::Location location) {
     base::HistogramBase::Sample sample =
@@ -184,6 +197,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
   base::HistogramTester histogram_tester_;
   std::vector<base::Bucket> expected_outcomes_;
   std::vector<base::Bucket> expected_not_restored_;
+  std::vector<base::Bucket> expected_blocklisted_features_;
   std::vector<base::Bucket> expected_disabled_reasons_;
   std::vector<base::Bucket> expected_eviction_after_committing_;
 };
@@ -1164,6 +1178,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
       FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kSharedWorker, FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -1189,6 +1205,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet,
       FROM_HERE);
 }
 
@@ -1400,9 +1419,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   TestNavigationManager navigation_manager_back(shell()->web_contents(), url);
   web_contents()->GetController().GoBack();
   navigation_manager_back.WaitForNavigationFinished();
-  // The recorded reason is 'blocklisted features: outstanding network request'.
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kOutstandingNetworkRequest,
       FROM_HERE);
 }
 
@@ -1512,6 +1533,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebGL) {
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
       FROM_HERE);
+  ExpectBlocklistedFeature(blink::scheduler::WebSchedulerTrackedFeature::kWebGL,
+                           FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfHttpError) {
@@ -2409,6 +2432,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
       FROM_HERE);
+  ExpectBlocklistedFeature(blink::scheduler::WebSchedulerTrackedFeature::
+                               kServiceWorkerControlledPage,
+                           FROM_HERE);
 }
 
 class BackForwardCacheBrowserTestWithServiceWorkerEnabled

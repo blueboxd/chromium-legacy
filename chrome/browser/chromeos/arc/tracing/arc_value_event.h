@@ -25,6 +25,9 @@ struct ArcValueEvent {
     kGpuFrequency,
     kCpuTemperature,
     kCpuFrequency,
+    kCpuPower,
+    kGpuPower,
+    kMemoryPower,
   };
 
   ArcValueEvent(int64_t timestamp, Type type, int value);
@@ -44,6 +47,9 @@ struct ArcValueEvent {
    * kGpuFrequency - mhz
    * kCpuTemperature - celsius * 1000
    * kCpuFrequency - khz
+   * kCpuPower - milli-watts
+   * kGpuPower - milli-watts
+   * kMemporyPower - milli-watts
    */
   int value;
 };

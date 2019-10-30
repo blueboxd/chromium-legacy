@@ -1345,28 +1345,6 @@
             ]
         }
     ],
-    "BlobDataPipeTuning": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_2MB_v1",
-                    "params": {
-                        "capacity_bytes": "2097152"
-                    },
-                    "enable_features": [
-                        "BlobDataPipeTuning"
-                    ]
-                }
-            ]
-        }
-    ],
     "BlockPromptsIfIgnoredOften": [
         {
             "platforms": [
@@ -2992,6 +2970,29 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IncludeBetaForumMenuItem"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IncognitoDynamicQuota": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "WideRange",
+                    "params": {
+                        "RatioLowerBound": "0.1",
+                        "RatioUpperBound": "0.2"
+                    },
+                    "enable_features": [
+                        "IncognitoDynamicQuota"
                     ]
                 }
             ]

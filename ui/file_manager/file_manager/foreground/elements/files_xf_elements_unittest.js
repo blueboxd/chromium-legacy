@@ -10,6 +10,12 @@ function setUpPage() {
       '<xf-display-panel id="test-xf-display-panel"></xf-display-panel>';
 }
 
+function tearDown() {
+  /** @type {!DisplayPanel|!Element} */
+  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
+  displayPanel.removeAllPanelItems();
+}
+
 async function testDisplayPanelAttachPanel(done) {
   // Get the host display panel container element.
   /** @type {!DisplayPanel|!Element} */
@@ -163,6 +169,52 @@ function testFilesDisplayPanelErrorMarker() {
   assertEquals(
       summaryPanel.errorMarkerVisibility, 'hidden',
       'Summary panel error marker property is wrong, should be "hidden"');
+}
+
+function testFilesDisplayPanelMixedSummary() {
+  // Get the host display panel container element.
+  /** @type {!DisplayPanel|!Element} */
+  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
+
+  // Add an error panel item to the display panel container.
+  let errorPanel = displayPanel.addPanelItem('testpanel1');
+  errorPanel.panelType = errorPanel.panelTypeError;
+  assertEquals('status', errorPanel.indicator);
+
+  // Add a progress panel item to the display panel container.
+  const progressPanel = displayPanel.addPanelItem('testpanel2');
+  progressPanel.panelType = progressPanel.panelTypeProgress;
+
+  // Verify a summary panel item is created and shows the error indicator.
+  const summaryContainer = displayPanel.shadowRoot.querySelector('#summary');
+  let summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
+  assertEquals(summaryPanelItem.panelTypeSummary, summaryPanelItem.panelType);
+  assertEquals('largeprogress', summaryPanelItem.indicator);
+  assertEquals('visible', summaryPanelItem.errorMarkerVisibility);
+
+  // Remove the error panel item and add a second progress panel item.
+  displayPanel.removePanelItem(errorPanel);
+  const extraProgressPanel = displayPanel.addPanelItem('testpanel3');
+  extraProgressPanel.panelType = extraProgressPanel.panelTypeProgress;
+
+  // Verify a summary panel item is created without an error indicator.
+  summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
+  assertEquals(summaryPanelItem.panelTypeSummary, summaryPanelItem.panelType);
+  assertEquals('largeprogress', summaryPanelItem.indicator);
+  assertEquals('hidden', summaryPanelItem.errorMarkerVisibility);
+
+  // Remove the progress panel items and add 2 error panel items.
+  displayPanel.removePanelItem(progressPanel);
+  displayPanel.removePanelItem(extraProgressPanel);
+  errorPanel = displayPanel.addPanelItem('testpanel4');
+  errorPanel.panelType = errorPanel.panelTypeError;
+  const extraErrorPanel = displayPanel.addPanelItem('testpanel5');
+  extraErrorPanel.panelType = extraErrorPanel.panelTypeError;
+
+  // Verify a summary panel item is shown, with an error status indicator.
+  summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
+  assertEquals(summaryPanelItem.panelTypeSummary, summaryPanelItem.panelType);
+  assertEquals('status', summaryPanelItem.indicator);
 }
 
 async function testFilesDisplayPanelSummaryPanel(done) {

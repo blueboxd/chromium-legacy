@@ -3389,8 +3389,8 @@ IN_PROC_BROWSER_TEST_F(WebViewCaptureTest, DISABLED_Shim_ScreenshotCapture) {
 // <webview> with content settings set to CONTENT_SETTING_BLOCK.
 IN_PROC_BROWSER_TEST_F(WebViewTest, TestPlugin) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-    ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                               CONTENT_SETTING_BLOCK);
+      ->SetDefaultContentSetting(ContentSettingsType::PLUGINS,
+                                 CONTENT_SETTING_BLOCK);
   TestHelper("testPlugin", "web_view/shim", NEEDS_TEST_SERVER);
 }
 

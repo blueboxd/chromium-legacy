@@ -677,27 +677,6 @@ public class Tab {
     }
 
     /**
-     * Called on the foreground tab when the Activity showing the Tab gets started. This is called
-     * on both cold and warm starts.
-     */
-    public void onActivityShown() {
-        if (isHidden()) {
-            show(TabSelectionType.FROM_USER);
-        } else {
-            // The visible Tab's renderer process may have died after the activity was paused.
-            // Ensure that it's restored appropriately.
-            loadIfNeeded();
-        }
-    }
-
-    /**
-     * Called on the foreground tab when the Activity showing the Tab gets stopped.
-     */
-    public void onActivityHidden() {
-        hide(TabHidingType.ACTIVITY_HIDDEN);
-    }
-
-    /**
      * Prepares the tab to be shown. This method is supposed to be called before the tab is
      * displayed. It restores the ContentView if it is not available after the cold start and
      * reloads the tab if its renderer has crashed.
@@ -871,7 +850,7 @@ public class Tab {
             boolean creatingWebContents = webContents == null;
             if (creatingWebContents) {
                 webContents = WarmupManager.getInstance().takeSpareWebContents(
-                        isIncognito(), initiallyHidden, isCurrentlyACustomTab());
+                        isIncognito(), initiallyHidden, isCustomTab());
                 if (webContents == null) {
                     webContents =
                             WebContentsFactory.createWebContents(isIncognito(), initiallyHidden);
@@ -1278,7 +1257,7 @@ public class Tab {
         if (mPendingLoadParams != null) {
             assert isFrozen();
             WebContents webContents = WarmupManager.getInstance().takeSpareWebContents(
-                    isIncognito(), isHidden(), isCurrentlyACustomTab());
+                    isIncognito(), isHidden(), isCustomTab());
             if (webContents == null) {
                 webContents = WebContentsFactory.createWebContents(isIncognito(), isHidden());
             }
@@ -1502,13 +1481,9 @@ public class Tab {
         return mWebContentsDelegate;
     }
 
-    /**
-     * Checks if this tab is currently presented in the context of custom tabs. Tabs can be moved
-     * between different activities so the returned value might change over the lifetime of the tab.
-     * @return true if this is currently a custom tab.
-     */
-    @CalledByNative
-    public boolean isCurrentlyACustomTab() {
+    // TODO(jinsukkim): Delete this once the WarmupManager does not need this any more
+    //         for its metric after 2020-03-28.
+    private boolean isCustomTab() {
         ChromeActivity activity = getActivity();
         return activity != null && activity.isCustomTab();
     }

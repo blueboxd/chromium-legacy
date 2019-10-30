@@ -134,6 +134,7 @@ source_set("unit_tests") {
     "fcm_network_handler_unittests.cc",
     "invalidation_logger_unittest.cc",
     "invalidator_registrar_unittest.cc",
+    "invalidator_registrar_with_memory_unittest.cc",
     "per_user_topic_registration_manager_unittest.cc",
     "per_user_topic_registration_request_unittest.cc",
   ]

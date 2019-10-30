@@ -46,7 +46,8 @@ class NET_EXPORT WebSocketEventInterface {
   // Called in response to an AddChannelRequest. This means that a response has
   // been received from the remote server.
   virtual void OnAddChannelResponse(const std::string& selected_subprotocol,
-                                    const std::string& extensions) = 0;
+                                    const std::string& extensions,
+                                    int64_t send_flow_control_quota) = 0;
 
   // Called when a data frame has been received from the remote host and needs
   // to be forwarded to the renderer process.

@@ -2169,7 +2169,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
   filters->Append(std::move(filter));
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
-          url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+          url, GURL(), ContentSettingsType::AUTO_SELECT_CERTIFICATE,
           std::string(), std::move(setting));
 
   // Visit a HTTPS page which requires client certs.
@@ -2271,7 +2271,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrowserUseClientCertStore) {
   filters->Append(base::DictionaryValue());
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
-          https_url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+          https_url, GURL(), ContentSettingsType::AUTO_SELECT_CERTIFICATE,
           std::string(), std::move(setting));
 
   // Visit a HTTPS page which requires client certs.
@@ -2307,7 +2307,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestClientAuthSigningFails) {
   filters->Append(base::DictionaryValue());
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
-          https_url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+          https_url, GURL(), ContentSettingsType::AUTO_SELECT_CERTIFICATE,
           std::string(), std::move(setting));
 
   // Visit a HTTPS page which requires client certs.
@@ -2370,7 +2370,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCertDBChangedFlushesClientAuthCache) {
   filters->Append(base::DictionaryValue());
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
-          https_url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+          https_url, GURL(), ContentSettingsType::AUTO_SELECT_CERTIFICATE,
           std::string(), std::move(setting));
 
   // Visit a HTTPS page which requires client certs.
@@ -2683,7 +2683,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
   ASSERT_TRUE(https_server_expired_.Start());
   // Enable popups without user gesture.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS,
+      ->SetDefaultContentSetting(ContentSettingsType::POPUPS,
                                  CONTENT_SETTING_ALLOW);
   {
     // First visit the page with its iframe and subresources served over good
@@ -2980,7 +2980,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestCloseTabWithUnsafePopup) {
 
   // Enable popups without user gesture.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS,
+      ->SetDefaultContentSetting(ContentSettingsType::POPUPS,
                                  CONTENT_SETTING_ALLOW);
 
   std::string replacement_path = GetFilePathWithHostAndPortReplacement(
@@ -3561,7 +3561,7 @@ class SSLUIWorkerFetchTest
     EXPECT_EQ(
         expected_show_blocked,
         TabSpecificContentSettings::FromWebContents(tab)->IsContentBlocked(
-            CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+            ContentSettingsType::MIXEDSCRIPT));
     CheckSecurityState(tab, CertError::NONE,
                        expected_show_dangerous ? security_state::DANGEROUS
                                                : security_state::SECURE,
@@ -3584,7 +3584,7 @@ class SSLUIWorkerFetchTest
     EXPECT_EQ(
         expected_show_blocked_after_allow,
         TabSpecificContentSettings::FromWebContents(tab)->IsContentBlocked(
-            CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+            ContentSettingsType::MIXEDSCRIPT));
     CheckSecurityState(
         tab, CertError::NONE,
         expected_show_dangerous_after_allow ? security_state::DANGEROUS
@@ -3610,7 +3610,7 @@ class SSLUIWorkerFetchTest
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_FALSE(
         TabSpecificContentSettings::FromWebContents(tab)->IsContentBlocked(
-            CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+            ContentSettingsType::MIXEDSCRIPT));
     CheckSecurityState(tab, CertError::NONE, security_state::NONE,
                        AuthState::NONE);
     EXPECT_FALSE(SecurityStateTabHelper::FromWebContents(tab)
@@ -4186,7 +4186,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrorsBySPKIHTTPS,
 // Verifies that the interstitial can proceed, even if JavaScript is disabled.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptProceeds) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+      ->SetDefaultContentSetting(ContentSettingsType::JAVASCRIPT,
                                  CONTENT_SETTING_BLOCK);
 
   ASSERT_TRUE(https_server_expired_.Start());
@@ -4214,7 +4214,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptProceeds) {
 // http://crbug.com/322948
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptGoesBack) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+      ->SetDefaultContentSetting(ContentSettingsType::JAVASCRIPT,
                                  CONTENT_SETTING_BLOCK);
 
   ASSERT_TRUE(https_server_expired_.Start());

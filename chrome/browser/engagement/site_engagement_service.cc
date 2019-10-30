@@ -91,7 +91,7 @@ std::set<GURL> GetEngagementOriginsFromContentSettings(
 
   // Fetch URLs of sites with engagement details stored.
   for (const auto& site :
-       GetContentSettingsFromMap(map, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT)) {
+       GetContentSettingsFromMap(map, ContentSettingsType::SITE_ENGAGEMENT)) {
     urls.insert(GURL(site.primary_pattern.ToString()));
   }
 
@@ -404,7 +404,7 @@ void SiteEngagementService::CleanupEngagementScores(
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   for (const auto& site : GetContentSettingsFromProfile(
-           profile_, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT)) {
+           profile_, ContentSettingsType::SITE_ENGAGEMENT)) {
     GURL origin(site.primary_pattern.ToString());
 
     if (origin.is_valid()) {
@@ -446,7 +446,7 @@ void SiteEngagementService::CleanupEngagementScores(
 
     // This origin has a score of 0. Wipe it from content settings.
     settings_map->SetWebsiteSettingDefaultScope(
-        origin, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+        origin, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
         content_settings::ResourceIdentifier(), nullptr);
   }
 
@@ -663,7 +663,7 @@ int SiteEngagementService::OriginsWithMaxDailyEngagement() const {
 
   // We cannot call GetScoreMap as we need the score objects, not raw scores.
   for (const auto& site : GetContentSettingsFromProfile(
-           profile_, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT)) {
+           profile_, ContentSettingsType::SITE_ENGAGEMENT)) {
     GURL origin(site.primary_pattern.ToString());
 
     if (!origin.is_valid())
@@ -709,7 +709,7 @@ void SiteEngagementService::UpdateEngagementScores(
     // Remove origins that have no urls left.
     if (remaining == 0) {
       settings_map->SetWebsiteSettingDefaultScope(
-          origin, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+          origin, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
           content_settings::ResourceIdentifier(), nullptr);
       continue;
     }

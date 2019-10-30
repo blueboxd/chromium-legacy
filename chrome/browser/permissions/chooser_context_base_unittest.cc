@@ -23,8 +23,8 @@ class TestChooserContext : public ChooserContextBase {
   // This class uses the USB content settings type for testing purposes only.
   explicit TestChooserContext(Profile* profile)
       : ChooserContextBase(profile,
-                           CONTENT_SETTINGS_TYPE_USB_GUARD,
-                           CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA) {}
+                           ContentSettingsType::USB_GUARD,
+                           ContentSettingsType::USB_CHOOSER_DATA) {}
   ~TestChooserContext() override {}
 
   bool IsValidObject(const base::Value& object) override {
@@ -177,7 +177,7 @@ TEST_F(ChooserContextBaseTest, GetAllGrantedObjects) {
 TEST_F(ChooserContextBaseTest, GetGrantedObjectsWithGuardBlocked) {
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetContentSettingDefaultScope(url1_, url1_,
-                                     CONTENT_SETTINGS_TYPE_USB_GUARD,
+                                     ContentSettingsType::USB_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
   TestChooserContext context(profile());
@@ -201,7 +201,7 @@ TEST_F(ChooserContextBaseTest, GetGrantedObjectsWithGuardBlocked) {
 TEST_F(ChooserContextBaseTest, GetAllGrantedObjectsWithGuardBlocked) {
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetContentSettingDefaultScope(url1_, url1_,
-                                     CONTENT_SETTINGS_TYPE_USB_GUARD,
+                                     ContentSettingsType::USB_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
   TestChooserContext context(profile());

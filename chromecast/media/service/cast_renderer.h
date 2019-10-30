@@ -56,7 +56,7 @@ class CastRenderer : public ::media::Renderer,
                   ::media::RendererClient* client,
                   ::media::PipelineStatusCallback init_cb) final;
   void SetCdm(::media::CdmContext* cdm_context,
-              const ::media::CdmAttachedCB& cdm_attached_cb) final;
+              ::media::CdmAttachedCB cdm_attached_cb) final;
   void Flush(base::OnceClosure flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
   void SetPlaybackRate(double playback_rate) final;

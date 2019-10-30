@@ -172,7 +172,7 @@ void PersistentNotificationHandler::OnClickCompleted(
 void PersistentNotificationHandler::DisableNotifications(Profile* profile,
                                                          const GURL& origin) {
   PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
-      profile, origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      profile, origin, origin, ContentSettingsType::NOTIFICATIONS,
       PermissionSourceUI::INLINE_SETTINGS);
   NotificationPermissionContext::UpdatePermission(profile, origin,
                                                   CONTENT_SETTING_BLOCK);

@@ -198,9 +198,20 @@ class BASE_EXPORT Value {
   void Append(StringPiece16 value);
   void Append(Value&& value);
 
+  // Inserts |value| before |pos|.
+  // Note: These CHECK that type() is Type::LIST.
+  // TODO(crbug.com/990059): Remove ListStorage::const_iterator overload once
+  // mutable GetList() returns a base::span.
+  ListStorage::iterator Insert(ListStorage::const_iterator pos, Value&& value);
+  CheckedContiguousIterator<Value> Insert(
+      CheckedContiguousConstIterator<Value> pos,
+      Value&& value);
+
   // Erases the Value pointed to by |iter|. Returns false if |iter| is out of
   // bounds.
   // Note: This CHECKs that type() is Type::LIST.
+  // TODO(crbug.com/990059): Remove ListStorage::const_iterator overload once
+  // mutable GetList() returns a base::span.
   bool EraseListIter(ListStorage::const_iterator iter);
   bool EraseListIter(CheckedContiguousConstIterator<Value> iter);
 
@@ -866,9 +877,10 @@ class BASE_EXPORT ListValue : public Value {
   // DEPRECATED, use std::find() with Value::Append() instead.
   bool AppendIfNotPresent(std::unique_ptr<Value> in_value);
 
+  using Value::Insert;
   // Insert a Value at index.
   // Returns true if successful, or false if the index was out of range.
-  // DEPRECATED, use GetList()::insert() instead.
+  // DEPRECATED, use Value::Insert() instead.
   bool Insert(size_t index, std::unique_ptr<Value> in_value);
 
   // Searches for the first instance of |value| in the list using the Equals

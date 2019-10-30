@@ -3820,6 +3820,12 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Failure bubble shown"/>
 </enum>
 
+<enum name="AutofillCreditCardWebauthnOptInParameters">
+  <int value="0" label="Fetching challenge"/>
+  <int value="1" label="Creating new credential"/>
+  <int value="2" label="Using existing credential"/>
+</enum>
+
 <enum name="AutofillCreditCardWebauthnResultMetric">
   <int value="0" label="Success"/>
   <int value="1" label="Other error"/>
@@ -4673,6 +4679,12 @@ Unknown properties are collapsed to zero. -->
 <enum name="AutofillWalletAddressConversionType">
   <int value="0" label="Merged with existing local profile"/>
   <int value="1" label="Added as a new local profile"/>
+</enum>
+
+<enum name="AutofillWebauthnOptInPromoUserDecision">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Declined immediately"/>
+  <int value="2" label="Declined after accepting"/>
 </enum>
 
 <enum name="AutoLaunchState">
@@ -19685,6 +19697,7 @@ Called by update_net_error_codes.py.-->
   <int value="442" label="PRINTING_METRICS_ON_PRINT_JOB_FINISHED"/>
   <int value="443" label="AUTOTESTPRIVATE_ON_CLIPBOARD_DATA_CHANGED"/>
   <int value="444" label="AUTOFILL_PRIVATE_ON_PERSONAL_DATA_CHANGED"/>
+  <int value="445" label="PRINTING_ON_JOB_STATUS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -21694,6 +21707,7 @@ Called by update_net_error_codes.py.-->
   <int value="221" label="kLoginScreenStorage"/>
   <int value="222" label="kLoginState"/>
   <int value="223" label="kPrintingMetrics"/>
+  <int value="224" label="kPrinting"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
@@ -36501,6 +36515,7 @@ from previous Chrome versions.
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
   <int value="-778098896" label="EnableAggregatedMlSearchRanking:disabled"/>
+  <int value="-778047974" label="CrostiniUseBusterImage:disabled"/>
   <int value="-777126951" label="FontSrcLocalMatching:enabled"/>
   <int value="-776686417" label="SiteExplorationUi:disabled"/>
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>
@@ -36728,6 +36743,7 @@ from previous Chrome versions.
   <int value="-477101783" label="HandwritingGesture:disabled"/>
   <int value="-475049740" label="disable-vr-shell"/>
   <int value="-475042780" label="DialMediaRouteProvider:enabled"/>
+  <int value="-474833105" label="CrostiniUseBusterImage:enabled"/>
   <int value="-474806100" label="DataReductionProxyMainMenu:enabled"/>
   <int value="-474322576" label="disable-quick-unlock-pin"/>
   <int value="-473087416" label="DragTabsInTabletMode:enabled"/>
@@ -65103,6 +65119,42 @@ Full version information for the fingerprint enum values:
   <int value="1" label="VP8"/>
   <int value="2" label="VP9"/>
   <int value="3" label="H264"/>
+</enum>
+
+<enum name="WebSchedulerTrackedFeature">
+  <int value="0" label="WebSocket"/>
+  <int value="1" label="WebRTC"/>
+  <int value="2" label="MainResourceHasCacheControlNoCache"/>
+  <int value="3" label="MainResourceHasCacheControlNoStore"/>
+  <int value="4" label="SubresourceHasCacheControlNoCache"/>
+  <int value="5" label="SubresourceHasCacheControlNoStore"/>
+  <int value="6" label="PageShowEventListener"/>
+  <int value="7" label="PageHideEventListener"/>
+  <int value="8" label="BeforeUnloadEventListener"/>
+  <int value="9" label="UnloadEventListener"/>
+  <int value="10" label="FreezeEventListener"/>
+  <int value="11" label="ResumeEventListener"/>
+  <int value="12" label="ContainsPlugins"/>
+  <int value="13" label="DocumentLoaded"/>
+  <int value="14" label="DedicatedWorkerOrWorklet"/>
+  <int value="15" label="OutstandingNetworkRequest"/>
+  <int value="16" label="ServiceWorkerControlledPage"/>
+  <int value="17" label="OutstandingIndexedDBTransaction"/>
+  <int value="18" label="HasScriptableFramesInMultipleTabs"/>
+  <int value="19" label="RequestedGeolocationPermission"/>
+  <int value="20" label="RequestedNotificationsPermission"/>
+  <int value="21" label="RequestedMIDIPermission"/>
+  <int value="22" label="RequestedAudioCapturePermission"/>
+  <int value="23" label="RequestedVideoCapturePermission"/>
+  <int value="24" label="RequestedSensorsPermission"/>
+  <int value="25" label="RequestedBackgroundWorkPermission"/>
+  <int value="26" label="BroadcastChannel"/>
+  <int value="27" label="IndexedDBConnection"/>
+  <int value="28" label="WebGL"/>
+  <int value="29" label="WebVR"/>
+  <int value="30" label="WebXR"/>
+  <int value="31" label="SharedWorker"/>
+  <int value="32" label="WebLocks"/>
 </enum>
 
 <enum name="WebShareMethod">

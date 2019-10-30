@@ -1,12 +1,17 @@
-// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/gfx/test/font_fallback_test_data.h"
 
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+
 namespace gfx {
 
+#if defined(OS_WIN)
 constexpr bool kWin10Only = true;
+#endif
 
 FallbackFontTestCase::FallbackFontTestCase() = default;
 FallbackFontTestCase::FallbackFontTestCase(const FallbackFontTestCase& other) =
@@ -26,6 +31,7 @@ FallbackFontTestCase::FallbackFontTestCase(
 
 FallbackFontTestCase::~FallbackFontTestCase() = default;
 
+#if defined(OS_WIN)
 // A list of script and the fallback font on a default windows installation.
 // This list may need to be updated if fonts or operating systems are
 // upgraded.
@@ -86,7 +92,6 @@ std::vector<FallbackFontTestCase> kGetFontFallbackTests = {
      {"Segoe UI Symbol"},
      kWin10Only},
 
-    {USCRIPT_DEVANAGARI, "hi", L"\u0905\u0906", {"Mangal", "Nirmala UI"}},
     {USCRIPT_ETHIOPIC, "am", L"\u1201\u1202", {"Ebrima", "Nyala"}},
     {USCRIPT_GEORGIAN,
      "ka",
@@ -244,5 +249,45 @@ std::vector<FallbackFontTestCase> kGetFontFallbackTests = {
     {USCRIPT_TIFINAGH, "", L"\u2D31\u2D32", {"Ebrima"}},
     {USCRIPT_VAI, "vai", L"\uA501\uA502", {"Ebrima"}},
     {USCRIPT_YI, "yi", L"\uA000\uA001", {"Microsoft Yi Baiti"}}};
+
+#elif defined(OS_LINUX)
+
+// A list of script and the fallback font on the linux test environment.
+// On linux, font-config configuration and fonts are mock. The config
+// can be found in '${build}/etc/fonts/fonts.conf' and the test fonts
+// can be found in '${build}/test_fonts/*'.
+std::vector<FallbackFontTestCase> kGetFontFallbackTests = {
+    {USCRIPT_BENGALI,
+     "bn",
+     base::WideToUTF16(L"\u09B8\u09AE"),
+     {"Mukti Narrow"}},
+
+    {USCRIPT_DEVANAGARI,
+     "hi",
+     base::WideToUTF16(L"\u0905\u0906"),
+     {"Lohit Devanagari"}},
+
+    {USCRIPT_GURMUKHI,
+     "pa",
+     base::WideToUTF16(L"\u0A21\u0A22"),
+     {"Lohit Gurmukhi"}},
+
+    {USCRIPT_HAN, "zh-CN", base::WideToUTF16(L"\u6211"), {"Noto Sans CJK JP"}},
+
+    {USCRIPT_KHMER,
+     "km",
+     base::WideToUTF16(L"\u1780\u1781"),
+     {"Noto Sans Khmer"}},
+
+    {USCRIPT_TAMIL, "ta", base::WideToUTF16(L"\u0BB1\u0BB2"), {"Lohit Tamil"}},
+    {USCRIPT_THAI, "th", base::WideToUTF16(L"\u0e01\u0e02"), {"Garuda"}},
+};
+
+#else
+
+// No fallback font tests are defined on that platform.
+std::vector<FallbackFontTestCase> kGetFontFallbackTests = {};
+
+#endif
 
 }  // namespace gfx

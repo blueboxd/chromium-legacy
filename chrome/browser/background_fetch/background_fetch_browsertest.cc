@@ -800,7 +800,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromServiceWorker) {
   DCHECK(settings_map);
 
   // Give the needed permissions.
-  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+  SetPermission(ContentSettingsType::AUTOMATIC_DOWNLOADS,
                 CONTENT_SETTING_ALLOW);
 
   // The fetch should succeed.
@@ -809,7 +809,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromServiceWorker) {
       "StartFetchFromServiceWorker()", "backgroundfetchsuccess"));
 
   // Revoke Automatic Downloads permission.
-  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+  SetPermission(ContentSettingsType::AUTOMATIC_DOWNLOADS,
                 CONTENT_SETTING_BLOCK);
 
   // This should fail without the Automatic Downloads permission.
@@ -823,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   DCHECK(settings_map);
 
-  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, CONTENT_SETTING_ASK);
+  SetPermission(ContentSettingsType::AUTOMATIC_DOWNLOADS, CONTENT_SETTING_ASK);
 
   // The fetch starts in a paused state.
   std::vector<OfflineItem> items;
@@ -838,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        FetchFromChildFrameWithPermissions) {
   // Give the needed permissions. The fetch should still start in a paused
   // state.
-  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+  SetPermission(ContentSettingsType::AUTOMATIC_DOWNLOADS,
                 CONTENT_SETTING_ALLOW);
 
   // The fetch starts in a paused state.
@@ -851,7 +851,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromChildFrameWithAsk) {
-  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, CONTENT_SETTING_ASK);
+  SetPermission(ContentSettingsType::AUTOMATIC_DOWNLOADS, CONTENT_SETTING_ASK);
 
   // The fetch starts in a paused state.
   std::vector<OfflineItem> items;
@@ -864,7 +864,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromChildFrameWithAsk) {
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        FetchFromChildFrameWithMissingPermissions) {
-  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+  SetPermission(ContentSettingsType::AUTOMATIC_DOWNLOADS,
                 CONTENT_SETTING_BLOCK);
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "StartFetchFromIframe()", "permissionerror"));

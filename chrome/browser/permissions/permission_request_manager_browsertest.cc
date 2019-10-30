@@ -230,15 +230,15 @@ void PermissionDialogTest::ShowUi(const std::string& name) {
     const char* name;
     ContentSettingsType type;
   } kNameToType[] = {
-      {"flash", CONTENT_SETTINGS_TYPE_PLUGINS},
-      {"geolocation", CONTENT_SETTINGS_TYPE_GEOLOCATION},
-      {"protected_media", CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER},
-      {"notifications", CONTENT_SETTINGS_TYPE_NOTIFICATIONS},
-      {"mic", CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC},
-      {"camera", CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA},
-      {"protocol_handlers", CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS},
-      {"midi", CONTENT_SETTINGS_TYPE_MIDI_SYSEX},
-      {kMultipleName, CONTENT_SETTINGS_TYPE_DEFAULT}};
+      {"flash", ContentSettingsType::PLUGINS},
+      {"geolocation", ContentSettingsType::GEOLOCATION},
+      {"protected_media", ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER},
+      {"notifications", ContentSettingsType::NOTIFICATIONS},
+      {"mic", ContentSettingsType::MEDIASTREAM_MIC},
+      {"camera", ContentSettingsType::MEDIASTREAM_CAMERA},
+      {"protocol_handlers", ContentSettingsType::PROTOCOL_HANDLERS},
+      {"midi", ContentSettingsType::MIDI_SYSEX},
+      {kMultipleName, ContentSettingsType::DEFAULT}};
   const auto* it = std::begin(kNameToType);
   for (; it != std::end(kNameToType); ++it) {
     if (name == it->name)
@@ -250,33 +250,33 @@ void PermissionDialogTest::ShowUi(const std::string& name) {
   }
   PermissionRequestManager* manager = GetPermissionRequestManager();
   switch (it->type) {
-    case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
+    case ContentSettingsType::PROTOCOL_HANDLERS:
       manager->AddRequest(MakeRegisterProtocolHandlerRequest());
       break;
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+    case ContentSettingsType::AUTOMATIC_DOWNLOADS:
       // TODO(tapted): Prompt for downloading multiple files.
       break;
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+    case ContentSettingsType::DURABLE_STORAGE:
       // TODO(tapted): Prompt for quota request.
       break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:  // ChromeOS only.
-    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
-    case CONTENT_SETTINGS_TYPE_PLUGINS:  // Flash.
+    case ContentSettingsType::MEDIASTREAM_MIC:
+    case ContentSettingsType::MEDIASTREAM_CAMERA:
+    case ContentSettingsType::MIDI_SYSEX:
+    case ContentSettingsType::NOTIFICATIONS:
+    case ContentSettingsType::GEOLOCATION:
+    case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:  // ChromeOS only.
+    case ContentSettingsType::PPAPI_BROKER:
+    case ContentSettingsType::PLUGINS:  // Flash.
       manager->AddRequest(MakePermissionRequest(it->type));
       break;
-    case CONTENT_SETTINGS_TYPE_DEFAULT:
+    case ContentSettingsType::DEFAULT:
       // Permissions to request for a "multiple" request. Only mic/camera
       // requests are grouped together.
       EXPECT_EQ(kMultipleName, name);
       manager->AddRequest(
-          MakePermissionRequest(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
+          MakePermissionRequest(ContentSettingsType::MEDIASTREAM_MIC));
       manager->AddRequest(
-          MakePermissionRequest(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+          MakePermissionRequest(ContentSettingsType::MEDIASTREAM_CAMERA));
 
       break;
     default:
@@ -518,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
 
   // Now enable the geolocation killswitch.
-  EnableKillSwitch(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EnableKillSwitch(ContentSettingsType::GEOLOCATION);
 
   // Reload the page to get around blink layer caching for geolocation
   // requests.
@@ -657,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
 
   // Now enable the notifications killswitch.
-  EnableKillSwitch(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  EnableKillSwitch(ContentSettingsType::NOTIFICATIONS);
 
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -723,9 +723,10 @@ class PermissionRequestManagerBrowserTest_AnimatedIcon
   }
 };
 
+// Re-enable when 1016233 is fixed.
 // Quiet permission requests are cancelled when a new request is made.
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_StaticIcon,
-                       QuietPendingRequestsKilledOnNewRequest) {
+                       DISABLED_QuietPendingRequestsKilledOnNewRequest) {
   // First add a quiet permission request. Ensure that this request is decided
   // by the end of this test.
   MockPermissionRequest request_quiet(
@@ -752,9 +753,10 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_StaticIcon,
   EXPECT_EQ(0u, GetPermissionRequestManager()->Requests().size());
 }
 
+// Re-enable when 1016233 is fixed.
 // Quiet permission requests are cancelled when a new request is made.
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_AnimatedIcon,
-                       QuietPendingRequestsKilledOnNewRequest) {
+                       DISABLED_QuietPendingRequestsKilledOnNewRequest) {
   // First add a quiet permission request. Ensure that this request is decided
   // by the end of this test.
   MockPermissionRequest request_quiet(
@@ -929,7 +931,7 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeUi_multiple) {
   ShowAndVerifyUi();
 }
 
-// CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER is ChromeOS only.
+// ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER is ChromeOS only.
 #if defined(OS_CHROMEOS)
 #define MAYBE_InvokeUi_protected_media InvokeUi_protected_media
 #else

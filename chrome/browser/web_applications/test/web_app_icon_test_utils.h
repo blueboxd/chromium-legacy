@@ -25,6 +25,10 @@ void AddIconToIconsMap(const GURL& icon_url,
                        SkColor solid_color,
                        IconsMap* icons_map);
 
+bool AreColorsEqual(SkColor expected_color,
+                    SkColor actual_color,
+                    int threshold);
+
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_TEST_WEB_APP_ICON_TEST_UTILS_H_

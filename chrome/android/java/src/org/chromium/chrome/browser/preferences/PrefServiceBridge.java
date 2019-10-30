@@ -253,11 +253,11 @@ public class PrefServiceBridge {
     @CalledByNative
     public static String[] getAndroidPermissionsForContentSetting(int contentSettingType) {
         switch (contentSettingType) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
+            case ContentSettingsType.GEOLOCATION:
                 return Arrays.copyOf(LOCATION_PERMISSIONS, LOCATION_PERMISSIONS.length);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+            case ContentSettingsType.MEDIASTREAM_MIC:
                 return Arrays.copyOf(MICROPHONE_PERMISSIONS, MICROPHONE_PERMISSIONS.length);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+            case ContentSettingsType.MEDIASTREAM_CAMERA:
                 return Arrays.copyOf(CAMERA_PERMISSIONS, CAMERA_PERMISSIONS.length);
             default:
                 return EMPTY_PERMISSIONS;
@@ -382,22 +382,21 @@ public class PrefServiceBridge {
      * @return Whether JavaScript is managed by policy.
      */
     public boolean javaScriptManaged() {
-        return isContentSettingManaged(ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+        return isContentSettingManaged(ContentSettingsType.JAVASCRIPT);
     }
 
     /**
      * @return true if background sync is managed by policy.
      */
     public boolean isBackgroundSyncManaged() {
-        return isContentSettingManaged(ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC);
+        return isContentSettingManaged(ContentSettingsType.BACKGROUND_SYNC);
     }
 
     /**
      * @return true if automatic downloads is managed by policy.
      */
     public boolean isAutomaticDownloadsManaged() {
-        return isContentSettingManaged(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS);
+        return isContentSettingManaged(ContentSettingsType.AUTOMATIC_DOWNLOADS);
     }
 
     /**
@@ -641,7 +640,7 @@ public class PrefServiceBridge {
      * @return Whether the setting to allow popups is configured by policy
      */
     public boolean isPopupsManaged() {
-        return isContentSettingManaged(ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS);
+        return isContentSettingManaged(ContentSettingsType.POPUPS);
     }
 
     /**
@@ -649,7 +648,7 @@ public class PrefServiceBridge {
      */
     public boolean requiresTriStateContentSetting(int contentSettingsType) {
         switch (contentSettingsType) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+            case ContentSettingsType.PROTECTED_MEDIA_IDENTIFIER:
                 return true;
             default:
                 return false;
@@ -663,45 +662,45 @@ public class PrefServiceBridge {
         assert !requiresTriStateContentSetting(contentSettingsType);
 
         switch (contentSettingsType) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD:
+            case ContentSettingsType.ADS:
+            case ContentSettingsType.BLUETOOTH_SCANNING:
+            case ContentSettingsType.JAVASCRIPT:
+            case ContentSettingsType.POPUPS:
+            case ContentSettingsType.USB_GUARD:
                 setContentSettingEnabled(contentSettingsType, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+            case ContentSettingsType.AUTOMATIC_DOWNLOADS:
                 PrefServiceBridgeJni.get().setAutomaticDownloadsEnabled(
                         PrefServiceBridge.this, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY:
+            case ContentSettingsType.AUTOPLAY:
                 PrefServiceBridgeJni.get().setAutoplayEnabled(PrefServiceBridge.this, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
+            case ContentSettingsType.BACKGROUND_SYNC:
                 PrefServiceBridgeJni.get().setBackgroundSyncEnabled(PrefServiceBridge.this, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
+            case ContentSettingsType.CLIPBOARD_READ:
                 PrefServiceBridgeJni.get().setClipboardEnabled(PrefServiceBridge.this, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
+            case ContentSettingsType.COOKIES:
                 PrefServiceBridgeJni.get().setAllowCookiesEnabled(PrefServiceBridge.this, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
+            case ContentSettingsType.GEOLOCATION:
                 PrefServiceBridgeJni.get().setAllowLocationEnabled(PrefServiceBridge.this, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+            case ContentSettingsType.MEDIASTREAM_CAMERA:
                 PrefServiceBridgeJni.get().setCameraEnabled(PrefServiceBridge.this, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+            case ContentSettingsType.MEDIASTREAM_MIC:
                 PrefServiceBridgeJni.get().setMicEnabled(PrefServiceBridge.this, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+            case ContentSettingsType.NOTIFICATIONS:
                 PrefServiceBridgeJni.get().setNotificationsEnabled(PrefServiceBridge.this, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS:
+            case ContentSettingsType.SENSORS:
                 PrefServiceBridgeJni.get().setSensorsEnabled(PrefServiceBridge.this, allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND:
+            case ContentSettingsType.SOUND:
                 PrefServiceBridgeJni.get().setSoundEnabled(PrefServiceBridge.this, allow);
                 break;
             default:
@@ -713,34 +712,34 @@ public class PrefServiceBridge {
         assert !requiresTriStateContentSetting(contentSettingsType);
 
         switch (contentSettingsType) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
+            case ContentSettingsType.ADS:
+            case ContentSettingsType.CLIPBOARD_READ:
             // Returns true if JavaScript is enabled. It may return the temporary value set by
             // {@link #setJavaScriptEnabled}. The default is true.
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
+            case ContentSettingsType.JAVASCRIPT:
+            case ContentSettingsType.POPUPS:
             // Returns true if websites are allowed to request permission to access USB devices.
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
+            case ContentSettingsType.USB_GUARD:
+            case ContentSettingsType.BLUETOOTH_SCANNING:
                 return isContentSettingEnabled(contentSettingsType);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+            case ContentSettingsType.AUTOMATIC_DOWNLOADS:
                 return PrefServiceBridgeJni.get().getAutomaticDownloadsEnabled(
                         PrefServiceBridge.this);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY:
+            case ContentSettingsType.AUTOPLAY:
                 return PrefServiceBridgeJni.get().getAutoplayEnabled(PrefServiceBridge.this);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
+            case ContentSettingsType.BACKGROUND_SYNC:
                 return PrefServiceBridgeJni.get().getBackgroundSyncEnabled(PrefServiceBridge.this);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
+            case ContentSettingsType.COOKIES:
                 return PrefServiceBridgeJni.get().getAcceptCookiesEnabled(PrefServiceBridge.this);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+            case ContentSettingsType.MEDIASTREAM_CAMERA:
                 return PrefServiceBridgeJni.get().getCameraEnabled(PrefServiceBridge.this);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+            case ContentSettingsType.MEDIASTREAM_MIC:
                 return PrefServiceBridgeJni.get().getMicEnabled(PrefServiceBridge.this);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+            case ContentSettingsType.NOTIFICATIONS:
                 return PrefServiceBridgeJni.get().getNotificationsEnabled(PrefServiceBridge.this);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS:
+            case ContentSettingsType.SENSORS:
                 return PrefServiceBridgeJni.get().getSensorsEnabled(PrefServiceBridge.this);
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND:
+            case ContentSettingsType.SOUND:
                 return PrefServiceBridgeJni.get().getSoundEnabled(PrefServiceBridge.this);
             default:
                 assert false;

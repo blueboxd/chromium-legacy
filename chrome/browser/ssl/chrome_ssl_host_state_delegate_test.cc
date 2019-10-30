@@ -295,11 +295,11 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
       HostContentSettingsMapFactory::GetForProfile(profile);
   GURL url(std::string("https://") + kWWWGoogleHost);
   std::unique_ptr<base::Value> new_format =
-      map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
+      map->GetWebsiteSetting(url, url, ContentSettingsType::SSL_CERT_DECISIONS,
                              std::string(), nullptr);
   // Delete the new-format setting.
   map->SetWebsiteSettingDefaultScope(url, GURL(),
-                                     CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
+                                     ContentSettingsType::SSL_CERT_DECISIONS,
                                      std::string(), nullptr);
 
   // No exception should exist.
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
   map->SetWebsiteSettingCustomScope(
       ContentSettingsPattern::FromURLNoWildcard(url),
       ContentSettingsPattern::FromURLNoWildcard(url),
-      CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(),
+      ContentSettingsType::SSL_CERT_DECISIONS, std::string(),
       std::move(new_format));
 
   // Test that the old-format setting works.
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
 
   // Check that the old-format setting is removed and only the new one exists.
   ContentSettingsForOneType settings;
-  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
+  map->GetSettingsForOneType(ContentSettingsType::SSL_CERT_DECISIONS,
                              std::string(), &settings);
   EXPECT_EQ(1u, settings.size());
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(url),

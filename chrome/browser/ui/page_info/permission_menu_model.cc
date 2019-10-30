@@ -76,19 +76,19 @@ void PermissionMenuModel::ExecuteCommand(int command_id, int event_flags) {
 bool PermissionMenuModel::ShouldShowAllow(const GURL& url) {
   switch (permission_.type) {
     // Notifications does not support CONTENT_SETTING_ALLOW in incognito.
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case ContentSettingsType::NOTIFICATIONS:
       return !permission_.is_incognito;
     // Media only supports CONTENT_SETTING_ALLOW for secure origins.
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+    case ContentSettingsType::MEDIASTREAM_MIC:
+    case ContentSettingsType::MEDIASTREAM_CAMERA:
       return content::IsOriginSecure(url);
     // Chooser permissions do not support CONTENT_SETTING_ALLOW.
-    case CONTENT_SETTINGS_TYPE_SERIAL_GUARD:
-    case CONTENT_SETTINGS_TYPE_USB_GUARD:
+    case ContentSettingsType::SERIAL_GUARD:
+    case ContentSettingsType::USB_GUARD:
     // Bluetooth scanning does not support CONTENT_SETTING_ALLOW.
-    case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
+    case ContentSettingsType::BLUETOOTH_SCANNING:
     // Native file system write does not support CONTENT_SETTING_ALLOW.
-    case CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD:
+    case ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD:
       return false;
     default:
       return true;
@@ -97,10 +97,10 @@ bool PermissionMenuModel::ShouldShowAllow(const GURL& url) {
 
 bool PermissionMenuModel::ShouldShowAsk(const GURL& url) {
   switch (permission_.type) {
-    case CONTENT_SETTINGS_TYPE_USB_GUARD:
-    case CONTENT_SETTINGS_TYPE_SERIAL_GUARD:
-    case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
-    case CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD:
+    case ContentSettingsType::USB_GUARD:
+    case ContentSettingsType::SERIAL_GUARD:
+    case ContentSettingsType::BLUETOOTH_SCANNING:
+    case ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD:
       return true;
     default:
       return false;

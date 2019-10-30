@@ -111,10 +111,10 @@
 
 using base::TimeDelta;
 
+using blink::MediaPlayerAction;
 using blink::PluginAction;
 using blink::WebConsoleMessage;
 using blink::WebInputEvent;
-using blink::WebMediaPlayerAction;
 
 namespace content {
 namespace {

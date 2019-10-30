@@ -42,7 +42,7 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
 constexpr CGFloat kSectionHeaderHeight = 6;
 
 // Height of the section footer.
-constexpr CGFloat kSectionFooterHeight = 14;
+constexpr CGFloat kSectionFooterHeight = 8;
 
 }  // namespace
 

@@ -191,25 +191,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
   }
 
   // Returns a Symbol to access a private property. Symbol instances from same
-  // |key|s are guaranteed to access the same property. |desc| is a description
-  // of the property. By defining the key as the address of a static variable,
-  // the key is unique for each private property.
-  static Symbol GetSymbol(v8::Isolate* isolate, void* key, const char* desc) {
-    V8PrivateProperty* private_prop =
-        V8PerIsolateData::From(isolate)->PrivateProperty();
-    auto& symbol_map = private_prop->symbol_map_;
-    auto iter = symbol_map.find(key);
-    v8::Local<v8::Private> v8_private;
-    if (UNLIKELY(iter == symbol_map.end())) {
-      v8_private = CreateV8Private(isolate, desc);
-      symbol_map.insert(key, v8::Eternal<v8::Private>(isolate, v8_private));
-    } else {
-      v8_private = iter->value.Get(isolate);
-    }
-    return Symbol(isolate, v8_private);
-  }
-
-  // Returns a Symbol to access a private property. Symbol instances from same
   // |key| are guaranteed to access the same property.
   static Symbol GetSymbol(v8::Isolate* isolate, const SymbolKey& key);
 

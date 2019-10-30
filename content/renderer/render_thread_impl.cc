@@ -92,7 +92,6 @@
 #include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/media/render_media_client.h"
-#include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
@@ -774,13 +773,6 @@ void RenderThreadImpl::Init() {
   registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter,
                                              weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
-  registry->AddInterface(
-      // Unretained here is safe, since PeerConnectionTracker instance
-      // is a leaky singleton.
-      base::BindRepeating(
-          &PeerConnectionTracker::Bind,
-          base::Unretained(PeerConnectionTracker::GetInstance())),
-      base::ThreadTaskRunnerHandle::Get());
 
   if (base::FeatureList::IsEnabled(
           blink::features::kOffMainThreadServiceWorkerStartup)) {

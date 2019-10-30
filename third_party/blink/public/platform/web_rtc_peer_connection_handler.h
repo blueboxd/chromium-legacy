@@ -49,6 +49,7 @@ enum class RTCErrorType;
 
 namespace blink {
 
+class WebLocalFrame;
 class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
@@ -80,6 +81,7 @@ class WebRTCPeerConnectionHandler {
   virtual bool Initialize(
       const webrtc::PeerConnectionInterface::RTCConfiguration&,
       const WebMediaConstraints&) = 0;
+  virtual void AssociateWithFrame(WebLocalFrame*) {}
 
   // Unified Plan: The list of transceivers after the createOffer() call.
   // Because of offerToReceive[Audio/Video] it is possible for createOffer() to

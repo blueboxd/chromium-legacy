@@ -33,9 +33,15 @@ UseAddressAction::UseAddressAction(ActionDelegate* delegate,
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto :
        proto_.use_address().required_fields()) {
+    if (required_field_proto.address_field() ==
+        UseAddressProto::RequiredField::UNDEFINED) {
+      DVLOG(1) << "address_field enum not set, skipping required field";
+      continue;
+    }
+
     required_fields.emplace_back();
     RequiredField& required_field = required_fields.back();
-    required_field.address_field = required_field_proto.address_field();
+    required_field.fallback_key = (int)required_field_proto.address_field();
     required_field.selector = Selector(required_field_proto.element());
     required_field.simulate_key_presses =
         required_field_proto.simulate_key_presses();
@@ -45,12 +51,8 @@ UseAddressAction::UseAddressAction(ActionDelegate* delegate,
   }
 
   required_fields_fallback_handler_ =
-      std::make_unique<RequiredFieldsFallbackHandler>(
-          required_fields,
-          base::BindRepeating(&UseAddressAction::GetFallbackValue,
-                              base::Unretained(this)),
-          base::BindOnce(&UseAddressAction::EndAction, base::Unretained(this)),
-          delegate);
+      std::make_unique<RequiredFieldsFallbackHandler>(required_fields,
+                                                      delegate);
   selector_ = Selector(proto.use_address().form_field_element());
   selector_.MustBeVisible();
   DCHECK(!selector_.empty());
@@ -108,8 +110,7 @@ void UseAddressAction::OnWaitForElement(const ClientStatus& element_status) {
   const autofill::AutofillProfile* profile =
       delegate_->GetClientMemory()->selected_address(name_);
   DCHECK(profile);
-  auto fallback_data = std::make_unique<FallbackData>();
-  fallback_data->profile = profile;
+  auto fallback_data = CreateFallbackData(*profile);
   delegate_->FillAddressForm(
       profile, selector_,
       base::BindOnce(&UseAddressAction::OnFormFilled,
@@ -119,51 +120,61 @@ void UseAddressAction::OnWaitForElement(const ClientStatus& element_status) {
 void UseAddressAction::OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
                                     const ClientStatus& status) {
   required_fields_fallback_handler_->CheckAndFallbackRequiredFields(
-      status, std::move(fallback_data));
+      status, std::move(fallback_data),
+      base::BindOnce(&UseAddressAction::EndAction,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-std::string UseAddressAction::GetFallbackValue(
-    const RequiredField& required_field,
-    const FallbackData& fallback_data) {
-  return base::UTF16ToUTF8(
-      GetFieldValue(fallback_data.profile, required_field.address_field));
-}
-
-base::string16 UseAddressAction::GetFieldValue(
-    const autofill::AutofillProfile* profile,
-    const UseAddressProto::RequiredField::AddressField& address_field) {
-  // TODO(crbug.com/806868): Get the actual application locale.
+std::unique_ptr<FallbackData> UseAddressAction::CreateFallbackData(
+    const autofill::AutofillProfile& profile) {
+  // TODO(crbug.com/806868): Get the locale from the backend.
   std::string app_locale = "en-US";
-  switch (address_field) {
-    case UseAddressProto::RequiredField::FIRST_NAME:
-      return profile->GetInfo(autofill::NAME_FIRST, app_locale);
-    case UseAddressProto::RequiredField::LAST_NAME:
-      return profile->GetInfo(autofill::NAME_LAST, app_locale);
-    case UseAddressProto::RequiredField::FULL_NAME:
-      return profile->GetInfo(autofill::NAME_FULL, app_locale);
-    case UseAddressProto::RequiredField::PHONE_NUMBER:
-      return profile->GetInfo(autofill::PHONE_HOME_WHOLE_NUMBER, app_locale);
-    case UseAddressProto::RequiredField::EMAIL:
-      return profile->GetInfo(autofill::EMAIL_ADDRESS, app_locale);
-    case UseAddressProto::RequiredField::ORGANIZATION:
-      return profile->GetInfo(autofill::COMPANY_NAME, app_locale);
-    case UseAddressProto::RequiredField::COUNTRY_CODE:
-      return profile->GetInfo(autofill::ADDRESS_HOME_COUNTRY, app_locale);
-    case UseAddressProto::RequiredField::REGION:
-      return profile->GetInfo(autofill::ADDRESS_HOME_STATE, app_locale);
-    case UseAddressProto::RequiredField::STREET_ADDRESS:
-      return profile->GetInfo(autofill::ADDRESS_HOME_STREET_ADDRESS,
-                              app_locale);
-    case UseAddressProto::RequiredField::LOCALITY:
-      return profile->GetInfo(autofill::ADDRESS_HOME_CITY, app_locale);
-    case UseAddressProto::RequiredField::DEPENDANT_LOCALITY:
-      return profile->GetInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY,
-                              app_locale);
-    case UseAddressProto::RequiredField::POSTAL_CODE:
-      return profile->GetInfo(autofill::ADDRESS_HOME_ZIP, app_locale);
-    case UseAddressProto::RequiredField::UNDEFINED:
-      NOTREACHED();
-      return base::string16();
-  }
+
+  auto fallback_data = std::make_unique<FallbackData>();
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::FIRST_NAME,
+      base::UTF16ToUTF8(profile.GetInfo(autofill::NAME_FIRST, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::LAST_NAME,
+      base::UTF16ToUTF8(profile.GetInfo(autofill::NAME_LAST, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::FULL_NAME,
+      base::UTF16ToUTF8(profile.GetInfo(autofill::NAME_FIRST, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::PHONE_NUMBER,
+      base::UTF16ToUTF8(
+          profile.GetInfo(autofill::PHONE_HOME_WHOLE_NUMBER, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::EMAIL,
+      base::UTF16ToUTF8(profile.GetInfo(autofill::EMAIL_ADDRESS, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::ORGANIZATION,
+      base::UTF16ToUTF8(profile.GetInfo(autofill::COMPANY_NAME, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::COUNTRY_CODE,
+      base::UTF16ToUTF8(
+          profile.GetInfo(autofill::ADDRESS_HOME_COUNTRY, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::REGION,
+      base::UTF16ToUTF8(
+          profile.GetInfo(autofill::ADDRESS_HOME_STATE, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::STREET_ADDRESS,
+      base::UTF16ToUTF8(
+          profile.GetInfo(autofill::ADDRESS_HOME_STREET_ADDRESS, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::LOCALITY,
+      base::UTF16ToUTF8(
+          profile.GetInfo(autofill::ADDRESS_HOME_CITY, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::DEPENDANT_LOCALITY,
+      base::UTF16ToUTF8(profile.GetInfo(
+          autofill::ADDRESS_HOME_DEPENDENT_LOCALITY, app_locale)));
+  fallback_data->field_values.emplace(
+      (int)UseAddressProto::RequiredField::POSTAL_CODE,
+      base::UTF16ToUTF8(
+          profile.GetInfo(autofill::ADDRESS_HOME_ZIP, app_locale)));
+
+  return fallback_data;
 }
 }  // namespace autofill_assistant

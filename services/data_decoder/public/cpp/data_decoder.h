@@ -45,9 +45,9 @@ class DataDecoder {
   DataDecoder();
   ~DataDecoder();
 
-  // The result of a |ParseJson()| or |ParseJsonIsolated()| call. Exactly one of
-  // either |value| or |error| will have a value when returned by either
-  // operation.
+  // The result of a Parse*() call that can return either a Value or an error
+  // string. Exactly one of either |value| or |error| will have a value when
+  // returned by either operation.
   struct ValueOrError {
     ValueOrError();
     ValueOrError(ValueOrError&&);
@@ -59,6 +59,8 @@ class DataDecoder {
     base::Optional<base::Value> value;
     base::Optional<std::string> error;
   };
+
+  using ValueParseCallback = base::OnceCallback<void(ValueOrError)>;
 
   // Returns a raw interface to the service instance. This launches an instance
   // of the service process if possible on the current platform, or returns a
@@ -72,7 +74,6 @@ class DataDecoder {
   //
   // Note that |callback| will only be called if the parsing operation succeeds
   // or fails before this DataDecoder is destroyed.
-  using ValueParseCallback = base::OnceCallback<void(ValueOrError)>;
   void ParseJson(const std::string& json, ValueParseCallback callback);
 
   // Parses the potentially unsafe JSON string in |json|. This static helper
@@ -80,6 +81,22 @@ class DataDecoder {
   // platforms.
   static void ParseJsonIsolated(const std::string& json,
                                 ValueParseCallback callback);
+
+  // Parses the potentially unsafe XML string in |xml| using this
+  // DataDecoder's service instance. The Value provided to the callback
+  // is a structured tree representing the XML document. See
+  // ../mojom/xml_parser.mojom for details on the structure, and
+  // safe_xml_parser.h for utilities to access parsed data.
+  //
+  // Note that |callback| will only be called if the parsing operation succeeds
+  // or fails before this DataDecoder is destroyed.
+  void ParseXml(const std::string& xml, ValueParseCallback callback);
+
+  // Parses the potentially unsafe XML string in |xml|. This static helper
+  // uses a dedicated instance of the Data Decoder service on applicable
+  // platforms.
+  static void ParseXmlIsolated(const std::string& xml,
+                               ValueParseCallback callback);
 
  private:
   // This instance's connection to the service. This connection is lazily

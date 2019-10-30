@@ -547,7 +547,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   // Push does not allow permission requests from iframes.
   PermissionManager::Get(profile_)->RequestPermission(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, render_frame_host, requesting_origin,
+      ContentSettingsType::NOTIFICATIONS, render_frame_host, requesting_origin,
       user_gesture,
       base::BindOnce(&PushMessagingServiceImpl::DoSubscribe,
                      weak_factory_.GetWeakPtr(), app_identifier,
@@ -602,7 +602,7 @@ blink::mojom::PermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
   // |origin| when checking whether permission to use the API has been granted.
   return ToPermissionStatus(
       PermissionManager::Get(profile_)
-          ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, origin,
+          ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS, origin,
                                 origin)
           .content_setting);
 }
@@ -1004,7 +1004,7 @@ void PushMessagingServiceImpl::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const std::string& resource_identifier) {
-  if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+  if (content_type != ContentSettingsType::NOTIFICATIONS)
     return;
 
   std::vector<PushMessagingAppIdentifier> all_app_identifiers =

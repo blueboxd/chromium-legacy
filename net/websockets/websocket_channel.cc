@@ -465,18 +465,16 @@ void WebSocketChannel::OnConnectSuccess(
 
   SetState(CONNECTED);
 
-  event_interface_->OnAddChannelResponse(stream_->GetSubProtocol(),
-                                         stream_->GetExtensions());
+  // |stream_request_| is not used once the connection has succeeded.
+  stream_request_.reset();
 
   // TODO(ricea): Get flow control information from the WebSocketStream once we
   // have a multiplexing WebSocketStream.
   current_send_quota_ = send_quota_high_water_mark_;
-  event_interface_->OnSendFlowControlQuotaAdded(send_quota_high_water_mark_);
-
-  // |stream_request_| is not used once the connection has succeeded.
-  stream_request_.reset();
-
-  // |this| may have been deleted.
+  event_interface_->OnAddChannelResponse(stream_->GetSubProtocol(),
+                                         stream_->GetExtensions(),
+                                         send_quota_high_water_mark_);
+  // |this| may have been deleted after OnAddChannelResponse.
 }
 
 void WebSocketChannel::OnConnectFailure(const std::string& message) {

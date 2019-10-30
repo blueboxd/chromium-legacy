@@ -54,15 +54,14 @@ SubresourceFilterContentSettingsManager::
 
 ContentSetting SubresourceFilterContentSettingsManager::GetSitePermission(
     const GURL& url) const {
-  return settings_map_->GetContentSetting(
-      url, GURL(), ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS,
-      std::string());
+  return settings_map_->GetContentSetting(url, GURL(), ContentSettingsType::ADS,
+                                          std::string());
 }
 
 void SubresourceFilterContentSettingsManager::WhitelistSite(const GURL& url) {
   settings_map_->SetContentSettingDefaultScope(
-      url, GURL(), ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS,
-      std::string(), CONTENT_SETTING_ALLOW);
+      url, GURL(), ContentSettingsType::ADS, std::string(),
+      CONTENT_SETTING_ALLOW);
 }
 
 void SubresourceFilterContentSettingsManager::OnDidShowUI(const GURL& url) {
@@ -105,15 +104,15 @@ std::unique_ptr<base::DictionaryValue>
 SubresourceFilterContentSettingsManager::GetSiteMetadata(
     const GURL& url) const {
   return base::DictionaryValue::From(settings_map_->GetWebsiteSetting(
-      url, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(), nullptr));
+      url, GURL(), ContentSettingsType::ADS_DATA, std::string(), nullptr));
 }
 
 void SubresourceFilterContentSettingsManager::SetSiteMetadata(
     const GURL& url,
     std::unique_ptr<base::DictionaryValue> dict) {
-  settings_map_->SetWebsiteSettingDefaultScope(
-      url, GURL(), ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS_DATA,
-      std::string(), std::move(dict));
+  settings_map_->SetWebsiteSettingDefaultScope(url, GURL(),
+                                               ContentSettingsType::ADS_DATA,
+                                               std::string(), std::move(dict));
 }
 
 // When history URLs are deleted, clear the metadata for the smart UI.
@@ -121,7 +120,7 @@ void SubresourceFilterContentSettingsManager::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
   if (deletion_info.IsAllHistory()) {
-    settings_map_->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_ADS_DATA);
+    settings_map_->ClearSettingsForOneType(ContentSettingsType::ADS_DATA);
     return;
   }
 

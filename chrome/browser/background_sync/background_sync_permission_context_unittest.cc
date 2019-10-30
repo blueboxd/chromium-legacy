@@ -90,7 +90,7 @@ TEST_F(BackgroundSyncPermissionContextTest, TestBlockOrigin) {
   BackgroundSyncPermissionContext permission_context(profile());
   HostContentSettingsMapFactory::GetForProfile(profile())
       ->SetContentSettingDefaultScope(url1, GURL(),
-                                      CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+                                      ContentSettingsType::BACKGROUND_SYNC,
                                       std::string(), CONTENT_SETTING_BLOCK);
 
   NavigateAndRequestPermission(url1, &permission_context);

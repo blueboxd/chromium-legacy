@@ -131,7 +131,7 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
 }
 
 void MojoRenderer::SetCdm(CdmContext* cdm_context,
-                          const CdmAttachedCB& cdm_attached_cb) {
+                          CdmAttachedCB cdm_attached_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(cdm_context);
@@ -139,7 +139,8 @@ void MojoRenderer::SetCdm(CdmContext* cdm_context,
   DCHECK(!cdm_attached_cb_);
 
   if (encountered_error_) {
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(cdm_attached_cb, false));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(cdm_attached_cb), false));
     return;
   }
 
@@ -147,15 +148,16 @@ void MojoRenderer::SetCdm(CdmContext* cdm_context,
   if (cdm_id == CdmContext::kInvalidCdmId) {
     DVLOG(2) << "MojoRenderer only works with remote CDMs but the CDM ID "
                 "is invalid.";
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(cdm_attached_cb, false));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(cdm_attached_cb), false));
     return;
   }
 
   BindRemoteRendererIfNeeded();
 
-  cdm_attached_cb_ = cdm_attached_cb;
-  remote_renderer_->SetCdm(
-      cdm_id, base::Bind(&MojoRenderer::OnCdmAttached, base::Unretained(this)));
+  cdm_attached_cb_ = std::move(cdm_attached_cb);
+  remote_renderer_->SetCdm(cdm_id, base::BindOnce(&MojoRenderer::OnCdmAttached,
+                                                  base::Unretained(this)));
 }
 
 void MojoRenderer::Flush(base::OnceClosure flush_cb) {

@@ -42,4 +42,22 @@ void AddIconToIconsMap(const GURL& icon_url,
   icons_map->emplace(icon_url, std::move(bitmaps));
 }
 
+bool AreColorsEqual(SkColor expected_color,
+                    SkColor actual_color,
+                    int threshold) {
+  uint32_t expected_alpha = SkColorGetA(expected_color);
+  int error_r = SkColorGetR(actual_color) - SkColorGetR(expected_color);
+  int error_g = SkColorGetG(actual_color) - SkColorGetG(expected_color);
+  int error_b = SkColorGetB(actual_color) - SkColorGetB(expected_color);
+  int error_a = SkColorGetA(actual_color) - expected_alpha;
+  int abs_error_r = std::abs(error_r);
+  int abs_error_g = std::abs(error_g);
+  int abs_error_b = std::abs(error_b);
+  int abs_error_a = std::abs(error_a);
+
+  // Colors are equal if error is below threshold.
+  return abs_error_r <= threshold && abs_error_g <= threshold &&
+         abs_error_b <= threshold && abs_error_a <= threshold;
+}
+
 }  // namespace web_app

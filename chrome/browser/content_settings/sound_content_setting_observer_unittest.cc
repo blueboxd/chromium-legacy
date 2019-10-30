@@ -67,12 +67,12 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
   void ChangeSoundContentSettingTo(ContentSetting setting) {
     GURL url = web_contents()->GetLastCommittedURL();
     host_content_settings_map_->SetContentSettingDefaultScope(
-        url, url, CONTENT_SETTINGS_TYPE_SOUND, std::string(), setting);
+        url, url, ContentSettingsType::SOUND, std::string(), setting);
   }
 
   void ChangeDefaultSoundContentSettingTo(ContentSetting setting) {
     host_content_settings_map_->SetDefaultContentSetting(
-        CONTENT_SETTINGS_TYPE_SOUND, setting);
+        ContentSettingsType::SOUND, setting);
   }
 
   void SimulateAudioStarting() {

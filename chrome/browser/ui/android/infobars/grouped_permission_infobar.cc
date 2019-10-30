@@ -77,7 +77,8 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   std::vector<int> content_settings_types;
   for (size_t i = 0; i < delegate->PermissionCount(); i++) {
-    content_settings_types.push_back(delegate->GetContentSettingType(i));
+    content_settings_types.push_back(
+        static_cast<int>(delegate->GetContentSettingType(i)));
   }
 
   return CreateRenderInfoBarHelper(

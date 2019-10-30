@@ -169,7 +169,7 @@ public class SiteSettingsPreferencesTest {
 
             private boolean doesAcceptCookies() {
                 return PrefServiceBridge.getInstance().isCategoryEnabled(
-                        ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES);
+                        ContentSettingsType.COOKIES);
             }
         });
     }
@@ -210,8 +210,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"), enabled,
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS));
+                    PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.POPUPS));
         });
     }
 
@@ -221,7 +220,7 @@ public class SiteSettingsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"), enabled,
                     PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+                            ContentSettingsType.MEDIASTREAM_CAMERA));
         });
     }
 
@@ -585,7 +584,7 @@ public class SiteSettingsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse("Mic should be blocked",
                     PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
+                            ContentSettingsType.MEDIASTREAM_MIC));
         });
 
         // Test that the microphone permission doesn't get requested.
@@ -658,7 +657,7 @@ public class SiteSettingsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Background Sync should be " + (enabled ? "enabled" : "disabled"),
                     PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC),
+                            ContentSettingsType.BACKGROUND_SYNC),
                     enabled);
         });
     }
@@ -686,7 +685,7 @@ public class SiteSettingsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("USB should be " + (enabled ? "enabled" : "disabled"),
                     PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD),
+                            ContentSettingsType.USB_GUARD),
                     enabled);
         });
     }
@@ -716,7 +715,7 @@ public class SiteSettingsPreferencesTest {
             Assert.assertEquals(
                     "Automatic Downloads should be " + (enabled ? "enabled" : "disabled"),
                     PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS),
+                            ContentSettingsType.AUTOMATIC_DOWNLOADS),
                     enabled);
         });
     }
@@ -746,7 +745,7 @@ public class SiteSettingsPreferencesTest {
             Assert.assertEquals(
                     "Bluetooth scanning should be " + (enabled ? "enabled" : "disabled"),
                     PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING),
+                            ContentSettingsType.BLUETOOTH_SCANNING),
                     enabled);
         });
     }

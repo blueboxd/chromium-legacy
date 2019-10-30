@@ -1391,7 +1391,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPermission) {
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->RemoveObserver(push_service());
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      ->ClearSettingsForOneType(ContentSettingsType::NOTIFICATIONS);
   base::RunLoop().RunUntilIdle();
 
   gcm::IncomingMessage message;
@@ -1855,7 +1855,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, CrossOriginFrame) {
 
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSettingDefaultScope(kRequesterURL, kRequesterURL,
-                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      ContentSettingsType::NOTIFICATIONS,
                                       std::string(), CONTENT_SETTING_ALLOW);
 
   GetPermissionRequestManager()->set_auto_response_for_test(
@@ -2230,7 +2230,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      ->ClearSettingsForOneType(ContentSettingsType::NOTIFICATIONS);
 
   message_loop_runner->Run();
 
@@ -2267,7 +2267,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSettingDefaultScope(origin, origin,
-                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      ContentSettingsType::NOTIFICATIONS,
                                       std::string(), CONTENT_SETTING_DEFAULT);
 
   message_loop_runner->Run();
@@ -2305,7 +2305,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSettingDefaultScope(origin, origin,
-                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      ContentSettingsType::NOTIFICATIONS,
                                       std::string(), CONTENT_SETTING_BLOCK);
 
   message_loop_runner->Run();
@@ -2341,7 +2341,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       message_loop_runner->QuitClosure());
 
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      ->ClearSettingsForOneType(ContentSettingsType::NOTIFICATIONS);
 
   message_loop_runner->Run();
 
@@ -2378,7 +2378,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSettingDefaultScope(origin, GURL(),
-                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      ContentSettingsType::NOTIFICATIONS,
                                       std::string(), CONTENT_SETTING_DEFAULT);
 
   message_loop_runner->Run();
@@ -2416,7 +2416,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSettingDefaultScope(origin, GURL(),
-                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      ContentSettingsType::NOTIFICATIONS,
                                       std::string(), CONTENT_SETTING_BLOCK);
 
   message_loop_runner->Run();
@@ -2454,7 +2454,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSettingDefaultScope(origin, GURL(),
-                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      ContentSettingsType::NOTIFICATIONS,
                                       std::string(), CONTENT_SETTING_ALLOW);
 
   message_loop_runner->Run();
@@ -2491,11 +2491,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      ->SetDefaultContentSetting(ContentSettingsType::NOTIFICATIONS,
                                  CONTENT_SETTING_ALLOW);
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
       ->SetContentSettingDefaultScope(origin, GURL(),
-                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      ContentSettingsType::NOTIFICATIONS,
                                       std::string(), CONTENT_SETTING_DEFAULT);
 
   message_loop_runner->Run();
@@ -2541,7 +2541,7 @@ IN_PROC_BROWSER_TEST_F(
   // registrations, which have a different codepath due to sender_id being
   // required for unsubscribing there.
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      ->ClearSettingsForOneType(ContentSettingsType::NOTIFICATIONS);
 
   run_loop.Run();
 

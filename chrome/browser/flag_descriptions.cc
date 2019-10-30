@@ -3295,6 +3295,11 @@ const char kCrostiniAppSearchDescription[] =
 const char kCrostiniBackupName[] = "Crostini Backup";
 const char kCrostiniBackupDescription[] = "Enable Crostini export and import.";
 
+const char kCrostiniUseBusterImageName[] = "New Crostini containers use Buster";
+const char kCrostiniUseBusterImageDescription[] =
+    "New Crostini containers use Debian Buster images instead of Debian "
+    "Stretch.";
+
 const char kCrostiniGpuSupportName[] = "Crostini GPU Support";
 const char kCrostiniGpuSupportDescription[] = "Enable Crostini GPU support.";
 

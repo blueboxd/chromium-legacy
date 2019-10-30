@@ -97,6 +97,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -125,7 +126,6 @@
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_manifest_manager.h"
-#include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_performance.h"
@@ -2493,7 +2493,7 @@ bool WebLocalFrameImpl::ShouldSuppressKeyboardForFocusedElement() {
 
 void WebLocalFrameImpl::PerformMediaPlayerAction(
     const WebPoint& location,
-    const WebMediaPlayerAction& action) {
+    const MediaPlayerAction& action) {
   HitTestResult result = HitTestResultForVisualViewportPos(location);
   Node* node = result.InnerNode();
   if (!IsHTMLVideoElement(*node) && !IsA<HTMLAudioElement>(*node))
@@ -2501,23 +2501,23 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
 
   HTMLMediaElement* media_element = ToHTMLMediaElement(node);
   switch (action.type) {
-    case WebMediaPlayerAction::Type::kPlay:
+    case MediaPlayerAction::Type::kPlay:
       if (action.enable)
         media_element->Play();
       else
         media_element->pause();
       break;
-    case WebMediaPlayerAction::Type::kMute:
+    case MediaPlayerAction::Type::kMute:
       media_element->setMuted(action.enable);
       break;
-    case WebMediaPlayerAction::Type::kLoop:
+    case MediaPlayerAction::Type::kLoop:
       media_element->SetLoop(action.enable);
       break;
-    case WebMediaPlayerAction::Type::kControls:
+    case MediaPlayerAction::Type::kControls:
       media_element->SetBooleanAttribute(html_names::kControlsAttr,
                                          action.enable);
       break;
-    case WebMediaPlayerAction::Type::kPictureInPicture:
+    case MediaPlayerAction::Type::kPictureInPicture:
       DCHECK(media_element->IsHTMLVideoElement());
       if (action.enable) {
         PictureInPictureController::From(node->GetDocument())

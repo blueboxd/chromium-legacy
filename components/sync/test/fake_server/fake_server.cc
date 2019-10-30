@@ -41,7 +41,7 @@ FakeServer::FakeServer()
       error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
       request_counter_(0) {
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
   loopback_server_storage_ = std::make_unique<base::ScopedTempDir>();
   if (!loopback_server_storage_->CreateUniqueTempDir()) {
     NOTREACHED() << "Creating temp dir failed.";
@@ -56,7 +56,7 @@ FakeServer::FakeServer(const base::FilePath& user_data_dir)
       error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
       request_counter_(0) {
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath loopback_server_path =
       user_data_dir.AppendASCII("FakeSyncServer");
   loopback_server_ = std::make_unique<syncer::LoopbackServer>(
@@ -64,7 +64,10 @@ FakeServer::FakeServer(const base::FilePath& user_data_dir)
   loopback_server_->set_observer_for_tests(this);
 }
 
-FakeServer::~FakeServer() {}
+FakeServer::~FakeServer() {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  loopback_server_storage_.reset();
+}
 
 namespace {
 
@@ -306,7 +309,7 @@ net::HttpStatusCode FakeServer::HandleParsedCommand(
 net::HttpStatusCode FakeServer::SendToLoopbackServer(
     const sync_pb::ClientToServerMessage& message,
     sync_pb::ClientToServerResponse* response) {
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlockingForTesting allow_blocking;
   return loopback_server_->HandleCommand(message, response);
 }
 
@@ -438,6 +441,7 @@ bool FakeServer::ModifyBookmarkEntity(
 
 void FakeServer::ClearServerData() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  base::ScopedAllowBlockingForTesting allow_blocking;
   loopback_server_->ClearServerData();
 }
 

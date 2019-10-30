@@ -87,14 +87,13 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
       number = percentage < 0.5 ? from_number : to_number;
     else
       number = (to_number - from_number) * percentage + from_number;
-
-    if (IsAccumulated() && repeat_count)
-      number += to_at_end_of_duration_number * repeat_count;
-
-    if (IsAdditive() && GetAnimationMode() != kToAnimation)
-      animated_number += number;
-    else
-      animated_number = number;
+    if (GetAnimationMode() != kToAnimation) {
+      if (repeat_count && IsAccumulated())
+        number += to_at_end_of_duration_number * repeat_count;
+      if (IsAdditive())
+        number += animated_number;
+    }
+    animated_number = number;
   }
 
  protected:

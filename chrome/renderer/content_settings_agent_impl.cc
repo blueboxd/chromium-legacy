@@ -288,7 +288,7 @@ bool ContentSettingsAgentImpl::AllowImage(bool enabled_per_settings,
     }
   }
   if (!allow)
-    DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES);
+    DidBlockContentType(ContentSettingsType::IMAGES);
   return allow;
 }
 
@@ -444,7 +444,7 @@ bool ContentSettingsAgentImpl::AllowRunningInsecureContent(
   } else {
     allow |= allow_running_insecure_content_;
     if (!allow) {
-      DidBlockContentType(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
+      DidBlockContentType(ContentSettingsType::MIXEDSCRIPT);
     }
   }
 
@@ -549,11 +549,11 @@ void ContentSettingsAgentImpl::GetAllowedClientHintsFromSource(
 }
 
 void ContentSettingsAgentImpl::DidNotAllowPlugins() {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
+  DidBlockContentType(ContentSettingsType::PLUGINS);
 }
 
 void ContentSettingsAgentImpl::DidNotAllowScript() {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+  DidBlockContentType(ContentSettingsType::JAVASCRIPT);
 }
 
 void ContentSettingsAgentImpl::OnLoadBlockedPlugins(

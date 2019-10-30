@@ -116,7 +116,11 @@ class MockPipeline : public Pipeline {
   MOCK_METHOD0(DidLoadingProgress, bool());
   MOCK_CONST_METHOD0(GetStatistics, PipelineStatistics());
 
-  MOCK_METHOD2(SetCdm, void(CdmContext*, const CdmAttachedCB&));
+  void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) override {
+    OnSetCdm(cdm_context, cdm_attached_cb);
+  }
+  MOCK_METHOD2(OnSetCdm,
+               void(CdmContext* cdm_context, CdmAttachedCB& cdm_attached_cb));
 
  private:
   // Forwarding stubs (see comment above).
@@ -365,9 +369,11 @@ class MockRenderer : public Renderer {
   MOCK_METHOD0(GetMediaTime, base::TimeDelta());
   MOCK_METHOD0(HasAudio, bool());
   MOCK_METHOD0(HasVideo, bool());
-  MOCK_METHOD2(SetCdm,
-               void(CdmContext* cdm_context,
-                    const CdmAttachedCB& cdm_attached_cb));
+  void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) override {
+    OnSetCdm(cdm_context, cdm_attached_cb);
+  }
+  MOCK_METHOD2(OnSetCdm,
+               void(CdmContext* cdm_context, CdmAttachedCB& cdm_attached_cb));
   MOCK_METHOD2(OnSelectedVideoTrackChanged,
                void(std::vector<DemuxerStream*>, base::OnceClosure));
   MOCK_METHOD2(OnSelectedAudioTracksChanged,

@@ -457,8 +457,8 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
       content_settings::ContentSettingsRegistry::GetInstance();
   for (const content_settings::ContentSettingsInfo* info : *registry) {
     ContentSettingsType content_type = info->website_settings_info()->type();
-    if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
-        content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+    if (content_type == ContentSettingsType::MIXEDSCRIPT ||
+        content_type == ContentSettingsType::PROTOCOL_HANDLERS) {
       // These types are excluded because one can't call
       // GetDefaultContentSetting() for them.
       continue;
@@ -490,8 +490,8 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
 
   for (const content_settings::ContentSettingsInfo* info : *registry) {
     ContentSettingsType content_type = info->website_settings_info()->type();
-    if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
-        content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS)
+    if (content_type == ContentSettingsType::MIXEDSCRIPT ||
+        content_type == ContentSettingsType::PROTOCOL_HANDLERS)
       continue;
     ContentSetting default_setting =
         host_content_settings_map->GetDefaultContentSetting(content_type,

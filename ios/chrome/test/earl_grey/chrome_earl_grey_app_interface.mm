@@ -578,14 +578,14 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 + (ContentSetting)popupPrefValue {
   return ios::HostContentSettingsMapFactory::GetForBrowserState(
              chrome_test_util::GetOriginalBrowserState())
-      ->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS, NULL);
+      ->GetDefaultContentSetting(ContentSettingsType::POPUPS, NULL);
 }
 
 + (void)setPopupPrefValue:(ContentSetting)value {
   DCHECK(value == CONTENT_SETTING_BLOCK || value == CONTENT_SETTING_ALLOW);
   ios::HostContentSettingsMapFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS, value);
+      ->SetDefaultContentSetting(ContentSettingsType::POPUPS, value);
 }
 
 @end

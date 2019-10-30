@@ -86,7 +86,7 @@ void ClientHintsObserver::PersistClientHints(
   // TODO(tbansal): crbug.com/735518. Disable updates to client hints settings
   // when cookies are disabled for |primary_origin|.
   map->SetWebsiteSettingDefaultScope(
-      primary_url, GURL(), CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
+      primary_url, GURL(), ContentSettingsType::CLIENT_HINTS, std::string(),
       std::move(expiration_times_dictionary));
 
   UMA_HISTOGRAM_EXACT_LINEAR("ClientHints.UpdateEventCount", 1, 2);

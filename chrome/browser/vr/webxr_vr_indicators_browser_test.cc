@@ -126,21 +126,21 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestLocationInUseIndicator) {
   // Asking for location seems to work without any hardware/machine specific
   // enabling/capability (unlike microphone, camera). Hence, this test.
   TestIndicatorOnAccessForContentType(
-      t, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      t, ContentSettingsType::GEOLOCATION,
       "navigator.geolocation.getCurrentPosition( ()=>{}, ()=>{} )",
       UserFriendlyElementName::kWebXrLocationPermissionIndicator);
 }
 
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(DISABLED_TestMicrophoneInUseIndicator) {
   TestIndicatorOnAccessForContentType(
-      t, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+      t, ContentSettingsType::MEDIASTREAM_MIC,
       "navigator.getUserMedia( {audio : true},  ()=>{}, ()=>{} )",
       UserFriendlyElementName::kWebXrAudioIndicator);
 }
 
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(DISABLED_TestCameraInUseIndicator) {
   TestIndicatorOnAccessForContentType(
-      t, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+      t, ContentSettingsType::MEDIASTREAM_CAMERA,
       "navigator.getUserMedia( {video : true},  ()=>{}, ()=>{} )",
       UserFriendlyElementName::kWebXrVideoPermissionIndicator);
 }
@@ -149,14 +149,14 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(DISABLED_TestCameraInUseIndicator) {
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
     TestLocationIndicatorWhenPermissionInitiallyAllowed) {
   TestForInitialIndicatorForContentType(
-      t, {{CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW,
+      t, {{ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW,
            UserFriendlyElementName::kWebXrLocationPermissionIndicator, true}});
 }
 
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
     TestLocationIndicatorWhenPermissionInitiallyBlocked) {
   TestForInitialIndicatorForContentType(
-      t, {{CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_BLOCK,
+      t, {{ContentSettingsType::GEOLOCATION, CONTENT_SETTING_BLOCK,
            UserFriendlyElementName::kWebXrLocationPermissionIndicator, false}});
 }
 
@@ -167,7 +167,7 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(
     WebXrVrBrowserTestBase,
     TestLocationIndicatorWhenUserAskedToPrompt) {
   TestForInitialIndicatorForContentType(
-      t, {{CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ASK,
+      t, {{ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ASK,
            UserFriendlyElementName::kWebXrLocationPermissionIndicator, false}});
 }
 
@@ -177,11 +177,11 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
   TestForInitialIndicatorForContentType(
       t,
       {
-          {CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ASK,
+          {ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ASK,
            UserFriendlyElementName::kWebXrLocationPermissionIndicator, false},
-          {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, CONTENT_SETTING_ASK,
+          {ContentSettingsType::MEDIASTREAM_MIC, CONTENT_SETTING_ASK,
            UserFriendlyElementName::kWebXrAudioIndicator, false},
-          {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, CONTENT_SETTING_BLOCK,
+          {ContentSettingsType::MEDIASTREAM_CAMERA, CONTENT_SETTING_BLOCK,
            UserFriendlyElementName::kWebXrVideoPermissionIndicator, false},
       });
 }
@@ -196,11 +196,11 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(
   TestForInitialIndicatorForContentType(
       t,
       {
-          {CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ASK,
+          {ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ASK,
            UserFriendlyElementName::kWebXrLocationPermissionIndicator, false},
-          {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, CONTENT_SETTING_ALLOW,
+          {ContentSettingsType::MEDIASTREAM_MIC, CONTENT_SETTING_ALLOW,
            UserFriendlyElementName::kWebXrAudioIndicator, true},
-          {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, CONTENT_SETTING_BLOCK,
+          {ContentSettingsType::MEDIASTREAM_CAMERA, CONTENT_SETTING_BLOCK,
            UserFriendlyElementName::kWebXrVideoPermissionIndicator, false},
       });
 }
@@ -209,11 +209,11 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
     TestMultipleInitialIndicators_TwoDevicesAllowed) {
   TestForInitialIndicatorForContentType(
       t, {
-             {CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW,
+             {ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW,
               UserFriendlyElementName::kWebXrLocationPermissionIndicator, true},
-             {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, CONTENT_SETTING_BLOCK,
+             {ContentSettingsType::MEDIASTREAM_MIC, CONTENT_SETTING_BLOCK,
               UserFriendlyElementName::kWebXrAudioIndicator, false},
-             {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, CONTENT_SETTING_ALLOW,
+             {ContentSettingsType::MEDIASTREAM_CAMERA, CONTENT_SETTING_ALLOW,
               UserFriendlyElementName::kWebXrVideoPermissionIndicator, true},
          });
 }
@@ -222,11 +222,11 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
     TestMultipleInitialIndicators_ThreeDevicesAllowed) {
   TestForInitialIndicatorForContentType(
       t, {
-             {CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW,
+             {ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW,
               UserFriendlyElementName::kWebXrLocationPermissionIndicator, true},
-             {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, CONTENT_SETTING_ALLOW,
+             {ContentSettingsType::MEDIASTREAM_MIC, CONTENT_SETTING_ALLOW,
               UserFriendlyElementName::kWebXrAudioIndicator, true},
-             {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, CONTENT_SETTING_ALLOW,
+             {ContentSettingsType::MEDIASTREAM_CAMERA, CONTENT_SETTING_ALLOW,
               UserFriendlyElementName::kWebXrVideoPermissionIndicator, true},
          });
 }

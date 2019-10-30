@@ -57,7 +57,7 @@ class Point;
 
 namespace blink {
 struct PluginAction;
-struct WebMediaPlayerAction;
+struct MediaPlayerAction;
 }
 
 class RenderViewContextMenu : public RenderViewContextMenuBase {
@@ -234,7 +234,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void ExecPictureInPicture();
 
   void MediaPlayerActionAt(const gfx::Point& location,
-                           const blink::WebMediaPlayerAction& action);
+                           const blink::MediaPlayerAction& action);
   void PluginActionAt(const gfx::Point& location,
                       const blink::PluginAction& action);
 

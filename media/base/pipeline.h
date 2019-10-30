@@ -235,7 +235,7 @@ class MEDIA_EXPORT Pipeline {
   virtual PipelineStatistics GetStatistics() const = 0;
 
   virtual void SetCdm(CdmContext* cdm_context,
-                      const CdmAttachedCB& cdm_attached_cb) = 0;
+                      CdmAttachedCB cdm_attached_cb) = 0;
 };
 
 }  // namespace media

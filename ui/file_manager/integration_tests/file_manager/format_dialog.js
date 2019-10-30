@@ -261,9 +261,8 @@ testcase.formatDialogGearMenu = async () => {
           'focus', appId, ['#directory-tree']),
       'focus failed: #directory-tree');
 
-  // Click on the USB's directory tree entry.
-  const treeQuery = `#directory-tree [entry-label="fake-usb"]`;
-  await remoteCall.waitAndClickElement(appId, treeQuery);
+  // Navigate to the USB via the directory tree.
+  await navigateWithDirectoryTree(appId, '/fake-usb');
 
   // Click on the gear menu button.
   await remoteCall.waitAndClickElement(appId, '#gear-button:not([hidden])');
@@ -303,4 +302,23 @@ testcase.formatDialogGearMenu = async () => {
   const title2 = await remoteCall.waitForElement(
       appId, ['files-format-dialog', 'cr-dialog[open] div[slot="title"]']);
   chrome.test.assertEq('Format fake-usb', title2.text.trim());
+
+  // Click cancel button.
+  await remoteCall.waitAndClickElement(appId, cancelButtonQuery);
+
+  // Click on the gear menu button.
+  await remoteCall.waitAndClickElement(appId, '#gear-button:not([hidden])');
+
+  // Ensure the format menu item has appeared.
+  await remoteCall.waitForElement(
+      appId, '#gear-menu-format:not([disabled]):not([hidden])');
+
+  // Unmount the USB.
+  await sendTestMessage({name: 'unmountUsb'});
+
+  // Ensure the file manager has navigated back to My files.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My files');
+
+  // Ensure the format menu item has disappeared.
+  await remoteCall.waitForElement(appId, '#gear-menu-format[disabled][hidden]');
 };

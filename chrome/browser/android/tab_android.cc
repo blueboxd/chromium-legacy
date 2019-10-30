@@ -200,12 +200,6 @@ void TabAndroid::SetWindowSessionID(SessionID window_id) {
   session_tab_helper->SetWindowID(session_window_id_);
 }
 
-
-bool TabAndroid::IsCurrentlyACustomTab() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_Tab_isCurrentlyACustomTab(env, weak_java_tab_.get(env));
-}
-
 void TabAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }

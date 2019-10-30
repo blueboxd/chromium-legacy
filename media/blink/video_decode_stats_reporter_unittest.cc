@@ -171,7 +171,7 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
   mojo::PendingRemote<mojom::VideoDecodeStatsRecorder> SetupRecordInterceptor(
       RecordInterceptor** interceptor) {
     // Capture a the interceptor pointer for verifying recorder calls. Lifetime
-    // will be managed by the |recorder_ptr|.
+    // will be managed by the |recorder_remote|.
     *interceptor = new RecordInterceptor();
     mojo::PendingRemote<mojom::VideoDecodeStatsRecorder> recorder_remote;
     mojo::MakeSelfOwnedReceiver(
@@ -368,8 +368,8 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
 
   // Points to the interceptor that acts as a VideoDecodeStatsRecorder. The
-  // object is owned by VideoDecodeStatsRecorderPtr, which is itself owned by
-  // |reporter_|.
+  // object is owned by mojo::Remote<VideoDecodeStatsRecorder>, which is itself
+  // owned by |reporter_|.
   RecordInterceptor* interceptor_ = nullptr;
 
   // The VideoDecodeStatsReporter being tested.

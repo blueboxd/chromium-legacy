@@ -16,6 +16,7 @@
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_content_client.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -26,6 +27,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/buildflags/buildflags.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 using content::BrowserThread;
 
@@ -190,6 +192,21 @@ void PrintViewManager::RenderFrameDeleted(
   if (render_frame_host == print_preview_rfh_)
     PrintPreviewDone();
   PrintViewManagerBase::RenderFrameDeleted(render_frame_host);
+}
+
+const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>&
+PrintViewManager::GetPrintRenderFrame(content::RenderFrameHost* rfh) {
+  if (!print_render_frame_.is_bound()) {
+    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame_);
+    print_render_frame_.set_disconnect_handler(
+        base::BindOnce(&PrintViewManager::OnPrintRenderFrameDisconnected,
+                       base::Unretained(this)));
+  }
+  return print_render_frame_;
+}
+
+void PrintViewManager::OnPrintRenderFrameDisconnected() {
+  print_render_frame_.reset();
 }
 
 bool PrintViewManager::PrintPreview(

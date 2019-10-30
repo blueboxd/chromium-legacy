@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "ui/gfx/geometry/mojom/geometry.mojom-blink.h"
 #include "ui/gfx/geometry/mojom/geometry_traits_test_service.mojom-blink.h"
 
@@ -40,7 +41,7 @@ class GeometryStructTraitsTest
     std::move(callback).Run(p);
   }
 
-  void EchoPoint3F(const WebFloatPoint3D& p,
+  void EchoPoint3F(const FloatPoint3D& p,
                    EchoPoint3FCallback callback) override {
     std::move(callback).Run(p);
   }
@@ -142,10 +143,10 @@ TEST_F(GeometryStructTraitsTest, Point3D) {
   const float kX = 1.234;
   const float kY = 5.678;
   const float kZ = 9.098;
-  WebFloatPoint3D input(kX, kY, kZ);
+  FloatPoint3D input(kX, kY, kZ);
   mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy =
       GetTraitsTestProxy();
-  WebFloatPoint3D output;
+  FloatPoint3D output;
   proxy->EchoPoint3F(input, &output);
   EXPECT_EQ(input, output);
 }

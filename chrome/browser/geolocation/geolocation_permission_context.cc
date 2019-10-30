@@ -18,7 +18,7 @@
 
 GeolocationPermissionContext::GeolocationPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                            ContentSettingsType::GEOLOCATION,
                             blink::mojom::FeaturePolicyFeature::kGeolocation),
       extensions_context_(profile) {}
 

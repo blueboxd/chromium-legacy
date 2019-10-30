@@ -86,7 +86,8 @@ class WebSocket::WebSocketEventHandler final
 
   void OnCreateURLRequest(net::URLRequest* url_request) override;
   void OnAddChannelResponse(const std::string& selected_subprotocol,
-                            const std::string& extensions) override;
+                            const std::string& extensions,
+                            int64_t send_flow_control_quota) override;
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
                    base::span<const char> payload) override;
@@ -142,7 +143,8 @@ void WebSocket::WebSocketEventHandler::OnCreateURLRequest(
 
 void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
     const std::string& selected_protocol,
-    const std::string& extensions) {
+    const std::string& extensions,
+    int64_t send_flow_control_quota) {
   DVLOG(3) << "WebSocketEventHandler::OnAddChannelResponse @"
            << reinterpret_cast<void*>(this) << " selected_protocol=\""
            << selected_protocol << "\""
@@ -192,6 +194,8 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   impl_->header_client_.reset();
   impl_->client_.set_disconnect_handler(base::BindOnce(
       &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
+
+  impl_->client_->AddSendFlowControlQuota(send_flow_control_quota);
 }
 
 void WebSocket::WebSocketEventHandler::OnDataFrame(

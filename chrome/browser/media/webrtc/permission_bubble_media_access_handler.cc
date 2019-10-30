@@ -102,8 +102,8 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ContentSettingsType content_settings_type =
       type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE
-          ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
-          : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
+          ? ContentSettingsType::MEDIASTREAM_MIC
+          : ContentSettingsType::MEDIASTREAM_CAMERA;
 
   DCHECK(!security_origin.is_empty());
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();

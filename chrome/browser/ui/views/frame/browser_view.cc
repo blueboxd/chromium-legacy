@@ -366,6 +366,15 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return browser_view_->IsBookmarkBarVisible();
   }
 
+  bool IsContentsSeparatorEnabled() const override {
+    // Web app windows manage their own separator.
+    // TODO(crbug.com/1012979): Make PWAs set the visibility of the ToolbarView
+    // based on whether it is visible instead of setting the height to 0px. This
+    // will enable BrowserViewLayout to hide the contents separator on its own
+    // using the same logic used by normal BrowserViews.
+    return !browser_view_->browser()->app_controller();
+  }
+
   ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() const override {
     return browser_view_->exclusive_access_bubble();
   }

@@ -119,7 +119,7 @@ MediaEngagementService::MediaEngagementService(Profile* profile,
   // all Media Engagement data.
   if (GetSchemaVersion() < kSchemaVersion) {
     HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT);
+        ->ClearSettingsForOneType(ContentSettingsType::MEDIA_ENGAGEMENT);
     SetSchemaVersion(kSchemaVersion);
   }
 }
@@ -140,7 +140,7 @@ void MediaEngagementService::ClearDataBetweenTime(
     const base::Time& delete_end) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->ClearSettingsForOneTypeWithPredicate(
-          CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, base::Time(),
+          ContentSettingsType::MEDIA_ENGAGEMENT, base::Time(),
           base::Time::Max(),
           base::Bind(&MediaEngagementTimeFilterAdapter, this, delete_begin,
                      delete_end));
@@ -158,7 +158,7 @@ void MediaEngagementService::OnURLsDeleted(
     const history::DeletionInfo& deletion_info) {
   if (deletion_info.IsAllHistory()) {
     HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT);
+        ->ClearSettingsForOneType(ContentSettingsType::MEDIA_ENGAGEMENT);
     return;
   }
 
@@ -225,7 +225,7 @@ void MediaEngagementService::RemoveOriginsWithNoVisits(
 void MediaEngagementService::Clear(const url::Origin& origin) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->ClearSettingsForOneTypeWithPredicate(
-          CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, base::Time(),
+          ContentSettingsType::MEDIA_ENGAGEMENT, base::Time(),
           base::Time::Max(),
           base::BindRepeating(&MediaEngagementFilterAdapter,
                               std::cref(origin)));
@@ -305,7 +305,7 @@ std::vector<MediaEngagementScore> MediaEngagementService::GetAllStoredScores()
 
   HostContentSettingsMap* settings =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  settings->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
+  settings->GetSettingsForOneType(ContentSettingsType::MEDIA_ENGAGEMENT,
                                   content_settings::ResourceIdentifier(),
                                   &content_settings);
 

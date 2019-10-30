@@ -93,7 +93,7 @@ bool GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
     ContentSettingsType type) {
   return QuietNotificationsPromptConfig::UIFlavorToUse() ==
              QuietNotificationsPromptConfig::UIFlavor::MINI_INFOBAR &&
-         type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+         type == ContentSettingsType::NOTIFICATIONS;
 }
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
@@ -108,7 +108,7 @@ GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
   // Infobars are only used for NOTIFICATIONS right now, therefore strings can
   // be hardcoded for that type.
   DCHECK_EQ(permission_prompt_->GetContentSettingType(0u),
-            CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+            ContentSettingsType::NOTIFICATIONS);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier

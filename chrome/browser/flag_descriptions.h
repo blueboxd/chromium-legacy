@@ -1951,6 +1951,9 @@ extern const char kCrostiniAppSearchDescription[];
 extern const char kCrostiniBackupName[];
 extern const char kCrostiniBackupDescription[];
 
+extern const char kCrostiniUseBusterImageName[];
+extern const char kCrostiniUseBusterImageDescription[];
+
 extern const char kCrostiniGpuSupportName[];
 extern const char kCrostiniGpuSupportDescription[];
 

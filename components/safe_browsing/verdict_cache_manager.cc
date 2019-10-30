@@ -175,7 +175,7 @@ void VerdictCacheManager::CachePhishGuardVerdict(
           : &stored_verdict_count_password_entry_;
   std::unique_ptr<base::DictionaryValue> cache_dictionary =
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
-          hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+          hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
           std::string(), nullptr));
 
   if (!cache_dictionary || !cache_dictionary)
@@ -218,8 +218,8 @@ void VerdictCacheManager::CachePhishGuardVerdict(
       verdict.cache_expression(),
       base::Value::FromUniquePtrValue(std::move(verdict_entry)));
   content_settings_->SetWebsiteSettingDefaultScope(
-      hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
-      std::string(), std::move(cache_dictionary));
+      hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION, std::string(),
+      std::move(cache_dictionary));
 }
 
 LoginReputationClientResponse::VerdictType
@@ -234,7 +234,7 @@ VerdictCacheManager::GetCachedPhishGuardVerdict(
   GURL hostname = GetHostNameWithHTTPScheme(url);
   std::unique_ptr<base::DictionaryValue> cache_dictionary =
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
-          hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+          hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
           std::string(), nullptr));
 
   if (!cache_dictionary || cache_dictionary->empty())
@@ -308,7 +308,7 @@ size_t VerdictCacheManager::GetStoredPhishGuardVerdictCount(
 
   ContentSettingsForOneType password_protection_settings;
   content_settings_->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      ContentSettingsType::PASSWORD_PROTECTION, std::string(),
       &password_protection_settings);
   stored_verdict_count_password_on_focus_ = 0;
   stored_verdict_count_password_entry_ = 0;
@@ -320,7 +320,7 @@ size_t VerdictCacheManager::GetStoredPhishGuardVerdictCount(
     std::unique_ptr<base::DictionaryValue> cache_dictionary =
         base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
             GURL(source.primary_pattern.ToString()), GURL(),
-            CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(), nullptr));
+            ContentSettingsType::PASSWORD_PROTECTION, std::string(), nullptr));
     if (cache_dictionary.get() && !cache_dictionary->empty()) {
       for (const auto& item : cache_dictionary->DictItems()) {
         if (item.first == base::StringPiece(kPasswordOnFocusCacheKey)) {
@@ -348,7 +348,7 @@ void VerdictCacheManager::CleanUpExpiredVerdicts() {
 
   ContentSettingsForOneType password_protection_settings;
   content_settings_->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      ContentSettingsType::PASSWORD_PROTECTION, std::string(),
       &password_protection_settings);
 
   for (const ContentSettingPatternSource& source :
@@ -358,7 +358,7 @@ void VerdictCacheManager::CleanUpExpiredVerdicts() {
     std::unique_ptr<base::DictionaryValue> cache_dictionary =
         base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
             primary_pattern_url, GURL(),
-            CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(), nullptr));
+            ContentSettingsType::PASSWORD_PROTECTION, std::string(), nullptr));
     bool has_expired_password_on_focus_entry = RemoveExpiredVerdicts(
         LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
         cache_dictionary.get());
@@ -368,7 +368,7 @@ void VerdictCacheManager::CleanUpExpiredVerdicts() {
 
     if (cache_dictionary->size() == 0u) {
       content_settings_->ClearSettingsForOneTypeWithPredicate(
-          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
+          ContentSettingsType::PASSWORD_PROTECTION, base::Time(),
           base::Time::Max(),
           base::BindRepeating(&OriginMatchPrimaryPattern, primary_pattern_url));
     } else if (has_expired_password_on_focus_entry ||
@@ -376,9 +376,8 @@ void VerdictCacheManager::CleanUpExpiredVerdicts() {
       // Set the website setting of this origin with the updated
       // |cache_dictionary|.
       content_settings_->SetWebsiteSettingDefaultScope(
-          primary_pattern_url, GURL(),
-          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
-          std::move(cache_dictionary));
+          primary_pattern_url, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
+          std::string(), std::move(cache_dictionary));
     }
   }
 }
@@ -441,7 +440,7 @@ void VerdictCacheManager::RemoveContentSettingsOnURLsDeleted(
 
   if (all_history) {
     content_settings_->ClearSettingsForOneType(
-        CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION);
+        ContentSettingsType::PASSWORD_PROTECTION);
     stored_verdict_count_password_on_focus_ = 0;
     stored_verdict_count_password_entry_ = 0;
     return;
@@ -467,7 +466,7 @@ void VerdictCacheManager::RemoveContentSettingsOnURLsDeleted(
         GetVerdictCountForURL(
             url_key, LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
     content_settings_->ClearSettingsForOneTypeWithPredicate(
-        CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
+        ContentSettingsType::PASSWORD_PROTECTION, base::Time(),
         base::Time::Max(),
         base::BindRepeating(&OriginMatchPrimaryPattern, url_key));
   }
@@ -480,7 +479,7 @@ size_t VerdictCacheManager::GetVerdictCountForURL(
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
   std::unique_ptr<base::DictionaryValue> cache_dictionary =
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
-          url, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+          url, GURL(), ContentSettingsType::PASSWORD_PROTECTION, std::string(),
           nullptr));
   if (!cache_dictionary || cache_dictionary->empty())
     return 0;

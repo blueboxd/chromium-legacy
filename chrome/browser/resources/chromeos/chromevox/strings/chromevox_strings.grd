@@ -595,6 +595,12 @@
       <message desc="Hide event stream filters options for event stream logging." name="IDS_CHROMEVOX_OPTIONS_HIDE_EVENT_STREAM_FILTERS">
         Hide event stream filters
       </message>
+      <message desc="Set all event stream logging filters to on." name="IDS_CHROMEVOX_OPTIONS_ENABLE_ALL_EVENT_STREAM_FILTERS">
+        Enable all event filters
+      </message>
+      <message desc="Set all event stream logging filters to off." name="IDS_CHROMEVOX_OPTIONS_DISABLE_ALL_EVENT_STREAM_FILTERS">
+        Disable all event filters
+      </message>
       <message desc="Enable chromevox braille logging." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_BRAILLE_LOGGING">
         Enable braille logging
       </message>

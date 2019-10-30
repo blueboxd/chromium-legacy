@@ -112,15 +112,12 @@ class WebLocalFrame;
 class WebMediaCapabilitiesClient;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
-class WebRTCPeerConnectionHandler;
-class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
 class WebSecurityOrigin;
 class WebThemeEngine;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
-class WebUserMediaRequest;
 class WebVideoCaptureImplManager;
 
 namespace scheduler {
@@ -554,13 +551,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // WebRTC ----------------------------------------------------------
 
-  // Creates a WebRTCPeerConnectionHandler for RTCPeerConnection.
-  // May return null if WebRTC functionality is not avaliable or if it's out of
-  // resources.
-  virtual std::unique_ptr<WebRTCPeerConnectionHandler>
-  CreateRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*,
-                                 scoped_refptr<base::SingleThreadTaskRunner>);
-
   // Returns the SingleThreadTaskRunner suitable for running WebRTC networking.
   // An rtc::Thread will have already been created.
   // May return null if WebRTC functionality is not implemented.
@@ -623,9 +613,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual base::Optional<int> GetAgcStartupMinimumVolume() {
     return base::nullopt;
   }
-
-  virtual void TrackGetUserMedia(
-      const blink::WebUserMediaRequest& web_request) {}
 
   virtual bool IsWebRtcHWH264DecodingEnabled(
       webrtc::VideoCodecType video_coded_type) {

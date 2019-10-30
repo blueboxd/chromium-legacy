@@ -17,7 +17,7 @@ namespace payments {
 PaymentHandlerPermissionContext::PaymentHandlerPermissionContext(
     Profile* profile)
     : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER,
+                            ContentSettingsType::PAYMENT_HANDLER,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 PaymentHandlerPermissionContext::~PaymentHandlerPermissionContext() {}

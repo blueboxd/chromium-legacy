@@ -102,6 +102,7 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
     case kFileSystemTypeDriveFs:
     case kFileSystemTypeArcContent:
     case kFileSystemTypeArcDocumentsProvider:
+    case kFileSystemTypeSmbFs:
       return FILE_PERMISSION_USE_FILE_PERMISSION;
 
     case kFileSystemTypeRestrictedNativeLocal:

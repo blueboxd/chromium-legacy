@@ -103,6 +103,7 @@ void BackForwardCacheMetrics::DidCommitNavigation(
     if (is_history_navigation && back_forward_cache_allowed)
       RecordMetricsForHistoryNavigationCommit(navigation);
     not_restored_reasons_.reset();
+    blocklisted_features_ = 0;
   }
 
   if (last_committed_main_frame_navigation_id_ != -1 &&
@@ -178,9 +179,14 @@ void BackForwardCacheMetrics::CollectFeatureUsageFromSubtree(
   }
 }
 
-void BackForwardCacheMetrics::MarkNotRestoredWithReason(
-    NotRestoredReason reason) {
-  not_restored_reasons_.set(static_cast<size_t>(reason));
+void BackForwardCacheMetrics::MarkNotRestoredWithReasons(
+    const BackForwardCacheMetrics::NotRestoredReasons& reasons) {
+  not_restored_reasons_ |= reasons;
+}
+
+void BackForwardCacheMetrics::MarkNotRestoredWithBlocklistedFeatures(
+    uint64_t blocklisted_features) {
+  blocklisted_features_ |= blocklisted_features;
 }
 
 void BackForwardCacheMetrics::MarkDisableForRenderFrameHost(
@@ -206,9 +212,22 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
     if (!not_restored_reasons_.test(static_cast<size_t>(i)))
       continue;
     DCHECK(!navigation->IsServedFromBackForwardCache());
+    NotRestoredReason reason = static_cast<NotRestoredReason>(i);
     UMA_HISTOGRAM_ENUMERATION(
-        "BackForwardCache.HistoryNavigationOutcome.NotRestoredReason",
-        static_cast<NotRestoredReason>(i));
+        "BackForwardCache.HistoryNavigationOutcome.NotRestoredReason", reason);
+  }
+
+  for (int i = 0;
+       i < static_cast<int>(
+               blink::scheduler::WebSchedulerTrackedFeature::kMaxValue);
+       i++) {
+    blink::scheduler::WebSchedulerTrackedFeature feature =
+        static_cast<blink::scheduler::WebSchedulerTrackedFeature>(i);
+    if (blocklisted_features_ & blink::scheduler::FeatureToBit(feature)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "BackForwardCache.HistoryNavigationOutcome.BlocklistedFeature",
+          feature);
+    }
   }
 
   for (const std::string& reason : disallowed_reasons_) {

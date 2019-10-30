@@ -330,7 +330,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
     GURL invalid_hostname("http://invalid.com");
     std::unique_ptr<base::DictionaryValue> verdict_dictionary =
         base::DictionaryValue::From(content_setting_map_->GetWebsiteSetting(
-            invalid_hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+            invalid_hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
             std::string(), nullptr));
 
     if (!verdict_dictionary)
@@ -351,7 +351,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
                     password_type))),
         std::move(invalid_cache_expression_entry));
     content_setting_map_->SetWebsiteSettingDefaultScope(
-        invalid_hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+        invalid_hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
         std::string(), std::move(verdict_dictionary));
   }
 

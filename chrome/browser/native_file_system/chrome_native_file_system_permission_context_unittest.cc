@@ -145,7 +145,7 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
 
   // The existing grant should not change if the permission is blocked globally.
   SetDefaultContentSettingValue(
-      CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
   ExpectCanRequestWritePermission(grant.get(), /*expected=*/false);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
@@ -189,7 +189,7 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
 TEST_F(ChromeNativeFileSystemPermissionContextTest,
        GetWritePermissionGrant_InitialState_OpenAction_GlobalGuardBlocked) {
   SetDefaultContentSettingValue(
-      CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
@@ -200,7 +200,7 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
   grant.reset();
 
   SetContentSettingValueForOrigin(
-      kTestOrigin, CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_ASK);
 
   grant = permission_context()->GetWritePermissionGrant(
@@ -214,7 +214,7 @@ TEST_F(
     ChromeNativeFileSystemPermissionContextTest,
     GetWritePermissionGrant_InitialState_WritableImplicitState_GlobalGuardBlocked) {
   SetDefaultContentSettingValue(
-      CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
@@ -225,7 +225,7 @@ TEST_F(
   grant.reset();
 
   SetContentSettingValueForOrigin(
-      kTestOrigin, CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_ASK);
 
   grant = permission_context()->GetWritePermissionGrant(
@@ -239,7 +239,7 @@ TEST_F(
     ChromeNativeFileSystemPermissionContextTest,
     GetWritePermissionGrant_WriteGrantedChangesExistingGrant_GlobalGuardBlocked) {
   SetContentSettingValueForOrigin(
-      kTestOrigin, CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
 
   auto grant1 = permission_context()->GetWritePermissionGrant(
@@ -262,7 +262,7 @@ TEST_F(
     ChromeNativeFileSystemPermissionContextTest,
     GetWritePermissionGrant_GrantIsRevokedWhenNoLongerUsed_GlobalGuardBlockedBeforeNewGrant) {
   SetDefaultContentSettingValue(
-      CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
@@ -300,7 +300,7 @@ TEST_F(
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 
   SetDefaultContentSettingValue(
-      CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
 
   // After the guard is blocked, the permission status for |grant| should remain
@@ -466,7 +466,7 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
   // should update the PermissionStatus to DENIED, call the passed-in
   // callback, and return immediately without showing a prompt.
   SetDefaultContentSettingValue(
-      CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
 
   auto grant = permission_context()->GetWritePermissionGrant(
@@ -495,7 +495,7 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
 
   grant2.reset();
   SetContentSettingValueForOrigin(
-      kTestOrigin2, CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      kTestOrigin2, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_ASK);
 
   grant2 = permission_context()->GetWritePermissionGrant(
@@ -524,7 +524,7 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       UserAction::kOpen);
 
   SetDefaultContentSettingValue(
-      CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
 
   base::RunLoop loop;
@@ -547,7 +547,7 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
   grant2.reset();
 
   SetContentSettingValueForOrigin(
-      kTestOrigin, CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      kTestOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_ASK);
   grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, /*is_directory=*/false, process_id(), frame_id(),
@@ -582,7 +582,7 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
 TEST_F(ChromeNativeFileSystemPermissionContextTest,
        CanRequestWritePermission_ContentSettingsBlock) {
   SetDefaultContentSettingValue(
-      CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
   bool expected = permission_context()->CanRequestWritePermission(kTestOrigin);
   EXPECT_EQ(false, expected);

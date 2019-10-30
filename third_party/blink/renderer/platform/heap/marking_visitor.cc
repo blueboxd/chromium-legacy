@@ -65,6 +65,70 @@ void MarkingVisitorCommon::RegisterBackingStoreCallback(
   }
 }
 
+void MarkingVisitorCommon::VisitWeak(void* object,
+                                     void* object_weak_ref,
+                                     TraceDescriptor desc,
+                                     WeakCallback callback) {
+  // Filter out already marked values. The write barrier for WeakMember
+  // ensures that any newly set value after this point is kept alive and does
+  // not require the callback.
+  if (desc.base_object_payload != BlinkGC::kNotFullyConstructedObject &&
+      HeapObjectHeader::FromPayload(desc.base_object_payload)
+          ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>())
+    return;
+  RegisterWeakCallback(object_weak_ref, callback);
+}
+
+void MarkingVisitorCommon::VisitBackingStoreStrongly(void* object,
+                                                     void** object_slot,
+                                                     TraceDescriptor desc) {
+  RegisterBackingStoreReference(object_slot);
+  if (!object)
+    return;
+  Visit(object, desc);
+}
+
+// All work is registered through RegisterWeakCallback.
+void MarkingVisitorCommon::VisitBackingStoreWeakly(void* object,
+                                                   void** object_slot,
+                                                   TraceDescriptor strong_desc,
+                                                   TraceDescriptor weak_desc,
+                                                   WeakCallback callback,
+                                                   void* parameter,
+                                                   bool is_ephemeron) {
+  RegisterBackingStoreReference(object_slot);
+  if (!object)
+    return;
+  RegisterWeakCallback(parameter, callback);
+
+  if (weak_desc.callback) {
+    weak_table_worklist_.Push(
+        {weak_desc.base_object_payload, weak_desc.callback});
+  }
+}
+
+bool MarkingVisitorCommon::VisitEphemeronKeyValuePair(
+    void* key,
+    void* value,
+    bool strong_handling,
+    EphemeronTracingCallback key_trace_callback,
+    EphemeronTracingCallback value_trace_callback) {
+  const bool key_is_dead = key_trace_callback(this, key);
+  if (key_is_dead && !strong_handling)
+    return true;
+  return value_trace_callback(this, value);
+}
+
+void MarkingVisitorCommon::VisitBackingStoreOnly(void* object,
+                                                 void** object_slot) {
+  RegisterBackingStoreReference(object_slot);
+  if (!object)
+    return;
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
+  MarkHeaderNoTracing(header);
+  AccountMarkedBytes(header);
+}
+
 // static
 bool MarkingVisitor::WriteBarrierSlow(void* value) {
   if (!value || IsHashTableDeleteValue(value))

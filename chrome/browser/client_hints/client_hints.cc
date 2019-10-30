@@ -39,7 +39,7 @@ void ClientHints::GetAllowedClientHintsFromSource(
     return;
 
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(), &client_hints_rules);
+      ContentSettingsType::CLIENT_HINTS, std::string(), &client_hints_rules);
   client_hints::GetAllowedClientHintsFromSource(url, client_hints_rules,
                                                 client_hints);
 }
@@ -50,7 +50,7 @@ bool ClientHints::IsJavaScriptAllowed(const GURL& url) {
     return false;
 
   return HostContentSettingsMapFactory::GetForProfile(profile)
-             ->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+             ->GetContentSetting(url, url, ContentSettingsType::JAVASCRIPT,
                                  std::string()) == CONTENT_SETTING_ALLOW;
 }
 

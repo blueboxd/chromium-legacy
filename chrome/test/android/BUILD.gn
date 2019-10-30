@@ -111,6 +111,7 @@ android_library("chrome_java_test_support") {
   java_files = [
     "javatests/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteCoordinatorTestUtils.java",
     "javatests/src/org/chromium/chrome/browser/tab/MockTab.java",
+    "javatests/src/org/chromium/chrome/browser/tab/TabTestUtils.java",
     "javatests/src/org/chromium/chrome/test/BottomSheetTestRule.java",
     "javatests/src/org/chromium/chrome/test/ChromeActivityTestRule.java",
     "javatests/src/org/chromium/chrome/test/ChromeBrowserTestRule.java",

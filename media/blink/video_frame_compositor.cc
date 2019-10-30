@@ -216,7 +216,8 @@ void VideoFrameCompositor::PaintSingleFrame(scoped_refptr<VideoFrame> frame,
                                   std::move(frame), repaint_duplicate_frame));
     return;
   }
-  if (ProcessNewFrame(std::move(frame), repaint_duplicate_frame) &&
+  if (ProcessNewFrame(std::move(frame), tick_clock_->NowTicks(),
+                      repaint_duplicate_frame) &&
       IsClientSinkAvailable()) {
     client_->DidReceiveFrame();
   }
@@ -258,7 +259,14 @@ void VideoFrameCompositor::SetOnNewProcessedFrameCallback(
   new_processed_frame_cb_ = std::move(cb);
 }
 
+void VideoFrameCompositor::SetOnFramePresentedCallback(
+    OnNewFramePresentedCB present_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  new_presented_frame_cb_ = std::move(present_cb);
+}
+
 bool VideoFrameCompositor::ProcessNewFrame(scoped_refptr<VideoFrame> frame,
+                                           base::TimeTicks presentation_time,
                                            bool repaint_duplicate_frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -274,7 +282,15 @@ bool VideoFrameCompositor::ProcessNewFrame(scoped_refptr<VideoFrame> frame,
   SetCurrentFrame(std::move(frame));
 
   if (new_processed_frame_cb_)
-    std::move(new_processed_frame_cb_).Run(base::TimeTicks::Now());
+    std::move(new_processed_frame_cb_).Run(tick_clock_->NowTicks());
+
+  if (new_presented_frame_cb_) {
+    std::move(new_presented_frame_cb_)
+        .Run(GetCurrentFrame(), tick_clock_->NowTicks(), presentation_time,
+             presentation_counter_);
+  }
+
+  ++presentation_counter_;
 
   return true;
 }
@@ -327,7 +343,7 @@ bool VideoFrameCompositor::CallRender(base::TimeTicks deadline_min,
 
   const bool new_frame = ProcessNewFrame(
       callback_->Render(deadline_min, deadline_max, background_rendering),
-      false);
+      deadline_min, false);
 
   // We may create a new frame here with background rendering, but the provider
   // has no way of knowing that a new frame had been processed, so keep track of

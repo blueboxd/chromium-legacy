@@ -107,7 +107,7 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
         PermissionManager::Get(
             Profile::FromBrowserContext(web_contents->GetBrowserContext()))
             ->GetPermissionStatus(
-                CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+                ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                 requesting_origin, embedding_origin)
             .content_setting;
 

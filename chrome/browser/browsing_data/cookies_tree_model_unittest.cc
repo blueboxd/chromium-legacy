@@ -1629,7 +1629,7 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
   EXPECT_EQ(1u, origin->children().size());
   EXPECT_TRUE(origin->CanCreateContentException());
   EXPECT_CALL(observer, OnContentSettingsChanged(
-                            content_settings, CONTENT_SETTINGS_TYPE_COOKIES,
+                            content_settings, ContentSettingsType::COOKIES,
                             false, ContentSettingsPattern::FromURL(host),
                             ContentSettingsPattern::Wildcard(), false))
       .Times(2);

@@ -81,7 +81,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
-#include "components/network_hints/renderer/prescient_networking_dispatcher.h"
+#include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/safe_browsing/buildflags.h"
@@ -362,8 +362,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   ChromeExtensionsRendererClient::GetInstance()->RenderThreadStarted();
 #endif
 
-  prescient_networking_dispatcher_.reset(
-      new network_hints::PrescientNetworkingDispatcher());
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   if (!spellcheck_)
     InitSpellCheck();
@@ -788,8 +786,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
     const ContentSettingsType content_type =
         ShouldUseJavaScriptSettingForPlugin(info)
-            ? CONTENT_SETTINGS_TYPE_JAVASCRIPT
-            : CONTENT_SETTINGS_TYPE_PLUGINS;
+            ? ContentSettingsType::JAVASCRIPT
+            : ContentSettingsType::PLUGINS;
 
     if ((status == chrome::mojom::PluginStatus::kUnauthorized ||
          status == chrome::mojom::PluginStatus::kBlocked) &&
@@ -1278,7 +1276,11 @@ bool ChromeContentRendererClient::IsLinkVisited(uint64_t link_hash) {
 
 blink::WebPrescientNetworking*
 ChromeContentRendererClient::GetPrescientNetworking() {
-  return prescient_networking_dispatcher_.get();
+  if (!web_prescient_networking_impl_) {
+    web_prescient_networking_impl_ =
+        std::make_unique<network_hints::WebPrescientNetworkingImpl>();
+  }
+  return web_prescient_networking_impl_.get();
 }
 
 bool ChromeContentRendererClient::IsExternalPepperPlugin(

@@ -57,6 +57,7 @@ class WebAppInstallManager final : public InstallManager,
                                const InstallParams& install_params,
                                WebappInstallSource install_source,
                                OnceInstallCallback callback) override;
+  // For the old ExtensionSyncService-based system only:
   void InstallWebAppFromSync(
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
@@ -68,7 +69,8 @@ class WebAppInstallManager final : public InstallManager,
   void Shutdown() override;
 
   // For the new USS-based system only. SyncInstallDelegate:
-  void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps) override;
+  void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
+                               RepeatingInstallCallback callback) override;
   void UninstallWebAppsAfterSync(
       std::vector<std::unique_ptr<WebApp>> web_apps) override;
 
@@ -92,6 +94,11 @@ class WebAppInstallManager final : public InstallManager,
                              OnceInstallCallback callback,
                              const AppId& app_id,
                              InstallResultCode code);
+  // For the new USS-based system only:
+  void OnWebAppInstalledAfterSync(const AppId& app_in_sync_install_id,
+                                  OnceInstallCallback callback,
+                                  const AppId& installed_app_id,
+                                  InstallResultCode code);
 
   content::WebContents* EnsureWebContentsCreated();
   void OnWebContentsReady(WebAppUrlLoader::Result result);

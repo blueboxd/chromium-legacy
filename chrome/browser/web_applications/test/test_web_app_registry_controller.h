@@ -10,6 +10,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
+#include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -37,7 +38,8 @@ class TestWebAppRegistryController : public SyncInstallDelegate {
   void UnregisterAll();
 
   // SyncInstallDelegate:
-  void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps) override;
+  void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
+                               RepeatingInstallCallback callback) override;
   void UninstallWebAppsAfterSync(
       std::vector<std::unique_ptr<WebApp>> web_apps) override;
 

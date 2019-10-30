@@ -173,15 +173,15 @@ TEST_F(PermissionRequestNotificationAndroidTest, Closing_CallsDelegateClosing) {
 
 TEST_F(PermissionRequestNotificationAndroidTest, ShouldShowAsNotification) {
   EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+      ContentSettingsType::NOTIFICATIONS));
   EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      ContentSettingsType::GEOLOCATION));
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kQuietNotificationPrompts);
 
   EXPECT_TRUE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+      ContentSettingsType::NOTIFICATIONS));
   EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION));
+      ContentSettingsType::GEOLOCATION));
 }

@@ -464,7 +464,7 @@ TEST_F(NotificationPermissionContextTest, GetNotificationsSettings) {
 
   ContentSettingsForOneType settings;
   HostContentSettingsMapFactory::GetForProfile(profile())
-      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      ->GetSettingsForOneType(ContentSettingsType::NOTIFICATIONS,
                               content_settings::ResourceIdentifier(),
                               &settings);
 

@@ -238,10 +238,31 @@ void WebGPUImplementation::OnGpuControlReturnData(
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                "WebGPUImplementation::OnGpuControlReturnData", "bytes",
                data.size());
-  if (!wire_client_->HandleCommands(
-      reinterpret_cast<const char*>(data.data()), data.size())) {
-    // TODO(enga): Lose the context.
+
+  if (data.size() <= sizeof(cmds::DawnReturnDataHeader)) {
+    // TODO(jiawei.shao@intel.com): Lose the context.
     NOTREACHED();
+  }
+  const cmds::DawnReturnDataHeader& dawnReturnDataHeader =
+      *reinterpret_cast<const cmds::DawnReturnDataHeader*>(data.data());
+
+  const uint8_t* dawnReturnDataBody =
+      data.data() + sizeof(cmds::DawnReturnDataHeader);
+  size_t dawnReturnDataSize = data.size() - sizeof(cmds::DawnReturnDataHeader);
+
+  switch (dawnReturnDataHeader.return_data_type) {
+    case DawnReturnDataType::kDawnCommands:
+      if (!wire_client_->HandleCommands(
+              reinterpret_cast<const char*>(dawnReturnDataBody),
+              dawnReturnDataSize)) {
+        // TODO(enga): Lose the context.
+        NOTREACHED();
+      }
+      break;
+    default:
+      // TODO(jiawei.shao@intel.com): Lose the context.
+      NOTREACHED();
+      break;
   }
 #endif
 }

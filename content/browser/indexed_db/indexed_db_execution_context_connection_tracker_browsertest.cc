@@ -102,6 +102,13 @@ class IndexedDBExecutionContextConnectionTrackerBrowserTest
     // on Android Kitkat or older systems.
     if (!original_client_)
       return false;
+
+    // TODO(https://crbug.com/1011765, https://crbug.com/1019659):
+    // Navigation fails on Android Kit Kat.
+    if (base::android::BuildInfo::GetInstance()->sdk_int() <=
+        base::android::SDK_VERSION_KITKAT) {
+      return false;
+    }
 #endif  // defined(OS_ANDROID)
     EXPECT_TRUE(NavigateToURL(shell(), GetTestURL("a.com")));
     return true;

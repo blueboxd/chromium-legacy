@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                                                    &opened_window));
   EXPECT_TRUE(opened_window);
   EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
-                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+                   ->IsContentBlocked(ContentSettingsType::POPUPS));
 
   // Navigate again to trigger histogram logging. Make sure the navigation
   // happens in the original WebContents.
@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
   tester.ExpectTotalCount(kSubresourceFilterActionsHistogram, 0);
   // Make sure the popup UI was shown.
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+                  ->IsContentBlocked(ContentSettingsType::POPUPS));
 
   // Block again.
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
@@ -223,7 +223,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
   EXPECT_TRUE(opened_window);
   // Popup UI should not be shown.
   EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
-                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+                   ->IsContentBlocked(ContentSettingsType::POPUPS));
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
@@ -288,8 +288,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   settings_map->SetContentSettingDefaultScope(
-      a_url, a_url, ContentSettingsType::CONTENT_SETTINGS_TYPE_POPUPS,
-      std::string(), CONTENT_SETTING_ALLOW);
+      a_url, a_url, ContentSettingsType::POPUPS, std::string(),
+      CONTENT_SETTING_ALLOW);
 
   // Navigate to a_url, should not trigger the popup blocker.
   ScopedLoggingObserver log_observer;
@@ -321,8 +321,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   settings_map->SetContentSettingDefaultScope(
-      a_url, a_url, ContentSettingsType::CONTENT_SETTINGS_TYPE_POPUPS,
-      std::string(), CONTENT_SETTING_ALLOW);
+      a_url, a_url, ContentSettingsType::POPUPS, std::string(),
+      CONTENT_SETTING_ALLOW);
 
   // Navigate to a_url, should not trigger the popup blocker.
   ScopedLoggingObserver log_observer;
@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
   tester.ExpectTotalCount(kSubresourceFilterActionsHistogram, 0);
 
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+                  ->IsContentBlocked(ContentSettingsType::POPUPS));
   const bool enable_adblock_on_abusive_sites = GetParam();
   EXPECT_EQ(enable_adblock_on_abusive_sites, AreDisallowedRequestsBlocked());
 
@@ -376,7 +376,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
 
   // Popup UI should not be shown.
   EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
-                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+                   ->IsContentBlocked(ContentSettingsType::POPUPS));
   EXPECT_FALSE(AreDisallowedRequestsBlocked());
 }
 
@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
                                                    &sent_open));
   EXPECT_TRUE(sent_open);
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+                  ->IsContentBlocked(ContentSettingsType::POPUPS));
   const bool enable_adblock_on_abusive_sites = GetParam();
   EXPECT_EQ(enable_adblock_on_abusive_sites, AreDisallowedRequestsBlocked());
 }
@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
-                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+                   ->IsContentBlocked(ContentSettingsType::POPUPS));
   const bool enable_adblock_on_abusive_sites = GetParam();
   EXPECT_EQ(enable_adblock_on_abusive_sites, AreDisallowedRequestsBlocked());
 }

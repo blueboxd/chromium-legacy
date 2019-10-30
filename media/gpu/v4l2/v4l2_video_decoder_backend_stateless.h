@@ -117,6 +117,8 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   // Setup the format of V4L2 output buffer, and allocate new buffer set.
   bool ChangeResolution();
 
+  // Check whether request api is supported or not.
+  bool CheckRequestAPISupport();
   // Allocate necessary request buffers is request api is supported.
   bool AllocateRequests();
 
@@ -156,6 +158,8 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   // Callbacks of EOS buffer passed from Decode().
   VideoDecoder::DecodeCB flush_cb_;
 
+  // Set to true during Initialize() if the codec driver supports request API.
+  bool supports_requests_ = false;
   // FIFO queue of requests, only used if supports_requests_ is true.
   base::queue<base::ScopedFD> requests_;
   // Stores the media file descriptor, only used if supports_requests_ is true.

@@ -25,6 +25,7 @@ class BrowserViewLayoutDelegate {
   virtual int GetThemeBackgroundXInset() const = 0;
   virtual bool IsToolbarVisible() const = 0;
   virtual bool IsBookmarkBarVisible() const = 0;
+  virtual bool IsContentsSeparatorEnabled() const = 0;
   virtual bool DownloadShelfNeedsLayout() const = 0;
   virtual ExclusiveAccessBubbleViews* GetExclusiveAccessBubble() const = 0;
   virtual bool IsTopControlsSlideBehaviorEnabled() const = 0;

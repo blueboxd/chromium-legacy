@@ -46,7 +46,6 @@ class ChromeRenderThreadObserver;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 class ChromePDFPrintClient;
 #endif
-class PrescientNetworkingDispatcher;
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
 #endif
@@ -66,7 +65,7 @@ struct WebPluginInfo;
 }  // namespace content
 
 namespace network_hints {
-class PrescientNetworkingDispatcher;
+class WebPrescientNetworkingImpl;
 }
 
 namespace extensions {
@@ -275,8 +274,8 @@ class ChromeContentRendererClient
   std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;
   std::unique_ptr<chrome::WebRtcLoggingAgentImpl> webrtc_logging_agent_impl_;
 
-  std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
-      prescient_networking_dispatcher_;
+  std::unique_ptr<network_hints::WebPrescientNetworkingImpl>
+      web_prescient_networking_impl_;
 
   ChromeKeySystemsProvider key_systems_provider_;
 

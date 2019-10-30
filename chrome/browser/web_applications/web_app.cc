@@ -12,6 +12,15 @@
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/color_utils.h"
 
+namespace {
+
+std::string ColorToString(base::Optional<SkColor> color) {
+  return color.has_value() ? color_utils::SkColorToRgbaString(color.value())
+                           : "none";
+}
+
+}  // namespace
+
 namespace web_app {
 
 WebApp::WebApp(const AppId& app_id)
@@ -108,15 +117,17 @@ WebApp::SyncData::SyncData(const SyncData& sync_data) = default;
 
 WebApp::SyncData& WebApp::SyncData::operator=(SyncData&& sync_data) = default;
 
+std::ostream& operator<<(std::ostream& out, const WebApp::IconInfo& icon_info) {
+  return out << "size_in_px: " << icon_info.size_in_px
+             << " url: " << icon_info.url;
+}
+
+std::ostream& operator<<(std::ostream& out, const WebApp::SyncData& sync_data) {
+  return out << "theme_color: " << ColorToString(sync_data.theme_color)
+             << " name: " << sync_data.name;
+}
+
 std::ostream& operator<<(std::ostream& out, const WebApp& app) {
-  const std::string theme_color =
-      app.theme_color_.has_value()
-          ? color_utils::SkColorToRgbaString(app.theme_color_.value())
-          : "none";
-  const std::string sync_theme_color =
-      app.sync_data_.theme_color.has_value()
-          ? color_utils::SkColorToRgbaString(app.sync_data_.theme_color.value())
-          : "none";
   const std::string display_mode =
       blink::DisplayModeToString(app.display_mode_);
   const std::string user_display_mode =
@@ -124,19 +135,22 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
   const bool is_locally_installed = app.is_locally_installed_;
   const bool is_in_sync_install = app.is_in_sync_install_;
 
-  return out << "app_id: " << app.app_id_ << std::endl
-             << "  name: " << app.name_ << std::endl
-             << "  launch_url: " << app.launch_url_ << std::endl
-             << "  scope: " << app.scope_ << std::endl
-             << "  theme_color: " << theme_color << std::endl
-             << "  display_mode: " << display_mode << std::endl
-             << "  user_display_mode: " << user_display_mode << std::endl
-             << "  sources: " << app.sources_.to_string() << std::endl
-             << "  is_locally_installed: " << is_locally_installed << std::endl
-             << "  is_in_sync_install: " << is_in_sync_install << std::endl
-             << "  sync_data.name: " << app.sync_data_.name << std::endl
-             << "  sync_data.theme_color: " << sync_theme_color << std::endl
-             << "  description: " << app.description_;
+  out << "app_id: " << app.app_id_ << std::endl
+      << "  name: " << app.name_ << std::endl
+      << "  launch_url: " << app.launch_url_ << std::endl
+      << "  scope: " << app.scope_ << std::endl
+      << "  theme_color: " << ColorToString(app.theme_color_) << std::endl
+      << "  display_mode: " << display_mode << std::endl
+      << "  user_display_mode: " << user_display_mode << std::endl
+      << "  sources: " << app.sources_.to_string() << std::endl
+      << "  is_locally_installed: " << is_locally_installed << std::endl
+      << "  is_in_sync_install: " << is_in_sync_install << std::endl
+      << "  sync_data: " << app.sync_data_ << std::endl
+      << "  description: " << app.description_ << std::endl;
+  for (auto icon : app.icons_)
+    out << "  icon: " << icon << std::endl;
+
+  return out;
 }
 
 bool operator==(const WebApp::IconInfo& icon_info1,
@@ -149,6 +163,11 @@ bool operator==(const WebApp::SyncData& sync_data1,
                 const WebApp::SyncData& sync_data2) {
   return std::tie(sync_data1.name, sync_data1.theme_color) ==
          std::tie(sync_data2.name, sync_data2.theme_color);
+}
+
+bool operator!=(const WebApp::SyncData& sync_data1,
+                const WebApp::SyncData& sync_data2) {
+  return !(sync_data1 == sync_data2);
 }
 
 bool operator==(const WebApp& app1, const WebApp& app2) {

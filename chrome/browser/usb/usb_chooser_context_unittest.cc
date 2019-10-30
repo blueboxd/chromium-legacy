@@ -110,8 +110,8 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
 
   store->GrantDevicePermission(origin, origin, *device_info);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
@@ -130,8 +130,8 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
 
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
   EXPECT_CALL(mock_permission_observer_, OnPermissionRevoked(origin, origin));
 
   store->RevokeObjectPermission(origin, origin, objects[0]->value);
@@ -163,8 +163,8 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
 
   store->GrantDevicePermission(origin, origin, *device_info);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
@@ -185,8 +185,8 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
 
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
   EXPECT_CALL(mock_permission_observer_, OnPermissionRevoked(origin, origin));
 
   store->RevokeObjectPermission(origin, origin, objects[0]->value);
@@ -209,8 +209,8 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithPermission) {
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
 
   store->GrantDevicePermission(origin, origin, *device_info);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
@@ -255,8 +255,8 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
 
   store->GrantDevicePermission(origin, origin, *device_info);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info));
@@ -271,8 +271,8 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
 
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
   EXPECT_CALL(mock_device_observer_, OnDeviceRemoved(_));
   device_manager_.RemoveDevice(device_info->guid);
   base::RunLoop().RunUntilIdle();
@@ -307,8 +307,8 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
 
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
 
   store->GrantDevicePermission(origin, origin, *device_info_1);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info_1));
@@ -317,8 +317,8 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
 
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
 
   incognito_store->GrantDevicePermission(origin, origin, *device_info_2);
   EXPECT_TRUE(store->HasDevicePermission(origin, origin, *device_info_1));
@@ -360,14 +360,14 @@ TEST_F(UsbChooserContextTest, UsbGuardPermission) {
 
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetContentSettingDefaultScope(kFooUrl, kFooUrl,
-                                     CONTENT_SETTINGS_TYPE_USB_GUARD,
+                                     ContentSettingsType::USB_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
   auto* store = GetChooserContext(profile());
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA))
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA))
       .Times(4);
   store->GrantDevicePermission(kFooOrigin, kFooOrigin, *device_info);
   store->GrantDevicePermission(kFooOrigin, kFooOrigin, *ephemeral_device_info);
@@ -570,10 +570,10 @@ TEST_F(UsbChooserContextTest,
 
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetContentSettingDefaultScope(kProductVendorUrl, kProductVendorUrl,
-                                     CONTENT_SETTINGS_TYPE_USB_GUARD,
+                                     ContentSettingsType::USB_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
   map->SetContentSettingDefaultScope(kGadgetUrl, kCoolUrl,
-                                     CONTENT_SETTINGS_TYPE_USB_GUARD,
+                                     ContentSettingsType::USB_GUARD,
                                      std::string(), CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(store->HasDevicePermission(
       kProductVendorOrigin, kProductVendorOrigin, *specific_device_info));
@@ -934,8 +934,8 @@ TEST_F(UsbChooserContextTest,
 
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA))
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA))
       .Times(2);
   store->GrantDevicePermission(kGoogleOrigin, kGoogleOrigin,
                                *persistent_device_info);
@@ -1010,8 +1010,8 @@ TEST_F(UsbChooserContextTest,
 
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
   const auto kProductVendorOrigin = url::Origin::Create(kProductVendorUrl);
   store->GrantDevicePermission(kProductVendorOrigin, kProductVendorOrigin,
                                *persistent_device_info);
@@ -1068,8 +1068,8 @@ TEST_F(UsbChooserContextTest,
 
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
   const auto kVendorOrigin = url::Origin::Create(kVendorUrl);
   store->GrantDevicePermission(kVendorOrigin, kVendorOrigin,
                                *persistent_device_info);
@@ -1123,8 +1123,8 @@ TEST_F(UsbChooserContextTest,
 
   EXPECT_CALL(
       mock_permission_observer_,
-      OnChooserObjectPermissionChanged(CONTENT_SETTINGS_TYPE_USB_GUARD,
-                                       CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
+      OnChooserObjectPermissionChanged(ContentSettingsType::USB_GUARD,
+                                       ContentSettingsType::USB_CHOOSER_DATA));
   const auto kAnyDeviceOrigin = url::Origin::Create(kAnyDeviceUrl);
   store->GrantDevicePermission(kAnyDeviceOrigin, kAnyDeviceOrigin,
                                *persistent_device_info);

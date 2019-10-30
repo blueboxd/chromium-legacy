@@ -1218,15 +1218,15 @@ void VrShell::SetPermissionInfo(const PermissionInfoList& permission_info_list,
   // page-specific potentiality, so we will not check for this, either.
   for (const auto& info : permission_info_list) {
     switch (info.type) {
-      case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      case ContentSettingsType::GEOLOCATION:
         potential_capturing_.location_access_enabled =
             info.setting == CONTENT_SETTING_ALLOW;
         break;
-      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+      case ContentSettingsType::MEDIASTREAM_MIC:
         potential_capturing_.audio_capture_enabled =
             info.setting == CONTENT_SETTING_ALLOW;
         break;
-      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      case ContentSettingsType::MEDIASTREAM_CAMERA:
         potential_capturing_.video_capture_enabled =
             info.setting == CONTENT_SETTING_ALLOW;
         break;

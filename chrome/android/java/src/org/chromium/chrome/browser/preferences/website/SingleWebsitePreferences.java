@@ -454,8 +454,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
             }
 
             String overrideSummary;
-            if (isPermissionControlledByDSE(
-                        ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS)) {
+            if (isPermissionControlledByDSE(ContentSettingsType.NOTIFICATIONS)) {
                 overrideSummary = getString(value != null && value == ContentSettingValues.ALLOW
                                 ? R.string.website_settings_permissions_allow_dse
                                 : R.string.website_settings_permissions_block_dse);
@@ -483,8 +482,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
             });
         } else {
             setUpListPreference(preference, value);
-            if (isPermissionControlledByDSE(ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
-                    && value != null) {
+            if (isPermissionControlledByDSE(ContentSettingsType.NOTIFICATIONS) && value != null) {
                 updatePreferenceForDSESetting(preference);
             }
         }
@@ -747,8 +745,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
         @Nullable
         Integer permission = mSite.getPermission(PermissionInfo.Type.GEOLOCATION);
         setUpListPreference(preference, permission);
-        if (isPermissionControlledByDSE(ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION)
-                && permission != null) {
+        if (isPermissionControlledByDSE(ContentSettingsType.GEOLOCATION) && permission != null) {
             updatePreferenceForDSESetting(preference);
         }
     }
@@ -761,8 +758,8 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
         // In order to always show the sound permission, set it up with the default value if it
         // doesn't have a current value.
         if (currentValue == null) {
-            currentValue = PrefServiceBridge.getInstance().isCategoryEnabled(
-                                   ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND)
+            currentValue =
+                    PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.SOUND)
                     ? ContentSettingValues.ALLOW
                     : ContentSettingValues.BLOCK;
         }
@@ -801,8 +798,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
         // However, if the blocking is activated, we still want to show the permission, even if it
         // is in the default state.
         if (permission == null) {
-            permission = PrefServiceBridge.getInstance().isCategoryEnabled(
-                                 ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS)
+            permission = PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.ADS)
                     ? ContentSettingValues.ALLOW
                     : ContentSettingValues.BLOCK;
         }

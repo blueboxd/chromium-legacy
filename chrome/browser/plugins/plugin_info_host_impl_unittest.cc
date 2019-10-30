@@ -260,7 +260,7 @@ TEST_F(PluginInfoHostImplTest, PreferHtmlOverPlugins) {
 
   // Now enable plugins.
   host_content_settings_map()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+      ContentSettingsType::PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
                                 security_status, content::kFlashPluginName,
@@ -285,7 +285,7 @@ TEST_F(PluginInfoHostImplTest, RunAllFlashInAllowMode) {
   ASSERT_THAT(status, Eq(chrome::mojom::PluginStatus::kAllowed));
 
   host_content_settings_map()->SetContentSettingDefaultScope(
-      main_frame_origin.GetURL(), GURL(), CONTENT_SETTINGS_TYPE_PLUGINS,
+      main_frame_origin.GetURL(), GURL(), ContentSettingsType::PLUGINS,
       std::string(), CONTENT_SETTING_ALLOW);
 
   ASSERT_FALSE(
@@ -311,7 +311,7 @@ TEST_F(PluginInfoHostImplTest, RunAllFlashInAllowMode) {
 
 TEST_F(PluginInfoHostImplTest, PluginsOnlyAllowedInWhitelistedSchemes) {
   host_content_settings_map()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+      ContentSettingsType::PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   VerifyPluginContentSetting(GURL("http://example.com"), "foo",
                              CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, true,
@@ -341,17 +341,17 @@ TEST_F(PluginInfoHostImplTest, GetPluginContentSetting) {
 
   // Set plugins to Plugin Power Saver on example.com and subdomains.
   GURL host("http://example.com/");
-  map->SetContentSettingDefaultScope(
-      host, GURL(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
-      CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  map->SetContentSettingDefaultScope(host, GURL(), ContentSettingsType::PLUGINS,
+                                     std::string(),
+                                     CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   GURL unmatched_host("https://www.google.com");
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
       map->GetContentSetting(unmatched_host, unmatched_host,
-                             CONTENT_SETTINGS_TYPE_PLUGINS, std::string()));
+                             ContentSettingsType::PLUGINS, std::string()));
   EXPECT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
-            map->GetContentSetting(host, host, CONTENT_SETTINGS_TYPE_PLUGINS,
+            map->GetContentSetting(host, host, ContentSettingsType::PLUGINS,
                                    std::string()));
 
   VerifyPluginContentSetting(host, std::string(),

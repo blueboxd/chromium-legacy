@@ -18,6 +18,7 @@
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/predictors/network_hints_handler_impl.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/content_capture/browser/content_capture_receiver_manager.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -263,6 +264,13 @@ void ChromeContentBrowserClient::BindGpuHostReceiver(
 void ChromeContentBrowserClient::BindHostReceiverForRenderer(
     content::RenderProcessHost* render_process_host,
     mojo::GenericPendingReceiver receiver) {
+  if (auto host_receiver =
+          receiver.As<network_hints::mojom::NetworkHintsHandler>()) {
+    predictors::NetworkHintsHandlerImpl::Create(render_process_host->GetID(),
+                                                std::move(host_receiver));
+    return;
+  }
+
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   if (auto host_receiver = receiver.As<spellcheck::mojom::SpellCheckHost>()) {
     SpellCheckHostChromeImpl::Create(render_process_host->GetID(),
@@ -271,10 +279,10 @@ void ChromeContentBrowserClient::BindHostReceiverForRenderer(
   }
 
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
-  if (auto panel_host_receiver =
+  if (auto host_receiver =
           receiver.As<spellcheck::mojom::SpellCheckPanelHost>()) {
     SpellCheckPanelHostImpl::Create(render_process_host->GetID(),
-                                    std::move(panel_host_receiver));
+                                    std::move(host_receiver));
     return;
   }
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)

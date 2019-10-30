@@ -88,7 +88,7 @@ class PermissionParamsListBuilder {
             LocationUtils locationUtils = LocationUtils.getInstance();
             Intent intentOverride = null;
             String[] androidPermissions = null;
-            if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
+            if (permission.type == ContentSettingsType.GEOLOCATION
                     && !locationUtils.isSystemLocationSettingEnabled()) {
                 permissionParams.warningTextResource = R.string.page_info_android_location_blocked;
                 intentOverride = locationUtils.getSystemLocationSettingsIntent();
@@ -112,7 +112,7 @@ class PermissionParamsListBuilder {
         }
 
         // The ads permission requires an additional static subtitle.
-        if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS) {
+        if (permission.type == ContentSettingsType.ADS) {
             permissionParams.subtitleTextResource = R.string.page_info_permission_ads_subtitle;
         }
 
@@ -126,7 +126,7 @@ class PermissionParamsListBuilder {
         String status_text = "";
 
         String managedBy = null;
-        if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+        if (permission.type == ContentSettingsType.NOTIFICATIONS) {
             TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
             managedBy = manager.getDelegateAppName(new Origin(mFullUrl));
         }
@@ -157,7 +157,7 @@ class PermissionParamsListBuilder {
     }
 
     private boolean shouldShowNotificationsDisabledWarning(PageInfoPermissionEntry permission) {
-        return permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS
+        return permission.type == ContentSettingsType.NOTIFICATIONS
                 && !NotificationManagerCompat.from(mContext).areNotificationsEnabled()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.APP_NOTIFICATION_STATUS_MESSAGING);
     }

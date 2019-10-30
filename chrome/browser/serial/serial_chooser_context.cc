@@ -54,8 +54,8 @@ base::Value PortInfoToValue(const device::mojom::SerialPortInfo& port) {
 
 SerialChooserContext::SerialChooserContext(Profile* profile)
     : ChooserContextBase(profile,
-                         CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
-                         CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA),
+                         ContentSettingsType::SERIAL_GUARD,
+                         ContentSettingsType::SERIAL_CHOOSER_DATA),
       is_incognito_(profile->IsOffTheRecord()) {}
 
 SerialChooserContext::~SerialChooserContext() = default;

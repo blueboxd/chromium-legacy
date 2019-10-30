@@ -91,20 +91,20 @@ public class WebsitePermissionsFetcher {
         // Midi sysex access permission is per-origin and per-embedder.
         queue.add(new PermissionInfoFetcher(PermissionInfo.Type.MIDI));
         // Cookies are stored per-host.
-        queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES));
+        queue.add(new ExceptionInfoFetcher(ContentSettingsType.COOKIES));
         // Local storage info is per-origin.
         queue.add(new LocalStorageInfoFetcher());
         // Website storage is per-host.
         queue.add(new WebStorageInfoFetcher());
         // Popup exceptions are host-based patterns (unless we start
         // synchronizing popup exceptions with desktop Chrome).
-        queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS));
+        queue.add(new ExceptionInfoFetcher(ContentSettingsType.POPUPS));
         // Ads exceptions are host-based.
-        queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS));
+        queue.add(new ExceptionInfoFetcher(ContentSettingsType.ADS));
         // JavaScript exceptions are host-based patterns.
-        queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+        queue.add(new ExceptionInfoFetcher(ContentSettingsType.JAVASCRIPT));
         // Sound exceptions are host-based patterns.
-        queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND));
+        queue.add(new ExceptionInfoFetcher(ContentSettingsType.SOUND));
         // Protected media identifier permission is per-origin and per-embedder.
         queue.add(new PermissionInfoFetcher(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER));
         // Notification permission is per-origin.
@@ -114,16 +114,13 @@ public class WebsitePermissionsFetcher {
         // Micropohone capture permission is per-origin and per-embedder.
         queue.add(new PermissionInfoFetcher(PermissionInfo.Type.MICROPHONE));
         // Background sync permission is per-origin.
-        queue.add(new ExceptionInfoFetcher(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC));
+        queue.add(new ExceptionInfoFetcher(ContentSettingsType.BACKGROUND_SYNC));
         // Automatic Downloads permission is per-origin.
-        queue.add(new ExceptionInfoFetcher(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS));
+        queue.add(new ExceptionInfoFetcher(ContentSettingsType.AUTOMATIC_DOWNLOADS));
         // Autoplay permission is per-origin.
-        queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY));
+        queue.add(new ExceptionInfoFetcher(ContentSettingsType.AUTOPLAY));
         // USB device permission is per-origin and per-embedder.
-        queue.add(new ChooserExceptionInfoFetcher(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD));
+        queue.add(new ChooserExceptionInfoFetcher(ContentSettingsType.USB_GUARD));
         // Clipboard info is per-origin.
         queue.add(new PermissionInfoFetcher(PermissionInfo.Type.CLIPBOARD));
         // Sensors permission is per-origin.
@@ -131,8 +128,7 @@ public class WebsitePermissionsFetcher {
         CommandLine commandLine = CommandLine.getInstance();
         if (commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
             // Bluetooth scanning permission is per-origin.
-            queue.add(new ExceptionInfoFetcher(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING));
+            queue.add(new ExceptionInfoFetcher(ContentSettingsType.BLUETOOTH_SCANNING));
         }
 
         queue.add(new PermissionsAvailableCallbackRunner(callback));
@@ -163,7 +159,7 @@ public class WebsitePermissionsFetcher {
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.GEOLOCATION));
         } else if (category.showSites(SiteSettingsCategory.Type.COOKIES)) {
             // Cookies exceptions are patterns.
-            queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES));
+            queue.add(new ExceptionInfoFetcher(ContentSettingsType.COOKIES));
         } else if (category.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
             // Local storage info is per-origin.
             queue.add(new LocalStorageInfoFetcher());
@@ -178,38 +174,34 @@ public class WebsitePermissionsFetcher {
         } else if (category.showSites(SiteSettingsCategory.Type.POPUPS)) {
             // Popup exceptions are host-based patterns (unless we start
             // synchronizing popup exceptions with desktop Chrome.)
-            queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS));
+            queue.add(new ExceptionInfoFetcher(ContentSettingsType.POPUPS));
         } else if (category.showSites(SiteSettingsCategory.Type.ADS)) {
             // Ads exceptions are host-based.
-            queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS));
+            queue.add(new ExceptionInfoFetcher(ContentSettingsType.ADS));
         } else if (category.showSites(SiteSettingsCategory.Type.JAVASCRIPT)) {
             // JavaScript exceptions are host-based patterns.
-            queue.add(
-                    new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+            queue.add(new ExceptionInfoFetcher(ContentSettingsType.JAVASCRIPT));
         } else if (category.showSites(SiteSettingsCategory.Type.SOUND)) {
             // Sound exceptions are host-based patterns.
-            queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND));
+            queue.add(new ExceptionInfoFetcher(ContentSettingsType.SOUND));
         } else if (category.showSites(SiteSettingsCategory.Type.NOTIFICATIONS)) {
             // Push notification permission is per-origin.
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.NOTIFICATION));
         } else if (category.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)) {
             // Background sync info is per-origin.
-            queue.add(new ExceptionInfoFetcher(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC));
+            queue.add(new ExceptionInfoFetcher(ContentSettingsType.BACKGROUND_SYNC));
         } else if (category.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)) {
             // Automatic downloads info is per-origin.
-            queue.add(new ExceptionInfoFetcher(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS));
+            queue.add(new ExceptionInfoFetcher(ContentSettingsType.AUTOMATIC_DOWNLOADS));
         } else if (category.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
             // Protected media identifier permission is per-origin and per-embedder.
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER));
         } else if (category.showSites(SiteSettingsCategory.Type.AUTOPLAY)) {
             // Autoplay permission is per-origin.
-            queue.add(new ExceptionInfoFetcher(ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY));
+            queue.add(new ExceptionInfoFetcher(ContentSettingsType.AUTOPLAY));
         } else if (category.showSites(SiteSettingsCategory.Type.USB)) {
             // USB device permission is per-origin.
-            queue.add(new ChooserExceptionInfoFetcher(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD));
+            queue.add(new ChooserExceptionInfoFetcher(ContentSettingsType.USB_GUARD));
         } else if (category.showSites(SiteSettingsCategory.Type.CLIPBOARD)) {
             // Clipboard permission is per-origin.
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.CLIPBOARD));
@@ -220,8 +212,7 @@ public class WebsitePermissionsFetcher {
             CommandLine commandLine = CommandLine.getInstance();
             if (commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
                 // Bluetooth scanning permission is per-origin.
-                queue.add(new ExceptionInfoFetcher(
-                        ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING));
+                queue.add(new ExceptionInfoFetcher(ContentSettingsType.BLUETOOTH_SCANNING));
             }
         }
         queue.add(new PermissionsAvailableCallbackRunner(callback));

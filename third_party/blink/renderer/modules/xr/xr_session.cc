@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_world_tracking_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_world_tracking_state_init.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
@@ -464,13 +466,13 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
   pose_ptr->orientation =
       gfx::Quaternion(-decomposed.quaternion_x, -decomposed.quaternion_y,
                       -decomposed.quaternion_z, decomposed.quaternion_w);
-  pose_ptr->position = blink::WebFloatPoint3D(
+  pose_ptr->position = blink::FloatPoint3D(
       decomposed.translate_x, decomposed.translate_y, decomposed.translate_z);
 
   DVLOG(3) << __func__
            << ": pose_ptr->orientation = " << pose_ptr->orientation->ToString()
-           << ", pose_ptr->position = [" << pose_ptr->position->x << ", "
-           << pose_ptr->position->y << ", " << pose_ptr->position->z << "]";
+           << ", pose_ptr->position = [" << pose_ptr->position->X() << ", "
+           << pose_ptr->position->Y() << ", " << pose_ptr->position->Z() << "]";
 
   if (plane) {
     xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
@@ -549,8 +551,8 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
 
   device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
 
-  ray_mojo->origin = WebFloatPoint3D(ray->origin()->x(), ray->origin()->y(),
-                                     ray->origin()->z());
+  ray_mojo->origin =
+      FloatPoint3D(ray->origin()->x(), ray->origin()->y(), ray->origin()->z());
 
   ray_mojo->direction = {ray->direction()->x(), ray->direction()->y(),
                          ray->direction()->z()};
@@ -609,7 +611,7 @@ ScriptPromise XRSession::requestHitTestSource(
 
   device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
 
-  ray_mojo->origin = WebFloatPoint3D(origin_from_ray.MapPoint({0, 0, 0}));
+  ray_mojo->origin = FloatPoint3D(origin_from_ray.MapPoint({0, 0, 0}));
 
   // Zero out the translation of origin_from_ray matrix to correctly map a 3D
   // vector.

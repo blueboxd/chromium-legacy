@@ -77,7 +77,7 @@ class MockContentSettingsManagerImpl
  private:
   int allow_storage_access_count_ = 0;
   int on_content_blocked_count_ = 0;
-  ContentSettingsType on_content_blocked_type_ = CONTENT_SETTINGS_TYPE_DEFAULT;
+  ContentSettingsType on_content_blocked_type_ = ContentSettingsType::DEFAULT;
 };
 
 class MockContentSettingsAgentImpl : public ContentSettingsAgentImpl {
@@ -167,14 +167,14 @@ class ContentSettingsAgentImplBrowserTest : public ChromeRenderViewTest {
 TEST_F(ContentSettingsAgentImplBrowserTest, DidBlockContentType) {
   MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame(),
                                           registry_.get());
-  mock_agent.DidBlockContentType(CONTENT_SETTINGS_TYPE_COOKIES);
+  mock_agent.DidBlockContentType(ContentSettingsType::COOKIES);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_agent.mock_manager()->on_content_blocked_count());
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_COOKIES,
+  EXPECT_EQ(ContentSettingsType::COOKIES,
             mock_agent.mock_manager()->on_content_blocked_type());
 
   // Blocking the same content type a second time shouldn't send a notification.
-  mock_agent.DidBlockContentType(CONTENT_SETTINGS_TYPE_COOKIES);
+  mock_agent.DidBlockContentType(ContentSettingsType::COOKIES);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_agent.mock_manager()->on_content_blocked_count());
 }
@@ -307,7 +307,7 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ImagesBlockedByDefault) {
   EXPECT_FALSE(agent->AllowImage(true, mock_agent.image_url()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_agent.mock_manager()->on_content_blocked_count());
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_IMAGES,
+  EXPECT_EQ(ContentSettingsType::IMAGES,
             mock_agent.mock_manager()->on_content_blocked_type());
 
   // Create an exception which allows the image.
@@ -361,7 +361,7 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ImagesAllowedByDefault) {
   EXPECT_FALSE(agent->AllowImage(true, mock_agent.image_url()));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_agent.mock_manager()->on_content_blocked_count());
-  EXPECT_EQ(CONTENT_SETTINGS_TYPE_IMAGES,
+  EXPECT_EQ(ContentSettingsType::IMAGES,
             mock_agent.mock_manager()->on_content_blocked_type());
 }
 

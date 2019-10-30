@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -963,27 +964,25 @@ static std::pair<LayoutUnit, LayoutUnit> SelectionTopAndBottom(
                                  : nullptr;
   if (fragmentainer) {
     // Step 1: Find the line box containing |layout_replaced|.
-    const NGPaintFragment* inline_fragment =
-        *NGPaintFragment::InlineFragmentsFor(&layout_replaced).begin();
-    if (!inline_fragment)
+    NGInlineCursor line_box;
+    line_box.MoveTo(layout_replaced);
+    if (!line_box)
       return fallback;
-    const NGPaintFragment* line_box_container =
-        inline_fragment->ContainerLineBox();
-    if (!line_box_container)
+    line_box.MoveToContainingLine();
+    if (!line_box)
       return fallback;
 
     // Step 2: Return the logical top and bottom of the line box.
     // TODO(layout-dev): Use selection top & bottom instead of line's, or decide
     // if we still want to distinguish line and selection heights in NG.
-    const ComputedStyle& line_style = line_box_container->Style();
+    const ComputedStyle& line_style = line_box.CurrentStyle();
     const WritingMode writing_mode = line_style.GetWritingMode();
     const TextDirection text_direction = line_style.Direction();
-    const PhysicalOffset line_box_offset =
-        line_box_container->InlineOffsetToContainerBox();
-    const PhysicalSize line_box_size = line_box_container->Size();
+    const PhysicalOffset line_box_offset = line_box.CurrentOffset();
+    const PhysicalSize line_box_size = line_box.CurrentSize();
     const LogicalOffset logical_offset = line_box_offset.ConvertToLogical(
         writing_mode, text_direction, fragmentainer->Size(),
-        line_box_container->Size());
+        line_box.CurrentSize());
     const LogicalSize logical_size =
         line_box_size.ConvertToLogical(writing_mode);
     return {logical_offset.block_offset,
@@ -1039,14 +1038,13 @@ PhysicalRect LayoutReplaced::LocalSelectionVisualRect() const {
     return PhysicalRect();
   }
 
-  if (IsInline()) {
-    const auto fragments = NGPaintFragment::InlineFragmentsFor(this);
-    if (fragments.IsInLayoutNGInlineFormattingContext()) {
-      PhysicalRect rect;
-      for (const NGPaintFragment* fragment : fragments)
-        rect.Unite(fragment->ComputeLocalSelectionRectForReplaced());
-      return rect;
-    }
+  if (IsInline() && IsInLayoutNGInlineFormattingContext()) {
+    PhysicalRect rect;
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    for (; cursor; cursor.MoveToNextForSameLayoutObject())
+      rect.Unite(ComputeLocalSelectionRectForReplaced(cursor));
+    return rect;
   }
 
   if (!InlineBoxWrapper()) {

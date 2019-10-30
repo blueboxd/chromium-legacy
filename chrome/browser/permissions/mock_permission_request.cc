@@ -19,8 +19,7 @@ MockPermissionRequest::MockPermissionRequest()
                             "button",
                             GURL("http://www.google.com"),
                             PermissionRequestType::PERMISSION_NOTIFICATIONS,
-                            PermissionRequestGestureType::UNKNOWN,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
+                            PermissionRequestGestureType::UNKNOWN) {}
 
 MockPermissionRequest::MockPermissionRequest(const std::string& text)
     : MockPermissionRequest(text,
@@ -28,8 +27,7 @@ MockPermissionRequest::MockPermissionRequest(const std::string& text)
                             "button",
                             GURL("http://www.google.com"),
                             PermissionRequestType::PERMISSION_NOTIFICATIONS,
-                            PermissionRequestGestureType::UNKNOWN,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
+                            PermissionRequestGestureType::UNKNOWN) {}
 
 MockPermissionRequest::MockPermissionRequest(
     const std::string& text,
@@ -40,8 +38,7 @@ MockPermissionRequest::MockPermissionRequest(
                             "button",
                             GURL("http://www.google.com"),
                             request_type,
-                            gesture_type,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
+                            gesture_type) {}
 
 MockPermissionRequest::MockPermissionRequest(const std::string& text,
                                              PermissionRequestType request_type,
@@ -51,8 +48,7 @@ MockPermissionRequest::MockPermissionRequest(const std::string& text,
                             "button",
                             url,
                             request_type,
-                            PermissionRequestGestureType::UNKNOWN,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
+                            PermissionRequestGestureType::UNKNOWN) {}
 
 MockPermissionRequest::MockPermissionRequest(const std::string& text,
                                              const std::string& accept_label,
@@ -62,18 +58,7 @@ MockPermissionRequest::MockPermissionRequest(const std::string& text,
                             deny_label,
                             GURL("http://www.google.com"),
                             PermissionRequestType::PERMISSION_NOTIFICATIONS,
-                            PermissionRequestGestureType::UNKNOWN,
-                            CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {}
-MockPermissionRequest::MockPermissionRequest(
-    const std::string& text,
-    ContentSettingsType content_settings_type_)
-    : MockPermissionRequest(text,
-                            "button",
-                            "button",
-                            GURL("http://www.google.com"),
-                            PermissionRequestType::PERMISSION_NOTIFICATIONS,
-                            PermissionRequestGestureType::UNKNOWN,
-                            content_settings_type_) {}
+                            PermissionRequestGestureType::UNKNOWN) {}
 
 MockPermissionRequest::~MockPermissionRequest() {}
 
@@ -130,10 +115,6 @@ PermissionRequestGestureType MockPermissionRequest::GetGestureType()
   return gesture_type_;
 }
 
-ContentSettingsType MockPermissionRequest::GetContentSettingsType() const {
-  return content_settings_type_;
-}
-
 bool MockPermissionRequest::granted() {
   return granted_;
 }
@@ -152,14 +133,12 @@ MockPermissionRequest::MockPermissionRequest(
     const std::string& deny_label,
     const GURL& origin,
     PermissionRequestType request_type,
-    PermissionRequestGestureType gesture_type,
-    ContentSettingsType content_settings_type)
+    PermissionRequestGestureType gesture_type)
     : granted_(false),
       cancelled_(false),
       finished_(false),
       request_type_(request_type),
-      gesture_type_(gesture_type),
-      content_settings_type_(content_settings_type) {
+      gesture_type_(gesture_type) {
   text_ = base::UTF8ToUTF16(text);
   accept_label_ = base::UTF8ToUTF16(accept_label);
   deny_label_ = base::UTF8ToUTF16(deny_label);

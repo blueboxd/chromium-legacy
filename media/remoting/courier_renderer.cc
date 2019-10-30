@@ -151,7 +151,7 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
 }
 
 void CourierRenderer::SetCdm(CdmContext* cdm_context,
-                             const CdmAttachedCB& cdm_attached_cb) {
+                             CdmAttachedCB cdm_attached_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   // Media remoting doesn't support encrypted content.

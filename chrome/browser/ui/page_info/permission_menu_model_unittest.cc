@@ -40,7 +40,7 @@ class PermissionMenuModelTest : public testing::Test {
 TEST_F(PermissionMenuModelTest, TestDefault) {
   TestCallback callback;
   PageInfoUI::PermissionInfo permission;
-  permission.type = CONTENT_SETTINGS_TYPE_COOKIES;
+  permission.type = ContentSettingsType::COOKIES;
   permission.setting = CONTENT_SETTING_ALLOW;
   permission.default_setting = CONTENT_SETTING_ALLOW;
   permission.source = content_settings::SETTING_SOURCE_USER;
@@ -53,8 +53,8 @@ TEST_F(PermissionMenuModelTest, TestDefault) {
 
 TEST_F(PermissionMenuModelTest, TestDefaultMediaHttp) {
   for (int i = 0; i < 2; ++i) {
-    ContentSettingsType type = i ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
-                                 : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
+    ContentSettingsType type = i ? ContentSettingsType::MEDIASTREAM_MIC
+                                 : ContentSettingsType::MEDIASTREAM_CAMERA;
     TestCallback callback;
     PageInfoUI::PermissionInfo permission;
     permission.type = type;
@@ -71,7 +71,7 @@ TEST_F(PermissionMenuModelTest, TestDefaultMediaHttp) {
 TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
   TestCallback callback;
   PageInfoUI::PermissionInfo permission;
-  permission.type = CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+  permission.type = ContentSettingsType::NOTIFICATIONS;
   permission.setting = CONTENT_SETTING_ASK;
   permission.default_setting = CONTENT_SETTING_ASK;
   permission.source = content_settings::SETTING_SOURCE_USER;
@@ -90,7 +90,7 @@ TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
 TEST_F(PermissionMenuModelTest, TestUsbGuard) {
   TestCallback callback;
   PageInfoUI::PermissionInfo permission;
-  permission.type = CONTENT_SETTINGS_TYPE_USB_GUARD;
+  permission.type = ContentSettingsType::USB_GUARD;
   permission.setting = CONTENT_SETTING_ASK;
   permission.default_setting = CONTENT_SETTING_ASK;
   permission.source = content_settings::SETTING_SOURCE_USER;
@@ -105,7 +105,7 @@ TEST_F(PermissionMenuModelTest, TestSerialGuard) {
   const GURL kUrl("http://www.google.com");
   TestCallback callback;
   PageInfoUI::PermissionInfo permission;
-  permission.type = CONTENT_SETTINGS_TYPE_SERIAL_GUARD;
+  permission.type = ContentSettingsType::SERIAL_GUARD;
   permission.setting = CONTENT_SETTING_ASK;
   permission.source = content_settings::SETTING_SOURCE_USER;
   permission.is_incognito = false;
@@ -133,7 +133,7 @@ TEST_F(PermissionMenuModelTest, TestBluetoothScanning) {
   const GURL kUrl("http://www.google.com");
   TestCallback callback;
   PageInfoUI::PermissionInfo permission;
-  permission.type = CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING;
+  permission.type = ContentSettingsType::BLUETOOTH_SCANNING;
   permission.setting = CONTENT_SETTING_ASK;
   permission.source = content_settings::SETTING_SOURCE_USER;
   permission.is_incognito = false;

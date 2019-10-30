@@ -62,10 +62,10 @@ suite('<app-management-pwa-permission-view>', function() {
                      .checked);
     };
 
-    await checkToggle('CONTENT_SETTINGS_TYPE_NOTIFICATIONS');
-    await checkToggle('CONTENT_SETTINGS_TYPE_GEOLOCATION');
-    await checkToggle('CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA');
-    await checkToggle('CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC');
+    await checkToggle('NOTIFICATIONS');
+    await checkToggle('GEOLOCATION');
+    await checkToggle('MEDIASTREAM_CAMERA');
+    await checkToggle('MEDIASTREAM_MIC');
   });
 
   test('Pin to shelf toggle', async function() {

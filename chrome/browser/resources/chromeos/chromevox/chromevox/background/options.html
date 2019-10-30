@@ -181,7 +181,7 @@
       </cr-expand-button>
     </label>
   </div>
-  <div class="option" id="developerSpeechLogging">
+  <div class="option" id="developerSpeechLogging" hidden>
     <label>
       <input id="enableSpeechLogging" type="checkbox"
              class="checkbox pref logging" name="enableSpeechLogging">
@@ -190,7 +190,7 @@
       </span>
     </label>
   </div>
-  <div class="option" id="developerEarconLogging">
+  <div class="option" id="developerEarconLogging" hidden>
     <label>
       <input id="enableEarconLogging" type="checkbox"
              class="checkbox pref logging" name="enableEarconLogging">
@@ -199,7 +199,7 @@
       </span>
     </label>
   </div>
-  <div class="option" id="developerBrailleLogging">
+  <div class="option" id="developerBrailleLogging" hidden>
     <label>
       <input id="enableBrailleLogging" type="checkbox"
              class="checkbox pref logging" name="enableBrailleLogging">
@@ -208,7 +208,7 @@
       </span>
     </label>
   </div>
-  <div class="option" id="developerEventStream">
+  <div class="option" id="developerEventStream" hidden>
     <label>
       <input id="enableEventStreamLogging" type="checkbox"
              class="checkbox pref logging" name="enableEventStreamLogging">
@@ -218,7 +218,7 @@
     </label>
     <button id="toggleEventStreamFilters"></button>
   </div>
-   <div class="option" id="showDeveloperLog">
+  <div class="option" id="showDeveloperLog" hidden>
     <label>
       <cr-link-row class="developer-option-icon-button" id="openDeveloperLog"
           using-slotted-label external embedded>
@@ -230,6 +230,12 @@
   </div>
 
   <div id="eventStreamFilters" hidden>
+    <div class="option">
+      <button id="enableAllEventStreamFilters" class="i18n"
+          msgid="options_enable_all_event_stream_filters"></button>
+      <button id="disableAllEventStreamFilters" class="i18n"
+          msgid="options_disable_all_event_stream_filters"></button>
+    </div>
     <label><div class="option-eventstream">
       <input name="activedescendantchanged" type="checkbox"
              class="checkbox pref eventstream">

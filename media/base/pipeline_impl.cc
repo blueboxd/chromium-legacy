@@ -66,7 +66,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   Ranges<base::TimeDelta> GetBufferedTimeRanges() const;
   bool DidLoadingProgress();
   PipelineStatistics GetStatistics() const;
-  void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
+  void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb);
 
   // |enabled_track_ids| contains track ids of enabled audio tracks.
   void OnEnabledAudioTracksChanged(
@@ -141,7 +141,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
 
   // Common handlers for notifications from renderers and demuxer.
   void OnPipelineError(PipelineStatus error);
-  void OnCdmAttached(const CdmAttachedCB& cdm_attached_cb,
+  void OnCdmAttached(CdmAttachedCB cdm_attached_cb,
                      CdmContext* cdm_context,
                      bool success);
   void CheckPlaybackEnded();
@@ -475,21 +475,20 @@ PipelineStatistics PipelineImpl::RendererWrapper::GetStatistics() const {
   return shared_state_.statistics;
 }
 
-void PipelineImpl::RendererWrapper::SetCdm(
-    CdmContext* cdm_context,
-    const CdmAttachedCB& cdm_attached_cb) {
+void PipelineImpl::RendererWrapper::SetCdm(CdmContext* cdm_context,
+                                           CdmAttachedCB cdm_attached_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (!shared_state_.renderer) {
     cdm_context_ = cdm_context;
-    cdm_attached_cb.Run(true);
+    std::move(cdm_attached_cb).Run(true);
     return;
   }
 
   shared_state_.renderer->SetCdm(
-      cdm_context, base::BindRepeating(&RendererWrapper::OnCdmAttached,
-                                       weak_factory_.GetWeakPtr(),
-                                       cdm_attached_cb, cdm_context));
+      cdm_context, base::BindOnce(&RendererWrapper::OnCdmAttached,
+                                  weak_factory_.GetWeakPtr(),
+                                  std::move(cdm_attached_cb), cdm_context));
 }
 
 void PipelineImpl::RendererWrapper::OnBufferedTimeRangesChanged(
@@ -786,15 +785,14 @@ void PipelineImpl::RendererWrapper::OnPipelineError(PipelineStatus error) {
       FROM_HERE, base::BindOnce(&PipelineImpl::OnError, weak_pipeline_, error));
 }
 
-void PipelineImpl::RendererWrapper::OnCdmAttached(
-    const CdmAttachedCB& cdm_attached_cb,
-    CdmContext* cdm_context,
-    bool success) {
+void PipelineImpl::RendererWrapper::OnCdmAttached(CdmAttachedCB cdm_attached_cb,
+                                                  CdmContext* cdm_context,
+                                                  bool success) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (success)
     cdm_context_ = cdm_context;
-  cdm_attached_cb.Run(success);
+  std::move(cdm_attached_cb).Run(success);
 }
 
 void PipelineImpl::RendererWrapper::CheckPlaybackEnded() {
@@ -914,7 +912,7 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
 
   if (cdm_context_) {
     shared_state_.renderer->SetCdm(cdm_context_,
-                                   base::BindRepeating(&IgnoreCdmAttached));
+                                   base::BindOnce(&IgnoreCdmAttached));
   }
 
   shared_state_.renderer->Initialize(demuxer_, this, std::move(done_cb));
@@ -1226,7 +1224,7 @@ PipelineStatistics PipelineImpl::GetStatistics() const {
 }
 
 void PipelineImpl::SetCdm(CdmContext* cdm_context,
-                          const CdmAttachedCB& cdm_attached_cb) {
+                          CdmAttachedCB cdm_attached_cb) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(cdm_context);
@@ -1236,7 +1234,7 @@ void PipelineImpl::SetCdm(CdmContext* cdm_context,
       FROM_HERE,
       base::BindOnce(&RendererWrapper::SetCdm,
                      base::Unretained(renderer_wrapper_.get()), cdm_context,
-                     BindToCurrentLoop(cdm_attached_cb)));
+                     BindToCurrentLoop(std::move(cdm_attached_cb))));
 }
 
 #define RETURN_STRING(state) \

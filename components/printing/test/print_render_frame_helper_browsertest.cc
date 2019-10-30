@@ -237,7 +237,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   }
 
   void OnPrintPages() {
-    GetPrintRenderFrameHelper()->PrintRequestedPages();
+    GetPrintRenderFrameHelper()->OnPrintPages();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -245,7 +245,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     PrintRenderFrameHelper* helper =
         GetPrintRenderFrameHelperForFrame(frame_name);
     ASSERT_TRUE(helper);
-    helper->PrintRequestedPages();
+    helper->OnPrintPages();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -741,11 +741,11 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, BlockScriptInitiatedPrinting) {
   LoadHTML(kHelloWorldHTML);
   PrintRenderFrameHelper* print_render_frame_helper =
       GetPrintRenderFrameHelper();
-  print_render_frame_helper->SetPrintingEnabled(false);
+  print_render_frame_helper->OnSetPrintingEnabled(false);
   PrintWithJavaScript();
   VerifyPreviewRequest(false);
 
-  print_render_frame_helper->SetPrintingEnabled(true);
+  print_render_frame_helper->OnSetPrintingEnabled(true);
   PrintWithJavaScript();
   VerifyPreviewRequest(true);
 }

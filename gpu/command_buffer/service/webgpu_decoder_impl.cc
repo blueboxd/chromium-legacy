@@ -53,11 +53,18 @@ class WireServerCommandSerializer : public dawn_wire::CommandSerializer {
 };
 
 WireServerCommandSerializer::WireServerCommandSerializer(DecoderClient* client)
-    : client_(client), buffer_(kMaxWireBufferSize), put_offset_(0) {}
+    : client_(client),
+      buffer_(kMaxWireBufferSize),
+      put_offset_(sizeof(cmds::DawnReturnDataHeader)) {
+  cmds::DawnReturnDataHeader* return_data_header =
+      reinterpret_cast<cmds::DawnReturnDataHeader*>(&buffer_[0]);
+  return_data_header->return_data_type = DawnReturnDataType::kDawnCommands;
+}
 
 void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
-  // TODO(enga): Handle chunking commands if size > kMaxWireBufferSize.
-  if (size > kMaxWireBufferSize) {
+  // TODO(enga): Handle chunking commands if size +
+  // sizeof(cmds::DawnReturnDataHeader)> kMaxWireBufferSize.
+  if (size + sizeof(cmds::DawnReturnDataHeader) > kMaxWireBufferSize) {
     NOTREACHED();
     return nullptr;
   }
@@ -76,8 +83,8 @@ void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
     // TODO(enga): Keep track of how much command space the application is using
     // and adjust the buffer size accordingly.
 
-    DCHECK_EQ(put_offset_, 0u);
-    next_offset = size;
+    DCHECK_EQ(put_offset_, sizeof(cmds::DawnReturnDataHeader));
+    next_offset = put_offset_ + size;
   }
 
   uint8_t* ptr = &buffer_[put_offset_];
@@ -86,7 +93,7 @@ void* WireServerCommandSerializer::GetCmdSpace(size_t size) {
 }
 
 bool WireServerCommandSerializer::Flush() {
-  if (put_offset_ > 0) {
+  if (put_offset_ > sizeof(cmds::DawnReturnDataHeader)) {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                  "WireServerCommandSerializer::Flush", "bytes", put_offset_);
 
@@ -95,7 +102,7 @@ bool WireServerCommandSerializer::Flush() {
                             "DawnReturnCommands", return_trace_id++);
 
     client_->HandleReturnData(base::make_span(buffer_.data(), put_offset_));
-    put_offset_ = 0;
+    put_offset_ = sizeof(cmds::DawnReturnDataHeader);
   }
   return true;
 }

@@ -16,6 +16,8 @@
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/chromecast_buildflags.h"
+#include "components/network_hints/browser/simple_network_hints_handler_impl.h"
+#include "content/public/browser/render_process_host.h"
 #include "media/mojo/buildflags.h"
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
@@ -176,6 +178,10 @@ void CastContentBrowserClient::BindHostReceiverForRenderer(
     return;
   }
 #endif
+  if (auto r = receiver.As<::network_hints::mojom::NetworkHintsHandler>()) {
+    network_hints::SimpleNetworkHintsHandlerImpl::Create(
+        render_process_host->GetID(), std::move(r));
+  }
   ContentBrowserClient::BindHostReceiverForRenderer(render_process_host,
                                                     std::move(receiver));
 }

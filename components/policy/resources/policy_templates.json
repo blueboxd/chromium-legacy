@@ -18707,7 +18707,7 @@
 
           This policy can be overridden for specific URL patterns using the 'InsecureContentAllowedForUrls' and 'InsecureContentBlockedForUrls' policies.
 
-          If this policy is left not set, users will be allowed to add exceptions to allow blockable mixed content''',
+          If this policy is left not set, users will be allowed to add exceptions to allow blockable mixed content.''',
     },
     {
       'name': 'InsecureContentAllowedForUrls',

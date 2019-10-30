@@ -91,7 +91,7 @@ class PeriodicBackgroundSyncPermissionContextTest
     ASSERT_TRUE(host_content_settings_map);
     host_content_settings_map->SetContentSettingDefaultScope(
         /* primary_url= */ url, /* secondary_url= */ url,
-        CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+        ContentSettingsType::BACKGROUND_SYNC,
         /* resource_identifier= */ std::string(), setting);
   }
 

@@ -97,7 +97,8 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
   void OnCreateURLRequest(URLRequest* request) override {}
 
   void OnAddChannelResponse(const std::string& selected_subprotocol,
-                            const std::string& extensions) override;
+                            const std::string& extensions,
+                            int64_t send_flow_control_quota) override;
 
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
@@ -168,7 +169,8 @@ std::string ConnectTestingEventInterface::extensions() const {
 
 void ConnectTestingEventInterface::OnAddChannelResponse(
     const std::string& selected_subprotocol,
-    const std::string& extensions) {
+    const std::string& extensions,
+    int64_t send_flow_control_quota) {
   selected_subprotocol_ = selected_subprotocol;
   extensions_ = extensions;
   QuitNestedEventLoop();

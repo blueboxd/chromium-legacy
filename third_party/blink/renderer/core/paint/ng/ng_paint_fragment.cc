@@ -134,20 +134,6 @@ LogicalRect ExpandSelectionRectToLineHeight(
           {rect.size.inline_size, selection_bottom - selection_top}};
 }
 
-LogicalRect ExpandSelectionRectToLineHeight(
-    const LogicalRect& rect,
-    const NGPaintFragment& paint_fragment) {
-  // Compute the rect of the containing line box relative to |paint_fragment|.
-  const NGPaintFragment* current_line = paint_fragment.ContainerLineBox();
-  DCHECK(current_line);
-  const PhysicalRect line_physical_rect(
-      current_line->InlineOffsetToContainerBox() -
-          paint_fragment.InlineOffsetToContainerBox(),
-      current_line->Size());
-  return ExpandSelectionRectToLineHeight(
-      rect, ComputeLogicalRectFor(line_physical_rect, paint_fragment));
-}
-
 LogicalRect ExpandSelectionRectToLineHeight(const LogicalRect& rect,
                                             const NGInlineCursor& cursor) {
   NGInlineCursor line(cursor);
@@ -1013,14 +999,17 @@ PhysicalRect ComputeLocalSelectionRectForText(
   return physical_rect;
 }
 
-PhysicalRect NGPaintFragment::ComputeLocalSelectionRectForReplaced() const {
-  DCHECK(GetLayoutObject()->IsLayoutReplaced());
-  const PhysicalRect selection_rect = PhysicalFragment().LocalRect();
-  LogicalRect logical_rect = ComputeLogicalRectFor(selection_rect, *this);
+// TODO(yosin): We should move |ComputeLocalSelectionRectForReplaced()| to
+// "ng_selection_painter.cc".
+PhysicalRect ComputeLocalSelectionRectForReplaced(
+    const NGInlineCursor& cursor) {
+  DCHECK(cursor.CurrentLayoutObject()->IsLayoutReplaced());
+  const PhysicalRect selection_rect = PhysicalRect({}, cursor.CurrentSize());
+  LogicalRect logical_rect = ComputeLogicalRectFor(selection_rect, cursor);
   const LogicalRect line_height_expanded_rect =
-      ExpandSelectionRectToLineHeight(logical_rect, *this);
+      ExpandSelectionRectToLineHeight(logical_rect, cursor);
   const PhysicalRect physical_rect =
-      ComputePhysicalRectFor(line_height_expanded_rect, *this);
+      ComputePhysicalRectFor(line_height_expanded_rect, cursor);
   return physical_rect;
 }
 

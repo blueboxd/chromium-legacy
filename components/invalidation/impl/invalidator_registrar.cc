@@ -75,9 +75,9 @@ Topics InvalidatorRegistrar::GetRegisteredTopics(
 Topics InvalidatorRegistrar::GetAllRegisteredIds() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   Topics registered_ids;
-  for (auto it = handler_to_topics_map_.begin();
-       it != handler_to_topics_map_.end(); ++it) {
-    registered_ids.insert(it->second.begin(), it->second.end());
+  for (const auto& handler_and_topics : handler_to_topics_map_) {
+    const Topics& topics = handler_and_topics.second;
+    registered_ids.insert(topics.begin(), topics.end());
   }
   return registered_ids;
 }

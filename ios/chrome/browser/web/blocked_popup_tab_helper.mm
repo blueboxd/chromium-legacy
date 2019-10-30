@@ -74,7 +74,7 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
       web_state_->OpenURL(params);
       host_content_map_settings->SetContentSettingCustomScope(
           ContentSettingsPattern::FromURL(popup.referrer.url),
-          ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_POPUPS,
+          ContentSettingsPattern::Wildcard(), ContentSettingsType::POPUPS,
           std::string(), CONTENT_SETTING_ALLOW);
     }
     return true;
@@ -101,7 +101,7 @@ bool BlockedPopupTabHelper::ShouldBlockPopup(const GURL& source_url) {
   HostContentSettingsMap* settings_map =
       ios::HostContentSettingsMapFactory::GetForBrowserState(GetBrowserState());
   ContentSetting setting = settings_map->GetContentSetting(
-      source_url, source_url, CONTENT_SETTINGS_TYPE_POPUPS, std::string());
+      source_url, source_url, ContentSettingsType::POPUPS, std::string());
   return setting != CONTENT_SETTING_ALLOW;
 }
 

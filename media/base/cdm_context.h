@@ -109,7 +109,7 @@ class MEDIA_EXPORT CdmContext {
 
 // Callback to notify that the CdmContext has been completely attached to
 // the media pipeline. Parameter indicates whether the operation succeeded.
-typedef base::Callback<void(bool)> CdmAttachedCB;
+typedef base::OnceCallback<void(bool)> CdmAttachedCB;
 
 // A dummy implementation of CdmAttachedCB.
 MEDIA_EXPORT void IgnoreCdmAttached(bool success);

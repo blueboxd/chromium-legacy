@@ -554,6 +554,14 @@ const GURL TabWebContentsDelegateAndroid::GetManifestScope() const {
                          : GURL(base::android::ConvertJavaStringToUTF8(scope));
 }
 
+bool TabWebContentsDelegateAndroid::IsCustomTab() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  return Java_TabWebContentsDelegateAndroid_isCustomTab(env, obj);
+}
+
 }  // namespace android
 
 void JNI_TabWebContentsDelegateAndroid_OnRendererUnresponsive(

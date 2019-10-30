@@ -1187,6 +1187,10 @@ bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
   if (!surfaces_at_device_.empty())
     return false;
 
+  // Wait until all pending frames in image processor are processed.
+  if (image_processor_ && !surfaces_at_ip_.empty())
+    return false;
+
   DCHECK_EQ(state_, kIdle);
   DCHECK(decoder_display_queue_.empty());
   // All output buffers should've been returned from decoder and device by now.
@@ -1201,7 +1205,6 @@ bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
   }
 
   image_processor_ = nullptr;
-  surfaces_at_ip_ = {};
 
   // Dequeued decoded surfaces may be pended in pending_picture_ready_ if they
   // are waiting for some pictures to be cleared. We should post them right away

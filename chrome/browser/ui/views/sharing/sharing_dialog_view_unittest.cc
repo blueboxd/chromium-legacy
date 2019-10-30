@@ -216,19 +216,22 @@ TEST_F(SharingDialogViewTest, ThemeChangedEmptyList) {
 TEST_F(SharingDialogViewTest, OriginView) {
   auto dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
   auto dialog = CreateDialogView(std::move(dialog_data));
-  const int children_without_origin = dialog->children().size();
+  // No footnote by default if there is no initiating origin set.
+  EXPECT_EQ(nullptr, dialog->CreateFootnoteView());
 
   dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
   dialog_data.initiating_origin =
       url::Origin::Create(GURL("https://example.com"));
   dialog = CreateDialogView(std::move(dialog_data));
-  const int children_with_origin = dialog->children().size();
-  EXPECT_EQ(children_without_origin + 1, children_with_origin);
+  // Origin should be shown in the footnote if the initiating origin does not
+  // match the main frame origin.
+  EXPECT_NE(nullptr, dialog->CreateFootnoteView());
 
   dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
   dialog_data.initiating_origin =
       url::Origin::Create(GURL("https://google.com"));
   dialog = CreateDialogView(std::move(dialog_data));
-  const int children_with_same_origin = dialog->children().size();
-  EXPECT_EQ(children_without_origin, children_with_same_origin);
+  // Origin should not be shown in the footnote if the initiating origin does
+  // match the main frame origin.
+  EXPECT_EQ(nullptr, dialog->CreateFootnoteView());
 }

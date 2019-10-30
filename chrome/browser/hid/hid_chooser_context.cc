@@ -34,8 +34,8 @@ base::Value DeviceInfoToValue(const device::mojom::HidDeviceInfo& device) {
 
 HidChooserContext::HidChooserContext(Profile* profile)
     : ChooserContextBase(profile,
-                         CONTENT_SETTINGS_TYPE_HID_GUARD,
-                         CONTENT_SETTINGS_TYPE_HID_CHOOSER_DATA),
+                         ContentSettingsType::HID_GUARD,
+                         ContentSettingsType::HID_CHOOSER_DATA),
       is_incognito_(profile->IsOffTheRecord()) {}
 
 HidChooserContext::~HidChooserContext() = default;

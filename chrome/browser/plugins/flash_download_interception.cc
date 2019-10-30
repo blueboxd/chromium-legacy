@@ -81,7 +81,7 @@ void FlashDownloadInterception::InterceptFlashDownloadNavigation(
   if (flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
     PermissionManager* manager = PermissionManager::Get(profile);
     manager->RequestPermission(
-        CONTENT_SETTINGS_TYPE_PLUGINS, web_contents->GetMainFrame(),
+        ContentSettingsType::PLUGINS, web_contents->GetMainFrame(),
         web_contents->GetLastCommittedURL(), true, base::DoNothing());
   } else if (flash_setting == CONTENT_SETTING_BLOCK) {
     auto* settings = TabSpecificContentSettings::FromWebContents(web_contents);

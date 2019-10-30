@@ -194,7 +194,7 @@ class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
     GeolocationPermissionContextAndroid* geolocation_permission_context_ =
         static_cast<GeolocationPermissionContextAndroid*>(
             GetPermissionControllerDelegate()->GetPermissionContext(
-                CONTENT_SETTINGS_TYPE_GEOLOCATION));
+                ContentSettingsType::GEOLOCATION));
     geolocation_permission_context_->SetLocationSettingsForTesting(
         std::unique_ptr<LocationSettings>(new MockLocationSettings()));
     MockLocationSettings::SetLocationStatus(
@@ -235,18 +235,18 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDefault) {
 }
 
 TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
-  SetPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
+  SetPermission(ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::GEOLOCATION, PermissionStatus::GRANTED);
 
-  SetPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
+  SetPermission(ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::NOTIFICATIONS,
                         PermissionStatus::GRANTED);
 
-  SetPermission(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ALLOW);
+  SetPermission(ContentSettingsType::MIDI_SYSEX, CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::MIDI_SYSEX, PermissionStatus::GRANTED);
 
 #if defined(OS_ANDROID)
-  SetPermission(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+  SetPermission(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                 CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
                         PermissionStatus::GRANTED);
@@ -254,39 +254,37 @@ TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
 }
 
 TEST_F(PermissionManagerTest, CheckPermissionResultDefault) {
-  CheckPermissionResult(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ASK,
+  CheckPermissionResult(ContentSettingsType::MIDI_SYSEX, CONTENT_SETTING_ASK,
                         PermissionStatusSource::UNSPECIFIED);
-  CheckPermissionResult(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                        CONTENT_SETTING_ASK,
+  CheckPermissionResult(ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_ASK,
                         PermissionStatusSource::UNSPECIFIED);
-  CheckPermissionResult(CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ASK,
+  CheckPermissionResult(ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ASK,
                         PermissionStatusSource::UNSPECIFIED);
 #if defined(OS_ANDROID)
-  CheckPermissionResult(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+  CheckPermissionResult(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                         GetDefaultProtectedMediaIdentifierContentSetting(),
                         PermissionStatusSource::UNSPECIFIED);
 #endif
 }
 
 TEST_F(PermissionManagerTest, CheckPermissionResultAfterSet) {
-  SetPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
-  CheckPermissionResult(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+  SetPermission(ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW);
+  CheckPermissionResult(ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW,
+                        PermissionStatusSource::UNSPECIFIED);
+
+  SetPermission(ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_ALLOW);
+  CheckPermissionResult(ContentSettingsType::NOTIFICATIONS,
                         CONTENT_SETTING_ALLOW,
                         PermissionStatusSource::UNSPECIFIED);
 
-  SetPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
-  CheckPermissionResult(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                        CONTENT_SETTING_ALLOW,
-                        PermissionStatusSource::UNSPECIFIED);
-
-  SetPermission(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ALLOW);
-  CheckPermissionResult(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ALLOW,
+  SetPermission(ContentSettingsType::MIDI_SYSEX, CONTENT_SETTING_ALLOW);
+  CheckPermissionResult(ContentSettingsType::MIDI_SYSEX, CONTENT_SETTING_ALLOW,
                         PermissionStatusSource::UNSPECIFIED);
 
 #if defined(OS_ANDROID)
-  SetPermission(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+  SetPermission(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                 CONTENT_SETTING_ALLOW);
-  CheckPermissionResult(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
+  CheckPermissionResult(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                         CONTENT_SETTING_ALLOW,
                         PermissionStatusSource::UNSPECIFIED);
 #endif
@@ -335,7 +333,7 @@ TEST_F(PermissionManagerTest, SameTypeChangeNotifies) {
                      base::Unretained(this)));
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(callback_called());
@@ -353,7 +351,7 @@ TEST_F(PermissionManagerTest, DifferentTypeChangeDoesNotNotify) {
                      base::Unretained(this)));
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
+      url(), GURL(), ContentSettingsType::NOTIFICATIONS, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(callback_called());
@@ -373,7 +371,7 @@ TEST_F(PermissionManagerTest, ChangeAfterUnsubscribeDoesNotNotify) {
       subscription_id);
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(callback_called());
@@ -387,7 +385,7 @@ TEST_F(PermissionManagerTest, DifferentPrimaryUrlDoesNotNotify) {
                      base::Unretained(this)));
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      other_url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      other_url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(callback_called());
@@ -404,7 +402,7 @@ TEST_F(PermissionManagerTest, DifferentSecondaryUrlDoesNotNotify) {
                      base::Unretained(this)));
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), other_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), other_url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(callback_called());
@@ -421,7 +419,7 @@ TEST_F(PermissionManagerTest, WildCardPatternNotifies) {
                      base::Unretained(this)));
 
   GetHostContentSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
+      ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
@@ -432,7 +430,7 @@ TEST_F(PermissionManagerTest, WildCardPatternNotifies) {
 
 TEST_F(PermissionManagerTest, ClearSettingsNotifies) {
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   int subscription_id =
@@ -442,7 +440,7 @@ TEST_F(PermissionManagerTest, ClearSettingsNotifies) {
                      base::Unretained(this)));
 
   GetHostContentSettingsMap()->ClearSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      ContentSettingsType::GEOLOCATION);
 
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(PermissionStatus::ASK, callback_result());
@@ -459,7 +457,7 @@ TEST_F(PermissionManagerTest, NewValueCorrectlyPassed) {
                      base::Unretained(this)));
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_BLOCK);
 
   EXPECT_TRUE(callback_called());
@@ -471,7 +469,7 @@ TEST_F(PermissionManagerTest, NewValueCorrectlyPassed) {
 
 TEST_F(PermissionManagerTest, ChangeWithoutPermissionChangeDoesNotNotify) {
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   int subscription_id =
@@ -481,7 +479,7 @@ TEST_F(PermissionManagerTest, ChangeWithoutPermissionChangeDoesNotNotify) {
                      base::Unretained(this)));
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(callback_called());
@@ -492,7 +490,7 @@ TEST_F(PermissionManagerTest, ChangeWithoutPermissionChangeDoesNotNotify) {
 
 TEST_F(PermissionManagerTest, ChangesBackAndForth) {
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ASK);
 
   int subscription_id =
@@ -502,7 +500,7 @@ TEST_F(PermissionManagerTest, ChangesBackAndForth) {
                      base::Unretained(this)));
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(callback_called());
@@ -511,7 +509,7 @@ TEST_F(PermissionManagerTest, ChangesBackAndForth) {
   Reset();
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ASK);
 
   EXPECT_TRUE(callback_called());
@@ -523,7 +521,7 @@ TEST_F(PermissionManagerTest, ChangesBackAndForth) {
 
 TEST_F(PermissionManagerTest, ChangesBackAndForthWorker) {
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ASK);
 
   int subscription_id =
@@ -533,7 +531,7 @@ TEST_F(PermissionManagerTest, ChangesBackAndForthWorker) {
                      base::Unretained(this)));
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(callback_called());
@@ -542,7 +540,7 @@ TEST_F(PermissionManagerTest, ChangesBackAndForthWorker) {
   Reset();
 
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ASK);
 
   EXPECT_TRUE(callback_called());
@@ -561,7 +559,7 @@ TEST_F(PermissionManagerTest, SubscribeMIDIPermission) {
 
   CheckPermissionStatus(PermissionType::GEOLOCATION, PermissionStatus::ASK);
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::GEOLOCATION, PermissionStatus::GRANTED);
 
@@ -600,7 +598,7 @@ TEST_F(PermissionManagerTest, InsecureOrigin) {
 
   PermissionResult result =
       GetPermissionControllerDelegate()->GetPermissionStatusForFrame(
-          CONTENT_SETTINGS_TYPE_GEOLOCATION, web_contents()->GetMainFrame(),
+          ContentSettingsType::GEOLOCATION, web_contents()->GetMainFrame(),
           insecure_frame);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
@@ -610,7 +608,7 @@ TEST_F(PermissionManagerTest, InsecureOrigin) {
   NavigateAndCommit(secure_frame);
 
   result = GetPermissionControllerDelegate()->GetPermissionStatusForFrame(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, web_contents()->GetMainFrame(),
+      ContentSettingsType::GEOLOCATION, web_contents()->GetMainFrame(),
       secure_frame);
 
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
@@ -656,7 +654,7 @@ TEST_F(PermissionManagerTest, KillSwitchOnIsNotOverridable) {
   variations::testing::ClearAllVariationParams();
   std::map<std::string, std::string> params;
   params[PermissionUtil::GetPermissionString(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION)] =
+      ContentSettingsType::GEOLOCATION)] =
       PermissionContextBase::kPermissionsKillSwitchBlockedValue;
   variations::AssociateVariationParams(
       PermissionContextBase::kPermissionsKillSwitchFieldStudy, "TestGroup",
@@ -686,32 +684,32 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginSearch) {
   // "Normal" URLs are not affected by GetCanonicalOrigin.
   EXPECT_EQ(google_com,
             GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_com, google_com));
+                ContentSettingsType::GEOLOCATION, google_com, google_com));
   EXPECT_EQ(google_de,
             GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_de, google_de));
+                ContentSettingsType::GEOLOCATION, google_de, google_de));
   EXPECT_EQ(other_url,
             GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                CONTENT_SETTINGS_TYPE_GEOLOCATION, other_url, other_url));
+                ContentSettingsType::GEOLOCATION, other_url, other_url));
   EXPECT_EQ(google_base,
             GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_base, google_base));
+                ContentSettingsType::GEOLOCATION, google_base, google_base));
 
   // The local NTP URL gets mapped to the Google base URL.
   EXPECT_EQ(google_base,
             GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                CONTENT_SETTINGS_TYPE_GEOLOCATION, local_ntp, top_level_ntp));
+                ContentSettingsType::GEOLOCATION, local_ntp, top_level_ntp));
   // However, other chrome-search:// URLs, including the remote NTP URL, are
   // not affected.
   EXPECT_EQ(remote_ntp,
             GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                CONTENT_SETTINGS_TYPE_GEOLOCATION, remote_ntp, top_level_ntp));
+                ContentSettingsType::GEOLOCATION, remote_ntp, top_level_ntp));
   EXPECT_EQ(google_com,
             GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_com, top_level_ntp));
+                ContentSettingsType::GEOLOCATION, google_com, top_level_ntp));
   EXPECT_EQ(other_chrome_search,
             GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                CONTENT_SETTINGS_TYPE_GEOLOCATION, other_chrome_search,
+                ContentSettingsType::GEOLOCATION, other_chrome_search,
                 top_level_ntp));
 }
 
@@ -728,11 +726,11 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
     // be returned.
     EXPECT_EQ(requesting_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  CONTENT_SETTINGS_TYPE_GEOLOCATION, requesting_origin,
+                  ContentSettingsType::GEOLOCATION, requesting_origin,
                   embedding_origin));
     EXPECT_EQ(extensions_requesting_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                  ContentSettingsType::GEOLOCATION,
                   extensions_requesting_origin, embedding_origin));
   }
 
@@ -744,15 +742,15 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
     // permission delegation is always off.
     EXPECT_EQ(embedding_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  CONTENT_SETTINGS_TYPE_GEOLOCATION, requesting_origin,
+                  ContentSettingsType::GEOLOCATION, requesting_origin,
                   embedding_origin));
     EXPECT_EQ(extensions_requesting_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                  ContentSettingsType::GEOLOCATION,
                   extensions_requesting_origin, embedding_origin));
     EXPECT_EQ(requesting_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS, requesting_origin,
+                  ContentSettingsType::NOTIFICATIONS, requesting_origin,
                   embedding_origin));
   }
 }
@@ -772,12 +770,12 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
   // By default the parent should be able to request access, but not the child.
   EXPECT_EQ(CONTENT_SETTING_ASK,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               parent, GURL(kOrigin1))
                 .content_setting);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               child, GURL(kOrigin2))
                 .content_setting);
 
@@ -789,7 +787,7 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               child, GURL(kOrigin2))
                 .content_setting);
 
@@ -809,12 +807,12 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
   // Now the child frame should have location, as well as the parent frame.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               parent, GURL(kOrigin1))
                 .content_setting);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               child, GURL(kOrigin2))
                 .content_setting);
 
@@ -824,12 +822,12 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
       PermissionType::GEOLOCATION, GURL(kOrigin1), GURL(kOrigin1));
   EXPECT_EQ(CONTENT_SETTING_ASK,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               parent, GURL(kOrigin1))
                 .content_setting);
   EXPECT_EQ(CONTENT_SETTING_ASK,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               child, GURL(kOrigin2))
                 .content_setting);
 
@@ -840,12 +838,12 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               parent, GURL(kOrigin1))
                 .content_setting);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               child, GURL(kOrigin2))
                 .content_setting);
 
@@ -873,19 +871,19 @@ TEST_F(PermissionManagerTest, SubscribeWithPermissionDelegation) {
   // Location should be blocked for the child because it's not delegated.
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               child, GURL(kOrigin2))
                 .content_setting);
 
   // Allow access for the top level origin.
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_ALLOW);
 
   // The child's permission should still be block and no callback should be run.
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               child, GURL(kOrigin2))
                 .content_setting);
 
@@ -899,7 +897,7 @@ TEST_F(PermissionManagerTest, SubscribeWithPermissionDelegation) {
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               child, GURL(kOrigin2))
                 .content_setting);
 
@@ -913,7 +911,7 @@ TEST_F(PermissionManagerTest, SubscribeWithPermissionDelegation) {
   // Blocking access to the parent should trigger the callback to be run for the
   // child also.
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
-      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+      url(), url(), ContentSettingsType::GEOLOCATION, std::string(),
       CONTENT_SETTING_BLOCK);
 
   EXPECT_TRUE(callback_called());
@@ -921,7 +919,7 @@ TEST_F(PermissionManagerTest, SubscribeWithPermissionDelegation) {
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetPermissionControllerDelegate()
-                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION,
                                               child, GURL(kOrigin2))
                 .content_setting);
 

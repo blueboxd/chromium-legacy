@@ -238,14 +238,14 @@ std::string GenerateContentSettingsExceptionsSubPage(ContentSettingsType type) {
   // will no longer be needed.
   static base::NoDestructor<std::map<ContentSettingsType, std::string>>
       kSettingsPathOverrides(
-          {{CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, "automaticDownloads"},
-           {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "backgroundSync"},
-           {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "microphone"},
-           {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "camera"},
-           {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midiDevices"},
-           {CONTENT_SETTINGS_TYPE_PLUGINS, "flash"},
-           {CONTENT_SETTINGS_TYPE_ADS, "ads"},
-           {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "unsandboxedPlugins"}});
+          {{ContentSettingsType::AUTOMATIC_DOWNLOADS, "automaticDownloads"},
+           {ContentSettingsType::BACKGROUND_SYNC, "backgroundSync"},
+           {ContentSettingsType::MEDIASTREAM_MIC, "microphone"},
+           {ContentSettingsType::MEDIASTREAM_CAMERA, "camera"},
+           {ContentSettingsType::MIDI_SYSEX, "midiDevices"},
+           {ContentSettingsType::PLUGINS, "flash"},
+           {ContentSettingsType::ADS, "ads"},
+           {ContentSettingsType::PPAPI_BROKER, "unsandboxedPlugins"}});
   const auto it = kSettingsPathOverrides->find(type);
   const std::string content_type_path =
       (it == kSettingsPathOverrides->end())

@@ -24,10 +24,7 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   testing::InitGoogleMock(&argc, argv);
   sh::Initialize();
-
   base::TestSuite test_suite(argc, argv);
-  test_suite.DisableCheckForThreadAndProcessPriority();
-
   int rt = base::LaunchUnitTestsSerially(
       argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
   sh::Finalize();

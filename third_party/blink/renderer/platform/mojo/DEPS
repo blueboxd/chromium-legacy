@@ -23,3 +23,9 @@ include_rules = [
     "+third_party/blink/renderer/platform/weborigin",
     "+third_party/blink/renderer/platform/wtf",
 ]
+
+specific_include_rules = {
+    "geometry_mojom_traits*": [
+        "+third_party/blink/renderer/platform/geometry",
+    ],
+}

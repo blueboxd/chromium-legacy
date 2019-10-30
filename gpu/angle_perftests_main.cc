@@ -27,10 +27,6 @@ int main(int argc, char** argv) {
   ANGLEProcessPerfTestArgs(&argc, argv);
 
   base::TestSuite test_suite(argc, argv);
-
-  // The thread priority is modified by StabilizeCPUForBenchmarking().
-  test_suite.DisableCheckForThreadAndProcessPriority();
-
   int rt = base::LaunchUnitTestsSerially(
       argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
   return rt;

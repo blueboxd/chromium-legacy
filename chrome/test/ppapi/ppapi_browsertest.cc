@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Accept) {
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             content_settings->GetContentSetting(
-                url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string()));
+                url, url, ContentSettingsType::PPAPI_BROKER, std::string()));
 }
 
 IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Deny) {
@@ -219,13 +219,13 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Deny) {
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             content_settings->GetContentSetting(
-                url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string()));
+                url, url, ContentSettingsType::PPAPI_BROKER, std::string()));
 }
 
 IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Blocked) {
   // Block access to the PPAPI broker.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+      ->SetDefaultContentSetting(ContentSettingsType::PPAPI_BROKER,
                                  CONTENT_SETTING_BLOCK);
 
   // We shouldn't see an infobar.
@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Blocked) {
 IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Allowed) {
   // Always allow access to the PPAPI broker.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+      ->SetDefaultContentSetting(ContentSettingsType::PPAPI_BROKER,
                                  CONTENT_SETTING_ALLOW);
 
   // We shouldn't see an infobar.

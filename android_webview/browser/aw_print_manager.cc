@@ -72,8 +72,7 @@ void AwPrintManager::PdfWritingDone(int page_count) {
 bool AwPrintManager::PrintNow() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* rfh = web_contents()->GetMainFrame();
-  GetPrintRenderFrame(rfh)->PrintRequestedPages();
-  return true;
+  return rfh->Send(new PrintMsg_PrintPages(rfh->GetRoutingID()));
 }
 
 void AwPrintManager::OnGetDefaultPrintSettings(

@@ -359,7 +359,7 @@ void ChromePluginPlaceholder::OnBlockedContent(
   if (status ==
       content::RenderFrame::PeripheralContentStatus::CONTENT_STATUS_TINY) {
     ContentSettingsAgentImpl::Get(render_frame())
-        ->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
+        ->DidBlockContentType(ContentSettingsType::PLUGINS);
   }
 
   std::string message = base::StringPrintf(

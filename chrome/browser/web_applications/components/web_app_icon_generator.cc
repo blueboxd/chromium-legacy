@@ -10,7 +10,9 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/grit/platform_locale_settings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -114,6 +116,17 @@ void GenerateIcons(std::set<int> generate_sizes,
 }
 
 }  // namespace
+
+std::set<int> SizesToGenerate() {
+  return std::set<int>({
+      icon_size::k32,
+      icon_size::k64,
+      icon_size::k48,
+      icon_size::k96,
+      icon_size::k128,
+      icon_size::k256,
+  });
+}
 
 BitmapAndSource::BitmapAndSource() {}
 
@@ -227,6 +240,34 @@ std::map<int, BitmapAndSource> ResizeIconsAndGenerateMissing(
                 &resized_bitmaps);
 
   return resized_bitmaps;
+}
+
+std::vector<WebApplicationIconInfo> GenerateIcons(
+    const std::string& app_name,
+    SkColor background_icon_color) {
+  const std::set<int> sizes_to_generate = SizesToGenerate();
+
+  std::vector<WebApplicationIconInfo> icon_infos;
+  icon_infos.reserve(sizes_to_generate.size());
+
+  const base::string16 app_name_utf16 = base::UTF8ToUTF16(app_name);
+  CHECK(!app_name_utf16.empty());
+  const base::char16 first_app_name_letter =
+      base::i18n::ToUpper(app_name_utf16)[0];
+
+  for (int size : sizes_to_generate) {
+    SkBitmap bitmap =
+        GenerateBitmap(size, background_icon_color, first_app_name_letter);
+
+    WebApplicationIconInfo icon_info;
+    icon_info.data = bitmap;
+    icon_info.width = bitmap.width();
+    icon_info.height = bitmap.height();
+    // Leave icon_info.url empty to indicate that this is generated icon.
+    icon_infos.push_back(std::move(icon_info));
+  }
+
+  return icon_infos;
 }
 
 }  // namespace web_app

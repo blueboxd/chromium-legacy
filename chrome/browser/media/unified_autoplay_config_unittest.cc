@@ -46,7 +46,7 @@ class UnifiedAutoplaySoundSettingsTest
   void SetSoundContentSettingDefault(ContentSetting value) {
     HostContentSettingsMap* content_settings =
         HostContentSettingsMapFactory::GetForProfile(profile());
-    content_settings->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND,
+    content_settings->SetDefaultContentSetting(ContentSettingsType::SOUND,
                                                value);
   }
 

@@ -409,4 +409,46 @@ TEST_P(NGInlineCursorTest, PreviousLine) {
   EXPECT_EQ(line1, should_be_line1);
 }
 
+TEST_P(NGInlineCursorTest, CursorForDescendants) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    span { background: yellow; }
+    </style>
+    <div id=root>
+      text1
+      <span id="span1">
+        text2
+        <span id="span2">
+          text3
+        </span>
+        text4
+      </span>
+      text5
+      <span id="span3">
+        text6
+      </span>
+      text7
+    </div>
+  )HTML");
+
+  LayoutBlockFlow* block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"));
+  NGInlineCursor cursor(*block_flow);
+  EXPECT_TRUE(cursor.IsLineBox());
+  cursor.MoveToNext();
+  EXPECT_TRUE(cursor.IsText());
+  EXPECT_THAT(ToDebugStringList(cursor.CursorForDescendants()), ElementsAre());
+  cursor.MoveToNext();
+  EXPECT_EQ(ToDebugString(cursor), "#span1");
+  EXPECT_THAT(ToDebugStringList(cursor.CursorForDescendants()),
+              ElementsAre("text2", "#span2", "text3", "text4"));
+  cursor.MoveToNext();
+  EXPECT_EQ(ToDebugString(cursor), "text2");
+  EXPECT_THAT(ToDebugStringList(cursor.CursorForDescendants()), ElementsAre());
+  cursor.MoveToNext();
+  EXPECT_EQ(ToDebugString(cursor), "#span2");
+  EXPECT_THAT(ToDebugStringList(cursor.CursorForDescendants()),
+              ElementsAre("text3"));
+}
+
 }  // namespace blink

@@ -132,39 +132,39 @@ public class SiteSettingsCategory {
     public static int contentSettingsType(@Type int type) {
         switch (type) {
             case Type.ADS:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS;
+                return ContentSettingsType.ADS;
             case Type.AUTOMATIC_DOWNLOADS:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS;
+                return ContentSettingsType.AUTOMATIC_DOWNLOADS;
             case Type.AUTOPLAY:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
+                return ContentSettingsType.AUTOPLAY;
             case Type.BACKGROUND_SYNC:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
+                return ContentSettingsType.BACKGROUND_SYNC;
             case Type.BLUETOOTH_SCANNING:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING;
+                return ContentSettingsType.BLUETOOTH_SCANNING;
             case Type.CAMERA:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
+                return ContentSettingsType.MEDIASTREAM_CAMERA;
             case Type.CLIPBOARD:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ;
+                return ContentSettingsType.CLIPBOARD_READ;
             case Type.COOKIES:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES;
+                return ContentSettingsType.COOKIES;
             case Type.DEVICE_LOCATION:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION;
+                return ContentSettingsType.GEOLOCATION;
             case Type.JAVASCRIPT:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
+                return ContentSettingsType.JAVASCRIPT;
             case Type.MICROPHONE:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC;
+                return ContentSettingsType.MEDIASTREAM_MIC;
             case Type.NOTIFICATIONS:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+                return ContentSettingsType.NOTIFICATIONS;
             case Type.POPUPS:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS;
+                return ContentSettingsType.POPUPS;
             case Type.PROTECTED_MEDIA:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+                return ContentSettingsType.PROTECTED_MEDIA_IDENTIFIER;
             case Type.SENSORS:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS;
+                return ContentSettingsType.SENSORS;
             case Type.SOUND:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND;
+                return ContentSettingsType.SOUND;
             case Type.USB:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD;
+                return ContentSettingsType.USB_GUARD;
             // case Type.ALL_SITES
             // case Type.USE_STORAGE
             default:
@@ -178,8 +178,8 @@ public class SiteSettingsCategory {
      */
     public static int objectChooserDataTypeFromGuard(@ContentSettingsType int type) {
         switch (type) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA;
+            case ContentSettingsType.USB_GUARD:
+                return ContentSettingsType.USB_CHOOSER_DATA;
             default:
                 return -1; // Conversion unavailable.
         }
@@ -434,15 +434,15 @@ public class SiteSettingsCategory {
         int type = this.getContentSettingsType();
         int permission_string = R.string.android_permission_off;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)) {
-            if (type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION)
+            if (type == ContentSettingsType.GEOLOCATION) {
                 permission_string = R.string.android_location_permission_off;
-            else if (type == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
+            } else if (type == ContentSettingsType.MEDIASTREAM_CAMERA) {
                 permission_string = R.string.android_camera_permission_off;
-            else if (type == ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
+            } else if (type == ContentSettingsType.MEDIASTREAM_MIC) {
                 permission_string = R.string.android_microphone_permission_off;
-            else if (type == ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+            } else if (type == ContentSettingsType.NOTIFICATIONS) {
                 permission_string = R.string.android_notifications_permission_off;
-
+            }
             return activity.getResources().getString(
                     plural ? R.string.android_permission_off_plural : permission_string);
         } else {

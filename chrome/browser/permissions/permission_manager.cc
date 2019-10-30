@@ -105,66 +105,66 @@ ContentSetting PermissionStatusToContentSetting(PermissionStatus status) {
 
 // Helper method to convert PermissionType to ContentSettingType.
 // If PermissionType is not supported or found, returns
-// CONTENT_SETTINGS_TYPE_DEFAULT.
+// ContentSettingsType::DEFAULT.
 ContentSettingsType PermissionTypeToContentSettingSafe(
     PermissionType permission) {
   switch (permission) {
     case PermissionType::MIDI:
-      return CONTENT_SETTINGS_TYPE_MIDI;
+      return ContentSettingsType::MIDI;
     case PermissionType::MIDI_SYSEX:
-      return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
+      return ContentSettingsType::MIDI_SYSEX;
     case PermissionType::NOTIFICATIONS:
-      return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+      return ContentSettingsType::NOTIFICATIONS;
     case PermissionType::GEOLOCATION:
-      return CONTENT_SETTINGS_TYPE_GEOLOCATION;
+      return ContentSettingsType::GEOLOCATION;
     case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-      return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+      return ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER;
 #else
       break;
 #endif
     case PermissionType::DURABLE_STORAGE:
-      return CONTENT_SETTINGS_TYPE_DURABLE_STORAGE;
+      return ContentSettingsType::DURABLE_STORAGE;
     case PermissionType::AUDIO_CAPTURE:
-      return CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC;
+      return ContentSettingsType::MEDIASTREAM_MIC;
     case PermissionType::VIDEO_CAPTURE:
-      return CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
+      return ContentSettingsType::MEDIASTREAM_CAMERA;
     case PermissionType::BACKGROUND_SYNC:
-      return CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
+      return ContentSettingsType::BACKGROUND_SYNC;
     case PermissionType::FLASH:
-      return CONTENT_SETTINGS_TYPE_PLUGINS;
+      return ContentSettingsType::PLUGINS;
     case PermissionType::SENSORS:
-      return CONTENT_SETTINGS_TYPE_SENSORS;
+      return ContentSettingsType::SENSORS;
     case PermissionType::ACCESSIBILITY_EVENTS:
-      return CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS;
+      return ContentSettingsType::ACCESSIBILITY_EVENTS;
     case PermissionType::CLIPBOARD_READ:
-      return CONTENT_SETTINGS_TYPE_CLIPBOARD_READ;
+      return ContentSettingsType::CLIPBOARD_READ;
     case PermissionType::CLIPBOARD_WRITE:
-      return CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE;
+      return ContentSettingsType::CLIPBOARD_WRITE;
     case PermissionType::PAYMENT_HANDLER:
-      return CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER;
+      return ContentSettingsType::PAYMENT_HANDLER;
     case PermissionType::BACKGROUND_FETCH:
-      return CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH;
+      return ContentSettingsType::BACKGROUND_FETCH;
     case PermissionType::IDLE_DETECTION:
-      return CONTENT_SETTINGS_TYPE_IDLE_DETECTION;
+      return ContentSettingsType::IDLE_DETECTION;
     case PermissionType::PERIODIC_BACKGROUND_SYNC:
-      return CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC;
+      return ContentSettingsType::PERIODIC_BACKGROUND_SYNC;
     case PermissionType::WAKE_LOCK_SCREEN:
-      return CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN;
+      return ContentSettingsType::WAKE_LOCK_SCREEN;
     case PermissionType::WAKE_LOCK_SYSTEM:
-      return CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM;
+      return ContentSettingsType::WAKE_LOCK_SYSTEM;
     case PermissionType::NUM:
       break;
   }
 
-  return CONTENT_SETTINGS_TYPE_DEFAULT;
+  return ContentSettingsType::DEFAULT;
 }
 
 // Helper method to convert PermissionType to ContentSettingType.
 ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
   ContentSettingsType content_setting =
       PermissionTypeToContentSettingSafe(permission);
-  DCHECK_NE(content_setting, CONTENT_SETTINGS_TYPE_DEFAULT)
+  DCHECK_NE(content_setting, ContentSettingsType::DEFAULT)
       << "Unknown content setting for permission "
       << static_cast<int>(permission);
   return content_setting;
@@ -302,59 +302,59 @@ PermissionManager* PermissionManager::Get(Profile* profile) {
 }
 
 PermissionManager::PermissionManager(Profile* profile) : profile_(profile) {
-  permission_contexts_[CONTENT_SETTINGS_TYPE_MIDI_SYSEX] =
+  permission_contexts_[ContentSettingsType::MIDI_SYSEX] =
       std::make_unique<MidiSysexPermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_MIDI] =
+  permission_contexts_[ContentSettingsType::MIDI] =
       std::make_unique<MidiPermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_NOTIFICATIONS] =
+  permission_contexts_[ContentSettingsType::NOTIFICATIONS] =
       std::make_unique<NotificationPermissionContext>(profile);
 #if !defined(OS_ANDROID)
-  permission_contexts_[CONTENT_SETTINGS_TYPE_GEOLOCATION] =
+  permission_contexts_[ContentSettingsType::GEOLOCATION] =
       std::make_unique<GeolocationPermissionContext>(profile);
 #else
-  permission_contexts_[CONTENT_SETTINGS_TYPE_GEOLOCATION] =
+  permission_contexts_[ContentSettingsType::GEOLOCATION] =
       std::make_unique<GeolocationPermissionContextAndroid>(profile);
 #endif
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  permission_contexts_[CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER] =
+  permission_contexts_[ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER] =
       std::make_unique<ProtectedMediaIdentifierPermissionContext>(profile);
 #endif
-  permission_contexts_[CONTENT_SETTINGS_TYPE_DURABLE_STORAGE] =
+  permission_contexts_[ContentSettingsType::DURABLE_STORAGE] =
       std::make_unique<DurableStoragePermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC] =
+  permission_contexts_[ContentSettingsType::MEDIASTREAM_MIC] =
       std::make_unique<MediaStreamDevicePermissionContext>(
-          profile, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA] =
+          profile, ContentSettingsType::MEDIASTREAM_MIC);
+  permission_contexts_[ContentSettingsType::MEDIASTREAM_CAMERA] =
       std::make_unique<MediaStreamDevicePermissionContext>(
-          profile, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC] =
+          profile, ContentSettingsType::MEDIASTREAM_CAMERA);
+  permission_contexts_[ContentSettingsType::BACKGROUND_SYNC] =
       std::make_unique<BackgroundSyncPermissionContext>(profile);
 #if BUILDFLAG(ENABLE_PLUGINS)
-  permission_contexts_[CONTENT_SETTINGS_TYPE_PLUGINS] =
+  permission_contexts_[ContentSettingsType::PLUGINS] =
       std::make_unique<FlashPermissionContext>(profile);
 #endif
-  permission_contexts_[CONTENT_SETTINGS_TYPE_SENSORS] =
+  permission_contexts_[ContentSettingsType::SENSORS] =
       std::make_unique<SensorPermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS] =
+  permission_contexts_[ContentSettingsType::ACCESSIBILITY_EVENTS] =
       std::make_unique<AccessibilityPermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_CLIPBOARD_READ] =
+  permission_contexts_[ContentSettingsType::CLIPBOARD_READ] =
       std::make_unique<ClipboardReadPermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE] =
+  permission_contexts_[ContentSettingsType::CLIPBOARD_WRITE] =
       std::make_unique<ClipboardWritePermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER] =
+  permission_contexts_[ContentSettingsType::PAYMENT_HANDLER] =
       std::make_unique<payments::PaymentHandlerPermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH] =
+  permission_contexts_[ContentSettingsType::BACKGROUND_FETCH] =
       std::make_unique<BackgroundFetchPermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_IDLE_DETECTION] =
+  permission_contexts_[ContentSettingsType::IDLE_DETECTION] =
       std::make_unique<IdleDetectionPermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC] =
+  permission_contexts_[ContentSettingsType::PERIODIC_BACKGROUND_SYNC] =
       std::make_unique<PeriodicBackgroundSyncPermissionContext>(profile);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN] =
+  permission_contexts_[ContentSettingsType::WAKE_LOCK_SCREEN] =
       std::make_unique<WakeLockPermissionContext>(
-          profile, CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN);
-  permission_contexts_[CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM] =
+          profile, ContentSettingsType::WAKE_LOCK_SCREEN);
+  permission_contexts_[ContentSettingsType::WAKE_LOCK_SYSTEM] =
       std::make_unique<WakeLockPermissionContext>(
-          profile, CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM);
+          profile, ContentSettingsType::WAKE_LOCK_SYSTEM);
 }
 
 PermissionManager::~PermissionManager() {
@@ -388,7 +388,7 @@ GURL PermissionManager::GetCanonicalOrigin(ContentSettingsType permission,
   // TODO(crbug.com/987654): Generalize this to other "background permissions",
   // that is, permissions that can be used by a service worker. This includes
   // durable storage, background sync, etc.
-  if (permission == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+  if (permission == ContentSettingsType::NOTIFICATIONS)
     return requesting_origin;
 
   if (base::FeatureList::IsEnabled(features::kPermissionDelegation)) {
@@ -777,7 +777,7 @@ void PermissionManager::SetPermissionOverridesForDevTools(
   for (const auto& item : overrides) {
     ContentSettingsType content_setting =
         PermissionTypeToContentSettingSafe(item.first);
-    if (content_setting != CONTENT_SETTINGS_TYPE_DEFAULT)
+    if (content_setting != ContentSettingsType::DEFAULT)
       result[content_setting] = PermissionStatusToContentSetting(item.second);
   }
   devtools_permission_overrides_[origin] = std::move(result);

@@ -209,7 +209,7 @@ class PLATFORM_EXPORT HeapAllocator {
   template <typename VisitorDispatcher, typename T, typename Traits>
   static void Trace(VisitorDispatcher visitor, T& t) {
     TraceCollectionIfEnabled<Traits::kWeakHandlingFlag, T, Traits>::Trace(
-        visitor, t);
+        visitor, &t);
   }
 
   template <typename T, typename VisitorDispatcher>
@@ -242,10 +242,8 @@ class PLATFORM_EXPORT HeapAllocator {
       // No weak handling for write barriers. Modifying weakly reachable objects
       // strongifies them for the current cycle.
       DCHECK(!Traits::kCanHaveDeletedValue || !Traits::IsDeletedValue(*object));
-      TraceCollectionIfEnabled<
-          WTF::kNoWeakHandling, T, Traits>::Trace(thread_state
-                                                      ->CurrentVisitor(),
-                                                  *object);
+      TraceCollectionIfEnabled<WTF::kNoWeakHandling, T, Traits>::Trace(
+          thread_state->CurrentVisitor(), object);
     }
   }
 
@@ -265,10 +263,8 @@ class PLATFORM_EXPORT HeapAllocator {
       while (len-- > 0) {
         DCHECK(!Traits::kCanHaveDeletedValue ||
                !Traits::IsDeletedValue(*array));
-        TraceCollectionIfEnabled<
-            WTF::kNoWeakHandling, T, Traits>::Trace(thread_state
-                                                        ->CurrentVisitor(),
-                                                    *array);
+        TraceCollectionIfEnabled<WTF::kNoWeakHandling, T, Traits>::Trace(
+            thread_state->CurrentVisitor(), array);
         array++;
       }
     }
@@ -364,7 +360,7 @@ static void TraceListHashSetValue(VisitorDispatcher visitor, Value& value) {
   // strongify template argument, so we specify WTF::WeakPointersActWeak,
   // arbitrarily.
   TraceCollectionIfEnabled<WTF::kNoWeakHandling, Value,
-                           WTF::HashTraits<Value>>::Trace(visitor, value);
+                           WTF::HashTraits<Value>>::Trace(visitor, &value);
 }
 
 // The inline capacity is just a dummy template argument to match the off-heap

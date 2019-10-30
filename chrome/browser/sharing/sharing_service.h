@@ -17,6 +17,7 @@
 #include "chrome/browser/sharing/ack_message_handler.h"
 #include "chrome/browser/sharing/ping_message_handler.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/response_callback_helper.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/gcm_driver/web_push_common.h"
@@ -57,9 +58,6 @@ class SharingService : public KeyedService,
                        syncer::SyncServiceObserver,
                        syncer::DeviceInfoTracker::Observer {
  public:
-  using SendMessageCallback = base::OnceCallback<void(
-      SharingSendMessageResult,
-      std::unique_ptr<chrome_browser_sharing::ResponseMessage>)>;
   using SharingDeviceList = std::vector<std::unique_ptr<syncer::DeviceInfo>>;
 
   enum class State {
@@ -110,7 +108,7 @@ class SharingService : public KeyedService,
       const std::string& device_guid,
       base::TimeDelta response_timeout,
       chrome_browser_sharing::SharingMessage message,
-      SendMessageCallback callback);
+      ResponseCallbackHelper::ResponseCallback callback);
 
   // Used to register devices with required capabilities in tests.
   void RegisterDeviceInTesting(
@@ -131,11 +129,6 @@ class SharingService : public KeyedService,
   void OnSyncShutdown(syncer::SyncService* sync) override;
   void OnStateChanged(syncer::SyncService* sync) override;
   void OnSyncCycleCompleted(syncer::SyncService* sync) override;
-
-  void OnAckReceived(
-      chrome_browser_sharing::MessageType message_type,
-      std::string message_id,
-      std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
   // syncer::DeviceInfoTracker::Observer.
   void OnDeviceInfoChange() override;
@@ -186,6 +179,8 @@ class SharingService : public KeyedService,
   void InitPersonalizableLocalDeviceName(
       std::string personalizable_local_device_name);
 
+  ResponseCallbackHelper response_callback_helper_;
+
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;
@@ -207,12 +202,6 @@ class SharingService : public KeyedService,
 
   // List of callbacks for AddDeviceCandidatesInitializedObserver.
   std::vector<base::OnceClosure> device_candidates_initialized_callbacks_;
-  // Map of random GUID to SendMessageCallback.
-  std::map<std::string, SendMessageCallback> send_message_callbacks_;
-  // Map of FCM message_id to time at start of send message request to FCM.
-  std::map<std::string, base::TimeTicks> send_message_times_;
-  // Map of FCM message_id to random GUID.
-  std::map<std::string, std::string> message_guids_;
 
 #if defined(OS_ANDROID)
   SharingServiceProxyAndroid sharing_service_proxy_android_{this};

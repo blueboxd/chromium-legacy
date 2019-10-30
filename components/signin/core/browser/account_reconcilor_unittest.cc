@@ -411,7 +411,7 @@ void AccountReconcilorTest::SimulateCookieContentSettingsChanged(
     const ContentSettingsPattern& primary_pattern) {
   observer->OnContentSettingChanged(
       primary_pattern, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_COOKIES, std::string());
+      ContentSettingsType::COOKIES, std::string());
 }
 
 void AccountReconcilorTest::SetAccountConsistency(

@@ -24,6 +24,7 @@
 #include "third_party/blink/public/web/web_media_inspector.h"
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
+#include "media/mojo/clients/mojo_renderer_factory.h"  // nogncheck
 #include "media/mojo/mojom/interface_factory.mojom.h"  // nogncheck
 #endif
 
@@ -153,6 +154,8 @@ class MediaFactory {
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
+
+  std::unique_ptr<media::MojoRendererFactory> CreateMojoRendererFactory();
 
   // The media interface provider attached to this frame, lazily initialized.
   std::unique_ptr<MediaInterfaceFactory> media_interface_factory_;

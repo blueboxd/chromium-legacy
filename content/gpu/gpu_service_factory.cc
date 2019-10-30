@@ -9,14 +9,15 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "media/media_buildflags.h"
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 #include "base/bind.h"
 #include "media/mojo/mojom/constants.mojom.h"      // nogncheck
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 #include "content/public/gpu/content_gpu_client.h"
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 
 namespace content {
@@ -48,11 +49,11 @@ void GpuServiceFactory::RunService(
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   if (service_name == media::mojom::kMediaServiceName) {
     media::CdmProxyFactoryCB cdm_proxy_factory_cb;
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_CDM_PROXY)
     cdm_proxy_factory_cb =
         base::BindRepeating(&ContentGpuClient::CreateCdmProxy,
                             base::Unretained(GetContentClient()->gpu()));
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
     // This service will host audio/video decoders, and if these decoding
     // operations are blocked, user may hear audio glitch or see video freezing,

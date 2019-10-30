@@ -562,6 +562,13 @@ class AutofillManagerTest : public testing::Test {
         autofill_manager_->credit_card_access_manager_->cvc_authenticator_
             ->full_card_request_.get();
     DCHECK(full_card_request);
+
+    // Mock user response.
+    payments::FullCardRequest::UserProvidedUnmaskDetails details;
+    details.cvc = base::ASCIIToUTF16("123");
+    full_card_request->OnUnmaskPromptAccepted(details);
+
+    // Mock payments response.
     payments::PaymentsClient::UnmaskResponseDetails response;
     full_card_request->OnDidGetRealPan(result,
                                        response.with_real_pan(real_pan));

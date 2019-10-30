@@ -1209,16 +1209,10 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
         return results_bg_color();
       case TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED:
         return results_bg_selected_color();
-      case TP::COLOR_OMNIBOX_SELECTED_KEYWORD:
-        if (dark)
-          return {{gfx::kGoogleGrey100, false}};
-        return url_color(results_bg_color());
       case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE:
         return {{dark ? gfx::kGoogleGrey100
                       : SkColorSetA(gfx::kGoogleGrey900, 0x24),
                  false}};
-      case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE:
-        return url_color(results_bg_color());
       case TP::COLOR_OMNIBOX_TEXT_DIMMED:
         return blend_with_clamped_contrast(bg_hovered_color());
       case TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED:
@@ -1233,6 +1227,11 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
                                       results_bg_selected_color());
       case TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED:
         return results_bg_hovered_color();
+      case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE:
+      case TP::COLOR_OMNIBOX_SELECTED_KEYWORD:
+        if (dark)
+          return {{gfx::kGoogleGrey100, false}};
+        FALLTHROUGH;
       case TP::COLOR_OMNIBOX_RESULTS_URL:
         return url_color(results_bg_hovered_color());
       case TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED:

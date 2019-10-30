@@ -63,7 +63,6 @@ static bool check_msgtable() {
   exemptions.push_back(GinJavaBridgeMsgStart);
   exemptions.push_back(AndroidWebViewMsgStart);
   exemptions.push_back(ExtensionWorkerMsgStart);
-  exemptions.push_back(SurfaceViewManagerMsgStart);
 #endif  // !defined(OS_ANDROID)
 
 #if !defined(USE_OZONE)

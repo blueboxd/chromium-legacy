@@ -35,8 +35,7 @@ template("chrome_feature_module") {
   }
 
   _shared_libraries = []
-  if (use_native_partitions && defined(_module_desc.native_deps) &&
-      _module_desc.native_deps != []) {
+  if (defined(_module_desc.native_deps) && _module_desc.native_deps != []) {
     _arch = ""
     _toolchain = ""
     if (android_64bit_target_cpu && _is_monochrome_or_trichrome) {

@@ -221,9 +221,8 @@ class PasswordFormMetricsRecorder
     // Form is suspected to be a password change form. (Only recorded for old
     // form parser)
     kFormNotGoodForFilling = 3,
-    // User is on an HTTP site where passwords are filled on account selection
-    // (FOAS).
-    kFoasOnHTTP = 4,
+    // User is on a site with an insecure main frame origin.
+    kInsecureOrigin = 4,
     // The Touch To Fill feature is enabled.
     kTouchToFill = 5,
     // Show suggestion on account selection feature is enabled.

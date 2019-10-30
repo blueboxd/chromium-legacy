@@ -175,7 +175,8 @@ def _CreateTestingSymbolssDeltas(symbols):
   testing_symbols = symbols.WhereNameMatches('ForTest').WhereDiffStatusIs(
       models.DIFF_STATUS_ADDED)
   lines = list(describe.GenerateLines(testing_symbols, summarize=False))
-  return lines, _SizeDelta('Added symbols named "ForTest"', 'symbols', 0,
+  # Check is temporarily disabled, as such the limit is set to 100 instead of 0.
+  return lines, _SizeDelta('Added symbols named "ForTest"', 'symbols', 100,
                            len(testing_symbols), None)
 
 

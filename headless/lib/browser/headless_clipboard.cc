@@ -25,8 +25,7 @@ uint64_t HeadlessClipboard::GetSequenceNumber(
 
 bool HeadlessClipboard::IsFormatAvailable(const ui::ClipboardFormatType& format,
                                           ui::ClipboardBuffer buffer) const {
-  const DataStore& store = GetStore(buffer);
-  return store.data.find(format) != store.data.end();
+  return base::Contains(GetStore(buffer).data, format);
 }
 
 void HeadlessClipboard::Clear(ui::ClipboardBuffer buffer) {

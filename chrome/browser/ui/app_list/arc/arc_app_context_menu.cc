@@ -9,6 +9,8 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
@@ -89,7 +91,11 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == ash::LAUNCH_NEW) {
     delegate()->ExecuteLaunchCommand(event_flags);
   } else if (command_id == ash::UNINSTALL) {
-    arc::ShowArcAppUninstallDialog(profile(), controller(), app_id());
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile());
+    DCHECK(proxy);
+    proxy->Uninstall(app_id(),
+                     controller() ? controller()->GetAppListWindow() : nullptr);
   } else if (command_id == ash::SHOW_APP_INFO) {
     ShowPackageInfo();
   } else if (command_id >= ash::LAUNCH_APP_SHORTCUT_FIRST &&

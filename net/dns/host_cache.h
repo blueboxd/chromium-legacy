@@ -32,6 +32,7 @@
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/esni_content.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/log/net_log_capture_mode.h"
@@ -163,6 +164,10 @@ class NET_EXPORT HostCache {
     void set_hostnames(base::Optional<std::vector<HostPortPair>> hostnames) {
       hostnames_ = std::move(hostnames);
     }
+    const base::Optional<EsniContent>& esni_data() const { return esni_data_; }
+    void set_esni_data(base::Optional<EsniContent> esni_data) {
+      esni_data_ = std::move(esni_data);
+    }
     Source source() const { return source_; }
     bool has_ttl() const { return ttl_ >= base::TimeDelta(); }
     base::TimeDelta ttl() const { return ttl_; }
@@ -199,6 +204,7 @@ class NET_EXPORT HostCache {
           const base::Optional<AddressList>& addresses,
           base::Optional<std::vector<std::string>>&& text_results,
           base::Optional<std::vector<HostPortPair>>&& hostnames,
+          base::Optional<EsniContent>&& esni_data,
           Source source,
           base::TimeTicks expires,
           int network_changes);
@@ -210,6 +216,7 @@ class NET_EXPORT HostCache {
     void SetResult(std::vector<HostPortPair> hostnames) {
       hostnames_ = std::move(hostnames);
     }
+    void SetResult(EsniContent esni_data) { esni_data_ = std::move(esni_data); }
 
     int total_hits() const { return total_hits_; }
     int stale_hits() const { return stale_hits_; }
@@ -227,6 +234,7 @@ class NET_EXPORT HostCache {
     base::Optional<AddressList> addresses_;
     base::Optional<std::vector<std::string>> text_records_;
     base::Optional<std::vector<HostPortPair>> hostnames_;
+    base::Optional<EsniContent> esni_data_;
     // Where results were obtained (e.g. DNS lookup, hosts file, etc).
     Source source_ = SOURCE_UNKNOWN;
     // TTL obtained from the nameserver. Negative if unknown.

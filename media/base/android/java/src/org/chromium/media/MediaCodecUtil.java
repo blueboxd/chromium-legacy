@@ -72,7 +72,7 @@ class MediaCodecUtil {
             if (supportsNewMediaCodecList()) {
                 try {
                     mCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos();
-                } catch (RuntimeException e) {
+                } catch (Throwable e) {
                     // Swallow the exception due to bad Android implementation and pretend
                     // MediaCodecList is not supported.
                 }

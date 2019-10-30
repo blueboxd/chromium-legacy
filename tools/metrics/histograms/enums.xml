@@ -14211,6 +14211,75 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Mixed mirror mode"/>
 </enum>
 
+<enum name="DisplayResolution">
+  <int value="0" label="Display is power off"/>
+  <int value="1" label="1024 x 1024"/>
+  <int value="2" label="1024 x 1280"/>
+  <int value="3" label="1024 x 1440"/>
+  <int value="4" label="1024 x 1920"/>
+  <int value="5" label="1024 x 2560"/>
+  <int value="6" label="1024 x 3840"/>
+  <int value="7" label="1024 x 5120"/>
+  <int value="8" label="1024 x 7680"/>
+  <int value="9" label="1280 x 1024"/>
+  <int value="10" label="1280 x 1280"/>
+  <int value="11" label="1280 x 1440"/>
+  <int value="12" label="1280 x 1920"/>
+  <int value="13" label="1280 x 2560"/>
+  <int value="14" label="1280 x 3840"/>
+  <int value="15" label="1280 x 5120"/>
+  <int value="16" label="1280 x 7680"/>
+  <int value="17" label="1440 x 1024"/>
+  <int value="18" label="1440 x 1280"/>
+  <int value="19" label="1440 x 1440"/>
+  <int value="20" label="1440 x 1920"/>
+  <int value="21" label="1440 x 2560"/>
+  <int value="22" label="1440 x 3840"/>
+  <int value="23" label="1440 x 5120"/>
+  <int value="24" label="1440 x 7680"/>
+  <int value="25" label="1920 x 1024"/>
+  <int value="26" label="1920 x 1280"/>
+  <int value="27" label="1920 x 1440"/>
+  <int value="28" label="1920 x 1920"/>
+  <int value="29" label="1920 x 2560"/>
+  <int value="30" label="1920 x 3840"/>
+  <int value="31" label="1920 x 5120"/>
+  <int value="32" label="1920 x 7680"/>
+  <int value="33" label="2560 x 1024"/>
+  <int value="34" label="2560 x 1280"/>
+  <int value="35" label="2560 x 1440"/>
+  <int value="36" label="2560 x 1920"/>
+  <int value="37" label="2560 x 2560"/>
+  <int value="38" label="2560 x 3840"/>
+  <int value="39" label="2560 x 5120"/>
+  <int value="40" label="2560 x 7680"/>
+  <int value="41" label="3840 x 1024"/>
+  <int value="42" label="3840 x 1280"/>
+  <int value="43" label="3840 x 1440"/>
+  <int value="44" label="3840 x 1920"/>
+  <int value="45" label="3840 x 2560"/>
+  <int value="46" label="3840 x 3840"/>
+  <int value="47" label="3840 x 5120"/>
+  <int value="48" label="3840 x 7680"/>
+  <int value="49" label="5120 x 1024"/>
+  <int value="50" label="5120 x 1280"/>
+  <int value="51" label="5120 x 1440"/>
+  <int value="52" label="5120 x 1920"/>
+  <int value="53" label="5120 x 2560"/>
+  <int value="54" label="5120 x 3840"/>
+  <int value="55" label="5120 x 5120"/>
+  <int value="56" label="5120 x 7680"/>
+  <int value="57" label="7680 x 1024"/>
+  <int value="58" label="7680 x 1280"/>
+  <int value="59" label="7680 x 1440"/>
+  <int value="60" label="7680 x 1920"/>
+  <int value="61" label="7680 x 2560"/>
+  <int value="62" label="7680 x 3840"/>
+  <int value="63" label="7680 x 5120"/>
+  <int value="64" label="7680 x 7680"/>
+  <int value="65" label="Dimension overflow"/>
+</enum>
+
 <enum name="DistillableType">
   <int value="0" label="Not distillable"/>
   <int value="1" label="Non-mobile-friendly distillable"/>
@@ -33738,6 +33807,23 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Del Fail -MaxPathCheck Fail - MoveFileEx Fail - CopyDelDir Fail"/>
 </enum>
 
+<enum name="KeepaliveRequestBlockStatus">
+  <int value="0" label="Not Blocked"/>
+  <int value="1" label="Blocked due to NetworkContext::CanCreateLoader"/>
+  <int value="2" label="Blocked due to the number of requests per process"/>
+  <int value="3"
+      label="Blocked due to the number of requests per top-level frame"/>
+  <int value="4" label="Blocked due to the number of requests globally"/>
+  <int value="5"
+      label="Blocked due to the total size of URL and request headers"/>
+  <int value="6"
+      label="Not blocked but the total size of URL and request headers
+             exceeds 384kb"/>
+  <int value="7"
+      label="Not blocked but the total size of URL and request headers
+             exceeds 256kb"/>
+</enum>
+
 <enum name="KerberosConfigErrorCode">
   <int value="0" label="Valid"/>
   <int value="1" label="Section nested in group"/>
@@ -35331,6 +35417,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2098243118" label="OmniboxTailSuggestions:disabled"/>
   <int value="-2097895488" label="NotificationScrollBar:enabled"/>
   <int value="-2097515669" label="disable-cast"/>
+  <int value="-2095519429" label="FtpProtocol:enabled"/>
   <int value="-2092067251" label="NativeFilesystemAPI:disabled"/>
   <int value="-2091404586" label="TabStripKeyboardFocus:enabled"/>
   <int value="-2090484194" label="ContextualSearchUrlActions:disabled"/>
@@ -36696,6 +36783,7 @@ from previous Chrome versions.
   <int value="-400572959" label="UseDownloadOfflineContentProvider:enabled"/>
   <int value="-400098787" label="QuietNotificationPrompts:enabled"/>
   <int value="-398623652" label="CCTTargetTranslateLanguage:enabled"/>
+  <int value="-397392156" label="FtpProtocol:disabled"/>
   <int value="-396994784" label="enable-vr-shell"/>
   <int value="-396496344" label="ViewsTaskManager:enabled"/>
   <int value="-395606844" label="enable-site-settings"/>
@@ -42210,6 +42298,22 @@ Called by update_use_counter_css.py.-->
   <int value="7"
       label="An origin was preconnected to when the user kept the tab in the
              foreground until the previous preconnect expired."/>
+</enum>
+
+<enum name="NavigationPredictorLinkClickedPrerenderResult">
+  <int value="0"
+      label="The prerender finished entirely before the link was clicked"/>
+  <int value="1" label="The prerender was started but not finished"/>
+  <int value="2" label="The link was waiting to be prerendered"/>
+  <int value="3" label="The prerender was attempted, but blocked by policy"/>
+  <int value="4" label="The link scored poorly"/>
+  <int value="5" label="The link was not seen at the load event"/>
+  <int value="6"
+      label="The link was cross origin and scored above the threshold"/>
+  <int value="7"
+      label="The link was cross origin and scored below the threshold"/>
+  <int value="8"
+      label="The link was cross origin and not seen at the load event"/>
 </enum>
 
 <enum name="NavigationRequiresDedicatedProcess">
@@ -47861,9 +47965,8 @@ Called by update_net_trust_anchors.py.-->
     Form is suspected to be a password change form. (Only recorded for old form
     parser)
   </int>
-  <int value="4" label="FOAS on HTTP">
-    User is on an HTTP site where passwords are filled on account selection
-    (FOAS).
+  <int value="4" label="Insecure Origin">
+    User is on a site with an insecure main frame origin.
   </int>
   <int value="5" label="Touch To Fill">
     User is browsing with the Touch To Fill feature enabled.

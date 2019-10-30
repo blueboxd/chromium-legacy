@@ -1443,14 +1443,18 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
     LayoutUnit& max_logical_width) const {
   int scrollbar_width = ScrollbarLogicalWidth();
 
-  // Size-contained elements don't consider their contents for preferred sizing.
-  if (ShouldApplySizeContainment()) {
-    // For multicol containers we need the column gaps. So allow descending into
-    // the flow thread, which will take care of that.
-    const auto* block_flow = DynamicTo<LayoutBlockFlow>(this);
-    if (!block_flow || !block_flow->MultiColumnFlowThread()) {
+  // See if we can early out sooner if the logical width is overridden or we're
+  // size contained. Note that for multicol containers we need the column gaps.
+  // So allow descending into the flow thread, which will take care of that.
+  const auto* block_flow = DynamicTo<LayoutBlockFlow>(this);
+  if (!block_flow || !block_flow->MultiColumnFlowThread()) {
+    if (HasOverrideIntrinsicContentLogicalWidth()) {
       max_logical_width = min_logical_width =
-          ContentLogicalWidthForSizeContainment() + LayoutUnit(scrollbar_width);
+          OverrideIntrinsicContentLogicalWidth() + LayoutUnit(scrollbar_width);
+      return;
+    }
+    if (ShouldApplySizeContainment()) {
+      max_logical_width = min_logical_width = LayoutUnit(scrollbar_width);
       return;
     }
   }

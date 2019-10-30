@@ -13,9 +13,11 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/login/app_launch_signin_screen.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -33,6 +35,7 @@ class OobeUI;
 class AppLaunchController : public KioskProfileLoader::Delegate,
                             public StartupAppLauncher::Delegate,
                             public AppLaunchSigninScreen::Delegate,
+                            public AppLaunchSplashScreenView::Delegate,
                             public content::NotificationObserver {
  public:
   typedef base::Callback<bool()> ReturnBoolCallback;
@@ -52,21 +55,13 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   bool network_wait_timedout() { return network_wait_timedout_; }
   bool showing_network_dialog() { return showing_network_dialog_; }
 
-  // Invoked when the configure network control is clicked.
-  void OnConfigureNetwork();
-
-  // Invoked when the app launch bailout shortcut key is pressed.
-  void OnCancelAppLaunch();
-
-  // Invoked when the network config shortcut key is pressed.
-  void OnNetworkConfigRequested(bool requested);
-
-  // Invoked when network state is changed. |online| is true if the device
-  // is connected to the Internet.
-  void OnNetworkStateChanged(bool online);
-
-  // Invoked when the splash screen view is being deleted.
-  void OnDeletingSplashScreenView();
+  // AppLaunchSplashScreenView::Delegate:
+  void OnConfigureNetwork() override;
+  void OnCancelAppLaunch() override;
+  void OnNetworkConfigRequested(bool requested) override;
+  void OnNetworkStateChanged(bool online) override;
+  void OnDeletingSplashScreenView() override;
+  KioskAppManagerBase::App GetAppData() override;
 
   // Customize controller for testing purposes.
   static void SkipSplashWaitForTesting();

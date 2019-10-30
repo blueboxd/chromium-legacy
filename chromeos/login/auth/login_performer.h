@@ -89,6 +89,9 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   // Performs a login into the ARC kiosk mode account with |arc_app_account_id|.
   void LoginAsArcKioskAccount(const AccountId& arc_app_account_id);
 
+  // Performs a login into the Web kiosk mode account with |web_app_account_id|.
+  void LoginAsWebKioskAccount(const AccountId& web_app_account_id);
+
   // AuthStatusConsumer implementation:
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;

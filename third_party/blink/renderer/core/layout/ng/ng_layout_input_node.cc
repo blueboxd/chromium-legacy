@@ -75,18 +75,32 @@ void NGLayoutInputNode::IntrinsicSize(
     base::Optional<LayoutUnit>* computed_block_size,
     LogicalSize* aspect_ratio) const {
   DCHECK(IsReplaced());
+
+  LayoutUnit override_inline_size = OverrideIntrinsicContentInlineSize();
+  if (override_inline_size != kIndefiniteSize)
+    *computed_inline_size = override_inline_size;
+
+  LayoutUnit override_block_size = OverrideIntrinsicContentBlockSize();
+  if (override_block_size != kIndefiniteSize)
+    *computed_block_size = override_block_size;
+
   if (ShouldApplySizeContainment()) {
-    *computed_inline_size = ContentInlineSizeForSizeContainment();
-    *computed_block_size = ContentBlockSizeForSizeContainment();
+    if (!*computed_inline_size)
+      *computed_inline_size = LayoutUnit();
+    if (!*computed_block_size)
+      *computed_block_size = LayoutUnit();
+  }
+  if (*computed_inline_size && *computed_block_size) {
     *aspect_ratio = LogicalSize(**computed_inline_size, **computed_block_size);
     return;
   }
+
   IntrinsicSizingInfo legacy_sizing_info;
 
   ToLayoutReplaced(box_)->ComputeIntrinsicSizingInfo(legacy_sizing_info);
-  if (legacy_sizing_info.has_width)
+  if (!*computed_inline_size && legacy_sizing_info.has_width)
     *computed_inline_size = LayoutUnit(legacy_sizing_info.size.Width());
-  if (legacy_sizing_info.has_height)
+  if (!*computed_block_size && legacy_sizing_info.has_height)
     *computed_block_size = LayoutUnit(legacy_sizing_info.size.Height());
   *aspect_ratio =
       LogicalSize(LayoutUnit(legacy_sizing_info.aspect_ratio.Width()),

@@ -125,17 +125,41 @@ serial_test(async (t, fake) => {
   assert_true(port.writable instanceof WritableStream);
 
   const encoder = new TextEncoderStream();
-  const encodingComplete = encoder.readable.pipeTo(port.writable);
+  const streamClosed = encoder.readable.pipeTo(port.writable);
   const writer = encoder.writable.getWriter();
-  let writePromise = writer.write("Hello world!");
-  let { value, done } = await fakePort.read();
+  const writePromise = writer.write("Hello world!");
+  const { value, done } = await fakePort.read();
   await writePromise;
   assert_equals("Hello world!", new TextDecoder().decode(value));
   await writer.close();
-  await encodingComplete;
+  await streamClosed;
 
   await port.close();
   assert_equals(port.writable, null);
 }, 'Can pipe a stream to writable');
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+
+  await port.open({ baudrate: 9600 });
+  assert_true(port.writable instanceof WritableStream);
+
+  const transform = new TransformStream();
+  const readable = transform.readable.pipeThrough(new TextEncoderStream())
+                                     .pipeThrough(new TransformStream())
+                                     .pipeThrough(new TransformStream())
+                                     .pipeThrough(new TransformStream());
+  const streamClosed = readable.pipeTo(port.writable);
+  const writer = transform.writable.getWriter();
+  const writePromise = writer.write("Hello world!");
+  const { value, done } = await fakePort.read();
+  await writePromise;
+  assert_equals("Hello world!", new TextDecoder().decode(value));
+  await writer.close();
+  await streamClosed;
+
+  await port.close();
+  assert_equals(port.writable, null);
+}, 'Stream closure is observable through a long chain of transformers');
 
 </script>

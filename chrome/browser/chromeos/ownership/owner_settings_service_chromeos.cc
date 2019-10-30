@@ -697,18 +697,11 @@ void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
   if (waiting_for_tpm_token_ || waiting_for_easy_unlock_operation_finshed_)
     return;
 
-  bool rv = base::PostTask(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&LoadPrivateKeyOnIOThread, owner_key_util_,
                      ProfileHelper::GetUserIdHashFromProfile(profile_),
                      callback));
-  if (!rv) {
-    // IO thread doesn't exists in unit tests, but it's safe to use NSS from
-    // BlockingPool in unit tests.
-    LoadPrivateKeyOnIOThread(owner_key_util_,
-                             ProfileHelper::GetUserIdHashFromProfile(profile_),
-                             callback);
-  }
 }
 
 void OwnerSettingsServiceChromeOS::StorePendingChanges() {

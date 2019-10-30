@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/mru_cache.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/i18n/base_i18n_switches.h"
@@ -20,6 +21,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -67,7 +69,7 @@ const size_t kMaxTextLength = 10000;
 // The maximum number of scripts a Unicode character can belong to. This value
 // is arbitrarily chosen to be a good limit because it is unlikely for a single
 // character to belong to more scripts.
-const size_t kMaxScripts = 5;
+const size_t kMaxScripts = 32;
 
 // Font fallback mechanism used to Shape runs (see ShapeRuns(...)).
 // These values are persisted to logs. Entries should not be renumbered and
@@ -98,34 +100,18 @@ bool IsBracket(UChar32 codepoint) {
          U_BPT_NONE;
 }
 
-// If the given scripts match, returns the one that isn't USCRIPT_INHERITED,
-// i.e. the more specific one. Otherwise returns USCRIPT_INVALID_CODE. This
-// function is used to split runs between characters of different script codes,
-// unless either character has USCRIPT_INHERITED property. See crbug.com/448909.
-UScriptCode ScriptIntersect(UScriptCode first, UScriptCode second) {
-  if (first == second || second == USCRIPT_INHERITED)
-    return first;
-  if (first == USCRIPT_INHERITED)
-    return second;
-  return USCRIPT_INVALID_CODE;
-}
-
-// Writes the script and the script extensions of the character with the
-// Unicode |codepoint|. Returns the number of written scripts.
-int GetScriptExtensions(UChar32 codepoint, UScriptCode* scripts) {
+// Writes the script and the script extensions of the Unicode |codepoint|.
+// Returns the number of written scripts.
+size_t GetScriptExtensions(UChar32 codepoint, UScriptCode* scripts) {
+  // Fill |scripts| with the script extensions.
   UErrorCode icu_error = U_ZERO_ERROR;
-  // ICU documentation incorrectly states that the result of
-  // |uscript_getScriptExtensions| will contain the regular script property.
-  // Write the character's script property to the first element.
-  scripts[0] = uscript_getScript(codepoint, &icu_error);
+  size_t count =
+      uscript_getScriptExtensions(codepoint, scripts, kMaxScripts, &icu_error);
+  DCHECK_NE(icu_error, U_BUFFER_OVERFLOW_ERROR) << " #ext: " << count;
   if (U_FAILURE(icu_error))
     return 0;
-  // Fill the rest of |scripts| with the extensions.
-  int count = uscript_getScriptExtensions(codepoint, scripts + 1,
-                                          kMaxScripts - 1, &icu_error);
-  if (U_FAILURE(icu_error))
-    count = 0;
-  return count + 1;
+
+  return count;
 }
 
 // Intersects the script extensions set of |codepoint| with |result| and writes
@@ -133,19 +119,51 @@ int GetScriptExtensions(UChar32 codepoint, UScriptCode* scripts) {
 void ScriptSetIntersect(UChar32 codepoint,
                         UScriptCode* result,
                         size_t* result_size) {
+  // Each codepoint has a Script property and a Script Extensions (Scx)
+  // property.
+  //
+  // The implicit Script property values 'Common' and 'Inherited' indicate that
+  // a codepoint is widely used in many scripts, rather than being associated
+  // to a specific script.
+  //
+  // However, some codepoints that are assigned a value of 'Common' or
+  // 'Inherited' are not commonly used with all scripts, but rather only with a
+  // limited set of scripts. The Script Extension property is used to specify
+  // the set of script which borrow the codepoint.
+  //
+  // Calls to GetScriptExtensions(...) return the set of scripts where the
+  // codepoints can be used.
+  // (see table 7 from http://www.unicode.org/reports/tr24/tr24-29.html)
+  //
+  //     Script     Script Extensions   ->  Results
+  //  1) Common       {Common}          ->  {Common}
+  //     Inherited    {Inherited}       ->  {Inherited}
+  //  2) Latin        {Latn}            ->  {Latn}
+  //     Inherited    {Latn}            ->  {Latn}
+  //  3) Common       {Hira Kana}       ->  {Hira Kana}
+  //     Inherited    {Hira Kana}       ->  {Hira Kana}
+  //  4) Devanagari   {Deva Dogr Kthi Mahj}  ->  {Deva Dogr Kthi Mahj}
+  //     Myanmar      {Cakm Mymr Tale}  ->  {Cakm Mymr Tale}
+  //
+  // For most of the codepoints, the script extensions set contains only one
+  // element. For CJK codepoints, it's common to see 3-4 scripts. For really
+  // rare cases, the set can go above 20 scripts.
   UScriptCode scripts[kMaxScripts] = { USCRIPT_INVALID_CODE };
-  int count = GetScriptExtensions(codepoint, scripts);
+  size_t count = GetScriptExtensions(codepoint, scripts);
+
+  // Implicit script 'inherited' is inheriting scripts from preceding codepoint.
+  if (count == 1 && scripts[0] == USCRIPT_INHERITED)
+    return;
+
+  // Perform the intersection of both script set.
+  auto scripts_span = base::span<UScriptCode>(scripts, count);
+  DCHECK(!base::Contains(scripts_span, USCRIPT_INHERITED));
+  auto results_span = base::span<UScriptCode>(result, *result_size);
 
   size_t out_size = 0;
-
-  for (size_t i = 0; i < *result_size; ++i) {
-    for (int j = 0; j < count; ++j) {
-      UScriptCode intersection = ScriptIntersect(result[i], scripts[j]);
-      if (intersection != USCRIPT_INVALID_CODE) {
-        result[out_size++] = intersection;
-        break;
-      }
-    }
+  for (UScriptCode current : results_span) {
+    if (base::Contains(scripts_span, current))
+      result[out_size++] = current;
   }
 
   *result_size = out_size;

@@ -110,7 +110,7 @@ void KioskAppMenuController::LaunchApp(const ash::KioskAppMenuEntry& app) {
       host->StartArcKiosk(app.account_id);
       return;
     case policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP:
-      // TODO(crbug.com/1006230): StartWebKiosk(app.account_id)
+      host->StartWebKiosk(app.account_id);
       return;
     default:
       break;

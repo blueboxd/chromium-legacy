@@ -12,8 +12,8 @@
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/macros.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/animation/animation_delegate_views.h"
 
 namespace gfx {
 class SlideAnimation;
@@ -32,11 +32,12 @@ class UnifiedSystemTrayView;
 
 // Controller class of UnifiedSystemTrayView. Handles events of the view.
 class ASH_EXPORT UnifiedSystemTrayController
-    : public gfx::AnimationDelegate,
+    : public views::AnimationDelegateViews,
       public UnifiedVolumeSliderController::Delegate {
  public:
   UnifiedSystemTrayController(UnifiedSystemTrayModel* model,
-                              UnifiedSystemTrayBubble* bubble = nullptr);
+                              UnifiedSystemTrayBubble* bubble = nullptr,
+                              views::View* owner_view = nullptr);
   ~UnifiedSystemTrayController() override;
 
   // Create the view. The created view is unowned.
@@ -116,7 +117,7 @@ class ASH_EXPORT UnifiedSystemTrayController
   // notifications area.
   void ResetToCollapsedIfRequired();
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;

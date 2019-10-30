@@ -1447,8 +1447,10 @@ bool FrameLoader::ShouldReuseDefaultView(
   // be considered when deciding whether to reuse it.
   // Spec:
   // https://html.spec.whatwg.org/C/#initialise-the-document-object
-  if (csp && (csp->GetSandboxMask() & WebSandboxFlags::kOrigin) !=
-                 WebSandboxFlags::kNone) {
+  if ((csp && (csp->GetSandboxMask() & WebSandboxFlags::kOrigin) !=
+                  WebSandboxFlags::kNone) ||
+      ((EffectiveSandboxFlags() & WebSandboxFlags::kOrigin) !=
+       WebSandboxFlags::kNone)) {
     return false;
   }
 

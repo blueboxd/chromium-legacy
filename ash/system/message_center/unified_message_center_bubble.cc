@@ -88,21 +88,23 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
     message_center_view_->SetCollapsed(false /*animate*/);
 
   message_center_view_->AddObserver(this);
+}
 
+void UnifiedMessageCenterBubble::ShowBubble() {
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   bubble_widget_->AddObserver(this);
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
 
-  bubble_view_->InitializeAndShowBubble();
-
-  tray->tray_event_filter()->AddBubble(this);
-  tray->bubble()->unified_view()->AddObserver(this);
+  tray_->tray_event_filter()->AddBubble(this);
+  tray_->bubble()->unified_view()->AddObserver(this);
 
   ui::Layer* widget_layer = bubble_widget_->GetLayer();
   int radius = kUnifiedTrayCornerRadius;
   widget_layer->SetRoundedCornerRadius({radius, radius, radius, radius});
   widget_layer->SetIsFastRoundedCorner(true);
   widget_layer->Add(border_->layer());
+
+  bubble_view_->InitializeAndShowBubble();
 
   UpdatePosition();
 }
@@ -168,7 +170,7 @@ void UnifiedMessageCenterBubble::FocusFirstNotification() {
 }
 
 bool UnifiedMessageCenterBubble::IsMessageCenterVisible() {
-  return message_center_view_->GetVisible();
+  return !!bubble_widget_ && message_center_view_->GetVisible();
 }
 
 TrayBackgroundView* UnifiedMessageCenterBubble::GetTray() const {

@@ -52,7 +52,7 @@ class SSLBlockingPage : public SSLBlockingPageBase {
   // Creates an SSL blocking page. If the blocking page isn't shown, the caller
   // is responsible for cleaning up the blocking page, otherwise the
   // interstitial takes ownership when shown. |options_mask| must be a bitwise
-  // mask of SSLErrorUI::SSLErrorOptionsMask values.
+  // mask of SSLErrorOptionsMask values.
   // This is static because the constructor uses expensive to compute parameters
   // more than once (e.g. overrideable).
   static SSLBlockingPage* Create(

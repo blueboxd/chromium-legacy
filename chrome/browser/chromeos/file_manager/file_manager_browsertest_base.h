@@ -30,7 +30,7 @@ namespace file_manager {
 
 enum GuestMode { NOT_IN_GUEST_MODE, IN_GUEST_MODE, IN_INCOGNITO };
 
-class DriveTestVolume;
+class DriveFsTestVolume;
 class FakeTestVolume;
 class DownloadsTestVolume;
 class CrostiniTestVolume;
@@ -149,8 +149,8 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   std::unique_ptr<DownloadsTestVolume> local_volume_;
   std::unique_ptr<CrostiniTestVolume> crostini_volume_;
   std::unique_ptr<AndroidFilesTestVolume> android_files_volume_;
-  std::map<Profile*, std::unique_ptr<DriveTestVolume>> drive_volumes_;
-  DriveTestVolume* drive_volume_ = nullptr;
+  std::map<Profile*, std::unique_ptr<DriveFsTestVolume>> drive_volumes_;
+  DriveFsTestVolume* drive_volume_ = nullptr;
   std::unique_ptr<FakeTestVolume> usb_volume_;
   std::unique_ptr<FakeTestVolume> mtp_volume_;
   std::unique_ptr<RemovableTestVolume> partition_1_;

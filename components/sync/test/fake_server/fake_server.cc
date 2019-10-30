@@ -68,6 +68,11 @@ FakeServer::~FakeServer() {}
 
 namespace {
 
+struct HashAndTime {
+  uint64_t hash;
+  base::Time time;
+};
+
 std::unique_ptr<sync_pb::DataTypeProgressMarker>
 RemoveWalletProgressMarkerIfExists(sync_pb::ClientToServerMessage* message) {
   google::protobuf::RepeatedPtrField<sync_pb::DataTypeProgressMarker>*
@@ -96,22 +101,49 @@ void VerifyNoWalletDataProgressMarkerExists(
   }
 }
 
-std::string GetTokenFromHashAndTime(int64_t hash, const base::Time& time) {
-  return base::NumberToString(hash) + " " +
-         base::NumberToString(time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+// Returns a hash representing |entities| including each entity's ID and
+// version, in a way that the order of the entities is irrelevant.
+uint64_t ComputeWalletEntitiesHash(
+    const std::vector<sync_pb::SyncEntity>& entities) {
+  // Make sure to pick a token that will be consistent across clients when
+  // receiving the same data. We sum up the hashes which has the nice side
+  // effect of being independent of the order.
+  uint64_t hash = 0;
+  for (const auto& entity : entities) {
+    hash += base::PersistentHash(entity.id_string());
+    hash += entity.version();
+  }
+  return hash;
 }
 
-int64_t GetHashFromToken(const std::string& token, int64_t default_value) {
+// Encodes a hash and timestamp in a string that is meant to be used as progress
+// marker token.
+std::string PackWalletProgressMarkerToken(const HashAndTime& hash_and_time) {
+  return base::NumberToString(hash_and_time.hash) + " " +
+         base::NumberToString(
+             hash_and_time.time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+}
+
+// Reverse for PackWalletProgressMarkerToken.
+HashAndTime UnpackWalletProgressMarkerToken(const std::string& token) {
   // The hash is stored as a first piece of the string (space delimited), the
   // second piece is the timestamp.
+  HashAndTime hash_and_time;
   std::vector<base::StringPiece> pieces =
       base::SplitStringPiece(token, base::kWhitespaceASCII,
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  int64_t hash = 0;
-  if (pieces.size() != 2 || !base::StringToInt64(pieces[0], &hash)) {
-    return default_value;
+  uint64_t micros_since_windows_epoch = 0;
+  if (pieces.size() != 2 ||
+      !base::StringToUint64(pieces[0], &hash_and_time.hash) ||
+      !base::StringToUint64(pieces[1], &micros_since_windows_epoch)) {
+    // The hash defaults to an arbitrary hash which should in practice never
+    // match actual hashes (zero is avoided because it's actually a sum).
+    return {std::numeric_limits<uint64_t>::max(), base::Time()};
   }
-  return hash;
+
+  hash_and_time.time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(micros_since_windows_epoch));
+  return hash_and_time;
 }
 
 void PopulateWalletResults(
@@ -127,21 +159,14 @@ void PopulateWalletResults(
   new_wallet_marker->set_data_type_id(
       GetSpecificsFieldNumberFromModelType(syncer::AUTOFILL_WALLET_DATA));
 
-  // Make sure to pick a token that will be consistent across clients when
-  // receiving the same data. We sum up the hashes which has the nice side
-  // effect of being independent of the order.
+  uint64_t hash = ComputeWalletEntitiesHash(entities);
+
   // We also include information about the fetch time in the token. This is
   // in-line with the server behavior and -- as it keeps changing -- allows
   // integration tests to wait for a GetUpdates call to finish, even if they
   // don't contain data updates.
-  int64_t hash = 0;
-  for (const auto& entity : entities) {
-    // PersistentHash returns 32-bit integers, so summing them up is defined
-    // behavior.
-    hash += base::PersistentHash(entity.id_string());
-  }
-  std::string token = GetTokenFromHashAndTime(hash, base::Time::Now());
-  new_wallet_marker->set_token(token);
+  new_wallet_marker->set_token(
+      PackWalletProgressMarkerToken({hash, base::Time::Now()}));
 
   if (!old_wallet_marker.has_token() ||
       !AreWalletDataProgressMarkersEquivalent(old_wallet_marker,
@@ -176,8 +201,8 @@ std::string PrettyPrintValue(std::unique_ptr<base::DictionaryValue> value) {
 bool AreWalletDataProgressMarkersEquivalent(
     const sync_pb::DataTypeProgressMarker& marker1,
     const sync_pb::DataTypeProgressMarker& marker2) {
-  return GetHashFromToken(marker1.token(), /*default_value=*/-1) ==
-         GetHashFromToken(marker2.token(), /*default_value=*/-1);
+  return UnpackWalletProgressMarkerToken(marker1.token()).hash ==
+         UnpackWalletProgressMarkerToken(marker2.token()).hash;
 }
 
 net::HttpStatusCode FakeServer::HandleCommand(const std::string& request,
@@ -350,21 +375,35 @@ void FakeServer::InjectEntity(std::unique_ptr<LoopbackServerEntity> entity) {
            /*committed_model_types=*/{model_type});
 }
 
-void FakeServer::SetWalletData(
+base::Time FakeServer::SetWalletData(
     const std::vector<sync_pb::SyncEntity>& wallet_entities) {
-  for (const auto& entity : wallet_entities) {
+  wallet_entities_ = wallet_entities;
+
+  const base::Time now = base::Time::Now();
+  const int64_t version = (now - base::Time::UnixEpoch()).InMilliseconds();
+
+  for (sync_pb::SyncEntity& entity : wallet_entities_) {
     DCHECK_EQ(GetModelTypeFromSpecifics(entity.specifics()),
               syncer::AUTOFILL_WALLET_DATA);
     DCHECK(!entity.has_client_defined_unique_tag())
         << "The sync server doesn not provide a client tag for wallet entries";
     DCHECK(!entity.id_string().empty()) << "server id required!";
+
+    // The version is overriden during serving of the entities, but is useful
+    // here to influence the entities' hash.
+    entity.set_version(version);
   }
 
-  wallet_entities_ = wallet_entities;
+  OnCommit(/*committer_id=*/std::string(),
+           /*committed_model_types=*/{syncer::AUTOFILL_WALLET_DATA});
 
-  // TODO(crbug.com/1019108): This function should issue OnCommit() calls to
-  // observers in order to mimic invalidations, such that tests don't need to
-  // call TriggerSyncForModelTypes().
+  return now;
+}
+
+// static
+base::Time FakeServer::GetWalletProgressMarkerTimestamp(
+    const sync_pb::DataTypeProgressMarker& progress_marker) {
+  return UnpackWalletProgressMarkerToken(progress_marker.token()).time;
 }
 
 bool FakeServer::ModifyEntitySpecifics(

@@ -6,6 +6,38 @@
 
 namespace ppapi {
 
+PdfAccessibilityTextStyleInfo::PdfAccessibilityTextStyleInfo() = default;
+
+PdfAccessibilityTextStyleInfo::PdfAccessibilityTextStyleInfo(
+    const PP_PrivateAccessibilityTextStyleInfo& style)
+    : font_name(std::string(style.font_name, style.font_name_length)),
+      font_weight(style.font_weight),
+      render_mode(style.render_mode),
+      font_size(style.font_size),
+      fill_color(style.fill_color),
+      stroke_color(style.stroke_color),
+      is_italic(style.is_italic),
+      is_bold(style.is_bold) {}
+
+PdfAccessibilityTextStyleInfo::PdfAccessibilityTextStyleInfo(
+    PdfAccessibilityTextStyleInfo&& other) = default;
+
+PdfAccessibilityTextStyleInfo::~PdfAccessibilityTextStyleInfo() = default;
+
+PdfAccessibilityTextRunInfo::PdfAccessibilityTextRunInfo() = default;
+
+PdfAccessibilityTextRunInfo::PdfAccessibilityTextRunInfo(
+    const PP_PrivateAccessibilityTextRunInfo& text_run)
+    : len(text_run.len),
+      bounds(text_run.bounds),
+      direction(text_run.direction),
+      style(text_run.style) {}
+
+PdfAccessibilityTextRunInfo::PdfAccessibilityTextRunInfo(
+    PdfAccessibilityTextRunInfo&& other) = default;
+
+PdfAccessibilityTextRunInfo::~PdfAccessibilityTextRunInfo() = default;
+
 PdfAccessibilityLinkInfo::PdfAccessibilityLinkInfo() = default;
 
 PdfAccessibilityLinkInfo::PdfAccessibilityLinkInfo(

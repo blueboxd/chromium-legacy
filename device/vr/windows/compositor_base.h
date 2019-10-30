@@ -31,7 +31,6 @@ namespace device {
 class XRDeviceAbstraction {
  public:
   virtual mojom::XRFrameDataPtr GetNextFrameData();
-  virtual mojom::XRGamepadDataPtr GetNextGamepadData();
   virtual bool StartRuntime() = 0;
   virtual void StopRuntime() = 0;
   virtual void OnSessionStart();
@@ -46,7 +45,6 @@ class XRCompositorCommon : public base::Thread,
                            public XRDeviceAbstraction,
                            public mojom::XRPresentationProvider,
                            public mojom::XRFrameDataProvider,
-                           public mojom::IsolatedXRGamepadProvider,
                            public mojom::ImmersiveOverlay {
  public:
   using RequestSessionCallback =
@@ -71,17 +69,12 @@ class XRCompositorCommon : public base::Thread,
   void SetInputSourceButtonListener(
       mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>
           input_listener_remote) override;
-  void GetControllerDataAndSendFrameData(
-      XRFrameDataProvider::GetFrameDataCallback callback,
-      mojom::XRFrameDataPtr frame_data);
 
   void GetEnvironmentIntegrationProvider(
       mojo::PendingAssociatedReceiver<
           device::mojom::XREnvironmentIntegrationProvider> environment_provider)
       final;
 
-  void RequestGamepadProvider(
-      mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> receiver);
   void RequestOverlay(mojo::PendingReceiver<mojom::ImmersiveOverlay> receiver);
 
  protected:
@@ -103,7 +96,6 @@ class XRCompositorCommon : public base::Thread,
   void CleanUp() final;
 
   void ClearPendingFrame();
-  void UpdateControllerState();
   void StartPendingFrame();
 
   // Will Submit if we have textures submitted from the Overlay (if it is
@@ -114,10 +106,6 @@ class XRCompositorCommon : public base::Thread,
   // Finally, if we exit presentation while waiting for outstanding submits, we
   // will clean up our pending-frame state.
   void MaybeCompositeAndSubmit();
-
-  // IsolatedXRGamepadProvider
-  void RequestUpdate(
-      mojom::IsolatedXRGamepadProvider::RequestUpdateCallback callback) final;
 
   // XRPresentationProvider overrides:
   void SubmitFrameMissing(int16_t frame_index, const gpu::SyncToken&) final;
@@ -145,6 +133,9 @@ class XRCompositorCommon : public base::Thread,
                                     bool webxr_visible) override;
   void RequestNotificationOnWebXrSubmitted(
       RequestNotificationOnWebXrSubmittedCallback callback) override;
+
+  void SendFrameData(XRFrameDataProvider::GetFrameDataCallback callback,
+                     mojom::XRFrameDataPtr frame_data);
 
   struct OutstandingFrame {
     OutstandingFrame();
@@ -184,11 +175,8 @@ class XRCompositorCommon : public base::Thread,
   base::OnceCallback<void()> on_presentation_ended_;
   base::RepeatingCallback<void(mojom::XRVisibilityState)>
       on_visibility_state_changed_;
-  mojom::IsolatedXRGamepadProvider::RequestUpdateCallback gamepad_callback_;
   mojo::Receiver<mojom::XRPresentationProvider> presentation_receiver_{this};
   mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
-  mojo::Receiver<mojom::IsolatedXRGamepadProvider> gamepad_provider_receiver_{
-      this};
   mojo::Receiver<mojom::ImmersiveOverlay> overlay_receiver_{this};
   mojom::XRVisibilityState visibility_state_ =
       mojom::XRVisibilityState::VISIBLE;

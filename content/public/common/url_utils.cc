@@ -8,12 +8,15 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "content/common/url_schemes.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
+#include "net/net_buildflags.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -63,8 +66,14 @@ bool IsURLHandledByNetworkStack(const GURL& url) {
 }
 
 bool IsURLHandledByNetworkService(const GURL& url) {
-  return url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS() ||
-         url.SchemeIs(url::kFtpScheme);
+  if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS())
+    return true;
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  if (url.SchemeIs(url::kFtpScheme) &&
+      base::FeatureList::IsEnabled(features::kFtpProtocol))
+    return true;
+#endif
+  return false;
 }
 
 bool IsRendererDebugURL(const GURL& url) {

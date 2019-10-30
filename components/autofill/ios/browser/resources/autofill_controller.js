@@ -239,7 +239,7 @@ function controlElementInputListener_(evt) {
     evt.target.isAutofilled = false;
     evt.target.removeEventListener('input', controlElementInputListener_);
   }
-};
+}
 
 /**
  * Fills a number of fields in the same named form for full-form Autofill.
@@ -271,18 +271,21 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
 
   for (var i = 0, delay = 0; i < controlElements.length; ++i) {
     var element = controlElements[i];
-    if (!__gCrWeb.fill.isAutofillableElement(element))
+    if (!__gCrWeb.fill.isAutofillableElement(element)) {
       continue;
+    }
 
     // TODO(crbug.com/836013): Investigate autofilling checkable elements.
-    if (__gCrWeb.fill.isCheckableElement(element))
+    if (__gCrWeb.fill.isCheckableElement(element)) {
       continue;
+    }
 
     // Skip fields for which autofill data is missing.
     var fieldIdentifier = __gCrWeb.form.getFieldIdentifier(element);
     var fieldData = data.fields[fieldIdentifier];
-    if (!fieldData)
+    if (!fieldData) {
       continue;
+    }
 
     // Skip non-empty fields unless:
     // a) The element's identifier matches |forceFillFieldIdentifier|; or
@@ -363,11 +366,13 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(
 
   for (var i = 0, delay = 0; i < controlElements.length; ++i) {
     var element = controlElements[i];
-    if (!element.isAutofilled || element.disabled)
+    if (!element.isAutofilled || element.disabled) {
       continue;
+    }
 
-    if (formField && formField.autofillSection != element.autofillSection)
+    if (formField && formField.autofillSection != element.autofillSection) {
       continue;
+    }
 
     var value = null;
     if (__gCrWeb.fill.isTextInput(element) ||

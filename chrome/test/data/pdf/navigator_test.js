@@ -78,18 +78,18 @@ function doNavigationUrlTest(
  * tab, and a new window.
  */
 function doNavigationUrlTests(originalUrl, url, expectedResultUrl) {
-  var mockWindow = new MockWindow(100, 100);
-  var mockSizer = new MockSizer();
-  var mockViewportChangedCallback = new MockViewportChangedCallback();
-  var viewport = new Viewport(mockWindow, mockSizer, 0, 1, 0);
+  const mockWindow = new MockWindow(100, 100);
+  const mockSizer = new MockSizer();
+  const mockViewportChangedCallback = new MockViewportChangedCallback();
+  const viewport = new Viewport(mockWindow, mockSizer, 0, 1, 0);
   viewport.setViewportChangedCallback(mockViewportChangedCallback.callback);
 
-  var paramsParser = new OpenPdfParamsParser(function(name) {
+  const paramsParser = new OpenPdfParamsParser(function(name) {
     paramsParser.onNamedDestinationReceived(-1);
   });
 
-  var navigatorDelegate = new MockNavigatorDelegate();
-  var navigator =
+  const navigatorDelegate = new MockNavigatorDelegate();
+  const navigator =
       new PdfNavigator(originalUrl, viewport, paramsParser, navigatorDelegate);
 
   doNavigationUrlTest(
@@ -103,19 +103,19 @@ function doNavigationUrlTests(originalUrl, url, expectedResultUrl) {
       expectedResultUrl, mockViewportChangedCallback, navigatorDelegate);
 }
 
-var tests = [
+const tests = [
   /**
    * Test navigation within the page, opening a url in the same tab and
    * opening a url in a new tab.
    */
   function testNavigate() {
-    var mockWindow = new MockWindow(100, 100);
-    var mockSizer = new MockSizer();
-    var mockCallback = new MockViewportChangedCallback();
-    var viewport = new Viewport(mockWindow, mockSizer, 0, 1, 0);
+    const mockWindow = new MockWindow(100, 100);
+    const mockSizer = new MockSizer();
+    const mockCallback = new MockViewportChangedCallback();
+    const viewport = new Viewport(mockWindow, mockSizer, 0, 1, 0);
     viewport.setViewportChangedCallback(mockCallback.callback);
 
-    var paramsParser = new OpenPdfParamsParser(function(destination) {
+    const paramsParser = new OpenPdfParamsParser(function(destination) {
       if (destination == 'US') {
         paramsParser.onNamedDestinationReceived(0);
       } else if (destination == 'UY') {
@@ -124,13 +124,13 @@ var tests = [
         paramsParser.onNamedDestinationReceived(-1);
       }
     });
-    var url = 'http://xyz.pdf';
+    const url = 'http://xyz.pdf';
 
-    var navigatorDelegate = new MockNavigatorDelegate();
-    var navigator =
+    const navigatorDelegate = new MockNavigatorDelegate();
+    const navigator =
         new PdfNavigator(url, viewport, paramsParser, navigatorDelegate);
 
-    var documentDimensions = new MockDocumentDimensions();
+    const documentDimensions = new MockDocumentDimensions();
     documentDimensions.addPage(100, 100);
     documentDimensions.addPage(200, 200);
     documentDimensions.addPage(100, 400);
@@ -185,7 +185,7 @@ var tests = [
    * similar heuristics as Adobe Acrobat Reader.
    */
   function testNavigateForLinksWithoutScheme() {
-    var url = 'http://www.example.com/subdir/xyz.pdf';
+    const url = 'http://www.example.com/subdir/xyz.pdf';
 
     // Sanity check.
     doNavigationUrlTests(
@@ -232,7 +232,7 @@ var tests = [
    * a file:/// url as the current location.
    */
   function testNavigateFromLocalFile() {
-    var url = 'file:///some/path/to/myfile.pdf';
+    const url = 'file:///some/path/to/myfile.pdf';
 
     // Open an absolute link.
     doNavigationUrlTests(
@@ -242,7 +242,7 @@ var tests = [
   },
 
   function testNavigateInvalidUrls() {
-    var url = 'https://example.com/some-web-document.pdf';
+    const url = 'https://example.com/some-web-document.pdf';
 
     // From non-file: to file:
     doNavigationUrlTests(url, 'file:///bar.pdf', undefined);
@@ -261,7 +261,7 @@ var tests = [
   }
 ];
 
-var scriptingAPI = new PDFScriptingAPI(window, window);
+const scriptingAPI = new PDFScriptingAPI(window, window);
 scriptingAPI.setLoadCallback(function() {
   chrome.test.runTests(tests);
 });

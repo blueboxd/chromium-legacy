@@ -160,7 +160,6 @@
 #include "net/http/http_util.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -5271,8 +5270,7 @@ void RenderFrameImpl::DidStartResponse(
     content::ResourceType resource_type,
     PreviewsState previews_state) {
   for (auto& observer : observers_)
-    observer.DidStartResponse(response_url, request_id,
-                              network::ResourceResponseHead(response_head),
+    observer.DidStartResponse(response_url, request_id, *response_head,
                               resource_type, previews_state);
 }
 

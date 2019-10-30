@@ -58,21 +58,21 @@ class ArCore {
       const mojom::XRRayPtr& ray,
       std::vector<mojom::XRHitResultPtr>* hit_results) = 0;
 
-  virtual base::Optional<uint32_t> SubscribeToHitTest(
+  virtual base::Optional<uint64_t> SubscribeToHitTest(
       mojom::XRNativeOriginInformationPtr native_origin_information,
       mojom::XRRayPtr ray) = 0;
 
   virtual mojom::XRHitTestSubscriptionResultsDataPtr
   GetHitTestSubscriptionResults(const device::mojom::VRPosePtr& pose) = 0;
 
-  virtual void UnsubscribeFromHitTest(uint32_t subscription_id) = 0;
+  virtual void UnsubscribeFromHitTest(uint64_t subscription_id) = 0;
 
-  virtual base::Optional<uint32_t> CreateAnchor(
+  virtual base::Optional<uint64_t> CreateAnchor(
       const mojom::VRPosePtr& pose) = 0;
-  virtual base::Optional<uint32_t> CreateAnchor(const mojom::VRPosePtr& pose,
-                                                uint32_t plane_id) = 0;
+  virtual base::Optional<uint64_t> CreateAnchor(const mojom::VRPosePtr& pose,
+                                                uint64_t plane_id) = 0;
 
-  virtual void DetachAnchor(uint32_t anchor_id) = 0;
+  virtual void DetachAnchor(uint64_t anchor_id) = 0;
 
   virtual void Pause() = 0;
   virtual void Resume() = 0;

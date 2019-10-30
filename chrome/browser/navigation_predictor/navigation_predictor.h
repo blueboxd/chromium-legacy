@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_H_
 #define CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_H_
 
+#include <deque>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -13,6 +15,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/prerender/prerender_handle.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -29,7 +32,6 @@ class RenderFrameHost;
 }
 
 namespace prerender {
-class PrerenderHandle;
 class PrerenderManager;
 }
 
@@ -39,7 +41,8 @@ class TemplateURLService;
 // and browser process. Then it uses these metrics to make predictions on what
 // are the most likely anchor elements that the user will click.
 class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
-                            public content::WebContentsObserver {
+                            public content::WebContentsObserver,
+                            public prerender::PrerenderHandle::Observer {
  public:
   // |render_frame_host| is the host associated with the render frame. It is
   // used to retrieve metrics at the browser side.
@@ -66,43 +69,33 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
     kMaxValue = kPrefetch,
   };
 
-  // Enum describing the accuracy of actions taken by the navigation predictor.
-  // This enum should remain synchronized with enum
-  // NavigationPredictorAccuracyActionTaken in enums.xml. Order of enum values
-  // should not be changed since the values are recorded in UMA.
-  enum class ActionAccuracy {
-    // No action was taken, but an anchor element was clicked.
-    kNoActionTakenClickHappened = 0,
-
-    // Navigation predictor prefetched a URL, and an anchor element was clicked
-    // which pointed to the same URL as prefetched URL.
-    kPrefetchActionClickToSameURL = 1,
-
-    // Navigation predictor prefetched a URL, and an anchor element was clicked
-    // whose URL had the same origin as the prefetched URL.
-    kPrefetchActionClickToSameOrigin = 2,
-
-    // Navigation predictor prefetched a URL, and an anchor element was clicked
-    // whose URL had a different origin than the prefetched URL.
-    kPrefetchActionClickToDifferentOrigin = 3,
-
-    // Navigation predictor preconnected to an origin, and an anchor element was
-    // clicked whose URL had the same origin as the preconnected origin.
-    // DEPRECATED: kPreconnectActionClickToSameOrigin = 4,
-
-    // Navigation predictor preconnected to an origin, and an anchor element was
-    // clicked whose URL had a different origin than the preconnected origin.
-    // DEPRECATED: kPreconnectActionClickToDifferentOrigin = 5,
-    kMaxValue = kPrefetchActionClickToDifferentOrigin,
+  // Enum to report the prerender result of the clicked link. Changes must be
+  // propagated to enums.xml, and the enum should not be re-ordered.
+  enum class PrerenderResult {
+    // The prerender finished entirely before the link was clicked.
+    kSameOriginPrefetchFinished = 0,
+    // The prerender was started but not finished before the user navigated or
+    // backgrounded the page.
+    kSameOriginPrefetchPartiallyComplete = 1,
+    // The link was waiting to be prerendered while another prerender was in
+    // progress.
+    kSameOriginPrefetchInQueue = 2,
+    // The prerender was attempted, but a prerender mechanism skipped the
+    // prerender.
+    kSameOriginPrefetchSkipped = 3,
+    // The link was same origin, but scored poorly in the decider logic.
+    kSameOriginBelowThreshold = 4,
+    // The URL was not seen in the load event.
+    kSameOriginNotSeen = 5,
+    // The link was cross origin and scored above the threshold, but we did not
+    // prerender it.
+    kCrossOriginAboveThreshold = 6,
+    // The link was cross origin and scored below the threshold.
+    kCrossOriginBelowThreshold = 7,
+    // The URL was not seen in the load event.
+    kCrossOriginNotSeen = 8,
+    kMaxValue = kCrossOriginNotSeen,
   };
-
- protected:
-  // URL that we decided to prefetch.
-  base::Optional<GURL> prefetch_url_;
-
-  // True if a prefetch_url_ has already been prefetched, so we know
-  // whether to prefetch the url again when a tab becomes visible.
-  bool prefetch_url_prefetched_ = false;
 
  private:
   // Struct holding navigation score, rank and other info of the anchor element.
@@ -120,6 +113,15 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   void OnVisibilityChanged(content::Visibility visibility) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+
+  // prerender::PrerenderHandle::Observer:
+  void OnPrerenderStop(prerender::PrerenderHandle* handle) override;
+  void OnPrerenderStart(prerender::PrerenderHandle* handle) override {}
+  void OnPrerenderStopLoading(prerender::PrerenderHandle* handle) override {}
+  void OnPrerenderDomContentLoaded(
+      prerender::PrerenderHandle* handle) override {}
+  void OnPrerenderNetworkBytesChanged(
+      prerender::PrerenderHandle* handle) override {}
 
   // Returns true if the anchor element metric from the renderer process is
   // valid.
@@ -161,12 +163,15 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // Given a url to prefetch, uses PrerenderManager to start a NoStatePrefetch
   // of that URL.
-  virtual void Prefetch(prerender::PrerenderManager* prerender_manager);
+  virtual void Prefetch(prerender::PrerenderManager* prerender_manager,
+                        const GURL& url_to_prefetch);
 
-  base::Optional<GURL> GetUrlToPrefetch(
+  // Returns a collection of URLs that can be prefetched. Only one should be
+  // prefetched at a time.
+  std::deque<GURL> GetUrlsToPrefetch(
       const GURL& document_url,
       const std::vector<std::unique_ptr<NavigationScore>>&
-          sorted_navigation_scores) const;
+          sorted_navigation_scores);
 
   // Record anchor element metrics on page load.
   void RecordMetricsOnLoad(
@@ -206,6 +211,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   void NotifyPredictionUpdated(
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores);
+
+  // Record metrics about how many prerenders were started and finished.
+  void RecordActionAccuracyOnTearDown();
 
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
@@ -291,8 +299,24 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // Current visibility state of the web contents.
   content::Visibility current_visibility_;
 
-  // PrerenderHandle returned after completing a prefetch in PrerenderManager.
+  // Current prerender handle.
   std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
+
+  // URL that we decided to prefetch, and are currently prefetching.
+  base::Optional<GURL> prefetch_url_;
+
+  // An ordered list of URLs that should be prefetched in succession.
+  std::deque<GURL> urls_to_prefetch_;
+
+  // URLs that were successfully prefetched.
+  std::set<GURL> urls_prefetched_;
+
+  // URLs that scored above the threshold in sorted order.
+  std::vector<GURL> urls_above_threshold_;
+
+  // URLs that had a prerender started, but were canceled due to background or
+  // next navigation.
+  std::set<GURL> partial_prerfetches_;
 
   // UKM ID for navigation
   ukm::SourceId ukm_source_id_;

@@ -109,6 +109,10 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityWinBrowserTest,
   ShowDropdown("datalist");
   control_waiter->Wait();
 
+  // The focus should remain on the input element.
+  EXPECT_EQ(content::GetFocusedAccessibilityNodeInfo(GetWebContents()).role,
+            ax::mojom::Role::kTextFieldWithComboBox);
+
   // The autofill popup of the form input element is showing. The form input
   // element is the controller for the checkbox and autofill popup as
   // indicated by the form input element's |aria-controls| attribute and the

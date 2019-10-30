@@ -120,4 +120,25 @@ class TraceWrapperV8Reference {
 
 }  // namespace blink
 
+namespace WTF {
+
+template <typename T>
+struct IsTraceable<blink::TraceWrapperV8Reference<T>> {
+  STATIC_ONLY(IsTraceable);
+  static const bool value = true;
+};
+
+template <typename T>
+struct VectorTraits<blink::TraceWrapperV8Reference<T>>
+    : VectorTraitsBase<blink::TraceWrapperV8Reference<T>> {
+  STATIC_ONLY(VectorTraits);
+  static const bool kNeedsDestruction = false;
+  static const bool kCanInitializeWithMemset = true;
+  static const bool kCanClearUnusedSlotsWithMemset = true;
+  static const bool kCanCopyWithMemcpy = false;
+  static const bool kCanMoveWithMemcpy = false;
+};
+
+}  // namespace WTF
+
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_REFERENCE_H_

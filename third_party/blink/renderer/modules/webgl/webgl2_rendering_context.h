@@ -22,6 +22,7 @@ class OVRMultiview2;
 class WebGLDebugRendererInfo;
 class WebGLLoseContext;
 class WebGLMultiDraw;
+class WebGLMultiDrawInstanced;
 class KHRParallelShaderCompile;
 class WebGLVideoTexture;
 
@@ -81,6 +82,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<WebGLDebugShaders> webgl_debug_shaders_;
   Member<WebGLLoseContext> webgl_lose_context_;
   Member<WebGLMultiDraw> webgl_multi_draw_;
+  Member<WebGLMultiDrawInstanced> webgl_multi_draw_instanced_;
   Member<WebGLVideoTexture> webgl_video_texture_;
 };
 

@@ -30,7 +30,7 @@ scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(CursorType type) {
   gfx::Point hotspot = cursor.GetHotspot();
   if (!bitmap.isNull())
     return new BitmapCursorOzone(bitmap, hotspot);
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace
@@ -120,7 +120,7 @@ void BitmapCursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
 scoped_refptr<BitmapCursorOzone>
 BitmapCursorFactoryOzone::GetDefaultCursorInternal(CursorType type) {
   if (type == CursorType::kNone)
-    return NULL;  // NULL is used for hidden cursor.
+    return nullptr;  // Null is used for hidden cursor.
 
   if (!default_cursors_.count(type)) {
     // Create new image cursor from default aura bitmap for this type. We hold a

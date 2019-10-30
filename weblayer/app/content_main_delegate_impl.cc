@@ -66,14 +66,18 @@ void DisableFeaturesIfNotSet(
     const std::vector<base::Feature>& features_to_disable) {
   auto* cl = base::CommandLine::ForCurrentProcess();
   std::vector<std::string> enabled_features;
-  for (const auto& f : base::FeatureList::SplitFeatureListString(
-           cl->GetSwitchValueASCII(switches::kEnableFeatures))) {
+  std::string enabled_features_str =
+      cl->GetSwitchValueASCII(switches::kEnableFeatures);
+  for (const auto& f :
+       base::FeatureList::SplitFeatureListString(enabled_features_str)) {
     enabled_features.emplace_back(f);
   }
 
   std::vector<std::string> disabled_features;
-  for (const auto& f : base::FeatureList::SplitFeatureListString(
-           cl->GetSwitchValueASCII(switches::kDisableFeatures))) {
+  std::string disabled_features_str =
+      cl->GetSwitchValueASCII(switches::kDisableFeatures);
+  for (const auto& f :
+       base::FeatureList::SplitFeatureListString(disabled_features_str)) {
     disabled_features.emplace_back(f);
   }
 

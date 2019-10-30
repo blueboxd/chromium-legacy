@@ -5398,13 +5398,13 @@
                          "local_state": true } ]
   },
 
-  "DomainsToCheckComplianceOfDownloadedContent": {
+  "URLsToCheckComplianceOfDownloadedContent": {
   },
 
-  "DomainsToNotCheckComplianceOfUploadedContent": {
+  "URLsToNotCheckComplianceOfUploadedContent": {
   },
 
-  "DomainsToCheckForMalwareOfUploadedContent": {
+  "URLsToCheckForMalwareOfUploadedContent": {
   },
 
   "RendererCodeIntegrityEnabled": {

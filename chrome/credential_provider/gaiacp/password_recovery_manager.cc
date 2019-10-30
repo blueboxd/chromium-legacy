@@ -202,7 +202,7 @@ class EscrowServiceRequest {
 
     HRESULT hr = requester->fetcher_->Fetch(&requester->response_);
     if (FAILED(hr))
-      LOGFN(INFO) << "fetcher.Fetch hr=" << putHR(hr);
+      LOGFN(ERROR) << "fetcher.Fetch hr=" << putHR(hr);
 
     requester->ProcessingDone();
     return 0;
@@ -710,6 +710,8 @@ HRESULT PasswordRecoveryManager::StoreWindowsPasswordIfNeeded(
         LOGFN(ERROR) << "StorePrivateData hr=" << putHR(hr);
         return hr;
       }
+
+      LOGFN(INFO) << "Encrypted and stored secret for sid=" << sid;
     } else {
       LOGFN(ERROR) << "base::JSONWriter::Write failed";
       return E_FAIL;
@@ -769,6 +771,8 @@ HRESULT PasswordRecoveryManager::RecoverWindowsPasswordIfPossible(
   if (SUCCEEDED(hr))
     *recovered_password = decrypted_password;
   SecurelyClearString(decrypted_password);
+
+  LOGFN(INFO) << "Decrypted the secret for sid=" << sid;
 
   return hr;
 }

@@ -54,7 +54,7 @@ class AwPrintManager : public printing::PrintManager,
                        IPC::Message* reply_msg) override;
 
   static void OnDidPrintDocumentWritingDone(
-      PdfWritingDoneCallback callback,
+      const PdfWritingDoneCallback& callback,
       std::unique_ptr<DelayedFrameDispatchHelper> helper,
       int page_count);
 

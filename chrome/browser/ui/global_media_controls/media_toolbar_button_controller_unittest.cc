@@ -139,6 +139,26 @@ class MediaToolbarButtonControllerTest : public testing::Test {
     item_itr->second.item()->MediaSessionMetadataChanged(std::move(metadata));
   }
 
+  void SimulateHasArtwork(const base::UnguessableToken& id) {
+    auto item_itr = controller_->sessions_.find(id.ToString());
+    ASSERT_NE(controller_->sessions_.end(), item_itr);
+
+    SkBitmap image;
+    image.allocN32Pixels(10, 10);
+    image.eraseColor(SK_ColorMAGENTA);
+
+    item_itr->second.item()->MediaControllerImageChanged(
+        media_session::mojom::MediaSessionImageType::kArtwork, image);
+  }
+
+  void SimulateHasNoArtwork(const base::UnguessableToken& id) {
+    auto item_itr = controller_->sessions_.find(id.ToString());
+    ASSERT_NE(controller_->sessions_.end(), item_itr);
+
+    item_itr->second.item()->MediaControllerImageChanged(
+        media_session::mojom::MediaSessionImageType::kArtwork, SkBitmap());
+  }
+
   void SimulateReceivedAudioFocusRequests(
       std::vector<AudioFocusRequestStatePtr> requests) {
     controller_->OnReceivedAudioFocusRequests(std::move(requests));
@@ -420,4 +440,43 @@ TEST_F(MediaToolbarButtonControllerTest, ShowButtonForCastSession) {
 
   EXPECT_CALL(delegate(), Hide());
   SimulateMediaRoutesUpdate({});
+}
+
+// Regression test for https://crbug.com/1015903: we could end up in a situation
+// where the toolbar icon was disabled indefinitely.
+TEST_F(MediaToolbarButtonControllerTest,
+       LoseGainLoseDoesNotCauseRaceCondition) {
+  // First, show the button, and include artwork.
+  EXPECT_CALL(delegate(), Show());
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  SimulateHasArtwork(id);
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // Then, stop playing media so the button is disabled, but hasn't been hidden
+  // yet.
+  EXPECT_CALL(delegate(), Disable());
+  EXPECT_CALL(delegate(), Hide()).Times(0);
+  SimulateFocusLost(id);
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // Simulate no artwork, so we wait for new artwork.
+  SimulateHasNoArtwork(id);
+
+  // Simulate regaining focus, but no artwork yet so we wait.
+  EXPECT_CALL(delegate(), Show());
+  SimulateFocusGained(id, true);
+  SimulateNecessaryMetadata(id);
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // Then, lose focus again before getting artwork.
+  EXPECT_CALL(delegate(), Show()).Times(0);
+  EXPECT_CALL(delegate(), Disable());
+  EXPECT_CALL(delegate(), Hide()).Times(0);
+  SimulateFocusLost(id);
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // When the freeze timer fires, we should be hidden.
+  EXPECT_CALL(delegate(), Hide());
+  AdvanceClockMilliseconds(2600);
+  testing::Mock::VerifyAndClearExpectations(&delegate());
 }

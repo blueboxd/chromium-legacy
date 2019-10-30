@@ -309,6 +309,11 @@ def load_tests(loader, standard_tests, pattern):
         story_names=story_names)
 
     for story_to_smoke_test in stories_set.stories:
+      # Per crbug.com/1019383 we don't have many device cycles to work with on
+      # Android, so let's just run the most important stories.
+      if (benchmark_class.Name() == 'system_health.memory_mobile' and
+          'health_check' not in story_to_smoke_test.tags):
+        continue
       suite.addTest(
           _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test))
 

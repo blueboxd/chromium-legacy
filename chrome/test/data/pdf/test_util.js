@@ -56,7 +56,7 @@ export function MockWindow(width, height, sizer) {
 }
 
 export function MockSizer() {
-  var sizer = this;
+  const sizer = this;
   this.style = {
     width_: '0px',
     height_: '0px',
@@ -97,7 +97,7 @@ export function MockDocumentDimensions(width, height, layoutOptions) {
   this.layoutOptions = layoutOptions;
   this.pageDimensions = [];
   this.addPage = function(w, h) {
-    var y = 0;
+    let y = 0;
     if (this.pageDimensions.length != 0) {
       y = this.pageDimensions[this.pageDimensions.length - 1].y +
           this.pageDimensions[this.pageDimensions.length - 1].height;

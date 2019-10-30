@@ -108,7 +108,18 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // Sets the Wallet card and address data to be served in following GetUpdates
   // requests (any further GetUpdates response will be empty, indicating no
   // change, if the client already has received |wallet_entities|).
-  void SetWalletData(const std::vector<sync_pb::SyncEntity>& wallet_entities);
+  //
+  // The returned value represents the timestamp of the write, such that any
+  // progress marker greater or equal to this timestamp must have processed the
+  // changes. See GetWalletProgressMarkerTimestamp() below.
+  base::Time SetWalletData(
+      const std::vector<sync_pb::SyncEntity>& wallet_entities);
+
+  // Allows the caller to know the wallet timestamp corresponding to
+  // |progress_marker| as annotated by the FakeServer during the GetUpdates
+  // request that returned the progress marker.
+  static base::Time GetWalletProgressMarkerTimestamp(
+      const sync_pb::DataTypeProgressMarker& progress_marker);
 
   // Modifies the entity on the server with the given |id|. The entity's
   // EntitySpecifics are replaced with |updated_specifics| and its version is

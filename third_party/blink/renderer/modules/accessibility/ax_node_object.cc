@@ -2513,7 +2513,6 @@ bool AXNodeObject::CanHaveChildren() const {
     return false;  // Does not have a role, so check here
 
   switch (native_role_) {
-    case ax::mojom::Role::kButton:
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kImage:
     case ax::mojom::Role::kListBoxOption:
@@ -2544,7 +2543,6 @@ bool AXNodeObject::CanHaveChildren() const {
   switch (AriaRoleAttribute()) {
     case ax::mojom::Role::kImage:
       return false;
-    case ax::mojom::Role::kButton:
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kMath:  // role="math" is flat, unlike <math>

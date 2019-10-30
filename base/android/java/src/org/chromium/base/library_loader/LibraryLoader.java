@@ -403,7 +403,7 @@ public class LibraryLoader {
 
             mLoaded = true;
         } catch (UnsatisfiedLinkError e) {
-            throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED, e);
+            throw new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED, e);
         }
     }
 
@@ -474,8 +474,7 @@ public class LibraryLoader {
     private void initializeAlreadyLocked(@LibraryProcessType int processType) {
         if (mInitialized) {
             if (mLibraryProcessType != processType) {
-                throw new ProcessInitException(
-                        LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED);
+                throw new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED);
             }
             return;
         }
@@ -493,7 +492,7 @@ public class LibraryLoader {
 
         if (!LibraryLoaderJni.get().libraryLoaded(mLibraryProcessType)) {
             Log.e(TAG, "error calling LibraryLoaderJni.get().libraryLoaded");
-            throw new ProcessInitException(LoaderErrors.LOADER_ERROR_FAILED_TO_REGISTER_JNI);
+            throw new ProcessInitException(LoaderErrors.FAILED_TO_REGISTER_JNI);
         }
 
         // Check that the version of the library we have loaded matches the version we expect
@@ -502,7 +501,7 @@ public class LibraryLoader {
                     "Expected native library version number \"%s\", "
                             + "actual native library version number \"%s\"",
                     NativeLibraries.sVersionNumber, LibraryLoaderJni.get().getVersionNumber());
-            throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_WRONG_VERSION);
+            throw new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_WRONG_VERSION);
         } else {
             // Log the version anyway as this is often helpful, but word it differently so it's
             // clear that it isn't an error.

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "components/safe_browsing/base_ui_manager.h"
+#include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -19,6 +20,7 @@ class SharedURLLoaderFactory;
 }
 
 namespace safe_browsing {
+class BaseBlockingPage;
 class PingManager;
 class SafeBrowsingNetworkContext;
 }  // namespace safe_browsing
@@ -45,7 +47,7 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   AwSafeBrowsingUIManager();
 
   // Gets the correct ErrorUiType for the web contents
-  int GetErrorUiType(const UnsafeResource& resource) const;
+  int GetErrorUiType(content::WebContents* web_contents) const;
 
   // BaseUIManager methods:
   void DisplayBlockingPage(const UnsafeResource& resource) override;
@@ -65,6 +67,11 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   void ShowBlockingPageForResource(const UnsafeResource& resource) override;
 
  private:
+  safe_browsing::BaseBlockingPage* CreateBlockingPageForSubresource(
+      content::WebContents* contents,
+      const GURL& blocked_url,
+      const UnsafeResource& unsafe_resource) override;
+
   // Called on the UI thread to create a URLLoaderFactory interface ptr for
   // the IO thread.
   void CreateURLLoaderFactoryForIO(

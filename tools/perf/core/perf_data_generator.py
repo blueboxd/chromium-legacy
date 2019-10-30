@@ -768,9 +768,10 @@ BUILDERS = {
     ],
     'platform': 'linux',
     'dimension': {
-      'gpu': '10de:1cb3',
-      'os': 'Ubuntu',
+      'gpu': '10de:1cb3-384.90',
+      'os': 'Ubuntu-14.04',
       'pool': 'chrome.tests.perf',
+      'synthetic_product_name': 'PowerEdge R230 (Dell Inc.)'
     },
   },
   'mac-10_13_laptop_high_end-perf': {
@@ -1096,7 +1097,7 @@ def update_labs_docs_md(filepath):
       f.write('## %s\n\n' % platform.title())
       testers.sort()
       for tester in testers:
-        f.write(' * [{0.name}]({0.buildbot_url}): {0.description}.\n'.format(
+        f.write(' * [{0.name}]({0.builder_url}): {0.description}.\n'.format(
             tester))
       f.write('\n')
 

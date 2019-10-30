@@ -5643,6 +5643,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/platform/api/quic_string_utils_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_text_utils_test.cc",
     "third_party/quiche/src/quic/quic_transport/quic_transport_client_session_test.cc",
+    "third_party/quiche/src/quic/quic_transport/quic_transport_integration_test.cc",
     "third_party/quiche/src/quic/quic_transport/quic_transport_server_session_test.cc",
     "third_party/quiche/src/quic/quic_transport/quic_transport_stream_test.cc",
     "third_party/quiche/src/quic/test_tools/crypto_test_utils_test.cc",

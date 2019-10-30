@@ -9,6 +9,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
@@ -35,13 +36,13 @@ class VideoCaptureServiceTest : public testing::Test {
     ~SharedMemoryVirtualDeviceContext();
 
     std::unique_ptr<MockProducer> mock_producer;
-    mojom::SharedMemoryVirtualDevicePtr device;
+    mojo::Remote<mojom::SharedMemoryVirtualDevice> device;
   };
 
   std::unique_ptr<SharedMemoryVirtualDeviceContext>
   AddSharedMemoryVirtualDevice(const std::string& device_id);
 
-  mojom::TextureVirtualDevicePtr AddTextureVirtualDevice(
+  mojo::PendingRemote<mojom::TextureVirtualDevice> AddTextureVirtualDevice(
       const std::string& device_id);
 
   base::test::TaskEnvironment task_environment_;

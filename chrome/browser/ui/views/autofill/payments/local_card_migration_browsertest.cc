@@ -902,20 +902,8 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   EXPECT_EQ(nullptr, personal_data_->GetCreditCardByNumber(kSecondCardNumber));
 }
 
-class LocalCardMigrationBrowserTestWithStrikeSystemV2
-    : public LocalCardMigrationBrowserTest {
- public:
-  LocalCardMigrationBrowserTestWithStrikeSystemV2() {
-    feature_list_.InitAndEnableFeature(
-        features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Ensures that rejecting the main migration dialog adds 3 strikes.
-IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
                        ClosingDialogAddsLocalCardMigrationStrikes) {
   base::HistogramTester histogram_tester;
 
@@ -933,7 +921,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
 }
 
 // Ensures that rejecting the migration bubble adds 2 strikes.
-IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
                        ClosingBubbleAddsLocalCardMigrationStrikes) {
   base::HistogramTester histogram_tester;
 
@@ -953,7 +941,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
 
 // Ensures that rejecting the migration bubble repeatedly adds 2 strikes every
 // time, even for the same tab.
-IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
                        ClosingBubbleAgainAddsLocalCardMigrationStrikes) {
   base::HistogramTester histogram_tester;
 
@@ -977,7 +965,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
 
 // Ensures that reshowing and closing bubble after previously closing it does
 // not add strikes.
-IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestWithStrikeSystemV2,
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
                        ReshowingBubbleDoesNotAddStrikes) {
   SaveLocalCard(kFirstCardNumber);
   SaveLocalCard(kSecondCardNumber);

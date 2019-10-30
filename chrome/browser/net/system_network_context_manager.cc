@@ -862,7 +862,7 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
   // These are needed for PAC scripts that use FTP URLs.
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   network_context_params->enable_ftp_url_support =
-      base::FeatureList::IsEnabled(features::kEnableFtp);
+      base::FeatureList::IsEnabled(features::kFtpProtocol);
 #endif
 
   network_context_params->primary_network_context = true;

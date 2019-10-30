@@ -1058,7 +1058,14 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
         case AppListControllerImpl::HomeLauncherAnimationState::kHiding:
           return in_overview ? HotseatState::kExtended : HotseatState::kHidden;
         case AppListControllerImpl::HomeLauncherAnimationState::kFinished:
-          if (app_list_controller->IsVisible())
+          // Consider the AppList visible if it is beginning to show. Also
+          // detect the case where the last window is being minimized.
+          const bool app_list_visible =
+              app_list_controller->IsVisible() ||
+              app_list_controller->GetTargetVisibility() ||
+              (!in_overview &&
+               app_list_controller->ShouldHomeLauncherBeVisible());
+          if (app_list_visible)
             return HotseatState::kShown;
           if (in_split_view)
             return HotseatState::kHidden;
@@ -1066,8 +1073,9 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
             return HotseatState::kExtended;
           if (visibility_state == SHELF_AUTO_HIDE) {
             if (auto_hide_state == SHELF_AUTO_HIDE_HIDDEN ||
-                should_hide_hotseat_)
+                should_hide_hotseat_) {
               return HotseatState::kHidden;
+            }
             return HotseatState::kExtended;
           }
           if (shelf_widget_->hotseat_widget()->is_manually_extended() &&

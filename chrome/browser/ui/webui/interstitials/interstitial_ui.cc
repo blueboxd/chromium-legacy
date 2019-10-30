@@ -26,6 +26,7 @@
 #include "components/grit/components_resources.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
+#include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/render_frame_host.h"
@@ -181,9 +182,11 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
   // This delegate doesn't create an interstitial.
   int options_mask = 0;
   if (overridable)
-    options_mask |= security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED;
+    options_mask |=
+        security_interstitials::SSLErrorOptionsMask::SOFT_OVERRIDE_ENABLED;
   if (strict_enforcement)
-    options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
+    options_mask |=
+        security_interstitials::SSLErrorOptionsMask::STRICT_ENFORCEMENT;
   return SSLBlockingPage::Create(
       web_contents, cert_error, ssl_info, request_url, options_mask,
       time_triggered_, GURL(), nullptr,
@@ -251,9 +254,11 @@ BadClockBlockingPage* CreateBadClockBlockingPage(
   // This delegate doesn't create an interstitial.
   int options_mask = 0;
   if (overridable)
-    options_mask |= security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED;
+    options_mask |=
+        security_interstitials::SSLErrorOptionsMask::SOFT_OVERRIDE_ENABLED;
   if (strict_enforcement)
-    options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
+    options_mask |=
+        security_interstitials::SSLErrorOptionsMask::STRICT_ENFORCEMENT;
   return new BadClockBlockingPage(
       web_contents, cert_error, ssl_info, request_url, base::Time::Now(),
       clock_state, nullptr,

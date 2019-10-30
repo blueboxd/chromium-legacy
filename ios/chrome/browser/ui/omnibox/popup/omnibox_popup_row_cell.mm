@@ -66,6 +66,8 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
+    _incognito = NO;
+
     self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
     self.selectedBackgroundView.backgroundColor = color::DarkModeDynamicColor(
         [UIColor colorNamed:kTableViewRowHighlightColor], _incognito,
@@ -108,8 +110,6 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     _separator = [[UIView alloc] initWithFrame:CGRectZero];
     _separator.translatesAutoresizingMaskIntoConstraints = NO;
     _separator.hidden = YES;
-
-    _incognito = NO;
 
     self.backgroundColor = UIColor.clearColor;
   }
@@ -307,6 +307,17 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   }
   self.suggestion = suggestion;
   self.incognito = incognito;
+
+  // While iOS 12 is still supported, the background color needs to be reset
+  // when the incognito mode changes. Once iOS 12 is no longer supported,
+  // the color should only have to be set once.
+  if (@available(iOS 13, *)) {
+    // Empty because condition should be if (!@available(iOS 13, *)).
+  } else {
+    self.selectedBackgroundView.backgroundColor = color::DarkModeDynamicColor(
+        [UIColor colorNamed:kTableViewRowHighlightColor], self.incognito,
+        [UIColor colorNamed:kTableViewRowHighlightDarkColor]);
+  }
 
   self.separator.backgroundColor =
       self.incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.12]

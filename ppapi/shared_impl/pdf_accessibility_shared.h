@@ -14,6 +14,41 @@
 
 namespace ppapi {
 
+// Needs to stay in sync with PP_PrivateAccessibilityTextStyleInfo.
+struct PPAPI_SHARED_EXPORT PdfAccessibilityTextStyleInfo {
+ public:
+  PdfAccessibilityTextStyleInfo();
+  explicit PdfAccessibilityTextStyleInfo(
+      const PP_PrivateAccessibilityTextStyleInfo& style);
+  PdfAccessibilityTextStyleInfo(PdfAccessibilityTextStyleInfo&& other);
+  ~PdfAccessibilityTextStyleInfo();
+
+  std::string font_name;
+  int font_weight;
+  int render_mode;
+  double font_size;
+  // Colors are ARGB.
+  uint32_t fill_color;
+  uint32_t stroke_color;
+  bool is_italic;
+  bool is_bold;
+};
+
+// Needs to stay in sync with PP_PrivateAccessibilityTextRunInfo.
+struct PPAPI_SHARED_EXPORT PdfAccessibilityTextRunInfo {
+ public:
+  PdfAccessibilityTextRunInfo();
+  explicit PdfAccessibilityTextRunInfo(
+      const PP_PrivateAccessibilityTextRunInfo& text_run);
+  PdfAccessibilityTextRunInfo(PdfAccessibilityTextRunInfo&& other);
+  ~PdfAccessibilityTextRunInfo();
+
+  uint32_t len;
+  struct PP_FloatRect bounds;
+  PP_PrivateDirection direction;
+  PdfAccessibilityTextStyleInfo style;
+};
+
 // Needs to stay in sync with PP_PrivateAccessibilityLinkInfo.
 struct PPAPI_SHARED_EXPORT PdfAccessibilityLinkInfo {
   PdfAccessibilityLinkInfo();

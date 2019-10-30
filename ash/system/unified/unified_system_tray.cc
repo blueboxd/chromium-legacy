@@ -391,8 +391,11 @@ void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
 
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled())
+  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
     message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
+    message_center_bubble_->ShowBubble();
+    FocusQuickSettings(false /*reverse*/);
+  }
 
   SetIsActive(true);
 }

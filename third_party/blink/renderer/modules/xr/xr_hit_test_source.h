@@ -21,9 +21,9 @@ class XRHitTestSource : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRHitTestSource(uint32_t id, XRHitTestOptions* options);
+  XRHitTestSource(uint64_t id, XRHitTestOptions* options);
 
-  uint32_t id() const;
+  uint64_t id() const;
 
   XRHitTestOptions* hitTestOptions() const;
 
@@ -37,7 +37,7 @@ class XRHitTestSource : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  const uint32_t id_;
+  const uint64_t id_;
 
   Member<XRHitTestOptions> options_;
 

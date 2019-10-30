@@ -62,7 +62,7 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
     size_t freelist_size;
   };
 
-  Statistics GetStatistics() const;
+  size_t GetBytesAllocated() const override;
 
  private:
   std::unique_ptr<base::DiscardableSharedMemory>

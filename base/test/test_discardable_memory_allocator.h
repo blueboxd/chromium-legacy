@@ -17,11 +17,13 @@ namespace base {
 // DiscardableMemory instances backed by heap memory.
 class TestDiscardableMemoryAllocator : public DiscardableMemoryAllocator {
  public:
-  constexpr TestDiscardableMemoryAllocator() = default;
+  TestDiscardableMemoryAllocator() = default;
 
   // Overridden from DiscardableMemoryAllocator:
   std::unique_ptr<DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) override;
+
+  size_t GetBytesAllocated() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestDiscardableMemoryAllocator);

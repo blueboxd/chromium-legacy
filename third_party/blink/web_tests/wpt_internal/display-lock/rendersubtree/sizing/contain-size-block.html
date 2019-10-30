@@ -15,7 +15,10 @@
 }
 #container {
   contain: style layout size;
-  content-size: none;
+  intrinsic-size: 0;
+}
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 

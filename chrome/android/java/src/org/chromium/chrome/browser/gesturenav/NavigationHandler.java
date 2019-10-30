@@ -15,6 +15,7 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.gesturenav.NavigationBubble.CloseTarget;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -83,6 +84,11 @@ public class NavigationHandler {
          * @param forward Direction to navigate. {@code true} if forward.
          */
         void navigate(boolean forward);
+
+        /**
+         * @return {@code true} if back action will close the current tab.
+         */
+        boolean willBackCloseTab();
 
         /**
          * @return {@code true} if back action will cause the app to exit.
@@ -192,11 +198,12 @@ public class NavigationHandler {
         if (mSideSlideLayout == null) createLayout();
         mSideSlideLayout.setEnabled(true);
         mSideSlideLayout.setDirection(forward);
-        boolean showCloseIndicator = shouldShowCloseIndicator(forward);
-        mSideSlideLayout.setEnableCloseIndicator(showCloseIndicator);
+        @CloseTarget
+        int closeIndicator = getCloseIndicator(forward);
+        mSideSlideLayout.setCloseIndicator(closeIndicator);
         attachLayoutIfNecessary();
         mSideSlideLayout.start();
-        mNavigationSheet.start(forward, showCloseIndicator);
+        mNavigationSheet.start(forward, closeIndicator != CloseTarget.NONE);
         mState = GestureState.DRAGGED;
     }
 
@@ -216,6 +223,18 @@ public class NavigationHandler {
         // Some tabs, upon back at the beginning of the history stack, should be just closed
         // than closing the entire app. In such case we do not show the close indicator.
         return !forward && mActionDelegate.willBackExitApp();
+    }
+
+    private @CloseTarget int getCloseIndicator(boolean forward) {
+        // Some tabs, upon back at the beginning of the history stack, should be just closed
+        // than closing the entire app.
+        if (!forward && mActionDelegate.willBackCloseTab()) {
+            return CloseTarget.TAB;
+        } else if (!forward && mActionDelegate.willBackExitApp()) {
+            return CloseTarget.APP;
+        } else {
+            return CloseTarget.NONE;
+        }
     }
 
     /**

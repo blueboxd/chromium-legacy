@@ -8,6 +8,12 @@
 <script src="/common/reftest-wait.js"></script>
 <script src="resources/utils.js"></script>
 
+<style>
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
+}
+</style>
+</div>
 <div id="host">
   <div id="slottedToFirst" slot="first">
     slotted to first slot
@@ -46,9 +52,9 @@ async function runTest() {
   secondSlot.name = "second";
   shadowRoot.appendChild(secondSlot);
 
-  host.style = "content-size: 100px 100px;"
-  nonActivatable.style = "content-size: 20px 20px;"
-  slottedToFirst.style = "content-size: 40px 40px;"
+  host.style = "intrinsic-size: 100px 100px;"
+  nonActivatable.style = "intrinsic-size: 20px 20px;"
+  slottedToFirst.style = "intrinsic-size: 40px 40px;"
   await setInvisibleActivatable(host);
   await setInvisible(nonActivatable);
   await setInvisibleActivatable(slottedToFirst);

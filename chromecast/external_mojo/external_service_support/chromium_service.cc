@@ -12,6 +12,7 @@
 #include "chromecast/external_mojo/external_service_support/external_connector.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -24,13 +25,12 @@ namespace {
 
 void OnStartCallback(
     ExternalConnector* connector,
-    service_manager::mojom::ConnectorRequest connector_request,
+    mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver,
     mojo::PendingAssociatedReceiver<service_manager::mojom::ServiceControl>
         control_receiver) {
   DCHECK(connector);
-  if (connector_request.is_pending()) {
-    connector->SendChromiumConnectorRequest(
-        connector_request.PassMessagePipe());
+  if (connector_receiver.is_valid()) {
+    connector->SendChromiumConnectorRequest(connector_receiver.PassPipe());
   }
 }
 

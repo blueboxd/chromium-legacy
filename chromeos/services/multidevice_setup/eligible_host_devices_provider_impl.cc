@@ -81,6 +81,18 @@ void EligibleHostDevicesProviderImpl::UpdateEligibleDevicesSet() {
     }
   }
 
+  // Sort from most-recently-updated to least-recently-updated. The timestamp
+  // used is provided by the back-end and indicates the last time at which the
+  // device's metadata was updated on the server. Note that this does not
+  // provide us with the last time that a user actually used this device, but it
+  // is a good estimate.
+  std::sort(eligible_devices_from_last_sync_.begin(),
+            eligible_devices_from_last_sync_.end(),
+            [](const auto& first_device, const auto& second_device) {
+              return first_device.last_update_time_millis() >
+                     second_device.last_update_time_millis();
+            });
+
   if (base::FeatureList::IsEnabled(
           features::kCryptAuthV2DeviceActivityStatus)) {
     eligible_active_devices_from_last_sync_.clear();

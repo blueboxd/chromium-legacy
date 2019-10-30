@@ -103,9 +103,7 @@ void LocalCardMigrationBubbleControllerImpl::OnCancelButtonClicked() {
 void LocalCardMigrationBubbleControllerImpl::OnBubbleClosed() {
   local_card_migration_bubble_ = nullptr;
   UpdateLocalCardMigrationIcon();
-  if (should_add_strikes_on_bubble_close_ &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
+  if (should_add_strikes_on_bubble_close_) {
     should_add_strikes_on_bubble_close_ = false;
     AddStrikesForBubbleClose();
   }

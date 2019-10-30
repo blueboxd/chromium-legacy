@@ -96,7 +96,7 @@ public class AsyncInitTaskRunnerTest {
 
     @Test
     public void libraryLoaderFailTest() throws InterruptedException {
-        doThrow(new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED))
+        doThrow(new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED))
                 .when(mLoader)
                 .ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mRunner.startBackgroundTasks(false, false);

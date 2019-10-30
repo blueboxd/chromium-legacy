@@ -88,14 +88,10 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
   const Extension* extension =
       registry->disabled_extensions().GetByID(extension_id_);
 
-  bool abort =
-      !extension ||
-      // The extension might be force-disabled by policy.
-      system->management_policy()->MustRemainDisabled(extension, nullptr,
-                                                      nullptr) ||
-      // Supervised users can't re-enable custodian-installed extensions.
-      extensions::util::IsExtensionSupervised(extension, profile_);
-
+  bool abort = !extension ||
+               // The extension might be force-disabled by policy.
+               system->management_policy()->MustRemainDisabled(
+                   extension, nullptr, nullptr);
   if (abort) {
     delegate_->ExtensionEnableFlowAborted(false);  // |delegate_| may delete us.
     return;

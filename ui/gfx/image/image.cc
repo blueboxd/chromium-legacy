@@ -264,7 +264,7 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
     RepresentationMap::const_iterator it = representations_.find(rep_type);
     if (it == representations_.end()) {
       CHECK(!must_exist);
-      return NULL;
+      return nullptr;
     }
     return it->second.get();
   }
@@ -319,7 +319,7 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
 }  // namespace internal
 
 Image::Image() {
-  // |storage_| is NULL for empty Images.
+  // |storage_| is null for empty Images.
 }
 
 Image::Image(const std::vector<ImagePNGRep>& image_reps) {
@@ -520,7 +520,7 @@ scoped_refptr<base::RefCountedMemory> Image::As1xPNGBytes() const {
     return new base::RefCountedBytes();
   }
 
-  scoped_refptr<base::RefCountedMemory> png_bytes(NULL);
+  scoped_refptr<base::RefCountedMemory> png_bytes;
   switch (DefaultRepresentationType()) {
 #if defined(OS_IOS)
     case kImageRepCocoaTouch: {

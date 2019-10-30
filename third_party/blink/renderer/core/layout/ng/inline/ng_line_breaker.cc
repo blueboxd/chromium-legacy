@@ -430,9 +430,7 @@ void NGLineBreaker::BreakLine(
       continue;
     }
     if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
-      NGInlineItemResult* item_result = AddItem(item, line_info);
-      ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
-      MoveToNextOf(item);
+      HandleOutOfFlowPositioned(item, line_info);
     } else if (item.Length()) {
       NOTREACHED();
       // For other items with text (e.g., bidi controls), use their text to
@@ -1492,6 +1490,21 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
 
     DCHECK_GE(AvailableWidth(), LayoutUnit());
   }
+}
+
+void NGLineBreaker::HandleOutOfFlowPositioned(const NGInlineItem& item,
+                                              NGLineInfo* line_info) {
+  DCHECK_EQ(item.Type(), NGInlineItem::kOutOfFlowPositioned);
+  NGInlineItemResult* item_result = AddItem(item, line_info);
+
+  // Break opportunity after OOF is not well-defined nor interoperable. Using
+  // |kObjectReplacementCharacter|, except when this is a leading OOF, seems to
+  // produce reasonable and interoperable results in common cases.
+  DCHECK(!item_result->can_break_after);
+  if (item_result->should_create_line_box)
+    ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
+
+  MoveToNextOf(item);
 }
 
 bool NGLineBreaker::ComputeOpenTagResult(

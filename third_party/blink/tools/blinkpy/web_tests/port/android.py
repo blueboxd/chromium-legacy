@@ -307,11 +307,6 @@ class AndroidPort(base.Port):
                                                     'Unable to find any attached Android devices.')
         return len(usable_devices)
 
-    def max_drivers_per_process(self):
-        # Android falls over when we try to run multiple content_shells per worker.
-        # See https://codereview.chromium.org/1158323009/
-        return 1
-
     def check_build(self, needs_http, printer):
         exit_status = super(AndroidPort, self).check_build(needs_http, printer)
         if exit_status:

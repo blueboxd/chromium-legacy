@@ -7,6 +7,7 @@
 #include "base/i18n/time_formatting.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
+#include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_strings.h"
@@ -18,7 +19,7 @@ namespace {
 // Path to the relevant help center page. Used if |support_url_| is invalid.
 const char kHelpPath[] = "answer/6098869";
 
-bool IsMasked(int options, SSLErrorUI::SSLErrorOptionsMask mask) {
+bool IsMasked(int options, SSLErrorOptionsMask mask) {
   return ((options & mask) != 0);
 }
 

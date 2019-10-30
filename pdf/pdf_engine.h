@@ -23,6 +23,7 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/image_data.h"
+#include "ppapi/cpp/private/pdf.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/url_loader.h"
@@ -42,7 +43,6 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
 
 struct PP_PdfAccessibilityActionData;
 struct PP_PdfPrintSettings_Dev;
-struct PP_PrivateAccessibilityTextRunInfo;
 
 namespace gfx {
 class Rect;
@@ -376,12 +376,11 @@ class PDFEngine {
   // Get a given unicode character on a given page.
   virtual uint32_t GetCharUnicode(int page_index, int char_index) = 0;
   // Given a start char index, find the longest continuous run of text that's
-  // in a single direction and with the same style and font size. Return a
-  // filled out PP_PrivateAccessibilityTextRunInfo on success or base::nullopt
-  // on failure. e.g. When |start_char_index| is out of bounds.
-  virtual base::Optional<PP_PrivateAccessibilityTextRunInfo> GetTextRunInfo(
-      int page_index,
-      int start_char_index) = 0;
+  // in a single direction and with the same text style. Return a filled out
+  // pp::PDF::PrivateAccessibilityTextRunInfo on success or base::nullopt on
+  // failure. e.g. When |start_char_index| is out of bounds.
+  virtual base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
+  GetTextRunInfo(int page_index, int start_char_index) = 0;
   // Gets the number of links on a given page.
   virtual uint32_t GetLinkCount(int page_index) = 0;
   // Gets url, underlying text range and bounding box of a link at |link_index|

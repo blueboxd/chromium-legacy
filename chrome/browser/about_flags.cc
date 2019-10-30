@@ -132,6 +132,7 @@
 #include "media/midi/midi_switches.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "net/base/features.h"
+#include "net/net_buildflags.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
@@ -2558,10 +2559,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"fill-on-account-select", flag_descriptions::kFillOnAccountSelectName,
      flag_descriptions::kFillOnAccountSelectDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},
-    {"fill-on-account-select-http",
-     flag_descriptions::kFillOnAccountSelectHttpName,
-     flag_descriptions::kFillOnAccountSelectHttpDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelectHttp)},
     {"enable-surfaces-for-videos",
      flag_descriptions::kUseSurfaceLayerForVideoName,
      flag_descriptions::kUseSurfaceLayerForVideoDescription, kOsAll,
@@ -2653,13 +2650,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
-    {"enable-autofill-local-card-migration-uses-strike-system-v2",
-     flag_descriptions::kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name,
-     flag_descriptions::
-         kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Description,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillLocalCardMigrationUsesStrikeSystemV2)},
 
 #if defined(OS_ANDROID)
     {"enable-autofill-manual-fallback",
@@ -4655,6 +4645,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-desktop-minimal-ui", flag_descriptions::kDesktopMinimalUIName,
      flag_descriptions::kDesktopMinimalUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopMinimalUI)},
+
     {"enable-media-internals-devtools",
      flag_descriptions::kMediaInspectorLoggingName,
      flag_descriptions::kMediaInspectorLoggingDescription, kOsAll,
@@ -4675,6 +4666,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHeavyAdPrivacyMitigationsOptOutName,
      flag_descriptions::kHeavyAdPrivacyMitigationsOptOutDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kHeavyAdPrivacyMitigations)},
+
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+    {"enable-ftp", flag_descriptions::kEnableFtpName,
+     flag_descriptions::kEnableFtpDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFtpProtocol)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

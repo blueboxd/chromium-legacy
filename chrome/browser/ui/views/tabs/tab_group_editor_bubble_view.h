@@ -22,9 +22,6 @@ class Size;
 class ColorPickerView;
 
 // A dialog for changing a tab group's visual parameters.
-//
-// TODO(crbug.com/989174): polish this UI. It is currently sufficient for
-// testing, but it is not ready to be launched.
 class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
  public:
   // Shows the editor for |group|. Returns an *unowned* pointer to the
@@ -35,7 +32,6 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
-  base::string16 GetWindowTitle() const override;
   ui::ModalType GetModalType() const override;
   int GetDialogButtons() const override;
 

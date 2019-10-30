@@ -336,13 +336,11 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     decoder_factory_.reset(new media::DefaultDecoderFactory(nullptr));
     auto factory_selector = std::make_unique<RendererFactorySelector>();
-    factory_selector->AddFactory(
+    factory_selector->AddBaseFactory(
         RendererFactorySelector::FactoryType::DEFAULT,
         std::make_unique<DefaultRendererFactory>(
             media_log.get(), decoder_factory_.get(),
             DefaultRendererFactory::GetGpuFactoriesCB()));
-    factory_selector->SetBaseFactoryType(
-        RendererFactorySelector::FactoryType::DEFAULT);
 #if defined(OS_ANDROID)
     factory_selector->StartRequestRemotePlayStateCB(base::DoNothing());
 #endif

@@ -170,7 +170,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpDisabledByList) {
   EnableFeatures({kDeepScanningOfUploads});
   SetDMToken(kDmToken);
   SetDlpPolicy(CHECK_UPLOADS);
-  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent, url);
+  AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent, url);
 
   DeepScanningDialogDelegate::Data data;
   EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
@@ -182,20 +182,20 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpDisabledByListWithPatterns) {
   EnableFeatures({kDeepScanningOfUploads});
   SetDMToken(kDmToken);
   SetDlpPolicy(CHECK_UPLOADS);
-  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent, kTestUrl);
-  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+  AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent, kTestUrl);
+  AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent,
                kTestHttpsSchemePatternUrl);
-  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+  AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent,
                kTestChromeSchemePatternUrl);
-  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+  AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent,
                kTestDevtoolsSchemePatternUrl);
-  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+  AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent,
                kTestHttpsSchemePatternUrl);
-  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+  AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent,
                kTestPathPatternUrl);
-  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+  AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent,
                kTestPortPatternUrl);
-  AddUrlToList(prefs::kDomainsToNotCheckComplianceOfUploadedContent,
+  AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent,
                kTestQueryPatternUrl);
 
   DeepScanningDialogDelegate::Data data;
@@ -323,7 +323,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareEnabled) {
   EnableFeatures({kDeepScanningOfUploads});
   SetDMToken(kDmToken);
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
-  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent, url);
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent, url);
 
   DeepScanningDialogDelegate::Data data;
   EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
@@ -337,7 +337,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoScanInIncognito) {
   SetDMToken(kDmToken);
   SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
-  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent, url);
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent, url);
 
   DeepScanningDialogDelegate::Data data;
   EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
@@ -351,18 +351,18 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareEnabledWithPatterns) {
   EnableFeatures({kDeepScanningOfUploads});
   SetDMToken(kDmToken);
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
-  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent, kTestUrl);
-  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent, kTestUrl);
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent,
                kTestHttpsSchemePatternUrl);
-  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent,
                kTestChromeSchemePatternUrl);
-  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent,
                kTestDevtoolsSchemePatternUrl);
-  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent,
                kTestPathPatternUrl);
-  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent,
                kTestPortPatternUrl);
-  AddUrlToList(prefs::kDomainsToCheckForMalwareOfUploadedContent,
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent,
                kTestQueryPatternUrl);
 
   DeepScanningDialogDelegate::Data data;

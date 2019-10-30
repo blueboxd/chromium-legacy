@@ -436,7 +436,6 @@ VISIT_PROTO_FIELDS(const sync_pb::ExtensionSpecifics& proto) {
   VISIT(incognito_enabled);
   VISIT(name);
   VISIT(remote_install);
-  VISIT(installed_by_custodian);
   VISIT(all_urls_enabled);
   VISIT(disable_reasons);
 }

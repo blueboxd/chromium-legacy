@@ -118,7 +118,7 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
   int32_t OnHostMsgSetAccessibilityPageInfo(
       ppapi::host::HostMessageContext* context,
       const PP_PrivateAccessibilityPageInfo& page_info,
-      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       const ppapi::PdfAccessibilityPageObjects& page_objects);
   int32_t OnHostMsgSelectionChanged(ppapi::host::HostMessageContext* context,

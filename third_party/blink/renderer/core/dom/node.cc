@@ -1225,7 +1225,34 @@ void Node::MarkAncestorsWithChildNeedsDistributionRecalc() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
+#if DCHECK_IS_ON()
+namespace {
+class AllowDirtyShadowV0TraversalScope {
+  STACK_ALLOCATED();
+
+ public:
+  explicit AllowDirtyShadowV0TraversalScope(Document& document)
+      : document_(&document),
+        old_value_(document.AllowDirtyShadowV0Traversal()) {
+    document.SetAllowDirtyShadowV0Traversal(true);
+  }
+  ~AllowDirtyShadowV0TraversalScope() {
+    document_->SetAllowDirtyShadowV0Traversal(old_value_);
+  }
+
+ private:
+  Member<Document> document_;
+  bool old_value_;
+};
+}  // namespace
+#define ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(document) \
+  AllowDirtyShadowV0TraversalScope traversal_scope(document)
+#else  // DCHECK_IS_ON()
+#define ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(document)
+#endif  // DCHECK_IS_ON()
+
 void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
+  ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(GetDocument());
   ContainerNode* ancestor = GetStyleRecalcParent();
   bool parent_dirty = ancestor && ancestor->IsDirtyForStyleRecalc();
   for (; ancestor && !ancestor->ChildNeedsStyleRecalc();
@@ -1338,6 +1365,7 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (!InActiveDocument())
     return;
   if (!GetComputedStyle()) {
+    ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(GetDocument());
     // If we don't have a computed style, and our parent element does not have a
     // computed style it's not necessary to mark this node for style recalc.
     if (auto* parent = GetStyleRecalcParent()) {

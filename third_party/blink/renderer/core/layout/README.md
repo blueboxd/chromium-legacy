@@ -223,6 +223,10 @@ The final location of these within an 800x600 frame is as:
     container: (492, 8  300x200)
     relpos:    (662, 58 70x80)
 
+The 8px is the default margin of HTML body element
+per https://html.spec.whatwg.org/multipage/rendering.html#the-page,
+which is specified in ../html/resources/html.css.
+
 See the [diagram](resources/flipped-blocks-relpos.svg) for full detail on
 dimensions of the involved elements.
 

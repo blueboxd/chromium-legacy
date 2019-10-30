@@ -1110,6 +1110,10 @@ PrerenderManager::FindIteratorForPrerenderContents(
 
 bool PrerenderManager::DoesRateLimitAllowPrerender(Origin origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Allow navigation predictor to manage its own rate limit.
+  if (origin == ORIGIN_NAVIGATION_PREDICTOR)
+    return true;
   base::TimeDelta elapsed_time =
       GetCurrentTimeTicks() - last_prerender_start_time_;
   if (!config_.rate_limit_enabled)

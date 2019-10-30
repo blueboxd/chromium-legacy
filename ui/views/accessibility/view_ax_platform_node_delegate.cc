@@ -153,10 +153,12 @@ void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
     case ax::mojom::Event::kMenuEnd:
       OnMenuEnd();
       break;
-    case ax::mojom::Event::kSelection:
-      if (menu_depth_ && ui::IsMenuItem(GetData().role))
+    case ax::mojom::Event::kSelection: {
+      ax::mojom::Role role = GetData().role;
+      if (menu_depth_ && (ui::IsMenuItem(role) || ui::IsListItem(role)))
         OnMenuItemActive();
       break;
+    }
     case ax::mojom::Event::kFocusContext: {
       // A focus context event is intended to send a focus event and a delay
       // before the next focus event. It makes sense to delay the entire next

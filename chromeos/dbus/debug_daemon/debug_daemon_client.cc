@@ -600,6 +600,19 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void SetSwapParameter(const std::string& parameter,
+                        int32_t value,
+                        DBusMethodCallback<std::string> callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface, "SwapSetParameter");
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(parameter);
+    writer.AppendInt32(value);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnSetSwapParameter,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     debugdaemon_proxy_ =
@@ -624,6 +637,24 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     }
 
     std::move(callback).Run(std::move(routes));
+  }
+
+  void OnSetSwapParameter(DBusMethodCallback<std::string> callback,
+                          dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::string res;
+    dbus::MessageReader reader(response);
+    if (!reader.PopString(&res)) {
+      LOG(ERROR) << "Received a non-string response from dbus";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(std::move(res));
   }
 
   void OnGetAllLogs(GetLogsCallback callback, dbus::Response* response) {

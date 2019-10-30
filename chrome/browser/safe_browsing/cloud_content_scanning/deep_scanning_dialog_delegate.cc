@@ -311,9 +311,9 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
 
   if (data->do_dlp_scan &&
       g_browser_process->local_state()->HasPrefPath(
-          prefs::kDomainsToNotCheckComplianceOfUploadedContent)) {
+          prefs::kURLsToNotCheckComplianceOfUploadedContent)) {
     const base::ListValue* filters = g_browser_process->local_state()->GetList(
-        prefs::kDomainsToNotCheckComplianceOfUploadedContent);
+        prefs::kURLsToNotCheckComplianceOfUploadedContent);
     url_matcher::URLMatcher matcher;
     policy::url_util::AddAllowFilters(&matcher, filters);
     data->do_dlp_scan = matcher.MatchURL(url).empty();
@@ -328,10 +328,10 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
 
   if (data->do_malware_scan) {
     if (g_browser_process->local_state()->HasPrefPath(
-            prefs::kDomainsToCheckForMalwareOfUploadedContent)) {
+            prefs::kURLsToCheckForMalwareOfUploadedContent)) {
       const base::ListValue* filters =
           g_browser_process->local_state()->GetList(
-              prefs::kDomainsToCheckForMalwareOfUploadedContent);
+              prefs::kURLsToCheckForMalwareOfUploadedContent);
       url_matcher::URLMatcher matcher;
       policy::url_util::AddAllowFilters(&matcher, filters);
       data->do_malware_scan = !matcher.MatchURL(url).empty();

@@ -259,6 +259,10 @@ body.hide-fakebox #fakebox {
   padding-inline-end: 48px;
 }
 
+#realbox-matches a:last-of-type {
+  margin-bottom: 8px;  /* Last result is tight with border-radius. */
+}
+
 .clock-icon,
 .search-icon {
   -webkit-mask-position: center;
@@ -279,6 +283,10 @@ body.hide-fakebox #fakebox {
 .search-icon {
   -webkit-mask-image:
       url(../../../../ui/webui/resources/images/icon_search.svg);
+}
+
+#realbox-input-wrapper > .search-icon {
+  -webkit-mask-size: 20px;  /* Loupe in realbox is bigger than in matches. */
 }
 
 html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
@@ -425,7 +433,8 @@ html[dir=rtl] .microphone-icon {
   right: auto;
 }
 
-#realbox-input-wrapper :-webkit-any(.google-g-icon, .microphone-icon) {
+#realbox-input-wrapper > :-webkit-any(.google-g-icon, .microphone-icon,
+                                      .search-icon) {
   z-index: 3;
 }
 

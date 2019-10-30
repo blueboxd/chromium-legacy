@@ -15,14 +15,13 @@
 #include "base/strings/string16.h"
 #include "pdf/page_orientation.h"
 #include "pdf/pdf_engine.h"
+#include "ppapi/cpp/private/pdf.h"
 #include "ppapi/cpp/rect.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_text.h"
 #include "ui/gfx/geometry/point_f.h"
-
-struct PP_PrivateAccessibilityTextRunInfo;
 
 namespace chrome_pdf {
 
@@ -47,7 +46,7 @@ class PDFiumPage {
   FPDF_TEXTPAGE GetTextPage();
 
   // See definition of PDFEngine::GetTextRunInfo().
-  base::Optional<PP_PrivateAccessibilityTextRunInfo> GetTextRunInfo(
+  base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo> GetTextRunInfo(
       int start_char_index);
   // Get a unicode character from the page.
   uint32_t GetCharUnicode(int char_index);
@@ -198,6 +197,15 @@ class PDFiumPage {
   // Calculates the set of character indices on which text runs need to be
   // broken for page objects such as links and images.
   void CalculatePageObjectTextRunBreaks();
+  // Set text run style information based on a character of the text run.
+  void CalculateTextRunStyleInfo(
+      int char_index,
+      pp::PDF::PrivateAccessibilityTextStyleInfo* style_info);
+  // Returns a boolean indicating if the character at index |char_index| has the
+  // same text style as the text run.
+  bool AreTextStyleEqual(
+      int char_index,
+      const pp::PDF::PrivateAccessibilityTextStyleInfo& style);
 
   // Key    :  Marked content id for the image element as specified in the
   //           struct tree.

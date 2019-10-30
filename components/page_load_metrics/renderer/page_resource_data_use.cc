@@ -6,8 +6,8 @@
 
 #include "base/stl_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
 
@@ -34,7 +34,7 @@ bool IsImageAutoReload(content::ResourceType resource_type,
 // Returns the ratio of original data size (without applying interventions) to
 // actual data use for a placeholder.
 double EstimatePartialImageRequestSavings(
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   if (!response_head.headers)
     return 1.0;
 
@@ -57,7 +57,7 @@ double EstimatePartialImageRequestSavings(
 // that this request was previously fetched as a placeholder, and therefore
 // recorded savings earlier.
 double EstimateAutoReloadImageRequestSavings(
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   static const double kPlageholderContentInCache = 2048;
 
   // Count the new network usage. For a reloaded placeholder image, 2KB will be
@@ -89,7 +89,7 @@ PageResourceDataUse::~PageResourceDataUse() = default;
 void PageResourceDataUse::DidStartResponse(
     const GURL& response_url,
     int resource_id,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     content::ResourceType resource_type,
     content::PreviewsState previews_state) {
   resource_id_ = resource_id;

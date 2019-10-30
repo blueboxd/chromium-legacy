@@ -10,9 +10,11 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
@@ -93,36 +95,50 @@ void AwSafeBrowsingBlockingPage::ShowBlockingPage(
     // There is no interstitial currently showing, or we are about to display a
     // new one for the main frame. If there is already an interstitial, showing
     // the new one will automatically hide the old one.
-    content::NavigationEntry* entry =
-        unsafe_resource.GetNavigationEntryForResource();
-    const UnsafeResourceList unsafe_resources{unsafe_resource};
-    AwBrowserContext* browser_context =
-        AwBrowserContext::FromWebContents(web_contents);
-    PrefService* pref_service = browser_context->GetPrefService();
-    BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options =
-        BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
-            IsMainPageLoadBlocked(unsafe_resources),
-            safe_browsing::IsExtendedReportingOptInAllowed(*pref_service),
-            browser_context->IsOffTheRecord(),
-            safe_browsing::IsExtendedReportingEnabled(*pref_service),
-            safe_browsing::IsExtendedReportingPolicyManaged(*pref_service),
-            pref_service->GetBoolean(
-                ::prefs::kSafeBrowsingProceedAnywayDisabled),
-            false,                    // should_open_links_in_new_tab
-            false,                    // always_show_back_to_safety
-            "cpn_safe_browsing_wv");  // help_center_article_link
-
-    ErrorUiType errorType =
-        static_cast<ErrorUiType>(ui_manager->GetErrorUiType(unsafe_resource));
-
-    AwSafeBrowsingBlockingPage* blocking_page = new AwSafeBrowsingBlockingPage(
-        ui_manager, web_contents, entry ? entry->GetURL() : GURL(),
-        unsafe_resources,
-        CreateControllerClient(web_contents, unsafe_resources, ui_manager,
-                               pref_service),
-        display_options, errorType);
+    AwSafeBrowsingBlockingPage* blocking_page = CreateBlockingPage(
+        ui_manager, unsafe_resource.web_contents_getter.Run(), GURL(),
+        unsafe_resource);
     blocking_page->Show();
   }
+}
+
+AwSafeBrowsingBlockingPage* AwSafeBrowsingBlockingPage::CreateBlockingPage(
+    AwSafeBrowsingUIManager* ui_manager,
+    content::WebContents* web_contents,
+    const GURL& main_frame_url,
+    const UnsafeResource& unsafe_resource) {
+  const UnsafeResourceList unsafe_resources{unsafe_resource};
+  AwBrowserContext* browser_context =
+      AwBrowserContext::FromWebContents(web_contents);
+  PrefService* pref_service = browser_context->GetPrefService();
+  BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options =
+      BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
+          IsMainPageLoadBlocked(unsafe_resources),
+          safe_browsing::IsExtendedReportingOptInAllowed(*pref_service),
+          browser_context->IsOffTheRecord(),
+          safe_browsing::IsExtendedReportingEnabled(*pref_service),
+          safe_browsing::IsExtendedReportingPolicyManaged(*pref_service),
+          pref_service->GetBoolean(::prefs::kSafeBrowsingProceedAnywayDisabled),
+          false,                    // should_open_links_in_new_tab
+          false,                    // always_show_back_to_safety
+          "cpn_safe_browsing_wv");  // help_center_article_link
+
+  ErrorUiType errorType =
+      static_cast<ErrorUiType>(ui_manager->GetErrorUiType(web_contents));
+
+  // TODO(carlosil): This logic is necessary to support committed and non
+  // committed interstitials, it can be cleaned up when removing non-committed
+  // interstitials.
+  content::NavigationEntry* entry =
+      unsafe_resource.GetNavigationEntryForResource();
+  GURL url =
+      (main_frame_url.is_empty() && entry) ? entry->GetURL() : main_frame_url;
+
+  return new AwSafeBrowsingBlockingPage(
+      ui_manager, web_contents, url, unsafe_resources,
+      CreateControllerClient(web_contents, unsafe_resources, ui_manager,
+                             pref_service),
+      display_options, errorType);
 }
 
 void AwSafeBrowsingBlockingPage::FinishThreatDetails(

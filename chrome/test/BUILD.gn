@@ -3111,6 +3111,7 @@ test("unit_tests") {
     "../browser/performance_manager/decorators/page_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
     "../browser/performance_manager/decorators/process_metrics_decorator_unittest.cc",
+    "../browser/performance_manager/decorators/process_priority_aggregator_unittest.cc",
     "../browser/performance_manager/graph/policies/dynamic_tcmalloc_policy_linux_unittest.cc",
     "../browser/performance_manager/graph/policies/working_set_trimmer_policy_chromeos_unittest.cc",
     "../browser/performance_manager/graph/policies/working_set_trimmer_policy_unittest.cc",
@@ -3688,6 +3689,7 @@ test("unit_tests") {
       "../browser/diagnostics/diagnostics_model_unittest.cc",
       "../browser/download/download_commands_unittest.cc",
       "../browser/download/download_shelf_unittest.cc",
+      "../browser/enterprise_reporting/browser_report_generator_unittest.cc",
       "../browser/enterprise_reporting/extension_info_unittest.cc",
       "../browser/enterprise_reporting/policy_info_unittest.cc",
       "../browser/enterprise_reporting/profile_report_generator_unittest.cc",
@@ -5163,7 +5165,7 @@ test("unit_tests") {
     ]
   }
 
-  if (enable_widevine && is_win) {
+  if (enable_cdm_proxy && enable_widevine && is_win) {
     sources += [ "../gpu/widevine_cdm_proxy_factory_unittest.cc" ]
   }
 

@@ -68,11 +68,13 @@ void RecordPageSwitcherSourceByEventType(ui::EventType type,
 
 UnifiedSystemTrayController::UnifiedSystemTrayController(
     UnifiedSystemTrayModel* model,
-    UnifiedSystemTrayBubble* bubble)
-    : model_(model),
+    UnifiedSystemTrayBubble* bubble,
+    views::View* owner_view)
+    : views::AnimationDelegateViews(owner_view),
+      model_(model),
       bubble_(bubble),
       animation_(std::make_unique<gfx::SlideAnimation>(this)) {
-  animation_->Reset(model->IsExpandedOnOpen() ? 1.0 : 0.0);
+  animation_->Reset(model_->IsExpandedOnOpen() ? 1.0 : 0.0);
   animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(500));
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
 

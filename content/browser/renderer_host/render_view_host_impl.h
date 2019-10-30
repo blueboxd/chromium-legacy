@@ -217,6 +217,23 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
 
+  // Resets any per page state. This should be called when a main frame
+  // associated with this RVH commits a navigation to a new document. Note that
+  // this means it should NOT be called for same document navigations or when
+  // restoring a page from the back-forward cache.
+  void ResetPerPageState();
+
+  bool did_first_visually_non_empty_paint() const {
+    return did_first_visually_non_empty_paint_;
+  }
+
+  void OnThemeColorChanged(RenderFrameHostImpl* rfh,
+                           const base::Optional<SkColor>& theme_color);
+
+  base::Optional<SkColor> theme_color() const {
+    return main_frame_theme_color_;
+  }
+
   // Manual RTTI to ensure safe downcasts in tests.
   virtual bool IsTestRenderViewHost() const;
 
@@ -362,6 +379,19 @@ class CONTENT_EXPORT RenderViewHostImpl
   // then back to active, and for the latter transition, this avoids firing
   // duplicate RenderViewCreated events.
   bool has_notified_about_creation_ = false;
+
+  // ---------- Per page state START ------------------------------------------
+  // The following members will get reset when this RVH commits a navigation to
+  // a new document. See ResetPerPageState()
+
+  // Whether the first visually non-empty paint has occurred.
+  bool did_first_visually_non_empty_paint_ = false;
+
+  // The theme color for the underlying document as specified
+  // by theme-color meta tag.
+  base::Optional<SkColor> main_frame_theme_color_;
+
+  // ---------- Per page state END --------------------------------------------
 
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;

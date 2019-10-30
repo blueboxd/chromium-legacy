@@ -663,17 +663,6 @@ class PersonalDataManager : public KeyedService,
           server_id_profiles_map,
       std::unordered_map<std::string, std::string>* guids_merge_map) const;
 
-  // Tries to merge the |server_address| into the |existing_profiles| if
-  // possible. Adds it to the list if no match is found. The existing profiles
-  // should be sorted by decreasing frecency outside of this method, since this
-  // will be called multiple times in a row. Returns the guid of the new or
-  // updated profile.
-  static std::string MergeServerAddressesIntoProfiles(
-      const AutofillProfile& server_address,
-      std::vector<AutofillProfile>* existing_profiles,
-      const std::string& app_locale,
-      const std::string& primary_account_email);
-
   // Removes profile from web database according to |guid| and resets credit
   // card's billing address if that address is used by any credit cards.
   // The method does not refresh, this allows multiple removal with one

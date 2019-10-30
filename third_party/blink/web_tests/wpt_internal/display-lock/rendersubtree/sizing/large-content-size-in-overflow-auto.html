@@ -1,7 +1,7 @@
 <!doctype HTML>
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: content-size is larger than height</title>
+<title>Display Locking: intrinsic-size is larger than height</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="large-content-size-in-overflow-auto-ref.html">
@@ -10,11 +10,14 @@
 
 <style>
 #container {
-  content-size: 1px 200px;
+  intrinsic-size: 1px 200px;
   width: 200px;
   height: 100px;
   overflow: auto;
   background: lightblue;
+}
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 

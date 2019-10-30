@@ -69,6 +69,13 @@ const char kEnableClipboardProviderTextSuggestionsName[] =
 const char kEnableClipboardProviderTextSuggestionsDescription[] =
     "Enables search suggestions in omnibox";
 
+const char kEnableFtpName[] = "Enable support for FTP URLs";
+const char kEnableFtpDescription[] =
+    "When enabled, the browser will handle navigations to ftp:// URLs by "
+    "either showing a directory listing or downloading the resource over FTP. "
+    "When disabled, the browser has no special handling for ftp:// URLs and "
+    "by default defer handling of the URL to the underlying platform.";
+
 const char kEnableSignedExchangeSubresourcePrefetchName[] =
     "Enable Signed Exchange subresource prefetching";
 const char kEnableSignedExchangeSubresourcePrefetchDescription[] =
@@ -555,14 +562,6 @@ const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[] =
 const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[] =
     "If enabled, local cards from unsupported networks will not be offered "
     "local card migration.";
-
-const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name[] =
-    "Enable limit on offering to migrate local cards repeatedly using the "
-    "updated strike system implementation";
-const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Description[] =
-    "If enabled, uses the updated strike system implementation to prevent "
-    "offering prompts for local card migration if it has repeatedly been "
-    "ignored, declined, or failed.";
 
 const char kEnableAutofillNativeDropdownViewsName[] =
     "Display Autofill Dropdown Using Views";
@@ -1109,12 +1108,6 @@ const char kFillOnAccountSelectName[] = "Fill passwords on account selection";
 const char kFillOnAccountSelectDescription[] =
     "Filling of passwords when an account is explicitly selected by the user "
     "rather than autofilling credentials on page load.";
-
-const char kFillOnAccountSelectHttpName[] =
-    "Fill passwords on account selection on HTTP origins";
-const char kFillOnAccountSelectHttpDescription[] =
-    "Filling of passwords when an account is explicitly selected by the user "
-    "rather than autofilling credentials on page load on HTTP origins.";
 
 const char kForceTextDirectionName[] = "Force text direction";
 const char kForceTextDirectionDescription[] =

@@ -1229,6 +1229,12 @@ fyi_coverage_builder(
 )
 
 fyi_coverage_builder(
+    name = 'android-code-coverage-native',
+    use_clang_coverage = True,
+    ssd = True,
+)
+
+fyi_coverage_builder(
     name = 'chromeos-vm-code-coverage',
     ssd = True,
     use_clang_coverage = True,

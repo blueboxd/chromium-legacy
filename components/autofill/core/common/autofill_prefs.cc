@@ -84,11 +84,6 @@ const char kAutofillLastVersionDisusedAddressesDeleted[] =
 const char kAutofillLastVersionDisusedCreditCardsDeleted[] =
     "autofill.last_version_disused_credit_cards_deleted";
 
-// Boolean that is set to denote whether user cancelled/rejected local card
-// migration prompt.
-const char kAutofillMigrateLocalCardsCancelledPrompt[] =
-    "autofill.migrate_local_card_cancelled_state";
-
 // Boolean that is true if the orphan rows in the autofill table were removed.
 const char kAutofillOrphanRowsRemoved[] = "autofill.orphan_rows_removed";
 
@@ -175,8 +170,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kAutofillLastVersionDisusedCreditCardsDeleted, 0);
   registry->RegisterIntegerPref(prefs::kAutocompleteLastVersionRetentionPolicy,
                                 0);
-  registry->RegisterBooleanPref(
-      prefs::kAutofillMigrateLocalCardsCancelledPrompt, false);
   registry->RegisterBooleanPref(prefs::kAutofillOrphanRowsRemoved, false);
   registry->RegisterStringPref(prefs::kAutofillUploadEncodingSeed, "");
   registry->RegisterDictionaryPref(prefs::kAutofillUploadEvents);
@@ -269,15 +262,6 @@ bool IsProfileAutofillEnabled(const PrefService* prefs) {
 
 void SetProfileAutofillEnabled(PrefService* prefs, bool enabled) {
   prefs->SetBoolean(kAutofillProfileEnabled, enabled);
-}
-
-bool IsLocalCardMigrationPromptPreviouslyCancelled(const PrefService* prefs) {
-  return prefs->GetBoolean(kAutofillMigrateLocalCardsCancelledPrompt);
-}
-
-void SetLocalCardMigrationPromptPreviouslyCancelled(PrefService* prefs,
-                                                    bool enabled) {
-  prefs->SetBoolean(kAutofillMigrateLocalCardsCancelledPrompt, enabled);
 }
 
 bool IsPaymentsIntegrationEnabled(const PrefService* prefs) {

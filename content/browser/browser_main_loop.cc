@@ -105,6 +105,7 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/service_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
@@ -135,6 +136,7 @@
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
+#include "services/data_decoder/public/cpp/service_provider.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "skia/ext/event_tracer_impl.h"
@@ -402,6 +404,27 @@ mojo::PendingRemote<data_decoder::mojom::BleScanParser> GetBleScanParser() {
 const base::Feature kBrowserDynamicCodeDisabled{
     "BrowserDynamicCodeDisabled", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
+
+class OopDataDecoder : public data_decoder::ServiceProvider {
+ public:
+  OopDataDecoder() { data_decoder::ServiceProvider::Set(this); }
+  ~OopDataDecoder() override { data_decoder::ServiceProvider::Set(nullptr); }
+
+  // data_decoder::ServiceProvider implementation:
+  void BindDataDecoderService(
+      mojo::PendingReceiver<data_decoder::mojom::DataDecoderService> receiver)
+      override {
+    ServiceProcessHost::Launch(
+        std::move(receiver),
+        ServiceProcessHost::Options()
+            .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
+            .WithDisplayName("Data Decoder Service")
+            .Pass());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OopDataDecoder);
+};
 
 }  // namespace
 
@@ -1236,6 +1259,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // Initializaing mojo requires the IO thread to have been initialized first,
   // so this cannot happen any earlier than now.
   InitializeMojo();
+
+  data_decoder_service_provider_ = std::make_unique<OopDataDecoder>();
 
   HistogramSynchronizer::GetInstance();
 

@@ -9,10 +9,7 @@
 
 #include <vector>
 
-// Accessibility identifier to open the advanced sign-in settings view.
-extern NSString* const kAdvancedSigninSettingsLinkIdentifier;
-// Accessibility identifier for |-UnifiedConsentViewController.view|.
-extern NSString* const kUnifiedConsentScrollViewIdentifier;
+#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
 
 @protocol UnifiedConsentViewControllerDelegate;
 

@@ -24,7 +24,6 @@
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -732,9 +731,6 @@ DriveIntegrationService::DriveIntegrationService(
                 logger_.get(), cache_.get(), scheduler_.get(),
                 resource_metadata_.get(), blocking_task_runner_.get(),
                 cache_root_directory_.Append(kTemporaryFileDirectory)));
-  debug_info_collector_ = std::make_unique<DebugInfoCollector>(
-      resource_metadata_.get(), file_system(), blocking_task_runner_.get());
-
   notification_manager_ =
       std::make_unique<DriveIntegrationService::NotificationManager>(profile);
 
@@ -759,7 +755,6 @@ void DriveIntegrationService::Shutdown() {
 
   RemoveDriveMountPoint();
   notification_manager_.reset();
-  debug_info_collector_.reset();
   file_system_.reset();
   scheduler_.reset();
   drive_service_.reset();

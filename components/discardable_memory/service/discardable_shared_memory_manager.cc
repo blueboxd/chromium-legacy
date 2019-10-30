@@ -125,6 +125,11 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
     return shared_memory_->memory();
   }
 
+  void DiscardForTesting() override {
+    DCHECK(is_locked_);
+    shared_memory_->Purge(base::Time::Now());
+  }
+
   base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
       const char* name,
       base::trace_event::ProcessMemoryDump* pmd) const override {
@@ -418,7 +423,7 @@ void DiscardableSharedMemoryManager::EnforceMemoryPolicy() {
   ReduceMemoryUsageUntilWithinMemoryLimit();
 }
 
-size_t DiscardableSharedMemoryManager::GetBytesAllocated() {
+size_t DiscardableSharedMemoryManager::GetBytesAllocated() const {
   base::AutoLock lock(lock_);
 
   return bytes_allocated_;

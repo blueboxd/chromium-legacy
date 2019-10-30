@@ -31,8 +31,7 @@ namespace {
 const int LOCAL_GUID_LENGTH = 36;
 
 // TODO(crbug.com/687975): Reuse MergeProfile in this function.
-// static
-std::string MergeServerAddressesIntoProfiles(
+std::string MergeServerAddressesIntoProfilesAndUpdateDb(
     const AutofillProfile& server_address,
     std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
     const std::string& app_locale,
@@ -94,7 +93,7 @@ bool ConvertWalletAddressesToLocalProfiles(
     if (!wallet_address->has_converted()) {
       // Try to merge the server address into a similar local profile, or create
       // a new local profile if no similar profile is found.
-      std::string address_guid = MergeServerAddressesIntoProfiles(
+      std::string address_guid = MergeServerAddressesIntoProfilesAndUpdateDb(
           *wallet_address, local_profiles, app_locale, primary_account_email,
           backend, db);
 

@@ -277,11 +277,11 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     public void onOpenInNewChromeTabFromCCT(String linkUrl, boolean isIncognito) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setClass(mTab.getApplicationContext(), ChromeLauncherActivity.class);
+        intent.setClass(ContextUtils.getApplicationContext(), ChromeLauncherActivity.class);
         if (isIncognito) {
             intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
-            intent.putExtra(
-                    Browser.EXTRA_APPLICATION_ID, mTab.getApplicationContext().getPackageName());
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID,
+                    ContextUtils.getApplicationContext().getPackageName());
             IntentHandler.addTrustedIntentExtras(intent);
             IntentHandler.setTabLaunchType(intent, TabLaunchType.FROM_EXTERNAL_APP);
         }

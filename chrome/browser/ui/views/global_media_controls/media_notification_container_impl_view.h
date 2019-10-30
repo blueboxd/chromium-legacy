@@ -81,7 +81,7 @@ class MediaNotificationContainerImplView
   views::ImageButton* GetDismissButtonForTesting();
 
   media_message_center::MediaNotificationView* view_for_testing() {
-    return view_.get();
+    return view_;
   }
 
  private:
@@ -99,19 +99,19 @@ class MediaNotificationContainerImplView
   void ForceExpandedState();
 
   const std::string id_;
-  std::unique_ptr<views::View> swipeable_container_;
+  views::View* swipeable_container_ = nullptr;
 
   // Always "visible" so that it reserves space in the header so that the
   // dismiss button can appear without forcing things to shift.
-  std::unique_ptr<views::View> dismiss_button_placeholder_;
+  views::View* dismiss_button_placeholder_ = nullptr;
 
   // Shows the colored circle background behind the dismiss button to give it
   // proper contrast against the artwork. The background can't be on the dismiss
   // button itself because it messes up the ink drop.
-  std::unique_ptr<views::View> dismiss_button_container_;
+  views::View* dismiss_button_container_ = nullptr;
 
-  DismissButton* dismiss_button_;
-  std::unique_ptr<media_message_center::MediaNotificationView> view_;
+  DismissButton* dismiss_button_ = nullptr;
+  media_message_center::MediaNotificationView* view_ = nullptr;
 
   SkColor foreground_color_;
   SkColor background_color_;

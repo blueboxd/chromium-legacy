@@ -44,8 +44,6 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
 
   QueuePriority GetCompositorPriority() const;
 
-  void SetCompositingIsFast(bool compositing_is_fast);
-
   void OnTaskCompleted(MainThreadTaskQueue* queue,
                        QueuePriority current_priority,
                        MainThreadTaskQueue::TaskTiming* task_timing);
@@ -108,8 +106,6 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
 
   QueuePriority alternating_compositor_priority_ =
       QueuePriority::kVeryHighPriority;
-
-  bool compositing_is_fast_ = false;
 
   QueuePriority delay_compositor_priority_ = QueuePriority::kNormalPriority;
   CancelableClosureHolder do_prioritize_compositing_after_delay_callback_;

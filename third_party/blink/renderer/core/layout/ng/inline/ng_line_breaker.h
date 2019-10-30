@@ -171,6 +171,7 @@ class CORE_EXPORT NGLineBreaker {
       const NGInlineItemResult& item_result) const;
   void HandleFloat(const NGInlineItem&,
                    NGLineInfo*);
+  void HandleOutOfFlowPositioned(const NGInlineItem&, NGLineInfo*);
 
   void HandleOpenTag(const NGInlineItem&, NGLineInfo*);
   void HandleCloseTag(const NGInlineItem&, NGLineInfo*);

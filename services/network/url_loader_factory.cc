@@ -24,6 +24,34 @@
 
 namespace network {
 
+namespace {
+
+// An enum class representing whether / how keepalive requests are blocked. This
+// is used for UMA so do NOT re-assign values.
+enum class KeepaliveBlockStatus {
+  // The request is not blocked.
+  kNotBlocked = 0,
+  // The request is blocked due to NetworkContext::CanCreateLoader.
+  kBlockedDueToCanCreateLoader = 1,
+  // The request is blocked due to the number of requests per process.
+  kBlockedDueToNumberOfRequestsPerProcess = 2,
+  // The request is blocked due to the number of requests per top-level frame.
+  kBlockedDueToNumberOfRequestsPerTopLevelFrame = 3,
+  // The request is blocked due to the number of requests in the system.
+  kBlockedDueToNumberOfRequests = 4,
+  // The request is blocked due to the total size of URL and request headers.
+  kBlockedDueToTotalSizeOfUrlAndHeaders = 5,
+  // The request is NOT blocked but the total size of URL and request headers
+  // exceeds 384kb.
+  kNotBlockedButUrlAndHeadersExceeds384kb = 6,
+  // The request is NOT blocked but the total size of URL and request headers
+  // exceeds 256kb.
+  kNotBlockedButUrlAndHeadersExceeds256kb = 7,
+  kMaxValue = kNotBlockedButUrlAndHeadersExceeds256kb,
+};
+
+}  // namespace
+
 constexpr int URLLoaderFactory::kMaxKeepaliveConnections;
 constexpr int URLLoaderFactory::kMaxKeepaliveConnectionsPerProcess;
 constexpr int URLLoaderFactory::kMaxTotalKeepaliveRequestSize;
@@ -100,8 +128,12 @@ void URLLoaderFactory::CreateLoaderAndStart(
         context_->network_service()->network_usage_accumulator()->AsWeakPtr();
   }
 
-  int keepalive_request_size = 0;
   bool exhausted = false;
+  if (!context_->CanCreateLoader(params_->process_id)) {
+    exhausted = true;
+  }
+
+  int keepalive_request_size = 0;
   if (url_request.keepalive && keepalive_statistics_recorder) {
     const size_t url_size = url_request.url.spec().size();
     size_t headers_size = 0;
@@ -121,21 +153,41 @@ void URLLoaderFactory::CreateLoaderAndStart(
 
     keepalive_request_size = url_size + headers_size;
 
+    KeepaliveBlockStatus block_status = KeepaliveBlockStatus::kNotBlocked;
     const auto& recorder = *keepalive_statistics_recorder;
-    if (recorder.num_inflight_requests() >= kMaxKeepaliveConnections) {
+    if (!context_->CanCreateLoader(params_->process_id)) {
+      // We already checked this, but we have this here for histogram.
+      DCHECK(exhausted);
+      block_status = KeepaliveBlockStatus::kBlockedDueToCanCreateLoader;
+    } else if (recorder.num_inflight_requests() >= kMaxKeepaliveConnections) {
       exhausted = true;
+      block_status = KeepaliveBlockStatus::kBlockedDueToNumberOfRequests;
     } else if (recorder.NumInflightRequestsPerProcess(params_->process_id) >=
                kMaxKeepaliveConnectionsPerProcess) {
       exhausted = true;
+      block_status =
+          KeepaliveBlockStatus::kBlockedDueToNumberOfRequestsPerProcess;
     } else if (recorder.GetTotalRequestSizePerProcess(params_->process_id) +
                    keepalive_request_size >
                kMaxTotalKeepaliveRequestSize) {
       exhausted = true;
+      block_status =
+          KeepaliveBlockStatus::kBlockedDueToTotalSizeOfUrlAndHeaders;
+    } else if (recorder.GetTotalRequestSizePerProcess(params_->process_id) +
+                   keepalive_request_size >
+               384 * 1024) {
+      block_status =
+          KeepaliveBlockStatus::kNotBlockedButUrlAndHeadersExceeds384kb;
+    } else if (recorder.GetTotalRequestSizePerProcess(params_->process_id) +
+                   keepalive_request_size >
+               256 * 1024) {
+      block_status =
+          KeepaliveBlockStatus::kNotBlockedButUrlAndHeadersExceeds256kb;
+    } else {
+      block_status = KeepaliveBlockStatus::kNotBlocked;
     }
+    UMA_HISTOGRAM_ENUMERATION("Net.KeepaliveRequest.BlockStatus", block_status);
   }
-
-  if (!context_->CanCreateLoader(params_->process_id))
-    exhausted = true;
 
   if (exhausted) {
     URLLoaderCompletionStatus status;

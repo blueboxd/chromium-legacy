@@ -70,12 +70,14 @@ const char kExternalClearKeyCrashKeySystem[] =
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
     "org.chromium.externalclearkey.verifycdmhosttest";
-#endif
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 const char kExternalClearKeyStorageIdTestKeySystem[] =
     "org.chromium.externalclearkey.storageidtest";
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 const char kExternalClearKeyCdmProxyKeySystem[] =
     "org.chromium.externalclearkey.cdmproxy";
-#endif
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Sessions to load.
 const char kNoSessionToLoad[] = "";
@@ -923,6 +925,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MultipleCdmTypes) {
 
 // Tests that only works on newer CDM interfaces.
 
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
   if (GetCdmInterfaceVersion() < 11) {
     DVLOG(0) << "Skipping test; CdmProxy only supported on CDM_11 and above.";
@@ -933,6 +936,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
   RunSimpleEncryptedMediaTest("bear-a_enc-a.webm",
                               kExternalClearKeyCdmProxyKeySystem, SrcType::MSE);
 }
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 // Incognito tests. Ideally we would run all above tests in incognito mode to
 // ensure that everything works. However, that would add a lot of extra tests

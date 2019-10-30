@@ -8,8 +8,6 @@ import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
@@ -140,21 +138,18 @@ public class WebLayerShellActivityTestRule extends ActivityTestRule<WebLayerShel
     }
 
     /**
-     * Rotates the Activity, blocking until the Activity is re-created.
+     * Recreates the Activity, blocking until finished.
      * After calling this, getActivity() returns the new Activity.
      */
-    public void rotateActivity() {
+    public void recreateActivity() {
         Activity activity = getActivity();
 
         ActivityMonitor monitor = new ActivityMonitor(WebLayerShellActivity.class.getName(),
                 null, false);
         InstrumentationRegistry.getInstrumentation().addMonitor(monitor);
 
-        int current = activity.getResources().getConfiguration().orientation;
-        int requested = current == Configuration.ORIENTATION_LANDSCAPE ?
-                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT :
-                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-        activity.setRequestedOrientation(requested);
+        TestThreadUtils.runOnUiThreadBlocking(activity::recreate);
+
         CriteriaHelper.pollUiThread(() ->
             monitor.getLastActivity() != null && monitor.getLastActivity() != activity
         );

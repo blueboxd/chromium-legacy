@@ -14,7 +14,7 @@
   width: max-content;
 }
 #container {
-  content-size: 12px 34px;
+  intrinsic-size: 12px 34px;
   height: 100px;
   overflow: auto;
 }
@@ -23,6 +23,9 @@
   height: 50px;
   margin: 5px;
   background: pink;
+}
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 

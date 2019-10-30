@@ -677,6 +677,7 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
   if (item) {
     if ([[web_controller_ nativeContentHolder].nativeController
             respondsToSelector:@selector(virtualURL)] ||
+        wk_navigation_util::IsPlaceholderUrl(item->GetURL()) ||
         item->error_retry_state_machine().state() ==
             ErrorRetryState::kReadyToDisplayError) {
       // For native content, or when webView.URL is a placeholder URL,

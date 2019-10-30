@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/clang_coverage_buildflags.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
@@ -32,6 +33,9 @@ class MockChildProcess : public mojom::ChildProcess {
   MOCK_METHOD1(GetTaskPort, void(GetTaskPortCallback));
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   MOCK_METHOD1(SetIPCLoggingEnabled, void(bool));
+#endif
+#if BUILDFLAG(CLANG_COVERAGE)
+  MOCK_METHOD1(SetCoverageFile, void(base::File));
 #endif
   MOCK_METHOD1(GetBackgroundTracingAgentProvider,
                void(mojo::PendingReceiver<

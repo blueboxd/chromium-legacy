@@ -244,8 +244,7 @@ class Worker(object):
         self._port = None
         self._batch_count = None
         self._filesystem = None
-        self._primary_driver = None
-        self._secondary_driver = None
+        self._driver = None
         self._num_tests = 0
 
     def __del__(self):
@@ -259,11 +258,7 @@ class Worker(object):
         self._host = self._caller.host
         self._filesystem = self._host.filesystem
         self._port = self._host.port_factory.get(self._options.platform, self._options)
-        self._primary_driver = self._port.create_driver(self._worker_number)
-
-        if self._port.max_drivers_per_process() > 1:
-            self._secondary_driver = self._port.create_driver(self._worker_number)
-
+        self._driver = self._port.create_driver(self._worker_number)
         self._batch_count = 0
 
     def handle(self, name, source, test_list_name, test_inputs, batch_size):
@@ -275,9 +270,6 @@ class Worker(object):
                 self._caller.stop_running()
                 return
 
-        # Kill the secondary driver at the end of each test shard.
-        self._kill_driver(self._secondary_driver, 'secondary')
-
         self._caller.post('finished_test_list', test_list_name)
 
     def _update_test_input(self, test_input):
@@ -286,10 +278,9 @@ class Worker(object):
             test_input.reference_files = self._port.reference_files(test_input.test_name)
 
     def _run_test(self, test_input, shard_name, batch_size):
-        # If the batch size has been exceeded, kill the drivers.
+        # If the batch size has been exceeded, kill the driver.
         if batch_size > 0 and self._batch_count >= batch_size:
-            self._kill_driver(self._primary_driver, 'primary')
-            self._kill_driver(self._secondary_driver, 'secondary')
+            self._kill_driver()
             self._batch_count = 0
 
         self._batch_count += 1
@@ -301,7 +292,7 @@ class Worker(object):
         self._caller.post('started_test', test_input)
         result = single_test_runner.run_single_test(
             self._port, self._options, self._results_directory, self._name,
-            self._primary_driver, self._secondary_driver, test_input)
+            self._driver, test_input)
 
         result.shard_name = shard_name
         result.worker_name = self._name
@@ -314,25 +305,24 @@ class Worker(object):
 
     def stop(self):
         _log.debug('%s cleaning up', self._name)
-        self._kill_driver(self._primary_driver, 'primary')
-        self._kill_driver(self._secondary_driver, 'secondary')
+        self._kill_driver()
 
-    def _kill_driver(self, driver, label):
+    def _kill_driver(self):
         # Be careful about how and when we kill the driver; if driver.stop()
         # raises an exception, this routine may get re-entered via __del__.
-        if driver:
+        if self._driver:
             # When tracing we need to go through the standard shutdown path to
             # ensure that the trace is recorded properly.
             if any(i in ['--trace-startup', '--trace-shutdown']
                    for i in self._options.additional_driver_flag):
                 _log.debug('%s waiting %d seconds for %s driver to shutdown',
                            self._name, self._port.driver_stop_timeout(), label)
-                driver.stop(timeout_secs=self._port.driver_stop_timeout())
+                self._driver.stop(timeout_secs=self._port.driver_stop_timeout())
                 return
 
             # Otherwise, kill the driver immediately to speed up shutdown.
-            _log.debug('%s killing %s driver', self._name, label)
-            driver.stop()
+            _log.debug('%s killing driver', self._name)
+            self._driver.stop()
 
     def _clean_up_after_test(self, test_input, result):
         test_description = test_input.test_name
@@ -345,9 +335,8 @@ class Worker(object):
             if any([f.driver_needs_restart() for f in result.failures]):
                 # FIXME: Need more information in failure reporting so
                 # we know which driver needs to be restarted. For now
-                # we kill both drivers.
-                self._kill_driver(self._primary_driver, 'primary')
-                self._kill_driver(self._secondary_driver, 'secondary')
+                # we kill the driver.
+                self._kill_driver()
 
                 # Reset the batch count since the shell just bounced.
                 self._batch_count = 0

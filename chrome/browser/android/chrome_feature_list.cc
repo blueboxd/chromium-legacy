@@ -132,7 +132,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchTapDisableOverride,
     &kContextualSearchTranslationModel,
     &kDirectActions,
-    &kDownloadLocationShowImageInGallery,
     &kDownloadFileProvider,
     &kDownloadNotificationBadge,
     &kDownloadProgressInfoBar,
@@ -400,9 +399,6 @@ const base::Feature kDrawVerticallyEdgeToEdge{
 
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kDownloadLocationShowImageInGallery{
-    "DownloadLocationShowImageInGallery", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDownloadProgressInfoBar{"DownloadProgressInfoBar",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

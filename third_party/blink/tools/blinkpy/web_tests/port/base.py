@@ -321,10 +321,6 @@ class Port(object):
         """Returns the number of child processes to use for this port."""
         return self._executive.cpu_count()
 
-    def max_drivers_per_process(self):
-        """Returns the maximum number of drivers a child process can use for this port."""
-        return 2
-
     def default_max_locked_shards(self):
         """Returns the number of "locked" shards to run in parallel (like the http tests)."""
         max_locked_shards = int(self.default_child_processes()) / 4
@@ -1051,10 +1047,10 @@ class Port(object):
 
     @memoized
     def args_for_test(self, test_name):
-        virtual_args = self.lookup_virtual_test_args(test_name)
+        virtual_args = self._lookup_virtual_test_args(test_name)
         if virtual_args:
             return virtual_args
-        return self.lookup_physical_test_args(test_name)
+        return self._lookup_physical_test_args(test_name)
 
     @memoized
     def name_for_test(self, test_name):
@@ -1694,17 +1690,14 @@ class Port(object):
             for test in base_tests:
                 suite.tests[suite.full_prefix + test] = test
 
-    def is_virtual_test(self, test_name):
-        return bool(self.lookup_virtual_suite(test_name))
-
-    def lookup_virtual_suite(self, test_name):
+    def _lookup_virtual_suite(self, test_name):
         for suite in self.virtual_test_suites():
             if test_name.startswith(suite.full_prefix):
                 return suite
         return None
 
     def lookup_virtual_test_base(self, test_name):
-        suite = self.lookup_virtual_suite(test_name)
+        suite = self._lookup_virtual_suite(test_name)
         if not suite:
             return None
         assert test_name.startswith(suite.full_prefix)
@@ -1715,29 +1708,17 @@ class Port(object):
                 return maybe_base
         return None
 
-    def lookup_virtual_test_args(self, test_name):
+    def _lookup_virtual_test_args(self, test_name):
         normalized_test_name = self.normalize_test_name(test_name)
         for suite in self.virtual_test_suites():
             if normalized_test_name.startswith(suite.full_prefix):
                 return suite.args
         return []
 
-    def lookup_virtual_reference_args(self, test_name):
-        for suite in self.virtual_test_suites():
-            if test_name.startswith(suite.full_prefix):
-                return suite.reference_args
-        return []
-
-    def lookup_physical_test_args(self, test_name):
+    def _lookup_physical_test_args(self, test_name):
         for suite in self.physical_test_suites():
             if test_name.startswith(suite.name):
                 return suite.args
-        return []
-
-    def lookup_physical_reference_args(self, test_name):
-        for suite in self.physical_test_suites():
-            if test_name.startswith(suite.name):
-                return suite.reference_args
         return []
 
     def _build_path(self, *comps):
@@ -1836,7 +1817,7 @@ class Port(object):
 
 class VirtualTestSuite(object):
 
-    def __init__(self, prefix=None, bases=None, args=None, references_use_default_args=False):
+    def __init__(self, prefix=None, bases=None, args=None):
         assert isinstance(bases, list)
         assert args
         assert isinstance(args, list)
@@ -1844,21 +1825,19 @@ class VirtualTestSuite(object):
         self.full_prefix = 'virtual/' + prefix + '/'
         self.bases = bases
         self.args = args
-        self.reference_args = [] if references_use_default_args else args
         self.tests = {}
 
     def __repr__(self):
-        return "VirtualTestSuite('%s', %s, %s, %s)" % (self.full_prefix, self.bases, self.args, self.reference_args)
+        return "VirtualTestSuite('%s', %s, %s)" % (self.full_prefix, self.bases, self.args)
 
 
 class PhysicalTestSuite(object):
 
-    def __init__(self, base, args, reference_args=None):
+    def __init__(self, base, args):
         self.name = base
         self.base = base
         self.args = args
-        self.reference_args = args if reference_args is None else reference_args
         self.tests = set()
 
     def __repr__(self):
-        return "PhysicalTestSuite('%s', '%s', %s, %s)" % (self.name, self.base, self.args, self.reference_args)
+        return "PhysicalTestSuite('%s', '%s', %s)" % (self.name, self.base, self.args)

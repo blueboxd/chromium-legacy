@@ -65,9 +65,6 @@ NSString* kServerNumberObfuscated =
 
 const char kFormHTMLFile[] = "/multi_field_form.html";
 
-// TODO(crbug.com/1016367): Remove the guard once ExecuteJavaScript is updated
-// to compile on EG2.
-#if defined(CHROME_EARL_GREY_1)
 // Matcher for the not secure website alert.
 id<GREYMatcher> NotSecureWebsiteAlert() {
   return StaticTextWithAccessibilityLabelId(
@@ -78,7 +75,7 @@ id<GREYMatcher> NotSecureWebsiteAlert() {
 // |boolValue| is YES with a kWaitForActionTimeout timeout.
 BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   auto verify_block = ^BOOL {
-    id value = chrome_test_util::ExecuteJavaScript(java_script_condition, nil);
+    id value = [ChromeEarlGrey executeJavaScript:java_script_condition];
     return [value isEqual:@YES];
   };
   NSTimeInterval timeout = base::test::ios::kWaitForActionTimeout;
@@ -88,7 +85,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
                                                         block:verify_block];
   return [condition waitWithTimeout:timeout];
 }
-#endif
 
 // Waits for the keyboard to appear. Returns NO on timeout.
 BOOL WaitForKeyboardToAppear() {
@@ -522,9 +518,6 @@ BOOL WaitForKeyboardToAppear() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// TODO(crbug.com/1016367): Remove the guard once ExecuteJavaScript is updated
-// to compile on EG2.
-#if defined(CHROME_EARL_GREY_1)
 // Tests that credit card number (for local card) is injected.
 // TODO(crbug.com/845472): maybe figure a way to test successfull injection
 // when page is https, but right now if we use the https embedded server,
@@ -562,7 +555,6 @@ BOOL WaitForKeyboardToAppear() {
   [self verifyCreditCardButtonWithTitle:kLocalCardExpirationYear
                         doesInjectValue:kLocalCardExpirationYear];
 }
-#endif
 
 // Tests that masked credit card offer CVC input.
 // TODOD(crbug.com/909748) can't test this one until https tests are possible.
@@ -599,9 +591,6 @@ BOOL WaitForKeyboardToAppear() {
 
 #pragma mark - Private
 
-// TODO(crbug.com/1016367): Remove the guard once ExecuteJavaScript is updated
-// to compile on EG2.
-#if defined(CHROME_EARL_GREY_1)
 - (void)verifyCreditCardButtonWithTitle:(NSString*)title
                         doesInjectValue:(NSString*)result {
   [AutofillAppInterface saveLocalCreditCard];
@@ -632,6 +621,5 @@ BOOL WaitForKeyboardToAppear() {
                        kFormElementUsername, result];
   XCTAssertTrue(WaitForJavaScriptCondition(javaScriptCondition));
 }
-#endif
 
 @end

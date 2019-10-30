@@ -485,7 +485,8 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       nested_runloop(false),
       compositing_experiment(main_thread_scheduler_impl),
       should_prioritize_compositing(false),
-      compositor_priority_experiments(main_thread_scheduler_impl) {}
+      compositor_priority_experiments(main_thread_scheduler_impl),
+      main_thread_compositing_is_fast(false) {}
 
 MainThreadSchedulerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
@@ -1446,7 +1447,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   // Avoid prioritizing main thread compositing (e.g., rAF) if it is extremely
   // slow, because that can cause starvation in other task sources.
-  bool main_thread_compositing_is_fast =
+  main_thread_only().main_thread_compositing_is_fast =
       main_thread_only().idle_time_estimator.GetExpectedIdleDuration(
           main_thread_only().compositor_frame_interval) >
       main_thread_only().compositor_frame_interval *
@@ -1458,53 +1459,24 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   switch (new_policy.use_case()) {
     case UseCase::kCompositorGesture:
-      if (main_thread_only().blocking_input_expected_soon) {
+      if (main_thread_only().blocking_input_expected_soon)
         new_policy.rail_mode() = RAILMode::kResponse;
-        new_policy.compositor_priority() =
-            TaskQueue::QueuePriority::kHighestPriority;
-      } else {
-        // What we really want to do is priorize loading tasks, but that doesn't
-        // seem to be safe. Instead we do that by proxy by deprioritizing
-        // compositor tasks. This should be safe since we've already gone to the
-        // pain of fixing ordering issues with them.
-        new_policy.compositor_priority() =
-            TaskQueue::QueuePriority::kLowPriority;
-      }
       break;
 
     case UseCase::kSynchronizedGesture:
-      new_policy.compositor_priority() = main_thread_compositing_is_fast
-                                             ? TaskQueue::kHighestPriority
-                                             : TaskQueue::kNormalPriority;
       if (main_thread_only().blocking_input_expected_soon)
         new_policy.rail_mode() = RAILMode::kResponse;
       break;
 
     case UseCase::kMainThreadCustomInputHandling:
-      // In main thread input handling scenarios we don't have perfect knowledge
-      // about which things we should be prioritizing, so we don't attempt to
-      // block expensive tasks because we don't know whether they were integral
-      // to the page's functionality or not.
-      new_policy.compositor_priority() =
-          main_thread_compositing_is_fast
-              ? TaskQueue::QueuePriority::kHighestPriority
-              : TaskQueue::QueuePriority::kNormalPriority;
       break;
 
     case UseCase::kMainThreadGesture:
-      // A main thread gesture is for example a scroll gesture which is handled
-      // by the main thread. Since we know the established gesture type, we can
-      // be a little more aggressive about prioritizing compositing and input
-      // handling over other tasks.
-      new_policy.compositor_priority() =
-          TaskQueue::QueuePriority::kHighestPriority;
       if (main_thread_only().blocking_input_expected_soon)
         new_policy.rail_mode() = RAILMode::kResponse;
       break;
 
     case UseCase::kTouchstart:
-      new_policy.compositor_priority() =
-          TaskQueue::QueuePriority::kHighestPriority;
       new_policy.rail_mode() = RAILMode::kResponse;
       new_policy.loading_queue_policy().is_deferred = true;
       new_policy.timer_queue_policy().is_deferred = true;
@@ -1521,12 +1493,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
     case UseCase::kEarlyLoading:
       new_policy.rail_mode() = RAILMode::kLoad;
-      if (scheduling_settings_
-              .prioritize_compositing_and_loading_during_early_loading) {
-        new_policy.compositor_priority() =
-            base::sequence_manager::TaskQueue::QueuePriority::kHighPriority;
-        new_policy.should_prioritize_loading_with_compositing() = true;
-      }
       break;
 
     case UseCase::kLoading:
@@ -1538,15 +1504,27 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       NOTREACHED();
   }
 
-  // Do not reset compositor priority if set to highest or higher.
-  if (new_policy.compositor_priority() >
-          TaskQueue::QueuePriority::kHighestPriority &&
-      main_thread_only().compositor_priority_experiments.IsExperimentActive()) {
-    main_thread_only().compositor_priority_experiments.SetCompositingIsFast(
-        main_thread_compositing_is_fast);
+  if (main_thread_only().should_prioritize_compositing) {
     new_policy.compositor_priority() =
         main_thread_only()
-            .compositor_priority_experiments.GetCompositorPriority();
+            .compositing_experiment.GetIncreasedCompositingPriority();
+  } else if (scheduling_settings_
+                 .prioritize_compositing_and_loading_during_early_loading &&
+             current_use_case() == UseCase::kEarlyLoading) {
+    new_policy.compositor_priority() =
+        base::sequence_manager::TaskQueue::QueuePriority::kHighPriority;
+    new_policy.should_prioritize_loading_with_compositing() = true;
+  } else {
+    base::Optional<TaskQueue::QueuePriority> computed_compositor_priority =
+        ComputeCompositorPriorityFromUseCase();
+    if (computed_compositor_priority) {
+      new_policy.compositor_priority() = computed_compositor_priority.value();
+    } else if (main_thread_only()
+                   .compositor_priority_experiments.IsExperimentActive()) {
+      new_policy.compositor_priority() =
+          main_thread_only()
+              .compositor_priority_experiments.GetCompositorPriority();
+    }
   }
 
   // TODO(skyostil): Add an idle state for foreground tabs too.
@@ -1569,12 +1547,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
 
   new_policy.should_disable_throttling() = main_thread_only().use_virtual_time;
-
-  if (main_thread_only().should_prioritize_compositing) {
-    new_policy.compositor_priority() =
-        main_thread_only()
-            .compositing_experiment.GetIncreasedCompositingPriority();
-  }
 
   // Tracing is done before the early out check, because it's quite possible we
   // will otherwise miss this information in traces.
@@ -2787,7 +2759,49 @@ void MainThreadSchedulerImpl::SetShouldPrioritizeCompositing(
 
 void MainThreadSchedulerImpl::
     OnCompositorPriorityExperimentUpdateCompositorPriority() {
-  UpdatePolicy();
+  if (!ComputeCompositorPriorityFromUseCase())
+    UpdatePolicy();
+}
+
+base::Optional<TaskQueue::QueuePriority>
+MainThreadSchedulerImpl::ComputeCompositorPriorityFromUseCase() const {
+  switch (current_use_case()) {
+    case UseCase::kCompositorGesture:
+      if (main_thread_only().blocking_input_expected_soon)
+        return TaskQueue::QueuePriority::kHighestPriority;
+      // What we really want to do is priorize loading tasks, but that doesn't
+      // seem to be safe. Instead we do that by proxy by deprioritizing
+      // compositor tasks. This should be safe since we've already gone to the
+      // pain of fixing ordering issues with them.
+      return TaskQueue::QueuePriority::kLowPriority;
+
+    case UseCase::kSynchronizedGesture:
+    case UseCase::kMainThreadCustomInputHandling:
+      // In main thread input handling use case we don't have perfect knowledge
+      // about which things we should be prioritizing, so we don't attempt to
+      // block expensive tasks because we don't know whether they were integral
+      // to the page's functionality or not.
+      if (main_thread_only().main_thread_compositing_is_fast)
+        return TaskQueue::QueuePriority::kHighestPriority;
+      return base::nullopt;
+
+    case UseCase::kMainThreadGesture:
+    case UseCase::kTouchstart:
+      // A main thread gesture is for example a scroll gesture which is handled
+      // by the main thread. Since we know the established gesture type, we can
+      // be a little more aggressive about prioritizing compositing and input
+      // handling over other tasks.
+      return TaskQueue::QueuePriority::kHighestPriority;
+
+    case UseCase::kNone:
+    case UseCase::kEarlyLoading:
+    case UseCase::kLoading:
+      return base::nullopt;
+
+    default:
+      NOTREACHED();
+      return base::nullopt;
+  }
 }
 
 void MainThreadSchedulerImpl::OnSafepointEntered() {

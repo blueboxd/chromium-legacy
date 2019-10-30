@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -112,17 +113,31 @@ void BinaryFCMService::OnMessage(const std::string& app_id,
                                  const gcm::IncomingMessage& message) {
   auto serialized_proto_iterator =
       message.data.find(kBinaryFCMServiceMessageKey);
+  base::UmaHistogramBoolean("SafeBrowsingFCMService.IncomingMessageHasKey",
+                            serialized_proto_iterator != message.data.end());
   if (serialized_proto_iterator == message.data.end())
     return;
 
   std::string serialized_proto;
-  base::Base64Decode(serialized_proto_iterator->second, &serialized_proto);
+  bool parsed =
+      base::Base64Decode(serialized_proto_iterator->second, &serialized_proto);
+  base::UmaHistogramBoolean(
+      "SafeBrowsingFCMService.IncomingMessageParsedBase64", parsed);
+  if (!parsed)
+    return;
+
   DeepScanningClientResponse response;
-  if (!response.ParseFromString(serialized_proto))
+  parsed = response.ParseFromString(serialized_proto);
+  base::UmaHistogramBoolean("SafeBrowsingFCMService.IncomingMessageParsedProto",
+                            parsed);
+  if (!parsed)
     return;
 
   auto callback_it = message_token_map_.find(response.token());
-  if (callback_it == message_token_map_.end())
+  bool has_valid_token = (callback_it != message_token_map_.end());
+  base::UmaHistogramBoolean(
+      "SafeBrowsingFCMService.IncomingMessageHasValidToken", has_valid_token);
+  if (!has_valid_token)
     return;
 
   callback_it->second.Run(std::move(response));

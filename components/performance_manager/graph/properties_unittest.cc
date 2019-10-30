@@ -22,7 +22,7 @@ class DummyObserver {
   MOCK_METHOD1(NotifyAlwaysConst, void(const DummyNode*));
   MOCK_METHOD1(NotifyOnlyOnChangesConst, void(const DummyNode*));
   MOCK_METHOD2(NotifyOnlyOnChangesWithPreviousValueConst,
-               void(const DummyNode*, const bool&));
+               void(const DummyNode*, bool));
 };
 
 class DummyNode {
@@ -63,6 +63,7 @@ class DummyNode {
       NotifiesOnlyOnChanges<bool, &DummyObserver::NotifyOnlyOnChangesConst>
           observed_only_on_changes_{false};
   ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
+      bool,
       bool,
       &DummyObserver::NotifyOnlyOnChangesWithPreviousValueConst>
       observed_only_on_changes_with_previous_value_{false};

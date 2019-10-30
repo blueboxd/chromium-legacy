@@ -1238,13 +1238,15 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
 LayoutUnit ClampIntrinsicBlockSize(const NGBlockNode& node,
                                    const NGBoxStrut& border_scrollbar_padding,
                                    LayoutUnit current_intrinsic_block_size) {
-  // With contain: size, we ignore intrinsic sizing. If the block-size was
-  // specified as auto, its content-box size will become 0, unless overridden by
-  // content-size.
-  if (node.ShouldApplySizeContainment()) {
-    return node.ContentBlockSizeForSizeContainment() +
-           border_scrollbar_padding.BlockSum();
-  }
+  // If the intrinsic size was overridden, then use that.
+  LayoutUnit intrinsic_size_override = node.OverrideIntrinsicContentBlockSize();
+  if (intrinsic_size_override != kIndefiniteSize)
+    return intrinsic_size_override + border_scrollbar_padding.BlockSum();
+
+  // If we have size containment, we ignore child contributions to intrinsic
+  // sizing.
+  if (node.ShouldApplySizeContainment())
+    return border_scrollbar_padding.BlockSum();
   return current_intrinsic_block_size;
 }
 
@@ -1256,14 +1258,17 @@ base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
   if (type == NGMinMaxSizeType::kBorderBoxSize)
     sizes += border_scrollbar_padding.InlineSum();
 
-  // Size contained elements don't consider children for intrinsic sizing.
-  if (node.ShouldApplySizeContainment()) {
-    sizes += node.ContentInlineSizeForSizeContainment();
+  // If intrinsic size was overridden, then use that.
+  const LayoutUnit intrinsic_size_override =
+      node.OverrideIntrinsicContentInlineSize();
+  if (intrinsic_size_override != kIndefiniteSize) {
+    sizes += intrinsic_size_override;
     return sizes;
   }
 
-  // If we don't have children, we can also determine the size immediately.
-  if (!node.FirstChild())
+  // Size contained elements don't consider children for intrinsic sizing.
+  // Also, if we don't have children, we can determine the size immediately.
+  if (node.ShouldApplySizeContainment() || !node.FirstChild())
     return sizes;
 
   return base::nullopt;

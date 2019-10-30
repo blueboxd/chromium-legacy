@@ -62,6 +62,37 @@ class PortalBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
+  Portal* CreatePortalToUrl(WebContentsImpl* host_contents,
+                            GURL portal_url,
+                            int number_of_navigations = 1) {
+    EXPECT_GE(number_of_navigations, 1);
+    RenderFrameHostImpl* main_frame = host_contents->GetMainFrame();
+
+    // Create portal and wait for navigation.
+    PortalCreatedObserver portal_created_observer(main_frame);
+    TestNavigationObserver navigation_observer(nullptr, number_of_navigations);
+    navigation_observer.set_wait_event(
+        TestNavigationObserver::WaitEvent::kNavigationFinished);
+    navigation_observer.StartWatchingNewWebContents();
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("{"
+                              "  let portal = document.createElement('portal');"
+                              "  portal.src = $1;"
+                              "  document.body.appendChild(portal);"
+                              "}",
+                              portal_url)));
+    Portal* portal = portal_created_observer.WaitUntilPortalCreated();
+    navigation_observer.StopWatchingNewWebContents();
+
+    WebContentsImpl* portal_contents = portal->GetPortalContents();
+    EXPECT_TRUE(portal_contents);
+
+    navigation_observer.WaitForNavigationFinished();
+    EXPECT_TRUE(WaitForLoadStop(portal_contents));
+
+    return portal;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -90,56 +121,35 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigatePortal) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  PortalCreatedObserver portal_created_observer(main_frame);
-
   // Tests that a portal can navigate by setting its src before appending it to
   // the DOM.
-  PortalInterceptorForTesting* portal_interceptor;
-  WebContents* portal_contents;
-  {
-    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-    TestNavigationObserver navigation_observer(a_url);
-    navigation_observer.StartWatchingNewWebContents();
-    EXPECT_TRUE(ExecJs(
-        main_frame,
-        base::StringPrintf("var portal = document.createElement('portal');"
-                           "portal.src = '%s';"
-                           "document.body.appendChild(portal);",
-                           a_url.spec().c_str())));
-
-    portal_interceptor = PortalInterceptorForTesting::From(
-        portal_created_observer.WaitUntilPortalCreated());
-    portal_contents = portal_interceptor->GetPortalContents();
-    EXPECT_NE(nullptr, portal_contents);
-
-    navigation_observer.Wait();
-    EXPECT_EQ(portal_contents->GetLastCommittedURL(), a_url);
-  }
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+  WebContents* portal_contents = portal->GetPortalContents();
+  EXPECT_EQ(portal_contents->GetLastCommittedURL(), a_url);
 
   // Tests that a portal can navigate by setting its src.
   {
     TestNavigationObserver navigation_observer(portal_contents);
 
     GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
-    EXPECT_TRUE(ExecJs(
-        main_frame,
-        base::StringPrintf("document.querySelector('portal').src = '%s';",
-                           b_url.spec().c_str())));
+    EXPECT_TRUE(
+        ExecJs(main_frame,
+               JsReplace("document.querySelector('portal').src = $1;", b_url)));
     navigation_observer.Wait();
     EXPECT_EQ(navigation_observer.last_navigation_url(), b_url);
     EXPECT_EQ(portal_contents->GetLastCommittedURL(), b_url);
   }
 
-  // Tests that a portal can navigating by attribute.
+  // Tests that a portal can navigate by setting the attribute src.
   {
     TestNavigationObserver navigation_observer(portal_contents);
 
     GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
     EXPECT_TRUE(ExecJs(
         main_frame,
-        base::StringPrintf(
-            "document.querySelector('portal').setAttribute('src', '%s');",
-            c_url.spec().c_str())));
+        JsReplace("document.querySelector('portal').setAttribute('src', $1);",
+                  c_url)));
     navigation_observer.Wait();
     EXPECT_EQ(navigation_observer.last_navigation_url(), c_url);
     EXPECT_EQ(portal_contents->GetLastCommittedURL(), c_url);
@@ -154,17 +164,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePortal) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  Portal* portal = nullptr;
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-    EXPECT_TRUE(ExecJs(
-        main_frame, JsReplace("var portal = document.createElement('portal');"
-                              "portal.src = $1;"
-                              "document.body.appendChild(portal);",
-                              a_url)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);
 
@@ -184,26 +186,16 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePortal) {
 }
 
 // Tests if a portal can be activated and the predecessor can be adopted.
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ReactivatePredecessor) {
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AdoptPredecessor) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  Portal* portal = nullptr;
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-    EXPECT_TRUE(ExecJs(
-        main_frame, JsReplace("var portal = document.createElement('portal');"
-                              "portal.src = $1;"
-                              "document.body.appendChild(portal);",
-                              a_url)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);
 
@@ -212,7 +204,6 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ReactivatePredecessor) {
   WebContentsImpl* portal_contents = portal->GetPortalContents();
   EXPECT_NE(nullptr, portal_contents);
   EXPECT_NE(portal_contents, shell()->web_contents());
-  navigation_observer.Wait();
 
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
   EXPECT_TRUE(ExecJs(portal_frame,
@@ -224,6 +215,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ReactivatePredecessor) {
   {
     PortalCreatedObserver adoption_observer(portal_frame);
     EXPECT_TRUE(ExecJs(main_frame,
+                       "let portal = document.querySelector('portal');"
                        "portal.activate().then(() => { "
                        "  document.body.removeChild(portal); "
                        "});"));
@@ -245,17 +237,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RenderFrameProxyHostCreated) {
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  Portal* portal = nullptr;
-  PortalCreatedObserver portal_created_observer(main_frame);
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  EXPECT_TRUE(ExecJs(main_frame,
-                     JsReplace("var portal = document.createElement('portal');"
-                               "portal.src = $1;"
-                               "document.body.appendChild(portal);",
-                               a_url)));
-  portal = portal_created_observer.WaitUntilPortalCreated();
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
   WebContentsImpl* portal_contents = portal->GetPortalContents();
   RenderFrameProxyHost* proxy_host = portal_contents->GetFrameTree()
                                          ->root()
@@ -274,28 +258,14 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DetachPortal) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents->GetMainFrame();
 
-  Portal* portal = nullptr;
-  PortalCreatedObserver portal_created_observer(main_frame);
   GURL a_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  EXPECT_TRUE(ExecJs(main_frame,
-                     JsReplace("var portal = document.createElement('portal');"
-                               "portal.src = $1;"
-                               "document.body.appendChild(portal);",
-                               a_url)));
+  // Wait for a second navigation for the inner iframe.
+  Portal* portal = CreatePortalToUrl(web_contents, a_url, 2);
 
-  // Wait for portal to be created.
-  portal = portal_created_observer.WaitUntilPortalCreated();
   WebContentsImpl* portal_contents = portal->GetPortalContents();
   FrameTreeNode* portal_main_frame_node =
       portal_contents->GetFrameTree()->root();
-  // Wait for portal frame to navigate.
-  navigation_observer.WaitForNavigationFinished();
-  // Wait for inner iframe to navigate.
-  TestNavigationObserver observer2(portal_contents);
-  observer2.WaitForNavigationFinished();
 
   // Remove portal from document and wait for frames to be deleted.
   FrameDeletedObserver fdo1(portal_main_frame_node->render_manager()
@@ -303,7 +273,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DetachPortal) {
                                 ->current_frame_host());
   FrameDeletedObserver fdo2(
       portal_main_frame_node->child_at(0)->current_frame_host());
-  EXPECT_TRUE(ExecJs(main_frame, "document.body.removeChild(portal);"));
+  EXPECT_TRUE(
+      ExecJs(main_frame,
+             "document.body.removeChild(document.querySelector('portal'));"));
   fdo1.Wait();
   fdo2.Wait();
 }
@@ -367,32 +339,22 @@ IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, DispatchInputEvent) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  // Create portal and wait for navigation.
-  Portal* portal = nullptr;
-  PortalCreatedObserver portal_created_observer(main_frame);
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  EXPECT_TRUE(ExecJs(main_frame,
-                     JsReplace("var portal = document.createElement('portal');"
-                               "portal.src = $1;"
-                               "document.body.appendChild(portal);",
-                               a_url)));
-  portal = portal_created_observer.WaitUntilPortalCreated();
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
   WebContentsImpl* portal_contents = portal->GetPortalContents();
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
   EXPECT_TRUE(static_cast<RenderWidgetHostViewBase*>(portal_frame->GetView())
                   ->IsRenderWidgetHostViewChildFrame());
   RenderWidgetHostViewChildFrame* portal_view =
       static_cast<RenderWidgetHostViewChildFrame*>(portal_frame->GetView());
-  navigation_observer.Wait();
   WaitForHitTestData(portal_frame);
 
   FailOnInputEvent no_input_to_portal_frame(
       portal_frame->GetRenderWidgetHost());
-  EXPECT_TRUE(ExecJs(main_frame,
-                     "var clicked = false;"
-                     "portal.onmousedown = _ => clicked = true;"));
+  EXPECT_TRUE(ExecJs(
+      main_frame,
+      "var clicked = false;"
+      "document.querySelector('portal').onmousedown = _ => clicked = true;"));
   EXPECT_TRUE(ExecJs(portal_frame,
                      "var clicked = false;"
                      "document.body.onmousedown = _ => clicked = true;"));
@@ -426,7 +388,6 @@ IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
   // Create portal and wait for navigation.
   // In the case of crbug.com/1002228 , this does not appear to reproduce if the
   // portal element is too small, so we give it an explicit size.
-  Portal* portal = nullptr;
   PortalCreatedObserver portal_created_observer(main_frame);
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   TestNavigationObserver navigation_observer(a_url);
@@ -439,7 +400,7 @@ IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
                                "portal.style.border = 'solid';"
                                "document.body.appendChild(portal);",
                                a_url)));
-  portal = portal_created_observer.WaitUntilPortalCreated();
+  Portal* portal = portal_created_observer.WaitUntilPortalCreated();
   WebContentsImpl* portal_contents = portal->GetPortalContents();
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
   navigation_observer.Wait();
@@ -501,24 +462,14 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AsyncEventTargetingIgnoresPortals) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  // Create portal and wait for navigation.
-  PortalCreatedObserver portal_created_observer(main_frame);
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  EXPECT_TRUE(ExecJs(main_frame,
-                     JsReplace("var portal = document.createElement('portal');"
-                               "portal.src = $1;"
-                               "document.body.appendChild(portal);",
-                               a_url)));
-  Portal* portal = portal_created_observer.WaitUntilPortalCreated();
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
   WebContentsImpl* portal_contents = portal->GetPortalContents();
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
   ASSERT_TRUE(static_cast<RenderWidgetHostViewBase*>(portal_frame->GetView())
                   ->IsRenderWidgetHostViewChildFrame());
   RenderWidgetHostViewChildFrame* portal_view =
       static_cast<RenderWidgetHostViewChildFrame*>(portal_frame->GetView());
-  navigation_observer.Wait();
   WaitForHitTestData(portal_frame);
 
   viz::mojom::InputTargetClient* target_client =
@@ -590,24 +541,14 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivate) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  // Create portal and wait for navigation.
-  Portal* portal = nullptr;
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-    EXPECT_TRUE(ExecJs(
-        main_frame, JsReplace("var portal = document.createElement('portal');"
-                              "portal.src = $1;"
-                              "document.body.appendChild(portal);"
-                              "document.body.addEventListener('touchstart', "
-                              "e => { portal.activate(); }, {passive: false});",
-                              a_url)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+  EXPECT_TRUE(
+      ExecJs(main_frame,
+             JsReplace("document.body.addEventListener('touchstart', e => {"
+                       "  document.querySelector('portal').activate();"
+                       "}, {passive: false});")));
   WebContentsImpl* portal_contents = portal->GetPortalContents();
-  navigation_observer.Wait();
 
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);
@@ -644,29 +585,18 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndAdopt) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  // Create portal and wait for navigation.
-  Portal* portal = nullptr;
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-    const int TOUCH_ACK_DELAY_IN_MILLISECONDS = 500;
-    EXPECT_TRUE(
-        ExecJs(main_frame,
-               JsReplace("var portal = document.createElement('portal');"
-                         "portal.src = $1;"
-                         "document.body.appendChild(portal);"
-                         "document.body.addEventListener('touchstart', e => {"
-                         "  portal.activate();"
-                         "  var stop = performance.now() + $2;"
-                         "  while (performance.now() < stop) {}"
-                         "}, {passive: false});",
-                         a_url, TOUCH_ACK_DELAY_IN_MILLISECONDS)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+  const int TOUCH_ACK_DELAY_IN_MILLISECONDS = 500;
+  EXPECT_TRUE(
+      ExecJs(main_frame,
+             JsReplace("document.body.addEventListener('touchstart', e => {"
+                       "  document.querySelector('portal').activate();"
+                       "  var stop = performance.now() + $1;"
+                       "  while (performance.now() < stop) {}"
+                       "}, {passive: false});",
+                       TOUCH_ACK_DELAY_IN_MILLISECONDS)));
   WebContentsImpl* portal_contents = portal->GetPortalContents();
-  navigation_observer.Wait();
 
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
   EXPECT_TRUE(ExecJs(portal_frame,
@@ -714,31 +644,18 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndReactivate) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  // Create portal and wait for navigation.
-  Portal* portal = nullptr;
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-    const int TOUCH_ACK_DELAY_IN_MILLISECONDS = 500;
-    EXPECT_TRUE(
-        ExecJs(main_frame,
-               JsReplace("var portal = document.createElement('portal');"
-                         "portal.src = $1;"
-                         "document.body.appendChild(portal);"
-                         "document.body.addEventListener('touchstart', e => {"
-                         "  portal.activate();"
-                         "  var stop = performance.now() + $2;"
-                         "  while (performance.now() < stop) {}"
-                         "}, {passive: false});"
-                         "var stop = performance.now() + 500;"
-                         "while (performance.now() < stop) {}",
-                         a_url, TOUCH_ACK_DELAY_IN_MILLISECONDS)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+  const int TOUCH_ACK_DELAY_IN_MILLISECONDS = 500;
+  EXPECT_TRUE(
+      ExecJs(main_frame,
+             JsReplace("document.body.addEventListener('touchstart', e => {"
+                       "  document.querySelector('portal').activate();"
+                       "  var stop = performance.now() + $1;"
+                       "  while (performance.now() < stop) {}"
+                       "}, {passive: false});",
+                       TOUCH_ACK_DELAY_IN_MILLISECONDS)));
   WebContentsImpl* portal_contents = portal->GetPortalContents();
-  navigation_observer.Wait();
 
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
   EXPECT_TRUE(ExecJs(portal_frame,
@@ -790,26 +707,14 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchStateClearedBeforeActivation) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  // Create portal and wait for navigation.
-  Portal* portal = nullptr;
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-    EXPECT_TRUE(
-        ExecJs(main_frame,
-               JsReplace("var portal = document.createElement('portal');"
-                         "portal.src = $1;"
-                         "document.body.appendChild(portal);"
-                         "document.body.addEventListener('touchstart', e => {"
-                         "  portal.activate();"
-                         "}, {passive: false});",
-                         a_url)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+  EXPECT_TRUE(
+      ExecJs(main_frame,
+             JsReplace("document.body.addEventListener('touchstart', e => {"
+                       "  document.querySelector('portal').activate();"
+                       "}, {passive: false});")));
   WebContentsImpl* portal_contents = portal->GetPortalContents();
-  navigation_observer.Wait();
 
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
   EXPECT_TRUE(ExecJs(portal_frame,
@@ -871,27 +776,14 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, GestureCleanedUpBeforeActivation) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  // Create portal and wait for navigation.
-  Portal* portal = nullptr;
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-    EXPECT_TRUE(
-        ExecJs(main_frame,
-               JsReplace("var portal = document.createElement('portal');"
-                         "portal.src = $1;"
-                         "document.body.appendChild(portal);"
-                         "document.body.addEventListener('touchstart', e => {"
-                         "  portal.activate();"
-                         "}, {once: true});",
-                         a_url)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+  EXPECT_TRUE(
+      ExecJs(main_frame,
+             JsReplace("document.body.addEventListener('touchstart', e => {"
+                       "  document.querySelector('portal').activate();"
+                       "}, {once: true});")));
   WebContentsImpl* portal_contents = portal->GetPortalContents();
-  navigation_observer.Wait();
-
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
   EXPECT_TRUE(ExecJs(portal_frame,
                      "window.addEventListener('portalactivate', e => {"
@@ -952,25 +844,11 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchInputTransferAcrossActivation) {
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
   RenderWidgetHostImpl* render_widget_host = main_frame->GetRenderWidgetHost();
 
-  // Create portal and wait for navigation.
-  Portal* portal = nullptr;
   GURL portal_url(embedded_test_server()->GetURL(
       "portal.test", "/portals/scroll-portal.html"));
-  TestNavigationObserver navigation_observer(portal_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-
-    EXPECT_TRUE(ExecJs(
-        main_frame, JsReplace("var portal = document.createElement('portal');"
-                              "portal.src = $1;"
-                              "document.body.appendChild(portal);",
-                              portal_url)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  Portal* portal = CreatePortalToUrl(web_contents_impl, portal_url);
   WebContentsImpl* portal_contents = portal->GetPortalContents();
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
-  navigation_observer.Wait();
   WaitForHitTestData(portal_frame);
 
   // Create and dispatch a synthetic scroll to trigger activation.
@@ -1010,23 +888,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
   RenderWidgetHostImpl* render_widget_host = main_frame->GetRenderWidgetHost();
 
-  // Create portal and wait for navigation.
-  Portal* portal = nullptr;
   GURL portal_url(embedded_test_server()->GetURL(
       "portal.test", "/portals/reactivate-predecessor.html"));
-  TestNavigationObserver navigation_observer(portal_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-
-    EXPECT_TRUE(ExecJs(
-        main_frame, JsReplace("var portal = document.createElement('portal');"
-                              "portal.src = $1;"
-                              "document.body.appendChild(portal);",
-                              portal_url)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
-  navigation_observer.Wait();
+  Portal* portal = CreatePortalToUrl(web_contents_impl, portal_url);
   WaitForHitTestData(main_frame);
 
   PortalInterceptorForTesting* portal_interceptor =
@@ -1074,21 +938,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, FrameDeletedAfterActivation) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  Portal* portal = nullptr;
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-    EXPECT_TRUE(ExecJs(
-        main_frame, JsReplace("var portal = document.createElement('portal');"
-                              "portal.src = $1;"
-                              "document.body.appendChild(portal);",
-                              a_url)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
   WebContentsImpl* portal_contents = portal->GetPortalContents();
-  navigation_observer.Wait();
 
   FrameTreeNode* outer_frame_tree_node = FrameTreeNode::GloballyFindByID(
       portal_contents->GetOuterDelegateFrameTreeNodeId());
@@ -1159,23 +1011,11 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, OrphanedNavigation) {
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  Portal* portal = nullptr;
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-    EXPECT_TRUE(ExecJs(
-        main_frame, JsReplace("var portal = document.createElement('portal');"
-                              "portal.src = $1;"
-                              "document.body.appendChild(portal);",
-                              a_url)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);
   WebContentsImpl* portal_contents = portal->GetPortalContents();
-  navigation_observer.Wait();
 
   // Block the activate callback so that the predecessor portal stays orphaned.
   EXPECT_TRUE(ExecJs(portal_contents->GetMainFrame(),
@@ -1198,24 +1038,11 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  Portal* portal = nullptr;
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  {
-    PortalCreatedObserver portal_created_observer(main_frame);
-    EXPECT_TRUE(ExecJs(
-        main_frame, JsReplace("var portal = document.createElement('portal');"
-                              "portal.src = $1;"
-                              "document.body.appendChild(portal);",
-                              a_url)));
-    portal = portal_created_observer.WaitUntilPortalCreated();
-  }
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
   WebContentsImpl* portal_contents = portal->GetPortalContents();
   RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
-  navigation_observer.Wait();
 
   // Simulate the portal being dropped, but not the destruction of the
   // WebContents.
@@ -1244,22 +1071,11 @@ IN_PROC_BROWSER_TEST_F(PortalOOPIFBrowserTest, OOPIFInsidePortal) {
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  // Create portal and wait for navigation.
-  PortalCreatedObserver portal_created_observer(main_frame);
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  TestNavigationObserver navigation_observer(a_url);
-  navigation_observer.StartWatchingNewWebContents();
-  EXPECT_TRUE(ExecJs(main_frame,
-                     JsReplace("var portal = document.createElement('portal');"
-                               "portal.src = $1;"
-                               "document.body.appendChild(portal);",
-                               a_url)));
-  Portal* portal = portal_created_observer.WaitUntilPortalCreated();
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
   WebContentsImpl* portal_contents = portal->GetPortalContents();
   RenderFrameHostImpl* portal_main_frame = portal_contents->GetMainFrame();
-  navigation_observer.Wait();
 
   // Add an out-of-process iframe to the portal.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));

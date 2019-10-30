@@ -10,9 +10,13 @@
 
 namespace ui {
 
-AXEvent::AXEvent() {}
+// Mojo enums are initialized here so the header can include the much smaller
+// mojom-forward.h header.
+AXEvent::AXEvent()
+    : event_type(ax::mojom::Event::kNone),
+      event_from(ax::mojom::EventFrom::kNone) {}
 
-AXEvent::~AXEvent() {}
+AXEvent::~AXEvent() = default;
 
 std::string AXEvent::ToString() const {
   std::string result = "AXEvent";

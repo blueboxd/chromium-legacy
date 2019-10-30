@@ -39,7 +39,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -591,6 +590,10 @@ ash::AppListViewState AppListControllerImpl::GetAppListViewState() {
   return model_->state_fullscreen();
 }
 
+bool AppListControllerImpl::ShouldHomeLauncherBeVisible() const {
+  return IsTabletMode() && !HasVisibleWindows();
+}
+
 void AppListControllerImpl::OnShelfAlignmentChanged(aura::Window* root_window) {
   if (!IsTabletMode())
     DismissAppList();
@@ -604,6 +607,10 @@ void AppListControllerImpl::OnShellDestroying() {
 
 void AppListControllerImpl::OnOverviewModeWillStart() {
   if (IsTabletMode()) {
+    scoped_suspend_visibility_update_ =
+        std::make_unique<ShelfLayoutManager::ScopedSuspendVisibilityUpdate>(
+            RootWindowController::ForWindow(presenter_.GetWindow())
+                ->GetShelfLayoutManager());
     const int64_t display_id = last_visible_display_id_;
     OnHomeLauncherTargetPositionChanged(false /* showing */, display_id);
     OnVisibilityWillChange(false /* visible */, display_id);
@@ -616,6 +623,8 @@ void AppListControllerImpl::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
   if (!IsTabletMode())
     return;
+  if (scoped_suspend_visibility_update_)
+    scoped_suspend_visibility_update_.reset();
   OnHomeLauncherAnimationComplete(false /* shown */, last_visible_display_id_);
 }
 

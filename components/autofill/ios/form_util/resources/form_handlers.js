@@ -74,7 +74,7 @@ function getFullyQualifiedUrl_(originalURL) {
   var anchor = document.createElement('a');
   anchor.href = originalURL;
   return anchor.href;
-};
+}
 
 /**
  * Focus, input, change, keyup and blur events for form elements (form and input
@@ -118,7 +118,7 @@ function formActivity_(evt) {
     'hasUserGesture': evt.isTrusted
   };
   sendMessageOnNextLoop_(msg);
-};
+}
 
 
 /**
@@ -157,7 +157,7 @@ function sendFormMutationMessageAfterDelay_(msg, delay) {
     __gCrWeb.message.invokeOnHost(formMutationMessageToSend_);
     formMutationMessageToSend_ = null;
   }, delay);
-};
+}
 
 function attachListeners_() {
   /**
@@ -192,9 +192,9 @@ function attachListeners_() {
       } catch (e) {
       }
       formSubmitOriginalFunction_.call(this);
-    }
+    };
   }
-};
+}
 
 // Attach the listeners immediately to try to catch early actions of the user.
 attachListeners_();
@@ -255,15 +255,14 @@ __gCrWeb.formHandlers['trackFormMutations'] = function(delay) {
 /**
  * Enables or disables the tracking of input event sources.
  */
-__gCrWeb.formHandlers['toggleTrackingUserEditedFields'] =
-    function(track) {
+__gCrWeb.formHandlers['toggleTrackingUserEditedFields'] = function(track) {
   if (track) {
     __gCrWeb.form.wasEditedByUser =
         __gCrWeb.form.wasEditedByUser || new WeakMap();
   } else {
     __gCrWeb.form.wasEditedByUser = null;
   }
-}
+};
 /** Flush the message queue. */
 if (__gCrWeb.message) {
   __gCrWeb.message.invokeQueues();

@@ -681,37 +681,55 @@ void NativeWidgetMacNSWindowHost::SetParent(
   }
 }
 
-void NativeWidgetMacNSWindowHost::SetAssociationForView(const View* view,
-                                                        NSView* native_view) {
-  DCHECK_EQ(0u, associated_views_.count(view));
-  associated_views_[view] = native_view;
+void NativeWidgetMacNSWindowHost::OnNativeViewHostAttach(const View* view,
+                                                         NSView* native_view) {
+  DCHECK_EQ(0u, attached_native_view_host_views_.count(view));
+  attached_native_view_host_views_[view] = native_view;
   native_widget_mac_->GetWidget()->ReorderNativeViews();
 }
 
-void NativeWidgetMacNSWindowHost::ClearAssociationForView(const View* view) {
-  auto it = associated_views_.find(view);
-  DCHECK(it != associated_views_.end());
-  associated_views_.erase(it);
+void NativeWidgetMacNSWindowHost::OnNativeViewHostDetach(const View* view) {
+  auto it = attached_native_view_host_views_.find(view);
+  DCHECK(it != attached_native_view_host_views_.end());
+  attached_native_view_host_views_.erase(it);
 }
 
 void NativeWidgetMacNSWindowHost::ReorderChildViews() {
   Widget* widget = native_widget_mac_->GetWidget();
   if (!widget->GetRootView())
     return;
-  std::map<NSView*, int> rank;
-  RankNSViewsRecursive(widget->GetRootView(), &rank);
-  if (in_process_ns_window_bridge_)
-    in_process_ns_window_bridge_->SortSubviews(std::move(rank));
+
+  // Get the ordering for the NSViews in |attached_native_view_host_views_|.
+  std::vector<NSView*> attached_subviews;
+  GetAttachedNativeViewHostViewsRecursive(widget->GetRootView(),
+                                          &attached_subviews);
+
+  // Convert to NSView ids that can go over mojo. If need be, create temporary
+  // NSView ids.
+  std::vector<uint64_t> attached_subview_ids;
+  std::list<remote_cocoa::ScopedNSViewIdMapping> temp_ids;
+  for (NSView* subview : attached_subviews) {
+    uint64_t ns_view_id = remote_cocoa::GetIdFromNSView(subview);
+    if (!ns_view_id) {
+      // Subviews that do not already have an id will not work if the target is
+      // in a different process.
+      DCHECK(in_process_ns_window_bridge_);
+      ns_view_id = remote_cocoa::GetNewNSViewId();
+      temp_ids.emplace_back(ns_view_id, subview);
+    }
+    attached_subview_ids.push_back(ns_view_id);
+  }
+  GetNSWindowMojo()->SortSubviews(attached_subview_ids);
 }
 
-void NativeWidgetMacNSWindowHost::RankNSViewsRecursive(
+void NativeWidgetMacNSWindowHost::GetAttachedNativeViewHostViewsRecursive(
     View* view,
-    std::map<NSView*, int>* rank) const {
-  auto it = associated_views_.find(view);
-  if (it != associated_views_.end())
-    rank->emplace(it->second, rank->size());
+    std::vector<NSView*>* order) const {
+  auto found = attached_native_view_host_views_.find(view);
+  if (found != attached_native_view_host_views_.end())
+    order->push_back(found->second);
   for (View* child : view->children())
-    RankNSViewsRecursive(child, rank);
+    GetAttachedNativeViewHostViewsRecursive(child, order);
 }
 
 void NativeWidgetMacNSWindowHost::UpdateLocalWindowFrame(

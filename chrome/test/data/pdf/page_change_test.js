@@ -14,7 +14,7 @@ function getCurrentPage() {
   return window.viewer.viewport.getMostVisiblePage();
 }
 
-var tests = [
+const tests = [
   /**
    * Test that the left/right arrows change page back and forth.
    */

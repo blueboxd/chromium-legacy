@@ -27,90 +27,95 @@ cr.define('safe_browsing', function() {
     });
 
     cr.sendWithPromise('getSentClientDownloadRequests', [])
-        .then(
-            (sentClientDownloadRequests) => {
-                sentClientDownloadRequests.forEach(function(cdr) {
-                  addSentClientDownloadRequestsInfo(cdr);
-                })});
+        .then((sentClientDownloadRequests) => {
+          sentClientDownloadRequests.forEach(function(cdr) {
+            addSentClientDownloadRequestsInfo(cdr);
+          });
+        });
     cr.addWebUIListener(
         'sent-client-download-requests-update', function(result) {
           addSentClientDownloadRequestsInfo(result);
         });
 
     cr.sendWithPromise('getReceivedClientDownloadResponses', [])
-        .then(
-            (receivedClientDownloadResponses) => {
-                receivedClientDownloadResponses.forEach(function(cdr) {
-                  addReceivedClientDownloadResponseInfo(cdr);
-                })});
+        .then((receivedClientDownloadResponses) => {
+          receivedClientDownloadResponses.forEach(function(cdr) {
+            addReceivedClientDownloadResponseInfo(cdr);
+          });
+        });
     cr.addWebUIListener(
         'received-client-download-responses-update', function(result) {
           addReceivedClientDownloadResponseInfo(result);
         });
 
-    cr.sendWithPromise('getSentCSBRRs', [])
-        .then((sentCSBRRs) => {sentCSBRRs.forEach(function(csbrr) {
-                addSentCSBRRsInfo(csbrr);
-              })});
+    cr.sendWithPromise('getSentCSBRRs', []).then((sentCSBRRs) => {
+      sentCSBRRs.forEach(function(csbrr) {
+        addSentCSBRRsInfo(csbrr);
+      });
+    });
     cr.addWebUIListener('sent-csbrr-update', function(result) {
       addSentCSBRRsInfo(result);
     });
 
-    cr.sendWithPromise('getPGEvents', [])
-        .then((pgEvents) => {pgEvents.forEach(function(pgEvent) {
-                addPGEvent(pgEvent);
-              })});
+    cr.sendWithPromise('getPGEvents', []).then((pgEvents) => {
+      pgEvents.forEach(function(pgEvent) {
+        addPGEvent(pgEvent);
+      });
+    });
     cr.addWebUIListener('sent-pg-event', function(result) {
       addPGEvent(result);
     });
 
-    cr.sendWithPromise('getSecurityEvents', [])
-        .then((securityEvents) => {securityEvents.forEach(
-          function(securityEvent) {
-                addSecurityEvent(securityEvent);
-              })});
+    cr.sendWithPromise('getSecurityEvents', []).then((securityEvents) => {
+      securityEvents.forEach(function(securityEvent) {
+        addSecurityEvent(securityEvent);
+      });
+    });
     cr.addWebUIListener('sent-security-event', function(result) {
       addSecurityEvent(result);
     });
 
-    cr.sendWithPromise('getPGPings', [])
-        .then((pgPings) => { pgPings.forEach(function (pgPing) {
-          addPGPing(pgPing);
-        })});
+    cr.sendWithPromise('getPGPings', []).then((pgPings) => {
+      pgPings.forEach(function(pgPing) {
+        addPGPing(pgPing);
+      });
+    });
     cr.addWebUIListener('pg-pings-update', function(result) {
       addPGPing(result);
     });
 
-    cr.sendWithPromise('getPGResponses', [])
-        .then((pgResponses) => { pgResponses.forEach(function (pgResponse) {
-          addPGResponse(pgResponse);
-        })});
+    cr.sendWithPromise('getPGResponses', []).then((pgResponses) => {
+      pgResponses.forEach(function(pgResponse) {
+        addPGResponse(pgResponse);
+      });
+    });
     cr.addWebUIListener('pg-responses-update', function(result) {
       addPGResponse(result);
     });
 
-    cr.sendWithPromise('getRTLookupPings', [])
-        .then((rtLookupPings) => { rtLookupPings
-            .forEach(function (rtLookupPing) {
-          addRTLookupPing(rtLookupPing);
-        })});
+    cr.sendWithPromise('getRTLookupPings', []).then((rtLookupPings) => {
+      rtLookupPings.forEach(function(rtLookupPing) {
+        addRTLookupPing(rtLookupPing);
+      });
+    });
     cr.addWebUIListener('rt-lookup-pings-update', function(result) {
       addRTLookupPing(result);
     });
 
-    cr.sendWithPromise('getRTLookupResponses', [])
-        .then((rtLookupResponses) => { rtLookupResponses
-            .forEach(function (rtLookupResponse) {
-          addRTLookupResponse(rtLookupResponse);
-        })});
+    cr.sendWithPromise('getRTLookupResponses', []).then((rtLookupResponses) => {
+      rtLookupResponses.forEach(function(rtLookupResponse) {
+        addRTLookupResponse(rtLookupResponse);
+      });
+    });
     cr.addWebUIListener('rt-lookup-responses-update', function(result) {
       addRTLookupResponse(result);
     });
 
-    cr.sendWithPromise('getLogMessages', [])
-        .then((logMessages) => { logMessages.forEach(function (message) {
-          addLogMessage(message);
-        })});
+    cr.sendWithPromise('getLogMessages', []).then((logMessages) => {
+      logMessages.forEach(function(message) {
+        addLogMessage(message);
+      });
+    });
     cr.addWebUIListener('log-messages-update', function(message) {
       addLogMessage(message);
     });
@@ -266,8 +271,9 @@ cr.define('safe_browsing', function() {
   }
 
   function appendChildWithInnerText(logDiv, text) {
-    if (!logDiv)
+    if (!logDiv) {
       return;
+    }
     var textDiv = document.createElement('div');
     textDiv.innerText = text;
     logDiv.appendChild(textDiv);

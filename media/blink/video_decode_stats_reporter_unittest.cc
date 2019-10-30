@@ -21,7 +21,8 @@
 #include "media/capabilities/bucket_utility.h"
 #include "media/mojo/mojom/media_types.mojom.h"
 #include "media/mojo/mojom/video_decode_stats_recorder.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -163,21 +164,21 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
     SLOW_STABILIZE_FPS,
   };
 
-  // Bind the RecordInterceptor to the request for a VideoDecodeStatsRecorder.
-  // The interceptor serves as a mock recorder to verify reporter/recorder
-  // interactions.
-  void SetupRecordInterceptor(mojom::VideoDecodeStatsRecorderPtr* recorder_ptr,
-                              RecordInterceptor** interceptor) {
+  // Return mojo::PendingRemote<mojom::VideoDecodeStatsRecorder>
+  // after binding the RecordInterceptor to the receiver for a
+  // VideoDecodeStatsRecorder. The interceptor serves as a mock recorder to
+  // verify reporter/recorder interactions.
+  mojo::PendingRemote<mojom::VideoDecodeStatsRecorder> SetupRecordInterceptor(
+      RecordInterceptor** interceptor) {
     // Capture a the interceptor pointer for verifying recorder calls. Lifetime
     // will be managed by the |recorder_ptr|.
     *interceptor = new RecordInterceptor();
-
-    // Bind interceptor as the VideoDecodeStatsRecorder.
-    mojom::VideoDecodeStatsRecorderRequest request =
-        mojo::MakeRequest(recorder_ptr);
-    mojo::MakeStrongBinding(base::WrapUnique(*interceptor),
-                            mojo::MakeRequest(recorder_ptr));
-    EXPECT_TRUE(recorder_ptr->is_bound());
+    mojo::PendingRemote<mojom::VideoDecodeStatsRecorder> recorder_remote;
+    mojo::MakeSelfOwnedReceiver(
+        base::WrapUnique(*interceptor),
+        recorder_remote.InitWithNewPipeAndPassReceiver());
+    EXPECT_TRUE(recorder_remote.is_valid());
+    return recorder_remote;
   }
 
   // Inject mock objects and create a new |reporter_| to test.
@@ -186,11 +187,8 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
       const gfx::Size& natural_size = gfx::Size(kDefaultWidth, kDefaultHeight),
       const std::string key_system = kDefaultKeySystem,
       const base::Optional<CdmConfig> cdm_config = kDefaultCdmConfig) {
-    mojom::VideoDecodeStatsRecorderPtr recorder_ptr;
-    SetupRecordInterceptor(&recorder_ptr, &interceptor_);
-
     reporter_ = std::make_unique<VideoDecodeStatsReporter>(
-        std::move(recorder_ptr),
+        SetupRecordInterceptor(&interceptor_),
         base::Bind(&VideoDecodeStatsReporterTest::GetPipelineStatsCB,
                    base::Unretained(this)),
         profile, natural_size, key_system, cdm_config, task_runner_,

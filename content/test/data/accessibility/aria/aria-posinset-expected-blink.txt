@@ -40,6 +40,8 @@ rootWebArea
 ++++form
 ++++++paragraph
 ++++++++button name='changedFromRadio'
+++++++++++staticText name='changedFromRadio'
+++++++++++++inlineTextBox name='changedFromRadio'
 ++++++++labelText
 ++++++++++staticText name='red'
 ++++++++++++inlineTextBox name='red'

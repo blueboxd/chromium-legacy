@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, UninstallWinsConflicts) {
   // Start with an extension installed, and setup sync.
   InstallExtensionForAllProfiles(0);
   ASSERT_TRUE(SetupSync());
-  EXPECT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
+  ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 
   // Simulate a delete at the server.
   std::vector<sync_pb::SyncEntity> server_extensions =
@@ -89,21 +89,19 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, UninstallWinsConflicts) {
 
   // Modify the extension in the local profile to cause a conflict.
   DisableExtension(GetProfile(0), 0);
-  EXPECT_EQ(1u, GetInstalledExtensions(GetProfile(0)).size());
+  ASSERT_EQ(1u, GetInstalledExtensions(GetProfile(0)).size());
 
-  // Trigger sync, and expect the extension to remain uninstalled at the server
-  // and get uninstalled locally.
-  const syncer::ModelTypeSet kExtensionsType(syncer::EXTENSIONS);
-  TriggerSyncForModelTypes(0, kExtensionsType);
-  server_extensions =
-      GetFakeServer()->GetSyncEntitiesByModelType(syncer::EXTENSIONS);
-  EXPECT_EQ(0ul, server_extensions.size());
-
+  // Expect the extension to get uninstalled locally.
   AwaitMatchStatusChangeChecker checker(
       base::Bind(&ExtensionCountCheck, GetProfile(0), 0u),
       "Waiting for profile to have no extensions");
   EXPECT_TRUE(checker.Wait());
   EXPECT_TRUE(GetInstalledExtensions(GetProfile(0)).empty());
+
+  // Expect the extension to remain uninstalled at the server.
+  server_extensions =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::EXTENSIONS);
+  EXPECT_EQ(0ul, server_extensions.size());
 }
 
 }  // namespace

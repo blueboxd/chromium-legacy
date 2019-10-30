@@ -17,13 +17,12 @@ AssistantAudioDecoderFactory::AssistantAudioDecoderFactory(
 AssistantAudioDecoderFactory::~AssistantAudioDecoderFactory() = default;
 
 void AssistantAudioDecoderFactory::CreateAssistantAudioDecoder(
-    mojom::AssistantAudioDecoderRequest request,
-    mojom::AssistantAudioDecoderClientPtr client,
-    mojom::AssistantMediaDataSourcePtr data_source) {
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<AssistantAudioDecoder>(std::move(client),
-                                              std::move(data_source)),
-      mojo::PendingReceiver<mojom::AssistantAudioDecoder>(std::move(request)));
+    mojo::PendingReceiver<mojom::AssistantAudioDecoder> receiver,
+    mojo::PendingRemote<mojom::AssistantAudioDecoderClient> client,
+    mojo::PendingRemote<mojom::AssistantMediaDataSource> data_source) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<AssistantAudioDecoder>(
+                                  std::move(client), std::move(data_source)),
+                              std::move(receiver));
 }
 
 }  // namespace assistant

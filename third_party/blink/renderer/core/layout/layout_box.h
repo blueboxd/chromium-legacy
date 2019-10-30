@@ -606,41 +606,33 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                                 : ContentWidth();
   }
 
-  // CSS content-size getters. This property only applies if size containment is
-  // specified, hence the names have ForSizeContainment suffix to distinguish
-  // them from above.
-  bool HasSpecifiedContentSizeForSizeContainment() const {
-    return !StyleRef().GetContentSize().IsNone();
+  // CSS intrinsic sizing getters.
+  // https://drafts.csswg.org/css-sizing-4/#intrinsic-size-override
+  // Physical:
+  bool HasOverrideIntrinsicContentWidth() const;
+  bool HasOverrideIntrinsicContentHeight() const;
+  LayoutUnit OverrideIntrinsicContentWidth() const;
+  LayoutUnit OverrideIntrinsicContentHeight() const;
+  // Logical:
+  bool HasOverrideIntrinsicContentLogicalWidth() const {
+    return StyleRef().IsHorizontalWritingMode()
+               ? HasOverrideIntrinsicContentWidth()
+               : HasOverrideIntrinsicContentHeight();
   }
-  LayoutSize ContentLogicalSizeForSizeContainment() const {
-    return LayoutSize(ContentLogicalWidthForSizeContainment(),
-                      ContentLogicalHeightForSizeContainment());
+  bool HasOverrideIntrinsicContentLogicalHeight() const {
+    return StyleRef().IsHorizontalWritingMode()
+               ? HasOverrideIntrinsicContentHeight()
+               : HasOverrideIntrinsicContentWidth();
   }
-  LayoutUnit ContentLogicalWidthForSizeContainment() const {
-    DCHECK(ShouldApplySizeContainment());
-    const auto& style = StyleRef();
-    const auto& content_size = style.GetContentSize();
-    if (content_size.IsNone())
-      return LayoutUnit();
-    const auto& logical_width = style.IsHorizontalWritingMode()
-                                    ? content_size.GetWidth()
-                                    : content_size.GetHeight();
-    DCHECK(logical_width.IsFixed());
-    DCHECK_GE(logical_width.Value(), 0.f);
-    return LayoutUnit(logical_width.Value());
+  LayoutUnit OverrideIntrinsicContentLogicalWidth() const {
+    return StyleRef().IsHorizontalWritingMode()
+               ? OverrideIntrinsicContentWidth()
+               : OverrideIntrinsicContentHeight();
   }
-  LayoutUnit ContentLogicalHeightForSizeContainment() const {
-    DCHECK(ShouldApplySizeContainment());
-    const auto& style = StyleRef();
-    const auto& content_size = style.GetContentSize();
-    if (content_size.IsNone())
-      return LayoutUnit();
-    const auto& logical_height = style.IsHorizontalWritingMode()
-                                     ? content_size.GetHeight()
-                                     : content_size.GetWidth();
-    DCHECK(logical_height.IsFixed());
-    DCHECK_GE(logical_height.Value(), 0.f);
-    return LayoutUnit(logical_height.Value());
+  LayoutUnit OverrideIntrinsicContentLogicalHeight() const {
+    return StyleRef().IsHorizontalWritingMode()
+               ? OverrideIntrinsicContentHeight()
+               : OverrideIntrinsicContentWidth();
   }
 
   // IE extensions. Used to calculate offsetWidth/Height. Overridden by inlines
@@ -1068,7 +1060,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                                 : IntrinsicSize().Width();
   }
   virtual LayoutUnit IntrinsicContentLogicalHeight() const {
-    return intrinsic_content_logical_height_;
+    // TODO(crbug.com/1016328): Set the override at the setter callsite instead,
+    // with tests.
+    return HasOverrideIntrinsicContentLogicalHeight()
+               ? OverrideIntrinsicContentLogicalHeight()
+               : intrinsic_content_logical_height_;
   }
 
   // Whether or not the element shrinks to its intrinsic width (rather than

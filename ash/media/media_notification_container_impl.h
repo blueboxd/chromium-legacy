@@ -8,11 +8,11 @@
 #include "ash/ash_export.h"
 #include "base/containers/flat_set.h"
 #include "components/media_message_center/media_notification_container.h"
-#include "components/media_message_center/media_notification_view.h"
 #include "ui/message_center/views/message_view.h"
 
 namespace media_message_center {
 class MediaNotificationItem;
+class MediaNotificationView;
 }  // namespace media_message_center
 
 namespace ash {
@@ -57,10 +57,10 @@ class ASH_EXPORT MediaNotificationContainerImpl
       const message_center::Notification& notification);
 
   // View containing close and settings buttons.
-  std::unique_ptr<message_center::NotificationControlButtonsView>
-      control_buttons_view_;
+  message_center::NotificationControlButtonsView* control_buttons_view_ =
+      nullptr;
 
-  media_message_center::MediaNotificationView view_;
+  media_message_center::MediaNotificationView* view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationContainerImpl);
 };

@@ -151,7 +151,6 @@ All changes to this list should go through Blink's feature review process: http:
     column-width
     contain
     content
-    content-size
     counter-increment
     counter-reset
     cursor
@@ -207,6 +206,10 @@ All changes to this list should go through Blink's feature review process: http:
     inset-block-start
     inset-inline-end
     inset-inline-start
+    intrinsic-block-size
+    intrinsic-height
+    intrinsic-inline-size
+    intrinsic-width
     isolation
     justify-content
     justify-items
@@ -620,6 +623,9 @@ All changes to this list should go through Blink's feature review process: http:
     inset-inline
         inset-inline-end
         inset-inline-start
+    intrinsic-size
+        intrinsic-height
+        intrinsic-width
     list-style
         list-style-image
         list-style-position

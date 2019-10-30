@@ -270,7 +270,7 @@ bool CreateDesktopShortcut(
     std::string contents = shell_integration_linux::GetDesktopFileContents(
         chrome_exe_path, app_name, shortcut_info.url,
         shortcut_info.extension_id, shortcut_info.title, icon_name,
-        shortcut_info.profile_path, "", false);
+        shortcut_info.profile_path, "", "", false);
     success = CreateShortcutOnDesktop(shortcut_filename, contents);
   }
 
@@ -299,6 +299,7 @@ bool CreateDesktopShortcut(
   std::string contents = shell_integration_linux::GetDesktopFileContents(
       chrome_exe_path, app_name, shortcut_info.url, shortcut_info.extension_id,
       shortcut_info.title, icon_name, shortcut_info.profile_path, "",
+      base::JoinString(shortcut_info.mime_types, ";"),
       creation_locations.applications_menu_location ==
           web_app::APP_MENU_LOCATION_HIDDEN);
   success = CreateShortcutInApplicationsMenu(shortcut_filename, contents,

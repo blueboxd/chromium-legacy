@@ -86,7 +86,7 @@ public class NavigationTest {
         }
 
         public NavigationCallbackHelper onStartedCallback = new NavigationCallbackHelper();
-        public NavigationCallbackHelper onCommittedCallback = new NavigationCallbackHelper();
+        public NavigationCallbackHelper onReadyToCommitCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onCompletedCallback = new NavigationCallbackHelper();
         public NavigationObserverValueRecorder loadStateChangedCallback =
                 new NavigationObserverValueRecorder();
@@ -100,8 +100,8 @@ public class NavigationTest {
         }
 
         @Override
-        public void navigationCommitted(Navigation navigation) {
-            onCommittedCallback.notifyCalled(navigation.getUri());
+        public void readyToCommitNavigation(Navigation navigation) {
+            onReadyToCommitCallback.notifyCalled(navigation.getUri());
         }
 
         @Override
@@ -136,7 +136,7 @@ public class NavigationTest {
 
         setNavigationObserver(activity);
         int curStartedCount = mObserver.onStartedCallback.getCallCount();
-        int curCommittedCount = mObserver.onCommittedCallback.getCallCount();
+        int curCommittedCount = mObserver.onReadyToCommitCallback.getCallCount();
         int curCompletedCount = mObserver.onCompletedCallback.getCallCount();
         int curOnFirstContentfulPaintCount =
                 mObserver.onFirstContentfulPaintCallback.getCallCount();
@@ -144,7 +144,7 @@ public class NavigationTest {
         mActivityTestRule.navigateAndWait(URL2);
 
         mObserver.onStartedCallback.assertCalledWith(curStartedCount, URL2);
-        mObserver.onCommittedCallback.assertCalledWith(curCommittedCount, URL2);
+        mObserver.onReadyToCommitCallback.assertCalledWith(curCommittedCount, URL2);
         mObserver.onCompletedCallback.assertCalledWith(curCompletedCount, URL2);
         mObserver.onFirstContentfulPaintCallback.waitForCallback(curOnFirstContentfulPaintCount);
     }

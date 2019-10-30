@@ -9,9 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/environment.h"
-#include "base/memory/protected_memory.h"
-#include "base/memory/protected_memory_cfi.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/common/channel_info.h"
 #include "ui/base/glib/glib_integers.h"
@@ -47,24 +46,12 @@ UnityInspector* inspector = nullptr;
 UnityLauncherEntry* chrome_entry = nullptr;
 
 // Retrieved functions from libunity.
-PROTECTED_MEMORY_SECTION
-base::ProtectedMemory<unity_inspector_get_default_func> inspector_get_default;
-PROTECTED_MEMORY_SECTION
-base::ProtectedMemory<unity_inspector_get_unity_running_func> get_unity_running;
-PROTECTED_MEMORY_SECTION
-base::ProtectedMemory<unity_launcher_entry_get_for_desktop_id_func>
-    entry_get_for_desktop_id;
-PROTECTED_MEMORY_SECTION
-base::ProtectedMemory<unity_launcher_entry_set_count_func> entry_set_count;
-PROTECTED_MEMORY_SECTION
-base::ProtectedMemory<unity_launcher_entry_set_count_visible_func>
-    entry_set_count_visible;
-PROTECTED_MEMORY_SECTION
-base::ProtectedMemory<unity_launcher_entry_set_progress_func>
-    entry_set_progress;
-PROTECTED_MEMORY_SECTION
-base::ProtectedMemory<unity_launcher_entry_set_progress_visible_func>
-    entry_set_progress_visible;
+unity_inspector_get_unity_running_func get_unity_running = nullptr;
+unity_launcher_entry_set_count_func entry_set_count = nullptr;
+unity_launcher_entry_set_count_visible_func entry_set_count_visible = nullptr;
+unity_launcher_entry_set_progress_func entry_set_progress = nullptr;
+unity_launcher_entry_set_progress_visible_func entry_set_progress_visible =
+    nullptr;
 
 void EnsureLibUnityLoaded() {
   using base::nix::GetDesktopEnvironment;
@@ -91,75 +78,60 @@ void EnsureLibUnityLoaded() {
   if (!unity_lib)
     return;
 
-  static base::ProtectedMemory<unity_inspector_get_default_func>::Initializer
-      inspector_get_default_init(
-          &inspector_get_default,
-          reinterpret_cast<unity_inspector_get_default_func>(
-              dlsym(unity_lib, "unity_inspector_get_default")));
-  if (*inspector_get_default) {
-    inspector = UnsanitizedCfiCall(inspector_get_default)();
+  unity_inspector_get_default_func inspector_get_default =
+      reinterpret_cast<unity_inspector_get_default_func>(
+          dlsym(unity_lib, "unity_inspector_get_default"));
+  if (inspector_get_default) {
+    inspector = inspector_get_default();
 
-    static base::ProtectedMemory<unity_inspector_get_unity_running_func>::
-        Initializer get_unity_running_init(
-            &get_unity_running,
-            reinterpret_cast<unity_inspector_get_unity_running_func>(
-                dlsym(unity_lib, "unity_inspector_get_unity_running")));
+    get_unity_running =
+        reinterpret_cast<unity_inspector_get_unity_running_func>(
+            dlsym(unity_lib, "unity_inspector_get_unity_running"));
   }
 
-  static base::ProtectedMemory<unity_launcher_entry_get_for_desktop_id_func>::
-      Initializer entry_get_for_desktop_id_init(
-          &entry_get_for_desktop_id,
-          reinterpret_cast<unity_launcher_entry_get_for_desktop_id_func>(
-              dlsym(unity_lib, "unity_launcher_entry_get_for_desktop_id")));
-  if (*entry_get_for_desktop_id) {
+  unity_launcher_entry_get_for_desktop_id_func entry_get_for_desktop_id =
+      reinterpret_cast<unity_launcher_entry_get_for_desktop_id_func>(
+          dlsym(unity_lib, "unity_launcher_entry_get_for_desktop_id"));
+  if (entry_get_for_desktop_id) {
     std::string desktop_id = chrome::GetDesktopName(env.get());
-    chrome_entry =
-        UnsanitizedCfiCall(entry_get_for_desktop_id)(desktop_id.c_str());
+    chrome_entry = entry_get_for_desktop_id(desktop_id.c_str());
 
-    static base::ProtectedMemory<unity_launcher_entry_set_count_func>::
-        Initializer entry_set_count_init(
-            &entry_set_count,
-            reinterpret_cast<unity_launcher_entry_set_count_func>(
-                dlsym(unity_lib, "unity_launcher_entry_set_count")));
+    entry_set_count = reinterpret_cast<unity_launcher_entry_set_count_func>(
+        dlsym(unity_lib, "unity_launcher_entry_set_count"));
 
-    static base::ProtectedMemory<unity_launcher_entry_set_count_visible_func>::
-        Initializer entry_set_count_visible_init(
-            &entry_set_count_visible,
-            reinterpret_cast<unity_launcher_entry_set_count_visible_func>(
-                dlsym(unity_lib, "unity_launcher_entry_set_count_visible")));
+    entry_set_count_visible =
+        reinterpret_cast<unity_launcher_entry_set_count_visible_func>(
+            dlsym(unity_lib, "unity_launcher_entry_set_count_visible"));
 
-    static base::ProtectedMemory<unity_launcher_entry_set_progress_func>::
-        Initializer entry_set_progress_init(
-            &entry_set_progress,
-            reinterpret_cast<unity_launcher_entry_set_progress_func>(
-                dlsym(unity_lib, "unity_launcher_entry_set_progress")));
+    entry_set_progress =
+        reinterpret_cast<unity_launcher_entry_set_progress_func>(
+            dlsym(unity_lib, "unity_launcher_entry_set_progress"));
 
-    static base::ProtectedMemory<
-        unity_launcher_entry_set_progress_visible_func>::Initializer
-        entry_set_progress_visible_init(
-            &entry_set_progress_visible,
-            reinterpret_cast<unity_launcher_entry_set_progress_visible_func>(
-                dlsym(unity_lib, "unity_launcher_entry_set_progress_visible")));
+    entry_set_progress_visible =
+        reinterpret_cast<unity_launcher_entry_set_progress_visible_func>(
+            dlsym(unity_lib, "unity_launcher_entry_set_progress_visible"));
   }
 }
 
+NO_SANITIZE("cfi-icall")
 bool IsRunning() {
-  return inspector && *get_unity_running &&
-         UnsanitizedCfiCall(get_unity_running)(inspector);
+  return inspector && get_unity_running && get_unity_running(inspector);
 }
 
+NO_SANITIZE("cfi-icall")
 void SetDownloadCount(int count) {
-  if (chrome_entry && *entry_set_count && *entry_set_count_visible) {
-    UnsanitizedCfiCall(entry_set_count)(chrome_entry, count);
-    UnsanitizedCfiCall(entry_set_count_visible)(chrome_entry, count != 0);
+  if (chrome_entry && entry_set_count && entry_set_count_visible) {
+    entry_set_count(chrome_entry, count);
+    entry_set_count_visible(chrome_entry, count != 0);
   }
 }
 
+NO_SANITIZE("cfi-icall")
 void SetProgressFraction(float percentage) {
-  if (chrome_entry && *entry_set_progress && *entry_set_progress_visible) {
-    UnsanitizedCfiCall(entry_set_progress)(chrome_entry, percentage);
-    UnsanitizedCfiCall(entry_set_progress_visible)(
-        chrome_entry, percentage > 0.0 && percentage < 1.0);
+  if (chrome_entry && entry_set_progress && entry_set_progress_visible) {
+    entry_set_progress(chrome_entry, percentage);
+    entry_set_progress_visible(chrome_entry,
+                               percentage > 0.0 && percentage < 1.0);
   }
 }
 

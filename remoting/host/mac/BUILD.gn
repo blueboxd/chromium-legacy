@@ -98,6 +98,8 @@ target("mac_app_bundle", "remoting_me2me_host") {
   sources = [
     "permission_utils.h",
     "permission_utils.mm",
+    "permission_wizard.h",
+    "permission_wizard.mm",
   ]
 
   deps = [

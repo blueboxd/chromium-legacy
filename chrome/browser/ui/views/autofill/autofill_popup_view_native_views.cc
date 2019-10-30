@@ -903,23 +903,21 @@ void AutofillPopupViewNativeViews::Hide() {
 void AutofillPopupViewNativeViews::OnSelectedRowChanged(
     base::Optional<int> previous_row_selection,
     base::Optional<int> current_row_selection) {
+  if (!is_ax_menu_start_event_fired_) {
+    // By firing these and the matching kMenuEnd events, we are telling screen
+    // readers that the focus is only changing temporarily, and the screen
+    // reader will restore the focus back to the appropriate textfield when the
+    // menu closes.
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
+    is_ax_menu_start_event_fired_ = true;
+  }
+
   if (previous_row_selection) {
     rows_[*previous_row_selection]->SetSelected(false);
   }
 
   if (current_row_selection)
     rows_[*current_row_selection]->SetSelected(true);
-
-  if (!is_ax_menu_start_event_fired_) {
-    // By firing these and the matching kMenuEnd events, we are telling screen
-    // readers that the focus is only changing temporarily, and the screen
-    // reader will restore the focus back to the appropriate textfield when the
-    // menu closes. Wait until item is selected before firing, otherwise if it's
-    // fired when the menu is first visible, then the focus on the form control
-    // is not read.
-    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
-    is_ax_menu_start_event_fired_ = true;
-  }
 }
 
 void AutofillPopupViewNativeViews::OnSuggestionsChanged() {

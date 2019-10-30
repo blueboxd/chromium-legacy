@@ -58,8 +58,7 @@ ninja clang-apply-replacements
 ## Running clang-tidy
 
 Running clang-tidy is (hopefully) simple.
-1.  Build chrome normally.\* Note that [Jumbo builds](jumbo.md) are not
-    supported.
+1.  Build chrome normally.
 ```
 ninja -C out/Release chrome
 ```
@@ -99,9 +98,9 @@ Copy-Paste Friendly (though you'll still need to stub in the variables):
     chrome/browser
 ```
 
-\*It's not clear which, if any, `gn` flags outside of `use_jumbo_build` may
-cause issues for `clang-tidy`. I've had no problems building a component release
-build, both with and without goma. if you run into issues, let us know!
+\*It's not clear which, if any, `gn` flags may cause issues for
+`clang-tidy`. I've had no problems building a component release build,
+both with and without goma. if you run into issues, let us know!
 
 ## Questions
 

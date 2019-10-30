@@ -16,8 +16,11 @@
   background: lightgreen;
 }
 #container {
-  content-size: 123px 234px;
+  intrinsic-size: 123px 234px;
   background: lightblue;
+}
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 

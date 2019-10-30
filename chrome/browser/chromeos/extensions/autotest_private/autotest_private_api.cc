@@ -2609,7 +2609,7 @@ AutotestPrivateGetArcAppWindowInfoFunction::Run() {
 
   api::autotest_private::ArcAppWindowInfo result;
   result.bounds = ToBoundsDictionary(bounds);
-  result.display_id = display_id;
+  result.display_id = base::NumberToString(display_id);
   result.is_animating = is_animating;
   result.is_visible = arc_window->IsVisible();
 
@@ -2917,8 +2917,8 @@ AutotestPrivateGetAppWindowListFunction::Run() {
     window_info.bounds_in_root =
         ToBoundsDictionary(window->GetBoundsInRootWindow());
     window_info.target_bounds = ToBoundsDictionary(window->GetTargetBounds());
-    window_info.display_id =
-        display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+    window_info.display_id = base::NumberToString(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window).id());
     window_info.title = base::UTF16ToUTF8(window->GetTitle());
     window_info.is_animating = window->layer()->GetAnimator()->is_animating();
     window_info.is_visible = window->IsVisible();

@@ -1630,6 +1630,15 @@ class CORE_EXPORT Document : public ContainerNode,
     return use_count_fragment_directive_;
   }
 
+#if DCHECK_IS_ON()
+  bool AllowDirtyShadowV0Traversal() const {
+    return allow_dirty_shadow_v0_traversal_;
+  }
+  void SetAllowDirtyShadowV0Traversal(bool allow) {
+    allow_dirty_shadow_v0_traversal_ = allow;
+  }
+#endif
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -2096,6 +2105,12 @@ class CORE_EXPORT Document : public ContainerNode,
   // counterpart to a PluginDocument except that it contains a FrameView as
   // opposed to a PluginView.
   bool is_for_external_handler_ = false;
+
+#if DCHECK_IS_ON()
+  // Allow traversal of Shadow DOM V0 traversal with dirty distribution.
+  // Required for marking ancestors style-child-dirty for FlatTreeStyleRecalc.
+  bool allow_dirty_shadow_v0_traversal_ = false;
+#endif
 
   Member<NavigationInitiatorImpl> navigation_initiator_;
   Member<LazyLoadImageObserver> lazy_load_image_observer_;

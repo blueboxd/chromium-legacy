@@ -72,8 +72,9 @@ class ContainerView : public views::View {
 
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
                                                  bool show_by_click)
-    : controller_(
-          std::make_unique<UnifiedSystemTrayController>(tray->model(), this)),
+    : controller_(std::make_unique<UnifiedSystemTrayController>(tray->model(),
+                                                                this,
+                                                                tray)),
       tray_(tray) {
   if (show_by_click)
     time_shown_by_click_ = base::TimeTicks::Now();

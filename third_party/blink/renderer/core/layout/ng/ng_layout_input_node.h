@@ -185,11 +185,20 @@ class CORE_EXPORT NGLayoutInputNode {
   bool ShouldApplySizeContainment() const {
     return box_->ShouldApplySizeContainment();
   }
-  LayoutUnit ContentInlineSizeForSizeContainment() const {
-    return box_->ContentLogicalWidthForSizeContainment();
+
+  // CSS intrinsic sizing getters.
+  // https://drafts.csswg.org/css-sizing-4/#intrinsic-size-override
+  // Note that this returns kIndefiniteSize if the override was not specified.
+  LayoutUnit OverrideIntrinsicContentInlineSize() const {
+    if (box_->HasOverrideIntrinsicContentLogicalWidth())
+      return box_->OverrideIntrinsicContentLogicalWidth();
+    return kIndefiniteSize;
   }
-  LayoutUnit ContentBlockSizeForSizeContainment() const {
-    return box_->ContentLogicalHeightForSizeContainment();
+  // Note that this returns kIndefiniteSize if the override was not specified.
+  LayoutUnit OverrideIntrinsicContentBlockSize() const {
+    if (box_->HasOverrideIntrinsicContentLogicalHeight())
+      return box_->OverrideIntrinsicContentLogicalHeight();
+    return kIndefiniteSize;
   }
 
   // Display locking functionality.

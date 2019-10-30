@@ -70,9 +70,13 @@ void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   LayoutUnit scrollbar_width(ScrollbarLogicalWidth());
-  if (ShouldApplySizeContainment()) {
+  if (HasOverrideIntrinsicContentLogicalWidth()) {
     max_logical_width = min_logical_width =
-        ContentLogicalWidthForSizeContainment() + scrollbar_width;
+        OverrideIntrinsicContentLogicalWidth() + scrollbar_width;
+    return;
+  }
+  if (ShouldApplySizeContainment()) {
+    max_logical_width = min_logical_width = scrollbar_width;
     return;
   }
 
@@ -504,10 +508,12 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalHeight(
     AutoClearOverrideLogicalHeight clear(const_cast<LayoutBox*>(&child));
 
     LayoutUnit child_intrinsic_content_logical_height;
-    if (child.ShouldApplySizeContainment()) {
+    // TODO(crbug.com/1018395): Write more tests for this and the size
+    // containment.
+    if (child.HasOverrideIntrinsicContentLogicalHeight()) {
       child_intrinsic_content_logical_height =
-          child.ContentLogicalHeightForSizeContainment();
-    } else {
+          child.OverrideIntrinsicContentLogicalHeight();
+    } else if (!child.ShouldApplySizeContainment()) {
       child_intrinsic_content_logical_height =
           child.IntrinsicContentLogicalHeight();
     }
@@ -885,10 +891,12 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
   } else {
     // The needed value here is the logical height. This value does not include
     // the border/scrollbar/padding size, so we have to add the scrollbar.
-    if (child.ShouldApplySizeContainment()) {
-      return child.ContentLogicalHeightForSizeContainment() +
+    if (child.HasOverrideIntrinsicContentLogicalHeight()) {
+      return child.OverrideIntrinsicContentLogicalHeight() +
              LayoutUnit(child.ScrollbarLogicalHeight());
     }
+    if (child.ShouldApplySizeContainment())
+      return LayoutUnit(child.ScrollbarLogicalHeight());
 
     if (child_layout_type == kNeverLayout)
       return LayoutUnit();

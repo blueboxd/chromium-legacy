@@ -4,6 +4,7 @@
 
 #include "ash/media/media_notification_container_impl.h"
 
+#include "components/media_message_center/media_notification_view.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
@@ -16,25 +17,19 @@ namespace ash {
 MediaNotificationContainerImpl::MediaNotificationContainerImpl(
     const message_center::Notification& notification,
     base::WeakPtr<media_message_center::MediaNotificationItem> item)
-    : message_center::MessageView(notification),
-      control_buttons_view_(
-          std::make_unique<message_center::NotificationControlButtonsView>(
-              this)),
-      view_(
-          this,
-          std::move(item),
-          control_buttons_view_.get(),
-          message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
-          message_center::kNotificationWidth,
-          /*should_show_icon=*/true) {
+    : message_center::MessageView(notification) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  // Since we own these, we don't want Views to destroy them when their parent
-  // is destroyed.
-  control_buttons_view_->set_owned_by_client();
-  view_.set_owned_by_client();
+  auto control_buttons_view =
+      std::make_unique<message_center::NotificationControlButtonsView>(this);
+  control_buttons_view_ = control_buttons_view.get();
 
-  AddChildView(&view_);
+  auto view = std::make_unique<media_message_center::MediaNotificationView>(
+      this, std::move(item), std::move(control_buttons_view),
+      message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
+      message_center::kNotificationWidth,
+      /*should_show_icon=*/true);
+  view_ = AddChildView(std::move(view));
 
   SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
 }
@@ -54,17 +49,17 @@ void MediaNotificationContainerImpl::UpdateWithNotification(
 
 message_center::NotificationControlButtonsView*
 MediaNotificationContainerImpl::GetControlButtonsView() const {
-  return control_buttons_view_.get();
+  return control_buttons_view_;
 }
 
 void MediaNotificationContainerImpl::SetExpanded(bool expanded) {
-  view_.SetExpanded(expanded);
+  view_->SetExpanded(expanded);
 }
 
 void MediaNotificationContainerImpl::UpdateCornerRadius(int top_radius,
                                                         int bottom_radius) {
   MessageView::SetCornerRadius(top_radius, bottom_radius);
-  view_.UpdateCornerRadius(top_radius, bottom_radius);
+  view_->UpdateCornerRadius(top_radius, bottom_radius);
 }
 
 void MediaNotificationContainerImpl::OnExpanded(bool expanded) {

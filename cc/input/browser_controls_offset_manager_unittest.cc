@@ -179,7 +179,7 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownHideAnimation) {
   EXPECT_FLOAT_EQ(15.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -188,13 +188,13 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownHideAnimation) {
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -216,7 +216,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -225,13 +225,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->BottomControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_LT(manager->BottomControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->BottomControlsShownRatio());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -251,7 +251,7 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownShowAnimation) {
   EXPECT_FLOAT_EQ(70.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -260,13 +260,13 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownShowAnimation) {
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
@@ -283,7 +283,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -292,13 +292,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->BottomControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_GT(manager->BottomControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(1.f, manager->BottomControlsShownRatio());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -315,7 +315,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(80.f, manager->ContentTopOffset());
 
   manager->ScrollEnd();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -324,13 +324,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
@@ -347,7 +347,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(70.f, manager->ContentTopOffset());
 
   manager->ScrollEnd();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -356,13 +356,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -383,7 +383,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(20.f, manager->ContentTopOffset());
 
   manager->ScrollEnd();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -392,13 +392,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -419,7 +419,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(30.f, manager->ContentTopOffset());
 
   manager->ScrollEnd();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -428,13 +428,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
@@ -465,7 +465,7 @@ TEST(BrowserControlsOffsetManagerTest, PinchIgnoresScroll) {
   EXPECT_FLOAT_EQ(15.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 }
 
 TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
@@ -477,17 +477,17 @@ TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
 
   manager->PinchBegin();
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
 
   manager->PinchEnd();
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
 
   manager->ScrollBy(gfx::Vector2dF(0.f, -15.f));
   EXPECT_FLOAT_EQ(-85.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(15.f, manager->ContentTopOffset());
 
   manager->PinchBegin();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -496,24 +496,24 @@ TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
 
   manager->PinchEnd();
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
 
   manager->ScrollBy(gfx::Vector2dF(0.f, -55.f));
   EXPECT_FLOAT_EQ(-45.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(55.f, manager->ContentTopOffset());
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
 
   manager->ScrollEnd();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   time = base::TimeTicks::Now();
 
@@ -522,13 +522,13 @@ TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
 }
 
@@ -540,12 +540,12 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
 
   client.SetBrowserControlsHeight(100.f);
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(100.f, manager->TopControlsHeight());
   EXPECT_FLOAT_EQ(0, manager->ControlsTopOffset());
 
   client.SetBrowserControlsHeight(50.f);
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(50.f, manager->TopControlsHeight());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
 }
@@ -562,12 +562,12 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->ScrollEnd();
 
   client.SetBrowserControlsHeight(50.f);
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(-50.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 
   client.SetBrowserControlsHeight(0.f);
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -648,12 +648,12 @@ TEST(BrowserControlsOffsetManagerTest,
 
   manager->UpdateBrowserControlsState(BrowserControlsState::kBoth,
                                       BrowserControlsState::kHidden, true);
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
 
   manager->UpdateBrowserControlsState(BrowserControlsState::kBoth,
                                       BrowserControlsState::kShown, true);
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
 }
 

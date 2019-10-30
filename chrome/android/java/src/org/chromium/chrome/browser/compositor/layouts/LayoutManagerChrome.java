@@ -82,7 +82,7 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
         mOverviewModeObservers = new ObserverList<OverviewModeObserver>();
 
         // Build Event Filter Handlers
-        mToolbarSwipeHandler = new ToolbarSwipeHandler();
+        mToolbarSwipeHandler = createToolbarSwipeHandler(/* supportSwipeDown = */ true);
 
         // Build Layouts
         mOverviewListLayout = new OverviewListLayout(context, this, renderHost);
@@ -125,6 +125,11 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
     @Override
     public EdgeSwipeHandler getToolbarSwipeHandler() {
         return mToolbarSwipeHandler;
+    }
+
+    @Override
+    public EdgeSwipeHandler createToolbarSwipeHandler(boolean supportSwipeDown) {
+        return new ToolbarSwipeHandler(supportSwipeDown);
     }
 
     @Override
@@ -424,6 +429,12 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
          */
         private static final float SWIPE_RANGE_DEG = 25;
 
+        private final boolean mSupportSwipeDown;
+
+        public ToolbarSwipeHandler(boolean supportSwipeDown) {
+            mSupportSwipeDown = supportSwipeDown;
+        }
+
         @Override
         public void swipeStarted(@ScrollDirection int direction, float x, float y) {
             mScrollDirection = ScrollDirection.UNKNOWN;
@@ -442,12 +453,12 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
             mScrollDirection = computeScrollDirection(dx, dy);
             if (mScrollDirection == ScrollDirection.UNKNOWN) return;
 
-            if (mOverviewLayout != null && mScrollDirection == ScrollDirection.DOWN) {
+            if (mSupportSwipeDown && mOverviewLayout != null
+                    && mScrollDirection == ScrollDirection.DOWN) {
                 RecordUserAction.record("MobileToolbarSwipeOpenStackView");
                 showOverview(true);
-            } else if (mToolbarSwipeLayout != null
-                    && (mScrollDirection == ScrollDirection.LEFT
-                            || mScrollDirection == ScrollDirection.RIGHT)) {
+            } else if (mScrollDirection == ScrollDirection.LEFT
+                    || mScrollDirection == ScrollDirection.RIGHT) {
                 startShowing(mToolbarSwipeLayout, true);
             }
 

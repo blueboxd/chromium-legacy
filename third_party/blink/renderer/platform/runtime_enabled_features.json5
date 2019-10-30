@@ -404,13 +404,6 @@
       status: "stable",
     },
     {
-      // Support for CSS content-size property.
-      // http://tabatkins.github.io/specs/css-content-size/
-      name: "CSSContentSize",
-      implied_by: ["DisplayLocking"],
-      status: "experimental",
-    },
-    {
       name: "CSSFocusVisible",
       status: "experimental",
     },
@@ -427,6 +420,13 @@
     },
     {
       name: "CSSIndependentTransformProperties",
+      status: "experimental",
+    },
+    {
+      // Support for CSS intrinsic-* sizing properties.
+      // https://drafts.csswg.org/css-sizing-4/#intrinsic-size-override
+      name: "CSSIntrinsicSize",
+      implied_by: ["DisplayLocking"],
       status: "experimental",
     },
     {

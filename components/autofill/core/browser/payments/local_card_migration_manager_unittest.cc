@@ -675,24 +675,6 @@ TEST_F(LocalCardMigrationManagerTest,
   EXPECT_TRUE(local_card_migration_manager_->MainPromptWasShown());
 }
 
-// Verify that when triggering from submitted form, intermediate prompt and main
-// prompt are not triggered as user previously rejected the prompt.
-TEST_F(LocalCardMigrationManagerTest,
-       MigrateCreditCard_DontTriggerFromSubmittedForm) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
-
-  // Set that previously user rejected this prompt.
-  prefs::SetLocalCardMigrationPromptPreviouslyCancelled(
-      autofill_client_.GetPrefs(), true);
-
-  // Use one local card with more valid local cards available.
-  UseLocalCardWithOtherLocalCardsOnFile();
-
-  EXPECT_FALSE(local_card_migration_manager_->IntermediatePromptWasShown());
-  EXPECT_FALSE(local_card_migration_manager_->MainPromptWasShown());
-}
-
 // Verify that given the parsed response from the payments client, the migration
 // status is correctly set.
 TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_MigrationSuccess) {
@@ -858,9 +840,6 @@ TEST_F(LocalCardMigrationManagerTest, DeleteLocalCardViaMigrationDialog) {
 // if max strikes reached.
 TEST_F(LocalCardMigrationManagerTest,
        MigrateLocalCreditCard_MaxStrikesReached) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
-
   LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
       LocalCardMigrationStrikeDatabase(strike_database_);
   local_card_migration_strike_database.AddStrikes(
@@ -886,9 +865,6 @@ TEST_F(LocalCardMigrationManagerTest,
 // if max strikes reached.
 TEST_F(LocalCardMigrationManagerTest,
        MigrateServerCreditCard_MaxStrikesReached) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
-
   LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
       LocalCardMigrationStrikeDatabase(strike_database_);
   local_card_migration_strike_database.AddStrikes(
@@ -914,9 +890,6 @@ TEST_F(LocalCardMigrationManagerTest,
 // 3 strikes should be added.
 TEST_F(LocalCardMigrationManagerTest,
        MigrateCreditCard_StrikesAddedWhenSomeCardsNotSelected) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
-
   LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
       LocalCardMigrationStrikeDatabase(strike_database_);
   // LocalCardMigrationStrikeDatabase should initially have no strikes.
@@ -943,9 +916,6 @@ TEST_F(LocalCardMigrationManagerTest,
 // When local card migration is accepted, UMA metrics for LocalCardMigration
 // strike count is logged.
 TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_StrikeCountUMALogged) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
-
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
                      test::NextYear().c_str(), "1", "guid1");
   AddLocalCreditCard(personal_data_, "Flo Master", "5454545454545454", "11",
@@ -1334,9 +1304,6 @@ TEST_F(LocalCardMigrationManagerTest,
 // migration decision metric is logged as max strikes reached.
 TEST_F(LocalCardMigrationManagerTest,
        LogMigrationDecisionMetric_MaxStrikesReached) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
-
   LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
       LocalCardMigrationStrikeDatabase(strike_database_);
   local_card_migration_strike_database.AddStrikes(

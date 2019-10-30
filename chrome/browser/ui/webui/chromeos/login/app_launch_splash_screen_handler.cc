@@ -54,8 +54,8 @@ AppLaunchSplashScreenHandler::AppLaunchSplashScreenHandler(
 
 AppLaunchSplashScreenHandler::~AppLaunchSplashScreenHandler() {
   network_state_informer_->RemoveObserver(this);
-  if (controller_)
-    controller_->OnDeletingSplashScreenView();
+  if (delegate_)
+    delegate_->OnDeletingSplashScreenView();
 }
 
 void AppLaunchSplashScreenHandler::DeclareLocalizedValues(
@@ -78,12 +78,11 @@ void AppLaunchSplashScreenHandler::DeclareLocalizedValues(
 void AppLaunchSplashScreenHandler::Initialize() {
   if (show_on_init_) {
     show_on_init_ = false;
-    Show(app_id_);
+    Show();
   }
 }
 
-void AppLaunchSplashScreenHandler::Show(const std::string& app_id) {
-  app_id_ = app_id;
+void AppLaunchSplashScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;
     return;
@@ -131,9 +130,8 @@ void AppLaunchSplashScreenHandler::UpdateAppLaunchState(AppLaunchState state) {
   UpdateState(NetworkError::ERROR_REASON_UPDATE);
 }
 
-void AppLaunchSplashScreenHandler::SetDelegate(
-    AppLaunchController* controller) {
-  controller_ = controller;
+void AppLaunchSplashScreenHandler::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
 }
 
 void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
@@ -141,7 +139,7 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
   if (state == NetworkStateInformer::ONLINE) {
     online_state_ = true;
     if (!network_config_requested_) {
-      controller_->OnNetworkStateChanged(true);
+      delegate_->OnNetworkStateChanged(true);
       return;
     }
   }
@@ -199,22 +197,22 @@ void AppLaunchSplashScreenHandler::OnNetworkReady() {
 
 void AppLaunchSplashScreenHandler::UpdateState(
     NetworkError::ErrorReason reason) {
-  if (!controller_ || (state_ != APP_LAUNCH_STATE_PREPARING_NETWORK &&
-                       state_ != APP_LAUNCH_STATE_NETWORK_WAIT_TIMEOUT)) {
+  if (!delegate_ || (state_ != APP_LAUNCH_STATE_PREPARING_NETWORK &&
+                     state_ != APP_LAUNCH_STATE_NETWORK_WAIT_TIMEOUT)) {
     return;
   }
 
   bool new_online_state =
       network_state_informer_->state() == NetworkStateInformer::ONLINE;
-  controller_->OnNetworkStateChanged(new_online_state);
+  delegate_->OnNetworkStateChanged(new_online_state);
 
   online_state_ = new_online_state;
 }
 
 void AppLaunchSplashScreenHandler::PopulateAppInfo(
     base::DictionaryValue* out_info) {
-  KioskAppManager::App app;
-  KioskAppManager::Get()->GetApp(app_id_, &app);
+  DCHECK(delegate_);
+  KioskAppManagerBase::App app = delegate_->GetAppData();
 
   if (app.name.empty())
     app.name = l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME);
@@ -250,34 +248,34 @@ int AppLaunchSplashScreenHandler::GetProgressMessageFromState(
 }
 
 void AppLaunchSplashScreenHandler::HandleConfigureNetwork() {
-  if (controller_)
-    controller_->OnConfigureNetwork();
+  if (delegate_)
+    delegate_->OnConfigureNetwork();
   else
     LOG(WARNING) << "No delegate set to handle network configuration.";
 }
 
 void AppLaunchSplashScreenHandler::HandleCancelAppLaunch() {
-  if (controller_)
-    controller_->OnCancelAppLaunch();
+  if (delegate_)
+    delegate_->OnCancelAppLaunch();
   else
     LOG(WARNING) << "No delegate set to handle cancel app launch";
 }
 
 void AppLaunchSplashScreenHandler::HandleNetworkConfigRequested() {
-  if (!controller_ || network_config_done_)
+  if (!delegate_ || network_config_done_)
     return;
 
   network_config_requested_ = true;
-  controller_->OnNetworkConfigRequested(true);
+  delegate_->OnNetworkConfigRequested(true);
 }
 
 void AppLaunchSplashScreenHandler::HandleContinueAppLaunch() {
   DCHECK(online_state_);
-  if (controller_ && online_state_) {
+  if (delegate_ && online_state_) {
     network_config_requested_ = false;
     network_config_done_ = true;
-    controller_->OnNetworkConfigRequested(false);
-    Show(app_id_);
+    delegate_->OnNetworkConfigRequested(false);
+    Show();
   }
 }
 

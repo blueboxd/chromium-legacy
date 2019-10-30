@@ -22,22 +22,23 @@ namespace {
 
 enum DisableInfo {
   DISABLED_BY_NONE,
-  DISABLED_BY_HISTORY,
-  DISABLED_BY_INITIALIZED,
-  DISABLED_BY_HISTORY_INITIALIZED,
-  DISABLED_BY_CONNECTED,
-  DISABLED_BY_HISTORY_CONNECTED,
-  DISABLED_BY_INITIALIZED_CONNECTED,
-  DISABLED_BY_HISTORY_INITIALIZED_CONNECTED,
-  DISABLED_BY_PASSPHRASE,
-  DISABLED_BY_HISTORY_PASSPHRASE,
-  DISABLED_BY_INITIALIZED_PASSPHRASE,
-  DISABLED_BY_HISTORY_INITIALIZED_PASSPHRASE,
-  DISABLED_BY_CONNECTED_PASSPHRASE,
-  DISABLED_BY_HISTORY_CONNECTED_PASSPHRASE,
-  DISABLED_BY_INITIALIZED_CONNECTED_PASSPHRASE,
-  DISABLED_BY_HISTORY_INITIALIZED_CONNECTED_PASSPHRASE,
-  DISABLED_BY_ANONYMIZED_DATA_COLLECTION,
+  // All commented values below were deprecated and removed.
+  // DISABLED_BY_HISTORY,
+  // DISABLED_BY_INITIALIZED,
+  // DISABLED_BY_HISTORY_INITIALIZED,
+  // DISABLED_BY_CONNECTED,
+  // DISABLED_BY_HISTORY_CONNECTED,
+  // DISABLED_BY_INITIALIZED_CONNECTED,
+  // DISABLED_BY_HISTORY_INITIALIZED_CONNECTED,
+  // DISABLED_BY_PASSPHRASE,
+  // DISABLED_BY_HISTORY_PASSPHRASE,
+  // DISABLED_BY_INITIALIZED_PASSPHRASE,
+  // DISABLED_BY_HISTORY_INITIALIZED_PASSPHRASE,
+  // DISABLED_BY_CONNECTED_PASSPHRASE,
+  // DISABLED_BY_HISTORY_CONNECTED_PASSPHRASE,
+  // DISABLED_BY_INITIALIZED_CONNECTED_PASSPHRASE,
+  // DISABLED_BY_HISTORY_INITIALIZED_CONNECTED_PASSPHRASE,
+  DISABLED_BY_ANONYMIZED_DATA_COLLECTION = 16,
   MAX_DISABLE_INFO
 };
 
@@ -56,57 +57,20 @@ SyncDisableObserver::~SyncDisableObserver() {
 }
 
 bool SyncDisableObserver::SyncState::AllowsUkm() const {
-  if (anonymized_data_collection_state == DataCollectionState::kIgnored)
-    return history_enabled && initialized && connected && !passphrase_protected;
-  else
-    return anonymized_data_collection_state == DataCollectionState::kEnabled;
-}
-
-bool SyncDisableObserver::SyncState::AllowsUkmWithExtension() const {
-  return AllowsUkm() && extensions_enabled && initialized && connected &&
-         !passphrase_protected;
+  return anonymized_data_collection_enabled;
 }
 
 // static
 SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
     syncer::SyncService* sync_service,
     UrlKeyedDataCollectionConsentHelper* consent_helper) {
+  DCHECK(sync_service);
+  DCHECK(consent_helper);
   SyncState state;
-
-  // For the following two settings, we want them to match the state of a user
-  // having history/extensions enabled in their Sync settings. Using it to track
-  // active connections here is undesirable as changes in these states trigger
-  // data purges.
-  state.history_enabled = sync_service->GetPreferredDataTypes().Has(
-                              syncer::HISTORY_DELETE_DIRECTIVES) &&
-                          sync_service->IsSyncFeatureEnabled();
+  state.anonymized_data_collection_enabled = consent_helper->IsEnabled();
   state.extensions_enabled =
       sync_service->GetPreferredDataTypes().Has(syncer::EXTENSIONS) &&
       sync_service->IsSyncFeatureEnabled();
-
-  state.initialized = sync_service->IsEngineInitialized();
-
-  // Reasoning for the individual checks:
-  // - IsSyncFeatureActive() makes sure Sync is enabled and initialized.
-  // - HasCompletedSyncCycle() makes sure Sync has actually talked to the
-  //   server. Without this, it's possible that there is some auth issue that we
-  //   just haven't detected yet.
-  // - Finally, GetAuthError() makes sure Sync is not in an auth error state. In
-  //   particular, this includes the "Sync paused" state (which is implemented
-  //   as an auth error).
-  state.connected =
-      (sync_service->IsSyncFeatureActive() &&
-       sync_service->HasCompletedSyncCycle() &&
-       sync_service->GetAuthError() == GoogleServiceAuthError::AuthErrorNone());
-
-  state.passphrase_protected =
-      state.initialized &&
-      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase();
-  if (consent_helper) {
-    state.anonymized_data_collection_state =
-        consent_helper->IsEnabled() ? DataCollectionState::kEnabled
-                                    : DataCollectionState::kDisabled;
-  }
   return state;
 }
 
@@ -151,23 +115,8 @@ bool SyncDisableObserver::CheckSyncStateOnAllProfiles() {
       continue;
 
     // Used as output for the disable reason UMA metrics.
-    int disabled_by = 0;
-    if (state.anonymized_data_collection_state ==
-        DataCollectionState::kIgnored) {
-      if (!state.history_enabled)
-        disabled_by |= 1 << 0;
-      if (!state.initialized)
-        disabled_by |= 1 << 1;
-      if (!state.connected)
-        disabled_by |= 1 << 2;
-      if (state.passphrase_protected)
-        disabled_by |= 1 << 3;
-    } else {
-      DCHECK_EQ(DataCollectionState::kDisabled,
-                state.anonymized_data_collection_state);
-      disabled_by |= 1 << 4;
-    }
-    RecordDisableInfo(DisableInfo(disabled_by));
+    DCHECK(!state.anonymized_data_collection_enabled);
+    RecordDisableInfo(DISABLED_BY_ANONYMIZED_DATA_COLLECTION);
     return false;
   }
   RecordDisableInfo(DISABLED_BY_NONE);
@@ -212,31 +161,11 @@ void SyncDisableObserver::UpdateSyncState(
     UrlKeyedDataCollectionConsentHelper* consent_helper) {
   DCHECK(base::Contains(previous_states_, sync));
   const SyncDisableObserver::SyncState& previous_state = previous_states_[sync];
-  DCHECK(previous_state.anonymized_data_collection_state ==
-             DataCollectionState::kIgnored ||
-         consent_helper);
+  DCHECK(consent_helper);
   SyncDisableObserver::SyncState state = GetSyncState(sync, consent_helper);
 
-  // Trigger a purge if the current state no longer allows UKM, ignoring
-  // connection issues.
-  bool must_purge;
-
-  if (state.anonymized_data_collection_state != DataCollectionState::kIgnored) {
-    // Verify that previous_state also uses unified consent.
-    DCHECK_NE(DataCollectionState::kIgnored,
-              previous_state.anonymized_data_collection_state);
-    must_purge = previous_state.AllowsUkm() && !state.AllowsUkm();
-  } else {
-    // This differs from AllowsUkm() as it intentionally ignores connected
-    // status.
-    bool previous_state_allowed_ukm = previous_state.history_enabled &&
-                                      previous_state.initialized &&
-                                      !previous_state.passphrase_protected;
-    bool current_state_allows_ukm = state.history_enabled &&
-                                    state.initialized &&
-                                    !state.passphrase_protected;
-    must_purge = previous_state_allowed_ukm && !current_state_allows_ukm;
-  }
+  // Trigger a purge if the current state no longer allows UKM.
+  bool must_purge = previous_state.AllowsUkm() && !state.AllowsUkm();
 
   UMA_HISTOGRAM_BOOLEAN("UKM.SyncDisable.Purge", must_purge);
 
@@ -253,7 +182,7 @@ void SyncDisableObserver::OnSyncShutdown(syncer::SyncService* sync) {
   }
   sync_observer_.Remove(sync);
   previous_states_.erase(sync);
-  UpdateAllProfileEnabled(false);
+  UpdateAllProfileEnabled(/*must_purge=*/false);
 }
 
 bool SyncDisableObserver::SyncStateAllowsUkm() {

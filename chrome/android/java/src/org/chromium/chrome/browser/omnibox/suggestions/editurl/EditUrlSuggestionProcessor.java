@@ -219,9 +219,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
                     mDesiredFaviconWidthPx,
                     (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
                             int iconType) -> {
-                        if (!mSuggestionHost.isActiveModel(model)) return;
                         model.set(EditUrlSuggestionProperties.SITE_FAVICON, icon);
-                        mSuggestionHost.notifyPropertyModelsChanged();
                     });
         }
 

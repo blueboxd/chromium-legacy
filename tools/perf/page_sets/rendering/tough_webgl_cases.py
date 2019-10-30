@@ -38,7 +38,7 @@ class ToughWebglPage(rendering_story.RenderingStory):
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('WebGLAnimation'):
-      action_runner.Wait(5)
+      action_runner.Wait(10)
 
 
 class NvidiaVertexBufferObjectPage(ToughWebglPage):

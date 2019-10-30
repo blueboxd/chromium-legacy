@@ -679,9 +679,6 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
     return ExtensionState::ALLOWED;
   }
 
-  if (extensions::util::WasInstalledByCustodian(extension.id(), profile_))
-    return ExtensionState::FORCED;
-
   if (!base::FeatureList::IsEnabled(
           supervised_users::kSupervisedUserInitiatedExtensionInstall)) {
     return ExtensionState::BLOCKED;
@@ -726,19 +723,6 @@ bool SupervisedUserService::UserMayModifySettings(const Extension* extension,
   if (!may_modify && error)
     *error = GetExtensionsLockedMessage();
   return may_modify;
-}
-
-// Note: Having MustRemainInstalled always say "true" for custodian-installed
-// extensions does NOT prevent remote uninstalls (which is a bit unexpected, but
-// exactly what we want).
-bool SupervisedUserService::MustRemainInstalled(const Extension* extension,
-                                                base::string16* error) const {
-  DCHECK(ProfileIsSupervised());
-  ExtensionState result = GetExtensionState(*extension);
-  bool may_not_uninstall = result == ExtensionState::FORCED;
-  if (may_not_uninstall && error)
-    *error = GetExtensionsLockedMessage();
-  return may_not_uninstall;
 }
 
 bool SupervisedUserService::MustRemainDisabled(
@@ -848,10 +832,9 @@ void SupervisedUserService::ChangeExtensionStateIfNecessary(
 
   ExtensionState state = GetExtensionState(*extension);
   switch (state) {
-    // BLOCKED/FORCED extensions should be already disabled/enabled
-    // and we don't need to change their state here.
+    // BLOCKED extensions should be already disabled and we don't need to change
+    // their state here.
     case ExtensionState::BLOCKED:
-    case ExtensionState::FORCED:
       break;
     case ExtensionState::REQUIRE_APPROVAL:
       service->DisableExtension(

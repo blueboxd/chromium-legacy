@@ -139,7 +139,7 @@ void HeadlessPrintManager::GetPDFContents(content::RenderFrameHost* rfh,
   print_params_ = GetPrintParamsFromSettings(settings);
   page_ranges_text_ = settings.page_ranges;
   ignore_invalid_page_ranges_ = settings.ignore_invalid_page_ranges;
-  rfh->Send(new PrintMsg_PrintPages(rfh->GetRoutingID()));
+  GetPrintRenderFrame(rfh)->PrintRequestedPages();
 }
 
 std::unique_ptr<PrintMsg_PrintPages_Params>
@@ -307,8 +307,7 @@ void HeadlessPrintManager::ReleaseJob(PrintResult result) {
     std::move(callback_).Run(result,
                              base::MakeRefCounted<base::RefCountedString>());
   }
-  printing_rfh_->Send(new PrintMsg_PrintingDone(printing_rfh_->GetRoutingID(),
-                                                result == PRINT_SUCCESS));
+  GetPrintRenderFrame(printing_rfh_)->PrintingDone(result == PRINT_SUCCESS);
   Reset();
 }
 

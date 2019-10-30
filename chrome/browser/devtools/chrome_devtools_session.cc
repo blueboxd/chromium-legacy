@@ -111,7 +111,7 @@ static void SendProtocolResponseOrNotification(
     content::DevToolsAgentHostClient* client,
     content::DevToolsAgentHost* agent_host,
     std::unique_ptr<protocol::Serializable> message) {
-  std::vector<uint8_t> cbor = message->serializeToBinary();
+  std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
   if (client->UsesBinaryProtocol()) {
     client->DispatchProtocolMessage(agent_host,
                                     std::string(cbor.begin(), cbor.end()));

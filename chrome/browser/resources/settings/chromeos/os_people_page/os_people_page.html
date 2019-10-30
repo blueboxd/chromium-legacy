@@ -54,46 +54,15 @@
         width: 40px;
       }
 
-      #sync-status.no-error {
-        --cr-link-row-start-icon-color: var(--google-green-refresh-700);
-      }
-
-      @media (prefers-color-scheme: dark) {
-        #sync-status.no-error {
-          --cr-link-row-start-icon-color: var(--google-green-refresh-300);
-        }
-      }
-
       #sync-setup {
         --cr-secondary-text: {
           color: var(--settings-error-color);
         }
       }
 
-      #sync-status[actionable].auth-error {
-        --cr-link-row-start-icon-color: var(--google-blue-500);
-      }
-
-      @media (prefers-color-scheme: dark) {
-        #sync-status[actionable].auth-error {
-          --cr-link-row-start-icon-color: var(--google-blue-refresh-300);
-        }
-      }
-
-      #sync-status:not([actionable]) .subpage-arrow {
-        display: none;
-      }
-
       cr-link-row {
         --cr-link-row-icon-width: 40px;
         border-top: var(--cr-separator-line);
-      }
-
-      #sync-status[actionable].sync-error {
-        --cr-link-row-start-icon-color: var(--settings-error-color);
-        --cr-secondary-text: {
-          color: var(--settings-error-color);
-        }
       }
 
       .icon-container {

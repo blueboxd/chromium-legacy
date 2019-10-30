@@ -174,8 +174,9 @@ bool BrowserAccessibilityAndroid::PlatformIsLeafIncludingIgnored() const {
     return false;
   }
 
-  // Date and time controls should drop their children.
+  // Button, date and time controls should drop their children.
   switch (GetRole()) {
+    case ax::mojom::Role::kButton:
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
     case ax::mojom::Role::kInputTime:

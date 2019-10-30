@@ -9,6 +9,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/process/process.h"
+#include "base/task/task_traits.h"
 #include "components/performance_manager/public/graph/node.h"
 
 namespace base {
@@ -102,6 +103,9 @@ class ProcessNode : public Node {
   // proxy may only be dereferenced on the UI thread.
   virtual const RenderProcessHostProxy& GetRenderProcessHostProxy() const = 0;
 
+  // Returns the current priority of the process.
+  virtual base::TaskPriority GetPriority() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ProcessNode);
 };
@@ -135,6 +139,10 @@ class ProcessNodeObserver {
   // Invoked when the |main_thread_task_load_is_low| property changes.
   virtual void OnMainThreadTaskLoadIsLow(const ProcessNode* process_node) = 0;
 
+  // Invoked when the process priority changes.
+  virtual void OnPriorityChanged(const ProcessNode* process_node,
+                                 base::TaskPriority previous_value) = 0;
+
   // Events with no property changes.
 
   // Fired when all frames in a process have transitioned to being frozen.
@@ -159,6 +167,8 @@ class ProcessNode::ObserverDefaultImpl : public ProcessNodeObserver {
   void OnExpectedTaskQueueingDurationSample(
       const ProcessNode* process_node) override {}
   void OnMainThreadTaskLoadIsLow(const ProcessNode* process_node) override {}
+  void OnPriorityChanged(const ProcessNode* process_node,
+                         base::TaskPriority previous_value) override {}
   void OnAllFramesInProcessFrozen(const ProcessNode* process_node) override {}
 
  private:

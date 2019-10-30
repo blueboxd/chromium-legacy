@@ -133,6 +133,7 @@ test("components_unittests") {
     "//components/search:unit_tests",
     "//components/search_engines:unit_tests",
     "//components/search_provider_logos:unit_tests",
+    "//components/security_interstitials/core:unit_tests",
     "//components/security_state/core:unit_tests",
     "//components/services/heap_profiling/public/cpp:unit_tests",
     "//components/services/storage:tests",

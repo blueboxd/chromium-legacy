@@ -72,6 +72,7 @@ void ContextualSearchLayer::SetProperties(
     float search_context_opacity,
     float search_text_layer_min_height,
     float search_term_opacity,
+    int search_term_bounds_adjust,
     float search_term_caption_spacing,
     float search_caption_animation_percentage,
     bool search_caption_visible,
@@ -126,9 +127,10 @@ void ContextualSearchLayer::SetProperties(
       dp_to_px, content_layer, content_view_top, search_panel_x, search_panel_y,
       search_panel_width, search_panel_height, search_bar_background_color,
       search_bar_margin_side, search_bar_margin_top, search_bar_height,
-      search_bar_top, search_term_opacity, should_render_bar_border,
-      search_bar_border_height, search_bar_shadow_visible, icon_color,
-      drag_handlebar_color, close_icon_opacity, separator_line_color);
+      search_bar_top, search_term_opacity, search_term_bounds_adjust,
+      should_render_bar_border, search_bar_border_height,
+      search_bar_shadow_visible, icon_color, drag_handlebar_color,
+      close_icon_opacity, separator_line_color);
 
   // -----------------------------------------------------------------
   // Content setup, to center in space below drag handle (when present).

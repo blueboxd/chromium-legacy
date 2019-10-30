@@ -192,6 +192,7 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndDcvvForMaskedServerCardViaDcvv) {
       AutofillClient::UNMASK_FOR_AUTOFILL, result_delegate()->AsWeakPtr(),
       ui_delegate()->AsWeakPtr());
   CardUnmaskDelegate::UserProvidedUnmaskDetails details;
+  details.cvc = base::ASCIIToUTF16("123");
   card_unmask_delegate()->OnUnmaskPromptAccepted(details);
   OnDidGetRealPanWithDcvv(AutofillClient::SUCCESS, "4111", "321");
   card_unmask_delegate()->OnUnmaskPromptClosed();

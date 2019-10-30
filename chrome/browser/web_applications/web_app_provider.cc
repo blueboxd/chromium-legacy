@@ -224,7 +224,8 @@ void WebAppProvider::ConnectSubsystems() {
   system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
                                          registrar_.get(), ui_manager_.get());
   web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
-  file_handler_manager_->SetSubsystems(registrar_.get());
+  file_handler_manager_->SetSubsystems(registrar_.get(),
+                                       shortcut_manager_.get());
   shortcut_manager_->SetSubsystems(registrar_.get());
 
   connected_ = true;
@@ -246,6 +247,7 @@ void WebAppProvider::OnRegistryControllerReady() {
     system_web_app_manager_->Start();
   }
   manifest_update_manager_->Start();
+  file_handler_manager_->Start();
 
   on_registry_ready_.Signal();
 }

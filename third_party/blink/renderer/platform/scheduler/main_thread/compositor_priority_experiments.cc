@@ -55,7 +55,7 @@ QueuePriority CompositorPriorityExperiments::GetCompositorPriority() const {
     case Experiment::kVeryHighPriorityForCompositingAlways:
       return QueuePriority::kVeryHighPriority;
     case Experiment::kVeryHighPriorityForCompositingWhenFast:
-      if (compositing_is_fast_) {
+      if (scheduler_->main_thread_compositing_is_fast()) {
         return QueuePriority::kVeryHighPriority;
       }
       return QueuePriority::kNormalPriority;
@@ -69,11 +69,6 @@ QueuePriority CompositorPriorityExperiments::GetCompositorPriority() const {
       NOTREACHED();
       return QueuePriority::kNormalPriority;
   }
-}
-
-void CompositorPriorityExperiments::SetCompositingIsFast(
-    bool compositing_is_fast) {
-  compositing_is_fast_ = compositing_is_fast;
 }
 
 void CompositorPriorityExperiments::DoPrioritizeCompositingAfterDelay() {
@@ -112,11 +107,6 @@ void CompositorPriorityExperiments::OnTaskCompleted(
     QueuePriority current_compositor_priority,
     MainThreadTaskQueue::TaskTiming* task_timing) {
   if (!queue)
-    return;
-
-  // Don't change priorities if compositor priority is already set to highest
-  // or higher.
-  if (current_compositor_priority <= QueuePriority::kHighestPriority)
     return;
 
   switch (experiment_) {

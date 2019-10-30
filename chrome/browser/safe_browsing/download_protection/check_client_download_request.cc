@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -389,7 +390,7 @@ bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
     return false;
 
   const base::ListValue* domains = g_browser_process->local_state()->GetList(
-      prefs::kDomainsToCheckComplianceOfDownloadedContent);
+      prefs::kURLsToCheckComplianceOfDownloadedContent);
   url_matcher::URLMatcher matcher;
   policy::url_util::AddAllowFilters(&matcher, domains);
   return !matcher.MatchURL(item_->GetURL()).empty();

@@ -463,11 +463,13 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
       net::SimplifyUrlForRequest(options.scope), options.type,
       options.update_via_cache);
   // TODO(bashi): Pass a valid outside fetch client settings object. Perhaps
-  // changing this method to take a settings object, or creating a settings
-  // object here using |script_url| as outgoing referrer.
+  // changing this method to take a settings object.
   context()->RegisterServiceWorker(
       net::SimplifyUrlForRequest(script_url), options_to_pass,
-      /*outside_fetch_client_settings_object=*/nullptr,
+      blink::mojom::FetchClientSettingsObject::New(
+          network::mojom::ReferrerPolicy::kDefault,
+          /*outgoing_referrer=*/script_url,
+          blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade),
       base::BindOnce(&FinishRegistrationOnCoreThread, std::move(callback)));
 }
 

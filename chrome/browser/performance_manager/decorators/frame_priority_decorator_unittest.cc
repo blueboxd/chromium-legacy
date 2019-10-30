@@ -17,12 +17,15 @@ namespace frame_priority {
 
 namespace {
 
+using testing::_;
+
 class LenientMockFrameNodeObserver : public FrameNode::ObserverDefaultImpl {
  public:
   LenientMockFrameNodeObserver() = default;
   ~LenientMockFrameNodeObserver() override = default;
 
-  MOCK_METHOD1(OnPriorityAndReasonChanged, void(const FrameNode*));
+  MOCK_METHOD2(OnPriorityAndReasonChanged,
+               void(const FrameNode*, const PriorityAndReason&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LenientMockFrameNodeObserver);
@@ -66,7 +69,7 @@ TEST_F(FramePriorityDecoratorTest, VotesForwardedToGraph) {
   testing::Mock::VerifyAndClear(&obs);
 
   // Update the vote with a new priority and expect that to propagate.
-  EXPECT_CALL(obs, OnPriorityAndReasonChanged(frame.get()));
+  EXPECT_CALL(obs, OnPriorityAndReasonChanged(frame.get(), _));
   receipt.ChangeVote(base::TaskPriority::HIGHEST, test::DummyVoter::kReason);
   testing::Mock::VerifyAndClear(&obs);
   EXPECT_EQ(base::TaskPriority::HIGHEST,
@@ -74,7 +77,7 @@ TEST_F(FramePriorityDecoratorTest, VotesForwardedToGraph) {
   EXPECT_EQ(test::DummyVoter::kReason, frame->priority_and_reason().reason());
 
   // Cancel the existing vote and expect it to go back to the default.
-  EXPECT_CALL(obs, OnPriorityAndReasonChanged(frame.get()));
+  EXPECT_CALL(obs, OnPriorityAndReasonChanged(frame.get(), _));
   receipt.Reset();
   testing::Mock::VerifyAndClear(&obs);
   EXPECT_EQ(base::TaskPriority::LOWEST,

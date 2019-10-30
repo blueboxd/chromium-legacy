@@ -83,7 +83,7 @@ scoped_refptr<gpu::Buffer> Graphics3D::CreateTransferBuffer(
     uint32_t size,
     int32_t* id) {
   *id = -1;
-  return NULL;
+  return nullptr;
 }
 
 PP_Bool Graphics3D::DestroyTransferBuffer(int32_t id) {
@@ -161,7 +161,7 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
     return PP_ERROR_BADARGUMENT;
 
   HostResource share_host;
-  gpu::gles2::GLES2Implementation* share_gles2 = NULL;
+  gpu::gles2::GLES2Implementation* share_gles2 = nullptr;
   if (share_context != 0) {
     EnterResourceNoLock<PPB_Graphics3D_API> enter(share_context, true);
     if (enter.failed())

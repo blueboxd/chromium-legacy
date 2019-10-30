@@ -20,6 +20,7 @@ from __future__ import print_function
 import argparse
 import csv
 import json
+import numpy as np
 import os
 import sys
 import time
@@ -96,7 +97,7 @@ def interpret_run_benchmark_results(upper_limit_data,
     result_recorder.set_tests(initialOut)
 
     results_path = os.path.join(out_dir_path, benchmark, 'perf_results.csv')
-    marked_stories = set()
+    values_per_story = {}
 
     with open(results_path) as csv_file:
       reader = csv.DictReader(csv_file)
@@ -106,37 +107,54 @@ def interpret_run_benchmark_results(upper_limit_data,
         if row['name'] != 'frame_times':
           continue
         story_name = row['stories']
-        if (story_name in marked_stories or story_name not in
-          upper_limit_data):
+        if (story_name not in upper_limit_data):
           continue
-        marked_stories.add(story_name)
+        if story_name not in values_per_story:
+          values_per_story[story_name] = {
+            'averages': [],
+            'ci_095': []
+          }
 
-        upper_limit_avg = upper_limit_data[story_name]['avg']
+        if (row['avg'] == '' or row['count'] == 0):
+          continue
+        values_per_story[story_name]['ci_095'].append(float(row['ci_095']))
+
         upper_limit_ci = upper_limit_data[story_name]['ci_095']
-
-        if row['avg'] == '' or row['count'] == 0:
-          print('[  FAILED  ] '+ benchmark + '/' + story_name + ' ' +
-            row['name'] + ' has no values for ' + row['name'] +
-            '. check run_benchmark logs for more information.')
-          result_recorder.add_failure(story_name, benchmark)
-        elif (float(row['ci_095']) > upper_limit_ci * CI_ERROR_MARGIN):
-          print('[  FAILED  ] '+ benchmark + '/' + story_name + ' ' +
-            row['name'] + ' has higher noise' + '(' + str(row['ci_095']) +
-            ') compared to upper limit(' + str(upper_limit_ci) + ').')
-          result_recorder.add_failure(story_name, benchmark)
-        elif (float(row['avg']) > upper_limit_avg + AVG_ERROR_MARGIN):
-          print('[  FAILED  ] '+ benchmark + '/' + story_name +
-            ' higher average ' + row['name'] + '(' + str(row['avg']) +
-            ') compared to upper limit(' + str(upper_limit_avg) + ').')
-          result_recorder.add_failure(story_name, benchmark)
-        else:
-          print('[       OK ] '+ benchmark + '/' + story_name +
-            ' lower average ' + row['name'] + '(' + str(row['avg']) +
-            ') compared to upper limit(' + str(upper_limit_avg) + ').')
+        # Only average values which are not noisy will be used
+        if (float(row['ci_095']) <= upper_limit_ci * CI_ERROR_MARGIN):
+          values_per_story[story_name]['averages'].append(float(row['ci_095']))
 
     # Clearing the result of run_benchmark and write the gated perf results
     resultsFile.seek(0)
     resultsFile.truncate(0)
+
+  for story_name in values_per_story:
+    if len(values_per_story[story_name]['averages']) == 0:
+      print(('[  FAILED  ] {}/{} has no valid values for frame_times. Check ' +
+        'run_benchmark logs for more information.').format(
+          benchmark, story_name))
+      result_recorder.add_failure(story_name, benchmark)
+      continue
+
+    upper_limit_avg = upper_limit_data[story_name]['avg']
+    upper_limit_ci = upper_limit_data[story_name]['ci_095']
+    measured_avg = np.mean(np.array(values_per_story[story_name]['averages']))
+    measured_ci = np.mean(np.array(values_per_story[story_name]['ci_095']))
+
+    if (measured_ci > upper_limit_ci * CI_ERROR_MARGIN):
+      print(('[  FAILED  ] {}/{} frame_times has higher noise ({:.3f}) ' +
+        'compared to upper limit ({:.3f})').format(
+          benchmark, story_name, measured_ci,upper_limit_ci))
+      result_recorder.add_failure(story_name, benchmark)
+    elif (measured_avg > upper_limit_avg + AVG_ERROR_MARGIN):
+      print(('[  FAILED  ] {}/{} higher average frame_times({:.3f}) compared' +
+        ' to upper limit ({:.3f})').format(
+          benchmark, story_name, measured_avg, upper_limit_avg))
+      result_recorder.add_failure(story_name, benchmark)
+    else:
+      print(('[       OK ] {}/{} lower average frame_times({:.3f}) compared ' +
+        'to upper limit({:.3f}).').format(
+          benchmark, story_name, measured_avg, upper_limit_avg))
 
   return result_recorder
 

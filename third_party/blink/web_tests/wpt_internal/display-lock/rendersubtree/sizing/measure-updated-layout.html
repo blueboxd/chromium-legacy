@@ -8,7 +8,7 @@
 
 <style>
 .contained {
-  content-size: 100px 100px;
+  intrinsic-size: 100px 100px;
   background: lightgreen;
 }
 #large {
@@ -24,6 +24,9 @@
   width: 150px;
   height: 150px;
   background: green;
+}
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 

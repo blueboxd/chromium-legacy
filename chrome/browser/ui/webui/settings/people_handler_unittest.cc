@@ -257,7 +257,6 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
   void TearDown() override {
     handler_->set_web_ui(nullptr);
     handler_->DisallowJavascript();
-    handler_->sync_startup_tracker_.reset();
     identity_test_env_adaptor_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -321,16 +320,6 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(expected_status, status);
   }
 
-  void ExpectSpinnerAndClose() {
-    ExpectPageStatusChanged(PeopleHandler::kSpinnerPageStatus);
-
-    // Cancelling the spinner dialog will cause CloseSyncSetup().
-    handler_->CloseSyncSetup();
-    EXPECT_EQ(
-        NULL,
-        LoginUIServiceFactory::GetForProfile(profile())->current_login_ui());
-  }
-
   const base::DictionaryValue* ExpectSyncPrefsChanged() {
     const content::TestWebUI::CallData& data1 = *web_ui_.call_data().back();
     EXPECT_EQ("cr.webUIListenerCallback", data1.function_name());
@@ -342,14 +331,6 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     const base::DictionaryValue* dictionary = nullptr;
     EXPECT_TRUE(data1.arg2()->GetAsDictionary(&dictionary));
     return dictionary;
-  }
-
-  // It's difficult to notify sync listeners when using a MockSyncService
-  // so this helper routine dispatches an OnStateChanged() notification to the
-  // SyncStartupTracker.
-  void NotifySyncListeners() {
-    if (handler_->sync_startup_tracker_)
-      handler_->sync_startup_tracker_->OnStateChanged(mock_sync_service_);
   }
 
   void NotifySyncStateChanged() {

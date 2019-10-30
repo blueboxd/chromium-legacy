@@ -94,69 +94,6 @@ interface XRRuntime {
   SetInlinePosesEnabled(bool enable);
 };
 
-// Represents the state of a single button or trigger.
-struct XRGamepadButton {
-  bool pressed; // Is the button currently pressed from its default position?
-  bool touched; // Is the user in contact with a button (always true if pressed)
-  double value; // How far pressed is it, from 0 to 1?
-};
-
-// Represents the state of a single controller.
-struct XRGamepad {
-  bool can_provide_orientation; // Is the controller capable of orientation?
-  bool can_provide_position; // Is the controller capable of position?
-  array<double> axes;
-  array<XRGamepadButton> buttons;
-
-  // The position/orientation of a controller, and its velocity and acceleration
-  // if available.  Members inside this may be null if not available currently.
-  VRPose? pose;
-
-  // Left/Right handed controller, or none if unknown.
-  XRHandedness hand;
-
-  // A unique (per device_id) id that allows controllers to be tracked between
-  // updates.  Useful to identify controllers as they are added/removed.
-  uint32 controller_id;
-
-  // The time at which this pose was retrieved.
-  mojo_base.mojom.TimeTicks timestamp;
-};
-
-// Represents the state of a set of controllers driven by some runtime API.
-struct XRGamepadData {
-  array<XRGamepad> gamepads;
-};
-
-// OpenVR and Oculus APIs can't run in the browser process, but the gamepad
-// polling happens there.  This interface allows gamepad polling to request
-// data from out-of-process gamepad providers, at the cost of some extra IPC
-// latency.  IsolatedXRGamepadProvider is currently implemented in the XRRuntime
-// process, and consumed by the gamepad polling thread in the browser process.
-// It will move to live in a separate XRInput process in the future.
-interface IsolatedXRGamepadProvider {
-  // Consumers should not call RequestUpdate until the previous request returns
-  // to avoid queuing up extra requests if polling and rendering are happening
-  // at different rates.  If called while an outstanding request is queued, it
-  // returns immediately with null data.
-  // Returned data is null if we aren't currently getting data from the runtime.
-  RequestUpdate() => (XRGamepadData? data);
-};
-
-// Gamepad providers may come and go as pages request or stop requesting gamepad
-// data.  IsolatedXRGamepadProviderFactory allows GamepadDataFetchers to acquire
-// new IsolatedXRGamepadProviders when needed.
-// IsolatedXRGamepadProvider is consumed in the browser process.  It is
-// currently implemented in the XRRuntime process, but will move to a separate
-// XRInput process.
-interface IsolatedXRGamepadProviderFactory {
-  // Get the IsolatedXRGamepadProvider for a specific XR runtime API (Oculus, or
-  // OpenVR, which are currently the only two that are hosted outside of the
-  // browser process).
-  GetIsolatedXRGamepadProvider(
-      pending_receiver<IsolatedXRGamepadProvider> provider);
-};
-
 // Represents an overlay that the browser may show on top of or instead of WebXR
 // content.  Consumed in the browser process, and implemented in the XRRuntime
 // process.

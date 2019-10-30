@@ -11,6 +11,7 @@ import android.os.Handler;
 import androidx.annotation.CallSuper;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -128,7 +129,7 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     public void navigationStateChanged(int flags) {
         if ((flags & InvalidateTypes.TAB) != 0) {
             MediaCaptureNotificationService.updateMediaNotificationForTab(
-                    mTab.getApplicationContext(), mTab.getId(), mTab.getWebContents(),
+                    ContextUtils.getApplicationContext(), mTab.getId(), mTab.getWebContents(),
                     mTab.getUrl());
         }
         if ((flags & InvalidateTypes.TITLE) != 0) {
@@ -148,7 +149,7 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
         PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
         auditor.notifyCertificateFailure(
                 PolicyAuditorJni.get().getCertificateFailure(mTab.getWebContents()),
-                mTab.getApplicationContext());
+                ContextUtils.getApplicationContext());
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) {
             observers.next().onSSLStateUpdated(mTab);

@@ -57,9 +57,6 @@ void PopulateExtensionInfo(
     extension_info->set_update_url(update_url);
   }
 
-  extension_info->set_installed_by_custodian(
-      extensions::util::WasInstalledByCustodian(
-          extension.id(), extension_registry.browser_context()));
   extension_info->set_installed_by_default(
       extension.was_installed_by_default());
   extension_info->set_installed_by_oem(extension.was_installed_by_oem());

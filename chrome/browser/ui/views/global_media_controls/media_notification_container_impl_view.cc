@@ -68,26 +68,25 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
   SetTooltipText(
       l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_BACK_TO_TAB));
 
-  swipeable_container_ = std::make_unique<views::View>();
-  swipeable_container_->set_owned_by_client();
-  swipeable_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
-  swipeable_container_->SetPaintToLayer();
-  swipeable_container_->layer()->SetFillsBoundsOpaquely(false);
-  AddChildView(swipeable_container_.get());
+  auto swipeable_container = std::make_unique<views::View>();
+  swipeable_container->SetLayoutManager(std::make_unique<views::FillLayout>());
+  swipeable_container->SetPaintToLayer();
+  swipeable_container->layer()->SetFillsBoundsOpaquely(false);
+  swipeable_container_ = AddChildView(std::move(swipeable_container));
 
-  dismiss_button_placeholder_ = std::make_unique<views::View>();
-  dismiss_button_placeholder_->set_owned_by_client();
-  dismiss_button_placeholder_->SetPreferredSize(kDismissButtonSize);
-  dismiss_button_placeholder_->SetLayoutManager(
+  auto dismiss_button_placeholder = std::make_unique<views::View>();
+  dismiss_button_placeholder->SetPreferredSize(kDismissButtonSize);
+  dismiss_button_placeholder->SetLayoutManager(
       std::make_unique<views::FillLayout>());
+  dismiss_button_placeholder_ = dismiss_button_placeholder.get();
 
-  dismiss_button_container_ = std::make_unique<views::View>();
-  dismiss_button_container_->set_owned_by_client();
-  dismiss_button_container_->SetPreferredSize(kDismissButtonSize);
-  dismiss_button_container_->SetLayoutManager(
+  auto dismiss_button_container = std::make_unique<views::View>();
+  dismiss_button_container->SetPreferredSize(kDismissButtonSize);
+  dismiss_button_container->SetLayoutManager(
       std::make_unique<views::FillLayout>());
-  dismiss_button_container_->SetVisible(false);
-  dismiss_button_placeholder_->AddChildView(dismiss_button_container_.get());
+  dismiss_button_container->SetVisible(false);
+  dismiss_button_container_ = dismiss_button_placeholder_->AddChildView(
+      std::move(dismiss_button_container));
 
   auto dismiss_button = std::make_unique<DismissButton>(this);
   dismiss_button->SetPreferredSize(kDismissButtonSize);
@@ -98,13 +97,12 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
       dismiss_button_container_->AddChildView(std::move(dismiss_button));
   UpdateDismissButtonIcon();
 
-  view_ = std::make_unique<media_message_center::MediaNotificationView>(
-      this, std::move(item), dismiss_button_placeholder_.get(),
+  auto view = std::make_unique<media_message_center::MediaNotificationView>(
+      this, std::move(item), std::move(dismiss_button_placeholder),
       base::string16(), kWidth, /*should_show_icon=*/false);
-  view_->set_owned_by_client();
-  ForceExpandedState();
+  view_ = swipeable_container_->AddChildView(std::move(view));
 
-  swipeable_container_->AddChildView(view_.get());
+  ForceExpandedState();
 
   slide_out_controller_ =
       std::make_unique<views::SlideOutController>(this, this);

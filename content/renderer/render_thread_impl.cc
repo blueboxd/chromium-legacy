@@ -1700,10 +1700,8 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
   size_t malloc_usage = metric->GetMallocUsage();
   memory_metrics->malloc_mb = malloc_usage / 1024 / 1024;
 
-  discardable_memory::ClientDiscardableSharedMemoryManager::Statistics
-      discardable_stats = discardable_shared_memory_manager_->GetStatistics();
   size_t discardable_usage =
-      discardable_stats.total_size - discardable_stats.freelist_size;
+      discardable_shared_memory_manager_->GetBytesAllocated();
   memory_metrics->discardable_kb = discardable_usage / 1024;
 
   size_t v8_usage = 0;

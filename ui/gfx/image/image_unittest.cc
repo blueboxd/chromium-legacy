@@ -57,7 +57,7 @@ TEST_F(ImageTest, EmptyImage) {
 // Test constructing a gfx::Image from an empty PlatformImage.
 TEST_F(ImageTest, EmptyImageFromEmptyPlatformImage) {
 #if defined(OS_IOS) || defined(OS_MACOSX)
-  gfx::Image image1(NULL);
+  gfx::Image image1(nullptr);
   EXPECT_TRUE(image1.IsEmpty());
   EXPECT_EQ(0, image1.Width());
   EXPECT_EQ(0, image1.Height());
@@ -85,7 +85,7 @@ TEST_F(ImageTest, EmptyImageFromEmptyPlatformImage) {
 // invalid data.
 TEST_F(ImageTest, EmptyImageFromObviouslyInvalidPNGImage) {
   std::vector<gfx::ImagePNGRep> image_png_reps1;
-  image_png_reps1.push_back(gfx::ImagePNGRep(NULL, 1.0f));
+  image_png_reps1.push_back(gfx::ImagePNGRep(nullptr, 1.0f));
   gfx::Image image1(image_png_reps1);
   EXPECT_TRUE(image1.IsEmpty());
   EXPECT_EQ(0U, image1.RepresentationCount());
@@ -150,7 +150,7 @@ TEST_F(ImageTest, EmptyImageToPNG) {
 }
 
 // Check that getting the 1x PNG bytes from images which do not have a 1x
-// representation returns NULL.
+// representation returns null.
 TEST_F(ImageTest, ImageNo1xToPNG) {
   // Image with 2x only.
   const int kSize2x = 50;

@@ -54,7 +54,7 @@ cr.define('destination_settings_test', function() {
       // Stub out native layer and cloud print interface.
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
-      let localDestinations = [];
+      const localDestinations = [];
       destinations = print_preview_test_utils.getDestinations(
           nativeLayer, localDestinations);
       nativeLayer.setLocalDestinations(localDestinations);
@@ -197,7 +197,7 @@ cr.define('destination_settings_test', function() {
      *     destinations in the dropdown.
      */
     function assertDropdownItems(expectedDestinations) {
-      let options =
+      const options =
           destinationSettings.$.destinationSelect.shadowRoot.querySelectorAll(
               'option:not([hidden])');
       assertEquals(expectedDestinations.length + 1, options.length);

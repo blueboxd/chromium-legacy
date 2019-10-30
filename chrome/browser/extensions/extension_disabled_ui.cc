@@ -233,11 +233,6 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
 }
 
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
-  if (util::IsExtensionSupervised(extension_, service_->profile())) {
-    // TODO(crbug.com/461261): Probably use a new string here once we get UX
-    // design. For now, just use "OK".
-    return l10n_util::GetStringUTF16(IDS_OK);
-  }
   if (is_remote_install_) {
     return l10n_util::GetStringUTF16(
         extension_->is_app()
@@ -249,12 +244,6 @@ base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
 }
 
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewCancelButtonLabel() {
-  if (util::IsExtensionSupervised(extension_, service_->profile())) {
-    // The supervised user can't approve the update, and hence there is no
-    // "cancel" button. Return an empty string such that the "cancel" button
-    // is not shown in the dialog.
-    return base::string16();
-  }
   return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON);
 }
 
@@ -276,9 +265,6 @@ void ExtensionDisabledGlobalError::OnBubbleViewDidClose(Browser* browser) {
 
 void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
-  if (util::IsExtensionSupervised(extension_, service_->profile())) {
-    return;
-  }
   user_response_ = REENABLE;
   // Delay extension reenabling so this bubble closes properly.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -289,10 +275,6 @@ void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
 
 void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
     Browser* browser) {
-  // For custodian-installed extensions, this button should not exist because
-  // there is only an "OK" button.
-  // Supervised users may never remove custodian-installed extensions.
-  DCHECK(!util::IsExtensionSupervised(extension_, service_->profile()));
   uninstall_dialog_ = ExtensionUninstallDialog::Create(
       service_->profile(), browser->window()->GetNativeWindow(), this);
   user_response_ = UNINSTALL;

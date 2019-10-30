@@ -161,18 +161,6 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     return request_->handle_state();
   }
 
-  bool is_deferring() {
-    switch (state()) {
-      case NavigationRequest::PROCESSING_WILL_START_REQUEST:
-      case NavigationRequest::PROCESSING_WILL_REDIRECT_REQUEST:
-      case NavigationRequest::PROCESSING_WILL_FAIL_REQUEST:
-      case NavigationRequest::PROCESSING_WILL_PROCESS_RESPONSE:
-        return true;
-      default:
-        return false;
-    }
-  }
-
   bool call_counts_match(TestNavigationThrottle* throttle,
                          int start,
                          int redirect,
@@ -327,7 +315,7 @@ TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillStart) {
   // Simulate WillStartRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillStartRequest();
-  EXPECT_EQ(NavigationRequest::PROCESSING_WILL_START_REQUEST, state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 0, 0));
 
@@ -357,7 +345,7 @@ TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillRedirect) {
   // Simulate WillRedirectRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillRedirectRequest();
-  EXPECT_EQ(NavigationRequest::PROCESSING_WILL_REDIRECT_REQUEST, state());
+  EXPECT_EQ(NavigationRequest::WILL_REDIRECT_REQUEST, state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 0, 1, 0, 0));
 
@@ -391,7 +379,7 @@ TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillFail) {
   // Simulate WillFailRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillFailRequest(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(NavigationRequest::PROCESSING_WILL_FAIL_REQUEST, state());
+  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST, state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 1, 0));
 
@@ -422,7 +410,7 @@ TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillRedirectNoIgnore) {
   // Simulate WillStartRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillStartRequest();
-  EXPECT_EQ(NavigationRequest::PROCESSING_WILL_START_REQUEST, state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, state());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 0, 0));
 
   // Cancel the request. The callback should have been called with CANCEL, and
@@ -457,7 +445,7 @@ TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillFailNoIgnore) {
   // Simulate WillFailRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillFailRequest(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(NavigationRequest::PROCESSING_WILL_FAIL_REQUEST, state());
+  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST, state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 1, 0));
 
@@ -556,7 +544,7 @@ TEST_F(NavigationRequestTest, MAYBE_WillFailRequestCanAccessRenderFrameHost) {
   navigation->SetAutoAdvance(false);
   navigation->Start();
   navigation->Fail(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(NavigationRequest::PROCESSING_WILL_FAIL_REQUEST,
+  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST,
             NavigationRequest::From(navigation->GetNavigationHandle())
                 ->handle_state());
   EXPECT_TRUE(navigation->GetNavigationHandle()->GetRenderFrameHost());

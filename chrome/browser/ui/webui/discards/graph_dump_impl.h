@@ -85,7 +85,8 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
   void OnPriorityAndReasonChanged(
-      const performance_manager::FrameNode* frame_node) override {}
+      const performance_manager::FrameNode* frame_node,
+      const PriorityAndReason& previous_value) override {}
 
   // PageNodeObserver implementation:
   void OnPageNodeAdded(const performance_manager::PageNode* page_node) override;
@@ -139,6 +140,8 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   // Ignored.
   void OnAllFramesInProcessFrozen(
       const performance_manager::ProcessNode* process_node) override {}
+  void OnPriorityChanged(const performance_manager::ProcessNode* process_node,
+                         base::TaskPriority previous_value) override {}
 
  private:
   // The favicon requests happen on the UI thread. This helper class

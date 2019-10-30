@@ -309,8 +309,8 @@ enum XRReferenceSpaceCategory {
 // anchors and input sources), or by reference space category.
 union XRNativeOriginInformation {
   uint32 input_source_id;
-  uint32 plane_id;
-  uint32 anchor_id;
+  uint64 plane_id;
+  uint64 anchor_id;
   XRReferenceSpaceCategory reference_space_category;
 };
 
@@ -328,8 +328,8 @@ struct XRPlanePointData {
 // Struct containing plane-related information. A plane describes a flat surface
 // detected in the real world by the underlying system.
 struct XRPlaneData {
-  // Unique (per session) identifier of the plane.
-  uint32 id;
+  // Unique (within a session) identifier of the plane.
+  uint64 id;
 
   // Plane orientation relative to gravity.
   XRPlaneOrientation orientation;
@@ -349,7 +349,7 @@ struct XRPlaneData {
 // present in updated_planes_data.
 struct XRPlaneDetectionData {
   // Array with ids of all tracked planes.
-  array<uint32> all_planes_ids;
+  array<uint64> all_planes_ids;
 
   // Array with plane data for all updated planes. Plane is considered updated
   // if its position or polygon has changed. Updated planes are always a subset
@@ -363,8 +363,8 @@ struct XRPlaneDetectionData {
 // adjusted by the underlying system as its understanding of the real world
 // evolves.
 struct XRAnchorData {
-  // Unique (per session) identifier of the anchor.
-  uint32 id;
+  // Unique (within a session) identifier of the anchor.
+  uint64 id;
 
   // Pose of the anchor.
   VRPose pose;
@@ -376,7 +376,7 @@ struct XRAnchorData {
 // will not be present in updated_anchors_data.
 struct XRAnchorsData {
   // Array with ids of all tracked anchors.
-  array<uint32> all_anchors_ids;
+  array<uint64> all_anchors_ids;
 
   // Array with anchor data for all updated anchors. Updated anchors are always
   // a subset of all anchors (i.e. for each anchor found in
@@ -386,7 +386,7 @@ struct XRAnchorsData {
 
 // Information about results for a single subscription for the current frame.
 struct XRHitTestSubscriptionResultData {
-  uint32 subscription_id;
+  uint64 subscription_id;
   array<XRHitResult> hit_test_results;
 };
 
@@ -549,19 +549,19 @@ interface XREnvironmentIntegrationProvider {
   // tied to the lifetime of the immersive session.
   SubscribeToHitTest(
     XRNativeOriginInformation native_origin_information, XRRay ray) =>
-    (SubscribeToHitTestResult result, uint32 subscription_id);
+    (SubscribeToHitTestResult result, uint64 subscription_id);
 
   // Notifies the device that subscription with the passed in |subscription_id|
   // is no longer needed and should be removed. The |subscription_id| must be a
   // valid id of a subscription returned by one of the SubscribeToHitTest calls,
   // otherwise the call will be ignored.
-  UnsubscribeFromHitTest(uint32 subscription_id);
+  UnsubscribeFromHitTest(uint64 subscription_id);
 
   // Issues a request to create an anchor attached to a session.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
   CreateAnchor(VRPose anchor_pose) => (CreateAnchorResult result,
-                                       uint32 anchor_id);
+                                       uint64 anchor_id);
   // TODO(https://crbug.com/657632): Switch anchor_id to nullable integer once
   // that's available. This will allow us to remove CreateAnchorResult if we're
   // not interested in obtaining detailed error information from the device.
@@ -569,14 +569,14 @@ interface XREnvironmentIntegrationProvider {
   // Issues a request to create an anchor attached to a plane.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
-  CreatePlaneAnchor(VRPose anchor_pose, uint32 plane_id) =>
-    (CreateAnchorResult result, uint32 anchor_id);
+  CreatePlaneAnchor(VRPose anchor_pose, uint64 plane_id) =>
+    (CreateAnchorResult result, uint64 anchor_id);
   // TODO(https://crbug.com/657632): Ditto - make anchor_id a nullable integer..
 
   // Detaches an existing anchor. The |anchor_id| must be a valid id of an
   // anchor created by one of the CreateAnchor calls, otherwise the call will be
   // ignored.
-  DetachAnchor(uint32 anchor_id);
+  DetachAnchor(uint64 anchor_id);
 };
 
 // Provides a mechanism for a channel to plumb up any button click events

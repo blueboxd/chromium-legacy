@@ -131,6 +131,9 @@ class LoginDisplayHost {
   // Starts ARC kiosk splash screen.
   virtual void StartArcKiosk(const AccountId& account_id) = 0;
 
+  // Starts web kiosk splash screen.
+  virtual void StartWebKiosk(const AccountId& account_id) = 0;
+
   // Show the gaia dialog. |can_close| determines if the user is allowed to
   // close the dialog. If available, |account| is preloaded in the gaia dialog.
   virtual void ShowGaiaDialog(bool can_close,

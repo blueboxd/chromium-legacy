@@ -1061,11 +1061,17 @@ void NativeWidgetNSWindowBridge::InitCompositorView() {
   UpdateWindowGeometry();
 }
 
-void NativeWidgetNSWindowBridge::SortSubviews(RankMap rank) {
+void NativeWidgetNSWindowBridge::SortSubviews(
+    const std::vector<uint64_t>& attached_subview_ids) {
   // Ignore layer manipulation during a Close(). This can be reached during the
   // orderOut: in Close(), which notifies visibility changes to Views.
   if (!bridged_view_)
     return;
+  RankMap rank;
+  for (uint64_t subview_id : attached_subview_ids) {
+    if (NSView* subview = remote_cocoa::GetNSViewFromId(subview_id))
+      rank[subview] = rank.size() + 1;
+  }
   [bridged_view_ sortSubviewsUsingFunction:&SubviewSorter context:&rank];
 }
 

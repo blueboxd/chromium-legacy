@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "third_party/cld_3/src/src/nnet_language_identifier.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 
 namespace ui {

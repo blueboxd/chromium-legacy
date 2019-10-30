@@ -18353,15 +18353,15 @@
 
       If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not check any data for sensitive data protection rule violations.
 
-      If this policy is set to 'Check downloads' and the user attempts to download a file from a URL in the <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME">DomainsToCheckComplianceOfDownloadedContent</ph> policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will check the data downloaded for compiance with enterprise rules.
+      If this policy is set to 'Check downloads' and the user attempts to download a file from a URL in the <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME">URLsToCheckComplianceOfDownloadedContent</ph> policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will check the data downloaded for compiance with enterprise rules.
 
-      If this policy is set to 'Check uploads' and the user attempts to upload a file to a domain not in the <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME">DomainsToNotCheckComplianceOfUploadedContent</ph>, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will check the file uploaded, data pasted from the clipboard, or data dragged and dropped for compiance with enterprise rules.
+      If this policy is set to 'Check uploads' and the user attempts to upload a file to a domain not in the <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME">URLsToNotCheckComplianceOfUploadedContent</ph>, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will check the file uploaded, data pasted from the clipboard, or data dragged and dropped for compiance with enterprise rules.
 
       If this policy is set to 'Check uploads and downloads', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves according to the rules described under 'Check downloads' and 'Check uploads'.
       '''
     },
     {
-      'name': 'DomainsToCheckComplianceOfDownloadedContent',
+      'name': 'URLsToCheckComplianceOfDownloadedContent',
       'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
       'type': 'list',
       'schema': {
@@ -18386,7 +18386,7 @@
       '''
     },
     {
-      'name': 'DomainsToNotCheckComplianceOfUploadedContent',
+      'name': 'URLsToNotCheckComplianceOfUploadedContent',
       'owners': ['rogerta@chromium.org', 'mad@chromium.org'],
       'type': 'list',
       'schema': {
@@ -18430,7 +18430,7 @@
     },
     {
       # TODO(rogerta): Use a custom policy handler to show in chrome://policy that this policy depends on the state of SendFilesForMalwareCheck.
-      'name': 'DomainsToCheckForMalwareOfUploadedContent',
+      'name': 'URLsToCheckForMalwareOfUploadedContent',
       'owners': ['rogerta@chromium.org', 'drubery@chromium.org'],
       'type': 'list',
       'schema': {

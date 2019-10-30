@@ -156,12 +156,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
           false)
 
-// If true, enable QUIC version 47.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
-
-// If true, disable QUIC version 39.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, true)
-
 // If true and using Leto for QUIC shared-key calculations, GFE will react to a
 // failure to contact Leto by sending a REJ containing a fallback ServerConfig,
 // allowing the client to continue the handshake.
@@ -213,10 +207,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_reject_unprocessable_packets_statelessly,
     false)
 
-// If true, when RTO fires and there is no packet to be RTOed, let connection
-// send.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission3, true)
-
 // Maximum number of tracked packets.
 QUIC_FLAG(int64_t, FLAGS_quic_max_tracked_packet_count, 10000)
 
@@ -225,7 +215,7 @@ QUIC_FLAG(int64_t, FLAGS_quic_max_tracked_packet_count, 10000)
 QUIC_FLAG(bool, FLAGS_quic_client_convert_http_header_name_to_lowercase, true)
 
 // If true, do not send STOP_WAITING if no_stop_waiting_frame_.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, true)
 
 // If true, allow client to enable BBRv2 on server via connection option 'B2ON'.
 QUIC_FLAG(bool,
@@ -258,12 +248,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames3,
     true)
 
-// If true, static streams should never be closed before QuicSession
-// destruction.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_active_streams_never_negative,
-          true)
-
 // If true and FIFO connection option is received, write_blocked_streams uses
 // FIFO(stream with smallest ID has highest priority) write scheduler.
 QUIC_FLAG(bool,
@@ -274,11 +258,6 @@ QUIC_FLAG(bool,
 // LIFO(stream with largest ID has highest priority) write scheduler.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_enable_lifo_write_scheduler,
-          true)
-
-// When true, remove obsolete functionality intended to test IETF QUIC recovery.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_sent_packet_manager_cleanup,
           true)
 
 // If true, QuicStreamSequencer will not take in new data if the stream is
@@ -301,26 +280,12 @@ QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_use_hashed_stateless_reset_tokens,
           true)
 
-// This flag enables a temporary workaround which makes us reply to a specific
-// invalid packet that is sent by an Android UDP network conformance test.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_reply_to_old_android_conformance_test,
-          true)
-
 // The maximum amount of CRYPTO frame data that can be buffered.
 QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
-
-// If true, use the saved time of the last sent inflight packet rather than
-// traversing the deque.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simple_inflight_time, true)
 
 // If true, QUIC supports both QUIC Crypto and TLS 1.3 for the handshake
 // protocol.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_supports_tls_handshake, true)
-
-// If true, deprecate SpuriousRetransmitDetected and call SpuriousLossDetected
-// instead.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_detect_spurious_loss, true)
 
 // If true, enable IETF loss detection as described in
 // https://tools.ietf.org/html/draft-ietf-quic-recovery-22#section-6.1.
@@ -334,10 +299,6 @@ QUIC_FLAG(bool,
           true)
 // If true, enable HTTP/2 default scheduling(round robin).
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_rr_write_scheduler, true)
-
-// If true, when timer fires in RTO or PTO mode, make sure there is enough
-// credits to retransmit one packet.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_grant_enough_credits, false)
 
 // If true, combine QuicPacketGenerator and QuicPacketCreator.
 QUIC_FLAG(bool,
@@ -364,13 +325,13 @@ QUIC_FLAG(bool,
 // Call NeuterHandshakePackets() at most once per connection.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_neuter_handshake_packets_once,
-          false)
+          true)
 
 // If true, support HTTP/3 priority in v99.
 QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, false)
 
 // If true, enable QUIC version 50.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_50, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_50, true)
 
 // If true, enable QUIC MTU discovery version 2.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_mtu_discovery_v2, false)

@@ -233,6 +233,10 @@ gfx::Rect CustomTabBarView::GetAnchorBoundsInScreen() const {
                          title_origin_view_->GetAnchorBoundsInScreen());
 }
 
+const char* CustomTabBarView::GetClassName() const {
+  return kViewClassName;
+}
+
 void CustomTabBarView::TabChangedAt(content::WebContents* contents,
                                     int index,
                                     TabChangeType change_type) {

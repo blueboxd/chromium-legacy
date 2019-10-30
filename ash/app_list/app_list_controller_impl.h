@@ -28,6 +28,7 @@
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/session/session_observer.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
@@ -156,6 +157,8 @@ class ASH_EXPORT AppListControllerImpl
                                  AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp);
   ash::AppListViewState GetAppListViewState();
+  // Returns whether the home launcher should be visible.
+  bool ShouldHomeLauncherBeVisible() const;
 
   // AppListViewDelegate:
   AppListModel* GetModel() override;
@@ -421,6 +424,11 @@ class ASH_EXPORT AppListControllerImpl
   int profile_id_ = kAppListInvalidProfileID;
 
   StateTransitionAnimationCallback state_transition_animation_callback_;
+
+  // Used to prevent ShelfLayoutManager updating visibility state when overview
+  // is showing over the AppList.
+  std::unique_ptr<ShelfLayoutManager::ScopedSuspendVisibilityUpdate>
+      scoped_suspend_visibility_update_;
 
   base::ObserverList<AppListControllerObserver> observers_;
 

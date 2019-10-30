@@ -1028,7 +1028,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
   // The extension frame does run in the extension's process. Any requests made
   // by it should not be visible to other extensions, since they won't have
   // access to the request initiator.
-  EXPECT_EQ("Did not intercept any requests.", listener_result.message());
+  //
+  // OTOH, the content script executes fetches/XHRs as-if they were initiated by
+  // the webpage that the content script got injected into.  Here, the webpage
+  // has origin of http://127.0.0.1:<some port>, and so the webRequest API
+  // extension should have access to the request.
+  EXPECT_EQ("Intercepted requests: ?contentscript", listener_result.message());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {

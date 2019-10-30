@@ -14,7 +14,10 @@
   width: min-content;
 }
 #container {
-  content-size: 0px 0px;
+  intrinsic-size: 0px 0px;
+}
+fieldset:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 

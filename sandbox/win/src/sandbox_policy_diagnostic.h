@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#include "sandbox/win/src/policy_low_level.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/security_level.h"
@@ -42,6 +43,7 @@ class PolicyDiagnostic final : public PolicyInfo {
   MitigationFlags desired_mitigations_ = 0;
   std::unique_ptr<Sid> app_container_sid_ = nullptr;
   std::unique_ptr<Sid> lowbox_sid_ = nullptr;
+  std::unique_ptr<PolicyGlobal> policy_rules_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyDiagnostic);
 };

@@ -9,7 +9,10 @@ luci.bucket(
         ),
         acl.entry(
             roles = acl.BUILDBUCKET_TRIGGERER,
-            users = 'findit-for-me@appspot.gserviceaccount.com',
+            users = [
+                'findit-for-me@appspot.gserviceaccount.com',
+                'tricium-prod@appspot.gserviceaccount.com',
+            ],
             groups = [
                 'project-chromium-tryjob-access',
                 # Allow Pinpoint to trigger builds for bisection

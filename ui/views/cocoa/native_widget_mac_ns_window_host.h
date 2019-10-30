@@ -210,9 +210,10 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   void SetNativeWindowProperty(const char* name, void* value);
   void* GetNativeWindowProperty(const char* name) const;
 
-  // Updates |associated_views_| on NativeViewHost::Attach()/Detach().
-  void SetAssociationForView(const views::View* view, NSView* native_view);
-  void ClearAssociationForView(const views::View* view);
+  // Updates |attached_native_view_host_views_| on
+  // NativeViewHost::Attach()/Detach().
+  void OnNativeViewHostAttach(const views::View* view, NSView* native_view);
+  void OnNativeViewHostDetach(const views::View* view);
 
   // Sorts child NSViews according to NativeViewHosts order in views hierarchy.
   void ReorderChildViews();
@@ -230,7 +231,13 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
 
   void UpdateCompositorProperties();
   void DestroyCompositor();
-  void RankNSViewsRecursive(View* view, std::map<NSView*, int>* rank) const;
+
+  // Sort |attached_native_view_host_views_| by the order in which their
+  // NSViews should appear as subviews. This does a recursive pre-order
+  // traversal of the views::View tree starting at |view|.
+  void GetAttachedNativeViewHostViewsRecursive(
+      View* view,
+      std::vector<NSView*>* attached_native_view_host_views_ordered) const;
 
   // If we are accessing the BridgedNativeWidget through mojo, then
   // |in_process_ns_window_| is not the true window that is resized. This
@@ -470,8 +477,9 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   // Properties used by Set/GetNativeWindowProperty.
   std::map<std::string, void*> native_window_properties_;
 
-  // Contains NativeViewHost->gfx::NativeView associations.
-  std::map<const views::View*, NSView*> associated_views_;
+  // Contains NativeViewHost->gfx::NativeView associations for NativeViewHosts
+  // attached to |this|.
+  std::map<const views::View*, NSView*> attached_native_view_host_views_;
 
   mojo::AssociatedBinding<remote_cocoa::mojom::NativeWidgetNSWindowHost>
       remote_ns_window_host_binding_;

@@ -25,7 +25,7 @@ chrome.test.runTests(function() {
     }
 
     sendEvent(event) {
-      for (let l of this.listeners.get(event.type)) {
+      for (const l of this.listeners.get(event.type)) {
         l.listener(event);
       }
     }
@@ -73,9 +73,9 @@ chrome.test.runTests(function() {
 
   return [
     function testPinchZoomIn() {
-      let stubElement = new StubElement();
-      let gestureDetector = new GestureDetector(stubElement);
-      let pinchListener = new PinchListener(gestureDetector);
+      const stubElement = new StubElement();
+      const gestureDetector = new GestureDetector(stubElement);
+      const pinchListener = new PinchListener(gestureDetector);
 
       stubElement.sendEvent(new MockTouchEvent('touchstart', [
         {clientX: 0, clientY: 0},
@@ -121,9 +121,9 @@ chrome.test.runTests(function() {
     },
 
     function testPinchZoomInAndBackOut() {
-      let stubElement = new StubElement();
-      let gestureDetector = new GestureDetector(stubElement);
-      let pinchListener = new PinchListener(gestureDetector);
+      const stubElement = new StubElement();
+      const gestureDetector = new GestureDetector(stubElement);
+      const pinchListener = new PinchListener(gestureDetector);
 
       stubElement.sendEvent(new MockTouchEvent('touchstart', [
         {clientX: 0, clientY: 0},
@@ -171,9 +171,9 @@ chrome.test.runTests(function() {
     },
 
     function testZoomWithWheel() {
-      let stubElement = new StubElement();
-      let gestureDetector = new GestureDetector(stubElement);
-      let pinchListener = new PinchListener(gestureDetector);
+      const stubElement = new StubElement();
+      const gestureDetector = new GestureDetector(stubElement);
+      const pinchListener = new PinchListener(gestureDetector);
 
       // Since the wheel events that the GestureDetector receives are
       // individual updates without begin/end events, we need to make sure the
@@ -189,16 +189,16 @@ chrome.test.runTests(function() {
           });
         }
       }
-      let pinchSequenceListener = new PinchSequenceListener(gestureDetector);
+      const pinchSequenceListener = new PinchSequenceListener(gestureDetector);
 
-      let scale = 1.23;
-      let deltaY = -(100.0 * Math.log(scale));
-      let position = {clientX: 12, clientY: 34};
+      const scale = 1.23;
+      const deltaY = -(100.0 * Math.log(scale));
+      const position = {clientX: 12, clientY: 34};
       stubElement.sendEvent(new MockWheelEvent(deltaY, position, true));
 
       chrome.test.assertTrue(pinchSequenceListener.seenBegin);
 
-      let lastEvent = pinchListener.lastEvent;
+      const lastEvent = pinchListener.lastEvent;
       chrome.test.assertEq('pinchupdate', lastEvent.type);
       chrome.test.assertTrue(Math.abs(lastEvent.scaleRatio - scale) < 0.001);
       chrome.test.assertEq('in', lastEvent.direction);
@@ -211,11 +211,11 @@ chrome.test.runTests(function() {
     },
 
     function testIgnoreTouchScrolling() {
-      let stubElement = new StubElement();
-      let gestureDetector = new GestureDetector(stubElement);
-      let pinchListener = new PinchListener(gestureDetector);
+      const stubElement = new StubElement();
+      const gestureDetector = new GestureDetector(stubElement);
+      const pinchListener = new PinchListener(gestureDetector);
 
-      let touchScrollStartEvent = new MockTouchEvent('touchstart', [
+      const touchScrollStartEvent = new MockTouchEvent('touchstart', [
         {clientX: 0, clientY: 0},
       ]);
       stubElement.sendEvent(touchScrollStartEvent);
@@ -234,12 +234,12 @@ chrome.test.runTests(function() {
     },
 
     function testIgnoreWheelScrolling() {
-      let stubElement = new StubElement();
-      let gestureDetector = new GestureDetector(stubElement);
-      let pinchListener = new PinchListener(gestureDetector);
+      const stubElement = new StubElement();
+      const gestureDetector = new GestureDetector(stubElement);
+      const pinchListener = new PinchListener(gestureDetector);
 
       // A wheel event where ctrlKey is false does not indicate zooming.
-      let scrollingWheelEvent =
+      const scrollingWheelEvent =
           new MockWheelEvent(1, {clientX: 0, clientY: 0}, false);
       stubElement.sendEvent(scrollingWheelEvent);
       chrome.test.assertEq(null, pinchListener.lastEvent);
@@ -248,7 +248,7 @@ chrome.test.runTests(function() {
     },
 
     function testPreventNativePinchZoom() {
-      let touchAction =
+      const touchAction =
           window.getComputedStyle(document.documentElement).touchAction;
 
       chrome.test.assertEq('pan-x pan-y', touchAction);
@@ -257,15 +257,15 @@ chrome.test.runTests(function() {
     },
 
     function testPreventNativeZoomFromWheel() {
-      let stubElement = new StubElement();
-      let gestureDetector = new GestureDetector(stubElement);
-      let pinchListener = new PinchListener(gestureDetector);
+      const stubElement = new StubElement();
+      const gestureDetector = new GestureDetector(stubElement);
+      const pinchListener = new PinchListener(gestureDetector);
 
       // Ensure that the wheel listener is not passive, otherwise the call to
       // preventDefault will be ignored. Since listeners could default to being
       // passive, we must set the value explicitly.
-      for (let l of stubElement.listeners.get('wheel')) {
-        let options = l.options;
+      for (const l of stubElement.listeners.get('wheel')) {
+        const options = l.options;
         chrome.test.assertTrue(
             !!options && typeof (options.passive) == 'boolean');
         chrome.test.assertFalse(options.passive);
@@ -273,12 +273,12 @@ chrome.test.runTests(function() {
 
       // We should not preventDefault a wheel event where ctrlKey is false as
       // that would prevent scrolling, not zooming.
-      let scrollingWheelEvent =
+      const scrollingWheelEvent =
           new MockWheelEvent(1, {clientX: 0, clientY: 0}, false);
       stubElement.sendEvent(scrollingWheelEvent);
       chrome.test.assertFalse(scrollingWheelEvent.defaultPrevented);
 
-      let zoomingWheelEvent =
+      const zoomingWheelEvent =
           new MockWheelEvent(1, {clientX: 0, clientY: 0}, true);
       stubElement.sendEvent(zoomingWheelEvent);
       chrome.test.assertTrue(zoomingWheelEvent.defaultPrevented);
@@ -287,8 +287,8 @@ chrome.test.runTests(function() {
     },
 
     function testWasTwoFingerTouch() {
-      let stubElement = new StubElement();
-      let gestureDetector = new GestureDetector(stubElement);
+      const stubElement = new StubElement();
+      const gestureDetector = new GestureDetector(stubElement);
 
 
       chrome.test.assertFalse(

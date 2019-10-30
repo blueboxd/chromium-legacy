@@ -236,6 +236,11 @@ class CreditCardAccessManagerTest : public testing::Test {
     if (!full_card_request)
       return false;
 
+    // Mock user response.
+    payments::FullCardRequest::UserProvidedUnmaskDetails details;
+    details.cvc = base::ASCIIToUTF16("123");
+    full_card_request->OnUnmaskPromptAccepted(details);
+
     payments::PaymentsClient::UnmaskResponseDetails response;
 #if !defined(OS_IOS)
     response.card_authorization_token = "dummy_card_authorization_token";
@@ -626,10 +631,15 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {
   histogram_tester.ExpectUniqueSample(
       webauthn_result_histogram_name,
       AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.BetterAuth.CardUnmaskDuration.Fido", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.BetterAuth.CardUnmaskDuration.Fido.Success", 1);
 }
 
 // Ensures that CVC prompt is invoked after WebAuthn fails.
-TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOFailureCVCFallback) {
+TEST_F(CreditCardAccessManagerTest,
+       FetchServerCardFIDOVerificationFailureCVCFallback) {
   base::HistogramTester histogram_tester;
   std::string histogram_name =
       "Autofill.BetterAuth.WebauthnResult.ImmediateAuthentication";
@@ -665,6 +675,51 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOFailureCVCFallback) {
   histogram_tester.ExpectUniqueSample(
       histogram_name, AutofillMetrics::WebauthnResultMetric::kNotAllowedError,
       1);
+}
+
+// Ensures that CVC prompt is invoked after payments returns an error from
+// GetRealPan via FIDO.
+TEST_F(CreditCardAccessManagerTest,
+       FetchServerCardFIDOServerFailureCVCFallback) {
+  base::HistogramTester histogram_tester;
+  std::string histogram_name =
+      "Autofill.BetterAuth.WebauthnResult.ImmediateAuthentication";
+
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(true);
+  payments_client_->AddFidoEligibleCard(card->server_id(), kCredentialId,
+                                        kGooglePaymentsRpid);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  WaitForCallbacks();
+
+  // FIDO Failure.
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::AUTHENTICATION_FLOW,
+            GetFIDOAuthenticator()->current_flow());
+  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+                                                /*did_succeed=*/true);
+  EXPECT_TRUE(
+      GetRealPanForFIDOAuth(AutofillClient::PERMANENT_FAILURE, kTestNumber));
+  EXPECT_FALSE(accessor_->did_succeed());
+
+  // Followed by a fallback to CVC.
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::NONE_FLOW,
+            GetFIDOAuthenticator()->current_flow());
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(accessor_->did_succeed());
+  EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+
+  histogram_tester.ExpectUniqueSample(
+      histogram_name, AutofillMetrics::WebauthnResultMetric::kSuccess, 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.BetterAuth.CardUnmaskDuration.Fido", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.BetterAuth.CardUnmaskDuration.Fido.Failure", 1);
 }
 
 // Ensures WebAuthn call is not made if Request Options is missing a Credential

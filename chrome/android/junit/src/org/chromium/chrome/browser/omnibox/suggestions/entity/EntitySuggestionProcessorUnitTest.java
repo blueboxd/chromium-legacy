@@ -11,7 +11,6 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -78,18 +77,10 @@ public class EntitySuggestionProcessorUnitTest {
         protected final OmniboxSuggestion mSuggestion;
         // Stores PropertyModel for the suggestion.
         protected final PropertyModel mModel;
-        // Specifies whether embedded suggestion is considered active (ie. shown).
-        private boolean mIsActive;
 
         private SuggestionTestHelper(OmniboxSuggestion suggestion, PropertyModel model) {
             mSuggestion = suggestion;
             mModel = model;
-            mIsActive = true;
-        }
-
-        /** Specify whether suggestion should be reported by SuggestionHost as currently shown. */
-        void setActive(boolean isActive) {
-            mIsActive = isActive;
         }
 
         void verifyReportedType(int expectedType) {
@@ -102,7 +93,7 @@ public class EntitySuggestionProcessorUnitTest {
             final SuggestionDrawableState state = mModel.get(BaseSuggestionViewProperties.ICON);
             return state == null ? null : state.drawable;
         }
-    };
+    }
 
     /** Create fake Entity suggestion. */
     SuggestionTestHelper createSuggestion(
@@ -121,7 +112,6 @@ public class EntitySuggestionProcessorUnitTest {
 
     /** Populate model for associated suggestion. */
     void processSuggestion(SuggestionTestHelper helper) {
-        when(mSuggestionHost.isActiveModel(helper.mModel)).thenReturn(helper.mIsActive);
         mProcessor.populateModel(helper.mSuggestion, helper.mModel, 0);
     }
 
@@ -312,59 +302,6 @@ public class EntitySuggestionProcessorUnitTest {
         Assert.assertEquals(oldIcon, newIcon);
         Assert.assertThat(oldIcon, instanceOf(ColorDrawable.class));
         suggHelper.verifyReportedType(DECORATION_TYPE_COLOR);
-    }
-
-    @Test
-    public void decorationTest_oldModelsAreNotUpdated() {
-        final ArgumentCaptor<Callback<Bitmap>> callback1 = ArgumentCaptor.forClass(Callback.class);
-        final ArgumentCaptor<Callback<Bitmap>> callback2 = ArgumentCaptor.forClass(Callback.class);
-
-        final String url1 = "http://site1.com";
-        final String url2 = "http://site2.com";
-
-        final SuggestionTestHelper sugg1 = createSuggestion("", "", "", url1);
-        final SuggestionTestHelper sugg2 = createSuggestion("", "", "", url1);
-        final SuggestionTestHelper sugg3 = createSuggestion("", "", "", url2);
-        final SuggestionTestHelper sugg4 = createSuggestion("", "", "", url2);
-
-        sugg2.setActive(false);
-        sugg4.setActive(false);
-
-        processSuggestion(sugg1);
-        processSuggestion(sugg2);
-        processSuggestion(sugg3);
-        processSuggestion(sugg4);
-
-        verify(mImageFetcher)
-                .fetchImage(eq(url1), anyString(), anyInt(), anyInt(), callback1.capture());
-        verify(mImageFetcher)
-                .fetchImage(eq(url2), anyString(), anyInt(), anyInt(), callback2.capture());
-
-        final Drawable icon1 = sugg1.getIcon();
-        final Drawable icon2 = sugg2.getIcon();
-        final Drawable icon3 = sugg3.getIcon();
-        final Drawable icon4 = sugg4.getIcon();
-        sugg1.verifyReportedType(DECORATION_TYPE_ICON);
-        sugg2.verifyReportedType(DECORATION_TYPE_ICON);
-        sugg3.verifyReportedType(DECORATION_TYPE_ICON);
-        sugg4.verifyReportedType(DECORATION_TYPE_ICON);
-
-        callback1.getValue().onResult(mFakeBitmap);
-        callback2.getValue().onResult(mFakeBitmap);
-
-        final Drawable newIcon1 = sugg1.getIcon();
-        final Drawable newIcon2 = sugg2.getIcon();
-        final Drawable newIcon3 = sugg3.getIcon();
-        final Drawable newIcon4 = sugg4.getIcon();
-        sugg1.verifyReportedType(DECORATION_TYPE_IMAGE);
-        sugg2.verifyReportedType(DECORATION_TYPE_ICON);
-        sugg3.verifyReportedType(DECORATION_TYPE_IMAGE);
-        sugg4.verifyReportedType(DECORATION_TYPE_ICON);
-
-        Assert.assertNotEquals(icon1, newIcon1);
-        Assert.assertEquals(icon2, newIcon2);
-        Assert.assertNotEquals(icon3, newIcon3);
-        Assert.assertEquals(icon4, newIcon4);
     }
 
     @Test

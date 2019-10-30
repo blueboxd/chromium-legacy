@@ -44,7 +44,7 @@ interface ServiceWorkerContainerHost {
   // Otherwise, |error| and |error_msg| describe the failure.
   Register(url.mojom.Url script_url,
            ServiceWorkerRegistrationOptions options,
-           FetchClientSettingsObject? outside_fetch_client_settings_object)
+           FetchClientSettingsObject outside_fetch_client_settings_object)
     => (ServiceWorkerErrorType error,
         string? error_msg,
         ServiceWorkerRegistrationObjectInfo? registration);

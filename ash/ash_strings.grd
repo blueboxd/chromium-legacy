@@ -877,6 +877,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header.">
         Network
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACCESSIBILITY_LABEL" desc="Accessibility label for a network in the quick settings network list, to be read outloud by a screenreader or braile console.">
+        <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph> - <ph name="CONNECTION_STATUS">$2<ex>Connecting</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED" desc="The label used when a network connection is connected.">
         Connected
       </message>

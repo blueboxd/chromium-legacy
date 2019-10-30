@@ -770,7 +770,6 @@ bool WebAXObject::Click() const {
   if (IsDetached())
     return false;
 
-  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestClickAction();
 }
 

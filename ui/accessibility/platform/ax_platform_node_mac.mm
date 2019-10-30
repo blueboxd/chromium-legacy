@@ -1169,11 +1169,23 @@ void AXPlatformNodeMac::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     PostAnnouncementNotification(announcement_text);
     return;
   }
-  if (event_type == ax::mojom::Event::kSelection &&
-      ui::IsMenuItem(GetData().role)) {
-    // On Mac, map menu item selection to a focus event.
-    NotifyMacEvent(native_node_, ax::mojom::Event::kFocus);
-    return;
+  if (event_type == ax::mojom::Event::kSelection) {
+    ax::mojom::Role role = GetData().role;
+    if (ui::IsMenuItem(role)) {
+      // On Mac, map menu item selection to a focus event.
+      NotifyMacEvent(native_node_, ax::mojom::Event::kFocus);
+      return;
+    } else if (ui::IsListItem(role)) {
+      if (AXPlatformNodeBase* container = GetSelectionContainer()) {
+        const ui::AXNodeData& data = container->GetData();
+        if (data.role == ax::mojom::Role::kListBox &&
+            !data.HasState(ax::mojom::State::kMultiselectable) &&
+            GetDelegate()->GetFocus() == GetNativeViewAccessible()) {
+          NotifyMacEvent(native_node_, ax::mojom::Event::kFocus);
+          return;
+        }
+      }
+    }
   }
   // Otherwise, use mappings between ax::mojom::Event and NSAccessibility
   // notifications from the EventMap above.

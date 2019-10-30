@@ -93,6 +93,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
 
@@ -5433,6 +5434,61 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   window2.reset();
   EXPECT_FALSE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
   EXPECT_FALSE(InOverviewSession());
+}
+
+// Test dragging to snap an overview item on an external display.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly, Dragging) {
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  const gfx::Rect bounds_within_root2(800, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds_within_root2);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds_within_root2);
+  ToggleOverview();
+  OverviewGrid* grid_on_root2 =
+      overview_session()->GetGridWithRootWindow(root_windows[1]);
+  OverviewItem* item1 = grid_on_root2->GetOverviewItemContaining(window1.get());
+  OverviewItem* item2 = grid_on_root2->GetOverviewItemContaining(window2.get());
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(root_windows[1]);
+  SplitViewDragIndicators* indicators =
+      overview_session()->split_view_drag_indicators();
+
+  Shell::Get()->cursor_manager()->SetDisplay(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
+  overview_session()->InitiateDrag(item1, item1->target_bounds().CenterPoint(),
+                                   /*is_touch_dragging=*/false);
+  const gfx::PointF right_snap_point(1599.f, 300.f);
+  overview_session()->Drag(item1, right_snap_point);
+  EXPECT_EQ(IndicatorState::kPreviewAreaRight,
+            indicators->current_indicator_state());
+  EXPECT_EQ(SplitViewController::Get(root_windows[1])
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT),
+            grid_on_root2->bounds());
+  overview_session()->CompleteDrag(item1, right_snap_point);
+  EXPECT_EQ(SplitViewController::State::kRightSnapped,
+            split_view_controller->state());
+  EXPECT_EQ(window1.get(), split_view_controller->right_window());
+
+  overview_session()->InitiateDrag(item2, item2->target_bounds().CenterPoint(),
+                                   /*is_touch_dragging=*/false);
+  const gfx::PointF left_of_middle(1150.f, 300.f);
+  overview_session()->Drag(item2, left_of_middle);
+  EXPECT_EQ(IndicatorState::kDragArea, indicators->current_indicator_state());
+  overview_session()->CompleteDrag(item2, left_of_middle);
+  EXPECT_EQ(SplitViewController::State::kRightSnapped,
+            split_view_controller->state());
+  EXPECT_EQ(window1.get(), split_view_controller->right_window());
+
+  overview_session()->InitiateDrag(item2, item2->target_bounds().CenterPoint(),
+                                   /*is_touch_dragging=*/false);
+  const gfx::PointF left_snap_point(810.f, 300.f);
+  overview_session()->Drag(item2, left_snap_point);
+  EXPECT_EQ(IndicatorState::kPreviewAreaLeft,
+            indicators->current_indicator_state());
+  overview_session()->CompleteDrag(item2, left_snap_point);
+  EXPECT_EQ(SplitViewController::State::kNoSnap,
+            split_view_controller->state());
 }
 
 // Verify that when in overview mode, the selector items unsnappable indicator

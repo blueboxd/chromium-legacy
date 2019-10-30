@@ -18,6 +18,7 @@ import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.gesturenav.NavigationBubble.CloseTarget;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 /**
@@ -95,7 +96,7 @@ public class SideSlideLayout extends ViewGroup {
     private int mAnimationViewWidth;
 
     private boolean mIsForward;
-    private boolean mCloseIndicatorEnabled;
+    private @CloseTarget int mCloseIndicator;
 
     // True while swiped to a distance where, if released, the navigation would be triggered.
     private boolean mWillNavigate;
@@ -224,8 +225,8 @@ public class SideSlideLayout extends ViewGroup {
                 forward ? R.drawable.ic_arrow_forward_blue_24dp : R.drawable.ic_arrow_back_24dp);
     }
 
-    public void setEnableCloseIndicator(boolean enable) {
-        mCloseIndicatorEnabled = enable;
+    public void setCloseIndicator(@CloseTarget int target) {
+        mCloseIndicator = target;
     }
 
     @Override
@@ -303,9 +304,9 @@ public class SideSlideLayout extends ViewGroup {
         }
         mWillNavigate = navigating;
 
-        if (mCloseIndicatorEnabled) {
+        if (mCloseIndicator != CloseTarget.NONE) {
             if (mWillNavigate) {
-                mArrowView.showCaption(true);
+                mArrowView.showCaption(mCloseIndicator);
                 mArrowViewWidth = mArrowView.getMeasuredWidth();
             } else {
                 hideCloseIndicator();
@@ -343,7 +344,7 @@ public class SideSlideLayout extends ViewGroup {
     }
 
     private void hideCloseIndicator() {
-        mArrowView.showCaption(false);
+        mArrowView.showCaption(CloseTarget.NONE);
         // The width when indicator text view is hidden is slightly bigger than the height.
         // Set the width to circle's diameter for the widget to be of completely round shape.
         mArrowViewWidth = mCircleWidth;

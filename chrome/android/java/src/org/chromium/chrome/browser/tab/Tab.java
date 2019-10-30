@@ -508,13 +508,6 @@ public class Tab {
     }
 
     /**
-     * @return The application {@link Context} associated with this tab.
-     */
-    public Context getApplicationContext() {
-        return mThemedApplicationContext.getApplicationContext();
-    }
-
-    /**
      * @return {@link ChromeActivity} that currently contains this {@link Tab} in its
      *         {@link TabModel}.
      */
@@ -1543,8 +1536,9 @@ public class Tab {
                 ? new Rect(0, 0, mContentView.getWidth(), mContentView.getHeight())
                 : new Rect();
         if (hasWebContents) mWebContents.onHide();
+        Context appContext = ContextUtils.getApplicationContext();
         Rect bounds = original.isEmpty()
-                ? ExternalPrerenderHandler.estimateContentSize(getApplicationContext(), false)
+                ? ExternalPrerenderHandler.estimateContentSize(appContext, false)
                 : null;
         if (bounds != null) original.set(bounds);
 

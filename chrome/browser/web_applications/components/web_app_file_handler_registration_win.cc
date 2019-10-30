@@ -14,14 +14,13 @@ bool OsSupportsWebAppFileHandling() {
 
 void RegisterFileHandlersForWebApp(const AppId& app_id,
                                    const std::string& app_name,
-                                   const Profile& profile,
+                                   Profile* profile,
                                    const std::set<std::string>& file_extensions,
                                    const std::set<std::string>& mime_types) {
   // TODO(davidbienvenu): Setup shim app and windows registry for this |app_id|.
 }
 
-void UnregisterFileHandlersForWebApp(const AppId& app_id,
-                                     const Profile& profile) {
+void UnregisterFileHandlersForWebApp(const AppId& app_id, Profile* profile) {
   // TODO(davidbienvenu): Cleanup windows registry entries for this
   // |app_id|.
 }

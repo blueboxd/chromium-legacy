@@ -56,10 +56,11 @@ interface MediaMetricsProvider {
   // Creates a WatchTimeRecorder instance using |properties|. If any of those
   // properties changes, a new recorder should be requested.
   AcquireWatchTimeRecorder(PlaybackProperties properties,
-                           WatchTimeRecorder& recorder);
+                           pending_receiver<WatchTimeRecorder> recorder);
 
   // Creates a VideoDecodeStatsRecorder instance.
-  AcquireVideoDecodeStatsRecorder(VideoDecodeStatsRecorder& recorder);
+  AcquireVideoDecodeStatsRecorder(
+      pending_receiver<VideoDecodeStatsRecorder> recorder);
 
   // Returns a LearningTaskController for the given |taskName|.
   AcquireLearningTaskController(

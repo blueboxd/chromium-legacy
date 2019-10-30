@@ -10,17 +10,21 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/data_decoder/bundled_exchanges_parser_factory.h"
-#include "services/data_decoder/image_decoder_impl.h"
 #include "services/data_decoder/json_parser_impl.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/xml_parser.h"
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 #include "services/data_decoder/ble_scan_parser_impl.h"
-#endif  // OS_CHROMEOS
+#endif  // defined(OS_CHROMEOS)
+
+#if !defined(OS_IOS)
+#include "services/data_decoder/image_decoder_impl.h"
+#endif
 
 namespace data_decoder {
 
@@ -74,9 +78,13 @@ void DataDecoderService::OnBindInterface(
 
 void DataDecoderService::BindImageDecoder(
     mojo::PendingReceiver<mojom::ImageDecoder> receiver) {
+#if defined(OS_IOS)
+  LOG(FATAL) << "ImageDecoder not supported on iOS.";
+#else
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<ImageDecoderImpl>(keepalive_.CreateRef()),
       std::move(receiver));
+#endif
 }
 
 void DataDecoderService::BindJsonParser(

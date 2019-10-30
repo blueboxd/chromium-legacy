@@ -145,9 +145,8 @@ class BaseUIManager
 
  private:
   // When true, we immediately cancel navigations that have been blocked by Safe
-  // Browsing, otherwise we call show on the interstitial. Currently this is
-  // only enabled for main frame navigations.
-  virtual bool SafeBrowsingInterstitialsAreCommittedNavigations();
+  // Browsing, otherwise we call show on the interstitial.
+  bool SafeBrowsingInterstitialsAreCommittedNavigations();
 
   friend class base::RefCountedThreadSafe<BaseUIManager>;
 

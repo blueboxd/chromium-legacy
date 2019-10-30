@@ -55,7 +55,7 @@ void CookieControlsIconView::OnBlockedCookiesCountChanged(int blocked_cookies) {
   // UI updates.
   if (has_blocked_cookies_ != blocked_cookies > 0) {
     has_blocked_cookies_ = blocked_cookies > 0;
-    UpdateIconImage();
+    SetVisible(ShouldBeVisible());
   }
 }
 
@@ -69,7 +69,15 @@ bool CookieControlsIconView::ShouldBeVisible() const {
   if (!delegate()->GetWebContentsForPageActionIconView())
     return false;
 
-  return status_ != CookieControlsController::Status::kDisabled;
+  switch (status_) {
+    case CookieControlsController::Status::kDisabledForSite:
+      return true;
+    case CookieControlsController::Status::kEnabled:
+      return has_blocked_cookies_;
+    case CookieControlsController::Status::kDisabled:
+    case CookieControlsController::Status::kUninitialized:
+      return false;
+  }
 }
 
 bool CookieControlsIconView::HasAssociatedBubble() const {
@@ -97,7 +105,7 @@ views::BubbleDialogDelegateView* CookieControlsIconView::GetBubble() const {
 const gfx::VectorIcon& CookieControlsIconView::GetVectorIcon() const {
   if (status_ == CookieControlsController::Status::kDisabledForSite)
     return kEyeIcon;
-  return has_blocked_cookies_ ? kEyeCrossedDotIcon : kEyeCrossedIcon;
+  return kEyeCrossedIcon;
 }
 
 base::string16 CookieControlsIconView::GetTextForTooltipAndAccessibleName()

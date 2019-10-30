@@ -31,7 +31,6 @@ extern const char kAutofillLastVersionDeduped[];
 extern const char kAutofillLastVersionValidated[];
 extern const char kAutofillLastVersionDisusedAddressesDeleted[];
 extern const char kAutofillLastVersionDisusedCreditCardsDeleted[];
-extern const char kAutofillMigrateLocalCardsCancelledPrompt[];
 extern const char kAutofillOrphanRowsRemoved[];
 // Do not get/set the value of this pref directly. Use provided getter/setter.
 extern const char kAutofillProfileEnabled[];
@@ -88,11 +87,6 @@ bool IsCreditCardAutofillManaged(const PrefService* prefs);
 bool IsProfileAutofillEnabled(const PrefService* prefs);
 
 void SetProfileAutofillEnabled(PrefService* prefs, bool enabled);
-
-bool IsLocalCardMigrationPromptPreviouslyCancelled(const PrefService* prefs);
-
-void SetLocalCardMigrationPromptPreviouslyCancelled(PrefService* prefs,
-                                                    bool enabled);
 
 bool IsPaymentsIntegrationEnabled(const PrefService* prefs);
 

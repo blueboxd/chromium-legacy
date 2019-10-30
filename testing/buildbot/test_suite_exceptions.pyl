@@ -289,9 +289,15 @@
       },
     },
   },
+  'chrome_public_smoke_test': {
+    'remove_from': [
+      'android-code-coverage-native', # https://crbug.com/1018780
+    ],
+  },
   'chrome_public_test_apk': {
     'remove_from': [
       'android-asan',  # https://crbug.com/964562
+      'android-code-coverage-native', # https://crbug.com/1018780
     ],
     'modifications': {
       # chromium.android
@@ -336,6 +342,8 @@
       'ToTAndroidCFI',
       # chromium.memory
       'android-asan',  # https://crbug.com/964562
+      # chromium.fyi
+      'android-code-coverage-native', # https://crbug.com/1018780
     ],
   },
   'chrome_public_test_vr_apk-vega': {
@@ -1304,6 +1312,7 @@
     'remove_from': [
       'android-asan',
       'android-code-coverage',
+      'android-code-coverage-native',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
@@ -2115,6 +2124,8 @@
       # On chromium.swarm, this should possibly be being run (or removed
       # from Android N5X Swarm).
       'Android N5 Swarm',
+      # chromium.fyi
+      'android-code-coverage-native', # https://crbug.com/1018431
     ],
     'modifications': {
       'Oreo Phone Tester': {

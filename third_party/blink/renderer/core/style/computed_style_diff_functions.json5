@@ -34,7 +34,8 @@
         name: "ScrollAnchorDisablingPropertyChanged",
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "margin-top", "margin-left", "margin-right", "margin-bottom", 
                   "left", "right", "top", "bottom", "padding-top", 
-                  "padding-left", "padding-right", "padding-bottom", "content-size"],
+                  "padding-left", "padding-right", "padding-bottom",
+                  "intrinsic-width", "intrinsic-height"],
         methods_to_diff: [
           {
             method: "GetPosition()",
@@ -232,7 +233,7 @@
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height",
                 "max-height", "VerticalAlignLength", "box-sizing", "align-content",
                 "align-items", "align-self", "justify-content", "justify-items",
-                "justify-self", "contain", "content-size"],
+                "justify-self", "contain", "intrinsic-width", "intrinsic-height"],
         methods_to_diff: [
           {
             method: "VerticalAlign()",

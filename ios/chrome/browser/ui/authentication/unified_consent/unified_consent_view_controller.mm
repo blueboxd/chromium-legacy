@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
@@ -25,11 +26,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kAdvancedSigninSettingsLinkIdentifier =
-    @"AdvancedSigninSettingsLinkIdentifier";
-NSString* const kUnifiedConsentScrollViewIdentifier =
-    @"kUnifiedConsentScrollViewIdentifier";
 
 namespace {
 

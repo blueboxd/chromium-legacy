@@ -4,6 +4,7 @@
 
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "base/logging.h"
@@ -12,10 +13,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
-#include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,6 +36,11 @@
 #include "url/url_canon.h"
 
 namespace {
+
+// A feature to allow multiple prerenders. The feature itself is always enabled,
+// but the params it exposes are variable.
+const base::Feature kNavigationPredictorMultiplePrerenders{
+    "NavigationPredictorMultiplePrerenders", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsMainFrame(content::RenderFrameHost* rfh) {
   // Don't use rfh->GetRenderViewHost()->GetMainFrame() here because
@@ -228,7 +234,9 @@ NavigationPredictor::NavigationPredictor(
 NavigationPredictor::~NavigationPredictor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Observe(nullptr);
+
   if (prerender_handle_) {
+    prerender_handle_->SetObserver(nullptr);
     prerender_handle_->OnNavigateAway();
   }
 }
@@ -276,42 +284,90 @@ void NavigationPredictor::RecordTimingOnClick() {
 
 void NavigationPredictor::RecordActionAccuracyOnClick(
     const GURL& target_url) const {
-  static constexpr char histogram_name_dse[] =
-      "NavigationPredictor.OnDSE.AccuracyActionTaken";
-  static constexpr char histogram_name_non_dse[] =
-      "NavigationPredictor.OnNonDSE.AccuracyActionTaken";
-
-  if (!prefetch_url_) {
-    base::UmaHistogramEnumeration(source_is_default_search_engine_page_
-                                      ? histogram_name_dse
-                                      : histogram_name_non_dse,
-                                  ActionAccuracy::kNoActionTakenClickHappened);
+  // We don't pre-render default search engine at all, so measuring metrics here
+  // doesn't make sense.
+  if (source_is_default_search_engine_page_)
     return;
+
+  bool is_cross_origin =
+      url::Origin::Create(document_url_) != url::Origin::Create(target_url);
+
+  auto prefetch_result = is_cross_origin ? PrerenderResult::kCrossOriginNotSeen
+                                         : PrerenderResult::kSameOriginNotSeen;
+
+  if ((prefetch_url_ && prefetch_url_.value() == target_url) ||
+      base::Contains(partial_prerfetches_, target_url)) {
+    prefetch_result = PrerenderResult::kSameOriginPrefetchPartiallyComplete;
+  } else if (base::Contains(urls_prefetched_, target_url)) {
+    prefetch_result = PrerenderResult::kSameOriginPrefetchFinished;
+  } else if (std::find(urls_to_prefetch_.begin(), urls_to_prefetch_.end(),
+                       target_url) != urls_to_prefetch_.end()) {
+    prefetch_result = PrerenderResult::kSameOriginPrefetchInQueue;
+  } else if (!is_cross_origin &&
+             base::Contains(urls_above_threshold_, target_url)) {
+    prefetch_result = PrerenderResult::kSameOriginPrefetchSkipped;
+  } else if (base::Contains(urls_above_threshold_, target_url)) {
+    prefetch_result = PrerenderResult::kCrossOriginAboveThreshold;
+  } else if (!is_cross_origin &&
+             base::Contains(navigation_scores_map_, target_url.spec())) {
+    prefetch_result = PrerenderResult::kSameOriginBelowThreshold;
+  } else if (base::Contains(navigation_scores_map_, target_url.spec())) {
+    prefetch_result = PrerenderResult::kCrossOriginBelowThreshold;
   }
 
-  DCHECK(prefetch_url_);
-  if (target_url == prefetch_url_.value()) {
-    base::UmaHistogramEnumeration(
-        source_is_default_search_engine_page_ ? histogram_name_dse
-                                              : histogram_name_non_dse,
-        ActionAccuracy::kPrefetchActionClickToSameURL);
-    return;
-  }
+  UMA_HISTOGRAM_ENUMERATION("NavigationPredictor.LinkClickedPrerenderResult",
+                            prefetch_result);
+}
 
-  if (url::Origin::Create(target_url) ==
-      url::Origin::Create(prefetch_url_.value())) {
-    base::UmaHistogramEnumeration(
-        source_is_default_search_engine_page_ ? histogram_name_dse
-                                              : histogram_name_non_dse,
-        ActionAccuracy::kPrefetchActionClickToSameOrigin);
-    return;
-  }
+void NavigationPredictor::RecordActionAccuracyOnTearDown() {
+  auto document_origin = url::Origin::Create(document_url_);
+  int cross_origin_urls_above_threshold =
+      std::count_if(urls_above_threshold_.begin(), urls_above_threshold_.end(),
+                    [document_origin](const GURL& url) {
+                      return document_origin != url::Origin::Create(url);
+                    });
 
-  base::UmaHistogramEnumeration(
-      source_is_default_search_engine_page_ ? histogram_name_dse
-                                            : histogram_name_non_dse,
-      ActionAccuracy::kPrefetchActionClickToDifferentOrigin);
-  return;
+  UMA_HISTOGRAM_COUNTS_100("NavigationPredictor.CountOfURLsAboveThreshold",
+                           urls_above_threshold_.size());
+
+  UMA_HISTOGRAM_COUNTS_100(
+      "NavigationPredictor.CountOfURLsAboveThreshold.CrossOrigin",
+      cross_origin_urls_above_threshold);
+
+  UMA_HISTOGRAM_COUNTS_100(
+      "NavigationPredictor.CountOfURLsAboveThreshold.SameOrigin",
+      urls_above_threshold_.size() - cross_origin_urls_above_threshold);
+
+  int cross_origin_urls_above_threshold_in_top_n = std::count_if(
+      urls_above_threshold_.begin(),
+      urls_above_threshold_.begin() +
+          std::min(urls_above_threshold_.size(),
+                   static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+                       kNavigationPredictorMultiplePrerenders,
+                       "prerender_limit", 1))),
+      [document_origin](const GURL& url) {
+        return document_origin != url::Origin::Create(url);
+      });
+
+  int same_origin_urls_above_threshold_in_top_n =
+      std::min(
+          static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+              kNavigationPredictorMultiplePrerenders, "prerender_limit", 1)),
+          urls_above_threshold_.size()) -
+      cross_origin_urls_above_threshold_in_top_n;
+
+  UMA_HISTOGRAM_COUNTS_100(
+      "NavigationPredictor.CountOfURLsInPredictedSet.CrossOrigin",
+      cross_origin_urls_above_threshold_in_top_n);
+  UMA_HISTOGRAM_COUNTS_100(
+      "NavigationPredictor.CountOfURLsInPredictedSet.SameOrigin",
+      same_origin_urls_above_threshold_in_top_n);
+  UMA_HISTOGRAM_COUNTS_100("NavigationPredictor.CountOfURLsInPredictedSet",
+                           cross_origin_urls_above_threshold_in_top_n +
+                               same_origin_urls_above_threshold_in_top_n);
+
+  UMA_HISTOGRAM_COUNTS_100("NavigationPredictor.CountOfStartedPrerenders",
+                           urls_prefetched_.size());
 }
 
 void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
@@ -328,17 +384,18 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
     current_visibility_ = visibility;
 
     if (prerender_handle_) {
+      prerender_handle_->SetObserver(nullptr);
       prerender_handle_->OnNavigateAway();
       prerender_handle_.reset();
+      partial_prerfetches_.emplace(prefetch_url_.value());
+      prefetch_url_ = base::nullopt;
     }
     return;
   }
 
   current_visibility_ = visibility;
 
-  if (prefetch_url_.has_value()) {
-    MaybePrefetch();
-  }
+  MaybePrefetch();
 }
 
 void NavigationPredictor::DidStartNavigation(
@@ -347,6 +404,11 @@ void NavigationPredictor::DidStartNavigation(
       navigation_handle->IsSameDocument()) {
     return;
   }
+
+  if (next_navigation_started_)
+    return;
+
+  RecordActionAccuracyOnTearDown();
 
   // Don't start new prerenders.
   next_navigation_started_ = true;
@@ -363,8 +425,11 @@ void NavigationPredictor::DidStartNavigation(
     return;
 
   // Stop prerender to reduce network contention during main frame fetch.
+  prerender_handle_->SetObserver(nullptr);
   prerender_handle_->OnNavigateAway();
   prerender_handle_.reset();
+  partial_prerfetches_.emplace(prefetch_url_.value());
+  prefetch_url_ = base::nullopt;
 }
 
 void NavigationPredictor::RecordAction(Action log_action) {
@@ -495,6 +560,8 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
 
   RecordTimingOnClick();
   clicked_count_++;
+
+  document_url_ = metrics->source_url;
 
   RecordActionAccuracyOnClick(metrics->target_url);
   MaybeSendClickMetricsToUkm(metrics->target_url.spec());
@@ -899,35 +966,26 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
         sorted_navigation_scores) {
   DCHECK(!browser_context_->IsOffTheRecord());
 
-  std::string action_histogram_name =
-      source_is_default_search_engine_page_
-          ? "NavigationPredictor.OnDSE.ActionTaken"
-          : "NavigationPredictor.OnNonDSE.ActionTaken";
-
-  DCHECK(!prefetch_url_.has_value());
-
   NotifyPredictionUpdated(sorted_navigation_scores);
 
   // Try prefetch first.
-  prefetch_url_ = GetUrlToPrefetch(document_url, sorted_navigation_scores);
-  if (prefetch_url_.has_value()) {
-    DCHECK_EQ(document_url.host(), prefetch_url_->host());
-    RecordAction(Action::kPrefetch);
-    MaybePrefetch();
-    return;
-  }
-
-  RecordAction(Action::kNone);
+  urls_to_prefetch_ = GetUrlsToPrefetch(document_url, sorted_navigation_scores);
+  RecordAction(urls_to_prefetch_.empty() ? Action::kNone : Action::kPrefetch);
+  MaybePrefetch();
 }
 
 void NavigationPredictor::MaybePrefetch() {
   // If prefetches aren't allowed here, this URL has already
   // been prefetched, or the current tab is hidden,
   // we shouldn't prefetch again.
-  if (!prefetch_enabled_ || prefetch_url_prefetched_ ||
+  if (!prefetch_enabled_ || urls_to_prefetch_.empty() ||
       current_visibility_ == content::Visibility::HIDDEN) {
     return;
   }
+
+  // Already an on-going prefetch.
+  if (prefetch_url_.has_value())
+    return;
 
   // Don't prerender if the next navigation started.
   if (next_navigation_started_)
@@ -938,65 +996,103 @@ void NavigationPredictor::MaybePrefetch() {
           browser_context_);
 
   if (prerender_manager) {
-    Prefetch(prerender_manager);
-    prefetch_url_prefetched_ = true;
+    GURL url_to_prefetch = urls_to_prefetch_.front();
+    urls_to_prefetch_.pop_front();
+    Prefetch(prerender_manager, url_to_prefetch);
   }
 }
 
 void NavigationPredictor::Prefetch(
-    prerender::PrerenderManager* prerender_manager) {
-  DCHECK(!prefetch_url_prefetched_);
+    prerender::PrerenderManager* prerender_manager,
+    const GURL& url_to_prefetch) {
   DCHECK(!prerender_handle_);
+  DCHECK(!prefetch_url_);
 
   content::SessionStorageNamespace* session_storage_namespace =
       web_contents()->GetController().GetDefaultSessionStorageNamespace();
   gfx::Size size = web_contents()->GetContainerBounds().size();
 
   prerender_handle_ = prerender_manager->AddPrerenderFromNavigationPredictor(
-      prefetch_url_.value(), session_storage_namespace, size);
+      url_to_prefetch, session_storage_namespace, size);
+
+  // Prerender was prevented for some reason, try next URL.
+  if (!prerender_handle_) {
+    MaybePrefetch();
+    return;
+  }
+
+  prefetch_url_ = url_to_prefetch;
+  urls_prefetched_.emplace(url_to_prefetch);
+
+  prerender_handle_->SetObserver(this);
 }
 
-base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
+void NavigationPredictor::OnPrerenderStop(prerender::PrerenderHandle* handle) {
+  DCHECK_EQ(prerender_handle_.get(), handle);
+  prerender_handle_.reset();
+  prefetch_url_ = base::nullopt;
+
+  MaybePrefetch();
+}
+
+std::deque<GURL> NavigationPredictor::GetUrlsToPrefetch(
     const GURL& document_url,
     const std::vector<std::unique_ptr<NavigationScore>>&
-        sorted_navigation_scores) const {
+        sorted_navigation_scores) {
+  urls_above_threshold_.clear();
+  std::deque<GURL> urls_to_prefetch;
   // Currently, prefetch is disabled on low-end devices since prefetch may
   // increase memory usage.
   if (is_low_end_device_)
-    return base::nullopt;
+    return urls_to_prefetch;
 
   // On search engine results page, next navigation is likely to be a different
   // origin. Currently, the prefetch is only allowed for same orgins. Hence,
   // prefetch is currently disabled on search engine results page.
   if (source_is_default_search_engine_page_)
-    return base::nullopt;
+    return urls_to_prefetch;
 
   if (sorted_navigation_scores.empty())
-    return base::nullopt;
+    return urls_to_prefetch;
 
-  double highest_navigation_score = sorted_navigation_scores[0]->score;
-  GURL url_to_prefetch = sorted_navigation_scores[0]->url;
+  // Place in order the top n scoring links. If the top n scoring links contain
+  // a cross origin link, only place n-1 links. All links must score above
+  // |prefetch_url_score_threshold_|.
+  for (size_t i = 0; i < sorted_navigation_scores.size(); ++i) {
+    double navigation_score = sorted_navigation_scores[i]->score;
+    GURL url_to_prefetch = sorted_navigation_scores[i]->url;
+
+    // If the prediction score of the highest scoring URL is less than the
+    // threshold, then return.
+    if (navigation_score < prefetch_url_score_threshold_)
+      break;
+
+    // Log the links above the threshold.
+    urls_above_threshold_.push_back(url_to_prefetch);
+
+    if (i >=
+        static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+            kNavigationPredictorMultiplePrerenders, "prerender_limit", 1))) {
+      continue;
+    }
+
+    // Only the same origin URLs are eligible for prefetching. If the URL with
+    // the highest score is from a different origin, then we skip prefetching
+    // since same origin URLs are not likely to be clicked.
+    if (url::Origin::Create(url_to_prefetch) !=
+        url::Origin::Create(document_url)) {
+      continue;
+    }
+
+    urls_to_prefetch.emplace_back(url_to_prefetch);
+  }
 
   UMA_HISTOGRAM_COUNTS_100(
       "AnchorElementMetrics.Visible.HighestNavigationScore",
-      static_cast<int>(highest_navigation_score));
+      static_cast<int>(sorted_navigation_scores[0]->score));
 
-  // Only the same origin URLs are eligible for prefetching. If the URL with
-  // the highest score is from a different origin, then we skip prefetching
-  // since same origin URLs are not likely to be clicked.
-  if (url::Origin::Create(url_to_prefetch) !=
-      url::Origin::Create(document_url)) {
-    return base::nullopt;
-  }
-
-  // If the prediction score of the highest scoring URL is less than the
-  // threshold, then return.
-  if (highest_navigation_score < prefetch_url_score_threshold_)
-    return base::nullopt;
-
-  return url_to_prefetch;
+  return urls_to_prefetch;
 }
-
 
 void NavigationPredictor::RecordMetricsOnLoad(
     const blink::mojom::AnchorElementMetrics& metric) const {

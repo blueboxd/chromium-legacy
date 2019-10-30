@@ -14,7 +14,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
-#include "ui/accessibility/ax_enums.mojom-shared.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_text_styles.h"
 #include "ui/accessibility/ax_relative_bounds.h"
@@ -204,9 +204,9 @@ struct AX_EXPORT AXNodeData {
   // As much as possible this should behave as a simple, serializable,
   // copyable struct.
   int32_t id = -1;
-  ax::mojom::Role role = ax::mojom::Role::kUnknown;
-  uint32_t state = static_cast<uint32_t>(ax::mojom::State::kNone);
-  uint32_t actions = static_cast<uint32_t>(ax::mojom::Action::kNone);
+  ax::mojom::Role role;
+  uint32_t state;
+  uint32_t actions;
   std::vector<std::pair<ax::mojom::StringAttribute, std::string>>
       string_attributes;
   std::vector<std::pair<ax::mojom::IntAttribute, int32_t>> int_attributes;

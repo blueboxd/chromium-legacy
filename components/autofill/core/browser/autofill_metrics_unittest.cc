@@ -435,6 +435,12 @@ void AutofillMetricsTest::OnDidGetRealPan(
           ->GetOrCreateCVCAuthenticator()
           ->full_card_request_.get();
   DCHECK(full_card_request);
+
+  // Fake user response.
+  payments::FullCardRequest::UserProvidedUnmaskDetails details;
+  details.cvc = base::ASCIIToUTF16("123");
+  full_card_request->OnUnmaskPromptAccepted(details);
+
   payments::PaymentsClient::UnmaskResponseDetails response;
   full_card_request->OnDidGetRealPan(result, response.with_real_pan(real_pan));
 }

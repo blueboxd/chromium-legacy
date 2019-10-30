@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/p2p.mojom.h"
 #include "services/network/public/mojom/p2p_trusted.mojom.h"
 
@@ -56,7 +57,7 @@ class P2PSocketDispatcherHost
   RenderProcessHost::WebRtcRtpPacketCallback packet_callback_;
 
   mojo::Receiver<network::mojom::P2PTrustedSocketManagerClient> receiver_{this};
-  network::mojom::P2PTrustedSocketManagerPtr trusted_socket_manager_;
+  mojo::Remote<network::mojom::P2PTrustedSocketManager> trusted_socket_manager_;
 
   network::mojom::P2PNetworkNotificationClientPtr network_notification_client_;
 

@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 
 @RunWith(BaseJUnit4ClassRunner.class)
 public class FragmentRestoreTest {
@@ -20,14 +19,13 @@ public class FragmentRestoreTest {
 
     @Test
     @SmallTest
-    @DisabledTest
     public void successfullyLoadsUrlAfterRotation() {
         mActivityTestRule.launchShellWithUrl("about:blank");
 
         String url = "data:text,foo";
         mActivityTestRule.navigateAndWait(url);
 
-        mActivityTestRule.rotateActivity();
+        mActivityTestRule.recreateActivity();
 
         url = "data:text,bar";
         mActivityTestRule.navigateAndWait(url);

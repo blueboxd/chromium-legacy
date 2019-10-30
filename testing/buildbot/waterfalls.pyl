@@ -1615,6 +1615,17 @@
         },
         'os_type': 'android',
       },
+      'android-code-coverage-native': {
+        'mixins': [
+          'code-coverage',
+          'pie_fleet',
+          'walleye',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+        },
+        'os_type': 'android',
+      },
       'android-mojo-webview-rel': {
         'swarming': {
           'dimension_sets': [

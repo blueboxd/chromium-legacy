@@ -24,7 +24,6 @@ class ImageSkia;
 }
 
 class GURL;
-class Profile;
 
 namespace extensions {
 
@@ -61,20 +60,6 @@ void SetAllowFileAccess(const std::string& extension_id,
                         content::BrowserContext* context,
                         bool allow);
 
-// Returns true if this extension has been installed by the custodian of
-// a supervised user. It is relevant for supervised users and used to block
-// them from uninstalling the extension for example.
-bool WasInstalledByCustodian(const std::string& extension_id,
-                             content::BrowserContext* context);
-
-// Sets whether |extension_id| is installed by a custodian.
-// This is relevant for supervised users and is used to limit their privileges
-// for extensions installed by their custodians (e.g. supervised users cannot
-// uninstall such extensions).
-void SetWasInstalledByCustodian(const std::string& extension_id,
-                                content::BrowserContext* context,
-                                bool installed_by_custodian);
-
 // Returns true if |extension_id| can be launched (possibly only after being
 // enabled).
 bool IsAppLaunchable(const std::string& extension_id,
@@ -101,9 +86,6 @@ std::unique_ptr<base::DictionaryValue> GetExtensionInfo(
 // have one).
 const gfx::ImageSkia& GetDefaultExtensionIcon();
 const gfx::ImageSkia& GetDefaultAppIcon();
-
-// Returns true for custodian-installed extensions in a supervised profile.
-bool IsExtensionSupervised(const Extension* extension, Profile* profile);
 
 // Finds the first PWA with |url| in its scope, returns nullptr if there are
 // none.

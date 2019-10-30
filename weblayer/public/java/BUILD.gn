@@ -31,6 +31,7 @@ android_library("java") {
     "org/chromium/weblayer/FullscreenDelegate.java",
     "org/chromium/weblayer/ListenableFuture.java",
     "org/chromium/weblayer/ListenableResult.java",
+    "org/chromium/weblayer/WebLayerFileProvider.java",
     "org/chromium/weblayer/NavigationController.java",
     "org/chromium/weblayer/Navigation.java",
     "org/chromium/weblayer/NavigationObserver.java",
@@ -46,6 +47,7 @@ android_library("java") {
     ":client_resources",
     ":weblayer_client_manifest",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_deps:com_android_support_support_fragment_java",
     "//weblayer/browser/java:client_java",
   ]
@@ -70,6 +72,13 @@ dist_aar("client_aar") {
     "org/chromium/weblayer_private/*",
   ]
   resource_included_patterns = [ "*/weblayer/public/java/*" ]
+
+  # R files are excluded because they are not used in the client lib and depend
+  # on other generated chromium R classes.
+  jar_excluded_patterns = [
+    "org/chromium/weblayer/client/R\$*.class",
+    "org/chromium/weblayer/client/R.class",
+  ]
 
   # dist_aar does not take the manifest from libraries in deps, so we have to
   # specify again here.

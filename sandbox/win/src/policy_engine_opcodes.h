@@ -195,6 +195,9 @@ class PolicyOpcode {
   // Sets the stored options such as kPolNegateEval.
   void SetOptions(uint32_t options) { options_ = options; }
 
+  // Returns the parameter of the function the opcode concerns.
+  uint16_t GetParameter() const { return parameter_; }
+
  private:
   static const size_t kArgumentCount = 4;  // The number of supported argument.
 

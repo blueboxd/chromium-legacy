@@ -34,6 +34,11 @@ const base::Feature kDismissNtpPromos{"DismissNtpPromos",
 const base::Feature kNtpCustomizationMenuV2{"NtpCustomizationMenuV2",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the real search box ("realbox") on the New Tab page will show a
+// Google (g) icon instead of the typical magnifying glass (aka loupe).
+const base::Feature kNtpRealboxUseGoogleGIcon{
+    "NtpRealboxUseGoogleGIcon", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the search box in the middle of the NTP will accept input
 // directly (i.e. not be a "fake" box) and search results will show directly
 // below the non-fake input ("realbox").

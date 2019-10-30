@@ -57,8 +57,14 @@ base::Optional<XRNativeOriginInformation> XRNativeOriginInformation::Create(
   }
 }
 
-XRNativeOriginInformation::XRNativeOriginInformation(Type type, uint32_t id)
-    : type_(type), id_(id) {}
+XRNativeOriginInformation::XRNativeOriginInformation(Type type,
+                                                     uint32_t input_source_id)
+    : type_(type), input_source_id_(input_source_id) {}
+
+XRNativeOriginInformation::XRNativeOriginInformation(
+    Type type,
+    uint64_t anchor_or_plane_id)
+    : type_(type), anchor_or_plane_id_(anchor_or_plane_id) {}
 
 XRNativeOriginInformation::XRNativeOriginInformation(
     Type type,
@@ -69,14 +75,16 @@ device::mojom::blink::XRNativeOriginInformationPtr
 XRNativeOriginInformation::ToMojo() const {
   switch (type_) {
     case XRNativeOriginInformation::Type::Anchor:
-      return device::mojom::blink::XRNativeOriginInformation::NewAnchorId(id_);
+      return device::mojom::blink::XRNativeOriginInformation::NewAnchorId(
+          anchor_or_plane_id_);
 
     case XRNativeOriginInformation::Type::InputSource:
       return device::mojom::blink::XRNativeOriginInformation::NewInputSourceId(
-          id_);
+          input_source_id_);
 
     case XRNativeOriginInformation::Type::Plane:
-      return device::mojom::blink::XRNativeOriginInformation::NewPlaneId(id_);
+      return device::mojom::blink::XRNativeOriginInformation::NewPlaneId(
+          anchor_or_plane_id_);
 
     case XRNativeOriginInformation::Type::ReferenceSpace:
       return device::mojom::blink::XRNativeOriginInformation::

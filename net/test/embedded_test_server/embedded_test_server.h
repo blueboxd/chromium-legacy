@@ -100,6 +100,12 @@ class EmbeddedTestServer {
     CERT_MISMATCHED_NAME,
     CERT_EXPIRED,
 
+    // Cross-signed certificate to test PKIX path building. Contains an
+    // intermediate cross-signed by an unknown root, while the client (via
+    // TestRootStore) is expected to have a self-signed version of the
+    // intermediate.
+    CERT_CHAIN_WRONG_ROOT,
+
     // Causes the testserver to use a hostname that is a domain
     // instead of an IP.
     CERT_COMMON_NAME_IS_DOMAIN,
@@ -113,6 +119,10 @@ class EmbeddedTestServer {
 
     // A certificate that is signed by an intermediate certificate.
     CERT_OK_BY_INTERMEDIATE,
+
+    // A certificate with invalid notBefore and notAfter times. Windows'
+    // certificate library will not parse this certificate.
+    CERT_BAD_VALIDITY,
   };
 
   typedef base::RepeatingCallback<std::unique_ptr<HttpResponse>(

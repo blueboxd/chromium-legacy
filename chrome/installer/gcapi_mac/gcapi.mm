@@ -291,10 +291,10 @@ NSString* PathToFramework(NSString* app_path, NSDictionary* info_plist) {
   NSString* version = [info_plist objectForKey:@"CFBundleShortVersionString"];
   if (!version)
     return nil;
-  return [[[app_path
-      stringByAppendingPathComponent:@"Contents/Versions"]
-      stringByAppendingPathComponent:version]
-      stringByAppendingPathComponent:@"Google Chrome Framework.framework"];
+  return [NSString pathWithComponents:@[
+    app_path, @"Contents", @"Frameworks", @"Google Chrome Framework.framework",
+    @"Versions", version
+  ]];
 }
 
 NSString* PathToInstallScript(NSString* app_path, NSDictionary* info_plist) {

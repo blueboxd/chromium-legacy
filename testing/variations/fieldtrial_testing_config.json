@@ -864,24 +864,6 @@
             ]
         }
     ],
-    "AutofillLocalCardMigrationUsesStrikeSystemV2": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillLocalCardMigrationUsesStrikeSystemV2"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillMetadataUploads": [
         {
             "platforms": [

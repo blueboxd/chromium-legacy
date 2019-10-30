@@ -15,10 +15,19 @@ index f89e7e831b79..ebfb4ba88b35 100644
  # =============================================================================
  # SOURCES FILTERS
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 1822d8350117..dca8c088b3b6 100644
+index 0f91977e1352..acd5ab11f111 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -2290,6 +2290,9 @@ config("symbols") {
+@@ -1508,7 +1508,7 @@ config("default_warnings") {
+         cflags += [ "-Wno-nonportable-include-path" ]
+       }
+ 
+-      if (current_toolchain == host_toolchain || !use_xcode_clang) {
++      if ((current_toolchain == host_toolchain || !use_xcode_clang) && !is_wasm) {
+         # Flags NaCl (Clang 3.7) and Xcode 9.2 (Clang clang-900.0.39.2) do not
+         # recognize.
+         cflags += [
+@@ -2296,6 +2296,9 @@ config("symbols") {
          cflags += [ "-fno-standalone-debug" ]
        }
      }

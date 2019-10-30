@@ -336,12 +336,7 @@ bool ClipboardOzone::IsFormatAvailable(const ClipboardFormatType& format,
   DCHECK(CalledOnValidThread());
 
   auto available_types = async_clipboard_ozone_->RequestMimeTypes(buffer);
-  for (auto mime_type : available_types) {
-    if (format.ToString() == mime_type) {
-      return true;
-    }
-  }
-  return false;
+  return base::Contains(available_types, format.ToString());
 }
 
 void ClipboardOzone::Clear(ClipboardBuffer buffer) {

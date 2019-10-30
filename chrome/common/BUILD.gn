@@ -488,6 +488,8 @@ static_library("common") {
       "media/cdm_manifest.cc",
       "media/cdm_manifest.h",
     ]
+    deps += [ "//media/cdm:cdm_paths" ]  # Needed by chrome_content_client.cc
+
     if (enable_widevine) {
       if (is_desktop_linux) {
         sources += [

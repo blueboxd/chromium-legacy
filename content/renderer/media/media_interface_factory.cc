@@ -157,11 +157,13 @@ void MediaInterfaceFactory::CreateDecryptor(
   GetMediaInterfaceFactory()->CreateDecryptor(cdm_id, std::move(receiver));
 }
 
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 void MediaInterfaceFactory::CreateCdmProxy(
     const base::Token& cdm_guid,
     mojo::PendingReceiver<media::mojom::CdmProxy> receiver) {
   NOTREACHED() << "CdmProxy should only be connected from a library CDM";
 }
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 media::mojom::InterfaceFactory*
 MediaInterfaceFactory::GetMediaInterfaceFactory() {

@@ -118,6 +118,10 @@ void ProcessNodeImpl::RemoveWorker(WorkerNodeImpl* worker_node) {
   worker_nodes_.erase(worker_node);
 }
 
+void ProcessNodeImpl::set_priority(base::TaskPriority priority) {
+  priority_.SetAndMaybeNotify(this, priority);
+}
+
 void ProcessNodeImpl::SetProcessImpl(base::Process process,
                                      base::ProcessId new_pid,
                                      base::Time launch_time) {
@@ -215,6 +219,11 @@ const RenderProcessHostProxy& ProcessNodeImpl::GetRenderProcessHostProxy()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return render_process_host_proxy();
+}
+
+base::TaskPriority ProcessNodeImpl::GetPriority() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return priority();
 }
 
 void ProcessNodeImpl::OnAllFramesInProcessFrozen() {

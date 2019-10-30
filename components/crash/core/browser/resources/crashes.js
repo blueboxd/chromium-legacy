@@ -43,12 +43,14 @@ function updateCrashList(
 
   for (var i = 0; i < crashes.length; i++) {
     var crash = crashes[i];
-    if (crash.local_id == '')
+    if (crash.local_id == '') {
       crash.local_id = productName;
+    }
 
     var crashBlock = document.createElement('div');
-    if (crash.state != 'uploaded')
+    if (crash.state != 'uploaded') {
       crashBlock.className = 'notUploaded';
+    }
 
     var title = document.createElement('h3');
     var uploaded = crash.state == 'uploaded';
@@ -64,7 +66,7 @@ function updateCrashList(
 
     if (uploaded) {
       var date = document.createElement('p');
-      date.textContent = ""
+      date.textContent = '';
       if (crash.capture_time) {
         date.textContent += loadTimeData.getStringF(
             'crashCaptureAndUploadTimeFormat', crash.capture_time,
@@ -115,14 +117,15 @@ function updateCrashList(
       linkBlock.appendChild(link);
       crashBlock.appendChild(linkBlock);
     } else {
-      if (crash.state == 'pending_user_requested')
+      if (crash.state == 'pending_user_requested') {
         var textContentKey = 'crashUserRequested';
-      else if (crash.state == 'pending')
+      } else if (crash.state == 'pending') {
         var textContentKey = 'crashPending';
-      else if (crash.state == 'not_uploaded')
+      } else if (crash.state == 'not_uploaded') {
         var textContentKey = 'crashNotUploaded';
-      else
+      } else {
         continue;
+      }
 
       var crashText = document.createElement('p');
       crashText.textContent = loadTimeData.getStringF(textContentKey,

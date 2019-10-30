@@ -28,6 +28,12 @@ class ASH_EXPORT UnifiedMessageCenterBubble : public TrayBubbleBase,
   explicit UnifiedMessageCenterBubble(UnifiedSystemTray* tray);
   ~UnifiedMessageCenterBubble() override;
 
+  // We need the code to show the bubble explicitly separated from the
+  // contructor. This is to prevent trigerring the TrayEventFilter from within
+  // the constructor. Doing so can cause a crash when the TrayEventFilter tries
+  // to reference the message center bubble before it is fully instantiated.
+  void ShowBubble();
+
   // Calculate the height usable for the bubble.
   int CalculateAvailableHeight();
 

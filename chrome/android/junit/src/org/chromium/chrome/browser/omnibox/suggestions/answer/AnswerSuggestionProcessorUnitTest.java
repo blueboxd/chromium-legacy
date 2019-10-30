@@ -89,20 +89,12 @@ public class AnswerSuggestionProcessorUnitTest {
         // Current user input, used by calculation suggestion.
         private final String mUserQuery;
 
-        private boolean mIsActive;
-
         private SuggestionTestHelper(OmniboxSuggestion suggestion, SuggestionAnswer answer,
                 PropertyModel model, String userQuery) {
             mSuggestion = suggestion;
             mAnswer = answer;
             mModel = model;
-            mIsActive = true;
             mUserQuery = userQuery;
-        }
-
-        /** Specify whether suggestion should be reported by SuggestionHost as currently shown. */
-        void setActive(boolean isActive) {
-            mIsActive = isActive;
         }
 
         /** Check the content of first suggestion line. */
@@ -143,7 +135,7 @@ public class AnswerSuggestionProcessorUnitTest {
             final SuggestionDrawableState state = mModel.get(BaseSuggestionViewProperties.ICON);
             return state == null ? null : state.drawable;
         }
-    };
+    }
 
     /** Create Calculation Suggestion. */
     SuggestionTestHelper createCalculationSuggestion(String displayText, String userQuery) {
@@ -197,7 +189,6 @@ public class AnswerSuggestionProcessorUnitTest {
         // Note: Calculation needs access to raw, unmodified content of the Omnibox to present
         // the formula the user typed in.
         when(mUrlStateProvider.getTextWithoutAutocomplete()).thenReturn(helper.mUserQuery);
-        when(mSuggestionHost.isActiveModel(helper.mModel)).thenReturn(helper.mIsActive);
 
         mProcessor.populateModel(helper.mSuggestion, helper.mModel, 0);
 
@@ -420,51 +411,6 @@ public class AnswerSuggestionProcessorUnitTest {
                 createAnswerSuggestion(AnswerType.WEATHER, "", 1, "", 1, url);
         processSuggestion(suggHelper);
         Assert.assertNotNull(suggHelper.getIcon());
-    }
-
-    @Test
-    public void answerImage_oldModelsAreNotUpdated() {
-        final ArgumentCaptor<Callback<Bitmap>> callback1 = ArgumentCaptor.forClass(Callback.class);
-        final ArgumentCaptor<Callback<Bitmap>> callback2 = ArgumentCaptor.forClass(Callback.class);
-
-        final String url1 = "http://site1.com";
-        final String url2 = "http://site2.com";
-
-        final SuggestionTestHelper sugg1 =
-                createAnswerSuggestion(AnswerType.WEATHER, "", 1, "", 1, url1);
-        final SuggestionTestHelper sugg2 =
-                createAnswerSuggestion(AnswerType.DICTIONARY, "", 1, "", 1, url1);
-        final SuggestionTestHelper sugg3 =
-                createAnswerSuggestion(AnswerType.SPORTS, "", 1, "", 1, url2);
-        final SuggestionTestHelper sugg4 =
-                createAnswerSuggestion(AnswerType.CURRENCY, "", 1, "", 1, url2);
-
-        sugg2.setActive(false);
-        sugg4.setActive(false);
-
-        processSuggestion(sugg1);
-        processSuggestion(sugg2);
-        processSuggestion(sugg3);
-        processSuggestion(sugg4);
-
-        verify(mImageFetcher, times(1)).fetchImage(eq(url1), anyString(), callback1.capture());
-        verify(mImageFetcher, times(1)).fetchImage(eq(url2), anyString(), callback2.capture());
-
-        final Drawable icon1 = sugg1.getIcon();
-        final Drawable icon2 = sugg2.getIcon();
-        final Drawable icon3 = sugg3.getIcon();
-        final Drawable icon4 = sugg4.getIcon();
-        callback1.getValue().onResult(mFakeBitmap);
-        callback2.getValue().onResult(mFakeBitmap);
-        final Drawable newIcon1 = sugg1.getIcon();
-        final Drawable newIcon2 = sugg2.getIcon();
-        final Drawable newIcon3 = sugg3.getIcon();
-        final Drawable newIcon4 = sugg4.getIcon();
-
-        Assert.assertNotEquals(icon1, newIcon1);
-        Assert.assertEquals(icon2, newIcon2);
-        Assert.assertNotEquals(icon3, newIcon3);
-        Assert.assertEquals(icon4, newIcon4);
     }
 
     @Test

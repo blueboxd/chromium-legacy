@@ -6,22 +6,13 @@
 
 #include <utility>
 
-#include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/channel_info.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
-#include "components/version_info/channel.h"
-#include "components/version_info/version_info.h"
-#include "content/public/browser/plugin_service.h"
-#include "content/public/common/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "base/win/wmi.h"
@@ -48,12 +39,6 @@ constexpr char kBasicRequestSizeMetricsName[] =
 // are needed if there are many reports exceed this limitation.
 const int kRequestCountMetricMaxValue = 21;
 
-std::string GetChromePath() {
-  base::FilePath path;
-  base::PathService::Get(base::DIR_EXE, &path);
-  return path.AsUTF8Unsafe();
-}
-
 }  // namespace
 
 ReportGenerator::ReportGenerator() : maximum_report_size_(kMaximumReportSize) {}
@@ -75,14 +60,8 @@ void ReportGenerator::CreateBasicRequest() {
   basic_request_.set_os_user_name(GetOSUserName());
   basic_request_.set_serial_number(GetSerialNumber());
   basic_request_.set_allocated_os_report(GetOSReport().release());
-  basic_request_.set_allocated_browser_report(GetBrowserReport().release());
-  for (auto& profile : GetProfiles()) {
-    basic_request_.mutable_browser_report()
-        ->add_chrome_user_profile_infos()
-        ->Swap(profile.get());
-  }
-  content::PluginService::GetInstance()->GetPlugins(base::BindOnce(
-      &ReportGenerator::OnPluginsReady, weak_ptr_factory_.GetWeakPtr()));
+  browser_report_generator_.Generate(base::BindOnce(
+      &ReportGenerator::OnBrowserReportReady, weak_ptr_factory_.GetWeakPtr()));
 }
 
 std::unique_ptr<em::OSReport> ReportGenerator::GetOSReport() {
@@ -108,28 +87,6 @@ std::string ReportGenerator::GetSerialNumber() {
 #else
   return std::string();
 #endif
-}
-
-std::unique_ptr<em::BrowserReport> ReportGenerator::GetBrowserReport() {
-  auto report = std::make_unique<em::BrowserReport>();
-  report->set_browser_version(version_info::GetVersionNumber());
-  report->set_channel(policy::ConvertToProtoChannel(chrome::GetChannel()));
-  report->set_executable_path(GetChromePath());
-  return report;
-}
-
-std::vector<std::unique_ptr<em::ChromeUserProfileInfo>>
-ReportGenerator::GetProfiles() {
-  std::vector<std::unique_ptr<em::ChromeUserProfileInfo>> profiles;
-  for (auto* entry : g_browser_process->profile_manager()
-                         ->GetProfileAttributesStorage()
-                         .GetAllProfilesAttributes()) {
-    profiles.push_back(std::make_unique<em::ChromeUserProfileInfo>());
-    profiles.back()->set_id(entry->GetPath().AsUTF8Unsafe());
-    profiles.back()->set_name(base::UTF16ToUTF8(entry->GetName()));
-    profiles.back()->set_is_full_report(false);
-  }
-  return profiles;
 }
 
 void ReportGenerator::GenerateProfileReportWithIndex(int profile_index) {
@@ -186,21 +143,9 @@ void ReportGenerator::GenerateProfileReportWithIndex(int profile_index) {
   }
 }
 
-void ReportGenerator::OnPluginsReady(
-    const std::vector<content::WebPluginInfo>& plugins) {
-  auto* browser_report = basic_request_.mutable_browser_report();
-  for (auto plugin : plugins) {
-    auto* plugin_info = browser_report->add_plugins();
-    plugin_info->set_name(base::UTF16ToUTF8(plugin.name));
-    plugin_info->set_version(base::UTF16ToUTF8(plugin.version));
-    plugin_info->set_filename(plugin.path.BaseName().AsUTF8Unsafe());
-    plugin_info->set_description(base::UTF16ToUTF8(plugin.desc));
-  }
-
-  OnBasicRequestReady();
-}
-
-void ReportGenerator::OnBasicRequestReady() {
+void ReportGenerator::OnBrowserReportReady(
+    std::unique_ptr<em::BrowserReport> browser_report) {
+  basic_request_.set_allocated_browser_report(browser_report.release());
   basic_request_size_ = basic_request_.ByteSizeLong();
   base::UmaHistogramMemoryKB(kBasicRequestSizeMetricsName,
                              basic_request_size_ / 1024);

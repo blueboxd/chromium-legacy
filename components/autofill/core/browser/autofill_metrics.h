@@ -1095,6 +1095,11 @@ class AutofillMetrics {
   static void LogUserHappinessByProfileFormType(UserHappinessMetric metric,
                                                 uint32_t profile_form_bitmask);
 
+  // Logs the card fetch latency after a WebAuthn prompt.
+  static void LogCardUnmaskDurationAfterWebauthn(
+      const base::TimeDelta& duration,
+      AutofillClient::PaymentsRpcResult result);
+
   // Logs the count of calls to PaymentsClient::GetUnmaskDetails() (aka
   // GetDetailsForGetRealPan).
   static void LogCardUnmaskPreflightCalled();

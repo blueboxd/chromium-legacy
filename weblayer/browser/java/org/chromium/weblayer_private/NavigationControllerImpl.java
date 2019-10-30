@@ -107,8 +107,8 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     }
 
     @CalledByNative
-    private void navigationCommitted(NavigationImpl navigation) throws RemoteException {
-        mNavigationControllerClient.navigationCommitted(navigation.getClientNavigation());
+    private void readyToCommitNavigation(NavigationImpl navigation) throws RemoteException {
+        mNavigationControllerClient.readyToCommitNavigation(navigation.getClientNavigation());
     }
 
     @CalledByNative

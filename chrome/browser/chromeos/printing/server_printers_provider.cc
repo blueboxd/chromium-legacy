@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -74,6 +75,10 @@ class ServerPrintersProviderImpl
     if (servers_are_complete) {
       PRINTER_LOG(EVENT) << "The list of print servers has been completed. "
                          << "Number of print servers: " << servers.size();
+      if (!servers.empty()) {
+        base::UmaHistogramCounts1000("Printing.PrintServers.ServersToQuery",
+                                     servers.size());
+      }
     }
     // Save previous state.
     const bool previous_complete = IsComplete();

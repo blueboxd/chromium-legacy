@@ -26,11 +26,12 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestDeviceServiceDisconnect) {
   t->LoadUrlAndAwaitInitialization(
       t->GetFileUrlForHtmlTestFile("test_isolated_device_service_disconnect"));
 
-  // We expect one change from the initial device being available.
-  t->PollJavaScriptBooleanOrFail("deviceChanges === 1",
-                                 WebXrVrBrowserTestBase::kPollTimeoutMedium);
-
   t->EnterSessionWithUserGestureOrFail();
+
+  // We don't care how many device changes we've received prior to this point.
+  // We should now be at a steady state, so what we really care about is the
+  // number of device changes after this point.
+  t->RunJavaScriptOrFail("resetDeviceChanges()");
 
   device_hook->TerminateDeviceServiceProcessForTesting();
 
@@ -41,7 +42,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestDeviceServiceDisconnect) {
 
   // We expect one change indicating the device was disconnected, and then
   // one more indicating that the device was re-connected.
-  t->PollJavaScriptBooleanOrFail("deviceChanges === 3",
+  t->PollJavaScriptBooleanOrFail("deviceChanges === 2",
                                  WebXrVrBrowserTestBase::kPollTimeoutMedium);
 
   // One last check now that we have the device change that we can actually

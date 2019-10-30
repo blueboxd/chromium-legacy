@@ -79,6 +79,14 @@ OpenURLParams OpenURLParams::FromNavigationHandle(NavigationHandle* handle) {
   params.href_translate = handle->GetHrefTranslate();
   params.reload_type = handle->GetReloadType();
 
+  // A non-null |source_site_instance| is important for picking the right
+  // renderer process for hosting about:blank and/or data: URLs (their origin's
+  // precursor is based on |initiator_origin|).
+  if (params.url.IsAboutBlank() || params.url.SchemeIs(url::kDataScheme)) {
+    DCHECK_EQ(params.initiator_origin.has_value(),
+              static_cast<bool>(params.source_site_instance));
+  }
+
   // TODO(lukasza): Consider also covering |post_data| (and |uses_post|) and
   // |extra_headers| (this is difficult, because we can't cast |handle| to
   // NavigationRequest*, because it may be MockNavigationHandle in unit tests).

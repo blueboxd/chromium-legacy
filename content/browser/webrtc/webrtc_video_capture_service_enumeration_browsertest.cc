@@ -126,15 +126,16 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
         break;
       }
       case VirtualDeviceType::kTexture: {
-        video_capture::mojom::TextureVirtualDevicePtr virtual_device;
+        mojo::PendingRemote<video_capture::mojom::TextureVirtualDevice>
+            virtual_device;
         switch (GetParam().api_to_use) {
           case ServiceApi::kSingleClient:
             factory_->AddTextureVirtualDevice(
-                info, mojo::MakeRequest(&virtual_device));
+                info, virtual_device.InitWithNewPipeAndPassReceiver());
             break;
           case ServiceApi::kMultiClient:
             video_source_provider_->AddTextureVirtualDevice(
-                info, mojo::MakeRequest(&virtual_device));
+                info, virtual_device.InitWithNewPipeAndPassReceiver());
             break;
         }
         texture_devices_by_id_.insert(
@@ -218,10 +219,12 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
         shell(), GURL(embedded_test_server()->GetURL(kVideoCaptureHtmlFile))));
   }
 
-  std::map<std::string, video_capture::mojom::TextureVirtualDevicePtr>
+  std::map<std::string,
+           mojo::PendingRemote<video_capture::mojom::TextureVirtualDevice>>
       texture_devices_by_id_;
   std::map<std::string,
-           std::pair<video_capture::mojom::SharedMemoryVirtualDevicePtr,
+           std::pair<mojo::PendingRemote<
+                         video_capture::mojom::SharedMemoryVirtualDevice>,
                      std::unique_ptr<video_capture::MockProducer>>>
       shared_memory_devices_by_id_;
 

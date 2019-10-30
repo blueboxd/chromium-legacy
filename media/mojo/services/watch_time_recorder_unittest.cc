@@ -78,7 +78,7 @@ class WatchTimeRecorderTest : public testing::Test {
                           properties->is_mse ? mojom::MediaURLScheme::kUnknown
                                              : mojom::MediaURLScheme::kHttp);
     provider_->AcquireWatchTimeRecorder(std::move(properties),
-                                        mojo::MakeRequest(&wtr_));
+                                        wtr_.BindNewPipeAndPassReceiver());
   }
 
   void Initialize(bool has_audio,
@@ -177,7 +177,7 @@ class WatchTimeRecorderTest : public testing::Test {
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
   ukm::SourceId source_id_;
-  mojom::WatchTimeRecorderPtr wtr_;
+  mojo::Remote<mojom::WatchTimeRecorder> wtr_;
   const std::vector<WatchTimeKey> computation_keys_;
   const std::vector<base::StringPiece> mtbr_keys_;
   const std::vector<base::StringPiece> smooth_keys_;

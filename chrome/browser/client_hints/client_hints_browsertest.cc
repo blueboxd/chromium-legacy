@@ -1519,7 +1519,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   auto expiration_times_dictionary = std::make_unique<base::DictionaryValue>();
   expiration_times_dictionary->SetList("client_hints",
                                        std::move(expiration_times_list));
-  // Do not set |expiration_time| in the dictionary.
+  expiration_times_dictionary->SetDouble(
+      "expiration_time",
+      (base::Time::Now() + base::TimeDelta::FromDays(1)).ToDoubleT());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       without_accept_ch_without_lifetime_url(), GURL(),
       CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),

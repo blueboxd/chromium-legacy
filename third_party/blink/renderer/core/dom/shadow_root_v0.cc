@@ -145,8 +145,14 @@ ShadowRootV0::DescendantInsertionPoints() {
 
 const V0InsertionPoint* ShadowRootV0::FinalDestinationInsertionPointFor(
     const Node* key) const {
+#if DCHECK_IS_ON()
   DCHECK(key);
-  DCHECK(!key->NeedsDistributionRecalc());
+  // Allow traversal without V0 distribution up-to-date for marking ancestors
+  // with ChildNeedsStyleRecalc() when FlatTreeStyleRecalc is enabled.
+  DCHECK(!key->NeedsDistributionRecalc() ||
+         RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled() &&
+             key->GetDocument().AllowDirtyShadowV0Traversal());
+#endif
   NodeToDestinationInsertionPoints::const_iterator it =
       node_to_insertion_points_.find(key);
   return it == node_to_insertion_points_.end() ? nullptr : it->value->back();

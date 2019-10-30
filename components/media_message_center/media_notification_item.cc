@@ -241,11 +241,12 @@ void MediaNotificationItem::Dismiss() {
 }
 
 void MediaNotificationItem::Freeze() {
+  is_bound_ = false;
+
   if (frozen_)
     return;
 
   frozen_ = true;
-  is_bound_ = false;
   frozen_with_artwork_ = HasArtwork();
 
   freeze_timer_.Start(FROM_HERE, kFreezeTimerDelay,

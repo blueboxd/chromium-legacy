@@ -8,6 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "build/branding_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -47,12 +48,6 @@ const CGFloat kCloseButtonWidthHeight = 24;
 // Size for the imageView width and height.
 const CGFloat kImageViewWidthHeight = 32;
 }
-
-NSString* const kSigninPromoViewId = @"kSigninPromoViewId";
-NSString* const kSigninPromoPrimaryButtonId = @"kSigninPromoPrimaryButtonId";
-NSString* const kSigninPromoSecondaryButtonId =
-    @"kSigninPromoSecondaryButtonId";
-NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 
 @interface SigninPromoView ()
 // Re-declare as readwrite.

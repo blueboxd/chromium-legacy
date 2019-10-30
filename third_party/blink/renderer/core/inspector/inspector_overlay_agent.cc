@@ -1086,8 +1086,7 @@ Response InspectorOverlayAgent::setInspectMode(
 
   std::vector<uint8_t> serialized_config;
   if (highlight_inspector_object.isJust()) {
-    serialized_config =
-        highlight_inspector_object.fromJust()->serializeToBinary();
+    highlight_inspector_object.fromJust()->AppendSerialized(&serialized_config);
   }
   std::unique_ptr<InspectorHighlightConfig> config;
   Response response = HighlightConfigFromInspectorObject(

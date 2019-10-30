@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #include "components/safe_browsing/base_blocking_page.h"
+#include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -288,7 +290,7 @@ void BaseUIManager::ShowBlockingPageForResource(
 }
 
 bool BaseUIManager::SafeBrowsingInterstitialsAreCommittedNavigations() {
-  return false;
+  return base::FeatureList::IsEnabled(kCommittedSBInterstitials);
 }
 
 BaseBlockingPage* BaseUIManager::CreateBlockingPageForSubresource(

@@ -203,6 +203,9 @@ js_library("icon.m") {
   sources = [
     "$root_gen_dir/ui/webui/resources/js/icon.m.js",
   ]
+  deps = [
+    ":cr.m",
+  ]
   extra_deps = [ ":modulize" ]
 }
 

@@ -275,11 +275,10 @@ class Printer(object):
 
         base = port.lookup_virtual_test_base(test_name)
         if base:
-            args = ' '.join(port.lookup_virtual_test_args(test_name))
-            reference_args = ' '.join(port.lookup_virtual_reference_args(test_name))
             self._print_default(' base: %s' % base)
-            self._print_default(' args: %s' % args)
-            self._print_default(' reference_args: %s' % reference_args)
+        args = port.args_for_test(test_name)
+        if args:
+            self._print_default(' args: %s' % ' '.join(args))
 
         references = port.reference_files(test_name)
         if references:

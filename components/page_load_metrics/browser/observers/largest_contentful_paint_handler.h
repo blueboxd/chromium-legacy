@@ -33,8 +33,6 @@ class ContentfulPaintTimingInfo {
   }
 
   bool IsEmpty() const {
-    // |size_| is not necessarily 0, for example, when the largest image is
-    // still loading.
     return !time_;
   }
 

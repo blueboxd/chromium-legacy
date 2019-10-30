@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
+#include "build/build_config.h"
 
 namespace ash {
 namespace features {
@@ -94,7 +95,7 @@ const base::Feature kUnifiedMessageCenterRefactor{
     "UnifiedMessageCenterRefactor", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSwipingFromLeftEdgeToGoBack{
     "SwipingFromLeftEdgeToGoBack", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -179,7 +180,17 @@ bool IsUnifiedMessageCenterRefactorEnabled() {
 }
 
 bool IsBackgroundBlurEnabled() {
-  return base::FeatureList::IsEnabled(kEnableBackgroundBlur);
+  bool enabled_by_feature_flag =
+      base::FeatureList::IsEnabled(kEnableBackgroundBlur);
+#if defined(ARCH_CPU_ARM_FAMILY)
+  // Enable background blur on Mali when GPU rasterization is enabled.
+  // See crbug.com/996858 for the condition.
+  return enabled_by_feature_flag &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             ash::switches::kAshEnableTabletMode);
+#else
+  return enabled_by_feature_flag;
+#endif
 }
 
 bool IsSwipingFromLeftEdgeToGoBackEnabled() {

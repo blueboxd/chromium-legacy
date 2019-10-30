@@ -313,7 +313,9 @@ XR::PendingRequestSessionQuery::PendingRequestSessionQuery(
       mode_(session_mode),
       required_features_(std::move(required_features)),
       optional_features_(std::move(optional_features)),
-      ukm_source_id_(ukm_source_id) {}
+      ukm_source_id_(ukm_source_id) {
+  ParseSensorRequirement();
+}
 
 void XR::PendingRequestSessionQuery::Resolve(XRSession* session) {
   resolver_->Resolve(session);
@@ -402,6 +404,33 @@ bool XR::PendingRequestSessionQuery::InvalidOptionalFeatures() const {
 
 ScriptState* XR::PendingRequestSessionQuery::GetScriptState() const {
   return resolver_->GetScriptState();
+}
+
+void XR::PendingRequestSessionQuery::ParseSensorRequirement() {
+  // All modes other than inline require sensors.
+  if (mode_ != XRSession::kModeInline) {
+    sensor_requirement_ = SensorRequirement::kRequired;
+    return;
+  }
+
+  // If any required features require sensors, then sensors are required.
+  for (const auto& feature : RequiredFeatures()) {
+    if (feature != device::mojom::XRSessionFeature::REF_SPACE_VIEWER) {
+      sensor_requirement_ = SensorRequirement::kRequired;
+      return;
+    }
+  }
+
+  // If any optional features require sensors, then sensors are optional.
+  for (const auto& feature : OptionalFeatures()) {
+    if (feature != device::mojom::XRSessionFeature::REF_SPACE_VIEWER) {
+      sensor_requirement_ = SensorRequirement::kOptional;
+      return;
+    }
+  }
+
+  // By this point any situation that requires sensors should have returned.
+  sensor_requirement_ = kNone;
 }
 
 void XR::PendingRequestSessionQuery::Trace(blink::Visitor* visitor) {
@@ -672,21 +701,27 @@ void XR::RequestInlineSession(LocalFrame* frame,
     return;
   }
 
-  if (!service_) {
-    // If we don't have a service by the time we reach this call, there is no XR
-    // hardware. Create a sensorless session if possible.
-    if (CanCreateSensorlessInlineSession(query)) {
-      XRSession* session = CreateSensorlessInlineSession();
-      query->Resolve(session);
-    } else {
-      query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
-                                    kSessionNotSupported, exception_state);
-    }
+  // Reject session if any of the required features were invalid.
+  if (query->InvalidRequiredFeatures()) {
+    query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
+                                  kSessionNotSupported, exception_state);
     return;
   }
 
-  // Reject session if any of the required features were invalid.
-  if (query->InvalidRequiredFeatures()) {
+  auto sensor_requirement = query->GetSensorRequirement();
+
+  // If no sensors are requested, or if we don't have a service and sensors are
+  // not required, then just create a sensorless session.
+  if (sensor_requirement == SensorRequirement::kNone ||
+      (!service_ && sensor_requirement != SensorRequirement::kRequired)) {
+    query->Resolve(CreateSensorlessInlineSession());
+    return;
+  }
+
+  // If we don't have a service, then we don't have any WebXR hardware.
+  // If we didn't already create a sensorless session, we can't create a session
+  // without hardware, so just reject now.
+  if (!service_) {
     query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
                                   kSessionNotSupported, exception_state);
     return;
@@ -883,7 +918,7 @@ void XR::OnRequestSessionReturned(
   if (!session_ptr) {
     // |service_| does not support the requested mode. Attempt to create a
     // sensorless session.
-    if (CanCreateSensorlessInlineSession(query)) {
+    if (query->GetSensorRequirement() != SensorRequirement::kRequired) {
       XRSession* session = CreateSensorlessInlineSession();
       query->Resolve(session);
       return;
@@ -1049,23 +1084,6 @@ XRSession* XR::CreateSession(
     session->SetXRDisplayInfo(std::move(display_info));
   sessions_.insert(session);
   return session;
-}
-
-bool XR::CanCreateSensorlessInlineSession(
-    const PendingRequestSessionQuery* query) const {
-  // Sensorless can only support an inline mode
-  if (query->mode() != XRSession::kModeInline)
-    return false;
-
-  // Sensorless can only be supported if the only required feature is the
-  // viewer reference space.
-  for (const auto& feature : query->RequiredFeatures()) {
-    if (feature != device::mojom::XRSessionFeature::REF_SPACE_VIEWER) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 XRSession* XR::CreateSensorlessInlineSession() {

@@ -795,10 +795,46 @@ action("make_minimized_css") {
   script = "../build/scripts/minimize_css.py"
 
   inputs = [
+    "css/fullscreen.css",
+    "css/fullscreenAndroid.css",
+    "css/mathml.css",
+    "css/svg.css",
+    "css/view-source.css",
+    "css/viewportAndroid.css",
+    "css/viewportTelevision.css",
+    "css/xhtmlmp.css",
+    "html/forms/resources/validation_bubble.css",
+    "html/resources/android.css",
+    "html/resources/forced_colors.css",
     "html/resources/html.css",
+    "html/resources/input_multiple_fields.css",
+    "html/resources/linux.css",
+    "html/resources/quirks.css",
+    "html/resources/win.css",
+    "html/resources/win_quirks.css",
+    "inspector/inspect_tool_common.css",
+    "xml/DocumentXMLTreeViewer.css",
   ]
   outputs = [
+    "$blink_core_output_dir/fullscreen.css",
+    "$blink_core_output_dir/fullscreenAndroid.css",
+    "$blink_core_output_dir/mathml.css",
+    "$blink_core_output_dir/svg.css",
+    "$blink_core_output_dir/view-source.css",
+    "$blink_core_output_dir/viewportAndroid.css",
+    "$blink_core_output_dir/viewportTelevision.css",
+    "$blink_core_output_dir/xhtmlmp.css",
+    "$blink_core_output_dir/validation_bubble.css",
+    "$blink_core_output_dir/android.css",
+    "$blink_core_output_dir/forced_colors.css",
     "$blink_core_output_dir/html.css",
+    "$blink_core_output_dir/input_multiple_fields.css",
+    "$blink_core_output_dir/linux.css",
+    "$blink_core_output_dir/quirks.css",
+    "$blink_core_output_dir/win.css",
+    "$blink_core_output_dir/win_quirks.css",
+    "$blink_core_output_dir/inspect_tool_common.css",
+    "$blink_core_output_dir/DocumentXMLTreeViewer.css",
   ]
 
   args = [

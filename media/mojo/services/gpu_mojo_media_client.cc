@@ -312,7 +312,7 @@ std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
 #endif  // defined(OS_ANDROID)
 }
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 std::unique_ptr<CdmProxy> GpuMojoMediaClient::CreateCdmProxy(
     const base::Token& cdm_guid) {
   if (cdm_proxy_factory_cb_)
@@ -320,6 +320,6 @@ std::unique_ptr<CdmProxy> GpuMojoMediaClient::CreateCdmProxy(
 
   return nullptr;
 }
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 }  // namespace media

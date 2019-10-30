@@ -19,7 +19,7 @@
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/mojom/watch_time_recorder.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -244,12 +244,13 @@ class WatchTimeReporterTest
     // mojom::WatchTimeRecorderProvider implementation:
     void AcquireWatchTimeRecorder(
         mojom::PlaybackPropertiesPtr properties,
-        mojom::WatchTimeRecorderRequest request) override {
-      mojo::MakeStrongBinding(std::make_unique<WatchTimeInterceptor>(parent_),
-                              std::move(request));
+        mojo::PendingReceiver<mojom::WatchTimeRecorder> receiver) override {
+      mojo::MakeSelfOwnedReceiver(
+          std::make_unique<WatchTimeInterceptor>(parent_), std::move(receiver));
     }
     void AcquireVideoDecodeStatsRecorder(
-        mojom::VideoDecodeStatsRecorderRequest request) override {
+        mojo::PendingReceiver<mojom::VideoDecodeStatsRecorder> receiver)
+        override {
       FAIL();
     }
     void AcquireLearningTaskController(

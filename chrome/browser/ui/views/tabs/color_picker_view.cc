@@ -15,6 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -108,7 +109,7 @@ class ColorPickerElementView : public views::Button,
 
   gfx::Size CalculatePreferredSize() const override {
     const gfx::Insets insets = GetInsets();
-    gfx::Size size(24, 24);
+    gfx::Size size(gfx::kFaviconSize, gfx::kFaviconSize);
     size.Enlarge(insets.width(), insets.height());
     return size;
   }

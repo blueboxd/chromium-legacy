@@ -12,6 +12,10 @@ oobe-dialog {
   height: 100%;
 }
 
+webview {
+  user-select: none;
+}
+
 .container {
   box-sizing: border-box;
   height: 100%;

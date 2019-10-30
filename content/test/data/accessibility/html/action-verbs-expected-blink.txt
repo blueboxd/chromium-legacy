@@ -7,6 +7,8 @@ rootWebArea name='Action verbs'
 ++++++staticText name='Heading'
 ++++++++inlineTextBox name='Heading'
 ++++button name='Button' defaultActionVerb=press
+++++++staticText name='Button'
+++++++++inlineTextBox name='Button'
 ++++link name='Link' defaultActionVerb=jump
 ++++++staticText name='Link' defaultActionVerb=clickAncestor
 ++++++++inlineTextBox name='Link'

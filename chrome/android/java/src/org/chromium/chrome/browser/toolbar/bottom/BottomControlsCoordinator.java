@@ -150,7 +150,8 @@ public class BottomControlsCoordinator {
             mBottomToolbarCoordinator.initializeWithNative(tabSwitcherListener, newTabClickListener,
                     closeTabsClickListener, menuButtonHelper, overviewModeBehavior,
                     tabCountProvider, incognitoStateProvider, topToolbarRoot);
-            mMediator.setToolbarSwipeHandler(layoutManager.getToolbarSwipeHandler());
+            mMediator.setToolbarSwipeHandler(
+                    layoutManager.createToolbarSwipeHandler(/* supportSwipeDown = */ false));
         }
 
         if (mTabGroupUi != null) {

@@ -351,7 +351,8 @@ class BuildConfigGenerator extends DefaultTask {
             } else {
                 cipdPath += repoPath
             }
-            cipdPath += "/${depPath}"
+            // CIPD does not allow uppercase in names.
+            cipdPath += "/${depPath}".toLowerCase()
             sb.append("""\
             |
             |  'src/${repoPath}/${depPath}': {
@@ -436,7 +437,8 @@ class BuildConfigGenerator extends DefaultTask {
         } else {
             cipdPath += repoPath
         }
-        cipdPath += "/${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"
+        // CIPD does not allow uppercase in names.
+        cipdPath += "/${DOWNLOAD_DIRECTORY_NAME}/" + dependency.id.toLowerCase()
 
         // NOTE: the fetch_all.py script relies on the format of this file!
         // See fetch_all.py:GetCipdPackageInfo().

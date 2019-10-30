@@ -10,9 +10,8 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/memory/protected_memory.h"
-#include "base/memory/protected_memory_cfi.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -46,10 +45,7 @@ typedef std::vector<base::NativeLibrary> LibraryArray;
 
 GLImplementation g_gl_implementation = kGLImplementationNone;
 LibraryArray* g_libraries;
-// Place the function pointer for GetProcAddress in read-only memory after being
-// resolved to prevent it being tampered with. See crbug.com/771365 for details.
-PROTECTED_MEMORY_SECTION base::ProtectedMemory<GLGetProcAddressProc>
-    g_get_proc_address;
+GLGetProcAddressProc g_get_proc_address;
 
 void CleanupNativeLibraries(void* due_to_fallback) {
   if (g_libraries) {
@@ -164,10 +160,10 @@ void UnloadGLNativeLibraries(bool due_to_fallback) {
 
 void SetGLGetProcAddressProc(GLGetProcAddressProc proc) {
   DCHECK(proc);
-  auto writer = base::AutoWritableMemory::Create(g_get_proc_address);
-  *g_get_proc_address = proc;
+  g_get_proc_address = proc;
 }
 
+NO_SANITIZE("cfi-icall")
 GLFunctionPointerType GetGLProcAddress(const char* name) {
   DCHECK(g_gl_implementation != kGLImplementationNone);
 
@@ -179,9 +175,8 @@ GLFunctionPointerType GetGLProcAddress(const char* name) {
         return proc;
     }
   }
-  if (*g_get_proc_address) {
-    GLFunctionPointerType proc =
-        base::UnsanitizedCfiCall(g_get_proc_address)(name);
+  if (g_get_proc_address) {
+    GLFunctionPointerType proc = g_get_proc_address(name);
     if (proc)
       return proc;
   }

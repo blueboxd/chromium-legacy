@@ -374,7 +374,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest, UnexpectedLaunchType) {
   extensions::ExtensionSyncData invalid_launch_type_data(
       *extension, original_data.enabled(), original_data.disable_reasons(),
       original_data.incognito_enabled(), original_data.remote_install(),
-      original_data.installed_by_custodian(),
       original_data.app_launch_ordinal(), original_data.page_ordinal(),
       extensions::NUM_LAUNCH_TYPES);
   extension_sync_service->ApplySyncData(invalid_launch_type_data);

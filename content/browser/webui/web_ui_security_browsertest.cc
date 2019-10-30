@@ -347,6 +347,8 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest, WebUIReuseInSubframe) {
   scoped_refptr<SiteInstance> initial_site_instance =
       child->current_frame_host()->GetSiteInstance();
   WebUI* initial_web_ui = child->current_frame_host()->web_ui();
+  GlobalFrameRoutingId initial_rfh_id =
+      child->current_frame_host()->GetGlobalFrameRoutingId();
 
   GURL subframe_same_site_url(GetWebUIURL("web-ui/title2.html"));
   {
@@ -373,6 +375,7 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest, WebUIReuseInSubframe) {
             child->current_frame_host()->GetSiteInstance());
   EXPECT_NE(root->current_frame_host()->web_ui(),
             child->current_frame_host()->web_ui());
+  EXPECT_NE(initial_web_ui, child->current_frame_host()->web_ui());
 
   // Capture the new SiteInstance and WebUI of the subframe and navigate it to
   // another document on the same site.
@@ -393,7 +396,8 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest, WebUIReuseInSubframe) {
   EXPECT_EQ(second_web_ui, child->current_frame_host()->web_ui());
 
   // Navigate back to the first document in the subframe, which should bring
-  // it back to the initial SiteInstance, but use a different WebUI instance.
+  // it back to the initial SiteInstance, but use a different RenderFrameHost
+  // and by that a different WebUI instance.
   {
     TestFrameNavigationObserver observer(child);
     shell()->web_contents()->GetController().GoToOffset(-2);
@@ -403,7 +407,14 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest, WebUIReuseInSubframe) {
   }
   EXPECT_EQ(initial_site_instance,
             child->current_frame_host()->GetSiteInstance());
-  EXPECT_NE(initial_web_ui, child->current_frame_host()->web_ui());
+  // Use routing id comparison for the RenderFrameHost as the memory allocator
+  // sometime places the newly created RenderFrameHost for the back navigation
+  // at the same memory location as the initial one. For this reason too, it
+  // is not possible to check the web_ui() for inequality, since in some runs
+  // the memory in which two different WebUI instances of the same type are
+  // placed is the same.
+  EXPECT_NE(initial_rfh_id,
+            child->current_frame_host()->GetGlobalFrameRoutingId());
 }
 
 // Verify that if one WebUI does a window.open() to another WebUI, then the two

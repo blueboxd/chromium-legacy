@@ -192,11 +192,6 @@ extern const base::Feature kEnableAmbientAuthenticationInGuestSession;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEnableAmbientAuthenticationInIncognito;
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kEnableFtp;
-#endif
-
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEnterpriseReportingInBrowser;

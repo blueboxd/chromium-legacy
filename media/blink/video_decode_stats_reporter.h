@@ -21,6 +21,8 @@
 #include "media/base/video_codecs.h"
 #include "media/blink/media_blink_export.h"
 #include "media/mojo/mojom/video_decode_stats_recorder.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 
@@ -33,7 +35,7 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
   using GetPipelineStatsCB = base::Callback<PipelineStatistics(void)>;
 
   VideoDecodeStatsReporter(
-      mojom::VideoDecodeStatsRecorderPtr recorder_ptr,
+      mojo::PendingRemote<mojom::VideoDecodeStatsRecorder> recorder_remote,
       GetPipelineStatsCB get_pipeline_stats_cb,
       VideoCodecProfile codec_profile,
       const gfx::Size& natural_size,
@@ -146,7 +148,7 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
 
   // Pointer to the remote recorder. The recorder runs in the browser process
   // and finalizes the record in the event of fast render process tear down.
-  mojom::VideoDecodeStatsRecorderPtr recorder_ptr_;
+  mojo::Remote<mojom::VideoDecodeStatsRecorder> recorder_remote_;
 
   // Callback for retrieving playback statistics.
   GetPipelineStatsCB get_pipeline_stats_cb_;

@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -55,6 +56,11 @@ LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
       delegate_(delegate),
       title_(title),
       url_(url) {
+  if (!parent_window_) {
+    DCHECK(chromeos::LoginDisplayHost::default_host());
+    parent_window_ =
+        chromeos::LoginDisplayHost::default_host()->GetNativeWindow();
+  }
 }
 
 LoginWebDialog::~LoginWebDialog() {}

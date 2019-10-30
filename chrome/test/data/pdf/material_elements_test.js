@@ -33,25 +33,25 @@ class FitToEventChecker {
 /**
  * Standalone unit tests of the PDF Polymer elements.
  */
-var tests = [
+const tests = [
   /**
    * Test that viewer-page-selector reacts correctly to text entry. The page
    * selector validates that input is an integer, and does not allow navigation
    * past document bounds.
    */
   function testPageSelectorChange() {
-    var selector = document.createElement('viewer-page-selector');
+    const selector = document.createElement('viewer-page-selector');
     selector.docLength = 1234;
     document.body.appendChild(selector);
 
-    var input = selector.pageSelector;
+    const input = selector.pageSelector;
     // Simulate entering text into `input` and pressing enter.
     function changeInput(newValue) {
       input.value = newValue;
       input.dispatchEvent(new CustomEvent('change'));
     }
 
-    var navigatedPages = [];
+    const navigatedPages = [];
     selector.addEventListener('change-page', function(e) {
       navigatedPages.push(e.detail.page);
       // A change-page handler is expected to set the pageNo to the new value.
@@ -80,7 +80,7 @@ var tests = [
    * Test that viewer-page-selector changes in response to setting docLength.
    */
   function testPageSelectorDocLength() {
-    var selector = document.createElement('viewer-page-selector');
+    const selector = document.createElement('viewer-page-selector');
     selector.docLength = 1234;
     document.body.appendChild(selector);
     chrome.test.assertEq('1234', selector.$.pagelength.textContent);
@@ -93,7 +93,7 @@ var tests = [
    * Test that clicking the dropdown icon opens/closes the dropdown.
    */
   function testToolbarDropdownShowHide() {
-    var dropdown = document.createElement('viewer-toolbar-dropdown');
+    const dropdown = document.createElement('viewer-toolbar-dropdown');
     dropdown.header = 'Test Menu';
     dropdown.closedIcon = 'closedIcon';
     dropdown.openIcon = 'openIcon';
@@ -120,7 +120,7 @@ var tests = [
    * structure and behaviour.
    */
   function testBookmarkStructure() {
-    var bookmarkContent = createBookmarksForTest();
+    const bookmarkContent = createBookmarksForTest();
     bookmarkContent.bookmarks = [{
       title: 'Test 1',
       page: 1,
@@ -134,21 +134,21 @@ var tests = [
     // Force templates to render.
     flush();
 
-    var rootBookmarks =
+    const rootBookmarks =
         bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
     chrome.test.assertEq(1, rootBookmarks.length, 'one root bookmark');
-    var rootBookmark = rootBookmarks[0];
+    const rootBookmark = rootBookmarks[0];
     rootBookmark.$.expand.click();
 
     flush();
 
-    var subBookmarks =
+    const subBookmarks =
         rootBookmark.shadowRoot.querySelectorAll('viewer-bookmark');
     chrome.test.assertEq(2, subBookmarks.length, 'two sub bookmarks');
     chrome.test.assertEq(
         1, subBookmarks[1].depth, 'sub bookmark depth correct');
 
-    var lastPageChange;
+    let lastPageChange;
     rootBookmark.addEventListener('change-page', function(e) {
       lastPageChange = e.detail.page;
     });
@@ -167,15 +167,15 @@ var tests = [
    * fit-to-width buttons.
    */
   function testZoomToolbarToggle() {
-    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    const zoomToolbar = document.createElement('viewer-zoom-toolbar');
     document.body.appendChild(zoomToolbar);
-    var fitButton = zoomToolbar.$['fit-button'];
-    var button = fitButton.$$('cr-icon-button');
+    const fitButton = zoomToolbar.$['fit-button'];
+    const button = fitButton.$$('cr-icon-button');
 
-    var fitWidthIcon = 'fullscreen';
-    var fitPageIcon = 'fullscreen-exit';
+    const fitWidthIcon = 'fullscreen';
+    const fitPageIcon = 'fullscreen-exit';
 
-    var fitToEventChecker = new FitToEventChecker(zoomToolbar);
+    const fitToEventChecker = new FitToEventChecker(zoomToolbar);
 
     // Initial: Show fit-to-page.
     // TODO(tsergeant): This assertion attempts to be resilient to iconset
@@ -218,15 +218,15 @@ var tests = [
   },
 
   function testZoomToolbarForceFitToPage() {
-    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    const zoomToolbar = document.createElement('viewer-zoom-toolbar');
     document.body.appendChild(zoomToolbar);
-    var fitButton = zoomToolbar.$['fit-button'];
-    var button = fitButton.$$('cr-icon-button');
+    const fitButton = zoomToolbar.$['fit-button'];
+    const button = fitButton.$$('cr-icon-button');
 
-    var fitWidthIcon = 'fullscreen';
-    var fitPageIcon = 'fullscreen-exit';
+    const fitWidthIcon = 'fullscreen';
+    const fitPageIcon = 'fullscreen-exit';
 
-    var fitToEventChecker = new FitToEventChecker(zoomToolbar);
+    const fitToEventChecker = new FitToEventChecker(zoomToolbar);
 
     // Initial: Show fit-to-page.
     chrome.test.assertTrue(button.ironIcon.endsWith(fitPageIcon));
@@ -260,15 +260,15 @@ var tests = [
   },
 
   function testZoomToolbarForceFitToWidth() {
-    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    const zoomToolbar = document.createElement('viewer-zoom-toolbar');
     document.body.appendChild(zoomToolbar);
-    var fitButton = zoomToolbar.$['fit-button'];
-    var button = fitButton.$$('cr-icon-button');
+    const fitButton = zoomToolbar.$['fit-button'];
+    const button = fitButton.$$('cr-icon-button');
 
-    var fitWidthIcon = 'fullscreen';
-    var fitPageIcon = 'fullscreen-exit';
+    const fitWidthIcon = 'fullscreen';
+    const fitPageIcon = 'fullscreen-exit';
 
-    var fitToEventChecker = new FitToEventChecker(zoomToolbar);
+    const fitToEventChecker = new FitToEventChecker(zoomToolbar);
 
     // Initial: Show fit-to-page.
     chrome.test.assertTrue(button.ironIcon.endsWith(fitPageIcon));

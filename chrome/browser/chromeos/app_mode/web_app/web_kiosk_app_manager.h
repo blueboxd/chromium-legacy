@@ -36,6 +36,9 @@ class WebKioskAppManager : public KioskAppManagerBase {
   // thus is_valid() returns empty AccountId.
   const AccountId& GetAutoLaunchAccountId() const;
 
+  // Obtains an app associated with given |account_id|.
+  const WebKioskAppData* GetAppByAccountId(const AccountId& account_id) const;
+
  private:
   // KioskAppManagerBase:
   // Updates |apps_| based on CrosSettings.

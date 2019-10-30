@@ -9,22 +9,27 @@
 
 namespace web_app {
 
-#if !defined(OS_WIN)
+// This block defines stub implementations of OS specific methods for
+// FileHandling. Currently, Windows and Desktop Linux (but not Chrome OS) have
+// their own implementations.
+//
+// Note: Because OS_LINUX includes OS_CHROMEOS be sure to use the stub on
+// OS_CHROMEOS.
+#if !defined(OS_WIN) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
 bool OsSupportsWebAppFileHandling() {
   return false;
 }
 
 void RegisterFileHandlersForWebApp(const AppId& app_id,
                                    const std::string& app_name,
-                                   const Profile& profile,
+                                   Profile* profile,
                                    const std::set<std::string>& file_extensions,
                                    const std::set<std::string>& mime_types) {
   DCHECK(OsSupportsWebAppFileHandling());
   // Stub function for OS's that don't support Web App file handling yet.
 }
 
-void UnregisterFileHandlersForWebApp(const AppId& app_id,
-                                     const Profile& profile) {
+void UnregisterFileHandlersForWebApp(const AppId& app_id, Profile* profile) {
   DCHECK(OsSupportsWebAppFileHandling());
   // Stub function for OS's that don't support Web App file handling yet.
 }

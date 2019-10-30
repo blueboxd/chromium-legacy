@@ -48,6 +48,7 @@ class CustomTabBarView : public views::AccessiblePaneView,
 
   // views::View:
   gfx::Rect GetAnchorBoundsInScreen() const override;
+  const char* GetClassName() const override;
 
   // TabstripModelObserver:
   void TabChangedAt(content::WebContents* contents,

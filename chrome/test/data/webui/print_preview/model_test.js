@@ -90,7 +90,8 @@ cr.define('model_test', function() {
        *     reset to its default value.
        */
       const testStickySetting = function(setting, field) {
-        let promise = test_util.eventToPromise('sticky-setting-changed', model);
+        const promise =
+            test_util.eventToPromise('sticky-setting-changed', model);
         model.setSetting(setting, stickySettingsChange[field]);
         settingsSet.push(field);
         return promise.then(
@@ -99,18 +100,19 @@ cr.define('model_test', function() {
              * @return {!Promise} Promise that resolves when setting is reset.
              */
             function(e) {
-              let settings = JSON.parse(e.detail);
+              const settings = JSON.parse(e.detail);
               Object.keys(stickySettingsDefault).forEach(settingName => {
-                let set = settingsSet.includes(settingName);
+                const set = settingsSet.includes(settingName);
                 assertEquals(set, settings[settingName] !== undefined);
                 if (set) {
-                  let toCompare = settingName == field ? stickySettingsChange :
-                                                         stickySettingsDefault;
+                  const toCompare = settingName == field ?
+                      stickySettingsChange :
+                      stickySettingsDefault;
                   assertDeepEquals(
                       toCompare[settingName], settings[settingName]);
                 }
               });
-              let restorePromise =
+              const restorePromise =
                   test_util.eventToPromise('sticky-setting-changed', model);
               model.setSetting(setting, stickySettingsDefault[field]);
               return restorePromise;

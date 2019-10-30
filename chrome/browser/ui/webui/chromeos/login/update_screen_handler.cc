@@ -12,6 +12,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace chromeos {
 
@@ -82,7 +83,8 @@ void UpdateScreenHandler::SetCancelUpdateShortcutEnabled(bool value) {
 void UpdateScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("checkingForUpdatesMsg", IDS_CHECKING_FOR_UPDATE_MSG);
-  builder->Add("installingUpdateDesc", IDS_UPDATE_MSG);
+  builder->AddF("installingUpdateDesc", IDS_UPDATE_MSG,
+                ui::GetChromeOSDeviceName());
   builder->Add("updateCompeletedMsg", IDS_UPDATE_COMPLETED);
   builder->Add("updateScreenAccessibleTitle",
                IDS_UPDATE_SCREEN_ACCESSIBLE_TITLE);

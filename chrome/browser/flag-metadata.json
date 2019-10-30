@@ -1320,6 +1320,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-ftp",
+    "owners": [ "asanka" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-future-v8-vm-features",
     "owners": [ "hablich" ],
     // This flag enables the rolling set of upcoming V8 features, for early
@@ -2176,11 +2181,6 @@
   },
   {
     "name": "fill-on-account-select",
-    "owners": [ "jdoerrie" ],
-    "expiry_milestone": 80
-  },
-  {
-    "name": "fill-on-account-select-http",
     "owners": [ "jdoerrie" ],
     "expiry_milestone": 80
   },

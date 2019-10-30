@@ -22,10 +22,13 @@ apk_pak_asset_type = "_apk"
 #    is_monochrome: Optional. If set, the library is for use in monochrome.
 #    is_webview: If true, the library is for webview, and browser-specific
 #      config is skipped.
-#    module_descs: Optional. Descriptors of feature modules from which deps
-#      should be included, and if enabled, partition libraries created. See
-#      //chrome/android/modules/chrome_feature_modules.gni for the descriptor
-#      format.
+#    module_descs: Optional. Descriptors of feature modules for which library
+#      targets should be auto-generated. The targets are called
+#      "${target_name}_<module name>" and can be depended on like shared_library
+#      targets. If enabled, the library targets create partitions containing the
+#      module's native code. Otherwise, they simply depend on the module's
+#      native_deps. See //chrome/android/modules/chrome_feature_modules.gni for
+#      the descriptor format.
 template("chrome_common_shared_library") {
   _is_monochrome = defined(invoker.is_monochrome) && invoker.is_monochrome
   _is_webview = defined(invoker.is_webview) && invoker.is_webview
@@ -37,8 +40,9 @@ template("chrome_common_shared_library") {
   # Create a partitioned libraries if the build config supports it, and the
   # invoker has supplied module descriptors.
   _generate_partitions = defined(invoker.module_descs) && use_native_partitions
+  _module_descs = []
   if (defined(invoker.module_descs)) {
-    not_needed(invoker, [ "module_descs" ])
+    _module_descs = invoker.module_descs
   }
 
   # Create a custom linker script based on JNI and feature module requirements.
@@ -97,9 +101,9 @@ template("chrome_common_shared_library") {
       }
     }
 
-    if (defined(invoker.module_descs)) {
+    if (_generate_partitions) {
       partitions = []
-      foreach(_module_desc, invoker.module_descs) {
+      foreach(_module_desc, _module_descs) {
         if (defined(_module_desc.native_deps)) {
           partitions += [ _module_desc.name ]
           deps += _module_desc.native_deps
@@ -127,6 +131,19 @@ template("chrome_common_shared_library") {
     # See crbug.com/705088.
     if (target_cpu == "arm" && is_asan) {
       ldflags += [ "-Wl,--long-plt" ]
+    }
+  }
+
+  if (!_generate_partitions) {
+    # Make helper targets so that we always have module native targets no matter
+    # whether partitions are enabled.
+    foreach(_module_desc, _module_descs) {
+      if (defined(_module_desc.native_deps)) {
+        group("${target_name}_${_module_desc.name}") {
+          forward_variables_from(invoker, [ "testonly" ])
+          deps = _module_desc.native_deps
+        }
+      }
     }
   }
 }

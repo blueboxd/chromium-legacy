@@ -145,7 +145,7 @@ class ServiceInstance : public mojom::Connector,
       mojo::ScopedMessagePipeHandle service_remote_handle,
       mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver,
       RegisterServiceInstanceCallback callback) override;
-  void Clone(mojom::ConnectorRequest request) override;
+  void Clone(mojo::PendingReceiver<mojom::Connector> receiver) override;
   void FilterInterfaces(
       const std::string& filter_name,
       const Identity& source,

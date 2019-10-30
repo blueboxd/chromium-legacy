@@ -400,25 +400,20 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIDiscardsHost));
 
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources chrome://test 'self';");
+
   source->AddResourcePath("discards.js", IDR_DISCARDS_JS);
 
-  source->AddResourcePath("discards_main.html",
-                          IDR_DISCARDS_DISCARDS_MAIN_HTML);
   source->AddResourcePath("discards_main.js", IDR_DISCARDS_DISCARDS_MAIN_JS);
 
-  source->AddResourcePath("database_tab.html", IDR_DISCARDS_DATABASE_TAB_HTML);
   source->AddResourcePath("database_tab.js", IDR_DISCARDS_DATABASE_TAB_JS);
-  source->AddResourcePath("discards_tab.html", IDR_DISCARDS_DISCARDS_TAB_HTML);
   source->AddResourcePath("discards_tab.js", IDR_DISCARDS_DISCARDS_TAB_JS);
-  source->AddResourcePath("sorted_table_behavior.html",
-                          IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_HTML);
   source->AddResourcePath("sorted_table_behavior.js",
                           IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS);
-
-  source->AddResourcePath("graph_tab.html", IDR_DISCARDS_GRAPH_TAB_HTML);
   source->AddResourcePath("graph_tab.js", IDR_DISCARDS_GRAPH_TAB_JS);
 
-  source->AddResourcePath("mojo_api.html", IDR_DISCARDS_MOJO_API_HTML);
+  source->AddResourcePath("mojo_api.js", IDR_DISCARDS_MOJO_API_JS);
 
   // Full paths (relative to src) are important for Mojom generated files.
   source->AddResourcePath(

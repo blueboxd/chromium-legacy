@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_mode_observer.h"

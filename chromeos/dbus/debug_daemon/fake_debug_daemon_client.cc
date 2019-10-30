@@ -56,6 +56,13 @@ void FakeDebugDaemonClient::SetKstaledRatio(uint8_t val,
   std::move(callback).Run(true /* success */);
 }
 
+void FakeDebugDaemonClient::SetSwapParameter(
+    const std::string& parameter,
+    int32_t value,
+    DBusMethodCallback<std::string> callback) {
+  std::move(callback).Run(std::string());
+}
+
 std::string FakeDebugDaemonClient::GetTracingAgentName() {
   return kCrOSTracingAgentName;
 }

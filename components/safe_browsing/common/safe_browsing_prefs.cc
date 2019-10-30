@@ -119,12 +119,12 @@ const char kDelayDeliveryUntilVerdict[] =
 const char kAllowPasswordProtectedFiles[] =
     "safebrowsing.allow_password_protected_files";
 const char kCheckContentCompliance[] = "safebrowsing.check_content_compliance";
-const char kDomainsToCheckComplianceOfDownloadedContent[] =
-    "safebrowsing.domains_to_check_compliance_of_downloaded_content";
-const char kDomainsToCheckForMalwareOfUploadedContent[] =
-    "safebrowsing.domains_to_check_for_malware_of_uploaded_content";
-const char kDomainsToNotCheckComplianceOfUploadedContent[] =
-    "policy.domains_to_not_check_compliance_of_uploaded_content";
+const char kURLsToCheckComplianceOfDownloadedContent[] =
+    "safebrowsing.urls_to_check_compliance_of_downloaded_content";
+const char kURLsToCheckForMalwareOfUploadedContent[] =
+    "safebrowsing.urls_to_check_for_malware_of_uploaded_content";
+const char kURLsToNotCheckComplianceOfUploadedContent[] =
+    "policy.urls_to_not_check_compliance_of_uploaded_content";
 
 }  // namespace prefs
 
@@ -202,11 +202,9 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
       prefs::kAllowPasswordProtectedFiles,
       AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
   registry->RegisterIntegerPref(prefs::kCheckContentCompliance, CHECK_NONE);
-  registry->RegisterListPref(
-      prefs::kDomainsToCheckComplianceOfDownloadedContent);
-  registry->RegisterListPref(
-      prefs::kDomainsToNotCheckComplianceOfUploadedContent);
-  registry->RegisterListPref(prefs::kDomainsToCheckForMalwareOfUploadedContent);
+  registry->RegisterListPref(prefs::kURLsToCheckComplianceOfDownloadedContent);
+  registry->RegisterListPref(prefs::kURLsToNotCheckComplianceOfUploadedContent);
+  registry->RegisterListPref(prefs::kURLsToCheckForMalwareOfUploadedContent);
 }
 
 void SetExtendedReportingPrefAndMetric(

@@ -1227,22 +1227,6 @@ TEST_F(MultiDeviceSetupImplTest, TestSetHostDeviceWithoutAuthToken) {
       test_devices()[0], observer.get(), 1u /* expected_observer_index */);
 }
 
-TEST_F(MultiDeviceSetupImplTest, GetEligibleHostDevicesSortedByTimestamp) {
-  multidevice::RemoteDeviceRefList devices = test_devices();
-
-  // Update the devices in the list such that they are sorted from
-  // least-recently-updated to most-recently-updated. This is the opposite order
-  // that is expected from GetEligibleDevices();
-  for (size_t i = 0; i < devices.size(); ++i)
-    GetMutableRemoteDevice(devices[i])->last_update_time_millis = i;
-  fake_eligible_host_devices_provider()->set_eligible_host_devices(devices);
-
-  // Now, reverse the original list and verify that the returned devices are
-  // sorted in the correct order.
-  std::reverse(devices.begin(), devices.end());
-  EXPECT_EQ(RefListToRawList(devices), CallGetEligibleHostDevices());
-}
-
 }  // namespace multidevice_setup
 
 }  // namespace chromeos

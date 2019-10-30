@@ -24,9 +24,14 @@ rootWebArea
 ++++++++++++++genericContainer ignored
 ++++++++++++++++genericContainer
 ++++++++++++++++++button name='Show month selection panel'
+++++++++++++++++++++staticText name='September 2008'
+++++++++++++++++++++svgRoot
 ++++++++++++++++button name='Show previous month'
+++++++++++++++++++svgRoot
 ++++++++++++++++button name='Today'
+++++++++++++++++++genericContainer
 ++++++++++++++++button name='Show next month'
+++++++++++++++++++svgRoot
 ++++++++++++++grid
 ++++++++++++++++genericContainer
 ++++++++++++++++++genericContainer

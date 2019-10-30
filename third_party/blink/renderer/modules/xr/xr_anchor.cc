@@ -10,10 +10,10 @@
 
 namespace blink {
 
-XRAnchor::XRAnchor(uint32_t id, XRSession* session)
+XRAnchor::XRAnchor(uint64_t id, XRSession* session)
     : id_(id), session_(session), anchor_data_(base::nullopt) {}
 
-XRAnchor::XRAnchor(uint32_t id,
+XRAnchor::XRAnchor(uint64_t id,
                    XRSession* session,
                    const device::mojom::blink::XRAnchorDataPtr& anchor_data,
                    double timestamp)
@@ -32,7 +32,7 @@ void XRAnchor::Update(const device::mojom::blink::XRAnchorDataPtr& anchor_data,
   }
 }
 
-uint32_t XRAnchor::id() const {
+uint64_t XRAnchor::id() const {
   return id_;
 }
 

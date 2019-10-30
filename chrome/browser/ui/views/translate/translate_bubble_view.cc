@@ -510,8 +510,7 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
   }
 
   options_menu_model_->AddItemWithStringId(
-      OptionsMenuItem::MORE_OPTIONS,
-      IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON);
+      OptionsMenuItem::MORE_OPTIONS, IDS_TRANSLATE_BUBBLE_ADVANCED_MENU_BUTTON);
 
   options_menu_runner_ = std::make_unique<views::MenuRunner>(
       options_menu_model_.get(), views::MenuRunner::COMBOBOX);
@@ -1632,13 +1631,14 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_TITLE);
-  cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-  cs->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL) *
-          2);
+  if (!UseGoogleTranslateBranding()) {
+    cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                  views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
+                  0);
+    cs->AddPaddingColumn(views::GridLayout::kFixedSize,
+                         provider->GetDistanceMetric(
+                             views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
+  }
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                 views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
                 0);
@@ -1646,25 +1646,25 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL) *
           4);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+  cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                 views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
                 0);
   cs->AddPaddingColumn(1.0, 0);
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_LANGUAGES);
 
-  cs->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
-  cs->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
-  cs->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+  if (!UseGoogleTranslateBranding()) {
+    cs->AddPaddingColumn(views::GridLayout::kFixedSize,
+                         language_icon->CalculatePreferredSize().width());
+    cs->AddPaddingColumn(views::GridLayout::kFixedSize,
+                         provider->GetDistanceMetric(
+                             views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
+    cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
+                  views::GridLayout::USE_PREF, 0, 0);
+  } else {
+    cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
+                  views::GridLayout::USE_PREF, 0, 0);
+  }
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
@@ -1683,7 +1683,12 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
                 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_TITLE);
-  layout->AddView(std::move(language_icon));
+  if (!UseGoogleTranslateBranding()) {
+    // If the bottom branding isn't showing, display the leading translate icon
+    // otherwise it's not obvious what the bubble is about. This should only
+    // happen on non-Chrome-branded builds.
+    layout->AddView(std::move(language_icon));
+  }
   layout->AddView(std::move(language_title_label));
   layout->AddView(std::move(close_button));
 
@@ -1692,11 +1697,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
 
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_LANGUAGES);
-
-  // TODO(crbug.com/963148): Combobox doesn't take up the whole row as shown
-  // in mock.
   layout->AddView(std::move(combobox));
-
   layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
 
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS);

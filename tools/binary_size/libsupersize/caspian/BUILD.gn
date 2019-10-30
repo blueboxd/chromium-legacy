@@ -15,6 +15,8 @@ source_set("caspian-lib") {
     "file_format.h",
     "model.cc",
     "model.h",
+    "tree_builder.cc",
+    "tree_builder.h",
   ]
   deps = [
     "//third_party/zlib:zlib",
@@ -53,7 +55,7 @@ if (is_wasm) {
       "-s",
       "ALLOW_MEMORY_GROWTH=1",
       "-s",
-      "EXPORTED_FUNCTIONS=['_LoadSizeFile','_Open','_malloc','_free']",
+      "EXPORTED_FUNCTIONS=['_LoadSizeFile','_BuildTree','_Open','_malloc','_free']",
       "-s",
       "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap','UTF8ToString']",
     ]

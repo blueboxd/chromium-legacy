@@ -159,11 +159,6 @@ extern const char kEnableSyncUSSPasswordsDescription[];
 extern const char kEnableSyncUSSNigoriName[];
 extern const char kEnableSyncUSSNigoriDescription[];
 
-// Title and description for the flag to enable fill passwords on account select
-// on HTTP origins.
-extern const char kFillOnAccountSelectHttpName[];
-extern const char kFillOnAccountSelectHttpDescription[];
-
 // Title and description for the flag to search in iFrames in Find In Page.
 extern const char kFindInPageiFrameName[];
 extern const char kFindInPageiFrameDescription[];

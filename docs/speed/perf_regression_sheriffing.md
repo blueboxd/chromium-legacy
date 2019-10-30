@@ -76,6 +76,12 @@ below it the dashboard shows graphs of all the alerts checked in that table.
    bisects as you feel are necessary to investigate; [give feedback](#feedback)
    below if you feel that is not the case.
 
+### Dashboard UI Tips
+
+* Grouping is done client side today. If you click "Show more" at the bottom
+until you can see all the alerts, the alerts will be grouped together more.
+* You can shift click on the check boxes to select multiple alerts quickly.
+
 ## Follow up on Performance Regressions
 
 During your shift, you should try to follow up on each of the bugs you filed.

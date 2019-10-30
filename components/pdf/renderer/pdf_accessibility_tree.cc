@@ -54,7 +54,7 @@ gfx::RectF ToGfxRectF(const PP_FloatRect& r) {
 class LineHelper {
  public:
   explicit LineHelper(
-      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs)
+      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs)
       : text_runs_(text_runs) {
     StartNewLine(0);
   }
@@ -132,7 +132,7 @@ class LineHelper {
     }
   }
 
-  const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs_;
+  const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs_;
   size_t start_index_;
   float accumulated_weight_top_;
   float accumulated_weight_bottom_;
@@ -162,7 +162,7 @@ void ConnectPreviousAndNextOnLine(ui::AXNodeData* previous_on_line_node,
 }
 
 bool BreakParagraph(
-    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     uint32_t text_run_index,
     double paragraph_spacing_threshold) {
   // Check to see if its also a new paragraph, i.e., if the distance between
@@ -220,13 +220,14 @@ PdfAccessibilityTree::~PdfAccessibilityTree() {
 
 // static
 bool PdfAccessibilityTree::IsDataFromPluginValid(
-    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
     const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
   base::CheckedNumeric<uint32_t> char_length = 0;
-  for (const PP_PrivateAccessibilityTextRunInfo& text_run : text_runs)
+  for (const ppapi::PdfAccessibilityTextRunInfo& text_run : text_runs)
     char_length += text_run.len;
+
   if (!char_length.IsValid() || char_length.ValueOrDie() != chars.size())
     return false;
 
@@ -302,7 +303,7 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
 
 void PdfAccessibilityTree::SetAccessibilityPageInfo(
     const PP_PrivateAccessibilityPageInfo& page_info,
-    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
     const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
@@ -346,7 +347,7 @@ void PdfAccessibilityTree::AddPageContent(
     ui::AXNodeData* page_node,
     const gfx::RectF& page_bounds,
     uint32_t page_index,
-    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
     const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
@@ -369,7 +370,7 @@ void PdfAccessibilityTree::AddPageContent(
        ++text_run_index) {
     // If we don't have a paragraph, create one.
     if (!para_node) {
-      para_node = CreateParagraphNode(text_runs[text_run_index].font_size,
+      para_node = CreateParagraphNode(text_runs[text_run_index].style.font_size,
                                       heading_font_size_threshold);
       page_node->child_ids.push_back(para_node->id);
     }
@@ -418,7 +419,7 @@ void PdfAccessibilityTree::AddPageContent(
         para_node->child_ids.push_back(static_text_node->id);
       }
 
-      const PP_PrivateAccessibilityTextRunInfo& text_run =
+      const ppapi::PdfAccessibilityTextRunInfo& text_run =
           text_runs[text_run_index];
       // Add this text run to the current static text node.
       ui::AXNodeData* inline_text_box_node =
@@ -573,7 +574,7 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
 }
 
 void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
-    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     double* out_heading_font_size_threshold,
     double* out_paragraph_spacing_threshold) {
   // Scan over the font sizes and line spacing within this page and
@@ -583,7 +584,7 @@ void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
   std::vector<double> font_sizes;
   std::vector<double> line_spacings;
   for (size_t i = 0; i < text_runs.size(); ++i) {
-    font_sizes.push_back(text_runs[i].font_size);
+    font_sizes.push_back(text_runs[i].style.font_size);
     if (i > 0) {
       const auto& cur = text_runs[i].bounds;
       const auto& prev = text_runs[i - 1].bounds;
@@ -610,7 +611,7 @@ void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
 }
 
 std::string PdfAccessibilityTree::GetTextRunCharsAsUTF8(
-    const PP_PrivateAccessibilityTextRunInfo& text_run,
+    const ppapi::PdfAccessibilityTextRunInfo& text_run,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     int char_index) {
   std::string chars_utf8;
@@ -622,7 +623,7 @@ std::string PdfAccessibilityTree::GetTextRunCharsAsUTF8(
 }
 
 std::vector<int32_t> PdfAccessibilityTree::GetTextRunCharOffsets(
-    const PP_PrivateAccessibilityTextRunInfo& text_run,
+    const ppapi::PdfAccessibilityTextRunInfo& text_run,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     int char_index) {
   std::vector<int32_t> char_offsets(text_run.len);
@@ -686,7 +687,7 @@ ui::AXNodeData* PdfAccessibilityTree::CreateStaticTextNode(
 }
 
 ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
-    const PP_PrivateAccessibilityTextRunInfo& text_run,
+    const ppapi::PdfAccessibilityTextRunInfo& text_run,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     uint32_t char_index,
     const gfx::RectF& page_bounds) {
@@ -746,7 +747,7 @@ ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
 void PdfAccessibilityTree::AddTextToLinkNode(
     uint32_t start_text_run_index,
     uint32_t end_text_run_index,
-    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const gfx::RectF& page_bounds,
     uint32_t* char_index,
@@ -760,7 +761,7 @@ void PdfAccessibilityTree::AddTextToLinkNode(
 
   for (size_t text_run_index = start_text_run_index;
        text_run_index <= end_text_run_index; ++text_run_index) {
-    const PP_PrivateAccessibilityTextRunInfo& text_run =
+    const ppapi::PdfAccessibilityTextRunInfo& text_run =
         text_runs[text_run_index];
     // Add this text run to the current static text node.
     ui::AXNodeData* inline_text_box_node =

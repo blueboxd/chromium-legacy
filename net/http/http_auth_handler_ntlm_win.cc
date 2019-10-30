@@ -17,31 +17,6 @@
 
 namespace net {
 
-HttpAuthHandlerNTLM::HttpAuthHandlerNTLM(
-    SSPILibrary* sspi_library,
-    const HttpAuthPreferences* http_auth_preferences)
-    : auth_sspi_(sspi_library, "NTLM"),
-      http_auth_preferences_(http_auth_preferences) {}
-
-HttpAuthHandlerNTLM::~HttpAuthHandlerNTLM() {
-}
-
-// Require identity on first pass instead of second.
-bool HttpAuthHandlerNTLM::NeedsIdentity() {
-  return auth_sspi_.NeedsIdentity();
-}
-
-bool HttpAuthHandlerNTLM::AllowsDefaultCredentials() {
-  if (target_ == HttpAuth::AUTH_PROXY)
-    return true;
-  if (!http_auth_preferences_)
-    return false;
-  return http_auth_preferences_->CanUseDefaultCredentials(origin_);
-}
-
-HttpAuthHandlerNTLM::Factory::Factory() {}
-HttpAuthHandlerNTLM::Factory::~Factory() {}
-
 int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
     HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
@@ -63,6 +38,45 @@ int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
     return ERR_INVALID_RESPONSE;
   handler->swap(tmp_handler);
   return OK;
+}
+
+HttpAuthHandlerNTLM::HttpAuthHandlerNTLM(
+    SSPILibrary* sspi_library,
+    const HttpAuthPreferences* http_auth_preferences)
+    : auth_sspi_(sspi_library, "NTLM"),
+      http_auth_preferences_(http_auth_preferences) {}
+
+int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
+    const AuthCredentials* credentials,
+    const HttpRequestInfo* request,
+    CompletionOnceCallback callback,
+    std::string* auth_token) {
+  return auth_sspi_.GenerateAuthToken(credentials, CreateSPN(origin_),
+                                      channel_bindings_, auth_token, net_log(),
+                                      std::move(callback));
+}
+
+HttpAuthHandlerNTLM::~HttpAuthHandlerNTLM() {
+}
+
+// Require identity on first pass instead of second.
+bool HttpAuthHandlerNTLM::NeedsIdentity() {
+  return auth_sspi_.NeedsIdentity();
+}
+
+bool HttpAuthHandlerNTLM::AllowsDefaultCredentials() {
+  if (target_ == HttpAuth::AUTH_PROXY)
+    return true;
+  if (!http_auth_preferences_)
+    return false;
+  return http_auth_preferences_->CanUseDefaultCredentials(origin_);
+}
+
+HttpAuth::AuthorizationResult HttpAuthHandlerNTLM::ParseChallenge(
+    HttpAuthChallengeTokenizer* tok,
+    bool initial_challenge) {
+  // auth_sspi_ contains state for whether or not this is the initial challenge.
+  return auth_sspi_.ParseChallenge(tok);
 }
 
 }  // namespace net

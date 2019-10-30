@@ -635,8 +635,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    int context_id) override;
   RenderFrameHostImpl* GetMainFrameForInnerDelegate(
       FrameTreeNode* frame_tree_node) override;
-  void OnThemeColorChanged(RenderFrameHostImpl* source,
-                           const base::Optional<SkColor>& theme_color) override;
   bool IsFrameLowPriority(const RenderFrameHost* render_frame_host) override;
   void RegisterProtocolHandler(RenderFrameHostImpl* source,
                                const std::string& protocol,
@@ -712,6 +710,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderFrameHostImpl* GetPendingMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) override;
   bool IsPortal() const override;
+  void OnThemeColorChanged(RenderViewHostImpl* source) override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -1626,15 +1625,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // to modify the blank page.  Always false after the first commit.
   bool has_accessed_initial_document_;
 
-  // The theme color for the underlying document as specified
-  // by theme-color meta tag.
-  base::Optional<SkColor> theme_color_;
-
   // The last published theme color.
   base::Optional<SkColor> last_sent_theme_color_;
-
-  // Whether the first visually non-empty paint has occurred.
-  bool did_first_visually_non_empty_paint_;
 
   // SourceId for current page.
   ukm::SourceId last_committed_source_id_ = ukm::kInvalidSourceId;

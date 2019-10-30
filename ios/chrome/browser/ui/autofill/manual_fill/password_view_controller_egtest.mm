@@ -46,12 +46,7 @@ const char kFormElementPassword[] = "password";
 const char kExampleUsername[] = "concrete username";
 
 const char kFormHTMLFile[] = "/username_password_field_form.html";
-
-// TODO(crbug.com/1016367): Remove the guard once ExecuteJavaScript is updated
-// to compile on EG2.
-#if defined(CHROME_EARL_GREY_1)
 const char kIFrameHTMLFile[] = "/iframe_form.html";
-#endif  // CHROME_EARL_GREY_1
 
 // Returns a matcher for the example username in the list.
 id<GREYMatcher> UsernameButtonMatcher() {
@@ -64,14 +59,11 @@ id<GREYMatcher> NotSecureWebsiteAlert() {
       IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
 }
 
-// TODO(crbug.com/1016367): Remove the guard once ExecuteJavaScript is updated
-// to compile on EG2.
-#if defined(CHROME_EARL_GREY_1)
 // Polls the JavaScript query |java_script_condition| until the returned
 // |boolValue| is YES with a kWaitForActionTimeout timeout.
 BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   auto verify_block = ^BOOL {
-    id value = chrome_test_util::ExecuteJavaScript(java_script_condition, nil);
+    id value = [ChromeEarlGrey executeJavaScript:java_script_condition];
     return [value isEqual:@YES];
   };
   NSTimeInterval timeout = base::test::ios::kWaitForActionTimeout;
@@ -81,7 +73,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       [GREYCondition conditionWithName:condition_name block:verify_block];
   return [condition waitWithTimeout:timeout];
 }
-#endif  // CHROME_EARL_GREY_1
 
 }  // namespace
 
@@ -498,9 +489,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// TODO(crbug.com/1016367): Remove the guard of this test when ExecuteJavaScript
-// util is updated for EG2.
-#if defined(CHROME_EARL_GREY_1)
 // Tests that content is injected in iframe messaging.
 - (void)testPasswordControllerSupportsIFrameMessaging {
   const GURL URL = self.testServer->GetURL(kIFrameHTMLFile);
@@ -536,7 +524,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
           kFormElementUsername, kExampleUsername];
   XCTAssertTrue(WaitForJavaScriptCondition(javaScriptCondition));
 }
-#endif  // CHROME_EARL_GREY_1
 
 // Tests that an alert is shown when trying to fill a password in an unsecure
 // field.

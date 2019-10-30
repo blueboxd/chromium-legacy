@@ -114,6 +114,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/hugepage_text/hugepage_text.h"
 #include "chromeos/memory/kstaled.h"
+#include "chromeos/memory/swap_configuration.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -601,6 +602,7 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
     heap_profiler_controller_->Start();
 
 #if defined(OS_CHROMEOS)
+    chromeos::ConfigureSwap();
     chromeos::InitializeKstaled();
 #endif
   }

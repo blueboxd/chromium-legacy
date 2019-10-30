@@ -491,13 +491,6 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   ASSERT_EQ("root label text", name);
 
-  // Set tooltip on child2.
-  SetProperty(child2, AXStringProperty::TOOLTIP, "tooltip text");
-  CallSerializeNode(child2, &data);
-  ASSERT_TRUE(
-      data->GetStringAttribute(ax::mojom::StringAttribute::kTooltip, &name));
-  ASSERT_EQ("tooltip text", name);
-
   // Clearing both clickable and name from root, the name should not be
   // populated.
   root->boolean_properties->clear();
@@ -685,6 +678,51 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {
   EXPECT_NE(ax::mojom::Role::kRootWebArea, data->role);
 
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+}
+
+TEST_F(AXTreeSourceArcTest, StringPropertiesComputations) {
+  auto event = AXEventData::New();
+  event->source_id = 1;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* root = event->node_data.back().get();
+  root->id = 1;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 1;
+
+  // Add a child node.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* child = event->node_data.back().get();
+  child->id = 2;
+
+  // Set properties to the root.
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({2}));
+  SetProperty(root, AXStringProperty::PACKAGE_NAME, "com.android.vending");
+
+  // Set properties to the child.
+  SetProperty(child, AXStringProperty::TOOLTIP, "tooltip text");
+
+  // Populate the tree source with the data.
+  CallNotifyAccessibilityEvent(event.get());
+
+  std::unique_ptr<ui::AXNodeData> data;
+  CallSerializeNode(root, &data);
+
+  std::string prop;
+  // Url includes AXTreeId, which is unguessable. Just verifies the prefix.
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kUrl, &prop));
+  EXPECT_EQ(0U, prop.find("com.android.vending/"));
+
+  CallSerializeNode(child, &data);
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kTooltip, &prop));
+  ASSERT_EQ("tooltip text", prop);
 }
 
 TEST_F(AXTreeSourceArcTest, ComplexTreeStructure) {

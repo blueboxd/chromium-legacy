@@ -34,7 +34,7 @@ def main():
       html_doc.encode()).decode()
 
   # And finally stamp the the data URL into the output template.
-  output = output_template.substitute({'data_url': data_url})
+  output = output_template.safe_substitute({'data_url': data_url})
 
   current_contents = ''
   if os.path.isfile(args.output_file):

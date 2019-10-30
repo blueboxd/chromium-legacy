@@ -89,9 +89,9 @@ using ScopedArCoreObject = base::ScopedGeneric<T, ScopedGenericArObject<T>>;
 
 }  // namespace internal
 
-using PlaneId = util::IdTypeU32<class PlaneTag>;
-using AnchorId = util::IdTypeU32<class AnchorTag>;
-using HitTestSubscriptionId = util::IdTypeU32<class HitTestSubscriptionTag>;
+using PlaneId = util::IdTypeU64<class PlaneTag>;
+using AnchorId = util::IdTypeU64<class AnchorTag>;
+using HitTestSubscriptionId = util::IdTypeU64<class HitTestSubscriptionTag>;
 
 struct HitTestSubscriptionData {
   mojom::XRNativeOriginInformationPtr native_origin_information;
@@ -137,21 +137,21 @@ class ArCoreImpl : public ArCore {
                       const gfx::Vector3dF& direction,
                       std::vector<mojom::XRHitResultPtr>* hit_results);
 
-  base::Optional<uint32_t> SubscribeToHitTest(
+  base::Optional<uint64_t> SubscribeToHitTest(
       mojom::XRNativeOriginInformationPtr nativeOriginInformation,
       mojom::XRRayPtr ray) override;
 
   mojom::XRHitTestSubscriptionResultsDataPtr GetHitTestSubscriptionResults(
       const device::mojom::VRPosePtr& pose) override;
 
-  void UnsubscribeFromHitTest(uint32_t subscription_id) override;
+  void UnsubscribeFromHitTest(uint64_t subscription_id) override;
 
-  base::Optional<uint32_t> CreateAnchor(
+  base::Optional<uint64_t> CreateAnchor(
       const device::mojom::VRPosePtr& pose) override;
-  base::Optional<uint32_t> CreateAnchor(const device::mojom::VRPosePtr& pose,
-                                        uint32_t plane_id) override;
+  base::Optional<uint64_t> CreateAnchor(const device::mojom::VRPosePtr& pose,
+                                        uint64_t plane_id) override;
 
-  void DetachAnchor(uint32_t anchor_id) override;
+  void DetachAnchor(uint64_t anchor_id) override;
 
  private:
   bool IsOnGlThread();
@@ -194,7 +194,7 @@ class ArCoreImpl : public ArCore {
   // planes already have an ID assigned. The result includes freshly assigned
   // IDs for newly detected planes along with previously known IDs for updated
   // and unchanged planes. It excludes planes that are no longer being tracked.
-  std::vector<uint32_t> GetAllPlaneIds();
+  std::vector<uint64_t> GetAllPlaneIds();
 
   // Returns vector containing information about all anchors updated in the
   // current frame.
@@ -202,9 +202,9 @@ class ArCoreImpl : public ArCore {
 
   // The result will contain IDs of all anchors still tracked in the current
   // frame.
-  std::vector<uint32_t> GetAllAnchorIds();
+  std::vector<uint64_t> GetAllAnchorIds();
 
-  uint32_t next_id_ = 1;
+  uint64_t next_id_ = 1;
   std::map<void*, PlaneId> ar_plane_address_to_id_;
   std::map<PlaneId, device::internal::ScopedArCoreObject<ArTrackable*>>
       plane_id_to_plane_object_;
@@ -216,14 +216,11 @@ class ArCoreImpl : public ArCore {
       hit_test_subscription_id_to_data_;
 
   // Returns tuple containing plane id and a boolean signifying that the plane
-  // was created. The result will be a nullopt in case the ID should be assigned
-  // but next ID would result in an integer overflow.
-  base::Optional<std::pair<PlaneId, bool>> CreateOrGetPlaneId(
-      void* plane_address);
-  base::Optional<std::pair<AnchorId, bool>> CreateOrGetAnchorId(
-      void* anchor_address);
+  // was created.
+  std::pair<PlaneId, bool> CreateOrGetPlaneId(void* plane_address);
+  std::pair<AnchorId, bool> CreateOrGetAnchorId(void* anchor_address);
 
-  base::Optional<HitTestSubscriptionId> CreateHitTestSubscriptionId();
+  HitTestSubscriptionId CreateHitTestSubscriptionId();
 
   // Returns hit test subscription results for a single subscription given
   // current XRSpace transformation.

@@ -14,7 +14,10 @@
   width: min-content;
 }
 #container {
-  content-size: 123px 234px;
+  intrinsic-size: 123px 234px;
+}
+*:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 

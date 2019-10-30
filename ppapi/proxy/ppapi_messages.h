@@ -275,11 +275,22 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityCharInfo)
   IPC_STRUCT_TRAITS_MEMBER(char_width)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityTextRunInfo)
-  IPC_STRUCT_TRAITS_MEMBER(len)
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityTextStyleInfo)
+  IPC_STRUCT_TRAITS_MEMBER(font_name)
+  IPC_STRUCT_TRAITS_MEMBER(font_weight)
+  IPC_STRUCT_TRAITS_MEMBER(render_mode)
   IPC_STRUCT_TRAITS_MEMBER(font_size)
+  IPC_STRUCT_TRAITS_MEMBER(fill_color)
+  IPC_STRUCT_TRAITS_MEMBER(stroke_color)
+  IPC_STRUCT_TRAITS_MEMBER(is_italic)
+  IPC_STRUCT_TRAITS_MEMBER(is_bold)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityTextRunInfo)
+  IPC_STRUCT_TRAITS_MEMBER(len)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
   IPC_STRUCT_TRAITS_MEMBER(direction)
+  IPC_STRUCT_TRAITS_MEMBER(style)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityPageInfo)
@@ -2402,7 +2413,7 @@ IPC_MESSAGE_CONTROL1(
 IPC_MESSAGE_CONTROL4(
     PpapiHostMsg_PDF_SetAccessibilityPageInfo,
     PP_PrivateAccessibilityPageInfo /* page_info */,
-    std::vector<PP_PrivateAccessibilityTextRunInfo> /* text_runs */,
+    std::vector<ppapi::PdfAccessibilityTextRunInfo> /* text_runs */,
     std::vector<PP_PrivateAccessibilityCharInfo> /* chars */,
     ppapi::PdfAccessibilityPageObjects /* page_objects */)
 

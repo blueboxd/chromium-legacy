@@ -20,7 +20,6 @@
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
-#include "content/public/test/browser_task_environment.h"
 #include "content/test/gmock_util.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -96,7 +95,7 @@ class SessionStorageAreaImplTest : public testing::Test {
   }
 
  protected:
-  BrowserTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const std::string test_namespace_id1_;
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;

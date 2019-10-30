@@ -73,7 +73,7 @@ struct NET_EXPORT SSLServerConfig {
   // List of DER-encoded X.509 DistinguishedName of certificate authorities
   // to be included in the CertificateRequest handshake message,
   // if client certificates are required.
-  std::vector<std::string> cert_authorities_;
+  std::vector<std::string> cert_authorities;
 
   // Provides the ClientCertVerifier that is to be used to verify
   // client certificates during the handshake.

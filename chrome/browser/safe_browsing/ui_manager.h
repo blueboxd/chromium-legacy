@@ -107,9 +107,6 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // Calls SafeBrowsingBlockingPage::ShowBlockingPage().
   void ShowBlockingPageForResource(const UnsafeResource& resource) override;
 
-  // Returns true if SB committed interstitials are enabled.
-  bool SafeBrowsingInterstitialsAreCommittedNavigations() override;
-
   // Helper method to ensure hit reports are only sent when the user has
   // opted in to extended reporting and is not currently in incognito mode.
   static bool ShouldSendHitReport(const HitReport& hit_report,

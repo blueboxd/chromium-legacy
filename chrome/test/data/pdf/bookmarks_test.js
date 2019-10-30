@@ -5,22 +5,22 @@
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {createBookmarksForTest} from './test_util.js';
 
-var tests = [
+const tests = [
   /**
    * Test that the correct bookmarks were loaded for
    * test-bookmarks-with-zoom.pdf.
    */
   function testHasCorrectBookmarks() {
-    var bookmarks = viewer.bookmarks;
+    const bookmarks = viewer.bookmarks;
 
     // Load all relevant bookmarks.
     chrome.test.assertEq(3, bookmarks.length);
-    var firstBookmark = bookmarks[0];
-    var secondBookmark = bookmarks[1];
-    var uriBookmark = bookmarks[2];
+    const firstBookmark = bookmarks[0];
+    const secondBookmark = bookmarks[1];
+    const uriBookmark = bookmarks[2];
     chrome.test.assertEq(1, firstBookmark.children.length);
     chrome.test.assertEq(0, secondBookmark.children.length);
-    var firstNestedBookmark = firstBookmark.children[0];
+    const firstNestedBookmark = firstBookmark.children[0];
 
     // Check titles.
     chrome.test.assertEq('First Section', firstBookmark.title);
@@ -60,28 +60,28 @@ var tests = [
    * test-bookmarks-with-zoom.pdf.
    */
   function testFollowBookmark() {
-    var bookmarkContent = createBookmarksForTest();
+    const bookmarkContent = createBookmarksForTest();
     bookmarkContent.bookmarks = viewer.bookmarks;
     document.body.appendChild(bookmarkContent);
 
     flush();
 
-    var rootBookmarks =
+    const rootBookmarks =
         bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
     chrome.test.assertEq(3, rootBookmarks.length, 'three root bookmarks');
     rootBookmarks[0].$.expand.click();
 
     flush();
 
-    var subBookmarks =
+    const subBookmarks =
         rootBookmarks[0].shadowRoot.querySelectorAll('viewer-bookmark');
     chrome.test.assertEq(1, subBookmarks.length, 'one sub bookmark');
 
-    var lastPageChange;
-    var lastXChange;
-    var lastYChange;
-    var lastZoomChange;
-    var lastUriNavigation;
+    let lastPageChange;
+    let lastXChange;
+    let lastYChange;
+    let lastZoomChange;
+    let lastUriNavigation;
     bookmarkContent.addEventListener('change-page', function(e) {
       lastPageChange = e.detail.page;
       lastXChange = undefined;
@@ -129,7 +129,7 @@ var tests = [
   }
 ];
 
-var scriptingAPI = new PDFScriptingAPI(window, window);
+const scriptingAPI = new PDFScriptingAPI(window, window);
 scriptingAPI.setLoadCallback(function() {
   chrome.test.runTests(tests);
 });

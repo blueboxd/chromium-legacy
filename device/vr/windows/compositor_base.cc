@@ -24,9 +24,6 @@ namespace device {
 mojom::XRFrameDataPtr XRDeviceAbstraction::GetNextFrameData() {
   return nullptr;
 }
-mojom::XRGamepadDataPtr XRDeviceAbstraction::GetNextGamepadData() {
-  return nullptr;
-}
 void XRDeviceAbstraction::OnSessionStart() {}
 void XRDeviceAbstraction::HandleDeviceLost() {}
 bool XRDeviceAbstraction::PreComposite() {
@@ -136,16 +133,9 @@ void XRCompositorCommon::CleanUp() {
   webxr_has_pose_ = false;
   presentation_receiver_.reset();
   frame_data_receiver_.reset();
-  gamepad_provider_receiver_.reset();
   overlay_receiver_.reset();
   input_event_listener_.reset();
   StopRuntime();
-}
-
-void XRCompositorCommon::RequestGamepadProvider(
-    mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> receiver) {
-  gamepad_provider_receiver_.reset();
-  gamepad_provider_receiver_.Bind(std::move(receiver));
 }
 
 void XRCompositorCommon::RequestOverlay(
@@ -265,9 +255,6 @@ void XRCompositorCommon::ExitPresent() {
   // Reset webxr_visible_ for subsequent presentations.
   webxr_visible_ = true;
 
-  // Push out one more controller update so we don't have stale controllers.
-  UpdateControllerState();
-
   // Kill outstanding overlays:
   overlay_visible_ = false;
   overlay_receiver_.reset();
@@ -289,31 +276,6 @@ void XRCompositorCommon::SetVisibilityState(
           FROM_HERE,
           base::BindOnce(on_visibility_state_changed_, visibility_state));
     }
-  }
-}
-
-void XRCompositorCommon::UpdateControllerState() {
-  if (!gamepad_callback_) {
-    // Nobody is listening to updates, so bail early.
-    return;
-  }
-
-  if (!is_presenting_ || !webxr_visible_) {
-    std::move(gamepad_callback_).Run(nullptr);
-    return;
-  }
-
-  std::move(gamepad_callback_).Run(GetNextGamepadData());
-}
-
-void XRCompositorCommon::RequestUpdate(
-    mojom::IsolatedXRGamepadProvider::RequestUpdateCallback callback) {
-  // Save the callback to resolve next time we update (typically on vsync).
-  gamepad_callback_ = std::move(callback);
-
-  // If we aren't presenting, reply now saying that we have no controllers.
-  if (!is_presenting_) {
-    UpdateControllerState();
   }
 }
 
@@ -370,9 +332,8 @@ void XRCompositorCommon::GetFrameData(
   // have been sent during WaitGetPoses.
   task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&XRCompositorCommon::GetControllerDataAndSendFrameData,
-                     base::Unretained(this), std::move(callback),
-                     pending_frame_->frame_data_.Clone()));
+      base::BindOnce(&XRCompositorCommon::SendFrameData, base::Unretained(this),
+                     std::move(callback), pending_frame_->frame_data_.Clone()));
 
   next_frame_id_ += 1;
   if (next_frame_id_ < 0) {
@@ -388,12 +349,10 @@ void XRCompositorCommon::SetInputSourceButtonListener(
   input_event_listener_.Bind(std::move(input_listener_remote));
 }
 
-void XRCompositorCommon::GetControllerDataAndSendFrameData(
+void XRCompositorCommon::SendFrameData(
     XRFrameDataProvider::GetFrameDataCallback callback,
     mojom::XRFrameDataPtr frame_data) {
-  TRACE_EVENT0("xr", "GetControllerDataAndSendFrameData");
-  // Update gamepad controllers.
-  UpdateControllerState();
+  TRACE_EVENT0("xr", "SendFrameData");
 
   // This method represents a call from the renderer process. If our visibility
   // state is hidden, we should avoid handing "sensitive" information, like the

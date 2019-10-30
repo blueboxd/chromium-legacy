@@ -45,12 +45,12 @@
                  android:exported="false" />
         {% endfor %}
 
-        <provider android:name="android.support.v4.content.FileProvider"
+        <provider android:name="org.chromium.weblayer.WebLayerFileProvider"
             android:authorities="${applicationId}.org.chromium.weblayer.client.FileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
+                android:resource="@xml/weblayer_file_paths" />
         </provider>
     </application>
 </manifest>

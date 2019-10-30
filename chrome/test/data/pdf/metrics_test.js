@@ -44,7 +44,7 @@ chrome.test.runTests(function() {
 
       chrome.metricsPrivate = new MockMetricsPrivate();
       PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
-      for (var i = 0; i < 4; i++) {
+      for (let i = 0; i < 4; i++) {
         PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
       }
 

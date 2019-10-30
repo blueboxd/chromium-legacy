@@ -17,16 +17,33 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.ColorUtils;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * View class for a bubble used in gesture navigation UI that consists of an icon
  * and an optional text.
  */
 public class NavigationBubble extends LinearLayout {
+    /**
+     * Target to close when gesture navigation takes place on the beginning
+     * of the navigation history. It can close either the current tab or
+     * chrome itself (putting it background).
+     */
+    @IntDef({CloseTarget.NONE, CloseTarget.TAB, CloseTarget.APP})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface CloseTarget {
+        int NONE = 0;
+        int TAB = 1;
+        int APP = 2;
+    }
+
     private static final int COLOR_TRANSITION_DURATION_MS = 250;
 
     private static final float FADE_ALPHA = 0.5f;
@@ -36,6 +53,8 @@ public class NavigationBubble extends LinearLayout {
     private final ValueAnimator mColorAnimator;
     private final int mBlue;
     private final int mBlack;
+    private final String mCloseApp;
+    private final String mCloseTab;
 
     private class ColorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
         private int mStart;
@@ -63,6 +82,8 @@ public class NavigationBubble extends LinearLayout {
     // True if arrow bubble is faded out.
     private boolean mArrowFaded;
 
+    private @CloseTarget int mCloseTarget;
+
     /**
      * Constructor for inflating from XML.
      */
@@ -88,6 +109,10 @@ public class NavigationBubble extends LinearLayout {
         getBackground().setColorFilter(ApiCompatibilityUtils.getColor(getResources(),
                                                R.color.navigation_bubble_background_color),
                 Mode.MULTIPLY);
+        mCloseApp = getResources().getString(R.string.overscroll_navigation_close_chrome,
+                getContext().getString(R.string.app_name));
+        mCloseTab = getResources().getString(R.string.overscroll_navigation_close_tab);
+        mCloseTarget = CloseTarget.NONE;
     }
 
     @Override
@@ -114,17 +139,25 @@ public class NavigationBubble extends LinearLayout {
     }
 
     /**
-     * Shows or hides the close chrome indicator.
-     * @param on {@code true} if the indicator should appear.
+     * Shows or hides the close indicator.
+     * @param target Target to close. if {@code NONE}, hide the indicator.
      */
-    public void showCaption(boolean on) {
-        if (on && !isShowingCaption()) {
+    public void showCaption(@CloseTarget int target) {
+        if (target != CloseTarget.NONE && !isShowingCaption()) {
+            setCloseIndicator(target);
             getTextView().setVisibility(View.VISIBLE);
             // Measure the width again after the indicator text becomes visible.
             measure(0, 0);
-        } else if (!on && isShowingCaption()) {
+        } else if (target == CloseTarget.NONE && isShowingCaption()) {
             getTextView().setVisibility(View.GONE);
         }
+    }
+
+    private void setCloseIndicator(@CloseTarget int target) {
+        assert target == CloseTarget.APP || target == CloseTarget.TAB;
+        if (mCloseTarget == target) return;
+        mCloseTarget = target;
+        getTextView().setText(target == CloseTarget.APP ? mCloseApp : mCloseTab);
     }
 
     @Override

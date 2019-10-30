@@ -409,6 +409,12 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                       CanvasRenderingContext2DState::PaintType,
                       CanvasRenderingContext2DState::ImageType);
 
+  template <typename T>
+  bool ValidateRectForCanvas(T x, T y, T width, T height);
+
+  template <typename T>
+  void AdjustRectForCanvas(T& x, T& y, T& width, T& height);
+
   void ClearCanvas();
   bool RectContainsTransformedRect(const FloatRect&, const SkIRect&) const;
   // Sets the origin to be tainted by the content of the canvas, such
@@ -520,6 +526,31 @@ void BaseRenderingContext2D::CompositedDraw(
   draw_func(c, &foreground_flags);
   c->restore();
   c->setMatrix(ctm);
+}
+
+template <typename T>
+bool BaseRenderingContext2D::ValidateRectForCanvas(T x,
+                                                   T y,
+                                                   T width,
+                                                   T height) {
+  return (std::isfinite(x) && std::isfinite(y) && std::isfinite(width) &&
+          std::isfinite(height) && (width || height));
+}
+
+template <typename T>
+void BaseRenderingContext2D::AdjustRectForCanvas(T& x,
+                                                 T& y,
+                                                 T& width,
+                                                 T& height) {
+  if (width < 0) {
+    width = -width;
+    x -= width;
+  }
+
+  if (height < 0) {
+    height = -height;
+    y -= height;
+  }
 }
 
 }  // namespace blink

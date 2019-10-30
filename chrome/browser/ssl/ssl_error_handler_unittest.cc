@@ -31,6 +31,7 @@
 #include "components/network_time/network_time_test_utils.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1517,48 +1518,4 @@ TEST_F(SSLErrorAssistantProtoTest,
   SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
 
   TestNoMITMSoftwareInterstitial();
-}
-
-TEST(SSLErrorHandlerTest, CalculateOptionsMask) {
-  int mask;
-
-  // Non-overridable cert error.
-  mask = SSLErrorHandler::CalculateOptionsMask(
-      net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, /* cert_error */
-      false,                                     /* hard_override_disabled */
-      false /* should_ssl_errors_be_fatal */
-  );
-  EXPECT_EQ(0, mask);
-  mask = SSLErrorHandler::CalculateOptionsMask(
-      net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, /* cert_error */
-      true,                                      /* hard_override_disabled */
-      false /* should_ssl_errors_be_fatal */
-  );
-  EXPECT_EQ(security_interstitials::SSLErrorUI::HARD_OVERRIDE_DISABLED, mask);
-  mask = SSLErrorHandler::CalculateOptionsMask(
-      net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, /* cert_error */
-      false,                                     /* hard_override_disabled */
-      true /* should_ssl_errors_be_fatal */
-  );
-  EXPECT_EQ(security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT, mask);
-
-  // Overridable cert error.
-  mask = SSLErrorHandler::CalculateOptionsMask(
-      net::ERR_CERT_DATE_INVALID, /* cert_error */
-      false,                      /* hard_override_disabled */
-      false                       /* should_ssl_errors_be_fatal */
-  );
-  EXPECT_EQ(security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED, mask);
-  mask = SSLErrorHandler::CalculateOptionsMask(
-      net::ERR_CERT_DATE_INVALID, /* cert_error */
-      true,                       /* hard_override_disabled */
-      false                       /* should_ssl_errors_be_fatal */
-  );
-  EXPECT_EQ(security_interstitials::SSLErrorUI::HARD_OVERRIDE_DISABLED, mask);
-  mask = SSLErrorHandler::CalculateOptionsMask(
-      net::ERR_CERT_DATE_INVALID, /* cert_error */
-      false,                      /* hard_override_disabled */
-      true                        /* should_ssl_errors_be_fatal */
-  );
-  EXPECT_EQ(security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT, mask);
 }

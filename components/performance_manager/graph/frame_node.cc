@@ -9,6 +9,10 @@
 
 namespace performance_manager {
 
+// static
+const char* FrameNode::kDefaultPriorityReason =
+    FrameNodeImpl::kDefaultPriorityReason;
+
 FrameNode::FrameNode() = default;
 FrameNode::~FrameNode() = default;
 

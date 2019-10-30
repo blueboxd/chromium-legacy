@@ -33,7 +33,7 @@ cr.define('print_button_test', function() {
       print_preview.NativeLayer.setInstance(nativeLayer);
       PolymerTest.clearBody();
       nativeLayer.setInitialSettings(initialSettings);
-      let localDestinationInfos = [
+      const localDestinationInfos = [
         {printerName: 'FooName', deviceName: 'FooDevice'},
       ];
       nativeLayer.setLocalDestinations(localDestinationInfos);

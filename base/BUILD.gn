@@ -622,8 +622,6 @@ jumbo_component("base") {
     "profiler/stack_buffer.h",
     "profiler/stack_copier.cc",
     "profiler/stack_copier.h",
-    "profiler/stack_copier_signal.cc",
-    "profiler/stack_copier_signal.h",
     "profiler/stack_copier_suspend.cc",
     "profiler/stack_copier_suspend.h",
     "profiler/stack_sampler.cc",
@@ -1168,6 +1166,10 @@ jumbo_component("base") {
       "files/file_posix.cc",
       "files/file_util_posix.cc",
       "files/memory_mapped_file_posix.cc",
+      "memory/madv_free_discardable_memory_allocator_posix.cc",
+      "memory/madv_free_discardable_memory_allocator_posix.h",
+      "memory/madv_free_discardable_memory_posix.cc",
+      "memory/madv_free_discardable_memory_posix.h",
       "memory/protected_memory_posix.cc",
       "message_loop/watchable_io_message_pump_posix.cc",
       "message_loop/watchable_io_message_pump_posix.h",
@@ -1204,6 +1206,16 @@ jumbo_component("base") {
       "threading/thread_local_storage_posix.cc",
       "timer/hi_res_timer_manager_posix.cc",
     ]
+
+    if (!is_nacl && !is_mac && !is_ios) {
+      sources += [
+        "profiler/stack_copier_signal.cc",
+        "profiler/stack_copier_signal.h",
+        "profiler/stack_sampler_posix.cc",
+        "profiler/thread_delegate_posix.cc",
+        "profiler/thread_delegate_posix.h",
+      ]
+    }
   }
 
   if (!is_nacl) {
@@ -1222,14 +1234,6 @@ jumbo_component("base") {
 
     if (is_posix) {
       sources += [ "base_paths_posix.h" ]
-
-      if (!is_mac && !is_ios) {
-        sources += [
-          "profiler/stack_sampler_posix.cc",
-          "profiler/thread_delegate_posix.cc",
-          "profiler/thread_delegate_posix.h",
-        ]
-      }
     }
 
     if (is_linux) {
@@ -1667,6 +1671,10 @@ jumbo_component("base") {
       "memory/discardable_memory_allocator.h",
       "memory/discardable_shared_memory.cc",
       "memory/discardable_shared_memory.h",
+      "memory/madv_free_discardable_memory_allocator_posix.cc",
+      "memory/madv_free_discardable_memory_allocator_posix.h",
+      "memory/madv_free_discardable_memory_posix.cc",
+      "memory/madv_free_discardable_memory_posix.h",
       "memory/shared_memory_helper.cc",
       "memory/shared_memory_helper.h",
       "native_library.cc",
@@ -2900,11 +2908,16 @@ test("base_unittests") {
     sources += [
       "files/dir_reader_posix_unittest.cc",
       "files/file_descriptor_watcher_posix_unittest.cc",
+      "memory/madv_free_discardable_memory_allocator_posix_unittest.cc",
+      "memory/madv_free_discardable_memory_posix_unittest.cc",
       "message_loop/message_loop_io_posix_unittest.cc",
       "posix/file_descriptor_shuffle_unittest.cc",
       "posix/unix_domain_socket_unittest.cc",
       "task/thread_pool/task_tracker_posix_unittest.cc",
     ]
+    if (!is_nacl && !is_mac && !is_ios) {
+      sources += [ "profiler/stack_copier_signal_unittest.cc" ]
+    }
   }
 
   # Allow more direct string conversions on platforms with native utf8

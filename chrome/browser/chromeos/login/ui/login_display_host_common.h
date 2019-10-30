@@ -22,6 +22,7 @@ namespace chromeos {
 
 class ArcKioskController;
 class DemoAppLauncher;
+class WebKioskController;
 
 // LoginDisplayHostCommon contains code which is not specific to a particular UI
 // implementation - the goal is to reduce code duplication between
@@ -45,6 +46,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
                       bool is_auto_launch) final;
   void StartDemoAppLaunch() final;
   void StartArcKiosk(const AccountId& account_id) final;
+  void StartWebKiosk(const AccountId& account_id) final;
   void CompleteLogin(const UserContext& user_context) final;
   void OnGaiaScreenReady() final;
   void SetDisplayEmail(const std::string& email) final;
@@ -69,6 +71,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   virtual void OnStartSignInScreen(const LoginScreenContext& context) = 0;
   virtual void OnStartAppLaunch() = 0;
   virtual void OnStartArcKiosk() = 0;
+  virtual void OnStartWebKiosk() = 0;
   virtual void OnBrowserCreated() = 0;
   virtual void OnStartUserAdding() = 0;
   virtual void OnFinalize() = 0;
@@ -97,6 +100,9 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
   // ARC kiosk controller.
   std::unique_ptr<ArcKioskController> arc_kiosk_controller_;
+
+  // Web app launch controller.
+  std::unique_ptr<WebKioskController> web_kiosk_controller_;
 
   content::NotificationRegistrar registrar_;
 

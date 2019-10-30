@@ -161,6 +161,7 @@ class ExistingUserController
   void LoginAsPublicSession(const UserContext& user_context);
   void LoginAsKioskApp(const std::string& app_id, bool diagnostic_mode);
   void LoginAsArcKioskApp(const AccountId& account_id);
+  void LoginAsWebKioskApp(const AccountId& account_id);
   // Retrieve public session and ARC kiosk auto-login policy and update the
   // timer.
   void ConfigureAutoLogin();

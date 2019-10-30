@@ -179,17 +179,6 @@ void MultiDeviceSetupImpl::GetEligibleHostDevices(
     eligible_remote_devices.push_back(remote_device_ref.GetRemoteDevice());
   }
 
-  // Sort from most-recently-updated to least-recently-updated. The timestamp
-  // used is provided by the back-end and indicates the last time at which the
-  // device's metadata was updated on the server. Note that this does not
-  // provide us with the last time that a user actually used this device, but it
-  // is a good estimate.
-  std::sort(eligible_remote_devices.begin(), eligible_remote_devices.end(),
-            [](const auto& first_device, const auto& second_device) {
-              return first_device.last_update_time_millis >
-                     second_device.last_update_time_millis;
-            });
-
   std::move(callback).Run(eligible_remote_devices);
 }
 

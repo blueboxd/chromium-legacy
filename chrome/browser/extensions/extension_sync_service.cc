@@ -255,21 +255,17 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
   bool incognito_enabled = extensions::util::IsIncognitoEnabled(id, profile_);
   bool remote_install = extension_prefs->HasDisableReason(
       id, extensions::disable_reason::DISABLE_REMOTE_INSTALL);
-  bool installed_by_custodian =
-      extensions::util::WasInstalledByCustodian(id, profile_);
   AppSorting* app_sorting = ExtensionSystem::Get(profile_)->app_sorting();
 
   ExtensionSyncData result =
       extension.is_app()
           ? ExtensionSyncData(
                 extension, enabled, disable_reasons, incognito_enabled,
-                remote_install, installed_by_custodian,
-                app_sorting->GetAppLaunchOrdinal(id),
+                remote_install, app_sorting->GetAppLaunchOrdinal(id),
                 app_sorting->GetPageOrdinal(id),
                 extensions::GetLaunchTypePrefValue(extension_prefs, id))
           : ExtensionSyncData(extension, enabled, disable_reasons,
-                              incognito_enabled, remote_install,
-                              installed_by_custodian);
+                              incognito_enabled, remote_install);
 
   // If there's a pending update, send the new version to sync instead of the
   // installed one.
@@ -305,11 +301,6 @@ void ExtensionSyncService::ApplySyncData(
   // Ignore any pref change notifications etc. while we're applying incoming
   // sync data, so that we don't end up notifying ourselves.
   base::AutoReset<bool> ignore_updates(&ignore_updates_, true);
-
-  // Note: this may cause an existing version of the extension to be reloaded.
-  extensions::util::SetWasInstalledByCustodian(
-      extension_sync_data.id(), profile_,
-      extension_sync_data.installed_by_custodian());
 
   syncer::ModelType type = extension_sync_data.is_app() ? syncer::APPS
                                                         : syncer::EXTENSIONS;

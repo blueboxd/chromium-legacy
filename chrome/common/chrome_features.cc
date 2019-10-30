@@ -343,14 +343,6 @@ const base::Feature kEnableAmbientAuthenticationInGuestSession{
     "EnableAmbientAuthenticationInGuestSession",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-// Enables support for FTP URLs. When disabled ftp:// URLs will behave the same
-// as any other URL scheme that's unknown to the browser.
-// TODO(https://crbug.com/333943): FTP support is being phased out.
-const base::Feature kEnableFtp{"EnableFtpSupport",
-                               base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if !defined(OS_ANDROID)
 // Upload enterprise cloud reporting without the extension.
 const base::Feature kEnterpriseReportingInBrowser{

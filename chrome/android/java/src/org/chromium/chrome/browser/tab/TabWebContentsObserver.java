@@ -11,6 +11,7 @@ import androidx.annotation.IntDef;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.VisibleForTesting;
@@ -181,8 +182,8 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             }
             if (isMainFrame) mTab.didFinishPageLoad(validatedUrl);
             PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
-            auditor.notifyAuditEvent(
-                    mTab.getApplicationContext(), AuditEvent.OPEN_URL_SUCCESS, validatedUrl, "");
+            auditor.notifyAuditEvent(ContextUtils.getApplicationContext(),
+                    AuditEvent.OPEN_URL_SUCCESS, validatedUrl, "");
         }
 
         @Override
@@ -204,11 +205,11 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             assert description != null;
 
             PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
-            auditor.notifyAuditEvent(mTab.getApplicationContext(), AuditEvent.OPEN_URL_FAILURE,
-                    failingUrl, description);
+            auditor.notifyAuditEvent(ContextUtils.getApplicationContext(),
+                    AuditEvent.OPEN_URL_FAILURE, failingUrl, description);
             if (errorCode == BLOCKED_BY_ADMINISTRATOR) {
-                auditor.notifyAuditEvent(
-                        mTab.getApplicationContext(), AuditEvent.OPEN_URL_BLOCKED, failingUrl, "");
+                auditor.notifyAuditEvent(ContextUtils.getApplicationContext(),
+                        AuditEvent.OPEN_URL_BLOCKED, failingUrl, "");
             }
         }
 
@@ -307,7 +308,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
             auditor.notifyCertificateFailure(
                     PolicyAuditorJni.get().getCertificateFailure(mTab.getWebContents()),
-                    mTab.getApplicationContext());
+                    ContextUtils.getApplicationContext());
         }
 
         @Override
@@ -343,7 +344,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         @Override
         public void destroy() {
             MediaCaptureNotificationService.updateMediaNotificationForTab(
-                    mTab.getApplicationContext(), mTab.getId(), null, mTab.getUrl());
+                    ContextUtils.getApplicationContext(), mTab.getId(), null, mTab.getUrl());
             super.destroy();
         }
     }

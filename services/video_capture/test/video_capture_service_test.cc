@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/media_switches.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 
@@ -54,16 +53,17 @@ VideoCaptureServiceTest::AddSharedMemoryVirtualDevice(
   factory_->AddSharedMemoryVirtualDevice(
       device_info, std::move(producer),
       false /* send_buffer_handles_to_producer_as_raw_file_descriptors */,
-      mojo::MakeRequest(&result->device));
+      result->device.BindNewPipeAndPassReceiver());
   return result;
 }
 
-mojom::TextureVirtualDevicePtr VideoCaptureServiceTest::AddTextureVirtualDevice(
-    const std::string& device_id) {
+mojo::PendingRemote<mojom::TextureVirtualDevice>
+VideoCaptureServiceTest::AddTextureVirtualDevice(const std::string& device_id) {
   media::VideoCaptureDeviceInfo device_info;
   device_info.descriptor.device_id = device_id;
-  mojom::TextureVirtualDevicePtr device;
-  factory_->AddTextureVirtualDevice(device_info, mojo::MakeRequest(&device));
+  mojo::PendingRemote<mojom::TextureVirtualDevice> device;
+  factory_->AddTextureVirtualDevice(device_info,
+                                    device.InitWithNewPipeAndPassReceiver());
   return device;
 }
 

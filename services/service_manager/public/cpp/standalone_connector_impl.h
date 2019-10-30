@@ -65,7 +65,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) StandaloneConnectorImpl
       mojo::ScopedMessagePipeHandle service_pipe,
       mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver,
       RegisterServiceInstanceCallback callback) override;
-  void Clone(mojom::ConnectorRequest request) override;
+  void Clone(mojo::PendingReceiver<mojom::Connector> receiver) override;
   void FilterInterfaces(
       const std::string& spec,
       const Identity& source,

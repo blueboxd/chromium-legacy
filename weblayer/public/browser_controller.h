@@ -7,7 +7,13 @@
 
 #include <algorithm>
 
+#include "base/callback_forward.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
+
+namespace base {
+class Value;
+}
 
 #if !defined(OS_ANDROID)
 namespace views {
@@ -45,6 +51,10 @@ class BrowserController {
   virtual void RemoveObserver(BrowserObserver* observer) = 0;
 
   virtual NavigationController* GetNavigationController() = 0;
+
+  using JavaScriptResultCallback = base::OnceCallback<void(base::Value)>;
+  virtual void ExecuteScript(const base::string16& script,
+                             JavaScriptResultCallback callback) = 0;
 
 #if !defined(OS_ANDROID)
   // TODO: this isn't a stable API, so use it now for expediency in the C++ API,

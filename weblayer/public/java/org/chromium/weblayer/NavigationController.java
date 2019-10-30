@@ -161,9 +161,9 @@ public final class NavigationController {
         }
 
         @Override
-        public void navigationCommitted(IClientNavigation navigation) {
+        public void readyToCommitNavigation(IClientNavigation navigation) {
             for (NavigationObserver observer : mObservers) {
-                observer.navigationCommitted((Navigation) navigation);
+                observer.readyToCommitNavigation((Navigation) navigation);
             }
         }
 

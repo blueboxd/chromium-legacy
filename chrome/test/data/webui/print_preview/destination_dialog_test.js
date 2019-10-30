@@ -28,7 +28,7 @@ cr.define('destination_dialog_test', function() {
     let destinations = [];
 
     /** @type {!Array<!print_preview.LocalDestinationInfo>} */
-    let localDestinations = [];
+    const localDestinations = [];
 
     /** @type {!Array<!print_preview.RecentDestination>} */
     let recentDestinations = [];

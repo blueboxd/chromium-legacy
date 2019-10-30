@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread.h"
@@ -25,7 +24,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/ping_manager.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
@@ -106,10 +104,6 @@ void SafeBrowsingUIManager::CreateAndSendHitReport(
 void SafeBrowsingUIManager::ShowBlockingPageForResource(
     const UnsafeResource& resource) {
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
-}
-
-bool SafeBrowsingUIManager::SafeBrowsingInterstitialsAreCommittedNavigations() {
-  return base::FeatureList::IsEnabled(kCommittedSBInterstitials);
 }
 
 // static

@@ -35,12 +35,8 @@
 [ mac ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 
-# Disabling all multiview checks temporarily while ANGLE side changes
-# get merged in.
-crbug.com/864524 [ win ] WebglExtension_OVR_multiview2 [ Skip ]
-crbug.com/864524 [ mac ] WebglExtension_OVR_multiview2 [ Skip ]
-crbug.com/864524 [ android ] WebglExtension_OVR_multiview2 [ Skip ]
-crbug.com/864524 [ linux ] WebglExtension_OVR_multiview2 [ Skip ]
+# OVR_multiview2 only runs in passthrough
+crbug.com/864524 [ no-passthrough ] WebglExtension_OVR_multiview2 [ Skip ]
 crbug.com/808744 [ android ] WebglExtension_EXT_disjoint_timer_query_webgl2 [ Skip ]
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
@@ -50,8 +46,6 @@ crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 # ========================
 
 crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
-
-crbug.com/949249 [ passthrough ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 
 # Failing new test
 crbug.com/874620 [ linux nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]

@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -163,8 +164,8 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
                 }
             } else if (disposition == WindowOpenDisposition.NEW_POPUP) {
                 PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
-                auditor.notifyAuditEvent(
-                        mTab.getApplicationContext(), AuditEvent.OPEN_POPUP_URL_SUCCESS, url, "");
+                auditor.notifyAuditEvent(ContextUtils.getApplicationContext(),
+                        AuditEvent.OPEN_POPUP_URL_SUCCESS, url, "");
             }
         }
 
@@ -219,7 +220,7 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
         Intent newIntent = ChromeIntentUtil.createBringTabToFrontIntent(mTab.getId());
         if (newIntent != null) {
             newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mTab.getApplicationContext().startActivity(newIntent);
+            ContextUtils.getApplicationContext().startActivity(newIntent);
         }
     }
 
@@ -281,8 +282,9 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
             case KeyEvent.KEYCODE_MEDIA_CLOSE:
             case KeyEvent.KEYCODE_MEDIA_EJECT:
             case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
-                AudioManager am = (AudioManager) mTab.getApplicationContext().getSystemService(
-                        Context.AUDIO_SERVICE);
+                AudioManager am =
+                        (AudioManager) ContextUtils.getApplicationContext().getSystemService(
+                                Context.AUDIO_SERVICE);
                 am.dispatchMediaKeyEvent(e);
                 break;
             default:

@@ -30,13 +30,12 @@ UIImage* CreateErrorUIImage(float scale) {
   base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
   base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
-      NULL,  // Allow CG to allocate memory.
-      16,    // width
-      16,    // height
-      8,     // bitsPerComponent
-      0,     // CG will calculate by default.
-      color_space,
-      kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
+      nullptr,  // Allow CG to allocate memory.
+      16,       // width
+      16,       // height
+      8,        // bitsPerComponent
+      0,        // CG will calculate by default.
+      color_space, kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
   CGContextSetRGBFillColor(context, 1.0, 0.0, 0.0, 1.0);
   CGContextFillRect(context, CGRectMake(0.0, 0.0, 16, 16));
   base::ScopedCFTypeRef<CGImageRef> cg_image(
@@ -63,7 +62,7 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromUIImage(
   NSData* data = UIImagePNGRepresentation(uiimage);
 
   if ([data length] == 0)
-    return NULL;
+    return nullptr;
 
   scoped_refptr<base::RefCountedBytes> png_bytes(
       new base::RefCountedBytes());
@@ -103,7 +102,7 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
   // hold on to it.
   const gfx::ImageSkiaRep& image_skia_rep = skia->GetRepresentation(1.0f);
   if (image_skia_rep.scale() != 1.0f)
-    return NULL;
+    return nullptr;
 
   UIImage* image = UIImageFromImageSkiaRep(image_skia_rep);
   return Get1xPNGBytesFromUIImage(image);

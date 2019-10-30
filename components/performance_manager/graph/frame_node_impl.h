@@ -157,6 +157,7 @@ class FrameNodeImpl
 
     ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
         GURL,
+        const GURL&,
         &FrameNodeObserver::OnURLChanged>
         url;
     bool has_nonempty_beforeunload = false;
@@ -171,6 +172,7 @@ class FrameNodeImpl
     // Opt-in or opt-out of freezing via origin trial.
     ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
         mojom::InterventionPolicy,
+        const mojom::InterventionPolicy&,
         &FrameNodeObserver::OnOriginTrialFreezePolicyChanged>
         origin_trial_freeze_policy{mojom::InterventionPolicy::kUnknown};
   };
@@ -250,8 +252,9 @@ class FrameNodeImpl
   base::flat_set<WorkerNodeImpl*> child_worker_nodes_;
 
   // Frame priority information. Set via FramePriorityDecorator.
-  ObservedProperty::NotifiesOnlyOnChanges<
+  ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
       PriorityAndReason,
+      const PriorityAndReason&,
       &FrameNodeObserver::OnPriorityAndReasonChanged>
       priority_and_reason_{PriorityAndReason(base::TaskPriority::LOWEST,
                                              kDefaultPriorityReason)};

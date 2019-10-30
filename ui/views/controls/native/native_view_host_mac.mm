@@ -104,7 +104,7 @@ void NativeViewHostMac::AttachNativeView() {
         host_->parent()->GetNativeViewAccessible());
   }
 
-  window_host->SetAssociationForView(host_, native_view_);
+  window_host->OnNativeViewHostAttach(host_, native_view_);
 }
 
 void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
@@ -133,7 +133,7 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
   auto* window_host = GetNSWindowHost();
   // NativeWidgetNSWindowBridge can be null when Widget is closing.
   if (window_host)
-    window_host->ClearAssociationForView(host_);
+    window_host->OnNativeViewHostDetach(host_);
 
   native_view_.reset();
 }

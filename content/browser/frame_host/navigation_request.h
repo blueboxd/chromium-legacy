@@ -105,19 +105,14 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // currently processing the corresponding event. When they are done, the
   // state will move to the next in the list.
   // TODO(zetamoo): Merge NavigationHandleState with NavigationState, and remove
-  //                the duplicates. Remove the PROCESSING_* states once the
-  //                NavigationThrottleRunner is owned by the NavigationRequest.
+  //                the duplicates.
   enum NavigationHandleState {
     NOT_CREATED = 0,
     INITIAL,
-    PROCESSING_WILL_START_REQUEST,
     WILL_START_REQUEST,
-    PROCESSING_WILL_REDIRECT_REQUEST,
     WILL_REDIRECT_REQUEST,
-    PROCESSING_WILL_FAIL_REQUEST,
     WILL_FAIL_REQUEST,
     CANCELING,
-    PROCESSING_WILL_PROCESS_RESPONSE,
     WILL_PROCESS_RESPONSE,
     READY_TO_COMMIT,
     DID_COMMIT,
@@ -489,12 +484,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   NavigatorDelegate* GetDelegate() const;
 
   blink::mojom::RequestContextType request_context_type() const {
-    DCHECK_GE(handle_state_, PROCESSING_WILL_START_REQUEST);
+    DCHECK_GE(handle_state_, WILL_START_REQUEST);
     return begin_params_->request_context_type;
   }
 
   blink::WebMixedContentContextType mixed_content_context_type() const {
-    DCHECK_GE(handle_state_, PROCESSING_WILL_START_REQUEST);
+    DCHECK_GE(handle_state_, WILL_START_REQUEST);
     return begin_params_->mixed_content_context_type;
   }
 
@@ -815,6 +810,19 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   void TraceNavigationStart();
   void TraceNavigationEnd();
 
+  // Returns true if the contents of |common_params_| requires
+  // |source_site_instance_| to be set. This is used to ensure that data:
+  // URLs with valid initiator origins always have |source_site_instance_| set
+  // so that site isolation enforcements work properly.
+  bool RequiresSourceSiteInstance() const;
+
+  // Sets |source_site_instance_| to a SiteInstance that is derived from
+  // |common_params_->initiator_origin| and related to the |frame_tree_node_|'s
+  // current SiteInstance. |source_site_instance_| is only set if it doesn't
+  // already have a value, |common_params_->initiator_origin| has a valid
+  // origin, and RequiresSourceSiteInstance() return true.
+  void SetSourceSiteInstanceToInitiatorIfNeeded();
+
   FrameTreeNode* frame_tree_node_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.
@@ -1099,6 +1107,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // request, such that the pending entry can be discarded if no requests are
   // left referencing it.
   std::unique_ptr<NavigationControllerImpl::PendingEntryRef> pending_entry_ref_;
+
+  // Used only by DCHECK.
+  // True if the NavigationThrottles are running an event, the request then can
+  // be cancelled for deferring.
+  bool processing_navigation_throttle_ = false;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

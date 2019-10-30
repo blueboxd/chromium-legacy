@@ -44,7 +44,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/json_sanitizer.h"
 
 namespace component_updater {
@@ -130,21 +129,23 @@ void RecordUncleanUninstall() {
                              "ManagedUsers_Whitelist_UncleanUninstall")));
 }
 
-void OnWhitelistSanitizationError(const base::FilePath& whitelist,
-                                  const std::string& error) {
-  LOG(WARNING) << "Invalid whitelist " << whitelist.value() << ": " << error;
-}
-
 void DeleteFileOnTaskRunner(const base::FilePath& path) {
   if (!base::DeleteFile(path, true))
     DPLOG(ERROR) << "Couldn't delete " << path.value();
 }
 
 void OnWhitelistSanitizationResult(
+    const base::FilePath& whitelist_path,
     const std::string& crx_id,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::OnceClosure callback,
-    const std::string& result) {
+    data_decoder::JsonSanitizer::Result result) {
+  if (!result.value) {
+    LOG(WARNING) << "Invalid whitelist " << whitelist_path.value() << ": "
+                 << *result.error;
+    return;
+  }
+
   const base::FilePath sanitized_whitelist_path =
       GetSanitizedWhitelistPath(crx_id);
   const base::FilePath install_directory = sanitized_whitelist_path.DirName();
@@ -155,8 +156,9 @@ void OnWhitelistSanitizationResult(
     }
   }
 
-  const int size = result.size();
-  if (base::WriteFile(sanitized_whitelist_path, result.data(), size) != size) {
+  const int size = result.value->size();
+  if (base::WriteFile(sanitized_whitelist_path, result.value->data(), size) !=
+      size) {
     PLOG(ERROR) << "Couldn't write file " << sanitized_whitelist_path.value();
     return;
   }
@@ -180,10 +182,9 @@ void CheckForSanitizedWhitelistOnTaskRunner(
   }
 
   data_decoder::JsonSanitizer::Sanitize(
-      content::GetSystemConnector(), unsafe_json,
-      base::BindOnce(&OnWhitelistSanitizationResult, crx_id, task_runner,
-                     callback),
-      base::BindOnce(&OnWhitelistSanitizationError, whitelist_path));
+      unsafe_json,
+      base::BindOnce(&OnWhitelistSanitizationResult, whitelist_path, crx_id,
+                     task_runner, callback));
 }
 
 void RemoveUnregisteredWhitelistsOnTaskRunner(

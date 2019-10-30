@@ -287,8 +287,8 @@ class USER_MANAGER_EXPORT UserManager {
   // Returns true if we're logged in as an ARC kiosk app.
   virtual bool IsLoggedInAsArcKioskApp() const = 0;
 
-  // Returns true if we're logged in as web kiosk app.
-  virtual bool IsLoggedInAsWebKioskApp() const = 0;
+  // Returns true if we're logged in as chrome, ARC or web kiosk app.
+  virtual bool IsLoggedInAsAnyKioskApp() const = 0;
 
   // Returns true if we're logged in as the stub user used for testing on Linux.
   virtual bool IsLoggedInAsStub() const = 0;

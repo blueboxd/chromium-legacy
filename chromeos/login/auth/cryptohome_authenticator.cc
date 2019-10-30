@@ -194,7 +194,9 @@ void OnMount(const base::WeakPtr<AuthAttemptState>& attempt,
   const bool public_mount = attempt->user_context.GetUserType() ==
                                 user_manager::USER_TYPE_KIOSK_APP ||
                             attempt->user_context.GetUserType() ==
-                                user_manager::USER_TYPE_ARC_KIOSK_APP;
+                                user_manager::USER_TYPE_ARC_KIOSK_APP ||
+                            attempt->user_context.GetUserType() ==
+                                user_manager::USER_TYPE_WEB_KIOSK_APP;
 
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       public_mount ? "CryptohomeMountPublic-End" : "CryptohomeMount-End",
@@ -754,6 +756,22 @@ void CryptohomeAuthenticator::LoginAsArcKioskAccount(
   MountPublic(current_state_->AsWeakPtr(),
               scoped_refptr<CryptohomeAuthenticator>(this),
               true);  // force_dircrypto_if_available
+}
+
+void CryptohomeAuthenticator::LoginAsWebKioskAccount(
+    const AccountId& app_account_id) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  current_state_.reset(new AuthAttemptState(
+      UserContext(user_manager::USER_TYPE_WEB_KIOSK_APP, app_account_id),
+      false,    // unlock
+      false,    // online_complete
+      false));  // user_is_new
+
+  remove_user_data_on_failure_ = true;
+  MountPublic(current_state_->AsWeakPtr(),
+              scoped_refptr<CryptohomeAuthenticator>(this),
+              false);  // force_dircrypto_if_available
 }
 
 void CryptohomeAuthenticator::OnAuthSuccess() {

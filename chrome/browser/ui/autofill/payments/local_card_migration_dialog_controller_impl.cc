@@ -166,16 +166,11 @@ void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(
 
 void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
   // Add strikes for local card migration due to user closing the main dialog.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
-    LocalCardMigrationStrikeDatabase local_card_migration_strike_database(
-        StrikeDatabaseFactory::GetForProfile(
-            Profile::FromBrowserContext(web_contents()->GetBrowserContext())));
-    local_card_migration_strike_database.AddStrikes(
-        LocalCardMigrationStrikeDatabase::kStrikesToAddWhenDialogClosed);
-  } else {
-    prefs::SetLocalCardMigrationPromptPreviouslyCancelled(pref_service_, true);
-  }
+  LocalCardMigrationStrikeDatabase local_card_migration_strike_database(
+      StrikeDatabaseFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext())));
+  local_card_migration_strike_database.AddStrikes(
+      LocalCardMigrationStrikeDatabase::kStrikesToAddWhenDialogClosed);
 
   AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
       dialog_is_visible_duration_timer_.Elapsed(),

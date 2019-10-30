@@ -1203,20 +1203,26 @@ ScrollableShelfView::FadeZone ScrollableShelfView::CalculateStartGradientZone()
     return FadeZone();
 
   if (is_horizontal_alignment) {
-    int x;
+    int gradient_start;
+    int gradient_end;
 
-    // Calculates the start location on x-axis of the gradient zone.
+    // Calculates the bounds of the gradient zone. Enlarge the gradient zone by
+    // one-pixel to offset the potential rounding error during rendering (we
+    // also do it in CalculateEndGradientZone()).
     if (ShouldAdaptToRTL()) {
       const gfx::Rect mirrored_left_arrow_bounds =
           GetMirroredRect(left_arrow_bounds);
-      x = mirrored_left_arrow_bounds.x() - kGradientZoneLength;
+      gradient_start = mirrored_left_arrow_bounds.x() - kGradientZoneLength;
+      gradient_end = mirrored_left_arrow_bounds.x() + 1;
     } else {
-      x = left_arrow_bounds.right();
+      gradient_start = left_arrow_bounds.right() - 1;
+      gradient_end = left_arrow_bounds.right() + kGradientZoneLength;
     }
-    zone_rect = gfx::Rect(x, 0, kGradientZoneLength, height());
-  } else {
     zone_rect =
-        gfx::Rect(0, left_arrow_bounds.bottom(), width(), kGradientZoneLength);
+        gfx::Rect(gradient_start, 0, gradient_end - gradient_start, height());
+  } else {
+    zone_rect = gfx::Rect(0, left_arrow_bounds.bottom() - 1, width(),
+                          kGradientZoneLength + 1);
   }
 
   fade_in = !ShouldAdaptToRTL();
@@ -1235,20 +1241,23 @@ ScrollableShelfView::FadeZone ScrollableShelfView::CalculateEndGradientZone()
     return FadeZone();
 
   if (is_horizontal_alignment) {
-    int x;
+    int gradient_start;
+    int gradient_end;
 
-    // Calculates the start location on x-axis of the gradient zone.
     if (ShouldAdaptToRTL()) {
       const gfx::Rect mirrored_right_arrow_bounds =
           GetMirroredRect(right_arrow_bounds);
-      x = mirrored_right_arrow_bounds.right();
+      gradient_start = mirrored_right_arrow_bounds.right() - 1;
+      gradient_end = mirrored_right_arrow_bounds.right() + kGradientZoneLength;
     } else {
-      x = right_arrow_bounds.x() - kGradientZoneLength;
+      gradient_start = right_arrow_bounds.x() - kGradientZoneLength;
+      gradient_end = right_arrow_bounds.x() + 1;
     }
-    zone_rect = gfx::Rect(x, 0, kGradientZoneLength, height());
+    zone_rect =
+        gfx::Rect(gradient_start, 0, gradient_end - gradient_start, height());
   } else {
     zone_rect = gfx::Rect(0, right_arrow_bounds.y() - kGradientZoneLength,
-                          width(), kGradientZoneLength);
+                          width(), kGradientZoneLength + 1);
   }
 
   fade_in = ShouldAdaptToRTL();

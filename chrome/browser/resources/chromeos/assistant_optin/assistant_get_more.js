@@ -105,7 +105,8 @@ Polymer({
       zippy.setAttribute(
           'icon-src',
           'data:text/html;charset=utf-8,' +
-              encodeURIComponent(zippy.getWrappedIcon(data['iconUri'])));
+              encodeURIComponent(
+                  zippy.getWrappedIcon(data['iconUri'], data['title'])));
       zippy.setAttribute('hide-line', true);
       zippy.setAttribute('toggle-style', true);
       zippy.id = 'zippy-' + data['id'];

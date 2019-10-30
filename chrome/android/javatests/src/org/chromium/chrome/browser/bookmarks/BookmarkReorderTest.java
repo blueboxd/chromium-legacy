@@ -39,6 +39,7 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -584,6 +585,64 @@ public class BookmarkReorderTest extends BookmarkTest {
         View more = testFolder.findViewById(R.id.more);
         TestThreadUtils.runOnUiThreadBlocking(more::callOnClick);
 
+        onView(withText("Move up")).check(doesNotExist());
+        onView(withText("Move down")).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    public void testMoveButtonsGoneForPartnerBookmarks() throws Exception {
+        loadFakePartnerBookmarkShimForTesting();
+        BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        openBookmarkManager();
+
+        // Open partner bookmarks folder.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.openFolder(mBookmarkModel.getPartnerFolderId()));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
+        Assert.assertEquals("Wrong number of items in partner bookmark folder.", 2,
+                getAdapter().getItemCount());
+
+        // Verify that bookmark 1 is editable (so more button can be triggered) but not movable.
+        BookmarkId partnerBookmarkId1 = getReorderAdapter().getIdByPosition(0);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BookmarkBridge.BookmarkItem partnerBookmarkItem1 =
+                    mBookmarkModel.getBookmarkById(partnerBookmarkId1);
+            partnerBookmarkItem1.forceEditableForTesting();
+            Assert.assertEquals("Incorrect bookmark type for item 1", BookmarkType.PARTNER,
+                    partnerBookmarkId1.getType());
+            Assert.assertFalse(
+                    "Partner item 1 should not be movable", partnerBookmarkItem1.isMovable());
+            Assert.assertTrue(
+                    "Partner item 1 should be editable", partnerBookmarkItem1.isEditable());
+        });
+
+        // Verify that bookmark 2 is editable (so more button can be triggered) but not movable.
+        View partnerBookmarkView1 = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        View more1 = partnerBookmarkView1.findViewById(R.id.more);
+        TestThreadUtils.runOnUiThreadBlocking(more1::callOnClick);
+        onView(withText("Move up")).check(doesNotExist());
+        onView(withText("Move down")).check(doesNotExist());
+
+        // Verify that bookmark 2 is not movable.
+        BookmarkId partnerBookmarkId2 = getReorderAdapter().getIdByPosition(1);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BookmarkBridge.BookmarkItem partnerBookmarkItem2 =
+                    mBookmarkModel.getBookmarkById(partnerBookmarkId2);
+            partnerBookmarkItem2.forceEditableForTesting();
+            Assert.assertEquals("Incorrect bookmark type for item 2", BookmarkType.PARTNER,
+                    partnerBookmarkId2.getType());
+            Assert.assertFalse(
+                    "Partner item 2 should not be movable", partnerBookmarkItem2.isMovable());
+            Assert.assertTrue(
+                    "Partner item 2 should be editable", partnerBookmarkItem2.isEditable());
+        });
+
+        // Verify that bookmark 2 does not have move up/down items.
+        View partnerBookmarkView2 = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        View more2 = partnerBookmarkView2.findViewById(R.id.more);
+        TestThreadUtils.runOnUiThreadBlocking(more2::callOnClick);
         onView(withText("Move up")).check(doesNotExist());
         onView(withText("Move down")).check(doesNotExist());
     }

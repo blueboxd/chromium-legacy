@@ -104,16 +104,18 @@ class AutofillWebDataServiceConsumer : public WebDataServiceConsumer {
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceConsumer);
 };
 
-class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
-                                       public syncer::SyncServiceObserver {
+class WaitForWalletUpdateChecker : public StatusChangeChecker,
+                                   public syncer::SyncServiceObserver {
  public:
-  explicit WaitForNextWalletUpdateChecker(syncer::SyncService* service)
-      : service_(service), initial_marker_(GetInitialMarker(service)) {
+  WaitForWalletUpdateChecker(base::Time min_required_progress_marker_timestamp,
+                             syncer::SyncService* service)
+      : min_required_progress_marker_timestamp_(
+            min_required_progress_marker_timestamp),
+        service_(service) {
     scoped_observer_.Add(service);
   }
 
   bool IsExitConditionSatisfied(std::ostream* os) override {
-    *os << "Waiting for an updated Wallet progress marker.";
     // GetLastCycleSnapshot() returns by value, so make sure to capture it for
     // iterator use.
     const syncer::SyncCycleSnapshot snap =
@@ -122,9 +124,25 @@ class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
         snap.download_progress_markers();
     auto marker_it = progress_markers.find(syncer::AUTOFILL_WALLET_DATA);
     if (marker_it == progress_markers.end()) {
+      *os << "Waiting for an updated Wallet progress marker timestamp "
+          << min_required_progress_marker_timestamp_
+          << "; actual: no progress marker in last sync cycle";
       return false;
     }
-    return marker_it->second != initial_marker_;
+
+    sync_pb::DataTypeProgressMarker progress_marker;
+    bool success = progress_marker.ParseFromString(marker_it->second);
+    DCHECK(success);
+
+    const base::Time actual_timestamp =
+        fake_server::FakeServer::GetWalletProgressMarkerTimestamp(
+            progress_marker);
+
+    *os << "Waiting for an updated Wallet progress marker timestamp "
+        << min_required_progress_marker_timestamp_ << "; actual "
+        << actual_timestamp;
+
+    return actual_timestamp >= min_required_progress_marker_timestamp_;
   }
 
   // syncer::SyncServiceObserver implementation.
@@ -133,24 +151,13 @@ class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
   }
 
  private:
-  static std::string GetInitialMarker(const syncer::SyncService* service) {
-    // GetLastCycleSnapshot() returns by value, so make sure to capture it for
-    // iterator use.
-    const syncer::SyncCycleSnapshot snap =
-        service->GetLastCycleSnapshotForDebugging();
-    const syncer::ProgressMarkerMap& progress_markers =
-        snap.download_progress_markers();
-    auto marker_it = progress_markers.find(syncer::AUTOFILL_WALLET_DATA);
-    if (marker_it == progress_markers.end()) {
-      return "N/A";
-    }
-    return marker_it->second;
-  }
+  const base::Time min_required_progress_marker_timestamp_;
+  const syncer::SyncService* const service_;
 
-  const syncer::SyncService* service_;
-  const std::string initial_marker_;
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       scoped_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(WaitForWalletUpdateChecker);
 };
 
 std::vector<std::unique_ptr<CreditCard>> GetServerCards(
@@ -223,7 +230,24 @@ class SingleClientWalletSyncTest : public SyncTest {
     test_clock_.Advance(base::TimeDelta::FromDays(1));
   }
 
-  PersonalDataLoadedObserverMock personal_data_observer_;
+  bool SetWalletDataInFakeServerAndWaitForUpdates(
+      const std::vector<sync_pb::SyncEntity>& wallet_entities) {
+    const base::Time write_timestamp =
+        GetFakeServer()->SetWalletData(wallet_entities);
+
+    return WaitForWalletUpdateChecker(write_timestamp, GetSyncService(0))
+        .Wait();
+  }
+
+  bool TriggerGetUpdatesAndWait() {
+    const base::Time now = base::Time::Now();
+    // Trigger a sync and wait for the new data to arrive.
+    TriggerSyncForModelTypes(
+        0, syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+    return WaitForWalletUpdateChecker(now, GetSyncService(0)).Wait();
+  }
+
+  testing::NiceMock<PersonalDataLoadedObserverMock> personal_data_observer_;
   base::HistogramTester histogram_tester_;
   autofill::TestAutofillClock test_clock_;
 
@@ -491,19 +515,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
   // Put some completely new data in the sync server.
-  GetFakeServer()->SetWalletData(
+  ASSERT_TRUE(SetWalletDataInFakeServerAndWaitForUpdates(
       {CreateSyncWalletCard(/*name=*/"new-card", /*last_four=*/"0002",
                             kDefaultBillingAddressID),
        CreateSyncWalletAddress(/*name=*/"new-address", /*company=*/"Company-2"),
-       CreateSyncPaymentsCustomerData(/*customer_id=*/"newid")});
-
-  // Constructing the checker captures the current progress marker. Make sure to
-  // do that before triggering the fetch.
-  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
-  // Trigger a sync and wait for the new data to arrive.
-  TriggerSyncForModelTypes(0,
-                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(checker.Wait());
+       CreateSyncPaymentsCustomerData(/*customer_id=*/"newid")}));
 
   // Make sure only the new data is present.
   cards = pdm->GetCreditCards();
@@ -539,16 +555,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, EmptyUpdatesAreIgnored) {
                              profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
   EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
-  // Do not change anything on the server so that the update forced below is an
-  // empty one.
-
-  // Constructing the checker captures the current progress marker. Make sure to
-  // do that before triggering the fetch.
-  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
   // Trigger a sync and wait for the new data to arrive.
-  TriggerSyncForModelTypes(0,
-                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(checker.Wait());
+  ASSERT_TRUE(TriggerGetUpdatesAndWait());
 
   // Refresh the pdm so that it gets cards from autofill table.
   RefreshAndWaitForOnPersonalDataChanged(pdm);
@@ -577,16 +585,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   sync_pb::ModelTypeState state_before = GetWalletDataModelTypeState(0);
 
-  // Do not change anything on the server so that the update forced below is an
-  // empty one.
-
-  // Constructing the checker captures the current progress marker. Make sure to
-  // do that before triggering the fetch.
-  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
   // Trigger a sync and wait for the new data to arrive.
-  TriggerSyncForModelTypes(0,
-                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(checker.Wait());
+  ASSERT_TRUE(TriggerGetUpdatesAndWait());
 
   sync_pb::ModelTypeState state_after = GetWalletDataModelTypeState(0);
   EXPECT_NE(state_before.progress_marker().token(),
@@ -625,19 +625,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   // Keep the same data (only change the customer data to force the FakeServer
   // to send the full update).
-  GetFakeServer()->SetWalletData(
+  ASSERT_TRUE(SetWalletDataInFakeServerAndWaitForUpdates(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
-       CreateSyncPaymentsCustomerData("different")});
-
-  // Constructing the checker captures the current progress marker. Make sure to
-  // do that before triggering the fetch.
-  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
-  // Trigger a sync and wait for the new data to arrive.
-  TriggerSyncForModelTypes(0,
-                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(checker.Wait());
+       CreateSyncPaymentsCustomerData("different")}));
 
   // Refresh the pdm so that it gets cards from autofill table.
   RefreshAndWaitForOnPersonalDataChanged(pdm);
@@ -697,19 +689,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   // Update the data (also change the customer data to force the full update as
   // FakeServer computes the hash for progress markers only based on ids).
-  GetFakeServer()->SetWalletData(
+  ASSERT_TRUE(SetWalletDataInFakeServerAndWaitForUpdates(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
-       CreateSyncPaymentsCustomerData("different")});
-
-  // Constructing the checker captures the current progress marker. Make sure to
-  // do that before triggering the fetch.
-  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
-  // Trigger a sync and wait for the new data to arrive.
-  TriggerSyncForModelTypes(0,
-                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(checker.Wait());
+       CreateSyncPaymentsCustomerData("different")}));
 
   // Refresh the pdm so that it gets cards from autofill table.
   RefreshAndWaitForOnPersonalDataChanged(pdm);
@@ -767,18 +751,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   // Keep the same data (only change the customer data to force the FakeServer
   // to send the full update).
-  GetFakeServer()->SetWalletData(
+  ASSERT_TRUE(SetWalletDataInFakeServerAndWaitForUpdates(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
-       CreateSyncPaymentsCustomerData("different")});
-
-  // Constructing the checker captures the current progress marker. Make sure to
-  // do that before triggering the fetch.
-  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
-  // Trigger a sync and wait for the new data to arrive.
-  TriggerSyncForModelTypes(0,
-                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(checker.Wait());
+       CreateSyncPaymentsCustomerData("different")}));
 
   // Refresh the pdm so that it gets cards from autofill table.
   RefreshAndWaitForOnPersonalDataChanged(pdm);
@@ -904,15 +880,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
   // Add a new card from the server and sync it down.
-  GetFakeServer()->SetWalletData(
-      {CreateDefaultSyncWalletCard(), CreateDefaultSyncPaymentsCustomerData()});
-  // Constructing the checker captures the current progress marker. Make sure to
-  // do that before triggering the fetch.
-  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
-  // Trigger a sync and wait for the new data to arrive.
-  TriggerSyncForModelTypes(0,
-                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(checker.Wait());
+  ASSERT_TRUE(SetWalletDataInFakeServerAndWaitForUpdates(
+      {CreateDefaultSyncWalletCard(),
+       CreateDefaultSyncPaymentsCustomerData()}));
 
   // The only card present on the client should be the one from the server.
   cards = pdm->GetCreditCards();
@@ -975,16 +945,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
   // Add a new profile and new customer data from the server and sync them down.
-  GetFakeServer()->SetWalletData(
+  ASSERT_TRUE(SetWalletDataInFakeServerAndWaitForUpdates(
       {CreateDefaultSyncWalletAddress(),
-       CreateSyncPaymentsCustomerData(/*customer_id=*/"newid")});
-  // Constructing the checker captures the current progress marker. Make sure to
-  // do that before triggering the fetch.
-  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
-  // Trigger a sync and wait for the new data to arrive.
-  TriggerSyncForModelTypes(0,
-                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(checker.Wait());
+       CreateSyncPaymentsCustomerData(/*customer_id=*/"newid")}));
 
   // The only profile present on the client should be the one from the server.
   profiles = pdm->GetServerProfiles();
@@ -1025,14 +988,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   // Sync the same card from the server, except with a default billing address
   // id.
-  GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
-  // Constructing the checker captures the current progress marker. Make sure to
-  // do that before triggering the fetch.
-  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
-  // Trigger a sync and wait for the new data to arrive.
-  TriggerSyncForModelTypes(0,
-                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(checker.Wait());
+  ASSERT_TRUE(SetWalletDataInFakeServerAndWaitForUpdates(
+      {CreateDefaultSyncWalletCard()}));
 
   // The billing address is should still refer to the local profile.
   cards = pdm->GetCreditCards();
@@ -1074,14 +1031,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   // Sync the same card from the server, except with a default billing address
   // id.
-  GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
-  // Constructing the checker captures the current progress marker. Make sure to
-  // do that before triggering the fetch.
-  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
-  // Trigger a sync and wait for the new data to arrive.
-  TriggerSyncForModelTypes(0,
-                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
-  ASSERT_TRUE(checker.Wait());
+  ASSERT_TRUE(SetWalletDataInFakeServerAndWaitForUpdates(
+      {CreateDefaultSyncWalletCard()}));
 
   // The billing address should be the one from the server card.
   cards = pdm->GetCreditCards();

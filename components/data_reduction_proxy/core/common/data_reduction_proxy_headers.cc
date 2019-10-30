@@ -22,7 +22,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
 
@@ -432,7 +432,7 @@ int64_t GetDataReductionProxyOFCL(const net::HttpResponseHeaders* headers) {
 }
 
 double EstimateCompressionRatioFromHeaders(
-    const network::ResourceResponseHead* response_head) {
+    const network::mojom::URLResponseHead* response_head) {
   if (!response_head->network_accessed || !response_head->headers ||
       response_head->headers->GetContentLength() <= 0 ||
       response_head->proxy_server.is_direct()) {

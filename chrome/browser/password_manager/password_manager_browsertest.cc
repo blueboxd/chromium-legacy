@@ -2202,16 +2202,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
       RenderFrameHost(), "sendMessage('get_password');", &password_field));
 
-  // Verify username and password have only been autofilled if FOAS on HTTP is
-  // not active.
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kFillOnAccountSelectHttp)) {
-    EXPECT_TRUE(username_field.empty());
-    EXPECT_TRUE(password_field.empty());
-  } else {
-    EXPECT_EQ("temp", username_field);
-    EXPECT_EQ("pa55w0rd", password_field);
-  }
+  // Verify username and password have not been autofilled due to an insecure
+  // origin.
+  EXPECT_TRUE(username_field.empty());
+  EXPECT_TRUE(password_field.empty());
 }
 
 // Check that a username and password are not filled in forms in iframes

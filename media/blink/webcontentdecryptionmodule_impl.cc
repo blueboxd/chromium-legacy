@@ -72,7 +72,7 @@ void WebContentDecryptionModuleImpl::Create(
     const base::string16& key_system,
     const blink::WebSecurityOrigin& security_origin,
     const CdmConfig& cdm_config,
-    std::unique_ptr<blink::WebContentDecryptionModuleResult> result) {
+    WebCdmCreatedCB web_cdm_created_cb) {
   DCHECK(!security_origin.IsNull());
   DCHECK(!key_system.empty());
 
@@ -80,9 +80,7 @@ void WebContentDecryptionModuleImpl::Create(
   // Chromium only supports ASCII key systems.
   if (!base::IsStringASCII(key_system)) {
     NOTREACHED();
-    result->CompleteWithError(
-        blink::kWebContentDecryptionModuleExceptionNotSupportedError, 0,
-        "Invalid keysystem.");
+    std::move(web_cdm_created_cb).Run(nullptr, "Invalid keysystem.");
     return;
   }
 
@@ -92,27 +90,24 @@ void WebContentDecryptionModuleImpl::Create(
           key_system_ascii)) {
     std::string message =
         "Keysystem '" + key_system_ascii + "' is not supported.";
-    result->CompleteWithError(
-        blink::kWebContentDecryptionModuleExceptionNotSupportedError, 0,
-        blink::WebString::FromUTF8(message));
+    std::move(web_cdm_created_cb).Run(nullptr, message);
     return;
   }
 
   // If unique security origin, don't try to create the CDM.
   if (security_origin.IsUnique() || security_origin.ToString() == "null") {
-    result->CompleteWithError(
-        blink::kWebContentDecryptionModuleExceptionNotSupportedError, 0,
-        "EME use is not allowed on unique origins.");
+    std::move(web_cdm_created_cb)
+        .Run(nullptr, "EME use is not allowed on unique origins.");
     return;
   }
 
   // CdmSessionAdapter::CreateCdm() will keep a reference to |adapter|. Then
   // if WebContentDecryptionModuleImpl is successfully created (returned in
-  // |result|), it will keep a reference to |adapter|. Otherwise, |adapter| will
-  // be destructed.
+  // |web_cdm_created_cb|), it will keep a reference to |adapter|. Otherwise,
+  // |adapter| will be destructed.
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
   adapter->CreateCdm(cdm_factory, key_system_ascii, security_origin, cdm_config,
-                     std::move(result));
+                     std::move(web_cdm_created_cb));
 }
 
 WebContentDecryptionModuleImpl::WebContentDecryptionModuleImpl(

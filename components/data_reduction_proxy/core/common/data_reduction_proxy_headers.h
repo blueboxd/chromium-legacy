@@ -14,6 +14,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -21,10 +22,6 @@ class GURL;
 namespace net {
 class HttpResponseHeaders;
 }  // namespace net
-
-namespace network {
-struct ResourceResponseHead;
-}  // namespace network
 
 namespace data_reduction_proxy {
 
@@ -177,7 +174,7 @@ int64_t GetDataReductionProxyOFCL(const net::HttpResponseHeaders* headers);
 // used to compute the ratio, and headers are excluded, since this is only an
 // estimate for response that is beginning to arrive.
 double EstimateCompressionRatioFromHeaders(
-    const network::ResourceResponseHead* response_head);
+    const network::mojom::URLResponseHead* response_head);
 
 }  // namespace data_reduction_proxy
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_HEADERS_H_

@@ -269,6 +269,8 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     ui::AXNodeData* out_data) const {
   AccessibilityInfoDataWrapper::Serialize(out_data);
 
+  bool is_node_tree_root = tree_source_->IsRootOfNodeTree(GetId());
+
   // String properties.
   int labelled_by = -1;
 
@@ -333,7 +335,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
                                  role_description);
   }
 
-  if (out_data->role == ax::mojom::Role::kRootWebArea) {
+  if (is_node_tree_root) {
     std::string package_name;
     if (GetProperty(AXStringProperty::PACKAGE_NAME, &package_name)) {
       const std::string& url =
@@ -381,7 +383,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSupportsTextLocation,
                                true);
   }
-  if (tree_source_->IsRootOfNodeTree(GetId())) {
+  if (is_node_tree_root) {
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
   }
 

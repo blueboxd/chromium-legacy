@@ -910,8 +910,11 @@ void TaskQueueImpl::TaskAsValueInto(const Task& task,
   state->SetBoolean("is_cancelled", task.task.IsCancelled());
   state->SetDouble("delayed_run_time",
                    (task.delayed_run_time - TimeTicks()).InMillisecondsF());
+  const TimeDelta delayed_run_time_milliseconds_from_now =
+      task.delayed_run_time.is_null() ? TimeDelta()
+                                      : (task.delayed_run_time - now);
   state->SetDouble("delayed_run_time_milliseconds_from_now",
-                   (task.delayed_run_time - now).InMillisecondsF());
+                   delayed_run_time_milliseconds_from_now.InMillisecondsF());
   state->EndDictionary();
 }
 

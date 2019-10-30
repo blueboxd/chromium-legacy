@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_draw_buffers.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_lose_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_multi_draw.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_multi_draw_instanced.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_video_texture.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 
@@ -190,6 +191,8 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<WebGLLoseContext>(webgl_lose_context_, kApprovedExtension,
                                       kBothPrefixes);
   RegisterExtension<WebGLMultiDraw>(webgl_multi_draw_, kDraftExtension);
+  RegisterExtension<WebGLMultiDrawInstanced>(webgl_multi_draw_instanced_,
+                                             kDraftExtension);
   RegisterExtension<WebGLVideoTexture>(webgl_video_texture_, kDraftExtension);
 }
 
@@ -224,6 +227,7 @@ void WebGLRenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(webgl_draw_buffers_);
   visitor->Trace(webgl_lose_context_);
   visitor->Trace(webgl_multi_draw_);
+  visitor->Trace(webgl_multi_draw_instanced_);
   visitor->Trace(webgl_video_texture_);
   WebGLRenderingContextBase::Trace(visitor);
 }

@@ -57,12 +57,6 @@ const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
 const base::Feature kAutofillEnableToolbarStatusChip{
     "AutofillEnableToolbarStatusChip", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether offering to migrate cards will consider data from the
-// Autofill strike database (new version).
-const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2{
-    "AutofillLocalCardMigrationUsesStrikeSystemV2",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, will remove the option to save unmasked server cards as
 // FULL_SERVER_CARDs upon successful unmask.
 const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{

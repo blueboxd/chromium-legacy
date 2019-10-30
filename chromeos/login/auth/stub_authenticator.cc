@@ -130,6 +130,18 @@ void StubAuthenticator::LoginAsArcKioskAccount(
   consumer_->OnAuthSuccess(user_context);
 }
 
+void StubAuthenticator::LoginAsWebKioskAccount(
+    const AccountId& /* app_account_id */) {
+  UserContext user_context(user_manager::USER_TYPE_WEB_KIOSK_APP,
+                           expected_user_context_.GetAccountId());
+  user_context.SetIsUsingOAuth(false);
+  user_context.SetUserIDHash(
+      expected_user_context_.GetAccountId().GetUserEmail() + kUserIdHashSuffix);
+  user_context.GetKey()->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
+                                   "some-salt");
+  consumer_->OnAuthSuccess(user_context);
+}
+
 void StubAuthenticator::OnAuthSuccess() {
   // If we want to be more like the real thing, we could save the user ID
   // in AuthenticateToLogin, but there's not much of a point.

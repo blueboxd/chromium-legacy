@@ -677,8 +677,9 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
   SplitViewController* split_view_controller =
       GetSplitViewControllerForDisplayBeingDraggedIn();
   if (split_view_controller->InSplitViewMode()) {
-    const int position = gfx::ToRoundedInt(
-        is_landscape ? location_in_screen.x() : location_in_screen.y());
+    const int position =
+        gfx::ToRoundedInt(is_landscape ? location_in_screen.x() - area.x()
+                                       : location_in_screen.y() - area.y());
     SplitViewController::SnapPosition default_snap_position =
         split_view_controller->default_snap_position();
     // If we're trying to snap to a position that already has a snapped window:

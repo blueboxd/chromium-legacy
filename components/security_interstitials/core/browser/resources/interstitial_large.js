@@ -110,12 +110,13 @@ function setupEvents() {
           break;
 
         case 'SSL':
-          if (badClock)
+          if (badClock) {
             sendCommand(SecurityInterstitialCommandId.CMD_OPEN_DATE_SETTINGS);
-          else if (overridable)
+          } else if (overridable) {
             sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
-          else
+          } else {
             sendCommand(SecurityInterstitialCommandId.CMD_RELOAD);
+          }
           break;
 
         case 'SAFEBROWSING':

@@ -274,8 +274,7 @@ class AutocompleteMediator
         return mCurrentModels.get(index).suggestion;
     }
 
-    @Override
-    public void notifyPropertyModelsChanged() {
+    private void notifyPropertyModelsChanged() {
         if (mPreventSuggestionListPropertyChanges) return;
         ModelList suggestions = mListPropertyModel.get(SuggestionListProperties.SUGGESTION_MODELS);
         suggestions.clear();
@@ -322,7 +321,6 @@ class AutocompleteMediator
             PropertyModel model = mCurrentModels.get(i).model;
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, layoutDirection);
         }
-        if (!mCurrentModels.isEmpty()) notifyPropertyModelsChanged();
     }
 
     /**
@@ -337,7 +335,6 @@ class AutocompleteMediator
             PropertyModel model = mCurrentModels.get(i).model;
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, useDarkColors);
         }
-        if (!mCurrentModels.isEmpty()) notifyPropertyModelsChanged();
     }
 
     /**
@@ -545,14 +542,6 @@ class AutocompleteMediator
                                 : Math.max(maxTextWidth - maxMatchContentsWidth, 0));
             }
         };
-    }
-
-    @Override
-    public boolean isActiveModel(PropertyModel model) {
-        for (int i = 0; i < mCurrentModels.size(); i++) {
-            if (mCurrentModels.get(i).model.equals(model)) return true;
-        }
-        return false;
     }
 
     /**

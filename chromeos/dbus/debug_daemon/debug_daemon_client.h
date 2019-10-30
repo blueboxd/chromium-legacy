@@ -269,6 +269,11 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   virtual void GetU2fFlags(
       DBusMethodCallback<std::set<std::string>> callback) = 0;
 
+  // Set Swap Parameter
+  virtual void SetSwapParameter(const std::string& parameter,
+                                int32_t value,
+                                DBusMethodCallback<std::string> callback) = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static std::unique_ptr<DebugDaemonClient> Create();

@@ -361,7 +361,6 @@ void PeopleHandler::OnJavascriptDisallowed() {
 
 #if !defined(OS_CHROMEOS)
 void PeopleHandler::DisplayGaiaLogin(signin_metrics::AccessPoint access_point) {
-  DCHECK(!sync_startup_tracker_);
   // Advanced options are no longer being configured if the login screen is
   // visible. If the user exits the signin wizard after this without
   // configuring sync, CloseSyncSetup() will ensure they are logged out.
@@ -416,29 +415,6 @@ void PeopleHandler::OnPinLoginAvailable(bool is_available) {
 }
 #endif
 
-void PeopleHandler::DisplaySpinner() {
-  configuring_sync_ = true;
-
-  const int kTimeoutSec = 30;
-  DCHECK(!engine_start_timer_);
-  engine_start_timer_ = std::make_unique<base::OneShotTimer>();
-  engine_start_timer_->Start(FROM_HERE,
-                             base::TimeDelta::FromSeconds(kTimeoutSec), this,
-                             &PeopleHandler::DisplayTimeout);
-
-  FireWebUIListener("page-status-changed", base::Value(kSpinnerPageStatus));
-}
-
-void PeopleHandler::DisplayTimeout() {
-  // Stop a timer to handle timeout in waiting for checking network connection.
-  engine_start_timer_.reset();
-
-  // Do not listen to sync startup events.
-  sync_startup_tracker_.reset();
-
-  FireWebUIListener("page-status-changed", base::Value(kTimeoutPageStatus));
-}
-
 void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
   // Don't mark setup as complete if "didAbort" is true, or if authentication
   // is still needed.
@@ -449,27 +425,6 @@ void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
   CloseSyncSetup();
 }
 
-void PeopleHandler::SyncStartupFailed() {
-  // Stop a timer to handle timeout in waiting for checking network connection.
-  engine_start_timer_.reset();
-
-  // Just close the sync overlay (the idea is that the base settings page will
-  // display the current error.)
-  CloseUI();
-}
-
-void PeopleHandler::SyncStartupCompleted() {
-  syncer::SyncService* service = GetSyncService();
-  DCHECK(service->IsEngineInitialized());
-
-  // Stop a timer to handle timeout in waiting for checking network connection.
-  engine_start_timer_.reset();
-
-  sync_startup_tracker_.reset();
-
-  PushSyncPrefs();
-}
-
 syncer::SyncService* PeopleHandler::GetSyncService() const {
   return profile_->IsSyncAllowed()
              ? ProfileSyncServiceFactory::GetForProfile(profile_)
@@ -477,8 +432,6 @@ syncer::SyncService* PeopleHandler::GetSyncService() const {
 }
 
 void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
-  DCHECK(!sync_startup_tracker_);
-
   SyncConfigInfo configuration;
   const base::Value* callback_id = nullptr;
   ParseConfigurationArguments(args, &configuration, &callback_id);
@@ -575,8 +528,6 @@ void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
 #endif
 
 void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
-  DCHECK(!sync_startup_tracker_);
-
   SyncConfigInfo configuration;
   const base::Value* callback_id = nullptr;
   ParseConfigurationArguments(args, &configuration, &callback_id);
@@ -775,9 +726,6 @@ void PeopleHandler::CloseSyncSetup() {
   // Stop a timer to handle timeout in waiting for checking network connection.
   engine_start_timer_.reset();
 
-  // Clear the sync startup tracker, since the setup wizard is being closed.
-  sync_startup_tracker_.reset();
-
   // LoginUIService can be nullptr if page is brought up in incognito mode
   // (i.e. if the user is running in guest mode in cros and brings up settings).
   LoginUIService* service = GetLoginUIService();
@@ -852,11 +800,6 @@ void PeopleHandler::InitializeSyncBlocker() {
 void PeopleHandler::FocusUI() {
   WebContents* web_contents = web_ui()->GetWebContents();
   web_contents->GetDelegate()->ActivateContents(web_contents);
-}
-
-void PeopleHandler::CloseUI() {
-  CloseSyncSetup();
-  FireWebUIListener("page-status-changed", base::Value(kDonePageStatus));
 }
 
 void PeopleHandler::OnPrimaryAccountSet(

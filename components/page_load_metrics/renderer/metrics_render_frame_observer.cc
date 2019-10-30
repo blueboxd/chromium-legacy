@@ -13,6 +13,7 @@
 #include "components/page_load_metrics/renderer/page_timing_metrics_sender.h"
 #include "components/page_load_metrics/renderer/page_timing_sender.h"
 #include "content/public/renderer/render_frame.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -118,7 +119,7 @@ void MetricsRenderFrameObserver::DidObserveLazyLoadBehavior(
 void MetricsRenderFrameObserver::DidStartResponse(
     const GURL& response_url,
     int request_id,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     content::ResourceType resource_type,
     content::PreviewsState previews_state) {
   if (provisional_frame_resource_data_use_ &&
@@ -381,20 +382,24 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
     timing->paint_timing->first_meaningful_paint =
         ClampDelta(perf.FirstMeaningfulPaint(), start);
   }
-  if (perf.LargestImagePaintSize() > 0) {
+  if (perf.LargestImagePaint() > 0.0) {
     timing->paint_timing->largest_image_paint =
-        perf.LargestImagePaint() == 0.0
-            ? base::TimeDelta()
-            : ClampDelta(perf.LargestImagePaint(), start);
+        ClampDelta(perf.LargestImagePaint(), start);
     timing->paint_timing->largest_image_paint_size =
         perf.LargestImagePaintSize();
+    // LargestImagePaintSize should be available if LargestImagePaint is
+    // available. Note that size can be nonzero while the time is 0 since a time
+    // of 0 is sent when the image is painting. We are intentionally ignoring
+    // these cases, as they should not be reported by the UMA/UKM histograms.
+    DCHECK(perf.LargestImagePaintSize());
   }
-  if (perf.LargestTextPaintSize() > 0) {
+  if (perf.LargestTextPaint() > 0.0) {
     timing->paint_timing->largest_text_paint =
-        perf.LargestTextPaint() == 0.0
-            ? base::TimeDelta()
-            : ClampDelta(perf.LargestTextPaint(), start);
+        ClampDelta(perf.LargestTextPaint(), start);
     timing->paint_timing->largest_text_paint_size = perf.LargestTextPaintSize();
+    // LargestTextPaint and LargestTextPaintSize should be available at the
+    // same time. This is a renderer side DCHECK to ensure this.
+    DCHECK(perf.LargestTextPaintSize());
   }
   if (perf.ParseStart() > 0.0)
     timing->parse_timing->parse_start = ClampDelta(perf.ParseStart(), start);

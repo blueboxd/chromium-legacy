@@ -253,3 +253,10 @@ crbug.com/983600 [ mojave amd-0x6821 ] Pixel_CSSFilterEffects_NoOverlays [ Retry
 
 # Producing incorrect image on Win10 Intel HD 630 w/ 26.20.100.6912 drivers.
 crbug.com/997313 [ win intel-0x5912 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
+
+# Flakes on Nexus 9
+crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
+crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_FourColors_Rot_180 [ RetryOnFailure ]
+crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_FourColors_Rot_270 [ RetryOnFailure ]
+crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_FourColors_Rot_90 [ RetryOnFailure ]
+crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_Rounded_Corner [ RetryOnFailure ]

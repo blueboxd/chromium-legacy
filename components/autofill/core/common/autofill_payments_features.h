@@ -26,7 +26,6 @@ extern const base::Feature kAutofillCreditCardUploadFeedback;
 extern const base::Feature kAutofillDoNotMigrateUnsupportedLocalCards;
 extern const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser;
 extern const base::Feature kAutofillEnableToolbarStatusChip;
-extern const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2;
 extern const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillSaveCardShowNoThanks;

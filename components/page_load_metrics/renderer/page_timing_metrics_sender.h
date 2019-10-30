@@ -14,6 +14,7 @@
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/page_load_metrics/renderer/page_resource_data_use.h"
 #include "content/public/common/previews_state.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
@@ -26,7 +27,6 @@ class OneShotTimer;
 }  // namespace base
 
 namespace network {
-struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }  // namespace network
 
@@ -55,7 +55,7 @@ class PageTimingMetricsSender {
 
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
-                        const network::ResourceResponseHead& response_head,
+                        const network::mojom::URLResponseHead& response_head,
                         content::ResourceType resource_type,
                         content::PreviewsState previews_state);
   void DidReceiveTransferSizeUpdate(int resource_id, int received_data_length);

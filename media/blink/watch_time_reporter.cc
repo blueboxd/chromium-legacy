@@ -97,7 +97,7 @@ WatchTimeReporter::WatchTimeReporter(
   base::PowerMonitor::AddObserver(this);
 
   provider->AcquireWatchTimeRecorder(properties_->Clone(),
-                                     mojo::MakeRequest(&recorder_));
+                                     recorder_.BindNewPipeAndPassReceiver());
 
   reporting_timer_.SetTaskRunner(task_runner);
 

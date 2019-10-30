@@ -33,6 +33,7 @@
     {
       name: "AmbientLightSensor",
       feature_policy_name: "ambient-light-sensor",
+      depends_on: ["SensorExtraClasses"],
     },
     {
       name: "Autoplay",

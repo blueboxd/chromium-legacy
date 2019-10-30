@@ -28,6 +28,7 @@
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
+#include "media/media_buildflags.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_switches.h"
 
@@ -333,7 +334,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   CdmProxyContext* proxy_context = nullptr;
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_CDM_PROXY)
   if (cdm_context)
     proxy_context = cdm_context->GetCdmProxyContext();
 #endif

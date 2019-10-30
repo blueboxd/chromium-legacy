@@ -197,6 +197,7 @@ public class BookmarkBridge {
         private final BookmarkId mParentId;
         private final boolean mIsEditable;
         private final boolean mIsManaged;
+        private boolean mForceEditableForTesting;
 
         private BookmarkItem(BookmarkId id, String title, String url, boolean isFolder,
                 BookmarkId parentId, boolean isEditable, boolean isManaged) {
@@ -236,7 +237,7 @@ public class BookmarkBridge {
 
         /** @return Whether this bookmark can be edited. */
         public boolean isEditable() {
-            return mIsEditable;
+            return mForceEditableForTesting || mIsEditable;
         }
 
         /**@return Whether this bookmark's URL can be edited */
@@ -256,6 +257,11 @@ public class BookmarkBridge {
 
         public BookmarkId getId() {
             return mId;
+        }
+
+        // TODO(https://crbug.com/1019217): Remove when BookmarkModel is stubbed in tests instead.
+        void forceEditableForTesting() {
+            mForceEditableForTesting = true;
         }
     }
 
@@ -682,7 +688,7 @@ public class BookmarkBridge {
      * Add a new folder to the given parent folder
      *
      * @param parent Folder where to add. Must be a normal editable folder, instead of a partner
-     *               bookmark folder or a managed bookomark folder or root node of the entire
+     *               bookmark folder or a managed bookmark folder or root node of the entire
      *               bookmark model.
      * @param index The position to locate the new folder
      * @param title The title text of the new folder
@@ -702,7 +708,7 @@ public class BookmarkBridge {
      * Add a new bookmark to a specific position below parent
      *
      * @param parent Folder where to add. Must be a normal editable folder, instead of a partner
-     *               bookmark folder or a managed bookomark folder or root node of the entire
+     *               bookmark folder or a managed bookmark folder or root node of the entire
      *               bookmark model.
      * @param index The position where the bookmark will be placed in parent folder
      * @param title Title of the new bookmark. If empty, the URL will be used as the title.
@@ -776,6 +782,13 @@ public class BookmarkBridge {
     public void reorderBookmarks(BookmarkId parent, long[] newOrder) {
         BookmarkBridgeJni.get().reorderChildren(
                 mNativeBookmarkBridge, BookmarkBridge.this, parent, newOrder);
+    }
+
+    @VisibleForTesting
+    BookmarkId getPartnerFolderId() {
+        assert mIsNativeBookmarkModelLoaded;
+        return BookmarkBridgeJni.get().getPartnerFolderId(
+                mNativeBookmarkBridge, BookmarkBridge.this);
     }
 
     @CalledByNative
@@ -965,6 +978,7 @@ public class BookmarkBridge {
         BookmarkId getMobileFolderId(long nativeBookmarkBridge, BookmarkBridge caller);
         BookmarkId getOtherFolderId(long nativeBookmarkBridge, BookmarkBridge caller);
         BookmarkId getDesktopFolderId(long nativeBookmarkBridge, BookmarkBridge caller);
+        BookmarkId getPartnerFolderId(long nativeBookmarkBridge, BookmarkBridge caller);
         int getChildCount(long nativeBookmarkBridge, BookmarkBridge caller, long id, int type);
         void getChildIDs(long nativeBookmarkBridge, BookmarkBridge caller, long id, int type,
                 boolean getFolders, boolean getBookmarks, List<BookmarkId> bookmarksList);

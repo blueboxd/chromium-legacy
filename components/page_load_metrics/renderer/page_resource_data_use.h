@@ -9,12 +9,12 @@
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/origin.h"
 
 class GURL;
 
 namespace network {
-struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }  // namespace network
 
@@ -30,7 +30,7 @@ class PageResourceDataUse {
 
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
-                        const network::ResourceResponseHead& response_head,
+                        const network::mojom::URLResponseHead& response_head,
                         content::ResourceType resource_type,
                         content::PreviewsState previews_state);
 

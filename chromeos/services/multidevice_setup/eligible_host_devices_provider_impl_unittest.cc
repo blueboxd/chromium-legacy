@@ -125,36 +125,42 @@ TEST_P(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
        SupportedAndEnabled) {
   SetBitsOnTestDevices();
 
+  GetMutableRemoteDevice(test_devices()[0])->last_update_time_millis = 1999;
+  GetMutableRemoteDevice(test_devices()[1])->last_update_time_millis = 25;
+  GetMutableRemoteDevice(test_devices()[2])->last_update_time_millis = 2525;
+  GetMutableRemoteDevice(test_devices()[3])->last_update_time_millis = 500;
+  GetMutableRemoteDevice(test_devices()[4])->last_update_time_millis = 1000;
+
   multidevice::RemoteDeviceRefList devices{test_devices()[0], test_devices()[1],
                                            test_devices()[2], test_devices()[3],
                                            test_devices()[4]};
   fake_device_sync_client()->set_synced_devices(devices);
   fake_device_sync_client()->NotifyNewDevicesSynced();
 
-  base::flat_set<multidevice::RemoteDeviceRef> eligible_devices =
+  multidevice::RemoteDeviceRefList eligible_devices =
       provider()->GetEligibleHostDevices();
-  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[0]));
-  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[1]));
-  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[2]));
-  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[3]));
-  EXPECT_FALSE(base::Contains(eligible_devices, test_devices()[4]));
+  EXPECT_EQ(4u, eligible_devices.size());
+  EXPECT_EQ(test_devices()[2], eligible_devices[0]);
+  EXPECT_EQ(test_devices()[0], eligible_devices[1]);
+  EXPECT_EQ(test_devices()[3], eligible_devices[2]);
+  EXPECT_EQ(test_devices()[1], eligible_devices[3]);
 }
 
 TEST_P(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
        GetDevicesActivityStatus) {
   SetBitsOnTestDevices();
 
-  multidevice::RemoteDeviceRefList devices{test_devices()[0], test_devices()[1],
-                                           test_devices()[2], test_devices()[3],
-                                           test_devices()[4]};
-  fake_device_sync_client()->set_synced_devices(devices);
-  fake_device_sync_client()->NotifyNewDevicesSynced();
-
   GetMutableRemoteDevice(test_devices()[0])->last_update_time_millis = 1;
   GetMutableRemoteDevice(test_devices()[1])->last_update_time_millis = 25;
   GetMutableRemoteDevice(test_devices()[2])->last_update_time_millis = 10;
   GetMutableRemoteDevice(test_devices()[3])->last_update_time_millis = 100;
   GetMutableRemoteDevice(test_devices()[4])->last_update_time_millis = 10000;
+
+  multidevice::RemoteDeviceRefList devices{test_devices()[0], test_devices()[1],
+                                           test_devices()[2], test_devices()[3],
+                                           test_devices()[4]};
+  fake_device_sync_client()->set_synced_devices(devices);
+  fake_device_sync_client()->NotifyNewDevicesSynced();
 
   std::vector<device_sync::mojom::DeviceActivityStatusPtr>
       device_activity_statuses;
@@ -189,13 +195,13 @@ TEST_P(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
     EXPECT_EQ(test_devices()[0], eligible_devices[2]);
     EXPECT_EQ(test_devices()[1], eligible_devices[3]);
   } else {
-    base::flat_set<multidevice::RemoteDeviceRef> eligible_devices =
+    multidevice::RemoteDeviceRefList eligible_devices =
         provider()->GetEligibleHostDevices();
     EXPECT_EQ(4u, eligible_devices.size());
-    EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[0]));
-    EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[1]));
-    EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[2]));
-    EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[3]));
+    EXPECT_EQ(test_devices()[3], eligible_devices[0]);
+    EXPECT_EQ(test_devices()[1], eligible_devices[1]);
+    EXPECT_EQ(test_devices()[2], eligible_devices[2]);
+    EXPECT_EQ(test_devices()[0], eligible_devices[3]);
   }
 }
 

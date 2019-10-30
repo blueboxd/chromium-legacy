@@ -806,6 +806,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     return paint_worklet_tracker_;
   }
 
+  bool did_lock_scrolling_layer_for_testing() const {
+    return did_lock_scrolling_layer_;
+  }
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,

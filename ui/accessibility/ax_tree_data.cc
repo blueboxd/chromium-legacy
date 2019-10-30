@@ -11,10 +11,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
 
-AXTreeData::AXTreeData() = default;
+AXTreeData::AXTreeData()
+    : sel_anchor_affinity(ax::mojom::TextAffinity::kUpstream),
+      sel_focus_affinity(ax::mojom::TextAffinity::kDownstream) {}
+
 AXTreeData::AXTreeData(const AXTreeData& other) = default;
 AXTreeData::~AXTreeData() = default;
 

@@ -162,13 +162,42 @@ void LayoutReplaced::RecalcVisualOverflow() {
 
 void LayoutReplaced::ComputeIntrinsicSizingInfoForReplacedContent(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  if (ShouldApplySizeContainment()) {
-    intrinsic_sizing_info.size =
-        FloatSize(ContentLogicalSizeForSizeContainment());
+  // In cases where both size dimensions are overridden, or we apply size
+  // containment we don't need to compute sizing information, since the final
+  // result does not depend on it.
+  // TODO(vmpstr): The only difference between this and calling
+  // ComputeIntrinsicSizingInfo below is that the latter may use an aspect ratio
+  // from width and height. See if the two code paths can be unified.
+  if ((HasOverrideIntrinsicContentLogicalWidth() &&
+       HasOverrideIntrinsicContentLogicalHeight()) ||
+      ShouldApplySizeContainment()) {
+    // Reset the size in case it was already populated.
+    intrinsic_sizing_info.size = FloatSize();
+
+    // If any of the dimensions are overriden, set those sizes. Note that we
+    // have to check individual dimensions because we might reach here because
+    // of size-containment.
+    if (HasOverrideIntrinsicContentLogicalWidth()) {
+      intrinsic_sizing_info.size.SetWidth(
+          OverrideIntrinsicContentLogicalWidth().ToFloat());
+    }
+    if (HasOverrideIntrinsicContentLogicalHeight()) {
+      intrinsic_sizing_info.size.SetHeight(
+          OverrideIntrinsicContentLogicalHeight().ToFloat());
+    }
     return;
   }
 
   ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+
+  // The above call to ComputeIntrinsicSizingInfo should have used the override
+  // if it was set.
+  DCHECK(!HasOverrideIntrinsicContentLogicalWidth() ||
+         OverrideIntrinsicContentLogicalWidth() ==
+             intrinsic_sizing_info.size.Width());
+  DCHECK(!HasOverrideIntrinsicContentLogicalHeight() ||
+         OverrideIntrinsicContentLogicalHeight() ==
+             intrinsic_sizing_info.size.Height());
 
   // Update our intrinsic size to match what was computed, so that
   // when we constrain the size, the correct intrinsic size will be

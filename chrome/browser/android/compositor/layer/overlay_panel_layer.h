@@ -52,6 +52,7 @@ class OverlayPanelLayer : public Layer {
                      float bar_height,
                      float bar_offset_y,
                      float bar_text_opacity,
+                     int bar_text_bounds_adjust,
                      bool bar_border_visible,
                      float bar_border_height,
                      bool bar_shadow_visible,

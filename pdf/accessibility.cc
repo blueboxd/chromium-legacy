@@ -14,15 +14,16 @@ namespace chrome_pdf {
 
 namespace {
 
-bool IsCharWithinTextRun(const PP_PrivateAccessibilityTextRunInfo& text_run,
-                         uint32_t text_run_start_char_index,
-                         uint32_t char_index) {
+bool IsCharWithinTextRun(
+    const pp::PDF::PrivateAccessibilityTextRunInfo& text_run,
+    uint32_t text_run_start_char_index,
+    uint32_t char_index) {
   return char_index >= text_run_start_char_index &&
          char_index - text_run_start_char_index < text_run.len;
 }
 
 bool GetEnclosingTextRunRangeForCharRange(
-    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<pp::PDF::PrivateAccessibilityTextRunInfo>& text_runs,
     int start_char_index,
     int char_count,
     uint32_t* start_text_run_index,
@@ -58,7 +59,7 @@ bool GetEnclosingTextRunRangeForCharRange(
 void GetAccessibilityLinkInfo(
     PDFEngine* engine,
     int32_t page_index,
-    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<pp::PDF::PrivateAccessibilityTextRunInfo>& text_runs,
     std::vector<pp::PDF::PrivateAccessibilityLinkInfo>* links) {
   uint32_t link_count = engine->GetLinkCount(page_index);
   for (uint32_t i = 0; i < link_count; ++i) {
@@ -110,7 +111,7 @@ bool GetAccessibilityInfo(
     PDFEngine* engine,
     int32_t page_index,
     PP_PrivateAccessibilityPageInfo* page_info,
-    std::vector<PP_PrivateAccessibilityTextRunInfo>* text_runs,
+    std::vector<pp::PDF::PrivateAccessibilityTextRunInfo>* text_runs,
     std::vector<PP_PrivateAccessibilityCharInfo>* chars,
     pp::PDF::PrivateAccessibilityPageObjects* page_objects) {
   int page_count = engine->GetNumberOfPages();
@@ -135,8 +136,8 @@ bool GetAccessibilityInfo(
 
   int char_index = 0;
   while (char_index < char_count) {
-    base::Optional<PP_PrivateAccessibilityTextRunInfo> text_run_info_result =
-        engine->GetTextRunInfo(page_index, char_index);
+    base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
+        text_run_info_result = engine->GetTextRunInfo(page_index, char_index);
     DCHECK(text_run_info_result.has_value());
     const auto& text_run_info = text_run_info_result.value();
     uint32_t text_run_end = char_index + text_run_info.len;

@@ -22,10 +22,10 @@ cr.define('advanced_dialog_test', function() {
     let destination = null;
 
     /** @type {string} */
-    let printerId = 'FooDevice';
+    const printerId = 'FooDevice';
 
     /** @type {string} */
-    let printerName = 'FooName';
+    const printerName = 'FooName';
 
     /** @override */
     setup(function() {

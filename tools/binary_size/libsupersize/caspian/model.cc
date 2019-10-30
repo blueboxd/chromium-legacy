@@ -16,7 +16,12 @@ Symbol::Symbol() = default;
 Symbol::Symbol(const Symbol& other) = default;
 
 TreeNode::TreeNode() = default;
-TreeNode::~TreeNode() = default;
+TreeNode::~TreeNode() {
+  // TODO(jaspercb): Could use custom allocator to delete all nodes in one go.
+  for (TreeNode* child : children) {
+    delete child;
+  }
+}
 
 SizeInfo::SizeInfo() = default;
 SizeInfo::~SizeInfo() = default;

@@ -4,7 +4,7 @@
 
 #include "content/public/gpu/content_gpu_client.h"
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 #include "media/cdm/cdm_proxy.h"
 #endif
 
@@ -23,7 +23,7 @@ ContentGpuClient::GetVizCompositorThreadRunner() {
   return nullptr;
 }
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 std::unique_ptr<media::CdmProxy> ContentGpuClient::CreateCdmProxy(
     const base::Token& cdm_guid) {
   return nullptr;

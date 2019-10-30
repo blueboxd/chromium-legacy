@@ -28,8 +28,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilterModelConfig {
   // Maximum distance of neighbor centroid, in millimeters.
   float max_neighbor_distance_in_mm = 0.0f;
 
-  base::TimeDelta max_dead_neighbor_time =
-      base::TimeDelta::FromMilliseconds(0.0);
+  base::TimeDelta max_dead_neighbor_time;
 
   // Minimum count of samples in a stroke for neural comparison.
   uint32_t min_sample_count = 0;
@@ -62,7 +61,7 @@ class EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilterModel {
   // result.
   virtual float Inference(const std::vector<float>& features) const = 0;
 
-  virtual NeuralStylusPalmDetectionFilterModelConfig& config() const = 0;
+  virtual const NeuralStylusPalmDetectionFilterModelConfig& config() const = 0;
 };
 
 }  // namespace ui

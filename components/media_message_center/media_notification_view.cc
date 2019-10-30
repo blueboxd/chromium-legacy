@@ -99,13 +99,12 @@ const char MediaNotificationView::kMetadataHistogramName[] =
 MediaNotificationView::MediaNotificationView(
     MediaNotificationContainer* container,
     base::WeakPtr<MediaNotificationItem> item,
-    views::View* header_row_controls_view,
+    std::unique_ptr<views::View> header_row_controls_view,
     const base::string16& default_app_name,
     int notification_width,
     bool should_show_icon)
     : container_(container),
       item_(std::move(item)),
-      header_row_controls_view_(header_row_controls_view),
       default_app_name_(default_app_name),
       notification_width_(notification_width) {
   DCHECK(container_);
@@ -116,8 +115,10 @@ MediaNotificationView::MediaNotificationView(
   auto header_row =
       std::make_unique<message_center::NotificationHeaderView>(this);
 
-  if (header_row_controls_view_)
-    header_row->AddChildView(header_row_controls_view_);
+  if (header_row_controls_view) {
+    header_row_controls_view_ =
+        header_row->AddChildView(std::move(header_row_controls_view));
+  }
 
   header_row->SetAppName(default_app_name_);
 

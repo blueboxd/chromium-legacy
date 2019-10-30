@@ -202,6 +202,11 @@ interface NativeWidgetNSWindow {
   // Make the content view be the first responder for the NSWindow.
   MakeFirstResponder();
 
+  // Sort the subviews of the content view of this window. The sorted ids of
+  // the NSViews attached by NativeViewHost::Attach are listed in
+  // |attached_subview_ids|.
+  SortSubviews(array<uint64> attached_subview_ids);
+
   // Clear the touchbar.
   ClearTouchBar();
 

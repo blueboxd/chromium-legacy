@@ -14,6 +14,10 @@ namespace security_interstitials {
 struct UnsafeResource;
 }  // namespace security_interstitials
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace android_webview {
 
 class AwSafeBrowsingUIManager;
@@ -24,6 +28,12 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
 
   static void ShowBlockingPage(AwSafeBrowsingUIManager* ui_manager,
                                const UnsafeResource& unsafe_resource);
+
+  static AwSafeBrowsingBlockingPage* CreateBlockingPage(
+      AwSafeBrowsingUIManager* ui_manager,
+      content::WebContents* web_contents,
+      const GURL& main_frame_url,
+      const UnsafeResource& unsafe_resource);
 
  protected:
   // Used to specify which BaseSafeBrowsingErrorUI to instantiate, and

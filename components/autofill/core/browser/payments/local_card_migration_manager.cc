@@ -23,7 +23,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace autofill {
@@ -83,9 +82,7 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
   }
 
   // Don't show the prompt if max strike count was reached.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillLocalCardMigrationUsesStrikeSystemV2) &&
-      GetLocalCardMigrationStrikeDatabase()->IsMaxStrikesLimitReached()) {
+  if (GetLocalCardMigrationStrikeDatabase()->IsMaxStrikesLimitReached()) {
     switch (imported_credit_card_record_type_) {
       case FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD:
         AutofillMetrics::LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
@@ -99,10 +96,6 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
     AutofillMetrics::LogLocalCardMigrationDecisionMetric(
         AutofillMetrics::LocalCardMigrationDecisionMetric::
             NOT_OFFERED_REACHED_MAX_STRIKE_COUNT);
-    return false;
-  } else if (prefs::IsLocalCardMigrationPromptPreviouslyCancelled(
-                 client_->GetPrefs())) {
-    // Don't show the the prompt if user cancelled/rejected previously.
     return false;
   }
 
@@ -175,18 +168,14 @@ void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
       local_card_migration_origin_, AutofillMetrics::MAIN_DIALOG_ACCEPTED);
 
   // Log number of LocalCardMigration strikes when migration was accepted.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
-    base::UmaHistogramCounts1000(
-        "Autofill.StrikeDatabase.StrikesPresentWhenLocalCardMigrationAccepted",
-        GetLocalCardMigrationStrikeDatabase()->GetStrikes());
-  }
+  base::UmaHistogramCounts1000(
+      "Autofill.StrikeDatabase.StrikesPresentWhenLocalCardMigrationAccepted",
+      GetLocalCardMigrationStrikeDatabase()->GetStrikes());
 
-  // If there are cards which aren't selected, add 3 strikes to
+  // If there are cards which aren't selected, add
+  // kStrikesToAddWhenCardsDeselectedAtMigration strikes to
   // LocalCardMigrationStrikeDatabase.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillLocalCardMigrationUsesStrikeSystemV2) &&
-      (selected_card_guids.size() < migratable_credit_cards_.size())) {
+  if (selected_card_guids.size() < migratable_credit_cards_.size()) {
     GetLocalCardMigrationStrikeDatabase()->AddStrikes(
         LocalCardMigrationStrikeDatabase::
             kStrikesToAddWhenCardsDeselectedAtMigration);

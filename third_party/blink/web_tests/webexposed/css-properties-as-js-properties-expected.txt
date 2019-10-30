@@ -119,7 +119,6 @@ columnWidth
 columns
 contain
 content
-contentSize
 counterIncrement
 counterReset
 cssFloat
@@ -196,6 +195,11 @@ insetBlockStart
 insetInline
 insetInlineEnd
 insetInlineStart
+intrinsicBlockSize
+intrinsicHeight
+intrinsicInlineSize
+intrinsicSize
+intrinsicWidth
 isolation
 item
 justifyContent

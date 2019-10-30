@@ -17,12 +17,15 @@
   background: lightblue;
   overflow: scroll;
   border: 10px solid black;
-  content-size: 123px 456px;
+  intrinsic-size: 123px 456px;
 }
 #child {
   width: 500px;
   height: 500px;
   background: red;
+}
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 

@@ -15,8 +15,8 @@
 #include "base/timer/timer.h"
 #include "components/page_load_metrics/common/page_load_metrics_constants.h"
 #include "components/page_load_metrics/renderer/page_timing_sender.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace page_load_metrics {
 
@@ -127,7 +127,7 @@ void PageTimingMetricsSender::DidObserveLazyLoadBehavior(
 void PageTimingMetricsSender::DidStartResponse(
     const GURL& response_url,
     int resource_id,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     content::ResourceType resource_type,
     content::PreviewsState previews_state) {
   DCHECK(!base::Contains(page_resource_data_use_, resource_id));

@@ -206,33 +206,36 @@ TEST_F(PDFiumPageTextTest, GetTextRunInfo) {
 
   int current_char_index = 0;
 
+  pp::PDF::PrivateAccessibilityTextStyleInfo expected_style_1 = {
+      "Times-Roman", 0, 0, 12, 0xff000000, 0xff000000, false, false};
+  pp::PDF::PrivateAccessibilityTextStyleInfo expected_style_2 = {
+      "Helvetica", 0, 0, 16, 0xff000000, 0xff000000, false, false};
   // The links span from [7, 22], [52, 66] and [92, 108] with 16, 15 and 17
   // text run lengths respectively. There are text runs preceding and
   // succeeding them.
-  PP_PrivateAccessibilityTextRunInfo expected_text_runs[] = {
-      {7, 12,
+  pp::PDF::PrivateAccessibilityTextRunInfo expected_text_runs[] = {
+      {7,
        PP_MakeFloatRectFromXYWH(26.666666f, 189.333333f, 38.666672f,
                                 13.333344f),
-       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR},
-      {16, 12,
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, expected_style_1},
+      {16,
        PP_MakeFloatRectFromXYWH(70.666664f, 189.333333f, 108.0f, 14.666672f),
-       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR},
-      {20, 12,
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, expected_style_1},
+      {20,
        PP_MakeFloatRectFromXYWH(181.333333f, 189.333333f, 117.333333f,
                                 14.666672f),
-       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR},
-      {9, 16, PP_MakeFloatRectFromXYWH(28.0f, 117.33334f, 89.333328f, 20.0f),
-       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR},
-      {15, 16,
-       PP_MakeFloatRectFromXYWH(126.66666f, 117.33334f, 137.33334f, 20.0f),
-       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR},
-      {20, 16,
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, expected_style_1},
+      {9, PP_MakeFloatRectFromXYWH(28.0f, 117.33334f, 89.333328f, 20.0f),
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, expected_style_2},
+      {15, PP_MakeFloatRectFromXYWH(126.66666f, 117.33334f, 137.33334f, 20.0f),
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, expected_style_2},
+      {20,
        PP_MakeFloatRectFromXYWH(266.66666f, 118.66666f, 169.33334f, 18.666664f),
-       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR},
-      {5, 16, PP_MakeFloatRectFromXYWH(28.0f, 65.333336f, 40.0f, 18.666664f),
-       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR},
-      {17, 16, PP_MakeFloatRectFromXYWH(77.333336f, 64.0f, 160.0f, 20.0f),
-       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR}};
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, expected_style_2},
+      {5, PP_MakeFloatRectFromXYWH(28.0f, 65.333336f, 40.0f, 18.666664f),
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, expected_style_2},
+      {17, PP_MakeFloatRectFromXYWH(77.333336f, 64.0f, 160.0f, 20.0f),
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, expected_style_2}};
 
   if (IsRunningOnChromeOS()) {
     expected_text_runs[4].bounds =
@@ -244,19 +247,31 @@ TEST_F(PDFiumPageTextTest, GetTextRunInfo) {
   }
 
   // Test negative char index returns nullopt
-  base::Optional<PP_PrivateAccessibilityTextRunInfo> text_run_info_result =
-      engine->GetTextRunInfo(0, -1);
+  base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
+      text_run_info_result = engine->GetTextRunInfo(0, -1);
   ASSERT_FALSE(text_run_info_result.has_value());
 
-  // Test valid char index returns expected text run info
+  // Test valid char index returns expected text run info and expected text
+  // style info
   for (const auto& expected_text_run : expected_text_runs) {
     text_run_info_result = engine->GetTextRunInfo(0, current_char_index);
     ASSERT_TRUE(text_run_info_result.has_value());
     const auto& text_run_info = text_run_info_result.value();
     EXPECT_EQ(expected_text_run.len, text_run_info.len);
-    EXPECT_EQ(expected_text_run.font_size, text_run_info.font_size);
     CompareRect(expected_text_run.bounds, text_run_info.bounds);
+    const pp::PDF::PrivateAccessibilityTextStyleInfo& expected_style =
+        expected_text_run.style;
+    const pp::PDF::PrivateAccessibilityTextStyleInfo& text_run_info_style =
+        text_run_info.style;
     EXPECT_EQ(expected_text_run.direction, text_run_info.direction);
+    EXPECT_EQ(expected_style.font_name, text_run_info_style.font_name);
+    EXPECT_EQ(expected_style.font_weight, text_run_info_style.font_weight);
+    EXPECT_EQ(expected_style.render_mode, text_run_info_style.render_mode);
+    EXPECT_EQ(expected_style.font_size, text_run_info_style.font_size);
+    EXPECT_EQ(expected_style.fill_color, text_run_info_style.fill_color);
+    EXPECT_EQ(expected_style.stroke_color, text_run_info_style.stroke_color);
+    EXPECT_EQ(expected_style.is_italic, text_run_info_style.is_italic);
+    EXPECT_EQ(expected_text_run.style.is_bold, text_run_info_style.is_bold);
     current_char_index += text_run_info.len;
   }
 

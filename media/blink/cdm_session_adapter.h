@@ -18,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_config.h"
 #include "media/base/content_decryption_module.h"
-#include "third_party/blink/public/platform/web_content_decryption_module_result.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_session.h"
 
 namespace url {
@@ -42,12 +42,11 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   // Creates the CDM for |key_system| using |cdm_factory| and returns the result
   // via |result|.
-  void CreateCdm(
-      CdmFactory* cdm_factory,
-      const std::string& key_system,
-      const url::Origin& security_origin,
-      const CdmConfig& cdm_config,
-      std::unique_ptr<blink::WebContentDecryptionModuleResult> result);
+  void CreateCdm(CdmFactory* cdm_factory,
+                 const std::string& key_system,
+                 const url::Origin& security_origin,
+                 const CdmConfig& cdm_config,
+                 WebCdmCreatedCB web_cdm_created_cb);
 
   // Provides a server certificate to be used to encrypt messages to the
   // license server.
@@ -159,7 +158,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // OnCdmCreated() call.
   uint32_t trace_id_;
 
-  std::unique_ptr<blink::WebContentDecryptionModuleResult> cdm_created_result_;
+  WebCdmCreatedCB web_cdm_created_cb_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<CdmSessionAdapter> weak_ptr_factory_{this};

@@ -85,6 +85,7 @@ source_set("components") {
   if (is_desktop_linux) {
     # Desktop linux, doesn't count ChromeOS.
     sources += [
+      "web_app_file_handler_registration_linux.cc",
       "web_app_shortcut_linux.cc",
       "web_app_shortcut_linux.h",
     ]

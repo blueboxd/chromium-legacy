@@ -60,6 +60,10 @@ PhysicalGroup<4> CSSDirectionAwareResolver::InsetGroup() {
   return PhysicalGroup<4>(insetShorthand());
 }
 
+PhysicalGroup<2> CSSDirectionAwareResolver::IntrinsicSizeGroup() {
+  return PhysicalGroup<2>(intrinsicSizeShorthand());
+}
+
 PhysicalGroup<4> CSSDirectionAwareResolver::MarginGroup() {
   return PhysicalGroup<4>(marginShorthand());
 }

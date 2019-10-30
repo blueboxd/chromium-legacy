@@ -57,14 +57,14 @@ AwPrintManager::AwPrintManager(
       fd_(file_descriptor) {
   DCHECK(settings_);
   pdf_writing_done_callback_ = std::move(callback);
+  DCHECK(pdf_writing_done_callback_);
   cookie_ = 1;  // Set a valid dummy cookie value.
 }
 
 AwPrintManager::~AwPrintManager() = default;
 
 void AwPrintManager::PdfWritingDone(int page_count) {
-  if (pdf_writing_done_callback_)
-    std::move(pdf_writing_done_callback_).Run(page_count);
+  pdf_writing_done_callback_.Run(page_count);
   // Invalidate the file descriptor so it doesn't get reused.
   fd_ = -1;
 }
@@ -72,7 +72,8 @@ void AwPrintManager::PdfWritingDone(int page_count) {
 bool AwPrintManager::PrintNow() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* rfh = web_contents()->GetMainFrame();
-  return rfh->Send(new PrintMsg_PrintPages(rfh->GetRoutingID()));
+  GetPrintRenderFrame(rfh)->PrintRequestedPages();
+  return true;
 }
 
 void AwPrintManager::OnGetDefaultPrintSettings(
@@ -132,16 +133,16 @@ void AwPrintManager::OnDidPrintDocument(
           .get(),
       FROM_HERE, base::BindOnce(&SaveDataToFd, fd_, number_pages_, data),
       base::BindOnce(&AwPrintManager::OnDidPrintDocumentWritingDone,
-                     std::move(pdf_writing_done_callback_), std::move(helper)));
+                     pdf_writing_done_callback_, std::move(helper)));
 }
 
 // static
 void AwPrintManager::OnDidPrintDocumentWritingDone(
-    PdfWritingDoneCallback callback,
+    const PdfWritingDoneCallback& callback,
     std::unique_ptr<DelayedFrameDispatchHelper> helper,
     int page_count) {
   if (callback)
-    std::move(callback).Run(page_count);
+    callback.Run(page_count);
   helper->SendCompleted();
 }
 

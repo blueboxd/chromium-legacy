@@ -592,9 +592,24 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     // role of button.
     auto* parent =
         static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
-    if (MSAARole() == ROLE_SYSTEM_MENUITEM ||
-        (parent && parent->MSAARole() == ROLE_SYSTEM_MENUPOPUP)) {
+    int role = MSAARole();
+    if (role == ROLE_SYSTEM_MENUITEM) {
       event_type = ax::mojom::Event::kFocus;
+    } else if (role == ROLE_SYSTEM_LISTITEM) {
+      if (AXPlatformNodeBase* container = GetSelectionContainer()) {
+        const ui::AXNodeData& data = container->GetData();
+        if (data.role == ax::mojom::Role::kListBox &&
+            !data.HasState(ax::mojom::State::kMultiselectable) &&
+            GetDelegate()->GetFocus() == GetNativeViewAccessible()) {
+          event_type = ax::mojom::Event::kFocus;
+        }
+      }
+    } else if (parent) {
+      int parent_role = parent->MSAARole();
+      if (parent_role == ROLE_SYSTEM_MENUPOPUP ||
+          parent_role == ROLE_SYSTEM_LIST) {
+        event_type = ax::mojom::Event::kFocus;
+      }
     }
   }
 

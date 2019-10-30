@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/intrinsic_length.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
@@ -1859,16 +1860,17 @@ StyleBuilderConverter::CssToLengthConversionData(StyleResolverState& state) {
   return state.CssToLengthConversionData();
 }
 
-ContentSize StyleBuilderConverter::ConvertContentSize(StyleResolverState& state,
-                                                      const CSSValue& value) {
+IntrinsicLength StyleBuilderConverter::ConvertIntrinsicLength(
+    StyleResolverState& state,
+    const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone)
-    return ContentSize();
-
-  auto* pair = DynamicTo<CSSValuePair>(value);
-  DCHECK(pair);
-  return ContentSize(ConvertLength(state, pair->First()),
-                     ConvertLength(state, pair->Second()));
+  if (identifier_value) {
+    if (identifier_value->GetValueID() == CSSValueID::kLegacy)
+      return IntrinsicLength::MakeLegacy();
+    if (identifier_value->GetValueID() == CSSValueID::kAuto)
+      return IntrinsicLength::MakeAuto();
+  }
+  return IntrinsicLength::Make(ConvertLength(state, value));
 }
 
 }  // namespace blink

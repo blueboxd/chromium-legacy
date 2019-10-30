@@ -641,64 +641,6 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
   CloseBrowserSynchronously(browser);
 }
 
-// Make sure that UKM is disabled when an open sync window disables history.
-// Keep in sync with UkmTest.singleDisableHistorySyncCheck in
-// chrome/android/javatests/src/org/chromium/chrome/browser/sync/
-// UkmTest.java.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableHistorySyncCheck) {
-  MetricsConsentOverride metrics_consent(true);
-
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
-      EnableSyncForProfile(profile);
-
-  Browser* sync_browser = CreateBrowser(profile);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
-  EXPECT_NE(0U, original_client_id);
-
-  harness->DisableSyncForType(syncer::UserSelectableType::kHistory);
-  // Disable history sync does not disable UKM when unified consent is
-  // enabled.
-  EXPECT_TRUE(ukm_enabled());
-
-  harness->service()->GetUserSettings()->SetSyncRequested(false);
-  CloseBrowserSynchronously(sync_browser);
-}
-
-// Make sure that UKM is disabled when any open sync window disables history.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableHistorySyncCheck) {
-  MetricsConsentOverride metrics_consent(true);
-
-  Profile* profile1 = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness1 =
-      EnableSyncForProfile(profile1);
-
-  Browser* browser1 = CreateBrowser(profile1);
-  EXPECT_TRUE(ukm_enabled());
-  uint64_t original_client_id = client_id();
-  EXPECT_NE(0U, original_client_id);
-
-  Profile* profile2 = CreateNonSyncProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness2 =
-      EnableSyncForProfile(profile2);
-  Browser* browser2 = CreateBrowser(profile2);
-  EXPECT_TRUE(ukm_enabled());
-  EXPECT_EQ(original_client_id, client_id());
-
-  harness2->DisableSyncForType(syncer::UserSelectableType::kHistory);
-  EXPECT_TRUE(ukm_enabled());
-
-  harness2->EnableSyncForType(syncer::UserSelectableType::kHistory);
-  EXPECT_TRUE(ukm_enabled());
-  EXPECT_EQ(original_client_id, client_id());
-
-  harness2->service()->GetUserSettings()->SetSyncRequested(false);
-  harness1->service()->GetUserSettings()->SetSyncRequested(false);
-  CloseBrowserSynchronously(browser2);
-  CloseBrowserSynchronously(browser1);
-}
-
 // Make sure that extension URLs are disabled when an open sync window
 // disables it.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
@@ -1009,66 +951,6 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
-}
-
-IN_PROC_BROWSER_TEST_F(UkmBrowserTestWithSyncTransport, SyncFeatureCheck) {
-  MetricsConsentOverride metrics_consent(true);
-
-  // Set up Sync-the-feature.
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
-      EnableSyncForProfile(profile);
-
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            sync_service->GetTransportState());
-  ASSERT_TRUE(sync_service->IsSyncFeatureActive());
-
-  // Sanity check: UKM should now be active.
-  ASSERT_TRUE(ukm_enabled());
-
-  // Turn off Sync-the-feature by user choice. The machinery should start up
-  // again in transport-only mode.
-  sync_service->GetUserSettings()->SetSyncRequested(false);
-  ASSERT_TRUE(harness->AwaitSyncTransportActive());
-
-  // The Sync machinery is now active in transport mode (Sync-the-feature is
-  // disabled).
-  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            sync_service->GetTransportState());
-  ASSERT_FALSE(sync_service->IsSyncFeatureEnabled());
-
-  // Trigger a Sync cycle so the connection status will resolve to
-  // CONNECTION_OK.
-  sync_service->TriggerRefresh(syncer::Intersection(
-      sync_service->GetActiveDataTypes(), syncer::ProtocolTypes()));
-  SyncConnectionOkChecker connection_ok(
-      ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile));
-  ASSERT_TRUE(connection_ok.Wait());
-
-  // History Sync is now not active anymore, but (maybe surprisingly) TYPED_URLS
-  // is still considered part of the "chosen" data types, since the user hasn't
-  // disabled it.
-  ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(syncer::TYPED_URLS));
-  ASSERT_FALSE(sync_service->GetActiveDataTypes().Has(
-      syncer::HISTORY_DELETE_DIRECTIVES));
-  ASSERT_TRUE(sync_service->GetUserSettings()->GetSelectedTypes().Has(
-      syncer::UserSelectableType::kHistory));
-
-  // Even if sync is turned off, the UKM consent is not revoked so UKM should
-  // still be enabled.
-  EXPECT_TRUE(ukm_enabled());
-
-  // Finally, turn Sync-the-feature on again.
-  sync_service->GetUserSettings()->SetSyncRequested(true);
-  ASSERT_TRUE(harness->AwaitSyncSetupCompletion());
-  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            sync_service->GetTransportState());
-  ASSERT_TRUE(sync_service->IsSyncFeatureActive());
-
-  // Now UKM should be on again.
-  EXPECT_TRUE(ukm_enabled());
 }
 
 // On ChromeOS, the test profile starts with a primary account already set, so

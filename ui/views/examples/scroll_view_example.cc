@@ -14,6 +14,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/radio_button.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
@@ -28,26 +29,24 @@ class ScrollViewExample::ScrollableView : public View {
  public:
   ScrollableView() {
     SetColor(SK_ColorRED, SK_ColorCYAN);
-    AddChildView(new LabelButton(nullptr, ASCIIToUTF16("Button")));
-    AddChildView(new RadioButton(ASCIIToUTF16("Radio Button"), 0));
+
+    auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
+
+    const auto add_child = [this](std::unique_ptr<View> view) {
+      auto* container = AddChildView(std::make_unique<View>());
+      container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
+      container->AddChildView(std::move(view));
+    };
+    add_child(std::make_unique<LabelButton>(nullptr, ASCIIToUTF16("Button")));
+    add_child(std::make_unique<RadioButton>(ASCIIToUTF16("Radio Button"), 0));
+    layout_manager->SetDefaultFlex(1);
   }
 
   void SetColor(SkColor from, SkColor to) {
     from_color_ = from;
     to_color_ = to;
-  }
-
-  void PlaceChildY(size_t index, int y) {
-    View* view = children()[index];
-    gfx::Size size = view->GetPreferredSize();
-    view->SetBounds(0, y, size.width(), size.height());
-  }
-
-  // View
-  void Layout() override {
-    PlaceChildY(0, 0);
-    PlaceChildY(1, height() / 2);
-    SizeToPreferredSize();
   }
 
   void OnPaintBackground(gfx::Canvas* canvas) override {
@@ -56,10 +55,6 @@ class ScrollViewExample::ScrollableView : public View {
         gfx::Point(), gfx::Point(0, height()), from_color_, to_color_));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawRect(GetLocalBounds(), flags);
-  }
-
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(width(), height());
   }
 
  private:

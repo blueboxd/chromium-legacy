@@ -497,21 +497,22 @@ std::vector<base::FilePath> GetExistingProfileShortcutFilenames(
   return shortcut_paths;
 }
 
-std::string GetDesktopFileContents(
-    const base::FilePath& chrome_exe_path,
-    const std::string& app_name,
-    const GURL& url,
-    const std::string& extension_id,
-    const base::string16& title,
-    const std::string& icon_name,
-    const base::FilePath& profile_path,
-    const std::string& categories,
-    bool no_display) {
+std::string GetDesktopFileContents(const base::FilePath& chrome_exe_path,
+                                   const std::string& app_name,
+                                   const GURL& url,
+                                   const std::string& extension_id,
+                                   const base::string16& title,
+                                   const std::string& icon_name,
+                                   const base::FilePath& profile_path,
+                                   const std::string& categories,
+                                   const std::string& mime_type,
+                                   bool no_display) {
   base::CommandLine cmd_line = shell_integration::CommandLineArgsForLauncher(
       url, extension_id, profile_path);
   cmd_line.SetProgram(chrome_exe_path);
   return GetDesktopFileContentsForCommand(cmd_line, app_name, url, title,
-                                          icon_name, categories, no_display);
+                                          icon_name, categories, mime_type,
+                                          no_display);
 }
 
 std::string GetDesktopFileContentsForCommand(
@@ -521,6 +522,7 @@ std::string GetDesktopFileContentsForCommand(
     const base::string16& title,
     const std::string& icon_name,
     const std::string& categories,
+    const std::string& mime_type,
     bool no_display) {
 #if defined(USE_GLIB)
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
@@ -563,6 +565,13 @@ std::string GetDesktopFileContentsForCommand(
   if (!categories.empty()) {
     g_key_file_set_string(
         key_file, kDesktopEntry, "Categories", categories.c_str());
+  }
+
+  // Set the "MimeType" key.
+  if (!mime_type.empty() && mime_type.find("\n") == std::string::npos &&
+      mime_type.find("\r") == std::string::npos) {
+    g_key_file_set_string(key_file, kDesktopEntry, "MimeType",
+                          mime_type.c_str());
   }
 
   // Set the "NoDisplay" key.

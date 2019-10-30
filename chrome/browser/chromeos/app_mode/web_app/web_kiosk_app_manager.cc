@@ -61,6 +61,16 @@ const AccountId& WebKioskAppManager::GetAutoLaunchAccountId() const {
   return auto_launch_account_id_;
 }
 
+const WebKioskAppData* WebKioskAppManager::GetAppByAccountId(
+    const AccountId& account_id) const {
+  for (const auto& web_app : apps_) {
+    if (web_app->account_id() == account_id) {
+      return web_app.get();
+    }
+  }
+  return nullptr;
+}
+
 void WebKioskAppManager::UpdateAppsFromPolicy() {
   // Store current apps. We will compare old and new apps to determine which
   // apps are new, and which were deleted.

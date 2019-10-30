@@ -14,6 +14,7 @@ group("closure_compile") {
 group("polymer3_elements") {
   deps = [
     ":signin_shared_css_module",
+    "signin_email_confirmation:polymer3_elements",
     "sync_confirmation:polymer3_elements",
   ]
 }

@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 
 #include <string>
+#include <tuple>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -17,6 +18,7 @@
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/value_builder.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -44,15 +46,52 @@ bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
            std::set<base::StringPiece>(b.begin(), b.end());
   };
 
-  bool are_matched_rules_equal =
-      lhs.rule_id == rhs.rule_id && lhs.source_type == rhs.source_type;
+  auto get_members_tuple = [](const RequestAction& action) {
+    return std::tie(action.type, action.redirect_url, action.rule_id,
+                    action.source_type, action.extension_id);
+  };
 
-  return lhs.type == rhs.type && lhs.redirect_url == rhs.redirect_url &&
-         lhs.extension_id == rhs.extension_id && are_matched_rules_equal &&
+  return get_members_tuple(lhs) == get_members_tuple(rhs) &&
          are_vectors_equal(lhs.request_headers_to_remove,
                            rhs.request_headers_to_remove) &&
          are_vectors_equal(lhs.response_headers_to_remove,
                            rhs.response_headers_to_remove);
+}
+
+std::ostream& operator<<(std::ostream& output, RequestAction::Type type) {
+  switch (type) {
+    case RequestAction::Type::BLOCK:
+      output << "BLOCK";
+      break;
+    case RequestAction::Type::COLLAPSE:
+      output << "COLLAPSE";
+      break;
+    case RequestAction::Type::REDIRECT:
+      output << "REDIRECT";
+      break;
+    case RequestAction::Type::REMOVE_HEADERS:
+      output << "REMOVE_HEADERS";
+      break;
+  }
+  return output;
+}
+
+std::ostream& operator<<(std::ostream& output, const RequestAction& action) {
+  output << "\nRequestAction\n";
+  output << "|type| " << action.type << "\n";
+  output << "|redirect_url| "
+         << (action.redirect_url ? action.redirect_url->spec()
+                                 : std::string("nullopt"))
+         << "\n";
+  output << "|rule_id| " << action.rule_id << "\n";
+  output << "|source_type| "
+         << api::declarative_net_request::ToString(action.source_type) << "\n";
+  output << "|extension_id| " << action.extension_id << "\n";
+  output << "|request_headers_to_remove| "
+         << ::testing::PrintToString(action.request_headers_to_remove) << "\n";
+  output << "|response_headers_to_remove| "
+         << ::testing::PrintToString(action.response_headers_to_remove);
+  return output;
 }
 
 bool HasValidIndexedRuleset(const Extension& extension,

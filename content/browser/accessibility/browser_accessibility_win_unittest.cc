@@ -609,9 +609,9 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
   // Get the text of the button.
   EXPECT_EQ(S_OK, root_obj->get_hyperlink(2, hyperlink.GetAddressOf()));
   EXPECT_EQ(S_OK, hyperlink.CopyTo(hypertext.GetAddressOf()));
-  EXPECT_EQ(S_OK,
+  EXPECT_EQ(S_FALSE,
             hypertext->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
-  EXPECT_STREQ(button_text_name.c_str(), text);
+  EXPECT_EQ(nullptr, text);
   text.Reset();
   hyperlink.Reset();
   hypertext.Reset();

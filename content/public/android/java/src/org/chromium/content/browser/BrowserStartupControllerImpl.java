@@ -277,7 +277,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         // Startup should now be complete
         assert mFullBrowserStartupDone;
         if (!mStartupSuccess) {
-            throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_STARTUP_FAILED);
+            throw new ProcessInitException(LoaderErrors.NATIVE_STARTUP_FAILED);
         }
     }
 

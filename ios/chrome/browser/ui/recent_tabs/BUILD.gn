@@ -141,6 +141,7 @@ source_set("eg_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
+    "//ios/chrome/browser/ui/authentication/cells:constants",
     "//ios/chrome/browser/ui/history:constants",
     "//ios/chrome/browser/ui/history:history_ui",
     "//ios/chrome/browser/ui/table_view",

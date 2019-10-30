@@ -89,16 +89,8 @@ void CookieControlsBubbleView::OnBlockedCookiesCountChanged(
   if (blocked_cookies_ == blocked_cookies)
     return;
 
-  bool has_blocked_changed =
-      !blocked_cookies_ || (*blocked_cookies_ > 0) != (blocked_cookies > 0);
   blocked_cookies_ = blocked_cookies;
-
-  // If this only incremented the number of blocked sites, no full UI update is
-  // necessary besides the title text.
-  if (has_blocked_changed)
-    UpdateUi();
-  else
-    GetBubbleFrameView()->UpdateWindowTitle();
+  GetBubbleFrameView()->UpdateWindowTitle();
 }
 
 CookieControlsBubbleView::CookieControlsBubbleView(
@@ -122,7 +114,6 @@ void CookieControlsBubbleView::UpdateUi() {
   DialogModelChanged();
   GetBubbleFrameView()->UpdateWindowTitle();
 
-  bool has_blocked_cookies = blocked_cookies_ > 0;
 
   not_working_link_->SetVisible(false);
   text_->SetVisible(false);
@@ -136,13 +127,11 @@ void CookieControlsBubbleView::UpdateUi() {
     header_view_->SetVisible(true);
     header_view_->SetImage(
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            has_blocked_cookies ? IDR_COOKIE_BLOCKING_ON_HEADER
-                                : IDR_COOKIE_BLOCKING_INACTIVE_HEADER));
+            IDR_COOKIE_BLOCKING_ON_HEADER));
     text_->SetVisible(true);
-    text_->SetText(l10n_util::GetStringUTF16(
-        has_blocked_cookies ? IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE
-                            : IDS_COOKIE_CONTROLS_NOTHING_BLOCKED_MESSAGE));
-    not_working_link_->SetVisible(has_blocked_cookies);
+    text_->SetText(
+        l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE));
+    not_working_link_->SetVisible(true);
     blocked_cookies_.reset();
   } else {
     DCHECK_EQ(status_, CookieControlsController::Status::kDisabledForSite);

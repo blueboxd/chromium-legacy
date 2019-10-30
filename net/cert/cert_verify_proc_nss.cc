@@ -15,10 +15,9 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/protected_memory.h"
-#include "base/memory/protected_memory_cfi.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
@@ -48,22 +47,6 @@ using CacheOCSPResponseFunction = SECStatus (*)(CERTCertDBHandle* handle,
                                                 PRTime time,
                                                 const SECItem* encodedResponse,
                                                 void* pwArg);
-
-static PROTECTED_MEMORY_SECTION base::ProtectedMemory<CacheOCSPResponseFunction>
-    g_cache_ocsp_response;
-
-// The function pointer for CERT_CacheOCSPResponseFromSideChannel is saved to
-// read-only memory after being dynamically resolved as a security mitigation to
-// prevent the pointer from being tampered with. See crbug.com/771365 for
-// details.
-const base::ProtectedMemory<CacheOCSPResponseFunction>&
-ResolveCacheOCSPResponse() {
-  static base::ProtectedMemory<CacheOCSPResponseFunction>::Initializer init(
-      &g_cache_ocsp_response,
-      reinterpret_cast<CacheOCSPResponseFunction>(
-          dlsym(RTLD_DEFAULT, "CERT_CacheOCSPResponseFromSideChannel")));
-  return g_cache_ocsp_response;
-}
 
 typedef std::unique_ptr<
     CERTCertificatePolicies,
@@ -826,6 +809,7 @@ bool CertVerifyProcNSS::SupportsAdditionalTrustAnchors() const {
   return true;
 }
 
+NO_SANITIZE("cfi-icall")
 int CertVerifyProcNSS::VerifyInternalImpl(
     X509Certificate* cert,
     const std::string& hostname,
@@ -851,7 +835,10 @@ int CertVerifyProcNSS::VerifyInternalImpl(
   }
   CERTCertificate* cert_handle = input_chain[0].get();
 
-  if (!ocsp_response.empty() && *ResolveCacheOCSPResponse() != nullptr) {
+  static CacheOCSPResponseFunction cache_ocsp_response_from_side_channel =
+      reinterpret_cast<CacheOCSPResponseFunction>(
+          dlsym(RTLD_DEFAULT, "CERT_CacheOCSPResponseFromSideChannel"));
+  if (!ocsp_response.empty() && cache_ocsp_response_from_side_channel) {
     // Note: NSS uses a thread-safe global hash table, so this call will
     // affect any concurrent verification operations on |cert| or copies of
     // the same certificate. This is an unavoidable limitation of NSS's OCSP
@@ -860,9 +847,9 @@ int CertVerifyProcNSS::VerifyInternalImpl(
     ocsp_response_item.data = reinterpret_cast<unsigned char*>(
         const_cast<char*>(ocsp_response.data()));
     ocsp_response_item.len = ocsp_response.size();
-    UnsanitizedCfiCall(ResolveCacheOCSPResponse())(
-        CERT_GetDefaultCertDB(), cert_handle, PR_Now(), &ocsp_response_item,
-        nullptr);
+    cache_ocsp_response_from_side_channel(CERT_GetDefaultCertDB(), cert_handle,
+                                          PR_Now(), &ocsp_response_item,
+                                          nullptr);
   }
 
   // Setup a callback to call into CheckChainRevocationWithCRLSet with the

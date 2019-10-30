@@ -5,6 +5,8 @@
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "url/gurl.h"
 #include "weblayer/public/browser_controller.h"
 #include "weblayer/public/navigation.h"
@@ -40,8 +42,10 @@ class TestNavigationObserver : public NavigationObserver {
   // NavigationObserver implementation:
   void NavigationCompleted(Navigation* navigation) override {
     if (navigation->GetURL() == url_ &&
-        event_ == NavigationEventToObserve::Completion)
-      std::move(closure_).Run();
+        event_ == NavigationEventToObserve::Completion) {
+      navigation_complete_ = true;
+      CheckComplete();
+    }
   }
 
   void NavigationFailed(Navigation* navigation) override {
@@ -51,10 +55,22 @@ class TestNavigationObserver : public NavigationObserver {
     }
   }
 
+  void LoadStateChanged(bool is_loading, bool to_different_document) override {
+    done_loading_ = !is_loading;
+    CheckComplete();
+  }
+
+  void CheckComplete() {
+    if (done_loading_ && navigation_complete_)
+      std::move(closure_).Run();
+  }
+
   base::OnceClosure closure_;
   const GURL url_;
   NavigationEventToObserve event_;
   BrowserController* browser_;
+  bool done_loading_ = false;
+  bool navigation_complete_ = false;
 };
 
 // Navigates to |url| in |shell| and waits for |event| to occur.
@@ -80,6 +96,20 @@ void NavigateAndWaitForCompletion(const GURL& url, Shell* shell) {
 void NavigateAndWaitForFailure(const GURL& url, Shell* shell) {
   NavigateAndWaitForEvent(
       url, shell, TestNavigationObserver::NavigationEventToObserve::Failure);
+}
+
+base::Value ExecuteScript(Shell* shell, const std::string& script) {
+  base::Value final_result;
+  base::RunLoop run_loop;
+  shell->browser_controller()->ExecuteScript(
+      base::ASCIIToUTF16(script),
+      base::BindLambdaForTesting(
+          [&run_loop, &final_result](base::Value result) {
+            final_result = std::move(result);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  return final_result;
 }
 
 }  // namespace weblayer

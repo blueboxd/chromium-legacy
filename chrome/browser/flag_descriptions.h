@@ -77,6 +77,9 @@ extern const char kAllowSyncXHRInPageDismissalDescription[];
 extern const char kEnableClipboardProviderTextSuggestionsName[];
 extern const char kEnableClipboardProviderTextSuggestionsDescription[];
 
+extern const char kEnableFtpName[];
+extern const char kEnableFtpDescription[];
+
 extern const char kEnableSignedExchangeSubresourcePrefetchName[];
 extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
 
@@ -338,10 +341,6 @@ extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 
 extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[];
 extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[];
-
-extern const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name[];
-extern const char
-    kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Description[];
 
 extern const char kEnableAutofillSaveCardShowNoThanksName[];
 extern const char kEnableAutofillSaveCardShowNoThanksDescription[];
@@ -656,9 +655,6 @@ extern const char kFileHandlingAPIDescription[];
 
 extern const char kFillOnAccountSelectName[];
 extern const char kFillOnAccountSelectDescription[];
-
-extern const char kFillOnAccountSelectHttpName[];
-extern const char kFillOnAccountSelectHttpDescription[];
 
 extern const char kFocusMode[];
 extern const char kFocusModeDescription[];

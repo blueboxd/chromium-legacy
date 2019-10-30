@@ -60,7 +60,7 @@ function setTextDirection(direction) {
 
 function removeAll(source, elementsToRemove) {
   elementsToRemove.forEach(function(element) {
-    source.remove(element)
+    source.remove(element);
   });
 }
 
@@ -126,8 +126,9 @@ function maybeSetWebFont() {
   // fetched, which can take a long time on slow networks.
   // In Blink, it times out after 3 seconds and uses fallback fonts.
   // See crbug.com/711650
-  if (distiller_on_ios)
+  if (distiller_on_ios) {
     return;
+  }
 
   var e = document.createElement('link');
   e.href = 'https://fonts.googleapis.com/css?family=Roboto';
@@ -142,8 +143,9 @@ function updateSlider(position) {
       '--fontSizePercent', (position / 9 * 100) + '%');
   for (let i = 0; i < supportedTextSizes.length; i++) {
     let option = document.querySelector('.tickmarks option[value="' + i + '"]');
-    if (!option)
+    if (!option) {
       continue;
+    }
 
     let optionClasses = option.classList;
     removeAll(optionClasses, ['beforeThumb', 'afterThumb']);
@@ -156,8 +158,9 @@ function updateSlider(position) {
 }
 
 function updateSliderFromElement(element) {
-  if (element)
+  if (element) {
     updateSlider(element.value);
+  }
 }
 
 // Add a listener to the "View Original" link to report opt-outs.
@@ -299,8 +302,9 @@ var pincher = (function() {
 
   return {
     handleTouchStart: function(e) {
-      if (e.touches.length < 2)
+      if (e.touches.length < 2) {
         return;
+      }
       e.preventDefault();
 
       var span = touchSpan(e);
@@ -335,10 +339,12 @@ var pincher = (function() {
     },
 
     handleTouchMove: function(e) {
-      if (!pinching)
+      if (!pinching) {
         return;
-      if (e.touches.length < 2)
+      }
+      if (e.touches.length < 2) {
         return;
+      }
       e.preventDefault();
 
       var span = touchSpan(e);
@@ -355,8 +361,9 @@ var pincher = (function() {
     },
 
     handleTouchEnd: function(e) {
-      if (!pinching)
+      if (!pinching) {
         return;
+      }
       e.preventDefault();
 
       var span = touchSpan(e);
@@ -373,8 +380,9 @@ var pincher = (function() {
     },
 
     handleTouchCancel: function(e) {
-      if (!pinching)
+      if (!pinching) {
         return;
+      }
       endPinch();
     },
 

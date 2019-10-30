@@ -1021,6 +1021,121 @@ INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsBrackets,
                          ::testing::ValuesIn(kBracketsRunListCases),
                          RenderTextTestWithRunListCase::ParamInfoToString);
 
+// Test cases to ensure the extraction of script extensions are taken into
+// account while performing the text itemization.
+// See table 7 from http://www.unicode.org/reports/tr24/tr24-29.html
+const RunListCase kScriptExtensionRunListCases[] = {
+    {"implicit_com_inherited", L"a\u0301", "[0->1]"},
+    {"explicit_lat", L"\u0061d", "[0->1]"},
+    {"explicit_inherited_lat", L"x\u0363d", "[0->2]"},
+    {"explicit_inherited_dev", L"क\u1CD1क", "[0->2]"},
+    {"multi_explicit_hira", L"は\u30FCz", "[0->1][2]"},
+    {"multi_explicit_kana", L"ハ\u30FCz", "[0->1][2]"},
+    {"multi_explicit_lat", L"a\u30FCz", "[0][1][2]"},
+    {"multi_explicit_impl_dev", L"क\u1CD0z", "[0->1][2]"},
+    {"multi_explicit_expl_dev", L"क\u096Fz", "[0->1][2]"},
+};
+
+INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsScriptExtension,
+                         RenderTextTestWithRunListCase,
+                         ::testing::ValuesIn(kScriptExtensionRunListCases),
+                         RenderTextTestWithRunListCase::ParamInfoToString);
+
+// Test cases to ensure ItemizeTextToRuns is splitting text based on unicode
+// script (intersection of script extensions).
+// See ScriptExtensions.txt and Scripts.txt from
+// http://www.unicode.org/reports/tr24/tr24-29.html
+const RunListCase kScriptsRunListCases[] = {
+    {"lat", L"abc", "[0->2]"},
+    {"lat_diac", L"e\u0308f", "[0->2]"},
+    // Indic Fraction codepoints have large set of script extensions.
+    {"indic_fraction", L"\uA830\uA832\uA834\uA835", "[0->3]"},
+    // Devanagari Danda codepoints have large set of script extensions.
+    {"dev_danda", L"\u0964\u0965", "[0->1]"},
+    // Combining Diacritical Marks (inherited) should only merge with preceding.
+    {"diac_lat", L"\u0308fg", "[0][1->2]"},
+    {"diac_dev", L"क\u0308f", "[0->1][2]"},
+    // ZWJW has the inherited script.
+    {"lat_ZWNJ", L"ab\u200Ccd", "[0->4]"},
+    {"dev_ZWNJ", L"क\u200Cक", "[0->2]"},
+    {"lat_dev_ZWNJ", L"a\u200Cक", "[0->1][2]"},
+    // Invalid codepoints.
+    {"invalid_cp", L"\uFFFE", "[0]"},
+    {"invalid_cps", L"\uFFFE\uFFFF", "[0->1]"},
+    {"unknown", L"a\u243Fb", "[0][1][2]"},
+
+    // Codepoints from different code block should be in same run when part of
+    // the same script.
+    {"blocks_lat", L"aɒɠƉĚÑ", "[0->5]"},
+    {"blocks_lat_paren", L"([_!_])", "[0->1][2->4][5->6]"},
+    {"blocks_lat_sub", L"ₐₑaeꬱ", "[0->4]"},
+    {"blocks_lat_smallcap", L"ꟺＭ", "[0->1]"},
+    {"blocks_lat_small_letter", L"ᶓᶍᶓᴔᴟ", "[0->4]"},
+    {"blocks_lat_acc", L"eéěĕȩɇḕẻếⱻꞫ", "[0->10]"},
+    {"blocks_com", L"⟦ℳ¥¾⟾⁸⟧Ⓔ", "[0][1->5][6][7]"},
+
+    // Latin script.
+    {"latin_numbers", L"a1b2c3", "[0][1][2][3][4][5]"},
+    {"latin_puncts1", L"a,b,c.", "[0][1][2][3][4][5]"},
+    {"latin_puncts2", L"aa,bb,cc!!", "[0->1][2][3->4][5][6->7][8->9]"},
+    {"latin_diac_multi", L"a\u0300e\u0352i", "[0->4]"},
+
+    // Common script.
+    {"common_tm", L"•bug™", "[0][1->3][4]"},
+    {"common_copyright", L"chromium©", "[0->7][8]"},
+    {"common_math1", L"ℳ: ¬ƒ(x)=½×¾", "[0][1->2][3][4][5][6][7][8][9->11]"},
+    {"common_math2", L"𝟏×𝟑", "[0->4]"},
+    {"common_numbers", L"🄀𝟭𝟐⒓¹²", "[0->8]"},
+    {"common_puncts", L",.\u0083!", "[0->1][2][3]"},
+
+    // Arabic script.
+    {"arabic", L"\u0633\u069b\u0763\u077f\u08A2\uFB53", "[5<-0]"},
+    {"arabic_lat", L"\u0633\u069b\u0763\u077f\u08A2\uFB53abc", "[6->8][5<-0]"},
+    {"arabic_word_ligatures", L"\uFDFD\uFDF3", "[1<-0]"},
+    {"arabic_diac", L"\u069D\u0300", "[1<-0]"},
+    {"arabic_diac_lat", L"\u069D\u0300abc", "[2->4][1<-0]"},
+    {"arabic_diac_lat2", L"abc\u069D\u0300abc", "[0->2][4<-3][5->7]"},
+    {"arabic_lyd", L"\U00010935\U00010930\u06B0\u06B1", "[5<-4][3<-0]"},
+    {"arabic_numbers", L"12\u06D034", "[3->4][2][0->1]"},
+    {"arabic_letters", L"ab\u06D0cd", "[0->1][2][3->4]"},
+    {"arabic_mixed", L"a1\u06D02d", "[0][1][3][2][4]"},
+    {"arabic_coptic1", L"\u06D0\U000102E2\u2CB2", "[1->3][0]"},
+    {"arabic_coptic2", L"\u2CB2\U000102E2\u06D0", "[0->2][3]"},
+
+    // Devanagari script.
+    {"devanagari1", L"ञटठडढणतथ", "[0->7]"},
+    {"devanagari2", L"ढ꣸ꣴ", "[0->2]"},
+    {"devanagari_vowels", L"\u0915\u093F\u0915\u094C", "[0->3]"},
+    {"devanagari_consonants", L"\u0915\u094D\u0937", "[0->2]"},
+
+    // Ethiopic script.
+    {"ethiopic", L"መጩጪᎅⶹⶼꬣꬦ", "[0->7]"},
+    {"ethiopic_numbers", L"1ቨቤ2", "[0][1->2][3]"},
+    {"ethiopic_mixed1", L"abቨቤ12", "[0->1][2->3][4->5]"},
+    {"ethiopic_mixed2", L"a1ቨቤb2", "[0][1][2->3][4][5]"},
+
+    // Georgian script.
+    {"georgian1", L"ႼႽႾႿჀჁჂჳჴჵ", "[0->9]"},
+    {"georgian2", L"ლⴊⴅ", "[0->2]"},
+    {"georgian_numbers", L"1ლⴊⴅ2", "[0][1->3][4]"},
+    {"georgian_mixed", L"a1ლⴊⴅb2", "[0][1][2->4][5][6]"},
+
+    // Telugu script.
+    {"telugu_lat", L"aaఉయ!", "[0->1][2->3][4]"},
+    {"telugu_numbers", L"123౦౧౨456౩౪౫", "[0->2][3->5][6->8][9->11]"},
+    {"telugu_puncts", L"కురుచ, చిఱుత, చేరువ, చెఱువు!",
+     "[0->4][5->6][7->11][12->13][14->18][19->20][21->26][27]"},
+
+    // Control Pictures.
+    {"control_pictures", L"␑␒␓␔␕␖␗␘␙␚␛", "[0->10]"},
+    {"control_pictures_rewrite", L"␑\t␛", "[0->2]"},
+};
+
+INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsScripts,
+                         RenderTextTestWithRunListCase,
+                         ::testing::ValuesIn(kScriptsRunListCases),
+                         RenderTextTestWithRunListCase::ParamInfoToString);
+
 TEST_F(RenderTextTest, ElidedText) {
   // TODO(skanuj) : Add more test cases for following
   // - RenderText styles.

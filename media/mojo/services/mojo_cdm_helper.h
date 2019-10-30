@@ -12,14 +12,18 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/cdm/cdm_auxiliary_helper.h"
-#include "media/mojo/mojom/cdm_proxy.mojom.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/mojom/cdm_storage.mojom.h"
 #include "media/mojo/mojom/output_protection.mojom.h"
 #include "media/mojo/mojom/platform_verification.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_cdm_file_io.h"
-#include "media/mojo/services/mojo_cdm_proxy.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+#if BUILDFLAG(ENABLE_CDM_PROXY)
+#include "media/mojo/mojom/cdm_proxy.mojom.h"
+#include "media/mojo/services/mojo_cdm_proxy.h"
+#endif
 
 namespace service_manager {
 namespace mojom {
@@ -42,8 +46,10 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   // CdmAuxiliaryHelper implementation.
   void SetFileReadCB(FileReadCB file_read_cb) final;
   cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client) final;
+#if BUILDFLAG(ENABLE_CDM_PROXY)
   cdm::CdmProxy* CreateCdmProxy(cdm::CdmProxyClient* client) final;
   int GetCdmProxyCdmId() final;
+#endif
   cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
   void QueryStatus(QueryStatusCB callback) final;
@@ -83,7 +89,9 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   // TODO(xhwang): Switch to use UniquePtrComparator.
   std::vector<std::unique_ptr<MojoCdmFileIO>> cdm_file_io_set_;
 
+#if BUILDFLAG(ENABLE_CDM_PROXY)
   std::unique_ptr<MojoCdmProxy> cdm_proxy_;
+#endif
 
   base::WeakPtrFactory<MojoCdmHelper> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(MojoCdmHelper);

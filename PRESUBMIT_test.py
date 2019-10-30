@@ -1932,6 +1932,38 @@ class BannedTypeCheckTest(unittest.TestCase):
     self.assertTrue('some/cpp/problematic/file.c' in errors[0].message)
     self.assertTrue('some/cpp/ok/file.cc' not in errors[0].message)
 
+  def testBannedBlinkDowncastHelpers(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('some/cpp/problematic/file1.cc',
+               ['DEFINE_TYPE_CASTS(ToType, FromType, from_argument,'
+                'PointerPredicate(), ReferencePredicate());']),
+      MockFile('some/cpp/problematic/file2.cc',
+               ['bool is_test_ele = IsHTMLTestElement(n);']),
+      MockFile('some/cpp/problematic/file3.cc',
+               ['auto* html_test_ele = ToHTMLTestElement(n);']),
+      MockFile('some/cpp/problematic/file4.cc',
+               ['auto* html_test_ele_or_null = ToHTMLTestElementOrNull(n);']),
+      MockFile('some/cpp/ok/file1.cc',
+               ['bool is_test_ele = IsA<HTMLTestElement>(n);']),
+      MockFile('some/cpp/ok/file2.cc',
+               ['auto* html_test_ele = To<HTMLTestElement>(n);']),
+      MockFile('some/cpp/ok/file3.cc',
+               ['auto* html_test_ele_or_null = ',
+                'DynamicTo<HTMLTestElement>(n);']),
+    ]
+
+    # warnings are errors[0], errors are errors[1]
+    errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
+    self.assertEqual(2, len(errors))
+    self.assertTrue('some/cpp/problematic/file1.cc' in errors[1].message)
+    self.assertTrue('some/cpp/problematic/file2.cc' in errors[0].message)
+    self.assertTrue('some/cpp/problematic/file3.cc' in errors[0].message)
+    self.assertTrue('some/cpp/problematic/file4.cc' in errors[0].message)
+    self.assertTrue('some/cpp/ok/file1.cc' not in errors[0].message)
+    self.assertTrue('some/cpp/ok/file2.cc' not in errors[0].message)
+    self.assertTrue('some/cpp/ok/file3.cc' not in errors[0].message)
+
   def testBannedIosObjcFunctions(self):
     input_api = MockInputApi()
     input_api.files = [

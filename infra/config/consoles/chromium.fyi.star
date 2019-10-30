@@ -13,6 +13,11 @@ luci.console_view(
             short_name = 'and',
         ),
         luci.console_view_entry(
+            builder = 'ci/android-code-coverage-native',
+            category = 'code_coverage',
+            short_name = 'ann',
+        ),
+        luci.console_view_entry(
             builder = 'ci/linux-code-coverage',
             category = 'code_coverage',
             short_name = 'lnx',

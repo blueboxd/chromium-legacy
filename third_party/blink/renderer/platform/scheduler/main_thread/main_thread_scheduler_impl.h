@@ -424,6 +424,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         .current_policy.should_prioritize_loading_with_compositing();
   }
 
+  bool main_thread_compositing_is_fast() const {
+    return main_thread_only().main_thread_compositing_is_fast;
+  }
+
  protected:
   scoped_refptr<MainThreadTaskQueue> ControlTaskQueue();
   scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
@@ -739,6 +743,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // trigger a priority update.
   bool ShouldUpdateTaskQueuePriorities(Policy new_policy) const;
 
+  // Computes the priority for compositing based on the current use case.
+  // Returns nullopt if the use case does not need to set the priority.
+  base::Optional<TaskQueue::QueuePriority>
+  ComputeCompositorPriorityFromUseCase() const;
+
   static void RunIdleTask(Thread::IdleTask, base::TimeTicks deadline);
 
   // Probabilistically record all task metadata for the current task.
@@ -932,6 +941,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
     // Compositing priority experiments (crbug.com/966177).
     CompositorPriorityExperiments compositor_priority_experiments;
+
+    bool main_thread_compositing_is_fast;
   };
 
   struct AnyThread {

@@ -598,30 +598,6 @@ void BaseRenderingContext2D::beginPath() {
   path_.Clear();
 }
 
-static bool ValidateRectForCanvas(double& x,
-                                  double& y,
-                                  double& width,
-                                  double& height) {
-  if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(width) ||
-      !std::isfinite(height))
-    return false;
-
-  if (!width && !height)
-    return false;
-
-  if (width < 0) {
-    width = -width;
-    x -= width;
-  }
-
-  if (height < 0) {
-    height = -height;
-    y -= height;
-  }
-
-  return true;
-}
-
 bool BaseRenderingContext2D::IsFullCanvasCompositeMode(SkBlendMode op) {
   // See 4.8.11.1.3 Compositing
   // CompositeSourceAtop and CompositeDestinationOut are not listed here as the
@@ -699,6 +675,7 @@ void BaseRenderingContext2D::fillRect(double x,
     return;
 
   // clamp to float to avoid float cast overflow when used as SkScalar
+  AdjustRectForCanvas(x, y, width, height);
   float fx = clampTo<float>(x);
   float fy = clampTo<float>(y);
   float fwidth = clampTo<float>(width);
@@ -748,6 +725,7 @@ void BaseRenderingContext2D::strokeRect(double x,
     return;
 
   // clamp to float to avoid float cast overflow when used as SkScalar
+  AdjustRectForCanvas(x, y, width, height);
   float fx = clampTo<float>(x);
   float fy = clampTo<float>(y);
   float fwidth = clampTo<float>(width);
@@ -756,6 +734,11 @@ void BaseRenderingContext2D::strokeRect(double x,
   SkRect rect = SkRect::MakeXYWH(fx, fy, fwidth, fheight);
   FloatRect bounds = rect;
   InflateStrokeRect(bounds);
+
+  if (!ValidateRectForCanvas(bounds.X(), bounds.Y(), bounds.Width(),
+                             bounds.Height()))
+    return;
+
   Draw([&rect](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
        { StrokeRectOnCanvas(rect, c, flags); },
        [](const SkIRect& clip_bounds)  // overdraw test lambda
@@ -884,6 +867,7 @@ void BaseRenderingContext2D::clearRect(double x,
   clear_flags.setStyle(PaintFlags::kFill_Style);
 
   // clamp to float to avoid float cast overflow when used as SkScalar
+  AdjustRectForCanvas(x, y, width, height);
   float fx = clampTo<float>(x);
   float fy = clampTo<float>(y);
   float fwidth = clampTo<float>(width);

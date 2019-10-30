@@ -69,6 +69,11 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
     return reinterpret_cast<void*>(span_->start() * base::GetPageSize());
   }
 
+  void DiscardForTesting() override {
+    DCHECK(!is_locked_);
+    span_->shared_memory()->Purge(base::Time::Now());
+  }
+
   base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
       const char* name,
       base::trace_event::ProcessMemoryDump* pmd) const override {
@@ -264,13 +269,9 @@ bool ClientDiscardableSharedMemoryManager::OnMemoryDump(
   return heap_->OnMemoryDump(pmd);
 }
 
-ClientDiscardableSharedMemoryManager::Statistics
-ClientDiscardableSharedMemoryManager::GetStatistics() const {
+size_t ClientDiscardableSharedMemoryManager::GetBytesAllocated() const {
   base::AutoLock lock(lock_);
-  Statistics stats;
-  stats.total_size = heap_->GetSize();
-  stats.freelist_size = heap_->GetSizeOfFreeLists();
-  return stats;
+  return heap_->GetSize() - heap_->GetSizeOfFreeLists();
 }
 
 void ClientDiscardableSharedMemoryManager::ReleaseFreeMemory() {

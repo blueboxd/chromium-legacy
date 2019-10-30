@@ -52,6 +52,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   void ConstructAndAppendFlexItems();
   void ApplyStretchAlignmentToChild(FlexItem& flex_item);
   void GiveLinesAndItemsFinalPositionAndSize();
+  void LayoutColumnReverse(LayoutUnit main_axis_content_size);
+
   // This is same method as FlexItem but we need that logic before FlexItem is
   // constructed.
   bool MainAxisIsInlineAxis(const NGBlockNode& child) const;

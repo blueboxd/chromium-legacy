@@ -11,9 +11,9 @@
 namespace pdf {
 
 const PP_PrivateAccessibilityTextRunInfo kFirstTextRun = {
-    15, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+    15, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
 const PP_PrivateAccessibilityTextRunInfo kSecondTextRun = {
-    15, 16, PP_MakeFloatRectFromXYWH(28.0f, 117.0f, 152.0f, 19.0f)};
+    15, PP_MakeFloatRectFromXYWH(28.0f, 117.0f, 152.0f, 19.0f)};
 const PP_PrivateAccessibilityCharInfo kDummyCharsData[] = {
     {'H', 12}, {'e', 6},  {'l', 5},  {'l', 4},  {'o', 8},  {',', 4},
     {' ', 4},  {'w', 12}, {'o', 6},  {'r', 6},  {'l', 4},  {'d', 9},
@@ -26,7 +26,7 @@ TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMismatch) {
   // |chars| and |text_runs| span over the same page text. They should denote
   // the same page text size, but |text_runs_| is incorrect and only denotes 1
   // of 2 text runs.
-  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
   text_runs.emplace_back(kFirstTextRun);
 
   std::vector<PP_PrivateAccessibilityCharInfo> chars(
@@ -42,7 +42,7 @@ TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMismatch) {
 TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMatch) {
   // |chars| and |text_runs| span over the same page text. They should denote
   // the same page text size.
-  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
   text_runs.emplace_back(kFirstTextRun);
   text_runs.emplace_back(kSecondTextRun);
 
@@ -57,7 +57,7 @@ TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMatch) {
 }
 
 TEST(PdfAccessibilityTreeUnitTest, UnsortedLinkVector) {
-  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
   text_runs.emplace_back(kFirstTextRun);
   text_runs.emplace_back(kSecondTextRun);
 
@@ -88,7 +88,7 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedLinkVector) {
 }
 
 TEST(PdfAccessibilityTreeUnitTest, OutOfBoundLink) {
-  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
   text_runs.emplace_back(kFirstTextRun);
   text_runs.emplace_back(kSecondTextRun);
 
@@ -110,7 +110,7 @@ TEST(PdfAccessibilityTreeUnitTest, OutOfBoundLink) {
 }
 
 TEST(PdfAccessibilityTreeUnitTest, UnsortedImageVector) {
-  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
   text_runs.emplace_back(kFirstTextRun);
   text_runs.emplace_back(kSecondTextRun);
 
@@ -139,7 +139,7 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedImageVector) {
 }
 
 TEST(PdfAccessibilityTreeUnitTest, OutOfBoundImage) {
-  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
   text_runs.emplace_back(kFirstTextRun);
   text_runs.emplace_back(kSecondTextRun);
 

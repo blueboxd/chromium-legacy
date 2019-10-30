@@ -6,13 +6,15 @@
 
 #include "base/bind.h"
 #include "chromeos/services/assistant/platform/audio_media_data_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
 namespace assistant {
 
 AudioStreamHandler::AudioStreamHandler(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : task_runner_(task_runner), client_binding_(this), weak_factory_(this) {}
+    : task_runner_(task_runner), weak_factory_(this) {}
 
 AudioStreamHandler::~AudioStreamHandler() = default;
 
@@ -20,15 +22,15 @@ void AudioStreamHandler::StartAudioDecoder(
     mojom::AssistantAudioDecoderFactory* audio_decoder_factory,
     assistant_client::AudioOutput::Delegate* delegate,
     InitCB on_inited) {
-  mojom::AssistantAudioDecoderClientPtr client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  mojo::PendingRemote<mojom::AssistantAudioDecoderClient> client;
+  client_receiver_.Bind(client.InitWithNewPipeAndPassReceiver());
 
-  mojom::AssistantMediaDataSourcePtr data_source;
-  media_data_source_ =
-      std::make_unique<AudioMediaDataSource>(&data_source, task_runner_);
+  mojo::PendingRemote<mojom::AssistantMediaDataSource> data_source;
+  media_data_source_ = std::make_unique<AudioMediaDataSource>(
+      data_source.InitWithNewPipeAndPassReceiver(), task_runner_);
 
   audio_decoder_factory->CreateAssistantAudioDecoder(
-      mojo::MakeRequest(&audio_decoder_), std::move(client),
+      audio_decoder_.BindNewPipeAndPassReceiver(), std::move(client),
       std::move(data_source));
 
   delegate_ = delegate;

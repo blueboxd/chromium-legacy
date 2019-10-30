@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/media_options.gni")
+
 typemaps = [
   "//media/mojo/mojom/audio_decoder_config.typemap",
   "//media/mojo/mojom/audio_parameters.typemap",
   "//media/mojo/mojom/cdm_key_information.typemap",
-  "//media/mojo/mojom/cdm_proxy.typemap",
   "//media/mojo/mojom/content_decryption_module.typemap",
   "//media/mojo/mojom/decryptor.typemap",
   "//media/mojo/mojom/demuxer_stream.typemap",
@@ -21,3 +22,7 @@ typemaps = [
   "//media/mojo/mojom/video_encode_accelerator.typemap",
   "//media/mojo/mojom/video_frame.typemap",
 ]
+
+if (enable_cdm_proxy) {
+  typemaps += [ "//media/mojo/mojom/cdm_proxy.typemap" ]
+}

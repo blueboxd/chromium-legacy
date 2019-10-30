@@ -285,11 +285,11 @@ class XRSession final
       ScriptPromiseResolver* resolver,
       XRHitTestOptions* options,
       device::mojom::SubscribeToHitTestResult result,
-      uint32_t subscription_id);
+      uint64_t subscription_id);
 
   void OnCreateAnchorResult(ScriptPromiseResolver* resolver,
                             device::mojom::CreateAnchorResult result,
-                            uint32_t id);
+                            uint64_t id);
 
   void EnsureEnvironmentErrorHandler();
   void OnEnvironmentProviderError();
@@ -319,14 +319,14 @@ class XRSession final
   XRSessionFeatureSet enabled_features_;
 
   bool is_tracked_anchors_null_ = true;
-  HeapHashMap<uint32_t, Member<XRAnchor>> anchor_ids_to_anchors_;
+  HeapHashMap<uint64_t, Member<XRAnchor>> anchor_ids_to_anchors_;
 
   // Mapping of hit test source ids (aka hit test subscription ids) to hit test
   // sources. Hit test source has to be stored via weak member - JavaScript side
   // will communicate that it's no longer interested in the subscription by
   // dropping all its references to the hit test source & we need to make sure
   // that we don't keep the XRHitTestSources alive.
-  HeapHashMap<uint32_t, WeakMember<XRHitTestSource>>
+  HeapHashMap<uint64_t, WeakMember<XRHitTestSource>>
       hit_test_source_ids_to_hit_test_sources_;
 
   WTF::Vector<XRViewData> views_;

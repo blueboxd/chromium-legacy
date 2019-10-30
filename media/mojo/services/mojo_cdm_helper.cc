@@ -39,9 +39,9 @@ cdm::FileIO* MojoCdmHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
   return cdm_file_io;
 }
 
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 cdm::CdmProxy* MojoCdmHelper::CreateCdmProxy(cdm::CdmProxyClient* client) {
   DVLOG(3) << __func__;
-
   if (cdm_proxy_) {
     DVLOG(1) << __func__ << ": Only one outstanding CdmProxy allowed.";
     return nullptr;
@@ -58,6 +58,7 @@ cdm::CdmProxy* MojoCdmHelper::CreateCdmProxy(cdm::CdmProxyClient* client) {
 int MojoCdmHelper::GetCdmProxyCdmId() {
   return cdm_proxy_ ? cdm_proxy_->GetCdmId() : CdmContext::kInvalidCdmId;
 }
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 cdm::Buffer* MojoCdmHelper::CreateCdmBuffer(size_t capacity) {
   return GetAllocator()->CreateCdmBuffer(capacity);

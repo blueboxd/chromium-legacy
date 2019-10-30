@@ -415,6 +415,18 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetDesktopFolderId(
   return folder_id_obj;
 }
 
+ScopedJavaLocalRef<jobject> BookmarkBridge::GetPartnerFolderId(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK(partner_bookmarks_shim_->IsLoaded());
+
+  const BookmarkNode* partner_node =
+      partner_bookmarks_shim_->GetPartnerBookmarksRoot();
+  ScopedJavaLocalRef<jobject> folder_id_obj = JavaBookmarkIdCreateBookmarkId(
+      env, partner_node->id(), GetBookmarkType(partner_node));
+  return folder_id_obj;
+}
+
 jint BookmarkBridge::GetChildCount(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     jlong id,

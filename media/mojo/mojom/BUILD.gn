@@ -17,7 +17,6 @@ mojom("mojom") {
     "audio_logging.mojom",
     "audio_output_stream.mojom",
     "audio_parameters.mojom",
-    "cdm_proxy.mojom",
     "cdm_service.mojom",
     "cdm_storage.mojom",
     "content_decryption_module.mojom",
@@ -72,6 +71,11 @@ mojom("mojom") {
 
   if (enable_cast_renderer) {
     enabled_features = [ "enable_cast_renderer" ]
+  }
+
+  if (enable_cdm_proxy) {
+    enabled_features = [ "enable_cdm_proxy" ]
+    sources += [ "cdm_proxy.mojom" ]
   }
 
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"

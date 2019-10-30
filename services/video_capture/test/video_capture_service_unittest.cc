@@ -96,7 +96,7 @@ TEST_F(VideoCaptureServiceTest,
     run_loop.Run();
   }
 
-  mojom::TextureVirtualDevicePtr device_context_2;
+  mojo::PendingRemote<mojom::TextureVirtualDevice> device_context_2;
   {
     base::RunLoop run_loop;
     EXPECT_CALL(mock_observer, OnDevicesChanged())
@@ -138,7 +138,7 @@ TEST_F(VideoCaptureServiceTest,
   observer_receiver.reset();
 
   auto device_context = AddTextureVirtualDevice("TestDevice");
-  device_context = nullptr;
+  device_context.reset();
 }
 
 // Tests that VideoCaptureDeviceFactory::CreateDevice() returns an error

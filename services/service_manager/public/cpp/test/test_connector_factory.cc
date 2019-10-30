@@ -11,10 +11,10 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -87,8 +87,8 @@ class ProxiedServiceConnector : public mojom::Connector {
     NOTREACHED();
   }
 
-  void Clone(mojom::ConnectorRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<mojom::Connector> receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
 
   void FilterInterfaces(
@@ -103,7 +103,7 @@ class ProxiedServiceConnector : public mojom::Connector {
   TestConnectorFactory* const factory_;
   TestConnectorFactory::NameToServiceProxyMap* const proxies_;
   const base::Token test_instance_group_;
-  mojo::BindingSet<mojom::Connector> bindings_;
+  mojo::ReceiverSet<mojom::Connector> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxiedServiceConnector);
 };

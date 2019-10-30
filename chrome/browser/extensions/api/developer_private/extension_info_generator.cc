@@ -503,16 +503,12 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   // ControlledInfo.
   bool is_policy_location = Manifest::IsPolicyLocation(extension.location());
-  if (is_policy_location || util::IsExtensionSupervised(&extension, profile)) {
+  if (is_policy_location) {
     info->controlled_info.reset(new developer::ControlledInfo());
     if (is_policy_location) {
       info->controlled_info->type = developer::CONTROLLER_TYPE_POLICY;
       info->controlled_info->text =
           l10n_util::GetStringUTF8(IDS_EXTENSIONS_INSTALL_LOCATION_ENTERPRISE);
-    } else if (profile->IsChild()) {
-      info->controlled_info->type = developer::CONTROLLER_TYPE_CHILD_CUSTODIAN;
-      info->controlled_info->text = l10n_util::GetStringUTF8(
-          IDS_EXTENSIONS_INSTALLED_BY_CHILD_CUSTODIAN);
     } else {
       info->controlled_info->type =
           developer::CONTROLLER_TYPE_SUPERVISED_USER_CUSTODIAN;

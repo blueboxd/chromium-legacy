@@ -15,7 +15,7 @@ interface INavigationControllerClient {
 
   void navigationRedirected(IClientNavigation navigation) = 2;
 
-  void navigationCommitted(IClientNavigation navigation) = 3;
+  void readyToCommitNavigation(IClientNavigation navigation) = 3;
 
   void navigationCompleted(IClientNavigation navigation) = 4;
 

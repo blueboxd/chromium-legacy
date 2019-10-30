@@ -136,6 +136,8 @@ const char kEXTFragDepthExtension[] = "GL_EXT_frag_depth";
 const char kEXTDrawBuffersExtension[] = "GL_EXT_draw_buffers";
 const char kEXTShaderTextureLodExtension[] = "GL_EXT_shader_texture_lod";
 const char kWEBGLMultiDrawExtension[] = "GL_WEBGL_multi_draw";
+const char kWEBGLMultiDrawInstancedExtension[] =
+    "GL_WEBGL_multi_draw_instanced";
 
 template <typename MANAGER_TYPE, typename OBJECT_TYPE>
 GLuint GetClientId(const MANAGER_TYPE* manager, const OBJECT_TYPE* object) {
@@ -2689,6 +2691,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool draw_buffers_explicitly_enabled_;
   bool shader_texture_lod_explicitly_enabled_;
   bool multi_draw_explicitly_enabled_;
+  bool multi_draw_instanced_explicitly_enabled_;
 
   bool compile_shader_always_succeeds_;
 
@@ -3455,6 +3458,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       draw_buffers_explicitly_enabled_(false),
       shader_texture_lod_explicitly_enabled_(false),
       multi_draw_explicitly_enabled_(false),
+      multi_draw_instanced_explicitly_enabled_(false),
       compile_shader_always_succeeds_(false),
       lose_context_when_out_of_memory_(false),
       should_use_native_gmb_for_backbuffer_(false),
@@ -4442,7 +4446,9 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
 
   if (shader_spec == SH_WEBGL_SPEC || shader_spec == SH_WEBGL2_SPEC) {
     resources.ANGLE_multi_draw =
-        multi_draw_explicitly_enabled_ && features().webgl_multi_draw;
+        (multi_draw_explicitly_enabled_ && features().webgl_multi_draw) ||
+        (multi_draw_instanced_explicitly_enabled_ &&
+         features().webgl_multi_draw_instanced);
   }
 
   if (((shader_spec == SH_WEBGL_SPEC || shader_spec == SH_WEBGL2_SPEC) &&
@@ -9732,7 +9738,7 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
       if (workarounds().clear_uniforms_before_first_program_use)
         program_manager()->ClearUniforms(program);
     }
-    if (features().webgl_multi_draw)
+    if (features().webgl_multi_draw || features().webgl_multi_draw_instanced)
       program_manager()->UpdateDrawIDUniformLocation(program);
   }
 
@@ -11720,7 +11726,7 @@ error::Error GLES2DecoderImpl::HandleMultiDrawArraysInstancedCHROMIUM(
       *static_cast<
           const volatile gles2::cmds::MultiDrawArraysInstancedCHROMIUM*>(
           cmd_data);
-  if (!features().webgl_multi_draw) {
+  if (!features().webgl_multi_draw_instanced) {
     return error::kUnknownCommand;
   }
 
@@ -11807,7 +11813,7 @@ error::Error GLES2DecoderImpl::HandleMultiDrawElementsInstancedCHROMIUM(
       *static_cast<
           const volatile gles2::cmds::MultiDrawElementsInstancedCHROMIUM*>(
           cmd_data);
-  if (!features().webgl_multi_draw) {
+  if (!features().webgl_multi_draw_instanced) {
     return error::kUnknownCommand;
   }
 
@@ -13892,6 +13898,8 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32_t immediate_data_size,
           extension_set.erase(kEXTShaderTextureLodExtension);
         if (!multi_draw_explicitly_enabled_)
           extension_set.erase(kWEBGLMultiDrawExtension);
+        if (!multi_draw_instanced_explicitly_enabled_)
+          extension_set.erase(kWEBGLMultiDrawInstancedExtension);
       }
       if (supports_post_sub_buffer_)
         extension_set.insert("GL_CHROMIUM_post_sub_buffer");
@@ -16781,6 +16789,7 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   bool desire_draw_buffers = false;
   bool desire_shader_texture_lod = false;
   bool desire_multi_draw = false;
+  bool desire_multi_draw_instanced = false;
   if (feature_info_->context_type() == CONTEXT_TYPE_WEBGL1) {
     desire_standard_derivatives =
         feature_str.find("GL_OES_standard_derivatives ") != std::string::npos;
@@ -16794,17 +16803,21 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   if (feature_info_->IsWebGLContext()) {
     desire_multi_draw =
         feature_str.find("GL_WEBGL_multi_draw ") != std::string::npos;
+    desire_multi_draw_instanced =
+        feature_str.find("GL_WEBGL_multi_draw_instanced ") != std::string::npos;
   }
   if (desire_standard_derivatives != derivatives_explicitly_enabled_ ||
       desire_frag_depth != frag_depth_explicitly_enabled_ ||
       desire_draw_buffers != draw_buffers_explicitly_enabled_ ||
       desire_shader_texture_lod != shader_texture_lod_explicitly_enabled_ ||
-      desire_multi_draw != multi_draw_explicitly_enabled_) {
+      desire_multi_draw != multi_draw_explicitly_enabled_ ||
+      desire_multi_draw_instanced != multi_draw_instanced_explicitly_enabled_) {
     derivatives_explicitly_enabled_ |= desire_standard_derivatives;
     frag_depth_explicitly_enabled_ |= desire_frag_depth;
     draw_buffers_explicitly_enabled_ |= desire_draw_buffers;
     shader_texture_lod_explicitly_enabled_ |= desire_shader_texture_lod;
     multi_draw_explicitly_enabled_ |= desire_multi_draw;
+    multi_draw_instanced_explicitly_enabled_ |= desire_multi_draw_instanced;
     DestroyShaderTranslator();
   }
 

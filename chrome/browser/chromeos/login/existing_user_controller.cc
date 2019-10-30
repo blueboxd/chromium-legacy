@@ -438,7 +438,7 @@ void ExistingUserController::UpdateLoginDisplay(
   for (auto* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
-    // KioskAppManager and ArcKioskAppManager.
+    // KioskAppManager, ArcKioskAppManager and WebKioskAppManager.
     if (user->IsKioskType())
       continue;
     // TODO(xiyuan): Clean user profile whose email is not in whitelist.
@@ -1423,6 +1423,10 @@ void ExistingUserController::LoginAsArcKioskApp(const AccountId& account_id) {
   GetLoginDisplayHost()->StartArcKiosk(account_id);
 }
 
+void ExistingUserController::LoginAsWebKioskApp(const AccountId& account_id) {
+  GetLoginDisplayHost()->StartWebKiosk(account_id);
+}
+
 void ExistingUserController::ConfigureAutoLogin() {
   std::string auto_login_account_id;
   cros_settings_->GetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
@@ -1782,6 +1786,11 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
     LoginAsArcKioskApp(user_context.GetAccountId());
+    return;
+  }
+
+  if (user_context.GetUserType() == user_manager::USER_TYPE_WEB_KIOSK_APP) {
+    LoginAsWebKioskApp(user_context.GetAccountId());
     return;
   }
 

@@ -1036,6 +1036,11 @@ void LocalNtpSource::StartDataRequest(
     replacements["hiddenIfRealboxEnabled"] = realbox_enabled ? "hidden" : "";
     replacements["hiddenIfRealboxDisabled"] = realbox_enabled ? "" : "hidden";
 
+    bool use_google_g_icon =
+        base::FeatureList::IsEnabled(features::kNtpRealboxUseGoogleGIcon);
+    replacements["realboxIconClass"] =
+        use_google_g_icon ? "google-g-icon" : "search-icon";
+
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     base::StringPiece html = bundle.GetRawDataResource(IDR_LOCAL_NTP_HTML);
     std::string replaced = ui::ReplaceTemplateExpressions(html, replacements);

@@ -158,12 +158,12 @@ void NavigationControllerImpl::ReadyToCommitNavigation(
   auto* navigation = navigation_map_[navigation_handle].get();
 #if defined(OS_ANDROID)
   if (java_controller_) {
-    Java_NavigationControllerImpl_navigationCommitted(
+    Java_NavigationControllerImpl_readyToCommitNavigation(
         AttachCurrentThread(), java_controller_, navigation->java_navigation());
   }
 #endif
   for (auto& observer : observers_)
-    observer.NavigationCommitted(navigation);
+    observer.ReadyToCommitNavigation(navigation);
 }
 
 void NavigationControllerImpl::DidFinishNavigation(

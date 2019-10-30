@@ -43,8 +43,10 @@ namespace device_sync {
 class ClientAppMetadataProvider;
 class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
-class CryptAuthScheduler;
+class CryptAuthDeviceRegistry;
 class CryptAuthKeyRegistry;
+class CryptAuthScheduler;
+class CryptAuthV2DeviceManager;
 class GcmDeviceInfoProvider;
 class SoftwareFeatureManager;
 
@@ -220,6 +222,10 @@ class DeviceSyncImpl : public DeviceSyncBase,
   // Only created and used if v2 Enrollment is enabled; null otherwise.
   std::unique_ptr<CryptAuthKeyRegistry> cryptauth_key_registry_;
   std::unique_ptr<CryptAuthScheduler> cryptauth_scheduler_;
+
+  // Only created and used if v2 DeviceSync is enabled; null otherwise.
+  std::unique_ptr<CryptAuthDeviceRegistry> cryptauth_device_registry_;
+  std::unique_ptr<CryptAuthV2DeviceManager> cryptauth_v2_device_manager_;
 
   std::unique_ptr<CryptAuthEnrollmentManager> cryptauth_enrollment_manager_;
   std::unique_ptr<CryptAuthDeviceManager> cryptauth_device_manager_;

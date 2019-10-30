@@ -31,7 +31,7 @@ class IOSSSLBlockingPage : public IOSSecurityInterstitialPage {
   // Creates an SSL blocking page. If the blocking page isn't shown, the caller
   // is responsible for cleaning up the blocking page, otherwise the
   // interstitial takes ownership when shown. |options_mask| must be a bitwise
-  // mask of SSLErrorUI::SSLErrorOptionsMask values.
+  // mask of SSLErrorOptionsMask values.
   IOSSSLBlockingPage(web::WebState* web_state,
                      int cert_error,
                      const net::SSLInfo& ssl_info,

@@ -799,6 +799,7 @@ void RenderViewHostImpl::SetInitialFocus(bool reverse) {
 }
 
 void RenderViewHostImpl::RenderWidgetDidFirstVisuallyNonEmptyPaint() {
+  did_first_visually_non_empty_paint_ = true;
   delegate_->DidFirstVisuallyNonEmptyPaint(this);
 }
 
@@ -1077,6 +1078,20 @@ std::vector<viz::SurfaceId> RenderViewHostImpl::CollectSurfaceIdsForEviction() {
     view->set_is_evicted();
   }
   return ids;
+}
+
+void RenderViewHostImpl::ResetPerPageState() {
+  did_first_visually_non_empty_paint_ = false;
+  main_frame_theme_color_.reset();
+}
+
+void RenderViewHostImpl::OnThemeColorChanged(
+    RenderFrameHostImpl* rfh,
+    const base::Optional<SkColor>& theme_color) {
+  if (GetMainFrame() != rfh)
+    return;
+  main_frame_theme_color_ = theme_color;
+  delegate_->OnThemeColorChanged(this);
 }
 
 bool RenderViewHostImpl::IsTestRenderViewHost() const {

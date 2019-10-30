@@ -19,12 +19,15 @@
   writing-mode: vertical-rl;
 }
 #container {
-  content-size: 12px 34px;
+  intrinsic-size: 12px 34px;
 }
 .item {
   width: 50px;
   height: 60px;
   background: blue;
+}
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 

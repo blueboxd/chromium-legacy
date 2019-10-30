@@ -3518,7 +3518,7 @@ void RenderFrameHostImpl::VisibilityChanged(
 
 void RenderFrameHostImpl::DidChangeThemeColor(
     const base::Optional<SkColor>& theme_color) {
-  delegate_->OnThemeColorChanged(this, theme_color);
+  render_view_host_->OnThemeColorChanged(this, theme_color);
 }
 
 void RenderFrameHostImpl::SetCommitCallbackInterceptorForTesting(
@@ -7165,6 +7165,13 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
   accessibility_reset_count_ = 0;
   appcache_handle_ = navigation_request->TakeAppCacheHandle();
+
+  if (navigation_request->IsInMainFrame() &&
+      !navigation_request->IsSameDocument() &&
+      !navigation_request->IsServedFromBackForwardCache()) {
+    render_view_host_->ResetPerPageState();
+  }
+
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
                                               std::move(navigation_request),
                                               is_same_document_navigation);
@@ -7723,10 +7730,12 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
                                           base::debug::CrashKeySize::Size256),
       GetSiteInstance()->lock_url().spec());
 
-  base::debug::SetCrashKeyString(
-      base::debug::AllocateCrashKeyString("original_url_origin",
-                                          base::debug::CrashKeySize::Size256),
-      GetSiteInstance()->original_url().GetOrigin().spec());
+  if (!GetSiteInstance()->IsDefaultSiteInstance()) {
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("original_url_origin",
+                                            base::debug::CrashKeySize::Size256),
+        GetSiteInstance()->original_url().GetOrigin().spec());
+  }
 
   base::debug::SetCrashKeyString(
       base::debug::AllocateCrashKeyString("is_mhtml_document",

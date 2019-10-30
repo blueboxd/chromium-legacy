@@ -33,7 +33,7 @@ void SetChannel(const std::string& channel) {
 
 std::string GetChannelName() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  switch (g_chromeos_channel) {
+  switch (GetChannel()) {
     case version_info::Channel::STABLE:
       return std::string();
     case version_info::Channel::BETA:
@@ -65,11 +65,9 @@ version_info::Channel GetChannel() {
   return g_chromeos_channel;
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
 std::string GetChannelSuffixForDataDir() {
   // ChromeOS doesn't support side-by-side installations.
   return std::string();
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 }  // namespace chrome

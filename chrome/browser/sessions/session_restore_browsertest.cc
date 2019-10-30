@@ -368,6 +368,23 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsShouldHaveWindow) {
   }
 }
 
+// Verify that restoring a minimized window does not create a blank window.
+// Regression test for https://crbug.com/1018885.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreMinimizedWindow) {
+  // Minimize the window.
+  browser()->window()->Minimize();
+
+  // Restart and session restore the tabs.
+  Browser* restored = QuitBrowserAndRestore(browser(), 3);
+  EXPECT_EQ(1, restored->tab_strip_model()->count());
+
+  // Expect the window to be visible.
+  // Prior to the fix for https://crbug.com/1018885, the window was active but
+  // not visible.
+  EXPECT_TRUE(restored->window()->IsActive());
+  EXPECT_TRUE(restored->window()->IsVisible());
+}
+
 // Verify that restored tabs have correct disposition. Only one tab should
 // have "visible" visibility state, the rest should not.
 // (http://crbug.com/155365 http://crbug.com/118269)

@@ -38,6 +38,10 @@ class SingleThreadTaskRunner;
 class SystemMonitor;
 }  // namespace base
 
+namespace data_decoder {
+class ServiceProvider;
+}
+
 namespace gpu {
 class GpuChannelEstablishFactory;
 }
@@ -362,6 +366,9 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   std::unique_ptr<media::UserInputMonitor> user_input_monitor_;
+
+  // Support for out-of-process Data Decoder.
+  std::unique_ptr<data_decoder::ServiceProvider> data_decoder_service_provider_;
 
   // |audio_manager_| is not instantiated when the audio service runs out of
   // process.

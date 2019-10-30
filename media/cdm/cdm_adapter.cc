@@ -35,6 +35,7 @@
 #include "media/cdm/cdm_helpers.h"
 #include "media/cdm/cdm_type_conversion.h"
 #include "media/cdm/cdm_wrapper.h"
+#include "media/media_buildflags.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
@@ -427,9 +428,13 @@ Decryptor* CdmAdapter::GetDecryptor() {
 
 int CdmAdapter::GetCdmId() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
+#if BUILDFLAG(ENABLE_CDM_PROXY)
   int cdm_id = helper_->GetCdmProxyCdmId();
   DVLOG(2) << __func__ << ": cdm_id = " << cdm_id;
   return cdm_id;
+#else
+  return CdmContext::kInvalidCdmId;
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 }
 
 void CdmAdapter::RegisterNewKeyCB(StreamType stream_type,
@@ -1063,6 +1068,7 @@ cdm::CdmProxy* CdmAdapter::RequestCdmProxy(cdm::CdmProxyClient* client) {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+#if BUILDFLAG(ENABLE_CDM_PROXY)
   // CdmProxy should only be created once, at CDM initialization time.
   if (cdm_proxy_created_ ||
       init_promise_id_ == CdmPromiseAdapter::kInvalidPromiseId) {
@@ -1074,6 +1080,9 @@ cdm::CdmProxy* CdmAdapter::RequestCdmProxy(cdm::CdmProxyClient* client) {
 
   cdm_proxy_created_ = true;
   return helper_->CreateCdmProxy(client);
+#else
+  return nullptr;
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 }
 
 void CdmAdapter::OnStorageIdObtained(uint32_t version,

@@ -73,8 +73,11 @@ TEST(LookalikeUrlNavigationThrottleTest, IsEditDistanceAtMostOne) {
 // - http[s]://sité.test/path -> http[s]://site.test
 // - http[s]://subdomain.sité.test -> http[s]://site.test
 // - http[s]://random.test -> http[s]://sité.test -> http[s]://site.test
+// - http://sité.test/path -> https://sité.test/path -> https://site.test ->
+// <any_url>
 // - "subdomain" on either side.
-// This is not safe:
+//
+// These are not safe:
 // - http[s]://[subdomain.]sité.test -> http[s]://[subdomain.]site.test/path
 // because the redirected URL has a path.
 TEST(LookalikeUrlNavigationThrottleTest, IsSafeRedirect) {
@@ -85,6 +88,25 @@ TEST(LookalikeUrlNavigationThrottleTest, IsSafeRedirect) {
   EXPECT_TRUE(IsSafeRedirect(
       "example.com",
       {GURL("http://éxample.com"), GURL("http://subdomain.example.com")}));
+  EXPECT_TRUE(IsSafeRedirect(
+      "example.com", {GURL("http://éxample.com"), GURL("http://example.com"),
+                      GURL("https://example.com")}));
+  // Original site redirects to HTTPS.
+  EXPECT_TRUE(IsSafeRedirect(
+      "example.com", {GURL("http://éxample.com"), GURL("https://éxample.com"),
+                      GURL("https://example.com")}));
+  // Original site redirects to HTTPS which redirects to HTTP which redirects
+  // back to HTTPS of the non-IDN version.
+  EXPECT_TRUE(IsSafeRedirect(
+      "example.com",
+      {GURL("http://éxample.com/redir1"), GURL("https://éxample.com/redir1"),
+       GURL("http://éxample.com/redir2"), GURL("https://example.com/")}));
+  // Same as above, but there is another redirect at the end of the chain.
+  EXPECT_TRUE(IsSafeRedirect(
+      "example.com",
+      {GURL("http://éxample.com/redir1"), GURL("https://éxample.com/redir1"),
+       GURL("http://éxample.com/redir2"), GURL("https://example.com/"),
+       GURL("https://totallydifferentsite.com/somepath")}));
 
   // Not a redirect, the chain is too short.
   EXPECT_FALSE(IsSafeRedirect("example.com", {GURL("http://éxample.com")}));
@@ -95,7 +117,8 @@ TEST(LookalikeUrlNavigationThrottleTest, IsSafeRedirect) {
   EXPECT_FALSE(IsSafeRedirect(
       "example.com",
       {GURL("http://éxample.com"), GURL("http://example.com/path")}));
-  // Not safe: The chain is too long.
+  // Not safe: The first redirect away from éxample.com is not to the matching
+  // non-IDN site.
   EXPECT_FALSE(IsSafeRedirect("example.com", {GURL("http://éxample.com"),
                                               GURL("http://intermediate.com"),
                                               GURL("http://example.com")}));

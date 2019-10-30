@@ -505,7 +505,9 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   LayoutUnit main_axis_offset = border_scrollbar_padding_.inline_start;
   LayoutUnit cross_axis_offset = border_scrollbar_padding_.block_start;
   if (is_column_) {
-    main_axis_offset = border_scrollbar_padding_.block_start;
+    main_axis_offset = Style().ResolvedIsColumnReverseFlexDirection()
+                           ? LayoutUnit()
+                           : border_scrollbar_padding_.block_start;
     cross_axis_offset = border_scrollbar_padding_.inline_start;
   }
   FlexLine* line;
@@ -627,14 +629,13 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
   const LayoutUnit cross_axis_start_edge =
       line_contexts.IsEmpty() ? LayoutUnit()
                               : line_contexts[0].cross_axis_offset;
-  const LayoutUnit final_content_cross_size =
-      is_column_ ? container_builder_.InlineSize() -
-                       border_scrollbar_padding_.InlineSum()
-                 : container_builder_.BlockSize() -
-                       border_scrollbar_padding_.BlockSum();
 
-  // TODO(dgrogan): Implement the behavior from
-  // LayoutFlexibleBox::LayoutColumnReverse here.
+  LayoutUnit final_content_main_size =
+      container_builder_.InlineSize() - border_scrollbar_padding_.InlineSum();
+  LayoutUnit final_content_cross_size =
+      container_builder_.BlockSize() - border_scrollbar_padding_.BlockSum();
+  if (is_column_)
+    std::swap(final_content_main_size, final_content_cross_size);
 
   if (!algorithm_->IsMultiline() && !line_contexts.IsEmpty())
     line_contexts[0].cross_axis_extent = final_content_cross_size;
@@ -649,6 +650,11 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
     // to do that after AlignChildren sets an initial cross axis position.
     algorithm_->FlipForWrapReverse(cross_axis_start_edge,
                                    final_content_cross_size);
+  }
+
+  if (Style().ResolvedIsColumnReverseFlexDirection()) {
+    algorithm_->LayoutColumnReverse(final_content_main_size,
+                                    border_scrollbar_padding_.block_start);
   }
 
   for (FlexLine& line_context : line_contexts) {

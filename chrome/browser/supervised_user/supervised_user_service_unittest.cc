@@ -409,12 +409,9 @@ class SupervisedUserServiceExtensionTestBase
     return extension;
   }
 
-  scoped_refptr<const extensions::Extension> MakeExtension(bool by_custodian) {
+  scoped_refptr<const extensions::Extension> MakeExtension() {
     scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder("Extension").Build();
-    extensions::util::SetWasInstalledByCustodian(extension->id(),
-                                                 profile_.get(), by_custodian);
-
     return extension;
   }
 
@@ -460,30 +457,19 @@ TEST_F(SupervisedUserServiceExtensionTest,
   }
 
   // Now check a different kind of extension; the supervised user should not be
-  // able to load it.
+  // able to load it. It should also not need to remain installed.
   {
-    scoped_refptr<const extensions::Extension> extension = MakeExtension(false);
-
-    base::string16 error;
-    EXPECT_FALSE(supervised_user_service->UserMayLoad(extension.get(), &error));
-    EXPECT_FALSE(error.empty());
-  }
-
-  {
-    // Check that a custodian-installed extension may be loaded, but not
-    // uninstalled.
-    scoped_refptr<const extensions::Extension> extension = MakeExtension(true);
+    scoped_refptr<const extensions::Extension> extension = MakeExtension();
 
     base::string16 error_1;
-    EXPECT_TRUE(
+    EXPECT_FALSE(
         supervised_user_service->UserMayLoad(extension.get(), &error_1));
-    EXPECT_TRUE(error_1.empty());
+    EXPECT_FALSE(error_1.empty());
 
     base::string16 error_2;
-    EXPECT_TRUE(
-        supervised_user_service->MustRemainInstalled(extension.get(),
-                                                     &error_2));
-    EXPECT_FALSE(error_2.empty());
+    EXPECT_FALSE(supervised_user_service->MustRemainInstalled(extension.get(),
+                                                              &error_2));
+    EXPECT_TRUE(error_2.empty());
   }
 
 #if DCHECK_IS_ON()
@@ -509,7 +495,7 @@ TEST_F(SupervisedUserServiceExtensionTest,
   // The supervised user should be able to load and uninstall the extensions
   // they install.
   {
-    scoped_refptr<const extensions::Extension> extension = MakeExtension(false);
+    scoped_refptr<const extensions::Extension> extension = MakeExtension();
 
     base::string16 error;
     EXPECT_TRUE(supervised_user_service->UserMayLoad(extension.get(), &error));
@@ -533,35 +519,6 @@ TEST_F(SupervisedUserServiceExtensionTest,
     base::string16 error_4;
     EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension.get(),
                                                                 &error_4));
-    EXPECT_FALSE(error_4.empty());
-  }
-
-  {
-    // A custodian-installed extension may be loaded, but not uninstalled.
-    scoped_refptr<const extensions::Extension> extension = MakeExtension(true);
-
-    base::string16 error_1;
-    EXPECT_TRUE(
-        supervised_user_service->UserMayLoad(extension.get(), &error_1));
-    EXPECT_TRUE(error_1.empty());
-
-    base::string16 error_2;
-    EXPECT_TRUE(supervised_user_service->MustRemainInstalled(extension.get(),
-                                                             &error_2));
-    EXPECT_FALSE(error_2.empty());
-
-    base::string16 error_3;
-    extensions::disable_reason::DisableReason reason =
-        extensions::disable_reason::DISABLE_NONE;
-    EXPECT_FALSE(supervised_user_service->MustRemainDisabled(extension.get(),
-                                                             &reason,
-                                                             &error_3));
-    EXPECT_EQ(extensions::disable_reason::DISABLE_NONE, reason);
-    EXPECT_TRUE(error_3.empty());
-
-    base::string16 error_4;
-    EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension.get(),
-                                                             &error_4));
     EXPECT_FALSE(error_4.empty());
   }
 

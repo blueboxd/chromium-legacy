@@ -22,6 +22,29 @@ class Var;
 
 class PDF {
  public:
+  // C++ version of PP_PrivateAccessibilityTextStyleInfo.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityTextStyleInfo {
+    std::string font_name;
+    int font_weight;
+    int render_mode;
+    double font_size;
+    // Colors are ARGB.
+    uint32_t fill_color;
+    uint32_t stroke_color;
+    bool is_italic;
+    bool is_bold;
+  };
+
+  // C++ version of PP_PrivateAccessibilityTextRunInfo.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityTextRunInfo {
+    uint32_t len;
+    struct PP_FloatRect bounds;
+    PP_PrivateDirection direction;
+    PrivateAccessibilityTextStyleInfo style;
+  };
+
   // C++ version of PP_PrivateAccessibilityLinkInfo.
   // Needs to stay in sync with the C version.
   struct PrivateAccessibilityLinkInfo {
@@ -98,7 +121,7 @@ class PDF {
   static void SetAccessibilityPageInfo(
       const InstanceHandle& instance,
       const PP_PrivateAccessibilityPageInfo* page_info,
-      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<PrivateAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       const PrivateAccessibilityPageObjects& page_objects);
   static void SetCrashData(const InstanceHandle& instance,

@@ -946,10 +946,6 @@ class PortTest(LoggingTestCase):
         # 'failures/expected' is not a specified base of virtual/virtual_failures
         self.assertIsNone(port.lookup_virtual_test_base('virtual/virtual_failures/failures/expected/image.html'))
 
-        # Matching base file.
-        self.assertEqual('passes/reftest.html', port.lookup_virtual_test_base('virtual/references_use_default_args/passes/reftest.html'))
-        self.assertEqual('passes/', port.lookup_virtual_test_base('virtual/references_use_default_args/passes'))
-
         # Partial match of base with multiple levels.
         self.assertEqual('failures/', port.lookup_virtual_test_base('virtual/virtual_failures/failures/'))
         self.assertEqual('failures/', port.lookup_virtual_test_base('virtual/virtual_failures/failures'))
@@ -1123,24 +1119,12 @@ class VirtualTestSuiteTest(unittest.TestCase):
         self.assertEqual(suite.full_prefix, 'virtual/suite/')
         self.assertEqual(suite.bases, ['base/foo', 'base/bar'])
         self.assertEqual(suite.args, ['--args'])
-        self.assertEqual(suite.reference_args, suite.args)
 
     def test_empty_bases(self):
         suite = VirtualTestSuite(prefix='suite', bases=[], args=['--args'])
         self.assertEqual(suite.full_prefix, 'virtual/suite/')
         self.assertEqual(suite.bases, [])
         self.assertEqual(suite.args, ['--args'])
-        self.assertEqual(suite.reference_args, suite.args)
-
-    def test_default_reference_args(self):
-        suite = VirtualTestSuite(prefix='suite', bases=['base/foo'], args=['--args'], references_use_default_args=True)
-        self.assertEqual(suite.args, ['--args'])
-        self.assertEqual(suite.reference_args, [])
-
-    def test_non_default_reference_args(self):
-        suite = VirtualTestSuite(prefix='suite', bases=['base/foo'], args=['--args'], references_use_default_args=False)
-        self.assertEqual(suite.args, ['--args'])
-        self.assertEqual(suite.reference_args, suite.args)
 
     def test_no_slash(self):
         self.assertRaises(AssertionError, VirtualTestSuite, prefix='suite/bar', bases=['base/foo'], args=['--args'])

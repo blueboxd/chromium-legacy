@@ -284,6 +284,6 @@ __gCrWeb.form['fieldWasEditedByUser'] = function(element) {
     return false;
   }
   return __gCrWeb.form.wasEditedByUser.get(element);
-}
+};
 
 }());  // End of anonymous object

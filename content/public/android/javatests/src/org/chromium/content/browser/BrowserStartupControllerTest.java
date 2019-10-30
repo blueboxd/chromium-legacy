@@ -40,8 +40,7 @@ public class BrowserStartupControllerTest {
         @Override
         void prepareToStartBrowserProcess(boolean singleProcess, Runnable completionCallback) {
             if (!mLibraryLoadSucceeds) {
-                throw new ProcessInitException(
-                        LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED);
+                throw new ProcessInitException(LoaderErrors.NATIVE_LIBRARY_LOAD_FAILED);
             } else if (completionCallback != null) {
                 completionCallback.run();
             }

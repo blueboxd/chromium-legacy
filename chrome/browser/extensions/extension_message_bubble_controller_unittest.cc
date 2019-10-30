@@ -978,7 +978,9 @@ TEST_F(ExtensionMessageBubbleTest,
 // Tests that a bubble associated with multiple extensions remains shown after
 // one of its associated extensions is uninstalled. Also tests that the bubble
 // closes when all of its associated extensions are uninstalled.
-TEST_F(ExtensionMessageBubbleTest, TestBubbleShownForMultipleExtensions) {
+// Flaky: https://crbug.com/836332
+TEST_F(ExtensionMessageBubbleTest,
+       DISABLED_TestBubbleShownForMultipleExtensions) {
   FeatureSwitch::ScopedOverride force_dev_mode_highlighting(
       FeatureSwitch::force_dev_mode_highlighting(), true);
   Init();

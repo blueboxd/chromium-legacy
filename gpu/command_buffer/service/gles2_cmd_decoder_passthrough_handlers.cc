@@ -1842,7 +1842,7 @@ GLES2DecoderPassthroughImpl::HandleMultiDrawArraysInstancedCHROMIUM(
       *static_cast<
           const volatile gles2::cmds::MultiDrawArraysInstancedCHROMIUM*>(
           cmd_data);
-  if (!features().webgl_multi_draw) {
+  if (!features().webgl_multi_draw_instanced) {
     return error::kUnknownCommand;
   }
 
@@ -1930,7 +1930,7 @@ GLES2DecoderPassthroughImpl::HandleMultiDrawElementsInstancedCHROMIUM(
       *static_cast<
           const volatile gles2::cmds::MultiDrawElementsInstancedCHROMIUM*>(
           cmd_data);
-  if (!features().webgl_multi_draw) {
+  if (!features().webgl_multi_draw_instanced) {
     return error::kUnknownCommand;
   }
 

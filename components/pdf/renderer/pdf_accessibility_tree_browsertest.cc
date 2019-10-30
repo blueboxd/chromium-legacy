@@ -25,9 +25,9 @@ namespace pdf {
 namespace {
 
 const PP_PrivateAccessibilityTextRunInfo kFirstTextRun = {
-    15, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+    15, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
 const PP_PrivateAccessibilityTextRunInfo kSecondTextRun = {
-    15, 16, PP_MakeFloatRectFromXYWH(28.0f, 117.0f, 152.0f, 19.0f)};
+    15, PP_MakeFloatRectFromXYWH(28.0f, 117.0f, 152.0f, 19.0f)};
 const PP_PrivateAccessibilityCharInfo kDummyCharsData[] = {
     {'H', 12}, {'e', 6},  {'l', 5},  {'l', 4},  {'o', 8},  {',', 4},
     {' ', 4},  {'w', 12}, {'o', 6},  {'r', 6},  {'l', 4},  {'d', 9},
@@ -36,13 +36,13 @@ const PP_PrivateAccessibilityCharInfo kDummyCharsData[] = {
     {'w', 16}, {'o', 12}, {'r', 8},  {'l', 4},  {'d', 12}, {'!', 2},
 };
 const PP_PrivateAccessibilityTextRunInfo kFirstRunMultiLine = {
-    7, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+    7, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
 const PP_PrivateAccessibilityTextRunInfo kSecondRunMultiLine = {
-    8, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+    8, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
 const PP_PrivateAccessibilityTextRunInfo kThirdRunMultiLine = {
-    9, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+    9, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
 const PP_PrivateAccessibilityTextRunInfo kFourthRunMultiLine = {
-    6, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+    6, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
 
 const char kChromiumTestUrl[] = "www.cs.chromium.org";
 
@@ -177,7 +177,7 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
   PP_PrivateAccessibilityViewportInfo viewport_info_;
   PP_PrivateAccessibilityDocInfo doc_info_;
   PP_PrivateAccessibilityPageInfo page_info_;
-  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs_;
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs_;
   std::vector<PP_PrivateAccessibilityCharInfo> chars_;
   std::vector<ppapi::PdfAccessibilityLinkInfo> links_;
   std::vector<ppapi::PdfAccessibilityImageInfo> images_;

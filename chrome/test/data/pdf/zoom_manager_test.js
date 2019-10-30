@@ -88,9 +88,9 @@ chrome.test.runTests(function() {
 
   return [
     function testZoomChange() {
-      let viewport = new MockViewport();
-      let browserZoomSetter = new MockBrowserZoomSetter();
-      let zoomManager = ZoomManager.create(
+      const viewport = new MockViewport();
+      const browserZoomSetter = new MockBrowserZoomSetter();
+      const zoomManager = ZoomManager.create(
           BrowserApi.ZoomBehavior.MANAGE, () => viewport.getZoom(),
           zoom => browserZoomSetter.setBrowserZoom(zoom), 1);
       viewport.addZoomListeners(zoomManager.getEventTarget());
@@ -103,8 +103,8 @@ chrome.test.runTests(function() {
     },
 
     function testBrowserZoomChange() {
-      let viewport = new MockViewport();
-      let zoomManager = ZoomManager.create(
+      const viewport = new MockViewport();
+      const zoomManager = ZoomManager.create(
           BrowserApi.ZoomBehavior.MANAGE, () => viewport.getZoom(),
           chrome.test.fail, 1);
       viewport.addZoomListeners(zoomManager.getEventTarget());
@@ -117,8 +117,8 @@ chrome.test.runTests(function() {
     },
 
     function testBrowserZoomChangeEmbedded() {
-      let viewport = new MockViewport();
-      let zoomManager = ZoomManager.create(
+      const viewport = new MockViewport();
+      const zoomManager = ZoomManager.create(
           BrowserApi.ZoomBehavior.PROPAGATE_PARENT,
           () => viewport.getZoom(), function() {
             return Promise.reject();
@@ -137,9 +137,9 @@ chrome.test.runTests(function() {
     },
 
     function testSmallZoomChange() {
-      let viewport = new MockViewport();
-      let browserZoomSetter = new MockBrowserZoomSetter();
-      let zoomManager = ZoomManager.create(
+      const viewport = new MockViewport();
+      const browserZoomSetter = new MockBrowserZoomSetter();
+      const zoomManager = ZoomManager.create(
           BrowserApi.ZoomBehavior.MANAGE, () => viewport.getZoom(),
           zoom => browserZoomSetter.setBrowserZoom(zoom), 2);
       viewport.addZoomListeners(zoomManager.getEventTarget());
@@ -152,8 +152,8 @@ chrome.test.runTests(function() {
     },
 
     function testSmallBrowserZoomChange() {
-      let viewport = new MockViewport();
-      let zoomManager = ZoomManager.create(
+      const viewport = new MockViewport();
+      const zoomManager = ZoomManager.create(
           BrowserApi.ZoomBehavior.MANAGE, () => viewport.getZoom(),
           chrome.test.fail, 1);
       viewport.addZoomListeners(zoomManager.getEventTarget());
@@ -165,9 +165,9 @@ chrome.test.runTests(function() {
     },
 
     function testMultiplePdfZoomChanges() {
-      let viewport = new MockViewport();
-      let browserZoomSetter = new MockBrowserZoomSetter();
-      let zoomManager = ZoomManager.create(
+      const viewport = new MockViewport();
+      const browserZoomSetter = new MockBrowserZoomSetter();
+      const zoomManager = ZoomManager.create(
           BrowserApi.ZoomBehavior.MANAGE, () => viewport.getZoom(),
           zoom => browserZoomSetter.setBrowserZoom(zoom), 1);
       viewport.addZoomListeners(zoomManager.getEventTarget());
@@ -187,8 +187,8 @@ chrome.test.runTests(function() {
     },
 
     function testMultipleBrowserZoomChanges() {
-      let viewport = new MockViewport();
-      let zoomManager = ZoomManager.create(
+      const viewport = new MockViewport();
+      const zoomManager = ZoomManager.create(
           BrowserApi.ZoomBehavior.MANAGE, () => viewport.getZoom(),
           chrome.test.fail, 1);
       viewport.addZoomListeners(zoomManager.getEventTarget());

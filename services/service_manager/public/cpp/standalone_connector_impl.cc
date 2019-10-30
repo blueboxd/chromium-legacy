@@ -58,8 +58,9 @@ void StandaloneConnectorImpl::RegisterServiceInstance(
   std::move(callback).Run(mojom::ConnectResult::INVALID_ARGUMENT);
 }
 
-void StandaloneConnectorImpl::Clone(mojom::ConnectorRequest request) {
-  receivers_.Add(this, std::move(request));
+void StandaloneConnectorImpl::Clone(
+    mojo::PendingReceiver<mojom::Connector> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void StandaloneConnectorImpl::FilterInterfaces(

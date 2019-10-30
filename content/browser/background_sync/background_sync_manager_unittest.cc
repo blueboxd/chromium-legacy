@@ -166,13 +166,13 @@ class BackgroundSyncManagerTest
     options2.scope = GURL(kScope2);
     helper_->context()->RegisterServiceWorker(
         GURL(kScript1), options1,
-        /*outside_fetch_client_settings_object=*/nullptr,
+        blink::mojom::FetchClientSettingsObject::New(),
         base::BindOnce(&RegisterServiceWorkerCallback, &called_1,
                        &sw_registration_id_1_));
 
     helper_->context()->RegisterServiceWorker(
         GURL(kScript2), options2,
-        /*outside_fetch_client_settings_object=*/nullptr,
+        blink::mojom::FetchClientSettingsObject::New(),
         base::BindOnce(&RegisterServiceWorkerCallback, &called_2,
                        &sw_registration_id_2_));
     base::RunLoop().RunUntilIdle();

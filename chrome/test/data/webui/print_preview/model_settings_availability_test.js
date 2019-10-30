@@ -245,7 +245,7 @@ cr.define('model_settings_availability_test', function() {
       assertTrue(model.settings.mediaSize.available);
 
       // Remove capability.
-      let capabilities =
+      const capabilities =
           print_preview_test_utils.getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.media_size;

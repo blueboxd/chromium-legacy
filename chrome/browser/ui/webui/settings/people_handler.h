@@ -6,17 +6,14 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_PEOPLE_HANDLER_H_
 
 #include <memory>
-#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -44,7 +41,6 @@ namespace settings {
 
 class PeopleHandler : public SettingsPageUIHandler,
                       public signin::IdentityManager::Observer,
-                      public SyncStartupTracker::Observer,
                       public LoginUIService::LoginUI,
                       public syncer::SyncServiceObserver,
                       public content::WebContentsObserver {
@@ -56,6 +52,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   static const char kTimeoutPageStatus[];
   static const char kDonePageStatus[];
   static const char kPassphraseFailedPageStatus[];
+  // TODO(crbug.com/): Remove kSpinnerPageStatus and kTimeoutPageStatus (plus
+  // their JS-side handling); they're unused.
 
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
@@ -68,24 +66,14 @@ class PeopleHandler : public SettingsPageUIHandler,
 
  private:
   friend class PeopleHandlerTest;
-  friend class PeopleHandlerTest_UnifiedConsentDisabled;
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
-                           DisplayConfigureWithEngineDisabledAndCancel);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
                            DisplayConfigureWithEngineDisabledAndCancel);
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       DisplayConfigureWithEngineDisabledAndCancelAfterSigninSuccess);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
-                           DisplayConfigureWithEngineDisabledAndSigninFailed);
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       DisplayConfigureWithEngineDisabledAndSyncStartupCompleted);
-  FRIEND_TEST_ALL_PREFIXES(
-      PeopleHandlerTest_UnifiedConsentDisabled,
-      DisplayConfigureWithEngineDisabledAndSyncStartupCompleted);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
-                           HandleSetupUIWhenSyncDisabled);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            ShowSetupCustomPassphraseRequired);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSetupEncryptAll);
@@ -96,11 +84,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSetupSyncEverything);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            ShowSetupSyncForAllTypesIndividually);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
-                           ShowSigninOnAuthError);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSyncSetup);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
-                           DontShowSyncSetupWhenNotSignedIn);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncEverything);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncAllManually);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestPassphraseStillRequired);
@@ -118,8 +102,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            AcquireSyncBlockerWhenLoadingSyncSettingsSubpage);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, RestartSyncAfterDashboardClear);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
-                           RestartSyncAfterDashboardClear);
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       RestartSyncAfterDashboardClearWithStandaloneTransport);
@@ -134,10 +116,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   void RegisterMessages() override;
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
-
-  // SyncStartupTracker::Observer implementation.
-  void SyncStartupCompleted() override;
-  void SyncStartupFailed() override;
 
   // LoginUIService::LoginUI implementation.
   void FocusUI() override;
@@ -207,18 +185,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   base::Value GetStoredAccountsList();
 #endif
 
-  // Displays spinner-only UI indicating that something is going on in the
-  // background.
-  // TODO(kochi): better to show some message that the user can understand what
-  // is running in the background.
-  void DisplaySpinner();
-
-  // Displays an error dialog which shows timeout of starting the sync engine.
-  void DisplayTimeout();
-
-  // Closes the associated sync settings page.
-  void CloseUI();
-
   // Pushes the updated sync prefs to JavaScript.
   void PushSyncPrefs();
 
@@ -242,9 +208,6 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Weak pointer.
   Profile* profile_;
-
-  // Helper object used to wait for the sync engine to startup.
-  std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
 
   // Prevents Sync from running until configuration is complete.
   std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;

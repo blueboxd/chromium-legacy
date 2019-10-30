@@ -5,7 +5,9 @@
 #include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
 
 #include "base/base64.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/common/gcm_message.h"
@@ -106,6 +108,89 @@ TEST_F(BinaryFCMServiceTest, RoutesMessages) {
   binary_fcm_service_->ClearCallbackForToken("token2");
   binary_fcm_service_->OnMessage("app_id", incoming_message);
   EXPECT_EQ(response2.token(), "");
+}
+
+TEST_F(BinaryFCMServiceTest, EmitsHasKeyHistogram) {
+  {
+    base::HistogramTester histograms;
+    gcm::IncomingMessage incoming_message;
+
+    binary_fcm_service_->OnMessage("app_id", incoming_message);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageHasKey", false, 1);
+  }
+  {
+    base::HistogramTester histograms;
+    gcm::IncomingMessage incoming_message;
+
+    incoming_message.data["proto"] = "proto";
+    binary_fcm_service_->OnMessage("app_id", incoming_message);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageHasKey", true, 1);
+  }
+}
+
+TEST_F(BinaryFCMServiceTest, EmitsMessageParsedHistogram) {
+  {
+    base::HistogramTester histograms;
+    gcm::IncomingMessage incoming_message;
+
+    incoming_message.data["proto"] = "invalid base 64";
+    binary_fcm_service_->OnMessage("app_id", incoming_message);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageParsedBase64", false, 1);
+  }
+  {
+    base::HistogramTester histograms;
+    gcm::IncomingMessage incoming_message;
+
+    incoming_message.data["proto"] = "invalid+proto+data==";
+    binary_fcm_service_->OnMessage("app_id", incoming_message);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageParsedBase64", true, 1);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageParsedProto", false, 1);
+  }
+  {
+    base::HistogramTester histograms;
+    gcm::IncomingMessage incoming_message;
+    DeepScanningClientResponse message;
+    std::string serialized_message;
+
+    ASSERT_TRUE(message.SerializeToString(&serialized_message));
+    base::Base64Encode(serialized_message, &serialized_message);
+    incoming_message.data["proto"] = serialized_message;
+    binary_fcm_service_->OnMessage("app_id", incoming_message);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageParsedBase64", true, 1);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageParsedProto", true, 1);
+  }
+}
+
+TEST_F(BinaryFCMServiceTest, EmitsMessageHasValidTokenHistogram) {
+  gcm::IncomingMessage incoming_message;
+  DeepScanningClientResponse message;
+
+  message.set_token("token1");
+  std::string serialized_message;
+  ASSERT_TRUE(message.SerializeToString(&serialized_message));
+  base::Base64Encode(serialized_message, &serialized_message);
+  incoming_message.data["proto"] = serialized_message;
+
+  {
+    base::HistogramTester histograms;
+    binary_fcm_service_->OnMessage("app_id", incoming_message);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageHasValidToken", false, 1);
+  }
+  {
+    binary_fcm_service_->SetCallbackForToken("token1", base::DoNothing());
+    base::HistogramTester histograms;
+    binary_fcm_service_->OnMessage("app_id", incoming_message);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageHasValidToken", true, 1);
+  }
 }
 
 }  // namespace safe_browsing

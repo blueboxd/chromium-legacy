@@ -173,6 +173,21 @@ void RecordUMAFromMatchType(MatchType match_type) {
   }
 }
 
+// Returns the index of the first URL in the redirect chain which has a
+// different eTLD+1 than the initial URL. If all URLs have the same eTLD+1,
+// returns 0.
+size_t FindFirstCrossSiteURL(const std::vector<GURL>& redirect_chain) {
+  DCHECK_GE(redirect_chain.size(), 2u);
+  const GURL initial_url = redirect_chain[0];
+  const std::string initial_etld_plus_one = GetETLDPlusOne(initial_url.host());
+  for (size_t i = 1; i < redirect_chain.size(); i++) {
+    if (initial_etld_plus_one != GetETLDPlusOne(redirect_chain[i].host())) {
+      return i;
+    }
+  }
+  return 0;
+}
+
 }  // namespace
 
 // static
@@ -235,10 +250,21 @@ bool IsEditDistanceAtMostOne(const base::string16& str1,
 
 bool IsSafeRedirect(const std::string& matching_domain,
                     const std::vector<GURL>& redirect_chain) {
-  if (redirect_chain.size() != 2) {
+  if (redirect_chain.size() < 2) {
     return false;
   }
-  const GURL redirect_target = redirect_chain[redirect_chain.size() - 1];
+  const size_t first_cross_site_redirect =
+      FindFirstCrossSiteURL(redirect_chain);
+  DCHECK_GE(first_cross_site_redirect, 0u);
+  DCHECK_LE(first_cross_site_redirect, redirect_chain.size() - 1);
+  if (first_cross_site_redirect == 0) {
+    // All URLs in the redirect chain belong to the same eTLD+1.
+    return true;
+  }
+  // There is a redirect from the initial eTLD+1 to another site. In order to be
+  // a safe redirect, it should be to the root of |matching_domain|. This
+  // ignores any further redirects after |matching_domain|.
+  const GURL redirect_target = redirect_chain[first_cross_site_redirect];
   return matching_domain == GetETLDPlusOne(redirect_target.host()) &&
          redirect_target == redirect_target.GetWithEmptyPath();
 }

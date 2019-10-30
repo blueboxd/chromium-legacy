@@ -44,9 +44,11 @@ def GetParser():
       description=_SCRIPT_USAGE, formatter_class=argparse.RawTextHelpFormatter)
   subparsers = parser.add_subparsers()
 
-  parser_update = subparsers.add_parser('update')
+  parser_update = subparsers.add_parser(
+      'update',
+      help='Update the shard maps.')
   parser_update.add_argument(
-      '--use-old-timing-data', '-o', action='store_true',
+      '--use-existing-timing-data', '-o', action='store_true',
       help=('Whether to reuse existing builder timing data (stored in '
             '//tools/perf/core/shard_maps/timing_data/) and skip the step of '
             'fetching the most recent timing data from test results server. '
@@ -54,23 +56,23 @@ def GetParser():
             'when they need to fix the timing data to debug sharding '
             'generation.'),
       default=False)
-  builder_selection = parser_update.add_mutually_exclusive_group()
-  builder_selection.add_argument(
-      '--builders', '-b', action='append',
-      help=('The builder names to reshard.'), default=[],
-      choices=bot_platforms.ALL_PLATFORM_NAMES)
-  builder_selection.add_argument(
-      '--waterfall', '-w', choices=['perf', 'perf-fyi', 'all'], default=None,
-      help=('The name of waterfall whose builders to be resharded. If not '
-            'specified, use all perf builders by default'))
+  _AddBuilderPlatformSelectionArgs(parser_update)
   parser.add_argument(
       '--debug', action='store_true',
       help=('Whether to include detailed debug info of the sharding map in the '
             'shard maps.'), default=False)
-
   parser_update.set_defaults(func=_UpdateShardsForBuilders)
 
-  parser_create = subparsers.add_parser('create')
+  parser_update_timing = subparsers.add_parser(
+      'update-timing',
+      help='Update the timing data that is used to create the shard maps, '
+      'but don\'t update the shard maps themselves.')
+  _AddBuilderPlatformSelectionArgs(parser_update_timing)
+  parser_update_timing.set_defaults(func=_UpdateTimingDataCommand)
+
+  parser_create = subparsers.add_parser(
+      'create',
+      help='Create a shard map for a single benchmark.')
   parser_create.add_argument(
       '--benchmark', help='The benchmark that you want to create shard for',
       required=True)
@@ -103,6 +105,18 @@ def GetParser():
   parser_validate.set_defaults(func=_ValidateShardMaps)
 
   return parser
+
+
+def _AddBuilderPlatformSelectionArgs(parser):
+  builder_selection = parser.add_mutually_exclusive_group()
+  builder_selection.add_argument(
+      '--builders', '-b', action='append',
+      help=('The builder names to use.'), default=[],
+      choices=bot_platforms.ALL_PLATFORM_NAMES)
+  builder_selection.add_argument(
+      '--waterfall', '-w', choices=['perf', 'perf-fyi', 'all'], default=None,
+      help=('The name of waterfall whose builders should be used. If not '
+            'specified, use all perf builders by default'))
 
 
 def _DumpJson(data, output_path):
@@ -166,14 +180,14 @@ def _GenerateShardMap(
 
 
 def _PromptWarning():
-  message = ('This will regenerate the sharding maps for all perf benchmarks. '
+  message = ('This will regenerate the sharding maps for perf benchmarks. '
              'Note that this will shuffle all the benchmarks on the shards, '
              'which can cause false regressions. In general this operation '
              'should only be done when the shards are too unbalanced or when '
              'benchmarks are added/removed. '
-             'In addition, this a tricky operation and should '
-             'only be done by Telemetry or Chrome Client Infrastructure '
-             'team members. Upon landing the CL to update the shards maps, '
+             'In addition, this is a tricky operation and should '
+             'always be reviewed by Benchmarking '
+             'team members. Upon landing the CL to update the shard maps, '
              'please notify Chromium perf sheriffs in '
              'perf-sheriffs@chromium.org and put a warning about expected '
              'false regressions in your CL '
@@ -185,27 +199,40 @@ def _PromptWarning():
     sys.exit(0)
 
 
-def _UpdateShardsForBuilders(args):
+def _UpdateTimingDataCommand(args):
+  _UpdateTimingData(_GetBuilderPlatforms(args))
+
+
+def _UpdateTimingData(builders):
+  print('Updating shards timing data. May take a while...')
+  load_timing_args = []
+  for b in builders:
+    load_timing_args.append((b.name, b.timing_file_path))
+  p = multiprocessing.Pool(len(load_timing_args))
+  p.map(_LoadTimingData, load_timing_args)
+
+
+def _GetBuilderPlatforms(args):
+  """Get a list of PerfBuilder objects for the given builders or waterfall.
+
+  Otherwise, just return all platforms.
+  """
   if args.builders:
-    builders = {b for b in bot_platforms.ALL_PLATFORMS if b.name in
+    return {b for b in bot_platforms.ALL_PLATFORMS if b.name in
                 args.builders}
   elif args.waterfall == 'perf':
-    builders = bot_platforms.ALL_PERF_PLATFORMS
-    _PromptWarning()
+    return bot_platforms.ALL_PERF_PLATFORMS
   elif args.waterfall == 'perf-fyi':
-    builders = bot_platforms.ALL_PERF_FYI_PLATFORMS
+    return bot_platforms.ALL_PERF_FYI_PLATFORMS
   else:
-    builders = bot_platforms.ALL_PLATFORMS
-    _PromptWarning()
+    return bot_platforms.ALL_PLATFORMS
 
-  if not args.use_old_timing_data:
-    print('Update shards timing data. May take a while...')
-    load_timing_args = []
-    for b in builders:
-      load_timing_args.append((b.name, b.timing_file_path))
-    p = multiprocessing.Pool(len(load_timing_args))
-    p.map(_LoadTimingData, load_timing_args)
 
+def _UpdateShardsForBuilders(args):
+  _PromptWarning()
+  builders = _GetBuilderPlatforms(args)
+  if not args.use_existing_timing_data:
+    _UpdateTimingData(builders)
   for b in builders:
     _GenerateShardMap(
         b, b.num_shards, b.shards_map_file_path, args.debug, benchmark=None)

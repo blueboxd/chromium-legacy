@@ -217,13 +217,15 @@ void PDFResource::SetAccessibilityPageInfo(
     const PP_PrivateAccessibilityTextRunInfo text_runs[],
     const PP_PrivateAccessibilityCharInfo chars[],
     const PP_PrivateAccessibilityPageObjects* page_objects) {
-  std::vector<PP_PrivateAccessibilityTextRunInfo> text_run_vector(
-      text_runs, text_runs + page_info->text_run_count);
   std::vector<PP_PrivateAccessibilityCharInfo> char_vector(
       chars, chars + page_info->char_count);
   // Pepper APIs require us to pass strings as char*, but IPC expects
-  // std::string. Convert information for links and images to meet these
-  // requirements.
+  // std::string. Convert information for text runs style, links and images to
+  // meet these requirements.
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_run_vector;
+  text_run_vector.reserve(page_info->text_run_count);
+  for (size_t i = 0; i < page_info->text_run_count; i++)
+    text_run_vector.emplace_back(text_runs[i]);
   std::vector<ppapi::PdfAccessibilityLinkInfo> link_vector;
   link_vector.reserve(page_objects->link_count);
   for (size_t i = 0; i < page_objects->link_count; i++) {

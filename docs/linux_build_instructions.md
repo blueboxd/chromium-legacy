@@ -153,15 +153,6 @@ use_goma=true
 goma_dir=/path/to/goma-client
 ```
 
-#### Jumbo/Unity builds
-
-Jumbo builds merge many translation units ("source files") and compile them
-together. Since a large portion of Chromium's code is in shared header files,
-this dramatically reduces the total amount of work needed. Check out the
-[Jumbo / Unity builds](jumbo.md) for more information.
-
-Enable jumbo builds by setting the GN arg `use_jumbo_build=true`.
-
 #### Disable NaCl
 
 By default, the build includes support for

@@ -28,9 +28,7 @@ namespace ent_mgmt = ::enterprise_management;
 // case we won't report its status).
 std::unique_ptr<DeviceLocalAccount> GetCurrentKioskDeviceLocalAccount(
     chromeos::CrosSettings* settings) {
-  if (!user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp()) {
+  if (!user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
     return nullptr;
   }
   const user_manager::User* const user =

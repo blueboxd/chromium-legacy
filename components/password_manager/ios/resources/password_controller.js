@@ -85,19 +85,22 @@ var getSameOriginFrames_ = function(win) {
  * the site JavaScript.
  */
 var addSubmitButtonTouchEndHandler_ = function(form) {
-  if (form.querySelector('input[type=submit]'))
+  if (form.querySelector('input[type=submit]')) {
     return;
+  }
   // Try to find buttons of type submit at first.
   var buttons = form.querySelectorAll('button[type="submit"]');
   if (buttons.length == 0) {
     // Try to check all buttons. If there is only one button, assume that this
     // is the submit button.
     buttons = form.querySelectorAll('button');
-    if (buttons.length != 1)
+    if (buttons.length != 1) {
       return;
+    }
   }
-  for (var i = 0; i < buttons.length; ++i)
+  for (var i = 0; i < buttons.length; ++i) {
     buttons[0].addEventListener('touchend', onSubmitButtonTouchEnd_);
+  }
 };
 
 /**
@@ -107,8 +110,9 @@ var addSubmitButtonTouchEndHandler_ = function(form) {
 var onSubmitButtonTouchEnd_ = function(evt) {
   var form = evt.currentTarget.form;
   var formData = __gCrWeb.passwords.getPasswordFormData(form);
-  if (!formData)
+  if (!formData) {
     return;
+  }
   formData['command'] = 'passwordForm.submitButtonClick';
   __gCrWeb.message.invokeOnHost(formData);
 };
@@ -138,13 +142,15 @@ var findInputByFieldIdentifier_ = function(inputs, identifier) {
  */
 var getPasswordFormElement_ = function(win, identifier) {
   var el = win.__gCrWeb.form.getFormElementFromIdentifier(identifier);
-  if (el)
+  if (el) {
     return el;
+  }
   var frames = getSameOriginFrames_(win);
   for (var i = 0; i < frames.length; ++i) {
     el = getPasswordFormElement_(frames[i], identifier);
-    if (el)
+    if (el) {
       return el;
+    }
   }
   return null;
 };
@@ -168,11 +174,13 @@ var getFormInputElements_ = function(form) {
  */
 __gCrWeb.passwords['getPasswordFormDataAsString'] = function(identifier) {
   var el = getPasswordFormElement_(window, identifier);
-  if (!el)
+  if (!el) {
     return '{}';
+  }
   var formData = __gCrWeb.passwords.getPasswordFormData(el);
-  if (!formData)
+  if (!formData) {
     return '{}';
+  }
   return __gCrWeb.stringify(formData);
 };
 
@@ -215,13 +223,15 @@ __gCrWeb.passwords['fillPasswordForm'] = function(
 __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
     formName, newPasswordIdentifier, confirmPasswordIdentifier, password) {
   var form = __gCrWeb.form.getFormElementFromIdentifier(formName);
-  if (!form)
+  if (!form) {
     return false;
+  }
   var inputs = getFormInputElements_(form);
   var newPasswordField =
       findInputByFieldIdentifier_(inputs, newPasswordIdentifier);
-  if (!newPasswordField)
+  if (!newPasswordField) {
     return false;
+  }
   // Avoid resetting if same value, as it moves cursor to the end.
   if (newPasswordField.value != password) {
     __gCrWeb.fill.setInputElementValue(password, newPasswordField);
@@ -256,19 +266,22 @@ var fillPasswordFormWithData_ = function(
     var form = forms[i];
     var normalizedFormAction =
         opt_normalizedOrigin || __gCrWeb.fill.getCanonicalActionForForm(form);
-    if (formData.action != normalizedFormAction)
+    if (formData.action != normalizedFormAction) {
       continue;
+    }
     var inputs = getFormInputElements_(form);
     var usernameInput =
         findInputByFieldIdentifier_(inputs, formData.fields[0].name);
     if (usernameInput == null || !__gCrWeb.common.isTextField(usernameInput) ||
-        usernameInput.disabled)
+        usernameInput.disabled) {
       continue;
+    }
     var passwordInput =
         findInputByFieldIdentifier_(inputs, formData.fields[1].name);
     if (passwordInput == null || passwordInput.type != 'password' ||
-        passwordInput.readOnly || passwordInput.disabled)
+        passwordInput.readOnly || passwordInput.disabled) {
       continue;
+    }
 
     // If username was provided on a read-only field and it matches the
     // requested username, fill the form.

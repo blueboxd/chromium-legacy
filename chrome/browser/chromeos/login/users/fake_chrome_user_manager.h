@@ -150,6 +150,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   void DemoAccountLoggedIn() override;
   void KioskAppLoggedIn(user_manager::User* user) override;
   void ArcKioskAppLoggedIn(user_manager::User* user) override;
+  void WebKioskAppLoggedIn(user_manager::User* user) override;
   void PublicAccountUserLoggedIn(user_manager::User* user) override;
   void SupervisedUserLoggedIn(const AccountId& account_id) override;
   void OnUserRemoved(const AccountId& account_id) override;

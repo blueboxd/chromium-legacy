@@ -209,6 +209,10 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
         ArcKioskAppLoggedIn(user);
         break;
 
+      case USER_TYPE_WEB_KIOSK_APP:
+        WebKioskAppLoggedIn(user);
+        break;
+
       default:
         NOTREACHED() << "Unhandled usert type " << user_type;
     }
@@ -614,9 +618,9 @@ bool UserManagerBase::IsLoggedInAsArcKioskApp() const {
   return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_ARC_KIOSK_APP;
 }
 
-bool UserManagerBase::IsLoggedInAsWebKioskApp() const {
+bool UserManagerBase::IsLoggedInAsAnyKioskApp() const {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
-  return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_WEB_KIOSK_APP;
+  return IsUserLoggedIn() && active_user_->IsKioskType();
 }
 
 bool UserManagerBase::IsLoggedInAsStub() const {

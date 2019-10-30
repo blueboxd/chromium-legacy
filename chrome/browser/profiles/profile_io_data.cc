@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -60,6 +61,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/ssl/client_cert_store.h"
@@ -360,9 +362,6 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     url::kContentScheme,
 #endif  // defined(OS_ANDROID)
     url::kAboutScheme,
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-    url::kFtpScheme,
-#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
     url::kBlobScheme,
     url::kFileSystemScheme,
     chrome::kChromeSearchScheme,
@@ -371,6 +370,12 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     if (scheme == supported_protocol)
       return true;
   }
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  if (scheme == url::kFtpScheme &&
+      base::FeatureList::IsEnabled(features::kFtpProtocol)) {
+    return true;
+  }
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
   return false;
 }
 

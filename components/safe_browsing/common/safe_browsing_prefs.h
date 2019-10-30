@@ -7,6 +7,9 @@
 #ifndef COMPONENTS_SAFE_BROWSING_COMMON_SAFE_BROWSING_PREFS_H_
 #define COMPONENTS_SAFE_BROWSING_COMMON_SAFE_BROWSING_PREFS_H_
 
+#include <string>
+#include <vector>
+
 #include "base/feature_list.h"
 #include "base/values.h"
 #include "components/prefs/pref_member.h"
@@ -107,14 +110,16 @@ extern const char kAllowPasswordProtectedFiles[];
 // Integer that indidicates if Chrome checks data for content compliance.
 extern const char kCheckContentCompliance[];
 
-// List of domains where Chrome should check compliance of downloaded files.
-extern const char kDomainsToCheckComplianceOfDownloadedContent[];
+// List of url patterns where Chrome should check compliance of downloaded
+// files.
+extern const char kURLsToCheckComplianceOfDownloadedContent[];
 
-// List of domains where Chrome should check for malware of uploaded files.
-extern const char kDomainsToCheckForMalwareOfUploadedContent[];
+// List of url patterns where Chrome should check for malware of uploaded files.
+extern const char kURLsToCheckForMalwareOfUploadedContent[];
 
-// List of domains where Chrome should not check compliance of uploaded files.
-extern const char kDomainsToNotCheckComplianceOfUploadedContent[];
+// List of url patterns where Chrome should not check compliance of uploaded
+// files.
+extern const char kURLsToNotCheckComplianceOfUploadedContent[];
 
 }  // namespace prefs
 

@@ -1,4 +1,5 @@
 rootWebArea
 ++genericContainer ignored
 ++++genericContainer name='Done'
-++++button name='After'
+++++button name='Before'
+++++++image name='After'

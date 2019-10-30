@@ -2566,9 +2566,6 @@ are declared in tools/grit/grit_rule.gni.
      <message name="IDS_COOKIE_CONTROLS_NOT_WORKING_DESCRIPTION" desc="Label shown on a dialog that allows users to turn off third-party cookie blocking for a specific site.">
         Some sites use third-party cookies to load their pages. If a site isn't working, you can try turning off cookie blocking.
       </message>
-      <message name="IDS_COOKIE_CONTROLS_NOTHING_BLOCKED_MESSAGE" desc="Text shown in the dialog that allows users to control cookie blocking.">
-        This site is free of cookies that can be used to track you across the web
-      </message>
       <message name="IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE" desc="Text shown in the dialog that allows users to control cookie blocking.">
         Chrome is blocking cookies that can be used to track you across the web
       </message>
@@ -4250,9 +4247,6 @@ are declared in tools/grit/grit_rule.gni.
 
       <message name="IDS_EXTENSIONS_LOCKED_SUPERVISED_USER" desc="The error message (either shown in the extensions UI or logged) informing a supervised user that extensions cannot be changed.">
         Apps and extensions can only be modified by the manager (<ph name="CUSTODIAN_NAME">$1<ex>Jane Doe</ex></ph>).
-      </message>
-      <message name="IDS_EXTENSIONS_INSTALLED_BY_CHILD_CUSTODIAN" desc="The text in the extensions UI informing a child user that an extension was installed by their parent and cannot be changed.">
-        Installed by your parent.
       </message>
       <message name="IDS_EXTENSIONS_INSTALLED_BY_SUPERVISED_USER_CUSTODIAN" desc="The text in the extensions UI informing a supervised user that an extension was installed by their custodian and cannot be changed">
         Installed by your custodian.

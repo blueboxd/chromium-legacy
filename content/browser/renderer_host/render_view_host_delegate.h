@@ -201,6 +201,10 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // Returns true if the render view is rendering a portal.
   virtual bool IsPortal() const;
 
+  // Called when the theme color for the underlying document as specified
+  // by theme-color meta tag has changed.
+  virtual void OnThemeColorChanged(RenderViewHostImpl* source) {}
+
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

@@ -115,21 +115,12 @@ LikelyFormFilling SendFillInformationToRenderer(
   const bool no_sign_in_form =
       !observed_form.HasPasswordElement() && !observed_form.IsSingleUsername();
 
-  // Wait for the username before filling passwords in case the
-  // FillOnAccountSelectHttp feature is active and the main frame is
-  // insecure.
-  const bool enable_foas_on_http =
-      base::FeatureList::IsEnabled(features::kFillOnAccountSelectHttp) &&
-      !client->IsMainFrameSecure();
-
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
   // (1) we are in Incognito mode, or
   // (2) if it matched using public suffix domain matching, or
   // (3) it would result in unexpected filling in a form with new password
   //     fields.
-  // (4) the current main frame origin is insecure and the FOAS on HTTP feature
-  //     is active.
   using WaitForUsernameReason =
       PasswordFormMetricsRecorder::WaitForUsernameReason;
   WaitForUsernameReason wait_for_username_reason =
@@ -141,8 +132,8 @@ LikelyFormFilling SendFillInformationToRenderer(
   } else if (no_sign_in_form) {
     // If the parser did not find a current password element, don't fill.
     wait_for_username_reason = WaitForUsernameReason::kFormNotGoodForFilling;
-  } else if (enable_foas_on_http) {
-    wait_for_username_reason = WaitForUsernameReason::kFoasOnHTTP;
+  } else if (!client->IsMainFrameSecure()) {
+    wait_for_username_reason = WaitForUsernameReason::kInsecureOrigin;
   } else if (autofill::IsTouchToFillEnabled()) {
     wait_for_username_reason = WaitForUsernameReason::kTouchToFill;
   } else if (IsFillOnAccountSelectFeatureEnabled()) {

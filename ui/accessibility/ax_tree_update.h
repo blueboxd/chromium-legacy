@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"
 

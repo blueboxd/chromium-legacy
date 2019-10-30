@@ -8,28 +8,18 @@ package org.chromium.base.library_loader;
  * The exception that is thrown when the initialization of a process has failed.
  */
 public class ProcessInitException extends RuntimeException {
-    private int mErrorCode = LoaderErrors.LOADER_ERROR_NORMAL_COMPLETION;
-
     /**
      * @param errorCode This will be one of the LoaderErrors error codes.
      */
-    public ProcessInitException(int errorCode) {
-        mErrorCode = errorCode;
+    public ProcessInitException(@LoaderErrors int errorCode) {
+        super("errorCode=" + errorCode);
     }
 
     /**
      * @param errorCode This will be one of the LoaderErrors error codes.
      * @param throwable The wrapped throwable obj.
      */
-    public ProcessInitException(int errorCode, Throwable throwable) {
-        super(null, throwable);
-        mErrorCode = errorCode;
-    }
-
-    /**
-     * Return the error code.
-     */
-    public int getErrorCode() {
-        return mErrorCode;
+    public ProcessInitException(@LoaderErrors int errorCode, Throwable throwable) {
+        super("errorCode=" + errorCode, throwable);
     }
 }

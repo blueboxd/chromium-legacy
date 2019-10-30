@@ -224,8 +224,7 @@ void MaximizeIfSnapped(aura::Window* window) {
 gfx::Rect GetGridBoundsInScreenForSplitview(
     aura::Window* window,
     base::Optional<IndicatorState> indicator_state) {
-  auto* split_view_controller =
-      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  auto* split_view_controller = SplitViewController::Get(window);
   auto state = split_view_controller->state();
 
   // If we are in splitview mode already just use the given state, otherwise

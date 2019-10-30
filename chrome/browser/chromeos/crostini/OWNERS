@@ -1,7 +1,4 @@
-benwells@chromium.org
-joelhockey@chromium.org
-nverne@chromium.org
-timloh@chromium.org
+file://chrome/browser/chromeos/guest_os/OWNERS
 
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS

@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -16,6 +17,8 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/back_forward_cache_util.h"
@@ -224,6 +227,51 @@ class RenderFrameHostChangedCallback : public WebContentsObserver {
   base::OnceCallback<void(RenderFrameHost*, RenderFrameHost*)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostChangedCallback);
+};
+
+class FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
+ public:
+  explicit FirstVisuallyNonEmptyPaintObserver(WebContents* contents)
+      : WebContentsObserver(contents) {}
+  void DidFirstVisuallyNonEmptyPaint() override {
+    if (observed_)
+      return;
+    observed_ = true;
+    run_loop_.Quit();
+  }
+
+  bool did_fire() const { return observed_; }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  bool observed_ = false;
+  base::RunLoop run_loop_{base::RunLoop::Type::kNestableTasksAllowed};
+};
+
+void WaitForFirstVisuallyNonEmptyPaint(WebContents* contents) {
+  if (contents->CompletedFirstVisuallyNonEmptyPaint())
+    return;
+  FirstVisuallyNonEmptyPaintObserver observer(contents);
+  observer.Wait();
+}
+
+class ThemeColorObserver : public WebContentsObserver {
+ public:
+  explicit ThemeColorObserver(WebContents* contents)
+      : WebContentsObserver(contents) {}
+  void DidChangeThemeColor(base::Optional<SkColor> color) override {
+    observed_ = true;
+    color_ = color;
+  }
+
+  const base::Optional<SkColor>& color() const { return color_; }
+
+  bool did_fire() const { return observed_; }
+
+ private:
+  bool observed_ = false;
+  base::Optional<SkColor> color_;
 };
 
 }  // namespace
@@ -3413,6 +3461,89 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeWithNoStoreCached) {
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
+}
+
+// Do a same document navigation in a document restored from back forward cache
+// and make sure we do not fire the DidFirstVisuallyNonEmptyPaint again
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTest,
+    DoesNotFireDidFirstVisuallyNonEmptyPaintWhenRestoredFromCacheAndSameDocumentNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a_1(embedded_test_server()->GetURL(
+      "a.com", "/accessibility/html/a-name.html"));
+  const GURL url_a_2(embedded_test_server()->GetURL(
+      "a.com", "/accessibility/html/a-name.html#id"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a_1));
+  WaitForFirstVisuallyNonEmptyPaint(shell()->web_contents());
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(web_contents()->CompletedFirstVisuallyNonEmptyPaint());
+
+  FirstVisuallyNonEmptyPaintObserver observer(web_contents());
+  EXPECT_TRUE(NavigateToURL(shell(), url_a_2));
+  // Make sure the bfcache restore code does not fire the event during commit
+  // navigation.
+  EXPECT_FALSE(observer.did_fire());
+}
+
+// Make sure we fire DidFirstVisuallyNonEmptyPaint when restoring from bf-cache.
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTest,
+    FiresDidFirstVisuallyNonEmptyPaintWhenRestoredFromCache) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  WaitForFirstVisuallyNonEmptyPaint(shell()->web_contents());
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  WaitForFirstVisuallyNonEmptyPaint(shell()->web_contents());
+
+  // 3) Navigate to back to A.
+  FirstVisuallyNonEmptyPaintObserver observer(web_contents());
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  // Make sure the bfcache restore code does fire the event during commit
+  // navigation.
+  EXPECT_TRUE(web_contents()->CompletedFirstVisuallyNonEmptyPaint());
+  EXPECT_TRUE(observer.did_fire());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       SetsThemeColorWhenRestoredFromCache) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(
+      embedded_test_server()->GetURL("a.com", "/theme_color.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  WaitForFirstVisuallyNonEmptyPaint(web_contents());
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_EQ(web_contents()->GetThemeColor(), 0xFFFF0000u);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  WaitForFirstVisuallyNonEmptyPaint(web_contents());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_EQ(web_contents()->GetThemeColor(), base::nullopt);
+
+  ThemeColorObserver observer(web_contents());
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_TRUE(observer.did_fire());
+  EXPECT_EQ(observer.color(), 0xFFFF0000u);
+  EXPECT_EQ(web_contents()->GetThemeColor(), 0xFFFF0000u);
 }
 
 }  // namespace content

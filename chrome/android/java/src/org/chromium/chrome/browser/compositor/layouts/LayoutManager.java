@@ -867,10 +867,19 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     /**
-     * @return The {@link EdgeSwipeHandler} responsible for processing swipe events for the toolbar.
-     *         By default this returns null.
+     * @return The {@link EdgeSwipeHandler} responsible for processing swipe events for the normal
+     *         toolbar. By default this returns null.
      */
     public EdgeSwipeHandler getToolbarSwipeHandler() {
+        return null;
+    }
+
+    /**
+     * Creates a {@link EdgeSwipeHandler} instance.
+     * @param supportSwipeDown Whether or not to the handler should support swipe down gesture.
+     * @return The {@link EdgeSwipeHandler} cerated.
+     */
+    public EdgeSwipeHandler createToolbarSwipeHandler(boolean supportSwipeDown) {
         return null;
     }
 

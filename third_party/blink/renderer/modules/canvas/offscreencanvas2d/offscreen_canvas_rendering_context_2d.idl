@@ -58,8 +58,8 @@
     void fill(Path2D path, optional CanvasFillRule winding);
     void stroke();
     void stroke(Path2D path);
-    void clip();
-    void clip(Path2D path);
+    void clip(optional CanvasFillRule winding);
+    void clip(Path2D path, optional CanvasFillRule winding);
     [HighEntropy, MeasureAs=OffscreenCanvasIsPointInPath] boolean isPointInPath(unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
     [HighEntropy, MeasureAs=OffscreenCanvasIsPointInPath] boolean isPointInPath(Path2D path, unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
     [HighEntropy, MeasureAs=OffscreenCanvasIsPointInStroke] boolean isPointInStroke(unrestricted double x, unrestricted double y);

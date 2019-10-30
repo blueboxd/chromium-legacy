@@ -415,6 +415,9 @@ class FlexLayoutAlgorithm {
       const StyleContentAlignmentData&,
       unsigned number_of_items);
 
+  void LayoutColumnReverse(LayoutUnit main_axis_content_size,
+                           LayoutUnit border_scrollbar_padding_before);
+
  private:
   EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;
 

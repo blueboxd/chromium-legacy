@@ -1337,15 +1337,19 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
   // need when laid out inside the columns. In order to eventually end up with
   // the desired column width, we need to convert them to values pertaining to
   // the multicol container.
-  const ComputedStyle* multicol_style = MultiColumnBlockFlow()->Style();
+  auto* flow = MultiColumnBlockFlow();
+  const ComputedStyle* multicol_style = flow->Style();
   LayoutUnit column_count(
       multicol_style->HasAutoColumnCount() ? 1 : multicol_style->ColumnCount());
   LayoutUnit gap_extra((column_count - 1) *
                        ColumnGap(*multicol_style, LayoutUnit()));
 
-  if (MultiColumnBlockFlow()->ShouldApplySizeContainment()) {
+  if (flow->HasOverrideIntrinsicContentLogicalWidth()) {
     min_preferred_logical_width_ = max_preferred_logical_width_ =
-        MultiColumnBlockFlow()->ContentLogicalWidthForSizeContainment();
+        flow->OverrideIntrinsicContentLogicalWidth();
+    ClearPreferredLogicalWidthsDirty();
+  } else if (flow->ShouldApplySizeContainment()) {
+    min_preferred_logical_width_ = max_preferred_logical_width_ = LayoutUnit();
     ClearPreferredLogicalWidthsDirty();
   } else {
     // Calculate and set new min_preferred_logical_width_ and

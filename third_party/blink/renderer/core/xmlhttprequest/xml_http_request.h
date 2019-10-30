@@ -176,12 +176,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   Document* GetDocument() const;
 
-  // Returns the SecurityOrigin of the isolated world if the XMLHttpRequest was
-  // created in an isolated world. Otherwise, returns the SecurityOrigin of the
-  // execution context.
-  const SecurityOrigin* GetSecurityOrigin() const;
-  SecurityOrigin* GetMutableSecurityOrigin();
-
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(uint64_t identifier,

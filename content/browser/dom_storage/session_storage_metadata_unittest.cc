@@ -19,7 +19,6 @@
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_database.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +44,12 @@ std::vector<uint8_t> SliceToVector(const leveldb::Slice& s) {
 void ErrorCallback(leveldb::Status* status_out, leveldb::Status status) {
   *status_out = status;
 }
+
+// The leveldb::Env used by the Indexed DB backend.
+class LevelDBEnv : public leveldb_env::ChromiumEnv {
+ public:
+  LevelDBEnv() : ChromiumEnv("LevelDBEnv.SessionStorageMetadataTest") {}
+};
 
 class SessionStorageMetadataTest : public testing::Test {
  public:
@@ -425,8 +430,7 @@ class SessionStorageMetadataMigrationTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_path_.CreateUniqueTempDir());
-    in_memory_env_ =
-        leveldb_chrome::NewMemEnv("SessionStorage", LevelDBEnv::Get());
+    in_memory_env_ = leveldb_chrome::NewMemEnv("SessionStorage", &leveldb_env_);
     leveldb_env::Options options;
     options.create_if_missing = true;
     options.env = in_memory_env_.get();
@@ -444,6 +448,7 @@ class SessionStorageMetadataMigrationTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_path_;
+  LevelDBEnv leveldb_env_;
   std::string test_namespace1_id_;
   std::string test_namespace2_id_;
   url::Origin test_origin1_;

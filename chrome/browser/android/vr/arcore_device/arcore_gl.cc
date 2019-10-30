@@ -678,7 +678,7 @@ void ArCoreGl::SubscribeToHitTest(
     }
   }
 
-  base::Optional<uint32_t> maybe_subscription_id = arcore_->SubscribeToHitTest(
+  base::Optional<uint64_t> maybe_subscription_id = arcore_->SubscribeToHitTest(
       std::move(native_origin_information), std::move(ray));
 
   if (maybe_subscription_id) {
@@ -692,7 +692,7 @@ void ArCoreGl::SubscribeToHitTest(
   }
 }
 
-void ArCoreGl::UnsubscribeFromHitTest(uint32_t subscription_id) {
+void ArCoreGl::UnsubscribeFromHitTest(uint64_t subscription_id) {
   DVLOG(2) << __func__;
 
   arcore_->UnsubscribeFromHitTest(subscription_id);
@@ -702,7 +702,7 @@ void ArCoreGl::CreateAnchor(mojom::VRPosePtr anchor_pose,
                             CreateAnchorCallback callback) {
   DVLOG(2) << __func__;
 
-  base::Optional<uint32_t> maybe_anchor_id = arcore_->CreateAnchor(anchor_pose);
+  base::Optional<uint64_t> maybe_anchor_id = arcore_->CreateAnchor(anchor_pose);
 
   if (maybe_anchor_id) {
     std::move(callback).Run(device::mojom::CreateAnchorResult::SUCCESS,
@@ -713,11 +713,11 @@ void ArCoreGl::CreateAnchor(mojom::VRPosePtr anchor_pose,
 }
 
 void ArCoreGl::CreatePlaneAnchor(mojom::VRPosePtr anchor_pose,
-                                 uint32_t plane_id,
+                                 uint64_t plane_id,
                                  CreatePlaneAnchorCallback callback) {
   DVLOG(2) << __func__;
 
-  base::Optional<uint32_t> maybe_anchor_id =
+  base::Optional<uint64_t> maybe_anchor_id =
       arcore_->CreateAnchor(anchor_pose, plane_id);
 
   if (maybe_anchor_id) {
@@ -728,7 +728,7 @@ void ArCoreGl::CreatePlaneAnchor(mojom::VRPosePtr anchor_pose,
   }
 }
 
-void ArCoreGl::DetachAnchor(uint32_t anchor_id) {
+void ArCoreGl::DetachAnchor(uint64_t anchor_id) {
   DVLOG(2) << __func__;
 
   arcore_->DetachAnchor(anchor_id);

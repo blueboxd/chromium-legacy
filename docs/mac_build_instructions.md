@@ -140,15 +140,6 @@ in your args.gn to disable debug symbols altogether.  This makes both full
 rebuilds and linking faster (at the cost of not getting symbolized backtraces
 in gdb).
 
-#### Jumbo/Unity builds
-
-Jumbo builds merge many translation units ("source files") and compile them
-together. Since a large portion of Chromium's code is in shared header files,
-this dramatically reduces the total amount of work needed. Check out the
-[Jumbo / Unity builds](jumbo.md) for more information.
-
-Enable jumbo builds by setting the GN arg `use_jumbo_build=true`.
-
 #### CCache
 
 You might also want to [install ccache](ccache_mac.md) to speed up the build.

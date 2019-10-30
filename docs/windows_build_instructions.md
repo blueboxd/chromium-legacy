@@ -239,7 +239,6 @@ in the editor that appears when you create your output directory
 (`gn args out/Default`) or on the gn gen command line
 (`gn gen out/Default --args="is_component_build = true is_debug = true"`).
 Some helpful settings to consider using include:
-* `use_jumbo_build = true` - [Jumbo/unity](jumbo.md) builds.
 * `is_component_build = true` - this uses more, smaller DLLs, and incremental
 linking.
 * `enable_nacl = false` - this disables Native Client which is usually not
@@ -310,7 +309,7 @@ $ autoninja -C out\Default base
     Longest build steps:
 ...
            1.2 weighted s to build base.dll, base.dll.lib, base.dll.pdb (1.2 s CPU time)
-           8.5 weighted s to build obj/base/base/base_jumbo_38.obj (30.1 s CPU time)
+           8.5 weighted s to build obj/base/base/values.obj (30.1 s CPU time)
     Time by build-step type:
 ...
            1.2 s weighted time to generate 1 PEFile (linking) files (1.2 s CPU time)

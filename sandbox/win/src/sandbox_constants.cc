@@ -13,5 +13,6 @@ extern const char kJobLevel[] = "jobLevel";
 extern const char kLockdownLevel[] = "lockdownLevel";
 extern const char kLowboxSid[] = "lowboxSid";
 extern const char kPlatformMitigations[] = "platformMitigations";
+extern const char kPolicyRules[] = "policyRules";
 extern const char kProcessIds[] = "processIds";
 }  // namespace sandbox

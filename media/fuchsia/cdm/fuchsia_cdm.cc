@@ -124,8 +124,6 @@ class FuchsiaCdm::CdmSession {
     // JS. EME requires promises are resolved before session message.
     session_.events().OnLicenseMessageGenerated =
         fit::bind_member(this, &CdmSession::OnLicenseMessageGenerated);
-    session_.events().OnKeysChanged =
-        fit::bind_member(this, &CdmSession::OnKeysChanged);
     session_.events().OnKeyStatesChanged =
         fit::bind_member(this, &CdmSession::OnKeyStatesChanged);
 
@@ -183,35 +181,6 @@ class FuchsiaCdm::CdmSession {
     session_callbacks_->message_cb.Run(
         session_id_, ToCdmMessageType(message.type),
         std::vector<uint8_t>(session_msg.begin(), session_msg.end()));
-  }
-
-  // TODO(fxb/38522): Remove this after Fuchsia CDMs have transitioned to
-  // sending OnKeyStatesChanged
-  void OnKeysChanged(std::vector<fuchsia::media::drm::KeyInfo> key_info) {
-    std::string new_key_id;
-    bool has_additional_usable_key = false;
-    CdmKeysInfo keys_info;
-    for (const auto& info : key_info) {
-      CdmKeyInformation::KeyStatus status = ToCdmKeyStatus(info.status);
-      has_additional_usable_key |= (status == CdmKeyInformation::USABLE);
-      if (status == CdmKeyInformation::USABLE && new_key_id.empty()) {
-        // The |key_id| is passed to |on_new_key_| to workaround fxb/38253 in
-        // FuchsiaSecureStreamDecryptor. It needs just one valid |key_id|, so it
-        // doesn't matter if |key_info| contains more than one key.
-        // TODO(crbug.com/1012525): Remove the hack once fxb/38253 is resolved.
-        new_key_id.assign(
-            reinterpret_cast<const char*>(info.key_id.data.data()),
-            info.key_id.data.size());
-      }
-      keys_info.emplace_back(new CdmKeyInformation(
-          info.key_id.data.data(), info.key_id.data.size(), status, 0));
-    }
-
-    session_callbacks_->keys_change_cb.Run(
-        session_id_, has_additional_usable_key, std::move(keys_info));
-
-    if (has_additional_usable_key)
-      on_new_key_.Run(new_key_id);
   }
 
   void OnKeyStatesChanged(

@@ -1307,6 +1307,8 @@ if (closure_compile) {
     testonly = true
     data_deps = [
       "chrome/browser/resources:closure_compile",
+      "components/neterror/resources:closure_compile",
+      "components/security_interstitials/core/common/resources:closure_compile",
       "components/sync/driver/resources:closure_compile",
       "components/ukm/debug:closure_compile",
       "content/browser/resources:closure_compile",

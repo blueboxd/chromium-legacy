@@ -37,9 +37,8 @@
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/test_utils.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -300,9 +299,8 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager testing_profile_manager_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride json_parser_override_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   TestingPrefServiceSimple local_state_;
-  content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<SupervisedUserWhitelistInstaller> installer_;
   base::FilePath whitelist_base_directory_;
   base::FilePath whitelist_directory_;

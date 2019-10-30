@@ -18,14 +18,17 @@
 #include "chromeos/services/device_sync/cryptauth_client_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_activity_getter_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_manager_impl.h"
+#include "chromeos/services/device_sync/cryptauth_device_registry_impl.h"
 #include "chromeos/services/device_sync/cryptauth_enroller_factory_impl.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
 #include "chromeos/services/device_sync/cryptauth_scheduler_impl.h"
+#include "chromeos/services/device_sync/cryptauth_v2_device_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enrollment_manager_impl.h"
 #include "chromeos/services/device_sync/device_sync_type_converters.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/proto/device_classifier_util.h"
 #include "chromeos/services/device_sync/public/cpp/gcm_device_info_provider.h"
 #include "chromeos/services/device_sync/remote_device_provider_impl.h"
@@ -85,6 +88,13 @@ enum class DeviceSyncSetSoftwareFeature {
   kUnexpectedClientFeature = 5,
   kMaxValue = kUnexpectedClientFeature
 };
+
+bool ShouldUseV2DeviceSync() {
+  return base::FeatureList::IsEnabled(
+             chromeos::features::kCryptAuthV2Enrollment) &&
+         base::FeatureList::IsEnabled(
+             chromeos::features::kCryptAuthV2DeviceSync);
+}
 
 DeviceSyncRequestFailureReason GetDeviceSyncRequestFailureReason(
     mojom::NetworkRequestResult failure_reason) {
@@ -281,6 +291,10 @@ void DeviceSyncImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   } else {
     CryptAuthEnrollmentManagerImpl::RegisterPrefs(registry);
   }
+
+  if (ShouldUseV2DeviceSync()) {
+    CryptAuthDeviceRegistryImpl::RegisterPrefs(registry);
+  }
 }
 
 DeviceSyncImpl::DeviceSyncImpl(
@@ -355,6 +369,12 @@ void DeviceSyncImpl::ForceSyncNow(ForceSyncNowCallback callback) {
   }
 
   cryptauth_device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
+
+  if (ShouldUseV2DeviceSync()) {
+    cryptauth_v2_device_manager_->ForceDeviceSyncNow(
+        cryptauthv2::ClientMetadata::MANUAL, base::nullopt /* session_id */);
+  }
+
   std::move(callback).Run(true /* success */);
   RecordForceSyncNowResult(
       ForceCryptAuthOperationResult::kSuccess /* result */);
@@ -549,9 +569,11 @@ void DeviceSyncImpl::OnSyncDeviceListChanged() {
 void DeviceSyncImpl::Shutdown() {
   software_feature_manager_.reset();
   remote_device_provider_.reset();
+  cryptauth_v2_device_manager_.reset();
   cryptauth_device_manager_.reset();
   cryptauth_enrollment_manager_.reset();
   cryptauth_scheduler_.reset();
+  cryptauth_device_registry_.reset();
   cryptauth_key_registry_.reset();
   cryptauth_client_factory_.reset();
   cryptauth_gcm_manager_.reset();
@@ -619,12 +641,6 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
       identity_manager_, url_loader_factory_,
       device_classifier_util::GetDeviceClassifier());
 
-  // Initialize |crypauth_device_manager_| and start observing. Start() is not
-  // called yet since the device has not completed enrollment.
-  cryptauth_device_manager_ = CryptAuthDeviceManagerImpl::Factory::NewInstance(
-      clock_, cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
-      profile_prefs_);
-
   // Initialize |cryptauth_enrollment_manager_| and start observing, then call
   // Start() immediately to schedule enrollment.
   if (base::FeatureList::IsEnabled(
@@ -651,6 +667,25 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
             cryptauth_gcm_manager_.get(), profile_prefs_);
   }
 
+  // Initialize v1 and v2 CryptAuth device managers (depending on feature
+  // flags). Start() is not called yet since the device has not completed
+  // enrollment.
+  cryptauth_device_manager_ = CryptAuthDeviceManagerImpl::Factory::NewInstance(
+      clock_, cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
+      profile_prefs_);
+
+  if (ShouldUseV2DeviceSync()) {
+    cryptauth_device_registry_ =
+        CryptAuthDeviceRegistryImpl::Factory::Get()->BuildInstance(
+            profile_prefs_);
+
+    cryptauth_v2_device_manager_ =
+        CryptAuthV2DeviceManagerImpl::Factory::Get()->BuildInstance(
+            client_app_metadata_provider_, cryptauth_device_registry_.get(),
+            cryptauth_key_registry_.get(), cryptauth_client_factory_.get(),
+            cryptauth_gcm_manager_.get(), cryptauth_scheduler_.get());
+  }
+
   cryptauth_enrollment_manager_->AddObserver(this);
   cryptauth_enrollment_manager_->Start();
 }
@@ -662,6 +697,9 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
   // Now that enrollment has completed, the current device has been registered
   // with the CryptAuth back-end and can begin monitoring synced devices.
   cryptauth_device_manager_->Start();
+  if (ShouldUseV2DeviceSync()) {
+    cryptauth_v2_device_manager_->Start();
+  }
 
   remote_device_provider_ = RemoteDeviceProviderImpl::Factory::NewInstance(
       cryptauth_device_manager_.get(), primary_account_info_.account_id,
@@ -701,6 +739,12 @@ void DeviceSyncImpl::OnSetSoftwareFeatureStateSuccess() {
                   << "requesting force sync.";
   cryptauth_device_manager_->ForceSyncNow(
       cryptauth::INVOCATION_REASON_FEATURE_TOGGLED);
+
+  if (ShouldUseV2DeviceSync()) {
+    cryptauth_v2_device_manager_->ForceDeviceSyncNow(
+        cryptauthv2::ClientMetadata::FEATURE_TOGGLED,
+        base::nullopt /* session_id */);
+  }
 
   RecordSetSoftwareFeatureStateResult(true /* success */);
 }

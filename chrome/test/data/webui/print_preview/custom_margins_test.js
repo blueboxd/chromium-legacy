@@ -89,7 +89,7 @@ cr.define('custom_margins_test', function() {
       // Wait for the control elements to be created before updating the state.
       container.measurementSystem = measurementSystem;
       document.body.appendChild(container);
-      let controlsAdded = test_util.eventToPromise('dom-change', container);
+      const controlsAdded = test_util.eventToPromise('dom-change', container);
       return controlsAdded.then(() => {
         // 8.5 x 11, in pixels
         const controls = getControls();
@@ -275,7 +275,7 @@ cr.define('custom_margins_test', function() {
               assertEquals('0', window.getComputedStyle(control).opacity);
             });
 
-            let onTransitionEnd = getAllTransitions(controls);
+            const onTransitionEnd = getAllTransitions(controls);
             // Controls become visible when margin type CUSTOM is selected.
             model.set(
                 'settings.margins.value', print_preview.MarginsType.CUSTOM);
@@ -309,7 +309,7 @@ cr.define('custom_margins_test', function() {
               assertEquals(defaultMarginPts, control.getPositionInPts());
             });
 
-            let onTransitionEnd = getAllTransitions(controls);
+            const onTransitionEnd = getAllTransitions(controls);
 
             // Disappears when preview is loading or an error message is shown.
             // Check that all the controls also disappear.

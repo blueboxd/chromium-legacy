@@ -23,6 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/tab_count_metrics/tab_count_metrics.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -212,8 +213,8 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
       TabHoverCardBubbleView* hover_card_delegate)
       : AnimationDelegateViews(hover_card_delegate),
         bubble_delegate_(hover_card_delegate),
-        slide_animation_(std::make_unique<gfx::SlideAnimation>(this)) {
-    slide_animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(75));
+        slide_animation_(std::make_unique<gfx::LinearAnimation>(this)) {
+    slide_animation_->SetDuration(base::TimeDelta::FromMilliseconds(75));
   }
   ~WidgetSlideAnimationDelegate() override {}
 
@@ -222,8 +223,8 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
     desired_anchor_view_ = desired_anchor_view;
     starting_bubble_bounds_ = current_bubble_bounds_;
     target_bubble_bounds_ = CalculateTargetBounds(desired_anchor_view);
-    slide_animation_->Reset(0);
-    slide_animation_->Show();
+    slide_animation_->SetCurrentValue(0);
+    slide_animation_->Start();
   }
 
   void StopAnimation() { AnimationCanceled(slide_animation_.get()); }
@@ -272,7 +273,7 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
   }
 
   TabHoverCardBubbleView* const bubble_delegate_;
-  std::unique_ptr<gfx::SlideAnimation> slide_animation_;
+  std::unique_ptr<gfx::LinearAnimation> slide_animation_;
   views::View* desired_anchor_view_ = nullptr;
   gfx::Rect starting_bubble_bounds_;
   gfx::Rect target_bubble_bounds_;

@@ -74,9 +74,10 @@ void P2PSocketDispatcherHost::BindRequest(
   receiver_.reset();
   auto trusted_socket_manager_client = receiver_.BindNewPipeAndPassRemote();
 
+  trusted_socket_manager_.reset();
   rph->GetStoragePartition()->GetNetworkContext()->CreateP2PSocketManager(
       std::move(trusted_socket_manager_client),
-      mojo::MakeRequest(&trusted_socket_manager_), std::move(request));
+      trusted_socket_manager_.BindNewPipeAndPassReceiver(), std::move(request));
   if (dump_incoming_rtp_packet_ || dump_outgoing_rtp_packet_) {
     trusted_socket_manager_->StartRtpDump(dump_incoming_rtp_packet_,
                                           dump_outgoing_rtp_packet_);

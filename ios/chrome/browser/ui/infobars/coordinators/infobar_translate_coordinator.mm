@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/translate/translate_infobar_delegate_observer_bridge.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_delegate.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_translate_table_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -19,7 +21,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TranslateInfobarCoordinator () <TranslateInfobarDelegateObserving> {
+@interface TranslateInfobarCoordinator () <TranslateInfobarDelegateObserving,
+                                           InfobarTranslateModalDelegate> {
   // Observer to listen for changes to the TranslateStep.
   std::unique_ptr<TranslateInfobarDelegateObserverBridge>
       _translateInfobarDelegateObserver;
@@ -32,6 +35,10 @@
 // InfobarBannerViewController owned by this Coordinator.
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
 
+// ModalViewController owned by this Coordinator.
+@property(nonatomic, strong)
+    InfobarTranslateTableViewController* modalViewController;
+
 // The current state of translate.
 @property(nonatomic, assign) translate::TranslateStep currentStep;
 
@@ -43,6 +50,8 @@
 @implementation TranslateInfobarCoordinator
 // Synthesize since readonly property from superclass is changed to readwrite.
 @synthesize bannerViewController = _bannerViewController;
+// Synthesize since readonly property from superclass is changed to readwrite.
+@synthesize modalViewController = _modalViewController;
 
 - (instancetype)initWithInfoBarDelegate:
     (translate::TranslateInfoBarDelegate*)infoBarDelegate {
@@ -122,6 +131,7 @@
 - (void)infobarWasDismissed {
   // Release these strong ViewControllers at the time of infobar dismissal.
   self.bannerViewController = nil;
+  self.modalViewController = nil;
 }
 
 #pragma mark - Banner
@@ -141,8 +151,22 @@
 #pragma mark - Modal
 
 - (BOOL)configureModalViewController {
-  // TODO(crbug.com/1014959): implement
-  return NO;
+  // Return early if there's no delegate. e.g. A Modal presentation has been
+  // triggered after the Infobar was destroyed, but before the badge/banner
+  // were dismissed.
+  if (!self.translateInfoBarDelegate)
+    return NO;
+
+  self.modalViewController =
+      [[InfobarTranslateTableViewController alloc] initWithDelegate:self];
+  self.modalViewController.title = @"Translate Page";
+  self.modalViewController.sourceLanguage = base::SysUTF16ToNSString(
+      self.translateInfoBarDelegate->original_language_name());
+  self.modalViewController.targetLanguage = base::SysUTF16ToNSString(
+      self.translateInfoBarDelegate->target_language_name());
+  self.modalViewController.shouldAlwaysTranslateSourceLanguage =
+      self.translateInfoBarDelegate->ShouldAlwaysTranslate();
+  return YES;
 }
 
 - (void)infobarModalPresentedFromBanner:(BOOL)presentedFromBanner {
@@ -150,8 +174,32 @@
 }
 
 - (CGFloat)infobarModalHeightForWidth:(CGFloat)width {
-  // TODO(crbug.com/1014959): implement
-  return 0.0;
+  UITableView* tableView = self.modalViewController.tableView;
+  // Update the tableView frame to then layout its content for |width|.
+  tableView.frame = CGRectMake(0, 0, width, tableView.frame.size.height);
+  [tableView setNeedsLayout];
+  [tableView layoutIfNeeded];
+
+  // Since the TableView is contained in a NavigationController get the
+  // navigation bar height.
+  CGFloat navigationBarHeight = self.modalViewController.navigationController
+                                    .navigationBar.frame.size.height;
+
+  return tableView.contentSize.height + navigationBarHeight;
+}
+
+#pragma mark - InfobarTranslateModalDelegate
+
+- (void)alwaysTranslateSourceLanguage {
+  // TODO(crbug.com/1014959):
+}
+
+- (void)neverTranslateSourceLanguage {
+  // TODO(crbug.com/1014959):
+}
+
+- (void)neverTranslateSite {
+  // TODO(crbug.com/1014959):
 }
 
 #pragma mark - Private

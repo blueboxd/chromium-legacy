@@ -64,7 +64,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
 
   MediaNotificationView(MediaNotificationContainer* container,
                         base::WeakPtr<MediaNotificationItem> item,
-                        views::View* header_row_controls_view,
+                        std::unique_ptr<views::View> header_row_controls_view,
                         const base::string16& default_app_name,
                         int notification_width,
                         bool should_show_icon);
@@ -124,7 +124,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
 
   // Optional View that is put into the header row. E.g. in Ash we show
   // notification control buttons.
-  views::View* header_row_controls_view_;
+  views::View* header_row_controls_view_ = nullptr;
 
   // String to set as the app name of the header when there is no source title.
   base::string16 default_app_name_;

@@ -107,6 +107,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
 
         float searchContextOpacity = searchBarControl.getSearchBarContextOpacity();
         float searchTermOpacity = searchBarControl.getSearchBarTermOpacity();
+        int searchTermBoundsAdjust = searchBarControl.getSearchBarTermBoundsAdjust();
 
         float searchCaptionAnimationPercentage = searchBarControl.getCaptionAnimationPercentage();
         boolean searchCaptionVisible = searchBarControl.getCaptionVisible();
@@ -171,7 +172,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 searchPanelY * mDpToPx, searchPanelWidth * mDpToPx, searchPanelHeight * mDpToPx,
                 searchBarMarginSide * mDpToPx, searchBarMarginTop * mDpToPx,
                 searchBarHeight * mDpToPx, searchContextOpacity,
-                searchBarControl.getTextLayerMinHeight(), searchTermOpacity,
+                searchBarControl.getTextLayerMinHeight(), searchTermOpacity, searchTermBoundsAdjust,
                 searchBarControl.getSearchTermCaptionSpacing(), searchCaptionAnimationPercentage,
                 searchCaptionVisible, searchBarBorderVisible, searchBarBorderHeight * mDpToPx,
                 searchBarShadowVisible, quickActionIconVisible, thumbnailVisible, thumbnailUrl,
@@ -246,7 +247,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 float searchBarBannerTextOpacity, float searchPanelX, float searchPanelY,
                 float searchPanelWidth, float searchPanelHeight, float searchBarMarginSide,
                 float searchBarMarginTop, float searchBarHeight, float searchContextOpacity,
-                float searchTextLayerMinHeight, float searchTermOpacity,
+                float searchTextLayerMinHeight, float searchTermOpacity, int searchTermBoundsAdjust,
                 float searchTermCaptionSpacing, float searchCaptionAnimationPercentage,
                 boolean searchCaptionVisible, boolean searchBarBorderVisible,
                 float searchBarBorderHeight, boolean searchBarShadowVisible,

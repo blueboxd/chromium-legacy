@@ -2974,6 +2974,10 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
     active_tree_->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
 
+    // The previous scrolling node no longer exists in the new tree.
+    if (!active_tree_->CurrentlyScrollingNode())
+      ClearCurrentlyScrollingNode();
+
     // Now that we've synced everything from the pending tree to the active
     // tree, rename the pending tree the recycle tree so we can reuse it on the
     // next sync.
@@ -5234,12 +5238,12 @@ bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
 }
 
 bool LayerTreeHostImpl::AnimateBrowserControls(base::TimeTicks time) {
-  if (!browser_controls_offset_manager_->has_animation())
+  if (!browser_controls_offset_manager_->HasAnimation())
     return false;
 
   gfx::Vector2dF scroll_delta = browser_controls_offset_manager_->Animate(time);
 
-  if (browser_controls_offset_manager_->has_animation())
+  if (browser_controls_offset_manager_->HasAnimation())
     SetNeedsOneBeginImplFrame();
 
   if (active_tree_->TotalScrollOffset().y() == 0.f)

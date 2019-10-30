@@ -14,8 +14,8 @@ extern const char kJobLevel[];
 extern const char kLockdownLevel[];
 extern const char kLowboxSid[];
 extern const char kPlatformMitigations[];
+extern const char kPolicyRules[];
 extern const char kProcessIds[];
-
 }  // namespace sandbox
 
 #endif  // SANDBOX_WIN_SRC_SANDBOX_CONSTANTS_H_

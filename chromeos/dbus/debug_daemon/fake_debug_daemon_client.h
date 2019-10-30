@@ -36,6 +36,9 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
                     VoidDBusMethodCallback callback) override;
   std::string GetTracingAgentName() override;
   std::string GetTraceEventLabel() override;
+  void SetSwapParameter(const std::string& parameter,
+                        int32_t value,
+                        DBusMethodCallback<std::string> callback) override;
   void StartAgentTracing(const base::trace_event::TraceConfig& trace_config,
                          StartAgentTracingCallback callback) override;
   void StopAgentTracing(StopAgentTracingCallback callback) override;

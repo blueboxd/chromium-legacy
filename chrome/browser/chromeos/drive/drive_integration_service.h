@@ -42,7 +42,6 @@ class DriveFs;
 
 namespace drive {
 
-class DebugInfoCollector;
 class DriveServiceInterface;
 class EventLogger;
 class FileSystemInterface;
@@ -168,9 +167,6 @@ class DriveIntegrationService : public KeyedService,
 
   EventLogger* event_logger() { return logger_.get(); }
   DriveServiceInterface* drive_service() { return drive_service_.get(); }
-  DebugInfoCollector* debug_info_collector() {
-    return debug_info_collector_.get();
-  }
   FileSystemInterface* file_system() { return file_system_.get(); }
   JobListInterface* job_list() { return scheduler_.get(); }
 
@@ -279,7 +275,6 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<internal::ResourceMetadata, util::DestroyHelper>
       resource_metadata_;
   std::unique_ptr<FileSystemInterface> file_system_;
-  std::unique_ptr<DebugInfoCollector> debug_info_collector_;
 
   base::ObserverList<DriveIntegrationServiceObserver>::Unchecked observers_;
 

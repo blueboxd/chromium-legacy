@@ -11,14 +11,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/enterprise_reporting/browser_report_generator.h"
 #include "chrome/browser/enterprise_reporting/profile_report_generator.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
-
-namespace content {
-struct WebPluginInfo;
-}
 
 namespace enterprise_reporting {
 
@@ -52,23 +49,15 @@ class ReportGenerator {
   // on other platforms.
   virtual std::string GetSerialNumber();
 
-  // Returns a browser report contains browser related information includes
-  // browser version, channel and executable path.
-  virtual std::unique_ptr<em::BrowserReport> GetBrowserReport();
-
-  // Returns the list of Profiles that is owned by current Browser instance. It
-  // only contains Profile's path and name.
-  std::vector<std::unique_ptr<em::ChromeUserProfileInfo>> GetProfiles();
-
  private:
   void GenerateProfileReportWithIndex(int profile_index);
 
-  void OnPluginsReady(const std::vector<content::WebPluginInfo>& plugins);
-  void OnBasicRequestReady();
+  void OnBrowserReportReady(std::unique_ptr<em::BrowserReport> browser_report);
 
   void Response();
 
   ProfileReportGenerator profile_report_generator_;
+  BrowserReportGenerator browser_report_generator_;
 
   ReportCallback callback_;
 

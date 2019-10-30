@@ -36,6 +36,7 @@ class CSSDirectionAwareResolver {
   static PhysicalGroup<4> BorderStyleGroup();
   static PhysicalGroup<4> BorderWidthGroup();
   static PhysicalGroup<4> InsetGroup();
+  static PhysicalGroup<2> IntrinsicSizeGroup();
   static PhysicalGroup<4> MarginGroup();
   static PhysicalGroup<2> MaxSizeGroup();
   static PhysicalGroup<2> MinSizeGroup();

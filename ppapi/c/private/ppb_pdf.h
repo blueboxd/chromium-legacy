@@ -67,11 +67,32 @@ struct PP_PrivateAccessibilityPageInfo {
   uint32_t image_count;
 };
 
+// This holds the text style information provided by the PDF and will be used
+// in accessibility to provide the text style information. Needs to stay in
+// sync with C++ version. (PrivateAccessibilityTextStyleInfo and
+// PdfAccessibilityTextStyleInfo)
+struct PP_PrivateAccessibilityTextStyleInfo {
+  const char* font_name;
+  uint32_t font_name_length;
+  int font_weight;
+  int render_mode;
+  double font_size;
+  // Colors are ARGB.
+  uint32_t fill_color;
+  uint32_t stroke_color;
+  bool is_italic;
+  bool is_bold;
+};
+
+// This holds the text run information provided by the PDF and will be used in
+// accessibility to provide the text run information.
+// Needs to stay in sync with C++ version. (PrivateAccessibilityTextRunInfo and
+// PdfAccessibilityTextRunInfo)
 struct PP_PrivateAccessibilityTextRunInfo {
   uint32_t len;
-  double font_size;
   struct PP_FloatRect bounds;
   PP_PrivateDirection direction;
+  struct PP_PrivateAccessibilityTextStyleInfo style;
 };
 
 struct PP_PrivateAccessibilityCharInfo {

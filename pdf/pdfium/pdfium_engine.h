@@ -114,7 +114,7 @@ class PDFiumEngine : public PDFEngine,
   int GetCharCount(int page_index) override;
   pp::FloatRect GetCharBounds(int page_index, int char_index) override;
   uint32_t GetCharUnicode(int page_index, int char_index) override;
-  base::Optional<PP_PrivateAccessibilityTextRunInfo> GetTextRunInfo(
+  base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo> GetTextRunInfo(
       int page_index,
       int start_char_index) override;
   uint32_t GetLinkCount(int page_index) override;

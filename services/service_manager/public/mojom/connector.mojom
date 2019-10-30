@@ -179,7 +179,7 @@ interface Connector {
   // Binds another Connector pipe to this same implementation. This effectively
   // allows the client to "clone" its Connector arbitrarily many times, for
   // example to mint Connector endpoints for different threads to use.
-  Clone(Connector& request);
+  Clone(pending_receiver<Connector> receiver);
 
   // Filter interface requests received from |source| according to the policy
   // specified in this service's manifest in an InterfaceProviderSpec named

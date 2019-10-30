@@ -10,10 +10,10 @@
 
 namespace blink {
 
-XRHitTestSource::XRHitTestSource(uint32_t id, XRHitTestOptions* options)
+XRHitTestSource::XRHitTestSource(uint64_t id, XRHitTestOptions* options)
     : id_(id), options_(options) {}
 
-uint32_t XRHitTestSource::id() const {
+uint64_t XRHitTestSource::id() const {
   return id_;
 }
 

@@ -135,11 +135,16 @@ serial_test(async (t, fake) => {
 
   fakePort.write(new TextEncoder().encode("Hello world!"));
 
-  const reader = port.readable.pipeThrough(new TextDecoderStream()).getReader();
-  let { value, done } = await reader.read();
+  const decoder = new TextDecoderStream();
+  const streamClosed = port.readable.pipeTo(decoder.writable);
+  const reader = decoder.readable.getReader();
+  const { value, done } = await reader.read();
   assert_false(done);
   assert_equals("Hello world!", value);
   await reader.cancel();
+  await streamClosed.catch(reason => {
+    assert_equals(undefined, reason);
+  });
 
   await port.close();
 }, 'Can pipe readable through a transform stream.')
@@ -152,11 +157,36 @@ serial_test(async (t, fake) => {
   const reader = port.readable.getReader();
   const readPromise = reader.read();
   await reader.cancel();
-  let { value, done } = await readPromise;
+  const { value, done } = await readPromise;
   assert_true(done);
   assert_equals(undefined, value);
 
   await port.close();
 }, 'Can cancel while reading');
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+  // Select a buffer size larger than the amount of data transferred.
+  await port.open({ baudrate: 9600, buffersize: 64 });
+
+  fakePort.write(new TextEncoder().encode("Hello world!"));
+
+  const decoder = new TextDecoderStream();
+  const streamClosed = port.readable.pipeTo(decoder.writable);
+  const readable = decoder.readable.pipeThrough(new TransformStream())
+                                   .pipeThrough(new TransformStream())
+                                   .pipeThrough(new TransformStream())
+                                   .pipeThrough(new TransformStream());
+  const reader = readable.getReader();
+  const { value, done } = await reader.read();
+  assert_false(done);
+  assert_equals("Hello world!", value);
+  await reader.cancel("arbitrary reason");
+  await streamClosed.catch(reason => {
+    assert_equals("arbitrary reason", reason);
+  });
+
+  await port.close();
+}, 'Stream closure is observable through a long chain of transforms');
 
 </script>

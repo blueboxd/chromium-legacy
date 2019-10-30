@@ -186,6 +186,9 @@ declare_args() {
   # (which takes precedence), or by setting |alternate_cdm_storage_id_key|.
   # The key must be a string of at least 32 characters.
   alternate_cdm_storage_id_key = ""
+
+  # This feature is still under development. See crbug.com/641132.
+  enable_cdm_proxy = false
 }
 
 # This feature can only be enabled when using Mojo media. Furthermore, the
@@ -197,6 +200,9 @@ assert(
 
 assert(!enable_cdm_host_verification || is_mac || is_win,
        "CDM host verification is only supported on Mac and Windows.")
+
+assert(enable_library_cdms || !enable_cdm_proxy,
+       "CDM Proxy should only be enabled when library CDM is enabled.")
 
 _default_mojo_media_services = []
 _default_mojo_media_host = "none"

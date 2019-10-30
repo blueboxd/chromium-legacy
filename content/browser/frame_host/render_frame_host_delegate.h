@@ -453,11 +453,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual RenderFrameHostImpl* GetMainFrameForInnerDelegate(
       FrameTreeNode* frame_tree_node);
 
-  // Notifies that the given frame has changed theme color.
-  virtual void OnThemeColorChanged(RenderFrameHostImpl* source,
-                                   const base::Optional<SkColor>& theme_color) {
-  }
-
   // Determine if the frame is of a low priority.
   virtual bool IsFrameLowPriority(const RenderFrameHost* render_frame_host);
 

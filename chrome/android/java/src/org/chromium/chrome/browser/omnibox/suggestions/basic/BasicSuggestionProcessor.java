@@ -215,12 +215,10 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
             mLargeIconBridge.getLargeIconForUrl(suggestion.getUrl(), mDesiredFaviconWidthPx,
                     (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
                             int iconType) -> {
-                        if (!mSuggestionHost.isActiveModel(model)) return;
                         if (icon != null) {
                             model.set(SuggestionViewProperties.SUGGESTION_ICON_BITMAP, icon);
                             model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE,
                                     SuggestionIcon.FAVICON);
-                            mSuggestionHost.notifyPropertyModelsChanged();
                         }
                     });
         }

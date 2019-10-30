@@ -67,16 +67,10 @@ void ArcLauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
   if (command_id == ash::UNINSTALL) {
-    if (base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
-      apps::AppServiceProxy* proxy =
-          apps::AppServiceProxyFactory::GetForProfile(controller()->profile());
-      DCHECK(proxy);
-      proxy->Uninstall(item().id.app_id, nullptr /* parent_window */);
-      return;
-    }
-
-    arc::ShowArcAppUninstallDialog(controller()->profile(),
-                                   nullptr /* controller */, item().id.app_id);
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(controller()->profile());
+    DCHECK(proxy);
+    proxy->Uninstall(item().id.app_id, nullptr /* parent_window */);
     return;
   }
 

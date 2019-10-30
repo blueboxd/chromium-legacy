@@ -23,13 +23,21 @@ SafeJsonParserAndroid::SafeJsonParserAndroid(const std::string& unsafe_json,
 SafeJsonParserAndroid::~SafeJsonParserAndroid() {}
 
 void SafeJsonParserAndroid::Start() {
+  using StringCallback = base::OnceCallback<void(const std::string&)>;
   JsonSanitizer::Sanitize(
-      /*connector=*/nullptr,  // connector is unused on Android.
       unsafe_json_,
-      base::BindOnce(&SafeJsonParserAndroid::OnSanitizationSuccess,
-                     base::Unretained(this)),
-      base::BindOnce(&SafeJsonParserAndroid::OnSanitizationError,
-                     base::Unretained(this)));
+      base::BindOnce(
+          [](StringCallback success_callback, StringCallback error_callback,
+             JsonSanitizer::Result result) {
+            if (result.value)
+              std::move(success_callback).Run(*result.value);
+            else
+              std::move(error_callback).Run(*result.error);
+          },
+          base::BindOnce(&SafeJsonParserAndroid::OnSanitizationSuccess,
+                         base::Unretained(this)),
+          base::BindOnce(&SafeJsonParserAndroid::OnSanitizationError,
+                         base::Unretained(this))));
 }
 
 void SafeJsonParserAndroid::OnSanitizationSuccess(

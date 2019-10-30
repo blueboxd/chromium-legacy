@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_TEST_UTILS_H_
 
 #include <memory>
+#include <ostream>
 #include <vector>
 
 #include "extensions/browser/api/declarative_net_request/request_action.h"
@@ -42,7 +43,10 @@ RequestAction CreateRequestActionForTesting(
         api::declarative_net_request::SOURCE_TYPE_MANIFEST,
     const ExtensionId& extension_id = "extensionid");
 
+// Test helpers for help with gtest expectations and assertions.
 bool operator==(const RequestAction& lhs, const RequestAction& rhs);
+std::ostream& operator<<(std::ostream& output, RequestAction::Type type);
+std::ostream& operator<<(std::ostream& output, const RequestAction& action);
 
 // Returns true if the given extension has a valid indexed ruleset. Should be
 // called on a sequence where file IO is allowed.

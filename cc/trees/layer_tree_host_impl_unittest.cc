@@ -1147,6 +1147,34 @@ TEST_F(LayerTreeHostImplTest, ReplaceTreeWhileScrolling) {
                                  scroll_delta));
 }
 
+TEST_F(LayerTreeHostImplTest, ActivateTreeScrollingNodeDisappeared) {
+  SetupViewportLayersOuterScrolls(gfx::Size(100, 100), gfx::Size(1000, 1000));
+
+  auto status = host_impl_->ScrollBegin(BeginState(gfx::Point(30, 30)).get(),
+                                        InputHandler::WHEEL);
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+  EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+            status.main_thread_scrolling_reasons);
+  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
+  EXPECT_TRUE(host_impl_->active_tree()->CurrentlyScrollingNode());
+  EXPECT_TRUE(host_impl_->did_lock_scrolling_layer_for_testing());
+  EXPECT_TRUE(host_impl_->IsActivelyScrolling());
+
+  // Create the pending tree containing only the root layer.
+  CreatePendingTree();
+  PropertyTrees pending_property_trees;
+  pending_property_trees.sequence_number =
+      host_impl_->active_tree()->property_trees()->sequence_number + 1;
+  host_impl_->pending_tree()->SetPropertyTrees(&pending_property_trees);
+  SetupRootLayer<LayerImpl>(host_impl_->pending_tree(), gfx::Size(100, 100));
+  host_impl_->ActivateSyncTree();
+
+  // The scroll should stop.
+  EXPECT_FALSE(host_impl_->active_tree()->CurrentlyScrollingNode());
+  EXPECT_FALSE(host_impl_->did_lock_scrolling_layer_for_testing());
+  EXPECT_FALSE(host_impl_->IsActivelyScrolling());
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
   SetupViewportLayersInnerScrolls(gfx::Size(50, 50), gfx::Size(100, 100));
   auto* scroll = InnerViewportScrollLayer();
@@ -9948,7 +9976,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 
   // End the scroll while the controls are still offset from their limit.
   host_impl_->ScrollEnd(EndState().get());
-  ASSERT_TRUE(host_impl_->browser_controls_manager()->has_animation());
+  ASSERT_TRUE(host_impl_->browser_controls_manager()->HasAnimation());
   EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_commit_);
@@ -9983,12 +10011,12 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
       EXPECT_TRUE(did_request_redraw_);
 
     if (new_offset != 0) {
-      EXPECT_TRUE(host_impl_->browser_controls_manager()->has_animation());
+      EXPECT_TRUE(host_impl_->browser_controls_manager()->HasAnimation());
       EXPECT_TRUE(did_request_next_frame_);
     }
     host_impl_->DidFinishImplFrame();
   }
-  EXPECT_FALSE(host_impl_->browser_controls_manager()->has_animation());
+  EXPECT_FALSE(host_impl_->browser_controls_manager()->HasAnimation());
 }
 
 TEST_F(LayerTreeHostImplWithBrowserControlsTest,
@@ -10034,7 +10062,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 
   // End the scroll while the controls are still offset from the limit.
   host_impl_->ScrollEnd(EndState().get());
-  ASSERT_TRUE(host_impl_->browser_controls_manager()->has_animation());
+  ASSERT_TRUE(host_impl_->browser_controls_manager()->HasAnimation());
   EXPECT_TRUE(did_request_next_frame_);
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_commit_);
@@ -10064,7 +10092,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
     }
     host_impl_->DidFinishImplFrame();
   }
-  EXPECT_FALSE(host_impl_->browser_controls_manager()->has_animation());
+  EXPECT_FALSE(host_impl_->browser_controls_manager()->HasAnimation());
   EXPECT_EQ(-top_controls_height_,
             host_impl_->browser_controls_manager()->ControlsTopOffset());
 }

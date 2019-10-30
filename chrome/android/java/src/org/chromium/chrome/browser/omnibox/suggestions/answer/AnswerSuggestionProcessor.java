@@ -130,17 +130,13 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
                     List<PropertyModel> currentModels = mPendingAnswerRequestUrls.remove(url);
                     if (currentModels == null || bitmap == null) return;
 
-                    boolean didUpdate = false;
                     for (int i = 0; i < currentModels.size(); i++) {
                         PropertyModel currentModel = currentModels.get(i);
-                        if (!mSuggestionHost.isActiveModel(currentModel)) continue;
                         setSuggestionDrawableState(currentModel,
                                 SuggestionDrawableState.Builder.forBitmap(bitmap)
                                         .setLarge(true)
                                         .build());
-                        didUpdate = true;
                     }
-                    if (didUpdate) mSuggestionHost.notifyPropertyModelsChanged();
                 });
     }
 

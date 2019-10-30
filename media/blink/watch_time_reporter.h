@@ -20,6 +20,7 @@
 #include "media/blink/watch_time_component.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/mojom/watch_time_recorder.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
@@ -206,7 +207,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   const bool is_muted_;
   const GetMediaTimeCB get_media_time_cb_;
   const GetPipelineStatsCB get_pipeline_stats_cb_;
-  mojom::WatchTimeRecorderPtr recorder_;
+  mojo::Remote<mojom::WatchTimeRecorder> recorder_;
 
   // The amount of time between each UpdateWatchTime(); this is the frequency by
   // which the watch times are updated. In the event of a process crash or kill

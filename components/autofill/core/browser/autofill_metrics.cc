@@ -930,6 +930,32 @@ void AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(bool is_local) {
 }
 
 // static
+void AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
+    const base::TimeDelta& duration,
+    AutofillClient::PaymentsRpcResult result) {
+  std::string suffix;
+  switch (result) {
+    case AutofillClient::SUCCESS:
+      suffix = "Success";
+      break;
+    case AutofillClient::TRY_AGAIN_FAILURE:
+    case AutofillClient::PERMANENT_FAILURE:
+      suffix = "Failure";
+      break;
+    case AutofillClient::NETWORK_ERROR:
+      suffix = "NetworkError";
+      break;
+    case AutofillClient::NONE:
+      NOTREACHED();
+      return;
+  }
+  base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskDuration.Fido",
+                              duration);
+  base::UmaHistogramLongTimes(
+      "Autofill.BetterAuth.CardUnmaskDuration.Fido." + suffix, duration);
+}
+
+// static
 void AutofillMetrics::LogCardUnmaskPreflightCalled() {
   UMA_HISTOGRAM_BOOLEAN("Autofill.BetterAuth.CardUnmaskPreflightCalled", true);
 }

@@ -944,4 +944,27 @@ EOverflow FlexLayoutAlgorithm::MainAxisOverflowForChild(
   return child.StyleRef().OverflowY();
 }
 
+// Above, we calculated the positions of items in a column reverse container as
+// if they were in a column. Now that we know the block size of the container we
+// can flip the position of every item.
+void FlexLayoutAlgorithm::LayoutColumnReverse(
+    LayoutUnit main_axis_content_size,
+    LayoutUnit border_scrollbar_padding_before) {
+  DCHECK(IsColumnFlow());
+  DCHECK(Style()->ResolvedIsColumnReverseFlexDirection());
+  for (FlexLine& line_context : FlexLines()) {
+    for (wtf_size_t child_number = 0;
+         child_number < line_context.line_items.size(); ++child_number) {
+      FlexItem& flex_item = line_context.line_items[child_number];
+      LayoutUnit item_main_size = flex_item.FlexedBorderBoxSize();
+      // We passed 0 as the initial main_axis offset to ComputeLineItemsPosition
+      // for ColumnReverse containers so here we have to add the
+      // border_scrollbar_padding of the container.
+      flex_item.desired_location.SetX(
+          main_axis_content_size + border_scrollbar_padding_before -
+          flex_item.desired_location.X() - item_main_size);
+    }
+  }
+}
+
 }  // namespace blink

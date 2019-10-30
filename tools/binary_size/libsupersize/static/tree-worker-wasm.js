@@ -150,8 +150,9 @@ async function buildTree(
   console.log('Passing ' + sizeBuffer.byteLength + ' bytes to WebAssembly');
   let LoadSizeFile = Module.cwrap('LoadSizeFile', 'bool', ['number', 'number']);
   let start_time = Date.now();
-  console.log(LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength));
-  console.log('Loaded size file in ' + (Date.now() - start_time)/1000.0 + ' seconds');
+  LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength);
+  console.log('Loaded size file in ' +
+    (Date.now() - start_time)/1000.0 + ' seconds');
   Module._free(heapBuffer.byteOffset);
 
   /**
@@ -180,6 +181,12 @@ async function buildTree(
     }
     return message;
   }
+
+  let BuildTree = Module.cwrap('BuildTree', 'void', []);
+  start_time = Date.now();
+  BuildTree();
+  console.log('Constructed tree in ' +
+    (Date.now() - start_time)/1000.0 + ' seconds');
 
   return {
     root: Open(''),

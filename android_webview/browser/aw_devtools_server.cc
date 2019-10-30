@@ -21,8 +21,10 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/net_errors.h"
+#include "net/socket/tcp_server_socket.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 
 using base::android::JavaParamRef;
@@ -74,6 +76,55 @@ class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
   DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocketFactory);
 };
 
+class TCPServerSocketFactory : public content::DevToolsSocketFactory {
+ public:
+  TCPServerSocketFactory(const std::string& address, uint16_t port)
+      : address_(address), port_(port) {}
+
+ private:
+  // content::DevToolsSocketFactory.
+  std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
+    std::unique_ptr<net::ServerSocket> socket(
+        new net::TCPServerSocket(nullptr, net::NetLogSource()));
+    if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) != net::OK)
+      return nullptr;
+
+    net::IPEndPoint endpoint;
+    return socket;
+  }
+
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* out_name) override {
+    return nullptr;
+  }
+
+  std::string address_;
+  uint16_t port_;
+
+  DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
+};
+
+std::unique_ptr<content::DevToolsSocketFactory> CreateSocketFactory() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
+    uint16_t port = 0;
+    int temp_port;
+    std::string port_str =
+        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
+    if (base::StringToInt(port_str, &temp_port) && temp_port >= 1024 &&
+        temp_port < 65535) {
+      port = static_cast<uint16_t>(temp_port);
+    } else {
+      DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
+    }
+    return std::make_unique<TCPServerSocketFactory>("127.0.0.1", port);
+  }
+
+  return std::make_unique<UnixDomainServerSocketFactory>(
+      base::StringPrintf(kSocketNameFormat, getpid()));
+}
+
 }  // namespace
 
 namespace android_webview {
@@ -89,12 +140,8 @@ void AwDevToolsServer::Start() {
     return;
   is_started_ = true;
 
-  std::unique_ptr<content::DevToolsSocketFactory> factory(
-      new UnixDomainServerSocketFactory(
-          base::StringPrintf(kSocketNameFormat, getpid())));
   DevToolsAgentHost::StartRemoteDebuggingServer(
-      std::move(factory),
-      base::FilePath(), base::FilePath());
+      CreateSocketFactory(), base::FilePath(), base::FilePath());
 }
 
 void AwDevToolsServer::Stop() {

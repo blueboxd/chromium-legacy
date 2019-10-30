@@ -152,8 +152,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // Called by the window show animation when it completes and wants to destroy
   // itself.
   void OnShowAnimationComplete();
-  // Sort child NSViews according to their ranking in |rank|.
-  void SortSubviews(std::map<NSView*, int> rank);
 
   BridgedContentView* ns_view() { return bridged_view_; }
   NativeWidgetNSWindowHost* host() { return host_; }
@@ -237,6 +235,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   void SetWindowTitle(const base::string16& title) override;
   void SetIgnoresMouseEvents(bool ignores_mouse_events) override;
   void MakeFirstResponder() override;
+  void SortSubviews(
+      const std::vector<uint64_t>& associated_subview_ids) override;
   void ClearTouchBar() override;
   void UpdateTooltip() override;
   void AcquireCapture() override;

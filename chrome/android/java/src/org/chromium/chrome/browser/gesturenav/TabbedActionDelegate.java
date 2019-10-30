@@ -40,6 +40,11 @@ public class TabbedActionDelegate implements NavigationHandler.ActionDelegate {
     }
 
     @Override
+    public boolean willBackCloseTab() {
+        return !mTab.canGoBack() && mTab.getActivity().backShouldCloseTab(mTab);
+    }
+
+    @Override
     public boolean willBackExitApp() {
         return !mTab.canGoBack()
                 && (!mTab.getActivity().backShouldCloseTab(mTab)

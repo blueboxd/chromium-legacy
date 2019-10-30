@@ -41,7 +41,8 @@ class XRNativeOriginInformation {
   XRNativeOriginInformation(const XRNativeOriginInformation& other) = delete;
   void operator=(const XRNativeOriginInformation& other) = delete;
 
-  XRNativeOriginInformation(Type type, uint32_t id);
+  XRNativeOriginInformation(Type type, uint32_t input_source_id);
+  XRNativeOriginInformation(Type type, uint64_t anchor_or_plane_id);
   XRNativeOriginInformation(
       Type type,
       device::mojom::XRReferenceSpaceCategory reference_space_type);
@@ -49,7 +50,8 @@ class XRNativeOriginInformation {
   const Type type_;
 
   const union {
-    uint32_t id_;
+    uint32_t input_source_id_;
+    uint64_t anchor_or_plane_id_;
     device::mojom::XRReferenceSpaceCategory reference_space_category_;
   };
 };

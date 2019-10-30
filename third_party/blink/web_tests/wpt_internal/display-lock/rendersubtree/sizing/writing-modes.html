@@ -24,7 +24,7 @@
 }
 .box {
   background: lightblue;
-  content-size: 12px 34px;
+  intrinsic-size: 12px 34px;
   border-color: blue;
   border-style: solid;
   border-width: 1px 2px 3px 4px;
@@ -34,6 +34,9 @@
   border: 1px solid black;
   width: max-content;
   margin: 5px;
+}
+div:not([rendersubtree~="invisible"]) {
+  intrinsic-size: legacy !important;
 }
 </style>
 

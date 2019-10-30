@@ -53,14 +53,14 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
   self = [super initWithStyle:UITableViewCellStyleDefault
               reuseIdentifier:@"OmniboxPopupRow"];
   if (self) {
+    _incognito = incognito;
+
     self.isAccessibilityElement = YES;
     self.backgroundColor = UIColor.clearColor;
     self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
     self.selectedBackgroundView.backgroundColor = color::DarkModeDynamicColor(
         [UIColor colorNamed:kTableViewRowHighlightColor], _incognito,
         [UIColor colorNamed:kTableViewRowHighlightDarkColor]);
-
-    _incognito = incognito;
 
     _textTruncatingLabel =
         [[OmniboxPopupTruncatingLabel alloc] initWithFrame:CGRectZero];

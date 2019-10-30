@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.NativeMethods;
@@ -330,8 +331,8 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         int resId = mExternalNavHandler.canExternalAppHandleUrl(url)
                 ? R.string.blocked_navigation_warning
                 : R.string.unreachable_navigation_warning;
-        mTab.getWebContents().addMessageToDevToolsConsole(
-                ConsoleMessageLevel.WARNING, mTab.getApplicationContext().getString(resId, url));
+        mTab.getWebContents().addMessageToDevToolsConsole(ConsoleMessageLevel.WARNING,
+                ContextUtils.getApplicationContext().getString(resId, url));
     }
 
     @VisibleForTesting

@@ -294,7 +294,7 @@ function setInputElementValue_(value, input) {
       newProperty.set = function(e) {
         setterCalled = true;
         oldPropertyDescriptor.set.call(input, value);
-      }
+      };
     }
     Object.defineProperty(input, propertyName, newProperty);
   } else {
@@ -1266,8 +1266,9 @@ __gCrWeb.fill.inferLabelFromListItem = function(element) {
     parentNode = parentNode.parentNode;
   }
 
-  if (parentNode && __gCrWeb.fill.hasTagName(parentNode, 'li'))
+  if (parentNode && __gCrWeb.fill.hasTagName(parentNode, 'li')) {
     return __gCrWeb.fill.findChildText(parentNode);
+  }
 
   return '';
 };
@@ -1630,8 +1631,9 @@ __gCrWeb.fill.ancestorTagNames = function(element) {
   var tagNames = [];
   var parentNode = element.parentNode;
   while (parentNode) {
-    if (parentNode.nodeType === Node.ELEMENT_NODE)
+    if (parentNode.nodeType === Node.ELEMENT_NODE) {
       tagNames.push(parentNode.tagName);
+    }
     parentNode = parentNode.parentNode;
   }
   return tagNames;
@@ -1691,8 +1693,9 @@ __gCrWeb.fill.inferLabelForElement = function(element) {
       inferredLabel = __gCrWeb.fill.inferLabelFromDivTable(element);
     } else if (tagName === 'TD') {
       inferredLabel = __gCrWeb.fill.inferLabelFromTableColumn(element);
-      if (!__gCrWeb.fill.IsLabelValid(inferredLabel))
+      if (!__gCrWeb.fill.IsLabelValid(inferredLabel)) {
         inferredLabel = __gCrWeb.fill.inferLabelFromTableRow(element);
+      }
     } else if (tagName === 'DD') {
       inferredLabel = __gCrWeb.fill.inferLabelFromDefinitionList(element);
     } else if (tagName === 'LI') {
@@ -2003,7 +2006,7 @@ __gCrWeb.fill.autofillSubmissionData = function(form) {
   __gCrWeb['fill'].webFormElementToFormData(
       window, form, null, extractMask, formData, null);
   return __gCrWeb.stringify([formData]);
-}
+};
 
 /**
  * Returns the coalesced child text of the elements who's ids are found in
@@ -2036,13 +2039,21 @@ function coalesceTextByIdList(element, attribute) {
   }
 
   return ids.trim()
-            .split(/\s+/)
-            .map(function(i) { return document.getElementById(i); })
-            .filter(function(e) { return e !== null; })
-            .map(function (n) { return __gCrWeb.fill.findChildText(n); })
-            .filter(function (s) { return s.length > 0; })
-            .join(' ')
-            .trim();
+      .split(/\s+/)
+      .map(function(i) {
+        return document.getElementById(i);
+      })
+      .filter(function(e) {
+        return e !== null;
+      })
+      .map(function(n) {
+        return __gCrWeb.fill.findChildText(n);
+      })
+      .filter(function(s) {
+        return s.length > 0;
+      })
+      .join(' ')
+      .trim();
 }
 
 /**
@@ -2056,13 +2067,13 @@ __gCrWeb.fill.getAriaLabel = function(element) {
     label = element.getAttribute('aria-label') || '';
   }
   return label.trim();
-}
+};
 
 /**
  * Returns the coalesced text referenced by the aria-describedby attribute.
  */
 __gCrWeb.fill.getAriaDescription = function(element) {
   return coalesceTextByIdList(element, 'aria-describedby');
-}
+};
 
 }());  // End of anonymous object

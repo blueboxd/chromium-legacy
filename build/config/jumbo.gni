@@ -6,41 +6,17 @@ import("//build/config/nacl/config.gni")  # To see if jumbo should be turned off
 import("//build/toolchain/goma.gni")
 
 declare_args() {
-  # If true, use a jumbo build (files compiled together) to speed up
-  # compilation.
   use_jumbo_build = false
-
-  # A list of build targets to exclude from jumbo builds, for optimal
-  # round trip time when frequently changing a set of cpp files. The
-  # targets can be just the short name (in which case it matches any
-  # target with that name), a directory prefixed with the root
-  # specifier //, or a full build target label.
-  #
-  # Example:
-  # These would all exclude the "browser" target in a file
-  # content/browser/BUILD.gn, and potentially more.
-  #
-  # jumbo_build_excluded = [ "browser" ]
-  # jumbo_build_excluded = [ "//content/browser" ]
-  # jumbo_build_excluded = [ "//content/browser:browser" ]
   jumbo_build_excluded = []
-
-  # How many files to group on average. Smaller numbers give more
-  # parallellism, higher numbers give less total CPU usage. Higher
-  # numbers also give longer single-file recompilation times.
-  #
-  # Recommendations:
-  # Higher numbers than 100 does not reduce wall clock compile times
-  # even for 4 cores or less so no reason to go higher than 100.
-  # Going from 50 to 100 with a 4 core CPU saves about 3% CPU time and
-  # 3% wall clock time in a tree with blink, v8 and content
-  # jumbofied. At the same time it increases the compile time for the
-  # largest jumbo chunks by 10-20% and reduces the chance to use all
-  # available CPU cores. So set the default to 50 to balance between
-  # high and low-core build performance. -1 means do the default which
-  # varies depending on whether goma is enabled.
   jumbo_file_merge_limit = -1
 }
+
+# TODO(crbug.com/994387): Remove all uses of the jumbo_* templates from the
+# BUILD.gn files, and then remove this whole file.
+assert(!use_jumbo_build,
+       "The jumbo build is no longer supported. Please remove any uses of " +
+           "'use_jumbo_build', 'jumbo_build_excluded', or " +
+           "'jumbo_file_merge_limit' from your args.gn file and re-run GN.")
 
 # Normal builds benefit from lots of jumbification
 jumbo_file_merge_default = 50

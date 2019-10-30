@@ -24,13 +24,11 @@ SigninEmailConfirmationUI::SigninEmailConfirmationUI(content::WebUI* web_ui)
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUISigninEmailConfirmationHost);
   source->UseStringsJs();
+  source->EnableReplaceI18nInJS();
   source->SetDefaultResource(IDR_SIGNIN_EMAIL_CONFIRMATION_HTML);
-  source->AddResourcePath("signin_email_confirmation_app.html",
-                          IDR_SIGNIN_EMAIL_CONFIRMATION_APP_HTML);
   source->AddResourcePath("signin_email_confirmation_app.js",
                           IDR_SIGNIN_EMAIL_CONFIRMATION_APP_JS);
-  source->AddResourcePath("signin_shared_old_css.html",
-                          IDR_SIGNIN_SHARED_OLD_CSS_HTML);
+  source->AddResourcePath("signin_shared_css.js", IDR_SIGNIN_SHARED_CSS_JS);
 
   static constexpr LocalizedString kStrings[] = {
       {"signinEmailConfirmationTitle", IDS_SIGNIN_EMAIL_CONFIRMATION_TITLE},

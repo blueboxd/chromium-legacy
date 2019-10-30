@@ -134,7 +134,8 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
   MOCK_METHOD1(OnFrameIsHoldingWebLockChanged, void(const FrameNode*));
   MOCK_METHOD1(OnFrameIsHoldingIndexedDBLockChanged, void(const FrameNode*));
   MOCK_METHOD1(OnNonPersistentNotificationCreated, void(const FrameNode*));
-  MOCK_METHOD1(OnPriorityAndReasonChanged, void(const FrameNode*));
+  MOCK_METHOD2(OnPriorityAndReasonChanged,
+               void(const FrameNode*, const PriorityAndReason& previous_value));
 
   void SetCreatedFrameNode(const FrameNode* frame_node) {
     created_frame_node_ = frame_node;
@@ -276,7 +277,11 @@ TEST_F(FrameNodeImplTest, Priority) {
 
   // Changed the reason only.
   static const char kDummyReason[] = "this is a reason!";
-  EXPECT_CALL(obs, OnPriorityAndReasonChanged(frame_node.get()));
+  EXPECT_CALL(obs,
+              OnPriorityAndReasonChanged(
+                  frame_node.get(),
+                  PriorityAndReason(base::TaskPriority::LOWEST,
+                                    FrameNodeImpl::kDefaultPriorityReason)));
   frame_node->SetPriorityAndReason(
       PriorityAndReason(base::TaskPriority::LOWEST, kDummyReason));
   EXPECT_EQ(PriorityAndReason(base::TaskPriority::LOWEST, kDummyReason),
@@ -284,7 +289,10 @@ TEST_F(FrameNodeImplTest, Priority) {
   testing::Mock::VerifyAndClear(&obs);
 
   // Change the priority only.
-  EXPECT_CALL(obs, OnPriorityAndReasonChanged(frame_node.get()));
+  EXPECT_CALL(obs,
+              OnPriorityAndReasonChanged(
+                  frame_node.get(),
+                  PriorityAndReason(base::TaskPriority::LOWEST, kDummyReason)));
   frame_node->SetPriorityAndReason(
       PriorityAndReason(base::TaskPriority::HIGHEST, kDummyReason));
   EXPECT_EQ(PriorityAndReason(base::TaskPriority::HIGHEST, kDummyReason),
@@ -299,7 +307,10 @@ TEST_F(FrameNodeImplTest, Priority) {
   testing::Mock::VerifyAndClear(&obs);
 
   // Change both the priority and the reason.
-  EXPECT_CALL(obs, OnPriorityAndReasonChanged(frame_node.get()));
+  EXPECT_CALL(
+      obs, OnPriorityAndReasonChanged(
+               frame_node.get(),
+               PriorityAndReason(base::TaskPriority::HIGHEST, kDummyReason)));
   frame_node->SetPriorityAndReason(
       PriorityAndReason(base::TaskPriority::LOWEST, nullptr));
   EXPECT_EQ(PriorityAndReason(base::TaskPriority::LOWEST, nullptr),

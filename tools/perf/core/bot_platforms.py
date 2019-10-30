@@ -88,8 +88,8 @@ class PerfPlatform(object):
     return self._is_fyi
 
   @property
-  def buildbot_url(self):
-    return ('https://ci.chromium.org/p/chrome/builders/luci.chrome.ci/%s' %
+  def builder_url(self):
+    return ('https://ci.chromium.org/p/chrome/builders/ci/%s' %
              urllib.quote(self._name))
 
 OFFICIAL_BENCHMARK_NAMES = frozenset(

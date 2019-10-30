@@ -564,8 +564,8 @@ void ServiceInstance::RegisterServiceInstance(
   std::move(callback).Run(mojom::ConnectResult::SUCCEEDED);
 }
 
-void ServiceInstance::Clone(mojom::ConnectorRequest request) {
-  connector_receivers_.Add(this, std::move(request));
+void ServiceInstance::Clone(mojo::PendingReceiver<mojom::Connector> receiver) {
+  connector_receivers_.Add(this, std::move(receiver));
 }
 
 void ServiceInstance::FilterInterfaces(

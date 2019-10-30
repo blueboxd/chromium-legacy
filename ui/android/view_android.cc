@@ -423,8 +423,9 @@ void ViewAndroid::OnTopControlsChanged(float top_controls_offset,
   if (delegate.is_null())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ViewAndroidDelegate_onTopControlsChanged(
-      env, delegate, top_controls_offset, top_content_offset);
+  Java_ViewAndroidDelegate_onTopControlsChanged(env, delegate,
+                                                std::round(top_controls_offset),
+                                                std::round(top_content_offset));
 }
 
 void ViewAndroid::OnBottomControlsChanged(float bottom_controls_offset,
@@ -434,7 +435,8 @@ void ViewAndroid::OnBottomControlsChanged(float bottom_controls_offset,
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ViewAndroidDelegate_onBottomControlsChanged(
-      env, delegate, bottom_controls_offset, bottom_content_offset);
+      env, delegate, std::round(bottom_controls_offset),
+      std::round(bottom_content_offset));
 }
 
 int ViewAndroid::GetViewportInsetBottom() {

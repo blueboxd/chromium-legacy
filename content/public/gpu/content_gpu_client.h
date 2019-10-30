@@ -63,7 +63,7 @@ class CONTENT_EXPORT ContentGpuClient {
   virtual gpu::SharedImageManager* GetSharedImageManager();
   virtual viz::VizCompositorThreadRunner* GetVizCompositorThreadRunner();
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_CDM_PROXY)
   // Creates a media::CdmProxy for the type of Content Decryption Module (CDM)
   // identified by |cdm_guid|.
   virtual std::unique_ptr<media::CdmProxy> CreateCdmProxy(

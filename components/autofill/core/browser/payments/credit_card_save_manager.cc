@@ -528,12 +528,10 @@ void CreditCardSaveManager::OnUserDidDecideOnLocalSave(
       // removed.
       GetCreditCardSaveStrikeDatabase()->ClearStrikes(
           base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits()));
-      if (base::FeatureList::IsEnabled(
-              features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
-        GetLocalCardMigrationStrikeDatabase()->RemoveStrikes(
-            LocalCardMigrationStrikeDatabase::
-                kStrikesToRemoveWhenLocalCardAdded);
-      }
+      // Clear some local card migration strikes, as there is now a new card
+      // eligible for migration.
+      GetLocalCardMigrationStrikeDatabase()->RemoveStrikes(
+          LocalCardMigrationStrikeDatabase::kStrikesToRemoveWhenLocalCardAdded);
 
       personal_data_manager_->OnAcceptedLocalCreditCardSave(
           local_card_save_candidate_);

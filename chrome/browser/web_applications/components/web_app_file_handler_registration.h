@@ -22,14 +22,13 @@ bool OsSupportsWebAppFileHandling();
 // This may also involve creating a shim app to launch Chrome from.
 void RegisterFileHandlersForWebApp(const AppId& app_id,
                                    const std::string& app_name,
-                                   const Profile& profile,
+                                   Profile* profile,
                                    const std::set<std::string>& file_extensions,
                                    const std::set<std::string>& mime_types);
 
 // Undo the file extensions registration for the PWA with specified |app_id|.
 // If a shim app was required, also removes the shim app.
-void UnregisterFileHandlersForWebApp(const AppId& app_id,
-                                     const Profile& profile);
+void UnregisterFileHandlersForWebApp(const AppId& app_id, Profile* profile);
 
 }  // namespace web_app
 

@@ -27,18 +27,18 @@ class XRPlane : public ScriptWrappable {
  public:
   enum Orientation { kHorizontal, kVertical };
 
-  XRPlane(uint32_t id,
+  XRPlane(uint64_t id,
           XRSession* session,
           const device::mojom::blink::XRPlaneDataPtr& plane_data,
           double timestamp);
-  XRPlane(uint32_t id,
+  XRPlane(uint64_t id,
           XRSession* session,
           const base::Optional<Orientation>& orientation,
           const TransformationMatrix& pose_matrix,
           const HeapVector<Member<DOMPointReadOnly>>& polygon,
           double timestamp);
 
-  uint32_t id() const;
+  uint64_t id() const;
 
   XRSpace* planeSpace() const;
 
@@ -62,7 +62,7 @@ class XRPlane : public ScriptWrappable {
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  const uint32_t id_;
+  const uint64_t id_;
   HeapVector<Member<DOMPointReadOnly>> polygon_;
   base::Optional<Orientation> orientation_;
 

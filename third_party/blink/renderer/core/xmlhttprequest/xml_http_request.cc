@@ -305,18 +305,6 @@ Document* XMLHttpRequest::GetDocument() const {
   return To<Document>(GetExecutionContext());
 }
 
-const SecurityOrigin* XMLHttpRequest::GetSecurityOrigin() const {
-  return isolated_world_security_origin_
-             ? isolated_world_security_origin_.get()
-             : GetExecutionContext()->GetSecurityOrigin();
-}
-
-SecurityOrigin* XMLHttpRequest::GetMutableSecurityOrigin() {
-  return isolated_world_security_origin_
-             ? isolated_world_security_origin_.get()
-             : GetExecutionContext()->GetMutableSecurityOrigin();
-}
-
 XMLHttpRequest::State XMLHttpRequest::readyState() const {
   return state_;
 }
@@ -1048,12 +1036,15 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   // We also remember whether upload events should be allowed for this request
   // in case the upload listeners are added after the request is started.
   upload_events_allowed_ =
-      GetSecurityOrigin()->CanRequest(url_) || upload_events ||
-      !cors::IsCorsSafelistedMethod(method_) ||
+      GetExecutionContext()->GetSecurityOrigin()->CanRequest(url_) ||
+      (isolated_world_security_origin_ &&
+       isolated_world_security_origin_->CanRequest(url_)) ||
+      upload_events || !cors::IsCorsSafelistedMethod(method_) ||
       !cors::ContainsOnlyCorsSafelistedHeaders(request_headers_);
 
   ResourceRequest request(url_);
-  request.SetRequestorOrigin(GetSecurityOrigin());
+  request.SetRequestorOrigin(GetExecutionContext()->GetSecurityOrigin());
+  request.SetIsolatedWorldOrigin(isolated_world_security_origin_);
   request.SetHttpMethod(method_);
   request.SetRequestContext(mojom::RequestContextType::XML_HTTP_REQUEST);
   request.SetMode(upload_events
@@ -1494,8 +1485,9 @@ String XMLHttpRequest::getAllResponseHeaders() const {
     // TODO: Consider removing canLoadLocalResources() call.
     // crbug.com/567527
     if (FetchUtils::IsForbiddenResponseHeaderName(it->key) &&
-        !GetSecurityOrigin()->CanLoadLocalResources())
+        !GetExecutionContext()->GetSecurityOrigin()->CanLoadLocalResources()) {
       continue;
+    }
 
     if (response_.GetType() == network::mojom::FetchResponseType::kCors &&
         !cors::IsCorsSafelistedResponseHeader(it->key) &&
@@ -1530,7 +1522,7 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
 
   // See comment in getAllResponseHeaders above.
   if (FetchUtils::IsForbiddenResponseHeaderName(name) &&
-      !GetSecurityOrigin()->CanLoadLocalResources()) {
+      !GetExecutionContext()->GetSecurityOrigin()->CanLoadLocalResources()) {
     LogConsoleError(GetExecutionContext(),
                     "Refused to get unsafe header \"" + name + "\"");
     return g_null_atom;

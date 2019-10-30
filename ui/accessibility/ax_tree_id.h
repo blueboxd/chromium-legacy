@@ -7,8 +7,9 @@
 
 #include <string>
 
+#include "base/no_destructor.h"
 #include "base/unguessable_token.h"
-#include "ui/accessibility/ax_enums.mojom-shared.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 
 namespace mojo {
@@ -61,16 +62,13 @@ class AX_EXPORT AXTreeID {
   friend struct mojo::UnionTraits<ax::mojom::AXTreeIDDataView, ui::AXTreeID>;
   friend class base::NoDestructor<AXTreeID>;
 
-  ax::mojom::AXTreeIDType type_ = ax::mojom::AXTreeIDType::kUnknown;
+  ax::mojom::AXTreeIDType type_;
   base::Optional<base::UnguessableToken> token_;
 };
 
 // For use in std::unordered_map.
 struct AXTreeIDHash {
-  size_t operator()(const ui::AXTreeID& tree_id) const {
-    DCHECK(tree_id.type() == ax::mojom::AXTreeIDType::kToken);
-    return base::UnguessableTokenHash()(tree_id.token().value());
-  }
+  size_t operator()(const ui::AXTreeID& tree_id) const;
 };
 
 AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXTreeID& value);

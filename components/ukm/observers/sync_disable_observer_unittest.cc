@@ -149,20 +149,15 @@ TEST_F(SyncDisableObserverTest, NotActive) {
 }
 
 TEST_F(SyncDisableObserverTest, OneEnabled) {
+  MockSyncService sync;
   sync_preferences::TestingPrefServiceSyncable prefs;
   RegisterUrlKeyedAnonymizedDataCollectionPref(prefs);
   SetUrlKeyedAnonymizedDataCollectionEnabled(&prefs, true);
-  MockSyncService sync;
-  for (bool has_passphrase : {true, false}) {
-    for (bool history_enabled : {true, false}) {
-      TestSyncDisableObserver observer;
-      sync.SetStatus(has_passphrase, history_enabled, /*active=*/true);
-      observer.ObserveServiceForSyncDisables(&sync, &prefs);
-      EXPECT_TRUE(observer.SyncStateAllowsUkm());
-      EXPECT_TRUE(observer.ResetNotified());
-      EXPECT_FALSE(observer.ResetPurged());
-    }
-  }
+  TestSyncDisableObserver observer;
+  observer.ObserveServiceForSyncDisables(&sync, &prefs);
+  EXPECT_TRUE(observer.SyncStateAllowsUkm());
+  EXPECT_TRUE(observer.ResetNotified());
+  EXPECT_FALSE(observer.ResetPurged());
 }
 
 TEST_F(SyncDisableObserverTest, MixedProfiles) {

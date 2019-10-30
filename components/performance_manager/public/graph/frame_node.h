@@ -59,6 +59,8 @@ class FrameNode : public Node {
 
   class ObserverDefaultImpl;
 
+  static const char* kDefaultPriorityReason;
+
   FrameNode();
   ~FrameNode() override;
 
@@ -157,6 +159,7 @@ class FrameNode : public Node {
 class FrameNodeObserver {
  public:
   using InterventionPolicy = mojom::InterventionPolicy;
+  using PriorityAndReason = frame_priority::PriorityAndReason;
 
   FrameNodeObserver();
   virtual ~FrameNodeObserver();
@@ -200,7 +203,9 @@ class FrameNodeObserver {
       const FrameNode* frame_node) = 0;
 
   // Invoked when the frame priority and reason changes.
-  virtual void OnPriorityAndReasonChanged(const FrameNode* frame_node) = 0;
+  virtual void OnPriorityAndReasonChanged(
+      const FrameNode* frame_node,
+      const PriorityAndReason& previous_value) = 0;
 
   // Events with no property changes.
 
@@ -237,7 +242,9 @@ class FrameNode::ObserverDefaultImpl : public FrameNodeObserver {
       const FrameNode* frame_node) override {}
   void OnNonPersistentNotificationCreated(
       const FrameNode* frame_node) override {}
-  void OnPriorityAndReasonChanged(const FrameNode* frame_node) override {}
+  void OnPriorityAndReasonChanged(
+      const FrameNode* frame_node,
+      const PriorityAndReason& previous_value) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);

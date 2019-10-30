@@ -769,6 +769,66 @@ void LayoutBox::UpdateAfterLayout() {
     cached_layout_result_.reset();
 }
 
+bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
+  const auto& style = StyleRef();
+  const IntrinsicLength& intrinsic_length = style.IntrinsicWidth();
+  if (intrinsic_length.IsLegacy())
+    return false;
+
+  if (intrinsic_length.IsAuto()) {
+    // If we have an overflow that is not 'visible' in this direction, then we
+    // override the intrinsic length to be 0. Otherwise, it's the same as
+    // legacy, meaning we don't override it.
+    // https://drafts.csswg.org/css-sizing-4/#valdef-intrinsic-block-size-auto
+    return style.OverflowX() != EOverflow::kVisible;
+  }
+  return true;
+}
+
+bool LayoutBox::HasOverrideIntrinsicContentHeight() const {
+  const auto& style = StyleRef();
+  const IntrinsicLength& intrinsic_length = style.IntrinsicHeight();
+  if (intrinsic_length.IsLegacy())
+    return false;
+
+  if (intrinsic_length.IsAuto()) {
+    // If we have an overflow that is not 'visible' in this direction, then we
+    // override the intrinsic length to be 0. Otherwise, it's the same as
+    // legacy, meaning we don't override it.
+    // https://drafts.csswg.org/css-sizing-4/#valdef-intrinsic-block-size-auto
+    return style.OverflowY() != EOverflow::kVisible;
+  }
+  return true;
+}
+
+LayoutUnit LayoutBox::OverrideIntrinsicContentWidth() const {
+  DCHECK(HasOverrideIntrinsicContentWidth());
+  const auto& style = StyleRef();
+  const IntrinsicLength& intrinsic_length = style.IntrinsicWidth();
+  DCHECK(!intrinsic_length.IsLegacy());
+  if (intrinsic_length.IsAuto()) {
+    DCHECK(style.OverflowX() != EOverflow::kVisible);
+    return LayoutUnit();
+  }
+  DCHECK(intrinsic_length.GetLength().IsFixed());
+  DCHECK_GE(intrinsic_length.GetLength().Value(), 0.f);
+  return LayoutUnit(intrinsic_length.GetLength().Value());
+}
+
+LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
+  DCHECK(HasOverrideIntrinsicContentHeight());
+  const auto& style = StyleRef();
+  const IntrinsicLength& intrinsic_length = style.IntrinsicHeight();
+  DCHECK(!intrinsic_length.IsLegacy());
+  if (intrinsic_length.IsAuto()) {
+    DCHECK(style.OverflowY() != EOverflow::kVisible);
+    return LayoutUnit();
+  }
+  DCHECK(intrinsic_length.GetLength().IsFixed());
+  DCHECK_GE(intrinsic_length.GetLength().Value(), 0.f);
+  return LayoutUnit(intrinsic_length.GetLength().Value());
+}
+
 LayoutUnit LayoutBox::LogicalHeightWithVisibleOverflow() const {
   if (!LayoutOverflowIsSet() || HasOverflowClip())
     return LogicalHeight();
@@ -2919,13 +2979,6 @@ static float GetMaxWidthListMarker(const LayoutBox* layout_object) {
 DISABLE_CFI_PERF
 void LayoutBox::ComputeLogicalWidth(
     LogicalExtentComputedValues& computed_values) const {
-  if (ShouldApplySizeContainment()) {
-    computed_values.extent_ = ContentLogicalWidthForSizeContainment() +
-                              BorderAndPaddingLogicalWidth() +
-                              ScrollbarLogicalWidth();
-  } else {
-    computed_values.extent_ = LogicalWidth();
-  }
   computed_values.position_ = LogicalLeft();
   computed_values.margins_.start_ = MarginStart();
   computed_values.margins_.end_ = MarginEnd();
@@ -3424,9 +3477,11 @@ void LayoutBox::ComputeLogicalHeight(
   // TODO(962979): Implement grid layout with display locking. We need to figure
   // out what happens here if IsLayoutGrid() is true and size containment is
   // specified while the box is locked.
-  if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
-    height = ContentLogicalHeightForSizeContainment() +
+  if (HasOverrideIntrinsicContentLogicalHeight()) {
+    height = OverrideIntrinsicContentLogicalHeight() +
              BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
+  } else if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
+    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
   } else {
     height = LogicalHeight();
   }
@@ -3564,8 +3619,8 @@ void LayoutBox::ComputeLogicalHeight(
 LayoutUnit LayoutBox::ComputeLogicalHeightWithoutLayout() const {
   LogicalExtentComputedValues computed_values;
 
-  if (!SelfNeedsLayout() && ShouldApplySizeContainment()) {
-    ComputeLogicalHeight(ContentLogicalHeightForSizeContainment() +
+  if (!SelfNeedsLayout() && HasOverrideIntrinsicContentLogicalHeight()) {
+    ComputeLogicalHeight(OverrideIntrinsicContentLogicalHeight() +
                              BorderAndPaddingLogicalHeight(),
                          LayoutUnit(), computed_values);
   } else {

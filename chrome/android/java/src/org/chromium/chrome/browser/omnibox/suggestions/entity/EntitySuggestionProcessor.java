@@ -137,10 +137,8 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
                         return;
                     }
 
-                    boolean didUpdate = false;
                     for (int i = 0; i < pendingModels.size(); i++) {
                         PropertyModel pendingModel = pendingModels.get(i);
-                        if (!mSuggestionHost.isActiveModel(pendingModel)) continue;
                         setSuggestionDrawableState(pendingModel,
                                 SuggestionDrawableState.Builder.forBitmap(bitmap)
                                         .setUseRoundedCorners(true)
@@ -148,9 +146,7 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
                                         .build());
                         pendingModel.set(EntitySuggestionViewProperties.DECORATION_TYPE,
                                 DECORATION_TYPE_IMAGE);
-                        didUpdate = true;
                     }
-                    if (didUpdate) mSuggestionHost.notifyPropertyModelsChanged();
                 });
     }
 

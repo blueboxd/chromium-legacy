@@ -155,6 +155,13 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
   // otherwise.
   void LoginAsArcKioskAccount(const AccountId& app_account_id) override;
 
+  // Initiates login into the web kiosk mode account identified by
+  // |app_account_id|.
+  // Mounts a public cryptohome, which will be ephemeral if the
+  // |DeviceEphemeralUsersEnabled| policy is enabled and non-ephemeral
+  // otherwise.
+  void LoginAsWebKioskAccount(const AccountId& app_account_id) override;
+
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
   void OnAuthSuccess() override;

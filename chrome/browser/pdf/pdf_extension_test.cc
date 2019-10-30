@@ -2617,3 +2617,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
                        LinksImagesAndText) {
   RunPDFTest(FILE_PATH_LITERAL("text-image-link.pdf"));
 }
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
+                       TextRunStyleHeuristic) {
+  RunPDFTest(FILE_PATH_LITERAL("text-run-style-heuristic.pdf"));
+}

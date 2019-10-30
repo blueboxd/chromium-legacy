@@ -655,7 +655,7 @@ void XRSession::OnSubscribeToHitTestResult(
     ScriptPromiseResolver* resolver,
     XRHitTestOptions* options,
     device::mojom::SubscribeToHitTestResult result,
-    uint32_t subscription_id) {
+    uint64_t subscription_id) {
   DVLOG(2) << __func__ << ": result=" << result
            << ", subscription_id=" << subscription_id;
 
@@ -679,7 +679,7 @@ void XRSession::OnSubscribeToHitTestResult(
 
 void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
                                      device::mojom::CreateAnchorResult result,
-                                     uint32_t id) {
+                                     uint64_t id) {
   DCHECK(create_anchor_promises_.Contains(resolver));
   create_anchor_promises_.erase(resolver);
 
@@ -755,7 +755,7 @@ void XRSession::ProcessAnchorsData(
 
   is_tracked_anchors_null_ = false;
 
-  HeapHashMap<uint32_t, Member<XRAnchor>> updated_anchors;
+  HeapHashMap<uint64_t, Member<XRAnchor>> updated_anchors;
 
   // First, process all planes that had their information updated (new planes
   // are also processed here).
@@ -789,7 +789,7 @@ void XRSession::ProcessAnchorsData(
 
 void XRSession::CleanUpUnusedHitTestSources() {
   // Gather all IDs of unused hit test sources.
-  HashSet<uint32_t> unused_hit_test_source_ids;
+  HashSet<uint64_t> unused_hit_test_source_ids;
   for (auto& subscription_id_and_hit_test_source :
        hit_test_source_ids_to_hit_test_sources_) {
     if (!subscription_id_and_hit_test_source.value) {

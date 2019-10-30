@@ -281,7 +281,7 @@ void DevToolsSession::DidCommitLoad(LocalFrame* frame, DocumentLoader*) {
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponse(call_id, message->serializeToBinary());
+  SendProtocolResponse(call_id, std::move(*message).TakeSerialized());
 }
 
 void DevToolsSession::fallThrough(int call_id,
@@ -319,7 +319,7 @@ void DevToolsSession::sendProtocolNotification(
     return;
   notification_queue_.push_back(WTF::Bind(
       [](std::unique_ptr<protocol::Serializable> notification) {
-        return notification->serializeToBinary();
+        return std::move(*notification).TakeSerialized();
       },
       std::move(notification)));
 }

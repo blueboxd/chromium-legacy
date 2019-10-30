@@ -9,4 +9,6 @@ WebArea
         text "link"
           InlineTextBox
     button "Hello Button"
+      text "Hello Button"
+        InlineTextBox
 

@@ -129,19 +129,24 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
       "rootWebArea\n"
       "  genericContainer\n"
       "    button 'Before'\n"
+      "      staticText 'Before'\n"
       "    iframe\n"
       "      rootWebArea\n"
       "        pre\n"
       "          staticText 'Alpha'\n"
       "    button 'Middle'\n"
+      "      staticText 'Middle'\n"
       "    iframe\n"
       "      rootWebArea\n"
       "        genericContainer\n"
       "          button 'Inside Before'\n"
+      "            staticText 'Inside Before'\n"
       "          iframe\n"
       "            rootWebArea\n"
       "          button 'Inside After'\n"
-      "    button 'After'\n",
+      "            staticText 'Inside After'\n"
+      "    button 'After'\n"
+      "      staticText 'After'\n",
       dump);
 }
 
@@ -187,19 +192,24 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
       "rootWebArea\n"
       "  genericContainer\n"
       "    button 'Before'\n"
+      "      staticText 'Before'\n"
       "    iframe\n"
       "      rootWebArea\n"
       "        pre\n"
       "          staticText 'Alpha'\n"
       "    button 'Middle'\n"
+      "      staticText 'Middle'\n"
       "    iframe\n"
       "      rootWebArea\n"
       "        genericContainer\n"
       "          button 'Inside Before'\n"
+      "            staticText 'Inside Before'\n"
       "          iframe\n"
       "            rootWebArea\n"
       "          button 'Inside After'\n"
-      "    button 'After'\n",
+      "            staticText 'Inside After'\n"
+      "    button 'After'\n"
+      "      staticText 'After'\n",
       dump);
 }
 

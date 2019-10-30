@@ -133,6 +133,7 @@ class LenientMockObserver : public ProcessNodeImpl::Observer {
   MOCK_METHOD1(OnBeforeProcessNodeRemoved, void(const ProcessNode*));
   MOCK_METHOD1(OnExpectedTaskQueueingDurationSample, void(const ProcessNode*));
   MOCK_METHOD1(OnMainThreadTaskLoadIsLow, void(const ProcessNode*));
+  MOCK_METHOD2(OnPriorityChanged, void(const ProcessNode*, base::TaskPriority));
   MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNode*));
 
   void SetNotifiedProcessNode(const ProcessNode* process_node) {
@@ -183,6 +184,14 @@ TEST_F(ProcessNodeImplTest, ObserverWorks) {
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
   process_node->SetMainThreadTaskLoadIsLow(true);
   EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  // This call does nothing as the priority is always at LOWEST.
+  EXPECT_EQ(base::TaskPriority::LOWEST, process_node->priority());
+  process_node->set_priority(base::TaskPriority::LOWEST);
+
+  // This call should fire a notification.
+  EXPECT_CALL(obs, OnPriorityChanged(_, base::TaskPriority::LOWEST));
+  process_node->set_priority(base::TaskPriority::HIGHEST);
 
   EXPECT_CALL(obs, OnAllFramesInProcessFrozen(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));

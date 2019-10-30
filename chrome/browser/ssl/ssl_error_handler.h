@@ -223,11 +223,6 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
 
   bool IsOnlyCertError(net::CertStatus only_cert_error_expected) const;
 
-  // Calculates a mask encoded using flags in SSLErrorUI::SSLErrorOptionsMask.
-  static int CalculateOptionsMask(int cert_error,
-                                  bool hard_override_disabled,
-                                  bool should_ssl_errors_be_fatal);
-
   std::unique_ptr<Delegate> delegate_;
   content::WebContents* const web_contents_;
   Profile* const profile_;

@@ -33,7 +33,7 @@ class PNGImageSource : public ImageSkiaSource {
     if (image_skia_reps_.empty())
       return ImageSkiaRep();
 
-    const ImageSkiaRep* rep = NULL;
+    const ImageSkiaRep* rep = nullptr;
     // gfx::ImageSkia passes one of the resource scale factors. The source
     // should return:
     // 1) The ImageSkiaRep with the highest scale if all available
@@ -114,7 +114,7 @@ scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
   if (image_skia_rep.scale() != 1.0f ||
       !PNGCodec::EncodeBGRASkBitmap(image_skia_rep.GetBitmap(), false,
                                     &png_bytes->data())) {
-    return NULL;
+    return nullptr;
   }
   return png_bytes;
 }

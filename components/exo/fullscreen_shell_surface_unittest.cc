@@ -13,6 +13,7 @@
 #include "components/exo/wm_helper.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/aura/env.h"

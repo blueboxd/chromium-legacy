@@ -362,25 +362,37 @@ void TrayDetailedView::SetupConnectedScrollListItem(
     base::Optional<uint8_t> battery_percentage) {
   DCHECK(view->is_populated());
 
+  base::string16 status;
+
   if (battery_percentage) {
-    view->SetSubText(l10n_util::GetStringFUTF16(
+    status = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_WITH_BATTERY_LABEL,
-        base::NumberToString16(battery_percentage.value())));
+        base::NumberToString16(battery_percentage.value()));
   } else {
-    view->SetSubText(l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
+    status =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
   }
+  view->SetSubText(status);
 
   TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
   style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
   style.SetupLabel(view->sub_text_label());
+
+  view->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_NETWORK_ACCESSIBILITY_LABEL,
+      view->text_label()->GetText(), status));
 }
 
 void TrayDetailedView::SetupConnectingScrollListItem(HoverHighlightView* view) {
   DCHECK(view->is_populated());
 
-  view->SetSubText(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
+  base::string16 status =
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING);
+
+  view->SetSubText(status);
+  view->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_NETWORK_ACCESSIBILITY_LABEL,
+      view->text_label()->GetText(), status));
 }
 
 TriView* TrayDetailedView::AddScrollListSubHeader(const gfx::VectorIcon& icon,

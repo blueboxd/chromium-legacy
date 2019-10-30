@@ -170,10 +170,10 @@
     },
     {
       "id": 31,
-      "cr_bugs": [154715, 10068, 269829, 294779, 285292],
-      "description": "The Mali-Txxx driver does not guarantee flush ordering",
+      "cr_bugs": [154715, 10068, 269829, 294779, 285292, 1018528],
+      "description": "The Mali-3xx/4xx/Txxx driver does not guarantee flush ordering",
       "gl_vendor": "ARM.*",
-      "gl_renderer": "Mali-T.*",
+      "gl_renderer": "Mali-[T34].*",
       "features": [
         "use_virtualized_gl_contexts"
       ]

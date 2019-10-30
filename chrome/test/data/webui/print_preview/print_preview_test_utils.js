@@ -257,7 +257,7 @@ cr.define('print_preview_test_utils', function() {
    * @return {!Array<!print_preview.Destination>}
    */
   function getDestinations(nativeLayer, localDestinations) {
-    let destinations = [];
+    const destinations = [];
     const origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
                                    print_preview.DestinationOrigin.LOCAL;
     // Five destinations. FooDevice is the system default.

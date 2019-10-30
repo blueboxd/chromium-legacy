@@ -27,6 +27,8 @@ class BASE_EXPORT StackCopierSignal : public StackCopier {
                  ProfileBuilder* profile_builder,
                  RegisterContext* thread_context) override;
 
+  using StackCopier::CopyStackContentsAndRewritePointers;
+
  private:
   std::unique_ptr<ThreadDelegate> thread_delegate_;
 };

@@ -7,6 +7,7 @@
 #include "base/atomic_ref_count.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -14,13 +15,12 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
-#include "content/public/test/browser_task_environment.h"
-#include "content/test/barrier_builder.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,6 +43,34 @@ std::string ToString(const std::vector<uint8_t>& input) {
 std::vector<uint8_t> ToBytes(base::StringPiece input) {
   return std::vector<uint8_t>(input.begin(), input.end());
 }
+
+class BarrierBuilder {
+ public:
+  class ContinuationRef : public base::RefCountedThreadSafe<ContinuationRef> {
+   public:
+    explicit ContinuationRef(base::OnceClosure continuation)
+        : continuation_(std::move(continuation)) {}
+
+   private:
+    friend class base::RefCountedThreadSafe<ContinuationRef>;
+    ~ContinuationRef() = default;
+
+    base::ScopedClosureRunner continuation_;
+  };
+
+  explicit BarrierBuilder(base::OnceClosure continuation)
+      : continuation_(
+            base::MakeRefCounted<ContinuationRef>(std::move(continuation))) {}
+
+  base::OnceClosure AddClosure() {
+    return base::BindOnce([](scoped_refptr<ContinuationRef>) {}, continuation_);
+  }
+
+ private:
+  const scoped_refptr<ContinuationRef> continuation_;
+
+  DISALLOW_COPY_AND_ASSIGN(BarrierBuilder);
+};
 
 class MockDelegate : public StorageAreaImpl::Delegate {
  public:
@@ -142,7 +170,7 @@ class StorageAreaImplTest : public testing::Test,
         observer_receiver_.BindNewEndpointAndPassRemote());
   }
 
-  ~StorageAreaImplTest() override = default;
+  ~StorageAreaImplTest() override { task_environment_.RunUntilIdle(); }
 
   void SetDatabaseEntry(const std::vector<uint8_t>& key,
                         const std::vector<uint8_t>& value) {
@@ -332,7 +360,7 @@ class StorageAreaImplTest : public testing::Test,
           {Observation::kSendOldValue, "", "", "", "", value});
   }
 
-  BrowserTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<storage::AsyncDomStorageDatabase> db_;
   MockDelegate delegate_;
   std::unique_ptr<StorageAreaImpl> storage_area_;

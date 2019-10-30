@@ -16,7 +16,6 @@
 #include "base/test/task_environment.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
@@ -141,7 +140,7 @@ class SessionStorageDataMapTest : public testing::Test {
   }
 
  protected:
-  BrowserTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   testing::StrictMock<MockListener> listener_;
   url::Origin test_origin_;
   std::unique_ptr<storage::AsyncDomStorageDatabase> database_;

@@ -354,13 +354,12 @@ __gCrWeb.suggestion['hasPreviousElement'] = function(formName, fieldName) {
  *     comma separated string of the strings |true| and |false|.
  *     TODO(crbug.com/893368): Return a dictionary with the values instead.
  */
-__gCrWeb.suggestion['hasPreviousNextElements'] =
-    function(formName, fieldName) {
-    return [
-      __gCrWeb.suggestion.hasPreviousElement(formName, fieldName),
-      __gCrWeb.suggestion.hasNextElement(formName, fieldName)
-    ].toString();
-}
+__gCrWeb.suggestion['hasPreviousNextElements'] = function(formName, fieldName) {
+  return [
+    __gCrWeb.suggestion.hasPreviousElement(formName, fieldName),
+    __gCrWeb.suggestion.hasNextElement(formName, fieldName)
+  ].toString();
+};
 
 /**
  * Blurs the |activeElement| of the current document.

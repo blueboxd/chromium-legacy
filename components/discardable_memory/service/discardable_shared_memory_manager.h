@@ -93,7 +93,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   void EnforceMemoryPolicy();
 
   // Returns bytes of allocated discardable memory.
-  size_t GetBytesAllocated();
+  size_t GetBytesAllocated() const override;
 
  private:
   class MemorySegment : public base::RefCountedThreadSafe<MemorySegment> {
@@ -146,7 +146,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
 
   int32_t next_client_id_;
 
-  base::Lock lock_;
+  mutable base::Lock lock_;
   using MemorySegmentMap =
       std::unordered_map<int32_t, scoped_refptr<MemorySegment>>;
   using ClientMap = std::unordered_map<int, MemorySegmentMap>;

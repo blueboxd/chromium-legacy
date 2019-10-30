@@ -46,7 +46,6 @@
 #include "chrome/browser/extensions/extension_error_controller.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/external_install_manager.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
@@ -663,9 +662,7 @@ bool ExtensionService::UninstallExtension(
       (reason == UNINSTALL_REASON_COMPONENT_REMOVED) ||
       (reason == UNINSTALL_REASON_REINSTALL) ||
       (reason == UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION) ||
-      (reason == UNINSTALL_REASON_ORPHANED_SHARED_MODULE) ||
-      (reason == UNINSTALL_REASON_SYNC &&
-       util::WasInstalledByCustodian(extension->id(), profile_));
+      (reason == UNINSTALL_REASON_ORPHANED_SHARED_MODULE);
   if (!external_uninstall &&
       (!by_policy->UserMayModifySettings(extension.get(), error) ||
        by_policy->MustRemainInstalled(extension.get(), error))) {

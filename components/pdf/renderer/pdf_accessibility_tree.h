@@ -37,7 +37,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   ~PdfAccessibilityTree() override;
 
   static bool IsDataFromPluginValid(
-      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
       const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
@@ -48,7 +48,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       const PP_PrivateAccessibilityDocInfo& doc_info);
   void SetAccessibilityPageInfo(
       const PP_PrivateAccessibilityPageInfo& page_info,
-      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
       const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
@@ -96,7 +96,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       ui::AXNodeData* page_node,
       const gfx::RectF& page_bounds,
       uint32_t page_index,
-      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
       const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
@@ -109,15 +109,15 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       ui::AXNodeData* para_node);
 
   void ComputeParagraphAndHeadingThresholds(
-      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       double* out_heading_font_size_threshold,
       double* out_paragraph_spacing_threshold);
   std::string GetTextRunCharsAsUTF8(
-      const PP_PrivateAccessibilityTextRunInfo& text_run,
+      const ppapi::PdfAccessibilityTextRunInfo& text_run,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       int char_index);
   std::vector<int32_t> GetTextRunCharOffsets(
-      const PP_PrivateAccessibilityTextRunInfo& text_run,
+      const ppapi::PdfAccessibilityTextRunInfo& text_run,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       int char_index);
   gfx::Vector2dF ToVector2dF(const PP_Point& p);
@@ -127,7 +127,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
                                       double heading_font_size_threshold);
   ui::AXNodeData* CreateStaticTextNode(uint32_t char_index);
   ui::AXNodeData* CreateInlineTextBoxNode(
-      const PP_PrivateAccessibilityTextRunInfo& text_run,
+      const ppapi::PdfAccessibilityTextRunInfo& text_run,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       uint32_t char_index,
       const gfx::RectF& page_bounds);
@@ -139,7 +139,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   void AddTextToLinkNode(
       uint32_t start_text_run_index,
       uint32_t end_text_run_index,
-      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       const gfx::RectF& page_bounds,
       uint32_t* char_index,

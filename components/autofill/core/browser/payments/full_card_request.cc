@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 
 namespace autofill {
 namespace payments {
@@ -152,12 +153,13 @@ void FullCardRequest::OnUnmaskPromptClosed() {
 void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {
   request_->risk_data = risk_data;
   if (!request_->user_response.cvc.empty() ||
-      !request_->fido_assertion_info.is_none())
+      !request_->fido_assertion_info.is_none()) {
     SendUnmaskCardRequest();
+  }
 }
 
 void FullCardRequest::SendUnmaskCardRequest() {
-  real_pan_request_timestamp_ = AutofillClock::Now();
+  real_pan_request_timestamp_ = AutofillTickClock::NowTicks();
   payments_client_->UnmaskCard(*request_,
                                base::BindOnce(&FullCardRequest::OnDidGetRealPan,
                                               weak_ptr_factory_.GetWeakPtr()));
@@ -166,8 +168,18 @@ void FullCardRequest::SendUnmaskCardRequest() {
 void FullCardRequest::OnDidGetRealPan(
     AutofillClient::PaymentsRpcResult result,
     payments::PaymentsClient::UnmaskResponseDetails& response_details) {
-  AutofillMetrics::LogRealPanDuration(
-      AutofillClock::Now() - real_pan_request_timestamp_, result);
+  // If the CVC field is populated, that means the user performed a CVC check.
+  // If FIDO AssertionInfo is populated, then the user must have performed FIDO
+  // authentication. Exactly one of these fields must be populated.
+  DCHECK_NE(request_->user_response.cvc.empty(),
+            request_->fido_assertion_info.is_none());
+  if (!request_->user_response.cvc.empty()) {
+    AutofillMetrics::LogRealPanDuration(
+        AutofillTickClock::NowTicks() - real_pan_request_timestamp_, result);
+  } else if (!request_->fido_assertion_info.is_none()) {
+    AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
+        AutofillTickClock::NowTicks() - real_pan_request_timestamp_, result);
+  }
 
   if (ui_delegate_)
     ui_delegate_->OnUnmaskVerificationResult(result);

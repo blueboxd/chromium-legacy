@@ -36,6 +36,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
+#include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/ssl_errors/error_info.h"
@@ -568,32 +569,6 @@ void SSLErrorHandlerDelegateImpl::OnBlockingPageReady(
   }
 }
 
-int IsCertErrorFatal(int cert_error) {
-  switch (cert_error) {
-    case net::ERR_CERT_COMMON_NAME_INVALID:
-    case net::ERR_CERT_DATE_INVALID:
-    case net::ERR_CERT_AUTHORITY_INVALID:
-    case net::ERR_CERT_NO_REVOCATION_MECHANISM:
-    case net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION:
-    case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
-    case net::ERR_CERT_WEAK_KEY:
-    case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
-    case net::ERR_CERT_VALIDITY_TOO_LONG:
-    case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
-    case net::ERR_CERT_SYMANTEC_LEGACY:
-      return false;
-    case net::ERR_CERT_CONTAINS_ERRORS:
-    case net::ERR_CERT_REVOKED:
-    case net::ERR_CERT_INVALID:
-    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
-    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
-      return true;
-    default:
-      NOTREACHED();
-      return true;
-  }
-}
-
 }  // namespace
 
 static base::LazyInstance<ConfigSingleton>::Leaky g_config =
@@ -624,8 +599,8 @@ void SSLErrorHandler::HandleSSLError(
 
   bool hard_override_disabled =
       !profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed);
-  int options_mask = CalculateOptionsMask(cert_error, hard_override_disabled,
-                                          ssl_info.is_fatal_cert_error);
+  int options_mask = security_interstitials::CalculateSSLErrorOptionsMask(
+      cert_error, hard_override_disabled, ssl_info.is_fatal_cert_error);
 
   SSLErrorHandler* error_handler = new SSLErrorHandler(
       std::unique_ptr<SSLErrorHandler::Delegate>(
@@ -1055,24 +1030,6 @@ bool SSLErrorHandler::IsOnlyCertError(
   return cert_error_ ==
              net::MapCertStatusToNetError(only_cert_error_expected) &&
          !net::IsCertStatusError(other_errors);
-}
-
-// static
-int SSLErrorHandler::CalculateOptionsMask(int cert_error,
-                                          bool hard_override_disabled,
-                                          bool should_ssl_errors_be_fatal) {
-  int options_mask = 0;
-  if (!IsCertErrorFatal(cert_error) && !hard_override_disabled &&
-      !should_ssl_errors_be_fatal) {
-    options_mask |= security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED;
-  }
-  if (hard_override_disabled) {
-    options_mask |= security_interstitials::SSLErrorUI::HARD_OVERRIDE_DISABLED;
-  }
-  if (should_ssl_errors_be_fatal) {
-    options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
-  }
-  return options_mask;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SSLErrorHandler)

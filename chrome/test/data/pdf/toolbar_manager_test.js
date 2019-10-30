@@ -9,13 +9,13 @@ import {MockWindow} from './test_util.js';
 // A cut-down version of MockInteractions.move, which is not exposed
 // publicly.
 function getMouseMoveEvents(fromX, fromY, toX, toY, steps) {
-  var dx = Math.round((toX - fromX) / steps);
-  var dy = Math.round((toY - fromY) / steps);
-  var events = [];
+  const dx = Math.round((toX - fromX) / steps);
+  const dy = Math.round((toY - fromY) / steps);
+  const events = [];
 
   // Deliberate <= to ensure that an event is run for toX, toY
-  for (var i = 0; i <= steps; i++) {
-    var e = new MouseEvent('mousemove', {
+  for (let i = 0; i <= steps; i++) {
+    const e = new MouseEvent('mousemove', {
       clientX: fromX,
       clientY: fromY,
       movementX: dx,
@@ -29,7 +29,7 @@ function getMouseMoveEvents(fromX, fromY, toX, toY, steps) {
 }
 
 function makeTapEvent(x, y) {
-  var e = new MouseEvent('mousemove', {
+  const e = new MouseEvent('mousemove', {
     clientX: x,
     clientY: y,
     movementX: 0,
@@ -48,22 +48,22 @@ function mockGetCurrentTimestamp() {
   return 1449000000000 + this.callCount * 50;
 }
 
-var tests = [
+const tests = [
   /**
    * Test that ToolbarManager.forceHideTopToolbar hides (or shows) the top
    * toolbar correctly for different mouse movements.
    */
   function testToolbarManagerForceHideTopToolbar() {
-    var mockWindow = new MockWindow(1920, 1080);
+    const mockWindow = new MockWindow(1920, 1080);
 
-    var toolbar = document.createElement('viewer-pdf-toolbar');
+    const toolbar = document.createElement('viewer-pdf-toolbar');
     document.body.appendChild(toolbar);
-    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    const zoomToolbar = document.createElement('viewer-zoom-toolbar');
     document.body.appendChild(zoomToolbar);
-    var toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
+    const toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
     toolbarManager.getCurrentTimestamp_ = mockGetCurrentTimestamp;
 
-    var mouseMove = function(fromX, fromY, toX, toY, steps) {
+    const mouseMove = function(fromX, fromY, toX, toY, steps) {
       getMouseMoveEvents(fromX, fromY, toX, toY, steps).forEach(function(e) {
         toolbarManager.handleMouseMove(e);
       });
@@ -103,15 +103,15 @@ var tests = [
    * Test that changes to window height bubble down to dropdowns correctly.
    */
   function testToolbarManagerResizeDropdown() {
-    var mockWindow = new MockWindow(1920, 1080);
-    var mockZoomToolbar = {
+    const mockWindow = new MockWindow(1920, 1080);
+    const mockZoomToolbar = {
       clientHeight: 400,
       isPrintPreview: false,
     };
-    var toolbar = document.getElementById('toolbar');
-    var bookmarksDropdown = toolbar.$.bookmarks;
+    const toolbar = document.getElementById('toolbar');
+    const bookmarksDropdown = toolbar.$.bookmarks;
 
-    var toolbarManager =
+    const toolbarManager =
         new ToolbarManager(mockWindow, toolbar, mockZoomToolbar);
 
     chrome.test.assertEq(680, bookmarksDropdown.lowerBound);
@@ -126,16 +126,16 @@ var tests = [
    * Test that the toolbar will not be hidden when navigating with the tab key.
    */
   function testToolbarKeyboardNavigation() {
-    var mockWindow = new MockWindow(1920, 1080);
-    var toolbar = document.createElement('viewer-pdf-toolbar');
+    const mockWindow = new MockWindow(1920, 1080);
+    const toolbar = document.createElement('viewer-pdf-toolbar');
     toolbar.loadProgress = 100;
     document.body.appendChild(toolbar);
-    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    const zoomToolbar = document.createElement('viewer-zoom-toolbar');
     document.body.appendChild(zoomToolbar);
-    var toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
+    const toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
     toolbarManager.getCurrentTimestamp_ = mockGetCurrentTimestamp;
 
-    var mouseMove = function(fromX, fromY, toX, toY, steps) {
+    const mouseMove = function(fromX, fromY, toX, toY, steps) {
       getMouseMoveEvents(fromX, fromY, toX, toY, steps).forEach(function(e) {
         toolbarManager.handleMouseMove(e);
       });
@@ -170,12 +170,12 @@ var tests = [
    * Preview.
    */
   function testToolbarManagerResetKeyboardNavigation() {
-    var mockWindow = new MockWindow(1920, 1080);
+    const mockWindow = new MockWindow(1920, 1080);
 
-    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    const zoomToolbar = document.createElement('viewer-zoom-toolbar');
     zoomToolbar.isPrintPreview = true;
     document.body.appendChild(zoomToolbar);
-    var toolbarManager = new ToolbarManager(mockWindow, null, zoomToolbar);
+    const toolbarManager = new ToolbarManager(mockWindow, null, zoomToolbar);
     toolbarManager.getCurrentTimestamp_ = mockGetCurrentTimestamp;
 
     // Move the mouse and wait for a timeout to ensure toolbar is invisible.
@@ -223,13 +223,13 @@ var tests = [
    * device.
    */
   function testToolbarTouchInteraction() {
-    var mockWindow = new MockWindow(1920, 1080);
-    var toolbar = document.createElement('viewer-pdf-toolbar');
+    const mockWindow = new MockWindow(1920, 1080);
+    const toolbar = document.createElement('viewer-pdf-toolbar');
     toolbar.loadProgress = 100;
     document.body.appendChild(toolbar);
-    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    const zoomToolbar = document.createElement('viewer-zoom-toolbar');
     document.body.appendChild(zoomToolbar);
-    var toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
+    const toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
 
     toolbarManager.hideToolbarsIfAllowed();
     chrome.test.assertFalse(toolbar.opened);

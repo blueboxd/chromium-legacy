@@ -123,11 +123,7 @@ class MockDRTPort(object):
         env['PATH'] = self.host.environ.get('PATH')
         return env
 
-    def lookup_virtual_test_args(self, test_name):
-        # MockDRTPort doesn't support virtual test suites.
-        raise NotImplmentedError()
-
-    def lookup_virtual_reference_args(self, test_name):
+    def _lookup_virtual_test_args(self, test_name):
         # MockDRTPort doesn't support virtual test suites.
         raise NotImplmentedError()
 

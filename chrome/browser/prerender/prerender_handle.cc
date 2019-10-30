@@ -29,7 +29,6 @@ PrerenderHandle::~PrerenderHandle() {
 }
 
 void PrerenderHandle::SetObserver(Observer* observer) {
-  DCHECK(observer);
   observer_ = observer;
 }
 

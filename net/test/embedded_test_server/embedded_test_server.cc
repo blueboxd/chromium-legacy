@@ -166,6 +166,7 @@ void EmbeddedTestServer::InitializeSSLServerContext() {
 
   std::unique_ptr<crypto::RSAPrivateKey> server_key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
+  CHECK(server_key);
   context_ =
       CreateSSLServerContext(GetCertificate().get(), *server_key, ssl_config_);
 }
@@ -310,12 +311,18 @@ std::string EmbeddedTestServer::GetCertificateName() const {
       return "localhost_cert.pem";
     case CERT_EXPIRED:
       return "expired_cert.pem";
+    case CERT_CHAIN_WRONG_ROOT:
+      // This chain uses its own dedicated test root certificate to avoid
+      // side-effects that may affect testing.
+      return "redundant-server-chain.pem";
     case CERT_COMMON_NAME_ONLY:
       return "common_name_only.pem";
     case CERT_SHA1_LEAF:
       return "sha1_leaf.pem";
     case CERT_OK_BY_INTERMEDIATE:
       return "ok_cert_by_intermediate.pem";
+    case CERT_BAD_VALIDITY:
+      return "bad_validity.pem";
   }
 
   return "ok_cert.pem";

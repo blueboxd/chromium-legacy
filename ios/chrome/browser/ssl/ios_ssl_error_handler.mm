@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/captive_portal/captive_portal_detector.h"
+#include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
@@ -128,8 +129,9 @@ void IOSSSLErrorHandler::ShowSSLInterstitial() {
   }
 
   int options_mask =
-      overridable_ ? security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED
-                   : security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
+      overridable_
+          ? security_interstitials::SSLErrorOptionsMask::SOFT_OVERRIDE_ENABLED
+          : security_interstitials::SSLErrorOptionsMask::STRICT_ENFORCEMENT;
   if (!blocking_page_callback_.is_null()) {
     auto page = std::make_unique<IOSSSLBlockingPage>(
         web_state_, cert_error_, ssl_info_, request_url_, options_mask,

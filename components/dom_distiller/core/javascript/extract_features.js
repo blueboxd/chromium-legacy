@@ -28,4 +28,4 @@ return JSON.stringify({
   'textContent': body.textContent,
   'innerHTML': body.innerHTML,
 });
-})()
+})();

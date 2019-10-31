@@ -307,7 +307,7 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(end_point), true, true);
   if (GetLayoutBox()) {
-    end_point = GetSnapPosition(*strategy).value_or(end_point);
+    end_point = GetSnapPositionAndSetTarget(*strategy).value_or(end_point);
     new_scroll_offset = ScrollPositionToOffset(end_point);
   }
 
@@ -436,6 +436,10 @@ IntSize RootFrameViewport::ContentsSize() const {
   return LayoutViewport().ContentsSize();
 }
 
+bool RootFrameViewport::ShouldScrollOnMainThread() const {
+  return LayoutViewport().ShouldScrollOnMainThread();
+}
+
 bool RootFrameViewport::ScrollbarsCanBeActive() const {
   return LayoutViewport().ScrollbarsCanBeActive();
 }
@@ -454,19 +458,19 @@ void RootFrameViewport::ScrollControlWasSetNeedsPaintInvalidation() {
   LayoutViewport().ScrollControlWasSetNeedsPaintInvalidation();
 }
 
-GraphicsLayer* RootFrameViewport::LayerForScrolling() const {
+cc::Layer* RootFrameViewport::LayerForScrolling() const {
   return LayoutViewport().LayerForScrolling();
 }
 
-GraphicsLayer* RootFrameViewport::LayerForHorizontalScrollbar() const {
+cc::Layer* RootFrameViewport::LayerForHorizontalScrollbar() const {
   return LayoutViewport().LayerForHorizontalScrollbar();
 }
 
-GraphicsLayer* RootFrameViewport::LayerForVerticalScrollbar() const {
+cc::Layer* RootFrameViewport::LayerForVerticalScrollbar() const {
   return LayoutViewport().LayerForVerticalScrollbar();
 }
 
-GraphicsLayer* RootFrameViewport::LayerForScrollCorner() const {
+cc::Layer* RootFrameViewport::LayerForScrollCorner() const {
   return LayoutViewport().LayerForScrollCorner();
 }
 
@@ -608,6 +612,11 @@ const cc::SnapContainerData* RootFrameViewport::GetSnapContainerData() const {
 void RootFrameViewport::SetSnapContainerData(
     base::Optional<cc::SnapContainerData> data) {
   LayoutViewport().SetSnapContainerData(data);
+}
+
+base::Optional<FloatPoint> RootFrameViewport::GetSnapPositionAndSetTarget(
+    const cc::SnapSelectionStrategy& strategy) {
+  return LayoutViewport().GetSnapPositionAndSetTarget(strategy);
 }
 
 void RootFrameViewport::Trace(blink::Visitor* visitor) {

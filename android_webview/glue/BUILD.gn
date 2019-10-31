@@ -13,7 +13,7 @@ android_library("glue") {
     "//android_webview:android_webview_locale_config_java",
     "//android_webview:common_commandline_java",
     "//android_webview:common_java",
-    "//android_webview:system_webview_manifest",
+    "//android_webview/apk:system_webview_manifest",
     "//android_webview/support_library/boundary_interfaces:boundary_interface_java",
     "//android_webview/support_library/callback:callback_java",
     "//base:base_java",

@@ -16,6 +16,19 @@ namespace chromeos {
 extern const base::Feature kCrOSTuneMinFilelist;
 extern const base::FeatureParam<int> kCrOSTuneMinFilelistMb;
 
+// Controls the ChromeOS /sys/kernel/mm/chromeos-low_mem/ram_vs_swap_weight
+// tunable. The number is a zero or positive number which represents how well
+// zram based swap is compressed in physical ram.
+extern const base::Feature kCrOSTuneRamVsSwapWeight;
+extern const base::FeatureParam<int> kCrOSRamVsSwapWeight;
+
+// Controls the ChromeOS /proc/sys/vm/extra_free_kbytes tunable. The number is a
+// zero or positive number which represents how much additional memory the
+// kernel will keep around. Raising this number has the affect of causing
+// swapping earlier.
+extern const base::Feature kCrOSTuneExtraFree;
+extern const base::FeatureParam<int> kCrOSExtraFreeMb;
+
 // Configure swap will configure any swap related experiments that this user may
 // be opted into.
 CHROMEOS_EXPORT void ConfigureSwap();

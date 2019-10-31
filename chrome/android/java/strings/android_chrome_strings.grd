@@ -188,9 +188,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_LEARN_MORE" desc="Generic label for menu item to learn more about a feature. [CHAR-LIMIT=32]">
         Learn more
       </message>
-      <message name="IDS_MORE" desc="Generic label for a button to show more items or options. [CHAR-LIMIT=20]">
-        More
-      </message>
       <message name="IDS_CLOSE" desc="Content description for a button to close a dialog or popup" >
         Close
       </message>

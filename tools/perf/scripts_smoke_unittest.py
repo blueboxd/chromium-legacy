@@ -213,19 +213,19 @@ class ScriptsSmokeTest(unittest.TestCase):
     finally:
       shutil.rmtree(tempdir)
 
-  # Windows: ".exe" is auto-added which breaks Windows.
-  # ChromeOS: crbug.com/754913.
-  @decorators.Disabled('win', 'chromeos')
-  def testRunPerformanceTestsGtest_end2end(self):
+  def RunGtest(self, generate_trace):
     tempdir = tempfile.mkdtemp()
     benchmark = 'dummy_gtest'
     return_code, stdout = self.RunPerfScript(
         '../../testing/scripts/run_performance_tests.py ' +
-        os.path.join('..', '..', 'tools', 'perf', 'testdata', 'dummy_gtest') +
+        ('../../tools/perf/run_gtest_benchmark.py ' if generate_trace else '') +
+        os.path.join('..', '..', 'tools', 'perf', 'testdata',
+                     'dummy_gtest') +
+        (' --use-gtest-benchmark-script --output-format=histograms'
+             if generate_trace else '') +
         ' --non-telemetry=true '
         '--this-arg=passthrough '
         '--gtest-benchmark-name dummy_gtest '
-        '--isolated-script-test-output=/x/y/z/output.json '
         '--isolated-script-test-output=%s' % (
             os.path.join(tempdir, 'output.json')
         ))
@@ -247,6 +247,18 @@ class ScriptsSmokeTest(unittest.TestCase):
       self.fail('json_test_results should be populated: ' + stdout + str(e))
     finally:
       shutil.rmtree(tempdir)
+
+  # Windows: ".exe" is auto-added which breaks Windows.
+  # ChromeOS: crbug.com/754913.
+  @decorators.Disabled('win', 'chromeos')
+  def testRunPerformanceTestsGtest_end2end(self):
+    self.RunGtest(generate_trace=False)
+
+  # Windows: ".exe" is auto-added which breaks Windows.
+  # ChromeOS: crbug.com/754913.
+  @decorators.Disabled('win', 'chromeos')
+  def testRunPerformanceTestsGtestTrace_end2end(self):
+    self.RunGtest(generate_trace=True)
 
   def testRunPerformanceTestsTelemetryArgsParser(self):
     options = run_performance_tests.parse_arguments([

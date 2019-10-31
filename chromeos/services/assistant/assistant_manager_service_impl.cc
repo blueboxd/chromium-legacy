@@ -162,7 +162,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       delegate_(std::move(delegate)),
       background_thread_("background thread"),
       is_signed_out_mode_(is_signed_out_mode),
-      app_list_subscriber_binding_(this),
       weak_factory_(this) {
   background_thread_.Start();
 
@@ -1224,9 +1223,8 @@ void AssistantManagerServiceImpl::PostInitAssistant() {
   assistant_settings_manager_->UpdateServerDeviceSettings();
 
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport)) {
-    mojom::AppListEventSubscriberPtr subscriber_ptr;
-    app_list_subscriber_binding_.Bind(mojo::MakeRequest(&subscriber_ptr));
-    device_actions()->AddAppListEventSubscriber(std::move(subscriber_ptr));
+    device_actions()->AddAppListEventSubscriber(
+        app_list_subscriber_receiver_.BindNewPipeAndPassRemote());
   }
 }
 

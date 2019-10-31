@@ -212,7 +212,7 @@ jumbo_source_set("generated") {
     "//third_party/blink/renderer/core/probe:generated",
     "//third_party/blink/renderer/platform:make_platform_generated",
     "//third_party/blink/renderer/platform/wtf",
-    "//third_party/inspector_protocol:encoding",
+    "//third_party/inspector_protocol:crdtp",
     "//v8",
   ]
 }

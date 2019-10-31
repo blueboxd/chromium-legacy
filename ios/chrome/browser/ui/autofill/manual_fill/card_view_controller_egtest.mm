@@ -14,6 +14,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/testing/earl_grey/keyboard_app_interface.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -436,8 +437,7 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that the credit card View Controller is dismissed when tapping the
 // keyboard.
-// TODO(crbug.com/1017095): Re-enable this test.
-- (void)DISABLED_testTappingKeyboardDismissCreditCardControllerPopOver {
+- (void)testTappingKeyboardDismissCreditCardControllerPopOver {
   if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
@@ -457,7 +457,7 @@ BOOL WaitForKeyboardToAppear() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey
-      selectElementWithMatcher:ManualFallbackCreditCardTableViewMatcher()]
+      selectElementWithMatcher:[KeyboardAppInterface keyboardWindowMatcher]]
       performAction:grey_typeText(@"text")];
 
   // Verify the credit card controller table view and the credit card icon is

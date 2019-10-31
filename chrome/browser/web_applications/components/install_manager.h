@@ -34,6 +34,7 @@ class AppShortcutManager;
 // InstallWebAppZZZZ functions.
 class InstallManager {
  public:
+  // |app_id| may be empty on failure.
   using OnceInstallCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
 
@@ -132,10 +133,12 @@ class InstallManager {
                      InstallFinalizer* finalizer);
 
   // Loads |web_app_url| in a new WebContents and determines if it is
-  // installable. Returns the WebContents and whether the app is installable or
-  // not.
-  void LoadWebAppAndCheckInstallability(const GURL& web_app_url,
-                                        WebAppInstallabilityCheckCallback);
+  // installable.
+  // Calls back with a unique_ptr owning the WebContents used to check
+  // installability, and whether the app is installable.
+  virtual void LoadWebAppAndCheckInstallability(
+      const GURL& web_app_url,
+      WebAppInstallabilityCheckCallback) = 0;
 
  protected:
   Profile* profile() { return profile_; }

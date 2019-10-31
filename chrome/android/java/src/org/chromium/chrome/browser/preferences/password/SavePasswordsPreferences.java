@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchUtils;
@@ -407,11 +408,13 @@ public class SavePasswordsPreferences
         mSavePasswordsSwitch.setSummaryOn(R.string.text_on);
         mSavePasswordsSwitch.setSummaryOff(R.string.text_off);
         mSavePasswordsSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
-            PrefServiceBridge.getInstance().setRememberPasswordsEnabled((boolean) newValue);
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.REMEMBER_PASSWORDS_ENABLED, (boolean) newValue);
             return true;
         });
-        mSavePasswordsSwitch.setManagedPreferenceDelegate(
-                preference -> PrefServiceBridge.getInstance().isRememberPasswordsManaged());
+        mSavePasswordsSwitch.setManagedPreferenceDelegate(preference
+                -> PrefServiceBridge.getInstance().isManagedPreference(
+                        Pref.REMEMBER_PASSWORDS_ENABLED));
 
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             getPreferenceScreen().addPreference(mSavePasswordsSwitch);
@@ -422,7 +425,7 @@ public class SavePasswordsPreferences
         // (e.g. the switch will say "On" when save passwords is really turned off), so
         // .setChecked() should be called after .addPreference()
         mSavePasswordsSwitch.setChecked(
-                PrefServiceBridge.getInstance().isRememberPasswordsEnabled());
+                PrefServiceBridge.getInstance().getBoolean(Pref.REMEMBER_PASSWORDS_ENABLED));
     }
 
     private void createAutoSignInCheckbox() {
@@ -432,14 +435,16 @@ public class SavePasswordsPreferences
         mAutoSignInSwitch.setOrder(ORDER_AUTO_SIGNIN_CHECKBOX);
         mAutoSignInSwitch.setSummary(R.string.passwords_auto_signin_description);
         mAutoSignInSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
-            PrefServiceBridge.getInstance().setPasswordManagerAutoSigninEnabled((boolean) newValue);
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED, (boolean) newValue);
             return true;
         });
-        mAutoSignInSwitch.setManagedPreferenceDelegate(
-                preference -> PrefServiceBridge.getInstance().isPasswordManagerAutoSigninManaged());
+        mAutoSignInSwitch.setManagedPreferenceDelegate(preference
+                -> PrefServiceBridge.getInstance().isManagedPreference(
+                        Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
         getPreferenceScreen().addPreference(mAutoSignInSwitch);
-        mAutoSignInSwitch.setChecked(
-                PrefServiceBridge.getInstance().isPasswordManagerAutoSigninEnabled());
+        mAutoSignInSwitch.setChecked(PrefServiceBridge.getInstance().getBoolean(
+                Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
     }
 
     private void createAutoLeakDetectionSwitch() {
@@ -449,23 +454,26 @@ public class SavePasswordsPreferences
         mAutoLeakDetectionSwitch.setKey(PREF_LEAK_DETECTION_SWITCH);
         mAutoLeakDetectionSwitch.setTitle(R.string.passwords_leak_detection_switch_title);
         mAutoLeakDetectionSwitch.setOrder(ORDER_AUTO_LEAK_DETECTION_SWITCH);
-        mAutoLeakDetectionSwitch.setManagedPreferenceDelegate(
-                preference -> PrefServiceBridge.getInstance().isPasswordLeakDetectionManaged());
+        mAutoLeakDetectionSwitch.setManagedPreferenceDelegate(preference
+                -> PrefServiceBridge.getInstance().isManagedPreference(
+                        Pref.PASSWORD_MANAGER_LEAK_DETECTION_ENABLED));
 
         getPreferenceScreen().addPreference(mAutoLeakDetectionSwitch);
 
         if (PasswordUIView.hasAccountForLeakCheckRequest()) {
-            mAutoLeakDetectionSwitch.setChecked(
-                    PrefServiceBridge.getInstance().isPasswordLeakDetectionEnabled());
+            mAutoLeakDetectionSwitch.setChecked(PrefServiceBridge.getInstance().getBoolean(
+                    Pref.PASSWORD_MANAGER_LEAK_DETECTION_ENABLED));
             mAutoLeakDetectionSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
-                PrefServiceBridge.getInstance().setPasswordLeakDetectionEnabled((boolean) newValue);
+                PrefServiceBridge.getInstance().setBoolean(
+                        Pref.PASSWORD_MANAGER_LEAK_DETECTION_ENABLED, (boolean) newValue);
                 return true;
             });
         } else {
             mAutoLeakDetectionSwitch.setChecked(false);
             mAutoLeakDetectionSwitch.setEnabled(false);
             mAutoLeakDetectionSwitch.setOnPreferenceClickListener(null);
-            if (PrefServiceBridge.getInstance().isPasswordLeakDetectionEnabled()) {
+            if (PrefServiceBridge.getInstance().getBoolean(
+                        Pref.PASSWORD_MANAGER_LEAK_DETECTION_ENABLED)) {
                 mAutoLeakDetectionSwitch.setSummary(
                         R.string.passwords_leak_detection_switch_signed_out_enable_description);
             }

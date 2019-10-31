@@ -958,9 +958,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     public void insertVisualStateCallback(
             final long requestId, final VisualStateCallback callback) {
         sWebViewApiCallSample.record(ApiCall.INSERT_VISUAL_STATE_CALLBACK);
-        if (callback == null) return;
         mSharedWebViewChromium.insertVisualStateCallback(
-                requestId, new AwContents.VisualStateCallback() {
+                requestId, callback == null ? null : new AwContents.VisualStateCallback() {
                     @Override
                     public void onComplete(long requestId) {
                         callback.onComplete(requestId);

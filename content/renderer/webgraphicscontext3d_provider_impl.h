@@ -20,6 +20,10 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }  // namespace gles2
+
+namespace raster {
+class RasterInterface;
+}  // namespace raster
 }  // namespace gpu
 
 namespace viz {
@@ -40,6 +44,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   // WebGraphicsContext3DProvider implementation.
   bool BindToCurrentThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
+  gpu::raster::RasterInterface* RasterInterface() override;
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override;
   GrContext* GetGrContext() override;
   const gpu::Capabilities& GetCapabilities() const override;

@@ -147,7 +147,7 @@ static_library("devtools_protocol_encoding") {
   ]
   deps = [
     "//base",
-    "//third_party/inspector_protocol:encoding",
+    "//third_party/inspector_protocol:crdtp",
   ]
 }
 

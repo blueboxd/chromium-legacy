@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
@@ -177,13 +178,12 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
                        weak_factory_.GetWeakPtr()));
   }
 
-  void FinishReadingBody(MojoResult result) {
+  void FinishReadingBody(net::Error net_error) {
     if (!loader_client_.is_connected())
       return;
 
     network::URLLoaderCompletionStatus status;
-    status.error_code =
-        result == MOJO_RESULT_OK ? net::OK : net::ERR_UNEXPECTED;
+    status.error_code = net_error;
     loader_client_->OnComplete(status);
   }
 

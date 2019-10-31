@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 #include "chrome/credential_provider/gaiacp/scoped_handle.h"
@@ -252,6 +253,9 @@ std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
 // See:
 // https://stackoverflow.com/questions/31072543/reliable-way-to-get-windows-version-from-registry
 base::string16 GetWindowsVersion();
+
+// Returns the minimum supported version of Chrome for GCPW.
+base::Version GetMinimumSupportedChromeVersion();
 
 class OSUserManager;
 class OSProcessManager;

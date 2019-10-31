@@ -205,7 +205,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void SetCursorOverridden(bool) override {}
   Cursor LastSetCursorForTesting() const override { return PointerCursor(); }
 
-  void AttachRootGraphicsLayer(GraphicsLayer*, LocalFrame* local_root) override;
   void AttachRootLayer(scoped_refptr<cc::Layer>,
                        LocalFrame* local_root) override;
 
@@ -481,7 +480,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void AdvanceFocus(WebFocusType, LocalFrame* source) override {}
   void VisibilityChanged(blink::mojom::FrameVisibility) override {}
   void SetIsInert(bool) override {}
-  void SetInheritedEffectiveTouchAction(TouchAction) override {}
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override {}
   uint32_t Print(const IntRect& rect, cc::PaintCanvas* canvas) const override {

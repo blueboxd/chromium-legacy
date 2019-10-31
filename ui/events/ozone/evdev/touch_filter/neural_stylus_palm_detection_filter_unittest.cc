@@ -304,4 +304,70 @@ TEST_F(NeuralStylusPalmDetectionFilterTest, InferenceOncePalm) {
   }
 }
 
+TEST_F(NeuralStylusPalmDetectionFilterTest, DelayShortFingerTouch) {
+  std::bitset<kNumTouchEvdevSlots> actual_held, actual_cancelled;
+  std::bitset<kNumTouchEvdevSlots> expected_held, expected_cancelled;
+  model_config_.heuristic_delay_start_if_palm = true;
+  touch_[0].touching = true;
+  touch_[0].tracking_id = 605;
+  touch_[0].x = 50;
+  touch_[0].y = 55;
+  // small touch! 39*21 = 819, which is < 1000.
+  touch_[0].major = 39;
+  touch_[0].minor = 21;
+  base::TimeTicks touch_time =
+      base::TimeTicks::UnixEpoch() + base::TimeDelta::FromMillisecondsD(10.0);
+  palm_detection_filter_->Filter(touch_, touch_time, &actual_held,
+                                 &actual_cancelled);
+
+  EXPECT_EQ(expected_held, actual_held);
+  EXPECT_EQ(expected_cancelled, actual_cancelled);
+}
+
+TEST_F(NeuralStylusPalmDetectionFilterTest, DelayShortPalmTouch) {
+  std::bitset<kNumTouchEvdevSlots> actual_held, actual_cancelled;
+  std::bitset<kNumTouchEvdevSlots> expected_held, expected_cancelled;
+  model_config_.heuristic_delay_start_if_palm = true;
+  touch_[0].touching = true;
+  touch_[0].tracking_id = 605;
+  touch_[0].x = 50;
+  touch_[0].y = 55;
+  // big touch! 39*30 = 1170, which is > 1000.
+  touch_[0].major = 39;
+  touch_[0].minor = 30;
+  base::TimeTicks touch_time =
+      base::TimeTicks::UnixEpoch() + base::TimeDelta::FromMillisecondsD(10.0);
+  palm_detection_filter_->Filter(touch_, touch_time, &actual_held,
+                                 &actual_cancelled);
+
+  expected_held.set(0, true);
+  EXPECT_EQ(expected_held, actual_held);
+  EXPECT_EQ(expected_cancelled, actual_cancelled);
+
+  // Delay continues even afterwards, until inference time: then it's off.
+  for (uint32_t i = 1; i < model_config_.max_sample_count - 1; ++i) {
+    touch_[0].was_touching = true;
+    touch_time += base::TimeDelta::FromMillisecondsD(10.0);
+    touch_[0].major = 15;
+    touch_[0].minor = 15;
+    touch_[0].x += 1;
+    touch_[0].y += 1;
+    palm_detection_filter_->Filter(touch_, touch_time, &actual_held,
+                                   &actual_cancelled);
+    EXPECT_EQ(expected_held, actual_held) << " failed at " << i;
+    EXPECT_EQ(expected_cancelled, actual_cancelled) << " failed at " << i;
+  }
+  // When running inference, turn delay to false.
+  EXPECT_CALL(*model_, Inference(testing::_))
+      .Times(1)
+      .WillOnce(testing::Return(-0.1));
+  touch_time =
+      base::TimeTicks::UnixEpoch() + base::TimeDelta::FromMillisecondsD(10.0);
+  palm_detection_filter_->Filter(touch_, touch_time, &actual_held,
+                                 &actual_cancelled);
+  expected_held.set(0, false);
+  EXPECT_EQ(expected_held, actual_held);
+  EXPECT_EQ(expected_cancelled, actual_cancelled);
+}
+
 }  // namespace ui

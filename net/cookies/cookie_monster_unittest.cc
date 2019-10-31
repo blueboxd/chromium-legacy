@@ -2746,110 +2746,107 @@ TEST_F(CookieMonsterTest, CookieSourceHistogram) {
       CookieMonster::COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME, 1);
 }
 
-// Test that cookie delete equivalent histograms are recorded correctly.
-TEST_F(CookieMonsterTest, CookieDeleteEquivalentHistogramTest) {
-  base::HistogramTester histograms;
-  const std::string cookie_source_histogram = "Cookie.CookieDeleteEquivalent";
-
+TEST_F(CookieMonsterTest, MaybeDeleteEquivalentCookieAndUpdateStatus) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
   std::unique_ptr<CookieMonster> cm(new CookieMonster(store.get(), &net_log_));
 
-  // Set a secure cookie from a secure origin
-  EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(), "A=B; Secure"));
-  histograms.ExpectTotalCount(cookie_source_histogram, 1);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_ATTEMPT,
-                               1);
+  // Set a secure, httponly cookie from a secure origin
+  auto preexisting_cookie = CanonicalCookie::Create(
+      https_www_foo_.url(), "A=B;Secure;HttpOnly", base::Time::Now(),
+      base::nullopt /* server_time */);
+  CanonicalCookie::CookieInclusionStatus status =
+      SetCanonicalCookieReturnStatus(cm.get(), std::move(preexisting_cookie),
+                                     "https", true /* can_modify_httponly */);
+  ASSERT_TRUE(status.IsInclude());
 
-  // Set a new cookie with a different name from a variety of origins (including
-  // the same one).
+  // Set a new cookie with a different name. Should work because cookies with
+  // different names are not considered equivalent nor "equivalent for secure
+  // cookie matching".
+  // Same origin:
   EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(), "B=A;"));
-  histograms.ExpectTotalCount(cookie_source_histogram, 2);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_ATTEMPT,
-                               2);
+  // Different scheme, same domain:
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "C=A;"));
-  histograms.ExpectTotalCount(cookie_source_histogram, 3);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_ATTEMPT,
-                               3);
 
-  // Set a non-secure cookie from an insecure origin that matches the name of an
-  // already existing cookie and additionally is equivalent to the existing
-  // cookie. This should fail since it's trying to overwrite a secure cookie.
-  EXPECT_FALSE(SetCookie(cm.get(), http_www_foo_.url(), "A=B;"));
-  histograms.ExpectTotalCount(cookie_source_histogram, 6);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_ATTEMPT,
-                               4);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_FOUND,
-                               0);
-  histograms.ExpectBucketCount(
-      cookie_source_histogram,
-      CookieMonster::COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE, 1);
-  histograms.ExpectBucketCount(
-      cookie_source_histogram,
-      CookieMonster::COOKIE_DELETE_EQUIVALENT_WOULD_HAVE_DELETED, 1);
+  // Set a non-Secure cookie from an insecure origin that is
+  // equivalent to the pre-existing Secure cookie.
+  auto bad_cookie =
+      CanonicalCookie::Create(http_www_foo_.url(), "A=D", base::Time::Now(),
+                              base::nullopt /* server_time */);
+  // Allow modifying HttpOnly, so that we don't skip preexisting cookies for
+  // being HttpOnly.
+  status = SetCanonicalCookieReturnStatus(
+      cm.get(), std::move(bad_cookie), "http", true /* can_modify_httponly */);
+  EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
+      {CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE}));
+  // The preexisting cookie should still be there.
+  EXPECT_THAT(GetCookiesWithOptions(cm.get(), https_www_foo_.url(),
+                                    CookieOptions::MakeAllInclusive()),
+              ::testing::HasSubstr("A=B"));
 
   auto entries = net_log_.GetEntries();
-  ExpectLogContainsSomewhere(
+  size_t skipped_secure_netlog_index = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_SECURE,
       NetLogEventPhase::NONE);
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_HTTPONLY));
+  ExpectLogContainsSomewhereAfter(
+      entries, skipped_secure_netlog_index,
+      NetLogEventType::COOKIE_STORE_COOKIE_PRESERVED_SKIPPED_SECURE,
+      NetLogEventPhase::NONE);
+
+  net_log_.Clear();
 
   // Set a non-secure cookie from an insecure origin that matches the name of an
   // already existing cookie but is not equivalent. This should fail since it's
   // trying to shadow a secure cookie.
-  EXPECT_FALSE(
-      SetCookie(cm.get(), http_www_foo_.url(), "A=C; path=/some/path"));
-  histograms.ExpectTotalCount(cookie_source_histogram, 8);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_ATTEMPT,
-                               5);
-  histograms.ExpectBucketCount(
-      cookie_source_histogram,
-      CookieMonster::COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE, 2);
+  bad_cookie = CanonicalCookie::Create(
+      http_www_foo_.url(), "A=E; path=/some/path", base::Time::Now(),
+      base::nullopt /* server_time */);
+  // Allow modifying HttpOnly, so that we don't skip preexisting cookies for
+  // being HttpOnly.
+  status = SetCanonicalCookieReturnStatus(
+      cm.get(), std::move(bad_cookie), "http", true /* can_modify_httponly */);
+  EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
+      {CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE}));
+  // The preexisting cookie should still be there.
+  EXPECT_THAT(GetCookiesWithOptions(cm.get(), https_www_foo_.url(),
+                                    CookieOptions::MakeAllInclusive()),
+              ::testing::HasSubstr("A=B"));
 
-  // Set a secure cookie from a secure origin that matches the name of an
-  // already existing cookies and is equivalent.
-  EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(), "A=D; secure"));
-  histograms.ExpectTotalCount(cookie_source_histogram, 10);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_ATTEMPT,
-                               6);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_FOUND,
-                               1);
-  histograms.ExpectBucketCount(
-      cookie_source_histogram,
-      CookieMonster::COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE, 0);
+  entries = net_log_.GetEntries();
+  skipped_secure_netlog_index = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_SECURE,
+      NetLogEventPhase::NONE);
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_HTTPONLY));
+  // There wasn't actually a strictly equivalent cookie that we would have
+  // deleted.
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, skipped_secure_netlog_index,
+      NetLogEventType::COOKIE_STORE_COOKIE_PRESERVED_SKIPPED_SECURE));
 
-  // Set a secure cookie from a secure origin that matches the name of an
-  // already existing cookie and is not equivalent.
-  EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(),
-                        "A=E; secure; path=/some/other/path"));
-  histograms.ExpectTotalCount(cookie_source_histogram, 11);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_ATTEMPT,
-                               7);
+  net_log_.Clear();
 
-  // Set a cookie that matches both the name and value of an already existing
-  // cookie.
-  EXPECT_TRUE(SetCookie(cm.get(), https_www_foo_.url(), "A=D; secure"));
-  histograms.ExpectTotalCount(cookie_source_histogram, 14);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_ATTEMPT,
-                               8);
-  histograms.ExpectBucketCount(cookie_source_histogram,
-                               CookieMonster::COOKIE_DELETE_EQUIVALENT_FOUND,
-                               2);
-  histograms.ExpectBucketCount(
-      cookie_source_histogram,
-      CookieMonster::COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE, 1);
+  // Test skipping equivalent cookie for HttpOnly only.
+  bad_cookie = CanonicalCookie::Create(https_www_foo_.url(), "A=E; Secure",
+                                       base::Time::Now(),
+                                       base::nullopt /* server_time */);
+  status =
+      SetCanonicalCookieReturnStatus(cm.get(), std::move(bad_cookie), "https",
+                                     false /* can_modify_httponly */);
+  EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
+      {CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY}));
+
+  entries = net_log_.GetEntries();
+  ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_HTTPONLY,
+      NetLogEventPhase::NONE);
+  EXPECT_FALSE(LogContainsEntryWithTypeAfter(
+      entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_SECURE));
 }
 
-// Test skipping a cookie in DeleteAnyEquivalentCookie for multiple reasons
-// (Secure and HttpOnly).
+// Test skipping a cookie in MaybeDeleteEquivalentCookieAndUpdateStatus for
+// multiple reasons (Secure and HttpOnly).
 TEST_F(CookieMonsterTest, SkipDontOverwriteForMultipleReasons) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
   std::unique_ptr<CookieMonster> cm(new CookieMonster(store.get(), &net_log_));
@@ -2873,6 +2870,14 @@ TEST_F(CookieMonsterTest, SkipDontOverwriteForMultipleReasons) {
   EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
       {CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
        CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY}));
+
+  auto entries = net_log_.GetEntries();
+  ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_SECURE,
+      NetLogEventPhase::NONE);
+  ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_HTTPONLY,
+      NetLogEventPhase::NONE);
 }
 
 // Test that when we check for equivalent cookies, we don't remove any if the

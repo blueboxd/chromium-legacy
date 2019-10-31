@@ -29,13 +29,22 @@ class CastFeaturesTest : public testing::Test {
   ~CastFeaturesTest() override {}
 
   // testing::Test implementation:
-  void SetUp() override { ResetCastFeaturesForTesting(); }
-  void TearDown() override { ResetCastFeaturesForTesting(); }
+  void SetUp() override {
+    original_feature_list_ = base::FeatureList::ClearInstanceForTesting();
+    ResetCastFeaturesForTesting();
+  }
+  void TearDown() override {
+    ResetCastFeaturesForTesting();
+    base::FeatureList::RestoreInstanceForTesting(
+        std::move(original_feature_list_));
+  }
 
  private:
   // A field trial list must be created before attempting to create FieldTrials.
   // In production, this instance lives in CastBrowserMainParts.
   base::FieldTrialList field_trial_list_;
+
+  std::unique_ptr<base::FeatureList> original_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CastFeaturesTest);
 };

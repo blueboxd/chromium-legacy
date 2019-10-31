@@ -167,12 +167,12 @@ void NeuralStylusPalmDetectionFilter::Filter(
       slots_to_decide.insert(slot);
     }
 
-    if (!end_of_stroke && stroke.samples_seen() < config.max_sample_count &&
+    if (config.heuristic_delay_start_if_palm && !end_of_stroke &&
+        stroke.samples_seen() < config.max_sample_count &&
         IsHeuristicPalmStroke(stroke)) {
       //  A stroke that we _think_ may be a palm, but is too short to decide
       //  yet. So we mark for delay for now.
-      // TODO(robsc): enable this behavior.
-      // is_delay_.set(slot, true);
+      is_delay_.set(slot, true);
     }
   }
 

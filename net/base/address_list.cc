@@ -19,6 +19,8 @@ AddressList::AddressList() = default;
 
 AddressList::AddressList(const AddressList&) = default;
 
+AddressList& AddressList::operator=(const AddressList&) = default;
+
 AddressList::~AddressList() = default;
 
 AddressList::AddressList(const IPEndPoint& endpoint) {

@@ -209,10 +209,11 @@ bool ComputedHashes::Writer::WriteToFile(const base::FilePath& path) {
   return true;
 }
 
-void ComputedHashes::ComputeHashesForContent(const std::string& contents,
-                                             size_t block_size,
-                                             std::vector<std::string>* hashes) {
+std::vector<std::string> ComputedHashes::GetHashesForContent(
+    const std::string& contents,
+    size_t block_size) {
   size_t offset = 0;
+  std::vector<std::string> hashes;
   // Even when the contents is empty, we want to output at least one hash
   // block (the hash of the empty string).
   do {
@@ -223,10 +224,10 @@ void ComputedHashes::ComputeHashesForContent(const std::string& contents,
         crypto::SecureHash::Create(crypto::SecureHash::SHA256));
     hash->Update(block_start, bytes_to_read);
 
-    hashes->push_back(std::string());
-    std::string* buffer = &(hashes->back());
-    buffer->resize(crypto::kSHA256Length);
-    hash->Finish(base::data(*buffer), buffer->size());
+    std::string buffer;
+    buffer.resize(crypto::kSHA256Length);
+    hash->Finish(base::data(buffer), buffer.size());
+    hashes.push_back(std::move(buffer));
 
     // If |contents| is empty, then we want to just exit here.
     if (bytes_to_read == 0)
@@ -234,6 +235,8 @@ void ComputedHashes::ComputeHashesForContent(const std::string& contents,
 
     offset += bytes_to_read;
   } while (offset < contents.size());
+
+  return hashes;
 }
 
 }  // namespace extensions

@@ -1022,4 +1022,19 @@ public class AwContentsTest {
             // expected
         }
     }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testInsertNullVisualStateCallback() {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        try {
+            awContents.insertVisualStateCallback(0, null);
+            Assert.fail("A null VisualStateCallback should cause an exception to be thrown");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+    }
 }

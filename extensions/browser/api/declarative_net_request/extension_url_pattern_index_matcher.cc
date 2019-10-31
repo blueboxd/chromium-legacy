@@ -254,10 +254,11 @@ GURL GetUpgradedUrl(const GURL& url) {
 // Populates the list of headers corresponding to |mask|.
 RequestAction GetRemoveHeadersActionForMask(const ExtensionId& extension_id,
                                             uint8_t mask,
-                                            int rule_id,
+                                            uint32_t rule_id,
+                                            uint32_t rule_priority,
                                             dnr_api::SourceType source_type) {
   RequestAction action(RequestAction::Type::REMOVE_HEADERS, rule_id,
-                       source_type, extension_id);
+                       rule_priority, source_type, extension_id);
 
   for (int i = 0; mask && i <= dnr_api::REMOVE_HEADER_TYPE_LAST; ++i) {
     switch (i) {
@@ -308,9 +309,9 @@ ExtensionUrlPatternIndexMatcher::GetBlockOrCollapseAction(
 
   return ShouldCollapseResourceType(params.element_type)
              ? RequestAction(RequestAction::Type::COLLAPSE, rule->id(),
-                             source_type(), extension_id())
+                             rule->priority(), source_type(), extension_id())
              : RequestAction(RequestAction::Type::BLOCK, rule->id(),
-                             source_type(), extension_id());
+                             rule->priority(), source_type(), extension_id());
 }
 
 bool ExtensionUrlPatternIndexMatcher::HasMatchingAllowRule(
@@ -329,8 +330,8 @@ ExtensionUrlPatternIndexMatcher::GetRedirectAction(
     return base::nullopt;
 
   RequestAction redirect_action(RequestAction::Type::REDIRECT,
-                                redirect_rule->id(), source_type(),
-                                extension_id());
+                                redirect_rule->id(), redirect_rule->priority(),
+                                source_type(), extension_id());
   redirect_action.redirect_url = std::move(redirect_rule_url);
 
   return redirect_action;
@@ -344,49 +345,11 @@ base::Optional<RequestAction> ExtensionUrlPatternIndexMatcher::GetUpgradeAction(
     return base::nullopt;
 
   RequestAction upgrade_action(RequestAction::Type::REDIRECT,
-                               upgrade_rule->id(), source_type(),
-                               extension_id());
+                               upgrade_rule->id(), upgrade_rule->priority(),
+                               source_type(), extension_id());
   upgrade_action.redirect_url = GetUpgradedUrl(*params.url);
 
   return upgrade_action;
-}
-
-base::Optional<RequestAction>
-ExtensionUrlPatternIndexMatcher::GetRedirectOrUpgradeActionByPriority(
-    const RequestParams& params) const {
-  GURL redirect_rule_url;
-  const flat_rule::UrlRule* redirect_rule =
-      GetRedirectRule(params, &redirect_rule_url);
-  const flat_rule::UrlRule* upgrade_rule = GetUpgradeRule(params);
-
-  if (!redirect_rule && !upgrade_rule)
-    return base::nullopt;
-
-  GURL highest_priority_url;
-  int rule_id = kMinValidID - 1;
-  if (!upgrade_rule) {
-    highest_priority_url = std::move(redirect_rule_url);
-    rule_id = redirect_rule->id();
-  } else if (!redirect_rule) {
-    highest_priority_url = GetUpgradedUrl(*params.url);
-    rule_id = upgrade_rule->id();
-  } else {
-    highest_priority_url = upgrade_rule->priority() > redirect_rule->priority()
-                               ? GetUpgradedUrl(*params.url)
-                               : std::move(redirect_rule_url);
-
-    rule_id = upgrade_rule->priority() > redirect_rule->priority()
-                  ? upgrade_rule->id()
-                  : redirect_rule->id();
-  }
-
-  DCHECK_GE(rule_id, kMinValidID);
-
-  RequestAction action(RequestAction::Type::REDIRECT, rule_id, source_type(),
-                       extension_id());
-  action.redirect_url = std::move(highest_priority_url);
-
-  return action;
 }
 
 uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
@@ -439,11 +402,14 @@ uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
     }
   }
 
+  // Rule priority doesn't matter for remove header rules.
+  uint32_t rule_priority = kDefaultPriority;
   for (auto it = rule_id_to_mask.begin(); it != rule_id_to_mask.end(); ++it) {
     uint8_t mask_for_rule = it->second;
     DCHECK(mask_for_rule);
     remove_headers_actions->push_back(GetRemoveHeadersActionForMask(
-        extension_id(), mask_for_rule, it->first /* rule_id */, source_type()));
+        extension_id(), mask_for_rule, it->first /* rule_id */, rule_priority,
+        source_type()));
   }
 
   DCHECK(!(mask & ignored_mask));

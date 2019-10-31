@@ -15,7 +15,8 @@ bool ResourceRequest::TrustedParams::operator==(
     const TrustedParams& other) const {
   return network_isolation_key == other.network_isolation_key &&
          update_network_isolation_key_on_redirect ==
-             other.update_network_isolation_key_on_redirect;
+             other.update_network_isolation_key_on_redirect &&
+         disable_secure_dns == other.disable_secure_dns;
 }
 
 ResourceRequest::ResourceRequest() {}

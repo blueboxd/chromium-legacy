@@ -569,11 +569,6 @@ const char kEnableAutofillNativeDropdownViewsDescription[] =
     "If enabled, the Autofill Dropdown will be built natively using Views, "
     "rather than painted directly to a canvas.";
 
-const char kEnableAutofillSaveCardShowNoThanksName[] =
-    "Show explicit decline option in credit card save prompts";
-const char kEnableAutofillSaveCardShowNoThanksDescription[] =
-    "If enabled, adds a [No thanks] button to credit card save prompts.";
-
 const char kEnableAutofillUpdatedCardUnmaskPromptUiName[] =
     "Enable new card unmask prompt UI";
 const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[] =
@@ -2186,11 +2181,6 @@ const char kUnsafeWebGPUDescription[] =
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
-const char kUserActivationV2Name[] = "User Activation v2";
-const char kUserActivationV2Description[] =
-    "Enable simple user activation for APIs that are otherwise controlled by "
-    "user gesture tokens.";
-
 const char kUsernameFirstFlowName[] = "Username first flow";
 const char kUsernameFirstFlowDescription[] =
     "Support of username saving and filling on username first flow i.e. login "
@@ -3646,6 +3636,10 @@ const char kReleaseNotesNotificationName[] = "CrOS Release Notes Notification.";
 const char kReleaseNotesNotificationDescription[] =
     "Instructs OS to show notificationlogin after update that release notes "
     "are now available.";
+
+const char kShelfDimmingName[] = "Shelf Dimming.";
+const char kShelfDimmingDescription[] =
+    "Dims shelf when the user is not interacting with it.";
 
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =

@@ -704,14 +704,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
 // Expects the result to be returned via FrameHostMsg_BeforeUnload_ACK.
 IPC_MESSAGE_ROUTED1(FrameMsg_BeforeUnload, bool /* is_reload */)
 
-// Instructs the frame to swap out for a cross-site transition, including
-// running the unload event handler and creating a RenderFrameProxy with the
-// given |proxy_routing_id|. Expects a SwapOut_ACK message when finished.
-IPC_MESSAGE_ROUTED3(FrameMsg_SwapOut,
-                    int /* proxy_routing_id */,
-                    bool /* is_loading */,
-                    content::FrameReplicationState /* replication_state */)
-
 // Requests that a provisional RenderFrame swap itself into the frame tree,
 // replacing the RenderFrameProxy that it is associated with.  This is used
 // with remote-to-local frame navigations when the RenderFrameProxy corresponds
@@ -777,12 +769,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_AddContentSecurityPolicies,
 // Used when the frame's policy is changed in another process.
 IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureRequestPolicy,
                     blink::WebInsecureRequestPolicy)
-
-// Update a proxy's replicated origin.  Used when the frame is navigated to a
-// new origin.
-IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateOrigin,
-                    url::Origin /* origin */,
-                    bool /* is potentially trustworthy unique origin */)
 
 // Notifies RenderFrameProxy that its associated RenderWidgetHostView has
 // changed.
@@ -1220,10 +1206,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged,
 //
 // https://html.spec.whatwg.org/multipage/interaction.html#inert
 IPC_MESSAGE_ROUTED1(FrameHostMsg_SetIsInert, bool /* inert */)
-
-// Sets the inherited effective touch action on a remote frame.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_SetInheritedEffectiveTouchAction,
-                    cc::TouchAction)
 
 // Toggles render throttling on a remote frame. |is_throttled| indicates
 // whether the current frame should be throttled based on its viewport

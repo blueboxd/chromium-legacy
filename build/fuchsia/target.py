@@ -20,7 +20,6 @@ _SHUTDOWN_CMD = ['dm', 'poweroff']
 _ATTACH_MAX_RETRIES = 10
 _ATTACH_RETRY_INTERVAL = 1
 
-_PM = os.path.join(common.SDK_ROOT, 'tools', 'pm')
 _REPO_NAME = 'chrome_runner'
 
 # Amount of time to wait for Amber to complete package installation, as a
@@ -267,14 +266,15 @@ class Target(object):
     try:
       tuf_root = tempfile.mkdtemp()
       pm_serve_task = None
+      pm_tool = common.GetHostToolPathFromPlatform('pm')
 
-      subprocess.check_call([_PM, 'newrepo', '-repo', tuf_root])
+      subprocess.check_call([pm_tool, 'newrepo', '-repo', tuf_root])
 
       # Serve the |tuf_root| using 'pm serve' and configure the target to pull
       # from it.
       serve_port = common.GetAvailableTcpPort()
       pm_serve_task = subprocess.Popen(
-          [_PM, 'serve', '-d', os.path.join(tuf_root, 'repository'), '-l',
+          [pm_tool, 'serve', '-d', os.path.join(tuf_root, 'repository'), '-l',
            ':%d' % serve_port, '-q'])
 
       # Publish all packages to the serving TUF repository under |tuf_root|.

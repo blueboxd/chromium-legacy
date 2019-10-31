@@ -63,8 +63,6 @@ std::string CookieSameSiteToString(CookieSameSite same_site) {
       return kSameSiteStrict;
     case CookieSameSite::NO_RESTRICTION:
       return kSameSiteNone;
-    case CookieSameSite::EXTENDED_MODE:
-      return kSameSiteExtended;
     case CookieSameSite::UNSPECIFIED:
       return kSameSiteUnspecified;
   }

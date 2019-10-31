@@ -49,6 +49,7 @@ source_set("scenic") {
     "//third_party/fuchsia-sdk/sdk:images",
     "//third_party/fuchsia-sdk/sdk:mem",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
+    "//third_party/fuchsia-sdk/sdk:sys_cpp",
     "//third_party/fuchsia-sdk/sdk:sysmem",
     "//third_party/fuchsia-sdk/sdk:ui_gfx",
     "//third_party/fuchsia-sdk/sdk:ui_scenic",

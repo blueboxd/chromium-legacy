@@ -450,7 +450,8 @@ void SplitViewController::SnapWindow(aura::Window* window,
   if (do_divider_spawn_animation) {
     DCHECK(window->layer()->GetAnimator()->GetTargetTransform().IsIdentity());
 
-    const gfx::Rect bounds = GetSnappedWindowBoundsInScreen(snap_position);
+    const gfx::Rect bounds =
+        GetSnappedWindowBoundsInScreen(snap_position, window);
     // Get one of the two corners of |window| that meet the divider.
     gfx::Point p = IsPhysicalLeftOrTop(snap_position) ? bounds.bottom_right()
                                                       : bounds.origin();
@@ -513,58 +514,72 @@ aura::Window* SplitViewController::GetDefaultSnappedWindow() {
 
 gfx::Rect SplitViewController::GetSnappedWindowBoundsInParent(
     SnapPosition snap_position,
-    bool adjust_for_minimum_size) {
+    aura::Window* window_for_minimum_size) {
   gfx::Rect bounds =
-      GetSnappedWindowBoundsInScreen(snap_position, adjust_for_minimum_size);
+      GetSnappedWindowBoundsInScreen(snap_position, window_for_minimum_size);
   ::wm::ConvertRectFromScreen(root_window_, &bounds);
   return bounds;
 }
 
 gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreen(
     SnapPosition snap_position,
-    bool adjust_for_minimum_size) {
+    aura::Window* window_for_minimum_size) {
   const gfx::Rect work_area_bounds_in_screen =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           root_window_);
   if (snap_position == NONE)
     return work_area_bounds_in_screen;
 
+  const bool landscape = IsCurrentScreenOrientationLandscape();
+  const bool snap_left_or_top = IsPhysicalLeftOrTop(snap_position);
+  const bool in_tablet = Shell::Get()->tablet_mode_controller()->InTabletMode();
+  const int work_area_size = GetDividerEndPosition();
+  const int divider_position =
+      divider_position_ < 0 ? GetDefaultDividerPosition() : divider_position_;
+
+  int window_size;
+  if (snap_left_or_top) {
+    window_size = divider_position;
+  } else {
+    window_size = work_area_size - divider_position;
+    // In tablet mode, there is a divider widget of which |divider_position|
+    // refers to the left or top, and so we should subtract the thickness.
+    if (in_tablet)
+      window_size -= kSplitviewDividerShortSideLength;
+  }
+
+  const int minimum = GetMinimumWindowSize(window_for_minimum_size, landscape);
+  DCHECK(window_for_minimum_size || minimum == 0);
+  if (window_size < minimum) {
+    if (in_tablet && !is_resizing_) {
+      // If |window_for_minimum_size| really gets snapped, then the divider will
+      // be adjusted to its default position. Compute |window_size| accordingly.
+      window_size = work_area_size / 2 - kSplitviewDividerShortSideLength / 2;
+      // If |work_area_size| is odd, then the default divider position is
+      // rounded down, toward the left or top, but then if |snap_left_or_top| is
+      // false, that means |window_size| should now be rounded up.
+      if (!snap_left_or_top && work_area_size % 2 == 1)
+        ++window_size;
+    } else {
+      window_size = minimum;
+    }
+  }
+
   // Get the parameter values for which |gfx::Rect::SetByBounds| would recreate
-  // |work_area_bounds_in_screen|. We can make |snapped_window_bounds_in_screen|
-  // simply by modifying one of these four values.
+  // |work_area_bounds_in_screen|.
   int left = work_area_bounds_in_screen.x();
   int top = work_area_bounds_in_screen.y();
   int right = work_area_bounds_in_screen.right();
   int bottom = work_area_bounds_in_screen.bottom();
 
-  const bool landscape = IsCurrentScreenOrientationLandscape();
+  // Make |snapped_window_bounds_in_screen| by modifying one of the above four
+  // values: the one that represents the inner edge of the snapped bounds.
   int& left_or_top = landscape ? left : top;
   int& right_or_bottom = landscape ? right : bottom;
-
-  const bool snap_left_or_top = IsPhysicalLeftOrTop(snap_position);
-  const int divider_position =
-      divider_position_ < 0 ? GetDefaultDividerPosition() : divider_position_;
-  // Put the inner edge at the |snap_position| side of the divider.
-  if (snap_left_or_top) {
-    right_or_bottom = left_or_top + divider_position;
-  } else {
-    left_or_top += divider_position;
-    if (Shell::Get()->tablet_mode_controller()->InTabletMode())
-      left_or_top += kSplitviewDividerShortSideLength;
-  }
-
-  // If |adjust_for_minimum_size|, then adjust the inner edge as needed to
-  // accommodate the minimum size of the snapped window.
-  if (adjust_for_minimum_size) {
-    const int minimum =
-        GetMinimumWindowSize(GetSnappedWindow(snap_position), landscape);
-    if (right_or_bottom - left_or_top < minimum) {
-      if (snap_left_or_top)
-        right_or_bottom = left_or_top + minimum;
-      else
-        left_or_top = right_or_bottom - minimum;
-    }
-  }
+  if (snap_left_or_top)
+    right_or_bottom = left_or_top + window_size;
+  else
+    left_or_top = right_or_bottom - window_size;
 
   gfx::Rect snapped_window_bounds_in_screen;
   snapped_window_bounds_in_screen.SetByBounds(left, top, right, bottom);
@@ -1178,6 +1193,13 @@ void SplitViewController::OnAccessibilityControllerShutdown() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
 }
 
+SplitViewController::SnapPosition
+SplitViewController::GetPositionOfSnappedWindow(
+    const aura::Window* window) const {
+  DCHECK(IsWindowInSplitView(window));
+  return window == left_window_ ? LEFT : RIGHT;
+}
+
 aura::Window* SplitViewController::GetSnappedWindow(SnapPosition position) {
   DCHECK_NE(NONE, position);
   return position == LEFT ? left_window_ : right_window_;
@@ -1270,7 +1292,8 @@ void SplitViewController::UpdateBlackScrim(
     black_scrim_layer_.reset();
     return;
   }
-  black_scrim_layer_->SetBounds(GetSnappedWindowBoundsInScreen(position));
+  black_scrim_layer_->SetBounds(
+      GetSnappedWindowBoundsInScreen(position, GetSnappedWindow(position)));
 
   // Update its opacity. The opacity increases as it gets closer to the edge of
   // the screen.
@@ -1551,9 +1574,8 @@ gfx::Point SplitViewController::GetEndDragLocationInScreen(
   if (!IsWindowInSplitView(window))
     return end_location;
 
-  const gfx::Rect bounds = (window == left_window_)
-                               ? GetSnappedWindowBoundsInScreen(LEFT)
-                               : GetSnappedWindowBoundsInScreen(RIGHT);
+  const gfx::Rect bounds = GetSnappedWindowBoundsInScreen(
+      GetPositionOfSnappedWindow(window), window);
   if (IsCurrentScreenOrientationLandscape()) {
     end_location.set_x(window == GetPhysicalLeftOrTopWindow() ? bounds.right()
                                                               : bounds.x());
@@ -1578,8 +1600,8 @@ void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
   if (!window->layer()->GetTargetTransform().IsIdentity()) {
     // Calculate the starting transform based on the window's expected snapped
     // bounds and its transformed bounds before to be snapped.
-    const gfx::Rect snapped_bounds =
-        GetSnappedWindowBoundsInScreen((window == left_window_) ? LEFT : RIGHT);
+    const gfx::Rect snapped_bounds = GetSnappedWindowBoundsInScreen(
+        GetPositionOfSnappedWindow(window), window);
     const gfx::Transform starting_transform = gfx::TransformBetweenRects(
         gfx::RectF(snapped_bounds), gfx::RectF(item_bounds));
     SetTransformWithAnimation(window, starting_transform, gfx::Transform());
@@ -1766,7 +1788,7 @@ void SplitViewController::EndWindowDragImpl(
       // Calculate the expected snap position based on the last event
       // location. Note if there is already a window at |desired_snap_postion|,
       // SnapWindow() will put the previous snapped window in overview.
-      SnapWindow(window, GetSnapPosition(last_location_in_screen));
+      SnapWindow(window, ComputeSnapPosition(last_location_in_screen));
       wm::ActivateWindow(window);
     } else {
       // Restore the dragged window's transform first if it's not identity. It
@@ -1821,7 +1843,7 @@ void SplitViewController::EndWindowDragImpl(
   }
 }
 
-SplitViewController::SnapPosition SplitViewController::GetSnapPosition(
+SplitViewController::SnapPosition SplitViewController::ComputeSnapPosition(
     const gfx::Point& last_location_in_screen) {
   const int divider_position = InSplitViewMode() ? this->divider_position()
                                                  : GetDefaultDividerPosition();

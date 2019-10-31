@@ -4820,7 +4820,6 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   if (!scroll_node || !scroll_node->snap_container_data.has_value())
     return false;
 
-  const SnapContainerData& data = scroll_node->snap_container_data.value();
   gfx::ScrollOffset current_position = GetVisualScrollOffset(*scroll_node);
 
   std::unique_ptr<SnapSelectionStrategy> strategy =
@@ -4828,7 +4827,7 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
           current_position, did_scroll_x_for_scroll_gesture_,
           did_scroll_y_for_scroll_gesture_);
   gfx::ScrollOffset snap_position;
-  if (!data.FindSnapPosition(*strategy, &snap_position))
+  if (!FindSnapPositionAndSetTarget(scroll_node, *strategy, &snap_position))
     return false;
 
   gfx::Vector2dF delta =
@@ -4860,6 +4859,24 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   return did_animate;
 }
 
+bool LayerTreeHostImpl::FindSnapPositionAndSetTarget(
+    ScrollNode* scroll_node,
+    const SnapSelectionStrategy& strategy,
+    gfx::ScrollOffset* snap_position) const {
+  SnapContainerData& data = scroll_node->snap_container_data.value();
+
+  TargetSnapAreaElementIds snap_targets;
+  bool did_find_target =
+      data.FindSnapPosition(strategy, snap_position, &snap_targets);
+
+  // Even if a target was not found we still need to invalidate the target snap
+  // area element ids.
+  data.SetTargetSnapAreaElementIds(
+      did_find_target ? snap_targets : TargetSnapAreaElementIds());
+
+  return did_find_target;
+}
+
 gfx::ScrollOffset LayerTreeHostImpl::GetVisualScrollOffset(
     const ScrollNode& scroll_node) const {
   if (&scroll_node == viewport()->MainScrollNode())
@@ -4868,15 +4885,14 @@ gfx::ScrollOffset LayerTreeHostImpl::GetVisualScrollOffset(
       scroll_node.element_id);
 }
 
-bool LayerTreeHostImpl::GetSnapFlingInfo(
+bool LayerTreeHostImpl::GetSnapFlingInfoAndSetSnapTarget(
     const gfx::Vector2dF& natural_displacement_in_viewport,
     gfx::Vector2dF* out_initial_position,
-    gfx::Vector2dF* out_target_position) const {
-  const ScrollNode* scroll_node = CurrentlyScrollingNode();
+    gfx::Vector2dF* out_target_position) {
+  ScrollNode* scroll_node = CurrentlyScrollingNode();
   if (!scroll_node || !scroll_node->snap_container_data.has_value())
     return false;
 
-  const SnapContainerData& data = scroll_node->snap_container_data.value();
   float scale_factor = active_tree()->page_scale_factor_for_scroll();
   gfx::Vector2dF natural_displacement_in_content =
       gfx::ScaleVector2d(natural_displacement_in_viewport, 1.f / scale_factor);
@@ -4888,7 +4904,7 @@ bool LayerTreeHostImpl::GetSnapFlingInfo(
   std::unique_ptr<SnapSelectionStrategy> strategy =
       SnapSelectionStrategy::CreateForEndAndDirection(
           current_offset, gfx::ScrollOffset(natural_displacement_in_content));
-  if (!data.FindSnapPosition(*strategy, &snap_offset))
+  if (!FindSnapPositionAndSetTarget(scroll_node, *strategy, &snap_offset))
     return false;
 
   *out_target_position = ScrollOffsetToVector2dF(snap_offset);

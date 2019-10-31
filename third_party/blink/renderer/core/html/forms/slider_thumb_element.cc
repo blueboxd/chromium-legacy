@@ -122,8 +122,10 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   LayoutUnit track_size;
   LayoutUnit position;
   LayoutUnit current_position;
-  PhysicalOffset thumb_offset = thumb_box->OffsetFromAncestor(input_object) -
-                                track_box->OffsetFromAncestor(input_object);
+  const LayoutBox* input_box = ToLayoutBox(input_object);
+  PhysicalOffset thumb_offset =
+      thumb_box->LocalToAncestorPoint(PhysicalOffset(), input_box) -
+      track_box->LocalToAncestorPoint(PhysicalOffset(), input_box);
   if (is_vertical) {
     track_size = track_box->ContentHeight() - thumb_box->Size().Height();
     position = point_in_track.top - thumb_box->Size().Height() / 2 -

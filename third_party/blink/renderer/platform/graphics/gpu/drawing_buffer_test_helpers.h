@@ -43,6 +43,7 @@ class WebGraphicsContext3DProviderForTests
       : webgpu_(std::move(webgpu)) {}
 
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_.get(); }
+  gpu::raster::RasterInterface* RasterInterface() override { return nullptr; }
   GrContext* GetGrContext() override { return nullptr; }
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override {
     return webgpu_.get();

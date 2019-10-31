@@ -455,6 +455,16 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
   selections.Reset();
   text_edit_range_provider.Release();
 
+  // Verify that we don't fill the SAFEARRAY when there is no selection and the
+  // node is not editable.
+  selected_tree_data.sel_focus_object_id = 2;
+  selected_tree_data.sel_anchor_object_id = 2;
+  selected_tree_data.sel_anchor_offset = 1;
+  selected_tree_data.sel_focus_offset = 1;
+
+  root_text_provider->GetSelection(selections.Receive());
+  ASSERT_EQ(nullptr, selections.Get());
+
   // Now delete the tree (which will delete the associated elements) and verify
   // that UIA_E_ELEMENTNOTAVAILABLE is returned when calling GetSelection on
   // a dead element

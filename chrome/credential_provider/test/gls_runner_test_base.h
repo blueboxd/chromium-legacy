@@ -65,6 +65,10 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakeCredentialProviderEvents* fake_provider_events() {
     return &fake_provider_events_;
   }
+  FakeCredentialProviderCredentialEvents*
+  fake_credential_provider_credential_events() {
+    return &fake_credential_provider_credential_events_;
+  }
   FakeInternetAvailabilityChecker* fake_internet_checker() {
     return &fake_internet_checker_;
   }
@@ -179,6 +183,8 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakePasswordRecoveryManager fake_password_recovery_manager_;
   FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
   FakeCredentialProviderEvents fake_provider_events_;
+  FakeCredentialProviderCredentialEvents
+      fake_credential_provider_credential_events_;
   FakeCredentialProviderUserArray fake_user_array_;
 
   // SID of the user that is considered to be locking the workstation. This is

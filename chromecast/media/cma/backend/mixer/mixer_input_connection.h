@@ -133,6 +133,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   StreamMixer* const mixer_;
   std::unique_ptr<mixer_service::MixerSocket> socket_;
 
+  const bool ignore_for_stream_count_;
   const int fill_size_;
   const int num_channels_;
   const int input_samples_per_second_;

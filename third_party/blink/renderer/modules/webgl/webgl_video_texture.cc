@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_video_frame_info.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_video_frame_metadata.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_video_texture_enum.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -42,11 +42,11 @@ const char* WebGLVideoTexture::ExtensionName() {
 }
 
 void WebGLVideoTexture::Trace(blink::Visitor* visitor) {
-  visitor->Trace(current_frame_info_);
+  visitor->Trace(current_frame_metadata_);
   WebGLExtension::Trace(visitor);
 }
 
-WebGLVideoFrameInfo* WebGLVideoTexture::VideoElementTargetVideoTexture(
+WebGLVideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
     ExecutionContext* execution_context,
     unsigned target,
     HTMLVideoElement* video,
@@ -92,15 +92,16 @@ WebGLVideoFrameInfo* WebGLVideoTexture::VideoElementTargetVideoTexture(
   video->PrepareVideoFrameForWebGL(scoped.Context()->ContextGL(), target,
                                    texture->Object(), already_uploaded_id,
                                    frame_metadata_ptr);
-
   if (!frame_metadata_ptr) {
     return nullptr;
   }
 
-  if (frame_metadata_ptr)
-    current_frame_info_ = WebGLVideoFrameInfo::Create(frame_metadata_ptr);
+  if (frame_metadata_ptr) {
+    current_frame_metadata_ =
+        WebGLVideoFrameMetadata::Create(frame_metadata_ptr);
+  }
 
-  return current_frame_info_;
+  return current_frame_metadata_;
 }
 
 }  // namespace blink

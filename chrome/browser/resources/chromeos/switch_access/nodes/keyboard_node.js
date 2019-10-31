@@ -46,21 +46,30 @@ class KeyboardNode extends NodeWrapper {
       throw new TypeError('Keyboard nodes must have an automation node.');
     }
 
-    return KeyboardNode.buildTree_(node);
+    const root = new RootNodeWrapper(node);
+    KeyboardNode.buildHelper(root);
+    return root;
   }
 
   /**
    * Builds a tree of KeyboardNodes.
-   * @param {!chrome.automation.AutomationNode} automationNode
-   * @return {!SARootNode}
-   * @private
+   * @param {!RootNodeWrapper} root
    */
-  static buildTree_(automationNode) {
-    const root = new RootNodeWrapper(automationNode);
+  static buildHelper(root) {
     const childConstructor = (node) => new KeyboardNode(node, root);
 
-    RootNodeWrapper.buildHelper(root, childConstructor);
-    return root;
+    /** @type {!Array<!chrome.automation.AutomationNode>} */
+    let interestingChildren = RootNodeWrapper.getInterestingChildren(root);
+    let children = interestingChildren.map(childConstructor);
+    if (interestingChildren.length > SAConstants.KEYBOARD_MAX_ROW_LENGTH) {
+      children = GroupNode.separateByRow(children);
+    }
+
+    const backButton = new BackButtonNode(root);
+    children.push(backButton);
+
+    SARootNode.connectChildren(children);
+    root.setChildren(children);
   }
 }
 
@@ -107,9 +116,7 @@ class KeyboardRootNode extends RootNodeWrapper {
 
     const root = new KeyboardRootNode(keyboard);
     root.onEnter_();
-    const childConstructor = (node) => new KeyboardNode(node, root);
-
-    RootNodeWrapper.buildHelper(root, childConstructor);
+    KeyboardNode.buildHelper(root);
     return root;
   }
 }

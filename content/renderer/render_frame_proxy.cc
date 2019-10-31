@@ -87,7 +87,8 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   // always come from WebRemoteFrame::create and a call to WebFrame::swap must
   // follow later.
   blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::Create(
-      scope, proxy.get(), proxy->blink_interface_registry_.get());
+      scope, proxy.get(), proxy->blink_interface_registry_.get(),
+      proxy->GetRemoteAssociatedInterfaces());
 
   bool parent_is_local =
       !frame_to_replace->GetWebFrame()->Parent() ||
@@ -135,7 +136,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     render_view = RenderViewImpl::FromRoutingID(render_view_routing_id);
     web_frame = blink::WebRemoteFrame::CreateMainFrame(
         render_view->GetWebView(), proxy.get(),
-        proxy->blink_interface_registry_.get(), opener);
+        proxy->blink_interface_registry_.get(),
+        proxy->GetRemoteAssociatedInterfaces(), opener);
     render_widget = render_view->GetWidget();
   } else {
     // Create a frame under an existing parent. The parent is always expected
@@ -146,7 +148,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         blink::WebString::FromUTF8(replicated_state.name),
         replicated_state.frame_policy,
         replicated_state.frame_owner_element_type, proxy.get(),
-        proxy->blink_interface_registry_.get(), opener);
+        proxy->blink_interface_registry_.get(),
+        proxy->GetRemoteAssociatedInterfaces(), opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
     render_widget = parent->render_widget_;
@@ -176,7 +179,8 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
   proxy->devtools_frame_token_ = devtools_frame_token;
   blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::CreateForPortal(
       blink::WebTreeScopeType::kDocument, proxy.get(),
-      proxy->blink_interface_registry_.get(), portal_element);
+      proxy->blink_interface_registry_.get(),
+      proxy->GetRemoteAssociatedInterfaces(), portal_element);
   proxy->Init(web_frame, parent->render_view(),
               parent->GetLocalRootRenderWidget(), true);
   return proxy.release();
@@ -416,7 +420,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateVisualProperties,
                         OnDidUpdateVisualProperties)
@@ -537,13 +540,6 @@ void RenderFrameProxy::OnSetFrameOwnerProperties(
     const FrameOwnerProperties& properties) {
   web_frame_->SetFrameOwnerProperties(
       ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(properties));
-}
-
-void RenderFrameProxy::OnDidUpdateOrigin(
-    const url::Origin& origin,
-    bool is_potentially_trustworthy_unique_origin) {
-  web_frame_->SetReplicatedOrigin(origin,
-                                  is_potentially_trustworthy_unique_origin);
 }
 
 void RenderFrameProxy::OnSetPageFocus(bool is_focused) {
@@ -855,12 +851,6 @@ void RenderFrameProxy::SetIsInert(bool inert) {
   Send(new FrameHostMsg_SetIsInert(routing_id_, inert));
 }
 
-void RenderFrameProxy::SetInheritedEffectiveTouchAction(
-    cc::TouchAction touch_action) {
-  Send(new FrameHostMsg_SetInheritedEffectiveTouchAction(routing_id_,
-                                                         touch_action));
-}
-
 void RenderFrameProxy::UpdateRenderThrottlingStatus(bool is_throttled,
                                                     bool subtree_throttled) {
   Send(new FrameHostMsg_UpdateRenderThrottlingStatus(routing_id_, is_throttled,
@@ -951,13 +941,20 @@ blink::AssociatedInterfaceProvider*
 RenderFrameProxy::GetRemoteAssociatedInterfaces() {
   if (!remote_associated_interfaces_) {
     ChildThreadImpl* thread = ChildThreadImpl::current();
-    mojo::PendingAssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
-        remote_interfaces;
-    thread->GetRemoteRouteProvider()->GetRoute(
-        routing_id_, remote_interfaces.InitWithNewEndpointAndPassReceiver());
-    remote_associated_interfaces_ =
-        std::make_unique<blink::AssociatedInterfaceProvider>(
-            std::move(remote_interfaces));
+    if (thread) {
+      mojo::PendingAssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
+          remote_interfaces;
+      thread->GetRemoteRouteProvider()->GetRoute(
+          routing_id_, remote_interfaces.InitWithNewEndpointAndPassReceiver());
+      remote_associated_interfaces_ =
+          std::make_unique<blink::AssociatedInterfaceProvider>(
+              std::move(remote_interfaces));
+    } else {
+      // In some tests the thread may be null,
+      // so set up a self-contained interface provider instead.
+      remote_associated_interfaces_ =
+          std::make_unique<blink::AssociatedInterfaceProvider>(nullptr);
+    }
   }
   return remote_associated_interfaces_.get();
 }

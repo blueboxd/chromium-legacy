@@ -414,9 +414,6 @@ bool IsGroupSuggestionsBySearchVsUrlFeatureEnabled();
 // is enabled.
 bool IsMaxURLMatchesFeatureEnabled();
 
-// Returns whether on device head provider is enabled for incognito mode.
-bool IsOnDeviceHeadProviderEnabledForIncognito();
-
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
 

@@ -86,9 +86,9 @@ class TabStrip : public views::AccessiblePaneView,
   explicit TabStrip(std::unique_ptr<TabStripController> controller);
   ~TabStrip() override;
 
-  // Returns the size needed for the specified tabs. This is invoked during drag
-  // and drop to calculate offsets and positioning.
-  static int GetSizeNeededForTabs(const std::vector<Tab*>& tabs);
+  // Returns the size needed for the specified views. This is invoked during
+  // drag and drop to calculate offsets and positioning.
+  static int GetSizeNeededForViews(const std::vector<TabSlotView*>& views);
 
   // Add and remove observers to changes within this TabStrip.
   void AddObserver(TabStripObserver* observer);
@@ -207,9 +207,9 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns the NewTabButton.
   NewTabButton* new_tab_button() { return new_tab_button_; }
 
-  // Returns the index of the specified tab in the model coordinate system, or
-  // -1 if tab is closing or not valid.
-  int GetModelIndexOfTab(const Tab* tab) const;
+  // Returns the index of the specified view in the model coordinate system, or
+  // -1 if view is closing or not a tab.
+  int GetModelIndexOf(const TabSlotView* view) const;
 
   // Gets the number of Tabs in the tab strip.
   int tab_count() const { return tabs_.view_size(); }
@@ -261,7 +261,7 @@ class TabStrip : public views::AccessiblePaneView,
   bool IsLastVisibleTab(const Tab* tab) const override;
   bool IsFocusInTabs() const override;
   void MaybeStartDrag(
-      Tab* tab,
+      TabSlotView* source,
       const ui::LocatedEvent& event,
       const ui::ListSelectionModel& original_selection) override;
   void ContinueDrag(views::View* view, const ui::LocatedEvent& event) override;
@@ -483,7 +483,7 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Invoked from StoppedDraggingTabs to cleanup |tab|. If |tab| is known
   // |is_first_tab| is set to true.
-  void StoppedDraggingTab(Tab* tab, bool* is_first_tab);
+  void StoppedDraggingView(TabSlotView* view, bool* is_first_view);
 
   // Invoked when a mouse event occurs over |source|. Potentially switches the
   // |stacked_layout_|.

@@ -1129,15 +1129,13 @@ void TabStripModel::UpdateGroupForDragRevert(
     if (group_exists) {
       add_to_group_and_notify();
     } else {
-      auto data_it = group_data_
-                         .emplace(group_id.value(),
-                                  GroupData(TabGroupVisualData(*group_data)))
-                         .first;
+      RegisterGroup(group_id.value(), group_data);
+      const auto group_data_pair = group_data_.find(group_id.value());
       add_to_group_and_notify();
       // Notify observers about the initial visual data.
       for (auto& observer : observers_) {
-        observer.OnTabGroupVisualDataChanged(this, group_id.value(),
-                                             &data_it->second.visual_data());
+        observer.OnTabGroupVisualDataChanged(
+            this, group_id.value(), &group_data_pair->second.visual_data());
       }
     }
   }
@@ -1163,6 +1161,13 @@ void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
       new_index++;
     MoveAndSetGroup(index, new_index, base::nullopt);
   }
+}
+
+void TabStripModel::RegisterGroup(
+    TabGroupId id,
+    base::Optional<TabGroupVisualData> visual_data) {
+  group_data_.insert(std::make_pair(
+      id, GroupData(visual_data.value_or(TabGroupVisualData()))));
 }
 
 // Context menu functions.
@@ -1825,8 +1830,8 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
 
   // Create initial visual data and save the iterator so we can notify observer
   // later.
-  const auto data_it =
-      group_data_.emplace(new_group, GroupData(TabGroupVisualData())).first;
+  RegisterGroup(new_group, base::nullopt);
+  const auto group_data_pair = group_data_.find(new_group);
 
   // Find a destination for the first tab that's not inside another group. We
   // will stack the rest of the tabs up to its right.
@@ -1850,8 +1855,8 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
 
   // Notify observers about the initial visual data.
   for (auto& observer : observers_) {
-    observer.OnTabGroupVisualDataChanged(this, new_group,
-                                         &data_it->second.visual_data());
+    observer.OnTabGroupVisualDataChanged(
+        this, new_group, &group_data_pair->second.visual_data());
   }
 }
 

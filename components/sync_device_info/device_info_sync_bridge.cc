@@ -443,6 +443,12 @@ void DeviceInfoSyncBridge::OnHardwareInfoRetrieved(
     base::SysInfo::HardwareInfo hardware_info) {
   local_hardware_info_ = std::move(hardware_info);
 
+#if defined(OS_CHROMEOS)
+  // For ChromeOS the returned model values are product code names like Eve. We
+  // want to use generic names like Chromebook.
+  local_hardware_info_.model = GetChromeOSDeviceNameFromType();
+#endif
+
   auto all_data = std::make_unique<ClientIdToSpecifics>();
   ClientIdToSpecifics* all_data_copy = all_data.get();
 

@@ -1909,6 +1909,9 @@
     'windows_sandboxing': {
       'filepath': 'sandbox/win/',
     },
+    'wpt_tools': {
+      'filepath': 'third_party/blink/web_tests/external/wpt/tools/',
+    },
     'x11': {
       'filepath': 'content/browser/renderer_host/backing_store_x\.' \
                   '|chrome/browser/chromeos/input_method/xkeyboard\.' \
@@ -2708,6 +2711,7 @@
                          'msramek+watch@chromium.org'],
     'webui_backend': ['dbeam+watch-webui-backend@chromium.org'],
     'windows_sandboxing': ['wfh+watch@chromium.org'],
+    'wpt_tools': ['lpz+watch@chromium.org'],
     'x11': ['sadrul@chromium.org',
             'yusukes+watch@chromium.org'],
     'zlib': ['cblume+zlib@chromium.org'],

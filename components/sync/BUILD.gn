@@ -343,8 +343,6 @@ jumbo_static_library("rest_of_sync") {
     "syncable/change_record.h",
     "syncable/change_reorder_buffer.cc",
     "syncable/change_reorder_buffer.h",
-    "syncable/delete_journal.cc",
-    "syncable/delete_journal.h",
     "syncable/dir_open_result.h",
     "syncable/directory.cc",
     "syncable/directory.h",

@@ -11574,6 +11574,30 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Mobile.OmniboxContextMenu.SearchCopiedImage">
+  <owner>rkgibson@google.com</owner>
+  <owner>stkhapugin@google.com</owner>
+  <description>
+    User pressed 'Search Copied Image' in the omnibox context menu (iOS only).
+  </description>
+</action>
+
+<action name="Mobile.OmniboxContextMenu.SearchCopiedText">
+  <owner>rkgibson@google.com</owner>
+  <owner>stkhapugin@google.com</owner>
+  <description>
+    User pressed 'Search Copied Text' in the omnibox context menu (iOS only).
+  </description>
+</action>
+
+<action name="Mobile.OmniboxContextMenu.VisitCopiedLink">
+  <owner>rkgibson@google.com</owner>
+  <owner>stkhapugin@google.com</owner>
+  <description>
+    User pressed 'Visit Copied Link' in the omnibox context menu (iOS only).
+  </description>
+</action>
+
 <action name="Mobile_FocusedDefocusedOmnibox_WithNoAction">
   <owner>stkhapugin@chromium.org</owner>
   <description>

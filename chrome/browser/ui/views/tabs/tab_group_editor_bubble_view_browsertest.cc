@@ -27,6 +27,10 @@ class TabGroupEditorBubbleViewDialogBrowserTest : public DialogBrowserTest {
     ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, gfx::PointF(),
                                  gfx::PointF(), base::TimeTicks(), 0, 0);
     header->OnMousePressed(pressed_event);
+
+    ui::MouseEvent released_event(ui::ET_MOUSE_RELEASED, gfx::PointF(),
+                                  gfx::PointF(), base::TimeTicks(), 0, 0);
+    header->OnMouseReleased(released_event);
   }
 };
 

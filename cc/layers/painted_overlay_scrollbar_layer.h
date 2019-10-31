@@ -23,7 +23,7 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerBase {
   PaintedOverlayScrollbarLayer& operator=(const PaintedOverlayScrollbarLayer&) =
       delete;
   static scoped_refptr<PaintedOverlayScrollbarLayer> Create(
-      std::unique_ptr<Scrollbar> scrollbar);
+      scoped_refptr<Scrollbar> scrollbar);
 
   bool OpacityCanAnimateOnImplThread() const override;
   bool Update() override;
@@ -31,7 +31,7 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerBase {
   void PushPropertiesTo(LayerImpl* layer) override;
 
  protected:
-  explicit PaintedOverlayScrollbarLayer(std::unique_ptr<Scrollbar> scrollbar);
+  explicit PaintedOverlayScrollbarLayer(scoped_refptr<Scrollbar> scrollbar);
   ~PaintedOverlayScrollbarLayer() override;
 
  private:
@@ -49,7 +49,7 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerBase {
   bool PaintThumbIfNeeded();
   bool PaintTickmarks();
 
-  std::unique_ptr<Scrollbar> scrollbar_;
+  scoped_refptr<Scrollbar> scrollbar_;
 
   int thumb_thickness_;
   int thumb_length_;
@@ -57,6 +57,9 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerBase {
   gfx::Rect track_rect_;
 
   gfx::Rect aperture_;
+
+  const ScrollbarOrientation orientation_;
+  const bool is_left_side_vertical_scrollbar_;
 
   std::unique_ptr<ScopedUIResource> thumb_resource_;
   std::unique_ptr<ScopedUIResource> track_resource_;

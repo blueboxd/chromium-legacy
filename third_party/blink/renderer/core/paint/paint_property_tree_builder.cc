@@ -785,7 +785,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
       // TODO(crbug.com/953322): We need to fix this to work with CAP as well.
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
           effective_change_type ==
-              PaintPropertyChangeType::kChangedOnlySimpleValues) {
+              PaintPropertyChangeType::kChangedOnlySimpleValues &&
+          properties_->Transform()->HasDirectCompositingReasons()) {
         if (auto* paint_artifact_compositor =
                 object_.GetFrameView()->GetPaintArtifactCompositor()) {
           bool updated = paint_artifact_compositor->DirectlyUpdateTransform(
@@ -1085,7 +1086,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       // TODO(crbug.com/953322): We need to fix this to work with CAP as well.
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
           effective_change_type ==
-              PaintPropertyChangeType::kChangedOnlySimpleValues) {
+              PaintPropertyChangeType::kChangedOnlySimpleValues &&
+          properties_->Effect()->HasDirectCompositingReasons()) {
         if (auto* paint_artifact_compositor =
                 object_.GetFrameView()->GetPaintArtifactCompositor()) {
           bool updated =
@@ -1934,15 +1936,21 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           context_.current.should_flatten_inherited_transform;
       state.direct_compositing_reasons =
           full_context_.direct_compositing_reasons &
-          CompositingReason::kRootScroller;
+          (CompositingReason::kRootScroller |
+           CompositingReasonsForTransformProperty());
       state.rendering_context_id = context_.current.rendering_context_id;
       state.scroll = properties_->Scroll();
       auto effective_change_type = properties_->UpdateScrollTranslation(
           *context_.current.transform, std::move(state));
+      bool known_to_be_composited =
+          RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+              ? properties_->ScrollTranslation()->HasDirectCompositingReasons()
+              : box.GetScrollableArea()->NeedsCompositedScrolling();
       // TODO(crbug.com/953322): We need to fix this to work with CAP as well.
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
           effective_change_type ==
-              PaintPropertyChangeType::kChangedOnlySimpleValues) {
+              PaintPropertyChangeType::kChangedOnlySimpleValues &&
+          known_to_be_composited) {
         if (auto* paint_artifact_compositor =
                 object_.GetFrameView()->GetPaintArtifactCompositor()) {
           bool updated =

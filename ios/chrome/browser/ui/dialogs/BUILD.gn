@@ -47,6 +47,14 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "dialog_constants.h",
+    "dialog_constants.mm",
+  ]
+}
+
 source_set("dialogs_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -63,6 +71,7 @@ source_set("dialogs_internal") {
   ]
   deps = [
     ":completion_block_util",
+    ":constants",
     ":dialogs",
     "//base",
     "//components/strings",
@@ -120,13 +129,14 @@ source_set("unit_tests_internal") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "javascript_dialog_egtest.mm",
   ]
   deps = [
-    ":dialogs_internal",
+    ":constants",
     "//base",
     "//base/test:test_support",
     "//components/strings",
@@ -150,4 +160,34 @@ source_set("eg_tests") {
     "UIKit.framework",
     "XCTest.framework",
   ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "javascript_dialog_egtest.mm",
+  ]
+  deps = [
+    ":constants",
+    "//base",
+    "//base/test:test_support",
+    "//components/strings",
+    "//components/url_formatter",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/test:eg_test_support+eg2",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test:element_selector",
+    "//ios/web/public/test/http_server",
+    "//net:test_support",
+    "//ui/base",
+    "//url",
+  ]
+  libs = [ "UIKit.framework" ]
 }

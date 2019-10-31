@@ -53,6 +53,7 @@ ScopedJavaLocalRef<jobject> NavigationImpl::GetRedirectChain(
     jni_redirects.push_back(redirect.spec());
   return base::android::ToJavaArrayOfStrings(env, jni_redirects);
 }
+
 #endif
 
 GURL NavigationImpl::GetURL() {
@@ -66,6 +67,10 @@ const std::vector<GURL>& NavigationImpl::GetRedirectChain() {
 Navigation::State NavigationImpl::GetState() {
   NOTIMPLEMENTED() << "TODO: properly implement this";
   return Navigation::State::kWaitingResponse;
+}
+
+bool NavigationImpl::IsSameDocument() {
+  return navigation_handle_->IsSameDocument();
 }
 
 }  // namespace weblayer

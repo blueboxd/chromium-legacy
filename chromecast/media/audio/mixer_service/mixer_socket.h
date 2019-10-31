@@ -90,8 +90,9 @@ class MixerSocket : public SmallMessageSocket::Delegate {
   // given message, a normal IOBuffer will be dynamically allocated instead.
   void UseBufferPool(scoped_refptr<IOBufferPool> buffer_pool);
 
-  // 16-bit type and 64-bit timestamp.
-  static constexpr size_t kAudioHeaderSize = sizeof(int16_t) + sizeof(int64_t);
+  // 16-bit type and 64-bit timestamp, plus 32-bit padding to align to 16 bytes.
+  static constexpr size_t kAudioHeaderSize =
+      sizeof(int16_t) + sizeof(int64_t) + sizeof(int32_t);
   // Includes additional 16-bit size field for SmallMessageSocket.
   static constexpr size_t kAudioMessageHeaderSize =
       sizeof(uint16_t) + kAudioHeaderSize;

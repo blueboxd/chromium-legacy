@@ -13,4 +13,6 @@ interface INavigation {
   String getUri() = 1;
 
   List<String> getRedirectChain() = 2;
+
+  boolean isSameDocument() = 3;
 }

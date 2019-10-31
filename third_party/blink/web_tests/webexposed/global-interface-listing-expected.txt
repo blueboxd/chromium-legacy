@@ -5093,7 +5093,9 @@ interface NDEFReadingEvent : Event
 interface NDEFRecord
     attribute @@toStringTag
     getter data
+    getter encoding
     getter id
+    getter lang
     getter mediaType
     getter recordType
     method arrayBuffer
@@ -10567,11 +10569,17 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
-interface WebGLVideoFrameInfo
+interface WebGLVideoFrameMetadata
     attribute @@toStringTag
-    getter currentTime
-    getter textureHeight
-    getter textureWidth
+    getter captureTime
+    getter elapsedProcessingTime
+    getter expectedPresentationTime
+    getter height
+    getter presentationTime
+    getter presentationTimestamp
+    getter presentedFrames
+    getter rtpTimestamp
+    getter width
     method constructor
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag

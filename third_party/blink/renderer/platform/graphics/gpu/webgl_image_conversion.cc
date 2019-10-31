@@ -2823,7 +2823,8 @@ void WebGLImageConversion::ImageExtractor::ExtractImage(
         image_->Data(), data_complete, ImageDecoder::kAlphaNotPremultiplied,
         ImageDecoder::kDefaultBitDepth,
         ignore_color_space ? ColorBehavior::Ignore()
-                           : ColorBehavior::TransformToSRGB()));
+                           : ColorBehavior::TransformToSRGB(),
+        ImageDecoder::OverrideAllowDecodeToYuv::kDeny));
     if (!decoder || !decoder->FrameCount())
       return;
     ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);

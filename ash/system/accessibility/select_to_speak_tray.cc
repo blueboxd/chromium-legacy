@@ -30,7 +30,6 @@ const char kSelectToSpeakTrayClassName[] =
 
 SelectToSpeakTray::SelectToSpeakTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new views::ImageView()) {
-  SetInkDropMode(InkDropMode::ON);
 
   UpdateIconsForSession();
   icon_->SetImage(inactive_image_);

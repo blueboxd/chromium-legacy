@@ -105,11 +105,6 @@ class ScrollableAreaStub : public GarbageCollected<ScrollableAreaStub>,
   bool ScrollbarsCanBeActive() const override { return true; }
   bool ShouldPlaceVerticalScrollbarOnLeft() const override { return true; }
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
-  GraphicsLayer* LayerForScrolling() const override { return nullptr; }
-  GraphicsLayer* LayerForHorizontalScrollbar() const override {
-    return nullptr;
-  }
-  GraphicsLayer* LayerForVerticalScrollbar() const override { return nullptr; }
   bool UserInputScrollable(ScrollbarOrientation orientation) const override {
     return orientation == kHorizontalScrollbar ? user_input_scrollable_x_
                                                : user_input_scrollable_y_;

@@ -56,6 +56,8 @@ static inline ValidPropertyFilter DetermineValidPropertyFilter(
       return ValidPropertyFilter::kCue;
     if (component->GetPseudoType() == CSSSelector::kPseudoFirstLetter)
       return ValidPropertyFilter::kFirstLetter;
+    if (component->GetPseudoType() == CSSSelector::kPseudoMarker)
+      return ValidPropertyFilter::kMarker;
   }
   return ValidPropertyFilter::kNoFilter;
 }

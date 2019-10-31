@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/frame/header_view.h"
 
 namespace aura {
 class Window;
@@ -19,6 +20,8 @@ namespace ash {
 // Get application windows, windows that are shown in overview grid.
 ASH_EXPORT std::vector<aura::Window*> GetAppWindowList();
 
+// Get HeaderView from application windows.
+ASH_EXPORT ash::HeaderView* GetHeaderViewForWindow(aura::Window* window);
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_AUTOTEST_PRIVATE_API_UTILS_H_

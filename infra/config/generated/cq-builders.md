@@ -87,6 +87,20 @@ builder.
   Path exclude regular expressions:
   * [`//components/cronet/ios/.+`](https://cs.chromium.org/chromium/src/components/cronet/ios/)
 
+* [android-oreo-arm64-dbg](https://ci.chromium.org/p/chromium/builders/try/android-oreo-arm64-dbg) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-oreo-arm64-dbg)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-oreo-arm64-dbg))
+
+  Path regular expressions:
+  * [`//chrome/android/java/src/org/chromium/chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/vr/)
+  * [`//chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/browser/vr/)
+  * [`//third_party/gvr-android-sdk/.+`](https://cs.chromium.org/chromium/src/third_party/gvr-android-sdk/)
+
+* [android-pie-arm64-dbg](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-dbg) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-pie-arm64-dbg)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-pie-arm64-dbg))
+
+  Path regular expressions:
+  * [`//chrome/android/java/src/org/chromium/chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/vr/)
+  * [`//chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/browser/vr/)
+  * [`//third_party/gvr-android-sdk/.+`](https://cs.chromium.org/chromium/src/third_party/gvr-android-sdk/)
+
 * [android_compile_x64_dbg](https://ci.chromium.org/p/chromium/builders/try/android_compile_x64_dbg) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android_compile_x64_dbg)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android_compile_x64_dbg))
 
   Path regular expressions:
@@ -297,6 +311,13 @@ builder.
   * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
   * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
 
+* [try-nougat-phone-tester](https://ci.chromium.org/p/chromium/builders/try/try-nougat-phone-tester) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+try-nougat-phone-tester)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+try-nougat-phone-tester))
+
+  Path regular expressions:
+  * [`//chrome/android/java/src/org/chromium/chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/vr/)
+  * [`//chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/browser/vr/)
+  * [`//third_party/gvr-android-sdk/.+`](https://cs.chromium.org/chromium/src/third_party/gvr-android-sdk/)
+
 * [win_optional_gpu_tests_rel](https://ci.chromium.org/p/chromium/builders/try/win_optional_gpu_tests_rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+win_optional_gpu_tests_rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+win_optional_gpu_tests_rel))
 
   Path regular expressions:
@@ -325,7 +346,7 @@ as required builders.
   * Experiment percentage: 10
 
 * [android-pie-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-pie-arm64-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-pie-arm64-rel))
-  * Experiment percentage: 50
+  * Experiment percentage: 100
 
 * [chromeos-kevin-experimental-rel](https://ci.chromium.org/p/chromium/builders/try/chromeos-kevin-experimental-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+chromeos-kevin-experimental-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+chromeos-kevin-experimental-rel))
   * Experiment percentage: 5

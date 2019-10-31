@@ -19,6 +19,7 @@
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/child_process_termination_info.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_creation_observer.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/child_process_host.h"
@@ -178,7 +179,7 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
   std::map<base::ProcessId, int> child_pid_to_crash_signal_;
   ScopedObserver<crashpad::CrashHandlerHost,
                  crashpad::CrashHandlerHost::Observer>
-      scoped_observer_;
+      scoped_observer_{this};
 
   ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
       rph_observers_{this};

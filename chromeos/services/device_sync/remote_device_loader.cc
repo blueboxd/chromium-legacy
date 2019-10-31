@@ -140,10 +140,13 @@ void RemoteDeviceLoader::OnPSKDerived(
         multidevice::FromCryptAuthSeed(cryptauth_beacon_seed));
   }
 
+  // Because RemoteDeviceLoader does not handle devices using v2 DeviceSync, no
+  // Instance ID is present.
   multidevice::RemoteDevice remote_device(
-      user_id_, device.friendly_device_name(), device.no_pii_device_name(),
-      device.public_key(), psk, device.last_update_time_millis(),
-      GetSoftwareFeatureToStateMap(device), multidevice_beacon_seeds);
+      user_id_, std::string() /* instance_id */, device.friendly_device_name(),
+      device.no_pii_device_name(), device.public_key(), psk,
+      device.last_update_time_millis(), GetSoftwareFeatureToStateMap(device),
+      multidevice_beacon_seeds);
 
   remote_devices_.push_back(remote_device);
 

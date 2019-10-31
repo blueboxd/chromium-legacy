@@ -2,31 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#import <UIKit/UIKit.h>
-#import <XCTest/XCTest.h>
-
 #include "base/bind.h"
 #include "base/ios/ios_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/ui/fullscreen/test/fullscreen_app_interface.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/common/features.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server/error_page_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -46,9 +39,7 @@ const int kPageHeightEM = 200;
 
 // Hides the toolbar by scrolling down.
 void HideToolbarUsingUI() {
-  [[EarlGrey
-      selectElementWithMatcher:WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
 }
 
@@ -117,13 +108,7 @@ void AssertURLIs(const GURL& expectedURL) {
              errorMessage);
 
   // Initial y scroll positions are set to make room for the toolbar.
-  // TODO(crbug.com/618887) Replace use of specific values when API which
-  // generates these values is exposed.
-  CGFloat yOffset = [ChromeEarlGrey isIPadIdiom] ? -89.0 : -48.0;
-  // The safe area is included in the top inset as well as the toolbar
-  // heights.
-  yOffset -=
-      chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
+  CGFloat yOffset = -[FullscreenAppInterface currentViewportInsets].top;
   DCHECK_LT(yOffset, 0);
   [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       assertWithMatcher:grey_scrollViewContentOffset(CGPointMake(0, yOffset))];
@@ -145,9 +130,7 @@ void AssertURLIs(const GURL& expectedURL) {
         std::make_unique<ScopedSynchronizationDisabler>();
 
     // Test that the toolbar is still visible after a user swipes down.
-    [[EarlGrey
-        selectElementWithMatcher:WebViewScrollView(
-                                     chrome_test_util::GetCurrentWebState())]
+    [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
         performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
     [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
@@ -176,9 +159,7 @@ void AssertURLIs(const GURL& expectedURL) {
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Test that the toolbar is visible after a user swipes down.
-  [[EarlGrey
-      selectElementWithMatcher:WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
@@ -196,34 +177,21 @@ void AssertURLIs(const GURL& expectedURL) {
 
   // Hide the toolbar. The page is not long enough to dismiss the toolbar using
   // the UI so we have to zoom in.
-  const char script[] =
-      "(function(){"
-      "var metas = document.getElementsByTagName('meta');"
-      "for (var i=0; i<metas.length; i++) {"
-      "  if (metas[i].getAttribute('name') == 'viewport') {"
-      "    metas[i].setAttribute('content', 'width=10');"
-      "    return;"
-      "  }"
-      "}"
-      "document.body.innerHTML += \"<meta name='viewport' content='width=10'>\""
-      "})()";
-
-  __block bool finished = false;
-  chrome_test_util::GetCurrentWebState()->ExecuteJavaScript(
-      base::UTF8ToUTF16(script), base::BindOnce(^(const base::Value*) {
-        finished = true;
-      }));
-
-  GREYAssert(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout,
-                                         ^{
-                                           return finished;
-                                         }),
-             @"JavaScript to hide the toolbar did not complete");
+  NSString* script = @"(function(){"
+                      "var metas = document.getElementsByTagName('meta');"
+                      "for (var i=0; i<metas.length; i++) {"
+                      "  if (metas[i].getAttribute('name') == 'viewport') {"
+                      "    metas[i].setAttribute('content', 'width=10');"
+                      "    return;"
+                      "  }"
+                      "}"
+                      "document.body.innerHTML += \"<meta name='viewport' "
+                      "content='width=10'>\""
+                      "})()";
+  [ChromeEarlGrey executeJavaScript:script];
 
   // Scroll up to be sure the toolbar can be dismissed by scrolling down.
-  [[EarlGrey
-      selectElementWithMatcher:WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
 
   // Scroll to hide the UI.
@@ -251,9 +219,7 @@ void AssertURLIs(const GURL& expectedURL) {
   HideToolbarUsingUI();
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
   // Simulate a user scroll up.
-  [[EarlGrey
-      selectElementWithMatcher:WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }

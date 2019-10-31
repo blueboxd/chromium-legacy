@@ -15,8 +15,8 @@
 
 namespace syncer {
 
-std::string GetPersonalizableDeviceNameInternal() {
 #if defined(OS_CHROMEOS)
+std::string GetChromeOSDeviceNameFromType() {
   switch (chromeos::GetDeviceType()) {
     case chromeos::DeviceType::kChromebase:
       return "Chromebase";
@@ -30,6 +30,12 @@ std::string GetPersonalizableDeviceNameInternal() {
       break;
   }
   return "Chromebook";
+}
+#endif
+
+std::string GetPersonalizableDeviceNameInternal() {
+#if defined(OS_CHROMEOS)
+  return GetChromeOSDeviceNameFromType();
 #else
   char hostname[HOST_NAME_MAX];
   if (gethostname(hostname, HOST_NAME_MAX) == 0)  // Success.

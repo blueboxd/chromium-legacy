@@ -203,7 +203,6 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showReportAnIssueFromViewController:
     (UIViewController*)baseViewController {
   DCHECK(baseViewController);
-  DCHECK(![baseViewController presentedViewController]);
   // This dispatch is necessary to give enough time for the tools menu to
   // disappear before taking a screenshot.
   dispatch_async(dispatch_get_main_queue(), ^{

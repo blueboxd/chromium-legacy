@@ -20,6 +20,9 @@ which is equivalent to
 
     git checkout -b <branch_name> --track origin/master
 
+Mark the associated crbug as "started" so that other people know that you have
+started work on the bug. Doing this can avoid duplicated work.
+
 ## 2. Make your changes
 
 Do your thing. There's no further advice here about how to write or fix code.
@@ -140,8 +143,11 @@ of your reviewers to approve your changes as well, even if they're not owners.
 Click `Submit to CQ` to try your change in the commit queue (CQ), which will
 land it if successful.
 
+## 18. Cleanup
+
 After your CL is landed, you can use `git rebase-update` or `git cl archive` to
-clean up your local branches.
+clean up your local branches. These commands will automatically delete merged
+branches. Mark the associated crbug as "fixed".
 
 [//]: # (the reference link section should be alphabetically sorted)
 [contributing]: contributing.md

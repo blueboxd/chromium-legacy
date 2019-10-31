@@ -32,6 +32,8 @@
 #error "This file requires ARC support."
 #endif
 
+using base::UserMetricsAction;
+
 namespace {
 
 typedef NS_ENUM(int, TrailingButtonState) {
@@ -435,7 +437,7 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 // The actual share dialog is opened by the dispatcher, only collect the metrics
 // here.
 - (void)shareButtonPressed {
-  base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
+  RecordAction(UserMetricsAction("MobileToolbarShareMenu"));
 }
 
 
@@ -505,6 +507,8 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 }
 
 - (void)searchCopiedImage:(id)sender {
+  RecordAction(
+      UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
   if (base::Optional<gfx::Image> optionalImage =
           ClipboardRecentContent::GetInstance()
               ->GetRecentImageFromClipboard()) {
@@ -514,10 +518,13 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 }
 
 - (void)visitCopiedLink:(id)sender {
+  RecordAction(
+      UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
   [self pasteAndGo:sender];
 }
 
 - (void)searchCopiedText:(id)sender {
+  RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedText"));
   [self pasteAndGo:sender];
 }
 

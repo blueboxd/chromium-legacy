@@ -23,7 +23,7 @@
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace media {
 
@@ -37,9 +37,9 @@ class Renderer;
 class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
                                               public RendererClient {
  public:
-  // Helper function to bind MojoRendererService with a StrongBinding,
-  // which is safely accessible via the returned StrongBindingPtr.
-  static mojo::StrongBindingPtr<mojom::Renderer> Create(
+  // Helper function to bind MojoRendererService with a SelfOwendReceiver,
+  // which is safely accessible via the returned SelfOwnedReceiverRef.
+  static mojo::SelfOwnedReceiverRef<mojom::Renderer> Create(
       MojoCdmServiceContext* mojo_cdm_service_context,
       std::unique_ptr<media::Renderer> renderer,
       mojo::PendingReceiver<mojom::Renderer> receiver);

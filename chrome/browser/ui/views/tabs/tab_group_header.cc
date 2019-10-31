@@ -14,7 +14,11 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -30,9 +34,11 @@
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
-TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
-    : controller_(controller), group_(group) {
-  DCHECK(controller);
+TabGroupHeader::TabGroupHeader(TabStrip* tab_strip, TabGroupId group)
+    : tab_strip_(tab_strip) {
+  DCHECK(tab_strip);
+
+  set_group(group);
 
   views::FlexLayout* layout =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
@@ -64,9 +70,56 @@ bool TabGroupHeader::OnMousePressed(const ui::MouseEvent& event) {
   if (editor_bubble_tracker_.is_open())
     return false;
 
-  editor_bubble_tracker_.Opened(
-      TabGroupEditorBubbleView::Show(this, controller_, group_));
+  tab_strip_->MaybeStartDrag(this, event, tab_strip_->GetSelectionModel());
+
   return true;
+}
+
+bool TabGroupHeader::OnMouseDragged(const ui::MouseEvent& event) {
+  tab_strip_->ContinueDrag(this, event);
+  return true;
+}
+
+void TabGroupHeader::OnMouseReleased(const ui::MouseEvent& event) {
+  if (!dragging()) {
+    editor_bubble_tracker_.Opened(
+        TabGroupEditorBubbleView::Show(this, tab_strip_, group().value()));
+  }
+  tab_strip_->EndDrag(END_DRAG_COMPLETE);
+}
+
+void TabGroupHeader::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN: {
+      if (!editor_bubble_tracker_.is_open()) {
+        tab_strip_->MaybeStartDrag(this, *event,
+                                   tab_strip_->GetSelectionModel());
+      }
+      break;
+    }
+
+    case ui::ET_GESTURE_SCROLL_UPDATE: {
+      tab_strip_->ContinueDrag(this, *event);
+      break;
+    }
+
+    case ui::ET_GESTURE_END: {
+      if (!dragging()) {
+        editor_bubble_tracker_.Opened(
+            TabGroupEditorBubbleView::Show(this, tab_strip_, group().value()));
+      }
+      tab_strip_->EndDrag(END_DRAG_COMPLETE);
+      break;
+    }
+
+    default:
+      break;
+  }
+  event->SetHandled();
+}
+
+TabSlotView::ViewType TabGroupHeader::GetTabSlotViewType() const {
+  return TabSlotView::ViewType::kTabGroupHeader;
 }
 
 TabSizeInfo TabGroupHeader::GetTabSizeInfo() const {
@@ -96,7 +149,8 @@ int TabGroupHeader::CalculateWidth() const {
 
 void TabGroupHeader::VisualsChanged() {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  const TabGroupVisualData* data = controller_->GetVisualDataForGroup(group_);
+  const TabGroupVisualData* data =
+      tab_strip_->controller()->GetVisualDataForGroup(group().value());
   if (data->title().empty()) {
     title_->SetVisible(false);
     constexpr gfx::Rect kEmptyTitleChipSize(12, 12);

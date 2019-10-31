@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SHARING_SMS_SMS_FETCH_REQUEST_HANDLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
+#include "components/sync/protocol/sharing_message.pb.h"
 
 // Handles incoming messages for the sms fetcher feature.
 class SmsFetchRequestHandler : public SharingMessageHandler {

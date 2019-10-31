@@ -32,9 +32,7 @@ public class BrowserFragmentControllerImpl extends IBrowserFragmentController.St
     }
 
     public void onFragmentDetached() {
-        mTabController.destroy();
-        mTabController = null;
-        mWindowAndroid = null;
+        destroy(); // For now we don't retain anything between detach and attach.
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -71,5 +69,11 @@ public class BrowserFragmentControllerImpl extends IBrowserFragmentController.St
         return mTabController.getView();
     }
 
-    public void destroy() {}
+    public void destroy() {
+        if (mTabController != null) {
+            mTabController.destroy();
+            mTabController = null;
+        }
+        mWindowAndroid = null;
+    }
 }

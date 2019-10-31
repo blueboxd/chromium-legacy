@@ -680,9 +680,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // visual and layout offsets of the viewport.
   gfx::ScrollOffset GetVisualScrollOffset(const ScrollNode& scroll_node) const;
 
-  bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement_in_viewport,
-                        gfx::Vector2dF* out_initial_position,
-                        gfx::Vector2dF* out_target_position) const override;
+  bool GetSnapFlingInfoAndSetSnapTarget(
+      const gfx::Vector2dF& natural_displacement_in_viewport,
+      gfx::Vector2dF* out_initial_position,
+      gfx::Vector2dF* out_target_position) override;
 
   // Returns the amount of delta that can be applied to scroll_node, taking
   // page scale into account.
@@ -967,6 +968,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // Creates an animation curve and returns true if we need to update the
   // scroll position to a snap point. Otherwise returns false.
   bool SnapAtScrollEnd();
+
+  // Returns true if a target snap position was found.
+  // Updates the scrolling node's snap container data's target snap points
+  // accordingly to the found target.
+  bool FindSnapPositionAndSetTarget(ScrollNode* scroll_node,
+                                    const SnapSelectionStrategy& strategy,
+                                    gfx::ScrollOffset* snap_position) const;
 
   void SetContextVisibility(bool is_visible);
   void ImageDecodeFinished(int request_id, bool decode_succeeded);

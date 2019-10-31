@@ -518,7 +518,7 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   // This one we reset on failure.
   kernel_->info_status = KERNEL_SHARE_INFO_VALID;
 
-  delete_journal_->TakeSnapshotAndClear(&trans, &snapshot->delete_journals,
+  delete_journal_->TakeSnapshotAndClear(&trans,
                                         &snapshot->delete_journals_to_purge);
 }
 

@@ -196,6 +196,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
  private:
   class AutoHideEventHandler;
+  class AutoDimEventHandler;
   friend class ShelfLayoutManagerTest;
 
   // Returns work area insets object for the window with this shelf.
@@ -220,6 +221,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
   std::unique_ptr<AutoHideEventHandler> auto_hide_event_handler_;
+
+  // Forwards mouse and gesture events to ShelfLayoutManager for auto-dim.
+  std::unique_ptr<AutoDimEventHandler> auto_dim_event_handler_;
 
   // Hands focus off to different parts of the shelf.
   std::unique_ptr<ShelfFocusCycler> shelf_focus_cycler_;

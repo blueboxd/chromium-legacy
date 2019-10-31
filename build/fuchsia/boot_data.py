@@ -92,7 +92,7 @@ def GetBootImage(output_dir, target_arch, target_type):
 
   ProvisionSSH(output_dir)
   pubkey_path = _GetPubKeyPath(output_dir)
-  zbi_tool = os.path.join(common.SDK_ROOT, 'tools', 'zbi')
+  zbi_tool = common.GetHostToolPathFromPlatform('zbi')
   image_source_path = GetTargetFile('zircon-a.zbi', target_arch, target_type)
   image_dest_path = os.path.join(output_dir, 'gen', 'fuchsia-with-keys.zbi')
 

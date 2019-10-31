@@ -312,18 +312,13 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     }
 
     @Override
-    public boolean wrapContentEnabled() {
-        return false;
-    }
-
-    @Override
-    public float getCustomHalfRatio() {
-        return mFullyExpand ? getCustomFullRatio()
+    public float getHalfHeightRatio() {
+        return mFullyExpand ? getFullHeightRatio()
                             : getCappedHeightRatio(mParentView.getHeight() / 2 + mItemHeight / 2);
     }
 
     @Override
-    public float getCustomFullRatio() {
+    public float getFullHeightRatio() {
         return getCappedHeightRatio(mParentView.getHeight());
     }
 

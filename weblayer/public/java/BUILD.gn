@@ -25,6 +25,7 @@ android_library("java") {
     "org/chromium/weblayer/BrowserFragmentController.java",
     "org/chromium/weblayer/BrowserFragment.java",
     "org/chromium/weblayer/BrowserObserver.java",
+    "org/chromium/weblayer/BrowsingDataType.java",
     "org/chromium/weblayer/Callback.java",
     "org/chromium/weblayer/ChildProcessService.java",
     "org/chromium/weblayer/DownloadDelegate.java",

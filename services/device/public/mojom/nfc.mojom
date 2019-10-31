@@ -45,6 +45,14 @@ struct NDEFRecord {
   // The id of NDEFRecord. https://w3c.github.io/web-nfc/#dom-ndefrecord-id
   string? id;
 
+  // The encoding name used for encoding the payload in the case it is textual
+  // data.
+  string? encoding;
+
+  // The language tag of the NDEFRecord payload in the case that was encoded.
+  // Example: "en-US"
+  string? lang;
+
   // Payload of the NDEFRecord.
   array<uint8> data;
 };

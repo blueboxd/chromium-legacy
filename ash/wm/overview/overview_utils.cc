@@ -239,10 +239,10 @@ gfx::Rect GetGridBoundsInScreenForSplitview(
   switch (state) {
     case SplitViewController::State::kLeftSnapped:
       return split_view_controller->GetSnappedWindowBoundsInScreen(
-          SplitViewController::RIGHT);
+          SplitViewController::RIGHT, /*window_for_minimum_size=*/nullptr);
     case SplitViewController::State::kRightSnapped:
       return split_view_controller->GetSnappedWindowBoundsInScreen(
-          SplitViewController::LEFT);
+          SplitViewController::LEFT, /*window_for_minimum_size=*/nullptr);
     default:
       return screen_util::
           GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(window);

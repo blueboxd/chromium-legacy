@@ -126,10 +126,10 @@ const unsigned int kMinFramesForBitrateTests = 300;
 const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
 // Timeout between each BitstreamBufferReady() call and flush callback.
 // In the multiple encoder test case, the FPS might be lower than expected.
-// Currently the largest resolution we run at lab is 4K. The FPS of the slowest
-// device in MultipleEncoders test case is 3. Here we set the timeout 10x of the
-// expected period for margin.
-const unsigned int kBitstreamBufferReadyTimeoutMs = 3000;
+// To rule out a flakiness on low-end devices, the timeout is set to 10 sec,
+// https://crbug.com/1019307.
+const unsigned int kBitstreamBufferReadyTimeoutMs =
+    10 * base::Time::kMillisecondsPerSecond;
 
 // The syntax of multiple test streams is:
 //  test-stream1;test-stream2;test-stream3

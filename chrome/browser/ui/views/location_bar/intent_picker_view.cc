@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -20,6 +21,10 @@
 #include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/apps/intent_helper/common_apps_navigation_throttle.h"
 #endif  //  defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/apps/intent_helper/mac_apps_navigation_throttle.h"
+#endif  //  defined(OS_MACOSX)
 
 namespace content {
 class WebContents;
@@ -55,6 +60,9 @@ void IntentPickerView::OnExecuting(
     chromeos::ChromeOsAppsNavigationThrottle::ShowIntentPickerBubble(
         web_contents, /*ui_auto_display_service=*/nullptr, url);
   }
+#elif defined(OS_MACOSX)
+  apps::MacAppsNavigationThrottle::ShowIntentPickerBubble(
+      web_contents, /*ui_auto_display_service=*/nullptr, url);
 #else
   apps::AppsNavigationThrottle::ShowIntentPickerBubble(
       web_contents, /*ui_auto_display_service=*/nullptr, url);

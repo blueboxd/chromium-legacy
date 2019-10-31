@@ -152,7 +152,6 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   tray_container()->AddChildView(new tray::PowerTrayView(shelf));
   tray_container()->AddChildView(time_view_);
 
-  SetInkDropMode(InkDropMode::ON);
   set_separator_visibility(false);
 
   ShelfConfig::Get()->AddObserver(this);

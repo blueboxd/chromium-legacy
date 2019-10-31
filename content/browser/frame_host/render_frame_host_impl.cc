@@ -4297,8 +4297,7 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   bool effective_transient_activation_state =
       params->mimic_user_gesture ||
-      (base::FeatureList::IsEnabled(features::kUserActivationV2) &&
-       frame_tree_node_->HasTransientUserActivation());
+      frame_tree_node_->HasTransientUserActivation();
 
   // Ignore window creation when sent from a frame that's not current or
   // created.
@@ -4360,15 +4359,11 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   DCHECK(IsRenderFrameLive());
 
-  bool opened_by_user_activation = params->mimic_user_gesture;
-  if (base::FeatureList::IsEnabled(features::kUserActivationV2))
-    opened_by_user_activation = was_consumed;
-
   // The non-owning pointer |new_window| is valid in this stack frame since
   // nothing can delete it until this thread is freed up again.
-  RenderFrameHostDelegate* new_window = delegate_->CreateNewWindow(
-      this, *params, is_new_browsing_instance, opened_by_user_activation,
-      cloned_namespace.get());
+  RenderFrameHostDelegate* new_window =
+      delegate_->CreateNewWindow(this, *params, is_new_browsing_instance,
+                                 was_consumed, cloned_namespace.get());
 
   if (is_new_browsing_instance || !new_window) {
     // Opener suppressed, Javascript access disabled, or delegate did not

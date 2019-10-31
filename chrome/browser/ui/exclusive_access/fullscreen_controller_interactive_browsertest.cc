@@ -351,13 +351,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 }
 
 // Tests mouse lock then fullscreen.
+// TODO(crbug.com/913409): UAv2 seems to make this flaky.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       MouseLockThenFullscreen) {
-  if (base::FeatureList::IsEnabled(features::kUserActivationV2)) {
-    // TODO(mustaq): UAv2 seems to make this flaky (http://crbug.com/913409).
-    return;
-  }
-
+                       DISABLED_MouseLockThenFullscreen) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kFullscreenMouseLockHTML));

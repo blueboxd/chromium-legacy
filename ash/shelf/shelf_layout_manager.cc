@@ -50,6 +50,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
@@ -71,6 +72,15 @@
 
 namespace ash {
 namespace {
+
+// Default Target Dim Opacity for floating shelf.
+constexpr float kFloatingShelfDimOpacity = 0.74f;
+
+// Target Dim Opacity for shelf when shelf is in the maximized state.
+constexpr float kMaximizedShelfDimOpacity = 0.6f;
+
+// Default opacity for shelf without dimming.
+constexpr float kDefaultShelfOpacity = 1.0f;
 
 // Delay before showing the shelf. This is after the mouse stops moving.
 constexpr int kAutoHideDelayMS = 200;
@@ -1187,6 +1197,14 @@ void ShelfLayoutManager::LayoutShelf() {
   LayoutShelfAndUpdateBounds();
 }
 
+void ShelfLayoutManager::SetDimmed(bool dimmed) {
+  if (dimmed_for_inactivity_ == dimmed)
+    return;
+
+  dimmed_for_inactivity_ = dimmed;
+  LayoutShelfAndUpdateBounds();
+}
+
 void ShelfLayoutManager::UpdateBoundsAndOpacity(
     const TargetBounds& target_bounds,
     bool animate,
@@ -1823,10 +1841,6 @@ void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
 }
 
 float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
-  if (drag_status_ == kDragInProgress ||
-      state.visibility_state == SHELF_VISIBLE) {
-    return 1.0f;
-  }
   // The shelf should not become transparent during the animation to or from
   // HomeLauncher.
   if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletModeEnabled() &&
@@ -1835,12 +1849,25 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
     return 1.0f;
   }
 
+  float opacity_when_visible = kDefaultShelfOpacity;
+  if (dimmed_for_inactivity_) {
+    opacity_when_visible =
+        (GetShelfBackgroundType() == SHELF_BACKGROUND_MAXIMIZED)
+            ? kMaximizedShelfDimOpacity
+            : kFloatingShelfDimOpacity;
+  }
+
+  if (drag_status_ == kDragInProgress ||
+      state.visibility_state == SHELF_VISIBLE) {
+    return opacity_when_visible;
+  }
+
   // In Chrome OS Material Design, when shelf is hidden during auto hide state,
   // target bounds are also hidden. So the window can extend to the edge of
   // screen.
   return (state.visibility_state == SHELF_AUTO_HIDE &&
           state.auto_hide_state == SHELF_AUTO_HIDE_SHOWN)
-             ? 1.0f
+             ? opacity_when_visible
              : 0.0f;
 }
 

@@ -85,8 +85,8 @@ class AssistantBottomSheetContent implements BottomSheet.BottomSheetContent {
     }
 
     @Override
-    public boolean wrapContentEnabled() {
-        return true;
+    public float getFullHeightRatio() {
+        return BottomSheet.HeightMode.WRAP_CONTENT;
     }
 
     @Override

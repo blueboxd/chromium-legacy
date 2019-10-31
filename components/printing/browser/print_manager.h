@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "components/printing/common/print.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 #if defined(OS_ANDROID)
 #include "base/callback.h"
@@ -38,6 +40,11 @@ class PrintManager : public content::WebContentsObserver {
 
  protected:
   explicit PrintManager(content::WebContents* contents);
+
+  // Helper method to fetch the PrintRenderFrame associated remote interface
+  // pointer.
+  const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>&
+  GetPrintRenderFrame(content::RenderFrameHost* rfh);
 
   // Terminates or cancels the print job if one was pending.
   void PrintingRenderFrameDeleted();
@@ -95,6 +102,10 @@ class PrintManager : public content::WebContentsObserver {
 
  private:
   void OnDidGetDocumentCookie(int cookie);
+
+  // Used to transmit mojom interface method calls to the PrintRenderFrame
+  // associated remote.
+  mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> print_render_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintManager);
 };

@@ -47,8 +47,8 @@ android_library("devui_java") {
   ]
   deps = [
     ":devui_resources",
+    ":system_webview_manifest",
     "//android_webview:common_crash_java",
-    "//android_webview:system_webview_manifest",
     "//base:base_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//ui/android:ui_java",
@@ -67,12 +67,12 @@ android_library("services_java") {
     "java/src/org/chromium/android_webview/services/VariationsSeedServer.java",
   ]
   deps = [
+    ":system_webview_manifest",
     "//android_webview:common_aidl_java",
     "//android_webview:common_commandline_java",
     "//android_webview:common_crash_java",
     "//android_webview:common_platform_services_java",
     "//android_webview:common_variations_utils_java",
-    "//android_webview:system_webview_manifest",
     "//base:base_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -106,4 +106,31 @@ android_resources("icon_resources") {
 android_resources("devui_resources") {
   resource_dirs = [ "java/res_devui" ]
   custom_package = "org.chromium.android_webview.devui"
+}
+
+jinja_template("system_webview_manifest") {
+  input = "java/AndroidManifest.xml"
+  output = system_webview_android_manifest
+  variables = [ "manifest_package=$system_webview_package_name" ]
+}
+
+jinja_template("trichrome_webview_manifest") {
+  input = "java/AndroidManifest.xml"
+  output = trichrome_webview_android_manifest
+  variables = trichrome_jinja_variables + [
+                "trichrome_version=$trichrome_version_code",
+                "manifest_package=$system_webview_package_name",
+                "library=libmonochrome.so",
+              ]
+}
+
+jinja_template("trichrome_webview_64_32_manifest") {
+  input = "java/AndroidManifest.xml"
+  output = trichrome_webview_64_32_android_manifest
+  variables = trichrome_jinja_variables + [
+                "use32bitAbi=",
+                "trichrome_version=$trichrome_64_32_version_code",
+                "manifest_package=$system_webview_package_name",
+                "library=libmonochrome_64.so",
+              ]
 }

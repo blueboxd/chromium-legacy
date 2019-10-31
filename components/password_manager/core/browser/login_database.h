@@ -16,7 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
-#include "components/password_manager/core/browser/leaked_credentials_table.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"

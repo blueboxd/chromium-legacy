@@ -461,6 +461,19 @@ void SerialPort::Dispose() {
   client_receiver_.reset();
 }
 
+ExecutionContext* SerialPort::GetExecutionContext() const {
+  return parent_->GetExecutionContext();
+}
+
+bool SerialPort::HasPendingActivity() const {
+  // There is no need to check if the execution context has been destroyed, this
+  // is handled by the common tracing logic.
+  //
+  // This object should be considered active as long as it is open so that any
+  // chain of streams originating from this port are not closed prematurely.
+  return port_.is_bound();
+}
+
 void SerialPort::OnReadError(device::mojom::blink::SerialReceiveError error) {
   if (ReceiveErrorIsFatal(error))
     read_fatal_ = true;

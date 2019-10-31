@@ -17,11 +17,13 @@
 #include <objidl.h>
 #endif
 
+#if defined(OS_MACOSX)
 #ifdef __OBJC__
 @class NSString;
 #else
 class NSString;
 #endif
+#endif  // defined(OS_MACOSX)
 
 namespace ui {
 

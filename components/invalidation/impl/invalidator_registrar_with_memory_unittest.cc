@@ -26,7 +26,7 @@ class RegistrarInvalidator : public Invalidator {
   }
   ~RegistrarInvalidator() override {}
 
-  InvalidatorRegistrar* GetRegistrar() { return registrar_.get(); }
+  InvalidatorRegistrarWithMemory* GetRegistrar() { return registrar_.get(); }
 
   // Invalidator implementation.
   void RegisterHandler(InvalidationHandler* handler) override {

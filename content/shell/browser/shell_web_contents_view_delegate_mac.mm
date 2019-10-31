@@ -237,9 +237,7 @@ void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
     case ShellContextMenuItemOpenLinkTag: {
       ShellBrowserContext* browser_context =
           ShellContentBrowserClient::Get()->browser_context();
-      Shell::CreateNewWindow(browser_context,
-                             params_.link_url,
-                             NULL,
+      Shell::CreateNewWindow(browser_context, params_.link_url, nullptr,
                              gfx::Size());
       break;
     }

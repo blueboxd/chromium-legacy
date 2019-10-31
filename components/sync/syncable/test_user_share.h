@@ -91,8 +91,6 @@ class TestUserShare {
   // A helper function to pretend to download this type's root node.
   static bool CreateRoot(ModelType model_type, UserShare* service);
 
-  size_t GetDeleteJournalSize() const;
-
  private:
   std::unique_ptr<TestDirectorySetterUpper> dir_maker_;
   std::unique_ptr<UserShare> user_share_;

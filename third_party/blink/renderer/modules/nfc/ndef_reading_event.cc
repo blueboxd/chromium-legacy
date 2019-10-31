@@ -14,7 +14,8 @@ namespace blink {
 NDEFReadingEvent* NDEFReadingEvent::Create(const AtomicString& event_type,
                                            const NDEFReadingEventInit* init,
                                            ExceptionState& exception_state) {
-  NDEFMessage* message = NDEFMessage::Create(init->message(), exception_state);
+  NDEFMessage* message =
+      NDEFMessage::Create(nullptr, init->message(), exception_state);
   if (exception_state.HadException())
     return nullptr;
   DCHECK(message);

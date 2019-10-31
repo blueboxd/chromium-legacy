@@ -19,7 +19,7 @@ crbug.com/997202 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_short.htm
 
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
-# The following tests need to remove the assumption that user activation isfast/text/firstline/capitalize-transform.html
+# The following tests need to remove the assumption that user activation isvirtual/text-antialias/firstline/capitalize-transform.html
 # available in child/sibling frames.  This assumption doesn't hold with User
 # Activation v2 (UAv2).
 crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Timeout ]
@@ -38,9 +38,9 @@ crbug.com/881040 virtual/audio-service/media/controls/lazy-loaded-style.html [ F
 
 # With --enable-display-compositor-pixel-dump enabled by default, these three
 # tests fail. See crbug.com/887140 for more info.
-crbug.com/887140 hdr/color-jpeg-with-color-profile.html [ Failure ]
-crbug.com/887140 hdr/color-profile-video.html [ Failure ]
-crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
+crbug.com/887140 virtual/hdr/color-jpeg-with-color-profile.html [ Failure ]
+crbug.com/887140 virtual/hdr/color-profile-video.html [ Failure ]
+crbug.com/887140 virtual/hdr/video-canvas-alpha.html [ Failure ]
 
 crbug.com/1014421 external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Timeout ]
 
@@ -199,8 +199,8 @@ crbug.com/1011060 virtual/gpu/fast/canvas/bug382588.html [ Pass Failure ]
 crbug.com/1011060 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure ]
 
 crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
-crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Crash ]
-crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pass Crash ]
+crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform-2.html [ Pass Crash ]
+crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform.html [ Pass Crash ]
 
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
@@ -737,8 +737,8 @@ crbug.com/591099 fast/events/touch/compositor-touch-hit-rects-continuation.html 
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Failure ]
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/889721 fast/inline/outline-continuations.html [ Failure ]
-crbug.com/591099 fast/text/font-format-support-color-cff2-vertical.html [ Failure ]
-crbug.com/591099 fast/text/whitespace/018.html [ Failure ]
+crbug.com/591099 virtual/text-antialias/font-format-support-color-cff2-vertical.html [ Failure ]
+crbug.com/591099 virtual/text-antialias/whitespace/018.html [ Failure ]
 crbug.com/591099 fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/591099 fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
 crbug.com/591099 paint/invalidation/flexbox/scrollbars-changed.html [ Failure ]
@@ -766,10 +766,10 @@ crbug.com/591099 fast/multicol/vertical-lr/float-edge.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/float-paginate.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/nested-columns.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/unsplittable-inline-block.html [ Failure ]
-crbug.com/591099 [ Win ] fast/text/ellipsis-with-self-painting-layer.html [ Failure ]
+crbug.com/591099 [ Win ] virtual/text-antialias/ellipsis-with-self-painting-layer.html [ Failure ]
 
 # LayoutNG failures that needs to be triaged
-crbug.com/591099 fast/text/selection/selection-rect-line-height-too-small.html [ Failure ]
+crbug.com/591099 virtual/text-antialias/selection/selection-rect-line-height-too-small.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-rhythm/line-height-step-basic-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-rhythm/line-height-step-boundary-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-rhythm/line-height-step-valign-001.html [ Failure ]
@@ -779,7 +779,7 @@ crbug.com/591099 external/wpt/html/rendering/non-replaced-elements/the-fieldset-
 crbug.com/591099 fast/css-intrinsic-dimensions/width-avoid-floats.html [ Failure ]
 crbug.com/591099 fast/selectors/shadow-host-div-with-span.html [ Failure ]
 crbug.com/591099 fast/selectors/shadow-host-div-with-text.html [ Failure ]
-crbug.com/591099 fast/text/selection/inline-block-in-selection-root.html [ Failure ]
+crbug.com/591099 virtual/text-antialias/selection/inline-block-in-selection-root.html [ Failure ]
 crbug.com/591099 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Timeout ]
 crbug.com/591099 paint/invalidation/compositing/composited-float-under-composited-inline-individual.html [ Failure ]
 crbug.com/591099 paint/invalidation/compositing/composited-float-under-composited-inline.html [ Failure ]
@@ -792,10 +792,10 @@ crbug.com/591099 editing/selection/paint-hyphen.html [ Failure Pass ]
 crbug.com/591099 external/wpt/dom/ranges/Range-compareBoundaryPoints.html [ Timeout Failure Pass ]
 crbug.com/591099 external/wpt/dom/ranges/Range-set.html [ Failure Timeout ]
 crbug.com/591099 external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Timeout Failure Pass ]
-crbug.com/591099 [ Mac ] fast/text/international/shape-across-elements-simple.html [ Failure ]
-crbug.com/591099 [ Win ] fast/text/international/shape-across-elements-simple.html [ Failure ]
-crbug.com/591099 [ Mac ] fast/text/word-space-monospace.html [ Failure ]
-crbug.com/591099 [ Win ] fast/text/word-space-monospace.html [ Failure ]
+crbug.com/591099 [ Mac ] virtual/text-antialias/international/shape-across-elements-simple.html [ Failure ]
+crbug.com/591099 [ Win ] virtual/text-antialias/international/shape-across-elements-simple.html [ Failure ]
+crbug.com/591099 [ Mac ] virtual/text-antialias/word-space-monospace.html [ Failure ]
+crbug.com/591099 [ Win ] virtual/text-antialias/word-space-monospace.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] editing/selection/4402375.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/block/float/centered-float-avoidance-complexity.html [ Failure Timeout ]
 crbug.com/591099 [ Fuchsia ] fast/block/float/float-in-float-painting.html [ Failure ]
@@ -810,10 +810,10 @@ crbug.com/591099 [ Fuchsia ] fast/layers/opacity-transforms.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/lists/003.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/lists/scrolled-marker-paint.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/table/border-collapsing/004.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] fast/text/international/003.html [ Failure Timeout ]
-crbug.com/591099 [ Fuchsia ] fast/text/international/bidi-LDB-2-HTML.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] fast/text/international/bidi-LDB-2-formatting-characters.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] fast/text/international/bidi-neutral-directionality-paragraph-start.html [ Failure ]
+crbug.com/591099 [ Fuchsia ] virtual/text-antialias/international/003.html [ Failure Timeout ]
+crbug.com/591099 [ Fuchsia ] virtual/text-antialias/international/bidi-LDB-2-HTML.html [ Failure ]
+crbug.com/591099 [ Fuchsia ] virtual/text-antialias/international/bidi-LDB-2-formatting-characters.html [ Failure ]
+crbug.com/591099 [ Fuchsia ] virtual/text-antialias/international/bidi-neutral-directionality-paragraph-start.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/writing-mode/english-lr-text.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] tables/mozilla/bugs/bug2479-3.html [ Failure Timeout ]
 crbug.com/591099 [ Fuchsia ] tables/mozilla/bugs/bug2479-4.html [ Failure ]
@@ -851,9 +851,9 @@ crbug.com/591099 [ Mac ] fast/multicol/vertical-rl/column-count-with-rules.html 
 crbug.com/591099 [ Mac ] fast/multicol/vertical-rl/float-big-line.html [ Failure ]
 crbug.com/591099 [ Mac ] fast/multicol/vertical-rl/float-content-break.html [ Failure ]
 crbug.com/591099 [ Mac ] fast/multicol/vertical-rl/float-edge.html [ Failure ]
-crbug.com/591099 [ Mac ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Failure ]
-crbug.com/591099 [ Mac ] fast/text/hyphens/hyphens-auto-mock.html [ Failure ]
-crbug.com/591099 [ Mac ] fast/text/hyphens/midword-break-priority.html [ Failure ]
+crbug.com/591099 [ Mac ] virtual/text-antialias/hyphens/hyphen-min-preferred-width-mock.html [ Failure ]
+crbug.com/591099 [ Mac ] virtual/text-antialias/hyphens/hyphens-auto-mock.html [ Failure ]
+crbug.com/591099 [ Mac ] virtual/text-antialias/hyphens/midword-break-priority.html [ Failure ]
 crbug.com/591099 [ Mac ] paint/invalidation/box/hover-pseudo-borders.html [ Failure ]
 crbug.com/591099 [ Mac ] paint/invalidation/text-match-transparent-text.html [ Failure ]
 crbug.com/591099 [ Mac ] paint/text/text-match-highlights-big-line-height.html [ Failure ]
@@ -1823,22 +1823,22 @@ crbug.com/404597 fast/forms/long-text-in-input.html [ Skip ]
 
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
-crbug.com/652964 [ Linux ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
-crbug.com/652964 [ Win ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
-crbug.com/652964 [ Linux ] fast/text/hyphens/hyphens-align.html [ Skip ]
-crbug.com/652964 [ Win ] fast/text/hyphens/hyphens-align.html [ Skip ]
-crbug.com/652964 [ Linux ] fast/text/hyphens/hyphens-auto.html [ Skip ]
-crbug.com/652964 [ Win ] fast/text/hyphens/hyphens-auto.html [ Skip ]
-crbug.com/652964 [ Linux ] fast/text/hyphens/hyphens-auto-mock.html [ Skip ]
-crbug.com/652964 [ Win ] fast/text/hyphens/hyphens-auto-mock.html [ Skip ]
-crbug.com/652964 [ Linux ] fast/text/hyphens/hyphens-auto-nowrap.html [ Skip ]
-crbug.com/652964 [ Win ] fast/text/hyphens/hyphens-auto-nowrap.html [ Skip ]
-crbug.com/652964 [ Linux ] fast/text/hyphens/hyphens-locale.html [ Skip ]
-crbug.com/652964 [ Win ] fast/text/hyphens/hyphens-locale.html [ Skip ]
-crbug.com/652964 [ Linux ] fast/text/hyphens/hyphens-orphaned-word.html [ Skip ]
-crbug.com/652964 [ Win ] fast/text/hyphens/hyphens-orphaned-word.html [ Skip ]
-crbug.com/652964 [ Linux ] fast/text/hyphens/midword-break-priority.html [ Skip ]
-crbug.com/652964 [ Win ] fast/text/hyphens/midword-break-priority.html [ Skip ]
+crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
+crbug.com/652964 [ Win ] virtual/text-antialias/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
+crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphens-align.html [ Skip ]
+crbug.com/652964 [ Win ] virtual/text-antialias/hyphens/hyphens-align.html [ Skip ]
+crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphens-auto.html [ Skip ]
+crbug.com/652964 [ Win ] virtual/text-antialias/hyphens/hyphens-auto.html [ Skip ]
+crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphens-auto-mock.html [ Skip ]
+crbug.com/652964 [ Win ] virtual/text-antialias/hyphens/hyphens-auto-mock.html [ Skip ]
+crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphens-auto-nowrap.html [ Skip ]
+crbug.com/652964 [ Win ] virtual/text-antialias/hyphens/hyphens-auto-nowrap.html [ Skip ]
+crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphens-locale.html [ Skip ]
+crbug.com/652964 [ Win ] virtual/text-antialias/hyphens/hyphens-locale.html [ Skip ]
+crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphens-orphaned-word.html [ Skip ]
+crbug.com/652964 [ Win ] virtual/text-antialias/hyphens/hyphens-orphaned-word.html [ Skip ]
+crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/midword-break-priority.html [ Skip ]
+crbug.com/652964 [ Win ] virtual/text-antialias/hyphens/midword-break-priority.html [ Skip ]
 
 crbug.com/966283 external/wpt/css/css-overflow/clip-001.html [ Failure ]
 crbug.com/966283 external/wpt/css/css-overflow/dynamic-visible-to-clip-001.html [ Failure ]
@@ -2064,7 +2064,7 @@ crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
 # This means that CoreGraphics may draw outside the reported glyph bounds, and in this case does.
 # By about a quarter or less of a pixel.
-crbug.com/421412 [ Mac ] fast/text/international/bdo-bidi-width.html [ Failure ]
+crbug.com/421412 [ Mac ] virtual/text-antialias/international/bdo-bidi-width.html [ Failure ]
 
 crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
@@ -2278,8 +2278,8 @@ crbug.com/769885 [ Linux ] virtual/android/fullscreen/full-screen-frameset.html 
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Skip ]
 
 # Temporarily disabled after chromium change
-crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failure ]
-crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
+crbug.com/492511 [ Mac ] virtual/text-antialias/atsui-negative-spacing-features.html [ Failure ]
+crbug.com/492511 [ Mac ] virtual/text-antialias/international/arabic-justify.html [ Failure ]
 
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.
@@ -2352,16 +2352,16 @@ crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Fai
 crbug.com/663847 fast/events/context-no-deselect.html [ Failure Pass ]
 crbug.com/663847 virtual/mouseevent_fractional/fast/events/context-no-deselect.html [ Failure Pass ]
 
-crbug.com/453002 [ Win ] fast/text/international/text-combine-image-test.html [ Failure Pass ]
-crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Failure Pass ]
-crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
-crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
+crbug.com/453002 [ Win ] virtual/text-antialias/international/text-combine-image-test.html [ Failure Pass ]
+crbug.com/453002 [ Win ] virtual/text-antialias/international/vertical-text-glyph-test.html [ Failure Pass ]
+crbug.com/453002 [ Win ] virtual/text-antialias/justify-ideograph-vertical.html [ Failure Pass ]
+crbug.com/453002 [ Win ] virtual/text-antialias/orientation-sideways.html [ Failure Pass ]
 
-crbug.com/611658 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
+crbug.com/611658 [ Win ] virtual/text-antialias/emphasis-combined-text.html [ Failure ]
 
 crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
 
-crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
+crbug.com/605059 [ Retina ] virtual/text-antialias/international/rtl-negative-letter-spacing.html [ Failure ]
 
 crbug.com/654477 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/654477 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
@@ -2387,7 +2387,7 @@ crbug.com/613661 external/wpt/quirks/table-cell-nowrap-minimum-width-calculation
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
-crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
+crbug.com/624430 [ Win10 ] virtual/text-antialias/font-features/caps-casemapping.html [ Failure ]
 
 crbug.com/399507 virtual/threaded/http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Skip ]
 
@@ -2469,7 +2469,7 @@ crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
 crbug.com/626703 crbug.com/946710 http/tests/devtools/extensions/extensions-sidebar.js [ Crash Failure Pass Timeout ]
-crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
+crbug.com/751952 virtual/text-antialias/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 [ Win ] editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
 
 # Websockets
@@ -3932,8 +3932,8 @@ crbug.com/1002377 [ Win ] virtual/omt-service-worker-startup/external/wpt/servic
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 
-crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection-nested.html [ Skip ]
-crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection.html [ Skip ]
+crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection-nested.html [ Skip ]
+crbug.com/697971 [ Mac10.12 ] virtual/text-antialias/selection/flexbox-selection.html [ Skip ]
 
 # [css-grid]
 crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-001.html [ Failure ]
@@ -3962,16 +3962,16 @@ crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 
 # TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
 # this is not meant to be here for more than a few days (from 2016-11-03 SYD)
-crbug.com/657646 [ Win ] fast/text/font-weight.html [ Failure Pass ]
-crbug.com/657646 [ Win ] fast/text/textIteratorNilRenderer.html [ Failure Pass ]
-crbug.com/657646 [ Win ] fast/text/font-stretch.html [ Failure Pass ]
-crbug.com/657646 [ Win ] fast/text/sub-pixel/text-scaling-pixel.html [ Failure Pass ]
-crbug.com/657646 [ Win ] fast/text/international/bidi-listbox-atsui.html [ Failure Pass ]
-crbug.com/657646 [ Win ] fast/text/international/bidi-listbox.html [ Failure Pass ]
-crbug.com/657646 [ Win ] fast/text/international/lang-glyph-cache-separation.html [ Failure Pass ]
-crbug.com/657646 [ Win ] fast/text/font-stretch-variant.html [ Failure Pass ]
-crbug.com/657646 [ Win ] fast/text/drawBidiText.html [ Failure Pass ]
-crbug.com/657646 [ Win ] fast/text/font-features/caps-native-synthesis.html [ Failure Pass ]
+crbug.com/657646 [ Win ] virtual/text-antialias/font-weight.html [ Failure Pass ]
+crbug.com/657646 [ Win ] virtual/text-antialias/textIteratorNilRenderer.html [ Failure Pass ]
+crbug.com/657646 [ Win ] virtual/text-antialias/font-stretch.html [ Failure Pass ]
+crbug.com/657646 [ Win ] virtual/text-antialias/sub-pixel/text-scaling-pixel.html [ Failure Pass ]
+crbug.com/657646 [ Win ] virtual/text-antialias/international/bidi-listbox-atsui.html [ Failure Pass ]
+crbug.com/657646 [ Win ] virtual/text-antialias/international/bidi-listbox.html [ Failure Pass ]
+crbug.com/657646 [ Win ] virtual/text-antialias/international/lang-glyph-cache-separation.html [ Failure Pass ]
+crbug.com/657646 [ Win ] virtual/text-antialias/font-stretch-variant.html [ Failure Pass ]
+crbug.com/657646 [ Win ] virtual/text-antialias/drawBidiText.html [ Failure Pass ]
+crbug.com/657646 [ Win ] virtual/text-antialias/font-features/caps-native-synthesis.html [ Failure Pass ]
 
 crbug.com/664450 http/tests/devtools/console/console-on-animation-worklet.js [ Skip ]
 
@@ -4037,10 +4037,10 @@ crbug.com/663585 editing/pasteboard/data-transfer-items-image-png.html [ Pass Fa
 
 crbug.com/652536 fast/events/mouse-cursor.html [ Pass Failure ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor.html [ Pass Failure ]
-crbug.com/663858 fast/text/emphasis-vertical.html [ Pass Failure ]
+crbug.com/663858 virtual/text-antialias/emphasis-vertical.html [ Pass Failure ]
 crbug.com/664816 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
 
-crbug.com/702837 fast/text/aat-morx.html [ Skip ]
+crbug.com/702837 virtual/text-antialias/aat-morx.html [ Skip ]
 
 crbug.com/688670 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-rendering-after-controls-removed.html [ Pass Failure ]
 
@@ -4387,7 +4387,7 @@ crbug.com/799619 [ Debug ] http/tests/devtools/profiler/heap-snapshot-inspect-do
 
 crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure ]
 
-crbug.com/769056 fast/text/emoji-web-font.html [ Failure ]
+crbug.com/769056 virtual/text-antialias/emoji-web-font.html [ Failure ]
 
 # Paint-timing tests timeout without threaded-compositing, so skip them.
 crbug.com/720047 external/wpt/paint-timing [ Skip ]
@@ -4404,7 +4404,7 @@ crbug.com/694855 virtual/audio-service/media/video-src-suspend-after-have-metada
 ### See crbug.com/891427 comment near the top of this file:
 ###crbug.com/849979 media/video-layer-crash.html [ Pass Timeout ]
 
-crbug.com/770232 [ Win10 ] fast/text/hyphenate-character.html [ Failure ]
+crbug.com/770232 [ Win10 ] virtual/text-antialias/hyphenate-character.html [ Failure ]
 
 # Editing commands incorrectly assume no plain text length change after formatting text.
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs.html [ Failure ]
@@ -4443,8 +4443,8 @@ crbug.com/781935 fast/mediastream/MediaStreamTrack.html [ Pass Failure Timeout ]
 crbug.com/807191 fast/media/mq-color-gamut-picture.html [ Pass Failure Timeout ]
 
 # Text rendering on Win7 failing image diffs, flakily.
-crbug.com/773122 [ Win7 ] fast/text/international/unicode-bidi-plaintext-in-textarea.html [ Failure Pass ]
-crbug.com/773122 [ Win7 ] fast/text/whitespace/022.html [ Failure Pass ]
+crbug.com/773122 [ Win7 ] virtual/text-antialias/international/unicode-bidi-plaintext-in-textarea.html [ Failure Pass ]
+crbug.com/773122 [ Win7 ] virtual/text-antialias/whitespace/022.html [ Failure Pass ]
 
 # Sheriff failures 2017-10-13
 crbug.com/774463 [ Win7 Debug ] fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure Pass ]
@@ -4456,7 +4456,7 @@ crbug.com/772411 virtual/audio-service/http/tests/media/autoplay-crossorigin.htm
 crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 
 # Sheriff failures 2017-10-24
-crbug.com/773122 crbug.com/777813 [ Win ] fast/text/font-ascent-mac.html [ Failure Pass ]
+crbug.com/773122 crbug.com/777813 [ Win ] virtual/text-antialias/font-ascent-mac.html [ Failure Pass ]
 
 # Sheriff failures 2017-11-13
 crbug.com/783800 external/wpt/mediacapture-image/MediaStreamTrack-applyConstraints.html [ Pass Failure ]
@@ -4561,10 +4561,6 @@ crbug.com/793771 [ Mac Win ] virtual/audio-service/media/controls/scrubbing.html
 
 # Different paths may have different anti-aliasing pixels 2018-02-21
 skbug.com/7641 external/wpt/css/css-paint-api/paint2d-paths.https.html [ Failure Pass ]
-
-# Sheriff failures 2018-01-02
-crbug.com/798592 [ Win7 ] http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
-crbug.com/798592 [ Win7 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
 
 # Sheriff failures 2018-01-25
 # Flaking on Linux Tests, WebKit Linux Trusty (also ASAN, Leak)
@@ -5031,7 +5027,7 @@ crbug.com/922951 fast/dom/shadow/move-marquee-crossing-treescope-crash.html [ Sk
 crbug.com/922951 fast/forms/number/number-input-event-composed.html [ Skip ]
 crbug.com/922951 fast/loader/detach-while-printing.html [ Skip ]
 crbug.com/922951 fast/loader/document-open-iframe-then-detach.html [ Skip ]
-crbug.com/922951 fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ Skip ]
+crbug.com/922951 virtual/text-antialias/international/inline-plaintext-relayout-with-leading-neutrals.html [ Skip ]
 crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Skip ]
 crbug.com/922951 http/tests/devtools/tracing/timeline-network-received-data.js [ Skip ]
 crbug.com/922951 http/tests/history/back-to-post.html [ Skip ]
@@ -5078,7 +5074,9 @@ crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/ti
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-record-reload.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Skip ]
 
-
+# Flaky devtools test for recalculating styles.
+crbug.com/1018177 http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure Pass ]
+crbug.com/1018177 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
 
 # These were marked as skipped in 922951. Flakiness no longer produces localy.
 # Marking them as Failure/Pass to collect data on bots. Once confirmed they are
@@ -5222,7 +5220,7 @@ crbug.com/919789 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout 
 crbug.com/919789 fast/events/resize-events-count.html [ Pass Timeout ]
 crbug.com/919789 fast/css-grid-layout/flex-content-sized-columns-resize.html [ Pass Timeout ]
 crbug.com/919789 fast/css-grid-layout/flex-content-sized-columns-resize-expected.html [ Pass Timeout ]
-crbug.com/919789 fast/text/line-break-between-text-nodes-with-inline-blocks.html [ Pass Timeout ]
+crbug.com/919789 virtual/text-antialias/line-break-between-text-nodes-with-inline-blocks.html [ Pass Timeout ]
 crbug.com/919789 images/image-click-scale-restore-zoomed-image.html [ Pass Timeout ]
 crbug.com/919789 images/image-zoom-to-25.html [ Pass Timeout ]
 crbug.com/919789 images/image-zoom-to-500.html [ Pass Timeout ]
@@ -5300,7 +5298,7 @@ crbug.com/948785 [ Debug ] virtual/mouseevent_fractional/fast/events/pointereven
 
 # Sheriff 2019-05-01
 crbug.com/958347 [ Linux ] external/wpt/editing/run/removeformat.html [ Pass Crash ]
-crbug.com/958426 [ Mac10.13 ] fast/text/line-break-ascii.html [ Timeout Pass ]
+crbug.com/958426 [ Mac10.13 ] virtual/text-antialias/line-break-ascii.html [ Timeout Pass ]
 
 # Sheriff 2019-05-06
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Pass Timeout ]
@@ -5534,6 +5532,10 @@ crbug.com/783154 [ Linux Debug ] virtual/audio-service/media/controls/doubletap-
 #Sherrif 2019-08-16
 crbug.com/994692 [ Linux Win ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
 
+crbug.com/1003943 external/wpt/element-timing/multi-redirect-image.html [ Failure ]
+crbug.com/1003943 virtual/scalefactor200/external/wpt/element-timing/multi-redirect-image.html [ Failure ]
+crbug.com/1003943 virtual/scalefactor200withoutzoom/external/wpt/element-timing/multi-redirect-image.html [ Failure ]
+
 # Video flakily not being being rendered on Mac
 crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] media/controls/overflow-menu-always-visible.html [ Pass Failure ]
@@ -5548,7 +5550,7 @@ crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Fail
 
 crbug.com/986019 virtual/threaded-no-composited-antialiasing/animations/play-state.html [ Pass Failure ]
 
-crbug.com/996219 [ Win ] fast/text/emoji-vertical-origin-visual.html [ Failure ]
+crbug.com/996219 [ Win ] virtual/text-antialias/emoji-vertical-origin-visual.html [ Failure ]
 
 crbug.com/996597 [ Win ] css2.1/t0905-c5525-flthw-00-c-g.html [ Failure ]
 
@@ -5619,8 +5621,7 @@ crbug.com/1001814 external/wpt/css/css-masking/clip-path/clip-path-inline-002.ht
 crbug.com/1001936 external/wpt/css/css-masking/clip-path/clip-path-inline-001.html [ Pass Failure ]
 
 # Sheriff 2019-09-10
-crbug.com/1002527 [ Debug ] fast/text/large-text-composed-char.html [ Pass Crash ]
-crbug.com/1002686 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure ]
+crbug.com/1002527 [ Debug ] virtual/text-antialias/large-text-composed-char.html [ Pass Crash ]
 
 # Tests fail because of scrollbar-width property
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-001.html [ Failure ]
@@ -5671,9 +5672,9 @@ crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-
 
 # Sheriff 2019-10-01
 crbug.com/1010013 [ Win10 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure ]
-crbug.com/1010032 [ Win7 ] fast/text/fallback-traits-fixup.html [ Failure ]
-crbug.com/1010032 [ Win7 ] fast/text/international/bold-bengali.html [ Failure ]
-crbug.com/1010032 [ Win7 ] fast/text/selection/khmer-selection.html [ Failure ]
+crbug.com/1010032 [ Win7 ] virtual/text-antialias/fallback-traits-fixup.html [ Failure ]
+crbug.com/1010032 [ Win7 ] virtual/text-antialias/international/bold-bengali.html [ Failure ]
+crbug.com/1010032 [ Win7 ] virtual/text-antialias/selection/khmer-selection.html [ Failure ]
 crbug.com/1010032 [ Win7 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
 crbug.com/1010170 [ Mac ] media/video-played-reset.html [ Failure ]
 
@@ -5761,8 +5762,11 @@ crbug.com/1009396 http/tests/devtools/coverage/multiple-instances-merge.js [ Pas
 crbug.com/1016772 http/tests/devtools/compiler-script-mapping.js [ Pass Failure ]
 crbug.com/1016772 http/tests/devtools/sources/debugger-ui/source-url-comment.js [ Pass Failure ]
 
-# Temporarily disabled for landing initiator chain changes in DevTools
-crbug.com/842488 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]
-
 # Temporarily disabled to a breakpoint non-determinism issue.
 crbug.com/1019613 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ Pass Failure ]
+
+# eval+Trusted Types failures while the feature is implemented.
+crbug.com/940927 external/wpt/trusted-types/trusted-types-eval-reporting-report-only.tentative.https.html [ Timeout ]
+crbug.com/940927 external/wpt/trusted-types/trusted-types-eval-reporting.tentative.https.html [ Failure ]
+crbug.com/940927 external/wpt/trusted-types/trusted-types-eval-reporting-no-unsafe-eval.tentative.https.html [ Timeout ]
+crbug.com/940927 external/wpt/trusted-types/eval-with-permissive-csp.tentative.html [ Failure ]

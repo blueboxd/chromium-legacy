@@ -544,10 +544,12 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   // Ash doesn't properly remove pre-target-handlers.
   ui::EventHandler::DisableCheckTargets();
 
+  // AccelerometerReader is important for screen orientation so we need
+  // USER_VISIBLE priority.
   AccelerometerReader::GetInstance()->Initialize(
       base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
+           base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   login_screen_controller_ =

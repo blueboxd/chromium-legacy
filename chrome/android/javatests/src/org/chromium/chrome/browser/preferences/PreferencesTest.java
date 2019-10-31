@@ -367,7 +367,8 @@ public class PreferencesTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return PrefServiceBridge.getInstance().isRememberPasswordsManaged();
+                return PrefServiceBridge.getInstance().isManagedPreference(
+                        Pref.REMEMBER_PASSWORDS_ENABLED);
             }
         });
 

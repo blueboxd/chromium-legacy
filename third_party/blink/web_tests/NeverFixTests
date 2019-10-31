@@ -54,12 +54,12 @@ fast/harness/results.html [ WontFix ]
 
 # Tests trak table support / letter spacing specific to Mac system font
 # Only maintain this for the latest macOS (and Retina is currently 10.12).
- [ Win ] fast/text/mac-system-ui-trak.html [ WontFix ]
- [ Linux ] fast/text/mac-system-ui-trak.html [ WontFix ]
- [ Mac10.10 ] fast/text/mac-system-ui-trak.html [ WontFix ]
- [ Mac10.11 ] fast/text/mac-system-ui-trak.html [ WontFix ]
- [ Mac10.12 ] fast/text/mac-system-ui-trak.html [ WontFix ]
- [ Retina ] fast/text/mac-system-ui-trak.html [ WontFix ]
+ [ Win ] virtual/text-antialias/mac-system-ui-trak.html [ WontFix ]
+ [ Linux ] virtual/text-antialias/mac-system-ui-trak.html [ WontFix ]
+ [ Mac10.10 ] virtual/text-antialias/mac-system-ui-trak.html [ WontFix ]
+ [ Mac10.11 ] virtual/text-antialias/mac-system-ui-trak.html [ WontFix ]
+ [ Mac10.12 ] virtual/text-antialias/mac-system-ui-trak.html [ WontFix ]
+ [ Retina ] virtual/text-antialias/mac-system-ui-trak.html [ WontFix ]
 
  # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
@@ -113,30 +113,30 @@ crbug.com/1012590 [ Linux ] fast/overflow/rtl-scrollbar-drag-origin.html [ WontF
  [ Win ] editing/input/linux_rtl_composition_underline.html [ WontFix ]
  [ Mac ] editing/selection/linux_selection_color.html [ WontFix ]
  [ Win ] editing/selection/linux_selection_color.html [ WontFix ]
- [ Mac ] fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
- [ Win ] fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
- [ Mac ] fast/text/international/arabic-vertical-offset.html [ WontFix ]
- [ Win ] fast/text/international/arabic-vertical-offset.html [ WontFix ]
- [ Mac ] fast/text/international/complex-joining-using-gpos.html [ WontFix ]
- [ Win ] fast/text/international/complex-joining-using-gpos.html [ WontFix ]
- [ Mac ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
- [ Win ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
+ [ Mac ] virtual/text-antialias/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
+ [ Win ] virtual/text-antialias/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
+ [ Mac ] virtual/text-antialias/international/arabic-vertical-offset.html [ WontFix ]
+ [ Win ] virtual/text-antialias/international/arabic-vertical-offset.html [ WontFix ]
+ [ Mac ] virtual/text-antialias/international/complex-joining-using-gpos.html [ WontFix ]
+ [ Win ] virtual/text-antialias/international/complex-joining-using-gpos.html [ WontFix ]
+ [ Mac ] virtual/text-antialias/international/draw-complex-text-from-to.html [ WontFix ]
+ [ Win ] virtual/text-antialias/international/draw-complex-text-from-to.html [ WontFix ]
  [ Mac ] svg/text/text-with-geometric-precision.svg [ WontFix ]
  [ Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
 
 # Mac has different fallback behavior so that this test won't work there
-[ Mac ] fast/text/font-cachekey.html [ WontFix ]
+[ Mac ] virtual/text-antialias/font-cachekey.html [ WontFix ]
 
 # AAT/mortx shaping not supported on platforms other than Mac
- [ Linux ] fast/text/aat-morx.html [ WontFix ]
- [ Win ] fast/text/aat-morx.html [ WontFix ]
+ [ Linux ] virtual/text-antialias/aat-morx.html [ WontFix ]
+ [ Win ] virtual/text-antialias/aat-morx.html [ WontFix ]
 
 # AAT Small Caps test not supported on platforms other than Mac 10.13.
- [ Linux ] fast/text/small-caps-aat.html [ WontFix ]
- [ Win ] fast/text/small-caps-aat.html [ WontFix ]
- [ Mac10.10 ] fast/text/small-caps-aat.html [ WontFix ]
- [ Mac10.11 ] fast/text/small-caps-aat.html [ WontFix ]
- [ Mac10.12 ] fast/text/small-caps-aat.html [ WontFix ]
+ [ Linux ] virtual/text-antialias/small-caps-aat.html [ WontFix ]
+ [ Win ] virtual/text-antialias/small-caps-aat.html [ WontFix ]
+ [ Mac10.10 ] virtual/text-antialias/small-caps-aat.html [ WontFix ]
+ [ Mac10.11 ] virtual/text-antialias/small-caps-aat.html [ WontFix ]
+ [ Mac10.12 ] virtual/text-antialias/small-caps-aat.html [ WontFix ]
 
 # Linux layout tests do not have a Myanmar fallback font.
 [ Linux ] inspector-protocol/layout-fonts/fallback-myanmar.js [ WontFix ]
@@ -172,15 +172,15 @@ virtual/android/fullscreen/rendering/backdrop-object.html [ WontFix ]
 fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 
 # Missing Chrome Mac support, will start working when we move to harfbuzz on mac.
-[ Mac ] fast/text/international/zerowidthjoiner.html [ WontFix ]
+[ Mac ] virtual/text-antialias/international/zerowidthjoiner.html [ WontFix ]
 
 # Subpixel font scaling requires antialiasing on mac (which isn't enabled tests).
-[ Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
-[ Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
-[ Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
-[ Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
-[ Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
-[ Mac ] fast/text/mixed-direction-bidi-wrap.html [ WontFix ]
+[ Mac ] virtual/text-antialias/sub-pixel/text-scaling-ltr.html [ WontFix ]
+[ Mac ] virtual/text-antialias/sub-pixel/text-scaling-pixel.html [ WontFix ]
+[ Mac ] virtual/text-antialias/sub-pixel/text-scaling-rtl.html [ WontFix ]
+[ Mac ] virtual/text-antialias/sub-pixel/text-scaling-vertical.html [ WontFix ]
+[ Mac ] virtual/text-antialias/sub-pixel/text-scaling-webfont.html [ WontFix ]
+[ Mac ] virtual/text-antialias/mixed-direction-bidi-wrap.html [ WontFix ]
 
 # These two printing tests fail with the threaded compositor but they
 # aren't critical to run in this mode.
@@ -279,14 +279,14 @@ crbug.com/753080 external/wpt/css/css-transforms/ttwf-css-3d-polygon-cycle-misma
 crbug.com/753080 external/wpt/css/css-transforms/ttwf-css-3d-polygon-cycle.html [ WontFix ]
 
 # On Linux bold emoji are already supported.
-crbug.com/551843 [ Linux ] fast/text/fallback-traits-fixup.html [ WontFix ]
-crbug.com/551843 [ Linux ] fast/text/emoji-font-weight-mac.html [ WontFix ]
-crbug.com/551843 [ Win ] fast/text/emoji-font-weight-mac.html [ WontFix ]
+crbug.com/551843 [ Linux ] virtual/text-antialias/fallback-traits-fixup.html [ WontFix ]
+crbug.com/551843 [ Linux ] virtual/text-antialias/emoji-font-weight-mac.html [ WontFix ]
+crbug.com/551843 [ Win ] virtual/text-antialias/emoji-font-weight-mac.html [ WontFix ]
 
 # Variable system font only supported on Mac atm.
-crbug.com/670246 [ Linux ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
-crbug.com/670246 [ Win ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
-crbug.com/670246 [ Mac10.10 ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
+crbug.com/670246 [ Linux ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ WontFix ]
+crbug.com/670246 [ Win ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ WontFix ]
+crbug.com/670246 [ Mac10.10 ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ WontFix ]
 
 # prefer_compositing_to_lcd_text causes things to get composited regardless of their opaqueness, causing the test to fail
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ WontFix ]
@@ -306,8 +306,8 @@ crbug.com/702176 [ Win7 Debug ] fast/table/border-collapsing/001-vertical.html [
 crbug.com/702176 [ Win7 Debug ] fast/table/border-collapsing/001.html [ WontFix ]
 
 # Only Windows supports Symbol CMAP encoded fonts.
-crbug.com/627953 [ Linux ] fast/text/symbol-cmap.html [ WontFix ]
-crbug.com/627953 [ Mac ] fast/text/symbol-cmap.html [ WontFix ]
+crbug.com/627953 [ Linux ] virtual/text-antialias/symbol-cmap.html [ WontFix ]
+crbug.com/627953 [ Mac ] virtual/text-antialias/symbol-cmap.html [ WontFix ]
 
 # These tests require audio codecs which are generally not available;
 # these tests can still be run manually with --skipped=ignore.
@@ -2030,7 +2030,7 @@ crbug.com/946022 [ Win7 ] fast/dynamic/window-resize-scrollbars-test.html [ Wont
 crbug.com/946022 [ Win7 ] fast/events/resize-events-count.html [ WontFix ]
 crbug.com/946022 [ Win7 ] fast/css-grid-layout/flex-content-sized-columns-resize.html [ WontFix ]
 crbug.com/946022 [ Win7 ] fast/css-grid-layout/flex-content-sized-columns-resize-expected.html [ WontFix ]
-crbug.com/946022 [ Win7 ] fast/text/line-break-between-text-nodes-with-inline-blocks.html [ WontFix ]
+crbug.com/946022 [ Win7 ] virtual/text-antialias/line-break-between-text-nodes-with-inline-blocks.html [ WontFix ]
 crbug.com/946022 [ Win7 ] images/image-click-scale-restore-zoomed-image.html [ WontFix ]
 crbug.com/946022 [ Win7 ] images/image-zoom-to-25.html [ WontFix ]
 crbug.com/946022 [ Win7 ] images/image-zoom-to-500.html [ WontFix ]

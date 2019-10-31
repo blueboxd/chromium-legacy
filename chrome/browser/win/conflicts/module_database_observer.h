@@ -10,9 +10,11 @@ struct ModuleInfoData;
 
 class ModuleDatabaseObserver {
  public:
-  // Invoked when a new module is found either by loading into the process, or
-  // by being registered as a shell extension or IME. Only invoked after the
+  // Invoked when a new module is found either by loading into a Chrome process,
+  // or by being registered as a shell extension or IME. Only invoked after the
   // module was inspected on disk.
+  // Note that this is not invoked multiple times if the module subsequently
+  // loads into a different process type.
   virtual void OnNewModuleFound(const ModuleInfoKey& module_key,
                                 const ModuleInfoData& module_data) {}
 

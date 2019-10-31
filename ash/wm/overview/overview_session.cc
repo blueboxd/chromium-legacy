@@ -321,6 +321,12 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
   wm::ActivateWindow(window);
 }
 
+void OverviewSession::SetSplitViewDragIndicatorsDraggedWindow(
+    aura::Window* dragged_window) {
+  DCHECK(split_view_drag_indicators_);
+  split_view_drag_indicators_->SetDraggedWindow(dragged_window);
+}
+
 void OverviewSession::SetSplitViewDragIndicatorsIndicatorState(
     IndicatorState indicator_state,
     const gfx::Point& event_location) {

@@ -57,9 +57,8 @@ class TestExtensionBuilder {
     ComputedHashes::Writer computed_hashes_writer;
 
     for (const auto& resource : extension_resources_) {
-      std::vector<std::string> hashes;
-      ComputedHashes::ComputeHashesForContent(resource.contents, block_size,
-                                              &hashes);
+      std::vector<std::string> hashes =
+          ComputedHashes::GetHashesForContent(resource.contents, block_size);
       computed_hashes_writer.AddHashes(resource.relative_path, block_size,
                                        hashes);
     }

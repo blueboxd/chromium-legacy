@@ -26,7 +26,15 @@ WebGPUTest::~WebGPUTest() = default;
 
 bool WebGPUTest::WebGPUSupported() const {
   DCHECK(is_initialized_);  // Did you call WebGPUTest::Initialize?
-  return context_ != nullptr;
+
+  // crbug.com(941685): Vulkan driver crashes on Linux FYI Release (AMD R7 240).
+  // Win7 does not support WebGPU
+  if (GPUTestBotConfig::CurrentConfigMatches("Linux AMD") ||
+      GPUTestBotConfig::CurrentConfigMatches("Win7")) {
+    return false;
+  }
+
+  return true;
 }
 
 bool WebGPUTest::WebGPUSharedImageSupported() const {
@@ -57,8 +65,7 @@ void WebGPUTest::TearDown() {
 void WebGPUTest::Initialize(const Options& options) {
   is_initialized_ = true;
 
-  // crbug.com(941685): Vulkan driver crashes on Linux FYI Release (AMD R7 240).
-  if (GPUTestBotConfig::CurrentConfigMatches("Linux AMD")) {
+  if (!WebGPUSupported()) {
     return;
   }
 
@@ -75,10 +82,7 @@ void WebGPUTest::Initialize(const Options& options) {
       context_->Initialize(gpu_service_holder_->task_executor(), attributes,
                            options.shared_memory_limits, memory_buffer_manager,
                            image_factory, channel_manager);
-  if (result != ContextResult::kSuccess) {
-    context_ = nullptr;
-    return;
-  }
+  ASSERT_EQ(result, ContextResult::kSuccess);
 
   webgpu()->RequestAdapter(webgpu::PowerPreference::kHighPerformance);
 

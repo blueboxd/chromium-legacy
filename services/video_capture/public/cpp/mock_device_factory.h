@@ -20,9 +20,10 @@ class MockDeviceFactory : public video_capture::mojom::DeviceFactory {
   ~MockDeviceFactory() override;
 
   void GetDeviceInfos(GetDeviceInfosCallback callback) override;
-  void CreateDevice(const std::string& device_id,
-                    video_capture::mojom::DeviceRequest device_request,
-                    CreateDeviceCallback callback) override;
+  void CreateDevice(
+      const std::string& device_id,
+      mojo::PendingReceiver<video_capture::mojom::Device> device_receiver,
+      CreateDeviceCallback callback) override;
   void AddSharedMemoryVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
       mojo::PendingRemote<video_capture::mojom::Producer> producer,
@@ -41,10 +42,11 @@ class MockDeviceFactory : public video_capture::mojom::DeviceFactory {
   }
 
   MOCK_METHOD1(DoGetDeviceInfos, void(GetDeviceInfosCallback& callback));
-  MOCK_METHOD3(DoCreateDevice,
-               void(const std::string& device_id,
-                    video_capture::mojom::DeviceRequest* device_request,
-                    CreateDeviceCallback& callback));
+  MOCK_METHOD3(
+      DoCreateDevice,
+      void(const std::string& device_id,
+           mojo::PendingReceiver<video_capture::mojom::Device>* device_receiver,
+           CreateDeviceCallback& callback));
   MOCK_METHOD3(
       DoAddVirtualDevice,
       void(

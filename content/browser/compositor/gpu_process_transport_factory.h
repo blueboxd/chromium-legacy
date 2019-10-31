@@ -108,6 +108,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       ui::Compositor* compositor,
       mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer)
       override;
+  void SetDisplayTransformHint(ui::Compositor* compositor,
+                               gfx::OverlayTransform transform) override;
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;

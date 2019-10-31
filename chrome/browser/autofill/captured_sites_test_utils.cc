@@ -680,6 +680,10 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     } else if (base::CompareCaseInsensitiveASCII(*type, "click") == 0) {
       if (!ExecuteClickAction(*action))
         return false;
+    } else if (base::CompareCaseInsensitiveASCII(*type, "clickIfNotSeen") ==
+               0) {
+      if (!ExecuteClickIfNotSeenAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(*type, "closeTab") == 0) {
       if (!ExecuteCloseTabAction(*action))
         return false;
@@ -838,6 +842,22 @@ bool TestRecipeReplayer::ExecuteClickAction(
 
   WaitTillPageIsIdle();
   return true;
+}
+
+bool TestRecipeReplayer::ExecuteClickIfNotSeenAction(
+    const base::DictionaryValue& action) {
+  std::string xpath;
+  content::RenderFrameHost* frame;
+  if (ExtractFrameAndVerifyElement(action, &xpath, &frame, false, false,
+                                   true)) {
+    return true;
+  } else {
+    const std::string* click_xpath_text =
+        FindPopulateString(action, "clickSelector", "click xpath selector");
+    base::Value click_action = action.Clone();
+    click_action.SetStringKey("selector", *click_xpath_text);
+    return ExecuteClickAction(base::Value::AsDictionaryValue(click_action));
+  }
 }
 
 bool TestRecipeReplayer::ExecuteCloseTabAction(
@@ -1308,7 +1328,8 @@ bool TestRecipeReplayer::ExtractFrameAndVerifyElement(
     std::string* xpath,
     content::RenderFrameHost** frame,
     bool set_focus,
-    bool relaxed_visibility) {
+    bool relaxed_visibility,
+    bool ignore_failure) {
   if (!GetTargetHTMLElementXpathFromAction(action, xpath))
     return false;
 
@@ -1326,7 +1347,8 @@ bool TestRecipeReplayer::ExtractFrameAndVerifyElement(
   if (relaxed_visibility)
     visibility_enum_val &= ~kReadyStateOnTop;
 
-  if (!WaitForElementToBeReady(*xpath, visibility_enum_val, *frame))
+  if (!WaitForElementToBeReady(*xpath, visibility_enum_val, *frame,
+                               ignore_failure))
     return false;
 
   if (set_focus) {
@@ -1412,23 +1434,30 @@ bool TestRecipeReplayer::GetIFrameOffsetFromIFramePath(
 bool TestRecipeReplayer::WaitForElementToBeReady(
     const std::string& xpath,
     const int visibility_enum_val,
-    content::RenderFrameHost* frame) {
+    content::RenderFrameHost* frame,
+    bool ignore_failure) {
   std::vector<std::string> state_assertions;
   state_assertions.push_back(base::StringPrintf(
       "return automation_helper.isElementWithXpathReady(`%s`, %d);",
       xpath.c_str(), visibility_enum_val));
-  return WaitForStateChange(frame, state_assertions, default_action_timeout);
+  return WaitForStateChange(
+      frame, state_assertions,
+      ignore_failure ? click_fallback_timeout : default_action_timeout,
+      ignore_failure);
 }
 
 bool TestRecipeReplayer::WaitForStateChange(
     content::RenderFrameHost* frame,
     const std::vector<std::string>& state_assertions,
-    const base::TimeDelta& timeout) {
+    const base::TimeDelta& timeout,
+    bool ignore_failure) {
   base::TimeTicks start_time = base::TimeTicks::Now();
   while (!AllAssertionsPassed(frame, state_assertions)) {
     if (base::TimeTicks::Now() - start_time > timeout) {
+      if (!ignore_failure) {
         ADD_FAILURE() << "State change hasn't completed within timeout.";
-        return false;
+      }
+      return false;
     }
     WaitTillPageIsIdle();
   }

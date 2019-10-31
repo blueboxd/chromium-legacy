@@ -1,6 +1,21 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// This file is in maintenance mode, please do NOT add new tests into this file.
+//
+// policy_browsertests.cc contains lots of tests for multiple policies. However,
+// it became huge with hundreds of policies. Instead of adding even more tests
+// here, please put new ones with the policy implementation. For example, a
+// network policy test can be moved to chrome/browser/net.
+//
+// Policy component dependency is not necessary for policy test. Most of
+// policy values are copied into local state or Profile prefs. They can be used
+// to enable policy during test.
+//
+// Simple policy to prefs mapping can be tested with policy_test_cases.json. If
+// the conversion is complicated and requires custom policy handler, we
+// recommend to test the handler separately.
 
 #include <stddef.h>
 #include <stdint.h>

@@ -9,12 +9,18 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/skia_util.h"
 
 void ThumbnailImage::Observer::OnThumbnailImageAvailable(
     gfx::ImageSkia thumbnail_image) {}
 
 void ThumbnailImage::Observer::OnCompressedThumbnailDataAvailable(
     CompressedThumbnailData thumbnail_data) {}
+
+base::Optional<gfx::Size> ThumbnailImage::Observer::GetThumbnailSizeHint()
+    const {
+  return base::nullopt;
+}
 
 ThumbnailImage::Delegate::~Delegate() {
   if (thumbnail_)
@@ -105,8 +111,11 @@ void ThumbnailImage::NotifyUncompressedDataObservers(gfx::ImageSkia image) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (async_operation_finished_callback_)
     async_operation_finished_callback_.Run();
-  for (auto& observer : observers_)
-    observer.OnThumbnailImageAvailable(image);
+  for (auto& observer : observers_) {
+    auto size_hint = observer.GetThumbnailSizeHint();
+    observer.OnThumbnailImageAvailable(
+        size_hint ? CropPreviewImage(image, *size_hint) : image);
+  }
 }
 
 void ThumbnailImage::NotifyCompressedDataObservers(
@@ -134,4 +143,40 @@ gfx::ImageSkia ThumbnailImage::UncompressImage(
           compressed->data.data(), compressed->data.size()));
   result.MakeThreadSafe();
   return result;
+}
+
+// static
+gfx::ImageSkia ThumbnailImage::CropPreviewImage(
+    const gfx::ImageSkia& source_image,
+    const gfx::Size& minimum_size) {
+  DCHECK(!source_image.isNull());
+  DCHECK(!source_image.size().IsEmpty());
+  DCHECK(!minimum_size.IsEmpty());
+  const float desired_aspect =
+      float{minimum_size.width()} / minimum_size.height();
+  const float source_aspect =
+      float{source_image.width()} / float{source_image.height()};
+
+  if (source_aspect == desired_aspect ||
+      source_image.width() < minimum_size.width() ||
+      source_image.height() < minimum_size.height()) {
+    return source_image;
+  }
+
+  gfx::Rect clip_rect;
+  if (source_aspect > desired_aspect) {
+    // Wider than tall, clip horizontally: we center the smaller
+    // thumbnail in the wider screen.
+    const int new_width = source_image.height() * desired_aspect;
+    const int x_offset = (source_image.width() - new_width) / 2;
+    clip_rect = {x_offset, 0, new_width, source_image.height()};
+  } else {
+    // Taller than wide; clip vertically.
+    const int new_height = source_image.width() / desired_aspect;
+    clip_rect = {0, 0, source_image.width(), new_height};
+  }
+
+  SkBitmap cropped;
+  source_image.bitmap()->extractSubset(&cropped, gfx::RectToSkIRect(clip_rect));
+  return gfx::ImageSkia::CreateFrom1xBitmap(cropped);
 }

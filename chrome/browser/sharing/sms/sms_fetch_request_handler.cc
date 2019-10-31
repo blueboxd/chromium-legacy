@@ -5,7 +5,7 @@
 #include "chrome/browser/sharing/sms/sms_fetch_request_handler.h"
 
 #include "base/logging.h"
-#include "chrome/browser/sharing/proto/sms_fetch_message.pb.h"
+#include "components/sync/protocol/sharing_sms_fetch_message.pb.h"
 
 SmsFetchRequestHandler::SmsFetchRequestHandler() = default;
 

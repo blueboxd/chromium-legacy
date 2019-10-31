@@ -12,11 +12,6 @@
   {
     'name': 'chrome',
     'machines': {
-      'chromeos-amd64-generic-google-rel': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
-      },
       'chromeos-betty-google-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -623,15 +618,10 @@
         'os_type': 'android',
       },
       'android-pie-arm64-dbg': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'PQ1A.190105.004',
-              'device_type': 'walleye',
-              'os': 'Android',
-            },
-          ],
-        },
+        'mixins': [
+          'pie_fleet',
+          'walleye',
+        ],
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'android_pie_gtests',

@@ -12,12 +12,10 @@
 
 namespace ui_devtools {
 namespace {
-using ::inspector_protocol_encoding::span;
-using IPEStatus = ::inspector_protocol_encoding::Status;
 
 // Platform allows us to inject the string<->double conversion
 // routines from base:: into the inspector_protocol JSON parser / serializer.
-class Platform : public ::inspector_protocol_encoding::json::Platform {
+class Platform : public crdtp::json::Platform {
  public:
   bool StrToD(const char* str, double* result) const override {
     return base::StringToDouble(str, result);
@@ -33,18 +31,18 @@ class Platform : public ::inspector_protocol_encoding::json::Platform {
 };
 }  // namespace
 
-IPEStatus ConvertCBORToJSON(span<uint8_t> cbor, std::string* json) {
+crdtp::Status ConvertCBORToJSON(crdtp::span<uint8_t> cbor, std::string* json) {
   Platform platform;
-  return ::inspector_protocol_encoding::json::ConvertCBORToJSON(platform, cbor,
-                                                                json);
+  return crdtp::json::ConvertCBORToJSON(platform, cbor, json);
 }
 
-IPEStatus ConvertJSONToCBOR(span<uint8_t> json, std::string* cbor) {
+crdtp::Status ConvertJSONToCBOR(crdtp::span<uint8_t> json, std::string* cbor) {
   Platform platform;
   return ConvertJSONToCBOR(platform, json, cbor);
 }
 
-IPEStatus ConvertJSONToCBOR(span<uint8_t> json, std::vector<uint8_t>* cbor) {
+crdtp::Status ConvertJSONToCBOR(crdtp::span<uint8_t> json,
+                                std::vector<uint8_t>* cbor) {
   Platform platform;
   return ConvertJSONToCBOR(platform, json, cbor);
 }

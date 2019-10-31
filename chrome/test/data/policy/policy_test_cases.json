@@ -32,7 +32,7 @@
   },
 
   "TabFreezingEnabled": {
-    "os": ["win"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "official_only": true,
     "test_policy": { "TabFreezingEnabled": false },
     "pref_mappings": [
@@ -155,6 +155,17 @@
     "test_policy": { "DnsOverHttpsMode": "off" },
     "pref_mappings": [
       { "pref": "dns_over_https.mode",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DnsOverHttpsTemplates": {
+    "os": [ "win", "linux", "mac", "chromeos", "android" ],
+    "test_policy": { "DnsOverHttpsMode":  "automatic", "DnsOverHttpsTemplates": "https://cloudflare-dns.com/dns-query https://dns.quad9.net/dns-query{?dns}" },
+    "pref_mappings": [
+      {
+        "pref": "dns_over_https.templates",
         "local_state": true
       }
     ]
@@ -2935,6 +2946,14 @@
     "test_policy": { "ExternalProtocolDialogShowAlwaysOpenCheckbox": true },
     "pref_mappings": [
       { "pref": "external_protocol_dialog.show_always_open_checkbox" }
+    ]
+  },
+
+  "GloballyScopeHTTPAuthCacheEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "GloballyScopeHTTPAuthCacheEnabled": true },
+    "pref_mappings": [
+      { "pref": "auth.globally_scoped_http_auth_cache_enabled" }
     ]
   },
 

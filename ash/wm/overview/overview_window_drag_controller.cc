@@ -235,6 +235,8 @@ void OverviewWindowDragController::StartNormalDragMode(
   overview_grid->AddDropTargetForDraggingFromOverview(item_);
 
   if (should_allow_split_view_) {
+    overview_session_->SetSplitViewDragIndicatorsDraggedWindow(
+        item_->GetWindow());
     overview_session_->SetSplitViewDragIndicatorsIndicatorState(
         CanSnapInSplitview(item_->GetWindow()) ? IndicatorState::kDragArea
                                                : IndicatorState::kCannotSnap,

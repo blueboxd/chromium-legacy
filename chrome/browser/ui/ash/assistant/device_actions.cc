@@ -108,13 +108,11 @@ std::vector<AndroidAppInfoPtr> GetAppsInfo() {
 }
 
 void NotifyAndroidAppListRefreshed(
-    mojo::InterfacePtrSet<chromeos::assistant::mojom::AppListEventSubscriber>&
+    mojo::RemoteSet<chromeos::assistant::mojom::AppListEventSubscriber>&
         subscribers) {
   std::vector<AndroidAppInfoPtr> android_apps_info = GetAppsInfo();
-
-  subscribers.ForAllPtrs([&android_apps_info](auto* ptr) {
-    ptr->OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
-  });
+  for (const auto& subscriber : subscribers)
+    subscriber->OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
 }
 
 }  // namespace
@@ -230,14 +228,18 @@ void DeviceActions::LaunchAndroidIntent(const std::string& intent) {
 }
 
 void DeviceActions::AddAppListEventSubscriber(
-    chromeos::assistant::mojom::AppListEventSubscriberPtr subscriber) {
+    mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>
+        subscriber) {
+  mojo::Remote<chromeos::assistant::mojom::AppListEventSubscriber>
+      subscriber_remote(std::move(subscriber));
   auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
   if (prefs && prefs->package_list_initial_refreshed()) {
     std::vector<AndroidAppInfoPtr> android_apps_info = GetAppsInfo();
-    subscriber->OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
+    subscriber_remote->OnAndroidAppListRefreshed(
+        mojo::Clone(android_apps_info));
   }
 
-  app_list_subscribers_.AddPtr(std::move(subscriber));
+  app_list_subscribers_.Add(std::move(subscriber_remote));
 
   if (prefs && !scoped_prefs_observer_.IsObserving(prefs))
     scoped_prefs_observer_.Add(prefs);

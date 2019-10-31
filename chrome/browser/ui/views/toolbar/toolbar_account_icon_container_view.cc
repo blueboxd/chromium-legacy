@@ -66,6 +66,11 @@ SkColor ToolbarAccountIconContainerView::GetPageActionInkDropColor() const {
   return GetToolbarInkDropBaseColor(this);
 }
 
+float ToolbarAccountIconContainerView::GetPageActionInkDropVisibleOpacity()
+    const {
+  return kToolbarInkDropVisibleOpacity;
+}
+
 content::WebContents*
 ToolbarAccountIconContainerView::GetWebContentsForPageActionIconView() {
   return browser_->tab_strip_model()->GetActiveWebContents();

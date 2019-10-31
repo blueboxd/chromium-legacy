@@ -43,7 +43,13 @@ const base::Feature kOptimizationHintsExperiments{
 
 // Enables fetching optimization hints from a remote Optimization Guide Service.
 const base::Feature kOptimizationHintsFetching{
-    "OptimizationHintsFetching", base::FEATURE_DISABLED_BY_DEFAULT};
+  "OptimizationHintsFetching",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else   // !defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_ANDROID)
+};
 
 // Enables the initialization of the Optimization Guide Keyed Service.
 const base::Feature kOptimizationGuideKeyedService{
@@ -61,7 +67,7 @@ size_t MaxHintsFetcherTopHostBlacklistSize() {
   // of the top N.
   return GetFieldTrialParamByFeatureAsInt(kOptimizationHintsFetching,
                                           "top_host_blacklist_size_multiplier",
-                                          2) *
+                                          3) *
          MaxHostsForOptimizationGuideServiceHintsFetch();
 }
 
@@ -83,7 +89,7 @@ double MinTopHostEngagementScoreThreshold() {
   // navigation of the day.
   return GetFieldTrialParamByFeatureAsDouble(
       kOptimizationHintsFetching, "min_top_host_engagement_score_threshold",
-      3.0);
+      2.0);
 }
 
 base::TimeDelta StoredFetchedHintsFreshnessDuration() {

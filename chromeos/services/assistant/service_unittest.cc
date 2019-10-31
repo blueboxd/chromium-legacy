@@ -28,7 +28,7 @@
 #include "chromeos/services/assistant/test_support/fake_client.h"
 #include "chromeos/services/assistant/test_support/fully_initialized_assistant_state.h"
 #include "components/prefs/testing_pref_service.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -178,8 +178,8 @@ class FakeDeviceActions : mojom::DeviceActions {
       VerifyAndroidAppCallback callback) override {}
   void LaunchAndroidIntent(const std::string& intent) override {}
   void AddAppListEventSubscriber(
-      chromeos::assistant::mojom::AppListEventSubscriberPtr subscriber)
-      override {}
+      mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>
+          subscriber) override {}
 
   mojo::Receiver<mojom::DeviceActions> receiver_{this};
 

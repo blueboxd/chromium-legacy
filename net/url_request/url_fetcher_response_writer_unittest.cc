@@ -61,11 +61,17 @@ class URLFetcherFileWriterTest : public PlatformTest,
                                  public WithTaskEnvironment {
  protected:
   void SetUp() override {
+    PlatformTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_path_ = temp_dir_.GetPath().AppendASCII("test.txt");
     writer_.reset(new URLFetcherFileWriter(base::ThreadTaskRunnerHandle::Get(),
                                            file_path_));
     buf_ = base::MakeRefCounted<StringIOBuffer>(kData);
+  }
+
+  void TearDown() override {
+    ASSERT_TRUE(temp_dir_.Delete());
+    PlatformTest::TearDown();
   }
 
   base::ScopedTempDir temp_dir_;
@@ -187,6 +193,10 @@ TEST_F(URLFetcherFileWriterTest, InitializeAgainAfterFinishWithError) {
   EXPECT_THAT(callback4.WaitForResult(), IsOk());
   // Verify the result.
   EXPECT_TRUE(base::PathExists(file_path_));
+
+  // Destroy the writer and allow all files to be closed.
+  writer_.reset();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(URLFetcherFileWriterTest, DisownFile) {

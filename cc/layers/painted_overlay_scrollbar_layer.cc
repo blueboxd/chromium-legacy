@@ -26,21 +26,23 @@ namespace cc {
 std::unique_ptr<LayerImpl> PaintedOverlayScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return PaintedOverlayScrollbarLayerImpl::Create(
-      tree_impl, id(), scrollbar_->Orientation(),
-      scrollbar_->IsLeftSideVerticalScrollbar());
+      tree_impl, id(), orientation_, is_left_side_vertical_scrollbar_);
 }
 
 scoped_refptr<PaintedOverlayScrollbarLayer>
-PaintedOverlayScrollbarLayer::Create(std::unique_ptr<Scrollbar> scrollbar) {
+PaintedOverlayScrollbarLayer::Create(scoped_refptr<Scrollbar> scrollbar) {
   return base::WrapRefCounted(
       new PaintedOverlayScrollbarLayer(std::move(scrollbar)));
 }
 
 PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
-    std::unique_ptr<Scrollbar> scrollbar)
+    scoped_refptr<Scrollbar> scrollbar)
     : scrollbar_(std::move(scrollbar)),
       thumb_thickness_(scrollbar_->ThumbThickness()),
-      thumb_length_(scrollbar_->ThumbLength()) {
+      thumb_length_(scrollbar_->ThumbLength()),
+      orientation_(scrollbar_->Orientation()),
+      is_left_side_vertical_scrollbar_(
+          scrollbar_->IsLeftSideVerticalScrollbar()) {
   DCHECK(scrollbar_->HasThumb());
   DCHECK(scrollbar_->IsOverlay());
   DCHECK(scrollbar_->UsesNinePatchThumbResource());
@@ -49,7 +51,7 @@ PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
 PaintedOverlayScrollbarLayer::~PaintedOverlayScrollbarLayer() = default;
 
 bool PaintedOverlayScrollbarLayer::OpacityCanAnimateOnImplThread() const {
-  return scrollbar_->IsOverlay();
+  return true;
 }
 
 void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
@@ -60,7 +62,7 @@ void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
-  if (scrollbar_->Orientation() == HORIZONTAL) {
+  if (orientation_ == HORIZONTAL) {
     scrollbar_layer->SetTrackStart(track_rect_.x());
     scrollbar_layer->SetTrackLength(track_rect_.width());
   } else {
@@ -102,6 +104,14 @@ gfx::Rect PaintedOverlayScrollbarLayer::OriginThumbRectForPainting() const {
 }
 
 bool PaintedOverlayScrollbarLayer::Update() {
+  // These properties should never change.
+  DCHECK_EQ(orientation_, scrollbar_->Orientation());
+  DCHECK_EQ(is_left_side_vertical_scrollbar_,
+            scrollbar_->IsLeftSideVerticalScrollbar());
+  DCHECK(scrollbar_->HasThumb());
+  DCHECK(scrollbar_->IsOverlay());
+  DCHECK(scrollbar_->UsesNinePatchThumbResource());
+
   bool updated = false;
   updated |= Layer::Update();
 

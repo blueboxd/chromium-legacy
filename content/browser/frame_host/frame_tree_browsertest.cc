@@ -1290,8 +1290,7 @@ class TransferUserActivationFrameTreeBrowserTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     feature_list_.InitWithFeatures(
         {features::kUserActivationPostMessageTransfer,
-         features::kUserActivationSameOriginVisibility,
-         features::kUserActivationV2},
+         features::kUserActivationSameOriginVisibility},
         {});
   }
 

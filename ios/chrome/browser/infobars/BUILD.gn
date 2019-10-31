@@ -56,6 +56,8 @@ source_set("badge") {
 source_set("public") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "confirm_infobar_metrics_recorder.h",
+    "confirm_infobar_metrics_recorder.mm",
     "infobar_controller_delegate.h",
     "infobar_metrics_recorder.h",
     "infobar_metrics_recorder.mm",

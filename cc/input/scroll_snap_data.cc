@@ -111,7 +111,9 @@ void SnapContainerData::AddSnapAreaData(SnapAreaData snap_area_data) {
 
 bool SnapContainerData::FindSnapPosition(
     const SnapSelectionStrategy& strategy,
-    gfx::ScrollOffset* snap_position) const {
+    gfx::ScrollOffset* snap_position,
+    TargetSnapAreaElementIds* target_element_ids) const {
+  *target_element_ids = TargetSnapAreaElementIds();
   if (scroll_snap_type_.is_none)
     return false;
 
@@ -168,10 +170,30 @@ bool SnapContainerData::FindSnapPosition(
   }
 
   *snap_position = strategy.current_position();
-  if (closest_x.has_value())
+  if (closest_x.has_value()) {
     snap_position->set_x(closest_x.value().snap_offset());
-  if (closest_y.has_value())
+    target_element_ids->x = closest_x.value().element_id();
+  }
+
+  if (closest_y.has_value()) {
     snap_position->set_y(closest_y.value().snap_offset());
+    target_element_ids->y = closest_y.value().element_id();
+  }
+
+  return true;
+}
+
+const TargetSnapAreaElementIds& SnapContainerData::GetTargetSnapAreaElementIds()
+    const {
+  return target_snap_area_element_ids_;
+}
+
+bool SnapContainerData::SetTargetSnapAreaElementIds(
+    TargetSnapAreaElementIds ids) {
+  if (target_snap_area_element_ids_ == ids)
+    return false;
+
+  target_snap_area_element_ids_ = ids;
   return true;
 }
 
@@ -354,6 +376,7 @@ SnapSearchResult SnapContainerData::GetSnapSearchResult(
     }
     result.Clip(max_position_.y(), max_position_.x());
   }
+  result.set_element_id(area.element_id);
   return result;
 }
 

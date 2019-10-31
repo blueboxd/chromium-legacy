@@ -18,7 +18,7 @@ import tempfile
 import time
 import uuid
 
-from common import SDK_ROOT, EnsurePathExists
+from common import SDK_ROOT, EnsurePathExists, GetHostToolPathFromPlatform
 
 # The maximum times to attempt mDNS resolution when connecting to a freshly
 # booted Fuchsia instance before aborting.
@@ -139,7 +139,7 @@ class DeviceTarget(target.Target):
     or waits up to |timeout| seconds and returns False if the device couldn't
     be found."""
 
-    dev_finder_path = os.path.join(SDK_ROOT, 'tools', 'dev_finder')
+    dev_finder_path = GetHostToolPathFromPlatform('dev_finder')
 
     if self._node_name:
       command = [dev_finder_path, 'resolve',
@@ -220,7 +220,7 @@ class DeviceTarget(target.Target):
     The device is up and reachable via SSH when the function is successfully
     completes."""
 
-    bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
+    bootserver_path = GetHostToolPathFromPlatform('bootserver')
     bootserver_command = [
         bootserver_path,
         '-1',
@@ -253,7 +253,7 @@ class DeviceTarget(target.Target):
 
     # Start loglistener to save system logs.
     if self._system_log_file:
-      loglistener_path = os.path.join(SDK_ROOT, 'tools', 'loglistener')
+      loglistener_path = GetHostToolPathFromPlatform('loglistener')
       self._loglistener = subprocess.Popen(
           [loglistener_path, self._node_name],
           stdout=self._system_log_file,

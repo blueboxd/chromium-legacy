@@ -162,6 +162,11 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
       NET_LOG(DEBUG) << "Delete Profile Entry: " << profile_path << ": "
                      << entry_path;
       profile_delete_entries_[profile_path] = entry_path;
+
+      // If the ShillErrorCallback is executed synchronously, this object can
+      // be deleted while this loop is still running.  While this shouldn't be
+      // possible in practice, it should still be fixed to avoid problems in
+      // the future.  Tracked in crbug.com/1019396.
       ShillProfileClient::Get()->DeleteEntry(
           dbus::ObjectPath(profile_path), entry_path,
           base::Bind(&ProfileEntryDeleter::ProfileEntryDeletedCallback,

@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/span.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/devtools_agent.h"
@@ -25,17 +24,11 @@
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
-#include "third_party/inspector_protocol/encoding/encoding.h"
+#include "third_party/inspector_protocol/crdtp/encoding.h"
 
 namespace blink {
 
 namespace {
-using ::inspector_protocol_encoding::span;
-using ::inspector_protocol_encoding::SpanFrom;
-using ::inspector_protocol_encoding::cbor::IsCBORMessage;
-using ::inspector_protocol_encoding::json::ConvertCBORToJSON;
-using IPEStatus = ::inspector_protocol_encoding::Status;
-
 const char kV8StateKey[] = "v8";
 bool ShouldInterruptForMethod(const String& method) {
   // Keep in sync with DevToolsSession::ShouldSendOnIO.
@@ -58,7 +51,7 @@ Vector<uint8_t> UnwrapMessage(const mojom::blink::DevToolsMessagePtr& message) {
 
 // Platform allows us to inject the string<->double conversion
 // routines from Blink into the inspector_protocol JSON parser / serializer.
-class JsonPlatform : public ::inspector_protocol_encoding::json::Platform {
+class JsonPlatform : public crdtp::json::Platform {
  public:
   bool StrToD(const char* str, double* result) const override {
     bool ok;
@@ -77,8 +70,9 @@ class JsonPlatform : public ::inspector_protocol_encoding::json::Platform {
   }
 };
 
-IPEStatus ConvertCBORToJSON(span<uint8_t> cbor, std::vector<uint8_t>* json) {
-  DCHECK(IsCBORMessage(cbor));
+crdtp::Status ConvertCBORToJSON(crdtp::span<uint8_t> cbor,
+                                std::vector<uint8_t>* json) {
+  DCHECK(crdtp::cbor::IsCBORMessage(cbor));
   JsonPlatform platform;
   return ConvertCBORToJSON(platform, cbor, json);
 }
@@ -229,7 +223,8 @@ void DevToolsSession::DispatchProtocolCommand(
 void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
                                                   const String& method,
                                                   Vector<uint8_t> data) {
-  DCHECK(IsCBORMessage(span<uint8_t>(data.data(), data.size())));
+  DCHECK(crdtp::cbor::IsCBORMessage(
+      crdtp::span<uint8_t>(data.data(), data.size())));
 
   // IOSession does not provide ordering guarantees relative to
   // Session, so a command may come to IOSession after Session is detached,
@@ -362,7 +357,8 @@ blink::mojom::blink::DevToolsMessagePtr DevToolsSession::FinalizeMessage(
   std::vector<uint8_t> message_to_send = std::move(message);
   if (!client_expects_binary_responses_) {
     std::vector<uint8_t> json;
-    IPEStatus status = ConvertCBORToJSON(SpanFrom(message_to_send), &json);
+    crdtp::Status status =
+        ConvertCBORToJSON(crdtp::SpanFrom(message_to_send), &json);
     CHECK(status.ok()) << status.ToASCIIString();
     message_to_send = std::move(json);
   }

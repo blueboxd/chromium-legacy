@@ -22,9 +22,12 @@
 #include "ipc/ipc_message.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace network {
+struct ResourceResponseHead;
+}
 
 namespace extensions {
 
@@ -88,7 +91,7 @@ struct WebRequestInfo {
 
   // Fill in response data for this request.
   void AddResponseInfoFromResourceResponse(
-      const network::mojom::URLResponseHead& response);
+      const network::ResourceResponseHead& response);
 
   // A unique identifier for this request.
   const uint64_t id;

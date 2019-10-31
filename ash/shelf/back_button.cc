@@ -7,16 +7,12 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_focus_cycler.h"
-#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/model/system_tray_model.h"
-#include "ash/system/model/virtual_keyboard_model.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -26,12 +22,9 @@ const char BackButton::kViewClassName[] = "ash/BackButton";
 
 BackButton::BackButton(Shelf* shelf) : ShelfControlButton(shelf, this) {
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE));
-  Shell::Get()->system_tray_model()->virtual_keyboard()->AddObserver(this);
 }
 
-BackButton::~BackButton() {
-  Shell::Get()->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
-}
+BackButton::~BackButton() {}
 
 void BackButton::PaintButtonContents(gfx::Canvas* canvas) {
   // Use PaintButtonContents instead of SetImage so the icon gets drawn at
@@ -59,14 +52,6 @@ void BackButton::OnShelfButtonAboutToRequestFocusFromTabTraversal(
     shelf()->shelf_focus_cycler()->FocusOut(reverse,
                                             SourceView::kShelfNavigationView);
   }
-}
-
-void BackButton::OnVirtualKeyboardVisibilityChanged() {
-  gfx::Transform rotation;
-  // Rotate the back button when the virtual keyboard is visible.
-  if (Shell::Get()->system_tray_model()->virtual_keyboard()->visible())
-    rotation.Rotate(270.0);
-  layer()->SetTransform(TransformAboutPivot(GetCenterPoint(), rotation));
 }
 
 void BackButton::ButtonPressed(views::Button* sender,

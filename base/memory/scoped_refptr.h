@@ -178,8 +178,16 @@ class scoped_refptr {
 
   constexpr scoped_refptr() = default;
 
-  // Constructs from raw pointer. constexpr if |p| is null.
-  constexpr scoped_refptr(T* p) : ptr_(p) {
+  // Allow implicit construction from nullptr.
+  constexpr scoped_refptr(std::nullptr_t) {}
+
+  // Constructs from a raw pointer. Note that this constructor allows implicit
+  // conversion from T* to scoped_refptr<T> which is strongly discouraged. If
+  // you are creating a new ref-counted object please use
+  // base::MakeRefCounted<T>() or base::WrapRefCounted<T>(). Otherwise you
+  // should move or copy construct from an existing scoped_refptr<T> to the
+  // ref-counted object.
+  scoped_refptr(T* p) : ptr_(p) {
     if (ptr_)
       AddRef(ptr_);
   }

@@ -237,7 +237,8 @@ suite('CupsAddPrinterDialogTests', function() {
         .then(function(result) {
           // The general error should be showing.
           assertTrue(!!addDialog.errorText_);
-          assertFalse(addDialog.$$('#general-error-container').hidden);
+          const generalErrorElement = addDialog.$$('printer-dialog-error');
+          assertFalse(generalErrorElement.$$('#error-container').hidden);
         });
   });
 

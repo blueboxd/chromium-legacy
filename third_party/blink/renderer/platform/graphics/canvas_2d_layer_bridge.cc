@@ -34,6 +34,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "cc/layers/texture_layer.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -150,7 +151,7 @@ bool Canvas2DLayerBridge::ShouldAccelerate(AccelerationHint hint) const {
       SharedGpuContext::ContextProviderWrapper();
   if (accelerate && (!context_provider_wrapper ||
                      context_provider_wrapper->ContextProvider()
-                             ->ContextGL()
+                             ->RasterInterface()
                              ->GetGraphicsResetStatusKHR() != GL_NO_ERROR)) {
     accelerate = false;
   }

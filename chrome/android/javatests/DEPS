@@ -2,6 +2,7 @@ include_rules = [
   "+chrome/app",
   "+chrome/browser/ui/android/styles",
   "+chrome/browser/ui/android/widget",
+  "+chrome/browser/util/android",
   "+components/autofill/android/java/src/org/chromium/components/autofill",
   "+components/background_task_scheduler/android/java",
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",

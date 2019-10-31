@@ -6,6 +6,8 @@ package org.chromium.weblayer;
 
 import android.os.RemoteException;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IProfile;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
@@ -29,11 +31,22 @@ public final class Profile {
         // TODO(sky): figure out right assertion here if mImpl is non-null.
     }
 
-    public ListenableResult<Void> clearBrowsingData() {
+    /**
+     * Clears the data associated with the Profile.
+     * The clearing is asynchronous, and new data may be generated during clearing. It is safe to
+     * call this method repeatedly without waiting for callback.
+     *
+     * @param dataTypes See {@link BrowsingDataType}.
+     * @return {@link ListenableResult} into which a "null" will be supplied when clearing is
+     * finished.
+     */
+    @NonNull
+    public ListenableResult<Void> clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes) {
         ThreadCheck.ensureOnUiThread();
         try {
             ListenableResult<Void> result = new ListenableResult<>();
-            mImpl.clearBrowsingData(ObjectWrapper.wrap((Runnable) () -> result.supplyResult(null)));
+            mImpl.clearBrowsingData(dataTypes,
+                    ObjectWrapper.wrap((Runnable) () -> result.supplyResult(null)));
             return result;
         } catch (RemoteException e) {
             throw new APICallException(e);

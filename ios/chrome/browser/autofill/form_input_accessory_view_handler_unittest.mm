@@ -19,14 +19,14 @@ class FormInputAccessoryViewHandlerTest : public web::WebTestWithWebState {};
 // Tests that trying to programmatically dismiss the keyboard when it isn't
 // visible doesn't crash the browser.
 TEST_F(FormInputAccessoryViewHandlerTest, FormInputAccessoryViewHandler) {
-  FormInputAccessoryViewHandler* accessoryViewDelegate =
+  FormInputAccessoryViewHandler* accessory_view_delegate =
       [[FormInputAccessoryViewHandler alloc] init];
-  ASSERT_TRUE(accessoryViewDelegate);
-  [accessoryViewDelegate closeKeyboardWithoutButtonPress];
-  CRWJSInjectionReceiver* injectionReceiver =
+  ASSERT_TRUE(accessory_view_delegate);
+  [accessory_view_delegate closeKeyboardWithoutButtonPress];
+  CRWJSInjectionReceiver* injection_receiver =
       web_state()->GetJSInjectionReceiver();
-  accessoryViewDelegate.JSSuggestionManager =
+  accessory_view_delegate.JSSuggestionManager =
       base::mac::ObjCCastStrict<JsSuggestionManager>(
-          [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
-  [accessoryViewDelegate closeKeyboardWithoutButtonPress];
+          [injection_receiver instanceOfClass:[JsSuggestionManager class]]);
+  [accessory_view_delegate closeKeyboardWithoutButtonPress];
 }

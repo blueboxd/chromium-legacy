@@ -2,33 +2,72 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tree_builder.h"
+#include "tools/binary_size/libsupersize/caspian/tree_builder.h"
 
+#include <algorithm>
 #include <iostream>
+#include <map>
 
 namespace caspian {
-/** Name used by a directory created to hold symbols with no name. */
+
 namespace {
+/** Name used by a directory created to hold symbols with no name. */
 constexpr const char* kNoName = "(No path)";
+constexpr const char* kNoComponent = "(No component)";
+const char kPathSep = '/';
+const char kComponentSep = '>';
+
+size_t LastSeparatorIndex(std::string_view str, char sep, char othersep) {
+  size_t sep_idx = str.find_last_of(sep);
+  size_t path_idx = str.find_last_of(othersep);
+  if (sep_idx != std::string_view::npos && path_idx != std::string_view::npos) {
+    return std::max(sep_idx, path_idx);
+  } else if (sep_idx == std::string_view::npos) {
+    return path_idx;
+  } else {
+    return sep_idx;
+  }
 }
 
-TreeBuilder::TreeBuilder(SizeInfo* size_info) : _size_info(size_info) {}
+std::string_view DirName(std::string_view path, char sep, char othersep) {
+  auto end = LastSeparatorIndex(path, sep, othersep);
+  if (end != std::string_view::npos) {
+    std::string_view ret = path;
+    ret.remove_suffix(path.size() - end);
+    return ret;
+  }
+  return "";
+}
+}  // namespace
+
+TreeBuilder::TreeBuilder(
+    SizeInfo* size_info,
+    bool group_by_component,
+    std::vector<std::function<bool(const Symbol&)>> filters)
+    : size_info_(size_info),
+      group_by_component_(group_by_component),
+      sep_(group_by_component ? kComponentSep : kPathSep),
+      filters_(filters) {}
+
 TreeBuilder::~TreeBuilder() = default;
 
 void TreeBuilder::Build() {
   // Initialize tree root.
-  _root.container_type = ContainerType::kDirectory;
-  _root.id_path = "/";
-  _parents[""] = &_root;
+  root_.container_type = ContainerType::kDirectory;
+  owned_strings_.emplace_back(1, sep_);
+  root_.id_path = owned_strings_.back();
+  _parents[""] = &root_;
 
   // Group symbols by source path.
   std::unordered_map<std::string_view, std::vector<const Symbol*>> symbols;
-  for (auto& sym : _size_info->raw_symbols) {
-    std::string_view key = sym.source_path;
-    if (key == nullptr) {
-      key = sym.object_path;
+  for (auto& sym : size_info_->raw_symbols) {
+    if (ShouldIncludeSymbol(sym)) {
+      std::string_view key = sym.source_path;
+      if (key == nullptr) {
+        key = sym.object_path;
+      }
+      symbols[key].push_back(&sym);
     }
-    symbols[key].push_back(&sym);
   }
   for (const auto& pair : symbols) {
     AddFileEntry(pair.first, pair.second);
@@ -56,12 +95,26 @@ void TreeBuilder::AddFileEntry(const std::string_view source_path,
   // Creates a single file node with a child for each symbol in that file.
   TreeNode* file_node = new TreeNode();
   file_node->container_type = ContainerType::kFile;
+
   if (source_path.empty()) {
     file_node->id_path = kNoName;
   } else {
     file_node->id_path = source_path;
   }
-  file_node->short_name_index = source_path.find_last_of('/') + 1;
+  if (group_by_component_) {
+    std::string component;
+    if (symbols[0]->component && *symbols[0]->component) {
+      component = symbols[0]->component;
+    } else {
+      component = kNoComponent;
+    }
+    owned_strings_.push_back(component + std::string(1, kComponentSep) +
+                             std::string(file_node->id_path));
+    file_node->id_path = owned_strings_.back();
+  }
+
+  file_node->short_name_index =
+      LastSeparatorIndex(file_node->id_path, sep_, kPathSep) + 1;
   _parents[file_node->id_path] = file_node;
   // TODO: Initialize file type, source path, component
 
@@ -70,15 +123,16 @@ void TreeBuilder::AddFileEntry(const std::string_view source_path,
     TreeNode* symbol_node = new TreeNode();
     symbol_node->container_type = ContainerType::kSymbol;
     symbol_node->id_path = sym->full_name;
-    symbol_node->size = sym->size;
-    symbol_node->node_stats = NodeStats(
-        _size_info->ShortSectionName(sym->section_name), 1, 0, sym->size);
+    symbol_node->size = sym->pss();
+    symbol_node->node_stats =
+        NodeStats(size_info_->ShortSectionName(sym->section_name), 1, 0,
+                  symbol_node->size);
     AttachToParent(symbol_node, file_node);
   }
 
   // TODO: Only add if there are unfiltered symbols in this file.
   TreeNode* orphan_node = file_node;
-  while (orphan_node != &_root) {
+  while (orphan_node != &root_) {
     orphan_node = GetOrMakeParentNode(orphan_node);
   }
 
@@ -90,16 +144,16 @@ TreeNode* TreeBuilder::GetOrMakeParentNode(TreeNode* child_node) {
   if (child_node->id_path.empty()) {
     parent_path = kNoName;
   } else {
-    parent_path = DirName(child_node->id_path, '/');
+    parent_path = DirName(child_node->id_path, sep_, kPathSep);
   }
 
   TreeNode*& parent = _parents[parent_path];
   if (parent == nullptr) {
     parent = new TreeNode();
     parent->id_path = parent_path;
-    parent->short_name_index = parent_path.find_last_of('/') + 1;
-    // TODO: Container type might be a component instead of a directory.
-    parent->container_type = ContainerType::kDirectory;
+    parent->short_name_index =
+        LastSeparatorIndex(parent_path, sep_, kPathSep) + 1;
+    parent->container_type = ContainerTypeFromChild(child_node->id_path);
   }
   if (child_node->parent != parent) {
     AttachToParent(child_node, parent);
@@ -127,14 +181,27 @@ void TreeBuilder::AttachToParent(TreeNode* child, TreeNode* parent) {
   }
 }
 
-std::string_view TreeBuilder::DirName(std::string_view path, char sep) {
-  auto end = path.find_last_of(sep);
-  if (end != std::string_view::npos) {
-    std::string_view ret = path;
-    ret.remove_suffix(path.size() - end);
-    return ret;
+ContainerType TreeBuilder::ContainerTypeFromChild(
+    std::string_view child_id_path) const {
+  // When grouping by component, id paths use '>' separators for components and
+  // '/' separators for the file tree - e.g. Blink>third_party/blink/common...
+  // We know that Blink is a component because its children have the form
+  // Blink>third_party rather than Blink/third_party.
+  size_t idx = LastSeparatorIndex(child_id_path, sep_, kPathSep);
+  if (idx == std::string_view::npos || child_id_path[idx] == kPathSep) {
+    return ContainerType::kDirectory;
+  } else {
+    return ContainerType::kComponent;
   }
-  return "";
+}
+
+bool TreeBuilder::ShouldIncludeSymbol(const Symbol& symbol) const {
+  for (const auto& filter : filters_) {
+    if (!filter(symbol)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void TreeBuilder::JoinDexMethodClasses(TreeNode* node) {

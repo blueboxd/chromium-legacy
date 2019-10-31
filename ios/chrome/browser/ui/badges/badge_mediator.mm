@@ -141,7 +141,12 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 }
 
 - (void)translateBadgeButtonTapped:(id)sender {
-  // TODO(crbug.com/1014959): Implement.
+  BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
+  DCHECK_EQ(badgeButton.badgeType, BadgeType::kBadgeTypeTranslate);
+
+  [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypeTranslate];
+  [self recordMetricsForBadgeButton:badgeButton
+                        infobarType:InfobarType::kInfobarTypeTranslate];
 }
 
 - (void)overflowBadgeButtonTapped:(id)sender {

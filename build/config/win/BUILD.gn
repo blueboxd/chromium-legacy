@@ -89,7 +89,11 @@ config("compiler") {
     # don't emit the CFG checks themselves, but this enables the functions to
     # be called by code that is built with those checks enabled, such as system
     # libraries.
-    cflags += [ "/guard:cf,nochecks" ]
+    if (!is_debug && !is_component_build) {
+      # CFG isn't needed on debug or component builds, adds a bit of bloat to
+      # .obj files, and caused link errors once - https://crbug.com/1019970
+      cflags += [ "/guard:cf,nochecks" ]
+    }
 
     if (is_component_build) {
       cflags += [

@@ -5,6 +5,7 @@
 // https://wicg.github.io/serial
 
 [
+    ActiveScriptWrappable,
     Exposed(Window Serial,DedicatedWorker Serial),
     SecureContext
 ] interface SerialPort {

@@ -158,6 +158,7 @@ bool StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
     return false;
   out->update_network_isolation_key_on_redirect =
       data.update_network_isolation_key_on_redirect();
+  out->disable_secure_dns = data.disable_secure_dns();
   return true;
 }
 

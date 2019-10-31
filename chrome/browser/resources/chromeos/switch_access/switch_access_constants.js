@@ -93,6 +93,13 @@ SAConstants.Focus.BUFFER = 4;
 SAConstants.VK_KEY_PRESS_DURATION_MS = 100;
 
 /**
+ * The maximum length of a row in the Virtual Keyboard.
+ * @type {number}
+ * @const
+ */
+SAConstants.KEYBOARD_MAX_ROW_LENGTH = 14;
+
+/**
  * Preferences that are configurable in Switch Access.
  * @enum {string}
  */

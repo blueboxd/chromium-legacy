@@ -83,8 +83,6 @@ void StatusAreaOverflowButtonTray::IconView::UpdateRotation() {
 
 StatusAreaOverflowButtonTray::StatusAreaOverflowButtonTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new IconView()) {
-  SetInkDropMode(InkDropMode::ON);
-
   tray_container()->AddChildView(icon_);
 }
 

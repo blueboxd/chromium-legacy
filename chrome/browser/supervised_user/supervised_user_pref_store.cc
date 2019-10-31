@@ -22,6 +22,7 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "extensions/buildflags/buildflags.h"
 
 namespace {
 
@@ -162,6 +163,20 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
           force_safe_search ? safe_search_util::YOUTUBE_RESTRICT_MODERATE
                             : safe_search_util::YOUTUBE_RESTRICT_OFF);
     }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    {
+      // TODO(michaelpg): Update Kids Management server to set a new bit for
+      // extension permissions. Until then, rely on other side effects of the
+      // "allow sites and apps to ask for permissions" setting, like
+      // geolocation being disallowed.
+      bool permissions_disallowed = true;
+      settings->GetBoolean(supervised_users::kGeolocationDisabled,
+                           &permissions_disallowed);
+      prefs_->SetBoolean(prefs::kSupervisedUserExtensionsMayRequestPermissions,
+                         !permissions_disallowed);
+    }
+#endif
   }
 
   if (!old_prefs) {

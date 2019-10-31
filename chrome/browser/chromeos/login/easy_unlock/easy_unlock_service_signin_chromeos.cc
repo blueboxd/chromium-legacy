@@ -523,10 +523,14 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
       PA_LOG(WARNING) << "No BeaconSeeds were loaded.";
     }
 
+    // Values such as the |instance_id| and |name| of the device are not
+    // provided in the device dictionary that is persisted to the TPM during the
+    // user session. However, in this particular scenario, we do not need these
+    // values to safely construct and use the RemoteDevice objects.
     multidevice::RemoteDevice remote_device(
-        account_id.GetUserEmail(), std::string() /* name */,
-        std::string() /* pii_free_name */, decoded_public_key,
-        decoded_psk /* persistent_symmetric_key */,
+        account_id.GetUserEmail(), std::string() /* instance_id */,
+        std::string() /* name */, std::string() /* pii_free_name */,
+        decoded_public_key, decoded_psk /* persistent_symmetric_key */,
         0L /* last_update_time_millis */, software_features, beacon_seeds);
 
     remote_devices.push_back(remote_device);

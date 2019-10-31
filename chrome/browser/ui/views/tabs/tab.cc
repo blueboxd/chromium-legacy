@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
@@ -496,7 +497,9 @@ bool Tab::OnMousePressed(const ui::MouseEvent& event) {
     }
     ui::MouseEvent cloned_event(event_in_parent, parent(),
                                 static_cast<View*>(this));
-    controller_->MaybeStartDrag(this, cloned_event, original_selection);
+
+    if (!closing())
+      controller_->MaybeStartDrag(this, cloned_event, original_selection);
   }
   return true;
 }
@@ -616,7 +619,9 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
       views::View::ConvertPointToScreen(this, &loc);
       ui::GestureEvent cloned_event(event_in_parent, parent(),
                                     static_cast<View*>(this));
-      controller_->MaybeStartDrag(this, cloned_event, original_selection);
+
+      if (!closing())
+        controller_->MaybeStartDrag(this, cloned_event, original_selection);
       break;
     }
 
@@ -702,6 +707,10 @@ void Tab::OnThemeChanged() {
   UpdateForegroundColors();
 }
 
+TabSlotView::ViewType Tab::GetTabSlotViewType() const {
+  return TabSlotView::ViewType::kTab;
+}
+
 TabSizeInfo Tab::GetTabSizeInfo() const {
   return {TabStyle::GetPinnedWidth(), TabStyleViews::GetMinimumActiveWidth(),
           TabStyleViews::GetMinimumInactiveWidth(),
@@ -721,16 +730,10 @@ void Tab::SetClosing(bool closing) {
   }
 }
 
-void Tab::SetGroup(base::Optional<TabGroupId> group) {
-  if (group_ == group)
-    return;
-  group_ = group;
-}
-
 base::Optional<SkColor> Tab::GetGroupColor() const {
-  return group_.has_value()
+  return group().has_value()
              ? base::make_optional(
-                   controller_->GetVisualDataForGroup(group_.value())->color())
+                   controller_->GetVisualDataForGroup(group().value())->color())
              : base::nullopt;
 }
 

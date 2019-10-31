@@ -783,9 +783,6 @@ CookieEffectiveSameSite CanonicalCookie::GetEffectiveSameSite(
       return CookieEffectiveSameSite::LAX_MODE;
     case CookieSameSite::STRICT_MODE:
       return CookieEffectiveSameSite::STRICT_MODE;
-    // TODO(crbug.com/989171): Replace this with FirstParty{Lax,Strict}.
-    case CookieSameSite::EXTENDED_MODE:
-      return CookieEffectiveSameSite::LAX_MODE;
   }
 }
 

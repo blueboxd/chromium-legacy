@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_control_button.h"
-#include "ash/system/model/virtual_keyboard_model.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -21,8 +20,7 @@ class ShelfButtonDelegate;
 // and visiblity are handled by its parent, ShelfView, to ensure the fade
 // in/out of the icon matches the movement of ShelfView's items.
 class ASH_EXPORT BackButton : public ShelfControlButton,
-                              public ShelfButtonDelegate,
-                              public VirtualKeyboardModel::Observer {
+                              public ShelfButtonDelegate {
  public:
   static const char kViewClassName[];
 
@@ -37,9 +35,6 @@ class ASH_EXPORT BackButton : public ShelfControlButton,
   // ShelfButtonDelegate:
   void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
                                                         bool reverse) override;
-
-  // VirtualKeyboardModel::Observer:
-  void OnVirtualKeyboardVisibilityChanged() override;
 
   void ButtonPressed(views::Button* sender,
                      const ui::Event& event,

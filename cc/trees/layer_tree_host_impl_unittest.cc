@@ -701,12 +701,17 @@ class LayerTreeHostImplTest : public testing::Test,
         ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kMandatory),
         gfx::RectF(0, 0, 200, 200), gfx::ScrollOffset(300, 300));
     SnapAreaData area_data(ScrollSnapAlign(SnapAlignment::kStart),
-                           gfx::RectF(50, 50, 100, 100), false);
+                           gfx::RectF(50, 50, 100, 100), false, ElementId(10));
     container_data.AddSnapAreaData(area_data);
     GetScrollNode(overflow)->snap_container_data.emplace(container_data);
     DrawFrame();
 
     return overflow;
+  }
+
+  base::Optional<SnapContainerData> GetSnapContainerData(LayerImpl* layer) {
+    return GetScrollNode(layer) ? GetScrollNode(layer)->snap_container_data
+                                : base::nullopt;
   }
 
   void ClearLayersAndPropertyTrees(LayerTreeImpl* layer_tree_impl) {
@@ -1509,13 +1514,20 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnX) {
           ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   gfx::Vector2dF x_delta(20, 0);
   host_impl_->ScrollBy(UpdateState(pointer_position, x_delta).get());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   host_impl_->ScrollEnd(EndState().get(), true);
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
+
   base::TimeTicks start_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
   BeginImplFrameAndAnimate(begin_frame_args, start_time);
@@ -1525,6 +1537,8 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnX) {
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), overflow->CurrentScrollOffset());
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollSnapOnY) {
@@ -1537,13 +1551,19 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnY) {
           ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   gfx::Vector2dF y_delta(0, 20);
   host_impl_->ScrollBy(UpdateState(pointer_position, y_delta).get());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   host_impl_->ScrollEnd(EndState().get(), true);
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(), ElementId(10)),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
   base::TimeTicks start_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
   BeginImplFrameAndAnimate(begin_frame_args, start_time);
@@ -1553,6 +1573,8 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnY) {
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 50), overflow->CurrentScrollOffset());
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(), ElementId(10)),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollSnapOnBoth) {
@@ -1565,13 +1587,19 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnBoth) {
           ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   gfx::Vector2dF delta(20, 20);
   host_impl_->ScrollBy(UpdateState(pointer_position, delta).get());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   host_impl_->ScrollEnd(EndState().get(), true);
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
   base::TimeTicks start_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
   BeginImplFrameAndAnimate(begin_frame_args, start_time);
@@ -1581,6 +1609,8 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnBoth) {
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), overflow->CurrentScrollOffset());
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
@@ -1594,6 +1624,9 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
 
   EXPECT_EQ(overflow->scroll_tree_index(),
             host_impl_->CurrentlyScrollingNode()->id);
+
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   base::TimeTicks start_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
@@ -1610,17 +1643,24 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
   EXPECT_GT(20, current_offset.x());
   EXPECT_LT(0, current_offset.y());
   EXPECT_GT(20, current_offset.y());
+  EXPECT_EQ(TargetSnapAreaElementIds(),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
-  // Animating for the snap.
+  // The scroll animation is finished, so the snap target should be set now and
+  // the snap animation should begin.
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
   EXPECT_TRUE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   // Finish the animation.
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1500));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), overflow->CurrentScrollOffset());
   EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
 
 TEST_F(LayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
@@ -1700,9 +1740,11 @@ TEST_F(LayerTreeHostImplTest,
                            start_time + base::TimeDelta::FromMilliseconds(100));
   EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), overflow->CurrentScrollOffset());
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
 
-TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoWhenZoomed) {
+TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoAndSetSnapTargetWhenZoomed) {
   LayerImpl* overflow = CreateLayerForSnapping();
   // Scales the page to its 1/5.
   host_impl_->active_tree()->PushPageScaleFromMainThread(0.2f, 0.1f, 5.f);
@@ -1724,10 +1766,12 @@ TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoWhenZoomed) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), result.current_visual_offset);
 
   gfx::Vector2dF initial_offset, target_offset;
-  EXPECT_TRUE(host_impl_->GetSnapFlingInfo(gfx::Vector2dF(10, 10),
-                                           &initial_offset, &target_offset));
+  EXPECT_TRUE(host_impl_->GetSnapFlingInfoAndSetSnapTarget(
+      gfx::Vector2dF(10, 10), &initial_offset, &target_offset));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), initial_offset);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), target_offset);
+  EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
+            GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
 
 TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {

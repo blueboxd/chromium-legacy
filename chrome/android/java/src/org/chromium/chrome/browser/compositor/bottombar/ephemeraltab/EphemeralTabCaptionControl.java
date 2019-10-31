@@ -143,10 +143,12 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
     }
 
     /**
-     * @return The text currently showing in the caption view.
+     * Sets caption text.
+     * @param text String to use for caption.
      */
-    public CharSequence getCaptionText() {
-        return mCaption.getText();
+    public void setCaptionText(String text) {
+        mCaption.setText(text);
+        invalidate();
     }
 
     // OverlayPanelTextViewInflater

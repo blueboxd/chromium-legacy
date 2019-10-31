@@ -114,12 +114,12 @@ class TabStripController {
   virtual void StackedLayoutMaybeChanged() = 0;
 
   // Notifies controller that the user started dragging this tabstrip's tabs.
-  virtual void OnStartedDraggingTabs() = 0;
+  virtual void OnStartedDragging() = 0;
 
   // Notifies controller that the user stopped dragging this tabstrip's tabs.
   // This is also called when the tabs that the user is dragging were detached
   // from this tabstrip but the user is still dragging the tabs.
-  virtual void OnStoppedDraggingTabs() = 0;
+  virtual void OnStoppedDragging() = 0;
 
   // Notifies controller that the index of the tab with keyboard focus changed
   // to |index|.

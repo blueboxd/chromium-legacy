@@ -20,4 +20,13 @@ enum class InfobarType {
   kInfobarTypeTranslate = 4,
 };
 
+// Message "Confirm Infobars" types, these are the generic kInfobarTypeConfirm
+// infobars. Only kInfobarTypeConfirm which want to record unique metrics will
+// be listed here. Since these are used for metrics, entries should not be
+// renumbered and numeric values should never be reused.
+enum class InfobarConfirmType {
+  // Confirm Infobar for enabling to "Restore Tabs" after a crash.
+  kInfobarConfirmTypeRestore = 0,
+};
+
 #endif  // IOS_CHROME_BROWSER_INFOBARS_INFOBAR_TYPE_H_

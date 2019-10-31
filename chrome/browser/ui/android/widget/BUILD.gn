@@ -22,6 +22,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/ui/widget/PromoDialog.java",
     "java/src/org/chromium/chrome/browser/ui/widget/PromoDialogLayout.java",
     "java/src/org/chromium/chrome/browser/ui/widget/MaterialProgressBar.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/MoreProgressButton.java",
     "java/src/org/chromium/chrome/browser/ui/widget/RadioButtonLayout.java",
     "java/src/org/chromium/chrome/browser/ui/widget/RadioButtonWithDescription.java",
     "java/src/org/chromium/chrome/browser/ui/widget/RoundedCornerImageView.java",
@@ -158,6 +159,7 @@ android_library("ui_widget_java_tests") {
     "java/src/org/chromium/chrome/browser/ui/widget/RadioButtonLayoutTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/RoundedIconGeneratorTest.java",
     "java/src/org/chromium/chrome/browser/ui/widget/highlight/ViewHighlighterTest.java",
+    "java/src/org/chromium/chrome/browser/ui/widget/MoreProgressButtonTest.java",
   ]
   deps = [
     ":java",

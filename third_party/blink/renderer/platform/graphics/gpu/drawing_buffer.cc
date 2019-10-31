@@ -1544,9 +1544,8 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
   gl_->BeginSharedImageAccessDirectCHROMIUM(
       texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 
-  // Clear the alpha channel if we allocated a GpuMemoryBuffer and RGB emulation
-  // is required.
-  if (gpu_memory_buffer && !want_alpha_channel_ && have_alpha_channel_) {
+  // Clear the alpha channel if RGB emulation is required.
+  if (!want_alpha_channel_ && have_alpha_channel_) {
     GLuint fbo = 0;
 
     state_restorer_->SetClearStateDirty();

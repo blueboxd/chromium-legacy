@@ -100,9 +100,10 @@ export class TabsApiProxy {
 
   /**
    * @param {number} tabId
+   * @param {boolean} thumbnailTracked
    */
-  trackThumbnailForTab(tabId) {
-    chrome.send('addTrackedTab', [tabId]);
+  setThumbnailTracked(tabId, thumbnailTracked) {
+    chrome.send('setThumbnailTracked', [tabId, thumbnailTracked]);
   }
 }
 

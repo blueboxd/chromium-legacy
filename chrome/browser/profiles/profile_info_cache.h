@@ -81,13 +81,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   base::FilePath GetPathOfProfileAtIndex(size_t index) const override;
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   base::string16 GetUserNameOfProfileAtIndex(size_t index) const override;
-  // Will be removed SOON with ProfileInfoCache tests. Do not use!
-  const gfx::Image& GetAvatarIconOfProfileAtIndex(size_t index) const override;
-  // Note that a return value of false could mean an error in collection or
-  // that there are currently no background apps running. However, the action
-  // which results is the same in both cases (thus far).
-  // Will be removed SOON with ProfileInfoCache tests. Do not use!
-  bool GetBackgroundStatusOfProfileAtIndex(size_t index) const override;
   base::string16 GetGAIANameOfProfileAtIndex(size_t index) const override;
   base::string16 GetGAIAGivenNameOfProfileAtIndex(size_t index) const override;
   std::string GetGAIAIdOfProfileAtIndex(size_t index) const override;
@@ -122,9 +115,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
   void SetIsOmittedProfileAtIndex(size_t index, bool is_omitted);
   void SetSupervisedUserIdOfProfileAtIndex(size_t index, const std::string& id);
-  // Will be removed SOON with ProfileInfoCache tests. Do not use!
-  void SetBackgroundStatusOfProfileAtIndex(size_t index,
-                                           bool running_background_apps);
   // Warning: This will re-sort profiles and thus may change indices!
   void SetGAIANameOfProfileAtIndex(size_t index, const base::string16& name);
   // Warning: This will re-sort profiles and thus may change indices!

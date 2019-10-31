@@ -252,11 +252,10 @@ void CastWindowManagerAura::Setup() {
   system_gesture_event_handler_ =
       std::make_unique<CastSystemGestureEventHandler>(
           system_gesture_dispatcher_.get(), root_window);
-  // No need for the edge swipe detector when side gestures are pass-through.
-  if (!chromecast::IsFeatureEnabled(kEnableSideGesturePassThrough)) {
-    side_swipe_detector_ = std::make_unique<SideSwipeDetector>(
-        system_gesture_dispatcher_.get(), root_window);
-  }
+  // TODO(rdaum): Remove side swipe detection when all services requiring it
+  // have been rewritten.
+  side_swipe_detector_ = std::make_unique<SideSwipeDetector>(
+      system_gesture_dispatcher_.get(), root_window);
 
   // Add rounded corners, but defaulted to hidden until explicitly asked for by
   // a component.

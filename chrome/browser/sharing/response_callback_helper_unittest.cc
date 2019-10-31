@@ -12,8 +12,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
+#include "components/sync/protocol/sharing_message.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ResponseCallbackHelperTest, RunCallbackForUnregisteredGUID) {

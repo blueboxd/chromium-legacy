@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sharing/proto/shared_clipboard_message.pb.h"
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_service.h"
+#include "components/sync/protocol/sharing_message.pb.h"
+#include "components/sync/protocol/sharing_shared_clipboard_message.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"

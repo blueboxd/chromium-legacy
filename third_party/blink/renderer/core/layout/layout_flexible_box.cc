@@ -508,12 +508,11 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalHeight(
     AutoClearOverrideLogicalHeight clear(const_cast<LayoutBox*>(&child));
 
     LayoutUnit child_intrinsic_content_logical_height;
-    // TODO(crbug.com/1018395): Write more tests for this and the size
-    // containment.
-    if (child.HasOverrideIntrinsicContentLogicalHeight()) {
-      child_intrinsic_content_logical_height =
-          child.OverrideIntrinsicContentLogicalHeight();
-    } else if (!child.ShouldApplySizeContainment()) {
+    // If we have size containment specified, and are not overriding the
+    // intrinsic content height, then the height is LayoutUnit(). In all other
+    // cases, this if-condition will pass and set the intrinsic height.
+    if (!child.ShouldApplySizeContainment() ||
+        child.HasOverrideIntrinsicContentLogicalHeight()) {
       child_intrinsic_content_logical_height =
           child.IntrinsicContentLogicalHeight();
     }

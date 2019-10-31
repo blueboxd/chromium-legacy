@@ -252,10 +252,10 @@ TEST(AXTextUtils, FindAccessibleTextBoundaryCharacter) {
   verify_boundaries_at_offset(4, 4UL, 5UL);
   verify_boundaries_at_offset(5, 5UL, 7UL);
   verify_boundaries_at_offset(6, 5UL, 7UL);
-  verify_boundaries_at_offset(7, 7UL, 9UL);
-  verify_boundaries_at_offset(8, 7UL, 9UL);
-  verify_boundaries_at_offset(9, 9UL, 11UL);
-  verify_boundaries_at_offset(10, 9UL, 11UL);
+  verify_boundaries_at_offset(7, 7UL, 11UL);
+  verify_boundaries_at_offset(8, 7UL, 11UL);
+  verify_boundaries_at_offset(9, 7UL, 11UL);
+  verify_boundaries_at_offset(10, 7UL, 11UL);
   verify_boundaries_at_offset(11, 11L, 12UL);
   verify_boundaries_at_offset(12, 12L, 15UL);
   verify_boundaries_at_offset(13, 12L, 15UL);

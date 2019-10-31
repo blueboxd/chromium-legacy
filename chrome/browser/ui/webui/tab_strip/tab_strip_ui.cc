@@ -217,11 +217,9 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
         "getThemeColors", base::Bind(&TabStripUIHandler::HandleGetThemeColors,
                                      base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
-        "addTrackedTab",
-        base::Bind(&TabStripUIHandler::AddTrackedTab, base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
-        "removeTrackedTab", base::Bind(&TabStripUIHandler::RemoveTrackedTab,
-                                       base::Unretained(this)));
+        "setThumbnailTracked",
+        base::Bind(&TabStripUIHandler::HandleSetThumbnailTracked,
+                   base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
         "closeContainer", base::Bind(&TabStripUIHandler::HandleCloseContainer,
                                      base::Unretained(this)));
@@ -377,12 +375,14 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     ResolveJavascriptCallback(callback_id, layout);
   }
 
-  void AddTrackedTab(const base::ListValue* args) {
+  void HandleSetThumbnailTracked(const base::ListValue* args) {
     AllowJavascript();
 
     int tab_id = 0;
     if (!args->GetInteger(0, &tab_id))
       return;
+
+    const bool thumbnail_tracked = args->GetList()[1].GetBool();
 
     content::WebContents* tab = nullptr;
     if (!extensions::ExtensionTabUtil::GetTabById(tab_id, browser_->profile(),
@@ -391,16 +391,12 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
       DVLOG(1) << "Invalid tab ID";
       return;
     }
-    thumbnail_tracker_.WatchTab(tab);
-  }
 
-  void RemoveTrackedTab(const base::ListValue* args) {
-    AllowJavascript();
-
-    int tab_id = 0;
-    if (!args->GetInteger(0, &tab_id))
-      return;
-    // TODO(crbug.com/991393): un-watch tabs when we are done.
+    if (thumbnail_tracked) {
+      thumbnail_tracker_.WatchTab(tab);
+    } else {
+      // TODO(crbug.com/991393): un-watch tabs when we are done.
+    }
   }
 
   // Callback passed to |thumbnail_tracker_|. Called when a tab's thumbnail

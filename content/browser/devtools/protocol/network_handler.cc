@@ -136,9 +136,6 @@ std::unique_ptr<Network::Cookie> BuildCookie(
     case net::CookieSameSite::LAX_MODE:
       devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Lax);
       break;
-    case net::CookieSameSite::EXTENDED_MODE:
-      devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Extended);
-      break;
     case net::CookieSameSite::NO_RESTRICTION:
       devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::None);
       break;
@@ -294,8 +291,6 @@ std::unique_ptr<net::CanonicalCookie> MakeCookieFromProtocolValues(
     css = net::CookieSameSite::LAX_MODE;
   if (same_site == Network::CookieSameSiteEnum::Strict)
     css = net::CookieSameSite::STRICT_MODE;
-  if (same_site == Network::CookieSameSiteEnum::Extended)
-    css = net::CookieSameSite::EXTENDED_MODE;
   if (same_site == Network::CookieSameSiteEnum::None)
     css = net::CookieSameSite::NO_RESTRICTION;
 

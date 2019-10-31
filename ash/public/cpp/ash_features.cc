@@ -85,6 +85,9 @@ const base::Feature kVirtualDesksGestures{"VirtualDesksGestures",
 const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kShelfDimming{"ShelfDimming",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSupervisedUserDeprecationNotice{
     "SupervisedUserDeprecationNotice", base::FEATURE_ENABLED_BY_DEFAULT};
 

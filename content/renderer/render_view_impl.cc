@@ -1306,16 +1306,15 @@ WebView* RenderViewImpl::CreateView(
   RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   mojom::CreateNewWindowParamsPtr params = mojom::CreateNewWindowParams::New();
 
-  // User Activation v2 moves user gesture checks to the browser process, with
-  // the exception of the extensions case handled through the following |if|.
-  params->mimic_user_gesture =
-      base::FeatureList::IsEnabled(features::kUserActivationV2)
-          ? false
-          : WebUserGestureIndicator::IsProcessingUserGesture(creator);
+  // The user activation check is done at the browser process through
+  // |frame_host->CreateNewWindow()| call below.  But the extensions case
+  // handled through the following |if| is an exception.
+  //
   // TODO(mustaq): Investigate if mimic_user_gesture can wrongly expose presence
   // of user activation w/o any user interaction, e.g. through
   // |WebChromeClient#onCreateWindow|. One case to deep-dive: disabling popup
   // blocker then calling window.open at onload event. crbug.com/929729
+  params->mimic_user_gesture = false;
   if (GetContentClient()->renderer()->AllowPopup())
     params->mimic_user_gesture = true;
 
@@ -1344,7 +1343,6 @@ WebView* RenderViewImpl::CreateView(
   // moved on send.
   bool is_background_tab =
       params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
-  bool opened_by_user_gesture = params->mimic_user_gesture;
 
   mojom::CreateNewWindowStatus status;
   mojom::CreateNewWindowReplyPtr reply;
@@ -1371,11 +1369,9 @@ WebView* RenderViewImpl::CreateView(
   DCHECK_NE(MSG_ROUTING_NONE, reply->main_frame_widget_route_id);
 
   // The browser allowed creation of a new window and consumed the user
-  // activation (UAv2 only).
+  // activation.
   bool was_consumed = WebUserGestureIndicator::ConsumeUserGesture(
       creator, blink::UserActivationUpdateSource::kBrowser);
-  if (base::FeatureList::IsEnabled(features::kUserActivationV2))
-    opened_by_user_gesture = was_consumed;
 
   // While this view may be a background extension page, it can spawn a visible
   // render view. So we just assume that the new one is not another background
@@ -1425,7 +1421,7 @@ WebView* RenderViewImpl::CreateView(
   // show().
   RenderWidget::ShowCallback show_callback =
       base::BindOnce(&RenderFrameImpl::ShowCreatedWindow,
-                     base::Unretained(creator_frame), opened_by_user_gesture);
+                     base::Unretained(creator_frame), was_consumed);
 
   RenderViewImpl* view = RenderViewImpl::Create(
       compositor_deps_, std::move(view_params), std::move(show_callback),

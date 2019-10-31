@@ -16,7 +16,6 @@ cast_source_set("media") {
     "external_audio_pipeline_shlib.h",
     "media_pipeline_backend.h",
     "media_pipeline_device_params.h",
-    "redirected_audio_output.h",
     "stream_id.h",
   ]
 

@@ -44,6 +44,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 extern "C" {
 #include <stdio.h>  // jpeglib.h needs stdio FILE.
@@ -830,9 +831,8 @@ JPEGImageDecoder::JPEGImageDecoder(
           ImageDecoder::kDefaultBitDepth,
           color_behavior,
           max_decoded_bytes,
-          // TODO(crbug.com/919627): replace kDefault case with runtime flag
-          (allow_decode_to_yuv == OverrideAllowDecodeToYuv::kDeny ? false
-                                                                  : false)),
+          allow_decode_to_yuv == OverrideAllowDecodeToYuv::kDefault &&
+              RuntimeEnabledFeatures::DecodeJpeg420ImagesToYUVEnabled()),
       offset_(offset) {}
 
 JPEGImageDecoder::~JPEGImageDecoder() = default;
@@ -853,7 +853,7 @@ void JPEGImageDecoder::OnSetData(SegmentReader* data) {
   // supported.
   if (IsAllDataReceived()) {
     // TODO(crbug.com/919627): Right now |allow_decode_to_yuv_| is false by
-    // default and is only set true to for unit tests.
+    // default and is set by the blink feature DecodeJpeg420ImagesToYUV.
     //
     // Calling IsSizeAvailable() ensures the reader is created and the output
     // color space is set.

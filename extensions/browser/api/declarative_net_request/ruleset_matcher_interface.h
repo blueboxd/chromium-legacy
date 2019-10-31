@@ -31,21 +31,16 @@ class RulesetMatcherInterface {
   // Returns whether the ruleset has a matching allow rule.
   virtual bool HasMatchingAllowRule(const RequestParams& params) const = 0;
 
-  // Returns the ruleset's matching redirect RequestAction if there is a
-  // matching redirect rule, otherwise returns base::nullopt.
+  // Returns a RequestAction constructed from the matching redirect rule with
+  // the highest priority, or base::nullopt if no matching redirect rules are
+  // found for this request.
   virtual base::Optional<RequestAction> GetRedirectAction(
       const RequestParams& params) const = 0;
 
-  // Returns the ruleset's matching RequestAction with |params.url| upgraded to
-  // HTTPS as the redirect url, or base::nullopt if no matching rule is found or
-  // if the request's scheme is not upgradeable.
+  // Returns a RequestAction constructed from the matching upgrade rule with the
+  // highest priority, or base::nullopt if no matching upgrade rules are found
+  // for this request.
   virtual base::Optional<RequestAction> GetUpgradeAction(
-      const RequestParams& params) const = 0;
-
-  // Returns a RedirectAction constructed from the matching redirect or upgrade
-  // rule with the highest priority, or base::nullopt if no matching redirect or
-  // upgrade rules are found for this request.
-  virtual base::Optional<RequestAction> GetRedirectOrUpgradeActionByPriority(
       const RequestParams& params) const = 0;
 
   // Returns the bitmask of headers to remove from the request. The bitmask

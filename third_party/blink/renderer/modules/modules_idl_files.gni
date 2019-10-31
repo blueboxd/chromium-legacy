@@ -446,7 +446,7 @@ modules_idl_files =
           "webgl/webgl_uniform_location.idl",
           "webgl/webgl_vertex_array_object.idl",
           "webgl/webgl_vertex_array_object_oes.idl",
-          "webgl/webgl_video_frame_info.idl",
+          "webgl/webgl_video_frame_metadata.idl",
           "webgl/webgl_video_texture.idl",
           "webgpu/gpu.idl",
           "webgpu/gpu_adapter.idl",

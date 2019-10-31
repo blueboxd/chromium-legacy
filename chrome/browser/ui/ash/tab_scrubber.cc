@@ -140,7 +140,7 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
   if (!new_tab)
     return;
 
-  int new_index = tab_strip_->GetModelIndexOfTab(new_tab);
+  int new_index = tab_strip_->GetModelIndexOf(new_tab);
   if (highlighted_tab_ == -1 &&
       new_index == browser_->tab_strip_model()->active_index()) {
     return;

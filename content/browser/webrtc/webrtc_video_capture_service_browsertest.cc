@@ -23,6 +23,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -83,7 +84,7 @@ class VirtualDeviceExerciser {
   virtual ~VirtualDeviceExerciser() {}
   virtual void Initialize() = 0;
   virtual void RegisterVirtualDeviceAtFactory(
-      video_capture::mojom::DeviceFactoryPtr* factory,
+      mojo::Remote<video_capture::mojom::DeviceFactory>* factory,
       const media::VideoCaptureDeviceInfo& info) = 0;
   virtual gfx::Size GetVideoSize() = 0;
   virtual void PushNextFrame(base::TimeDelta timestamp) = 0;
@@ -115,7 +116,7 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
   }
 
   void RegisterVirtualDeviceAtFactory(
-      video_capture::mojom::DeviceFactoryPtr* factory,
+      mojo::Remote<video_capture::mojom::DeviceFactory>* factory,
       const media::VideoCaptureDeviceInfo& info) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     (*factory)->AddTextureVirtualDevice(
@@ -246,7 +247,7 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
   // VirtualDeviceExerciser implementation.
   void Initialize() override {}
   void RegisterVirtualDeviceAtFactory(
-      video_capture::mojom::DeviceFactoryPtr* factory,
+      mojo::Remote<video_capture::mojom::DeviceFactory>* factory,
       const media::VideoCaptureDeviceInfo& info) override {
     mojo::PendingRemote<video_capture::mojom::Producer> producer;
     static const bool kSendBufferHandlesToProducerAsRawFileDescriptors = false;
@@ -417,12 +418,14 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
     DCHECK(virtual_device_thread_.task_runner()->RunsTasksInCurrentSequence());
 
     main_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(
-                       [](video_capture::mojom::DeviceFactoryRequest request) {
-                         GetVideoCaptureService().ConnectToDeviceFactory(
-                             std::move(request));
-                       },
-                       mojo::MakeRequest(&factory_)));
+        FROM_HERE,
+        base::BindOnce(
+            [](mojo::PendingReceiver<video_capture::mojom::DeviceFactory>
+                   receiver) {
+              GetVideoCaptureService().ConnectToDeviceFactory(
+                  std::move(receiver));
+            },
+            factory_.BindNewPipeAndPassReceiver()));
 
     media::VideoCaptureDeviceInfo info;
     info.descriptor.device_id = kVirtualDeviceId;
@@ -464,7 +467,7 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
     DCHECK(virtual_device_thread_.task_runner()->RunsTasksInCurrentSequence());
     LOG(INFO) << "Shutting down virtual device";
     device_exerciser->ShutDown();
-    factory_ = nullptr;
+    factory_.reset();
     weak_factory_.InvalidateWeakPtrs();
     std::move(continuation).Run();
   }
@@ -517,7 +520,7 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  video_capture::mojom::DeviceFactoryPtr factory_;
+  mojo::Remote<video_capture::mojom::DeviceFactory> factory_;
   gfx::Size video_size_;
   base::TimeTicks first_frame_time_;
   base::WeakPtrFactory<WebRtcVideoCaptureServiceBrowserTest> weak_factory_{

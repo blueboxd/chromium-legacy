@@ -66,8 +66,9 @@ def ProcessResults(options):
   upload_bucket = options.upload_bucket
   results_label = options.results_label
   max_num_values = options.max_values_per_test_case
-  test_suite_start = (test_results[0]['startTime'] if test_results
-                      else datetime.datetime.utcnow().isoformat() + 'Z')
+  test_suite_start = (test_results[0]['startTime']
+      if test_results and 'startTime' in test_results[0]
+      else datetime.datetime.utcnow().isoformat() + 'Z')
   run_identifier = RunIdentifier(results_label, test_suite_start)
   should_compute_metrics = any(
       fmt in FORMATS_WITH_METRICS for fmt in options.output_formats)

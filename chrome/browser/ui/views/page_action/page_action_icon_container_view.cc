@@ -150,6 +150,8 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
 
   for (PageActionIconView* icon : page_action_icons_) {
     icon->SetVisible(false);
+    icon->set_ink_drop_visible_opacity(
+        params.page_action_icon_delegate->GetPageActionInkDropVisibleOpacity());
     if (params.icon_size)
       icon->set_icon_size(*params.icon_size);
     if (params.icon_color)

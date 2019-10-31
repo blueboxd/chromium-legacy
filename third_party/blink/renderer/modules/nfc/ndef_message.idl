@@ -8,6 +8,7 @@
     RuntimeEnabled=WebNFC,
     SecureContext,
     Constructor(NDEFMessageInit messageInit),
+    ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     Exposed=Window
 ] interface NDEFMessage {

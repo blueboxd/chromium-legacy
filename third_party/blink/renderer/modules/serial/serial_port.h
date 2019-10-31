@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/serial.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -32,8 +33,10 @@ class SerialPortUnderlyingSource;
 class WritableStream;
 
 class SerialPort final : public ScriptWrappable,
+                         public ActiveScriptWrappable<SerialPort>,
                          public device::mojom::blink::SerialPortClient {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SerialPort);
   USING_PRE_FINALIZER(SerialPort, Dispose);
 
  public:
@@ -63,6 +66,10 @@ class SerialPort final : public ScriptWrappable,
   void Trace(Visitor*) override;
   void Dispose();
 
+  // ActiveScriptWrappable
+  ExecutionContext* GetExecutionContext() const;
+  bool HasPendingActivity() const override;
+
   // SerialPortClient
   void OnReadError(device::mojom::blink::SerialReceiveError) override;
   void OnSendError(device::mojom::blink::SerialSendError) override;
@@ -84,8 +91,8 @@ class SerialPort final : public ScriptWrappable,
   void OnSetSignals(ScriptPromiseResolver*, bool success);
   void OnClose();
 
-  mojom::blink::SerialPortInfoPtr info_;
-  Member<Serial> parent_;
+  const mojom::blink::SerialPortInfoPtr info_;
+  const Member<Serial> parent_;
 
   uint32_t buffer_size_ = 0;
   mojo::Remote<device::mojom::blink::SerialPort> port_;

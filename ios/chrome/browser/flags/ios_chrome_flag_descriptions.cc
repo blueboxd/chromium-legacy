@@ -169,11 +169,6 @@ const char kEnableAutofillCreditCardUploadEditableExpirationDateDescription[] =
     "offering card upload to Google Payments, the offer-to-save dialog "
     "displays an expiration date selector.";
 
-const char kEnableAutofillSaveCardShowNoThanksName[] =
-    "Show explicit decline option in credit card save prompts";
-const char kEnableAutofillSaveCardShowNoThanksDescription[] =
-    "If enabled, adds a [No thanks] button to credit card save prompts.";
-
 const char kEnableClipboardProviderImageSuggestionsName[] =
     "Enable copied image provider";
 const char kEnableClipboardProviderImageSuggestionsDescription[] =

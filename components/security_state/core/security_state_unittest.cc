@@ -560,4 +560,35 @@ TEST(SecurityStateTest, MajorCertificateErrors) {
   EXPECT_TRUE(helper.HasMajorCertificateError());
 }
 
+// Tests that ShouldDowngradeNeutralStyling properly returns whether the
+// neutral styling should be downgraded to insecure styling.
+TEST(SecurityStateTest, ShouldDowngradeNeutralStyling) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::kMarkHttpAsParameterDangerWarning}});
+
+  // Returns false when security state is something other than NONE or WARNING.
+  EXPECT_FALSE(security_state::ShouldDowngradeNeutralStyling(
+      security_state::SECURE, GURL("https://scheme-is-cryptographic.test"),
+      base::BindRepeating(&IsOriginSecure)));
+  EXPECT_FALSE(security_state::ShouldDowngradeNeutralStyling(
+      security_state::DANGEROUS, GURL("https://scheme-is-cryptographic.test"),
+      base::BindRepeating(&IsOriginSecure)));
+
+  // Returns false for non-cryptographic secure origins.
+  EXPECT_FALSE(security_state::ShouldDowngradeNeutralStyling(
+      security_state::NONE, GURL("chrome://test"),
+      base::BindRepeating(&IsOriginSecure)));
+
+  // Returns true for HTTP and some mixed content.
+  EXPECT_TRUE(security_state::ShouldDowngradeNeutralStyling(
+      security_state::WARNING, GURL("http://scheme-is-not-cryptographic.test"),
+      base::BindRepeating(&IsOriginSecure)));
+  EXPECT_TRUE(security_state::ShouldDowngradeNeutralStyling(
+      security_state::NONE, GURL("https://mixed-content.test"),
+      base::BindRepeating(&IsOriginSecure)));
+}
+
 }  // namespace security_state

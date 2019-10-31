@@ -166,19 +166,16 @@ class ResolutionResponse : public InteractionResponse::Response {
 };
 
 TestAssistantService::TestAssistantService()
-    : binding_(this),
-      sanity_check_subscriber_(std::make_unique<SanityCheckSubscriber>()) {
+    : sanity_check_subscriber_(std::make_unique<SanityCheckSubscriber>()) {
   AddAssistantInteractionSubscriber(
       sanity_check_subscriber_->BindNewPipeAndPassRemote());
 }
 
 TestAssistantService::~TestAssistantService() = default;
 
-chromeos::assistant::mojom::AssistantPtr
-TestAssistantService::CreateInterfacePtrAndBind() {
-  chromeos::assistant::mojom::AssistantPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr));
-  return ptr;
+mojo::PendingRemote<chromeos::assistant::mojom::Assistant>
+TestAssistantService::CreateRemoteAndBind() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 void TestAssistantService::SetInteractionResponse(

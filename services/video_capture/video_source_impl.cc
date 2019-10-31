@@ -94,7 +94,7 @@ void VideoSourceImpl::StartDeviceWithSettings(
   device_start_settings_ = requested_settings;
   device_status_ = DeviceStatus::kStartingAsynchronously;
   device_factory_->CreateDevice(
-      device_id_, mojo::MakeRequest(&device_),
+      device_id_, device_.BindNewPipeAndPassReceiver(),
       base::BindOnce(&VideoSourceImpl::OnCreateDeviceResponse,
                      weak_factory_.GetWeakPtr()));
 }

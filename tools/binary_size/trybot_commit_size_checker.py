@@ -171,12 +171,13 @@ def _CreateUncompressedPakSizeDeltas(symbols):
   ]
 
 
-def _CreateTestingSymbolssDeltas(symbols):
+def _CreateTestingSymbolsDeltas(symbols):
   testing_symbols = symbols.WhereNameMatches('ForTest').WhereDiffStatusIs(
       models.DIFF_STATUS_ADDED)
-  lines = list(describe.GenerateLines(testing_symbols, summarize=False))
-  # Check is temporarily disabled, as such the limit is set to 100 instead of 0.
-  return lines, _SizeDelta('Added symbols named "ForTest"', 'symbols', 100,
+  lines = None
+  if len(testing_symbols):
+    lines = list(describe.GenerateLines(testing_symbols, summarize=False))
+  return lines, _SizeDelta('Added symbols named "ForTest"', 'symbols', 0,
                            len(testing_symbols), None)
 
 
@@ -239,7 +240,7 @@ def main():
   # Look for symbols with 'ForTesting' in their name.
   logging.info('Checking for symbols named "ForTest"')
   testing_symbols_lines, test_symbols_delta = (
-      _CreateTestingSymbolssDeltas(changed_symbols))
+      _CreateTestingSymbolsDeltas(changed_symbols))
   size_deltas.add(test_symbols_delta)
 
   # Check for uncompressed .pak file entries being added to avoid unnecessary

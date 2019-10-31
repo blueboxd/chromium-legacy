@@ -8,12 +8,15 @@
     RuntimeEnabled=WebNFC,
     SecureContext,
     Constructor(NDEFRecordInit recordInit),
+    ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     Exposed=Window
 ] interface NDEFRecord {
     readonly attribute NDEFRecordType recordType;
     readonly attribute USVString mediaType;
     readonly attribute USVString id;
+    readonly attribute USVString? encoding;
+    readonly attribute USVString? lang;
     readonly attribute DataView? data;
     USVString? text();
     [NewObject] ArrayBuffer? arrayBuffer();

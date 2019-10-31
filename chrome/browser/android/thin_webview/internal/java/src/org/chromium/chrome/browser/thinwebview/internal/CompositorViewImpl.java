@@ -54,6 +54,7 @@ public class CompositorViewImpl implements CompositorView {
     public void destroy() {
         if (mNativeCompositorViewImpl != 0) {
             CompositorViewImplJni.get().destroy(mNativeCompositorViewImpl, CompositorViewImpl.this);
+            mNativeCompositorViewImpl = 0;
         }
     }
 

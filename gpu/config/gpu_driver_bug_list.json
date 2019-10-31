@@ -904,7 +904,10 @@
     {
       "id": 108,
       "cr_bugs": [449150],
-      "description": "Mali-4xx does not support GL_RGB format",
+      "description": "Mali-4xx on Linux does not support GL_RGB format",
+      "os": {
+        "type": "linux"
+      },
       "gl_vendor": "ARM.*",
       "gl_renderer": ".*Mali-4.*",
       "features": [

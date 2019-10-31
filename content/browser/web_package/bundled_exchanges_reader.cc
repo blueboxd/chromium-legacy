@@ -193,10 +193,13 @@ void BundledExchangesReader::ReadResponseBody(
   raw_producer->Write(
       std::make_unique<SharedFileDataSource>(file_, response->payload_offset,
                                              response->payload_length),
-      base::BindOnce([](std::unique_ptr<mojo::DataPipeProducer> producer,
-                        BodyCompletionCallback callback,
-                        MojoResult result) { std::move(callback).Run(result); },
-                     std::move(data_producer), std::move(callback)));
+      base::BindOnce(
+          [](std::unique_ptr<mojo::DataPipeProducer> producer,
+             BodyCompletionCallback callback, MojoResult result) {
+            std::move(callback).Run(
+                result == MOJO_RESULT_OK ? net::OK : net::ERR_UNEXPECTED);
+          },
+          std::move(data_producer), std::move(callback)));
 }
 
 bool BundledExchangesReader::HasEntry(const GURL& url) const {

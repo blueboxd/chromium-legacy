@@ -15,8 +15,8 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/debug/leak_annotations.h"
-#include "base/memory/protected_memory_cfi.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
 #include "base/optional.h"
@@ -2024,68 +2024,57 @@ using GetRowColumnSpanFunc = bool (*)(AtkTableCell* cell,
                                       gint* row_span,
                                       gint* col_span);
 
-static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetTypeFunc>
-    g_atk_table_cell_get_type;
+static GetTypeFunc g_atk_table_cell_get_type;
 
-static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetColumnHeaderCellsFunc>
-    g_atk_table_cell_get_column_header_cells;
+static GetColumnHeaderCellsFunc g_atk_table_cell_get_column_header_cells;
 
-static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetRowHeaderCellsFunc>
-    g_atk_table_cell_get_row_header_cells;
+static GetRowHeaderCellsFunc g_atk_table_cell_get_row_header_cells;
 
-static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetRowColumnSpanFunc>
-    g_atk_table_cell_get_row_column_span;
+static GetRowColumnSpanFunc g_atk_table_cell_get_row_column_span;
 
 }  // namespace
 
 // static
+NO_SANITIZE("cfi-icall")
 GType AtkTableCellInterface::GetType() {
-  return base::UnsanitizedCfiCall(g_atk_table_cell_get_type)();
+  return g_atk_table_cell_get_type();
 }
 
 // static
+NO_SANITIZE("cfi-icall")
 GPtrArray* AtkTableCellInterface::GetColumnHeaderCells(AtkTableCell* cell) {
-  return base::UnsanitizedCfiCall(g_atk_table_cell_get_column_header_cells)(
-      cell);
+  return g_atk_table_cell_get_column_header_cells(cell);
 }
 
 // static
+NO_SANITIZE("cfi-icall")
 GPtrArray* AtkTableCellInterface::GetRowHeaderCells(AtkTableCell* cell) {
-  return base::UnsanitizedCfiCall(g_atk_table_cell_get_row_header_cells)(cell);
+  return g_atk_table_cell_get_row_header_cells(cell);
 }
 
 // static
+NO_SANITIZE("cfi-icall")
 bool AtkTableCellInterface::GetRowColumnSpan(AtkTableCell* cell,
                                              gint* row,
                                              gint* column,
                                              gint* row_span,
                                              gint* col_span) {
-  return base::UnsanitizedCfiCall(g_atk_table_cell_get_row_column_span)(
-      cell, row, column, row_span, col_span);
+  return g_atk_table_cell_get_row_column_span(cell, row, column, row_span,
+                                              col_span);
 }
 
 // static
 bool AtkTableCellInterface::Exists() {
-  static base::ProtectedMemory<GetTypeFunc>::Initializer
-      init_atk_table_cell_get_type(
-          &g_atk_table_cell_get_type,
-          reinterpret_cast<GetTypeFunc>(
-              dlsym(RTLD_DEFAULT, "atk_table_cell_get_type")));
-  static base::ProtectedMemory<GetColumnHeaderCellsFunc>::Initializer
-      init_atk_table_cell_get_column_header_cells(
-          &g_atk_table_cell_get_column_header_cells,
-          reinterpret_cast<GetColumnHeaderCellsFunc>(
-              dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells")));
-  static base::ProtectedMemory<GetRowHeaderCellsFunc>::Initializer
-      init_atk_table_cell_get_row_header_cells(
-          &g_atk_table_cell_get_row_header_cells,
-          reinterpret_cast<GetRowHeaderCellsFunc>(
-              dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells")));
-  static base::ProtectedMemory<GetRowColumnSpanFunc>::Initializer
-      init_atk_table_cell_get_row_column_span(
-          &g_atk_table_cell_get_row_column_span,
-          reinterpret_cast<GetRowColumnSpanFunc>(
-              dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span")));
+  g_atk_table_cell_get_type = reinterpret_cast<GetTypeFunc>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_type"));
+  g_atk_table_cell_get_column_header_cells =
+      reinterpret_cast<GetColumnHeaderCellsFunc>(
+          dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells"));
+  g_atk_table_cell_get_row_header_cells =
+      reinterpret_cast<GetRowHeaderCellsFunc>(
+          dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells"));
+  g_atk_table_cell_get_row_column_span = reinterpret_cast<GetRowColumnSpanFunc>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span"));
   return *g_atk_table_cell_get_type;
 }
 
@@ -2109,13 +2098,11 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // for each object.
   interface_mask |= 1 << ATK_ACTION_INTERFACE;
 
-  // TODO(accessibility): We should only expose this for some elements, but
-  // it might be better to do this after exposing the hypertext interface
-  // as well.
-  interface_mask |= 1 << ATK_TEXT_INTERFACE;
-
-  if (!IsPlainTextField())
-    interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
+  if (!ui::IsImage(GetData().role)) {
+    interface_mask |= 1 << ATK_TEXT_INTERFACE;
+    if (!IsPlainTextField())
+      interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
+  }
 
   // Value Interface
   AtkRole role = GetAtkRole();
@@ -3655,7 +3642,6 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
   offset_to_text_attributes_.clear();
 
   AtkObject* atk_object = GetOrCreateAtkObject();
-  DCHECK(ATK_IS_TEXT(atk_object));
 
   if (!EmitsAtkTextEvents())
     return;

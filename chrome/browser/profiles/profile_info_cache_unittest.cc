@@ -187,7 +187,10 @@ TEST_P(ProfileInfoCacheTestWithParam, AddProfiles) {
     GetCache()->AddProfileToCache(profile_path, profile_name, std::string(),
                                   base::string16(), false, i,
                                   supervised_user_id, EmptyAccountId());
-    GetCache()->SetBackgroundStatusOfProfileAtIndex(i, true);
+
+    ProfileAttributesEntry* entry = nullptr;
+    GetCache()->GetProfileAttributesWithPath(profile_path, &entry);
+    entry->SetBackgroundStatus(true);
     base::string16 gaia_name = ASCIIToUTF16(base::StringPrintf("gaia_%ud", i));
     GetCache()->SetGAIANameOfProfileAtIndex(i, gaia_name);
 
@@ -201,8 +204,7 @@ TEST_P(ProfileInfoCacheTestWithParam, AddProfiles) {
 
     EXPECT_EQ(profile_path, GetCache()->GetPathOfProfileAtIndex(i));
 #if !defined(OS_ANDROID)
-    const SkBitmap* actual_icon =
-        GetCache()->GetAvatarIconOfProfileAtIndex(i).ToSkBitmap();
+    const SkBitmap* actual_icon = entry->GetAvatarIcon().ToSkBitmap();
     EXPECT_EQ(icon->width(), actual_icon->width());
     EXPECT_EQ(icon->height(), actual_icon->height());
 #endif
@@ -236,7 +238,9 @@ TEST_P(ProfileInfoCacheTestWithParam, AddProfiles) {
 #if !defined(OS_ANDROID)
     EXPECT_EQ(i, GetCache()->GetAvatarIconIndexOfProfileAtIndex(i));
 #endif
-    EXPECT_EQ(true, GetCache()->GetBackgroundStatusOfProfileAtIndex(i));
+    ProfileAttributesEntry* entry = nullptr;
+    GetCache()->GetProfileAttributesWithPath(profile_path, &entry);
+    EXPECT_EQ(true, entry->GetBackgroundStatus());
     EXPECT_EQ(gaia_name, GetCache()->GetGAIANameOfProfileAtIndex(i));
   }
 }
@@ -453,8 +457,6 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
   const size_t new_icon_index = 3;
   GetCache()->SetAvatarIconOfProfileAtIndex(1, new_icon_index);
   EXPECT_EQ(new_icon_index, GetCache()->GetAvatarIconIndexOfProfileAtIndex(1));
-  // Not much to test.
-  GetCache()->GetAvatarIconOfProfileAtIndex(1);
 
   const size_t wrong_icon_index = profiles::GetDefaultAvatarIconCount() + 1;
   const size_t generic_icon_index = 0;
@@ -466,44 +468,52 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
 
 // Will be removed SOON with ProfileInfoCache tests.
 TEST_F(ProfileInfoCacheTest, BackgroundModeStatus) {
-  GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), std::string(),
-      base::string16(), false, 0, std::string(), EmptyAccountId());
-  GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), std::string(),
-      base::string16(), false, 0, std::string(), EmptyAccountId());
+  base::FilePath path_1 = GetProfilePath("path_1");
+  base::FilePath path_2 = GetProfilePath("path_2");
+  GetCache()->AddProfileToCache(path_1, ASCIIToUTF16("name_1"), std::string(),
+                                base::string16(), false, 0, std::string(),
+                                EmptyAccountId());
+  GetCache()->AddProfileToCache(path_2, ASCIIToUTF16("name_2"), std::string(),
+                                base::string16(), false, 0, std::string(),
+                                EmptyAccountId());
 
-  EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(0));
-  EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(1));
+  ProfileAttributesEntry* entry_1 = nullptr;
+  GetCache()->GetProfileAttributesWithPath(path_1, &entry_1);
+  ProfileAttributesEntry* entry_2 = nullptr;
+  GetCache()->GetProfileAttributesWithPath(path_2, &entry_2);
+  EXPECT_FALSE(entry_1->GetBackgroundStatus());
+  EXPECT_FALSE(entry_2->GetBackgroundStatus());
 
-  GetCache()->SetBackgroundStatusOfProfileAtIndex(1, true);
+  entry_2->SetBackgroundStatus(true);
 
-  EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(0));
-  EXPECT_TRUE(GetCache()->GetBackgroundStatusOfProfileAtIndex(1));
+  EXPECT_FALSE(entry_1->GetBackgroundStatus());
+  EXPECT_TRUE(entry_2->GetBackgroundStatus());
 
-  GetCache()->SetBackgroundStatusOfProfileAtIndex(0, true);
+  entry_1->SetBackgroundStatus(true);
 
-  EXPECT_TRUE(GetCache()->GetBackgroundStatusOfProfileAtIndex(0));
-  EXPECT_TRUE(GetCache()->GetBackgroundStatusOfProfileAtIndex(1));
+  EXPECT_TRUE(entry_1->GetBackgroundStatus());
+  EXPECT_TRUE(entry_2->GetBackgroundStatus());
 
-  GetCache()->SetBackgroundStatusOfProfileAtIndex(1, false);
+  entry_2->SetBackgroundStatus(false);
 
-  EXPECT_TRUE(GetCache()->GetBackgroundStatusOfProfileAtIndex(0));
-  EXPECT_FALSE(GetCache()->GetBackgroundStatusOfProfileAtIndex(1));
+  EXPECT_TRUE(entry_1->GetBackgroundStatus());
+  EXPECT_FALSE(entry_2->GetBackgroundStatus());
 }
 
 TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   const int kDefaultAvatarIndex = 0;
   const int kOtherAvatarIndex = 1;
   const int kGaiaPictureSize = 256;  // Standard size of a Gaia account picture.
+  base::FilePath path_2 = GetProfilePath("path_2");
   GetCache()->AddProfileToCache(GetProfilePath("path_1"),
                                 ASCIIToUTF16("name_1"), std::string(),
                                 base::string16(), false, kDefaultAvatarIndex,
                                 std::string(), EmptyAccountId());
-  GetCache()->AddProfileToCache(GetProfilePath("path_2"),
-                                ASCIIToUTF16("name_2"), std::string(),
+  GetCache()->AddProfileToCache(path_2, ASCIIToUTF16("name_2"), std::string(),
                                 base::string16(), false, kDefaultAvatarIndex,
                                 std::string(), EmptyAccountId());
+  ProfileAttributesEntry* entry = nullptr;
+  GetCache()->GetProfileAttributesWithPath(path_2, &entry);
 
   // Sanity check.
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
@@ -518,8 +528,8 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
       profiles::GetDefaultAvatarIconResourceIDAtIndex(kDefaultAvatarIndex);
   const gfx::Image& default_avatar_image(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(default_avatar_id));
-  EXPECT_TRUE(gfx::test::AreImagesEqual(
-      default_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+  EXPECT_TRUE(
+      gfx::test::AreImagesEqual(default_avatar_image, entry->GetAvatarIcon()));
 
   // Set GAIA picture.
   gfx::Image gaia_image(gfx::test::CreateImage(
@@ -532,8 +542,7 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   // preferred over the generic avatar image.
   EXPECT_TRUE(GetCache()->ProfileIsUsingDefaultAvatarAtIndex(1));
   EXPECT_TRUE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
-  EXPECT_TRUE(gfx::test::AreImagesEqual(
-      gaia_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gaia_image, entry->GetAvatarIcon()));
 
   // Set a non-default avatar. This should be preferred over the GAIA image.
   GetCache()->SetAvatarIconOfProfileAtIndex(1, kOtherAvatarIndex);
@@ -546,8 +555,8 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
       profiles::GetDefaultAvatarIconResourceIDAtIndex(kOtherAvatarIndex);
   const gfx::Image& other_avatar_image(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(other_avatar_id));
-  EXPECT_TRUE(gfx::test::AreImagesEqual(
-      other_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+  EXPECT_TRUE(
+      gfx::test::AreImagesEqual(other_avatar_image, entry->GetAvatarIcon()));
 #endif
 
   // Explicitly setting the GAIA picture should make it preferred again.
@@ -555,8 +564,7 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   EXPECT_TRUE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
-  EXPECT_TRUE(gfx::test::AreImagesEqual(
-      gaia_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gaia_image, entry->GetAvatarIcon()));
 
   // Clearing the IsUsingGAIAPicture flag should result in the generic image
   // being used again.
@@ -565,8 +573,8 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
 #if !defined(OS_ANDROID)
-  EXPECT_TRUE(gfx::test::AreImagesEqual(
-      other_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+  EXPECT_TRUE(
+      gfx::test::AreImagesEqual(other_avatar_image, entry->GetAvatarIcon()));
 #endif
 }
 
@@ -622,9 +630,10 @@ TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
   const gfx::Image& profile_image(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(id));
 
-  GetCache()->AddProfileToCache(GetProfilePath("path_1"), profile_name,
-                                std::string(), base::string16(), false, 0,
-                                std::string(), EmptyAccountId());
+  base::FilePath profile_path = GetProfilePath("path_1");
+  GetCache()->AddProfileToCache(profile_path, profile_name, std::string(),
+                                base::string16(), false, 0, std::string(),
+                                EmptyAccountId());
 
   // Set empty GAIA info.
   GetCache()->SetGAIANameOfProfileAtIndex(0, base::string16());
@@ -633,8 +642,9 @@ TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
 
   // Verify that the profile name and picture are not empty.
   EXPECT_EQ(profile_name, GetCache()->GetNameToDisplayOfProfileAtIndex(0));
-  EXPECT_TRUE(gfx::test::AreImagesEqual(
-      profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(0)));
+  ProfileAttributesEntry* entry = nullptr;
+  GetCache()->GetProfileAttributesWithPath(profile_path, &entry);
+  EXPECT_TRUE(gfx::test::AreImagesEqual(profile_image, entry->GetAvatarIcon()));
 }
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)

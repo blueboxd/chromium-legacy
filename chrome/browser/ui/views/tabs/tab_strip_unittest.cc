@@ -196,11 +196,11 @@ class TabStripTest : public ChromeViewsTestBase,
   int GetInactiveTabWidth() { return tab_strip_->GetInactiveTabWidth(); }
 
   // End any outstanding drag and animate tabs back to their ideal bounds.
-  void StopDraggingTab(Tab* tab) {
-    // Passing false for |is_first_tab| results in running the post-drag
+  void StopDragging(TabSlotView* view) {
+    // Passing false for |is_first_view| results in running the post-drag
     // animation unconditionally.
-    bool is_first_tab = false;
-    tab_strip_->StoppedDraggingTab(tab, &is_first_tab);
+    bool is_first_view = false;
+    tab_strip_->StoppedDraggingView(view, &is_first_view);
   }
 
   // Makes sure that all tabs have the correct AX indices.
@@ -470,7 +470,7 @@ TEST_P(TabStripTest, TabForEventWhenStacked) {
     int previous_tab = -1;
     for (int x = 0; x < tab_strip_->width(); ++x) {
       p.set_x(x);
-      int tab = tab_strip_->GetModelIndexOfTab(FindTabForEvent(p));
+      int tab = tab_strip_->GetModelIndexOf(FindTabForEvent(p));
       if (tab == previous_tab)
         continue;
       if ((tab != -1) || (previous_tab != tab_strip_->tab_count() - 1))
@@ -898,7 +898,7 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
 
   // Ending the drag triggers the tabstrip to begin animating this tab back
   // to its ideal bounds.
-  StopDraggingTab(dragged_tab);
+  StopDragging(dragged_tab);
   EXPECT_TRUE(bounds_animator()->IsAnimating(dragged_tab));
 
   // Change the ideal bounds of the tabs mid-animation by selecting a

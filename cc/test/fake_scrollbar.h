@@ -21,7 +21,6 @@ class FakeScrollbar : public Scrollbar {
                 bool is_left_side_vertical_scrollbar,
                 bool is_overlay);
   FakeScrollbar(const FakeScrollbar&) = delete;
-  ~FakeScrollbar() override;
 
   FakeScrollbar& operator=(const FakeScrollbar&) = delete;
 
@@ -64,6 +63,9 @@ class FakeScrollbar : public Scrollbar {
   void set_has_tickmarks(bool has_tickmarks) { has_tickmarks_ = has_tickmarks; }
 
   gfx::Rect GetPartRect(ScrollbarPart part) const;
+
+ protected:
+  ~FakeScrollbar() override;
 
  private:
   bool paint_;

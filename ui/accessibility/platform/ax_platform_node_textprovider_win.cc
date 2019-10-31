@@ -102,6 +102,14 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
   DCHECK(!start->IsNullPosition());
   DCHECK(!end->IsNullPosition());
 
+  // At this point, if there is no selection, the start and end endpoints will
+  // create a degenerate range. According to UIA's documentation, we should only
+  // fill the SAFEARRAY with a degenerate range if the degenerate range is on an
+  // editable node. Otherwise, the expectations are that the SAFEARRAY is set to
+  // nullptr. Here, we are explicitly not allocating an empty SAFEARRAY.
+  if (!anchor_object->GetDelegate()->HasVisibleCaretOrSelection())
+    return S_OK;
+
   CComPtr<ITextRangeProvider> text_range_provider =
       AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
           owner_, std::move(start), std::move(end));

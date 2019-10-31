@@ -31,6 +31,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/latency/latency_info.h"
 
@@ -263,6 +264,9 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   int64_t swapped_trace_id_ = 0;
   int64_t last_swap_ack_trace_id_ = 0;
   int64_t last_presented_trace_id_ = 0;
+
+  gfx::OverlayTransform last_display_transform_swapped_ =
+      gfx::OVERLAY_TRANSFORM_NONE;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

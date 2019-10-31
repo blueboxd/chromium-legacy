@@ -13,6 +13,7 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -75,6 +76,12 @@ gpu::gles2::GLES2Interface* CanvasResource::ContextGL() const {
   if (!ContextProviderWrapper())
     return nullptr;
   return ContextProviderWrapper()->ContextProvider()->ContextGL();
+}
+
+gpu::raster::RasterInterface* CanvasResource::RasterInterface() const {
+  if (!ContextProviderWrapper())
+    return nullptr;
+  return ContextProviderWrapper()->ContextProvider()->RasterInterface();
 }
 
 void CanvasResource::WaitSyncToken(const gpu::SyncToken& sync_token) {

@@ -7,9 +7,13 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
-#include "chromecast/public/media/redirected_audio_output.h"
+#include "chromecast/media/audio/mixer_service/redirected_audio_connection.h"
+#include "chromecast/public/volume_control.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,28 +24,30 @@ class AudioBus;
 namespace chromecast {
 namespace media {
 
-class MockRedirectedAudioOutput : public RedirectedAudioOutput {
+class MockRedirectedAudioOutput
+    : public mixer_service::RedirectedAudioConnection::Delegate {
  public:
-  explicit MockRedirectedAudioOutput(int num_channels);
+  explicit MockRedirectedAudioOutput(
+      const mixer_service::RedirectedAudioConnection::Config& config);
   ~MockRedirectedAudioOutput() override;
 
-  int last_num_inputs() const { return last_num_inputs_; }
   ::media::AudioBus* last_buffer() const { return last_buffer_.get(); }
   int64_t last_output_timestamp() const { return last_output_timestamp_; }
 
-  MOCK_METHOD1(Start, void(int));
-  MOCK_METHOD0(Stop, void());
-  MOCK_METHOD4(WriteBuffer, void(int, float**, int, int64_t));
+  MOCK_METHOD4(OnRedirectedAudio, void(int64_t, int, float*, int));
+
+  void SetStreamMatchPatterns(
+      std::vector<std::pair<AudioContentType, std::string>> patterns);
 
  private:
-  void OnWriteBuffer(int num_inputs,
-                     float** channel_data,
-                     int num_frames,
-                     int64_t output_timestamp);
+  void HandleRedirectedAudio(int64_t timestamp,
+                             int sample_rate,
+                             float* data,
+                             int frames);
 
-  const int num_channels_;
+  const mixer_service::RedirectedAudioConnection::Config config_;
+  mixer_service::RedirectedAudioConnection connection_;
 
-  int last_num_inputs_;
   std::unique_ptr<::media::AudioBus> last_buffer_;
   int64_t last_output_timestamp_;
 

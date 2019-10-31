@@ -214,8 +214,8 @@ void AccessibilityTreeFormatterAuraLinux::AddTextProperties(
   int selection_start, selection_end;
   char* selection_text =
       atk_text_get_selection(atk_text, 0, &selection_start, &selection_end);
-  g_free(selection_text);
-  if (selection_start || selection_end) {
+  if (selection_text) {
+    g_free(selection_text);
     text_values->AppendString(
         base::StringPrintf("selection_start=%i", selection_start));
     text_values->AppendString(
@@ -447,7 +447,8 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
   }
   atk_attribute_set_free(attributes);
 
-  AddTextProperties(ATK_TEXT(atk_object), dict);
+  if (ATK_IS_TEXT(atk_object))
+    AddTextProperties(ATK_TEXT(atk_object), dict);
   AddValueProperties(atk_object, dict);
   AddTableProperties(atk_object, dict);
   AddTableCellProperties(ax_platform_node, atk_object, dict);

@@ -713,12 +713,16 @@ cr.define('wallpapers', function() {
         var scrollUp =
             this.cachedScrollTop_ && this.cachedScrollTop_ > this.scrollTop;
         for (var i = 0; i < this.dataModel.length; ++i) {
-          if (this.getListItemByIndex(i)) {
-            this.getListItemByIndex(i).classList.toggle(
+          const listItem = this.getListItemByIndex(i);
+          if (listItem) {
+            listItem.classList.toggle(
                 'first-row',
                 i < this.columns &&
                     (this.firstIndex_ == 0 || i != this.firstIndex_ ||
                      scrollUp));
+            listItem.tabIndex = 0;
+            listItem.setAttribute(
+                'aria-label', this.dataModel.item(i).ariaLabel);
           }
         }
       }

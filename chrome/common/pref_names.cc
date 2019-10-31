@@ -155,6 +155,12 @@ const char kSupervisedUserCustodianProfileImageURL[] =
 const char kSupervisedUserCustodianProfileURL[] =
     "profile.managed.custodian_profile_url";
 
+// Whether the supervised user may approve extension permission requests. If
+// false, extensions should not be able to request new permissions, and new
+// extensions should not be installable.
+const char kSupervisedUserExtensionsMayRequestPermissions[] =
+    "profile.managed.extensions_may_request_permissions";
+
 // Maps host names to whether the host is manually allowed or blocked.
 const char kSupervisedUserManualHosts[] = "profile.managed.manual_hosts";
 
@@ -1837,6 +1843,11 @@ const char kAuthAndroidNegotiateAccountType[] =
 // Boolean that specifies whether to allow basic auth prompting on cross-
 // domain sub-content requests.
 const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
+
+// Boolean that specifies whether cached (server) auth credentials are separated
+// by NetworkIsolationKey.
+const char kGloballyScopeHTTPAuthCacheEnabled[] =
+    "auth.globally_scoped_http_auth_cache_enabled";
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 // Boolean that specifies whether OK-AS-DELEGATE flag from KDC is respected

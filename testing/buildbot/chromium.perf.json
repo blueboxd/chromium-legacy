@@ -881,7 +881,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "O",
+              "device_os": "OMB1.180119.001",
               "device_os_flavor": "google",
               "device_type": "gobo",
               "os": "Android",
@@ -927,7 +927,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "O",
+              "device_os": "OMB1.180119.001",
               "device_os_flavor": "google",
               "device_type": "gobo",
               "os": "Android",
@@ -1255,7 +1255,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "O",
+              "device_os": "OPM1.171019.021",
               "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
@@ -1301,7 +1301,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "O",
+              "device_os": "OPM1.171019.021",
               "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",

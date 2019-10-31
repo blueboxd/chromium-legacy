@@ -170,8 +170,8 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.PEDAL, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.CLIPBOARD_TEXT, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.CLIPBOARD_IMAGE, SuggestionIcon.GLOBE},
+                {OmniboxSuggestionType.CLIPBOARD_TEXT, SuggestionIcon.MAGNIFIER},
+                {OmniboxSuggestionType.CLIPBOARD_IMAGE, SuggestionIcon.MAGNIFIER},
         };
 
         for (int[] test : testSuites) {
@@ -201,8 +201,8 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.PEDAL, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.CLIPBOARD_TEXT, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.CLIPBOARD_IMAGE, SuggestionIcon.BOOKMARK},
+                {OmniboxSuggestionType.CLIPBOARD_TEXT, SuggestionIcon.MAGNIFIER},
+                {OmniboxSuggestionType.CLIPBOARD_IMAGE, SuggestionIcon.MAGNIFIER},
         };
 
         for (int[] test : testSuites) {

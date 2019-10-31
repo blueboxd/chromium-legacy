@@ -325,7 +325,7 @@ interface DeviceActions {
   LaunchAndroidIntent(string intent);
 
   // Register App list event subscriber.
-  AddAppListEventSubscriber(AppListEventSubscriber subscriber);
+  AddAppListEventSubscriber(pending_remote<AppListEventSubscriber> subscriber);
 };
 
 // Subscribes to App list events.

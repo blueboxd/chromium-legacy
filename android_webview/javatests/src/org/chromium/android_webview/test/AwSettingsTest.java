@@ -2345,7 +2345,6 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest(message = "crbug.com/957626")
     public void testJavaScriptPopupsOpenTwice() throws Throwable {
         final ViewPair views = createViews();
         runPerViewSettingsTest(new AwSettingsJavaScriptPopupsTestHelper(

@@ -118,11 +118,8 @@ bool ServiceDiscardableManager::OnMemoryDump(
 
     if (!entries_.empty()) {
       MemoryAllocatorDump* dump_avg_size =
-          pmd->CreateAllocatorDump(base::StringPrintf(
-              "gpu/discardable_cache/avg_image_size/cache_0x%" PRIXPTR,
-              reinterpret_cast<uintptr_t>(this)));
-      dump_avg_size->AddScalar(MemoryAllocatorDump::kNameSize,
-                               MemoryAllocatorDump::kUnitsBytes,
+          pmd->CreateAllocatorDump(dump_name + "/avg_image_size");
+      dump_avg_size->AddScalar("average_size", MemoryAllocatorDump::kUnitsBytes,
                                total_size_ / entries_.size());
     }
 

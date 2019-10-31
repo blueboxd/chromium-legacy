@@ -44,6 +44,11 @@ struct Symbol {
   Symbol();
   Symbol(const Symbol& other);
 
+  float pss() const {
+    int alias_count = aliases ? aliases->size() : 1;
+    return static_cast<float>(size) / alias_count;
+  }
+
   int32_t address = 0;
   int32_t size = 0;
   int32_t flags = 0;
@@ -81,7 +86,7 @@ struct SizeInfo {
 struct Stat {
   int32_t count = 0;
   int32_t highlight = 0;
-  int32_t size = 0;
+  float size = 0.0f;
 
   void operator+=(const Stat& other) {
     count += other.count;
@@ -93,7 +98,7 @@ struct Stat {
 struct NodeStats {
   NodeStats();
   ~NodeStats();
-  NodeStats(SectionId section, int32_t count, int32_t highlight, int32_t size);
+  NodeStats(SectionId section, int32_t count, int32_t highlight, float size);
   void WriteIntoJson(Json::Value* out) const;
   NodeStats& operator+=(const NodeStats& other);
   SectionId ComputeBiggestSection() const;
@@ -109,7 +114,7 @@ struct TreeNode {
   std::string_view id_path;
   const char* src_path = nullptr;
   const char* component = nullptr;
-  int32_t size = 0;
+  float size = 0.0f;
   NodeStats node_stats;
   int32_t flags = 0;
   int32_t short_name_index = 0;

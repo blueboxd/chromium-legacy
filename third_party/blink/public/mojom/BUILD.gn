@@ -166,6 +166,7 @@ mojom("mojom_platform") {
     ":mojom_mhtml_load_result",
     ":web_client_hints_types_mojo_bindings",
     ":web_feature_mojo_bindings",
+    "//cc/mojom",
     "//components/payments/mojom",
     "//components/services/filesystem/public/mojom",
     "//mojo/public/mojom/base",

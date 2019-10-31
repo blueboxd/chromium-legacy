@@ -41,11 +41,7 @@
         "export_header": "headless/public/headless_export.h"
     },
 
-    "encoding_lib": {
-        "namespace": "inspector_protocol_encoding"
-    },
-
-    "bindings_lib": {
-        "namespace": "inspector_protocol_bindings"
+    "crdtp": {
+        "namespace": "crdtp"
     }
 }

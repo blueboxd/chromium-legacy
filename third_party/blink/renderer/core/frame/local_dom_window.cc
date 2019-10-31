@@ -1046,7 +1046,8 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
       cc::SnapSelectionStrategy::CreateForEndAndDirection(
           gfx::ScrollOffset(current_position), gfx::ScrollOffset(scaled_delta));
   new_scaled_position =
-      viewport->GetSnapPosition(*strategy).value_or(new_scaled_position);
+      viewport->GetSnapPositionAndSetTarget(*strategy).value_or(
+          new_scaled_position);
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
@@ -1110,7 +1111,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
           gfx::ScrollOffset(new_scaled_position), scroll_to_options->hasLeft(),
           scroll_to_options->hasTop());
   new_scaled_position =
-      viewport->GetSnapPosition(*strategy).value_or(new_scaled_position);
+      viewport->GetSnapPositionAndSetTarget(*strategy).value_or(
+          new_scaled_position);
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
@@ -1503,9 +1505,12 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   // ensure the proper referrer is set now.
   // TODO(domfarolino): Stop setting ResourceRequest's HTTP Referrer and store
   // this is a separate member. See https://crbug.com/850813.
+  const SecurityOrigin* origin =
+      active_document ? active_document->GetSecurityOrigin()
+                      : SecurityOrigin::Create(completed_url).get();
   frame_request.GetResourceRequest().SetHttpReferrer(
       SecurityPolicy::GenerateReferrer(
-          active_document->GetReferrerPolicy(), completed_url,
+          active_document->GetReferrerPolicy(), origin, completed_url,
           window_features.noreferrer ? Referrer::NoReferrer()
                                      : active_document->OutgoingReferrer()));
 

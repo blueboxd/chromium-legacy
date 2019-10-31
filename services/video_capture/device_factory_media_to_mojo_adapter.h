@@ -9,9 +9,9 @@
 
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_system.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 
@@ -43,7 +43,7 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
   // DeviceFactory implementation.
   void GetDeviceInfos(GetDeviceInfosCallback callback) override;
   void CreateDevice(const std::string& device_id,
-                    mojom::DeviceRequest device_request,
+                    mojo::PendingReceiver<mojom::Device> device_receiver,
                     CreateDeviceCallback callback) override;
   void AddSharedMemoryVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
@@ -67,15 +67,16 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
     ActiveDeviceEntry& operator=(ActiveDeviceEntry&& other);
 
     std::unique_ptr<DeviceMediaToMojoAdapter> device;
-    // TODO(chfremer) Use mojo::Binding<> directly instead of unique_ptr<> when
-    // mojo::Binding<> supports move operators.
+    // TODO(chfremer) Use mojo::Receiver<> directly instead of unique_ptr<> when
+    // mojo::Receiver<> supports move operators.
     // https://crbug.com/644314
-    std::unique_ptr<mojo::Binding<mojom::Device>> binding;
+    std::unique_ptr<mojo::Receiver<mojom::Device>> receiver;
   };
 
-  void CreateAndAddNewDevice(const std::string& device_id,
-                             mojom::DeviceRequest device_request,
-                             CreateDeviceCallback callback);
+  void CreateAndAddNewDevice(
+      const std::string& device_id,
+      mojo::PendingReceiver<mojom::Device> device_receiver,
+      CreateDeviceCallback callback);
   void OnClientConnectionErrorOrClose(const std::string& device_id);
 
   const std::unique_ptr<media::VideoCaptureSystem> capture_system_;

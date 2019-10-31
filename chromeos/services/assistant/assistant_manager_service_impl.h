@@ -26,7 +26,6 @@
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "libassistant/shared/public/device_state_listener.h"
 #include "libassistant/shared/public/media_manager.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -375,7 +374,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   base::UnguessableToken media_session_audio_focus_id_ =
       base::UnguessableToken::Null();
 
-  mojo::Binding<mojom::AppListEventSubscriber> app_list_subscriber_binding_;
+  mojo::Receiver<mojom::AppListEventSubscriber> app_list_subscriber_receiver_{
+      this};
 
   base::ObserverList<CommunicationErrorObserver> error_observers_;
   base::ObserverList<StateObserver> state_observers_;

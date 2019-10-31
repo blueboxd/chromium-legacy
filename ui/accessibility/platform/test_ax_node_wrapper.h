@@ -120,6 +120,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   base::string16 GetStyleNameAttributeAsLocalizedString() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   const ui::AXUniqueId& GetUniqueId() const override;
+  bool HasVisibleCaretOrSelection() const override;
   std::set<AXPlatformNode*> GetReverseRelations(
       ax::mojom::IntAttribute attr) override;
   std::set<AXPlatformNode*> GetReverseRelations(

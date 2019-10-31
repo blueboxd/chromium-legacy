@@ -22,7 +22,9 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
+import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
+import org.chromium.chrome.browser.appmenu.CustomViewBinder;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.download.DownloadUtils;
@@ -34,6 +36,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.UrlConstants;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +86,12 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     }
 
     @Override
-    public void prepareMenu(Menu menu) {
+    public @Nullable List<CustomViewBinder> getCustomViewBinders() {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public void prepareMenu(Menu menu, AppMenuHandler handler) {
         Tab currentTab = mActivityTabProvider.get();
         if (currentTab != null) {
             MenuItem forwardMenuItem = menu.findItem(R.id.forward_menu_id);

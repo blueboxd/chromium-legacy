@@ -480,6 +480,7 @@ enum DBCookieSameSite {
   kCookieSameSiteNoRestriction = 0,
   kCookieSameSiteLax = 1,
   kCookieSameSiteStrict = 2,
+  // Deprecated, mapped to kCookieSameSiteUnspecified.
   kCookieSameSiteExtended = 3
 };
 
@@ -491,8 +492,6 @@ DBCookieSameSite CookieSameSiteToDBCookieSameSite(CookieSameSite value) {
       return kCookieSameSiteLax;
     case CookieSameSite::STRICT_MODE:
       return kCookieSameSiteStrict;
-    case CookieSameSite::EXTENDED_MODE:
-      return kCookieSameSiteExtended;
     case CookieSameSite::UNSPECIFIED:
       return kCookieSameSiteUnspecified;
   }

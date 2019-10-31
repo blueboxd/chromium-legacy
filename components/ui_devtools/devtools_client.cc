@@ -61,8 +61,7 @@ namespace {
 std::string SerializeToJSON(std::unique_ptr<protocol::Serializable> message) {
   std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
   std::string json;
-  ::inspector_protocol_encoding::Status status =
-      ConvertCBORToJSON(::inspector_protocol_encoding::SpanFrom(cbor), &json);
+  crdtp::Status status = ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   return json;
 }

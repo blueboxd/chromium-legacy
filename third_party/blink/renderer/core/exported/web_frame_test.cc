@@ -1884,57 +1884,27 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
   web_view_helper.GetWebView()->GetSettings()->SetForceZeroLayoutHeight(true);
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
-  PaintLayerCompositor* compositor = web_view_helper.GetWebView()->Compositor();
-  GraphicsLayer* scroll_container = compositor->RootGraphicsLayer();
+  LocalFrameView* frame_view =
+      web_view_helper.GetWebView()->MainFrameImpl()->GetFrameView();
+  GraphicsLayer* scroll_container =
+      frame_view->GetLayoutView()->Compositor()->RootGraphicsLayer();
 
-  EXPECT_EQ(0, web_view_helper.GetWebView()
-                   ->MainFrameImpl()
-                   ->GetFrameView()
-                   ->GetLayoutSize()
-                   .Width());
-  EXPECT_EQ(0, web_view_helper.GetWebView()
-                   ->MainFrameImpl()
-                   ->GetFrameView()
-                   ->GetLayoutSize()
-                   .Height());
-  EXPECT_EQ(0.0, scroll_container->Size().width());
-  EXPECT_EQ(0.0, scroll_container->Size().height());
+  EXPECT_EQ(IntSize(), frame_view->GetLayoutSize());
+  EXPECT_EQ(gfx::Size(), scroll_container->Size());
 
   web_view_helper.Resize(WebSize(viewport_width, 0));
-  EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
-                                ->MainFrameImpl()
-                                ->GetFrameView()
-                                ->GetLayoutSize()
-                                .Width());
-  EXPECT_EQ(0, web_view_helper.GetWebView()
-                   ->MainFrameImpl()
-                   ->GetFrameView()
-                   ->GetLayoutSize()
-                   .Height());
-  EXPECT_EQ(viewport_width, scroll_container->Size().width());
-  EXPECT_EQ(0.0, scroll_container->Size().height());
+  EXPECT_EQ(IntSize(viewport_width, 0), frame_view->GetLayoutSize());
+  EXPECT_EQ(gfx::Size(viewport_width, 0), scroll_container->Size());
 
   // The flag ForceZeroLayoutHeight will cause the following resize of viewport
   // height to be ignored by the outer viewport (the container layer of
   // LayerCompositor). The height of the visualViewport, however, is not
   // affected.
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  EXPECT_FALSE(web_view_helper.GetWebView()
-                   ->MainFrameImpl()
-                   ->GetFrameView()
-                   ->NeedsLayout());
-  EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
-                                ->MainFrameImpl()
-                                ->GetFrameView()
-                                ->GetLayoutSize()
-                                .Width());
-  EXPECT_EQ(0, web_view_helper.GetWebView()
-                   ->MainFrameImpl()
-                   ->GetFrameView()
-                   ->GetLayoutSize()
-                   .Height());
-  EXPECT_EQ(viewport_width, scroll_container->Size().width());
-  EXPECT_EQ(viewport_height, scroll_container->Size().height());
+  EXPECT_FALSE(frame_view->NeedsLayout());
+  EXPECT_EQ(IntSize(viewport_width, 0), frame_view->GetLayoutSize());
+  EXPECT_EQ(gfx::Size(viewport_width, viewport_height),
+            scroll_container->Size());
 
   LocalFrame* frame = web_view_helper.LocalMainFrame()->GetFrame();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
@@ -7635,9 +7605,8 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   auto* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
-  auto* scroll_layer = frame_view->GetScrollableArea()->LayerForScrolling();
-  ASSERT_TRUE(scroll_layer);
-  cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
+  auto* cc_scroll_layer = frame_view->GetScrollableArea()->LayerForScrolling();
+  ASSERT_TRUE(cc_scroll_layer);
 
   // Verify that the cc::Layer is not scrollable initially.
   ASSERT_FALSE(cc_scroll_layer->GetUserScrollableHorizontal());
@@ -7648,8 +7617,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   frame->ExecuteScript(WebScriptSource("allowScroll();"));
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
-  scroll_layer = frame_view->GetScrollableArea()->LayerForScrolling();
-  cc_scroll_layer = scroll_layer->CcLayer();
+  cc_scroll_layer = frame_view->GetScrollableArea()->LayerForScrolling();
   ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
   ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
 }
@@ -7937,19 +7905,15 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
 
   // Verify that the viewports are nonscrollable.
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
-  GraphicsLayer* layout_viewport_scroll_layer =
+  cc::Layer* layout_viewport_scroll_layer =
       frame_view->GetScrollableArea()->LayerForScrolling();
-  GraphicsLayer* visual_viewport_scroll_layer =
-      frame_view->GetPage()->GetVisualViewport().ScrollLayer();
+  cc::Layer* visual_viewport_scroll_layer =
+      frame_view->GetPage()->GetVisualViewport().LayerForScrolling();
 
-  ASSERT_FALSE(
-      layout_viewport_scroll_layer->CcLayer()->GetUserScrollableHorizontal());
-  ASSERT_FALSE(
-      layout_viewport_scroll_layer->CcLayer()->GetUserScrollableVertical());
-  ASSERT_FALSE(
-      visual_viewport_scroll_layer->CcLayer()->GetUserScrollableHorizontal());
-  ASSERT_FALSE(
-      visual_viewport_scroll_layer->CcLayer()->GetUserScrollableVertical());
+  ASSERT_FALSE(layout_viewport_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_FALSE(layout_viewport_scroll_layer->GetUserScrollableVertical());
+  ASSERT_FALSE(visual_viewport_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_FALSE(visual_viewport_scroll_layer->GetUserScrollableVertical());
 
   // Verify that the viewports are scrollable upon exiting fullscreen.
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
@@ -7960,15 +7924,11 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   layout_viewport_scroll_layer =
       frame_view->GetScrollableArea()->LayerForScrolling();
   visual_viewport_scroll_layer =
-      frame_view->GetPage()->GetVisualViewport().ScrollLayer();
-  ASSERT_TRUE(
-      layout_viewport_scroll_layer->CcLayer()->GetUserScrollableHorizontal());
-  ASSERT_TRUE(
-      layout_viewport_scroll_layer->CcLayer()->GetUserScrollableVertical());
-  ASSERT_TRUE(
-      visual_viewport_scroll_layer->CcLayer()->GetUserScrollableHorizontal());
-  ASSERT_TRUE(
-      visual_viewport_scroll_layer->CcLayer()->GetUserScrollableVertical());
+      frame_view->GetPage()->GetVisualViewport().LayerForScrolling();
+  ASSERT_TRUE(layout_viewport_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_TRUE(layout_viewport_scroll_layer->GetUserScrollableVertical());
+  ASSERT_TRUE(visual_viewport_scroll_layer->GetUserScrollableHorizontal());
+  ASSERT_TRUE(visual_viewport_scroll_layer->GetUserScrollableVertical());
 }
 
 TEST_F(WebFrameTest, FullscreenMainFrame) {
@@ -7987,8 +7947,7 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
                                    ->GetFrame()
                                    ->View()
                                    ->LayoutViewport()
-                                   ->LayerForScrolling()
-                                   ->CcLayer();
+                                   ->LayerForScrolling();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
   ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
@@ -8012,8 +7971,7 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
                         ->GetFrame()
                         ->View()
                         ->LayoutViewport()
-                        ->LayerForScrolling()
-                        ->CcLayer();
+                        ->LayerForScrolling();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(cc_scroll_layer->GetUserScrollableHorizontal());
   ASSERT_TRUE(cc_scroll_layer->GetUserScrollableVertical());
@@ -12783,7 +12741,7 @@ TEST_F(WebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   EXPECT_NE(nullptr, scrollable_area);
 
   // We should have a composited layer for scrolling due to will-change.
-  cc::Layer* cc_scroll_layer = scrollable_area->LayerForScrolling()->CcLayer();
+  cc::Layer* cc_scroll_layer = scrollable_area->LayerForScrolling();
   EXPECT_NE(nullptr, cc_scroll_layer);
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable

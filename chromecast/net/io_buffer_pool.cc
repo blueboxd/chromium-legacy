@@ -6,6 +6,8 @@
 
 #include <new>
 
+#include "base/bits.h"
+#include "base/memory/aligned_memory.h"
 #include "base/synchronization/lock.h"
 
 namespace chromecast {
@@ -59,6 +61,10 @@ class IOBufferPool::Internal {
   class Buffer;
   class Wrapper;
   union Storage;
+
+  static constexpr size_t kAlignment = 16;
+
+  static void* AllocateAlignedSpace(size_t buffer_size);
 
   ~Internal();
 
@@ -137,8 +143,14 @@ IOBufferPool::Internal::~Internal() {
   while (free_buffers_) {
     char* data = reinterpret_cast<char*>(free_buffers_);
     free_buffers_ = free_buffers_->next;
-    delete[] data;
+    base::AlignedFree(data);
   }
+}
+
+// static
+void* IOBufferPool::Internal::AllocateAlignedSpace(size_t buffer_size) {
+  size_t kAlignedStorageSize = base::bits::Align(sizeof(Storage), kAlignment);
+  return base::AlignedAlloc(kAlignedStorageSize + buffer_size, kAlignment);
 }
 
 void IOBufferPool::Internal::Preallocate(size_t num_buffers) {
@@ -155,7 +167,7 @@ void IOBufferPool::Internal::Preallocate(size_t num_buffers) {
   num_free_ += num_extra_buffers;
   num_allocated_ += num_extra_buffers;
   while (num_extra_buffers > 0) {
-    char* ptr = new char[sizeof(Storage) + buffer_size_];
+    void* ptr = AllocateAlignedSpace(buffer_size_);
     Storage* storage = reinterpret_cast<Storage*>(ptr);
     storage->next = free_buffers_;
     free_buffers_ = storage;
@@ -196,10 +208,11 @@ scoped_refptr<net::IOBuffer> IOBufferPool::Internal::GetBuffer() {
   }
 
   if (!ptr) {
-    ptr = new char[sizeof(Storage) + buffer_size_];
+    ptr = static_cast<char*>(AllocateAlignedSpace(buffer_size_));
   }
 
-  char* data = ptr + sizeof(Storage);
+  size_t kAlignedStorageSize = base::bits::Align(sizeof(Storage), kAlignment);
+  char* data = ptr + kAlignedStorageSize;
   Wrapper* wrapper = new (ptr) Wrapper(data, this);
   return scoped_refptr<net::IOBuffer>(wrapper->buffer());
 }

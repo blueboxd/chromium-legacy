@@ -23,6 +23,7 @@ QuicChromiumPacketReader::QuicChromiumPacketReader(
     quic::QuicTime::Delta yield_after_duration,
     const NetLogWithSource& net_log)
     : socket_(socket),
+      should_stop_reading_(false),
       visitor_(visitor),
       read_pending_(false),
       num_packets_read_(0),
@@ -37,6 +38,8 @@ QuicChromiumPacketReader::QuicChromiumPacketReader(
 QuicChromiumPacketReader::~QuicChromiumPacketReader() {}
 
 void QuicChromiumPacketReader::StartReading() {
+  CHECK(!should_stop_reading_);
+
   for (;;) {
     if (read_pending_)
       return;
@@ -69,6 +72,13 @@ void QuicChromiumPacketReader::StartReading() {
       if (!ProcessReadResult(rv)) {
         return;
       }
+      if (should_stop_reading_) {
+        // If data emits to this histogram, the underlying socket is closed.
+        UMA_HISTOGRAM_BOOLEAN(
+            "Net.QuicChromiumPacketReader.ShouldStopReadingInLoop",
+            should_stop_reading_);
+        return;
+      }
     }
   }
 }
@@ -98,7 +108,13 @@ bool QuicChromiumPacketReader::ProcessReadResult(int result) {
 
 void QuicChromiumPacketReader::OnReadComplete(int result) {
   if (ProcessReadResult(result)) {
-    StartReading();
+    if (should_stop_reading_) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "Net.QuicChromiumPacketReader.ShouldStopReadingOnReadComplete",
+          should_stop_reading_);
+    } else {
+      StartReading();
+    }
   }
 }
 

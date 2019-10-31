@@ -19,14 +19,8 @@
     <style include="cr-shared-style cups-printer-shared"></style>
     <add-printer-dialog>
       <div slot="dialog-title">$i18n{editPrinterDialogTitle}
-        <div id="general-error-container" hidden="[[!errorText_]]">
-          <div id="general-error">
-            <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
-            <div id="general-error-message">
-              [[errorText_]]
-            </div>
-          </div>
-        </div>
+        <printer-dialog-error error-text="[[errorText_]]">
+        </printer-dialog-error>
       </div>
       <div slot="dialog-body" scrollable>
         <div class="settings-box first two-line">

@@ -3930,17 +3930,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {
     EXPECT_EQ(9, unignored_selection.anchor_offset);
     EXPECT_EQ(9, unignored_selection.focus_offset);
 
-    // Verify the content of the selection.
+    // Verify that no selection is returned since the element is not editable.
     document_provider->GetSelection(selection.Receive());
-    ASSERT_NE(nullptr, selection.Get());
-
-    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetUBound(selection.Get(), 1, &ubound));
-    EXPECT_EQ(0, ubound);
-    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetLBound(selection.Get(), 1, &lbound));
-    EXPECT_EQ(0, lbound);
-    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetElement(
-        selection.Get(), &index, &selected_text_range_provider));
-    EXPECT_UIA_TEXTRANGE_EQ(selected_text_range_provider, L"");
+    ASSERT_EQ(nullptr, selection.Get());
 
     selected_text_range_provider.Release();
     selection.Reset();

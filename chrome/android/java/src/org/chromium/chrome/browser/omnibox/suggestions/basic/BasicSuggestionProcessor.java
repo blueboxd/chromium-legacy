@@ -128,7 +128,10 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
     @VisibleForTesting
     public @SuggestionIcon int getSuggestionIconType(OmniboxSuggestion suggestion) {
         if (suggestion.isUrlSuggestion()) {
-            if (suggestion.isStarred()) {
+            if (suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_TEXT
+                    || suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_IMAGE) {
+                return SuggestionIcon.MAGNIFIER;
+            } else if (suggestion.isStarred()) {
                 return SuggestionIcon.BOOKMARK;
             } else {
                 return SuggestionIcon.GLOBE;

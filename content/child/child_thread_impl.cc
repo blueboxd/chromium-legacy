@@ -394,8 +394,8 @@ class ChildProcessImpl : public mojom::ChildProcess {
 
 #if BUILDFLAG(CLANG_COVERAGE)
   void SetCoverageFile(base::File file) override {
-    // TODO(crbug.com/988816) Fix this when we support coverage on Windows.
-#if defined(OS_POSIX)
+    // TODO(crbug.com/985574) Remove Android check when possible.
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
     // Take the file descriptor so that |file| does not close it.
     int fd = file.TakePlatformFile();
     FILE* f = fdopen(fd, "r+b");

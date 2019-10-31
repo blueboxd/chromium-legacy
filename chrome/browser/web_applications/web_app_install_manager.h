@@ -38,6 +38,9 @@ class WebAppInstallManager final : public InstallManager,
 
   // InstallManager:
   bool CanInstallWebApp(content::WebContents* web_contents) override;
+  void LoadWebAppAndCheckInstallability(
+      const GURL& web_app_url,
+      WebAppInstallabilityCheckCallback callback) override;
   void InstallWebAppFromManifest(content::WebContents* contents,
                                  WebappInstallSource install_source,
                                  WebAppInstallDialogCallback dialog_callback,
@@ -86,10 +89,12 @@ class WebAppInstallManager final : public InstallManager,
   void EnqueueTask(std::unique_ptr<WebAppInstallTask> task,
                    base::OnceClosure start_task);
   void MaybeStartQueuedTask();
-  void OnTaskCompleted(WebAppInstallTask* task,
-                       OnceInstallCallback callback,
-                       const AppId& app_id,
-                       InstallResultCode code);
+
+  void DeleteTask(WebAppInstallTask* task);
+  void OnInstallTaskCompleted(WebAppInstallTask* task,
+                              OnceInstallCallback callback,
+                              const AppId& app_id,
+                              InstallResultCode code);
   void OnQueuedTaskCompleted(WebAppInstallTask* task,
                              OnceInstallCallback callback,
                              const AppId& app_id,
@@ -99,6 +104,13 @@ class WebAppInstallManager final : public InstallManager,
                                   OnceInstallCallback callback,
                                   const AppId& installed_app_id,
                                   InstallResultCode code);
+
+  void OnLoadWebAppAndCheckInstallabilityCompleted(
+      WebAppInstallTask* task,
+      WebAppInstallabilityCheckCallback callback,
+      std::unique_ptr<content::WebContents> web_contents,
+      const AppId& app_id,
+      InstallResultCode code);
 
   content::WebContents* EnsureWebContentsCreated();
   void OnWebContentsReady(WebAppUrlLoader::Result result);

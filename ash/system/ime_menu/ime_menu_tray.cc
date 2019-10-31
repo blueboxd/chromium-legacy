@@ -335,7 +335,6 @@ ImeMenuTray::ImeMenuTray(Shelf* shelf)
       is_handwriting_enabled_(false),
       is_voice_enabled_(false) {
   DCHECK(ime_controller_);
-  SetInkDropMode(InkDropMode::ON);
   CreateLabel();
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->AddIMEObserver(this);

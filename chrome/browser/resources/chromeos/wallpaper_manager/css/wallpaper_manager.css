@@ -870,7 +870,7 @@ html[dir='rtl'] .top-header-contents .more-options {
 
 #current-wallpaper-spinner {
   height: 24px;
-  left: 38px;
+  margin-inline-start: 38px;
   top: 38px;
   width: 24px;
 }

@@ -51,17 +51,6 @@ namespace {
 // Maximum number of lines that a title label occupies.
 int kTitleMaxLines = 2;
 
-// Hover card and preview image dimensions.
-int GetPreferredTabHoverCardWidth() {
-  return TabStyle::GetStandardWidth();
-}
-
-gfx::Size GetTabHoverCardPreviewImageSize() {
-  constexpr float kTabHoverCardPreviewImageAspectRatio = 16.0f / 9.0f;
-  const int width = GetPreferredTabHoverCardWidth();
-  return gfx::Size(width, width / kTabHoverCardPreviewImageAspectRatio);
-}
-
 bool AreHoverCardImagesEnabled() {
   return base::FeatureList::IsEnabled(features::kTabHoverCardImages);
 }
@@ -325,12 +314,13 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 
   if (AreHoverCardImagesEnabled()) {
     using Alignment = views::ImageView::Alignment;
+    const gfx::Size preview_size = TabStyle::GetPreviewImageSize();
     preview_image_ = new views::ImageView();
     preview_image_->SetVisible(AreHoverCardImagesEnabled());
     preview_image_->SetHorizontalAlignment(Alignment::kCenter);
     preview_image_->SetVerticalAlignment(Alignment::kCenter);
-    preview_image_->SetImageSize(GetTabHoverCardPreviewImageSize());
-    preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
+    preview_image_->SetImageSize(preview_size);
+    preview_image_->SetPreferredSize(preview_size);
     AddChildView(preview_image_);
   }
 
@@ -645,7 +635,7 @@ void TabHoverCardBubbleView::ClearPreviewImage() {
       kGlobeIcon, kNoPreviewImageSize.width(), foreground_color);
   preview_image_->SetImage(no_preview_image);
   preview_image_->SetImageSize(kNoPreviewImageSize);
-  preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
+  preview_image_->SetPreferredSize(TabStyle::GetPreviewImageSize());
 
   // Also possibly regenerate the background if it has changed.
   const SkColor background_color = GetThemeProvider()->GetColor(
@@ -659,15 +649,20 @@ void TabHoverCardBubbleView::ClearPreviewImage() {
 
 void TabHoverCardBubbleView::OnThumbnailImageAvailable(
     gfx::ImageSkia preview_image) {
+  const gfx::Size preview_size = TabStyle::GetPreviewImageSize();
   preview_image_->SetImage(preview_image);
-  preview_image_->SetImageSize(GetTabHoverCardPreviewImageSize());
-  preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
+  preview_image_->SetImageSize(preview_size);
+  preview_image_->SetPreferredSize(preview_size);
   preview_image_->SetBackground(nullptr);
+}
+
+base::Optional<gfx::Size> TabHoverCardBubbleView::GetThumbnailSizeHint() const {
+  return TabStyle::GetPreviewImageSize();
 }
 
 gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {
   gfx::Size preferred_size = GetLayoutManager()->GetPreferredSize(this);
-  preferred_size.set_width(GetPreferredTabHoverCardWidth());
+  preferred_size.set_width(TabStyle::GetPreviewImageSize().width());
   DCHECK(!preferred_size.IsEmpty());
   return preferred_size;
 }

@@ -71,8 +71,10 @@ void TopControlsContainerView::SetTopControlsOffset(
     const base::android::JavaParamRef<jobject>& caller,
     int top_controls_offset_y,
     int top_content_offset_y) {
-  DCHECK(top_controls_layer_);
-  top_controls_layer_->SetPosition(gfx::PointF(0, top_controls_offset_y));
+  // |top_controls_layer_| may not be created if the top controls view has 0
+  // height.
+  if (top_controls_layer_)
+    top_controls_layer_->SetPosition(gfx::PointF(0, top_controls_offset_y));
   web_contents()->GetNativeView()->GetLayer()->SetPosition(
       gfx::PointF(0, top_content_offset_y));
 }

@@ -386,9 +386,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool HasState(ax::mojom::State state_enum) const;
   bool HasAction(ax::mojom::Action action_enum) const;
 
-  // Returns true if the caret or selection is visible on this object.
-  bool HasVisibleCaretOrSelection() const;
-
   // True if this is a web area, and its grandparent is a presentational iframe.
   bool IsWebAreaForPresentationalIframe() const;
 
@@ -533,6 +530,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsOffscreen() const override;
   bool IsMinimized() const override;
   bool IsWebContent() const override;
+  bool HasVisibleCaretOrSelection() const override;
   ui::AXPlatformNode* GetTargetNodeForRelation(
       ax::mojom::IntAttribute attr) override;
   std::set<ui::AXPlatformNode*> GetTargetNodesForRelation(

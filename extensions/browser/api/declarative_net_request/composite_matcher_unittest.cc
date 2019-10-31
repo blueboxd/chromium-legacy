@@ -266,7 +266,7 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
 
   RequestAction expected_action = CreateRequestActionForTesting(
       RequestAction::Type::REMOVE_HEADERS, *remove_headers_rule_1.id,
-      dnr_api::SOURCE_TYPE_DYNAMIC);
+      kDefaultPriority, dnr_api::SOURCE_TYPE_DYNAMIC);
   expected_action.request_headers_to_remove.push_back(
       net::HttpRequestHeaders::kReferer);
   expected_action.response_headers_to_remove.push_back("set-cookie");
@@ -347,19 +347,19 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
   // Static actions are attributed to |matcher_1| and dynamic actions are
   // attributed to |matcher_2|.
   RequestAction static_action_1 = CreateRequestActionForTesting(
-      RequestAction::Type::REMOVE_HEADERS, *static_rule_1.id,
+      RequestAction::Type::REMOVE_HEADERS, *static_rule_1.id, kDefaultPriority,
       dnr_api::SOURCE_TYPE_MANIFEST);
   static_action_1.request_headers_to_remove.push_back(
       net::HttpRequestHeaders::kCookie);
 
   RequestAction dynamic_action_1 = CreateRequestActionForTesting(
-      RequestAction::Type::REMOVE_HEADERS, *dynamic_rule_1.id,
+      RequestAction::Type::REMOVE_HEADERS, *dynamic_rule_1.id, kDefaultPriority,
       dnr_api::SOURCE_TYPE_DYNAMIC);
   dynamic_action_1.request_headers_to_remove.push_back(
       net::HttpRequestHeaders::kReferer);
 
   RequestAction dynamic_action_2 = CreateRequestActionForTesting(
-      RequestAction::Type::REMOVE_HEADERS, *dynamic_rule_2.id,
+      RequestAction::Type::REMOVE_HEADERS, *dynamic_rule_2.id, kDefaultPriority,
       dnr_api::SOURCE_TYPE_DYNAMIC);
   dynamic_action_2.response_headers_to_remove.push_back("set-cookie");
 
@@ -387,7 +387,7 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
       net::HttpRequestHeaders::kReferer);
 
   RequestAction static_action_2 = CreateRequestActionForTesting(
-      RequestAction::Type::REMOVE_HEADERS, *static_rule_2.id,
+      RequestAction::Type::REMOVE_HEADERS, *static_rule_2.id, kDefaultPriority,
       dnr_api::SOURCE_TYPE_MANIFEST);
   static_action_2.response_headers_to_remove.push_back("set-cookie");
 

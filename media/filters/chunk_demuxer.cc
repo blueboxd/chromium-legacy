@@ -1257,12 +1257,6 @@ void ChunkDemuxer::OnSourceInitDone(
   if (!pending_source_init_ids_.empty())
     return;
 
-  for (const auto& s : video_streams_) {
-    media_log_->RecordRapporWithSecurityOrigin(
-        "Media.OriginUrl.MSE.VideoCodec." +
-        GetCodecName(s->video_decoder_config().codec()));
-  }
-
   SeekAllSources(GetStartTime());
   StartReturningData();
 

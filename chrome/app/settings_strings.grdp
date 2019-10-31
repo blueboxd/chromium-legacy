@@ -1520,8 +1520,14 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON" desc="Text for the button which allows the user to manually setup a CUPS printer.">
       Set up
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON_ARIA" desc="Label to be read aloud by the screen reader for the button which allows the user to manually setup a CUPS printer.">
+      Set up <ph name="PRINTER_NAME">$1<ex>HP OfficeJet 500</ex></ph>
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON" desc="Text for the button which allows the user to add an automatically discovered printer to the user's saved printer list.">
       Save
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON_ARIA" desc="Label to be read aloud by the screen reader for the button which allows the user to add an automatically discovered printer to the user's saved printer list.">
+      Save <ph name="PRINTER_NAME">$1<ex>HP OfficeJet 500</ex></ph>
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL" desc="The placeholder text in the printer search field.">
       Search printers

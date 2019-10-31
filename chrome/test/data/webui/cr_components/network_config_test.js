@@ -66,6 +66,15 @@ suite('network-config', function() {
       assertTrue(!!networkConfig.$$('#security'));
       assertFalse(networkConfig.$$('#security').disabled);
     });
+
+    test('Passphrase field shows', function() {
+      assertFalse(!!networkConfig.$$('#wifi-passphrase'));
+      networkConfig.$$('#security').value =
+          chromeos.networkConfig.mojom.SecurityType.kWpaPsk;
+      return flushAsync().then(() => {
+        assertTrue(!!networkConfig.$$('#wifi-passphrase'));
+      });
+    });
   });
 
   suite('Existing WiFi Config', function() {

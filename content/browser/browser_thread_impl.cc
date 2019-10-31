@@ -225,25 +225,7 @@ scoped_refptr<base::SingleThreadTaskRunner>
 BrowserThread::GetTaskRunnerForThread(ID identifier) {
   DCHECK_GE(identifier, 0);
   DCHECK_LT(identifier, ID_COUNT);
-
-  BrowserThreadGlobals& globals = GetBrowserThreadGlobals();
-
-  // Tasks should always be posted while the BrowserThread is in a RUNNING or
-  // SHUTDOWN state (will return false if SHUTDOWN).
-  //
-  // Posting tasks before BrowserThreads are initialized is incorrect as it
-  // would silently no-op. If you need to support posting early, gate it on
-  // BrowserThread::IsThreadInitialized(). If you hit this check in unittests,
-  // you most likely posted a task outside the scope of a
-  // BrowserTaskEnvironment (which also completely resets the state after
-  // shutdown in ~BrowserTaskEnvironment(), ref. ResetGlobalsForTesting(),
-  // making sure BrowserTaskEnvironment is the first member of your test
-  // fixture and thus outlives everything is usually the right solution).
-  DCHECK_GE(base::subtle::NoBarrier_Load(&globals.states[identifier]),
-            BrowserThreadState::RUNNING);
-  DCHECK(globals.task_runners[identifier]);
-
-  return globals.task_runners[identifier];
+  return base::CreateSingleThreadTaskRunner({identifier});
 }
 
 // static

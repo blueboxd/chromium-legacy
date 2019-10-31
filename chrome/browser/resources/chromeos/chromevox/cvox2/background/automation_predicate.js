@@ -106,6 +106,8 @@ AutomationPredicate.table = AutomationPredicate.roles([Role.GRID, Role.TABLE]);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.listLike =
     AutomationPredicate.roles([Role.LIST, Role.DESCRIPTION_LIST]);
+/** @type {AutomationPredicate.Unary} */
+AutomationPredicate.paragraph = AutomationPredicate.roles([Role.PARAGRAPH]);
 
 /**
  * @param {!AutomationNode} node

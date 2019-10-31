@@ -13,7 +13,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/sharing/features.h"
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
@@ -25,6 +24,7 @@
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/sync/driver/test_sync_service.h"
+#include "components/sync/protocol/sharing_message.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_device_info/local_device_info_provider.h"
@@ -430,7 +430,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
   ASSERT_TRUE(
       sharing_message.ParseFromString(fake_gcm_driver_.message().payload));
   EXPECT_EQ("id", sharing_message.sender_guid());
-  EXPECT_EQ("manufacturer Computer model",
+  EXPECT_EQ("Manufacturer Computer model",
             sharing_message.sender_device_name());
 
   // Simulate ack message received by AckMessageHandler.

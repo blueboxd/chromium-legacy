@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
+#include "components/sync/protocol/sharing_message.pb.h"
 
 namespace content {
 class WebContents;

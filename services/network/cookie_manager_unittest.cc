@@ -338,6 +338,7 @@ class CookieManagerTest : public testing::Test {
         &CookieManagerTest::OnConnectionError, base::Unretained(this)));
   }
 
+  base::ScopedTempDir temp_dir_;
   base::test::TaskEnvironment task_environment_;
 
  private:
@@ -2237,7 +2238,6 @@ class SessionCleanupCookieManagerTest : public CookieManagerTest {
  private:
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
-  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(SessionCleanupCookieManagerTest, PersistSessionCookies) {

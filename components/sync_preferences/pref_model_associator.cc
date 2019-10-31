@@ -322,10 +322,9 @@ std::unique_ptr<base::Value> PrefModelAssociator::MergeListValues(
   DCHECK(to_value.type() == base::Value::Type::LIST);
 
   base::Value result = to_value.Clone();
-  base::Value::ListStorage& list = result.GetList();
   for (const auto& value : from_value.GetList()) {
-    if (!base::Contains(list, value))
-      list.emplace_back(value.Clone());
+    if (!base::Contains(result.GetList(), value))
+      result.Append(value.Clone());
   }
 
   return base::Value::ToUniquePtrValue(std::move(result));

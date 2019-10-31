@@ -84,6 +84,7 @@ source_set("eg_test_support+eg2") {
     "earl_grey_test.h",
     "earl_grey_test.mm",
     "keyboard_app_interface.h",
+    "keyboard_app_interface_stub.mm",
     "matchers.h",
     "matchers.mm",
   ]

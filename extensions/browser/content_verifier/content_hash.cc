@@ -145,8 +145,8 @@ const ComputedHashes::Reader& ContentHash::computed_hashes() const {
 // static
 std::string ContentHash::ComputeTreeHashForContent(const std::string& contents,
                                                    int block_size) {
-  std::vector<std::string> hashes;
-  ComputedHashes::ComputeHashesForContent(contents, block_size, &hashes);
+  std::vector<std::string> hashes =
+      ComputedHashes::GetHashesForContent(contents, block_size);
   return ComputeTreeHashRoot(hashes, block_size / crypto::kSHA256Length);
 }
 
@@ -301,8 +301,8 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
 
     // Iterate through taking the hash of each block of size (block_size_) of
     // the file.
-    std::vector<std::string> hashes;
-    ComputedHashes::ComputeHashesForContent(contents, block_size_, &hashes);
+    std::vector<std::string> hashes =
+        ComputedHashes::GetHashesForContent(contents, block_size_);
     std::string root =
         ComputeTreeHashRoot(hashes, block_size_ / crypto::kSHA256Length);
     if (!verified_contents_->TreeHashRootEquals(relative_unix_path, root)) {

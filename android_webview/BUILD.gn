@@ -87,31 +87,11 @@ generate_jar_jni("cancellation_signal_android_jar_jni_headers") {
   classes = [ "android/os/CancellationSignal.class" ]
 }
 
-jinja_template("system_webview_manifest") {
-  input = "apk/java/AndroidManifest.xml"
-  output = system_webview_android_manifest
-  variables = [ "manifest_package=$system_webview_package_name" ]
-}
-
-jinja_template("trichrome_webview_manifest") {
-  input = "apk/java/AndroidManifest.xml"
-  output = trichrome_webview_android_manifest
-  variables = trichrome_jinja_variables + [
-                "trichrome_version=$trichrome_version_code",
-                "manifest_package=$system_webview_package_name",
-                "library=libmonochrome.so",
-              ]
-}
-
-jinja_template("trichrome_webview_64_32_manifest") {
-  input = "apk/java/AndroidManifest.xml"
-  output = trichrome_webview_64_32_android_manifest
-  variables = trichrome_jinja_variables + [
-                "use32bitAbi=",
-                "trichrome_version=$trichrome_64_32_version_code",
-                "manifest_package=$system_webview_package_name",
-                "library=libmonochrome_64.so",
-              ]
+# TODO(crbug.com/934152): Delete this once Clank uses the new manifest location.
+group("system_webview_manifest") {
+  deps = [
+    "//android_webview/apk:system_webview_manifest",
+  ]
 }
 
 webview_repack_locales("repack_locales") {
@@ -593,7 +573,7 @@ android_library("browser_java") {
     ":common_platform_services_java",
     ":common_variations_utils_java",
     ":resources",
-    ":system_webview_manifest",
+    "//android_webview/apk:system_webview_manifest",
     "//base:base_java",
     "//base:jni_java",
     "//components/autofill/android:autofill_java",
@@ -801,7 +781,7 @@ android_library("android_webview_locale_config_java") {
 if (public_android_sdk) {
   system_webview_apk_tmpl("system_webview_apk") {
     android_manifest = system_webview_android_manifest
-    android_manifest_dep = ":system_webview_manifest"
+    android_manifest_dep = "//android_webview/apk:system_webview_manifest"
     deps = upstream_only_webview_deps
     apk_name = "SystemWebView"
     min_sdk_version = 21
@@ -816,7 +796,7 @@ if (public_android_sdk) {
 
   system_webview_apk_tmpl("trichrome_webview_apk") {
     android_manifest = trichrome_webview_android_manifest
-    android_manifest_dep = ":trichrome_webview_manifest"
+    android_manifest_dep = "//android_webview/apk:trichrome_webview_manifest"
 
     # TODO(torne): make minsdk=Q once we no longer build hacky P version
     min_sdk_version = android_sdk_version
@@ -832,7 +812,8 @@ if (public_android_sdk) {
 
   system_webview_apk_tmpl("trichrome_webview_64_32_apk") {
     android_manifest = trichrome_webview_64_32_android_manifest
-    android_manifest_dep = ":trichrome_webview_64_32_manifest"
+    android_manifest_dep =
+        "//android_webview/apk:trichrome_webview_64_32_manifest"
     is_64_bit_browser = true
 
     # TODO(torne): make minsdk=Q once we no longer build hacky P version
@@ -851,7 +832,7 @@ if (public_android_sdk) {
   # builds.
   system_webview_apk_tmpl("trichrome_webview_for_bundle_apk") {
     android_manifest = trichrome_webview_android_manifest
-    android_manifest_dep = ":trichrome_webview_manifest"
+    android_manifest_dep = "//android_webview/apk:trichrome_webview_manifest"
 
     # TODO(torne): make minsdk=Q once we no longer build hacky P version
     min_sdk_version = android_sdk_version

@@ -173,9 +173,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   AutofillPopupLayoutModel layout_model_;
   base::WeakPtr<AutofillPopupDelegate> delegate_;
 
-  // The text direction of the popup.
-  base::i18n::TextDirection text_direction_;
-
   // The current Autofill query values.
   std::vector<Suggestion> suggestions_;
 

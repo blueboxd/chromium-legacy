@@ -4,8 +4,7 @@
 
 #include "third_party/blink/renderer/core/scroll/scrollbar_layer_delegate.h"
 
-#include "third_party/blink/public/platform/web_point.h"
-#include "third_party/blink/public/platform/web_rect.h"
+#include "cc/paint/paint_canvas.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
@@ -39,7 +38,6 @@ class ScopedScrollbarPainter {
 ScrollbarLayerDelegate::ScrollbarLayerDelegate(blink::Scrollbar& scrollbar,
                                                float device_scale_factor)
     : scrollbar_(&scrollbar),
-      theme_(scrollbar.GetTheme()),
       device_scale_factor_(device_scale_factor) {}
 
 ScrollbarLayerDelegate::~ScrollbarLayerDelegate() = default;
@@ -55,7 +53,7 @@ bool ScrollbarLayerDelegate::IsLeftSideVerticalScrollbar() const {
 }
 
 bool ScrollbarLayerDelegate::HasThumb() const {
-  return theme_.HasThumb(*scrollbar_);
+  return scrollbar_->GetTheme().HasThumb(*scrollbar_);
 }
 
 bool ScrollbarLayerDelegate::IsOverlay() const {
@@ -67,45 +65,45 @@ gfx::Point ScrollbarLayerDelegate::Location() const {
 }
 
 int ScrollbarLayerDelegate::ThumbThickness() const {
-  IntRect thumb_rect = theme_.ThumbRect(*scrollbar_);
+  IntRect thumb_rect = scrollbar_->GetTheme().ThumbRect(*scrollbar_);
   if (scrollbar_->Orientation() == kHorizontalScrollbar)
     return thumb_rect.Height();
   return thumb_rect.Width();
 }
 
 int ScrollbarLayerDelegate::ThumbLength() const {
-  IntRect thumb_rect = theme_.ThumbRect(*scrollbar_);
+  IntRect thumb_rect = scrollbar_->GetTheme().ThumbRect(*scrollbar_);
   if (scrollbar_->Orientation() == kHorizontalScrollbar)
     return thumb_rect.Width();
   return thumb_rect.Height();
 }
 
 gfx::Rect ScrollbarLayerDelegate::TrackRect() const {
-  IntRect track_rect = theme_.TrackRect(*scrollbar_);
+  IntRect track_rect = scrollbar_->GetTheme().TrackRect(*scrollbar_);
   track_rect.MoveBy(-scrollbar_->Location());
   return track_rect;
 }
 
 bool ScrollbarLayerDelegate::SupportsDragSnapBack() const {
-  return theme_.SupportsDragSnapBack();
+  return scrollbar_->GetTheme().SupportsDragSnapBack();
 }
 
 gfx::Rect ScrollbarLayerDelegate::BackButtonRect() const {
-  IntRect back_button_rect =
-      theme_.BackButtonRect(*scrollbar_, blink::kBackButtonStartPart);
+  IntRect back_button_rect = scrollbar_->GetTheme().BackButtonRect(
+      *scrollbar_, blink::kBackButtonStartPart);
   back_button_rect.MoveBy(-scrollbar_->Location());
   return back_button_rect;
 }
 
 gfx::Rect ScrollbarLayerDelegate::ForwardButtonRect() const {
-  IntRect forward_button_rect =
-      theme_.ForwardButtonRect(*scrollbar_, blink::kForwardButtonEndPart);
+  IntRect forward_button_rect = scrollbar_->GetTheme().ForwardButtonRect(
+      *scrollbar_, blink::kForwardButtonEndPart);
   forward_button_rect.MoveBy(-scrollbar_->Location());
   return forward_button_rect;
 }
 
 float ScrollbarLayerDelegate::ThumbOpacity() const {
-  return theme_.ThumbOpacity(*scrollbar_);
+  return scrollbar_->GetTheme().ThumbOpacity(*scrollbar_);
 }
 
 bool ScrollbarLayerDelegate::NeedsPaintPart(cc::ScrollbarPart part) const {
@@ -115,17 +113,18 @@ bool ScrollbarLayerDelegate::NeedsPaintPart(cc::ScrollbarPart part) const {
 }
 
 bool ScrollbarLayerDelegate::UsesNinePatchThumbResource() const {
-  return theme_.UsesNinePatchThumbResource();
+  return scrollbar_->GetTheme().UsesNinePatchThumbResource();
 }
 
 gfx::Size ScrollbarLayerDelegate::NinePatchThumbCanvasSize() const {
-  DCHECK(theme_.UsesNinePatchThumbResource());
-  return static_cast<gfx::Size>(theme_.NinePatchThumbCanvasSize(*scrollbar_));
+  DCHECK(scrollbar_->GetTheme().UsesNinePatchThumbResource());
+  return static_cast<gfx::Size>(
+      scrollbar_->GetTheme().NinePatchThumbCanvasSize(*scrollbar_));
 }
 
 gfx::Rect ScrollbarLayerDelegate::NinePatchThumbAperture() const {
-  DCHECK(theme_.UsesNinePatchThumbResource());
-  return theme_.NinePatchThumbAperture(*scrollbar_);
+  DCHECK(scrollbar_->GetTheme().UsesNinePatchThumbResource());
+  return scrollbar_->GetTheme().NinePatchThumbAperture(*scrollbar_);
 }
 
 bool ScrollbarLayerDelegate::ShouldPaint() const {
@@ -152,28 +151,28 @@ void ScrollbarLayerDelegate::PaintPart(cc::PaintCanvas* canvas,
   if (!ShouldPaint())
     return;
 
+  auto& theme = scrollbar_->GetTheme();
   ScopedScrollbarPainter painter(*canvas, device_scale_factor_);
   // The canvas coordinate space is relative to the part's origin.
   switch (part) {
     case cc::THUMB: {
-      IntRect rect(IntPoint(),
-                   UsesNinePatchThumbResource()
-                       ? theme_.NinePatchThumbCanvasSize(*scrollbar_)
-                       : theme_.ThumbRect(*scrollbar_).Size());
-      theme_.PaintThumb(painter.Context(), *scrollbar_, rect);
+      IntRect rect(IntPoint(), UsesNinePatchThumbResource()
+                                   ? theme.NinePatchThumbCanvasSize(*scrollbar_)
+                                   : theme.ThumbRect(*scrollbar_).Size());
+      theme.PaintThumb(painter.Context(), *scrollbar_, rect);
       scrollbar_->ClearThumbNeedsRepaint();
       break;
     }
     case cc::TRACK: {
-      theme_.PaintTrackAndButtonsForCompositor(painter.Context(), *scrollbar_);
-      theme_.PaintTickmarks(painter.Context(), *scrollbar_,
-                            IntRect(TrackRect()));
+      theme.PaintTrackAndButtonsForCompositor(painter.Context(), *scrollbar_);
+      theme.PaintTickmarks(painter.Context(), *scrollbar_,
+                           IntRect(TrackRect()));
       scrollbar_->ClearTrackNeedsRepaint();
       break;
     }
     case cc::TICKMARKS: {
-      IntRect rect(IntPoint(), theme_.TrackRect(*scrollbar_).Size());
-      theme_.PaintTickmarks(painter.Context(), *scrollbar_, rect);
+      IntRect rect(IntPoint(), theme.TrackRect(*scrollbar_).Size());
+      theme.PaintTickmarks(painter.Context(), *scrollbar_, rect);
       break;
     }
     default:

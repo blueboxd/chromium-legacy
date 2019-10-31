@@ -42,10 +42,7 @@
         "string_header": "chrome/browser/devtools/protocol/base_string_adapter.h"
     },
 
-    "encoding_lib": {
-        "namespace": "inspector_protocol_encoding"
-    },
-    "bindings_lib": {
-        "namespace": "inspector_protocol_bindings"
+    "crdtp": {
+        "namespace": "crdtp"
     }
 }

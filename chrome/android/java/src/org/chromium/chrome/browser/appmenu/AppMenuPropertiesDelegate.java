@@ -11,6 +11,8 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import java.util.List;
+
 /**
  * App Menu helper that handles hiding and showing menu items based on activity state.
  */
@@ -26,12 +28,20 @@ public interface AppMenuPropertiesDelegate {
     int getAppMenuLayoutId();
 
     /**
+     * @return A list of {@link CustomViewBinder}s to use for binding specific menu items or null if
+     *         there are no custom binders for this delegate.
+     */
+    @Nullable
+    List<CustomViewBinder> getCustomViewBinders();
+
+    /**
      * Allows the delegate to show and hide items before the App Menu is shown. It is called every
      * time the menu is shown. This assumes that the provided menu contains all the items expected
      * in the application menu (i.e. that the main menu has been inflated into it).
      * @param menu Menu that will be used as the source for the App Menu pop up.
+     * @param handler The {@link AppMenuHandler} associated with {@code menu}.
      */
-    void prepareMenu(Menu menu);
+    void prepareMenu(Menu menu, AppMenuHandler handler);
 
     /**
      * Gets an optional bundle of extra data associated with the provided MenuItem.

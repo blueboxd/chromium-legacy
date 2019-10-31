@@ -575,16 +575,12 @@ void ScrollableArea::RecalculateScrollbarOverlayColorTheme(
 void ScrollableArea::SetScrollbarNeedsPaintInvalidation(
     ScrollbarOrientation orientation) {
   if (orientation == kHorizontalScrollbar) {
-    if (GraphicsLayer* graphics_layer = LayerForHorizontalScrollbar()) {
-      graphics_layer->SetNeedsDisplay();
-      graphics_layer->SetContentsNeedsDisplay();
-    }
+    if (cc::Layer* layer = LayerForHorizontalScrollbar())
+      layer->SetNeedsDisplay();
     horizontal_scrollbar_needs_paint_invalidation_ = true;
   } else {
-    if (GraphicsLayer* graphics_layer = LayerForVerticalScrollbar()) {
-      graphics_layer->SetNeedsDisplay();
-      graphics_layer->SetContentsNeedsDisplay();
-    }
+    if (cc::Layer* layer = LayerForVerticalScrollbar())
+      layer->SetNeedsDisplay();
     vertical_scrollbar_needs_paint_invalidation_ = true;
   }
 
@@ -592,8 +588,8 @@ void ScrollableArea::SetScrollbarNeedsPaintInvalidation(
 }
 
 void ScrollableArea::SetScrollCornerNeedsPaintInvalidation() {
-  if (GraphicsLayer* graphics_layer = LayerForScrollCorner()) {
-    graphics_layer->SetNeedsDisplay();
+  if (cc::Layer* layer = LayerForScrollCorner()) {
+    layer->SetNeedsDisplay();
     return;
   }
   scroll_corner_needs_paint_invalidation_ = true;
@@ -657,27 +653,6 @@ void ScrollableArea::CancelProgrammaticScrollAnimation() {
   if (ProgrammaticScrollAnimator* programmatic_scroll_animator =
           ExistingProgrammaticScrollAnimator())
     programmatic_scroll_animator->CancelAnimation();
-}
-
-bool ScrollableArea::ShouldScrollOnMainThread() const {
-  return !!(GetMainThreadScrollingReasons() &
-            ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
-}
-
-MainThreadScrollingReasons ScrollableArea::GetMainThreadScrollingReasons()
-    const {
-  if (GraphicsLayer* layer = LayerForScrolling()) {
-    // Property tree state is not available until the PrePaint lifecycle stage.
-    DCHECK(GetDocument()->Lifecycle().GetState() >=
-           DocumentLifecycle::kPrePaintClean);
-    if (const auto* scroll = layer->GetPropertyTreeState()
-                                 .Transform()
-                                 .NearestScrollTranslationNode()
-                                 .ScrollNode()) {
-      return scroll->GetMainThreadScrollingReasons();
-    }
-  }
-  return true;
 }
 
 bool ScrollableArea::ScrollbarsHiddenIfOverlay() const {
@@ -840,25 +815,6 @@ void ScrollableArea::OnScrollFinished() {
   }
 }
 
-base::Optional<FloatPoint> ScrollableArea::GetSnapPosition(
-    const cc::SnapSelectionStrategy& strategy) const {
-  const auto* optional_data = GetSnapContainerData();
-  if (!optional_data)
-    return base::nullopt;
-
-  const cc::SnapContainerData& data = *optional_data;
-  if (!data.size())
-    return base::nullopt;
-
-  gfx::ScrollOffset snap_position;
-  if (data.FindSnapPosition(strategy, &snap_position)) {
-    FloatPoint snap_point(snap_position.x(), snap_position.y());
-    return snap_point;
-  }
-
-  return base::nullopt;
-}
-
 void ScrollableArea::SnapAfterScrollbarScrolling(
     ScrollbarOrientation orientation) {
   SnapAtCurrentPosition(orientation == kHorizontalScrollbar,
@@ -909,7 +865,7 @@ bool ScrollableArea::SnapForEndAndDirection(const ScrollOffset& delta) {
 
 bool ScrollableArea::PerformSnapping(const cc::SnapSelectionStrategy& strategy,
                                      base::ScopedClosureRunner on_finish) {
-  base::Optional<FloatPoint> snap_point = GetSnapPosition(strategy);
+  base::Optional<FloatPoint> snap_point = GetSnapPositionAndSetTarget(strategy);
   if (!snap_point)
     return false;
   CancelScrollAnimation();

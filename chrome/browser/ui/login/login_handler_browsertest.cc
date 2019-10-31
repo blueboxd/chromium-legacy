@@ -1417,6 +1417,76 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
                                   "'YmFzaWN1c2VyOnNlY3JldA==') >= 0"));
 }
 
+IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
+                       GloballyScopeHTTPAuthCacheEnabled) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kGloballyScopeHTTPAuthCacheEnabled, true);
+  // This is not technically necessary, since the SetAuthFor() call below uses
+  // the same pipe that the pref change uses, making sure the change is applied
+  // before the network process receives credentials, but seems safest to flush
+  // the NetworkContext pipe explicitly.
+  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+      ->FlushNetworkInterfaceForTesting();
+
+  GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  browser()->OpenURL(OpenURLParams(test_page, Referrer(),
+                                   WindowOpenDisposition::CURRENT_TAB,
+                                   ui::PAGE_TRANSITION_TYPED, false));
+  auth_needed_waiter.Wait();
+
+  ASSERT_EQ(1u, observer.handlers().size());
+  WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
+  LoginHandler* handler = *observer.handlers().begin();
+  SetAuthFor(handler);
+  auth_supplied_waiter.Wait();
+
+  base::string16 expected_title = ExpectedTitleFromAuth(
+      base::ASCIIToUTF16("basicuser"), base::ASCIIToUTF16("secret"));
+  content::TitleWatcher title_watcher(contents, expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  EXPECT_EQ(1, observer.auth_needed_count());
+
+  base::RunLoop run_loop;
+  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+      ->GetNetworkContext()
+      ->ClearHttpCache(base::Time(), base::Time(), nullptr,
+                       run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Navigate to a URL on a different origin that iframes the URL with the
+  // challenge.
+  GURL cross_origin_page = embedded_test_server()->GetURL(
+      "localhost", "/iframe?" + test_page.spec());
+
+  // When allowing credentials to be used across NetworkIsolationKeys, the
+  // auth credentials should be reused and there should be no new auth dialog.
+  ui_test_utils::NavigateToURL(browser(), cross_origin_page);
+  EXPECT_EQ(0u, observer.handlers().size());
+  EXPECT_EQ(1, observer.auth_needed_count());
+
+  std::vector<content::RenderFrameHost*> frames = contents->GetAllFrames();
+  ASSERT_EQ(2u, frames.size());
+  ASSERT_TRUE(frames[1]->IsDescendantOf(frames[0]));
+  ASSERT_EQ(test_page, frames[1]->GetLastCommittedURL());
+
+  // Make sure the iframe is displaying the base64-encoded credentials that
+  // should have been set, which the EmbeddedTestServer echos back in response
+  // bodies when /basic-auth is requested.
+  EXPECT_EQ(true, content::EvalJs(frames[1],
+                                  "document.documentElement.innerText.search("
+                                  "'YmFzaWN1c2VyOnNlY3JldA==') >= 0"));
+}
+
 // If a cross origin direct navigation triggers a login prompt, the login
 // interstitial should be shown.
 IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,

@@ -179,6 +179,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/mojo/public/java/system/system_impl_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/net/android/net_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/printing/printing_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/services/network/public/mojom/mojom_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/services/service_manager/public/mojom/mojom_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_data_chart/android_data_chart_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_core_common.jar"/>
@@ -231,6 +232,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_viewpager_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_media/android_media_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_protobuf/protobuf_nano_javalib.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_support_test_runner/runner-release-no-dep.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_swipe_refresh/android_swipe_refresh_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/cacheinvalidation/cacheinvalidation_javalib.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/cacheinvalidation/cacheinvalidation_proto_java.jar"/>

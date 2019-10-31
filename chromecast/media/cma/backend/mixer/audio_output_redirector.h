@@ -14,9 +14,15 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chromecast/media/audio/mixer_service/redirected_audio_connection.h"
+#include "chromecast/net/io_buffer_pool.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
-#include "chromecast/public/media/redirected_audio_output.h"
 #include "chromecast/public/volume_control.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace media {
 class AudioBus;
@@ -25,10 +31,12 @@ class AudioBus;
 namespace chromecast {
 namespace media {
 class MixerInput;
+class StreamMixer;
 
-// Empty interface so we can use a pointer to AudioOutputRedirector as the
-// token.
-class AudioOutputRedirectorToken {};
+namespace mixer_service {
+class Generic;
+class MixerSocket;
+}  // namespace mixer_service
 
 // The AudioOutputRedirector class determines which MixerInputs match the config
 // conditions, and adds an AudioOutputRedirectorInput to each one.
@@ -41,12 +49,14 @@ class AudioOutputRedirectorToken {};
 // mixer will call FinishBuffer() on each AudioOutputRedirector; the
 // redirected buffer is then sent to the RedirectedAudioOutput associated
 // with each redirector.
-class AudioOutputRedirector : public AudioOutputRedirectorToken {
+// Created on the IO thread, but otherwise runs on the mixer thread.
+class AudioOutputRedirector {
  public:
   using RenderingDelay = MediaPipelineBackend::AudioDecoder::RenderingDelay;
 
-  AudioOutputRedirector(const AudioOutputRedirectionConfig& config,
-                        std::unique_ptr<RedirectedAudioOutput> output);
+  AudioOutputRedirector(StreamMixer* mixer,
+                        std::unique_ptr<mixer_service::MixerSocket> socket,
+                        const mixer_service::Generic& message);
   ~AudioOutputRedirector();
 
   int order() const { return config_.order; }
@@ -62,24 +72,14 @@ class AudioOutputRedirector : public AudioOutputRedirectorToken {
   void AddInput(MixerInput* mixer_input);
   void RemoveInput(MixerInput* mixer_input);
 
-  // Updates the set of patterns used to determine which inputs should be
-  // redirected by this AudioOutputRedirector. Any inputs which no longer match
-  // will stop being redirected.
-  void UpdatePatterns(
-      std::vector<std::pair<AudioContentType, std::string>> patterns);
-
-  // Indicates that mixer output is starting at the given sample rate of
-  // |output_samples_per_second|.
-  void Start(int output_samples_per_second);
-
-  // Indicates that mixer output is stopping.
-  void Stop();
+  // Sets the sample rate for subsequent audio from inputs.
+  void SetSampleRate(int output_samples_per_second);
 
   // Called by the mixer when it is preparing to write another buffer of
   // |num_frames| frames.
   void PrepareNextBuffer(int num_frames);
 
-  // Mixes audio into the redirected output bufer. Called by the
+  // Mixes audio into the redirected output buffer. Called by the
   // AudioOutputRedirectorInput implementation to mix in audio from each
   // matching MixerInput.
   void MixInput(MixerInput* mixer_input,
@@ -93,22 +93,42 @@ class AudioOutputRedirector : public AudioOutputRedirectorToken {
 
  private:
   class InputImpl;
+  class RedirectionConnection;
+
+  using Config = mixer_service::RedirectedAudioConnection::Config;
+
+  static Config ParseConfig(const mixer_service::Generic& message);
+
+  // Updates the set of patterns used to determine which inputs should be
+  // redirected by this AudioOutputRedirector. Any inputs which no longer match
+  // will stop being redirected.
+  void UpdatePatterns(
+      std::vector<std::pair<AudioContentType, std::string>> patterns);
+  void OnConnectionError();
 
   bool ApplyToInput(MixerInput* mixer_input);
 
-  AudioOutputRedirectionConfig config_;
-  const std::unique_ptr<RedirectedAudioOutput> output_;
-  int output_samples_per_second_ = 0;
+  StreamMixer* const mixer_;
+  const Config config_;
+  std::unique_ptr<RedirectionConnection> output_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+
+  int sample_rate_ = 0;
+
+  std::vector<std::pair<AudioContentType, std::string>> patterns_;
 
   int next_num_frames_ = 0;
   int64_t next_output_timestamp_ = INT64_MIN;
   int input_count_ = 0;
 
-  std::unique_ptr<::media::AudioBus> mixed_;
-  std::vector<float*> channel_data_;
+  scoped_refptr<IOBufferPool> buffer_pool_;
+  scoped_refptr<::net::IOBuffer> current_mix_buffer_;
+  float* current_mix_data_ = nullptr;
 
   base::flat_map<MixerInput*, std::unique_ptr<InputImpl>> inputs_;
   base::flat_set<MixerInput*> non_redirected_inputs_;
+
+  base::WeakPtrFactory<AudioOutputRedirector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputRedirector);
 };

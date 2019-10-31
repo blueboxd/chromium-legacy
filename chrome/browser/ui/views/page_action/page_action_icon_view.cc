@@ -26,6 +26,10 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/platform_style.h"
 
+float PageActionIconView::Delegate::GetPageActionInkDropVisibleOpacity() const {
+  return GetOmniboxStateOpacity(OmniboxPartState::SELECTED);
+}
+
 std::unique_ptr<views::Border>
 PageActionIconView::Delegate::CreatePageActionIconBorder() const {
   return views::CreateEmptyBorder(
@@ -54,8 +58,6 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
 
   image()->EnableCanvasFlippingForRTLUI(true);
   SetInkDropMode(InkDropMode::ON);
-  set_ink_drop_visible_opacity(
-      GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   // Only shows bubble after mouse is released.
   button_controller()->set_notify_action(

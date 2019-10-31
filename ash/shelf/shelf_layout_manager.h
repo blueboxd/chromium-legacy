@@ -124,6 +124,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void ProcessGestureEventOfInAppHotseat(ui::GestureEvent* event,
                                          aura::Window* target);
 
+  // Updates the auto-dim state.
+  void SetDimmed(bool dimmed);
+
   void AddObserver(ShelfLayoutManagerObserver* observer);
   void RemoveObserver(ShelfLayoutManagerObserver* observer);
 
@@ -262,6 +265,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTestBase;
   friend class NotificationTrayTest;
+  friend class Shelf;
 
   struct TargetBounds {
     TargetBounds();
@@ -624,6 +628,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // The window drag controller that will be used when a window can be dragged
   // up from shelf to homescreen, overview or splitview.
   std::unique_ptr<DragWindowFromShelfController> window_drag_controller_;
+
+  // Tracks whether the shelf is currently dimmed for inactivity.
+  bool dimmed_for_inactivity_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

@@ -87,9 +87,4 @@ bool TestUserShare::CreateRoot(ModelType model_type, UserShare* user_share) {
   return true;
 }
 
-size_t TestUserShare::GetDeleteJournalSize() const {
-  syncable::ReadTransaction trans(FROM_HERE, user_share_->directory.get());
-  return user_share_->directory->delete_journal()->GetDeleteJournalSize(&trans);
-}
-
 }  // namespace syncer

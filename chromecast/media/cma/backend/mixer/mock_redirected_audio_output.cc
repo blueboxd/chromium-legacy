@@ -14,30 +14,35 @@ using testing::_;
 namespace chromecast {
 namespace media {
 
-MockRedirectedAudioOutput::MockRedirectedAudioOutput(int num_channels)
-    : num_channels_(num_channels),
-      last_num_inputs_(-1),
+MockRedirectedAudioOutput::MockRedirectedAudioOutput(
+    const mixer_service::RedirectedAudioConnection::Config& config)
+    : config_(config),
+      connection_(config_, this),
       last_output_timestamp_(INT64_MIN) {
-  ON_CALL(*this, WriteBuffer(_, _, _, _))
-      .WillByDefault(
-          testing::Invoke(this, &MockRedirectedAudioOutput::OnWriteBuffer));
+  ON_CALL(*this, OnRedirectedAudio(_, _, _, _))
+      .WillByDefault(testing::Invoke(
+          this, &MockRedirectedAudioOutput::HandleRedirectedAudio));
+  connection_.Connect();
 }
 
 MockRedirectedAudioOutput::~MockRedirectedAudioOutput() = default;
 
-void MockRedirectedAudioOutput::OnWriteBuffer(int num_inputs,
-                                              float** channel_data,
-                                              int num_frames,
-                                              int64_t output_timestamp) {
-  CHECK(channel_data);
-  last_buffer_ = ::media::AudioBus::Create(num_channels_, num_frames);
-  for (int c = 0; c < num_channels_; ++c) {
-    CHECK(channel_data[c]);
-    std::copy_n(channel_data[c], num_frames, last_buffer_->channel(c));
+void MockRedirectedAudioOutput::SetStreamMatchPatterns(
+    std::vector<std::pair<AudioContentType, std::string>> patterns) {
+  connection_.SetStreamMatchPatterns(std::move(patterns));
+}
+
+void MockRedirectedAudioOutput::HandleRedirectedAudio(int64_t timestamp,
+                                                      int sample_rate,
+                                                      float* data,
+                                                      int frames) {
+  CHECK(data);
+  last_buffer_ = ::media::AudioBus::Create(config_.num_output_channels, frames);
+  for (int c = 0; c < config_.num_output_channels; ++c) {
+    std::copy_n(data + c * frames, frames, last_buffer_->channel(c));
   }
 
-  last_num_inputs_ = num_inputs;
-  last_output_timestamp_ = output_timestamp;
+  last_output_timestamp_ = timestamp;
 }
 
 }  // namespace media

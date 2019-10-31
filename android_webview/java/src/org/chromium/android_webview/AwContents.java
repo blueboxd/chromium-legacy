@@ -3066,6 +3066,9 @@ public class AwContents implements SmartClipProvider {
         if (TRACE) Log.i(TAG, "%s insertVisualStateCallback", this);
         if (isDestroyed(NO_WARN)) throw new IllegalStateException(
                 "insertVisualStateCallback cannot be called after the WebView has been destroyed");
+        if (callback == null) {
+            throw new IllegalArgumentException("VisualStateCallback shouldn't be null");
+        }
         AwContentsJni.get().insertVisualStateCallback(
                 mNativeAwContents, AwContents.this, requestId, callback);
     }

@@ -1933,7 +1933,6 @@ jumbo_static_library("browser") {
     "//chrome/browser/resource_coordinator:mojo_bindings",
     "//chrome/browser/resource_coordinator:tab_manager_features",
     "//chrome/browser/safe_browsing",
-    "//chrome/browser/sharing/proto",
     "//chrome/browser/ssl:proto",
     "//chrome/browser/touch_to_fill",
     "//chrome/browser/ui",
@@ -3887,6 +3886,8 @@ jumbo_static_library("browser") {
   if (is_mac) {
     allow_circular_includes_from += [ "//chrome/browser/apps/app_shim" ]
     sources += [
+      "apps/intent_helper/mac_apps_navigation_throttle.h",
+      "apps/intent_helper/mac_apps_navigation_throttle.mm",
       "badging/badge_manager_delegate_mac.cc",
       "badging/badge_manager_delegate_mac.h",
       "download/drag_download_item_mac.mm",

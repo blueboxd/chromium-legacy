@@ -53,8 +53,7 @@ std::set<int32_t> GetThrottledHashes() {
   if (throttled_traffic_annotation_tags.empty()) {
     // 727528: metrics_report_uma
     // 727478: metrics_report_uma
-    // 18300705: gcm_channel_status_request
-    throttled_traffic_annotation_tags = "727528,727478,18300705";
+    throttled_traffic_annotation_tags = "727528,727478";
   }
 
   const std::vector<std::string>& tokens =

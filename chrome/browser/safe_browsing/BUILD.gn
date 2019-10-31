@@ -295,4 +295,11 @@ source_set("test_support") {
       "//content/public/browser",
     ]
   }
+
+  if (safe_browsing_mode == 1) {
+    sources += [
+      "download_protection/test_binary_upload_service.cc",
+      "download_protection/test_binary_upload_service.h",
+    ]
+  }
 }

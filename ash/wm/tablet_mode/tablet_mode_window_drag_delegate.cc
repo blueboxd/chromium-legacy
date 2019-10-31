@@ -165,6 +165,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
                                               /*animate=*/was_overview_open);
   }
 
+  split_view_drag_indicators_->SetDraggedWindow(dragged_window_);
   bounds_of_selected_drop_target_ =
       GetBoundsOfSelectedDropTarget(dragged_window_);
 

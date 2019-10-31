@@ -6191,7 +6191,7 @@ static ParseQualifiedNameResult ParseQualifiedNameInternal(
 
   for (unsigned i = 0; i < length;) {
     UChar32 c;
-    U16_NEXT(characters, i, length, c)
+    U16_NEXT(characters, i, length, c);
     if (c == ':') {
       if (saw_colon)
         return ParseQualifiedNameResult(kQNMultipleColons);

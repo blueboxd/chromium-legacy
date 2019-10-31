@@ -28,6 +28,7 @@ class NET_EXPORT AddressList {
  public:
   AddressList();
   AddressList(const AddressList&);
+  AddressList& operator=(const AddressList&);
   ~AddressList();
 
   // Creates an address list for a single IP literal.

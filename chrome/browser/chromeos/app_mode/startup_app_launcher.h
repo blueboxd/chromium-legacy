@@ -135,7 +135,7 @@ class StartupAppLauncher : public extensions::InstallObserver,
   // secondary extensions.
   std::unique_ptr<StartupAppLauncherUpdateChecker> update_checker_;
 
-  ScopedObserver<KioskAppManager, KioskAppManagerObserver>
+  ScopedObserver<KioskAppManagerBase, KioskAppManagerObserver>
       kiosk_app_manager_observer_{this};
 
   ScopedObserver<extensions::InstallTracker, extensions::InstallObserver>

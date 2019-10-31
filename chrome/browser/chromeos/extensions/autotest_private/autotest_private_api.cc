@@ -11,7 +11,9 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/autotest_private_api_utils.h"
+#include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/desks_helper.h"
+#include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -119,6 +121,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/filename_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -279,6 +282,8 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
       return api::autotest_private::AppType::APP_TYPE_WEB;
     case apps::mojom::AppType::kUnknown:
       return api::autotest_private::AppType::APP_TYPE_NONE;
+    case apps::mojom::AppType::kMacNative:
+      return api::autotest_private::AppType::APP_TYPE_MACNATIVE;
   }
   NOTREACHED();
   return api::autotest_private::AppType::APP_TYPE_NONE;
@@ -1927,7 +1932,8 @@ class AssistantInteractionHelper
 
   void Init(OnInteractionFinishedCallback on_interaction_finished_callback) {
     // Bind to Assistant service interface.
-    AssistantClient::Get()->BindAssistant(mojo::MakeRequest(&assistant_));
+    AssistantClient::Get()->BindAssistant(
+        assistant_.BindNewPipeAndPassReceiver());
 
     // Subscribe to Assistant interaction events.
     assistant_->AddAssistantInteractionSubscriber(
@@ -2016,7 +2022,7 @@ class AssistantInteractionHelper
   void OnTtsStarted(bool due_to_error) override {}
   void OnWaitStarted() override {}
 
-  chromeos::assistant::mojom::AssistantPtr assistant_;
+  mojo::Remote<chromeos::assistant::mojom::Assistant> assistant_;
   mojo::Receiver<chromeos::assistant::mojom::AssistantInteractionSubscriber>
       assistant_interaction_subscriber_receiver_{this};
   std::unique_ptr<base::DictionaryValue> query_status_;
@@ -2934,6 +2940,35 @@ AutotestPrivateGetAppWindowListFunction::Run() {
         static_cast<int>(ash::AppType::ARC_APP)) {
       window_info.arc_package_name = std::make_unique<std::string>(
           *window->GetProperty(ash::kArcPackageNameKey));
+
+      ash::HeaderView* header_view = ash::GetHeaderViewForWindow(window);
+      ash::DefaultFrameHeader* frame_header = header_view->GetFrameHeader();
+      window_info.caption_height = frame_header->GetHeaderHeight();
+
+      const ash::CaptionButtonModel* buttonModel =
+          header_view->caption_button_container()->model();
+      int caption_button_enabled_status = 0;
+      int caption_button_visible_status = 0;
+      constexpr views::CaptionButtonIcon all_button_icons[] = {
+          views::CAPTION_BUTTON_ICON_MINIMIZE,
+          views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+          views::CAPTION_BUTTON_ICON_CLOSE,
+          views::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+          views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+          views::CAPTION_BUTTON_ICON_BACK,
+          views::CAPTION_BUTTON_ICON_LOCATION,
+          views::CAPTION_BUTTON_ICON_MENU,
+          views::CAPTION_BUTTON_ICON_ZOOM,
+          views::CAPTION_BUTTON_ICON_COUNT};
+
+      for (const auto button : all_button_icons) {
+        if (buttonModel->IsEnabled(button))
+          caption_button_enabled_status |= (1 << button);
+        if (buttonModel->IsVisible(button))
+          caption_button_visible_status |= (1 << button);
+      }
+      window_info.caption_button_enabled_status = caption_button_enabled_status;
+      window_info.caption_button_visible_status = caption_button_visible_status;
     }
     result_list.emplace_back(std::move(window_info));
   }

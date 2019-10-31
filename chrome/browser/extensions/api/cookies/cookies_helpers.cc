@@ -108,7 +108,6 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
       cookie.same_site = api::cookies::SAME_SITE_STATUS_NO_RESTRICTION;
       break;
     case net::CookieSameSite::LAX_MODE:
-    case net::CookieSameSite::EXTENDED_MODE:
       cookie.same_site = api::cookies::SAME_SITE_STATUS_LAX;
       break;
     case net::CookieSameSite::STRICT_MODE:

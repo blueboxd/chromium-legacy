@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -75,6 +77,40 @@ void WebAppInstallTask::ExpectAppId(const AppId& expected_app_id) {
   expected_app_id_ = expected_app_id;
 }
 
+void WebAppInstallTask::LoadWebAppAndCheckInstallability(
+    const GURL& url,
+    WebappInstallSource install_source,
+    WebAppUrlLoader* url_loader,
+    LoadWebAppAndCheckInstallabilityCallback callback) {
+  DCHECK(url_loader);
+  // Create a WebContents instead of reusing a shared one because we will pass
+  // it back to be used for opening the web app.
+  // TODO(loyso): Implement stealing of shared web_contents in upcoming
+  // WebContentsManager.
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContents::Create(
+          content::WebContents::CreateParams(profile_));
+  InstallableManager::CreateForWebContents(web_contents.get());
+  SecurityStateTabHelper::CreateForWebContents(web_contents.get());
+
+  // Grab WebContents pointer now, before the call to BindOnce might null out
+  // |web_contents|.
+  content::WebContents* web_contents_ptr = web_contents.get();
+
+  Observe(web_contents.get());
+  background_installation_ = false;
+  install_callback_ =
+      base::BindOnce(std::move(callback), std::move(web_contents));
+  install_source_ = install_source;
+
+  url_loader->LoadUrl(
+      url, web_contents_ptr,
+      base::BindOnce(
+          &WebAppInstallTask::
+              OnWebAppUrlLoadedCheckInstallabilityAndRetrieveManifest,
+          base::Unretained(this), web_contents_ptr));
+}
+
 void WebAppInstallTask::InstallWebAppFromManifest(
     content::WebContents* contents,
     WebappInstallSource install_source,
@@ -131,9 +167,10 @@ void WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback(
   install_callback_ = std::move(install_callback);
   install_source_ = install_source;
 
-  url_loader->LoadUrl(launch_url, contents,
-                      base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoaded,
-                                     weak_ptr_factory_.GetWeakPtr()));
+  url_loader->LoadUrl(
+      launch_url, contents,
+      base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppInstallTask::InstallWebAppFromInfo(
@@ -271,7 +308,8 @@ bool WebAppInstallTask::ShouldStopInstall() const {
   return !web_contents() || web_contents()->IsBeingDestroyed();
 }
 
-void WebAppInstallTask::OnWebAppUrlLoaded(WebAppUrlLoader::Result result) {
+void WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo(
+    WebAppUrlLoader::Result result) {
   if (ShouldStopInstall())
     return;
 
@@ -289,6 +327,46 @@ void WebAppInstallTask::OnWebAppUrlLoaded(WebAppUrlLoader::Result result) {
       web_contents(),
       base::BindOnce(&WebAppInstallTask::OnGetWebApplicationInfo,
                      base::Unretained(this), /*force_shortcut_app*/ false));
+}
+
+void WebAppInstallTask::OnWebAppUrlLoadedCheckInstallabilityAndRetrieveManifest(
+    content::WebContents* web_contents,
+    WebAppUrlLoader::Result result) {
+  if (ShouldStopInstall())
+    return;
+
+  if (result == WebAppUrlLoader::Result::kRedirectedUrlLoaded) {
+    CallInstallCallback(AppId(), InstallResultCode::kInstallURLRedirected);
+    return;
+  }
+  if (result != WebAppUrlLoader::Result::kUrlLoaded) {
+    CallInstallCallback(AppId(), InstallResultCode::kInstallURLLoadFailed);
+    return;
+  }
+
+  data_retriever_->CheckInstallabilityAndRetrieveManifest(
+      web_contents,
+      /*bypass_service_worker_check=*/false,
+      base::BindOnce(&WebAppInstallTask::OnWebAppInstallabilityChecked,
+                     base::Unretained(this)));
+}
+
+void WebAppInstallTask::OnWebAppInstallabilityChecked(
+    base::Optional<blink::Manifest> manifest,
+    bool valid_manifest_for_web_app,
+    bool is_installable) {
+  if (ShouldStopInstall())
+    return;
+
+  if (is_installable) {
+    DCHECK(manifest);
+    // TODO(loyso): Consider generalizing this class slightly to avoid abusing
+    // kSuccessNewInstall and kFailedUnknownReason to indicate installability.
+    CallInstallCallback(GenerateAppIdFromURL(manifest->start_url),
+                        InstallResultCode::kSuccessNewInstall);
+  } else {
+    CallInstallCallback(AppId(), InstallResultCode::kFailedUnknownReason);
+  }
 }
 
 void WebAppInstallTask::OnGetWebApplicationInfo(
@@ -318,7 +396,7 @@ void WebAppInstallTask::OnGetWebApplicationInfo(
 void WebAppInstallTask::OnDidPerformInstallableCheck(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     bool force_shortcut_app,
-    const blink::Manifest& manifest,
+    base::Optional<blink::Manifest> opt_manifest,
     bool valid_manifest_for_web_app,
     bool is_installable) {
   if (ShouldStopInstall())
@@ -338,6 +416,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
                                         ? ForInstallableSite::kYes
                                         : ForInstallableSite::kNo;
 
+  const blink::Manifest manifest = opt_manifest.value_or(blink::Manifest{});
   UpdateWebAppInfoFromManifest(manifest, web_app_info.get(),
                                for_installable_site);
 

@@ -2277,13 +2277,12 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
   // We can't just map hitTestLocation and hitTestRect because they may have
   // been flattened (losing z) by our container.
   FloatPoint local_point = new_transform_state.MappedPoint();
-  FloatQuad local_point_quad = new_transform_state.MappedQuad();
   PhysicalRect bounds_of_mapped_area = new_transform_state.BoundsOfMappedArea();
   base::Optional<HitTestLocation> new_location;
   if (recursion_data.location.IsRectBasedTest())
-    new_location.emplace(local_point, local_point_quad);
+    new_location.emplace(local_point, new_transform_state.MappedQuad());
   else
-    new_location.emplace(local_point);
+    new_location.emplace(local_point, new_transform_state.BoundsOfMappedQuad());
   HitTestRecursionData new_recursion_data(bounds_of_mapped_area, *new_location,
                                           recursion_data.original_location);
 

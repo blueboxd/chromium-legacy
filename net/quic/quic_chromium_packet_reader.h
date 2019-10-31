@@ -53,6 +53,13 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
+  // Called when the underlying socket is closed.
+  // TODO(crbug.com/1014092): remove once the root cause of the bug is fixed.
+  void SetShouldStopReading() {
+    DCHECK(!should_stop_reading_);
+    should_stop_reading_ = true;
+  }
+
  private:
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
@@ -60,6 +67,9 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   bool ProcessReadResult(int result);
 
   DatagramClientSocket* socket_;
+  // Set to true if |this| should no longer attempt read.
+  bool should_stop_reading_;
+
   Visitor* visitor_;
   bool read_pending_;
   int num_packets_read_;

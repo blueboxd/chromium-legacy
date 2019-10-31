@@ -24,7 +24,6 @@
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_tooltip_delegate.h"
 #include "ash/shell_observer.h"
-#include "ash/system/model/virtual_keyboard_model.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -115,7 +114,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public ApplicationDragAndDropHost,
                              public ShelfTooltipDelegate,
                              public ash::TabletModeObserver,
-                             public VirtualKeyboardModel::Observer,
                              public ShelfConfig::Observer {
  public:
   ShelfView(ShelfModel* model,
@@ -218,9 +216,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // ash::TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
-
-  // VirtualKeyboardModel::Observer:
-  void OnVirtualKeyboardVisibilityChanged() override;
 
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;

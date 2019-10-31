@@ -132,7 +132,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
   void DidCreateLocalRootView() override;
 
-  void SetRootGraphicsLayer(GraphicsLayer*) override;
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
   cc::AnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
@@ -142,10 +141,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // Event related methods:
   void MouseContextMenu(const WebMouseEvent&);
-
-  GraphicsLayer* RootGraphicsLayer() const override {
-    return root_graphics_layer_;
-  }
 
   void Trace(blink::Visitor*) override;
 
@@ -189,7 +184,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   cc::AnimationHost* animation_host_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
-  GraphicsLayer* root_graphics_layer_ = nullptr;
 
   // Metrics gathering timing information
   base::Optional<base::TimeTicks> raf_aligned_input_start_time_;

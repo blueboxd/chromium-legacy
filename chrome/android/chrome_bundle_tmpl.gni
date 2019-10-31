@@ -65,7 +65,6 @@ template("chrome_bundle") {
     # WebView is included with 64bit ABI if |android_64bit_target_cpu| is true.
     _is_multi_abi = android_64bit_target_cpu
   }
-  assert(!_is_multi_abi || build_apk_secondary_abi)
 
   android_app_bundle(target_name) {
     forward_variables_from(invoker,

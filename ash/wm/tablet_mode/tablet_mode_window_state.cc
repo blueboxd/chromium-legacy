@@ -79,19 +79,19 @@ gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
 
 // Returns the maximized/full screen and/or centered bounds of a window.
 gfx::Rect GetBoundsInTabletMode(WindowState* state_object) {
-  if (state_object->IsFullscreen() || state_object->IsPinned()) {
-    return screen_util::GetFullscreenWindowBoundsInParent(
-        state_object->window());
-  }
+  aura::Window* window = state_object->window();
+
+  if (state_object->IsFullscreen() || state_object->IsPinned())
+    return screen_util::GetFullscreenWindowBoundsInParent(window);
 
   if (state_object->GetStateType() == WindowStateType::kLeftSnapped) {
     return SplitViewController::Get(Shell::GetPrimaryRootWindow())
-        ->GetSnappedWindowBoundsInParent(SplitViewController::LEFT);
+        ->GetSnappedWindowBoundsInParent(SplitViewController::LEFT, window);
   }
 
   if (state_object->GetStateType() == WindowStateType::kRightSnapped) {
     return SplitViewController::Get(Shell::GetPrimaryRootWindow())
-        ->GetSnappedWindowBoundsInParent(SplitViewController::RIGHT);
+        ->GetSnappedWindowBoundsInParent(SplitViewController::RIGHT, window);
   }
 
   gfx::Rect bounds_in_parent;

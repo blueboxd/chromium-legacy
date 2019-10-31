@@ -251,6 +251,7 @@ _CONFIG = [
 
             # cc::Layers.
             'cc::Layer',
+            'cc::LayerClient',
             'cc::PictureLayer',
             'cc::SurfaceLayer',
 
@@ -301,6 +302,7 @@ _CONFIG = [
             'cc::SnapFlingController',
             'cc::SnapSelectionStrategy',
             'cc::SnapStrictness',
+            'cc::TargetSnapAreaElementIds',
             'gfx::RectToSkRect',
             'gfx::ScrollOffset',
             'ui::input_types::ScrollGranularity',

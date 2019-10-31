@@ -598,7 +598,9 @@ void Widget::CloseWithReason(ClosedReason closed_reason) {
     // invoking Close again.
     return;
   }
-
+  if (block_close_) {
+    return;
+  }
   if (non_client_view_ && !non_client_view_->CanClose())
     return;
 

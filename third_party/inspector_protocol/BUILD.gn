@@ -2,22 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("encoding") {
-  sources = [
-    "encoding/encoding.cc",
-    "encoding/encoding.h",
-  ]
-}
+import("//build/config/jumbo.gni")
 
-static_library("bindings") {
+jumbo_component("crdtp") {
   sources = [
-    "bindings/bindings.cc",
-    "bindings/bindings.h",
+    "crdtp/bindings.cc",
+    "crdtp/bindings.h",
+    "crdtp/encoding.cc",
+    "crdtp/encoding.h",
+    "crdtp/export.h",
   ]
-}
 
+  defines = [ "CRDTP_IMPLEMENTATION" ]
+
+  if (!is_debug) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+}
 # encoding/encoding_test.cc:
 # There's no target for this file here, instead it is included
 # in //content/test:content_unittest
 # via //content/browser/devtools:inspector_protocol_encoding_test.
-

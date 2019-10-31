@@ -101,6 +101,7 @@ base::string16 AppUninstallDialogView::GetWindowTitle() const {
   switch (app_type_) {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
+    case apps::mojom::AppType::kMacNative:
       NOTREACHED();
       return base::string16();
     case apps::mojom::AppType::kArc:
@@ -267,6 +268,7 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
   switch (app_type_) {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
+    case apps::mojom::AppType::kMacNative:
       NOTREACHED();
       break;
     case apps::mojom::AppType::kArc:

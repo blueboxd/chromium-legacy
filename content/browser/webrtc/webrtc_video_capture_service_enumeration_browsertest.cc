@@ -16,6 +16,7 @@
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
@@ -78,7 +79,7 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
     switch (GetParam().api_to_use) {
       case ServiceApi::kSingleClient:
         GetVideoCaptureService().ConnectToDeviceFactory(
-            mojo::MakeRequest(&factory_));
+            factory_.BindNewPipeAndPassReceiver());
         factory_->RegisterVirtualDevicesChangedObserver(
             std::move(observer),
             false /*raise_event_if_virtual_devices_already_present*/);
@@ -164,7 +165,7 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
   }
 
   void DisconnectFromService() {
-    factory_ = nullptr;
+    factory_.reset();
     video_source_provider_ = nullptr;
   }
 
@@ -232,7 +233,7 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
   mojo::Receiver<video_capture::mojom::DevicesChangedObserver>
       devices_changed_observer_receiver_{this};
   base::test::ScopedFeatureList scoped_feature_list_;
-  video_capture::mojom::DeviceFactoryPtr factory_;
+  mojo::Remote<video_capture::mojom::DeviceFactory> factory_;
   video_capture::mojom::VideoSourceProviderPtr video_source_provider_;
   base::OnceClosure closure_to_be_called_on_devices_changed_;
 

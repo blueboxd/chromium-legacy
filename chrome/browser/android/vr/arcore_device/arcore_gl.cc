@@ -870,22 +870,17 @@ mojom::XRInputSourceStatePtr ArCoreGl::GetInputSourceState() {
   new_y.Cross(new_x);
   new_y.GetNormalized(&new_y);
 
-  // Fill in the transform matrix in column-major order. The first three columns
+  // Fill in the transform matrix in row-major order. The first three columns
   // contain the basis vectors, the fourth column the position offset.
-  gfx::Transform from_ray_space(
-      new_x.x(), new_x.y(), new_x.z(), 0,  // X basis vector
-      new_y.x(), new_y.y(), new_y.z(), 0,  // Y basis vector
-      new_z.x(), new_z.y(), new_z.z(), 0,  // Z basis vector
-      touch_point.x(), touch_point.y(), touch_point.z(), 1);
-  DVLOG(3) << __func__ << ": from_ray_space=" << from_ray_space.ToString();
+  gfx::Transform viewer_from_pointer(
+      new_x.x(), new_y.x(), new_z.x(), touch_point.x(),  // row 1
+      new_x.y(), new_y.y(), new_z.y(), touch_point.y(),  // row 2
+      new_x.z(), new_y.z(), new_z.z(), touch_point.z(),  // row 3
+      0, 0, 0, 1);
+  DVLOG(3) << __func__ << ": viewer_from_pointer=\n"
+           << viewer_from_pointer.ToString();
 
-  // We now have a transform from ray space to viewer space, but the mojo
-  // matrices go in the opposite direction, in this case it expects a transform
-  // from grip matrix (== viewer space) to ray space, so we need to invert it.
-  gfx::Transform to_ray_space;
-  bool can_invert = from_ray_space.GetInverse(&to_ray_space);
-  state->description->pointer_offset = to_ray_space;
-  DCHECK(can_invert);
+  state->description->pointer_offset = viewer_from_pointer;
 
   return state;
 }

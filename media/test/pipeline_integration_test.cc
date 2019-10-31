@@ -43,6 +43,7 @@
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/services/media_manifest.h"                    // nogncheck
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"  // nogncheck
 #include "services/service_manager/public/cpp/test/test_service.h"  // nogncheck
 #include "services/service_manager/public/cpp/test/test_service_manager.h"  // nogncheck
@@ -442,9 +443,9 @@ class PipelineIntegrationTest : public testing::Testing,
     test_service_.connector()->BindInterface(mojom::kMediaServiceName,
                                              &media_interface_factory_);
 
-    mojom::RendererPtr mojo_renderer;
-    media_interface_factory_->CreateRenderer(std::string(),
-                                             mojo::MakeRequest(&mojo_renderer));
+    mojo::PendingRemote<mojom::Renderer> mojo_renderer;
+    media_interface_factory_->CreateRenderer(
+        std::string(), mojo_renderer.InitWithNewPipeAndPassReceiver());
 
     return std::make_unique<MojoRenderer>(message_loop_.task_runner(),
                                           std::move(mojo_renderer));

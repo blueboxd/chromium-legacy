@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "chromecast/media/audio/mixer_service/loopback_connection.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
+#include "chromecast/media/audio/mixer_service/redirected_audio_connection.h"
 #include "chromecast/media/cma/backend/mixer/audio_output_redirector.h"
 #include "chromecast/media/cma/backend/mixer/loopback_handler.h"
 #include "chromecast/media/cma/backend/mixer/loopback_test_support.h"
@@ -46,6 +47,9 @@ namespace media {
 namespace {
 
 using FloatType = ::media::Float32SampleTypeTraits;
+using StreamMatchPatterns =
+    std::vector<std::pair<AudioContentType, std::string>>;
+using RedirectionConfig = mixer_service::RedirectedAudioConnection::Config;
 
 // Testing constants that are common to multiple test cases.
 const size_t kBytesPerSample = sizeof(int32_t);
@@ -317,7 +321,8 @@ void ToPlanar(const float* interleaved,
 
 // Asserts that |expected| matches |actual| exactly.
 void CompareAudioData(const ::media::AudioBus& expected,
-                      const ::media::AudioBus& actual) {
+                      const ::media::AudioBus& actual,
+                      const std::string& token = "") {
   ASSERT_EQ(expected.channels(), actual.channels());
   ASSERT_EQ(expected.frames(), actual.frames());
 
@@ -325,7 +330,8 @@ void CompareAudioData(const ::media::AudioBus& expected,
     const float* expected_data = expected.channel(c);
     const float* actual_data = actual.channel(c);
     for (int f = 0; f < expected.frames(); ++f) {
-      EXPECT_FLOAT_EQ(*expected_data++, *actual_data++) << c << " " << f;
+      EXPECT_FLOAT_EQ(*expected_data++, *actual_data++)
+          << c << " " << f << " " << token;
     }
   }
 }
@@ -371,6 +377,7 @@ class StreamMixerTest : public testing::Test {
     mixer_ = std::make_unique<StreamMixer>(std::move(output), nullptr,
                                            base::ThreadTaskRunnerHandle::Get());
     mixer_->SetVolume(AudioContentType::kMedia, 1.0f);
+    mixer_->SetVolume(AudioContentType::kAlarm, 1.0f);
     std::string test_pipeline_json = base::StringPrintf(
         kTestPipelineJsonTemplate, kDelayModuleSolib, kDefaultProcessorDelay,
         kDelayModuleSolib, kTtsProcessorDelay, kDelayModuleSolib,
@@ -402,20 +409,15 @@ class StreamMixerTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(mock_output_);
   }
 
-  MockRedirectedAudioOutput* AddOutputRedirector(
-      const AudioOutputRedirectionConfig& config,
-      AudioOutputRedirector** redirector_ptr = nullptr) {
+  std::unique_ptr<MockRedirectedAudioOutput> AddOutputRedirector(
+      const RedirectionConfig& config,
+      StreamMatchPatterns patterns) {
+    DCHECK_EQ(config.num_output_channels, kNumChannels);
     auto redirected_output =
-        std::make_unique<MockRedirectedAudioOutput>(kNumChannels);
-    MockRedirectedAudioOutput* redirected_output_ptr = redirected_output.get();
-    auto redirector = std::make_unique<AudioOutputRedirector>(
-        config, std::move(redirected_output));
-    if (redirector_ptr) {
-      *redirector_ptr = redirector.get();
-    }
-    EXPECT_CALL(*redirected_output_ptr, Start(kTestSamplesPerSecond)).Times(1);
-    mixer_->AddAudioOutputRedirector(std::move(redirector));
-    return redirected_output_ptr;
+        std::make_unique<MockRedirectedAudioOutput>(config);
+    redirected_output->SetStreamMatchPatterns(std::move(patterns));
+    WaitForMixer();
+    return redirected_output;
   }
 
   void CheckRedirectorOutput(
@@ -437,10 +439,11 @@ class StreamMixerTest : public testing::Test {
     } else {
       expected_mixer_output = GetMixedAudioData(normal_inputs);
     }
-    CompareAudioData(*expected_mixer_output, *actual_mixer_output);
+    CompareAudioData(*expected_mixer_output, *actual_mixer_output, "output");
 
     auto actual_redirected_output =
         ::media::AudioBus::Create(kNumChannels, num_frames);
+    CHECK(redirected_output->last_buffer());
     ASSERT_GE(redirected_output->last_buffer()->frames(), num_frames);
     redirected_output->last_buffer()->CopyPartialFramesTo(
         0, num_frames, 0, actual_redirected_output.get());
@@ -453,7 +456,8 @@ class StreamMixerTest : public testing::Test {
       expected_redirected_output =
           GetMixedAudioData(redirected_inputs, apply_volume);
     }
-    CompareAudioData(*expected_redirected_output, *actual_redirected_output);
+    CompareAudioData(*expected_redirected_output, *actual_redirected_output,
+                     "redirected");
   }
 
   std::unique_ptr<mixer_service::LoopbackConnection> AddLoopbackObserver(
@@ -1247,10 +1251,10 @@ TEST_F(StreamMixerTest, ObserverGets1ChannelIfNumOutputChannelsIs1) {
 }
 
 TEST_F(StreamMixerTest, OneStreamOutputRedirection) {
-  AudioOutputRedirectionConfig config;
-  config.stream_match_patterns.push_back({AudioContentType::kMedia, "*"});
-  MockRedirectedAudioOutput* redirected_output_ptr =
-      AddOutputRedirector(config);
+  RedirectionConfig config;
+  StreamMatchPatterns patterns = {{AudioContentType::kMedia, "*"}};
+  std::unique_ptr<MockRedirectedAudioOutput> redirected_output =
+      AddOutputRedirector(config, patterns);
   WaitForMixer();
 
   MockMixerSource input(kTestSamplesPerSecond);
@@ -1262,27 +1266,31 @@ TEST_F(StreamMixerTest, OneStreamOutputRedirection) {
   const int kNumFrames = 32;
   input.SetData(GetTestData(0));
 
-  EXPECT_CALL(input, FillAudioPlaybackFrames(_, _, _)).Times(2);
-  EXPECT_CALL(*redirected_output_ptr, WriteBuffer(1, _, kOutputFrames, _))
+  EXPECT_CALL(*redirected_output,
+              OnRedirectedAudio(_, kTestSamplesPerSecond, _, kOutputFrames))
       .Times(2);
   PlaybackOnce();  // First buffer is faded in, so don't try to compare it.
   input.SetData(GetTestData(0));
   PlaybackOnce();
+  // Need to wait 2 extra times since we post a task on the mixer side (to the
+  // IO task runner) and again to actually "send" the data.
+  WaitForMixer();
+  WaitForMixer();
 
-  CheckRedirectorOutput(redirected_output_ptr, {}, {&input}, kNumFrames);
+  CheckRedirectorOutput(redirected_output.get(), {}, {&input}, kNumFrames);
 
   mixer_.reset();
 }
 
 TEST_F(StreamMixerTest, OutputRedirectionOrder) {
-  AudioOutputRedirectionConfig config;
-  config.stream_match_patterns.push_back({AudioContentType::kMedia, "*"});
-  MockRedirectedAudioOutput* redirected_output_ptr1 =
-      AddOutputRedirector(config);
+  RedirectionConfig config;
+  StreamMatchPatterns patterns = {{AudioContentType::kMedia, "*"}};
+  std::unique_ptr<MockRedirectedAudioOutput> redirected_output1 =
+      AddOutputRedirector(config, patterns);
 
   config.order = 1;
-  MockRedirectedAudioOutput* redirected_output_ptr2 =
-      AddOutputRedirector(config);
+  std::unique_ptr<MockRedirectedAudioOutput> redirected_output2 =
+      AddOutputRedirector(config, patterns);
   WaitForMixer();
 
   MockMixerSource input(kTestSamplesPerSecond);
@@ -1294,19 +1302,20 @@ TEST_F(StreamMixerTest, OutputRedirectionOrder) {
   const int kNumFrames = 32;
   input.SetData(GetTestData(0));
 
-  EXPECT_CALL(input, FillAudioPlaybackFrames(_, _, _)).Times(2);
-  EXPECT_CALL(*redirected_output_ptr1, WriteBuffer(1, _, kOutputFrames, _))
+  EXPECT_CALL(*redirected_output1, OnRedirectedAudio(_, _, _, kOutputFrames))
       .Times(2);
-  EXPECT_CALL(*redirected_output_ptr2, WriteBuffer(0, _, kOutputFrames, _))
-      .Times(2);
+  EXPECT_CALL(*redirected_output2, OnRedirectedAudio(_, _, _, kOutputFrames))
+      .Times(0);
   PlaybackOnce();  // First buffer is faded in, so don't try to compare it.
   input.SetData(GetTestData(0));
   PlaybackOnce();
+  WaitForMixer();
+  WaitForMixer();
 
   // First redirector should produce actual data, since it has a lower order.
-  CheckRedirectorOutput(redirected_output_ptr1, {}, {&input}, kNumFrames);
-  // Second redirector should produce silence.
-  CheckRedirectorOutput(redirected_output_ptr2, {}, {}, kNumFrames);
+  CheckRedirectorOutput(redirected_output1.get(), {}, {&input}, kNumFrames);
+  // Second redirector should not have received any data.
+  EXPECT_FALSE(redirected_output2->last_buffer());
 
   mixer_.reset();
 }
@@ -1324,14 +1333,11 @@ TEST_F(StreamMixerTest, TwoStreamsOutputRedirection) {
   WaitForMixer();
   mock_output_->ClearData();
 
-  AudioOutputRedirectionConfig config;
-  config.stream_match_patterns.push_back({AudioContentType::kMedia, "*"});
-  MockRedirectedAudioOutput* redirected_output_ptr =
-      AddOutputRedirector(config);
+  RedirectionConfig config;
+  StreamMatchPatterns patterns = {{AudioContentType::kMedia, "*"}};
+  std::unique_ptr<MockRedirectedAudioOutput> redirected_output =
+      AddOutputRedirector(config, patterns);
   WaitForMixer();
-
-  EXPECT_CALL(*redirected_output_ptr, WriteBuffer(2, _, kOutputFrames, _))
-      .Times(2);
 
   const int kNumFrames = 32;
   for (size_t i = 0; i < inputs.size(); ++i) {
@@ -1342,8 +1348,10 @@ TEST_F(StreamMixerTest, TwoStreamsOutputRedirection) {
     inputs[i]->SetData(GetTestData(i));
   }
   PlaybackOnce();
+  WaitForMixer();
+  WaitForMixer();
 
-  CheckRedirectorOutput(redirected_output_ptr, {},
+  CheckRedirectorOutput(redirected_output.get(), {},
                         {inputs[0].get(), inputs[1].get()}, kNumFrames);
 
   mixer_.reset();
@@ -1365,15 +1373,12 @@ TEST_F(StreamMixerTest, TwoStreamsOutputRedirectionWithVolume) {
   WaitForMixer();
   mock_output_->ClearData();
 
-  AudioOutputRedirectionConfig config;
-  config.stream_match_patterns.push_back({AudioContentType::kMedia, "*"});
+  RedirectionConfig config;
   config.apply_volume = true;
-  MockRedirectedAudioOutput* redirected_output_ptr =
-      AddOutputRedirector(config);
+  StreamMatchPatterns patterns = {{AudioContentType::kMedia, "*"}};
+  std::unique_ptr<MockRedirectedAudioOutput> redirected_output =
+      AddOutputRedirector(config, patterns);
   WaitForMixer();
-
-  EXPECT_CALL(*redirected_output_ptr, WriteBuffer(2, _, kOutputFrames, _))
-      .Times(2);
 
   const int kNumFrames = 32;
   for (size_t i = 0; i < inputs.size(); ++i) {
@@ -1384,8 +1389,10 @@ TEST_F(StreamMixerTest, TwoStreamsOutputRedirectionWithVolume) {
     inputs[i]->SetData(GetTestData(i));
   }
   PlaybackOnce();
+  WaitForMixer();
+  WaitForMixer();
 
-  CheckRedirectorOutput(redirected_output_ptr, {},
+  CheckRedirectorOutput(redirected_output.get(), {},
                         {inputs[0].get(), inputs[1].get()}, kNumFrames,
                         true /* apply_volume */);
 
@@ -1405,14 +1412,11 @@ TEST_F(StreamMixerTest, OutputRedirectionMatchDeviceId) {
   WaitForMixer();
   mock_output_->ClearData();
 
-  AudioOutputRedirectionConfig config;
-  config.stream_match_patterns.push_back({AudioContentType::kMedia, "*match*"});
-  MockRedirectedAudioOutput* redirected_output_ptr =
-      AddOutputRedirector(config);
+  RedirectionConfig config;
+  StreamMatchPatterns patterns = {{AudioContentType::kMedia, "*match*"}};
+  std::unique_ptr<MockRedirectedAudioOutput> redirected_output =
+      AddOutputRedirector(config, patterns);
   WaitForMixer();
-
-  EXPECT_CALL(*redirected_output_ptr, WriteBuffer(1, _, kOutputFrames, _))
-      .Times(2);
 
   const int kNumFrames = 32;
   for (size_t i = 0; i < inputs.size(); ++i) {
@@ -1424,8 +1428,10 @@ TEST_F(StreamMixerTest, OutputRedirectionMatchDeviceId) {
     inputs[i]->SetData(GetTestData(i));
   }
   PlaybackOnce();
+  WaitForMixer();
+  WaitForMixer();
 
-  CheckRedirectorOutput(redirected_output_ptr, {inputs[1].get()},
+  CheckRedirectorOutput(redirected_output.get(), {inputs[1].get()},
                         {inputs[0].get()}, kNumFrames);
 
   mixer_.reset();
@@ -1434,9 +1440,9 @@ TEST_F(StreamMixerTest, OutputRedirectionMatchDeviceId) {
 TEST_F(StreamMixerTest, OutputRedirectionMatchContentType) {
   std::vector<std::unique_ptr<MockMixerSource>> inputs;
   inputs.push_back(
-      std::make_unique<MockMixerSource>(kTestSamplesPerSecond, "matches"));
+      std::make_unique<MockMixerSource>(kTestSamplesPerSecond, "matches1"));
   inputs.push_back(
-      std::make_unique<MockMixerSource>(kTestSamplesPerSecond, "matches"));
+      std::make_unique<MockMixerSource>(kTestSamplesPerSecond, "matches2"));
   inputs[0]->set_content_type(AudioContentType::kAlarm);
 
   for (size_t i = 0; i < inputs.size(); ++i) {
@@ -1445,14 +1451,11 @@ TEST_F(StreamMixerTest, OutputRedirectionMatchContentType) {
   WaitForMixer();
   mock_output_->ClearData();
 
-  AudioOutputRedirectionConfig config;
-  config.stream_match_patterns.push_back({AudioContentType::kAlarm, "*match*"});
-  MockRedirectedAudioOutput* redirected_output_ptr =
-      AddOutputRedirector(config);
+  RedirectionConfig config;
+  StreamMatchPatterns patterns = {{AudioContentType::kAlarm, "*match*"}};
+  std::unique_ptr<MockRedirectedAudioOutput> redirected_output =
+      AddOutputRedirector(config, patterns);
   WaitForMixer();
-
-  EXPECT_CALL(*redirected_output_ptr, WriteBuffer(1, _, kOutputFrames, _))
-      .Times(2);
 
   const int kNumFrames = 32;
   for (size_t i = 0; i < inputs.size(); ++i) {
@@ -1464,8 +1467,10 @@ TEST_F(StreamMixerTest, OutputRedirectionMatchContentType) {
     inputs[i]->SetData(GetTestData(i));
   }
   PlaybackOnce();
+  WaitForMixer();
+  WaitForMixer();
 
-  CheckRedirectorOutput(redirected_output_ptr, {inputs[1].get()},
+  CheckRedirectorOutput(redirected_output.get(), {inputs[1].get()},
                         {inputs[0].get()}, kNumFrames);
 
   mixer_.reset();
@@ -1482,16 +1487,12 @@ TEST_F(StreamMixerTest, OutputRedirectionNoMatch) {
   WaitForMixer();
   mock_output_->ClearData();
 
-  AudioOutputRedirectionConfig config;
-  config.stream_match_patterns.push_back({AudioContentType::kAlarm, "*"});
-  MockRedirectedAudioOutput* redirected_output_ptr =
-      AddOutputRedirector(config);
+  RedirectionConfig config;
+  StreamMatchPatterns patterns = {{AudioContentType::kAlarm, "*"}};
+  std::unique_ptr<MockRedirectedAudioOutput> redirected_output =
+      AddOutputRedirector(config, patterns);
   WaitForMixer();
 
-  EXPECT_CALL(*redirected_output_ptr, WriteBuffer(0, _, kOutputFrames, _))
-      .Times(2);
-
-  const int kNumFrames = 32;
   for (size_t i = 0; i < inputs.size(); ++i) {
     inputs[i]->SetData(GetTestData(i));
   }
@@ -1501,9 +1502,11 @@ TEST_F(StreamMixerTest, OutputRedirectionNoMatch) {
     inputs[i]->SetData(GetTestData(i));
   }
   PlaybackOnce();
+  WaitForMixer();
+  WaitForMixer();
 
-  CheckRedirectorOutput(redirected_output_ptr,
-                        {inputs[0].get(), inputs[1].get()}, {}, kNumFrames);
+  // Redirector should not have received any data, since no inputs match.
+  EXPECT_FALSE(redirected_output->last_buffer());
 
   mixer_.reset();
 }
@@ -1521,12 +1524,10 @@ TEST_F(StreamMixerTest, ModifyOutputRedirection) {
   WaitForMixer();
   mock_output_->ClearData();
 
-  AudioOutputRedirectionConfig config;
-  config.stream_match_patterns.push_back({AudioContentType::kMedia, "*match*"});
-  AudioOutputRedirector* redirector_ptr = nullptr;
-  MockRedirectedAudioOutput* redirected_output_ptr =
-      AddOutputRedirector(config, &redirector_ptr);
-  CHECK(redirector_ptr);
+  RedirectionConfig config;
+  StreamMatchPatterns patterns = {{AudioContentType::kMedia, "*match*"}};
+  std::unique_ptr<MockRedirectedAudioOutput> redirected_output =
+      AddOutputRedirector(config, patterns);
   WaitForMixer();
 
   const int kNumFrames = 32;
@@ -1539,14 +1540,16 @@ TEST_F(StreamMixerTest, ModifyOutputRedirection) {
     inputs[i]->SetData(GetTestData(i));
   }
   PlaybackOnce();
+  WaitForMixer();
+  WaitForMixer();
 
-  CheckRedirectorOutput(redirected_output_ptr, {inputs[1].get()},
+  CheckRedirectorOutput(redirected_output.get(), {inputs[1].get()},
                         {inputs[0].get()}, kNumFrames);
 
-  std::vector<std::pair<AudioContentType, std::string>> new_match_patterns = {
-      {AudioContentType::kMedia, "*asdf*"}};
-  mixer_->ModifyAudioOutputRedirection(redirector_ptr,
-                                       std::move(new_match_patterns));
+  StreamMatchPatterns new_patterns = {{AudioContentType::kMedia, "*asdf*"}};
+  redirected_output->SetStreamMatchPatterns(new_patterns);
+  WaitForMixer();
+  WaitForMixer();
   WaitForMixer();
   mock_output_->ClearData();
 
@@ -1559,8 +1562,10 @@ TEST_F(StreamMixerTest, ModifyOutputRedirection) {
     inputs[i]->SetData(GetTestData(i));
   }
   PlaybackOnce();
+  WaitForMixer();
+  WaitForMixer();
 
-  CheckRedirectorOutput(redirected_output_ptr, {inputs[0].get()},
+  CheckRedirectorOutput(redirected_output.get(), {inputs[0].get()},
                         {inputs[1].get()}, kNumFrames);
 
   mixer_.reset();

@@ -643,7 +643,7 @@ void URLRequest::StartJob(URLRequestJob* job) {
 
   GURL referrer_url(referrer_);
   if (referrer_url != URLRequestJob::ComputeReferrerForPolicy(
-                          referrer_policy_, referrer_url, url())) {
+                          referrer_policy_, referrer_url, initiator_, url())) {
     if (!network_delegate_ ||
         !network_delegate_->CancelURLRequestWithPolicyViolatingReferrerHeader(
             *this, url(), referrer_url)) {

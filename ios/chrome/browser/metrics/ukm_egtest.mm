@@ -37,6 +37,9 @@
 using chrome_test_util::AccountsSyncButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::ClearBrowsingDataButton;
+using chrome_test_util::ClearBrowsingDataCell;
+using chrome_test_util::ConfirmClearBrowsingDataButton;
 using chrome_test_util::GoogleServicesSettingsButton;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
@@ -100,23 +103,18 @@ void AssertUKMEnabled(bool is_enabled) {
              @"Failed to assert whether UKM was enabled or not.");
 }
 
-// Matcher for the Clear Browsing Data cell on the Privacy screen.
-id<GREYMatcher> ClearBrowsingDataCell() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
-}
-// Matcher for the clear browsing data button on the clear browsing data panel.
-id<GREYMatcher> ClearBrowsingDataButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BUTTON);
-}
-
 void ClearBrowsingData() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
   [ChromeEarlGreyUI tapClearBrowsingDataMenuButton:ClearBrowsingDataButton()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          ConfirmClearBrowsingDataButton()]
+  [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
       performAction:grey_tap()];
+
+  // Wait until activity indicator modal is cleared, meaning clearing browsing
+  // data has been finished.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
@@ -208,7 +206,11 @@ void SignOut() {
                              syncTimeout:kSyncUKMOperationsTimeout];
   AssertUKMEnabled(false);
 
-  // Enable sync.
+  // Sign in to Chrome and turn sync on.
+  //
+  // Note: URL-keyed anonymized data collection is turned on as part of the
+  // flow to Sign in to Chrome and Turn sync on. This matches the main user
+  // flow that enables UKM.
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   [ChromeEarlGrey waitForSyncInitialized:YES
                              syncTimeout:kSyncUKMOperationsTimeout];
@@ -237,7 +239,11 @@ void SignOut() {
       nullptr);
   AssertUKMEnabled(false);
 
-  // Disable sync.
+  // Sign out of Chrome and Turn sync off.
+  //
+  // Note: URL-keyed anonymized data collection is turned off as part of the
+  // flow to Sign out of Chrome and Turn sync off. This matchers the main user
+  // flow that disables UKM.
   SignOut();
   [ChromeEarlGrey waitForSyncInitialized:NO
                              syncTimeout:kSyncUKMOperationsTimeout];

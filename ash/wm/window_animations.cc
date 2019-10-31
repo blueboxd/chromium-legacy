@@ -289,6 +289,7 @@ void AnimateHideWindow_SlideOut(aura::Window* window) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(window);
   gfx::Rect dismissed_bounds =
       PipPositioner::GetDismissedPosition(display, bounds);
+  ::wm::ConvertRectFromScreen(window->parent(), &dismissed_bounds);
   window->layer()->SetBounds(dismissed_bounds);
 }
 

@@ -18,6 +18,7 @@ namespace blink {
 class DOMArrayBuffer;
 class DOMDataView;
 class ExceptionState;
+class ExecutionContext;
 class NDEFRecordInit;
 class ScriptState;
 
@@ -25,20 +26,29 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NDEFRecord* Create(const NDEFRecordInit*, ExceptionState&);
+  static NDEFRecord* Create(const ExecutionContext*,
+                            const NDEFRecordInit*,
+                            ExceptionState&);
 
   // Construct a "text" record from a string.
-  explicit NDEFRecord(const String&);
+  explicit NDEFRecord(const ExecutionContext*, const String&);
 
   // Construct a "opaque" record from an array buffer.
   explicit NDEFRecord(DOMArrayBuffer*);
 
   NDEFRecord(const String&, const String&, WTF::Vector<uint8_t>);
+  NDEFRecord(const String&,
+             const String&,
+             const String&,
+             const String&,
+             WTF::Vector<uint8_t>);
   explicit NDEFRecord(const device::mojom::blink::NDEFRecord&);
 
   const String& recordType() const;
   const String& mediaType() const;
   const String& id() const;
+  const String& encoding() const;
+  const String& lang() const;
   DOMDataView* data() const;
   String text() const;
   DOMArrayBuffer* arrayBuffer() const;
@@ -52,6 +62,8 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   String record_type_;
   String media_type_;
   String id_;
+  String encoding_;
+  String lang_;
   // Holds the NDEFRecord.[[PayloadData]] bytes defined at
   // https://w3c.github.io/web-nfc/#the-ndefrecord-interface.
   WTF::Vector<uint8_t> payload_data_;

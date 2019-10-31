@@ -528,13 +528,16 @@ bool Display::DrawAndSwap() {
   // The CompositorFrame provided by the SurfaceAggregator includes the display
   // transform while |current_surface_size_| is the pre-transform size received
   // from the client.
+  const gfx::OverlayTransform current_display_transform =
+      output_surface_->GetDisplayTransform();
   const gfx::Transform display_transform = gfx::OverlayTransformToTransform(
-      output_surface_->GetDisplayTransform(), current_surface_size_);
+      current_display_transform, current_surface_size_);
   const gfx::Size current_surface_size =
       cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
           display_transform, gfx::Rect(current_surface_size_))
           .size();
   if (settings_.auto_resize_output_surface &&
+      last_display_transform_swapped_ == current_display_transform &&
       last_render_pass.output_rect.size() != current_surface_size &&
       last_render_pass.damage_rect == last_render_pass.output_rect &&
       !current_surface_size.IsEmpty()) {
@@ -619,6 +622,7 @@ bool Display::DrawAndSwap() {
                                  "Graphics.Pipeline.DrawAndSwap",
                                  swapped_trace_id_, "WaitForSwap");
     swapped_since_resize_ = true;
+    last_display_transform_swapped_ = current_display_transform;
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");

@@ -6,6 +6,7 @@
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_ndef_message_init.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message_init.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_record.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -13,13 +14,15 @@
 namespace blink {
 
 // static
-NDEFMessage* NDEFMessage::Create(const NDEFMessageInit* init,
+NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
+                                 const NDEFMessageInit* init,
                                  ExceptionState& exception_state) {
   NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
   message->url_ = init->url();
   if (init->hasRecords()) {
     for (const NDEFRecordInit* record_init : init->records()) {
-      NDEFRecord* record = NDEFRecord::Create(record_init, exception_state);
+      NDEFRecord* record =
+          NDEFRecord::Create(execution_context, record_init, exception_state);
       if (exception_state.HadException())
         return nullptr;
       DCHECK(record);
@@ -30,12 +33,13 @@ NDEFMessage* NDEFMessage::Create(const NDEFMessageInit* init,
 }
 
 // static
-NDEFMessage* NDEFMessage::Create(const NDEFMessageSource& source,
+NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
+                                 const NDEFMessageSource& source,
                                  ExceptionState& exception_state) {
   if (source.IsString()) {
     NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
-    message->records_.push_back(
-        MakeGarbageCollected<NDEFRecord>(source.GetAsString()));
+    message->records_.push_back(MakeGarbageCollected<NDEFRecord>(
+        execution_context, source.GetAsString()));
     return message;
   }
 
@@ -47,7 +51,8 @@ NDEFMessage* NDEFMessage::Create(const NDEFMessageSource& source,
   }
 
   if (source.IsNDEFMessageInit()) {
-    return Create(source.GetAsNDEFMessageInit(), exception_state);
+    return Create(execution_context, source.GetAsNDEFMessageInit(),
+                  exception_state);
   }
 
   NOTREACHED();

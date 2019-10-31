@@ -148,6 +148,11 @@ base::SysInfo::HardwareInfo GetLocalHardwareInfoBlocking() {
   base::SysInfo::GetHardwareInfo(base::BindLambdaForTesting(
       [&](base::SysInfo::HardwareInfo hardware_info) {
         info = std::move(hardware_info);
+#if defined(OS_CHROMEOS)
+        // For ChromeOS the returned model values are product code names like
+        // Eve. We want to use generic names like Chromebook.
+        info.model = GetChromeOSDeviceNameFromType();
+#endif
         run_loop.Quit();
       }));
   run_loop.Run();

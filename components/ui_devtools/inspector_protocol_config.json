@@ -32,10 +32,8 @@
         "export_macro": "UI_DEVTOOLS_EXPORT",
         "export_header": "components/ui_devtools/devtools_export.h"
     },
-    "encoding_lib": {
-        "namespace": "inspector_protocol_encoding"
-    },
-    "bindings_lib": {
-        "namespace": "inspector_protocol_bindings"
+
+    "crdtp": {
+        "namespace": "crdtp"
     }
 }

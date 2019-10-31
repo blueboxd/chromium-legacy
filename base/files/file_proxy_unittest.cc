@@ -37,52 +37,58 @@ class FileProxyTest : public testing::Test {
     ASSERT_TRUE(file_thread_.Start());
   }
 
-  void DidFinish(File::Error error) {
+  void DidFinish(base::RepeatingClosure continuation, File::Error error) {
     error_ = error;
-    RunLoop::QuitCurrentWhenIdleDeprecated();
+    continuation.Run();
   }
 
-  void DidCreateOrOpen(File::Error error) {
+  void DidCreateOrOpen(base::RepeatingClosure continuation, File::Error error) {
     error_ = error;
-    RunLoop::QuitCurrentWhenIdleDeprecated();
+    continuation.Run();
   }
 
-  void DidCreateTemporary(File::Error error,
+  void DidCreateTemporary(base::RepeatingClosure continuation,
+                          File::Error error,
                           const FilePath& path) {
     error_ = error;
     path_ = path;
-    RunLoop::QuitCurrentWhenIdleDeprecated();
+    continuation.Run();
   }
 
-  void DidGetFileInfo(File::Error error,
+  void DidGetFileInfo(base::RepeatingClosure continuation,
+                      File::Error error,
                       const File::Info& file_info) {
     error_ = error;
     file_info_ = file_info;
-    RunLoop::QuitCurrentWhenIdleDeprecated();
+    continuation.Run();
   }
 
-  void DidRead(File::Error error,
+  void DidRead(base::RepeatingClosure continuation,
+               File::Error error,
                const char* data,
                int bytes_read) {
     error_ = error;
     buffer_.resize(bytes_read);
     memcpy(&buffer_[0], data, bytes_read);
-    RunLoop::QuitCurrentWhenIdleDeprecated();
+    continuation.Run();
   }
 
-  void DidWrite(File::Error error,
+  void DidWrite(base::RepeatingClosure continuation,
+                File::Error error,
                 int bytes_written) {
     error_ = error;
     bytes_written_ = bytes_written;
-    RunLoop::QuitCurrentWhenIdleDeprecated();
+    continuation.Run();
   }
 
  protected:
   void CreateProxy(uint32_t flags, FileProxy* proxy) {
+    RunLoop run_loop;
     proxy->CreateOrOpen(
         TestPath(), flags,
-        BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
-    RunLoop().Run();
+        BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr(),
+                 run_loop.QuitWhenIdleClosure()));
+    run_loop.Run();
     EXPECT_TRUE(proxy->IsValid());
   }
 
@@ -106,10 +112,12 @@ class FileProxyTest : public testing::Test {
 
 TEST_F(FileProxyTest, CreateOrOpen_Create) {
   FileProxy proxy(file_task_runner());
+  RunLoop run_loop;
   proxy.CreateOrOpen(
       TestPath(), File::FLAG_CREATE | File::FLAG_READ,
-      BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+      BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr(),
+               run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 
   EXPECT_EQ(File::FILE_OK, error_);
   EXPECT_TRUE(proxy.IsValid());
@@ -124,10 +132,12 @@ TEST_F(FileProxyTest, CreateOrOpen_Open) {
 
   // Opens the created file.
   FileProxy proxy(file_task_runner());
+  RunLoop run_loop;
   proxy.CreateOrOpen(
       TestPath(), File::FLAG_OPEN | File::FLAG_READ,
-      BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+      BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr(),
+               run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 
   EXPECT_EQ(File::FILE_OK, error_);
   EXPECT_TRUE(proxy.IsValid());
@@ -136,10 +146,12 @@ TEST_F(FileProxyTest, CreateOrOpen_Open) {
 
 TEST_F(FileProxyTest, CreateOrOpen_OpenNonExistent) {
   FileProxy proxy(file_task_runner());
+  RunLoop run_loop;
   proxy.CreateOrOpen(
       TestPath(), File::FLAG_OPEN | File::FLAG_READ,
-      BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+      BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr(),
+               run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
   EXPECT_EQ(File::FILE_ERROR_NOT_FOUND, error_);
   EXPECT_FALSE(proxy.IsValid());
   EXPECT_FALSE(proxy.created());
@@ -148,13 +160,15 @@ TEST_F(FileProxyTest, CreateOrOpen_OpenNonExistent) {
 
 TEST_F(FileProxyTest, CreateOrOpen_AbandonedCreate) {
   bool prev = ThreadRestrictions::SetIOAllowed(false);
+  RunLoop run_loop;
   {
     FileProxy proxy(file_task_runner());
     proxy.CreateOrOpen(
         TestPath(), File::FLAG_CREATE | File::FLAG_READ,
-        BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
+        BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr(),
+                 run_loop.QuitWhenIdleClosure()));
   }
-  RunLoop().Run();
+  run_loop.Run();
   ThreadRestrictions::SetIOAllowed(prev);
 
   EXPECT_TRUE(PathExists(TestPath()));
@@ -170,8 +184,10 @@ TEST_F(FileProxyTest, Close) {
   EXPECT_FALSE(base::Move(TestPath(), TestDirPath().AppendASCII("new")));
 #endif
 
-  proxy.Close(BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+  RunLoop run_loop;
+  proxy.Close(BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr(),
+                       run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
   EXPECT_EQ(File::FILE_OK, error_);
   EXPECT_FALSE(proxy.IsValid());
 
@@ -182,19 +198,27 @@ TEST_F(FileProxyTest, Close) {
 TEST_F(FileProxyTest, CreateTemporary) {
   {
     FileProxy proxy(file_task_runner());
-    proxy.CreateTemporary(0 /* additional_file_flags */,
-                          BindOnce(&FileProxyTest::DidCreateTemporary,
-                                   weak_factory_.GetWeakPtr()));
-    RunLoop().Run();
+    {
+      RunLoop run_loop;
+      proxy.CreateTemporary(
+          0 /* additional_file_flags */,
+          BindOnce(&FileProxyTest::DidCreateTemporary,
+                   weak_factory_.GetWeakPtr(), run_loop.QuitWhenIdleClosure()));
+      run_loop.Run();
+    }
 
     EXPECT_TRUE(proxy.IsValid());
     EXPECT_EQ(File::FILE_OK, error_);
     EXPECT_TRUE(PathExists(path_));
 
     // The file should be writable.
-    proxy.Write(0, "test", 4,
-                BindOnce(&FileProxyTest::DidWrite, weak_factory_.GetWeakPtr()));
-    RunLoop().Run();
+    {
+      RunLoop run_loop;
+      proxy.Write(0, "test", 4,
+                  BindOnce(&FileProxyTest::DidWrite, weak_factory_.GetWeakPtr(),
+                           run_loop.QuitWhenIdleClosure()));
+      run_loop.Run();
+    }
     EXPECT_EQ(File::FILE_OK, error_);
     EXPECT_EQ(4, bytes_written_);
   }
@@ -248,9 +272,11 @@ TEST_F(FileProxyTest, GetInfo) {
   // Run.
   FileProxy proxy(file_task_runner());
   CreateProxy(File::FLAG_OPEN | File::FLAG_READ, &proxy);
-  proxy.GetInfo(
-      BindOnce(&FileProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+  RunLoop run_loop;
+  proxy.GetInfo(BindOnce(&FileProxyTest::DidGetFileInfo,
+                         weak_factory_.GetWeakPtr(),
+                         run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 
   // Verify.
   EXPECT_EQ(File::FILE_OK, error_);
@@ -272,9 +298,11 @@ TEST_F(FileProxyTest, Read) {
   FileProxy proxy(file_task_runner());
   CreateProxy(File::FLAG_OPEN | File::FLAG_READ, &proxy);
 
+  RunLoop run_loop;
   proxy.Read(0, 128,
-             BindOnce(&FileProxyTest::DidRead, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+             BindOnce(&FileProxyTest::DidRead, weak_factory_.GetWeakPtr(),
+                      run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 
   // Verify.
   EXPECT_EQ(File::FILE_OK, error_);
@@ -290,16 +318,24 @@ TEST_F(FileProxyTest, WriteAndFlush) {
 
   const char data[] = "foo!";
   int data_bytes = base::size(data);
-  proxy.Write(0, data, data_bytes,
-              BindOnce(&FileProxyTest::DidWrite, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+  {
+    RunLoop run_loop;
+    proxy.Write(0, data, data_bytes,
+                BindOnce(&FileProxyTest::DidWrite, weak_factory_.GetWeakPtr(),
+                         run_loop.QuitWhenIdleClosure()));
+    run_loop.Run();
+  }
   EXPECT_EQ(File::FILE_OK, error_);
   EXPECT_EQ(data_bytes, bytes_written_);
 
   // Flush the written data.  (So that the following read should always
   // succeed.  On some platforms it may work with or without this flush.)
-  proxy.Flush(BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+  {
+    RunLoop run_loop;
+    proxy.Flush(BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr(),
+                         run_loop.QuitWhenIdleClosure()));
+    run_loop.Run();
+  }
   EXPECT_EQ(File::FILE_OK, error_);
 
   // Verify the written data.
@@ -327,10 +363,11 @@ TEST_F(FileProxyTest, MAYBE_SetTimes) {
   Time last_accessed_time = Time::Now() - TimeDelta::FromDays(12345);
   Time last_modified_time = Time::Now() - TimeDelta::FromHours(98765);
 
-  proxy.SetTimes(
-      last_accessed_time, last_modified_time,
-      BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+  RunLoop run_loop;
+  proxy.SetTimes(last_accessed_time, last_modified_time,
+                 BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr(),
+                          run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
   EXPECT_EQ(File::FILE_OK, error_);
 
   File::Info info;
@@ -355,9 +392,11 @@ TEST_F(FileProxyTest, SetLength_Shrink) {
   // Run.
   FileProxy proxy(file_task_runner());
   CreateProxy(File::FLAG_OPEN | File::FLAG_WRITE, &proxy);
+  RunLoop run_loop;
   proxy.SetLength(
-      7, BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+      7, BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr(),
+                  run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 
   // Verify.
   GetFileInfo(TestPath(), &info);
@@ -381,9 +420,11 @@ TEST_F(FileProxyTest, SetLength_Expand) {
   // Run.
   FileProxy proxy(file_task_runner());
   CreateProxy(File::FLAG_OPEN | File::FLAG_WRITE, &proxy);
+  RunLoop run_loop;
   proxy.SetLength(
-      53, BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
+      53, BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr(),
+                   run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 
   // Verify.
   GetFileInfo(TestPath(), &info);

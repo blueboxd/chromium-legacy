@@ -83,7 +83,7 @@ class QemuTarget(emu_target.EmuTarget):
     # Configure the machine to emulate, based on the target architecture.
     if self._target_cpu == 'arm64':
       emu_command.extend([
-          '-machine','virt',
+          '-machine','virt,gic_version=3',
       ])
       netdev_type = 'virtio-net-pci'
     else:
@@ -108,7 +108,11 @@ class QemuTarget(emu_target.EmuTarget):
     # On Linux, we can enable lightweight virtualization (KVM) if the host and
     # guest architectures are the same.
     if self._IsKvmEnabled():
-      kvm_command = ['-enable-kvm', '-cpu', 'host,migratable=no']
+      kvm_command = ['-enable-kvm', '-cpu']
+      if self._target_cpu == 'arm64':
+        kvm_command.append('host')
+      else:
+        kvm_command.append('host,migratable=no')
     else:
       logging.warning('Unable to launch %s with KVM acceleration.'
                        % (self._emu_type) +
@@ -161,7 +165,7 @@ def _EnsureBlobstoreQcowAndReturnPath(output_dir, target_arch):
 
   qimg_tool = os.path.join(common.GetEmuRootForPlatform('qemu'),
                            'bin', 'qemu-img')
-  fvm_tool = os.path.join(common.SDK_ROOT, 'tools', 'fvm')
+  fvm_tool = common.GetHostToolPathFromPlatform('fvm')
   blobstore_path = boot_data.GetTargetFile('storage-full.blk', target_arch,
                                            'qemu')
   qcow_path = os.path.join(output_dir, 'gen', 'blobstore.qcow')

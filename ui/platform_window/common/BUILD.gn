@@ -4,7 +4,17 @@
 
 import("//build/config/ui.gni")
 
-source_set("common") {
+assert(is_linux)
+
+component("common") {
+  output_name = "platform_window_common"
+
+  defines = [ "IS_PLATFORM_WINDOW_COMMON_IMPL" ]
+
+  public_deps = [
+    "//base",
+  ]
+
   sources = [
     "platform_window_defaults.cc",
     "platform_window_defaults.h",

@@ -571,12 +571,6 @@ const base::Feature kUserActivationPostMessageTransfer{
 const base::Feature kUserActivationSameOriginVisibility{
     "UserActivationSameOriginVisibility", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// An experimental simple user-activation model where the user gesture state is
-// tracked through a frame-based state instead of the gesture tokens we use
-// today.
-const base::Feature kUserActivationV2{"UserActivationV2",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // An experimental replacement for the `User-Agent` header, defined in
 // https://tools.ietf.org/html/draft-west-ua-client-hints.
 const base::Feature kUserAgentClientHint{"UserAgentClientHint",

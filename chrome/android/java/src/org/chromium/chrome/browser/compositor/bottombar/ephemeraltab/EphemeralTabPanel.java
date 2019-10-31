@@ -143,6 +143,16 @@ public class EphemeralTabPanel extends OverlayPanel {
         }
 
         @Override
+        public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {
+            updateCaption();
+        }
+
+        @Override
+        public void onTitleUpdated(String title) {
+            getBarControl().setBarText(title);
+        }
+
+        @Override
         public void onSSLStateUpdated() {
             if (isNewLayout()) updateCaption();
         }
@@ -270,8 +280,7 @@ public class EphemeralTabPanel extends OverlayPanel {
         if (mCaptionAnimation != null) mCaptionAnimation.cancel();
         int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(getWebContents());
         EphemeralTabCaptionControl caption = getBarControl().getCaptionControl();
-        caption.getTextView().setText(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
-                getWebContents().getVisibleUrl()));
+        caption.setCaptionText(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mUrl));
         caption.setSecurityIcon(EphemeralTabCoordinator.getSecurityIconResource(securityLevel));
 
         mCaptionAnimation = new CompositorAnimator(getAnimationHandler());

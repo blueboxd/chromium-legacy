@@ -197,7 +197,8 @@ void ProcessMirrorHeader(
   //    have been forced through an online in-browser sign-in for sensitive
   //    webpages, thereby decreasing their session validity. After their session
   //    expires, they will receive a "Mirror" re-authentication request for all
-  //    Google web properties.
+  //    Google web properties. Another case when this can be triggered is
+  //    https://crbug.com/1012649.
   // 3. Displaying the Account Manager for managing accounts.
 
   // 1. Going incognito.
@@ -215,6 +216,26 @@ void ProcessMirrorHeader(
         SupervisedUserServiceFactory::GetForProfile(profile);
     if (service && service->signout_required_after_supervision_enabled()) {
       return;
+    }
+
+    // The account's cookie is invalid but the cookie has not been removed by
+    // |AccountReconcilor|. Ideally, this should not happen. At this point,
+    // |AccountReconcilor| cannot detect this state because its source of truth
+    // (/ListAccounts) is giving us false positives (claiming an invalid account
+    // to be valid). We need to store that this account's cookie is actually
+    // invalid, so that if/when this account is re-authenticated, we can force a
+    // reconciliation for this account instead of treating it as a no-op.
+    // See https://crbug.com/1012649 for details.
+
+    signin::IdentityManager* const identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+    base::Optional<AccountInfo> maybe_account_info =
+        identity_manager
+            ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+                manage_accounts_params.email);
+    if (maybe_account_info.has_value()) {
+      account_reconcilor->ForceCookieRemintingOnNextTokenUpdate(
+          maybe_account_info.value());
     }
 
     // Display a re-authentication dialog.

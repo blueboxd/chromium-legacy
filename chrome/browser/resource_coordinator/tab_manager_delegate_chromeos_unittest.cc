@@ -109,7 +109,9 @@ TEST_F(TabManagerDelegateTest, CandidatesSortedWithFocusedAppAndTab) {
 // is turned on.
 TEST_F(TabManagerDelegateTest, SortLifecycleUnitWithTabRanker) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTabRanker);
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kTabRanker,
+      {{"number_of_oldest_tabs_to_score_with_TabRanker", "20"}});
   std::vector<arc::ArcProcess> arc_processes;
   arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
                              kIsFocused, 99);

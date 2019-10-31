@@ -8,28 +8,28 @@
 # Platform-independent failures
 #
 
-crbug.com/1014734 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type~{"bindingType":"readonly-storage-buffer"} [ Failure ]
+crbug.com/1014734 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer_binding_must_contain_exactly_one_buffer_of_its_type~{"bindingType":"readonly-storage-buffer"} [ Failure ]
 
-crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type~{"bindingType":"storage-texture"} [ Failure ]
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer_binding_must_contain_exactly_one_buffer_of_its_type~{"bindingType":"storage-texture"} [ Failure ]
 
-crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"uniform-buffer","resourceType":"storage-texture"} [ Failure ]
-crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"storage-buffer","resourceType":"storage-texture"} [ Failure ]
-crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampler","resourceType":"storage-texture"} [ Failure ]
-crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampled-texture","resourceType":"storage-texture"} [ Failure ]
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer_binding_must_contain_exactly_one_buffer_of_its_type={"bindingType":"uniform-buffer","resourceType":"storage-texture"} [ Failure ]
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer_binding_must_contain_exactly_one_buffer_of_its_type={"bindingType":"storage-buffer","resourceType":"storage-texture"} [ Failure ]
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer_binding_must_contain_exactly_one_buffer_of_its_type={"bindingType":"sampler","resourceType":"storage-texture"} [ Failure ]
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer_binding_must_contain_exactly_one_buffer_of_its_type={"bindingType":"sampled-texture","resourceType":"storage-texture"} [ Failure ]
 
-crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:texture+binding+must+have+correct+usage={"type":"storage-texture"} [ Failure ]
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:texture_binding_must_have_correct_usage={"type":"storage-texture"} [ Failure ]
 
-crbug.com/1014734 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroupLayout:dynamic+set+to+true+is+allowed+only+for+buffers={"type":"readonly-storage-buffer","success":true} [ Failure ]
+crbug.com/1014734 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroupLayout:dynamic_set_to_true_is_allowed_only_for_buffers={"type":"readonly-storage-buffer"} [ Failure ]
 
-crbug.com/dawn/243 wpt_internal/webgpu/cts.html?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":4,"arrayLayerCount":2,"success":true} [ Failure ]
+crbug.com/dawn/243 wpt_internal/webgpu/cts.html?q=cts:validation/createTexture:validation_of_sampleCount={"sampleCount":4,"arrayLayerCount":2} [ Failure ]
 
-crbug.com/1014750 wpt_internal/webgpu/cts.html?q=cts:validation/createView:it+is+invalid+to+use+a+texture+view+created+from+a+destroyed+texture= [ Failure ]
+crbug.com/1014750 wpt_internal/webgpu/cts.html?q=cts:validation/createView:it_is_invalid_to_use_a_texture_view_created_from_a_destroyed_texture= [ Failure ]
 
 #
 # Mac (Metal) specific
 #
 
-crbug.com/1014744 [ Mac ] wpt_internal/webgpu/cts.html?q=cts:command_buffer/render/storeop:storeOp+controls+whether+1x1+drawn+quad+is+stored={"storeOp":"clear","expected":0} [ Failure ]
+crbug.com/1014744 [ Mac ] wpt_internal/webgpu/cts.html?q=cts:command_buffer/render/storeop:storeOp_controls_whether_1x1_drawn_quad_is_stored={"storeOp":"clear"} [ Failure ]
 
 #
 # Linux (Vulkan) specific

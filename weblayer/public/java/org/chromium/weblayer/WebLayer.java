@@ -11,6 +11,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.support.v4.app.Fragment;
 import android.util.AndroidRuntimeException;
 import android.webkit.ValueCallback;
 import android.webkit.WebViewDelegate;
@@ -192,7 +193,7 @@ public final class WebLayer {
     }
 
     @NonNull
-    public static BrowserFragment createBrowserFragment(String profilePath) {
+    public static Fragment createBrowserFragment(String profilePath) {
         ThreadCheck.ensureOnUiThread();
         // TODO: use a profile id instead of the path to the actual file.
         Bundle args = new Bundle();

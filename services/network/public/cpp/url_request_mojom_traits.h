@@ -58,6 +58,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest::TrustedParams& trusted_params) {
     return trusted_params.update_network_isolation_key_on_redirect;
   }
+  static bool disable_secure_dns(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    return trusted_params.disable_secure_dns;
+  }
 
   static bool Read(network::mojom::TrustedUrlRequestParamsDataView data,
                    network::ResourceRequest::TrustedParams* out);

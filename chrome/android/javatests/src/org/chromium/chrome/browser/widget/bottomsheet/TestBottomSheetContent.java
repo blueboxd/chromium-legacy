@@ -37,6 +37,12 @@ public class TestBottomSheetContent implements BottomSheetContent {
     /** The peek height of this content. */
     private int mPeekHeight;
 
+    /** The half height of this content. */
+    private float mHalfHeight;
+
+    /** The full height of this content. */
+    private float mFullHeight;
+
     /**
      * @param context A context to inflate views with.
      * @param priority The content's priority.
@@ -45,6 +51,8 @@ public class TestBottomSheetContent implements BottomSheetContent {
     public TestBottomSheetContent(
             Context context, @ContentPriority int priority, boolean hasCustomLifecycle) {
         mPeekHeight = BottomSheet.HeightMode.DEFAULT;
+        mHalfHeight = BottomSheet.HeightMode.DEFAULT;
+        mFullHeight = BottomSheet.HeightMode.DEFAULT;
         mPriority = priority;
         mHasCustomLifecycle = hasCustomLifecycle;
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -107,6 +115,24 @@ public class TestBottomSheetContent implements BottomSheetContent {
     @Override
     public int getPeekHeight() {
         return mPeekHeight;
+    }
+
+    public void setHalfHeightRatio(float ratio) {
+        mHalfHeight = ratio;
+    }
+
+    @Override
+    public float getHalfHeightRatio() {
+        return mHalfHeight;
+    }
+
+    public void setFullHeightRatio(float ratio) {
+        mFullHeight = ratio;
+    }
+
+    @Override
+    public float getFullHeightRatio() {
+        return mFullHeight;
     }
 
     @Override

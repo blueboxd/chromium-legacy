@@ -10,7 +10,8 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace ash {
@@ -72,7 +73,8 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
   TestAssistantService();
   ~TestAssistantService() override;
 
-  chromeos::assistant::mojom::AssistantPtr CreateInterfacePtrAndBind();
+  mojo::PendingRemote<chromeos::assistant::mojom::Assistant>
+  CreateRemoteAndBind();
 
   // Set the response that will be invoked when the next interaction starts.
   void SetInteractionResponse(InteractionResponse&& response);
@@ -115,7 +117,7 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
   void SendInteractionResponse();
   InteractionResponse PopInteractionResponse();
 
-  mojo::Binding<chromeos::assistant::mojom::Assistant> binding_;
+  mojo::Receiver<chromeos::assistant::mojom::Assistant> receiver_{this};
   mojo::RemoteSet<chromeos::assistant::mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
   std::unique_ptr<SanityCheckSubscriber> sanity_check_subscriber_;

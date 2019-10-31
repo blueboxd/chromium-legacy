@@ -5,19 +5,24 @@
 #include "chromecast/media/cma/backend/mixer/audio_output_redirector.h"
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/pattern.h"
-#include "base/values.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "chromecast/media/audio/mixer_service/conversions.h"
+#include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
+#include "chromecast/media/audio/mixer_service/mixer_socket.h"
 #include "chromecast/media/cma/backend/audio_fader.h"
 #include "chromecast/media/cma/backend/mixer/audio_output_redirector_input.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input.h"
 #include "chromecast/media/cma/backend/mixer/stream_mixer.h"
-#include "chromecast/public/cast_media_shlib.h"
 #include "media/base/audio_bus.h"
-#include "media/base/audio_timestamp_helper.h"
 #include "media/base/channel_layout.h"
 #include "media/base/channel_mixer.h"
 
@@ -25,9 +30,103 @@ namespace chromecast {
 namespace media {
 
 namespace {
+
+using Patterns = std::vector<std::pair<AudioContentType, std::string>>;
+
 constexpr int kDefaultBufferSize = 2048;
 constexpr int kMaxChannels = 8;
+
+constexpr int kAudioMessageHeaderSize =
+    mixer_service::MixerSocket::kAudioMessageHeaderSize;
+
 }  // namespace
+
+class AudioOutputRedirector::RedirectionConnection
+    : public mixer_service::MixerSocket::Delegate {
+ public:
+  explicit RedirectionConnection(
+      std::unique_ptr<mixer_service::MixerSocket> socket,
+      scoped_refptr<base::SequencedTaskRunner> mixer_task_runner,
+      base::WeakPtr<AudioOutputRedirector> redirector)
+      : socket_(std::move(socket)),
+        mixer_task_runner_(std::move(mixer_task_runner)),
+        redirector_(std::move(redirector)) {
+    DCHECK(socket_);
+    DCHECK(mixer_task_runner_);
+
+    socket_->SetDelegate(this);
+  }
+
+  ~RedirectionConnection() override = default;
+
+  void SetStreamConfig(SampleFormat sample_format,
+                       int sample_rate,
+                       int num_channels,
+                       int data_size) {
+    mixer_service::Generic message;
+    mixer_service::StreamConfig* config = message.mutable_stream_config();
+    config->set_sample_format(
+        mixer_service::ConvertSampleFormat(sample_format));
+    config->set_sample_rate(sample_rate);
+    config->set_num_channels(num_channels);
+    config->set_data_size(data_size);
+    socket_->SendProto(message);
+
+    sent_stream_config_ = true;
+  }
+
+  void SendAudio(scoped_refptr<net::IOBuffer> audio_buffer,
+                 int data_size_bytes,
+                 int64_t timestamp) {
+    if (error_) {
+      return;
+    }
+    DCHECK(sent_stream_config_);
+    socket_->SendAudioBuffer(std::move(audio_buffer), data_size_bytes,
+                             timestamp);
+  }
+
+  // mixer_service::MixerSocket::Delegate implementation:
+  bool HandleMetadata(const mixer_service::Generic& message) override {
+    if (!message.has_redirected_stream_patterns()) {
+      return true;
+    }
+
+    Patterns new_patterns;
+    for (const auto& p : message.redirected_stream_patterns().patterns()) {
+      new_patterns.emplace_back(ConvertContentType(p.content_type()),
+                                p.device_id_pattern());
+    }
+    mixer_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&AudioOutputRedirector::UpdatePatterns,
+                                  redirector_, std::move(new_patterns)));
+    return true;
+  }
+
+ private:
+  bool HandleAudioData(char* data, int size, int64_t timestamp) override {
+    return true;
+  }
+
+  void OnConnectionError() override {
+    if (error_) {
+      return;
+    }
+    error_ = true;
+    mixer_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AudioOutputRedirector::OnConnectionError, redirector_));
+  }
+
+  const std::unique_ptr<mixer_service::MixerSocket> socket_;
+  const scoped_refptr<base::SequencedTaskRunner> mixer_task_runner_;
+  const base::WeakPtr<AudioOutputRedirector> redirector_;
+
+  bool error_ = false;
+  bool sent_stream_config_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(RedirectionConnection);
+};
 
 class AudioOutputRedirector::InputImpl : public AudioOutputRedirectorInput {
  public:
@@ -93,68 +192,103 @@ void AudioOutputRedirector::InputImpl::Redirect(::media::AudioBus* const buffer,
                                                 int num_frames,
                                                 RenderingDelay rendering_delay,
                                                 bool redirected) {
-  if (!temp_buffer_ || temp_buffer_->frames() < num_frames) {
+  if (num_frames == 0) {
+    return;
+  }
+
+  if (previous_ended_in_silence_ && redirected) {
+    // Previous buffer ended in silence, and the current buffer was redirected
+    // by a previous output splitter, so maintain silence.
+    return;
+  }
+  if (!previous_ended_in_silence_ && !redirected && !channel_mixer_) {
+    // No fading or channel mixing required, just mix directly.
+    output_redirector_->MixInput(mixer_input_, buffer, num_frames,
+                                 rendering_delay);
+    return;
+  }
+
+  if (temp_buffer_->frames() < num_frames) {
     temp_buffer_ = ::media::AudioBus::Create(
         num_output_channels_, std::max(num_frames, kDefaultBufferSize));
   }
 
-  if (num_frames != 0) {
-    if (previous_ended_in_silence_ && redirected) {
-      // Previous buffer ended in silence, and the current buffer was redirected
-      // by a previous output splitter, so maintain silence.
-      num_frames = 0;
-    } else if (channel_mixer_) {
-      channel_mixer_->TransformPartial(buffer, num_frames, temp_buffer_.get());
-    } else {
-      buffer->CopyPartialFramesTo(0, num_frames, 0, temp_buffer_.get());
-    }
-
-    float* channels[kMaxChannels];
-    for (int c = 0; c < num_output_channels_; ++c) {
-      channels[c] = temp_buffer_->channel(c);
-    }
-    if (previous_ended_in_silence_) {
-      if (!redirected) {
-        // Smoothly fade in from previous silence.
-        AudioFader::FadeInHelper(channels, num_output_channels_, num_frames,
-                                 num_frames, num_frames);
-      }
-    } else if (redirected) {
-      // Smoothly fade out to silence, since output is now being redirected by a
-      // previous output splitter.
-      AudioFader::FadeOutHelper(channels, num_output_channels_, num_frames,
-                                num_frames, num_frames);
-    }
-    previous_ended_in_silence_ = redirected;
+  if (channel_mixer_) {
+    channel_mixer_->TransformPartial(buffer, num_frames, temp_buffer_.get());
+  } else {
+    buffer->CopyPartialFramesTo(0, num_frames, 0, temp_buffer_.get());
   }
+
+  float* channels[kMaxChannels];
+  for (int c = 0; c < num_output_channels_; ++c) {
+    channels[c] = temp_buffer_->channel(c);
+  }
+  if (previous_ended_in_silence_) {
+    if (!redirected) {
+      // Smoothly fade in from previous silence.
+      AudioFader::FadeInHelper(channels, num_output_channels_, num_frames,
+                               num_frames, num_frames);
+    }
+  } else if (redirected) {
+    // Smoothly fade out to silence, since output is now being redirected by a
+    // previous output splitter.
+    AudioFader::FadeOutHelper(channels, num_output_channels_, num_frames,
+                              num_frames, num_frames);
+  }
+  previous_ended_in_silence_ = redirected;
 
   output_redirector_->MixInput(mixer_input_, temp_buffer_.get(), num_frames,
                                rendering_delay);
 }
 
-AudioOutputRedirector::AudioOutputRedirector(
-    const AudioOutputRedirectionConfig& config,
-    std::unique_ptr<RedirectedAudioOutput> output)
-    : config_(config),
-      output_(std::move(output)),
-      channel_data_(config.num_output_channels) {
-  DCHECK(output_);
-  DCHECK_GT(config_.num_output_channels, 0);
-
-  mixed_ = ::media::AudioBus::Create(config_.num_output_channels,
-                                     kDefaultBufferSize);
-  mixed_->Zero();
-  for (int c = 0; c < config_.num_output_channels; ++c) {
-    channel_data_[c] = mixed_->channel(c);
+// static
+AudioOutputRedirector::Config AudioOutputRedirector::ParseConfig(
+    const mixer_service::Generic& message) {
+  Config config;
+  DCHECK(message.has_redirection_request());
+  const mixer_service::RedirectionRequest& request =
+      message.redirection_request();
+  if (request.has_num_channels()) {
+    config.num_output_channels = request.num_channels();
   }
+  if (request.has_order()) {
+    config.order = request.order();
+  }
+  if (request.has_apply_volume()) {
+    config.apply_volume = request.apply_volume();
+  }
+  if (request.has_extra_delay_microseconds()) {
+    config.extra_delay_microseconds = request.extra_delay_microseconds();
+  }
+  return config;
 }
 
-AudioOutputRedirector::~AudioOutputRedirector() = default;
+AudioOutputRedirector::AudioOutputRedirector(
+    StreamMixer* mixer,
+    std::unique_ptr<mixer_service::MixerSocket> socket,
+    const mixer_service::Generic& message)
+    : mixer_(mixer),
+      config_(ParseConfig(message)),
+      io_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      buffer_pool_(
+          base::MakeRefCounted<IOBufferPool>(kDefaultBufferSize,
+                                             std::numeric_limits<size_t>::max(),
+                                             true /* threadsafe */)),
+      weak_factory_(this) {
+  DCHECK_GT(config_.num_output_channels, 0);
+
+  output_ = std::make_unique<RedirectionConnection>(
+      std::move(socket), mixer_->task_runner(), weak_factory_.GetWeakPtr());
+  output_->HandleMetadata(message);
+}
+
+AudioOutputRedirector::~AudioOutputRedirector() {
+  io_task_runner_->DeleteSoon(FROM_HERE, std::move(output_));
+}
 
 void AudioOutputRedirector::AddInput(MixerInput* mixer_input) {
   if (ApplyToInput(mixer_input)) {
-    DCHECK_EQ(mixer_input->output_samples_per_second(),
-              output_samples_per_second_);
+    DCHECK_EQ(mixer_input->output_samples_per_second(), sample_rate_);
     inputs_[mixer_input] = std::make_unique<InputImpl>(this, mixer_input);
   } else {
     non_redirected_inputs_.insert(mixer_input);
@@ -171,7 +305,7 @@ bool AudioOutputRedirector::ApplyToInput(MixerInput* mixer_input) {
     return false;
   }
 
-  for (const auto& pattern : config_.stream_match_patterns) {
+  for (const auto& pattern : patterns_) {
     if (mixer_input->content_type() == pattern.first &&
         base::MatchPattern(mixer_input->device_id(), pattern.second)) {
       return true;
@@ -183,7 +317,7 @@ bool AudioOutputRedirector::ApplyToInput(MixerInput* mixer_input) {
 
 void AudioOutputRedirector::UpdatePatterns(
     std::vector<std::pair<AudioContentType, std::string>> patterns) {
-  config_.stream_match_patterns = std::move(patterns);
+  patterns_ = std::move(patterns);
   // Remove streams that no longer match.
   for (auto it = inputs_.begin(); it != inputs_.end();) {
     MixerInput* mixer_input = it->first;
@@ -208,26 +342,45 @@ void AudioOutputRedirector::UpdatePatterns(
   }
 }
 
-void AudioOutputRedirector::Start(int output_samples_per_second) {
-  output_samples_per_second_ = output_samples_per_second;
-  output_->Start(output_samples_per_second);
+void AudioOutputRedirector::OnConnectionError() {
+  mixer_->RemoveAudioOutputRedirector(this);
 }
 
-void AudioOutputRedirector::Stop() {
-  output_->Stop();
+void AudioOutputRedirector::SetSampleRate(int output_samples_per_second) {
+  sample_rate_ = output_samples_per_second;
+
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RedirectionConnection::SetStreamConfig,
+                     base::Unretained(output_.get()), kSampleFormatPlanarF32,
+                     sample_rate_, config_.num_output_channels,
+                     buffer_pool_->buffer_size() - kAudioMessageHeaderSize));
 }
 
 void AudioOutputRedirector::PrepareNextBuffer(int num_frames) {
+  size_t required_size_bytes =
+      kAudioMessageHeaderSize +
+      num_frames * config_.num_output_channels * sizeof(float);
+  if (buffer_pool_->buffer_size() < required_size_bytes) {
+    buffer_pool_ = base::MakeRefCounted<IOBufferPool>(
+        required_size_bytes, std::numeric_limits<size_t>::max(),
+        true /* threadsafe */);
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RedirectionConnection::SetStreamConfig,
+            base::Unretained(output_.get()), kSampleFormatPlanarF32,
+            sample_rate_, config_.num_output_channels,
+            num_frames * config_.num_output_channels * sizeof(float)));
+  }
+
+  current_mix_buffer_ = buffer_pool_->GetBuffer();
+  current_mix_data_ = reinterpret_cast<float*>(current_mix_buffer_->data() +
+                                               kAudioMessageHeaderSize);
+  std::fill_n(current_mix_data_, num_frames * config_.num_output_channels,
+              0.0f);
   next_output_timestamp_ = INT64_MIN;
   next_num_frames_ = num_frames;
-
-  if (!mixed_ || mixed_->frames() < num_frames) {
-    mixed_ = ::media::AudioBus::Create(config_.num_output_channels, num_frames);
-    for (int c = 0; c < config_.num_output_channels; ++c) {
-      channel_data_[c] = mixed_->channel(c);
-    }
-  }
-  mixed_->ZeroFramesPartial(0, num_frames);
   input_count_ = 0;
 }
 
@@ -235,7 +388,7 @@ void AudioOutputRedirector::MixInput(MixerInput* mixer_input,
                                      ::media::AudioBus* data,
                                      int num_frames,
                                      RenderingDelay rendering_delay) {
-  DCHECK_GE(mixed_->frames(), num_frames);
+  DCHECK(current_mix_data_);
   DCHECK_GE(next_num_frames_, num_frames);
   DCHECK_EQ(config_.num_output_channels, data->channels());
 
@@ -255,68 +408,37 @@ void AudioOutputRedirector::MixInput(MixerInput* mixer_input,
 
   ++input_count_;
   for (int c = 0; c < config_.num_output_channels; ++c) {
+    float* dest_channel = current_mix_data_ + c * next_num_frames_;
     if (config_.apply_volume) {
       mixer_input->VolumeScaleAccumulate(data->channel(c), num_frames,
-                                         mixed_->channel(c));
+                                         dest_channel);
     } else {
       const float* temp_channel = data->channel(c);
-      float* mixed_channel = mixed_->channel(c);
       for (int i = 0; i < num_frames; ++i) {
-        mixed_channel[i] += temp_channel[i];
+        dest_channel[i] += temp_channel[i];
       }
     }
   }
 }
 
 void AudioOutputRedirector::FinishBuffer() {
+  if (input_count_ == 0) {
+    return;
+  }
+
   // Hard limit to [1.0, -1.0].
-  for (int c = 0; c < config_.num_output_channels; ++c) {
-    for (int f = 0; f < next_num_frames_; ++f) {
-      channel_data_[c][f] =
-          base::ClampToRange(channel_data_[c][f], -1.0f, 1.0f);
-    }
+  for (int s = 0; s < config_.num_output_channels * next_num_frames_; ++s) {
+    current_mix_data_[s] =
+        base::ClampToRange(current_mix_data_[s], -1.0f, 1.0f);
   }
 
-  output_->WriteBuffer(input_count_, channel_data_.data(), next_num_frames_,
-                       next_output_timestamp_);
-}
-
-// static
-AudioOutputRedirectorToken* CastMediaShlib::AddAudioOutputRedirection(
-    const AudioOutputRedirectionConfig& config,
-    std::unique_ptr<RedirectedAudioOutput> output) {
-  if (!output || config.num_output_channels <= 0) {
-    return nullptr;
-  }
-
-  auto redirector =
-      std::make_unique<AudioOutputRedirector>(config, std::move(output));
-  AudioOutputRedirectorToken* token = redirector.get();
-  StreamMixer::Get()->AddAudioOutputRedirector(std::move(redirector));
-  return token;
-}
-
-// static
-void CastMediaShlib::RemoveAudioOutputRedirection(
-    AudioOutputRedirectorToken* token) {
-  AudioOutputRedirector* redirector =
-      static_cast<AudioOutputRedirector*>(token);
-  if (redirector) {
-    StreamMixer::Get()->RemoveAudioOutputRedirector(redirector);
-  }
-}
-
-// static
-void CastMediaShlib::ModifyAudioOutputRedirection(
-    AudioOutputRedirectorToken* token,
-    std::vector<std::pair<AudioContentType, std::string>>
-        stream_match_patterns) {
-  AudioOutputRedirector* redirector =
-      static_cast<AudioOutputRedirector*>(token);
-  if (redirector) {
-    StreamMixer::Get()->ModifyAudioOutputRedirection(
-        redirector, std::move(stream_match_patterns));
-  }
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &RedirectionConnection::SendAudio, base::Unretained(output_.get()),
+          std::move(current_mix_buffer_),
+          config_.num_output_channels * next_num_frames_ * sizeof(float),
+          next_output_timestamp_));
 }
 
 }  // namespace media

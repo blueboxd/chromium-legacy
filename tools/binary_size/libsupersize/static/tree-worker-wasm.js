@@ -141,19 +141,26 @@ function Open(name) {
 
 // Placeholder input name until supplied via setInput()
 const fetcher = new DataFetcher('data.size');
+let sizeFileLoaded = false;
 
 async function buildTree(
-    groupBy, filterTest, highlightTest, methodCountMode, onProgress) {
+    groupBy, includeRegex, excludeRegex, minSymbolSize, highlightTest,
+    methodCountMode, onProgress) {
+  if (!sizeFileLoaded) {
+    let sizeBuffer = await fetcher.loadSizeBuffer();
+    let heapBuffer = mallocBuffer(sizeBuffer);
+    console.log('Passing ' + sizeBuffer.byteLength + ' bytes to WebAssembly');
+    let LoadSizeFile =
+        Module.cwrap('LoadSizeFile', 'bool', ['number', 'number']);
+    let start_time = Date.now();
+    LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength);
+    console.log(
+        'Loaded size file in ' + (Date.now() - start_time) / 1000.0 +
+        ' seconds');
+    Module._free(heapBuffer.byteOffset);
 
-  let sizeBuffer = await fetcher.loadSizeBuffer();
-  let heapBuffer = mallocBuffer(sizeBuffer);
-  console.log('Passing ' + sizeBuffer.byteLength + ' bytes to WebAssembly');
-  let LoadSizeFile = Module.cwrap('LoadSizeFile', 'bool', ['number', 'number']);
-  let start_time = Date.now();
-  LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength);
-  console.log('Loaded size file in ' +
-    (Date.now() - start_time)/1000.0 + ' seconds');
-  Module._free(heapBuffer.byteOffset);
+    sizeFileLoaded = true;
+  }
 
   /**
    * Creates data to post to the UI thread. Defaults will be used for the root
@@ -182,9 +189,11 @@ async function buildTree(
     return message;
   }
 
-  let BuildTree = Module.cwrap('BuildTree', 'void', []);
-  start_time = Date.now();
-  BuildTree();
+  let BuildTree =
+      Module.cwrap('BuildTree', 'void', ['bool', 'string', 'string', 'number']);
+  let start_time = Date.now();
+  const groupByComponent = groupBy === 'component';
+  BuildTree(groupByComponent, includeRegex, excludeRegex, minSymbolSize);
   console.log('Constructed tree in ' +
     (Date.now() - start_time)/1000.0 + ' seconds');
 
@@ -209,20 +218,40 @@ function parseOptions(options) {
   const filterGeneratedFiles = params.has('generated_filter');
   const flagToHighlight = _NAMES_TO_FLAGS[params.get('highlight')];
 
-  function filterTest(symbolNode) {
-    return true;
+  let minSymbolSize = Number(params.get('min_size'));
+  if (Number.isNaN(minSymbolSize)) {
+    minSymbolSize = 0;
   }
+
+  const includeRegex = params.get('include');
+  const excludeRegex = params.get('exclude');
+
   function highlightTest(symbolNode) {
     return false;
   }
-  return {groupBy, filterTest, highlightTest, url, methodCountMode};
+  return {
+    groupBy,
+    includeRegex,
+    excludeRegex,
+    minSymbolSize,
+    highlightTest,
+    url,
+    methodCountMode
+  };
 }
 
 const actions = {
   /** @param {{input:string|null,options:string}} param0 */
   load({input, options}) {
-    const {groupBy, filterTest, highlightTest, url, methodCountMode} =
-        parseOptions(options);
+    const {
+      groupBy,
+      includeRegex,
+      excludeRegex,
+      minSymbolSize,
+      highlightTest,
+      url,
+      methodCountMode
+    } = parseOptions(options);
     if (input === 'from-url://' && url) {
       // Display the data from the `load_url` query parameter
       console.info('Displaying data from', url);
@@ -233,7 +262,8 @@ const actions = {
     }
 
     return buildTree(
-        groupBy, filterTest, highlightTest, methodCountMode, progress => {
+        groupBy, includeRegex, excludeRegex, minSymbolSize, highlightTest,
+        methodCountMode, progress => {
           // @ts-ignore
           self.postMessage(progress);
         });

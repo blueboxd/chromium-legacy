@@ -200,11 +200,6 @@ class PagePopupChromeClient final : public EmptyChromeClient {
       client->SetTouchAction(static_cast<WebTouchAction>(touch_action));
   }
 
-  void AttachRootGraphicsLayer(GraphicsLayer* graphics_layer,
-                               LocalFrame* local_root) override {
-    popup_->SetRootLayer(graphics_layer ? graphics_layer->CcLayer() : nullptr);
-  }
-
   void AttachRootLayer(scoped_refptr<cc::Layer> layer,
                        LocalFrame* local_root) override {
     popup_->SetRootLayer(layer.get());

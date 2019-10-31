@@ -13,6 +13,10 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace views {
 class Widget;
 }  // namespace views
@@ -75,6 +79,8 @@ class ASH_EXPORT SplitViewDragIndicators {
 
   SplitViewDragIndicators();
   ~SplitViewDragIndicators();
+
+  void SetDraggedWindow(aura::Window* dragged_window);
 
   // Sets visiblity. The correct indicators will become visible based on the
   // split view controllers state. If |event_location| is located on a different

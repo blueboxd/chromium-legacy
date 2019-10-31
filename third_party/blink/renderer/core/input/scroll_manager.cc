@@ -774,7 +774,7 @@ bool ScrollManager::SnapAtGestureScrollEnd(
       std::move(on_finish));
 }
 
-bool ScrollManager::GetSnapFlingInfo(
+bool ScrollManager::GetSnapFlingInfoAndSetSnapTarget(
     const gfx::Vector2dF& natural_displacement,
     gfx::Vector2dF* out_initial_position,
     gfx::Vector2dF* out_target_position) const {
@@ -790,7 +790,7 @@ bool ScrollManager::GetSnapFlingInfo(
           gfx::ScrollOffset(*out_initial_position),
           gfx::ScrollOffset(natural_displacement));
   base::Optional<FloatPoint> snap_end =
-      scrollable_area->GetSnapPosition(*strategy);
+      scrollable_area->GetSnapPositionAndSetTarget(*strategy);
   if (!snap_end.has_value())
     return false;
   *out_target_position = gfx::Vector2dF(snap_end.value());

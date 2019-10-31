@@ -5,6 +5,7 @@
 #include "components/safe_browsing/realtime/policy_engine.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -42,8 +43,19 @@ class RealTimePolicyEngineTest : public PlatformTest {
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_DisabledFetchAllowlist) {
   base::test::ScopedFeatureList feature_list;
+#if !defined(OS_ANDROID)
   feature_list.InitAndDisableFeature(kRealTimeUrlLookupFetchAllowlist);
   EXPECT_FALSE(CanPerformFullURLLookup());
+#else
+  // Should not be controlled by allowlist flag on Android.
+  feature_list.InitWithFeatures(
+      /* enabled_features */ {kRealTimeUrlLookupEnabled},
+      /* disabled_features */ {kRealTimeUrlLookupFetchAllowlist});
+  pref_service_.SetUserPref(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+      std::make_unique<base::Value>(true));
+  EXPECT_TRUE(CanPerformFullURLLookup());
+#endif
 }
 
 TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledByPolicy) {

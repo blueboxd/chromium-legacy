@@ -25,7 +25,7 @@ constexpr char kKeyTestResult[] = "testResult";
 constexpr char kKeyTestPath[] = "testPath";
 constexpr char kKeyVariant[] = "variant";
 constexpr char kKeyStatus[] = "status";
-constexpr char kKeyIsExpected[] = "isExpected";
+constexpr char kKeyExpected[] = "expected";
 constexpr char kKeyStartTime[] = "startTime";
 constexpr char kKeyRunDuration[] = "runDuration";
 constexpr char kKeyOutputArtifacts[] = "outputArtifacts";
@@ -93,7 +93,7 @@ base::Value ToValue(const LuciTestResult& result) {
   }
 
   test_result->SetStringKey(kKeyStatus, ToString(result.status()));
-  test_result->SetBoolKey(kKeyIsExpected, result.is_expected());
+  test_result->SetBoolKey(kKeyExpected, result.is_expected());
 
   if (!result.start_time().is_null()) {
     test_result->SetStringKey(kKeyStartTime, ToUtcIsoTime(result.start_time()));

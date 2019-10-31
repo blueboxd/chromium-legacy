@@ -137,10 +137,6 @@ export class TabElement extends CustomElement {
           this.toggleAttribute('has-alert-states_', alertIndicatorsCount > 0);
         });
 
-    if (!this.tab_ || this.tab_.id !== tab.id) {
-      this.tabsApi_.trackThumbnailForTab(tab.id);
-    }
-
     this.tab_ = Object.freeze(tab);
   }
 

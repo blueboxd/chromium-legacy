@@ -220,6 +220,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get whether this node is in web content.
   virtual bool IsWebContent() const = 0;
 
+  // Returns true if the caret or selection is visible on this object.
+  virtual bool HasVisibleCaretOrSelection() const = 0;
+
   // Get another node from this same tree.
   virtual AXPlatformNode* GetFromNodeID(int32_t id) = 0;
 

@@ -140,6 +140,8 @@ void MixerSocket::PrepareAudioBuffer(net::IOBuffer* audio_buffer,
   memcpy(ptr, &type, sizeof(type));
   ptr += sizeof(type);
   memcpy(ptr, &timestamp, sizeof(timestamp));
+  ptr += sizeof(timestamp);
+  memset(ptr, 0, sizeof(int32_t));
 }
 
 void MixerSocket::SendAudioBuffer(scoped_refptr<net::IOBuffer> audio_buffer,
@@ -326,6 +328,10 @@ bool MixerSocket::ParseAudioBuffer(scoped_refptr<net::IOBuffer> buffer,
   memcpy(&timestamp, data, sizeof(timestamp));
   data += sizeof(timestamp);
   size -= sizeof(timestamp);
+
+  // Handle padding bytes.
+  data += sizeof(int32_t);
+  size -= sizeof(int32_t);
 
   return delegate_->HandleAudioBuffer(std::move(buffer), data, size, timestamp);
 }

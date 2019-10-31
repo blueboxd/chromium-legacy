@@ -850,6 +850,86 @@ test.realbox.testPressEnterAfterFocusout = function() {
   assertTrue(clicked);
 };
 
+test.realbox.testInputAfterFocusoutPrefixMatches = function() {
+  test.realbox.realboxEl.value = 'hello';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  assertEquals(1, test.realbox.queries.length);
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.queries[0],
+    matches: [test.realbox.getSearchMatch()],
+  });
+
+  assertTrue(test.realbox.wrapperEl.classList.contains(
+      test.realbox.CLASSES.SHOW_MATCHES));
+
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  }));
+
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(1, matchEls.length);
+  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertEquals('hello world', test.realbox.realboxEl.value);
+
+  test.realbox.realboxEl.dispatchEvent(new Event('focusout', {
+    bubbles: true,
+    cancelable: true,
+    target: test.realbox.realboxEl,
+    relatedTarget: document.body,
+  }));
+
+  assertFalse(test.realbox.wrapperEl.classList.contains(
+      test.realbox.CLASSES.SHOW_MATCHES));
+  assertEquals('hello world', test.realbox.realboxEl.value);
+};
+
+test.realbox.testInputAfterFocusoutZeroPrefixMatches = function() {
+  test.realbox.realboxEl.value = '';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  // Empty input doesn't query autocomplete.
+  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {
+    bubbles: true,
+    cancelable: true,
+    target: test.realbox.realboxEl,
+  }));
+  assertEquals(1, test.realbox.queries.length);
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.queries[0],
+    matches: [test.realbox.getSearchMatch()],
+  });
+
+  assertTrue(test.realbox.wrapperEl.classList.contains(
+      test.realbox.CLASSES.SHOW_MATCHES));
+
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  }));
+
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(1, matchEls.length);
+  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertEquals('hello world', test.realbox.realboxEl.value);
+
+  test.realbox.realboxEl.dispatchEvent(new Event('focusout', {
+    bubbles: true,
+    cancelable: true,
+    target: test.realbox.realboxEl,
+    relatedTarget: document.body,
+  }));
+
+  assertFalse(test.realbox.wrapperEl.classList.contains(
+      test.realbox.CLASSES.SHOW_MATCHES));
+  assertEquals('', test.realbox.realboxEl.value);
+};
+
 test.realbox.testArrowUpDownShowsMatchesWhenHidden = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));

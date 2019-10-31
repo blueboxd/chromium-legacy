@@ -39,7 +39,8 @@ void VideoCaptureServiceTest::SetUp() {
   // |service_remote_->InjectGpuDependencies()| here. Test case
   // |FakeMjpegVideoCaptureDeviceTest.
   //  CanDecodeMjpegWithoutInjectedGpuDependencies| depends on this assumption.
-  service_remote_->ConnectToDeviceFactory(mojo::MakeRequest(&factory_));
+  service_remote_->ConnectToDeviceFactory(
+      factory_.BindNewPipeAndPassReceiver());
 }
 
 std::unique_ptr<VideoCaptureServiceTest::SharedMemoryVirtualDeviceContext>

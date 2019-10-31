@@ -5,7 +5,7 @@
 #include "chrome/browser/sharing/ack_message_handler.h"
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "components/sync/protocol/sharing_message.pb.h"
 
 AckMessageHandler::AckMessageHandler(
     ResponseCallbackHelper* response_callback_helper)

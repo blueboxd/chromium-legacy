@@ -23,6 +23,8 @@ static_library("browser") {
     "chrome_connected_header_helper.h",
     "consistency_cookie_manager_base.cc",
     "consistency_cookie_manager_base.h",
+    "cookie_reminter.cc",
+    "cookie_reminter.h",
     "cookie_settings_util.cc",
     "cookie_settings_util.h",
     "dice_account_reconcilor_delegate.cc",

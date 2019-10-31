@@ -270,7 +270,7 @@ void SetPlatformVersion(const std::string& platform_version) {
 
 class KioskSessionInitializedWaiter : public KioskAppManagerObserver {
  public:
-  KioskSessionInitializedWaiter() : scoped_observer_(this) {
+  KioskSessionInitializedWaiter() {
     scoped_observer_.Add(KioskAppManager::Get());
   }
   ~KioskSessionInitializedWaiter() override = default;
@@ -286,7 +286,8 @@ class KioskSessionInitializedWaiter : public KioskAppManagerObserver {
   void OnKioskSessionInitialized() override { run_loop_.Quit(); }
 
  private:
-  ScopedObserver<KioskAppManager, KioskAppManagerObserver> scoped_observer_;
+  ScopedObserver<KioskAppManagerBase, KioskAppManagerObserver> scoped_observer_{
+      this};
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskSessionInitializedWaiter);

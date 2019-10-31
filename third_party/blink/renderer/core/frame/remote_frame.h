@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_H_
 
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -20,6 +21,7 @@ class Layer;
 
 namespace blink {
 
+class AssociatedInterfaceProvider;
 class InterfaceRegistry;
 class LocalFrame;
 class RemoteFrameClient;
@@ -34,7 +36,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
               Page&,
               FrameOwner*,
               WindowAgentFactory* inheriting_agent_factory,
-              InterfaceRegistry*);
+              InterfaceRegistry*,
+              AssociatedInterfaceProvider*);
   ~RemoteFrame() override;
 
   // Frame overrides:
@@ -65,6 +68,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetView(RemoteFrameView*);
   void CreateView();
 
+  mojom::blink::RemoteFrameHost& GetRemoteFrameHostRemote();
+
   RemoteFrameView* View() const override;
 
   RemoteFrameClient* Client() const;
@@ -73,10 +78,17 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   void DidChangeVisibleToHitTesting() override;
 
+  void SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+      const ParsedFeaturePolicy& parsed_header,
+      const FeaturePolicy::FeatureState&);
+
   // blink::mojom::LocalFrame overrides:
   void WillEnterFullscreen() override;
   void ResetReplicatedContentSecurityPolicy() override;
   void EnforceInsecureNavigationsSet(const WTF::Vector<uint32_t>& set) override;
+  void SetReplicatedOrigin(
+      const scoped_refptr<const SecurityOrigin>& origin,
+      bool is_potentially_trustworthy_unique_origin) override;
 
  private:
   // Frame protected overrides:
@@ -88,6 +100,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   bool IsRemoteFrame() const override { return true; }
 
   void DetachChildren();
+  void ApplyReplicatedFeaturePolicyHeader();
 
   static void BindToReceiver(
       blink::RemoteFrame* frame,
@@ -98,7 +111,10 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   cc::Layer* cc_layer_ = nullptr;
   bool prevent_contents_opaque_changes_ = false;
   bool is_surface_layer_ = false;
+  ParsedFeaturePolicy feature_policy_header_;
 
+  mojo::AssociatedRemote<mojom::blink::RemoteFrameHost>
+      remote_frame_host_remote_;
   mojo::AssociatedReceiver<mojom::blink::RemoteFrame> receiver_{this};
 };
 

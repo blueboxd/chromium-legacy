@@ -67,8 +67,8 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
   MOCK_CONST_METHOD0(EnclosingScrollableArea, ScrollableArea*());
   MOCK_CONST_METHOD1(VisibleContentRect, IntRect(IncludeScrollbarsInRect));
   MOCK_CONST_METHOD0(ContentsSize, IntSize());
-  MOCK_CONST_METHOD0(LayerForHorizontalScrollbar, GraphicsLayer*());
-  MOCK_CONST_METHOD0(LayerForVerticalScrollbar, GraphicsLayer*());
+  MOCK_CONST_METHOD0(LayerForHorizontalScrollbar, cc::Layer*());
+  MOCK_CONST_METHOD0(LayerForVerticalScrollbar, cc::Layer*());
   MOCK_CONST_METHOD0(HorizontalScrollbar, Scrollbar*());
   MOCK_CONST_METHOD0(VerticalScrollbar, Scrollbar*());
   MOCK_CONST_METHOD0(ScrollbarsHiddenIfOverlay, bool());

@@ -151,6 +151,22 @@ int VendorIdToTranslatedId(const std::string& vendor_id) {
       {"prc_8_120x309mm", PRINT_PREVIEW_MEDIA_PRC_8_120X309MM},
       {"roc_16k_7.75x10.75in", PRINT_PREVIEW_MEDIA_ROC_16K_7_75X10_75IN},
       {"roc_8k_10.75x15.5in", PRINT_PREVIEW_MEDIA_ROC_8K_10_75X15_5IN},
+
+      // Here follow manually curated IDs not blessed with common names
+      // in PWG 5101.1-2002.
+
+      // JIS B*
+      {"jis_b0_1030x1456mm", PRINT_PREVIEW_MEDIA_JIS_B0_1030X1456MM},
+      {"jis_b1_728x1030mm", PRINT_PREVIEW_MEDIA_JIS_B1_728X1030MM},
+      {"jis_b2_515x728mm", PRINT_PREVIEW_MEDIA_JIS_B2_515X728MM},
+      {"jis_b3_364x515mm", PRINT_PREVIEW_MEDIA_JIS_B3_364X515MM},
+      {"jis_b4_257x364mm", PRINT_PREVIEW_MEDIA_JIS_B4_257X364MM},
+      {"jis_b5_182x257mm", PRINT_PREVIEW_MEDIA_JIS_B5_182X257MM},
+      {"jis_b6_128x182mm", PRINT_PREVIEW_MEDIA_JIS_B6_128X182MM},
+      {"jis_b7_91x128mm", PRINT_PREVIEW_MEDIA_JIS_B7_91X128MM},
+      {"jis_b8_64x91mm", PRINT_PREVIEW_MEDIA_JIS_B8_64X91MM},
+      {"jis_b9_45x64mm", PRINT_PREVIEW_MEDIA_JIS_B9_45X64MM},
+      {"jis_b10_32x45mm", PRINT_PREVIEW_MEDIA_JIS_B10_32X45MM},
   });
 
   auto it = media_map->find(vendor_id);

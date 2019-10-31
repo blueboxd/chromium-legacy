@@ -144,9 +144,6 @@ static void RecordVideoCodecStats(container_names::MediaContainerName container,
                                   const VideoDecoderConfig& video_config,
                                   AVColorRange color_range,
                                   MediaLog* media_log) {
-  media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.SRC.VideoCodec." +
-                                            GetCodecName(video_config.codec()));
-
   // TODO(xhwang): Fix these misleading metric names. They should be something
   // like "Media.SRC.Xxxx". See http://crbug.com/716183.
   UMA_HISTOGRAM_ENUMERATION("Media.VideoCodec", video_config.codec(),

@@ -99,7 +99,7 @@ NodeStats::~NodeStats() = default;
 NodeStats::NodeStats(SectionId sectionId,
                      int32_t count,
                      int32_t highlight,
-                     int32_t size) {
+                     float size) {
   child_stats[sectionId] = {count, highlight, size};
 }
 
@@ -124,7 +124,7 @@ NodeStats& NodeStats::operator+=(const NodeStats& other) {
 
 SectionId NodeStats::ComputeBiggestSection() const {
   SectionId ret = SectionId::kNone;
-  int32_t max = 0;
+  float max = 0.0f;
   for (auto& pair : child_stats) {
     if (pair.second.size > max) {
       ret = pair.first;

@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/input_alert_coordinator.h"
 #import "ios/chrome/browser/ui/dialogs/completion_block_util.h"
+#import "ios/chrome/browser/ui/dialogs/dialog_constants.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
 #import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -37,10 +38,6 @@ using completion_block_util::GetSafeJavaScriptAlertCompletion;
 using completion_block_util::GetSafeJavaScriptConfirmationCompletion;
 using completion_block_util::GetSafeJavaScriptPromptCompletion;
 using completion_block_util::GetSafeHTTPAuthCompletion;
-
-// Externed accessibility identifier.
-NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
-    @"JavaScriptDialogTextFieldAccessibiltyIdentifier";
 
 @interface DialogPresenter () <CRWWebStateObserver> {
   // Queue of WebStates which correspond to the keys in

@@ -5,13 +5,14 @@
 package org.chromium.device.nfc;
 
 import android.net.Uri;
-import android.os.Build;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefRecord;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +28,8 @@ public final class NdefMessageUtils {
     private static final String TEXT_MIME = "text/plain";
     private static final String JSON_MIME = "application/json";
     private static final String OCTET_STREAM_MIME = "application/octet-stream";
+    private static final String ENCODING_UTF8 = "utf-8";
+    private static final String ENCODING_UTF16 = "utf-16";
 
     public static final String RECORD_TYPE_EMPTY = "empty";
     public static final String RECORD_TYPE_TEXT = "text";
@@ -100,8 +103,8 @@ public final class NdefMessageUtils {
 
     /**
      * Converts mojo NdefRecord to android.nfc.NdefRecord
-     * |record.data| should always be treated as "UTF-8" encoding bytes, this is guaranteed by the
-     * sender (Blink).
+     * |record.data| can safely be treated as "UTF-8" encoding bytes for non text records, this is
+     * guaranteed by the sender (Blink).
      */
     private static android.nfc.NdefRecord toNdefRecord(NdefRecord record)
             throws InvalidNdefMessageException, IllegalArgumentException,
@@ -110,12 +113,9 @@ public final class NdefMessageUtils {
             case RECORD_TYPE_URL:
                 return android.nfc.NdefRecord.createUri(new String(record.data, "UTF-8"));
             case RECORD_TYPE_TEXT:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    return android.nfc.NdefRecord.createTextRecord(
-                            "en-US", new String(record.data, "UTF-8"));
-                } else {
-                    return android.nfc.NdefRecord.createMime(TEXT_MIME, record.data);
-                }
+                byte[] payload = createPayloadForTextRecord(record);
+                return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
+                        android.nfc.NdefRecord.RTD_TEXT, null, payload);
             case RECORD_TYPE_JSON:
             case RECORD_TYPE_OPAQUE:
                 return android.nfc.NdefRecord.createMime(record.mediaType, record.data);
@@ -215,7 +215,7 @@ public final class NdefMessageUtils {
     /**
      * Constructs TEXT NdefRecord
      */
-    private static NdefRecord createTextRecord(byte[] text) {
+    private static NdefRecord createTextRecord(byte[] text) throws UnsupportedEncodingException {
         // Check that text byte array is not empty.
         if (text.length == 0) {
             return null;
@@ -228,8 +228,10 @@ public final class NdefMessageUtils {
         // First byte of the payload is status byte, defined in Table 3: Status Byte Encodings.
         // 0-5: lang code length
         // 6  : must be zero
-        // 8  : 0 - text is in UTF-8 encoding, 1 - text is in UTF-16 encoding.
+        // 7  : 0 - text is in UTF-8 encoding, 1 - text is in UTF-16 encoding.
+        nfcRecord.encoding = (text[0] & (1 << 7)) == 0 ? ENCODING_UTF8 : ENCODING_UTF16;
         int langCodeLength = (text[0] & (byte) 0x3F);
+        nfcRecord.lang = new String(text, 1, langCodeLength, "US-ASCII");
         int textBodyStartPos = langCodeLength + 1;
         if (textBodyStartPos > text.length) {
             return null;
@@ -241,7 +243,8 @@ public final class NdefMessageUtils {
     /**
      * Constructs well known type (TEXT or URI) NdefRecord
      */
-    private static NdefRecord createWellKnownRecord(android.nfc.NdefRecord record) {
+    private static NdefRecord createWellKnownRecord(android.nfc.NdefRecord record)
+            throws UnsupportedEncodingException {
         if (Arrays.equals(record.getType(), android.nfc.NdefRecord.RTD_URI)) {
             return createURLRecord(record.toUri());
         }
@@ -300,5 +303,20 @@ public final class NdefMessageUtils {
         if (!type.matches("[a-zA-Z0-9()+,\\-:=@;$_!*'.]+")) return null;
 
         return new PairOfDomainAndType(domain, type);
+    }
+
+    private static byte[] createPayloadForTextRecord(NdefRecord record)
+            throws UnsupportedEncodingException {
+        byte[] languageCodeBytes = record.lang.getBytes(StandardCharsets.US_ASCII);
+        ByteBuffer buffer = ByteBuffer.allocate(1 + languageCodeBytes.length + record.data.length);
+        // Lang length is always less than 64 as it is guaranteed by Blink.
+        byte status = (byte) languageCodeBytes.length;
+        if (!record.encoding.equals(ENCODING_UTF8)) {
+            status |= (byte) (1 << 7);
+        }
+        buffer.put(status);
+        buffer.put(languageCodeBytes);
+        buffer.put(record.data);
+        return buffer.array();
     }
 }

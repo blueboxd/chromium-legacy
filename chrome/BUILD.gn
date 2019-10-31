@@ -1759,6 +1759,12 @@ if (is_android) {
     ]
   }
 
+  java_cpp_enum("supervised_user_url_filter_enum_javagen") {
+    sources = [
+      "browser/supervised_user/supervised_user_url_filter.h",
+    ]
+  }
+
   source_set("chrome_android_core") {
     sources = [
       "app/android/chrome_android_initializer.cc",

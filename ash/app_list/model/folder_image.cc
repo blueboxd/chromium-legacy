@@ -104,8 +104,8 @@ void FolderImageSource::DrawIcon(gfx::Canvas* canvas,
 
   canvas->DrawImageIntInPixel(
       shadowed_rep, x * scale + shadow_margin.left(),
-      y * scale + shadow_margin.top(), shadowed_rep.pixel_width(),
-      shadowed_rep.pixel_height(), true, cc::PaintFlags());
+      y * scale + shadow_margin.top(), scale * shadowed.width(),
+      scale * shadowed.height(), true, cc::PaintFlags());
 }
 
 void FolderImageSource::Draw(gfx::Canvas* canvas) {

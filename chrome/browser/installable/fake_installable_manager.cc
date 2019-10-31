@@ -49,10 +49,10 @@ FakeInstallableManager::CreateForWebContentsWithManifest(
   FakeInstallableManager* installable_manager =
       FakeInstallableManager::CreateForWebContents(web_contents);
 
+  const bool valid_manifest = manifest && !manifest->IsEmpty();
   installable_manager->manifest_url_ = manifest_url;
   installable_manager->manifest_ = std::move(manifest);
 
-  const bool valid_manifest = true;
   const bool has_worker = true;
   std::vector<InstallableStatusCode> errors;
 

@@ -54,6 +54,24 @@ class TabListElement extends CustomElement {
      */
     this.draggedItem_;
 
+    /**
+     * An intersection observer is needed to observe which TabElements are
+     * currently in view or close to being in view, which will help determine
+     * which thumbnails need to be tracked to stay fresh and which can be
+     * untracked until they become visible.
+     * @private {!IntersectionObserver}
+     */
+    this.intersectionObserver_ = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        this.tabsApi_.setThumbnailTracked(
+            entry.target.tab.id, entry.isIntersecting);
+      }
+    }, {
+      // The horizontal root margin is set to 100% to also track thumbnails that
+      // are one standard finger swipe away.
+      rootMargin: '0% 100%',
+    });
+
     /** @private {!Element} */
     this.pinnedTabsContainerElement_ =
         /** @type {!Element} */ (
@@ -88,7 +106,7 @@ class TabListElement extends CustomElement {
     this.addEventListener(
         'dragover', (e) => this.onDragOver_(/** @type {!DragEvent} */ (e)));
     document.addEventListener(
-        'visibilitychange', () => this.moveOrScrollToActiveTab_());
+        'visibilitychange', () => this.onVisibilityChange_());
 
     if (loadTimeData.getBoolean('showDemoOptions')) {
       this.shadowRoot.querySelector('#demoOptions').style.display = 'block';
@@ -187,6 +205,8 @@ class TabListElement extends CustomElement {
    * @private
    */
   insertTabOrMoveTo_(tabElement, index) {
+    const isInserting = !tabElement.isConnected;
+
     // Remove the tabElement if it already exists in the DOM
     tabElement.remove();
 
@@ -200,6 +220,10 @@ class TabListElement extends CustomElement {
           index - this.pinnedTabsContainerElement_.childElementCount;
       this.tabsContainerElement_.insertBefore(
           tabElement, this.tabsContainerElement_.childNodes[offsetIndex]);
+    }
+
+    if (isInserting) {
+      this.updateThumbnailTrackStatus_(tabElement);
     }
   }
 
@@ -319,7 +343,6 @@ class TabListElement extends CustomElement {
    */
   onTabCreated_(tab) {
     const tabElement = this.createTabElement_(tab);
-
     if (tabStripOptions.mruEnabled && tab.active && !tab.pinned &&
         tab.index !== this.pinnedTabsContainerElement_.childElementCount) {
       // Newly created active tabs should first be moved to the very beginning
@@ -383,7 +406,16 @@ class TabListElement extends CustomElement {
       if (tab.active) {
         this.scrollToTab_(tabElement);
       }
+
+      this.updateThumbnailTrackStatus_(tabElement);
     }
+  }
+
+  /** @private */
+  onVisibilityChange_() {
+    this.moveOrScrollToActiveTab_();
+    Array.from(this.tabsContainerElement_.children)
+        .forEach((tabElement) => this.updateThumbnailTrackStatus_(tabElement));
   }
 
   /**
@@ -420,6 +452,24 @@ class TabListElement extends CustomElement {
     const tab = this.findTabElement_(tabId);
     if (tab) {
       tab.updateThumbnail(imgData);
+    }
+  }
+
+  /**
+   * @param {!TabElement} tabElement
+   * @private
+   */
+  updateThumbnailTrackStatus_(tabElement) {
+    if (this.tabStripEmbedderProxy_.isVisible() && !tabElement.tab.pinned) {
+      // If the tab strip is visible and the tab is not pinned, let the
+      // IntersectionObserver start observing the TabElement to automatically
+      // determine if the tab's thumbnail should be tracked.
+      this.intersectionObserver_.observe(tabElement);
+    } else {
+      // If the tab strip is not visible or the tab is pinned, the tab does not
+      // need to show or update any thumbnails.
+      this.intersectionObserver_.unobserve(tabElement);
+      this.tabsApi_.setThumbnailTracked(tabElement.tab.id, false);
     }
   }
 }

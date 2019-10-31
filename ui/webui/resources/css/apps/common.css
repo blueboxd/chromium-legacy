@@ -41,16 +41,16 @@ button.white-button {
 }
 
 button.blue-button {
-  background-color: rgb(90, 151, 255);
+  background-color: rgb(50, 100, 255);
   border-color: rgb(43, 103, 206);
 }
 
 button.blue-button:hover {
-  background-color: rgb(98, 156, 255);
+  background-color: rgb(60, 110, 255);
 }
 
 button.blue-button:active {
-  background-color: rgb(66, 121, 216);
+  background-color: rgb(26, 91, 216);
   border-color: rgb(35, 82, 162);
 }
 
@@ -59,6 +59,6 @@ button.blue-button:focus {
 }
 
 button.blue-button[disabled] {
-  background-color: rgb(171, 201, 255);
+  background-color: rgb(110, 140, 255);
   border-color: rgb(148, 177, 229);
 }

@@ -22,7 +22,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.metrics.ChromeUserMetricsExtensionProtos.ChromeUserMetricsExtension;
 import org.chromium.components.metrics.MetricsSwitches;
-import org.chromium.components.metrics.SystemProfileProtos.SystemProfileProto;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.BlockingQueue;
@@ -109,45 +108,5 @@ public class AwMetricsMetadataTest {
                 ChromeUserMetricsExtension.Product.forNumber(log.getProduct()));
         Assert.assertTrue("Should have some client_id", log.hasClientId());
         Assert.assertTrue("Should have some session_id", log.hasSessionId());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"AndroidWebView"})
-    public void testMetadata_buildInfo() throws Throwable {
-        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
-        SystemProfileProto systemProfile = log.getSystemProfile();
-        Assert.assertTrue("Should have some build_timestamp", systemProfile.hasBuildTimestamp());
-        Assert.assertTrue("Should have some app_version", systemProfile.hasAppVersion());
-        Assert.assertTrue("Should have some channel", systemProfile.hasChannel());
-        Assert.assertTrue(
-                "Should have some is_instrumented_build", systemProfile.hasIsInstrumentedBuild());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"AndroidWebView"})
-    public void testMetadata_miscellaneousSystemProfileInfo() throws Throwable {
-        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
-        SystemProfileProto systemProfile = log.getSystemProfile();
-        // TODO(ntfschr): assert UMA enabled date when https://crbug.com/995544 is resolved.
-        Assert.assertTrue("Should have some install_date", systemProfile.hasInstallDate());
-        // Don't assert application_locale's value, because we don't want to enforce capitalization
-        // requirements on the metrics service (ex. in case it switches from "en-US" to "en-us" for
-        // some reason).
-        Assert.assertTrue(
-                "Should have some application_locale", systemProfile.hasApplicationLocale());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"AndroidWebView"})
-    public void testMetadata_osData() throws Throwable {
-        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
-        SystemProfileProto systemProfile = log.getSystemProfile();
-        Assert.assertEquals("Android", systemProfile.getOs().getName());
-        Assert.assertTrue("Should have some os.version", systemProfile.getOs().hasVersion());
-        Assert.assertTrue("Should have some os.build_fingerprint",
-                systemProfile.getOs().hasBuildFingerprint());
     }
 }

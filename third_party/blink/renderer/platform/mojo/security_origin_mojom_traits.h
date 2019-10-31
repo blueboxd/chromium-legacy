@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_SECURITY_ORIGIN_MOJOM_TRAITS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_SECURITY_ORIGIN_MOJOM_TRAITS_H_
 
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/mojom/origin.mojom-blink-forward.h"
@@ -22,9 +23,13 @@ struct UrlOriginAdapter {
       const base::Optional<base::UnguessableToken>& nonce_if_opaque) {
     scoped_refptr<blink::SecurityOrigin> tuple_origin;
     if (!tuple.IsInvalid()) {
+      // url::SchemeHostPort is percent encoded and SecurityOrigin is percent
+      // decoded.
+      String host = blink::DecodeURLEscapeSequences(
+          String::FromUTF8(tuple.host()),
+          url::DecodeURLMode::kUTF8OrIsomorphic);
       tuple_origin = blink::SecurityOrigin::Create(
-          String::FromUTF8(tuple.scheme()), String::FromUTF8(tuple.host()),
-          tuple.port());
+          String::FromUTF8(tuple.scheme()), host, tuple.port());
     }
 
     if (nonce_if_opaque) {

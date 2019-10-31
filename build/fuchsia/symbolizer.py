@@ -7,7 +7,12 @@ import os
 import subprocess
 
 from common import SDK_ROOT
+from common import GetHostArchFromPlatform
+from common import GetHostToolPathFromPlatform
 
+# TODO(steveroe): Change 'llvm-3.8' to 'llvm' after docker image is updated.
+ARM64_DOCKER_LLVM_SYMBOLIZER_PATH = os.path.join('/', 'usr', 'lib', 'llvm-3.8',
+                                                 'bin', 'llvm-symbolizer')
 
 def RunSymbolizer(input_pipe, build_ids_files):
   """Starts a symbolizer process.
@@ -17,10 +22,15 @@ def RunSymbolizer(input_pipe, build_ids_files):
                   unstripped binaries on the filesystem.
   Returns a Popen object for the started process."""
 
-  llvm_symbolizer_path = os.path.join(SDK_ROOT, os.pardir, os.pardir,
-                                      'llvm-build', 'Release+Asserts', 'bin',
-                                      'llvm-symbolizer')
-  symbolizer = os.path.join(SDK_ROOT, 'tools', 'symbolize')
+  if (GetHostArchFromPlatform() == 'arm64' and
+      os.path.isfile(ARM64_DOCKER_LLVM_SYMBOLIZER_PATH)):
+    llvm_symbolizer_path = ARM64_DOCKER_LLVM_SYMBOLIZER_PATH
+  else:
+    llvm_symbolizer_path = os.path.join(SDK_ROOT, os.pardir, os.pardir,
+                                        'llvm-build', 'Release+Asserts', 'bin',
+                                        'llvm-symbolizer')
+
+  symbolizer = GetHostToolPathFromPlatform('symbolize')
   symbolizer_cmd = [symbolizer,
                     '-ids-rel', '-llvm-symbolizer', llvm_symbolizer_path,
                     '-build-id-dir', os.path.join(SDK_ROOT, '.build-id')]

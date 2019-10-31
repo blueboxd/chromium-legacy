@@ -296,8 +296,8 @@ crbug.com/591099 external/wpt/quirks/line-height-trailing-collapsable-whitespace
 ### fast/css/
 crbug.com/591099 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
-### fast/text/
-crbug.com/591099 fast/text/justify-ideograph-simple.html [ Failure ]
+### virtual/text-antialias/
+crbug.com/591099 virtual/text-antialias/justify-ideograph-simple.html [ Failure ]
 
 ### http/tests/
 crbug.com/591099 http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Failure ]
@@ -328,7 +328,7 @@ crbug.com/591099 virtual/scalefactor200withoutzoom/external/wpt/largest-contentf
 
 ### 7/22/2019 update
 crbug.com/591099 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
-crbug.com/591099 fast/text/emoji-vertical-origin-visual.html [ Failure ]
+crbug.com/591099 virtual/text-antialias/emoji-vertical-origin-visual.html [ Failure ]
 crbug.com/591099 virtual/gpu/fast/canvas/image-object-in-canvas.html [ Failure ]
 crbug.com/591099 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 
@@ -387,9 +387,9 @@ Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shape
 Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-025.html [ Failure ]
 Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-020.html [ Failure ]
 Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-021.html [ Failure ]
-Bug(none) fast/text/ellipsis-with-self-painting-layer.html [ Failure ]
-Bug(none) fast/text/zwnj-disables-kerning.html [ Failure ]
-Bug(none) fast/text/international/shape-across-elements-simple.html [ Failure ]
+Bug(none) virtual/text-antialias/ellipsis-with-self-painting-layer.html [ Failure ]
+Bug(none) virtual/text-antialias/zwnj-disables-kerning.html [ Failure ]
+Bug(none) virtual/text-antialias/international/shape-across-elements-simple.html [ Failure ]
 Bug(none) paint/invalidation/overflow/float-overflow-right.html [ Failure ]
 Bug(none) paint/invalidation/overflow/float-overflow.html [ Failure ]
 Bug(none) scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Crash ]

@@ -6,6 +6,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -89,7 +90,7 @@ void SharedGpuContext::CreateContextProviderIfNeeded(
   // thread it was made on, or else lock it.
   if (context_provider_wrapper_ &&
       context_provider_wrapper_->ContextProvider()
-              ->ContextGL()
+              ->RasterInterface()
               ->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     // If the context isn't lost then |is_gpu_compositing_disabled_| state
     // hasn't changed yet. RenderThreadImpl::CompositingModeFallbackToSoftware()

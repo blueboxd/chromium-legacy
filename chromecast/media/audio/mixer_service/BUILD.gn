@@ -121,6 +121,23 @@ cast_source_set("loopback_connection") {
   ]
 }
 
+cast_source_set("redirected_audio_connection") {
+  sources = [
+    "redirected_audio_connection.cc",
+    "redirected_audio_connection.h",
+  ]
+
+  deps = [
+    ":common",
+    ":connection",
+    ":proto",
+    "//base",
+    "//chromecast/net:io_buffer_pool",
+    "//chromecast/public",
+    "//net",
+  ]
+}
+
 cast_source_set("audio_socket_service") {
   sources = [
     "audio_socket_service.cc",

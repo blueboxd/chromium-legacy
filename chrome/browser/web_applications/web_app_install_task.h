@@ -50,6 +50,17 @@ class WebAppInstallTask : content::WebContentsObserver {
   // The actual resulting app_id is reported as a part of OnceInstallCallback.
   void ExpectAppId(const AppId& expected_app_id);
 
+  using LoadWebAppAndCheckInstallabilityCallback = base::OnceCallback<void(
+      std::unique_ptr<content::WebContents> web_contents,
+      const AppId& app_id,
+      InstallResultCode code)>;
+  // Load a web app from the given URL and check installability.
+  void LoadWebAppAndCheckInstallability(
+      const GURL& url,
+      WebappInstallSource install_source,
+      WebAppUrlLoader* url_loader,
+      LoadWebAppAndCheckInstallabilityCallback callback);
+
   // Checks a WebApp installability, retrieves manifest and icons and
   // then performs the actual installation.
   void InstallWebAppFromManifest(
@@ -134,14 +145,23 @@ class WebAppInstallTask : content::WebContentsObserver {
   // install_callback_.
   bool ShouldStopInstall() const;
 
-  void OnWebAppUrlLoaded(WebAppUrlLoader::Result result);
+  void OnWebAppUrlLoadedGetWebApplicationInfo(WebAppUrlLoader::Result result);
+
+  void OnWebAppUrlLoadedCheckInstallabilityAndRetrieveManifest(
+      content::WebContents* web_contents,
+      WebAppUrlLoader::Result result);
+  void OnWebAppInstallabilityChecked(
+      base::Optional<blink::Manifest> opt_manifest,
+      bool valid_manifest_for_web_app,
+      bool is_installable);
+
   void OnGetWebApplicationInfo(
       bool force_shortcut_app,
       std::unique_ptr<WebApplicationInfo> web_app_info);
   void OnDidPerformInstallableCheck(
       std::unique_ptr<WebApplicationInfo> web_app_info,
       bool force_shortcut_app,
-      const blink::Manifest& manifest,
+      base::Optional<blink::Manifest> opt_manifest,
       bool valid_manifest_for_web_app,
       bool is_installable);
 

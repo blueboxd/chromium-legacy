@@ -22,7 +22,7 @@ import uuid
 
 from symbolizer import SymbolizerFilter
 
-FAR = os.path.join(common.SDK_ROOT, 'tools', 'far')
+FAR = common.GetHostToolPathFromPlatform('far')
 
 # Amount of time to wait for the termination of the system log output thread.
 _JOIN_TIMEOUT_SECS = 5

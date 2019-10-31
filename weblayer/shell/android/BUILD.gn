@@ -28,8 +28,10 @@ android_library("weblayer_shell_java") {
     "//third_party/android_deps:android_support_v4_java",
     "//weblayer/public/java",
   ]
-  java_files =
-      [ "shell_apk/src/org/chromium/weblayer/shell/WebLayerShellActivity.java" ]
+  java_files = [
+    "shell_apk/src/org/chromium/weblayer/shell/InstrumentationActivity.java",
+    "shell_apk/src/org/chromium/weblayer/shell/WebLayerShellActivity.java",
+  ]
 }
 
 template("weblayer_shell_apk_helper") {
@@ -210,20 +212,19 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
   ]
   java_files = [
     "javatests/src/org/chromium/weblayer/test/BrowserObserverTest.java",
+    "javatests/src/org/chromium/weblayer/test/DataClearingTest.java",
     "javatests/src/org/chromium/weblayer/test/DownloadDelegateTest.java",
     "javatests/src/org/chromium/weblayer/test/EventUtils.java",
-    "javatests/src/org/chromium/weblayer/test/FullscreenDelegateTest.java",
-    "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
-    "javatests/src/org/chromium/weblayer/test/DataClearingTest.java",
-    "javatests/src/org/chromium/weblayer/test/SmokeTest.java",
     "javatests/src/org/chromium/weblayer/test/EventUtils.java",
     "javatests/src/org/chromium/weblayer/test/ExecuteScriptTest.java",
-    "javatests/src/org/chromium/weblayer/test/RenderingTest.java",
-    "javatests/src/org/chromium/weblayer/test/TopControlsTest.java",
-    "javatests/src/org/chromium/weblayer/test/WebLayerShellActivityTestRule.java",
     "javatests/src/org/chromium/weblayer/test/FragmentRestoreTest.java",
+    "javatests/src/org/chromium/weblayer/test/FullscreenDelegateTest.java",
     "javatests/src/org/chromium/weblayer/test/InputTypesTest.java",
-    "shell_apk/src/org/chromium/weblayer/shell/WebLayerShellActivity.java",
+    "javatests/src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
+    "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
+    "javatests/src/org/chromium/weblayer/test/RenderingTest.java",
+    "javatests/src/org/chromium/weblayer/test/SmokeTest.java",
+    "javatests/src/org/chromium/weblayer/test/TopControlsTest.java",
   ]
   additional_apks = [
     "//weblayer/shell/android:weblayer_support_apk",

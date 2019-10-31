@@ -86,4 +86,19 @@ public final class Navigation extends IClientNavigation.Stub {
             throw new APICallException(e);
         }
     }
+
+    /**
+     * Whether the navigation happened without changing document. Examples of same document
+     * navigations are:
+     *  - reference fragment navigations
+     *  - pushState/replaceState
+     *  - same page history navigation
+     */
+    public boolean isSameDocument() {
+        try {
+            return mNavigationImpl.isSameDocument();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
 }

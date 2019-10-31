@@ -68,6 +68,7 @@ class HitTestingTransformState {
   FloatPoint MappedPoint() const;
   FloatQuad MappedQuad() const;
   FloatQuad MappedArea() const;
+  PhysicalRect BoundsOfMappedQuad() const;
   PhysicalRect BoundsOfMappedArea() const;
   void Flatten();
 

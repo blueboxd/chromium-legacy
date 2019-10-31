@@ -60,6 +60,7 @@ class ServicesDelegate {
     virtual bool CanCreateDownloadProtectionService() = 0;
     virtual bool CanCreateIncidentReportingService() = 0;
     virtual bool CanCreateResourceRequestDetector() = 0;
+    virtual bool CanCreateBinaryUploadService() = 0;
 
     // Caller takes ownership of the returned object. Cannot use std::unique_ptr
     // because services may not be implemented for some build configs.
@@ -67,6 +68,7 @@ class ServicesDelegate {
     virtual DownloadProtectionService* CreateDownloadProtectionService() = 0;
     virtual IncidentReportingService* CreateIncidentReportingService() = 0;
     virtual ResourceRequestDetector* CreateResourceRequestDetector() = 0;
+    virtual BinaryUploadService* CreateBinaryUploadService() = 0;
   };
 
   // Creates the ServicesDelegate using its's default ServicesCreator.

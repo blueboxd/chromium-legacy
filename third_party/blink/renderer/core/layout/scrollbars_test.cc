@@ -272,33 +272,27 @@ TEST(ScrollbarsTestWithOwnWebViewHelper, ScrollbarSizeForUseZoomDSF) {
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame())->GetDocument();
 
   VisualViewport& visual_viewport = document->GetPage()->GetVisualViewport();
-  int horizontal_scrollbar = clampTo<int>(std::floor(
-      visual_viewport.LayerForHorizontalScrollbar()->Size().height()));
-  int vertical_scrollbar = clampTo<int>(
-      std::floor(visual_viewport.LayerForVerticalScrollbar()->Size().width()));
+  int horizontal_scrollbar =
+      visual_viewport.LayerForHorizontalScrollbar()->bounds().height();
+  int vertical_scrollbar =
+      visual_viewport.LayerForVerticalScrollbar()->bounds().width();
 
   const float device_scale = 3.5f;
   client.set_device_scale_factor(device_scale);
   web_view_impl->MainFrameWidget()->Resize(IntSize(400, 300));
 
-  EXPECT_EQ(
-      clampTo<int>(std::floor(horizontal_scrollbar * device_scale)),
-      clampTo<int>(std::floor(
-          visual_viewport.LayerForHorizontalScrollbar()->Size().height())));
+  EXPECT_EQ(clampTo<int>(std::floor(horizontal_scrollbar * device_scale)),
+            visual_viewport.LayerForHorizontalScrollbar()->bounds().height());
   EXPECT_EQ(clampTo<int>(std::floor(vertical_scrollbar * device_scale)),
-            clampTo<int>(std::floor(
-                visual_viewport.LayerForVerticalScrollbar()->Size().width())));
+            visual_viewport.LayerForVerticalScrollbar()->bounds().width());
 
   client.set_device_scale_factor(1.f);
   web_view_impl->MainFrameWidget()->Resize(IntSize(800, 600));
 
-  EXPECT_EQ(
-      horizontal_scrollbar,
-      clampTo<int>(std::floor(
-          visual_viewport.LayerForHorizontalScrollbar()->Size().height())));
+  EXPECT_EQ(horizontal_scrollbar,
+            visual_viewport.LayerForHorizontalScrollbar()->bounds().height());
   EXPECT_EQ(vertical_scrollbar,
-            clampTo<int>(std::floor(
-                visual_viewport.LayerForVerticalScrollbar()->Size().width())));
+            visual_viewport.LayerForVerticalScrollbar()->bounds().width());
 }
 
 // Ensure that causing a change in scrollbar existence causes a nested layout
@@ -1578,7 +1572,7 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
 
   // For root Scrollbar, mobile emulator will change them to page VisualViewport
   // scrollbar layer.
-  EXPECT_TRUE(viewport.LayerForHorizontalScrollbar()->Parent());
+  EXPECT_TRUE(viewport.LayerForHorizontalScrollbar());
 
   // Ensure div scrollbar also change to mobile overlay theme.
   EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
@@ -2130,7 +2124,7 @@ TEST_F(ScrollbarsTest, PLSADisposeShouldClearPointerInLayers) {
   PaintLayer* paint_layer = scrollable_div->Layer();
   ASSERT_TRUE(paint_layer);
 
-  GraphicsLayer* graphics_layer = scrollable_div->LayerForScrolling();
+  cc::Layer* graphics_layer = scrollable_div->LayerForScrolling();
   ASSERT_TRUE(graphics_layer);
 
   div->setAttribute(html_names::kClassAttr, "hide");

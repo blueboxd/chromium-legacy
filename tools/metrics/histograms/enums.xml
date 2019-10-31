@@ -2658,7 +2658,9 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="ARC app preferred and pressed"/>
   <int value="9" label="Progressive web app pressed"/>
   <int value="10" label="Error before showing picker"/>
+  <int value="11" label="Invalid"/>
   <int value="12" label="External device pressed"/>
+  <int value="13" label="Mac native app pressed"/>
 </enum>
 
 <enum name="ArcIntentHandlerDestinationPlatform">
@@ -2669,6 +2671,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Chrome"/>
   <int value="2" label="Progressive web app"/>
   <int value="3" label="External device"/>
+  <int value="4" label="Mac native app"/>
 </enum>
 
 <enum name="ArcIntentHelperOpenType">
@@ -7915,6 +7918,8 @@ histogram as enum -->
   <int value="2" label="Initiated by WebStore Installer"/>
   <int value="3" label="Initiated by ImageBurner"/>
   <int value="4" label="Initiated by Plugin Installer"/>
+  <int value="5" label="Initiated by PDF plugin"/>
+  <int value="6" label="Initiated by Extension"/>
 </enum>
 
 <enum name="ChromeHomeOpenReason">
@@ -10807,6 +10812,10 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CookieDeleteEquivalent">
+  <obsolete>
+    Deprecated 2019-10-23 as part of cookie histogram cleanup
+    (https://crbug.com/993120).
+  </obsolete>
   <int value="0"
       label="Attempt to delete an equivalent cookie during a set cookie
              operation"/>
@@ -18541,8 +18550,8 @@ Called by update_net_error_codes.py.-->
   <int value="587" label="DelayDeliveryUntilVerdict"/>
   <int value="588" label="AllowPasswordProtectedFiles"/>
   <int value="589" label="CheckContentCompliance"/>
-  <int value="590" label="DomainsToCheckComplianceOfDownloadedContent"/>
-  <int value="591" label="DomainsToNotCheckComplianceOfUploadedContent"/>
+  <int value="590" label="URLsToCheckComplianceOfDownloadedContent"/>
+  <int value="591" label="URLsToNotCheckComplianceOfUploadedContent"/>
   <int value="592" label="DictationEnabled"/>
   <int value="593" label="KeyboardFocusHighlightEnabled"/>
   <int value="594" label="CursorHighlightEnabled"/>
@@ -18551,7 +18560,7 @@ Called by update_net_error_codes.py.-->
   <int value="597" label="AutoclickEnabled"/>
   <int value="598" label="RendererCodeIntegrityEnabled"/>
   <int value="599" label="DeviceLoginScreenLargeCursorEnabled"/>
-  <int value="600" label="DomainsToCheckForMalwareOfUploadedContent"/>
+  <int value="600" label="URLsToCheckForMalwareOfUploadedContent"/>
   <int value="601" label="HSTSPolicyBypassList"/>
   <int value="602" label="ReportDeviceOsUpdateStatus"/>
   <int value="603" label="DeviceLoginScreenWebUsbAllowDevicesForUrls"/>
@@ -18593,6 +18602,8 @@ Called by update_net_error_codes.py.-->
   <int value="639" label="CrostiniAnsiblePlaybook"/>
   <int value="640" label="WebRtcLocalIpsAllowedUrls"/>
   <int value="641" label="PerAppTimeLimits"/>
+  <int value="642" label="DnsOverHttpsTemplates"/>
+  <int value="643" label="GloballyScopeHTTPAuthCacheEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -36140,6 +36151,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1241002324" label="FocusMode:enabled"/>
   <int value="-1239262870" label="TextFragmentAnchor:enabled"/>
+  <int value="-1238992816" label="ShelfDimming:enabled"/>
   <int value="-1237921078" label="SyncUSSNigori:enabled"/>
   <int value="-1237621246" label="WebXRGamepadSupport:disabled"/>
   <int value="-1236065190" label="HardwareMediaKeyHandling:disabled"/>
@@ -37319,6 +37331,7 @@ from previous Chrome versions.
   <int value="297095559" label="ShowBluetoothDebugLogToggle:disabled"/>
   <int value="299792415" label="OmniboxSuggestionTransparencyOptions:enabled"/>
   <int value="300095239" label="FCMInvalidations:enabled"/>
+  <int value="300870732" label="ShelfDimming:disabled"/>
   <int value="301630312" label="ForcedColors:disabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
   <int value="303058039" label="AccountConsistency:disabled"/>
@@ -41582,6 +41595,12 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Dismissed"/>
   <int value="3" label="Presented"/>
   <int value="4" label="ReturnedToOrigin"/>
+</enum>
+
+<enum name="MobileMessagesConfirmInfobarEvents">
+  <int value="0" label="Presented"/>
+  <int value="1" label="Accepted"/>
+  <int value="2" label="Dismissed"/>
 </enum>
 
 <enum name="MobileMessagesModalEvent">
@@ -60396,24 +60415,24 @@ would be helpful to identify which type is being sent.
   <int value="12" label="Apps"/>
   <int value="13" label="App Settings"/>
   <int value="14" label="Extension Settings"/>
-  <int value="15" label="App Notifications"/>
+  <int value="15" label="App Notifications (deprecated)"/>
   <int value="16" label="History Delete Directives"/>
   <int value="17" label="Nigori"/>
   <int value="18" label="Device Information"/>
   <int value="19" label="Experiments"/>
-  <int value="20" label="Synced Notifications"/>
+  <int value="20" label="Synced Notifications (deprecated)"/>
   <int value="21" label="Priority Preferences"/>
   <int value="22" label="Dictionary"/>
   <int value="23" label="Favicon Images"/>
   <int value="24" label="Favicon Tracking"/>
   <int value="25" label="Proxy Tabs"/>
   <int value="26" label="Managed User Settings"/>
-  <int value="27" label="Managed Users"/>
-  <int value="28" label="Articles"/>
+  <int value="27" label="Managed Users (deprecated)"/>
+  <int value="28" label="Articles (deprecated)"/>
   <int value="29" label="App List"/>
-  <int value="30" label="Managed User Shared Settings"/>
-  <int value="31" label="Synced Notification App Info"/>
-  <int value="32" label="Wifi Credentials"/>
+  <int value="30" label="Managed User Shared Settings (deprecated)"/>
+  <int value="31" label="Synced Notification App Info (deprecated)"/>
+  <int value="32" label="Wifi Credentials (deprecated)"/>
   <int value="33" label="Managed User Whitelists"/>
   <int value="34" label="Autofill Wallet"/>
   <int value="35" label="Autofill Wallet Metadata"/>

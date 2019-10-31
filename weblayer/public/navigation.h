@@ -35,7 +35,12 @@ class Navigation {
 
   virtual State GetState() = 0;
 
-  // TODO(jam): add IsSameDocument
+  // Whether the navigation happened without changing document. Examples of
+  // same document navigations are:
+  // * reference fragment navigations
+  // * pushState/replaceState
+  // * same page history navigation
+  virtual bool IsSameDocument() = 0;
 };
 
 }  // namespace weblayer

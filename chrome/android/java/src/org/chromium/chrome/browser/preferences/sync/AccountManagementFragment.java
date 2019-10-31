@@ -31,6 +31,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -42,6 +43,7 @@ import org.chromium.chrome.browser.signin.SignOutDialogFragment.SignOutDialogLis
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SigninUtils;
+import org.chromium.chrome.browser.superviseduser.FilteringBehavior;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
@@ -232,8 +234,9 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         if (mProfile.isChild()) {
             PrefServiceBridge prefService = PrefServiceBridge.getInstance();
 
-            String firstParent = prefService.getSupervisedUserCustodianEmail();
-            String secondParent = prefService.getSupervisedUserSecondCustodianEmail();
+            String firstParent = prefService.getString(Pref.SUPERVISED_USER_CUSTODIAN_EMAIL);
+            String secondParent =
+                    prefService.getString(Pref.SUPERVISED_USER_SECOND_CUSTODIAN_EMAIL);
             String parentText;
 
             if (!secondParent.isEmpty()) {
@@ -247,10 +250,11 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
             parentAccounts.setSummary(parentText);
 
             final int childContentSummary;
-            int defaultBehavior = prefService.getDefaultSupervisedUserFilteringBehavior();
-            if (defaultBehavior == PrefServiceBridge.SUPERVISED_USER_FILTERING_BLOCK) {
+            int defaultBehavior =
+                    prefService.getInteger(Pref.DEFAULT_SUPERVISED_USER_FILTERING_BEHAVIOR);
+            if (defaultBehavior == FilteringBehavior.BLOCK) {
                 childContentSummary = R.string.account_management_child_content_approved;
-            } else if (prefService.isSupervisedUserSafeSitesEnabled()) {
+            } else if (prefService.getBoolean(Pref.SUPERVISED_USER_SAFE_SITES)) {
                 childContentSummary = R.string.account_management_child_content_filter_mature;
             } else {
                 childContentSummary = R.string.account_management_child_content_all;

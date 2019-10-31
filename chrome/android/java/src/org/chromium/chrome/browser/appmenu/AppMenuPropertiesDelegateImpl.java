@@ -48,6 +48,9 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Base implementation of {@link AppMenuPropertiesDelegate} that handles hiding and showing menu
  * items based on activity state.
@@ -66,9 +69,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     private final ObservableSupplier<BookmarkBridge> mBookmarkBridgeSupplier;
     private @Nullable Callback<OverviewModeBehavior> mOverviewModeSupplierCallback;
     private Callback<BookmarkBridge> mBookmarkBridgeSupplierCallback;
+    private boolean mUpdateMenuItemVisible;
 
     protected @Nullable OverviewModeBehavior mOverviewModeBehavior;
     protected BookmarkBridge mBookmarkBridge;
+    protected Runnable mAppMenuInvalidator;
 
     /**
      * Construct a new {@link AppMenuPropertiesDelegateImpl}.
@@ -124,6 +129,13 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         return R.menu.main_menu;
     }
 
+    @Override
+    public @Nullable List<CustomViewBinder> getCustomViewBinders() {
+        List<CustomViewBinder> customViewBinders = new ArrayList<>();
+        customViewBinders.add(new UpdateMenuItemViewBinder());
+        return customViewBinders;
+    }
+
     /**
      * @return Whether the app menu for a web page should be shown.
      */
@@ -140,7 +152,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     }
 
     @Override
-    public void prepareMenu(Menu menu) {
+    public void prepareMenu(Menu menu, AppMenuHandler handler) {
         // Exactly one of these will be true, depending on the type of menu showing.
         boolean isPageMenu = shouldShowPageMenu();
         boolean isOverviewMenu;
@@ -206,8 +218,13 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 }
             }
 
-            menu.findItem(R.id.update_menu_id)
-                    .setVisible(UpdateMenuItemHelper.getInstance().getUiState().itemState != null);
+            mUpdateMenuItemVisible =
+                    UpdateMenuItemHelper.getInstance().getUiState().itemState != null;
+            menu.findItem(R.id.update_menu_id).setVisible(mUpdateMenuItemVisible);
+            if (mUpdateMenuItemVisible) {
+                mAppMenuInvalidator = () -> handler.invalidateAppMenu();
+                UpdateMenuItemHelper.getInstance().registerObserver(mAppMenuInvalidator);
+            }
 
             boolean hasMoreThanOneTab = mTabModelSelector.getTotalTabCount() > 1;
             menu.findItem(R.id.move_to_other_window_menu_id)
@@ -373,6 +390,12 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     @Override
     public void onMenuDismissed() {
         mReloadMenuItem = null;
+        if (mUpdateMenuItemVisible) {
+            UpdateMenuItemHelper.getInstance().onMenuDismissed();
+            UpdateMenuItemHelper.getInstance().unregisterObserver(mAppMenuInvalidator);
+            mUpdateMenuItemVisible = false;
+            mAppMenuInvalidator = null;
+        }
     }
 
     // Set enabled to be |enable| for all MenuItems with |id| in |menu|.

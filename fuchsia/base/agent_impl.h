@@ -115,7 +115,6 @@ class AgentImpl : public ::fuchsia::modular::Agent {
   void Connect(std::string requester_url,
                fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services)
       override;
-  void RunTask(std::string task_id, RunTaskCallback callback) override;
 
  private:
   friend class ComponentStateBase;

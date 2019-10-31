@@ -971,7 +971,10 @@ RangeF TextRunHarfBuzz::GetGraphemeBounds(RenderTextHarfBuzz* render_text,
         ++total;
       }
     }
-    DCHECK_GT(total, 0);
+    // With ICU 65.1, DCHECK_GT() below fails.
+    // See https://crbug.com/1017047 for more details.
+    //
+    // DCHECK_GT(total, 0);
 
     // It's possible for |text_index| to point to a diacritical mark, at the end
     // of |chars|. In this case all the grapheme boundaries come before it. Just

@@ -72,6 +72,9 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 # ========================
 # Fails on all platforms
 
+# Need to merge WEBGL_multi_draw_instanced into WEBGL_multi_draw
+crbug.com/890539 conformance/extensions/webgl-multi-draw.html [ Skip ]
+
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607
 crbug.com/849572 conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]

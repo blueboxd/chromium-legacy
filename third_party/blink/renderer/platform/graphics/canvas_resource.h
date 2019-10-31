@@ -25,6 +25,14 @@ class GpuMemoryBuffer;
 
 }  // namespace gfx
 
+namespace gpu {
+namespace raster {
+
+class RasterInterface;
+
+}  // namespace raster
+}  // namespace gpu
+
 namespace viz {
 
 class SingleReleaseCallback;
@@ -184,6 +192,7 @@ class PLATFORM_EXPORT CanvasResource
   virtual void TearDown() = 0;
 
   gpu::gles2::GLES2Interface* ContextGL() const;
+  gpu::raster::RasterInterface* RasterInterface() const;
   GLenum GLFilter() const;
   GrContext* GetGrContext() const;
   virtual base::WeakPtr<WebGraphicsContext3DProviderWrapper>

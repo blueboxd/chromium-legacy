@@ -38,6 +38,9 @@ const base::TimeDelta default_action_timeout = base::TimeDelta::FromSeconds(30);
 // an action. The Captured Site Automation Framework uses this timeout to
 // break out of a wait loop after a hover action.
 const base::TimeDelta visual_update_timeout = base::TimeDelta::FromSeconds(20);
+// The amount of time to do a precheck on the page before going to a click
+// fallback action.
+const base::TimeDelta click_fallback_timeout = base::TimeDelta::FromSeconds(5);
 // When we cause a scroll event, make sure we give the page a moment to react
 // before continuing.
 const base::TimeDelta scroll_wait_timeout = base::TimeDelta::FromSeconds(2);
@@ -250,6 +253,7 @@ class TestRecipeReplayer {
       const std::unique_ptr<base::DictionaryValue>& recipe);
   bool ExecuteAutofillAction(const base::DictionaryValue& action);
   bool ExecuteClickAction(const base::DictionaryValue& action);
+  bool ExecuteClickIfNotSeenAction(const base::DictionaryValue& action);
   bool ExecuteCoolOffAction(const base::DictionaryValue& action);
   bool ExecuteCloseTabAction(const base::DictionaryValue& action);
   bool ExecuteHoverAction(const base::DictionaryValue& action);
@@ -281,14 +285,17 @@ class TestRecipeReplayer {
                                     std::string* xpath,
                                     content::RenderFrameHost** frame,
                                     bool set_focus = false,
-                                    bool relaxed_visibility = false);
+                                    bool relaxed_visibility = false,
+                                    bool ignore_failure = false);
   bool WaitForElementToBeReady(const std::string& xpath,
                                const int visibility_enum_val,
-                               content::RenderFrameHost* frame);
+                               content::RenderFrameHost* frame,
+                               bool ignore_failure = false);
   bool WaitForStateChange(
       content::RenderFrameHost* frame,
       const std::vector<std::string>& state_assertions,
-      const base::TimeDelta& timeout = default_action_timeout);
+      const base::TimeDelta& timeout = default_action_timeout,
+      bool ignore_failure = false);
   bool AllAssertionsPassed(const content::ToRenderFrameHost& frame,
                            const std::vector<std::string>& assertions);
   bool ExecuteJavaScriptOnElementByXpath(

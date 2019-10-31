@@ -132,6 +132,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Activates |item's| window.
   void SelectWindow(OverviewItem* item);
 
+  // Sets the dragged window on |split_view_drag_indicators_|.
+  void SetSplitViewDragIndicatorsDraggedWindow(aura::Window* dragged_window);
+
   // Called to show or hide the split view drag indicators. This will do
   // nothing if split view is not enabled. |event_location| is used to reparent
   // |split_view_drag_indicators_|'s widget, if necessary.

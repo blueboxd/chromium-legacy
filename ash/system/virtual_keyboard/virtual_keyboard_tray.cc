@@ -29,8 +29,6 @@ namespace ash {
 
 VirtualKeyboardTray::VirtualKeyboardTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new views::ImageView), shelf_(shelf) {
-  SetInkDropMode(InkDropMode::ON);
-
   UpdateIcon();
   tray_container()->AddChildView(icon_);
 

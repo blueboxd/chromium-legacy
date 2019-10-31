@@ -24,10 +24,6 @@
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -61,9 +57,10 @@ void AssistantController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kAssistantNumWarmerWelcomeTriggered, 0);
 }
 
-void AssistantController::BindRequest(
-    chromeos::assistant::mojom::AssistantControllerRequest request) {
-  assistant_controller_bindings_.AddBinding(this, std::move(request));
+void AssistantController::BindReceiver(
+    mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
+        receiver) {
+  assistant_controller_receivers_.Add(this, std::move(receiver));
 }
 
 void AssistantController::BindReceiver(
@@ -336,7 +333,7 @@ void AssistantController::OnLockedFullScreenStateChanged(bool enabled) {
 void AssistantController::BindController(
     mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
         receiver) {
-  BindRequest(std::move(receiver));
+  BindReceiver(std::move(receiver));
 }
 
 void AssistantController::BindAlarmTimerController(

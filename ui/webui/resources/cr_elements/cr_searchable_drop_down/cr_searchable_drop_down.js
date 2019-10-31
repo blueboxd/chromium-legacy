@@ -48,6 +48,17 @@ Polymer({
 
     placeholder: String,
 
+    /**
+     * Used to track in real time if the |value| in cr-searchable-drop-down
+     * matches the value in the underlying cr-input.These values will differ
+     * after a user types in input that does not match a valid dropdown option.
+     */
+    invalid: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
+
     /** @type {!Array<string>} */
     items: {
       type: Array,
@@ -76,7 +87,10 @@ Polymer({
     },
 
     /** @private {string} */
-    searchTerm_: String,
+    searchTerm_: {
+      type: String,
+      observer: 'updateInvalid_',
+    },
 
     /** @private {boolean} */
     dropdownRefitPending_: Boolean,
@@ -412,6 +426,17 @@ Polymer({
   onBlur_ : function () {
     if (!this.updateValueOnInput) {
       this.$.search.value = this.value;
+      this.searchTerm_ = '';
     }
+  },
+
+  /**
+   * If |updateValueOnInput| is true then any value is allowable so always set
+   * |invalid| to false.
+   * @private
+   */
+  updateInvalid_: function () {
+    this.invalid =
+        !this.updateValueOnInput && this.value != this.$.search.value;
   }
 });

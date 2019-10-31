@@ -15,31 +15,33 @@ namespace cc {
 
 std::unique_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return PaintedScrollbarLayerImpl::Create(
-      tree_impl, id(), scrollbar_->Orientation(),
-      scrollbar_->IsLeftSideVerticalScrollbar(), scrollbar_->IsOverlay());
+  return PaintedScrollbarLayerImpl::Create(tree_impl, id(), orientation_,
+                                           is_left_side_vertical_scrollbar_,
+                                           is_overlay_);
 }
 
 scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
-    std::unique_ptr<Scrollbar> scrollbar) {
+    scoped_refptr<Scrollbar> scrollbar) {
   return base::WrapRefCounted(new PaintedScrollbarLayer(std::move(scrollbar)));
 }
 
-PaintedScrollbarLayer::PaintedScrollbarLayer(
-    std::unique_ptr<Scrollbar> scrollbar)
+PaintedScrollbarLayer::PaintedScrollbarLayer(scoped_refptr<Scrollbar> scrollbar)
     : scrollbar_(std::move(scrollbar)),
       internal_contents_scale_(1.f),
-      supports_drag_snap_back_(false),
       thumb_thickness_(scrollbar_->ThumbThickness()),
       thumb_length_(scrollbar_->ThumbLength()),
-      is_overlay_(scrollbar_->IsOverlay()),
+      thumb_opacity_(scrollbar_->ThumbOpacity()),
       has_thumb_(scrollbar_->HasThumb()),
-      thumb_opacity_(scrollbar_->ThumbOpacity()) {}
+      supports_drag_snap_back_(scrollbar_->SupportsDragSnapBack()),
+      is_left_side_vertical_scrollbar_(
+          scrollbar_->IsLeftSideVerticalScrollbar()),
+      is_overlay_(scrollbar_->IsOverlay()),
+      orientation_(scrollbar_->Orientation()) {}
 
 PaintedScrollbarLayer::~PaintedScrollbarLayer() = default;
 
 bool PaintedScrollbarLayer::OpacityCanAnimateOnImplThread() const {
-  return scrollbar_->IsOverlay();
+  return is_overlay_;
 }
 
 void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
@@ -56,7 +58,7 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->SetBackButtonRect(back_button_rect_);
   scrollbar_layer->SetForwardButtonRect(forward_button_rect_);
   scrollbar_layer->SetThumbLength(thumb_length_);
-  if (scrollbar_->Orientation() == HORIZONTAL) {
+  if (orientation_ == HORIZONTAL) {
     scrollbar_layer->SetTrackStart(track_rect_.x());
     scrollbar_layer->SetTrackLength(track_rect_.width());
   } else {
@@ -103,24 +105,23 @@ gfx::Rect PaintedScrollbarLayer::ScrollbarLayerRectToContentRect(
 }
 
 gfx::Rect PaintedScrollbarLayer::OriginThumbRect() const {
-  gfx::Size thumb_size;
-  if (scrollbar_->Orientation() == HORIZONTAL) {
-    thumb_size =
-        gfx::Size(scrollbar_->ThumbLength(), scrollbar_->ThumbThickness());
-  } else {
-    thumb_size =
-        gfx::Size(scrollbar_->ThumbThickness(), scrollbar_->ThumbLength());
-  }
-  return gfx::Rect(thumb_size);
+  return orientation_ == HORIZONTAL
+             ? gfx::Rect(thumb_length_, thumb_thickness_)
+             : gfx::Rect(thumb_thickness_, thumb_length_);
 }
 
 void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
-  UpdateProperty(scrollbar_->SupportsDragSnapBack(), &supports_drag_snap_back_);
+  // These properties should never change.
+  DCHECK_EQ(supports_drag_snap_back_, scrollbar_->SupportsDragSnapBack());
+  DCHECK_EQ(is_left_side_vertical_scrollbar_,
+            scrollbar_->IsLeftSideVerticalScrollbar());
+  DCHECK_EQ(is_overlay_, scrollbar_->IsOverlay());
+  DCHECK_EQ(orientation_, scrollbar_->Orientation());
+
   UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
   UpdateProperty(scrollbar_->BackButtonRect(), &back_button_rect_);
   UpdateProperty(scrollbar_->ForwardButtonRect(), &forward_button_rect_);
   UpdateProperty(scrollbar_->Location(), &location_);
-  UpdateProperty(scrollbar_->IsOverlay(), &is_overlay_);
   UpdateProperty(scrollbar_->HasThumb(), &has_thumb_);
   if (has_thumb_) {
     UpdateProperty(scrollbar_->ThumbThickness(), &thumb_thickness_);

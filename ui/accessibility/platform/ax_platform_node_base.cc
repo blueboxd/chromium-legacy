@@ -412,11 +412,7 @@ bool AXPlatformNodeBase::IsPlainTextField() const {
   // We need to check both the role and editable state, because some ARIA text
   // fields may in fact not be editable, whilst some editable fields might not
   // have the role.
-  return !GetData().HasState(ax::mojom::State::kRichlyEditable) &&
-         (GetData().role == ax::mojom::Role::kTextField ||
-          GetData().role == ax::mojom::Role::kTextFieldWithComboBox ||
-          GetData().role == ax::mojom::Role::kSearchBox ||
-          GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot));
+  return ui::IsPlainTextField(GetData());
 }
 
 bool AXPlatformNodeBase::IsRichTextField() const {

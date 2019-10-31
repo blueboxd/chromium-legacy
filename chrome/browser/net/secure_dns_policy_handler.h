@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NET_SECURE_DNS_POLICY_HANDLER_H_
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
 class PrefValueMap;
@@ -25,6 +26,12 @@ class SecureDnsPolicyHandler : public ConfigurationPolicyHandler {
                            PrefValueMap* prefs) override;
 
  private:
+  bool IsTemplatesPolicyNotSpecified(const base::Value* templates,
+                                     const base::StringPiece mode_str);
+  bool IsTemplatesPolicyInvalid(const base::StringPiece templates_str);
+
+  bool ShouldSetTemplatesPref(const base::Value* templates);
+
   DISALLOW_COPY_AND_ASSIGN(SecureDnsPolicyHandler);
 };
 

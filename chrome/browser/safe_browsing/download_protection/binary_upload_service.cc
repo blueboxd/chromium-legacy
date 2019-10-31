@@ -466,4 +466,9 @@ bool BinaryUploadService::ShouldBlockFileSize(size_t file_size) {
   return (file_size > kMaxUploadSizeBytes);
 }
 
+// static
+GURL BinaryUploadService::GetUploadUrl() {
+  return GURL(kSbBinaryUploadUrl);
+}
+
 }  // namespace safe_browsing

@@ -39,6 +39,7 @@ static_library("browser") {
     "//components/crash/core/common",
     "//components/discardable_memory/service",
     "//components/printing/common",
+    "//components/printing/common:mojo_interfaces",
     "//components/services/pdf_compositor/public/cpp",
     "//components/services/pdf_compositor/public/mojom",
     "//components/strings:components_strings_grit",

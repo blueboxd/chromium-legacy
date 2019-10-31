@@ -5,22 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_LAYER_DELEGATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_LAYER_DELEGATE_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "cc/input/scrollbar.h"
-#include "cc/paint/paint_canvas.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-
-namespace cc {
-class PaintCanvas;
-}
 
 namespace blink {
 
 class Scrollbar;
-class ScrollbarTheme;
 
 // Implementation of cc::Scrollbar, providing a delegate to query about
 // scrollbar state and to paint the image in the scrollbar.
@@ -28,7 +20,6 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
  public:
   ScrollbarLayerDelegate(blink::Scrollbar& scrollbar,
                          float device_scale_factor);
-  ~ScrollbarLayerDelegate() override;
 
   // cc::Scrollbar implementation.
   cc::ScrollbarOrientation Orientation() const override;
@@ -59,13 +50,11 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
   gfx::Rect NinePatchThumbAperture() const override;
 
  private:
+  ~ScrollbarLayerDelegate() override;
+
   bool ShouldPaint() const;
 
-  // Accessed by main and compositor threads, e.g., the compositor thread
-  // checks |Orientation()|.
-  CrossThreadPersistent<blink::Scrollbar> scrollbar_;
-
-  ScrollbarTheme& theme_;
+  Persistent<blink::Scrollbar> scrollbar_;
   float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollbarLayerDelegate);

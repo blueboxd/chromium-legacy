@@ -618,5 +618,15 @@
     "prefix": "non-overlay-scrollbar",
     "bases": [],
     "args": ["--disable-features=OverlayScrollbar"]
+  },
+  {
+    "prefix": "text-antialias",
+    "bases": [],
+    "args": ["--enable-font-antialiasing"]
+  },
+  {
+    "prefix": "hdr",
+    "bases": [],
+    "args": ["--force-color-profile=scrgb-linear"]
   }
 ]

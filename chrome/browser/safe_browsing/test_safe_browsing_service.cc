@@ -6,7 +6,9 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/test_binary_upload_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
+#include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/db/database_manager.h"
@@ -96,6 +98,9 @@ bool TestSafeBrowsingService::CanCreateIncidentReportingService() {
 bool TestSafeBrowsingService::CanCreateResourceRequestDetector() {
   return false;
 }
+bool TestSafeBrowsingService::CanCreateBinaryUploadService() {
+  return true;
+}
 
 SafeBrowsingDatabaseManager* TestSafeBrowsingService::CreateDatabaseManager() {
   DCHECK(!use_v4_local_db_manager_);
@@ -125,6 +130,14 @@ ResourceRequestDetector*
 TestSafeBrowsingService::CreateResourceRequestDetector() {
   NOTIMPLEMENTED();
   return nullptr;
+}
+BinaryUploadService* TestSafeBrowsingService::CreateBinaryUploadService() {
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  return new TestBinaryUploadService();
+#else
+  NOTIMPLEMENTED();
+  return nullptr;
+#endif  // BUILDFLAG(FULL_SAFE_BROWSING)
 }
 
 // TestSafeBrowsingServiceFactory functions:

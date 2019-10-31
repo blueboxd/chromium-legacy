@@ -204,6 +204,7 @@ class URLRequestTestJobBackedByFileEventsTest : public TestWithTaskEnvironment {
                           bool* done_reading,
                           std::string* observed_content);
 
+  base::ScopedTempDir directory_;
   TestURLRequestContext context_;
   TestDelegate delegate_;
 };
@@ -214,6 +215,8 @@ URLRequestTestJobBackedByFileEventsTest::
 void URLRequestTestJobBackedByFileEventsTest::TearDown() {
   // Gives a chance to close the opening file.
   base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(!directory_.IsValid() || directory_.Delete());
+  TestWithTaskEnvironment::TearDown();
 }
 
 void URLRequestTestJobBackedByFileEventsTest::RunSuccessfulRequestWithString(
@@ -228,9 +231,8 @@ void URLRequestTestJobBackedByFileEventsTest::RunSuccessfulRequestWithString(
     const std::string& expected_content,
     const base::FilePath::StringPieceType& file_extension,
     const Range* range) {
-  base::ScopedTempDir directory;
-  ASSERT_TRUE(directory.CreateUniqueTempDir());
-  base::FilePath path = directory.GetPath().Append(FILE_PATH_LITERAL("test"));
+  ASSERT_TRUE(directory_.CreateUniqueTempDir());
+  base::FilePath path = directory_.GetPath().Append(FILE_PATH_LITERAL("test"));
   if (!file_extension.empty())
     path = path.AddExtension(file_extension);
   ASSERT_TRUE(CreateFileWithContent(raw_content, path));

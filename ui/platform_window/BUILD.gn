@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 
-source_set("platform_window") {
+component("platform_window") {
   sources = [
     "platform_window_base.cc",
     "platform_window_base.h",
@@ -14,6 +14,8 @@ source_set("platform_window") {
     "platform_window_init_properties.cc",
     "platform_window_init_properties.h",
   ]
+
+  defines = [ "IS_PLATFORM_WINDOW_IMPL" ]
 
   deps = [
     "//base",

@@ -12,6 +12,8 @@
 #include "ui/gfx/geometry/rect.h"
 
 class Tab;
+class TabGroupHeader;
+class TabSlotView;
 class TabStrip;
 class TabStripModel;
 class TabDragController;
@@ -29,10 +31,11 @@ class TabDragContext {
   virtual views::View* AsView() = 0;
   virtual const views::View* AsView() const = 0;
   virtual Tab* GetTabAt(int index) const = 0;
-  virtual int GetIndexOf(const Tab* tab) const = 0;
+  virtual int GetIndexOf(const TabSlotView* view) const = 0;
   virtual int GetTabCount() const = 0;
   virtual bool IsTabPinned(const Tab* tab) const = 0;
   virtual int GetPinnedTabCount() const = 0;
+  virtual TabGroupHeader* GetTabGroupHeader(TabGroupId group) const = 0;
   virtual TabStripModel* GetTabStripModel() = 0;
 
   // Returns the index of the active tab in touch mode, or no value if not in
@@ -82,13 +85,17 @@ class TabDragContext {
   // transformation applied.
   // |mouse_has_ever_moved_left| and |mouse_has_ever_moved_right| are used
   // only in stacked tabs cases.
+  // |group| is set if the drag is originating from a group header, in which
+  // case the entire group is dragged and should not be dropped into other
+  // groups.
   // NOTE: this is invoked from Attach() before the tabs have been inserted.
   virtual int GetInsertionIndexForDraggedBounds(
       const gfx::Rect& dragged_bounds,
       bool attaching,
       int num_dragged_tabs,
       bool mouse_has_ever_moved_left,
-      bool mouse_has_ever_moved_right) const = 0;
+      bool mouse_has_ever_moved_right,
+      base::Optional<TabGroupId> group) const = 0;
 
   // Returns true if |dragged_bounds| is close enough to the next stacked tab
   // so that the active tab should be dragged there.
@@ -110,37 +117,37 @@ class TabDragContext {
   virtual void DragActiveTabStacked(const std::vector<int>& initial_positions,
                                     int delta) = 0;
 
-  // Returns the bounds needed for each of the tabs, relative to a leading
-  // coordinate of 0 for the left edge of the first tab's bounds.
-  virtual std::vector<gfx::Rect> CalculateBoundsForDraggedTabs(
-      const std::vector<Tab*>& tabs) = 0;
+  // Returns the bounds needed for each of the views, relative to a leading
+  // coordinate of 0 for the left edge of the first view's bounds.
+  virtual std::vector<gfx::Rect> CalculateBoundsForDraggedViews(
+      const std::vector<TabSlotView*>& views) = 0;
 
-  // Sets the bounds of the tabs to |tab_bounds|.
-  virtual void SetTabBoundsForDrag(
-      const std::vector<gfx::Rect>& tab_bounds) = 0;
+  // Sets the bounds of |views| to |bounds|.
+  virtual void SetBoundsForDrag(const std::vector<TabSlotView*>& views,
+                                const std::vector<gfx::Rect>& bounds) = 0;
 
-  // Used by TabDragController when the user starts or stops dragging tabs.
-  virtual void StartedDraggingTabs(const std::vector<Tab*>& tabs) = 0;
+  // Used by TabDragController when the user starts or stops dragging.
+  virtual void StartedDragging(const std::vector<TabSlotView*>& views) = 0;
 
   // Invoked when TabDragController detaches a set of tabs.
   virtual void DraggedTabsDetached() = 0;
 
-  // Used by TabDragController when the user stops dragging tabs. |move_only| is
+  // Used by TabDragController when the user stops dragging. |move_only| is
   // true if the move behavior is TabDragController::MOVE_VISIBLE_TABS.
   // |completed| is true if the drag operation completed successfully, false if
   // it was reverted.
-  virtual void StoppedDraggingTabs(const std::vector<Tab*>& tabs,
-                                   const std::vector<int>& initial_positions,
-                                   bool move_only,
-                                   bool completed) = 0;
+  virtual void StoppedDragging(const std::vector<TabSlotView*>& views,
+                               const std::vector<int>& initial_positions,
+                               bool move_only,
+                               bool completed) = 0;
 
-  // Invoked during drag to layout the tabs being dragged in |tabs| at
+  // Invoked during drag to layout the views being dragged in |views| at
   // |location|. If |initial_drag| is true, this is the initial layout after the
   // user moved the mouse far enough to trigger a drag.
-  virtual void LayoutDraggedTabsAt(const std::vector<Tab*>& tabs,
-                                   Tab* active_tab,
-                                   const gfx::Point& location,
-                                   bool initial_drag) = 0;
+  virtual void LayoutDraggedViewsAt(const std::vector<TabSlotView*>& views,
+                                    TabSlotView* source_view,
+                                    const gfx::Point& location,
+                                    bool initial_drag) = 0;
 
   // Forces the entire tabstrip to lay out.
   virtual void ForceLayout() = 0;

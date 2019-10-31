@@ -5,7 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_REQUEST_ACTION_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_REQUEST_ACTION_H_
 
-#include <stddef.h>
+#include <cstdint>
 #include <vector>
 
 #include "base/macros.h"
@@ -32,7 +32,8 @@ struct RequestAction {
   };
 
   RequestAction(Type type,
-                int rule_id,
+                uint32_t rule_id,
+                uint32_t rule_priority,
                 api::declarative_net_request::SourceType source_type,
                 const ExtensionId& extension_id);
   ~RequestAction();
@@ -45,7 +46,11 @@ struct RequestAction {
   base::Optional<GURL> redirect_url;
 
   // The ID of the matching rule for this action.
-  int rule_id;
+  uint32_t rule_id;
+
+  // The priority of the matching rule for this action. Only really valid for
+  // redirect actions.
+  uint32_t rule_priority;
 
   // The source type of the matching rule for this action.
   api::declarative_net_request::SourceType source_type;

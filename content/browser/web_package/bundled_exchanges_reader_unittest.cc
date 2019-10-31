@@ -175,18 +175,18 @@ TEST_F(BundledExchangesReaderTest, ReadResponseBody) {
             mojo::CreateDataPipe(&options, &producer, &consumer));
 
   base::RunLoop run_loop;
-  MojoResult callback_result;
+  net::Error callback_result;
   GetReader()->ReadResponseBody(
       std::move(response), std::move(producer),
       base::BindOnce(
-          [](base::Closure quit_closure, MojoResult* callback_result,
-             MojoResult result) {
+          [](base::Closure quit_closure, net::Error* callback_result,
+             net::Error result) {
             *callback_result = result;
             std::move(quit_closure).Run();
           },
           run_loop.QuitClosure(), &callback_result));
   run_loop.Run();
-  ASSERT_EQ(MOJO_RESULT_OK, callback_result);
+  ASSERT_EQ(net::OK, callback_result);
 
   std::vector<char> buffer(expected_length);
   uint32_t bytes_read = buffer.size();

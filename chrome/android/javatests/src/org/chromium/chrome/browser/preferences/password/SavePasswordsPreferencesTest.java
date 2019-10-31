@@ -92,6 +92,7 @@ import org.chromium.chrome.browser.history.HistoryManager;
 import org.chromium.chrome.browser.history.StubbedHistoryProvider;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -534,8 +535,9 @@ public class SavePasswordsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testSavePasswordsSwitch() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { PrefServiceBridge.getInstance().setRememberPasswordsEnabled(true); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefServiceBridge.getInstance().setBoolean(Pref.REMEMBER_PASSWORDS_ENABLED, true);
+        });
 
         final Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -550,13 +552,15 @@ public class SavePasswordsPreferencesTest {
             Assert.assertTrue(onOffSwitch.isChecked());
 
             onOffSwitch.performClick();
-            Assert.assertFalse(PrefServiceBridge.getInstance().isRememberPasswordsEnabled());
+            Assert.assertFalse(
+                    PrefServiceBridge.getInstance().getBoolean(Pref.REMEMBER_PASSWORDS_ENABLED));
             onOffSwitch.performClick();
-            Assert.assertTrue(PrefServiceBridge.getInstance().isRememberPasswordsEnabled());
+            Assert.assertTrue(
+                    PrefServiceBridge.getInstance().getBoolean(Pref.REMEMBER_PASSWORDS_ENABLED));
 
             preferences.finish();
 
-            PrefServiceBridge.getInstance().setRememberPasswordsEnabled(false);
+            PrefServiceBridge.getInstance().setBoolean(Pref.REMEMBER_PASSWORDS_ENABLED, false);
         });
 
         final Preferences preferences2 =
@@ -673,7 +677,8 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     public void testAutoSignInCheckbox() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setPasswordManagerAutoSigninEnabled(true);
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED, true);
         });
 
         final Preferences preferences =
@@ -689,14 +694,16 @@ public class SavePasswordsPreferencesTest {
             Assert.assertTrue(onOffSwitch.isChecked());
 
             onOffSwitch.performClick();
-            Assert.assertFalse(
-                    PrefServiceBridge.getInstance().isPasswordManagerAutoSigninEnabled());
+            Assert.assertFalse(PrefServiceBridge.getInstance().getBoolean(
+                    Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
             onOffSwitch.performClick();
-            Assert.assertTrue(PrefServiceBridge.getInstance().isPasswordManagerAutoSigninEnabled());
+            Assert.assertTrue(PrefServiceBridge.getInstance().getBoolean(
+                    Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
 
             preferences.finish();
 
-            PrefServiceBridge.getInstance().setPasswordManagerAutoSigninEnabled(false);
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED, false);
         });
 
         final Preferences preferences2 =

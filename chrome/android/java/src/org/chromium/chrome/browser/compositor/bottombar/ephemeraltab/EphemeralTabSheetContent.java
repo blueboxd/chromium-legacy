@@ -221,13 +221,13 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
     }
 
     @Override
-    public boolean hideOnScroll() {
-        return false;
+    public float getFullHeightRatio() {
+        return BottomSheet.HeightMode.WRAP_CONTENT;
     }
 
     @Override
-    public boolean wrapContentEnabled() {
-        return true;
+    public boolean hideOnScroll() {
+        return false;
     }
 
     @Override

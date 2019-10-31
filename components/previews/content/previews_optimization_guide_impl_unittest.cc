@@ -1213,7 +1213,8 @@ TEST_F(PreviewsOptimizationGuideImplTest,
 TEST_F(PreviewsOptimizationGuideImplTest, ProcessHintsWithExistingSentinel) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
-      {features::kNoScriptPreviews, features::kResourceLoadingHints}, {});
+      {features::kNoScriptPreviews, features::kResourceLoadingHints},
+      {optimization_guide::features::kOptimizationHintsFetching});
   base::HistogramTester histogram_tester;
 
   // Create valid config.
@@ -1263,7 +1264,8 @@ TEST_F(PreviewsOptimizationGuideImplTest, ProcessHintsWithExistingSentinel) {
 TEST_F(PreviewsOptimizationGuideImplTest, ProcessHintsWithInvalidSentinelFile) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
-      {features::kNoScriptPreviews, features::kResourceLoadingHints}, {});
+      {features::kNoScriptPreviews, features::kResourceLoadingHints},
+      {optimization_guide::features::kOptimizationHintsFetching});
   base::HistogramTester histogram_tester;
 
   // Create valid config.
@@ -1315,7 +1317,8 @@ TEST_F(PreviewsOptimizationGuideImplTest,
        SkipHintProcessingForSameConfigVersion) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
-      {features::kNoScriptPreviews, features::kResourceLoadingHints}, {});
+      {features::kNoScriptPreviews, features::kResourceLoadingHints},
+      {optimization_guide::features::kOptimizationHintsFetching});
   base::HistogramTester histogram_tester;
 
   optimization_guide::proto::Configuration config1;
@@ -1376,7 +1379,8 @@ TEST_F(PreviewsOptimizationGuideImplTest,
        SkipHintProcessingForEarlierConfigVersion) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
-      {features::kNoScriptPreviews, features::kResourceLoadingHints}, {});
+      {features::kNoScriptPreviews, features::kResourceLoadingHints},
+      {optimization_guide::features::kOptimizationHintsFetching});
   base::HistogramTester histogram_tester;
 
   optimization_guide::proto::Configuration config1;
@@ -1437,7 +1441,8 @@ TEST_F(PreviewsOptimizationGuideImplTest, ProcessMultipleNewConfigs) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(
-      {features::kNoScriptPreviews, features::kResourceLoadingHints}, {});
+      {features::kNoScriptPreviews, features::kResourceLoadingHints},
+      {optimization_guide::features::kOptimizationHintsFetching});
 
   optimization_guide::proto::Configuration config1;
   optimization_guide::proto::Hint* hint1 = config1.add_hints();

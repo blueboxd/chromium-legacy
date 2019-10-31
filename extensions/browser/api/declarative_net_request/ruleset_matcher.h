@@ -73,8 +73,6 @@ class RulesetMatcher : public RulesetMatcherInterface {
       const RequestParams& params) const override;
   base::Optional<RequestAction> GetUpgradeAction(
       const RequestParams& params) const override;
-  base::Optional<RequestAction> GetRedirectOrUpgradeActionByPriority(
-      const RequestParams& params) const override;
   uint8_t GetRemoveHeadersMask(
       const RequestParams& params,
       uint8_t ignored_mask,
@@ -84,6 +82,12 @@ class RulesetMatcher : public RulesetMatcherInterface {
   api::declarative_net_request::SourceType source_type() const override {
     return source_type_;
   }
+
+  // Returns a RequestAction constructed from the matching redirect or upgrade
+  // rule with the highest priority, or base::nullopt if no matching redirect or
+  // upgrade rules are found for this request.
+  base::Optional<RequestAction> GetRedirectOrUpgradeActionByPriority(
+      const RequestParams& params) const;
 
   // ID of the ruleset. Each extension can have multiple rulesets with
   // their own unique ids.

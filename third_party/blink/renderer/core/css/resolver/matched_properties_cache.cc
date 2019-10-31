@@ -190,6 +190,10 @@ void MatchedPropertiesCache::RemoveCachedMatchedPropertiesWithDeadEntries(
     Visitor* visitor) {
   Vector<unsigned> to_remove;
   for (const auto& entry_pair : cache_) {
+    // A nullptr value indicates that the entry is currently being created; see
+    // |MatchedPropertiesCache::Add|. Keep such entries.
+    if (!entry_pair.value)
+      continue;
     for (const auto& matched_properties :
          entry_pair.value->matched_properties) {
       if (!ThreadHeap::IsHeapObjectAlive(matched_properties)) {

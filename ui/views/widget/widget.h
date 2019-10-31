@@ -547,6 +547,14 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // discouraged and only supported for backwards-compatibility with Close().
   void CloseWithReason(ClosedReason closed_reason);
 
+  // A UI test which tries to asynchronously examine a widget (e.g. the pixel
+  // tests) will fail if the widget is closed before that.  This can happen
+  // easily with widgets that close on focus loss coupled with tests being run
+  // in parallel, since one test's widget can be closed by the appearance of
+  // another test's.  This method can be used to temporarily disable
+  // Widget::Close() for such asynchronous cases.
+  void SetBlockCloseForTesting(bool block_close) { block_close_ = block_close; }
+
   // TODO(beng): Move off public API.
   // Closes the widget immediately. Compare to |Close|. This will destroy the
   // window handle associated with this Widget, so should not be called from
@@ -1096,6 +1104,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // True when window movement via mouse interaction with the frame should be
   // disabled.
   bool movement_disabled_ = false;
+
+  // Block the widget from closing.
+  bool block_close_ = false;
 
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> observer_manager_{
       this};

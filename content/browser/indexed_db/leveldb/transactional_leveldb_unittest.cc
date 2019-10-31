@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <content/browser/indexed_db/scopes/leveldb_state.h>
 #include <stddef.h>
-
 #include <algorithm>
 #include <cstring>
 #include <string>
@@ -20,8 +18,9 @@
 #include "base/strings/string_piece.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
-#include "content/browser/indexed_db/leveldb/leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"

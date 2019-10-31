@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/buildflag.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -138,6 +139,14 @@ void AssistantOptInDialog::Show(
   std::move(callback).Run(false);
   return;
 #endif
+
+  // Check Assistant allowed state.
+  if (::assistant::IsAssistantAllowedForProfile(
+          ProfileManager::GetActiveUserProfile()) !=
+      ash::mojom::AssistantAllowedState::ALLOWED) {
+    std::move(callback).Run(false);
+    return;
+  }
 
   // Check session state here to prevent timing issue -- session state might
   // have changed during the mojom calls to launch the opt-in dalog.

@@ -1,0 +1,16 @@
+{
+  "testResult": {
+    "status": "PASS",
+    "expected": true,
+    "outputArtifacts":{
+      "trace": {
+        "contentType":"application/json",
+        "filePath":"FULL_TRACE_FILE_PATH"
+      }
+    },
+    "tags":[
+      {"key":"tbmv2","value":"renderingMetric"},
+      {"key":"tbmv2","value":"umaMetric"}
+    ]
+  }
+}

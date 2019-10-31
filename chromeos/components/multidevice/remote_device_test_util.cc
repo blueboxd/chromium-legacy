@@ -8,6 +8,7 @@
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 
 #include "base/base64.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace chromeos {
 
@@ -15,6 +16,7 @@ namespace multidevice {
 
 // Attributes of the default test remote device.
 const char kTestRemoteDeviceUserId[] = "example@gmail.com";
+const char kTestRemoteDeviceInstanceId[] = "instanceId";
 const char kTestRemoteDeviceName[] = "remote device";
 const char kTestRemoteDevicePiiFreeName[] = "no-pii device";
 const char kTestRemoteDevicePublicKey[] = "public key";
@@ -30,6 +32,12 @@ RemoteDeviceRefBuilder::~RemoteDeviceRefBuilder() = default;
 RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetUserId(
     const std::string& user_id) {
   remote_device_->user_id = user_id;
+  return *this;
+}
+
+RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetInstanceId(
+    const std::string& instance_id) {
+  remote_device_->instance_id = instance_id;
   return *this;
 }
 
@@ -89,9 +97,9 @@ RemoteDevice CreateRemoteDeviceForTest() {
   software_features[SoftwareFeature::kInstantTetheringHost] =
       SoftwareFeatureState::kSupported;
 
-  return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
-                      kTestRemoteDevicePiiFreeName, kTestRemoteDevicePublicKey,
-                      kTestRemoteDevicePSK,
+  return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceInstanceId,
+                      kTestRemoteDeviceName, kTestRemoteDevicePiiFreeName,
+                      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
                       kTestRemoteDeviceLastUpdateTimeMillis, software_features,
                       {} /* beacon_seeds */);
 }
@@ -106,7 +114,9 @@ RemoteDeviceRefList CreateRemoteDeviceRefListForTest(size_t num_to_create) {
   for (size_t i = 0; i < num_to_create; i++) {
     RemoteDeviceRef remote_device =
         RemoteDeviceRefBuilder()
-            .SetPublicKey("publicKey" + std::to_string(i))
+            .SetInstanceId(kTestRemoteDeviceInstanceId +
+                           base::NumberToString(i))
+            .SetPublicKey("publicKey" + base::NumberToString(i))
             .Build();
     generated_devices.push_back(remote_device);
   }
@@ -119,7 +129,9 @@ RemoteDeviceList CreateRemoteDeviceListForTest(size_t num_to_create) {
 
   for (size_t i = 0; i < num_to_create; i++) {
     RemoteDevice remote_device = CreateRemoteDeviceForTest();
-    remote_device.public_key = "publicKey" + std::to_string(i);
+    remote_device.instance_id =
+        kTestRemoteDeviceInstanceId + base::NumberToString(i);
+    remote_device.public_key = "publicKey" + base::NumberToString(i);
     generated_devices.push_back(remote_device);
   }
 

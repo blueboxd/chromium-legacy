@@ -293,6 +293,80 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MultipleCalls) {
   ASSERT_EQ(S_OK, WaitForLogonProcess());
 }
 
+// Test disabling force reset password field. If provided gaia password
+// isn't valid, credential goes into password recovery flow. If the force reset
+// password is disabled through registry, force reset password field should be
+// in CPFS_HIDDEN state.
+// 0 - Disable force reset pasword link.
+// 1 - Enable force reset password link.
+// 2 - Test default value of registry. By default force reset password link
+// should be enabled.
+class GcpGaiaCredentialBaseForceResetRegistryTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<int> {};
+
+TEST_P(GcpGaiaCredentialBaseForceResetRegistryTest,
+       ForceResetPasswordRegistry) {
+  int enable_forgot_password_registry_value = GetParam();
+
+  if (enable_forgot_password_registry_value < 2)
+    ASSERT_EQ(S_OK,
+              SetGlobalFlagForTesting(kRegMdmEnableForcePasswordReset,
+                                      enable_forgot_password_registry_value));
+
+  // Create a fake user for which the windows password does not match the gaia
+  // password supplied by the test gls process.
+  CComBSTR sid;
+  CComBSTR windows_password = L"password2";
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                L"foo", (BSTR)windows_password, L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Create provider and start logon.
+  CComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(CPFS_HIDDEN,
+            fake_credential_provider_credential_events()->GetFieldState(
+                cred, FID_FORGOT_PASSWORD_LINK));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
+
+  if (!enable_forgot_password_registry_value) {
+    ASSERT_EQ(CPFS_HIDDEN,
+              fake_credential_provider_credential_events()->GetFieldState(
+                  cred, FID_FORGOT_PASSWORD_LINK));
+  } else {
+    ASSERT_EQ(CPFS_DISPLAY_IN_SELECTED_TILE,
+              fake_credential_provider_credential_events()->GetFieldState(
+                  cred, FID_FORGOT_PASSWORD_LINK));
+  }
+
+  // Update the Windows password to be the real password created for the user.
+  cred->SetStringValue(FID_CURRENT_PASSWORD_FIELD, windows_password);
+  // Sign in information should still be available.
+  EXPECT_TRUE(test->GetFinalEmail().length());
+
+  // Both Windows and Gaia credentials should be valid now.
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_TRUE(test->IsWindowsPasswordValidForStoredUser());
+
+  // Finish logon successfully but with no credential changed event.
+  ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         GcpGaiaCredentialBaseForceResetRegistryTest,
+                         ::testing::Values(0, 1, 2));
+
 TEST_F(GcpGaiaCredentialBaseTest,
        GetSerialization_PasswordChangedForAssociatedUser) {
   USES_CONVERSION;
@@ -314,10 +388,18 @@ TEST_F(GcpGaiaCredentialBaseTest,
   CComPtr<ITestCredential> test;
   ASSERT_EQ(S_OK, cred.QueryInterface(&test));
 
+  ASSERT_EQ(CPFS_HIDDEN,
+            fake_credential_provider_credential_events()->GetFieldState(
+                cred, FID_FORGOT_PASSWORD_LINK));
+
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
+
+  ASSERT_EQ(CPFS_DISPLAY_IN_SELECTED_TILE,
+            fake_credential_provider_credential_events()->GetFieldState(
+                cred, FID_FORGOT_PASSWORD_LINK));
 
   // Check that the process has not finished yet.
   CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
@@ -331,7 +413,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Credentials should still be available.
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
 
   // Set an invalid password and try to get serialization again. Credentials
   // should still be valid but serialization is not complete.
@@ -349,7 +431,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Both Windows and Gaia credentials should be valid now
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_FALSE, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_TRUE(test->IsWindowsPasswordValidForStoredUser());
 
   // Finish logon successfully but with no credential changed event.
   ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
@@ -379,7 +461,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
 
   // Check that the process has not finished yet.
   CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
@@ -393,7 +475,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Credentials should still be available.
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
 
   // Simulate a click on the "Forgot Password" link.
   cred->CommandLinkClicked(FID_FORGOT_PASSWORD_LINK);
@@ -426,7 +508,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
 
   // Check that the process has not finished yet.
   CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
@@ -440,7 +522,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Credentials should still be available.
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
 
   // Simulate a click on the "Forgot Password" link.
   cred->CommandLinkClicked(FID_FORGOT_PASSWORD_LINK);
@@ -464,7 +546,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Both Windows and Gaia credentials should be valid now
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_FALSE, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_TRUE(test->IsWindowsPasswordValidForStoredUser());
 
   // Finish logon successfully but with no credential changed event.
   ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
@@ -1412,6 +1494,12 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
       // Logon should not complete but there is no error message.
       EXPECT_EQ(test_provider->credentials_changed_fired(), false);
 
+      // Make sure password textbox is shown if the recovery of the password
+      // through escros service fails.
+      ASSERT_EQ(CPFS_DISPLAY_IN_SELECTED_TILE,
+                fake_credential_provider_credential_events()->GetFieldState(
+                    cred, FID_CURRENT_PASSWORD_FIELD));
+
       // Set the correct old password so that the user can sign in.
       ASSERT_EQ(S_OK,
                 cred->SetStringValue(FID_CURRENT_PASSWORD_FIELD, kOldPassword));
@@ -1419,6 +1507,12 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
       // Finish logon successfully now which should update the password.
       ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
     } else {
+      // Make sure password textbox isn't shown if the recovery of the password
+      // through escrow service succeeds.
+      ASSERT_EQ(CPFS_HIDDEN,
+                fake_credential_provider_credential_events()->GetFieldState(
+                    cred, FID_CURRENT_PASSWORD_FIELD));
+
       // Make sure the new password is sent to the provider.
       EXPECT_STREQ(A2OLE(kNewPassword), OLE2CW(test_provider->password()));
 

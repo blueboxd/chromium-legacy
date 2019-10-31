@@ -92,6 +92,8 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
       Compositor* compositor,
       mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer)
       override;
+  void SetDisplayTransformHint(Compositor* compositor,
+                               gfx::OverlayTransform transform) override;
 
  private:
   struct CompositorData {

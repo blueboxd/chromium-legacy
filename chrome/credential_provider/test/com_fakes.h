@@ -98,6 +98,58 @@ class FakeCredentialProviderEvents : public ICredentialProviderEvents {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// Fake OS imlpementation of ICredentialProviderEvents.
+class FakeCredentialProviderCredentialEvents
+    : public ICredentialProviderCredentialEvents {
+ public:
+  FakeCredentialProviderCredentialEvents();
+  virtual ~FakeCredentialProviderCredentialEvents();
+
+  // ICredentialProviderCredentialEvents
+  DECLARE_IUNKOWN_NOQI_WITH_REF()
+  IFACEMETHODIMP AppendFieldComboBoxItem(ICredentialProviderCredential* pcpc,
+                                         DWORD dwFieldID,
+                                         LPCWSTR pszItem) override;
+  IFACEMETHODIMP DeleteFieldComboBoxItem(ICredentialProviderCredential* pcpc,
+                                         DWORD dwFieldID,
+                                         DWORD dwItem) override;
+  IFACEMETHODIMP OnCreatingWindow(HWND* phwndOwner) override;
+  IFACEMETHODIMP SetFieldBitmap(ICredentialProviderCredential* pcpc,
+                                DWORD dwFieldID,
+                                HBITMAP hbmp) override;
+  IFACEMETHODIMP SetFieldCheckbox(ICredentialProviderCredential* pcpc,
+                                  DWORD dwFieldID,
+                                  BOOL bChecked,
+                                  LPCWSTR pszLabel) override;
+  IFACEMETHODIMP SetFieldComboBoxSelectedItem(
+      ICredentialProviderCredential* pcpc,
+      DWORD dwFieldID,
+      DWORD dwSelectedItem) override;
+  IFACEMETHODIMP SetFieldInteractiveState(
+      ICredentialProviderCredential* pcpc,
+      DWORD dwFieldID,
+      CREDENTIAL_PROVIDER_FIELD_INTERACTIVE_STATE cpfis) override;
+  IFACEMETHODIMP SetFieldState(ICredentialProviderCredential* pcpc,
+                               DWORD dwFieldID,
+                               CREDENTIAL_PROVIDER_FIELD_STATE cpfs) override;
+  IFACEMETHODIMP SetFieldString(ICredentialProviderCredential* pcpc,
+                                DWORD dwFieldID,
+                                LPCWSTR psz) override;
+  IFACEMETHODIMP SetFieldSubmitButton(ICredentialProviderCredential* pcpc,
+                                      DWORD dwFieldID,
+                                      DWORD dwAdjacentTo) override;
+  CREDENTIAL_PROVIDER_FIELD_STATE GetFieldState(
+      ICredentialProviderCredential* pcpc,
+      DWORD dwFieldID);
+
+ private:
+  std::unordered_map<ICredentialProviderCredential*,
+                     std::unordered_map<DWORD, CREDENTIAL_PROVIDER_FIELD_STATE>>
+      field_states_;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 // Test implementation of GaiaCredentialProvider that stores information from
 // OnUserAuthenticatedImpl.
 class CTestGaiaCredentialProvider : public CGaiaCredentialProvider,

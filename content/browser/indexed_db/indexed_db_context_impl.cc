@@ -22,6 +22,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
@@ -32,7 +33,6 @@
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/leveldb/leveldb_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_switches.h"
@@ -531,9 +531,13 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
 }
 
 void IndexedDBContextImpl::Shutdown() {
+  // Important: This function is NOT called on the IDB Task Runner. All variable
+  // access must be thread-safe.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_incognito())
     return;
 
+  // TODO(dmurph): Make this variable atomic.
   if (force_keep_session_state_)
     return;
 
@@ -544,11 +548,14 @@ void IndexedDBContextImpl::Shutdown() {
         FROM_HERE,
         base::BindOnce(
             [](const base::FilePath& indexeddb_path,
-               std::unique_ptr<IndexedDBFactory> factory,
+               scoped_refptr<IndexedDBContextImpl> context,
                scoped_refptr<storage::SpecialStoragePolicy>
                    special_storage_policy) {
               std::vector<Origin> origins;
               std::vector<base::FilePath> file_paths;
+              // This function only needs the factory, and not the context, but
+              // the context is used because passing that is thread-safe.
+              IndexedDBFactoryImpl* factory = context->GetIDBFactory();
               GetAllOriginsAndPaths(indexeddb_path, &origins, &file_paths);
               DCHECK_EQ(origins.size(), file_paths.size());
               auto file_path = file_paths.cbegin();
@@ -559,13 +566,12 @@ void IndexedDBContextImpl::Shutdown() {
                   continue;
                 if (special_storage_policy->IsStorageProtected(origin_url))
                   continue;
-                if (factory.get())
-                  factory->ForceClose(*origin);
+                if (factory)
+                  factory->ForceClose(*origin, false);
                 base::DeleteFile(*file_path, true);
               }
             },
-            data_path_, std::move(indexeddb_factory_),
-            special_storage_policy_));
+            data_path_, base::WrapRefCounted(this), special_storage_policy_));
   }
 }
 

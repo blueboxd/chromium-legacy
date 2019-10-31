@@ -39,7 +39,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
 import org.chromium.ui.widget.Toast;
 
@@ -52,7 +51,7 @@ import java.util.List;
  *   - Only visible MenuItems are shown.
  *   - Disabled items are grayed out.
  */
-class AppMenu implements OnItemClickListener, OnKeyListener {
+class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnClickHandler {
     private static final float LAST_ITEM_SHOW_FRACTION = 0.5f;
 
     private final Menu mMenu;
@@ -73,7 +72,6 @@ class AppMenu implements OnItemClickListener, OnKeyListener {
     private AnimatorSet mMenuItemEnterAnimator;
     private AnimatorListener mAnimationHistogramRecorder = AnimationFrameTimeHistogram
             .getAnimatorRecorder("WrenchMenu.OpeningAnimationFrameTimes");
-    private Runnable mAdapterInvalidator;
 
     /**
      * Creates and sets up the App Menu.
@@ -102,10 +100,6 @@ class AppMenu implements OnItemClickListener, OnKeyListener {
                 res.getDimensionPixelSize(R.dimen.menu_negative_vertical_offset_not_top_anchored);
 
         mTempLocation = new int[2];
-
-        mAdapterInvalidator = () -> {
-            if (mAdapter != null) mAdapter.notifyDataSetChanged();
-        };
     }
 
     /**
@@ -170,15 +164,16 @@ class AppMenu implements OnItemClickListener, OnKeyListener {
      * @param circleHighlightItem   Whether the highlighted item should use a circle highlight or
      *                              not.
      * @param showFromBottom        Whether the appearance animation should run from the bottom up.
+     * @param customViewBinders     See {@link AppMenuPropertiesDelegate#getCustomViewBinders()}.
      */
     void show(Context context, final View anchorView, boolean isByPermanentButton,
             int screenRotation, Rect visibleDisplayFrame, int screenHeight,
             @IdRes int footerResourceId, @IdRes int headerResourceId, Integer highlightedItemId,
-            boolean circleHighlightItem, boolean showFromBottom) {
+            boolean circleHighlightItem, boolean showFromBottom,
+            @Nullable List<CustomViewBinder> customViewBinders) {
         mPopup = new PopupWindow(context);
         mPopup.setFocusable(true);
         mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
-        UpdateMenuItemHelper.getInstance().registerObserver(mAdapterInvalidator);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // The window layout type affects the z-index of the popup window on M+.
@@ -192,7 +187,6 @@ class AppMenu implements OnItemClickListener, OnKeyListener {
 
             if (mMenuItemEnterAnimator != null) mMenuItemEnterAnimator.cancel();
 
-            UpdateMenuItemHelper.getInstance().unregisterObserver(mAdapterInvalidator);
             mHandler.appMenuDismissed();
             mHandler.onMenuVisibilityChanged(false);
 
@@ -251,8 +245,8 @@ class AppMenu implements OnItemClickListener, OnKeyListener {
 
         // A List adapter for visible items in the Menu. The first row is added as a header to the
         // list view.
-        mAdapter = new AppMenuAdapter(
-                this, menuItems, LayoutInflater.from(context), highlightedItemId);
+        mAdapter = new AppMenuAdapter(this, menuItems, LayoutInflater.from(context),
+                highlightedItemId, customViewBinders);
 
         ViewGroup contentView =
                 (ViewGroup) LayoutInflater.from(context).inflate(R.layout.app_menu_layout, null);
@@ -366,15 +360,9 @@ class AppMenu implements OnItemClickListener, OnKeyListener {
         return position;
     }
 
-    /**
-     * Handles clicks on the AppMenu popup.
-     * @param menuItem The menu item in the popup that was clicked.
-     */
-    void onItemClick(MenuItem menuItem) {
+    @Override
+    public void onItemClick(MenuItem menuItem) {
         if (menuItem.isEnabled()) {
-            if (menuItem.getItemId() == R.id.update_menu_id) {
-                UpdateMenuItemHelper.getInstance().setMenuItemClicked();
-            }
             dismiss();
             if (menuItem.getItemId() == R.id.new_tab_menu_id) {
                 RecordUserAction.record("MobileMenuNewTab.AppMenu");
@@ -385,12 +373,8 @@ class AppMenu implements OnItemClickListener, OnKeyListener {
         }
     }
 
-    /**
-     * Handles long clicks on image buttons on the AppMenu popup.
-     * @param menuItem The menu item in the popup that was long clicked.
-     * @param view The anchor view of the menu item.
-     */
-    boolean onItemLongClick(MenuItem menuItem, View view) {
+    @Override
+    public boolean onItemLongClick(MenuItem menuItem, View view) {
         if (!menuItem.isEnabled()) return false;
 
         String description = null;
@@ -476,8 +460,15 @@ class AppMenu implements OnItemClickListener, OnKeyListener {
     /**
      * @return The menu instance inside of this class.
      */
-    public Menu getMenu() {
+    Menu getMenu() {
         return mMenu;
+    }
+
+    /**
+     * Invalidate the app menu data. See {@link AppMenuAdapter#notifyDataSetChanged}.
+     */
+    void invalidate() {
+        if (mAdapter != null) mAdapter.notifyDataSetChanged();
     }
 
     private int setMenuHeight(int numMenuItems, Rect appDimensions, int screenHeight, Rect padding,

@@ -41,17 +41,20 @@ enum AddRuleFlags {
   kRuleHasDocumentSecurityOrigin = 1,
 };
 
-// Some CSS properties do not apply to certain psuedo-elements, and need to be
+// Some CSS properties do not apply to certain pseudo-elements, and need to be
 // ignored when resolving styles.
 enum class ValidPropertyFilter : unsigned {
   // All properties are valid. This is the common case.
   kNoFilter,
-  // Defined in a :cue psuedo-element scope. Only properties listed
+  // Defined in a ::cue pseudo-element scope. Only properties listed
   // in https://w3c.github.io/webvtt/#the-cue-pseudo-element are valid.
   kCue,
-  // Defined in a :first-letter psuedo-element scope. Only properties listed in
+  // Defined in a ::first-letter pseudo-element scope. Only properties listed in
   // https://drafts.csswg.org/css-pseudo-4/#first-letter-styling are valid.
   kFirstLetter,
+  // Defined in a ::marker pseudo-element scope. Only properties listed in
+  // https://drafts.csswg.org/css-pseudo-4/#marker-pseudo are valid.
+  kMarker,
 };
 
 class CSSSelector;

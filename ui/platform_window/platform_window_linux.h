@@ -5,6 +5,7 @@
 #ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_LINUX_H_
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_LINUX_H_
 
+#include "base/component_export.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_base.h"
@@ -12,7 +13,8 @@
 namespace ui {
 
 // Linux extensions to the PlatformWindowBase.
-class PlatformWindowLinux : public PlatformWindowBase {
+class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowLinux
+    : public PlatformWindowBase {
  public:
   PlatformWindowLinux();
   ~PlatformWindowLinux() override;

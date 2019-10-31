@@ -1047,10 +1047,7 @@ class Port(object):
 
     @memoized
     def args_for_test(self, test_name):
-        virtual_args = self._lookup_virtual_test_args(test_name)
-        if virtual_args:
-            return virtual_args
-        return self._lookup_physical_test_args(test_name)
+        return self._lookup_virtual_test_args(test_name)
 
     @memoized
     def name_for_test(self, test_name):
@@ -1586,14 +1583,6 @@ class Port(object):
     def sample_process(self, name, pid):
         pass
 
-    def physical_test_suites(self):
-        return [
-            # For example, to turn on force-compositing-mode in the svg/ directory:
-            # PhysicalTestSuite('svg', ['--force-compositing-mode']),
-            PhysicalTestSuite('fast/text', ['--enable-direct-write', '--enable-font-antialiasing']),
-            PhysicalTestSuite('hdr', ['--force-color-profile=scrgb-linear']),
-        ]
-
     def virtual_test_suites(self):
         if self._virtual_test_suites is None:
             path_to_virtual_test_suites = self._filesystem.join(self.web_tests_dir(), 'VirtualTestSuites')
@@ -1715,12 +1704,6 @@ class Port(object):
                 return suite.args
         return []
 
-    def _lookup_physical_test_args(self, test_name):
-        for suite in self.physical_test_suites():
-            if test_name.startswith(suite.name):
-                return suite.args
-        return []
-
     def _build_path(self, *comps):
         """Returns a path from the build directory."""
         return self._build_path_with_target(self._options.target, *comps)
@@ -1829,15 +1812,3 @@ class VirtualTestSuite(object):
 
     def __repr__(self):
         return "VirtualTestSuite('%s', %s, %s)" % (self.full_prefix, self.bases, self.args)
-
-
-class PhysicalTestSuite(object):
-
-    def __init__(self, base, args):
-        self.name = base
-        self.base = base
-        self.args = args
-        self.tests = set()
-
-    def __repr__(self):
-        return "PhysicalTestSuite('%s', '%s', %s)" % (self.name, self.base, self.args)

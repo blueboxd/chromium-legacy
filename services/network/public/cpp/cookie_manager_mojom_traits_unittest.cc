@@ -118,8 +118,7 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieWithStatus) {
 TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSite) {
   for (net::CookieSameSite cookie_state :
        {net::CookieSameSite::NO_RESTRICTION, net::CookieSameSite::LAX_MODE,
-        net::CookieSameSite::STRICT_MODE, net::CookieSameSite::EXTENDED_MODE,
-        net::CookieSameSite::UNSPECIFIED}) {
+        net::CookieSameSite::STRICT_MODE, net::CookieSameSite::UNSPECIFIED}) {
     net::CookieSameSite roundtrip;
     ASSERT_TRUE(SerializeAndDeserializeEnum<mojom::CookieSameSite>(cookie_state,
                                                                    &roundtrip));

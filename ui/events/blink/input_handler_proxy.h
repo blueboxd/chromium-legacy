@@ -117,9 +117,10 @@ class InputHandlerProxy : public cc::InputHandlerClient,
                            const gfx::Point& anchor) override;
 
   // SnapFlingClient implementation.
-  bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
-                        gfx::Vector2dF* initial_offset,
-                        gfx::Vector2dF* target_offset) const override;
+  bool GetSnapFlingInfoAndSetSnapTarget(
+      const gfx::Vector2dF& natural_displacement,
+      gfx::Vector2dF* initial_offset,
+      gfx::Vector2dF* target_offset) const override;
   gfx::Vector2dF ScrollByForSnapFling(const gfx::Vector2dF& delta) override;
   void ScrollEndForSnapFling() override;
   void RequestAnimationForSnapFling() override;

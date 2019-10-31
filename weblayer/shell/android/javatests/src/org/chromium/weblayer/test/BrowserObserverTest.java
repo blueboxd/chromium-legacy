@@ -16,7 +16,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.BrowserObserver;
-import org.chromium.weblayer.shell.WebLayerShellActivity;
+import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +28,8 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class BrowserObserverTest {
     @Rule
-    public WebLayerShellActivityTestRule mActivityTestRule = new WebLayerShellActivityTestRule();
+    public InstrumentationActivityTestRule mActivityTestRule =
+            new InstrumentationActivityTestRule();
 
     private static class Observer extends BrowserObserver {
         public static class BrowserObserverValueRecorder {
@@ -69,7 +70,7 @@ public class BrowserObserverTest {
     @SmallTest
     public void testLoadEvents() {
         String startupUrl = "about:blank";
-        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl(startupUrl);
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(startupUrl);
 
         Observer observer = new Observer();
         TestThreadUtils.runOnUiThreadBlocking(

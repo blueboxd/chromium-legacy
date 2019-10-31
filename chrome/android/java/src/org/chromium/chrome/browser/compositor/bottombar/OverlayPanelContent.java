@@ -350,6 +350,11 @@ public class OverlayPanelContent {
                     }
 
                     @Override
+                    public void titleWasSet(String title) {
+                        mContentDelegate.onTitleUpdated(title);
+                    }
+
+                    @Override
                     public void didFinishNavigation(NavigationHandle navigation) {
                         if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                             mIsProcessingPendingNavigation = false;

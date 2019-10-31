@@ -287,9 +287,9 @@ void WriteIncorrectComputedHashes(const base::FilePath& extension_path,
   ComputedHashes::Writer incorrect_computed_hashes_writer;
 
   // Write a valid computed_hashes.json with incorrect hash for |resource_path|.
-  std::vector<std::string> hashes;
   const std::string kFakeContents = "fake contents";
-  ComputedHashes::ComputeHashesForContent(kFakeContents, block_size, &hashes);
+  std::vector<std::string> hashes =
+      ComputedHashes::GetHashesForContent(kFakeContents, block_size);
   incorrect_computed_hashes_writer.AddHashes(resource_path, block_size, hashes);
 
   ASSERT_TRUE(incorrect_computed_hashes_writer.WriteToFile(

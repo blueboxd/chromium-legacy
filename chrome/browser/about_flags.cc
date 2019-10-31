@@ -814,10 +814,12 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
 
 #ifdef OS_ANDROID
 const FeatureEntry::FeatureParam kOmniboxNTPZPSLocal[] = {
+    {"ZeroSuggestVariant:1:*", "Local"},
     {"ZeroSuggestVariant:7:*", "Local"},
     {"ZeroSuggestVariant:8:*", "Local"}};
 
 const FeatureEntry::FeatureParam kOmniboxNTPZPSRemote[] = {
+    {"ZeroSuggestVariant:1:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:7:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:8:*", "RemoteNoUrl"}};
 
@@ -2397,11 +2399,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_snippets::kArticleSuggestionsFeature,
                                     kRemoteSuggestionsFeatureVariations,
                                     "NTPArticleSuggestions")},
-#endif  // OS_ANDROID
-    {"user-activation-v2", flag_descriptions::kUserActivationV2Name,
-     flag_descriptions::kUserActivationV2Description, kOsAll,
-     FEATURE_VALUE_TYPE(features::kUserActivationV2)},
-#if defined(OS_ANDROID)
     {"offlining-recent-pages", flag_descriptions::kOffliningRecentPagesName,
      flag_descriptions::kOffliningRecentPagesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kOffliningRecentPagesFeature)},
@@ -4216,6 +4213,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kAudioWorkletRealtimeThread)},
 
 #if defined(OS_CHROMEOS)
+    {"dim-shelf", flag_descriptions::kShelfDimmingName,
+     flag_descriptions::kShelfDimmingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kShelfDimming)},
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
     {"release-notes", flag_descriptions::kReleaseNotesName,
      flag_descriptions::kReleaseNotesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kReleaseNotes)},
@@ -4336,12 +4339,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTurnOffStreamingMediaCachingName,
      flag_descriptions::kTurnOffStreamingMediaCachingDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kTurnOffStreamingMediaCaching)},
-
-    {"enable-autofill-save-card-show-no-thanks",
-     flag_descriptions::kEnableAutofillSaveCardShowNoThanksName,
-     flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription,
-     kOsCrOS | kOsAndroid,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveCardShowNoThanks)},
 
 #if defined(OS_ANDROID)
     {"password-manager-onboarding-android",

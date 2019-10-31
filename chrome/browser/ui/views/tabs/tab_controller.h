@@ -13,6 +13,7 @@
 class Tab;
 class TabGroupVisualData;
 class TabGroupId;
+class TabSlotView;
 
 enum class BrowserFrameActiveState;
 
@@ -93,7 +94,7 @@ class TabController {
 
   // Potentially starts a drag for the specified Tab.
   virtual void MaybeStartDrag(
-      Tab* tab,
+      TabSlotView* source,
       const ui::LocatedEvent& event,
       const ui::ListSelectionModel& original_selection) = 0;
 

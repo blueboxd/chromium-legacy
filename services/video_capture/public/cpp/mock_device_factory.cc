@@ -16,9 +16,9 @@ void MockDeviceFactory::GetDeviceInfos(GetDeviceInfosCallback callback) {
 
 void MockDeviceFactory::CreateDevice(
     const std::string& device_id,
-    video_capture::mojom::DeviceRequest device_request,
+    mojo::PendingReceiver<video_capture::mojom::Device> device_receiver,
     CreateDeviceCallback callback) {
-  DoCreateDevice(device_id, &device_request, callback);
+  DoCreateDevice(device_id, &device_receiver, callback);
 }
 
 void MockDeviceFactory::AddSharedMemoryVirtualDevice(

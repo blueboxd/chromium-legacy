@@ -1,3 +1,4 @@
+
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -16,16 +17,10 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
-#include "third_party/inspector_protocol/encoding/encoding.h"
+#include "third_party/inspector_protocol/crdtp/encoding.h"
 
 namespace content {
 namespace {
-using ::inspector_protocol_encoding::span;
-using ::inspector_protocol_encoding::SpanFrom;
-using ::inspector_protocol_encoding::cbor::AppendString8EntryToCBORMap;
-using ::inspector_protocol_encoding::cbor::IsCBORMessage;
-using IPEStatus = ::inspector_protocol_encoding::Status;
-
 bool ShouldSendOnIO(const std::string& method) {
   // Keep in sync with WebDevToolsAgent::ShouldInterruptForMethod.
   // TODO(einbinder): find a way to share this.
@@ -191,9 +186,9 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
   // TODO(dgozman): revisit the proxy delegate.
   if (proxy_delegate_) {
     if (client_->UsesBinaryProtocol()) {
-      DCHECK(IsCBORMessage(SpanFrom(message)));
+      DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(message)));
       std::string json;
-      IPEStatus status = ConvertCBORToJSON(SpanFrom(message), &json);
+      crdtp::Status status = ConvertCBORToJSON(crdtp::SpanFrom(message), &json);
       LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
       proxy_delegate_->SendMessageToBackend(this, json);
       return true;
@@ -206,10 +201,10 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
   if (client_->UsesBinaryProtocol()) {
     // If the client uses the binary protocol, then |message| is already
     // CBOR (it comes from the client).
-    DCHECK(IsCBORMessage(SpanFrom(message)));
+    DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(message)));
   } else {
-    IPEStatus status =
-        ConvertJSONToCBOR(SpanFrom(message), &converted_cbor_message);
+    crdtp::Status status =
+        ConvertJSONToCBOR(crdtp::SpanFrom(message), &converted_cbor_message);
     LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
     message_to_send = &converted_cbor_message;
   }
@@ -325,14 +320,14 @@ static void SendProtocolResponseOrNotification(
     DevToolsAgentHostImpl* agent_host,
     std::unique_ptr<protocol::Serializable> message) {
   std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
-  DCHECK(IsCBORMessage(SpanFrom(cbor)));
+  DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(cbor)));
   if (client->UsesBinaryProtocol()) {
     client->DispatchProtocolMessage(agent_host,
                                     std::string(cbor.begin(), cbor.end()));
     return;
   }
   std::string json;
-  IPEStatus status = ConvertCBORToJSON(SpanFrom(cbor), &json);
+  crdtp::Status status = ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client->DispatchProtocolMessage(agent_host, json);
 }
@@ -395,16 +390,16 @@ void DevToolsSession::DispatchOnClientHost(const std::string& message) {
   // |message| either comes from a web socket, in which case it's JSON.
   // Or it comes from another devtools_session, in which case it may be CBOR
   // already. We auto-detect and convert to what the client wants as needed.
-  inspector_protocol_encoding::span<uint8_t> bytes = SpanFrom(message);
-  bool is_cbor_message = IsCBORMessage(bytes);
+  crdtp::span<uint8_t> bytes = crdtp::SpanFrom(message);
+  bool is_cbor_message = crdtp::cbor::IsCBORMessage(bytes);
   if (client_->UsesBinaryProtocol() == is_cbor_message) {
     client_->DispatchProtocolMessage(agent_host_, message);
     return;
   }
   std::string converted;
-  IPEStatus status = client_->UsesBinaryProtocol()
-                         ? ConvertJSONToCBOR(bytes, &converted)
-                         : ConvertCBORToJSON(bytes, &converted);
+  crdtp::Status status = client_->UsesBinaryProtocol()
+                             ? ConvertJSONToCBOR(bytes, &converted)
+                             : ConvertCBORToJSON(bytes, &converted);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client_->DispatchProtocolMessage(agent_host_, converted);
   // |this| may be deleted at this point.
@@ -456,10 +451,10 @@ void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
                                                   const std::string& message) {
   if (child_sessions_.find(session_id) == child_sessions_.end())
     return;
-  DCHECK(IsCBORMessage(SpanFrom(message)));
+  DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(message)));
   std::string patched(message);
-  IPEStatus status = AppendString8EntryToCBORMap(
-      SpanFrom(kSessionId), SpanFrom(session_id), &patched);
+  crdtp::Status status = crdtp::cbor::AppendString8EntryToCBORMap(
+      crdtp::SpanFrom(kSessionId), crdtp::SpanFrom(session_id), &patched);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   if (!status.ok())
     return;
@@ -468,7 +463,7 @@ void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
     return;
   }
   std::string json;
-  status = ConvertCBORToJSON(SpanFrom(patched), &json);
+  status = ConvertCBORToJSON(crdtp::SpanFrom(patched), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client_->DispatchProtocolMessage(agent_host_, json);
   // |this| may be deleted at this point.

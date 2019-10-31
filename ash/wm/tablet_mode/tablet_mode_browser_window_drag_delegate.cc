@@ -313,7 +313,8 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
       expected_bounds = split_view_controller_->GetSnappedWindowBoundsInScreen(
           snap_position == SplitViewController::LEFT
               ? SplitViewController::RIGHT
-              : SplitViewController::LEFT);
+              : SplitViewController::LEFT,
+          source_window);
     }
   }
   ::wm::ConvertRectFromScreen(source_window->parent(), &expected_bounds);

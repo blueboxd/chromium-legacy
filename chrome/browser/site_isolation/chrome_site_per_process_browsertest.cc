@@ -1423,13 +1423,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 // one popup will be opened.
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
                        PostMessageSenderAndReceiverRaceToCreatePopup) {
-  // TODO(alexmos, mustaq): This test will not work until either (1) browser
-  // process starts tracking and coordinating user gestures (see
-  // http://crbug.com/161068), or (2) UserActivation v2 ships and supports
-  // OOPIFs (see https://crbug.com/696617 and https://crbug.com/780556).
-  if (!base::FeatureList::IsEnabled(features::kUserActivationV2))
-    return;
-
   // Start on a page with an <iframe>.
   GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
   ui_test_utils::NavigateToURL(browser(), main_url);
@@ -1489,9 +1482,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 // and not to the descendants.
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
                        UserActivationVisibilityInAncestorFrame) {
-  if (!base::FeatureList::IsEnabled(features::kUserActivationV2))
-    return;
-
   // Start on a page a.com with two iframes on b.com and c.com.
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
@@ -1550,9 +1540,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 // consume it again.
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
                        UserActivationConsumptionAcrossFrames) {
-  if (!base::FeatureList::IsEnabled(features::kUserActivationV2))
-    return;
-
   // Start on a page a.com with two iframes on b.com and c.com.
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
@@ -1796,9 +1783,6 @@ class ChromeSitePerProcessTestWithVerifiedUserActivation
 // Test mouse down activation notification with browser verification.
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTestWithVerifiedUserActivation,
                        UserActivationBrowserVerificationSameOriginSite) {
-  if (!base::FeatureList::IsEnabled(features::kUserActivationV2))
-    return;
-
   // Start on a page a.com with same-origin iframe on a.com and cross-origin
   // iframe b.com.
   GURL main_url(embedded_test_server()->GetURL(

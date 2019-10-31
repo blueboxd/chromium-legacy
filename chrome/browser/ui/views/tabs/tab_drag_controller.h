@@ -34,6 +34,7 @@ class KeyEventTracker;
 class Tab;
 class TabDragControllerTest;
 class TabDragContext;
+class TabSlotView;
 class TabStripModel;
 class WindowFinder;
 
@@ -73,19 +74,21 @@ class TabDragController : public views::WidgetObserver {
   TabDragController();
   ~TabDragController() override;
 
-  // Initializes TabDragController to drag the tabs in |tabs| originating from
-  // |source_context|. |source_tab| is the tab that initiated the drag and is
-  // contained in |tabs|.  |mouse_offset| is the distance of the mouse pointer
-  // from the origin of the first tab in |tabs| and |source_tab_offset| the
-  // offset from |source_tab|. |source_tab_offset| is the horizontal offset of
-  // |mouse_offset| relative to |source_tab|. |initial_selection_model| is the
-  // selection model before the drag started and is only non-empty if
-  // |source_tab| was not initially selected.
+  // Initializes TabDragController to drag the views in |dragging_views|
+  // originating from |source_context|. |source_view| is the view that
+  // initiated the drag and is either a Tab or a TabGroupHeader contained in
+  // |dragging_views|. |mouse_offset| is the distance of the mouse pointer from
+  // the origin of the first view in |dragging_views| and |source_view_offset|
+  // the offset from |source_view|. |source_view_offset| is the horizontal
+  // offset of |mouse_offset| relative to |source_view|.
+  // |initial_selection_model| is the selection model before the drag started
+  // and is only non-empty if the original selection isn't the same as the
+  // dragging set.
   void Init(TabDragContext* source_context,
-            Tab* source_tab,
-            const std::vector<Tab*>& tabs,
+            TabSlotView* source_view,
+            const std::vector<TabSlotView*>& dragging_views,
             const gfx::Point& mouse_offset,
-            int source_tab_offset,
+            int source_view_offset,
             ui::ListSelectionModel initial_selection_model,
             MoveBehavior move_behavior,
             EventSource event_source);
@@ -231,8 +234,8 @@ class TabDragController : public views::WidgetObserver {
     // began. This is used to restore the previous state if the drag is aborted.
     int source_model_index;
 
-    // If attached this is the tab in |attached_context_|.
-    Tab* attached_tab;
+    // If attached this is the view in |attached_context_|.
+    TabSlotView* attached_view;
 
     // Is the tab pinned?
     bool pinned;
@@ -253,9 +256,9 @@ class TabDragController : public views::WidgetObserver {
 
   typedef std::vector<TabDragData> DragData;
 
-  // Sets |drag_data| from |tab|. This also registers for necessary
+  // Sets |drag_data| from |view|. This also registers for necessary
   // notifications and resets the delegate of the WebContents.
-  void InitTabDragData(Tab* tab, TabDragData* drag_data);
+  void InitDragData(TabSlotView* view, TabDragData* drag_data);
 
   // Overriden from views::WidgetObserver:
   void OnWidgetBoundsChanged(views::Widget* widget,
@@ -361,13 +364,11 @@ class TabDragController : public views::WidgetObserver {
   // with the mirroring transform applied.
   gfx::Point GetAttachedDragPoint(const gfx::Point& point_in_screen);
 
-  // Finds the Tabs within the specified TabDragContext that
-  // corresponds to the WebContents of the dragged tabs. Returns an empty vector
-  // if not attached.
-  std::vector<Tab*> GetTabsMatchingDraggedContents(TabDragContext* context);
-
-  // Returns the bounds for the tabs based on the attached tab strip.
-  std::vector<gfx::Rect> CalculateBoundsForDraggedTabs();
+  // Finds the TabSlotViews within the specified TabDragContext that
+  // corresponds to the WebContents of the dragged views. Also finds the group
+  // header if it is dragging. Returns an empty vector if not attached.
+  std::vector<TabSlotView*> GetViewsMatchingDraggedContents(
+      TabDragContext* context);
 
   // Does the work for EndDrag(). If we actually started a drag and |how_end| is
   // not TAB_DESTROYED then one of EndDrag() or RevertDrag() is invoked.
@@ -402,16 +403,26 @@ class TabDragController : public views::WidgetObserver {
 
   void BringWindowUnderPointToFront(const gfx::Point& point_in_screen);
 
-  // Convenience for getting the TabDragData corresponding to the tab the user
-  // started dragging.
-  TabDragData* source_tab_drag_data() {
-    return &(drag_data_[source_tab_index_]);
+  // Convenience for getting the TabDragData corresponding to the source view
+  // that the user started dragging.
+  TabDragData* source_view_drag_data() {
+    return &(drag_data_[source_view_index_]);
   }
 
-  // Convenience for |source_tab_drag_data()->contents|.
+  // Convenience for |source_view_drag_data()->contents|.
   content::WebContents* source_dragged_contents() {
-    return source_tab_drag_data()->contents;
+    return source_view_drag_data()->contents;
   }
+
+  // Returns the number of Tab views currently dragging.
+  // Excludes the TabGroupHeader view, if any.
+  int num_dragging_tabs() {
+    return header_drag_ ? drag_data_.size() - 1 : drag_data_.size();
+  }
+
+  // Returns the index of the first Tab, since the first dragging view may
+  // instead be a TabGroupHeader.
+  int first_tab_index() { return header_drag_ ? 1 : 0; }
 
   // Returns the Widget of the currently attached TabDragContext's
   // BrowserView.
@@ -549,8 +560,8 @@ class TabDragController : public views::WidgetObserver {
   // detached window is created at the right location.
   gfx::Point mouse_offset_;
 
-  // Ratio of the x-coordinate of the |source_tab_offset| to the width of the
-  // tab.
+  // Ratio of the x-coordinate of the |source_view_offset| to the width of the
+  // source view.
   float offset_to_width_ratio_;
 
   // A hint to use when positioning new windows created by detaching Tabs. This
@@ -564,7 +575,7 @@ class TabDragController : public views::WidgetObserver {
   gfx::Point first_source_tab_point_;
 
   // Used to track the view that had focus in the window containing
-  // |source_tab_|. This is saved so that focus can be restored properly when
+  // |source_view_|. This is saved so that focus can be restored properly when
   // a drag begins and ends within this same window.
   std::unique_ptr<views::ViewTracker> old_focused_view_tracker_;
 
@@ -583,8 +594,18 @@ class TabDragController : public views::WidgetObserver {
 
   DragData drag_data_;
 
-  // Index of the source tab in |drag_data_|.
-  size_t source_tab_index_;
+  // Index of the source view in |drag_data_|.
+  size_t source_view_index_;
+
+  // The attached views. Also found in |drag_data_|, but cached for convenience.
+  std::vector<TabSlotView*> attached_views_;
+
+  // Whether the drag originated from a group header.
+  bool header_drag_;
+
+  // The group that is being dragged. Only set if the drag originated from a
+  // group header, indicating that the entire group is being dragged together.
+  base::Optional<TabGroupId> group_;
 
   // True until MoveAttached() is first invoked.
   bool initial_move_;

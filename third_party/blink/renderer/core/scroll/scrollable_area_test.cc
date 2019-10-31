@@ -90,28 +90,26 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint) {
   ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
-TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
+TEST_F(ScrollableAreaTest, ScrollbarLayerInvalidation) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
   ScrollbarTheme::SetMockScrollbarsEnabled(true);
   MockScrollableArea* scrollable_area =
       MockScrollableArea::Create(ScrollOffset(0, 100));
-  FakeGraphicsLayerClient graphics_layer_client;
-  graphics_layer_client.SetIsTrackingRasterInvalidations(true);
-  FakeGraphicsLayer graphics_layer(graphics_layer_client);
-  graphics_layer.SetDrawsContent(true);
-  graphics_layer.SetSize(gfx::Size(111, 222));
+  scoped_refptr<cc::Layer> layer = cc::Layer::Create();
+  layer->SetIsDrawable(true);
+  layer->SetBounds(gfx::Size(111, 222));
 
   EXPECT_CALL(*scrollable_area, LayerForHorizontalScrollbar())
-      .WillRepeatedly(Return(&graphics_layer));
+      .WillRepeatedly(Return(layer.get()));
 
   auto* scrollbar =
       MakeGarbageCollected<Scrollbar>(scrollable_area, kHorizontalScrollbar,
                                       kRegularScrollbar, nullptr, nullptr);
-  graphics_layer.ResetTrackedRasterInvalidations();
+  EXPECT_TRUE(layer->update_rect().IsEmpty());
   scrollbar->SetNeedsPaintInvalidation(kNoPart);
-  EXPECT_TRUE(graphics_layer.HasTrackedRasterInvalidations());
+  EXPECT_FALSE(layer->update_rect().IsEmpty());
 
   // Forced GC in order to finalize objects depending on the mock object.
   ThreadState::Current()->CollectAllGarbageForTesting();
@@ -182,44 +180,45 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
 
   // Composited scrollbars only need repainting when parts become invalid
   // (e.g. if the track changes appearance when the thumb reaches the end).
-  FakeGraphicsLayerClient graphics_layer_client;
-  graphics_layer_client.SetIsTrackingRasterInvalidations(true);
-  FakeGraphicsLayer layer_for_horizontal_scrollbar(graphics_layer_client);
-  layer_for_horizontal_scrollbar.SetDrawsContent(true);
-  layer_for_horizontal_scrollbar.SetSize(gfx::Size(10, 10));
-  FakeGraphicsLayer layer_for_vertical_scrollbar(graphics_layer_client);
-  layer_for_vertical_scrollbar.SetDrawsContent(true);
-  layer_for_vertical_scrollbar.SetSize(gfx::Size(10, 10));
+  scoped_refptr<cc::Layer> layer_for_horizontal_scrollbar = cc::Layer::Create();
+  layer_for_horizontal_scrollbar->SetIsDrawable(true);
+  layer_for_horizontal_scrollbar->SetBounds(gfx::Size(10, 10));
+  scoped_refptr<cc::Layer> layer_for_vertical_scrollbar = cc::Layer::Create();
+  layer_for_vertical_scrollbar->SetIsDrawable(true);
+  layer_for_vertical_scrollbar->SetBounds(gfx::Size(10, 10));
   EXPECT_CALL(*scrollable_area, LayerForHorizontalScrollbar())
-      .WillRepeatedly(Return(&layer_for_horizontal_scrollbar));
+      .WillRepeatedly(Return(layer_for_horizontal_scrollbar.get()));
   EXPECT_CALL(*scrollable_area, LayerForVerticalScrollbar())
-      .WillRepeatedly(Return(&layer_for_vertical_scrollbar));
+      .WillRepeatedly(Return(layer_for_vertical_scrollbar.get()));
   ASSERT_TRUE(scrollable_area->HasLayerForHorizontalScrollbar());
   ASSERT_TRUE(scrollable_area->HasLayerForVerticalScrollbar());
   EXPECT_CALL(theme, ShouldRepaintAllPartsOnInvalidation())
       .WillRepeatedly(Return(false));
+
+  EXPECT_TRUE(layer_for_horizontal_scrollbar->update_rect().IsEmpty());
+  EXPECT_TRUE(layer_for_vertical_scrollbar->update_rect().IsEmpty());
 
   // First, we'll scroll horizontally, and the theme will require repainting
   // the back button (i.e. the track).
   EXPECT_CALL(theme, PartsToInvalidateOnThumbPositionChange(_, _, _))
       .WillOnce(Return(kBackButtonStartPart));
   scrollable_area->SetScrollOffset(ScrollOffset(50, 0), kProgrammaticScroll);
-  EXPECT_TRUE(layer_for_horizontal_scrollbar.HasTrackedRasterInvalidations());
-  EXPECT_FALSE(layer_for_vertical_scrollbar.HasTrackedRasterInvalidations());
+  EXPECT_FALSE(layer_for_horizontal_scrollbar->update_rect().IsEmpty());
+  EXPECT_TRUE(layer_for_vertical_scrollbar->update_rect().IsEmpty());
   EXPECT_TRUE(horizontal_scrollbar->TrackNeedsRepaint());
   EXPECT_FALSE(horizontal_scrollbar->ThumbNeedsRepaint());
-  layer_for_horizontal_scrollbar.ResetTrackedRasterInvalidations();
+  layer_for_horizontal_scrollbar->ResetUpdateRectForTesting();
   horizontal_scrollbar->ClearTrackNeedsRepaint();
 
   // Next, we'll scroll vertically, but invalidate the thumb.
   EXPECT_CALL(theme, PartsToInvalidateOnThumbPositionChange(_, _, _))
       .WillOnce(Return(kThumbPart));
   scrollable_area->SetScrollOffset(ScrollOffset(50, 50), kProgrammaticScroll);
-  EXPECT_FALSE(layer_for_horizontal_scrollbar.HasTrackedRasterInvalidations());
-  EXPECT_TRUE(layer_for_vertical_scrollbar.HasTrackedRasterInvalidations());
+  EXPECT_TRUE(layer_for_horizontal_scrollbar->update_rect().IsEmpty());
+  EXPECT_FALSE(layer_for_vertical_scrollbar->update_rect().IsEmpty());
   EXPECT_FALSE(vertical_scrollbar->TrackNeedsRepaint());
   EXPECT_TRUE(vertical_scrollbar->ThumbNeedsRepaint());
-  layer_for_vertical_scrollbar.ResetTrackedRasterInvalidations();
+  layer_for_vertical_scrollbar->ResetUpdateRectForTesting();
   vertical_scrollbar->ClearThumbNeedsRepaint();
 
   // Next we'll scroll in both, but the thumb position moving requires no
@@ -230,8 +229,8 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
       .Times(2)
       .WillRepeatedly(Return(kNoPart));
   scrollable_area->SetScrollOffset(ScrollOffset(70, 70), kProgrammaticScroll);
-  EXPECT_TRUE(layer_for_horizontal_scrollbar.HasTrackedRasterInvalidations());
-  EXPECT_TRUE(layer_for_vertical_scrollbar.HasTrackedRasterInvalidations());
+  EXPECT_FALSE(layer_for_horizontal_scrollbar->update_rect().IsEmpty());
+  EXPECT_FALSE(layer_for_vertical_scrollbar->update_rect().IsEmpty());
   EXPECT_FALSE(horizontal_scrollbar->TrackNeedsRepaint());
   EXPECT_FALSE(horizontal_scrollbar->ThumbNeedsRepaint());
   EXPECT_FALSE(vertical_scrollbar->TrackNeedsRepaint());

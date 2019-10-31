@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
+#include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
@@ -31,13 +32,11 @@ TEST_F(DeviceInfoPrefsTest, ShouldMigrateFromObsoletePref) {
 
   ListPrefUpdate cache_guids_update(&pref_service_,
                                     kObsoleteDeviceInfoRecentGUIDs);
-  base::Value::ListStorage* recent_local_cache_guids =
-      &cache_guids_update.Get()->GetList();
 
-  recent_local_cache_guids->emplace(recent_local_cache_guids->begin(),
-                                    base::Value("old_guid1"));
-  recent_local_cache_guids->emplace(recent_local_cache_guids->begin(),
-                                    base::Value("old_guid2"));
+  cache_guids_update->Insert(cache_guids_update->GetList().begin(),
+                             base::Value("old_guid1"));
+  cache_guids_update->Insert(cache_guids_update->GetList().begin(),
+                             base::Value("old_guid2"));
 
   ASSERT_FALSE(device_info_prefs_.IsRecentLocalCacheGuid("old_guid1"));
   ASSERT_FALSE(device_info_prefs_.IsRecentLocalCacheGuid("old_guid2"));

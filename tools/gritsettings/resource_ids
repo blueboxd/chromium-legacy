@@ -111,7 +111,8 @@
     "includes": [12340],
   },
   "chrome/browser/resources/extensions/extensions_resources.grd": {
-    "structures": [12350],
+    "includes": [12350],
+    "structures": [12360],
   },
   "chrome/browser/resources/invalidations_resources.grd": {
     "includes": [12440],

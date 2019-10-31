@@ -8,9 +8,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -24,11 +22,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
-import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuItemState;
 import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -36,7 +34,9 @@ import org.chromium.ui.widget.ChromeImageButton;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ListAdapter to customize the view of items in the list.
@@ -50,40 +50,55 @@ import java.util.List;
  * 3) Hope that the icon row still fits on small phones.
  */
 class AppMenuAdapter extends BaseAdapter {
+    /**
+     * Interface to handle clicks and long-clicks on menu items.
+     */
+    interface OnClickHandler {
+        /**
+         * Handles clicks on the AppMenu popup.
+         * @param menuItem The menu item in that was clicked.
+         */
+        void onItemClick(MenuItem menuItem);
+
+        /**
+         * Handles long clicks on image buttons on the AppMenu popup.
+         * @param menuItem The menu item that was long clicked.
+         * @param view The anchor view of the menu item.
+         */
+        boolean onItemLongClick(MenuItem menuItem, View view);
+    }
+
     @IntDef({MenuItemType.STANDARD, MenuItemType.TITLE_BUTTON, MenuItemType.THREE_BUTTON,
-            MenuItemType.FOUR_BUTTON, MenuItemType.FIVE_BUTTON, MenuItemType.UPDATE})
+            MenuItemType.FOUR_BUTTON, MenuItemType.FIVE_BUTTON})
     @Retention(RetentionPolicy.SOURCE)
-    private @interface MenuItemType {
+    @VisibleForTesting
+    @interface MenuItemType {
         /**
          * Regular Android menu item that contains a title and an icon if icon is specified.
          */
         int STANDARD = 0;
         /**
-         * Menu item for updating Chrome; uses a custom layout.
-         */
-        int UPDATE = 1;
-        /**
          * Menu item that has two buttons, the first one is a title and the second one is an icon.
          * It is different from the regular menu item because it contains two separate buttons.
          */
-        int TITLE_BUTTON = 2;
+        int TITLE_BUTTON = 1;
         /**
          * Menu item that has three buttons. Every one of these buttons is displayed as an icon.
          */
-        int THREE_BUTTON = 3;
+        int THREE_BUTTON = 2;
         /**
          * Menu item that has four buttons. Every one of these buttons is displayed as an icon.
          */
-        int FOUR_BUTTON = 4;
+        int FOUR_BUTTON = 3;
         /**
          * Menu item that has five buttons. Every one of these buttons is displayed as an icon.
          */
-        int FIVE_BUTTON = 5;
+        int FIVE_BUTTON = 4;
         /**
          * The number of view types specified above.  If you add a view type you MUST increment
          * this.
          */
-        int NUM_ENTRIES = 6;
+        int NUM_ENTRIES = 5;
     }
 
     /** IDs of all of the buttons in icon_row_menu_item.xml. */
@@ -102,21 +117,31 @@ class AppMenuAdapter extends BaseAdapter {
     private static final float ENTER_STANDARD_ITEM_OFFSET_Y_DP = -10.f;
     private static final float ENTER_STANDARD_ITEM_OFFSET_X_DP = 10.f;
 
-    private final AppMenu mAppMenu;
+    private final OnClickHandler mOnClickHandler;
     private final LayoutInflater mInflater;
     private final List<MenuItem> mMenuItems;
     private final int mNumMenuItems;
     private final Integer mHighlightedItemId;
     private final float mDpToPx;
+    private final @Nullable List<CustomViewBinder> mCustomViewBinders;
+    private final int mCustomViewTypes;
+    private final Map<CustomViewBinder, Integer> mViewTypeOffsetMap;
 
-    public AppMenuAdapter(AppMenu appMenu, List<MenuItem> menuItems, LayoutInflater inflater,
-            Integer highlightedItemId) {
-        mAppMenu = appMenu;
+    public AppMenuAdapter(OnClickHandler onClickHandler, List<MenuItem> menuItems,
+            LayoutInflater inflater, Integer highlightedItemId,
+            @Nullable List<CustomViewBinder> customViewBinders) {
+        mOnClickHandler = onClickHandler;
         mMenuItems = menuItems;
         mInflater = inflater;
         mHighlightedItemId = highlightedItemId;
+        mCustomViewBinders = customViewBinders;
         mNumMenuItems = menuItems.size();
         mDpToPx = inflater.getContext().getResources().getDisplayMetrics().density;
+
+        mCustomViewTypes = getCustomViewTypeCount(customViewBinders);
+        mViewTypeOffsetMap = new HashMap<>();
+        populateCustomViewBinderOffsetMap(
+                customViewBinders, mViewTypeOffsetMap, MenuItemType.NUM_ENTRIES);
     }
 
     @Override
@@ -126,16 +151,16 @@ class AppMenuAdapter extends BaseAdapter {
 
     @Override
     public int getViewTypeCount() {
-        return MenuItemType.NUM_ENTRIES;
+        return MenuItemType.NUM_ENTRIES + mCustomViewTypes;
     }
 
     @Override
     public @MenuItemType int getItemViewType(int position) {
         MenuItem item = getItem(position);
         int viewCount = item.hasSubMenu() ? item.getSubMenu().size() : 1;
-
-        if (item.getItemId() == R.id.update_menu_id) {
-            return MenuItemType.UPDATE;
+        int customItemViewType = getCustomItemViewType(item);
+        if (customItemViewType != CustomViewBinder.NOT_HANDLED) {
+            return customItemViewType;
         } else if (viewCount == 2) {
             return MenuItemType.TITLE_BUTTON;
         } else if (viewCount == 3) {
@@ -164,11 +189,13 @@ class AppMenuAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         final MenuItem item = getItem(position);
-        switch (getItemViewType(position)) {
+        int itemViewType = getItemViewType(position);
+        switch (itemViewType) {
             case MenuItemType.STANDARD: {
                 StandardMenuItemViewHolder holder = null;
                 if (convertView == null
-                        || !(convertView.getTag() instanceof StandardMenuItemViewHolder)) {
+                        || (int) convertView.getTag(R.id.menu_item_view_type)
+                                != MenuItemType.STANDARD) {
                     holder = new StandardMenuItemViewHolder();
                     convertView = mInflater.inflate(R.layout.menu_item, parent, false);
                     holder.text = (TextView) convertView.findViewById(R.id.menu_item_text);
@@ -176,66 +203,20 @@ class AppMenuAdapter extends BaseAdapter {
                     convertView.setTag(holder);
                     convertView.setTag(R.id.menu_item_enter_anim_id,
                             buildStandardItemEnterAnimator(convertView, position));
-                    convertView.setTag(
-                            R.id.menu_item_original_background, convertView.getBackground());
                 } else {
                     holder = (StandardMenuItemViewHolder) convertView.getTag();
                 }
                 setupStandardMenuItemViewHolder(holder, convertView, item);
                 break;
             }
-            case MenuItemType.UPDATE: {
-                CustomMenuItemViewHolder holder = null;
-                if (convertView == null
-                        || !(convertView.getTag() instanceof CustomMenuItemViewHolder)) {
-                    holder = new CustomMenuItemViewHolder();
-                    convertView = mInflater.inflate(R.layout.update_menu_item, parent, false);
-                    holder.text = (TextView) convertView.findViewById(R.id.menu_item_text);
-                    holder.image = (AppMenuItemIcon) convertView.findViewById(R.id.menu_item_icon);
-                    holder.summary = (TextView) convertView.findViewById(R.id.menu_item_summary);
-                    convertView.setTag(holder);
-                    convertView.setTag(R.id.menu_item_enter_anim_id,
-                            buildStandardItemEnterAnimator(convertView, position));
-                    convertView.setTag(
-                            R.id.menu_item_original_background, convertView.getBackground());
-                } else {
-                    holder = (CustomMenuItemViewHolder) convertView.getTag();
-                }
-                setupStandardMenuItemViewHolder(holder, convertView, item);
-                MenuItemState itemState = UpdateMenuItemHelper.getInstance().getUiState().itemState;
-                if (itemState != null) {
-                    Resources resources = convertView.getResources();
-
-                    holder.text.setText(itemState.title);
-                    holder.text.setContentDescription(resources.getString(itemState.title));
-                    holder.text.setTextColor(
-                            ApiCompatibilityUtils.getColor(resources, itemState.titleColorId));
-
-                    if (!TextUtils.isEmpty(itemState.summary)) {
-                        holder.summary.setText(itemState.summary);
-                        holder.summary.setVisibility(View.VISIBLE);
-                    } else {
-                        holder.summary.setText("");
-                        holder.summary.setVisibility(View.GONE);
-                    }
-
-                    holder.image.setImageResource(itemState.icon);
-                    if (itemState.iconTintId != 0) {
-                        DrawableCompat.setTint(holder.image.getDrawable(),
-                                ApiCompatibilityUtils.getColor(resources, itemState.iconTintId));
-                    }
-                    convertView.setEnabled(itemState.enabled);
-                }
-                break;
-            }
             case MenuItemType.THREE_BUTTON:
-                convertView = createMenuItemRow(convertView, parent, item, 3);
+                convertView = createMenuItemRow(convertView, parent, item, 3, itemViewType);
                 break;
             case MenuItemType.FOUR_BUTTON:
-                convertView = createMenuItemRow(convertView, parent, item, 4);
+                convertView = createMenuItemRow(convertView, parent, item, 4, itemViewType);
                 break;
             case MenuItemType.FIVE_BUTTON:
-                convertView = createMenuItemRow(convertView, parent, item, 5);
+                convertView = createMenuItemRow(convertView, parent, item, 5, itemViewType);
                 break;
             case MenuItemType.TITLE_BUTTON: {
                 assert item.hasSubMenu();
@@ -244,21 +225,18 @@ class AppMenuAdapter extends BaseAdapter {
 
                 TitleButtonMenuItemViewHolder holder = null;
                 if (convertView == null
-                        || !(convertView.getTag() instanceof TitleButtonMenuItemViewHolder)) {
+                        || (int) convertView.getTag(R.id.menu_item_view_type)
+                                != MenuItemType.TITLE_BUTTON) {
                     convertView = mInflater.inflate(R.layout.title_button_menu_item, parent, false);
 
                     holder = new TitleButtonMenuItemViewHolder();
                     holder.title = (TextView) convertView.findViewById(R.id.title);
                     holder.checkbox = (AppMenuItemIcon) convertView.findViewById(R.id.checkbox);
                     holder.button = (ChromeImageButton) convertView.findViewById(R.id.button);
-                    holder.button.setTag(
-                            R.id.menu_item_original_background, holder.button.getBackground());
 
                     convertView.setTag(holder);
                     convertView.setTag(R.id.menu_item_enter_anim_id,
                             buildStandardItemEnterAnimator(convertView, position));
-                    convertView.setTag(
-                            R.id.menu_item_original_background, convertView.getBackground());
                 } else {
                     holder = (TitleButtonMenuItemViewHolder) convertView.getTag();
                 }
@@ -266,7 +244,7 @@ class AppMenuAdapter extends BaseAdapter {
                 holder.title.setText(titleItem.getTitle());
                 holder.title.setEnabled(titleItem.isEnabled());
                 holder.title.setFocusable(titleItem.isEnabled());
-                holder.title.setOnClickListener(v -> mAppMenu.onItemClick(titleItem));
+                holder.title.setOnClickListener(v -> mOnClickHandler.onItemClick(titleItem));
                 if (TextUtils.isEmpty(titleItem.getTitleCondensed())) {
                     holder.title.setContentDescription(null);
                 } else {
@@ -294,7 +272,43 @@ class AppMenuAdapter extends BaseAdapter {
                 break;
             }
             default:
-                assert false : "Unexpected MenuItem type";
+                // If we get into this block, the item must be handled by a custom binder.
+                assert mCustomViewBinders != null;
+
+                // Use custom binder.
+                boolean bound = false;
+                for (int i = 0; i < mCustomViewBinders.size(); i++) {
+                    CustomViewBinder binder = mCustomViewBinders.get(i);
+                    int customItemViewType = binder.getItemViewType(item.getItemId());
+                    if (customItemViewType == CustomViewBinder.NOT_HANDLED) continue;
+
+                    // If the convertView wasn't previously used for the same item view type,
+                    // set it back to null so that the custom binder isn't passed a view that it
+                    // can't/shouldn't re-use.
+                    if (convertView != null
+                            && (int) convertView.getTag(R.id.menu_item_view_type) != itemViewType) {
+                        convertView = null;
+                    }
+
+                    convertView = binder.getView(item, convertView, parent, mInflater);
+
+                    if (binder.supportsEnterAnimation(item.getItemId())) {
+                        convertView.setTag(R.id.menu_item_enter_anim_id,
+                                buildStandardItemEnterAnimator(convertView, position));
+                    }
+
+                    // This will ensure that the item is not highlighted when selected.
+                    convertView.setEnabled(item.isEnabled());
+
+                    convertView.setOnClickListener(v -> mOnClickHandler.onItemClick(item));
+
+                    bound = true;
+                    break;
+                }
+
+                assert bound : "No binder found for item.";
+
+                break;
         }
 
         if (mHighlightedItemId != null && item.getItemId() == mHighlightedItemId) {
@@ -302,6 +316,8 @@ class AppMenuAdapter extends BaseAdapter {
         } else {
             ViewHighlighter.turnOffHighlight(convertView);
         }
+
+        convertView.setTag(R.id.menu_item_view_type, itemViewType);
 
         return convertView;
     }
@@ -343,9 +359,9 @@ class AppMenuAdapter extends BaseAdapter {
             button.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
         }
 
-        button.setOnClickListener(v -> mAppMenu.onItemClick(item));
+        button.setOnClickListener(v -> mOnClickHandler.onItemClick(item));
 
-        button.setOnLongClickListener(v -> mAppMenu.onItemLongClick(item, v));
+        button.setOnLongClickListener(v -> mOnClickHandler.onItemLongClick(item, v));
 
         if (mHighlightedItemId != null && item.getItemId() == mHighlightedItemId) {
             ViewHighlighter.turnOnHighlight(button, true);
@@ -373,7 +389,7 @@ class AppMenuAdapter extends BaseAdapter {
         // This will ensure that the item is not highlighted when selected.
         convertView.setEnabled(isEnabled);
 
-        convertView.setOnClickListener(v -> mAppMenu.onItemClick(item));
+        convertView.setOnClickListener(v -> mOnClickHandler.onItemClick(item));
     }
 
     /**
@@ -451,21 +467,17 @@ class AppMenuAdapter extends BaseAdapter {
     }
 
     private View createMenuItemRow(
-            View convertView, ViewGroup parent, MenuItem item, int numItems) {
+            View convertView, ViewGroup parent, MenuItem item, int numItems, int itemViewType) {
         RowItemViewHolder holder = null;
         if (convertView == null
-                || !(convertView.getTag() instanceof RowItemViewHolder)
-                || ((RowItemViewHolder) convertView.getTag()).buttons.length != numItems) {
+                || (int) convertView.getTag(R.id.menu_item_view_type) != itemViewType) {
             holder = new RowItemViewHolder(numItems);
             convertView = mInflater.inflate(R.layout.icon_row_menu_item, parent, false);
-            convertView.setTag(R.id.menu_item_original_background, convertView.getBackground());
 
             // Save references to all the buttons.
             for (int i = 0; i < numItems; i++) {
                 ImageButton view = convertView.findViewById(BUTTON_IDS[i]);
                 holder.buttons[i] = view;
-                holder.buttons[i].setTag(
-                        R.id.menu_item_original_background, holder.buttons[i].getBackground());
             }
 
             // Remove unused menu items.
@@ -488,13 +500,22 @@ class AppMenuAdapter extends BaseAdapter {
         return convertView;
     }
 
-    static class StandardMenuItemViewHolder {
-        public TextView text;
-        public AppMenuItemIcon image;
+    private int getCustomItemViewType(MenuItem item) {
+        if (mCustomViewBinders == null) return CustomViewBinder.NOT_HANDLED;
+
+        for (int i = 0; i < mCustomViewBinders.size(); i++) {
+            CustomViewBinder binder = mCustomViewBinders.get(i);
+            int binderViewType = binder.getItemViewType(item.getItemId());
+            if (binderViewType != CustomViewBinder.NOT_HANDLED) {
+                return binderViewType + mViewTypeOffsetMap.get(binder);
+            }
+        }
+        return CustomViewBinder.NOT_HANDLED;
     }
 
-    static class CustomMenuItemViewHolder extends StandardMenuItemViewHolder {
-        public TextView summary;
+    private static class StandardMenuItemViewHolder {
+        public TextView text;
+        public AppMenuItemIcon image;
     }
 
     private static class RowItemViewHolder {
@@ -505,9 +526,39 @@ class AppMenuAdapter extends BaseAdapter {
         }
     }
 
-    static class TitleButtonMenuItemViewHolder {
+    private static class TitleButtonMenuItemViewHolder {
         public TextView title;
         public AppMenuItemIcon checkbox;
         public ImageButton button;
+    }
+
+    @VisibleForTesting
+    static int getCustomViewTypeCount(@Nullable List<CustomViewBinder> customViewBinders) {
+        if (customViewBinders == null) return 0;
+
+        int count = 0;
+        for (int i = 0; i < customViewBinders.size(); i++) {
+            count += customViewBinders.get(i).getViewTypeCount();
+        }
+        return count;
+    }
+
+    @VisibleForTesting
+    static void populateCustomViewBinderOffsetMap(
+            @Nullable List<CustomViewBinder> customViewBinders, Map<CustomViewBinder, Integer> map,
+            int startingOffset) {
+        if (customViewBinders == null) return;
+
+        int currentOffset = startingOffset;
+        for (int i = 0; i < customViewBinders.size(); i++) {
+            CustomViewBinder binder = customViewBinders.get(i);
+            map.put(binder, currentOffset);
+            currentOffset += binder.getViewTypeCount();
+        }
+    }
+
+    @VisibleForTesting
+    Map<CustomViewBinder, Integer> getViewTypeOffsetMapForTests() {
+        return mViewTypeOffsetMap;
     }
 }

@@ -64,8 +64,8 @@ class VideoCaptureServiceLifecycleTest : public ::testing::Test {
 // having done anything other than obtaining a connection to the device factory.
 TEST_F(VideoCaptureServiceLifecycleTest,
        ServiceQuitsWhenSingleDeviceFactoryClientDisconnected) {
-  mojom::DeviceFactoryPtr factory;
-  service_remote_->ConnectToDeviceFactory(mojo::MakeRequest(&factory));
+  mojo::Remote<mojom::DeviceFactory> factory;
+  service_remote_->ConnectToDeviceFactory(factory.BindNewPipeAndPassReceiver());
   factory.reset();
   service_idle_wait_loop_.Run();
 }
@@ -146,8 +146,8 @@ TEST_F(VideoCaptureServiceLifecycleTest, EnumerateDevicesAfterReconnect) {
 // device.
 TEST_F(VideoCaptureServiceLifecycleTest,
        ServiceQuitsWhenClientDisconnectsWhileUsingDevice) {
-  mojom::DeviceFactoryPtr factory;
-  service_remote_->ConnectToDeviceFactory(mojo::MakeRequest(&factory));
+  mojo::Remote<mojom::DeviceFactory> factory;
+  service_remote_->ConnectToDeviceFactory(factory.BindNewPipeAndPassReceiver());
 
   // Connect to and start first device (in this case a fake camera).
   media::VideoCaptureDeviceInfo fake_device_info;
@@ -163,10 +163,10 @@ TEST_F(VideoCaptureServiceLifecycleTest,
     factory->GetDeviceInfos(device_info_receiver_.Get());
     wait_loop.Run();
   }
-  mojom::DevicePtr fake_device;
+  mojo::Remote<mojom::Device> fake_device;
   factory->CreateDevice(
       std::move(fake_device_info.descriptor.device_id),
-      mojo::MakeRequest(&fake_device),
+      fake_device.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::DeviceAccessResultCode result_code) {
         ASSERT_EQ(mojom::DeviceAccessResultCode::SUCCESS, result_code);
       }));

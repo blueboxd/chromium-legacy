@@ -35,6 +35,23 @@ class ThumbnailTabHelper
   friend class content::WebContentsUserData<ThumbnailTabHelper>;
   friend class ThumanailImageImpl;
 
+  // Describes how a thumbnail bitmap should be generated from a target surface.
+  // All sizes are in pixels, not DIPs.
+  struct ThumbnailCaptureInfo {
+    // The total source size (including scrollbars).
+    gfx::Size source_size;
+
+    // Insets for scrollbars in the source image that should probably be
+    // ignored for thumbnailing purposes.
+    gfx::Insets scrollbar_insets;
+
+    // Cropping rectangle for the source canvas, in pixels.
+    gfx::Rect copy_rect;
+
+    // Size of the target bitmap in pixels.
+    gfx::Size target_size;
+  };
+
   explicit ThumbnailTabHelper(content::WebContents* contents);
 
   // ThumbnailImage::Delegate:
@@ -48,8 +65,6 @@ class ThumbnailTabHelper
   void StoreThumbnail(const SkBitmap& bitmap);
 
   content::RenderWidgetHostView* GetView();
-
-  gfx::Size GetThumbnailSize() const;
 
   // content::WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;
@@ -65,16 +80,43 @@ class ThumbnailTabHelper
           callbacks) override;
   void OnStopped() override;
 
+  // Returns the dimensions of the multipurpose thumbnail that should be
+  // captured from an entire webpage. Can be cropped or compressed later.
+  // If |include_scrollbars_in_capture| is false, the area which is likely to
+  // contain scrollbars will be removed from both the result's |copy_rect| and
+  // |target_size|. In both cases, |scrollbar_insets| is calculated. This
+  // function always returns a result with |clip_result| = kSourceNotClipped.
+  static ThumbnailCaptureInfo GetInitialCaptureInfo(
+      const gfx::Size& source_size,
+      float scale_factor,
+      bool include_scrollbars_in_capture);
+
+  // The implementation of the 'classic' thumbnail cropping algorithm. It is not
+  // content-driven in any meaningful way. Rather, the choice of a cropping
+  // region is based on relation between source and target sizes. The selected
+  // source region is then rescaled into the target thumbnail image.
+  //
+  // Provides information necessary to crop-and-resize image data from a source
+  // canvas of |source_size|. Auxiliary |scale_factor| helps compute the target
+  // thumbnail size to be copied from the backing store, in pixels. The return
+  // value contains the type of clip and the clip parameters.
+  // static ThumbnailCaptureInfo GetThumbnailCropInfo(const gfx::Size&
+  // source_size,
+  //  float scale_factor,
+  //  const gfx::Size& unscaled_target_size);
+
   // The last known visibility WebContents visibility.
   content::Visibility last_visibility_;
+
+  // Is the thumbnail being observed?
+  bool is_being_observed_ = false;
 
   // Whether a thumbnail was captured while the tab was loaded, since the tab
   // was last hidden.
   bool captured_loaded_thumbnail_since_tab_hidden_ = false;
 
-  // The estimated percentage of the most recent frame being captured that
-  // consists of possible right and bottom scroll bars.
-  float last_frame_scrollbar_percent_ = 0.0f;
+  // Copy info from the most recent frame we have captured.
+  ThumbnailCaptureInfo last_frame_capture_info_;
 
   // Captures frames from the WebContents while it's hidden. The capturer count
   // of the WebContents is incremented/decremented when a capturer is set/unset.

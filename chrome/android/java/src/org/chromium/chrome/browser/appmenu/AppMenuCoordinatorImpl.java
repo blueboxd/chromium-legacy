@@ -5,15 +5,12 @@
 package org.chromium.chrome.browser.appmenu;
 
 import android.content.Context;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 
 /** A UI coordinator the app menu. */
 class AppMenuCoordinatorImpl implements AppMenuCoordinator {
@@ -38,25 +35,12 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
                 ActivityLifecycleDispatcher activityLifecycleDispatcher);
     }
 
-    /**
-     * @param factory The {@link AppMenuHandlerFactory} for creating {@link #mAppMenuHandler}
-     */
-    @VisibleForTesting
-    static void setAppMenuHandlerFactoryForTesting(AppMenuHandlerFactory factory) {
-        sAppMenuHandlerFactory = factory;
-    }
-
     private final Context mContext;
     private final MenuButtonDelegate mButtonDelegate;
     private final AppMenuDelegate mAppMenuDelegate;
 
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandlerImpl mAppMenuHandler;
-
-    private static AppMenuHandlerFactory sAppMenuHandlerFactory =
-            (delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher)
-            -> new AppMenuHandlerImpl(delegate, appMenuDelegate, menuResourceId, decorView,
-                    activityLifecycleDispatcher);
 
     /**
      * Construct a new AppMenuCoordinatorImpl.
@@ -76,27 +60,9 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
         mAppMenuDelegate = appMenuDelegate;
         mAppMenuPropertiesDelegate = mAppMenuDelegate.createAppMenuPropertiesDelegate();
 
-        mAppMenuHandler = sAppMenuHandlerFactory.get(mAppMenuPropertiesDelegate, mAppMenuDelegate,
+        mAppMenuHandler = new AppMenuHandlerImpl(mAppMenuPropertiesDelegate, mAppMenuDelegate,
                 mAppMenuPropertiesDelegate.getAppMenuLayoutId(), decorView,
                 activityLifecycleDispatcher);
-
-        // TODO(twellington): Move to UpdateMenuItemHelper or common UI coordinator parent?
-        mAppMenuHandler.addObserver(new AppMenuObserver() {
-            @Override
-            public void onMenuVisibilityChanged(boolean isVisible) {
-                if (isVisible) return;
-
-                mAppMenuPropertiesDelegate.onMenuDismissed();
-                MenuItem updateMenuItem =
-                        mAppMenuHandler.getAppMenu().getMenu().findItem(R.id.update_menu_id);
-                if (updateMenuItem != null && updateMenuItem.isVisible()) {
-                    UpdateMenuItemHelper.getInstance().onMenuDismissed();
-                }
-            }
-
-            @Override
-            public void onMenuHighlightChanged(boolean highlighting) {}
-        });
     }
 
     @Override

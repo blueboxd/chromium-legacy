@@ -1077,28 +1077,6 @@ bool BrowserAccessibility::HasAction(ax::mojom::Action action_enum) const {
   return GetData().HasAction(action_enum);
 }
 
-bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
-  ui::AXTree::Selection unignored_selection =
-      manager()->ax_tree()->GetUnignoredSelection();
-  int32_t focus_id = unignored_selection.focus_object_id;
-  BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
-  if (!focus_object)
-    return false;
-
-  // Selection or caret will be visible in a focused editable area.
-  if (HasState(ax::mojom::State::kEditable)) {
-    return IsPlainTextField() ? focus_object == this
-                              : focus_object->IsDescendantOf(this);
-  }
-
-  // The selection will be visible in non-editable content only if it is not
-  // collapsed into a caret.
-  return (focus_id != unignored_selection.anchor_object_id ||
-          unignored_selection.focus_offset !=
-              unignored_selection.anchor_offset) &&
-         focus_object->IsDescendantOf(this);
-}
-
 bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
   if (GetRole() != ax::mojom::Role::kWebArea &&
       GetRole() != ax::mojom::Role::kRootWebArea) {
@@ -1117,14 +1095,7 @@ bool BrowserAccessibility::IsClickable() const {
 }
 
 bool BrowserAccessibility::IsPlainTextField() const {
-  // We need to check both the role and editable state, because some ARIA text
-  // fields may in fact not be editable, whilst some editable fields might not
-  // have the role.
-  return !HasState(ax::mojom::State::kRichlyEditable) &&
-         (GetRole() == ax::mojom::Role::kTextField ||
-          GetRole() == ax::mojom::Role::kTextFieldWithComboBox ||
-          GetRole() == ax::mojom::Role::kSearchBox ||
-          GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot));
+  return ui::IsPlainTextField(GetData());
 }
 
 bool BrowserAccessibility::IsRichTextField() const {
@@ -1294,6 +1265,28 @@ bool BrowserAccessibility::IsMinimized() const {
 
 bool BrowserAccessibility::IsWebContent() const {
   return true;
+}
+
+bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
+  ui::AXTree::Selection unignored_selection =
+      manager()->ax_tree()->GetUnignoredSelection();
+  int32_t focus_id = unignored_selection.focus_object_id;
+  BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
+  if (!focus_object)
+    return false;
+
+  // Selection or caret will be visible in a focused editable area.
+  if (HasState(ax::mojom::State::kEditable)) {
+    return IsPlainTextField() ? focus_object == this
+                              : focus_object->IsDescendantOf(this);
+  }
+
+  // The selection will be visible in non-editable content only if it is not
+  // collapsed into a caret.
+  return (focus_id != unignored_selection.anchor_object_id ||
+          unignored_selection.focus_offset !=
+              unignored_selection.anchor_offset) &&
+         focus_object->IsDescendantOf(this);
 }
 
 std::set<ui::AXPlatformNode*> BrowserAccessibility::GetNodesForNodeIdSet(

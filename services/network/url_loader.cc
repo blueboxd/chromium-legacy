@@ -415,6 +415,11 @@ URLLoader::URLLoader(
         request.trusted_params->network_isolation_key);
   }
 
+  if (request.trusted_params) {
+    url_request_->SetDisableSecureDns(
+        request.trusted_params->disable_secure_dns);
+  }
+
   // |cors_excempt_headers| must be merged here to avoid breaking CORS checks.
   // They are non-empty when the values are given by the UA code, therefore
   // they should be ignored by CORS checks.

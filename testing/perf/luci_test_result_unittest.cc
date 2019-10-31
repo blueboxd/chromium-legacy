@@ -99,7 +99,7 @@ TEST_F(LuciTestResultTest, Basic) {
                   "contents":"plain data"
                 }
              },
-             "isExpected":true,
+             "expected":true,
              "runDuration":"1.50s",
              "startTime":"2019-09-11T12:30:00.000Z",
              "status":"PASS",
@@ -126,7 +126,7 @@ TEST_F(LuciTestResultTest, Status) {
   const std::string json_template =
       R"({
            "testResult":{
-             "isExpected":false,
+             "expected":false,
              "status":"%s",
              "testPath":"FakeTestSuite.Status"
            }
@@ -168,7 +168,7 @@ TEST_P(LuciTestResultParameterizedTest, Variant) {
   const std::string json_template =
       R"({
            "testResult":{
-             "isExpected":true,
+             "expected":true,
              "status":"PASS",
              "testPath":
                  "ZeroToFiveSequence/LuciTestResultParameterizedTest.Variant",
@@ -206,7 +206,7 @@ TYPED_TEST_P(LuciTestResultTypedTest, Variant) {
   const std::string json_template =
       R"({
            "testResult":{
-             "isExpected":true,
+             "expected":true,
              "status":"PASS",
              "testPath":"LuciTestResultTypedTest/%s.Variant",
              "variant":{"param/instantiation":"%s"}

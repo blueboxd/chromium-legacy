@@ -69,6 +69,8 @@
        width: 100%;
       }
     </style>
+
+    <!-- Arrangement section -->
     <div class="settings-box first layout vertical self-stretch">
       <h2 class="layout self-start">
         $i18n{displayArrangementTitle}
@@ -82,18 +84,19 @@
           on-select-display="onSelectDisplay_">
       </display-layout>
 
-    <template is="dom-if" if="[[showMirror_(unifiedDesktopMode_, displays)]]"
-        restamp>
-      <div class="secondary self-start">
-        <cr-checkbox checked="[[isMirrored_(displays)]]"
-            on-click="onMirroredTap_"
-            aria-label="[[getDisplayMirrorText_(displays)]]">
-          <div class="text-area">[[getDisplayMirrorText_(displays)]]</div>
-        </cr-checkbox>
-      </div>
-    </template>
-
+      <template is="dom-if" if="[[showMirror_(unifiedDesktopMode_, displays)]]"
+          restamp>
+        <div class="secondary self-start">
+          <cr-checkbox checked="[[isMirrored_(displays)]]"
+              on-click="onMirroredTap_"
+              aria-label="[[getDisplayMirrorText_(displays)]]">
+            <div class="text-area">[[getDisplayMirrorText_(displays)]]</div>
+          </cr-checkbox>
+        </div>
+      </template>
     </div>
+
+    <!-- Display tabs -->
     <div hidden="[[!hasMultipleDisplays_(displays)]]" class="settings-box">
       <cr-tabs selected="[[selectedTab_]]" class="display-tabs"
           on-selected-changed="onSelectDisplayTab_"
@@ -135,7 +138,6 @@
             <option value="0">$i18n{displayScreenPrimary}</option>
             <option value="1">$i18n{displayScreenExtended}</option>
           </select>
-          </div>
         </div>
       </template>
 
@@ -216,6 +218,7 @@
         </div>
       </template>
 
+      <!-- Link row to overscan dialog -->
       <cr-link-row class="indented hr" id="overscan"
           label="$i18n{displayOverscanPageTitle}"
           sub-label="$i18n{displayOverscanPageText}" on-click="onOverscanTap_"
@@ -227,6 +230,7 @@
           on-close="onCloseOverscanDialog_">
       </settings-display-overscan-dialog>
 
+      <!-- Link row to touch calibration -->
       <cr-link-row class="indented hr" id="touchCalibration"
           label="$i18n{displayTouchCalibrationTitle}"
           sub-label="$i18n{displayTouchCalibrationText}"

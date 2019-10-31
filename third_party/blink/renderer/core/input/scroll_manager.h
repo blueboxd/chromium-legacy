@@ -97,9 +97,10 @@ class CORE_EXPORT ScrollManager : public GarbageCollected<ScrollManager>,
   void SetResizeScrollableArea(PaintLayer*, IntPoint);
 
   // SnapFlingClient implementation.
-  bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
-                        gfx::Vector2dF* out_initial_position,
-                        gfx::Vector2dF* out_target_position) const override;
+  bool GetSnapFlingInfoAndSetSnapTarget(
+      const gfx::Vector2dF& natural_displacement,
+      gfx::Vector2dF* out_initial_position,
+      gfx::Vector2dF* out_target_position) const override;
   gfx::Vector2dF ScrollByForSnapFling(const gfx::Vector2dF& delta) override;
   void ScrollEndForSnapFling() override;
   void RequestAnimationForSnapFling() override;

@@ -94,6 +94,9 @@ struct TrustedUrlRequestParams {
   // Whether or not the network isolation key needs to be recomputed on
   // redirects. Typically this is only done for navigations.
   UpdateNetworkIsolationKeyOnRedirect update_network_isolation_key_on_redirect;
+
+  // Whether secure DNS should be disabled for the request.
+  bool disable_secure_dns;
 };
 
 // Typemapped to network::ResourceRequest.

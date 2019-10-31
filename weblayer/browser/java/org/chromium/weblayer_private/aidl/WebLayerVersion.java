@@ -4,5 +4,9 @@
 
 package org.chromium.weblayer_private.aidl;
 
-/** Holds the current version number of WebLayer. */
-public final class WebLayerVersion { public static int sVersionNumber = 2; }
+/**
+ * Holds the current version number of WebLayer.
+ *
+ * Whenever any AIDL file is changed, sVersionNumber must be incremented.
+ * */
+public final class WebLayerVersion { public static int sVersionNumber = 3; }

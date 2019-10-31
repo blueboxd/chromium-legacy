@@ -47,6 +47,15 @@ HitTestLocation::HitTestLocation(const FloatPoint& point)
       is_rect_based_(false),
       is_rectilinear_(true) {}
 
+HitTestLocation::HitTestLocation(const FloatPoint& point,
+                                 const PhysicalRect& bounding_box)
+    : point_(PhysicalOffset::FromFloatPointFloor(point)),
+      bounding_box_(bounding_box),
+      transformed_point_(point),
+      transformed_rect_(FloatRect(bounding_box)),
+      is_rect_based_(false),
+      is_rectilinear_(true) {}
+
 HitTestLocation::HitTestLocation(const DoublePoint& point)
     : HitTestLocation(FloatPoint(point)) {}
 

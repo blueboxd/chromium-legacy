@@ -81,9 +81,9 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
     void setVisible(boolean isVisible) {
         if (isVisible) {
             mBottomSheetController.getBottomSheet().addObserver(mBottomSheetObserver);
-            mBottomSheetController.requestShowContent(this, false);
+            mBottomSheetController.requestShowContent(this, true);
         } else {
-            mBottomSheetController.hideContent(this, false);
+            mBottomSheetController.hideContent(this, true);
         }
     }
 
@@ -133,7 +133,7 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
 
     @Override
     public boolean swipeToDismissEnabled() {
-        return true;
+        return false;
     }
 
     @Override
@@ -142,15 +142,10 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
     }
 
     @Override
-    public float getCustomHalfRatio() {
+    public float getHalfHeightRatio() {
         return Math.min(mContext.getResources().getDimensionPixelSize(getDesiredSheetHeight()),
                        (int) mBottomSheetController.getBottomSheet().getSheetContainerHeight())
                 / mBottomSheetController.getBottomSheet().getSheetContainerHeight();
-    }
-
-    @Override
-    public boolean wrapContentEnabled() {
-        return false;
     }
 
     @Override

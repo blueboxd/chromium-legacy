@@ -67,13 +67,6 @@ const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{
 const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
     "AutofillNoLocalSaveOnUploadSuccess", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, local and upload credit card save dialogs will add a
-// [No thanks] cancel button option. This is intended to bring the
-// AutofillSaveCardImprovedUserConsent functionality to Chrome OS, Android, and
-// iOS without bringing the extended title string change with it.
-const base::Feature kAutofillSaveCardShowNoThanks{
-    "AutofillSaveCardShowNoThanks", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether to show updated UI for the card unmask prompt.
 const base::Feature kAutofillUpdatedCardUnmaskPromptUi{
     "AutofillUpdatedCardUnmaskPromptUi", base::FEATURE_DISABLED_BY_DEFAULT};

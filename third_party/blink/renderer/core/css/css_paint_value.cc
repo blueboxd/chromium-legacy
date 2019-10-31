@@ -21,19 +21,14 @@
 
 namespace blink {
 
-CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name,
-                             bool threaded_compositing_enabled)
+CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
     : CSSImageGeneratorValue(kPaintClass),
       name_(name),
       paint_image_generator_observer_(MakeGarbageCollected<Observer>(this)),
       off_thread_paint_state_(
-          (!threaded_compositing_enabled ||
-           !RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
-              ? OffThreadPaintState::kMainThread
-              : OffThreadPaintState::kUnknown) {}
-
-CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
-    : CSSPaintValue(name, Thread::CompositorThread()) {}
+          RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()
+              ? OffThreadPaintState::kUnknown
+              : OffThreadPaintState::kMainThread) {}
 
 CSSPaintValue::CSSPaintValue(
     CSSCustomIdentValue* name,

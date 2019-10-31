@@ -67,6 +67,27 @@ TEST_F(PrefsTest, TestIndex) {
   EXPECT_EQ(password_manager::prefs::kPasswordManagerOnboardingState,
             GetPrefName(PASSWORD_MANAGER_ONBOARDING_STATE));
   EXPECT_EQ(prefs::kSearchSuggestEnabled, GetPrefName(SEARCH_SUGGEST_ENABLED));
+  EXPECT_EQ(password_manager::prefs::kCredentialsEnableService,
+            GetPrefName(REMEMBER_PASSWORDS_ENABLED));
+  EXPECT_EQ(password_manager::prefs::kCredentialsEnableAutosignin,
+            GetPrefName(PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
+  EXPECT_EQ(password_manager::prefs::kPasswordLeakDetectionEnabled,
+            GetPrefName(PASSWORD_MANAGER_LEAK_DETECTION_ENABLED));
+  EXPECT_EQ(prefs::kSupervisedUserSafeSites,
+            GetPrefName(SUPERVISED_USER_SAFE_SITES));
+  EXPECT_EQ(prefs::kDefaultSupervisedUserFilteringBehavior,
+            GetPrefName(DEFAULT_SUPERVISED_USER_FILTERING_BEHAVIOR));
+  EXPECT_EQ(prefs::kSupervisedUserId, GetPrefName(SUPERVISED_USER_ID));
+  EXPECT_EQ(prefs::kSupervisedUserCustodianEmail,
+            GetPrefName(SUPERVISED_USER_CUSTODIAN_EMAIL));
+  EXPECT_EQ(prefs::kSupervisedUserSecondCustodianName,
+            GetPrefName(SUPERVISED_USER_SECOND_CUSTODIAN_NAME));
+  EXPECT_EQ(prefs::kSupervisedUserSecondCustodianEmail,
+            GetPrefName(SUPERVISED_USER_SECOND_CUSTODIAN_EMAIL));
+  EXPECT_EQ(prefs::kClickedUpdateMenuItem,
+            GetPrefName(CLICKED_UPDATE_MENU_ITEM));
+  EXPECT_EQ(prefs::kLatestVersionWhenClickedUpdateMenuItem,
+            GetPrefName(LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
 #include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor.h"
@@ -28,7 +29,8 @@ namespace ui {
 //
 // Each instance of PlatformWindowBase represents a single window in the
 // underlying platform windowing system (i.e. X11/Win/OSX).
-class PlatformWindowBase : public PropertyHandler {
+class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowBase
+    : public PropertyHandler {
  public:
   PlatformWindowBase();
   ~PlatformWindowBase() override;

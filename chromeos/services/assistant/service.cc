@@ -495,7 +495,7 @@ void Service::FinalizeAssistantManagerService() {
   if (!observing_ash_session_) {
     // Bind to the AssistantController in ash.
     client_->RequestAssistantController(
-        mojo::MakeRequest(&assistant_controller_));
+        assistant_controller_.BindNewPipeAndPassReceiver());
     mojo::PendingRemote<mojom::Assistant> remote_for_controller;
     BindAssistant(remote_for_controller.InitWithNewPipeAndPassReceiver());
     assistant_controller_->SetAssistant(std::move(remote_for_controller));

@@ -168,7 +168,9 @@
 
       <div id="addPrinterSection">
         <div class="layout horizontal center custom-list-item">
-          <div id="addPrinterText">$i18n{addCupsPrinter}</div>
+          <div id="addPrinterText" aria-hidden="true">
+            $i18n{addCupsPrinter}
+          </div>
           <cr-icon-button class="action-button" id="addManualPrinterIcon"
               iron-icon="settings20:printer-add"
               on-click="onAddPrinterTap_"

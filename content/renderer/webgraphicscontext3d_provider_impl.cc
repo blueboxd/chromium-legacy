@@ -40,6 +40,11 @@ gpu::gles2::GLES2Interface* WebGraphicsContext3DProviderImpl::ContextGL() {
   return provider_->ContextGL();
 }
 
+gpu::raster::RasterInterface*
+WebGraphicsContext3DProviderImpl::RasterInterface() {
+  return provider_->RasterInterface();
+}
+
 gpu::webgpu::WebGPUInterface*
 WebGraphicsContext3DProviderImpl::WebGPUInterface() {
   return provider_->WebGPUInterface();

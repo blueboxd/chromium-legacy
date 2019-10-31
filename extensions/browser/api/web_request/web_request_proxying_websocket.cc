@@ -58,7 +58,6 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
       browser_context_(browser_context),
       forwarding_handshake_client_(std::move(handshake_client)),
       request_headers_(request.headers),
-      response_(network::mojom::URLResponseHead::New()),
       has_extra_headers_(has_extra_headers),
       info_(WebRequestInfoInitParams(request_id_generator->Generate(),
                                      process_id,
@@ -144,7 +143,7 @@ void WebRequestProxyingWebSocket::ContinueToHeadersReceived() {
       &WebRequestProxyingWebSocket::OnHeadersReceivedComplete,
       weak_factory_.GetWeakPtr());
   int result = ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
-      browser_context_, &info_, continuation, response_->headers.get(),
+      browser_context_, &info_, continuation, response_.headers.get(),
       &override_headers_, &redirect_url_);
 
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
@@ -177,23 +176,23 @@ void WebRequestProxyingWebSocket::OnConnectionEstablished(
   handshake_response_ = std::move(response);
   readable_ = std::move(readable);
 
-  response_->remote_endpoint = handshake_response_->remote_endpoint;
+  response_.remote_endpoint = handshake_response_->remote_endpoint;
 
-  // response_->headers will be set in OnBeforeSendHeaders if
+  // response_.headers will be set in OnBeforeSendHeaders if
   // |receiver_as_header_client_| is set.
   if (receiver_as_header_client_.is_bound()) {
     ContinueToCompleted();
     return;
   }
 
-  response_->headers =
+  response_.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>(base::StringPrintf(
           "HTTP/%d.%d %d %s", handshake_response_->http_version.major_value(),
           handshake_response_->http_version.minor_value(),
           handshake_response_->status_code,
           handshake_response_->status_text.c_str()));
   for (const auto& header : handshake_response_->headers)
-    response_->headers->AddHeader(header->name + ": " + header->value);
+    response_.headers->AddHeader(header->name + ": " + header->value);
 
   ContinueToHeadersReceived();
 }
@@ -221,15 +220,15 @@ void WebRequestProxyingWebSocket::OnAuthRequired(
     return;
   }
 
-  response_->headers = headers;
-  response_->remote_endpoint = remote_endpoint;
+  response_.headers = headers;
+  response_.remote_endpoint = remote_endpoint;
   auth_required_callback_ = std::move(callback);
 
   auto continuation = base::BindRepeating(
       &WebRequestProxyingWebSocket::OnHeadersReceivedCompleteForAuth,
       weak_factory_.GetWeakPtr(), auth_info);
   int result = ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
-      browser_context_, &info_, continuation, response_->headers.get(),
+      browser_context_, &info_, continuation, response_.headers.get(),
       &override_headers_, &redirect_url_);
 
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
@@ -262,7 +261,7 @@ void WebRequestProxyingWebSocket::OnHeadersReceived(
   DCHECK(receiver_as_header_client_.is_bound());
 
   on_headers_received_callback_ = std::move(callback);
-  response_->headers = base::MakeRefCounted<net::HttpResponseHeaders>(headers);
+  response_.headers = base::MakeRefCounted<net::HttpResponseHeaders>(headers);
 
   ContinueToHeadersReceived();
 }
@@ -410,12 +409,12 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedComplete(int error_code) {
   }
 
   if (override_headers_) {
-    response_->headers = override_headers_;
+    response_.headers = override_headers_;
     override_headers_ = nullptr;
   }
 
   ResumeIncomingMethodCallProcessing();
-  info_.AddResponseInfoFromResourceResponse(*response_);
+  info_.AddResponseInfoFromResourceResponse(response_);
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       browser_context_, &info_, net::OK);
 
@@ -454,7 +453,7 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedCompleteForAuth(
     return;
   }
   ResumeIncomingMethodCallProcessing();
-  info_.AddResponseInfoFromResourceResponse(*response_);
+  info_.AddResponseInfoFromResourceResponse(response_);
 
   auto continuation =
       base::BindRepeating(&WebRequestProxyingWebSocket::OnAuthRequiredComplete,

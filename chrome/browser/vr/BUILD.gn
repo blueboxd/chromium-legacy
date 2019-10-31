@@ -201,10 +201,6 @@ component("vr_ui") {
     cflags = [ "-fsymbol-partition=libvr.so" ]
   }
 
-  if (is_android) {
-    sources += [ "jni_onload.cc" ]
-  }
-
   defines = [ "VR_UI_IMPLEMENTATION" ]
 
   if (use_command_buffer) {

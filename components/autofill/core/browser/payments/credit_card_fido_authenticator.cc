@@ -370,18 +370,18 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
          current_flow_ == OPT_OUT_FLOW ||
          current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW ||
          current_flow_ == FOLLOWUP_AFTER_CVC_AUTH_FLOW);
+
+  // Update user preference to keep in sync with server.
+  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(
+      autofill_client_->GetPrefs(),
+      response.user_is_opted_in.value_or(IsUserOptedIn()));
+
   // End the flow if the server responded with an error.
   if (result != AutofillClient::PaymentsRpcResult::SUCCESS) {
     if (current_flow_ == OPT_IN_FETCH_CHALLENGE_FLOW)
       autofill_client_->UpdateWebauthnOfferDialogWithError();
     current_flow_ = NONE_FLOW;
     return;
-  }
-
-  // Update user preference to keep in sync with server.
-  if (response.user_is_opted_in.has_value()) {
-    ::autofill::prefs::SetCreditCardFIDOAuthEnabled(
-        autofill_client_->GetPrefs(), response.user_is_opted_in.value());
   }
 
   // If response contains |creation_options| or |request_options| and the last
@@ -422,6 +422,8 @@ void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse(
     current_flow_ = NONE_FLOW;
     GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
         FidoAuthenticationStrikeDatabase::kStrikesToAddWhenOptInOfferDeclined);
+    ::autofill::prefs::SetCreditCardFIDOAuthEnabled(
+        autofill_client_->GetPrefs(), false);
   }
 }
 

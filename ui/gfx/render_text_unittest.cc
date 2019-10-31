@@ -2293,14 +2293,10 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_ComplexScript) {
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(2U, render_text->cursor_position());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
-  EXPECT_EQ(4U, render_text->cursor_position());
-  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(5U, render_text->cursor_position());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(5U, render_text->cursor_position());
 
-  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
-  EXPECT_EQ(4U, render_text->cursor_position());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(2U, render_text->cursor_position());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
@@ -6140,32 +6136,26 @@ TEST_F(RenderTextTest, TeluguGraphemeBoundaries) {
   render_text->SetText(UTF8ToUTF16("క్రొ"));
 
   const int whole_width = render_text->GetStringSize().width();
-  const int half_width = whole_width / 2;
   // Sanity check. A typical width is 8 pixels. Anything less than 6 could screw
   // up the checks below with rounding.
   EXPECT_LE(6, whole_width);
 
   // Go to the end and perform Shift+Left. The selection should jump to a
-  // grapheme boundary and enclose the second grapheme in the ligature.
+  // grapheme boundary.
+  // Before ICU 65, this was in the center of the glyph, but now it encompasses
+  // the entire glyph.
   render_text->SetCursorPosition(4);
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_RETAIN);
-  EXPECT_EQ(Range(4, 2), render_text->selection());
+  EXPECT_EQ(Range(4, 0), render_text->selection());
   test_api()->EnsureLayout();
 
-  // The selection should start before the string end, and cover about half the
-  // width. Note this requires the RenderText implementation to return a
-  // sensible selection bounds for the diacritical at the end of the ligature.
-  Rect selection_bounds = GetSelectionBoundsUnion();
-  // The selection width rounds up, and half_width may already be rounded down.
-  EXPECT_GE(1, selection_bounds.width() - half_width);
-  EXPECT_GE(1, selection_bounds.x() - half_width);
-
+  // The cursor is already at the boundary, so there should be no change.
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_RETAIN);
   EXPECT_EQ(Range(4, 0), render_text->selection());
   test_api()->EnsureLayout();
 
   // The selection should cover the entire width.
-  selection_bounds = GetSelectionBoundsUnion();
+  Rect selection_bounds = GetSelectionBoundsUnion();
   EXPECT_EQ(0, selection_bounds.x());
   EXPECT_EQ(whole_width, selection_bounds.width());
 }

@@ -13,6 +13,10 @@ namespace syncer {
 
 sync_pb::SyncEnums::DeviceType GetLocalDeviceType();
 
+#if defined(OS_CHROMEOS)
+std::string GetChromeOSDeviceNameFromType();
+#endif
+
 // Returns the personalizable device name. This may contain
 // personally-identifiable information - e.g. Alex's MacbookPro.
 std::string GetPersonalizableDeviceNameBlocking();

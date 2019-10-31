@@ -574,8 +574,7 @@ bool FrameTreeNode::NotifyUserActivation() {
 
   // See the "Same-origin Visibility" section in |UserActivationState| class
   // doc.
-  if (base::FeatureList::IsEnabled(features::kUserActivationV2) &&
-      base::FeatureList::IsEnabled(
+  if (base::FeatureList::IsEnabled(
           features::kUserActivationSameOriginVisibility)) {
     const url::Origin& current_origin =
         this->current_frame_host()->GetLastCommittedOrigin();

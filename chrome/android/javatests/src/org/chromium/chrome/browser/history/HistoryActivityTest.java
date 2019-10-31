@@ -633,7 +633,7 @@ public class HistoryActivityTest {
         // Set supervised user.
         int onPreferenceChangeCallCount = mTestObserver.onPreferenceChangeCallback.getCallCount();
         Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setSupervisedUserId("ChildAccountSUID");
+            PrefServiceBridge.getInstance().setString(Pref.SUPERVISED_USER_ID, "ChildAccountSUID");
             return Profile.getLastUsedProfile().isChild()
                     && !PrefServiceBridge.getInstance().getBoolean(
                                Pref.ALLOW_DELETING_BROWSER_HISTORY)
@@ -664,7 +664,7 @@ public class HistoryActivityTest {
     private void signOut() throws Exception {
         // Clear supervised user id.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().setSupervisedUserId(""));
+                () -> PrefServiceBridge.getInstance().setString(Pref.SUPERVISED_USER_ID, ""));
 
         // Sign out of account.
         int currentCallCount = mTestObserver.onSigninStateChangedCallback.getCallCount();

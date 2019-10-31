@@ -430,6 +430,7 @@ android_library("chrome_java") {
     "//chrome:payments_journey_logger_enum_javagen",
     "//chrome:pref_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
+    "//chrome:supervised_user_url_filter_enum_javagen",
     "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser:sharing_dialog_type_generated_enum",
     "//chrome/browser:sharing_send_message_result_generated_enum",
@@ -2057,6 +2058,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/browser/subresource_filter:subresource_filter_javatests",
     "//chrome/browser/touch_to_fill/android:test_java",
     "//chrome/browser/ui/android/widget:ui_widget_java_tests",
+    "//chrome/browser/util:javatests",
   ]
 
   data_deps = [

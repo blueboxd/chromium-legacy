@@ -364,48 +364,6 @@ static jboolean JNI_PrefServiceBridge_GetBlockThirdPartyCookiesManaged(
   return GetPrefService()->IsManagedPreference(prefs::kBlockThirdPartyCookies);
 }
 
-static jboolean JNI_PrefServiceBridge_GetRememberPasswordsEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(
-      password_manager::prefs::kCredentialsEnableService);
-}
-
-static jboolean JNI_PrefServiceBridge_GetPasswordManagerAutoSigninEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(
-      password_manager::prefs::kCredentialsEnableAutosignin);
-}
-
-static jboolean JNI_PrefServiceBridge_GetPasswordLeakDetectionEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(
-      password_manager::prefs::kPasswordLeakDetectionEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetRememberPasswordsManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(
-      password_manager::prefs::kCredentialsEnableService);
-}
-
-static jboolean JNI_PrefServiceBridge_GetPasswordManagerAutoSigninManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(
-      password_manager::prefs::kCredentialsEnableAutosignin);
-}
-
-static jboolean JNI_PrefServiceBridge_GetPasswordLeakDetectionManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(
-      password_manager::prefs::kPasswordLeakDetectionEnabled);
-}
-
 static jboolean JNI_PrefServiceBridge_GetDoNotTrackEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -546,20 +504,6 @@ static jboolean JNI_PrefServiceBridge_GetResolveNavigationErrorManaged(
   return GetPrefService()->IsManagedPreference(
       prefs::kAlternateErrorPagesEnabled);
 }
-
-static jboolean JNI_PrefServiceBridge_GetSupervisedUserSafeSitesEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kSupervisedUserSafeSites);
-}
-
-static jint JNI_PrefServiceBridge_GetDefaultSupervisedUserFilteringBehavior(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetInteger(
-      prefs::kDefaultSupervisedUserFilteringBehavior);
-}
-
 static jboolean JNI_PrefServiceBridge_GetIncognitoModeEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -599,37 +543,6 @@ static jboolean JNI_PrefServiceBridge_IsMetricsReportingManaged(
     const JavaParamRef<jobject>& obj) {
   return GetPrefService()->IsManagedPreference(
       metrics::prefs::kMetricsReportingEnabled);
-}
-
-static void JNI_PrefServiceBridge_SetClickedUpdateMenuItem(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean clicked) {
-  GetPrefService()->SetBoolean(prefs::kClickedUpdateMenuItem, clicked);
-}
-
-static jboolean JNI_PrefServiceBridge_GetClickedUpdateMenuItem(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kClickedUpdateMenuItem);
-}
-
-static void JNI_PrefServiceBridge_SetLatestVersionWhenClickedUpdateMenuItem(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& version) {
-  GetPrefService()->SetString(
-      prefs::kLatestVersionWhenClickedUpdateMenuItem,
-      ConvertJavaStringToUTF8(env, version));
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetLatestVersionWhenClickedUpdateMenuItem(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(
-          prefs::kLatestVersionWhenClickedUpdateMenuItem));
 }
 
 static jboolean JNI_PrefServiceBridge_GetBrowsingDataDeletionPreference(
@@ -809,30 +722,6 @@ static void JNI_PrefServiceBridge_SetBlockThirdPartyCookiesEnabled(
     const JavaParamRef<jobject>& obj,
     jboolean enabled) {
   GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, enabled);
-}
-
-static void JNI_PrefServiceBridge_SetRememberPasswordsEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean allow) {
-  GetPrefService()->SetBoolean(
-      password_manager::prefs::kCredentialsEnableService, allow);
-}
-
-static void JNI_PrefServiceBridge_SetPasswordManagerAutoSigninEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(
-      password_manager::prefs::kCredentialsEnableAutosignin, enabled);
-}
-
-static void JNI_PrefServiceBridge_SetPasswordLeakDetectionEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(
-      password_manager::prefs::kPasswordLeakDetectionEnabled, enabled);
 }
 
 static void JNI_PrefServiceBridge_SetAllowLocationEnabled(
@@ -1049,32 +938,6 @@ static ScopedJavaLocalRef<jobject> JNI_PrefServiceBridge_GetAboutVersionStrings(
       ConvertUTF8ToJavaString(env, os_version));
 }
 
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetSupervisedUserCustodianEmail(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kSupervisedUserCustodianEmail));
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetSupervisedUserSecondCustodianName(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env,
-      GetPrefService()->GetString(prefs::kSupervisedUserSecondCustodianName));
-}
-
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetSupervisedUserSecondCustodianEmail(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return ConvertUTF8ToJavaString(
-      env,
-      GetPrefService()->GetString(prefs::kSupervisedUserSecondCustodianEmail));
-}
-
 // static
 // This logic should be kept in sync with prependToAcceptLanguagesIfNecessary in
 // chrome/android/java/src/org/chromium/chrome/browser/
@@ -1163,14 +1026,6 @@ void PrefServiceBridge::GetAndroidPermissionsForContentSetting(
       Java_PrefServiceBridge_getAndroidPermissionsForContentSetting(
           env, static_cast<int>(content_settings_type)),
       out);
-}
-
-static void JNI_PrefServiceBridge_SetSupervisedUserId(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& pref) {
-  GetPrefService()->SetString(prefs::kSupervisedUserId,
-                              ConvertJavaStringToUTF8(env, pref));
 }
 
 static void JNI_PrefServiceBridge_GetChromeAcceptLanguages(

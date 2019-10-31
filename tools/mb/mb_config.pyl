@@ -14,7 +14,6 @@
   # below). MB uses this dict to look up which config to use for a given bot.
   'masters': {
     'chrome': {
-      'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
       'chromeos-betty-google-rel': 'official_cros_chrome_sdk_headless_ozone',
       'chromeos-betty-pi-arc-google-rel': 'official_cros_chrome_sdk_headless_ozone',
       'chromeos-eve-google-rel': 'official_cros_chrome_sdk_headless_ozone',
@@ -123,7 +122,7 @@
       'ToTAndroid x64': 'android_clang_tot_x64',
       'ToTLinuxOfficial': 'clang_tot_official',
       'ToTLinux': 'clang_tot_linux_full_symbols_shared_release',
-      'ToTLinuxCoverage': 'clang_tot_coverage_minimal_symbols_release_with_libfuzzer',
+      'ToTLinuxCoverage': 'clang_tot_coverage_minimal_symbols_release',
       'ToTLinux (dbg)': 'clang_tot_shared_debug',
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
       'ToTLinuxASanLibfuzzer': 'libfuzzer_asan_clang_tot_release',
@@ -310,7 +309,7 @@
       'Mac deterministic': 'release_bot_mac_strip_minimal_symbols_deterministic',
       'Mac deterministic (dbg)': 'debug_bot_deterministic',
       'mac-autofill-captured-sites-rel': 'release_bot',
-      'mac-code-coverage': 'clang_code_coverage_nofuzzer',
+      'mac-code-coverage': 'clang_code_coverage',
 
       'android-mojo-webview-rel': 'android_release_bot_minimal_symbols_arm64',
       'Mojo ChromiumOS': 'chromeos_with_codecs_release_trybot',
@@ -328,7 +327,7 @@
       'win-password-manager-captured-sites-rel': 'release_bot',
       'win-pixel-builder-rel': 'release_bot',
       'win32-arm64-rel': 'win32_arm64_release_bot',
-      'win10-code-coverage': 'clang_code_coverage_nofuzzer',
+      'win10-code-coverage': 'clang_code_coverage',
     },
 
     'chromium.goma': {
@@ -1325,15 +1324,11 @@
     ],
 
     'clang_code_coverage': [
-      'release_bot', 'clang', 'use_clang_coverage', 'no_symbols', 'libfuzzer',
+      'release_bot', 'clang', 'use_clang_coverage', 'no_symbols',
     ],
 
     'clang_code_coverage_ios': [
       'use_clang_coverage', 'debug_static_bot', 'x64', 'ios'
-    ],
-
-    'clang_code_coverage_nofuzzer': [
-      'release_bot', 'clang', 'use_clang_coverage', 'no_symbols',
     ],
 
     'clang_tot_asan_lsan_static_release': [
@@ -1374,10 +1369,6 @@
 
     'clang_tot_minimal_symbols_shared_release': [
       'clang_tot', 'minimal_symbols', 'shared', 'release',
-    ],
-
-    'clang_tot_coverage_minimal_symbols_release_with_libfuzzer': [
-      'clang_tot', 'use_clang_coverage', 'minimal_symbols', 'release', 'libfuzzer',
     ],
 
     'clang_tot_coverage_minimal_symbols_release': [

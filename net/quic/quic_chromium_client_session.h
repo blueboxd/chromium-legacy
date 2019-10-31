@@ -89,13 +89,14 @@ enum class ConnectionMigrationMode {
 // Cause of a migration.
 enum MigrationCause {
   UNKNOWN_CAUSE,
-  ON_NETWORK_CONNECTED,                // No probing.
-  ON_NETWORK_DISCONNECTED,             // No probing.
-  ON_WRITE_ERROR,                      // No probing.
-  ON_NETWORK_MADE_DEFAULT,             // With probing.
-  ON_MIGRATE_BACK_TO_DEFAULT_NETWORK,  // With probing.
-  CHANGE_NETWORK_ON_PATH_DEGRADING,    // With probing.
-  CHANGE_PORT_ON_PATH_DEGRADING,       // With probing.
+  ON_NETWORK_CONNECTED,                       // No probing.
+  ON_NETWORK_DISCONNECTED,                    // No probing.
+  ON_WRITE_ERROR,                             // No probing.
+  ON_NETWORK_MADE_DEFAULT,                    // With probing.
+  ON_MIGRATE_BACK_TO_DEFAULT_NETWORK,         // With probing.
+  CHANGE_NETWORK_ON_PATH_DEGRADING,           // With probing.
+  CHANGE_PORT_ON_PATH_DEGRADING,              // With probing.
+  NEW_NETWORK_CONNECTED_POST_PATH_DEGRADING,  // With probing.
   MIGRATION_CAUSE_MAX
 };
 

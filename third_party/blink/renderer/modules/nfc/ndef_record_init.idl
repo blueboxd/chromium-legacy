@@ -11,5 +11,9 @@ typedef DOMString NDEFRecordType;
 dictionary NDEFRecordInit {
     NDEFRecordType recordType;
     USVString mediaType;
+
+    USVString encoding;
+    USVString lang;
+
     any data;
 };

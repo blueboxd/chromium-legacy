@@ -120,15 +120,15 @@ TEST(ComputedHashesTest, ComputedHashes) {
 // $ dd if=hello.txt bs=4096 count=1 | openssl dgst -sha256 -binary | base64
 // $ dd if=hello.txt skip=1 bs=4096 count=1 |
 //   openssl dgst -sha256 -binary | base64
-TEST(ComputedHashesTest, ComputeHashesForContent) {
+TEST(ComputedHashesTest, GetHashesForContent) {
   const int block_size = 4096;
 
   // Simple short input.
   std::string content1 = "hello world";
   std::string content1_expected_hash =
       "uU0nuZNNPgilLlLX2n2r+sSE7+N6U4DukIj3rOLvzek=";
-  std::vector<std::string> hashes1;
-  ComputedHashes::ComputeHashesForContent(content1, block_size, &hashes1);
+  std::vector<std::string> hashes1 =
+      ComputedHashes::GetHashesForContent(content1, block_size);
   ASSERT_EQ(1u, hashes1.size());
   EXPECT_EQ(content1_expected_hash, Base64Encode(hashes1[0]));
 
@@ -139,16 +139,16 @@ TEST(ComputedHashesTest, ComputeHashesForContent) {
   const char* content2_expected_hashes[] = {
       "bvtt5hXo8xvHrlzGAhhoqPL/r+4zJXHx+6wAvkv15V8=",
       "lTD45F7P6I/HOdi8u7FLRA4qzAYL+7xSNVeusG6MJI0="};
-  std::vector<std::string> hashes2;
-  ComputedHashes::ComputeHashesForContent(content2, block_size, &hashes2);
+  std::vector<std::string> hashes2 =
+      ComputedHashes::GetHashesForContent(content2, block_size);
   ASSERT_EQ(2u, hashes2.size());
   EXPECT_EQ(content2_expected_hashes[0], Base64Encode(hashes2[0]));
   EXPECT_EQ(content2_expected_hashes[1], Base64Encode(hashes2[1]));
 
   // Now an empty input.
   std::string content3;
-  std::vector<std::string> hashes3;
-  ComputedHashes::ComputeHashesForContent(content3, block_size, &hashes3);
+  std::vector<std::string> hashes3 =
+      ComputedHashes::GetHashesForContent(content3, block_size);
   ASSERT_EQ(1u, hashes3.size());
   ASSERT_EQ(std::string("47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU="),
             Base64Encode(hashes3[0]));

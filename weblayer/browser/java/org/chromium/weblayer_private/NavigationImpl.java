@@ -54,6 +54,12 @@ public final class NavigationImpl extends INavigation.Stub {
         return NavigationImplJni.get().getRedirectChain(mNativeNavigationImpl, NavigationImpl.this);
     }
 
+    @Override
+    public boolean isSameDocument() {
+        throwIfNativeDestroyed();
+        return NavigationImplJni.get().isSameDocument(mNativeNavigationImpl, NavigationImpl.this);
+    }
+
     private void throwIfNativeDestroyed() {
         if (mNativeNavigationImpl == 0) {
             throw new IllegalStateException("Using Navigation after native destroyed");
@@ -72,5 +78,6 @@ public final class NavigationImpl extends INavigation.Stub {
         int getState(long nativeNavigationImpl, NavigationImpl caller);
         String getUri(long nativeNavigationImpl, NavigationImpl caller);
         List<String> getRedirectChain(long nativeNavigationImpl, NavigationImpl caller);
+        boolean isSameDocument(long nativeNavigationImpl, NavigationImpl caller);
     }
 }

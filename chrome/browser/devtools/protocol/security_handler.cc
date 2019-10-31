@@ -37,10 +37,15 @@ const char kIsErrorPageSecurityStateIssueId[] = "is-error-page";
 const char kInsecureInputEventsSecurityStateIssueId[] = "insecure-input-events";
 
 std::string SecurityLevelToProtocolSecurityState(
-    security_state::SecurityLevel security_level) {
+    security_state::SecurityLevel security_level,
+    GURL url) {
   switch (security_level) {
     case security_state::NONE:
     case security_state::WARNING:
+      if (security_state::ShouldDowngradeNeutralStyling(
+              security_level, url,
+              base::BindRepeating(&content::IsOriginSecure)))
+        return protocol::Security::SecurityStateEnum::Insecure;
       return protocol::Security::SecurityStateEnum::Neutral;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
     case security_state::EV_SECURE:
@@ -146,8 +151,8 @@ CreateVisibleSecurityState(const security_state::VisibleSecurityState& state,
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
-  std::string security_state =
-      SecurityLevelToProtocolSecurityState(helper->GetSecurityLevel());
+  std::string security_state = SecurityLevelToProtocolSecurityState(
+      helper->GetSecurityLevel(), state.url);
 
   bool scheme_is_cryptographic =
       security_state::IsSchemeCryptographic(state.url);

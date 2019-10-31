@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "third_party/inspector_protocol/encoding/encoding.h"
+#include "third_party/inspector_protocol/crdtp/encoding.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
@@ -16,16 +16,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  inspector_protocol_encoding::span<uint8_t> fuzz{data, size};
+  crdtp::span<uint8_t> fuzz{data, size};
 
   // We need to handle whatever the parser parses. So, we handle the parsed
   // stuff with another CBOR encoder, just because it's conveniently available.
   std::vector<uint8_t> encoded;
-  inspector_protocol_encoding::Status status;
-  std::unique_ptr<inspector_protocol_encoding::StreamingParserHandler> encoder =
-      inspector_protocol_encoding::cbor::NewCBOREncoder(&encoded, &status);
+  crdtp::Status status;
+  std::unique_ptr<crdtp::StreamingParserHandler> encoder =
+      crdtp::cbor::NewCBOREncoder(&encoded, &status);
 
-  inspector_protocol_encoding::cbor::ParseCBOR(fuzz, encoder.get());
+  crdtp::cbor::ParseCBOR(fuzz, encoder.get());
 
   return 0;
 }

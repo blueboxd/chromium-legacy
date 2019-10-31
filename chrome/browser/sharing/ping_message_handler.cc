@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sharing/ping_message_handler.h"
 
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "components/sync/protocol/sharing_message.pb.h"
 
 PingMessageHandler::PingMessageHandler() = default;
 

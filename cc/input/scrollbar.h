@@ -5,6 +5,7 @@
 #ifndef CC_INPUT_SCROLLBAR_H_
 #define CC_INPUT_SCROLLBAR_H_
 
+#include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
 #include "cc/paint/paint_canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -42,10 +43,8 @@ enum ScrollbarPart {
   NO_PART,
 };
 
-class Scrollbar {
+class Scrollbar : public base::RefCounted<Scrollbar> {
  public:
-  virtual ~Scrollbar() {}
-
   virtual ScrollbarOrientation Orientation() const = 0;
   virtual bool IsLeftSideVerticalScrollbar() const = 0;
   virtual gfx::Point Location() const = 0;
@@ -77,6 +76,10 @@ class Scrollbar {
   virtual bool UsesNinePatchThumbResource() const = 0;
   virtual gfx::Size NinePatchThumbCanvasSize() const = 0;
   virtual gfx::Rect NinePatchThumbAperture() const = 0;
+
+ protected:
+  friend class base::RefCounted<Scrollbar>;
+  virtual ~Scrollbar() {}
 };
 
 }  // namespace cc

@@ -950,316 +950,324 @@
     {
       "name": "HorizontalScrollbar",
       "bounds": [150, 150],
+      "transform": 3
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='target4'",
+      "position": [40, 10010],
+      "bounds": [60, 40],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV id='target4'",
-          "rect": [0, 60, 50, 40],
+          "rect": [0, 0, 60, 40],
           "reason": "background"
         }
       ],
       "underPaintInvalidations": [
         {
           "x": 0,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 1,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 2,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 3,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 4,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 5,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 6,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 7,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 8,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 9,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 10,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 11,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 12,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 13,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 14,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 15,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 16,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 17,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 18,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 19,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 20,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 21,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 22,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 23,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 24,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 25,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 26,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 27,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 28,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 29,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 30,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 31,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 32,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 33,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 34,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 35,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 36,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 37,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 38,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 39,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 40,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 41,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 42,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 43,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 44,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 45,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 46,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 47,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 48,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         },
         {
           "x": 49,
-          "y": 60,
+          "y": 0,
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         }
       ],
-      "transform": 3
+      "transform": 4
     }
   ],
   "transforms": [
@@ -1288,6 +1296,16 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [8, 260, 0, 1]
+      ]
+    },
+    {
+      "id": 4,
+      "parent": 3,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [-50, -9950, 0, 1]
       ]
     }
   ]

@@ -411,7 +411,8 @@ TEST_F(SnapCoordinatorTest, SnapDataCalculation) {
       gfx::RectF(10, 10, width - 20, height - 20),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
   cc::SnapAreaData expected_area(cc::ScrollSnapAlign(cc::SnapAlignment::kStart),
-                                 gfx::RectF(192, 192, 116, 116), false);
+                                 gfx::RectF(192, 192, 116, 116), false,
+                                 cc::ElementId(10));
   expected_container.AddSnapAreaData(expected_area);
 
   EXPECT_EQ_CONTAINER(expected_container, actual_container);
@@ -444,7 +445,8 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculation) {
       gfx::RectF(10, 10, width - 20, height - 20),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
   cc::SnapAreaData expected_area(cc::ScrollSnapAlign(cc::SnapAlignment::kStart),
-                                 gfx::RectF(192, 192, 116, 116), false);
+                                 gfx::RectF(192, 192, 116, 116), false,
+                                 cc::ElementId(10));
   expected_container.AddSnapAreaData(expected_area);
 
   EXPECT_EQ_CONTAINER(expected_container, actual_container);
@@ -504,7 +506,8 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculationOnViewport) {
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
 
   cc::SnapAreaData expected_area(cc::ScrollSnapAlign(cc::SnapAlignment::kStart),
-                                 gfx::RectF(200, 200, 100, 100), false);
+                                 gfx::RectF(200, 200, 100, 100), false,
+                                 cc::ElementId(10));
   expected_container.AddSnapAreaData(expected_area);
 
   EXPECT_EQ_CONTAINER(expected_container, actual_container);
@@ -549,7 +552,8 @@ TEST_F(SnapCoordinatorTest, SnapDataCalculationWithBoxModel) {
   // rect.height = area.height +
   //               2 * (area.padding + area.border + area.scroll-margin)
   cc::SnapAreaData expected_area(cc::ScrollSnapAlign(cc::SnapAlignment::kStart),
-                                 gfx::RectF(208, 208, 144, 144), false);
+                                 gfx::RectF(208, 208, 144, 144), false,
+                                 cc::ElementId(10));
   expected_container.AddSnapAreaData(expected_area);
 
   EXPECT_EQ_CONTAINER(expected_container, actual_container);
@@ -582,7 +586,8 @@ TEST_F(SnapCoordinatorTest, NegativeMarginSnapDataCalculation) {
       gfx::RectF(10, 10, width - 20, height - 20),
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
   cc::SnapAreaData expected_area(cc::ScrollSnapAlign(cc::SnapAlignment::kStart),
-                                 gfx::RectF(208, 208, 84, 84), false);
+                                 gfx::RectF(208, 208, 84, 84), false,
+                                 cc::ElementId(10));
   expected_container.AddSnapAreaData(expected_area);
 
   EXPECT_EQ_CONTAINER(expected_container, actual_container);
@@ -629,7 +634,7 @@ TEST_F(SnapCoordinatorTest, AsymmetricalSnapDataCalculation) {
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
   cc::SnapAreaData expected_area(
       cc::ScrollSnapAlign(cc::SnapAlignment::kCenter),
-      gfx::RectF(192, 198, 112, 108), false);
+      gfx::RectF(192, 198, 112, 108), false, cc::ElementId(10));
   expected_container.AddSnapAreaData(expected_area);
 
   EXPECT_EQ_CONTAINER(expected_container, actual_container);
@@ -664,7 +669,8 @@ TEST_F(SnapCoordinatorTest, ScaledSnapDataCalculation) {
   // The area is scaled from center, so it pushes the area's top-left corner to
   // (50, 50).
   cc::SnapAreaData expected_area(cc::ScrollSnapAlign(cc::SnapAlignment::kEnd),
-                                 gfx::RectF(42, 42, 416, 416), false);
+                                 gfx::RectF(42, 42, 416, 416), false,
+                                 cc::ElementId(10));
   expected_container.AddSnapAreaData(expected_area);
 
   EXPECT_EQ_CONTAINER(expected_container, actual_container);
@@ -701,7 +707,7 @@ TEST_F(SnapCoordinatorTest, VerticalRlSnapDataCalculation) {
   // and 'end' should align to the left.
   cc::SnapAreaData expected_area(
       cc::ScrollSnapAlign(cc::SnapAlignment::kStart, cc::SnapAlignment::kEnd),
-      gfx::RectF(192, 192, 116, 116), false);
+      gfx::RectF(192, 192, 116, 116), false, cc::ElementId(10));
   expected_container.AddSnapAreaData(expected_area);
 
   EXPECT_EQ_CONTAINER(expected_container, actual_container);
@@ -728,4 +734,102 @@ TEST_F(SnapCoordinatorTest, ChangeOverflowToVisible) {
   EXPECT_TRUE(data);
 }
 
+TEST_F(SnapCoordinatorTest, CurrentSnappedAreaRemoved) {
+  SetUpSingleSnapArea();
+  Element* scroller_element = GetDocument().getElementById("scroller");
+  Element* area_element = GetDocument().getElementById("area");
+  area_element->setAttribute(kStyleAttr, "scroll-snap-align: start;");
+  UpdateAllLifecyclePhasesForTest();
+  scroller_element->scrollTo(250, 250);
+  UpdateAllLifecyclePhasesForTest();
+
+  const cc::SnapContainerData* data_ptr =
+      GetSnapContainerData(*scroller_element->GetLayoutBox());
+  EXPECT_TRUE(data_ptr);
+  cc::SnapContainerData data = *data_ptr;
+  cc::TargetSnapAreaElementIds expected_snap_targets(data.at(0).element_id,
+                                                     data.at(0).element_id);
+  EXPECT_TRUE(expected_snap_targets.x);
+  EXPECT_EQ(expected_snap_targets, data.GetTargetSnapAreaElementIds());
+
+  area_element->setAttribute(kStyleAttr, "scroll-snap-align: none;");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Removing a snap area should also remove it as the target snap area.
+  data_ptr = GetSnapContainerData(*scroller_element->GetLayoutBox());
+  EXPECT_TRUE(data_ptr);
+  data = *data_ptr;
+  EXPECT_EQ(cc::TargetSnapAreaElementIds(), data.GetTargetSnapAreaElementIds());
+}
+
+TEST_F(SnapCoordinatorTest, AddingSnapAreaDoesNotRemoveCurrentSnapTarget) {
+  // Set up 2 areas. Mark the other as a snap area later.
+  SetHTML(R"HTML(
+      <style>
+      #scroller {
+        width: 140px;
+        height: 160px;
+        padding: 0px;
+        scroll-snap-type: both mandatory;
+        scroll-padding: 10px;
+        overflow: scroll;
+      }
+      #container {
+        margin: 0px;
+        padding: 0px;
+        width: 500px;
+        height: 500px;
+      }
+      #area {
+        position: relative;
+        top: 200px;
+        left: 200px;
+        width: 100px;
+        height: 100px;
+        scroll-margin: 8px;
+      }
+      #area2 {
+        position: relative;
+        top: 400px;
+        left: 400px;
+        width: 100px;
+        height: 100px;
+        scroll-margin: 8px;
+      }
+      </style>
+      <div id='scroller'>
+        <div id='container'>
+          <div id="area"></div>
+          <div id="area2"></div>
+        </div>
+      </div>
+      )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* scroller_element = GetDocument().getElementById("scroller");
+  Element* area_element = GetDocument().getElementById("area");
+  area_element->setAttribute(kStyleAttr, "scroll-snap-align: start;");
+  UpdateAllLifecyclePhasesForTest();
+  scroller_element->scrollTo(250, 250);
+  UpdateAllLifecyclePhasesForTest();
+
+  const cc::SnapContainerData* data_ptr =
+      GetSnapContainerData(*scroller_element->GetLayoutBox());
+  EXPECT_TRUE(data_ptr);
+  cc::SnapContainerData data = *data_ptr;
+  cc::TargetSnapAreaElementIds expected_snap_targets(data.at(0).element_id,
+                                                     data.at(0).element_id);
+  EXPECT_TRUE(expected_snap_targets.x);
+  EXPECT_EQ(expected_snap_targets, data.GetTargetSnapAreaElementIds());
+
+  Element* area2_element = GetDocument().getElementById("area2");
+  area2_element->setAttribute(kStyleAttr, "scroll-snap-align: start;");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Adding another snap area should not affect the current snapped target.
+  data_ptr = GetSnapContainerData(*scroller_element->GetLayoutBox());
+  EXPECT_TRUE(data_ptr);
+  data = *data_ptr;
+  EXPECT_EQ(expected_snap_targets, data.GetTargetSnapAreaElementIds());
+}
 }  // namespace blink

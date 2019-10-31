@@ -12,6 +12,7 @@
 #include "cc/tiles/software_image_decode_cache.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -1073,6 +1074,12 @@ gpu::gles2::GLES2Interface* CanvasResourceProvider::ContextGL() const {
   return context_provider_wrapper_->ContextProvider()->ContextGL();
 }
 
+gpu::raster::RasterInterface* CanvasResourceProvider::RasterInterface() const {
+  if (!context_provider_wrapper_)
+    return nullptr;
+  return context_provider_wrapper_->ContextProvider()->RasterInterface();
+}
+
 GrContext* CanvasResourceProvider::GetGrContext() const {
   if (!context_provider_wrapper_)
     return nullptr;
@@ -1084,8 +1091,9 @@ void CanvasResourceProvider::FlushSkia() const {
 }
 
 bool CanvasResourceProvider::IsGpuContextLost() const {
-  auto* gl = ContextGL();
-  return !gl || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
+  auto* raster_interface = RasterInterface();
+  return !raster_interface ||
+         raster_interface->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
 bool CanvasResourceProvider::WritePixels(const SkImageInfo& orig_info,

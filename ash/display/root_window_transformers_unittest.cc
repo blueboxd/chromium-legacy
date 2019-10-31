@@ -310,7 +310,8 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
 // on 2.25 scale factor device so that HW overlay kicks in.
 // https://crbug.com/869090.
 TEST_F(RootWindowTransformersTest, OriginAlignmentWithFractionalScale) {
-  auto* host_window = Shell::GetPrimaryRootWindow()->GetHost()->window();
+  auto* host = Shell::GetPrimaryRootWindow()->GetHost();
+  auto* host_window = host->window();
   EXPECT_EQ(Shell::GetPrimaryRootWindow(), host_window);
 
   float device_scale_factor = 2.25f;
@@ -329,7 +330,7 @@ TEST_F(RootWindowTransformersTest, OriginAlignmentWithFractionalScale) {
     gfx::RectF tmp(1998, 2999);
     // Creates a transform that can be applied to already scaled layer.
     gfx::Transform transform(invert_transform);
-    transform.ConcatTransform(host_window->layer()->transform());
+    transform.ConcatTransform(host->GetRootTransform() * invert_transform);
     transform.ConcatTransform(scale_transform);
     transform.TransformRect(&tmp);
     EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
@@ -342,7 +343,7 @@ TEST_F(RootWindowTransformersTest, OriginAlignmentWithFractionalScale) {
 
     gfx::RectF tmp(2999, 1998);
     gfx::Transform transform(invert_transform);
-    transform.ConcatTransform(host_window->layer()->transform());
+    transform.ConcatTransform(host->GetRootTransform() * invert_transform);
     transform.ConcatTransform(scale_transform);
     transform.TransformRect(&tmp);
     EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
@@ -355,7 +356,7 @@ TEST_F(RootWindowTransformersTest, OriginAlignmentWithFractionalScale) {
 
     gfx::RectF tmp(1998, 2999);
     gfx::Transform transform(invert_transform);
-    transform.ConcatTransform(host_window->layer()->transform());
+    transform.ConcatTransform(host->GetRootTransform() * invert_transform);
     transform.ConcatTransform(scale_transform);
     transform.TransformRect(&tmp);
     EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());

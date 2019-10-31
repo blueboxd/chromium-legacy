@@ -97,6 +97,7 @@ class Tab : public gfx::AnimationDelegate,
   void OnFocus() override;
   void OnBlur() override;
   void OnThemeChanged() override;
+  TabSlotView::ViewType GetTabSlotViewType() const override;
   TabSizeInfo GetTabSizeInfo() const override;
 
   TabController* controller() const { return controller_; }
@@ -104,18 +105,6 @@ class Tab : public gfx::AnimationDelegate,
   // Used to set/check whether this Tab is being animated closed.
   void SetClosing(bool closing);
   bool closing() const { return closing_; }
-
-  // See description above field.
-  void set_dragging(bool dragging) { dragging_ = dragging; }
-  bool dragging() const { return dragging_; }
-
-  // Used to mark the tab as having been detached.  Once this has happened, the
-  // tab should be invisibly closed.  This is irreversible.
-  void set_detached() { detached_ = true; }
-  bool detached() const { return detached_; }
-
-  void SetGroup(base::Optional<TabGroupId> group);
-  base::Optional<TabGroupId> group() { return group_; }
 
   // Returns the color for the tab's group, if any.
   base::Optional<SkColor> GetGroupColor() const;
@@ -225,15 +214,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // True if the tab is being animated closed.
   bool closing_ = false;
-
-  // True if the tab is being dragged.
-  bool dragging_ = false;
-
-  // True if the tab has been detached.
-  bool detached_ = false;
-
-  // Defined when the tab is part of a group.
-  base::Optional<TabGroupId> group_;
 
   TabIcon* icon_ = nullptr;
   AlertIndicator* alert_indicator_ = nullptr;

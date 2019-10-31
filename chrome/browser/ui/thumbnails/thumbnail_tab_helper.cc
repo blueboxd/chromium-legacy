@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
-#include "chrome/browser/ui/thumbnails/thumbnail_utils.h"
+#include "components/history/core/common/thumbnail_score.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
@@ -25,6 +25,7 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/native_theme/native_theme.h"
 
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
@@ -36,15 +37,17 @@ ThumbnailTabHelper::~ThumbnailTabHelper() {
 
 void ThumbnailTabHelper::ThumbnailImageBeingObservedChanged(
     bool is_being_observed) {
-  if (is_being_observed) {
-    if (!captured_loaded_thumbnail_since_tab_hidden_)
+  if (is_being_observed_ != is_being_observed) {
+    is_being_observed_ = is_being_observed;
+    if (is_being_observed && !captured_loaded_thumbnail_since_tab_hidden_)
       StartVideoCapture();
-  } else {
-    StopVideoCapture();
   }
 }
 
 bool ThumbnailTabHelper::ShouldKeepUpdatingThumbnail() const {
+  if (!is_being_observed_)
+    return false;
+
   auto* tab_load_tracker = resource_coordinator::TabLoadTracker::Get();
   if (tab_load_tracker &&
       tab_load_tracker->GetLoadingState(web_contents()) !=
@@ -70,18 +73,9 @@ void ThumbnailTabHelper::CaptureThumbnailOnTabSwitch() {
   if (source_size.IsEmpty())
     return;
 
-  const gfx::Size desired_size = GetThumbnailSize();
   const float scale_factor = source_view->GetDeviceScaleFactor();
-  // Clip the pixels that will commonly hold a scrollbar, which looks bad in
-  // thumbnails - but only if that wouldn't make the thumbnail too small.
-  const int scrollbar_size = gfx::scrollbar_size() * scale_factor;
-  if (source_size.width() - scrollbar_size > desired_size.width() &&
-      source_size.height() - scrollbar_size > desired_size.height()) {
-    source_size.Enlarge(-scrollbar_size, -scrollbar_size);
-  }
-
-  thumbnails::CanvasCopyInfo copy_info =
-      thumbnails::GetCanvasCopyInfo(source_size, scale_factor, desired_size);
+  ThumbnailCaptureInfo copy_info = GetInitialCaptureInfo(
+      source_size, scale_factor, /* include_scrollbars_in_capture */ false);
 
   source_view->CopyFromSurface(
       copy_info.copy_rect, copy_info.target_size,
@@ -107,67 +101,30 @@ void ThumbnailTabHelper::StoreThumbnail(const SkBitmap& bitmap) {
 }
 
 void ThumbnailTabHelper::StartVideoCapture() {
-  if (video_capturer_) {
-    // Already capturing: We're already forcing rendering. Clear the capturer.
-    video_capturer_->Stop();
-    video_capturer_.reset();
-  } else {
-    // *Not* already capturing: Force rendering.
-    web_contents()->IncrementCapturerCount(GetThumbnailSize());
-  }
+  if (video_capturer_)
+    return;
 
   // Get the WebContents' main view.
   content::RenderWidgetHostView* const source_view = GetView();
-  if (!source_view) {
-    web_contents()->DecrementCapturerCount();
+  if (!source_view)
     return;
-  }
 
-  const gfx::Size preview_size = GetThumbnailSize();
+  // Get the source size and scale.
   const float scale_factor = source_view->GetDeviceScaleFactor();
-  const gfx::Size source_size_px = source_view->GetViewBounds().size();
-  const gfx::Size target_size_px =
-      gfx::ScaleToFlooredSize(preview_size, scale_factor);
-  DCHECK(!target_size_px.IsEmpty());
-  if (source_size_px.IsEmpty()) {
-    web_contents()->DecrementCapturerCount();
+  const gfx::Size source_size = source_view->GetViewBounds().size();
+  if (source_size.IsEmpty())
     return;
-  }
 
-  const float scrollbar_size = gfx::scrollbar_size() * scale_factor;
-  gfx::Size max_size_px;
-  if (source_size_px.width() - scrollbar_size < target_size_px.width() ||
-      source_size_px.height() - scrollbar_size < target_size_px.height()) {
-    // We need all of the pixels we can get, so we won't trim off scrollbars
-    // later.
-    last_frame_scrollbar_percent_ = 0.0f;
-    // The source is smaller than the target - typically shorter, since normal
-    // browser windows have a minimum width. Allowing the capture to use up to
-    // double the size of the target bitmap provides decent results in most
-    // cases (and with a window that is a sliver you can't get a good result
-    // anyway).
-    max_size_px =
-        gfx::Size(target_size_px.width() * 2, target_size_px.height() * 2);
-  } else {
-    const gfx::SizeF effective_source_size{
-        source_size_px.width() - scrollbar_size,
-        source_size_px.height() - scrollbar_size};
-    // Remember how much of the frame is likely to be scroll bars so we can trim
-    // them off later.
-    last_frame_scrollbar_percent_ = scrollbar_size / source_size_px.width();
-    // This scaling logic makes the maximum size equal to the size of the source
-    // scaled down so it is no smaller than the target bitmap in either
-    // dimension. It means we always have an appropriate sized frame to clip
-    // from (the final clip region will be determined after capture).
-    const float min_ratio =
-        std::min(effective_source_size.width() / target_size_px.width(),
-                 effective_source_size.height() / target_size_px.height());
-    max_size_px = gfx::ScaleToCeiledSize(source_size_px, 1.0f / min_ratio);
-  }
+  // Figure out how large we want the capture target to be.
+  last_frame_capture_info_ =
+      GetInitialCaptureInfo(source_size, scale_factor,
+                            /* include_scrollbars_in_capture */ true);
 
+  const gfx::Size& target_size = last_frame_capture_info_.target_size;
+  web_contents()->IncrementCapturerCount(target_size);
   constexpr int kMaxFrameRate = 5;
   video_capturer_ = source_view->CreateVideoCapturer();
-  video_capturer_->SetResolutionConstraints(target_size_px, max_size_px, false);
+  video_capturer_->SetResolutionConstraints(target_size, target_size, false);
   video_capturer_->SetAutoThrottlingEnabled(false);
   video_capturer_->SetMinSizeChangePeriod(base::TimeDelta());
   video_capturer_->SetFormat(media::PIXEL_FORMAT_ARGB,
@@ -187,10 +144,6 @@ void ThumbnailTabHelper::StopVideoCapture() {
 
 content::RenderWidgetHostView* ThumbnailTabHelper::GetView() {
   return web_contents()->GetRenderViewHost()->GetWidget()->GetView();
-}
-
-gfx::Size ThumbnailTabHelper::GetThumbnailSize() const {
-  return TabStyle::GetPreviewImageSize();
 }
 
 void ThumbnailTabHelper::OnVisibilityChanged(content::Visibility visibility) {
@@ -258,25 +211,18 @@ void ThumbnailTabHelper::OnFrameCaptured(
         releaser;
   };
 
-  content::RenderWidgetHostView* const source_view = GetView();
-  const float scale_factor =
-      source_view ? source_view->GetDeviceScaleFactor() : 1.0f;
-
   // Subtract back out the scroll bars if we decided there was enough canvas to
   // account for them and still have a decent preview image.
-  const int scrollbar_width =
-      std::round(content_rect.right() * last_frame_scrollbar_percent_);
-  gfx::Rect effective_content_rect = content_rect;
-  effective_content_rect.Inset(0, 0, scrollbar_width, scrollbar_width);
+  const float scale_ratio = float{content_rect.width()} /
+                            float{last_frame_capture_info_.copy_rect.width()};
 
-  // We want to grab a subset of the captured content rect. Since we've ensured
-  // that in the vast majority of cases the captured frame will be an
-  // appropriate size to clip a thumbnail from, our standard clipping logic
-  // should be adequate here.
-  auto copy_info = thumbnails::GetCanvasCopyInfo(
-      effective_content_rect.size(), scale_factor, GetThumbnailSize());
-  gfx::Rect copy_rect = copy_info.copy_rect;
-  copy_rect.Offset(effective_content_rect.x(), effective_content_rect.y());
+  const gfx::Insets original_scroll_insets =
+      last_frame_capture_info_.scrollbar_insets;
+  const gfx::Insets scroll_insets(
+      0, 0, std::round(original_scroll_insets.width() * scale_ratio),
+      std::round(original_scroll_insets.height() * scale_ratio));
+  gfx::Rect effective_content_rect = content_rect;
+  effective_content_rect.Inset(scroll_insets);
 
   const gfx::Size bitmap_size(content_rect.right(), content_rect.bottom());
   SkBitmap frame;
@@ -294,10 +240,81 @@ void ThumbnailTabHelper::OnFrameCaptured(
   frame.setImmutable();
 
   SkBitmap cropped_frame;
-  if (frame.extractSubset(&cropped_frame, gfx::RectToSkIRect(copy_rect)))
+  if (frame.extractSubset(&cropped_frame,
+                          gfx::RectToSkIRect(effective_content_rect))) {
     StoreThumbnail(cropped_frame);
+  }
 }
 
 void ThumbnailTabHelper::OnStopped() {}
+
+// static
+ThumbnailTabHelper::ThumbnailCaptureInfo
+ThumbnailTabHelper::GetInitialCaptureInfo(const gfx::Size& source_size,
+                                          float scale_factor,
+                                          bool include_scrollbars_in_capture) {
+  ThumbnailCaptureInfo capture_info;
+  capture_info.source_size = source_size;
+
+  // Minimum scale factor to capture thumbnail images at. At 1.0x we want to
+  // slightly over-sample the image so that it looks good for multiple uses and
+  // cropped to different dimensions.
+  constexpr float kMinThumbnailScaleFactor = 1.5f;
+  scale_factor = std::max(scale_factor, kMinThumbnailScaleFactor);
+
+  // Minimum thumbnail dimension (in DIP) for tablet tabstrip previews.
+  constexpr int kMinThumbnailDimensionForTablet = 175;
+  const gfx::Size preview_size = TabStyle::GetPreviewImageSize();
+  const int smallest_dimension =
+      scale_factor *
+      std::max(kMinThumbnailDimensionForTablet,
+               std::min(preview_size.width(), preview_size.height()));
+
+  // Clip the pixels that will commonly hold a scrollbar, which looks bad in
+  // thumbnails - but only if that wouldn't make the thumbnail too small. We
+  // can't just use gfx::scrollbar_size() because that reports default system
+  // scrollbar width which is different from the width used in web rendering.
+  const int scrollbar_size_dip =
+      ui::NativeTheme::GetInstanceForWeb()
+          ->GetPartSize(ui::NativeTheme::Part::kScrollbarVerticalTrack,
+                        ui::NativeTheme::State::kNormal,
+                        ui::NativeTheme::ExtraParams())
+          .width();
+  // Round up to make sure any scrollbar pixls are eliminated. It's better to
+  // lose a single pixel of content than having a single pixel of scrollbar.
+  const int scrollbar_size = std::ceil(scale_factor * scrollbar_size_dip);
+  if (source_size.width() - scrollbar_size > smallest_dimension)
+    capture_info.scrollbar_insets.set_right(scrollbar_size);
+  if (source_size.height() - scrollbar_size > smallest_dimension)
+    capture_info.scrollbar_insets.set_bottom(scrollbar_size);
+
+  // Calculate the region to copy from.
+  capture_info.copy_rect = gfx::Rect(source_size);
+  if (!include_scrollbars_in_capture)
+    capture_info.copy_rect.Inset(capture_info.scrollbar_insets);
+
+  // Compute minimum sizes for multiple uses of the thumbnail - currently,
+  // tablet tabstrip previews and tab hover card preview images.
+  gfx::Size min_target_size = TabStyle::GetPreviewImageSize();
+  min_target_size.SetToMax(
+      {kMinThumbnailDimensionForTablet, kMinThumbnailDimensionForTablet});
+  min_target_size = gfx::ScaleToFlooredSize(min_target_size, scale_factor);
+
+  // Calculate the target size to be the smallest size which meets the minimum
+  // requirements but has the same aspect ratio as the source (with or without
+  // scrollbars).
+  const float width_ratio =
+      float{capture_info.copy_rect.width()} / min_target_size.width();
+  const float height_ratio =
+      float{capture_info.copy_rect.height()} / min_target_size.height();
+  const float scale_ratio = std::min(width_ratio, height_ratio);
+  capture_info.target_size =
+      scale_ratio <= 1.0f
+          ? capture_info.copy_rect.size()
+          : gfx::ScaleToCeiledSize(capture_info.copy_rect.size(),
+                                   1.0f / scale_ratio);
+
+  return capture_info;
+}
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ThumbnailTabHelper)

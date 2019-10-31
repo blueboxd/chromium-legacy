@@ -61,6 +61,10 @@ struct RemoteDevice {
   // Identifier for the user to whom this device is registered.
   string user_id;
 
+  // The immutable FCM Instance ID assigned to the device. Used as the primary
+  // identifier for devices using CryptAuth v2 Enrollment and DeviceSync.
+  string instance_id;
+
   // Human-readable device name; by default, this is the name of the device
   // model, but this value is editable.
   string device_name;

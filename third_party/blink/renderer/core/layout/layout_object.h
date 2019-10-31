@@ -1694,7 +1694,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   PhysicalOffset OffsetFromContainer(const LayoutObject*,
                                      bool ignore_scroll_offset = false) const;
   // Return the offset from an object from the ancestor. The ancestor need
-  // not be on the containing block chain of |this|.
+  // not be on the containing block chain of |this|. Note that this function
+  // cannot be used when there are transforms between this object and the
+  // ancestor - use |LocalToAncestorPoint| if there might be transforms.
   PhysicalOffset OffsetFromAncestor(const LayoutObject*) const;
 
   FloatRect AbsoluteBoundingBoxFloatRect(MapCoordinatesFlags = 0) const;

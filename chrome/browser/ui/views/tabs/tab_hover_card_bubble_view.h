@@ -87,6 +87,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
 
   // ThumbnailImage::Observer:
   void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) override;
+  base::Optional<gfx::Size> GetThumbnailSizeHint() const override;
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;

@@ -27,6 +27,12 @@
         }
       ],
       "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
+      "position": [0, 16],
+      "bounds": [51, 19],
+      "transform": 1
     }
   ],
   "transforms": [

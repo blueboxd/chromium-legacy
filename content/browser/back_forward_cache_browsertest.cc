@@ -3489,34 +3489,26 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeWithNoStoreCached) {
   EXPECT_EQ(rfh_a, current_frame_host());
 }
 
-// Do a same document navigation in a document restored from back forward cache
-// and make sure we do not fire the DidFirstVisuallyNonEmptyPaint again
+// Do a same document navigation and make sure we do not fire the
+// DidFirstVisuallyNonEmptyPaint again
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheBrowserTest,
-    DoesNotFireDidFirstVisuallyNonEmptyPaintWhenRestoredFromCacheAndSameDocumentNavigation) {
+    DoesNotFireDidFirstVisuallyNonEmptyPaintForSameDocumentNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url_a_1(embedded_test_server()->GetURL(
       "a.com", "/accessibility/html/a-name.html"));
   const GURL url_a_2(embedded_test_server()->GetURL(
       "a.com", "/accessibility/html/a-name.html#id"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url_a_1));
   WaitForFirstVisuallyNonEmptyPaint(shell()->web_contents());
-  RenderFrameHostImpl* rfh_a = current_frame_host();
-
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
-
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_TRUE(web_contents()->CompletedFirstVisuallyNonEmptyPaint());
 
   FirstVisuallyNonEmptyPaintObserver observer(web_contents());
   EXPECT_TRUE(NavigateToURL(shell(), url_a_2));
   // Make sure the bfcache restore code does not fire the event during commit
   // navigation.
   EXPECT_FALSE(observer.did_fire());
+  EXPECT_TRUE(web_contents()->CompletedFirstVisuallyNonEmptyPaint());
 }
 
 // Make sure we fire DidFirstVisuallyNonEmptyPaint when restoring from bf-cache.
@@ -3531,9 +3523,11 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   WaitForFirstVisuallyNonEmptyPaint(shell()->web_contents());
   RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
   WaitForFirstVisuallyNonEmptyPaint(shell()->web_contents());
 
@@ -3557,10 +3551,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   WaitForFirstVisuallyNonEmptyPaint(web_contents());
   RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
   EXPECT_EQ(web_contents()->GetThemeColor(), 0xFFFF0000u);
 
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   WaitForFirstVisuallyNonEmptyPaint(web_contents());
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
   EXPECT_EQ(web_contents()->GetThemeColor(), base::nullopt);
 

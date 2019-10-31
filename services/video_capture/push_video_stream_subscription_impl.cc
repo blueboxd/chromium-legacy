@@ -17,7 +17,7 @@ PushVideoStreamSubscriptionImpl::PushVideoStreamSubscriptionImpl(
     const media::VideoCaptureParams& requested_settings,
     mojom::VideoSource::CreatePushSubscriptionCallback creation_callback,
     BroadcastingReceiver* broadcaster,
-    mojom::DevicePtr* device)
+    mojo::Remote<mojom::Device>* device)
     : receiver_(this, std::move(subscription_receiver)),
       subscriber_(std::move(subscriber)),
       requested_settings_(requested_settings),

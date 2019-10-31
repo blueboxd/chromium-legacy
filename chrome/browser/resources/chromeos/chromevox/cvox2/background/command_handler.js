@@ -533,6 +533,15 @@ CommandHandler.onCommand = function(command) {
       predErrorMsg = 'no_previous_list';
       skipInitialAncestry = false;
       break;
+    case 'nextParagraph':
+      pred = AutomationPredicate.paragraph;
+      predErrorMsg = 'no_next_paragraph';
+      break;
+    case 'previousParagraph':
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.paragraph;
+      predErrorMsg = 'no_previous_paragraph';
+      break;
     case 'jumpToTop':
       var node = AutomationUtil.findNodePost(
           current.start.node.root, Dir.FORWARD, AutomationPredicate.object);

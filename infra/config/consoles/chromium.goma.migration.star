@@ -692,21 +692,6 @@ luci.console_view(
             short_name = 'tsan',
         ),
         luci.console_view_entry(
-            builder = 'ci/Android ASAN (dbg)',
-            category = 'week14b|android',
-            short_name = 'asan',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Android arm Builder (dbg)',
-            category = 'week14b|android',
-            short_name = 'arm',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Android arm64 Builder (dbg)',
-            category = 'week14b|android',
-            short_name = 'arm64',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Win ASan Release',
             category = 'win|week1|asan',
         ),

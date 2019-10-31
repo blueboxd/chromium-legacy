@@ -25,6 +25,7 @@
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/base/thread_health_checker.h"
+#include "chromecast/media/audio/audio_io_thread.h"
 #include "chromecast/media/base/audio_device_ids.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
 #include "chromecast/media/cma/backend/interleaved_channel_mixer.h"
@@ -208,12 +209,7 @@ StreamMixer::StreamMixer(
     mixer_task_runner_ = mixer_thread_->task_runner();
     mixer_task_runner_->PostTask(FROM_HERE, base::BindOnce(&UseHighPriority));
 
-    io_thread_ = std::make_unique<base::Thread>("MixerIO");
-    base::Thread::Options io_options;
-    io_options.message_pump_type = base::MessagePumpType::IO;
-    io_options.priority = base::ThreadPriority::REALTIME_AUDIO;
-    CHECK(io_thread_->StartWithOptions(io_options));
-    io_task_runner_ = io_thread_->task_runner();
+    io_task_runner_ = AudioIoThread::Get()->task_runner();
 
     health_checker_ = std::make_unique<ThreadHealthChecker>(
         mixer_task_runner_, io_task_runner_, kHealthCheckInterval,
@@ -509,7 +505,7 @@ void StreamMixer::Start() {
   redirector_frames_per_write_ = redirector_samples_per_second_ *
                                  frames_per_write_ / output_samples_per_second_;
   for (auto& redirector : audio_output_redirectors_) {
-    redirector.second->Start(redirector_samples_per_second_);
+    redirector.second->SetSampleRate(redirector_samples_per_second_);
   }
 
   state_ = kStateRunning;
@@ -540,10 +536,6 @@ void StreamMixer::Stop() {
 
   if (output_) {
     output_->Stop();
-  }
-
-  for (auto& redirector : audio_output_redirectors_) {
-    redirector.second->Stop();
   }
 
   state_ = kStateStopped;
@@ -842,7 +834,7 @@ void StreamMixer::AddAudioOutputRedirector(
   audio_output_redirectors_[key] = std::move(redirector);
 
   if (state_ == kStateRunning) {
-    key->Start(redirector_samples_per_second_);
+    key->SetSampleRate(redirector_samples_per_second_);
   }
 
   for (const auto& input : inputs_) {
@@ -861,19 +853,6 @@ void StreamMixer::RemoveAudioOutputRedirectorOnThread(
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   LOG(INFO) << __func__;
   audio_output_redirectors_.erase(redirector);
-}
-
-void StreamMixer::ModifyAudioOutputRedirection(
-    AudioOutputRedirector* redirector,
-    std::vector<std::pair<AudioContentType, std::string>>
-        stream_match_patterns) {
-  MAKE_SURE_MIXER_THREAD(ModifyAudioOutputRedirection, redirector,
-                         std::move(stream_match_patterns));
-
-  auto it = audio_output_redirectors_.find(redirector);
-  if (it != audio_output_redirectors_.end()) {
-    it->second->UpdatePatterns(std::move(stream_match_patterns));
-  }
 }
 
 void StreamMixer::SetVolume(AudioContentType type, float level) {

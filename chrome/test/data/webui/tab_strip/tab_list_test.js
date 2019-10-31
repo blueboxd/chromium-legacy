@@ -61,6 +61,7 @@ suite('TabList', () => {
       alertStates: [],
       id: 0,
       index: 0,
+      pinned: false,
       title: 'Tab 1',
     },
     {
@@ -68,6 +69,7 @@ suite('TabList', () => {
       alertStates: [],
       id: 1,
       index: 1,
+      pinned: false,
       title: 'Tab 2',
     },
     {
@@ -75,12 +77,19 @@ suite('TabList', () => {
       alertStates: [],
       id: 2,
       index: 2,
+      pinned: false,
       title: 'Tab 3',
     },
   ];
 
   function pinTabAt(tab, index) {
     const changeInfo = {index: index, pinned: true};
+    const updatedTab = Object.assign({}, tab, changeInfo);
+    webUIListenerCallback('tab-updated', updatedTab);
+  }
+
+  function unpinTabAt(tab, index) {
+    const changeInfo = {index: index, pinned: false};
     const updatedTab = Object.assign({}, tab, changeInfo);
     webUIListenerCallback('tab-updated', updatedTab);
   }
@@ -111,6 +120,7 @@ suite('TabList', () => {
       '--height': '100px',
       '--width': '150px',
     });
+    testTabStripEmbedderProxy.setVisible(true);
     TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
 
     tabList = document.createElement('tabstrip-tab-list');
@@ -404,4 +414,93 @@ suite('TabList', () => {
         assertEquals(moveId, tabs[1].id);
         assertEquals(newIndex, 0);
       });
+
+  test('tracks and untracks thumbnails based on viewport', async () => {
+    // Wait for slideIn animations to complete updating widths and reset
+    // resolvers to track new calls.
+    await tabList.animationPromises;
+    testTabsApiProxy.reset();
+    const tabElements = getUnpinnedTabs();
+
+    // Update width such that at most one tab can fit in the viewport at once.
+    tabList.style.setProperty('--tabstrip-tab-width', `${window.innerWidth}px`);
+
+    // At this point, the only visible tab should be the first tab. The second
+    // tab should fit within the rootMargin of the IntersectionObserver. The
+    // third tab should not be intersecting.
+    let [tabId, thumbnailTracked] =
+        await testTabsApiProxy.whenCalled('setThumbnailTracked');
+    assertEquals(tabId, tabElements[2].tab.id);
+    assertEquals(thumbnailTracked, false);
+    assertEquals(testTabsApiProxy.getCallCount('setThumbnailTracked'), 1);
+    testTabsApiProxy.reset();
+
+    // Scroll such that the second tab is now the only visible tab. At this
+    // point, all 3 tabs should fit within the root and rootMargin of the
+    // IntersectionObserver. Since the 3rd tab was not being tracked before,
+    // it should be the only tab to become tracked.
+    document.documentElement.scrollLeft = tabElements[1].offsetLeft;
+    [tabId, thumbnailTracked] =
+        await testTabsApiProxy.whenCalled('setThumbnailTracked');
+    assertEquals(tabId, tabElements[2].tab.id);
+    assertEquals(thumbnailTracked, true);
+    assertEquals(testTabsApiProxy.getCallCount('setThumbnailTracked'), 1);
+    testTabsApiProxy.reset();
+
+    // Scroll such that the third tab is now the only visible tab. At this
+    // point, the first tab should be outside of the rootMargin of the
+    // IntersectionObserver.
+    document.documentElement.scrollLeft = tabElements[2].offsetLeft;
+    [tabId, thumbnailTracked] =
+        await testTabsApiProxy.whenCalled('setThumbnailTracked');
+    assertEquals(tabId, tabElements[0].tab.id);
+    assertEquals(thumbnailTracked, false);
+    assertEquals(testTabsApiProxy.getCallCount('setThumbnailTracked'), 1);
+  });
+
+  test.only(
+      'tracks and untracks thumbnails based on pinned state', async () => {
+        await tabList.animationPromises;
+        testTabsApiProxy.reset();
+
+        // Pinning the third tab should untrack thumbnails for the tab
+        pinTabAt(tabs[2], 0);
+        let [tabId, thumbnailTracked] =
+            await testTabsApiProxy.whenCalled('setThumbnailTracked');
+        assertEquals(tabId, tabs[2].id);
+        assertEquals(thumbnailTracked, false);
+        testTabsApiProxy.reset();
+
+        // Unpinning the tab should re-track the thumbnails
+        unpinTabAt(tabs[2], 0);
+        [tabId, thumbnailTracked] =
+            await testTabsApiProxy.whenCalled('setThumbnailTracked');
+        assertEquals(tabId, tabs[2].id);
+        assertEquals(thumbnailTracked, true);
+      });
+
+  test('should update thumbnail track status on visibilitychange', async () => {
+    await tabList.animationPromises;
+    testTabsApiProxy.reset();
+
+    testTabStripEmbedderProxy.setVisible(false);
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    // The tab strip should force untrack thumbnails for all tabs.
+    await testTabsApiProxy.whenCalled('setThumbnailTracked');
+    assertEquals(
+        testTabsApiProxy.getCallCount('setThumbnailTracked'), tabs.length);
+    testTabsApiProxy.reset();
+
+    // Update width such that at all tabs can fit
+    tabList.style.setProperty(
+        '--tabstrip-tab-width', `${window.innerWidth / tabs.length}px`);
+
+    testTabStripEmbedderProxy.setVisible(true);
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    await testTabsApiProxy.whenCalled('setThumbnailTracked');
+    assertEquals(
+        testTabsApiProxy.getCallCount('setThumbnailTracked'), tabs.length);
+  });
 });

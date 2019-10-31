@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bits.h"
 #include "base/logging.h"
 #include "media/base/audio_bus.h"
 
@@ -30,7 +31,8 @@ AudioFader::AudioFader(Source* source,
                        int sample_rate,
                        double playback_rate)
     : source_(source),
-      fade_frames_(fade_frames),
+      // Ensure that fade_frames_ is a multiple of 4 to keep correct alignment.
+      fade_frames_(base::bits::Align(fade_frames, 4)),
       num_channels_(num_channels),
       sample_rate_(sample_rate),
       playback_rate_(playback_rate) {

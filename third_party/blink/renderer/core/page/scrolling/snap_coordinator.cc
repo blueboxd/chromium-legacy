@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -214,12 +215,27 @@ void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
       snap_container_data.set_proximity_range(range);
     }
 
+    cc::TargetSnapAreaElementIds new_target_ids;
+    const cc::TargetSnapAreaElementIds old_target_ids =
+        old_snap_container_data
+            ? old_snap_container_data->GetTargetSnapAreaElementIds()
+            : cc::TargetSnapAreaElementIds();
+
     if (SnapAreaSet* snap_areas = snap_container.SnapAreas()) {
       for (const LayoutBox* snap_area : *snap_areas) {
-        snap_container_data.AddSnapAreaData(
-            CalculateSnapAreaData(*snap_area, snap_container));
+        cc::SnapAreaData snap_area_data =
+            CalculateSnapAreaData(*snap_area, snap_container);
+        // The target snap elements should be preserved in the new container
+        // only if the respective snap areas are still present.
+        if (old_target_ids.x == snap_area_data.element_id)
+          new_target_ids.x = old_target_ids.x;
+        if (old_target_ids.y == snap_area_data.element_id)
+          new_target_ids.y = old_target_ids.y;
+
+        snap_container_data.AddSnapAreaData(snap_area_data);
       }
     }
+    snap_container_data.SetTargetSnapAreaElementIds(new_target_ids);
   }
 
   if (!old_snap_container_data ||
@@ -290,6 +306,9 @@ cc::SnapAreaData SnapCoordinator::CalculateSnapAreaData(
 
   snap_area_data.must_snap =
       (area_style->ScrollSnapStop() == EScrollSnapStop::kAlways);
+
+  snap_area_data.element_id = CompositorElementIdFromDOMNodeId(
+      DOMNodeIds::IdForNode(snap_area.GetNode()));
 
   return snap_area_data;
 }

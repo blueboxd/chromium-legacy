@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
+#include "gpu/config/gpu_test_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -31,32 +32,33 @@ class WebGPUDecoderTest : public ::testing::Test {
   WebGPUDecoderTest() {}
 
   void SetUp() override {
+    if (!WebGPUSupported()) {
+      return;
+    }
+
     // Shared image factories for some backends take a dependency on GL.
     // Failure to create a test context with a surface and making it current
     // will result in a "NoContext" context being current that asserts on all
     // GL calls.
-    gl::init::InitializeGLNoExtensionsOneOff();
     gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(1, 1));
+    ASSERT_NE(gl_surface_, nullptr);
+
     gl_context_ = gl::init::CreateGLContext(nullptr, gl_surface_.get(),
                                             gl::GLContextAttribs());
+    ASSERT_NE(gl_context_, nullptr);
+
     gl_context_->MakeCurrent(gl_surface_.get());
 
     command_buffer_service_.reset(new FakeCommandBufferServiceBase());
     decoder_.reset(WebGPUDecoder::Create(nullptr, command_buffer_service_.get(),
                                          &shared_image_manager_, nullptr,
                                          &outputter_));
-    if (decoder_->Initialize() != ContextResult::kSuccess) {
-      decoder_ = nullptr;
-    } else {
-      cmds::RequestAdapter requestAdapterCmd;
-      requestAdapterCmd.Init(
-          static_cast<uint32_t>(webgpu::PowerPreference::kHighPerformance));
-      if (ExecuteCmd(requestAdapterCmd) == error::kLostContext) {
-        decoder_ = nullptr;
-      } else {
-        ASSERT_EQ(error::kNoError, ExecuteCmd(requestAdapterCmd));
-      }
-    }
+    ASSERT_EQ(decoder_->Initialize(), ContextResult::kSuccess);
+
+    cmds::RequestAdapter requestAdapterCmd;
+    requestAdapterCmd.Init(
+        static_cast<uint32_t>(webgpu::PowerPreference::kHighPerformance));
+    ASSERT_EQ(error::kNoError, ExecuteCmd(requestAdapterCmd));
 
     factory_ = std::make_unique<SharedImageFactory>(
         GpuPreferences(), GpuDriverBugWorkarounds(), GpuFeatureInfo(),
@@ -66,15 +68,22 @@ class WebGPUDecoderTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    factory_->DestroyAllSharedImages(true);
-    factory_.reset();
+    if (factory_) {
+      factory_->DestroyAllSharedImages(true);
+      factory_.reset();
+    }
 
     gl_surface_.reset();
     gl_context_.reset();
-    gl::init::ShutdownGL(false);
   }
 
-  bool WebGPUSupported() const { return decoder_ != nullptr; }
+  bool WebGPUSupported() const {
+    // WebGPU does not work on Win7 because there is no D3D12 on Win7
+    // Linux bots running Vulkan are not properly initializing the shared
+    // image extensions.
+    return !GPUTestBotConfig::CurrentConfigMatches("Win7") &&
+           !GPUTestBotConfig::CurrentConfigMatches("Linux");
+  }
 
   template <typename T>
   error::Error ExecuteCmd(const T& cmd) {

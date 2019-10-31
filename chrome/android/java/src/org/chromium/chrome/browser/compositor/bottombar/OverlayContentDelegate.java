@@ -28,6 +28,12 @@ public class OverlayContentDelegate {
     public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {}
 
     /**
+     * Called when a page title gets updated.
+     * @param title Title string
+     */
+    public void onTitleUpdated(String title) {}
+
+    /**
      * Called when content started loading in the panel.
      * @param url The URL that is loading.
      */

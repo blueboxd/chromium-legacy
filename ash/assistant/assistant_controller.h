@@ -32,10 +32,11 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 #include "components/prefs/pref_service.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
 
@@ -67,8 +68,9 @@ class ASH_EXPORT AssistantController
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  void BindRequest(
-      chromeos::assistant::mojom::AssistantControllerRequest request);
+  void BindReceiver(
+      mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
+          receiver);
   void BindReceiver(
       mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver);
 
@@ -189,14 +191,14 @@ class ASH_EXPORT AssistantController
   // register as observers during their construction.
   base::ObserverList<AssistantControllerObserver> observers_;
 
-  mojo::BindingSet<chromeos::assistant::mojom::AssistantController>
-      assistant_controller_bindings_;
+  mojo::ReceiverSet<chromeos::assistant::mojom::AssistantController>
+      assistant_controller_receivers_;
 
   mojo::Receiver<mojom::AssistantVolumeControl>
       assistant_volume_control_receiver_{this};
   mojo::RemoteSet<mojom::VolumeObserver> volume_observers_;
 
-  chromeos::assistant::mojom::AssistantPtr assistant_;
+  mojo::Remote<chromeos::assistant::mojom::Assistant> assistant_;
 
   // Assistant sub-controllers.
   AssistantAlarmTimerController assistant_alarm_timer_controller_{this};

@@ -47,7 +47,7 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/inspector_protocol/encoding/encoding.h"
+#include "third_party/inspector_protocol/crdtp/encoding.h"
 
 #ifdef OS_ANDROID
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -595,8 +595,7 @@ void TracingHandler::OnTraceDataCollected(
                  trace_data_buffer_state_.offset);
   message += "] } }";
   std::vector<uint8_t> cbor;
-  ::inspector_protocol_encoding::Status status = ConvertJSONToCBOR(
-      ::inspector_protocol_encoding::SpanFrom(message), &cbor);
+  crdtp::Status status = ConvertJSONToCBOR(crdtp::SpanFrom(message), &cbor);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   frontend_->sendRawCBORNotification(std::move(cbor));
 }

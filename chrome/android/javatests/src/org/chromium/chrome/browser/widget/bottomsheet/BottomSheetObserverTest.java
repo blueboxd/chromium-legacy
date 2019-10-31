@@ -257,8 +257,8 @@ public class BottomSheetObserverTest {
                 }
 
                 @Override
-                public boolean wrapContentEnabled() {
-                    return true;
+                public float getFullHeightRatio() {
+                    return HeightMode.WRAP_CONTENT;
                 }
             });
         });

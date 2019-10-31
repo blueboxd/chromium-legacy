@@ -4312,6 +4312,10 @@ STDMETHODIMP AXPlatformNodeWin::InternalQueryInterface(
   } else if (riid == IID_IAccessibleTableCell) {
     if (!IsCellOrTableHeader(accessible->GetData().role))
       return E_NOINTERFACE;
+  } else if (riid == IID_IAccessibleText || riid == IID_IAccessibleHypertext) {
+    if (ui::IsImage(accessible->GetData().role)) {
+      return E_NOINTERFACE;
+    }
   }
 
   return CComObjectRootBase::InternalQueryInterface(this_ptr, entries, riid,

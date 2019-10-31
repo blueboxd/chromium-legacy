@@ -30,6 +30,8 @@
 namespace credential_provider {
 
 constexpr wchar_t kRegMdmUrl[] = L"mdm";
+constexpr wchar_t kRegMdmEnableForcePasswordReset[] =
+    L"mdm_enable_force_password";
 constexpr wchar_t kRegMdmEscrowServiceServerUrl[] = L"mdm_ess_url";
 constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
 constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";

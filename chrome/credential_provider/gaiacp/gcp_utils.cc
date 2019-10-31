@@ -52,6 +52,9 @@ const wchar_t kDefaultProfilePictureFileExtension[] = L".jpg";
 
 namespace {
 
+// Minimum supported version of Chrome for GCPW.
+constexpr char kMinimumSupportedChromeVersionStr[] = "77.0.3865.65";
+
 constexpr char kSentinelFilename[] = "gcpw_startup.sentinel";
 constexpr base::FilePath::CharType kCredentialProviderFolder[] =
     L"Credential Provider";
@@ -789,6 +792,10 @@ base::string16 GetWindowsVersion() {
     return release_id;
 
   return L"Unknown";
+}
+
+base::Version GetMinimumSupportedChromeVersion() {
+  return base::Version(kMinimumSupportedChromeVersionStr);
 }
 
 FakesForTesting::FakesForTesting() {}

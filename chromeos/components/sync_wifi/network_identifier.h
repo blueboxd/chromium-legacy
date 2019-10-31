@@ -7,13 +7,13 @@
 
 #include <string>
 
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
+
 namespace sync_pb {
 class WifiConfigurationSpecificsData;
 }
 
 namespace chromeos {
-
-class NetworkState;
 
 namespace sync_wifi {
 
@@ -23,7 +23,8 @@ class NetworkIdentifier {
  public:
   static NetworkIdentifier FromProto(
       const sync_pb::WifiConfigurationSpecificsData& specifics);
-  static NetworkIdentifier FromNetwork(const chromeos::NetworkState& network);
+  static NetworkIdentifier FromMojoNetwork(
+      const network_config::mojom::NetworkStatePropertiesPtr& network);
   // |serialized_string| is in the format of hex_ssid and security_type
   // concatenated with an underscore.  security_type is the shill constant
   // returned from NetworkState::security_class(). For example, it would be
@@ -40,6 +41,9 @@ class NetworkIdentifier {
   virtual ~NetworkIdentifier();
 
   bool operator==(const NetworkIdentifier& o) const;
+  bool operator!=(const NetworkIdentifier& o) const;
+  bool operator<(const NetworkIdentifier& o) const;
+  bool operator>(const NetworkIdentifier& o) const;
 
   std::string SerializeToString() const;
 

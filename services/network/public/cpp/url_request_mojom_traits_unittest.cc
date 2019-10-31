@@ -95,6 +95,7 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
       net::NetworkIsolationKey(origin, origin);
   original.trusted_params->update_network_isolation_key_on_redirect = network::
       mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateTopFrameAndFrameOrigin;
+  original.trusted_params->disable_secure_dns = true;
 
   network::ResourceRequest copied;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::URLRequest>(&original,

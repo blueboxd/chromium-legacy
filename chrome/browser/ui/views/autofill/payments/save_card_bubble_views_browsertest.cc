@@ -1284,53 +1284,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 }
 #endif
 
-class SaveCardBubbleViewsFullFormBrowserTestWithoutNoThanks
-    : public SaveCardBubbleViewsFullFormBrowserTest {
- public:
-  SaveCardBubbleViewsFullFormBrowserTestWithoutNoThanks() {
-    feature_list_.InitAndDisableFeature(
-        features::kAutofillSaveCardShowNoThanks);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-#if defined(OS_CHROMEOS)
-// Tests the local save bubble. Ensures that the bubble does not have a
-// [No thanks] button (it has an [X] Close button instead.)
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestWithoutNoThanks,
-                       Local_ShouldNotHaveNoThanksButton) {
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Assert that the cancel button cannot be found.
-  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
-}
-
-class SaveCardBubbleViewsFullFormBrowserTestWithNoThanks
-    : public SaveCardBubbleViewsFullFormBrowserTest {
- public:
-  SaveCardBubbleViewsFullFormBrowserTestWithNoThanks() {
-    feature_list_.InitAndEnableFeature(features::kAutofillSaveCardShowNoThanks);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Tests the local save bubble. Ensures that the bubble has a
-// [No thanks] button if |kAutofillSaveCardShowNoThanks| experiment is enabled.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestWithNoThanks,
-                       Local_ShouldHaveNoThanksButtonIfExperimentEnabled) {
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Assert that the cancel button can be found.
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
-}
-#endif
-
 // Tests the local save bubble. Ensures that the bubble behaves correctly if
 // dismissed and then immediately torn down (e.g. by closing browser window)
 // before the asynchronous close completes. Regression test for
@@ -1596,68 +1549,6 @@ IN_PROC_BROWSER_TEST_F(
       AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
 }
 #endif
-
-#if defined(OS_CHROMEOS)
-class SaveCardBubbleViewsFullFormBrowserTestWithAutofillAndWithoutNoThanks
-    : public SaveCardBubbleViewsFullFormBrowserTest {
- public:
-  SaveCardBubbleViewsFullFormBrowserTestWithAutofillAndWithoutNoThanks() {
-    feature_list_.InitWithFeatures(
-        // Enabled
-        {features::kAutofillUpstream},
-        // Disabled
-        {features::kAutofillSaveCardShowNoThanks});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Tests the upload save bubble. Ensures that the bubble does not have a
-// [No thanks] button (it has an [X] Close button instead.)
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithAutofillAndWithoutNoThanks,
-    Upload_ShouldNotHaveNoThanksButton) {
-  // Start sync.
-  harness_->SetupSync();
-
-  FillForm();
-  SubmitFormAndWaitForCardUploadSaveBubble();
-
-  // Assert that the cancel button cannot be found.
-  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
-}
-
-class SaveCardBubbleViewsFullFormBrowserTestWithAutofillAndNoThanks
-    : public SaveCardBubbleViewsFullFormBrowserTest {
- public:
-  SaveCardBubbleViewsFullFormBrowserTestWithAutofillAndNoThanks() {
-    feature_list_.InitWithFeatures(
-        // Enabled
-        {features::kAutofillUpstream, features::kAutofillSaveCardShowNoThanks},
-        // Disabled
-        {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Tests the upload save bubble. Ensures that the bubble has a
-// [No thanks] button if |kAutofillSaveCardShowNoThanks| experiment is enabled.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithAutofillAndNoThanks,
-    Upload_ShouldHaveNoThanksButtonIfExperimentEnabled) {
-  // Start sync.
-  harness_->SetupSync();
-
-  FillForm();
-  SubmitFormAndWaitForCardUploadSaveBubble();
-
-  // Assert that the cancel button can be found.
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
-}
-#endif  // defined(OS_CHROMEOS)
 
 // Tests the upload save bubble. Ensures that clicking the top-right [X] close
 // button successfully causes the bubble to go away.

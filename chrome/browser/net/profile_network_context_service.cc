@@ -213,6 +213,12 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       base::BindRepeating(
           &ProfileNetworkContextService::UpdateCorsMitigationList,
           base::Unretained(this)));
+
+  pref_change_registrar_.Add(
+      prefs::kGloballyScopeHTTPAuthCacheEnabled,
+      base::BindRepeating(&ProfileNetworkContextService::
+                              UpdateSplitAuthCacheByNetworkIsolationKey,
+                          base::Unretained(this)));
 }
 
 ProfileNetworkContextService::~ProfileNetworkContextService() {}
@@ -226,6 +232,9 @@ ProfileNetworkContextService::CreateNetworkContext(
   content::GetNetworkService()->CreateNetworkContext(
       network_context.BindNewPipeAndPassReceiver(),
       CreateNetworkContextParams(in_memory, relative_partition_path));
+
+  network_context->SetSplitAuthCacheByNetworkIsolationKey(
+      ShouldSplitAuthCacheByNetworkIsolationKey());
 
   if ((!in_memory && !profile_->IsOffTheRecord())) {
     // TODO(jam): delete this code 1 year after Network Service shipped to all
@@ -269,6 +278,8 @@ void ProfileNetworkContextService::UpdateAdditionalCertificates() {
 void ProfileNetworkContextService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kQuicAllowed, true);
+  registry->RegisterBooleanPref(prefs::kGloballyScopeHTTPAuthCacheEnabled,
+                                false);
 }
 
 // static
@@ -387,6 +398,30 @@ void ProfileNetworkContextService::UpdateCorsMitigationList() {
                               *cors_extra_safelisted_request_header_names);
                     },
                     &cors_extra_safelisted_request_header_names));
+}
+
+bool ProfileNetworkContextService::ShouldSplitAuthCacheByNetworkIsolationKey()
+    const {
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kGloballyScopeHTTPAuthCacheEnabled))
+    return false;
+  return base::FeatureList::IsEnabled(
+      network::features::kSplitAuthCacheByNetworkIsolationKey);
+}
+
+void ProfileNetworkContextService::UpdateSplitAuthCacheByNetworkIsolationKey() {
+  bool split_auth_cache_by_network_isolation_key =
+      ShouldSplitAuthCacheByNetworkIsolationKey();
+
+  content::BrowserContext::ForEachStoragePartition(
+      profile_, base::BindRepeating(
+                    [](bool split_auth_cache_by_network_isolation_key,
+                       content::StoragePartition* storage_partition) {
+                      storage_partition->GetNetworkContext()
+                          ->SetSplitAuthCacheByNetworkIsolationKey(
+                              split_auth_cache_by_network_isolation_key);
+                    },
+                    split_auth_cache_by_network_isolation_key));
 }
 
 // static

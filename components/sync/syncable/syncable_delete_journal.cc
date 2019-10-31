@@ -20,11 +20,6 @@ DeleteJournal::DeleteJournal(std::unique_ptr<JournalIndex> initial_journal) {
 
 DeleteJournal::~DeleteJournal() {}
 
-size_t DeleteJournal::GetDeleteJournalSize(BaseTransaction* trans) const {
-  DCHECK(trans);
-  return delete_journals_.size();
-}
-
 void DeleteJournal::UpdateDeleteJournalForServerDelete(
     BaseTransaction* trans,
     bool was_deleted,
@@ -66,19 +61,6 @@ void DeleteJournal::UpdateDeleteJournalForServerDelete(
   }
 }
 
-void DeleteJournal::GetDeleteJournals(BaseTransaction* trans,
-                                      ModelType type,
-                                      EntryKernelSet* deleted_entries) {
-  DCHECK(trans);
-  for (auto it = delete_journals_.begin(); it != delete_journals_.end(); ++it) {
-    if ((*it).first->GetServerModelType() == type ||
-        GetModelTypeFromSpecifics((*it).first->ref(SPECIFICS)) == type) {
-      deleted_entries->insert((*it).first);
-    }
-  }
-  passive_delete_journal_types_.Put(type);
-}
-
 void DeleteJournal::PurgeDeleteJournals(BaseTransaction* trans,
                                         const MetahandleSet& to_purge) {
   DCHECK(trans);
@@ -95,22 +77,8 @@ void DeleteJournal::PurgeDeleteJournals(BaseTransaction* trans,
 }
 
 void DeleteJournal::TakeSnapshotAndClear(BaseTransaction* trans,
-                                         OwnedEntryKernelSet* journal_entries,
                                          MetahandleSet* journals_to_purge) {
   DCHECK(trans);
-  // Move passive delete journals to snapshot. Will copy back if snapshot fails
-  // to save.
-  auto it = delete_journals_.begin();
-  while (it != delete_journals_.end()) {
-    if (passive_delete_journal_types_.Has((*it).first->GetServerModelType()) ||
-        passive_delete_journal_types_.Has(
-            GetModelTypeFromSpecifics((*it).first->ref(SPECIFICS)))) {
-      journal_entries->insert(std::move((*it).second));
-      delete_journals_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
   *journals_to_purge = delete_journals_to_purge_;
   delete_journals_to_purge_.clear();
 }

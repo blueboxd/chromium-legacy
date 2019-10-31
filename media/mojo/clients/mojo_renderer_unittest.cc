@@ -28,7 +28,7 @@
 #include "media/renderers/video_overlay_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -72,7 +72,7 @@ class MojoRendererTest : public ::testing::Test {
     mock_renderer_ = mock_renderer.get();
 
     mojo::PendingRemote<mojom::Renderer> remote_renderer_remote;
-    renderer_binding_ = MojoRendererService::Create(
+    renderer_receiver_ = MojoRendererService::Create(
         &mojo_cdm_service_context_, std::move(mock_renderer),
         remote_renderer_remote.InitWithNewPipeAndPassReceiver());
 
@@ -166,8 +166,8 @@ class MojoRendererTest : public ::testing::Test {
   // on it. Otherwise the test will crash.
   void ConnectionError() {
     DVLOG(1) << __func__;
-    DCHECK(renderer_binding_);
-    renderer_binding_->Close();
+    DCHECK(renderer_receiver_);
+    renderer_receiver_->Close();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -226,7 +226,7 @@ class MojoRendererTest : public ::testing::Test {
   StrictMock<MockRenderer>* mock_renderer_;
   RendererClient* remote_renderer_client_;
 
-  mojo::StrongBindingPtr<mojom::Renderer> renderer_binding_;
+  mojo::SelfOwnedReceiverRef<mojom::Renderer> renderer_receiver_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MojoRendererTest);

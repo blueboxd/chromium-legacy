@@ -115,8 +115,8 @@
 
     <!-- App menu item custom tags -->
     <item type="id" name="menu_item_enter_anim_id" />
-    <item type="id" name="menu_item_original_background" />
     <item type="id" name="menu_item_background_drawable_position" />
+    <item type="id" name="menu_item_view_type" />
 
     <!-- VR constants -->
     <item type="id" name="vr_overlay_view" />

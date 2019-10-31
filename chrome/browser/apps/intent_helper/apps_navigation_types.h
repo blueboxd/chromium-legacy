@@ -73,6 +73,7 @@ enum class PickerEntryType {
   kArc,
   kWeb,
   kDevice,
+  kMacNative,
 };
 
 // Represents the data required to display an app in a picker to the user.
@@ -92,8 +93,9 @@ struct IntentPickerAppInfo {
   // The icon to be displayed for this app in the picker.
   gfx::Image icon;
 
-  // The string used to launch this app. Represents an Android package name
-  // when type is ARC.
+  // The string used to launch this app. Represents an Android package name when
+  // |type| is kArc, and when |type| is kMacNative, it is the file path of the
+  // native app to use.
   std::string launch_name;
 
   // The string shown to the user to identify this app in the intent picker.

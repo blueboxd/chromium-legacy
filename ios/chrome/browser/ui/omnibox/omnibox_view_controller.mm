@@ -422,6 +422,8 @@ const CGFloat kClearButtonSize = 28.0f;
 }
 
 - (void)searchCopiedImage:(id)sender {
+  RecordAction(
+      UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
   self.omniboxInteractedWhileFocused = YES;
   if (base::Optional<gfx::Image> optionalImage =
           ClipboardRecentContent::GetInstance()
@@ -433,10 +435,12 @@ const CGFloat kClearButtonSize = 28.0f;
 }
 
 - (void)visitCopiedLink:(id)sender {
+  RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.VisitCopiedLink"));
   [self pasteAndGo:sender];
 }
 
 - (void)searchCopiedText:(id)sender {
+  RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedText"));
   [self pasteAndGo:sender];
 }
 

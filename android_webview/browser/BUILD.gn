@@ -214,6 +214,7 @@ source_set("browser") {
     "//components/prefs",
     "//components/printing/browser",
     "//components/printing/common",
+    "//components/printing/common:mojo_interfaces",
     "//components/safe_browsing",
     "//components/safe_browsing:features",
     "//components/safe_browsing:ping_manager",

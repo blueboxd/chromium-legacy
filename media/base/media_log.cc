@@ -227,17 +227,6 @@ std::string MediaLog::GetErrorMessageLocked() {
   return "";
 }
 
-void MediaLog::RecordRapporWithSecurityOrigin(const std::string& metric) {
-  base::AutoLock auto_lock(parent_log_record_->lock);
-  // Forward to the parent log's implementation.
-  if (parent_log_record_->media_log)
-    parent_log_record_->media_log->RecordRapporWithSecurityOriginLocked(metric);
-}
-
-void MediaLog::RecordRapporWithSecurityOriginLocked(const std::string& metric) {
-  DVLOG(1) << "Default MediaLog doesn't support rappor reporting.";
-}
-
 std::unique_ptr<MediaLogEvent> MediaLog::CreateCreatedEvent(
     const std::string& origin_url) {
   std::unique_ptr<MediaLogEvent> event(

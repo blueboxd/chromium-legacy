@@ -162,7 +162,7 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
   const char kSuffix[] = ".local.";
   const size_t kSuffixLen = sizeof(kSuffix) - 1;
   const size_t kSuffixLenTrimmed = kSuffixLen - 1;
-  if (hostname.back() == '.') {
+  if (!hostname.empty() && hostname.back() == '.') {
     return hostname.size() > kSuffixLen &&
            !hostname.compare(hostname.size() - kSuffixLen, kSuffixLen, kSuffix);
   }

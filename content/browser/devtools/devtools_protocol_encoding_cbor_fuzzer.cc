@@ -5,7 +5,7 @@
 #include "content/browser/devtools/devtools_protocol_encoding.h"
 
 #include <string>
-#include "third_party/inspector_protocol/encoding/encoding.h"
+#include "third_party/inspector_protocol/crdtp/encoding.h"
 
 // A corpus for this fuzzer is located in
 // devtools_protocol_encoding_cbor_fuzzer_corpus.
@@ -14,13 +14,9 @@
 // https://chromium.googlesource.com/deps/inspector_protocol/
 
 namespace content {
-namespace {
-using ::inspector_protocol_encoding::span;
-}  // namespace
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::string json;
-  content::ConvertCBORToJSON(span<uint8_t>(data, size), &json);
+  content::ConvertCBORToJSON(crdtp::span<uint8_t>(data, size), &json);
   return 0;
 }
 }  // namespace content

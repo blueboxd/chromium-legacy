@@ -172,9 +172,9 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
 // characters turned into empty square due to font regression. So, not able
 // to test 2 characters belong to the same grapheme.
 #if defined(OS_LINUX)
-  EXPECT_EQ(base::WideToUTF16(
-                L"\x0915\x093f\x0061\x0062\x0915\x0915\x094d\x092e\x094d"),
-            model.text());
+  EXPECT_EQ(
+      base::WideToUTF16(L"\x0915\x093f\x0061\x0062\x0915\x094d\x092e\x094d"),
+      model.text());
 #endif
   EXPECT_EQ(4U, model.GetCursorPosition());
 
@@ -185,13 +185,12 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   // to test 2 characters belong to the same grapheme.
 #if defined(OS_LINUX)
   EXPECT_TRUE(model.Delete());
-  EXPECT_EQ(base::WideToUTF16(L"\x0061\x0062\x0915\x0915\x094d\x092e\x094d"),
+  EXPECT_EQ(base::WideToUTF16(L"\x0061\x0062\x0915\x094d\x092e\x094d"),
             model.text());
   MoveCursorTo(model, model.text().length());
   EXPECT_EQ(model.text().length(), model.GetCursorPosition());
   EXPECT_TRUE(model.Backspace());
-  EXPECT_EQ(base::WideToUTF16(L"\x0061\x0062\x0915\x0915\x094d\x092e"),
-            model.text());
+  EXPECT_EQ(base::WideToUTF16(L"\x0061\x0062\x0915\x094d\x092e"), model.text());
 #endif
 
   // Test cursor position and deletion for Hindi Virama.
@@ -208,9 +207,9 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   // seems Windows treats "\x0D38\x0D4D\x0D15" as a single grapheme.
 #if !defined(OS_WIN)
   MoveCursorTo(model, 2);
-  EXPECT_EQ(2U, model.GetCursorPosition());
+  EXPECT_EQ(3U, model.GetCursorPosition());
   EXPECT_TRUE(model.Backspace());
-  EXPECT_EQ(base::WideToUTF16(L"\x0D38\x0D15\x0D16\x0D2E"), model.text());
+  EXPECT_EQ(base::WideToUTF16(L"\x0D38\x0D4D\x0D16\x0D2E"), model.text());
 #endif
 
   model.SetText(
@@ -718,7 +717,6 @@ TEST_F(TextfieldModelTest, SelectWordTest_MixScripts) {
   word_and_cursor.emplace_back(L"\x05d1\x05d2", 5);
   word_and_cursor.emplace_back(L" ", 3);
   word_and_cursor.emplace_back(L"a\x05d0", 2);
-  word_and_cursor.emplace_back(L"\x0915\x094d\x0915", 9);
   word_and_cursor.emplace_back(L"\x0915\x094d\x0915", 9);
   word_and_cursor.emplace_back(L" ", 10);
   word_and_cursor.emplace_back(L"\x4E2D\x56FD", 12);

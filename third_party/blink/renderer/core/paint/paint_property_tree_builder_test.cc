@@ -6646,6 +6646,37 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleScrollChangeDoesNotCausePacUpdate) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
+       NonCompositedTransformChangeCausesPacUpdate) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #outer {
+        width: 100px;
+        height: 100px;
+        transform: translateY(0);
+      }
+      #inner {
+        width: 10px;
+        height: 10px;
+        will-change: transform;
+      }
+    </style>
+    <div id="outer">
+      <div id="inner"></div>
+    </div>
+  )HTML");
+
+  EXPECT_FALSE(
+      GetDocument().View()->GetPaintArtifactCompositor()->NeedsUpdate());
+
+  Element* outer = GetDocument().getElementById("outer");
+  outer->setAttribute(html_names::kStyleAttr, "transform: translateY(10px)");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  EXPECT_TRUE(
+      GetDocument().View()->GetPaintArtifactCompositor()->NeedsUpdate());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
        ColumnSpanAllUnderContainPaintAndClipPath) {
   // This test doesn't apply in CompositeAfterPaint mode.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())

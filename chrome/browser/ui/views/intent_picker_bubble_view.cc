@@ -90,11 +90,9 @@ class IntentPickerLabelButton : public views::LabelButton {
  public:
   IntentPickerLabelButton(views::ButtonListener* listener,
                           const gfx::Image* icon,
-                          const std::string& launch_name,
                           const std::string& display_name)
       : LabelButton(listener,
-                    base::UTF8ToUTF16(base::StringPiece(display_name))),
-        launch_name_(launch_name) {
+                    base::UTF8ToUTF16(base::StringPiece(display_name))) {
     SetHorizontalAlignment(gfx::ALIGN_LEFT);
     SetMinSize(gfx::Size(kMaxIntentPickerLabelButtonWidth, kRowHeight));
     SetInkDropMode(InkDropMode::ON);
@@ -121,8 +119,6 @@ class IntentPickerLabelButton : public views::LabelButton {
   }
 
  private:
-  std::string launch_name_;
-
   DISALLOW_COPY_AND_ASSIGN(IntentPickerLabelButton);
 };
 
@@ -374,7 +370,7 @@ void IntentPickerBubbleView::Initialize() {
     }
 #endif  // defined(OS_CHROMEOS)
     auto app_button = std::make_unique<IntentPickerLabelButton>(
-        this, &app_info.icon, app_info.launch_name, app_info.display_name);
+        this, &app_info.icon, app_info.display_name);
     app_button->set_tag(i);
     scrollable_view->AddChildViewAt(std::move(app_button), i++);
   }

@@ -250,10 +250,7 @@ bool MseTrackBuffer::EnqueueProcessedFrame(
       if (!num_keyframe_time_greater_than_dependant_warnings_) {
         // At most once per each track (but potentially multiple times per
         // playback, if there are more than one tracks that exhibit this
-        // sequence in a playback) report a RAPPOR URL instance and also run the
-        // warning's callback.
-        media_log_->RecordRapporWithSecurityOrigin(
-            "Media.OriginUrl.MSE.KeyframeTimeGreaterThanDependant");
+        // sequence in a playback) run the warning's callback.
         DCHECK(parse_warning_cb_);
         parse_warning_cb_.Run(
             SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant);
@@ -396,10 +393,7 @@ bool FrameProcessor::ProcessFrames(
     if (!num_muxed_sequence_mode_warnings_) {
       // At most once per SourceBuffer (but potentially multiple times per
       // playback, if there are more than one SourceBuffers used this way in a
-      // playback) report a RAPPOR URL instance and also run the warning's
-      // callback.
-      media_log_->RecordRapporWithSecurityOrigin(
-          "Media.OriginUrl.MSE.MuxedSequenceModeSourceBuffer");
+      // playback) run the warning's callback.
       DCHECK(parse_warning_cb_);
       parse_warning_cb_.Run(SourceBufferParseWarning::kMuxedSequenceMode);
     }

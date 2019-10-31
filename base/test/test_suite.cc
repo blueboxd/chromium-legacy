@@ -124,23 +124,31 @@ class CheckForLeakedGlobals : public testing::EmptyTestEventListener {
 
   // Check for leaks in individual tests.
   void OnTestStart(const testing::TestInfo& test) override {
+    feature_list_set_before_test_ = FeatureList::GetInstance();
     thread_pool_set_before_test_ = ThreadPoolInstance::Get();
   }
   void OnTestEnd(const testing::TestInfo& test) override {
+    DCHECK_EQ(feature_list_set_before_test_, FeatureList::GetInstance())
+        << " in test " << test.test_case_name() << "." << test.name();
     DCHECK_EQ(thread_pool_set_before_test_, ThreadPoolInstance::Get())
         << " in test " << test.test_case_name() << "." << test.name();
   }
 
   // Check for leaks in test cases (consisting of one or more tests).
   void OnTestCaseStart(const testing::TestCase& test_case) override {
+    feature_list_set_before_case_ = FeatureList::GetInstance();
     thread_pool_set_before_case_ = ThreadPoolInstance::Get();
   }
   void OnTestCaseEnd(const testing::TestCase& test_case) override {
+    DCHECK_EQ(feature_list_set_before_case_, FeatureList::GetInstance())
+        << " in case " << test_case.name();
     DCHECK_EQ(thread_pool_set_before_case_, ThreadPoolInstance::Get())
         << " in case " << test_case.name();
   }
 
  private:
+  FeatureList* feature_list_set_before_test_ = nullptr;
+  FeatureList* feature_list_set_before_case_ = nullptr;
   ThreadPoolInstance* thread_pool_set_before_test_ = nullptr;
   ThreadPoolInstance* thread_pool_set_before_case_ = nullptr;
 

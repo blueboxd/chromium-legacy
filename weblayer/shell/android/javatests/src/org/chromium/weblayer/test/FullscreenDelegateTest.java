@@ -20,7 +20,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.weblayer.FullscreenDelegate;
-import org.chromium.weblayer.shell.WebLayerShellActivity;
+import org.chromium.weblayer.shell.InstrumentationActivity;
 
 /**
  * Tests that FullscreenDelegate methods are invoked as expected.
@@ -28,10 +28,11 @@ import org.chromium.weblayer.shell.WebLayerShellActivity;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class FullscreenDelegateTest {
     @Rule
-    public WebLayerShellActivityTestRule mActivityTestRule = new WebLayerShellActivityTestRule();
+    public InstrumentationActivityTestRule mActivityTestRule =
+            new InstrumentationActivityTestRule();
 
     private EmbeddedTestServer mTestServer;
-    private WebLayerShellActivity mActivity;
+    private InstrumentationActivity mActivity;
     private Delegate mDelegate;
 
     private static class Delegate extends FullscreenDelegate {

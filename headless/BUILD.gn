@@ -288,7 +288,7 @@ jumbo_source_set("headless_shared_sources") {
     "//base:base_static",
     "//content/public/common",
     "//content/public/common:service_names",
-    "//third_party/inspector_protocol:encoding",
+    "//third_party/inspector_protocol:crdtp",
     "//ui/base",
     "//url",
   ]

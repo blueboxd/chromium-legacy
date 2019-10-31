@@ -24,6 +24,7 @@ class Layer;
 namespace blink {
 
 enum class WebTreeScopeType;
+class AssociatedInterfaceProvider;
 class InterfaceRegistry;
 class WebElement;
 class WebLocalFrameClient;
@@ -41,12 +42,15 @@ class WebRemoteFrame : public WebFrame {
   // argument must be non-null for all creation methods.
   BLINK_EXPORT static WebRemoteFrame* Create(WebTreeScopeType,
                                              WebRemoteFrameClient*,
-                                             InterfaceRegistry*);
+                                             InterfaceRegistry*,
+                                             AssociatedInterfaceProvider*);
 
-  BLINK_EXPORT static WebRemoteFrame* CreateMainFrame(WebView*,
-                                                      WebRemoteFrameClient*,
-                                                      InterfaceRegistry*,
-                                                      WebFrame* opener);
+  BLINK_EXPORT static WebRemoteFrame* CreateMainFrame(
+      WebView*,
+      WebRemoteFrameClient*,
+      InterfaceRegistry*,
+      AssociatedInterfaceProvider*,
+      WebFrame* opener);
 
   // Also performs core initialization to associate the created remote frame
   // with the provided <portal> element.
@@ -54,6 +58,7 @@ class WebRemoteFrame : public WebFrame {
       WebTreeScopeType,
       WebRemoteFrameClient*,
       InterfaceRegistry*,
+      AssociatedInterfaceProvider*,
       const WebElement& portal_element);
 
   // Specialized factory methods to allow the embedder to replicate the frame
@@ -80,6 +85,7 @@ class WebRemoteFrame : public WebFrame {
                                             FrameOwnerElementType,
                                             WebRemoteFrameClient*,
                                             blink::InterfaceRegistry*,
+                                            AssociatedInterfaceProvider*,
                                             WebFrame* opener) = 0;
 
   // Layer for the in-process compositor.

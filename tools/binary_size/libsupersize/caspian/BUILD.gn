@@ -43,6 +43,7 @@ if (is_wasm) {
     ]
     deps = [
       ":caspian-lib",
+      "//third_party/re2:re2",
     ]
     if (!is_debug) {
       # Use optimize_speed (-O3) to output the _smallest_ code.

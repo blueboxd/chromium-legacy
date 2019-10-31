@@ -342,9 +342,6 @@ extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[];
 extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[];
 
-extern const char kEnableAutofillSaveCardShowNoThanksName[];
-extern const char kEnableAutofillSaveCardShowNoThanksDescription[];
-
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMac[];
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 
@@ -1280,9 +1277,6 @@ extern const char kUnsafeWebGPUDescription[];
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 
-extern const char kUserActivationV2Name[];
-extern const char kUserActivationV2Description[];
-
 extern const char kUseSearchClickForRightClickName[];
 extern const char kUseSearchClickForRightClickDescription[];
 
@@ -2172,6 +2166,9 @@ extern const char kReleaseNotesDescription[];
 
 extern const char kReleaseNotesNotificationName[];
 extern const char kReleaseNotesNotificationDescription[];
+
+extern const char kShelfDimmingName[];
+extern const char kShelfDimmingDescription[];
 
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];

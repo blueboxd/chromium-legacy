@@ -24,12 +24,16 @@ Here's the mapping [isolate script flag] : [wpt flag]
 
 # TODO(aluo): Combine or factor out commons parts with run_wpt_tests.py script.
 
+import argparse
 import contextlib
 import json
+import logging
 import os
 import sys
 
 import common
+
+logger = logging.getLogger(__name__)
 
 SRC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -64,7 +68,26 @@ HOST_RESOLVER_ARGS = ['--host-resolver-rules=MAP nonexistent.*.test ~NOTFOUND,'
 FLAGS_FILE_MAP = {'android_webview': 'webview-command-line',
                   'chrome_android': 'chrome-command-line'}
 
+
+class PassThroughArgs(argparse.Action):
+  pass_through_args = []
+  def __call__(self, parser, namespace, values, option_string=None):
+    if option_string:
+      if self.nargs == 0:
+        self.pass_through_args.append(option_string)
+      elif self.nargs is None:
+        self.pass_through_args.append('{}={}'.format(option_string, values))
+      else:
+        raise ValueError("nargs {} not supported: {} {}".format(
+            self.nargs, option_string, values))
+
+
 class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
+  def __init__(self):
+    self.pass_through_wpt_args = []
+    self.pass_through_binary_args = []
+    super(WPTAndroidAdapter, self).__init__()
+
   def generate_test_output_args(self, output):
     return ['--log-chromium', output]
 
@@ -103,23 +126,23 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
       if self.options.product == 'chrome_android':
         if self.options.apk:
           pkg = apk_helper.GetPackageName(self.options.apk)
-          print("Defaulting --package-name to that of the apk: {}.".format(pkg))
+          logger.info("Defaulting --package-name to that of the apk: %s", pkg)
           rest_args.extend(['--package-name', pkg])
         else:
           raise Exception('chrome_android requires --package-name or --apk.')
     else:
       rest_args.extend(['--package-name', self.options.package_name])
 
-    if self.options.include:
-      for i in self.options.include:
-        rest_args.extend(['--include', i])
-
-    if self.options.list_tests:
-      rest_args.extend(['--list-tests'])
+    rest_args.extend(self.pass_through_wpt_args)
 
     return rest_args
 
   def add_extra_arguments(self, parser):
+    class BinaryPassThroughArgs(PassThroughArgs):
+      pass_through_args = self.pass_through_binary_args
+    class WPTPassThroughArgs(PassThroughArgs):
+      pass_through_args = self.pass_through_wpt_args
+
     parser.add_argument('--webdriver-binary', default=DEFAULT_WEBDRIVER,
                         help='Path of the webdriver binary.  It needs to have'
                         ' the same major version as the apk.  Defaults to cipd'
@@ -140,19 +163,43 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
                         ' to the on-device WebView Shell apk.')
     parser.add_argument('--package-name', help='The package name of Chrome'
                         ' to test, defaults to that of the --apk.')
-    parser.add_argument('--binary-arg', action='append', default=[],
-                        help='Additional command line flags to set during'
-                        ' test execution.')
-    parser.add_argument('--include', action='append', default=[],
+    parser.add_argument('--verbose', '-v', action='count',
+                        help='Verbosity level.')
+    parser.add_argument('--include', metavar='TEST_OR_DIR',
+                        action=WPTPassThroughArgs,
                         help='Test(s) to run, defaults to run all tests.')
-    parser.add_argument('--list-tests', action='store_true',
+    parser.add_argument('--list-tests', action=WPTPassThroughArgs, nargs=0,
                         help="Don't run any tests, just print out a list of"
                         ' tests that would be run.')
+    parser.add_argument('--log-wptreport', metavar='WPT_REPORT_FILE',
+                        action=WPTPassThroughArgs,
+                        help="Log wptreport with subtest details.")
+    parser.add_argument('--log-raw', metavar='RAW_REPORT_FILE',
+                        action=WPTPassThroughArgs,
+                        help="Log raw report.")
+    parser.add_argument('--log-html', metavar='HTML_REPORT_FILE',
+                        action=WPTPassThroughArgs,
+                        help="Log html report.")
+    parser.add_argument('--log-xunit', metavar='XUNIT_REPORT_FILE',
+                        action=WPTPassThroughArgs,
+                        help="Log xunit report.")
+    parser.add_argument('--enable-features', action=BinaryPassThroughArgs,
+                        help='Chromium features to enable during testing.')
+    parser.add_argument('--disable-features', action=BinaryPassThroughArgs,
+                        help='Chromium features to disable during testing.')
+    parser.add_argument('--disable-field-trial-config',
+                        action=BinaryPassThroughArgs,
+                        help='Disable test trials for Chromium features.')
+    parser.add_argument('--force-fieldtrials', action=BinaryPassThroughArgs,
+                        help='Force trials for Chromium features.')
+    parser.add_argument('--force-fieldtrial-params',
+                        action=BinaryPassThroughArgs,
+                        help='Force trial params for Chromium features.')
 
 
 def run_android_webview(device, adapter):
   if adapter.options.package_name:
-    print('WARNING: --package-name has no effect for android_webview, provider'
+    logger.warn('--package-name has no effect for android_webview, provider'
           'will be set to the --apk if it is provided.')
 
   if adapter.options.system_webview_shell:
@@ -162,12 +209,15 @@ def run_android_webview(device, adapter):
           '--system-webview-shell apk', shell_pkg, SYSTEM_WEBVIEW_SHELL_PKG))
     install_shell_as_needed = system_app.ReplaceSystemApp(device, shell_pkg,
         adapter.options.system_webview_shell)
+    logger.info('Will install ' + shell_pkg + ' at '
+                + adapter.options.system_webview_shell)
   else:
     install_shell_as_needed = no_op()
 
   if adapter.options.apk:
     install_webview_as_needed = webview_app.UseWebViewProvider(device,
         adapter.options.apk)
+    logger.info('Will install WebView apk at ' + adapter.options.apk)
   else:
     install_webview_as_needed = no_op()
 
@@ -209,6 +259,12 @@ def main():
   adapter = WPTAndroidAdapter()
   adapter.parse_args()
 
+  if adapter.options.verbose:
+    if adapter.options.verbose == 1:
+      logger.setLevel(logging.INFO)
+    else:
+      logger.setLevel(logging.DEBUG)
+
   devil_chromium.Initialize()
 
   # Only 1 device is supported for Android locally, this will work well with
@@ -216,7 +272,8 @@ def main():
   device = device_utils.DeviceUtils.HealthyDevices()[0]
 
   flags_file = FLAGS_FILE_MAP[adapter.options.product]
-  all_flags = HOST_RESOLVER_ARGS + adapter.options.binary_arg
+  all_flags = HOST_RESOLVER_ARGS + adapter.pass_through_binary_args
+  logger.info('Setting flags in ' + flags_file + ' to: ' + str(all_flags))
   flags = flag_changer.CustomCommandLineFlags(device, flags_file, all_flags)
 
   # WPT setup for chrome and webview requires that PATH contains adb.
@@ -239,4 +296,6 @@ if __name__ == '__main__':
             'compile_targets': main_compile_targets,
         }
         sys.exit(common.run_script(sys.argv[1:], funcs))
+    logging.basicConfig(level=logging.WARNING)
+    logger = logging.getLogger()
     sys.exit(main())

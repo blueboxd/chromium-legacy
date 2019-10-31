@@ -198,7 +198,7 @@ class FormSuggestionControllerTest : public PlatformTest {
                                                     delegate:nil
                                                 webStateList:NULL
                                          personalDataManager:NULL
-                                               passwordStore:NULL];
+                                               passwordStore:nullptr];
 
     [accessory_mediator_ injectWebState:&test_web_state_];
     [accessory_mediator_ injectProvider:suggestion_controller_];

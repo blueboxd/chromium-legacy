@@ -61,19 +61,19 @@ class OptimizationGuideTopHostProviderTest
     for (size_t i = 1; i <= num_hosts; i++) {
       AddEngagedHost(
           GURL(base::StringPrintf("https://domain%zu.com", i)),
-          static_cast<int>(
+          static_cast<double>(
               i + SiteEngagementScore::GetFirstDailyEngagementPoints()));
     }
   }
 
-  void AddEngagedHostsWithPoints(size_t num_hosts, int num_points) {
+  void AddEngagedHostsWithPoints(size_t num_hosts, double num_points) {
     for (size_t i = 1; i <= num_hosts; i++) {
       AddEngagedHost(GURL(base::StringPrintf("https://domain%zu.com", i)),
                      num_points);
     }
   }
 
-  void AddEngagedHost(GURL url, int num_points) {
+  void AddEngagedHost(GURL url, double num_points) {
     service_->AddPointsForTesting(url, num_points);
   }
 
@@ -437,9 +437,11 @@ TEST_F(OptimizationGuideTopHostProviderTest,
 
   AddEngagedHosts(engaged_hosts);
   // Add two hosts with very low engagement scores that should not be returned
-  // by the top host provider.
-  AddEngagedHost(GURL("https://lowengagement1.com"), 1);
-  AddEngagedHost(GURL("https://lowengagement2.com"), 1);
+  // by the top host provider. Must be negative in order to have a low enough
+  // score onced added to the service after the bonus scores included by the
+  // site engagement service.
+  AddEngagedHost(GURL("https://lowengagement1.com"), -0.5);
+  AddEngagedHost(GURL("https://lowengagement2.com"), -0.5);
 
   // Blacklist should be populated on the first request. Set the count of
   // desired
@@ -503,7 +505,7 @@ TEST_F(OptimizationGuideTopHostProviderTest,
 
   // Before the blacklist is populated, the threshold should have a default
   // value.
-  EXPECT_EQ(3,
+  EXPECT_EQ(2,
             GetHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore());
 
   // Blacklist should be populated on the first request.

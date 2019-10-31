@@ -185,7 +185,9 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
                                   const ScriptValue& message,
                                   const PostMessageOptions* options,
                                   ExceptionState& exception_state) {
-  DCHECK(GetExecutionContext()->IsContextThread());
+  DCHECK(!GetExecutionContext() || GetExecutionContext()->IsContextThread());
+  if (!GetExecutionContext())
+    return;
 
   BlinkTransferableMessage transferable_message;
   Transferables transferables;

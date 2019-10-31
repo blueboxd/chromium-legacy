@@ -25,7 +25,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -235,7 +234,7 @@ public class TabsOpenedFromExternalAppTest {
     @Feature({"Navigation"})
     public void testReferrer() {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(ANDROID_APP_REFERRER));
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras);
@@ -254,7 +253,7 @@ public class TabsOpenedFromExternalAppTest {
     public void testInvalidAndroidAppReferrer() {
         String invalidReferrer = "android-app:///note.the.extra.leading/";
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(invalidReferrer));
         launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras);
@@ -271,7 +270,7 @@ public class TabsOpenedFromExternalAppTest {
     @Feature({"Navigation"})
     public void testCannotSetArbitraryReferrer() {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
         String referrer = "foobar://totally.legit.referrer";
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(referrer));
@@ -289,7 +288,7 @@ public class TabsOpenedFromExternalAppTest {
     @Feature({"Navigation"})
     public void testNoHttpReferrer() {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTP_REFERRER));
 
@@ -308,7 +307,7 @@ public class TabsOpenedFromExternalAppTest {
     @Feature({"Navigation"})
     public void testHttpReferrerFromFirstParty() {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTP_REFERRER));
 
@@ -364,7 +363,7 @@ public class TabsOpenedFromExternalAppTest {
      */
     static void launchAndVerifyReferrerWithPolicy(String url, ChromeActivityTestRule testRule,
             int policy, String referrer, String expectedReferrer) {
-        testRule.startMainActivityFromLauncher();
+        testRule.startMainActivityOnBlankPage();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(referrer));
         extras.putInt(IntentHandler.EXTRA_REFERRER_POLICY, policy);
@@ -382,7 +381,7 @@ public class TabsOpenedFromExternalAppTest {
     @Feature({"Navigation"})
     public void testHttpsReferrerFromFirstPartyNoDowngrade() {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTPS_REFERRER));
         launchUrlFromExternalApp(
@@ -395,12 +394,11 @@ public class TabsOpenedFromExternalAppTest {
     /**
      * Tests that URLs opened from the same external app don't create new tabs.
      */
-    // @LargeTest
-    // @Feature({"Navigation"})
     @Test
-    @DisabledTest
+    @LargeTest
+    @Feature({"Navigation"})
     public void testNoNewTabForSameApp() {
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -428,21 +426,19 @@ public class TabsOpenedFromExternalAppTest {
                 mActivityTestRule.getActivity().hasWindowFocus());
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().onBackPressed());
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        Assert.assertFalse("Window still has focus after pressing back.",
-                mActivityTestRule.getActivity().hasWindowFocus());
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(false, () -> mActivityTestRule.getActivity().hasWindowFocus()));
     }
 
     /**
      * Tests that URLs opened from an unspecified external app (no Browser.EXTRA_APPLICATION_ID in
      * the intent extras) don't create new tabs.
      */
-
     @Test
     @LargeTest
     @Feature({"Navigation"})
     public void testNewTabForUnknownApp() {
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -475,21 +471,19 @@ public class TabsOpenedFromExternalAppTest {
                 mActivityTestRule.getActivity().hasWindowFocus());
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().onBackPressed());
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        Assert.assertFalse("Window still has focus after pressing back.",
-                mActivityTestRule.getActivity().hasWindowFocus());
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(false, () -> mActivityTestRule.getActivity().hasWindowFocus()));
     }
 
     /**
      * Tests that URLs opened with the Browser.EXTRA_CREATE_NEW_TAB extra in
      * the intent do create new tabs.
      */
-    // @LargeTest
-    // @Feature({"Navigation"})
     @Test
-    @DisabledTest
+    @LargeTest
+    @Feature({"Navigation"})
     public void testNewTabWithNewTabExtra() {
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -517,9 +511,8 @@ public class TabsOpenedFromExternalAppTest {
                 mActivityTestRule.getActivity().hasWindowFocus());
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().onBackPressed());
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        Assert.assertFalse("Window still has focus after pressing back.",
-                mActivityTestRule.getActivity().hasWindowFocus());
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(false, () -> mActivityTestRule.getActivity().hasWindowFocus()));
     }
 
     /**
@@ -551,9 +544,8 @@ public class TabsOpenedFromExternalAppTest {
                 mActivityTestRule.getActivity().hasWindowFocus());
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().onBackPressed());
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        Assert.assertFalse("Window still has focus after pressing back.",
-                mActivityTestRule.getActivity().hasWindowFocus());
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(false, () -> mActivityTestRule.getActivity().hasWindowFocus()));
     }
 
     /**
@@ -563,7 +555,7 @@ public class TabsOpenedFromExternalAppTest {
     @LargeTest
     @Feature({"Navigation", "Main"})
     public void testNewTabForDifferentApps() {
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -600,7 +592,7 @@ public class TabsOpenedFromExternalAppTest {
     @LargeTest
     @Feature({"Navigation"})
     public void testNewTabAfterNavigation() {
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -633,7 +625,7 @@ public class TabsOpenedFromExternalAppTest {
     @Test
     @FlakyTest(message = "http://crbug.com/6467101")
     public void testNewTabWhenPageEdited() throws TimeoutException {
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
 
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -687,7 +679,7 @@ public class TabsOpenedFromExternalAppTest {
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
     public void testBackgroundSvelteTabIsSelectedAfterClosingExternalTab() throws Exception {
         // Start up Chrome and immediately close its tab -- it gets in the way.
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) ()
                         -> TabModelUtils.closeTabByIndex(
@@ -769,7 +761,7 @@ public class TabsOpenedFromExternalAppTest {
             {"DataReductionProxyDecidesTransform", "DataReductionProxyEnabledWithNetworkService"})
     public void
     testLaunchWebLiteURL() {
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
 
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
 
@@ -790,7 +782,7 @@ public class TabsOpenedFromExternalAppTest {
     @CommandLineFlags.Add("enable-spdy-proxy-auth")
     @DisableFeatures("DataReductionProxyDecidesTransform")
     public void testLaunchWebLiteURLNoPreviews() {
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
 
         String url = "http://googleweblight.com/i?u=chrome/test/data/android/about.html";
 

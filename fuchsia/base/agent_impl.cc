@@ -80,11 +80,6 @@ void AgentImpl::Connect(
   it->second->service_provider_->AddBinding(std::move(services));
 }
 
-void AgentImpl::RunTask(std::string task_id, RunTaskCallback callback) {
-  NOTIMPLEMENTED();
-  callback();
-}
-
 void AgentImpl::DeleteComponentState(base::StringPiece component_id) {
   size_t removed_components = active_components_.erase(component_id);
   DCHECK_EQ(removed_components, 1u);

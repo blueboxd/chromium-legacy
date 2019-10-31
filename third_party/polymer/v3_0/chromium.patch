@@ -47,4 +47,16 @@ index 21fa65c0208d..bd591b6dd341 100644
  
    /**
     * Map of simple names to touch action names
-
+--- a/components-chromium/polymer/lib/mixins/template-stamp.js
++++ b/components-chromium/polymer/lib/mixins/template-stamp.js
+@@ -204,9 +204,7 @@ export const TemplateStamp = dedupingMixin(
+       if (!template._templateInfo) {
+         let templateInfo = template._templateInfo = {};
+         templateInfo.nodeInfoList = [];
+-        templateInfo.stripWhiteSpace =
+-          (outerTemplateInfo && outerTemplateInfo.stripWhiteSpace) ||
+-          template.hasAttribute('strip-whitespace');
++        templateInfo.stripWhiteSpace = true;
+         this._parseTemplateContent(template, templateInfo, {parent: null});
+       }
+       return template._templateInfo;

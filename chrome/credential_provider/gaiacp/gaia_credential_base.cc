@@ -2223,10 +2223,10 @@ void CGaiaCredentialBase::DisplayPasswordField(int password_message) {
                               GetStringResource(password_message).c_str());
       events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD,
                              CPFS_DISPLAY_IN_SELECTED_TILE);
-      // Request force password change wouldn't work on a domain joined
-      // machine as it requires domain admin role privileges to communicate
-      // with the domain controller whereas GCPW only has SYSTEM privilege.
-      if (!OSUserManager::Get()->IsUserDomainJoined(get_sid().m_str)) {
+      // Force password link won't be displayed if the machine is domain joined
+      // or force reset password is disabled through registry.
+      if (!OSUserManager::Get()->IsUserDomainJoined(get_sid().m_str) &&
+          GetGlobalFlagOrDefault(kRegMdmEnableForcePasswordReset, 1)) {
         events_->SetFieldState(this, FID_FORGOT_PASSWORD_LINK,
                                CPFS_DISPLAY_IN_SELECTED_TILE);
         events_->SetFieldString(

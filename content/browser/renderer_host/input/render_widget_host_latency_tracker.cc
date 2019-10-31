@@ -5,12 +5,12 @@
 #include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
 
 #include <stddef.h>
+#include <string>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "components/rappor/public/rappor_utils.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -114,7 +114,7 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   if (event.GetType() == WebInputEvent::kTouchStart) {
     const WebTouchEvent& touch_event =
         *static_cast<const WebTouchEvent*>(&event);
-    DCHECK(touch_event.touches_length >= 1);
+    DCHECK_GE(touch_event.touches_length, static_cast<unsigned>(1));
     active_multi_finger_gesture_ = touch_event.touches_length != 1;
   }
 

@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_termination_info.h"
-#include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
 
@@ -95,14 +94,7 @@ ChildExitObserver* ChildExitObserver::GetInstance() {
   return g_instance;
 }
 
-ChildExitObserver::ChildExitObserver()
-    : registered_clients_lock_(),
-      registered_clients_(),
-      process_host_id_to_pid_(),
-      browser_child_process_info_(),
-      crash_signals_lock_(),
-      child_pid_to_crash_signal_(),
-      scoped_observer_(this) {
+ChildExitObserver::ChildExitObserver() {
   BrowserChildProcessObserver::Add(this);
   scoped_observer_.Add(crashpad::CrashHandlerHost::Get());
 }

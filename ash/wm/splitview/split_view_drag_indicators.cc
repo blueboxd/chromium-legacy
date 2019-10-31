@@ -22,6 +22,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display_observer.h"
@@ -247,7 +248,8 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
 // window has entered a snap region to display the bounds of the window, if it
 // were to get snapped.
 class SplitViewDragIndicators::SplitViewDragIndicatorsView
-    : public views::View {
+    : public views::View,
+      public aura::WindowObserver {
  public:
   SplitViewDragIndicatorsView() {
     left_highlight_view_ =
@@ -278,7 +280,10 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     right_rotated_view_->layer()->SetOpacity(0.f);
   }
 
-  ~SplitViewDragIndicatorsView() override {}
+  ~SplitViewDragIndicatorsView() override {
+    if (dragged_window_)
+      dragged_window_->RemoveObserver(this);
+  }
 
   SplitViewHighlightView* left_highlight_view() { return left_highlight_view_; }
 
@@ -319,8 +324,22 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     return nullptr;
   }
 
+  void SetDraggedWindow(aura::Window* dragged_window) {
+    if (dragged_window_)
+      dragged_window_->RemoveObserver(this);
+    dragged_window_ = dragged_window;
+    if (dragged_window)
+      dragged_window->AddObserver(this);
+  }
+
   // views::View:
   void Layout() override { Layout(/*animate=*/false); }
+
+  // aura::WindowObserver:
+  void OnWindowDestroyed(aura::Window* window) override {
+    DCHECK_EQ(dragged_window_, window);
+    dragged_window_ = nullptr;
+  }
 
  private:
   // Layout the bounds of the highlight views and helper labels. One should
@@ -383,7 +402,8 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
               ->GetSnappedWindowBoundsInScreen(
                   preview_state == IndicatorState::kPreviewAreaLeft
                       ? SplitViewController::LEFT
-                      : SplitViewController::RIGHT);
+                      : SplitViewController::RIGHT,
+                  dragged_window_);
 
       aura::Window* root_window =
           GetWidget()->GetNativeWindow()->GetRootWindow();
@@ -599,6 +619,8 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
   IndicatorState indicator_state_ = IndicatorState::kNone;
   IndicatorState previous_indicator_state_ = IndicatorState::kNone;
 
+  aura::Window* dragged_window_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(SplitViewDragIndicatorsView);
 };
 
@@ -617,6 +639,11 @@ SplitViewDragIndicators::~SplitViewDragIndicators() {
   wm::SetWindowVisibilityAnimationType(
       window, WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END);
   AnimateOnChildWindowVisibilityChanged(window, /*visible=*/false);
+}
+
+void SplitViewDragIndicators::SetDraggedWindow(aura::Window* dragged_window) {
+  DCHECK_EQ(IndicatorState::kNone, current_indicator_state_);
+  indicators_view_->SetDraggedWindow(dragged_window);
 }
 
 void SplitViewDragIndicators::SetIndicatorState(

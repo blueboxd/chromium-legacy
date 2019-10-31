@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.preferences.MainPreferences;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.sync.AccountManagementFragment;
@@ -288,8 +289,8 @@ public class SigninTest {
             Assert.assertNull(mSigninManager.getManagementDomain());
 
             // Verify that the password manager is enabled by default.
-            Assert.assertTrue(mPrefService.isRememberPasswordsEnabled());
-            Assert.assertFalse(mPrefService.isRememberPasswordsManaged());
+            Assert.assertTrue(mPrefService.getBoolean(Pref.REMEMBER_PASSWORDS_ENABLED));
+            Assert.assertFalse(mPrefService.isManagedPreference(Pref.REMEMBER_PASSWORDS_ENABLED));
         });
 
         // Verify that its preference UI is enabled.

@@ -15,6 +15,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/platform_window/common/platform_window_defaults.h"
 #include "ui/platform_window/platform_window_delegate_linux.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 
@@ -617,7 +618,7 @@ gfx::Size X11Window::AdjustSizeForDisplay(
   return requested_size_in_pixels;
 #else
   auto* screen = display::Screen::GetScreen();
-  if (screen) {
+  if (screen && !UseTestConfigForPlatformWindows()) {
     std::vector<display::Display> displays = screen->GetAllDisplays();
     // Compare against all monitor sizes. The window manager can move the window
     // to whichever monitor it wants.

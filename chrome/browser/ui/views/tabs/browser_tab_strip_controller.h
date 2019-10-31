@@ -72,8 +72,8 @@ class BrowserTabStripController : public TabStripController,
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
   void StackedLayoutMaybeChanged() override;
-  void OnStartedDraggingTabs() override;
-  void OnStoppedDraggingTabs() override;
+  void OnStartedDragging() override;
+  void OnStoppedDragging() override;
   void OnKeyboardFocusedTabChanged(base::Optional<int> index) override;
   const TabGroupVisualData* GetVisualDataForGroup(
       TabGroupId group_id) const override;

@@ -15,16 +15,16 @@
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/services/media_resource_shim.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace media {
 
 namespace {
 
-void CloseBindingOnBadMessage(mojo::StrongBindingPtr<mojom::Renderer> binding) {
+void CloseReceiverOnBadMessage(
+    mojo::SelfOwnedReceiverRef<mojom::Renderer> receiver) {
   LOG(ERROR) << __func__;
-  DCHECK(binding);
-  binding->Close();
+  DCHECK(receiver);
+  receiver->Close();
 }
 
 }  // namespace
@@ -33,20 +33,21 @@ void CloseBindingOnBadMessage(mojo::StrongBindingPtr<mojom::Renderer> binding) {
 const int kTimeUpdateIntervalMs = 50;
 
 // static
-mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
+mojo::SelfOwnedReceiverRef<mojom::Renderer> MojoRendererService::Create(
     MojoCdmServiceContext* mojo_cdm_service_context,
     std::unique_ptr<media::Renderer> renderer,
     mojo::PendingReceiver<mojom::Renderer> receiver) {
   MojoRendererService* service =
       new MojoRendererService(mojo_cdm_service_context, std::move(renderer));
 
-  mojo::StrongBindingPtr<mojom::Renderer> binding =
+  mojo::SelfOwnedReceiverRef<mojom::Renderer> self_owned_receiver =
       mojo::MakeSelfOwnedReceiver<mojom::Renderer>(base::WrapUnique(service),
                                                    std::move(receiver));
 
-  service->set_bad_message_cb(base::Bind(&CloseBindingOnBadMessage, binding));
+  service->set_bad_message_cb(
+      base::Bind(&CloseReceiverOnBadMessage, self_owned_receiver));
 
-  return binding;
+  return self_owned_receiver;
 }
 
 MojoRendererService::MojoRendererService(

@@ -285,14 +285,16 @@ void CryptAuthFeatureStatusSetterImpl::FinishAttempt(
     base::Optional<NetworkRequestError> error) {
   DCHECK(!pending_requests_.empty());
 
+  Request current_request = std::move(pending_requests_.front());
+  pending_requests_.pop();
+
   if (error) {
-    std::move(pending_requests_.front().error_callback).Run(*error);
+    std::move(current_request.error_callback).Run(*error);
   } else {
     PA_LOG(VERBOSE) << "SetFeatureStatus attempt succeeded.";
-    std::move(pending_requests_.front().success_callback).Run();
+    std::move(current_request.success_callback).Run();
   }
 
-  pending_requests_.pop();
   SetState(State::kIdle);
   ProcessRequestQueue();
 }

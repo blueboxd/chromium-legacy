@@ -50,6 +50,7 @@ class RemoteDeviceRef {
   ~RemoteDeviceRef();
 
   const std::string& user_id() const { return remote_device_->user_id; }
+  const std::string& instance_id() const { return remote_device_->instance_id; }
   const std::string& name() const { return remote_device_->name; }
   const std::string& pii_free_name() const {
     return remote_device_->pii_free_name;

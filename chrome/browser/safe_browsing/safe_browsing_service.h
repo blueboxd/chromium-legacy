@@ -20,6 +20,7 @@
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
@@ -36,7 +37,6 @@
 
 class PrefChangeRegistrar;
 class PrefService;
-class Profile;
 
 namespace content {
 class DownloadManager;

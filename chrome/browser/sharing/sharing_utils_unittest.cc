@@ -42,8 +42,8 @@ TEST(SharingUtilsTest, GetSharingDeviceNames_ChromeOSDevices) {
       {"google", "Chromebook", ""});
   SharingDeviceNames names = GetSharingDeviceNames(device.get());
 
-  EXPECT_EQ("google Chromebook", names.full_name);
-  EXPECT_EQ("google Chromebook", names.short_name);
+  EXPECT_EQ("Google Chromebook", names.full_name);
+  EXPECT_EQ("Google Chromebook", names.short_name);
 }
 
 TEST(SharingUtilsTest, GetSharingDeviceNames_AndroidPhones) {
@@ -52,8 +52,8 @@ TEST(SharingUtilsTest, GetSharingDeviceNames_AndroidPhones) {
       {"google", "Pixel 2", ""});
   SharingDeviceNames names = GetSharingDeviceNames(device.get());
 
-  EXPECT_EQ("google Phone Pixel 2", names.full_name);
-  EXPECT_EQ("google Phone", names.short_name);
+  EXPECT_EQ("Google Phone Pixel 2", names.full_name);
+  EXPECT_EQ("Google Phone", names.short_name);
 }
 
 TEST(SharingUtilsTest, GetSharingDeviceNames_AndroidTablets) {
@@ -62,8 +62,8 @@ TEST(SharingUtilsTest, GetSharingDeviceNames_AndroidTablets) {
       {"google", "Pixel Slate", ""});
   SharingDeviceNames names = GetSharingDeviceNames(device.get());
 
-  EXPECT_EQ("google Tablet Pixel Slate", names.full_name);
-  EXPECT_EQ("google Tablet", names.short_name);
+  EXPECT_EQ("Google Tablet Pixel Slate", names.full_name);
+  EXPECT_EQ("Google Tablet", names.short_name);
 }
 
 TEST(SharingUtilsTest, GetSharingDeviceNames_Desktops) {
@@ -74,4 +74,38 @@ TEST(SharingUtilsTest, GetSharingDeviceNames_Desktops) {
 
   EXPECT_EQ("Dell Computer BX123", names.full_name);
   EXPECT_EQ("Dell Computer", names.short_name);
+}
+
+TEST(SharingUtilsTest, CheckManufacturerNameCapitalization) {
+  std::unique_ptr<syncer::DeviceInfo> device = CreateFakeDeviceInfo(
+      "guid", "name", sync_pb::SyncEnums_DeviceType_TYPE_WIN,
+      {"foo bar", "model", ""});
+  SharingDeviceNames names = GetSharingDeviceNames(device.get());
+
+  EXPECT_EQ("Foo Bar Computer model", names.full_name);
+  EXPECT_EQ("Foo Bar Computer", names.short_name);
+
+  device = CreateFakeDeviceInfo("guid", "name",
+                                sync_pb::SyncEnums_DeviceType_TYPE_WIN,
+                                {"foo1bar", "model", ""});
+  names = GetSharingDeviceNames(device.get());
+
+  EXPECT_EQ("Foo1Bar Computer model", names.full_name);
+  EXPECT_EQ("Foo1Bar Computer", names.short_name);
+
+  device = CreateFakeDeviceInfo("guid", "name",
+                                sync_pb::SyncEnums_DeviceType_TYPE_WIN,
+                                {"foo_bar-FOO", "model", ""});
+  names = GetSharingDeviceNames(device.get());
+
+  EXPECT_EQ("Foo_Bar-FOO Computer model", names.full_name);
+  EXPECT_EQ("Foo_Bar-FOO Computer", names.short_name);
+
+  device = CreateFakeDeviceInfo("guid", "name",
+                                sync_pb::SyncEnums_DeviceType_TYPE_WIN,
+                                {"foo&bar foo", "model", ""});
+  names = GetSharingDeviceNames(device.get());
+
+  EXPECT_EQ("Foo&Bar Foo Computer model", names.full_name);
+  EXPECT_EQ("Foo&Bar Foo Computer", names.short_name);
 }

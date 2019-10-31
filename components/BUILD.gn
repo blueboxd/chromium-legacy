@@ -392,7 +392,6 @@ test("components_unittests") {
     deps += [
       "//components/safe_browsing:verdict_cache_manager_unittest",
       "//components/safe_browsing/db:unit_tests_desktop",
-      "//components/safe_browsing/realtime:unit_tests",
     ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
@@ -400,6 +399,7 @@ test("components_unittests") {
 
   if (!is_ios) {
     deps += [
+      "//components/safe_browsing/realtime:unit_tests",
       "//components/webrtc_logging/browser:unit_tests",
       "//components/webrtc_logging/common:unit_tests",
     ]

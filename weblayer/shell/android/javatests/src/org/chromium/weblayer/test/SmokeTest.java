@@ -13,19 +13,20 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.weblayer.shell.WebLayerShellActivity;
+import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.concurrent.CountDownLatch;
 
 @RunWith(BaseJUnit4ClassRunner.class)
 public class SmokeTest {
     @Rule
-    public WebLayerShellActivityTestRule mActivityTestRule = new WebLayerShellActivityTestRule();
+    public InstrumentationActivityTestRule mActivityTestRule =
+            new InstrumentationActivityTestRule();
 
     @Test
     @SmallTest
     public void testSetSupportEmbedding() {
-        WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { activity.getBrowserFragmentController().setSupportsEmbedding(true); });

@@ -6,6 +6,12 @@ import("//build/compiled_action.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/ui.gni")
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -41,10 +47,6 @@ static_library("test_support") {
     "../timer/mock_timer.cc",
     "../timer/mock_timer.h",
     "../trace_event/trace_config_memory_test_util.h",
-    "android/java_handler_thread_helpers.cc",
-    "android/java_handler_thread_helpers.h",
-    "android/url_utils.cc",
-    "android/url_utils.h",
     "bind_test_util.cc",
     "bind_test_util.h",
     "copy_only_int.cc",
@@ -60,8 +62,6 @@ static_library("test_support") {
     "gtest_xml_util.h",
     "icu_test_util.cc",
     "icu_test_util.h",
-    "ios/wait_util.h",
-    "ios/wait_util.mm",
     "launcher/test_result.cc",
     "launcher/test_result.h",
     "launcher/test_results_tracker.h",
@@ -73,8 +73,6 @@ static_library("test_support") {
     "metrics/user_action_tester.cc",
     "metrics/user_action_tester.h",
     "mock_callback.h",
-    "mock_chrome_application_mac.h",
-    "mock_chrome_application_mac.mm",
     "mock_devices_changed_observer.cc",
     "mock_devices_changed_observer.h",
     "mock_entropy_provider.cc",
@@ -83,7 +81,6 @@ static_library("test_support") {
     "mock_log.h",
     "move_only_int.h",
     "multiprocess_test.h",
-    "multiprocess_test_android.cc",
     "null_task_runner.cc",
     "null_task_runner.h",
     "perf_log.cc",
@@ -94,7 +91,6 @@ static_library("test_support") {
     "perf_time_logger.h",
     "power_monitor_test_base.cc",
     "power_monitor_test_base.h",
-    "reached_code_profiler_android.cc",
     "scoped_command_line.cc",
     "scoped_command_line.h",
     "scoped_environment_variable_override.cc",
@@ -105,8 +101,6 @@ static_library("test_support") {
     "scoped_mock_clock_override.h",
     "scoped_mock_time_message_loop_task_runner.cc",
     "scoped_mock_time_message_loop_task_runner.h",
-    "scoped_os_info_override_win.cc",
-    "scoped_os_info_override_win.h",
     "scoped_path_override.cc",
     "scoped_path_override.h",
     "sequenced_task_runner_test_template.cc",
@@ -123,35 +117,20 @@ static_library("test_support") {
     "test_discardable_memory_allocator.h",
     "test_file_util.cc",
     "test_file_util.h",
-    "test_file_util_android.cc",
-    "test_file_util_linux.cc",
-    "test_file_util_mac.cc",
-    "test_file_util_win.cc",
     "test_io_thread.cc",
     "test_io_thread.h",
-    "test_listener_ios.h",
-    "test_listener_ios.mm",
     "test_message_loop.cc",
     "test_message_loop.h",
     "test_mock_time_task_runner.cc",
     "test_mock_time_task_runner.h",
     "test_pending_task.cc",
     "test_pending_task.h",
-    "test_reg_util_win.cc",
-    "test_reg_util_win.h",
     "test_shared_memory_util.cc",
     "test_shared_memory_util.h",
-    "test_shortcut_win.cc",
-    "test_shortcut_win.h",
     "test_simple_task_runner.cc",
     "test_simple_task_runner.h",
     "test_suite.cc",
     "test_suite.h",
-    "test_support_android.cc",
-    "test_support_android.h",
-    "test_support_ios.h",
-    "test_support_ios.mm",
-    "thread_pool_test_helpers_android.cc",
     "thread_test_helper.cc",
     "thread_test_helper.h",
     "trace_event_analyzer.cc",
@@ -162,8 +141,55 @@ static_library("test_support") {
     "values_test_util.h",
   ]
 
+  if (is_win) {
+    sources += [
+      "scoped_os_info_override_win.cc",
+      "scoped_os_info_override_win.h",
+      "test_file_util_win.cc",
+      "test_reg_util_win.cc",
+      "test_reg_util_win.h",
+      "test_shortcut_win.cc",
+      "test_shortcut_win.h",
+    ]
+  }
+
+  if (is_linux) {
+    sources += [ "test_file_util_linux.cc" ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "mock_chrome_application_mac.h",
+      "mock_chrome_application_mac.mm",
+      "test_file_util_mac.cc",
+    ]
+  }
+
+  if (is_android) {
+    sources += [
+      "android/java_handler_thread_helpers.cc",
+      "android/java_handler_thread_helpers.h",
+      "android/url_utils.cc",
+      "android/url_utils.h",
+      "multiprocess_test_android.cc",
+      "reached_code_profiler_android.cc",
+      "test_file_util_android.cc",
+      "test_support_android.cc",
+      "test_support_android.h",
+      "thread_pool_test_helpers_android.cc",
+    ]
+  }
+
   if (is_ios) {
-    sources += [ "launcher/unit_test_launcher_ios.cc" ]
+    sources += [
+      "ios/wait_util.h",
+      "ios/wait_util.mm",
+      "launcher/unit_test_launcher_ios.cc",
+      "test_listener_ios.h",
+      "test_listener_ios.mm",
+      "test_support_ios.h",
+      "test_support_ios.mm",
+    ]
   } else if (!is_nacl_nonsfi) {
     sources += [
       "launcher/test_launcher.cc",
@@ -223,9 +249,7 @@ static_library("test_support") {
   }
 
   if (is_ios) {
-    set_sources_assignment_filter([])
     sources += [ "test_file_util_mac.cc" ]
-    set_sources_assignment_filter(sources_assignment_filter)
     deps += [ ":google_test_runner_shared_headers" ]
   }
 
@@ -234,9 +258,7 @@ static_library("test_support") {
   }
 
   if (is_android) {
-    set_sources_assignment_filter([])
     sources += [ "test_file_util_linux.cc" ]
-    set_sources_assignment_filter(sources_assignment_filter)
     deps += [
       ":base_unittests_jni_headers",
       ":test_support_jni_headers",

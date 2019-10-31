@@ -68,6 +68,8 @@ class PaintedScrollbar : public FakeScrollbar {
   void set_paint_scale(int scale) { paint_scale_ = scale; }
 
  private:
+  ~PaintedScrollbar() override = default;
+
   int paint_scale_ = 4;
   SkColor color_ = SK_ColorGREEN;
 };
@@ -88,7 +90,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, NoScale) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  auto scrollbar = std::make_unique<PaintedScrollbar>(gfx::Size(200, 200));
+  auto scrollbar = base::MakeRefCounted<PaintedScrollbar>(gfx::Size(200, 200));
   scoped_refptr<PaintedScrollbarLayer> layer =
       PaintedScrollbarLayer::Create(std::move(scrollbar));
   layer->SetIsDrawable(true);
@@ -107,7 +109,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, DeviceScaleFactor) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
 
-  auto scrollbar = std::make_unique<PaintedScrollbar>(gfx::Size(100, 100));
+  auto scrollbar = base::MakeRefCounted<PaintedScrollbar>(gfx::Size(100, 100));
   scoped_refptr<PaintedScrollbarLayer> layer =
       PaintedScrollbarLayer::Create(std::move(scrollbar));
   layer->SetIsDrawable(true);
@@ -122,7 +124,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, TransformScale) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  auto scrollbar = std::make_unique<PaintedScrollbar>(gfx::Size(100, 100));
+  auto scrollbar = base::MakeRefCounted<PaintedScrollbar>(gfx::Size(100, 100));
   scoped_refptr<PaintedScrollbarLayer> layer =
       PaintedScrollbarLayer::Create(std::move(scrollbar));
   layer->SetIsDrawable(true);
@@ -149,7 +151,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(400, 400), SK_ColorWHITE);
 
-  auto scrollbar = std::make_unique<PaintedScrollbar>(gfx::Size(10, 400));
+  auto scrollbar = base::MakeRefCounted<PaintedScrollbar>(gfx::Size(10, 400));
   scrollbar->set_paint_scale(1);
   scoped_refptr<PaintedScrollbarLayer> layer =
       PaintedScrollbarLayer::Create(std::move(scrollbar));
@@ -245,6 +247,9 @@ class PaintedOverlayScrollbar : public FakeScrollbar {
   gfx::Rect NinePatchThumbAperture() const override {
     return gfx::Rect(3, 3, 1, 1);
   }
+
+ private:
+  ~PaintedOverlayScrollbar() override = default;
 };
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -257,7 +262,7 @@ TEST_P(LayerTreeHostOverlayScrollbarsPixelTest, NinePatchScrollbarScaledUp) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(400, 400), SK_ColorWHITE);
 
-  auto scrollbar = std::make_unique<PaintedOverlayScrollbar>();
+  auto scrollbar = base::MakeRefCounted<PaintedOverlayScrollbar>();
   scoped_refptr<PaintedOverlayScrollbarLayer> layer =
       PaintedOverlayScrollbarLayer::Create(std::move(scrollbar));
 
@@ -281,7 +286,7 @@ TEST_P(LayerTreeHostOverlayScrollbarsPixelTest, NinePatchScrollbarScaledDown) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(400, 400), SK_ColorWHITE);
 
-  auto scrollbar = std::make_unique<PaintedOverlayScrollbar>();
+  auto scrollbar = base::MakeRefCounted<PaintedOverlayScrollbar>();
   scoped_refptr<PaintedOverlayScrollbarLayer> layer =
       PaintedOverlayScrollbarLayer::Create(std::move(scrollbar));
 

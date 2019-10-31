@@ -5,9 +5,9 @@
 #include "chrome/browser/sharing/response_callback_helper.h"
 
 #include "base/callback.h"
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
+#include "components/sync/protocol/sharing_message.pb.h"
 
 ResponseCallbackHelper::ResponseCallbackHelper() = default;
 ResponseCallbackHelper::~ResponseCallbackHelper() = default;

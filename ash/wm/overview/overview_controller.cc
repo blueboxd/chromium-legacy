@@ -464,8 +464,6 @@ void OverviewController::ToggleOverview(
   } else {
     DCHECK(CanEnterOverview());
     TRACE_EVENT_ASYNC_BEGIN0("ui", "OverviewController::EnterOverview", this);
-    for (auto& observer : observers_)
-      observer.OnOverviewModeWillStart();
 
     // Clear any animations that may be running from last overview end.
     for (const auto& animation : delayed_animations_)

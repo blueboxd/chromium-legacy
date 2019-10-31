@@ -10,6 +10,8 @@ import "services/video_capture/public/mojom/scoped_access_permission.mojom";
 // Callback interface for receiving data and messages from a
 // video_capture.mojom.Device or
 // video_capture.mojom.PushVideoStreamSubscription.
+// TODO: Rename to VideoFrameHandler to avoid confusion with the new Mojo types
+// e.g. when currently declaring a mojo::Remote<video_capture::mojom::Receiver>.
 interface Receiver {
   // Indicates that the producer is going to subsequently use the provided
   // buffer as one of possibly many for frame delivery via

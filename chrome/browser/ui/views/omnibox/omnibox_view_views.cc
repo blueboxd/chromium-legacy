@@ -780,8 +780,8 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
   if (save_original_selection)
     saved_temporary_selection_ = GetSelectedRange();
   SetAccessibilityLabel(display_text, match);
-  int caret_pos = TextAndUIDirectionMatch() ? display_text.length() : 0;
-  SetWindowTextAndCaretPos(display_text, caret_pos, false, notify_text_changed);
+  SetWindowTextAndCaretPos(display_text, display_text.length(), false,
+                           notify_text_changed);
 }
 
 bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(

@@ -23,6 +23,38 @@
 
 namespace {
 
+// Adds an in-memory file containing |data| to |dir| at the location |path|.
+void AddFileToPseudoDir(base::StringPiece data,
+                        const base::FilePath& path,
+                        vfs::PseudoDir* dir) {
+  zx::vmo contents_vmo;
+  zx_status_t status = zx::vmo::create(data.size(), 0, &contents_vmo);
+  ASSERT_EQ(status, ZX_OK);
+  status = contents_vmo.write(data.data(), 0, data.size());
+  ASSERT_EQ(status, ZX_OK);
+
+  auto vmo_file = std::make_unique<vfs::VmoFile>(
+      std::move(contents_vmo), 0, data.size(),
+      vfs::VmoFile::WriteOption::READ_ONLY, vfs::VmoFile::Sharing::CLONE_COW);
+  status = dir->AddEntry(path.value(), std::move(vmo_file));
+  ASSERT_EQ(status, ZX_OK);
+}
+
+// Serves |dir| as a ContentDirectory under the path |name|.
+void ServePseudoDir(base::StringPiece name, vfs::PseudoDir* dir) {
+  fuchsia::web::ContentDirectoryProvider provider;
+  provider.set_name(name.as_string());
+  fidl::InterfaceHandle<fuchsia::io::Directory> directory_channel;
+  dir->Serve(
+      fuchsia::io::OPEN_FLAG_DIRECTORY | fuchsia::io::OPEN_RIGHT_READABLE,
+      directory_channel.NewRequest().TakeChannel());
+  provider.set_directory(std::move(directory_channel));
+  std::vector<fuchsia::web::ContentDirectoryProvider> providers;
+  providers.emplace_back(std::move(provider));
+  ContentDirectoryLoaderFactory::SetContentDirectoriesForTest(
+      std::move(providers));
+}
+
 class ContentDirectoryTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
   ContentDirectoryTest()
@@ -155,38 +187,15 @@ IN_PROC_BROWSER_TEST_F(ContentDirectoryTest, ImgSubresource) {
 IN_PROC_BROWSER_TEST_F(ContentDirectoryTest, FromVfsPseudoDir) {
   base::ScopedAllowBlockingForTesting allow_block;
 
-  // Get the file contents and store it in a VMO.
   std::string contents;
   base::FilePath pkg_path;
   base::PathService::Get(base::DIR_ASSETS, &pkg_path);
   ASSERT_TRUE(base::ReadFileToString(
       pkg_path.AppendASCII("fuchsia/engine/test/data/title1.html"), &contents));
-  zx::vmo contents_vmo;
-  zx_status_t status = zx::vmo::create(contents.size(), 0, &contents_vmo);
-  ASSERT_EQ(status, ZX_OK);
-  status = contents_vmo.write(contents.data(), 0, contents.size());
-  ASSERT_EQ(status, ZX_OK);
 
-  // Build up the directory structure of a VmoFile inside a PseudoDir.
-  auto vmo_file = std::make_unique<vfs::VmoFile>(
-      std::move(contents_vmo), 0, contents.size(),
-      vfs::VmoFile::WriteOption::READ_ONLY, vfs::VmoFile::Sharing::CLONE_COW);
   vfs::PseudoDir pseudo_dir;
-  status = pseudo_dir.AddEntry("title1.html", std::move(vmo_file));
-  ASSERT_EQ(status, ZX_OK);
-
-  // Serve the PseudoDir under the "pseudo-dir" URL.
-  fuchsia::web::ContentDirectoryProvider provider;
-  provider.set_name("pseudo-dir");
-  fidl::InterfaceHandle<fuchsia::io::Directory> directory_channel;
-  pseudo_dir.Serve(
-      fuchsia::io::OPEN_FLAG_DIRECTORY | fuchsia::io::OPEN_RIGHT_READABLE,
-      directory_channel.NewRequest().TakeChannel());
-  provider.set_directory(std::move(directory_channel));
-  std::vector<fuchsia::web::ContentDirectoryProvider> providers;
-  providers.emplace_back(std::move(provider));
-  ContentDirectoryLoaderFactory::SetContentDirectoriesForTest(
-      std::move(providers));
+  AddFileToPseudoDir(contents, base::FilePath("title1.html"), &pseudo_dir);
+  ServePseudoDir("pseudo-dir", &pseudo_dir);
 
   // Access the VmoFile under the PseudoDir.
   const GURL kUrl("fuchsia-dir://pseudo-dir/title1.html");
@@ -251,6 +260,37 @@ IN_PROC_BROWSER_TEST_F(ContentDirectoryTest, BadMetadataFile) {
   fuchsia::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), kUrl.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(kUrl,
+                                                 "content-type: text/html");
+}
+
+IN_PROC_BROWSER_TEST_F(ContentDirectoryTest, BigFilesAreSniffable) {
+  base::ScopedAllowBlockingForTesting allow_block;
+
+  std::string contents;
+  base::FilePath pkg_path;
+  base::PathService::Get(base::DIR_ASSETS, &pkg_path);
+  ASSERT_TRUE(base::ReadFileToString(
+      pkg_path.AppendASCII("fuchsia/engine/test/data/mime_override.html"),
+      &contents));
+
+  vfs::PseudoDir pseudo_dir;
+  AddFileToPseudoDir(contents, base::FilePath("test.html"), &pseudo_dir);
+
+  // Produce an HTML file that's a megabyte in size by appending a lot of
+  // zeroes to the end of an existing HTML file.
+  contents.resize(1000000, ' ');
+  AddFileToPseudoDir(contents, base::FilePath("blob.bin"), &pseudo_dir);
+
+  ServePseudoDir("pseudo-dir", &pseudo_dir);
+
+  // Access the VmoFile under the PseudoDir.
+  const GURL kUrl("fuchsia-dir://pseudo-dir/test.html");
+  fuchsia::web::FramePtr frame = CreateFrame();
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), kUrl.spec()));
   navigation_listener_.RunUntilUrlAndTitleEquals(kUrl,

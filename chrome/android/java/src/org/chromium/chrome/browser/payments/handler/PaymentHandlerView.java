@@ -128,11 +128,6 @@ import org.chromium.ui.base.ActivityWindowAndroid;
     }
 
     @Override
-    public boolean wrapContentEnabled() {
-        return false;
-    }
-
-    @Override
     public int getSheetContentDescriptionStringId() {
         return R.string.payment_handler_sheet_description;
     }

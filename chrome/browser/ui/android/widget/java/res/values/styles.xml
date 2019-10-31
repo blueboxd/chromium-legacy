@@ -14,6 +14,9 @@
         <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
         <item name="android:paddingEnd">?android:attr/listPreferredItemPaddingEnd</item>
     </style>
+    <style name="ListActionButton" parent="@style/TextButton">
+        <item name="android:minHeight">48dp</item>
+    </style>
 
     <style name="OverflowMenuAnim">
         <item name="android:windowEnterAnimation">@anim/menu_enter</item>

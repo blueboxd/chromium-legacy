@@ -26,7 +26,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.weblayer.shell.WebLayerShellActivity;
+import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.io.File;
 
@@ -36,12 +36,13 @@ import java.io.File;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class InputTypesTest {
     @Rule
-    public WebLayerShellActivityTestRule mActivityTestRule = new WebLayerShellActivityTestRule();
+    public InstrumentationActivityTestRule mActivityTestRule =
+            new InstrumentationActivityTestRule();
 
     private EmbeddedTestServer mTestServer;
     private File mTempFile;
 
-    private class FileIntentInterceptor implements WebLayerShellActivity.IntentInterceptor {
+    private class FileIntentInterceptor implements InstrumentationActivity.IntentInterceptor {
         public Intent mLastIntent;
 
         private Intent mResponseIntent;
@@ -82,7 +83,7 @@ public class InputTypesTest {
         mTestServer.addDefaultHandlers("weblayer/test/data");
         Assert.assertTrue(mTestServer.start(0));
 
-        WebLayerShellActivity activity =
+        InstrumentationActivity activity =
                 mActivityTestRule.launchShellWithUrl(mTestServer.getURL("/input_types.html"));
         mTempFile = File.createTempFile("file", null);
         activity.setIntentInterceptor(mIntentInterceptor);

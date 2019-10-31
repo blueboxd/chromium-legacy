@@ -40,8 +40,10 @@ void MockDeviceTest::SetUp() {
           std::move(video_capture_system));
 #endif  // defined(OS_CHROMEOS)
 
-  mock_factory_binding_ = std::make_unique<mojo::Binding<mojom::DeviceFactory>>(
-      mock_device_factory_adapter_.get(), mojo::MakeRequest(&factory_));
+  mock_factory_receiver_ =
+      std::make_unique<mojo::Receiver<mojom::DeviceFactory>>(
+          mock_device_factory_adapter_.get(),
+          factory_.BindNewPipeAndPassReceiver());
 
   media::VideoCaptureDeviceDescriptor mock_descriptor;
   mock_descriptor.device_id = "MockDeviceId";
@@ -56,7 +58,8 @@ void MockDeviceTest::SetUp() {
   // CreateDevice.
   wait_loop.Run();
   factory_->CreateDevice(mock_descriptor.device_id,
-                         mojo::MakeRequest(&device_proxy_), base::DoNothing());
+                         device_remote_.BindNewPipeAndPassReceiver(),
+                         base::DoNothing());
 
   requested_settings_.requested_format.frame_size = gfx::Size(800, 600);
   requested_settings_.requested_format.frame_rate = 15;

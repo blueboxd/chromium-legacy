@@ -49,7 +49,7 @@ class VideoCaptureServiceTest : public testing::Test {
 
   std::unique_ptr<VideoCaptureServiceImpl> service_impl_;
   mojo::Remote<mojom::VideoCaptureService> service_remote_;
-  mojom::DeviceFactoryPtr factory_;
+  mojo::Remote<mojom::DeviceFactory> factory_;
   base::MockCallback<mojom::DeviceFactory::GetDeviceInfosCallback>
       device_info_receiver_;
 

@@ -59,9 +59,6 @@ class WebRemoteFrameClient {
   // Set or clear the inert property on the remote frame.
   virtual void SetIsInert(bool) {}
 
-  // Set inherited effective touch action on the remote frame.
-  virtual void SetInheritedEffectiveTouchAction(blink::WebTouchAction) {}
-
   // Toggles render throttling for the remote frame.
   virtual void UpdateRenderThrottlingStatus(bool is_throttled,
                                             bool subtree_throttled) {}

@@ -45,7 +45,7 @@ public class ChromeBackgroundService extends GcmTaskService {
 
                 case OfflinePageUtils.TASK_TAG:
                     // Offline pages are migrating to BackgroundTaskScheduler, therefore getting
-                    // a task through ChromeBackgroundSerivce should cause a rescheduling using
+                    // a task through ChromeBackgroundService should cause a rescheduling using
                     // the new component.
                     rescheduleOfflinePages();
                     break;

@@ -185,10 +185,10 @@ class MockInputHandler : public cc::InputHandler {
   }
   void set_is_scrolling_root(bool is) { is_scrolling_root_ = is; }
 
-  MOCK_CONST_METHOD3(GetSnapFlingInfo,
-                     bool(const gfx::Vector2dF& natural_displacement,
-                          gfx::Vector2dF* initial_offset,
-                          gfx::Vector2dF* target_offset));
+  MOCK_METHOD3(GetSnapFlingInfoAndSetSnapTarget,
+               bool(const gfx::Vector2dF& natural_displacement,
+                    gfx::Vector2dF* initial_offset,
+                    gfx::Vector2dF* target_offset));
 
  private:
   bool is_scrolling_root_ = true;
@@ -207,8 +207,7 @@ class MockSynchronousInputHandler : public SynchronousInputHandler {
                     float max_page_scale_factor));
 };
 
-class MockInputHandlerProxyClient
-    : public InputHandlerProxyClient {
+class MockInputHandlerProxyClient : public InputHandlerProxyClient {
  public:
   MockInputHandlerProxyClient() {}
   ~MockInputHandlerProxyClient() override {}
@@ -257,7 +256,8 @@ class MockInputHandlerProxyClientWithDidAnimateForInput
   DISALLOW_COPY_AND_ASSIGN(MockInputHandlerProxyClientWithDidAnimateForInput);
 };
 
-WebTouchPoint CreateWebTouchPoint(WebTouchPoint::State state, float x,
+WebTouchPoint CreateWebTouchPoint(WebTouchPoint::State state,
+                                  float x,
                                   float y) {
   WebTouchPoint point;
   point.state = state;
@@ -389,9 +389,7 @@ class InputHandlerProxyTest
     input_handler_->smooth_scroll_enabled_ = value;
   }
 
-  base::HistogramTester& histogram_tester() {
-    return histogram_tester_;
-  }
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  protected:
   void GestureScrollStarted();
@@ -840,7 +838,7 @@ void InputHandlerProxyTest::FlingAndSnap() {
       -40;  // -Y means scroll down - i.e. in the +Y direction.
   gesture_.data.scroll_update.inertial_phase =
       blink::WebGestureEvent::InertialPhaseState::kMomentum;
-  EXPECT_CALL(mock_input_handler_, GetSnapFlingInfo(_, _, _))
+  EXPECT_CALL(mock_input_handler_, GetSnapFlingInfoAndSetSnapTarget(_, _, _))
       .WillOnce(DoAll(testing::SetArgPointee<1>(gfx::Vector2dF(0, 0)),
                       testing::SetArgPointee<2>(gfx::Vector2dF(0, 100)),
                       testing::Return(true)));
@@ -857,7 +855,8 @@ TEST_P(InputHandlerProxyTest, SnapFlingIgnoresFollowingGSUAndGSE) {
   // snap position.
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
 
-  EXPECT_CALL(mock_input_handler_, GetSnapFlingInfo(_, _, _)).Times(0);
+  EXPECT_CALL(mock_input_handler_, GetSnapFlingInfoAndSetSnapTarget(_, _, _))
+      .Times(0);
   EXPECT_CALL(mock_input_handler_, ScrollBy(_)).Times(0);
   EXPECT_EQ(expected_disposition_,
             input_handler_->RouteToTypeSpecificHandler(gesture_));

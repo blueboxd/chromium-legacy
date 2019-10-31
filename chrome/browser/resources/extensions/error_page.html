@@ -140,7 +140,7 @@
           <cr-icon-button class="icon-arrow-back no-overlap" id="closeButton"
               aria-label="$i18n{back}" on-click="onCloseButtonTap_">
           </cr-icon-button>
-          <span>$i18n{errorsPageHeading}</span>
+          <span role="heading" aria-level="2">$i18n{errorsPageHeading}</span>
           <cr-button on-click="onClearAllTap_" hidden="[[!entries_.length]]">
             $i18n{clearAll}
           </cr-button>
@@ -174,14 +174,16 @@
                   <div class="devtools-controls">
                     <template is="dom-if"
                         if="[[computeIsRuntimeError_(item)]]">
-                      <div class="details-heading cr-title-text">
+                      <div class="details-heading cr-title-text" role="heading"
+                          aria-level="3">
                         $i18n{errorContext}
                       </div>
                       <span class="context-url">
                         [[getContextUrl_(
                             item, '$i18nPolymer{errorContextUnknown}')]]
                       </span>
-                      <div class="details-heading cr-title-text">
+                      <div class="details-heading cr-title-text" role="heading"
+                          aria-level="3">
                         $i18n{stackTrace}
                       </div>
                       <ul class="stack-trace-container"

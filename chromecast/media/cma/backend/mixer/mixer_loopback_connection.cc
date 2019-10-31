@@ -61,14 +61,6 @@ bool MixerLoopbackConnection::HandleAudioData(char* data,
   return true;
 }
 
-bool MixerLoopbackConnection::HandleAudioBuffer(
-    scoped_refptr<net::IOBuffer> buffer,
-    char* data,
-    int size,
-    int64_t timestamp) {
-  return true;
-}
-
 void MixerLoopbackConnection::OnConnectionError() {
   if (error_callback_) {
     std::move(error_callback_).Run();

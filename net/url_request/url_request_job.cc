@@ -271,16 +271,21 @@ void URLRequestJob::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
 }
 
+// When making changes to this method that affect the returned referrer value,
+// also update blink::SecurityPolicy::GenerateReferrer accordingly.
 // static
-GURL URLRequestJob::ComputeReferrerForPolicy(URLRequest::ReferrerPolicy policy,
-                                             const GURL& original_referrer,
-                                             const GURL& destination) {
+GURL URLRequestJob::ComputeReferrerForPolicy(
+    URLRequest::ReferrerPolicy policy,
+    const GURL& original_referrer,
+    const base::Optional<url::Origin>& initiator,
+    const GURL& destination) {
   bool secure_referrer_but_insecure_destination =
       original_referrer.SchemeIsCryptographic() &&
       !destination.SchemeIsCryptographic();
   url::Origin referrer_origin = url::Origin::Create(original_referrer);
+  url::Origin initiator_origin = initiator.value_or(referrer_origin);
   bool same_origin =
-      referrer_origin.IsSameOriginWith(url::Origin::Create(destination));
+      initiator_origin.IsSameOriginWith(url::Origin::Create(destination));
   switch (policy) {
     case URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
       return secure_referrer_but_insecure_destination ? GURL()
@@ -386,9 +391,10 @@ void URLRequestJob::NotifyHeadersComplete() {
     base::WeakPtr<URLRequestJob> weak_this(weak_factory_.GetWeakPtr());
 
     RedirectInfo redirect_info = RedirectInfo::ComputeRedirectInfo(
-        request_->method(), request_->url(), request_->site_for_cookies(),
-        request_->first_party_url_policy(), request_->referrer_policy(),
-        request_->referrer(), http_status_code, new_location,
+        request_->method(), request_->url(), request_->initiator(),
+        request_->site_for_cookies(), request_->first_party_url_policy(),
+        request_->referrer_policy(), request_->referrer(), http_status_code,
+        new_location,
         net::RedirectUtil::GetReferrerPolicyHeader(
             request_->response_headers()),
         insecure_scheme_was_upgraded, CopyFragmentOnRedirect(new_location));

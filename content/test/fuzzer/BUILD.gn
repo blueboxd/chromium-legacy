@@ -110,7 +110,7 @@ fuzzer_test("devtools_protocol_encoding_cbor_fuzzer") {
   ]
   deps = [
     "//base",
-    "//third_party/inspector_protocol:encoding",
+    "//third_party/inspector_protocol:crdtp",
   ]
   seed_corpus =
       "../../browser/devtools/devtools_protocol_encoding_cbor_fuzzer_corpus/"
@@ -124,7 +124,7 @@ fuzzer_test("devtools_protocol_encoding_json_fuzzer") {
   ]
   deps = [
     "//base",
-    "//third_party/inspector_protocol:encoding",
+    "//third_party/inspector_protocol:crdtp",
   ]
   seed_corpus = "//third_party/grpc/src/test/core/json/corpus/"
 }
@@ -134,7 +134,7 @@ fuzzer_test("inspector_fuzzer") {
     "../../browser/devtools/inspector_fuzzer.cc",
   ]
   deps = [
-    "//third_party/inspector_protocol:encoding",
+    "//third_party/inspector_protocol:crdtp",
   ]
   seed_corpus = "//components/cbor/reader_fuzzer_corpus/"
 }

@@ -26,6 +26,14 @@ struct RemoteDevice {
   static std::string DerivePublicKey(const std::string& device_id);
 
   std::string user_id;
+
+  // The Instance ID is the primary identifier for devices using CryptAuth v2,
+  // but the Instance ID is not present in CryptAuth v1. This string is empty
+  // for devices not using CryptAuth v2 Enrollment and v2 DeviceSync.
+  // TODO(https://crbug.com/1019206): Remove comments when v1 DeviceSync is
+  // deprecated.
+  std::string instance_id;
+
   std::string name;
   std::string pii_free_name;
   std::string public_key;
@@ -37,6 +45,7 @@ struct RemoteDevice {
   RemoteDevice();
   RemoteDevice(
       const std::string& user_id,
+      const std::string& instance_id,
       const std::string& name,
       const std::string& pii_free_name,
       const std::string& public_key,

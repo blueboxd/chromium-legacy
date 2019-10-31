@@ -26,10 +26,11 @@ namespace declarative_net_request {
 namespace dnr_api = api::declarative_net_request;
 
 RequestAction CreateRequestActionForTesting(RequestAction::Type type,
-                                            int rule_id,
+                                            uint32_t rule_id,
+                                            uint32_t rule_priority,
                                             dnr_api::SourceType source_type,
                                             const ExtensionId& extension_id) {
-  return RequestAction(type, rule_id, source_type, extension_id);
+  return RequestAction(type, rule_id, rule_priority, source_type, extension_id);
 }
 
 // Note: This is not declared in the anonymous namespace so that we can use it
@@ -48,7 +49,8 @@ bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
 
   auto get_members_tuple = [](const RequestAction& action) {
     return std::tie(action.type, action.redirect_url, action.rule_id,
-                    action.source_type, action.extension_id);
+                    action.rule_priority, action.source_type,
+                    action.extension_id);
   };
 
   return get_members_tuple(lhs) == get_members_tuple(rhs) &&
@@ -84,6 +86,7 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action) {
                                  : std::string("nullopt"))
          << "\n";
   output << "|rule_id| " << action.rule_id << "\n";
+  output << "|rule_priority| " << action.rule_priority << "\n";
   output << "|source_type| "
          << api::declarative_net_request::ToString(action.source_type) << "\n";
   output << "|extension_id| " << action.extension_id << "\n";

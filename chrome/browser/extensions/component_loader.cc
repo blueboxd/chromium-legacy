@@ -543,7 +543,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif  // BUILDFLAG(ENABLE_NACL)
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    if (base::FeatureList::IsEnabled(
+    if (!base::FeatureList::IsEnabled(
             chromeos::features::kDisableOfficeEditingComponentApp)) {
       Add(IDR_QUICKOFFICE_MANIFEST,
           base::FilePath(

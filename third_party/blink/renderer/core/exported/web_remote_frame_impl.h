@@ -33,19 +33,23 @@ class CORE_EXPORT WebRemoteFrameImpl final
  public:
   static WebRemoteFrameImpl* Create(WebTreeScopeType,
                                     WebRemoteFrameClient*,
-                                    InterfaceRegistry*);
+                                    InterfaceRegistry*,
+                                    AssociatedInterfaceProvider*);
   static WebRemoteFrameImpl* CreateMainFrame(WebView*,
                                              WebRemoteFrameClient*,
                                              InterfaceRegistry*,
+                                             AssociatedInterfaceProvider*,
                                              WebFrame* opener);
   static WebRemoteFrameImpl* CreateForPortal(WebTreeScopeType,
                                              WebRemoteFrameClient*,
                                              InterfaceRegistry*,
+                                             AssociatedInterfaceProvider*,
                                              const WebElement& portal_element);
 
   WebRemoteFrameImpl(WebTreeScopeType,
                      WebRemoteFrameClient*,
-                     InterfaceRegistry*);
+                     InterfaceRegistry*,
+                     AssociatedInterfaceProvider*);
   ~WebRemoteFrameImpl() override;
 
   // WebFrame methods:
@@ -70,6 +74,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                     FrameOwnerElementType,
                                     WebRemoteFrameClient*,
                                     blink::InterfaceRegistry*,
+                                    AssociatedInterfaceProvider*,
                                     WebFrame* opener) override;
   void SetCcLayer(cc::Layer*,
                   bool prevent_contents_opaque_changes,
@@ -123,7 +128,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   friend class RemoteFrameClientImpl;
 
   void SetCoreFrame(RemoteFrame*);
-  void ApplyReplicatedFeaturePolicyHeader();
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to call these on a WebRemoteFrameImpl.
@@ -137,9 +141,8 @@ class CORE_EXPORT WebRemoteFrameImpl final
   Member<RemoteFrameClientImpl> frame_client_;
   Member<RemoteFrame> frame_;
 
-  ParsedFeaturePolicy feature_policy_header_;
-
   InterfaceRegistry* const interface_registry_;
+  AssociatedInterfaceProvider* const associated_interface_provider_;
 
   // Oilpan: WebRemoteFrameImpl must remain alive until close() is called.
   // Accomplish that by keeping a self-referential Persistent<>. It is

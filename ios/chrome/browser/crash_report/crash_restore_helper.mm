@@ -19,6 +19,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/infobars/confirm_infobar_metrics_recorder.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
@@ -114,6 +115,7 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
+  void InfoBarDismissed() override;
   int GetIconId() const override;
 
   // The CrashRestoreHelper to restore sessions.
@@ -165,10 +167,19 @@ base::string16 SessionCrashedInfoBarDelegate::GetButtonLabel(
 }
 
 bool SessionCrashedInfoBarDelegate::Accept() {
+  [ConfirmInfobarMetricsRecorder
+      recordConfirmInfobarEvent:MobileMessagesConfirmInfobarEvents::Accepted
+          forInfobarConfirmType:InfobarConfirmType::kInfobarConfirmTypeRestore];
   // Accept should return NO if the infobar is going to be dismissed.
   // Since |restoreSessionAfterCrash| returns YES if a single NTP tab is closed,
   // which will dismiss the infobar, invert the bool.
   return ![crash_restore_helper_ restoreSessionsAfterCrash];
+}
+
+void SessionCrashedInfoBarDelegate::InfoBarDismissed() {
+  [ConfirmInfobarMetricsRecorder
+      recordConfirmInfobarEvent:MobileMessagesConfirmInfobarEvents::Dismissed
+          forInfobarConfirmType:InfobarConfirmType::kInfobarConfirmTypeRestore];
 }
 
 int SessionCrashedInfoBarDelegate::GetIconId() const {
@@ -210,6 +221,9 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
       InfoBarManagerImpl::FromWebState(webState);
   _restorer = restorer;
   SessionCrashedInfoBarDelegate::Create(infoBarManager, self);
+  [ConfirmInfobarMetricsRecorder
+      recordConfirmInfobarEvent:MobileMessagesConfirmInfobarEvents::Presented
+          forInfobarConfirmType:InfobarConfirmType::kInfobarConfirmTypeRestore];
   _infoBarBridge.reset(new InfoBarManagerObserverBridge(infoBarManager, self));
 }
 

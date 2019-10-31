@@ -35,8 +35,6 @@ OverviewButtonTray::OverviewButtonTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       icon_(new views::ImageView()),
       scoped_session_observer_(this) {
-  SetInkDropMode(InkDropMode::ON);
-
   gfx::ImageSkia image = gfx::CreateVectorIcon(
       kShelfOverviewIcon, ShelfConfig::Get()->shelf_icon_color());
   icon_->SetImage(image);

@@ -4,9 +4,12 @@
 
 package org.chromium.weblayer_private;
 
-import org.chromium.base.annotations.CalledByNative;
+import androidx.annotation.NonNull;
+
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.weblayer_private.aidl.BrowsingDataType;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.IProfile;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
@@ -16,13 +19,11 @@ import java.util.List;
 
 @JNINamespace("weblayer")
 public final class ProfileImpl extends IProfile.Stub {
-    private final List<Runnable> mCurrentClearDataCallbacks = new ArrayList<>();
-    private final List<Runnable> mPendingClearDataCallbacks = new ArrayList<>();
     private long mNativeProfile;
     private Runnable mOnDestroyCallback;
 
     ProfileImpl(String path, Runnable onDestroyCallback) {
-        mNativeProfile = ProfileImplJni.get().createProfile(this, path);
+        mNativeProfile = ProfileImplJni.get().createProfile(path);
         mOnDestroyCallback = onDestroyCallback;
     }
 
@@ -35,29 +36,31 @@ public final class ProfileImpl extends IProfile.Stub {
     }
 
     @Override
-    public void clearBrowsingData(IObjectWrapper completionCallback) {
+    public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes,
+            @NonNull IObjectWrapper completionCallback) {
         Runnable callback = ObjectWrapper.unwrap(completionCallback, Runnable.class);
-        if (!mCurrentClearDataCallbacks.isEmpty()) {
-            // Already running a clear data job. Will have to re-run the job once it's completed,
-            // because new data may have been stored.
-            mPendingClearDataCallbacks.add(callback);
-            return;
-        }
-        mCurrentClearDataCallbacks.add(callback);
-        ProfileImplJni.get().clearBrowsingData(mNativeProfile);
+        ProfileImplJni.get().clearBrowsingData(mNativeProfile, mapBrowsingDataTypes(dataTypes),
+                callback);
     }
 
-    @CalledByNative
-    private void onBrowsingDataCleared() {
-        for (Runnable callback : mCurrentClearDataCallbacks) {
-            callback.run();
+    private static  @ImplBrowsingDataType int[] mapBrowsingDataTypes(
+            @NonNull @BrowsingDataType int[] dataTypes) {
+        // Convert data types coming from aidl to the ones accepted by C++ (ImplBrowsingDataType is
+        // generated from a C++ enum).
+        List<Integer> convertedTypes = new ArrayList<>();
+        for (int aidlType : dataTypes) {
+            switch (aidlType) {
+                case BrowsingDataType.COOKIES_AND_SITE_DATA:
+                    convertedTypes.add(ImplBrowsingDataType.COOKIES_AND_SITE_DATA);
+                    break;
+                case BrowsingDataType.CACHE:
+                    convertedTypes.add(ImplBrowsingDataType.CACHE);
+                    break;
+                default:
+                    break;  // Skip unrecognized values for forward compatibility.
+            }
         }
-        mCurrentClearDataCallbacks.clear();
-        if (!mPendingClearDataCallbacks.isEmpty()) {
-            mCurrentClearDataCallbacks.addAll(mPendingClearDataCallbacks);
-            mPendingClearDataCallbacks.clear();
-            ProfileImplJni.get().clearBrowsingData(mNativeProfile);
-        }
+        return CollectionUtil.integerListToIntArray(convertedTypes);
     }
 
     long getNativeProfile() {
@@ -66,8 +69,9 @@ public final class ProfileImpl extends IProfile.Stub {
 
     @NativeMethods
     interface Natives {
-        long createProfile(ProfileImpl caller, String path);
+        long createProfile(String path);
         void deleteProfile(long profile);
-        void clearBrowsingData(long nativeProfileImpl);
+        void clearBrowsingData(long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes,
+                Runnable callback);
     }
 }

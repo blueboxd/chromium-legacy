@@ -185,7 +185,7 @@ TEST_F(ExternalProviderImplTest, InAppPayments) {
 
   base::RunLoop run_loop;
   service_->set_external_updates_finished_callback_for_test(
-      run_loop.QuitClosure());
+      run_loop.QuitWhenIdleClosure());
   service_->CheckForExternalUpdates();
   run_loop.Run();
 
@@ -201,7 +201,7 @@ TEST_F(ExternalProviderImplTest, BlockedExternalUserProviders) {
 
   base::RunLoop run_loop;
   service_->set_external_updates_finished_callback_for_test(
-      run_loop.QuitClosure());
+      run_loop.QuitWhenIdleClosure());
   service_->CheckForExternalUpdates();
   run_loop.Run();
 
@@ -214,7 +214,7 @@ TEST_F(ExternalProviderImplTest, NotBlockedExternalUserProviders) {
 
   base::RunLoop run_loop;
   service_->set_external_updates_finished_callback_for_test(
-      run_loop.QuitClosure());
+      run_loop.QuitWhenIdleClosure());
   service_->CheckForExternalUpdates();
   run_loop.Run();
 

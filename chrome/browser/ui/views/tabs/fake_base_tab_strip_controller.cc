@@ -179,9 +179,9 @@ void FakeBaseTabStripController::CreateNewTabWithLocation(
 void FakeBaseTabStripController::StackedLayoutMaybeChanged() {
 }
 
-void FakeBaseTabStripController::OnStartedDraggingTabs() {}
+void FakeBaseTabStripController::OnStartedDragging() {}
 
-void FakeBaseTabStripController::OnStoppedDraggingTabs() {}
+void FakeBaseTabStripController::OnStoppedDragging() {}
 
 void FakeBaseTabStripController::OnKeyboardFocusedTabChanged(
     base::Optional<int> index) {}

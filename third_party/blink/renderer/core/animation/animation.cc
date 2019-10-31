@@ -537,9 +537,6 @@ void Animation::PostCommit(double timeline_time) {
 }
 
 void Animation::NotifyCompositorStartTime(double timeline_time) {
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand,
-                                    kDoNotSetCompositorPending);
-
   if (compositor_state_) {
     DCHECK_EQ(compositor_state_->pending_action, kStart);
     DCHECK(!compositor_state_->start_time);
@@ -557,7 +554,7 @@ void Animation::NotifyCompositorStartTime(double timeline_time) {
       // Unlikely, but possible.
       // FIXME: Depending on what changed above this might still be pending.
       // Maybe...
-      current_time_pending_ = false;
+      NotifyStartTime(timeline_time);
       return;
     }
 
@@ -572,24 +569,85 @@ void Animation::NotifyCompositorStartTime(double timeline_time) {
   NotifyStartTime(timeline_time);
 }
 
-void Animation::NotifyStartTime(double timeline_time) {
-  if (Playing()) {
-    DCHECK(!start_time_);
-    DCHECK(hold_time_.has_value());
+// Refer to Step 8.3 'pending play task' in
+// https://drafts.csswg.org/web-animations/#playing-an-animation-section.
+void Animation::NotifyStartTime(double ready_time) {
+  DCHECK(!IsNull(ready_time));
+  DCHECK(start_time_ || hold_time_);
+  pending_play_ = false;
+  current_time_pending_ = false;
 
-    if (playback_rate_ == 0) {
-      SetStartTimeInternal(timeline_time);
-    } else {
-      SetStartTimeInternal(timeline_time +
-                           CurrentTimeInternal() / -playback_rate_);
+  if (Playing()) {
+    // Update hold and start time.
+    if (timeline_ && timeline_->IsScrollTimeline()) {
+      // Special handling for scroll timelines.  The start time is always zero
+      // when the animation is playing. This forces the current time to match
+      // the timeline time. TODO(crbug.com/916117): Resolve in spec.
+      start_time_ = 0;
+      ApplyPendingPlaybackRate();
+      if (playback_rate_ != 0)
+        hold_time_ = base::nullopt;
+    } else if (hold_time_) {
+      // A: If animation’s hold time is resolved,
+      // A.1. Apply any pending playback rate on animation.
+      // A.2. Let new start time be the result of evaluating:
+      //        ready time - hold time / playback rate for animation.
+      //      If the playback rate is zero, let new start time be simply ready
+      //      time.
+      // A.3. Set the start time of animation to new start time.
+      // A.4. If animation’s playback rate is not 0, make animation’s hold time
+      //      unresolved.
+      ApplyPendingPlaybackRate();
+      if (playback_rate_ == 0) {
+        start_time_ = ready_time;
+      } else {
+        start_time_ = ready_time - hold_time_.value() / playback_rate_;
+        hold_time_ = base::nullopt;
+      }
+    } else if (start_time_ && active_playback_rate_) {
+      // B: If animation’s start time is resolved and animation has a pending
+      //    playback rate,
+      // B.1. Let current time to match be the result of evaluating:
+      //        (ready time - start time) × playback rate for animation.
+      // B.2 Apply any pending playback rate on animation.
+      // B.3 If animation’s playback rate is zero, let animation’s hold time be
+      //     current time to match.
+      // B.4 Let new start time be the result of evaluating:
+      //       ready time - current time to match / playback rate for animation.
+      //     If the playback rate is zero, let new start time be simply ready
+      //     time.
+      // B.5 Set the start time of animation to new start time.
+      double current_time_to_match =
+          (ready_time - start_time_.value()) * active_playback_rate_.value();
+      ApplyPendingPlaybackRate();
+      if (playback_rate_ == 0) {
+        hold_time_ = current_time_to_match;
+        start_time_ = ready_time;
+      } else {
+        start_time_ = ready_time - current_time_to_match / playback_rate_;
+      }
     }
 
-    // FIXME: This avoids marking this animation as outdated needlessly when a
-    // start time is notified, but we should refactor how outdating works to
-    // avoid this.
-    ClearOutdated();
-    current_time_pending_ = false;
+    // 8.4 Resolve animation’s current ready promise with animation.
+    if (ready_promise_ &&
+        ready_promise_->GetState() == AnimationPromise::kPending)
+      ResolvePromiseMaybeAsync(ready_promise_.Get());
+
+    // 8.5 Run the procedure to update an animation’s finished state for
+    //     animation with the did seek flag set to false, and the synchronously
+    //     notify flag set to false.
+    UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
   }
+
+  // Avoid marking this animation as outdated needlessly when a start time is
+  // notified.  TODO(crbug.com/960944): Remove the need for clearing the
+  // outdated flag once PlayStateUpdateScope and UpdateCurrentTimingState have
+  // been removed.
+  ClearOutdated();
+
+  // TODO(crbug.com/960944): deprecate use of these flags.
+  internal_play_state_ = CalculatePlayState();
+  animation_play_state_ = CalculateAnimationPlayState();
 }
 
 bool Animation::Affects(const Element& element,

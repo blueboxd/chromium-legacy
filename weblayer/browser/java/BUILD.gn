@@ -15,6 +15,12 @@ generate_locale_config_srcjar("weblayer_locale_config") {
   java_package = weblayer_locale_config_java_package
 }
 
+java_cpp_enum("generated_enums") {
+  sources = [
+    "//weblayer/public/profile.h",
+  ]
+}
+
 android_library("java") {
   java_files = [
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
@@ -49,7 +55,10 @@ android_library("java") {
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//ui/android:ui_java",
   ]
-  srcjar_deps = [ ":weblayer_locale_config" ]
+  srcjar_deps = [
+    ":weblayer_locale_config",
+    ":generated_enums",
+  ]
   jar_excluded_patterns = [ "*/LocaleConfig.class" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
@@ -78,6 +87,11 @@ android_library("client_java") {
     "org/chromium/weblayer_private/aidl/WebLayerVersion.java",
     "org/chromium/weblayer_private/aidl/APICallException.java",
     "org/chromium/weblayer_private/aidl/BrowserFragmentArgs.java",
+    "org/chromium/weblayer_private/aidl/BrowsingDataType.java",
+  ]
+
+  deps = [
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
 
   srcjar_deps = [ ":aidl" ]

@@ -178,8 +178,8 @@ inline ModelType ModelTypeFromInt(int i) {
 // Instead of using entries from this enum directly, you'll usually want to get
 // them via ModelTypeHistogramValue(model_type).
 // These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. When you add a new entry, also update
-// SyncModelTypes in enums.xml
+// numeric values should never be reused. When you add a new entry or when you
+// deprecate an existing one, also update SyncModelTypes in enums.xml
 enum class ModelTypeForHistograms {
   kUnspecified = 0,
   kTopLevelFolder = 1,

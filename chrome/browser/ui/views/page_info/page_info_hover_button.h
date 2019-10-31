@@ -62,7 +62,6 @@ class PageInfoHoverButton : public HoverButton {
   views::Label* subtitle() const { return subtitle_; }
   views::View* icon_view() const { return icon_view_; }
   // HoverButton:
-  void Layout() override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   gfx::Size CalculatePreferredSize() const override;

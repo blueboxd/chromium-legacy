@@ -24,7 +24,7 @@ import org.chromium.ui.base.WindowAndroid;
 @JNINamespace("thin_webview::android")
 public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
     private final CompositorView mCompositorView;
-    private final long mNativeThinWebViewImpl;
+    private long mNativeThinWebViewImpl;
     private WebContents mWebContents;
     private View mContentView;
 
@@ -66,6 +66,7 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
         mCompositorView.destroy();
         if (mNativeThinWebViewImpl != 0) {
             ThinWebViewImplJni.get().destroy(mNativeThinWebViewImpl, ThinWebViewImpl.this);
+            mNativeThinWebViewImpl = 0;
         }
     }
 

@@ -30,6 +30,9 @@ extern const wchar_t kRegMdmSupportsMultiUser[];
 // Allow sign in using normal consumer accounts.
 extern const wchar_t kRegMdmAllowConsumerAccounts[];
 
+// Enables force password reset option in forgot password flow.
+extern const wchar_t kRegMdmEnableForcePasswordReset[];
+
 // Password lsa store key prefix.
 extern const wchar_t kUserPasswordLsaStoreKeyPrefix[];
 

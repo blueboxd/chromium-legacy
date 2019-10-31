@@ -535,7 +535,6 @@
     },
     {
       name: "DecodeJpeg420ImagesToYUV",
-      status: "test"
     },
     {
       name: "DecodeLossyWebPImagesToYUV",
@@ -1119,7 +1118,6 @@
     },
     {
       name: "OffMainThreadCSSPaint",
-      status: "stable",
     },
     {
       name: "OffscreenCanvasCommit",

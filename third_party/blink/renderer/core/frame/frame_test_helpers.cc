@@ -38,6 +38,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -272,7 +273,8 @@ WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
       WebTreeScopeType::kDocument, client,
-      InterfaceRegistry::GetEmptyInterfaceRegistry());
+      InterfaceRegistry::GetEmptyInterfaceRegistry(),
+      AssociatedInterfaceProvider::GetEmptyAssociatedInterfaceProvider());
   client->Bind(frame, std::move(owned_client));
   return frame;
 }
@@ -318,7 +320,9 @@ WebRemoteFrameImpl* CreateRemoteChild(
   auto* frame = ToWebRemoteFrameImpl(parent.CreateRemoteChild(
       WebTreeScopeType::kDocument, name, FramePolicy(),
       FrameOwnerElementType::kIframe, client,
-      InterfaceRegistry::GetEmptyInterfaceRegistry(), nullptr));
+      InterfaceRegistry::GetEmptyInterfaceRegistry(),
+      AssociatedInterfaceProvider::GetEmptyAssociatedInterfaceProvider(),
+      nullptr));
   client->Bind(frame, std::move(owned_client));
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUniqueOpaque();
@@ -426,7 +430,9 @@ WebViewImpl* WebViewHelper::InitializeRemote(
       web_remote_frame_client, owned_web_remote_frame_client);
   WebRemoteFrameImpl* frame = WebRemoteFrameImpl::CreateMainFrame(
       web_view_, web_remote_frame_client,
-      InterfaceRegistry::GetEmptyInterfaceRegistry(), nullptr);
+      InterfaceRegistry::GetEmptyInterfaceRegistry(),
+      AssociatedInterfaceProvider::GetEmptyAssociatedInterfaceProvider(),
+      nullptr);
   web_remote_frame_client->Bind(frame,
                                 std::move(owned_web_remote_frame_client));
   if (!security_origin)

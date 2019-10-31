@@ -68,11 +68,7 @@ void ResetShortcutsOnBlockingThread() {
        location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
     ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
         static_cast<ShellUtil::ShortcutLocation>(location),
-        ShellUtil::CURRENT_USER,
-        chrome_exe,
-        true,
-        NULL,
-        NULL);
+        ShellUtil::CURRENT_USER, chrome_exe, true, nullptr, nullptr);
   }
 }
 

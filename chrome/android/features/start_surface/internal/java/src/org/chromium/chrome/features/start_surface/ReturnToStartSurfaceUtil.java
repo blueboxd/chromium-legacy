@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 
 /**
  * This is a utility class for managing the start surface when returning to Chrome.
@@ -36,7 +37,11 @@ public final class ReturnToStartSurfaceUtil {
     }
 
     private static SharedPreferences getSharedPreferences() {
-        return ContextUtils.getApplicationContext().getSharedPreferences(
-                START_SURFACE_PREF_FILE_NAME, Context.MODE_PRIVATE);
+        // On some versions of Android, creating the Preferences object involves a disk read (to
+        // check if the Preferences directory exists, not even to read the actual Preferences).
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return ContextUtils.getApplicationContext().getSharedPreferences(
+                    START_SURFACE_PREF_FILE_NAME, Context.MODE_PRIVATE);
+        }
     }
 }

@@ -133,15 +133,15 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // |left_window_|. All the other window will open on the right side.
   aura::Window* GetDefaultSnappedWindow();
 
-  // Gets the window bounds according to the snap state |snap_state| and the
-  // divider position |divider_position_|. If |adjust_for_minimum_size| is true,
-  // the returned snapped window bounds are adjusted to its minimum size if the
-  // desired bounds are smaller than its minumum bounds. Note: the snapped
-  // window bounds can't be pushed outside of the workspace area.
-  gfx::Rect GetSnappedWindowBoundsInParent(SnapPosition snap_position,
-                                           bool adjust_for_minimum_size = true);
-  gfx::Rect GetSnappedWindowBoundsInScreen(SnapPosition snap_position,
-                                           bool adjust_for_minimum_size = true);
+  // Gets snapped bounds based on |snap_position| and |divider_position_|,
+  // adjusted to accommodate the minimum size of |window_for_minimum_size| if
+  // |window_for_minimum_size| is not null.
+  gfx::Rect GetSnappedWindowBoundsInParent(
+      SnapPosition snap_position,
+      aura::Window* window_for_minimum_size);
+  gfx::Rect GetSnappedWindowBoundsInScreen(
+      SnapPosition snap_position,
+      aura::Window* window_for_minimum_size);
 
   // Gets the default value of |divider_position_|.
   int GetDefaultDividerPosition() const;
@@ -234,6 +234,10 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   friend class SplitViewOverviewSessionTest;
   class TabDraggedWindowObserver;
   class DividerSnapAnimation;
+
+  // |window| should be |left_window_| or |right_window_|, and this function
+  // returns |LEFT| or |RIGHT| accordingly.
+  SnapPosition GetPositionOfSnappedWindow(const aura::Window* window) const;
 
   // |position| should be |LEFT| or |RIGHT|, and this function returns
   // |left_window_| or |right_window_| accordingly.
@@ -379,11 +383,11 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                          SnapPosition desired_snap_position,
                          const gfx::Point& last_location_in_screen);
 
-  // Gets the snap position for a dragged window, according to the last
+  // Computes the snap position for a dragged window, based on the last
   // mouse/gesture event location. Called by |EndWindowDragImpl| when
   // desired_snap_position is |NONE| but because split view is already active,
   // the dragged window needs to be snapped anyway.
-  SplitViewController::SnapPosition GetSnapPosition(
+  SplitViewController::SnapPosition ComputeSnapPosition(
       const gfx::Point& last_location_in_screen);
 
   // Root window the split view is in.

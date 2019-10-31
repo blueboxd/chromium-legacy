@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/common/chrome_features.h"
@@ -70,7 +71,7 @@ class FakeTabController : public TabController {
   bool IsLastVisibleTab(const Tab* tab) const override { return false; }
   bool IsFocusInTabs() const override { return false; }
   void MaybeStartDrag(
-      Tab* tab,
+      TabSlotView* source,
       const ui::LocatedEvent& event,
       const ui::ListSelectionModel& original_selection) override {}
   void ContinueDrag(views::View* view, const ui::LocatedEvent& event) override {

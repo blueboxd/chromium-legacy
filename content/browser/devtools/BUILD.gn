@@ -126,25 +126,25 @@ proto_library("devtools_background_services_proto") {
 source_set("inspector_protocol_encoding_test") {
   testonly = true
   sources = [
-    "../../../third_party/inspector_protocol/encoding/encoding_test.cc",
+    "../../../third_party/inspector_protocol/crdtp/encoding_test.cc",
   ]
   deps = [
     "//base",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/inspector_protocol:encoding",
+    "//third_party/inspector_protocol:crdtp",
   ]
 }
 
 source_set("inspector_protocol_bindings_test") {
   testonly = true
   sources = [
-    "../../../third_party/inspector_protocol/bindings/bindings_test.cc",
+    "../../../third_party/inspector_protocol/crdtp/bindings_test.cc",
   ]
   deps = [
     "//base",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/inspector_protocol:bindings",
+    "//third_party/inspector_protocol:crdtp",
   ]
 }

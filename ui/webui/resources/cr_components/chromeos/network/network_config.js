@@ -303,6 +303,12 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private */
+    configRequiresPassphrase_: {
+      type: Boolean,
+      computed: 'computeConfigRequiresPassphrase_(mojoType_, securityType_)',
+    },
   },
 
   observers: [
@@ -1205,7 +1211,7 @@ Polymer({
       if (!typeConfig.wifi.ssid) {
         return false;
       }
-      if (this.configRequiresPassphrase_()) {
+      if (this.configRequiresPassphrase_) {
         const passphrase = typeConfig.wifi.passphrase;
         if (!passphrase || passphrase.length < this.MIN_PASSPHRASE_LENGTH) {
           return false;
@@ -1605,14 +1611,16 @@ Polymer({
   },
 
   /**
+   * @param {chromeos.networkConfig.mojom.NetworkType|undefined} mojoType
+   * @param {chromeos.networkConfig.mojom.SecurityType|undefined} securityType
    * @return {boolean}
    * @private
    */
-  configRequiresPassphrase_: function() {
+  computeConfigRequiresPassphrase_: function(mojoType, securityType) {
     // Note: 'Passphrase' is only used by WiFi; Ethernet uses EAP.Password.
-    return this.mojoType_ == mojom.NetworkType.kWiFi &&
-        (this.securityType_ == mojom.SecurityType.kWepPsk ||
-         this.securityType_ == mojom.SecurityType.kWpaPsk);
+    return mojoType == mojom.NetworkType.kWiFi &&
+        (securityType == mojom.SecurityType.kWepPsk ||
+         securityType == mojom.SecurityType.kWpaPsk);
   },
 
   /**

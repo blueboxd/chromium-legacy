@@ -27,6 +27,7 @@ class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
 
   // PageActionIconView::Delegate:
   SkColor GetPageActionInkDropColor() const override;
+  float GetPageActionInkDropVisibleOpacity() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
   std::unique_ptr<views::Border> CreatePageActionIconBorder() const override;
 

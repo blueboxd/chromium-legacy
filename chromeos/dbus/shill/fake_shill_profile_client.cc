@@ -105,7 +105,9 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
     case FakeShillSimulatedResult::kSuccess:
       break;
     case FakeShillSimulatedResult::kFailure:
-      error_callback.Run("Error", "Simulated failure");
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(error_callback, "Error", "Simulated failure"));
       return;
     case FakeShillSimulatedResult::kTimeout:
       // No callbacks get executed and the caller should eventually timeout.
@@ -114,12 +116,16 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
 
   ProfileProperties* profile = GetProfile(profile_path, error_callback);
   if (!profile) {
-    error_callback.Run("Error.InvalidProfile", profile_path.value());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(error_callback, "Error.InvalidProfile",
+                                  profile_path.value()));
     return;
   }
 
   if (!profile->entries.RemoveWithoutPathExpansion(entry_path, nullptr)) {
-    error_callback.Run("Error.InvalidProfileEntry", entry_path);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(error_callback, "Error.InvalidProfileEntry",
+                                  entry_path));
     return;
   }
 

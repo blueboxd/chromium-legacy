@@ -52,3 +52,18 @@ Polymer({
     this.$.dialog.close();
   },
 });
+
+/**
+ * 'printer-dialog-error' is the error container for dialogs.
+ */
+Polymer({
+  is: 'printer-dialog-error',
+
+  properties: {
+    /** The error text to be displayed on the dialog. */
+    errorText: {
+      type: String,
+      value: '',
+    },
+  },
+});

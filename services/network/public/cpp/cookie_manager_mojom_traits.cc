@@ -52,8 +52,6 @@ EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite>::ToMojom(
       return network::mojom::CookieSameSite::LAX_MODE;
     case net::CookieSameSite::STRICT_MODE:
       return network::mojom::CookieSameSite::STRICT_MODE;
-    case net::CookieSameSite::EXTENDED_MODE:
-      return network::mojom::CookieSameSite::EXTENDED_MODE;
     default:
       break;
   }
@@ -76,9 +74,6 @@ bool EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite>::FromMojom(
       return true;
     case network::mojom::CookieSameSite::STRICT_MODE:
       *output = net::CookieSameSite::STRICT_MODE;
-      return true;
-    case network::mojom::CookieSameSite::EXTENDED_MODE:
-      *output = net::CookieSameSite::EXTENDED_MODE;
       return true;
     default:
       break;

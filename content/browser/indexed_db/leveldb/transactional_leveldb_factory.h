@@ -5,9 +5,12 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_FACTORY_H_
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_FACTORY_H_
 
+#include <stddef.h>
+#include <memory>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/indexed_db/scopes/leveldb_state.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
 #include "content/common/content_export.h"
 
 namespace leveldb {

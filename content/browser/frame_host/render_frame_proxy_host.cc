@@ -248,9 +248,15 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
 void RenderFrameProxyHost::OnAssociatedInterfaceRequest(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  frame_proxy_host_associated_receiver_.Bind(
-      mojo::PendingAssociatedReceiver<mojom::RenderFrameProxyHost>(
-          std::move(handle)));
+  if (interface_name == mojom::RenderFrameProxyHost::Name_) {
+    frame_proxy_host_associated_receiver_.Bind(
+        mojo::PendingAssociatedReceiver<mojom::RenderFrameProxyHost>(
+            std::move(handle)));
+  } else if (interface_name == blink::mojom::RemoteFrameHost::Name_) {
+    remote_frame_host_receiver_.Bind(
+        mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrameHost>(
+            std::move(handle)));
+  }
 }
 
 blink::AssociatedInterfaceProvider*
@@ -291,6 +297,12 @@ RenderFrameProxyHost::GetAssociatedRemoteFrame() {
   if (!remote_frame_)
     GetRemoteAssociatedInterfaces()->GetInterface(&remote_frame_);
   return remote_frame_;
+}
+
+void RenderFrameProxyHost::SetInheritedEffectiveTouchAction(
+    cc::TouchAction touch_action) {
+  cross_process_frame_connector_->OnSetInheritedEffectiveTouchAction(
+      touch_action);
 }
 
 void RenderFrameProxyHost::UpdateOpener() {

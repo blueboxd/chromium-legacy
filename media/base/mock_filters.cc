@@ -7,9 +7,9 @@
 #include "base/logging.h"
 
 using ::testing::_;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SaveArg;
-using ::testing::StrictMock;
 
 MATCHER(NotEmpty, "") {
   return !arg.empty();
@@ -244,12 +244,13 @@ void MockCdmFactory::Create(
     before_creation_cb_.Run();
 
   // Create and return a new MockCdm. Keep a pointer to the created CDM so
-  // that tests can access it. Calls to GetCdmContext() can be ignored.
-  scoped_refptr<MockCdm> cdm = new StrictMock<MockCdm>(
+  // that tests can access it. Test cases that expect calls on MockCdm should
+  // get the MockCdm via MockCdmFactory::GetCreatedCdm() and explicitly specify
+  // expectations using EXPECT_CALL.
+  scoped_refptr<MockCdm> cdm = new NiceMock<MockCdm>(
       key_system, security_origin, session_message_cb, session_closed_cb,
       session_keys_change_cb, session_expiration_update_cb);
   created_cdm_ = cdm.get();
-  EXPECT_CALL(*created_cdm_.get(), GetCdmContext());
   cdm_created_cb.Run(std::move(cdm), "");
 }
 

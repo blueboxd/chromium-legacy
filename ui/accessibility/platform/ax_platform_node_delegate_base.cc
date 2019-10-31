@@ -445,6 +445,10 @@ bool AXPlatformNodeDelegateBase::IsWebContent() const {
   return false;
 }
 
+bool AXPlatformNodeDelegateBase::HasVisibleCaretOrSelection() const {
+  return false;
+}
+
 AXPlatformNode* AXPlatformNodeDelegateBase::GetTargetNodeForRelation(
     ax::mojom::IntAttribute attr) {
   DCHECK(IsNodeIdIntAttribute(attr));

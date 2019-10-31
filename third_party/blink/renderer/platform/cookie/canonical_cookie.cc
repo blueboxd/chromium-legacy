@@ -24,8 +24,6 @@ STATIC_ASSERT_ENUM(net::CookieSameSite::LAX_MODE,
                    network::mojom::CookieSameSite::LAX_MODE);
 STATIC_ASSERT_ENUM(net::CookieSameSite::STRICT_MODE,
                    network::mojom::CookieSameSite::STRICT_MODE);
-STATIC_ASSERT_ENUM(net::CookieSameSite::EXTENDED_MODE,
-                   network::mojom::CookieSameSite::EXTENDED_MODE);
 
 STATIC_ASSERT_ENUM(net::CookiePriority::COOKIE_PRIORITY_LOW,
                    network::mojom::CookiePriority::LOW);

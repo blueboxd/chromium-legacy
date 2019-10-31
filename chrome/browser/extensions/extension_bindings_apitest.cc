@@ -584,38 +584,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(SessionTabHelper::IdForTab(new_tab).id(), result_tab_id);
 }
 
-enum UserActivationType {
-  kUserActivationV1,
-  kUserActivationV2,
-};
-
-class ExtensionBindingsUserGestureTest
-    : public ExtensionBindingsApiTest,
-      public ::testing::WithParamInterface<UserActivationType> {
- public:
-  ExtensionBindingsUserGestureTest() {}
-  ~ExtensionBindingsUserGestureTest() override {}
-
-  void SetUp() override {
-    UserActivationType user_activation_type = GetParam();
-    if (user_activation_type == kUserActivationV2) {
-      scoped_feature_list_.InitAndEnableFeature(features::kUserActivationV2);
-    } else {
-      DCHECK_EQ(kUserActivationV1, user_activation_type);
-      scoped_feature_list_.InitAndDisableFeature(features::kUserActivationV2);
-    }
-
-    ExtensionBindingsApiTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBindingsUserGestureTest);
-};
-
 // Verifies that user gestures are carried through extension messages.
-IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
                        UserGestureFromExtensionMessageTest) {
   TestExtensionDir test_dir;
   test_dir.WriteManifest(
@@ -680,7 +650,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
 
 // Verifies that user gestures from API calls are active when the callback is
 // triggered.
-IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
                        UserGestureInExtensionAPICallback) {
   TestExtensionDir test_dir;
   test_dir.WriteManifest(
@@ -730,7 +700,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
 // Tests that a web page can consume a user gesture after an extension sends and
 // receives a reply during the same user gesture.
 // Regression test for https://crbug.com/921141.
-IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
                        WebUserGestureAfterMessagingCallback) {
   TestExtensionDir test_dir;
   test_dir.WriteManifest(
@@ -794,7 +764,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
 // Tests that a web page can consume a user gesture after an extension calls a
 // method and receives the response in the callback.
 // Regression test for https://crbug.com/921141.
-IN_PROC_BROWSER_TEST_P(ExtensionBindingsUserGestureTest,
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
                        WebUserGestureAfterApiCallback) {
   TestExtensionDir test_dir;
   test_dir.WriteManifest(
@@ -964,11 +934,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
   ASSERT_TRUE(LoadExtension(extension_dir.UnpackedPath()));
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
-
-INSTANTIATE_TEST_SUITE_P(,
-                         ExtensionBindingsUserGestureTest,
-                         ::testing::Values(kUserActivationV1,
-                                           kUserActivationV2));
 
 }  // namespace
 }  // namespace extensions

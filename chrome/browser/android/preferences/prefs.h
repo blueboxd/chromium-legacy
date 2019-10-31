@@ -41,6 +41,17 @@ enum Pref {
   SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED,
   PASSWORD_MANAGER_ONBOARDING_STATE,
   SEARCH_SUGGEST_ENABLED,
+  REMEMBER_PASSWORDS_ENABLED,
+  PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED,
+  PASSWORD_MANAGER_LEAK_DETECTION_ENABLED,
+  SUPERVISED_USER_SAFE_SITES,
+  DEFAULT_SUPERVISED_USER_FILTERING_BEHAVIOR,
+  SUPERVISED_USER_ID,
+  SUPERVISED_USER_CUSTODIAN_EMAIL,
+  SUPERVISED_USER_SECOND_CUSTODIAN_NAME,
+  SUPERVISED_USER_SECOND_CUSTODIAN_EMAIL,
+  CLICKED_UPDATE_MENU_ITEM,
+  LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -71,6 +82,17 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kSafeBrowsingExtendedReportingOptInAllowed,
     password_manager::prefs::kPasswordManagerOnboardingState,
     prefs::kSearchSuggestEnabled,
+    password_manager::prefs::kCredentialsEnableService,
+    password_manager::prefs::kCredentialsEnableAutosignin,
+    password_manager::prefs::kPasswordLeakDetectionEnabled,
+    prefs::kSupervisedUserSafeSites,
+    prefs::kDefaultSupervisedUserFilteringBehavior,
+    prefs::kSupervisedUserId,
+    prefs::kSupervisedUserCustodianEmail,
+    prefs::kSupervisedUserSecondCustodianName,
+    prefs::kSupervisedUserSecondCustodianEmail,
+    prefs::kClickedUpdateMenuItem,
+    prefs::kLatestVersionWhenClickedUpdateMenuItem,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

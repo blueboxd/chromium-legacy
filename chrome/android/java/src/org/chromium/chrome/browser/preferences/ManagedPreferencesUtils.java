@@ -251,7 +251,9 @@ public class ManagedPreferencesUtils {
 
     private static @StringRes int getManagedByParentStringRes() {
         boolean singleParentIsManager =
-                PrefServiceBridge.getInstance().getSupervisedUserSecondCustodianName().isEmpty();
+                PrefServiceBridge.getInstance()
+                        .getString(Pref.SUPERVISED_USER_SECOND_CUSTODIAN_NAME)
+                        .isEmpty();
         return singleParentIsManager ? R.string.managed_by_your_parent
                                      : R.string.managed_by_your_parents;
     }

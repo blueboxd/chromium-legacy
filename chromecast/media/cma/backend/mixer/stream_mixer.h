@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread.h"
@@ -75,6 +76,10 @@ class StreamMixer {
 
   int num_output_channels() const { return num_output_channels_; }
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
+    return mixer_task_runner_;
+  }
+
   // Adds an input source to the mixer. The |input_source| must live at least
   // until input_source->FinalizeAudioPlayback() is called.
   void AddInput(MixerInput::Source* input_source);
@@ -89,10 +94,6 @@ class StreamMixer {
   void AddAudioOutputRedirector(
       std::unique_ptr<AudioOutputRedirector> redirector);
   void RemoveAudioOutputRedirector(AudioOutputRedirector* redirector);
-  void ModifyAudioOutputRedirection(
-      AudioOutputRedirector* redirector,
-      std::vector<std::pair<AudioContentType, std::string>>
-          stream_match_patterns);
 
   // Sets the volume multiplier for the given content |type|.
   void SetVolume(AudioContentType type, float level);
@@ -187,8 +188,7 @@ class StreamMixer {
   std::unique_ptr<MixerPipeline> mixer_pipeline_;
   std::unique_ptr<base::Thread> mixer_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
-  std::unique_ptr<base::Thread> io_thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   std::unique_ptr<ThreadHealthChecker> health_checker_;
 
   std::unique_ptr<InterleavedChannelMixer> loopback_channel_mixer_;

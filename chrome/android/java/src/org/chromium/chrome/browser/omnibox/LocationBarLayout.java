@@ -994,6 +994,11 @@ public class LocationBarLayout extends FrameLayout
                 handleUrlFocusAnimation(mUrlHasFocus);
             } else {
                 mUrlBar.requestFocus();
+
+                // Explicitly show soft keyboard (crbug.com/981682).
+                InputMethodManager imm = (InputMethodManager) getContext().getSystemService(
+                        Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(mUrlBar, 0);
             }
         } else {
             assert pastedText == null;

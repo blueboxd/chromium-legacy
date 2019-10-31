@@ -26,6 +26,9 @@ class MockScrollbar : public FakeScrollbar {
                       /*has_thumb*/ true,
                       /*is_overlay*/ false) {}
   MOCK_METHOD2(PaintPart, void(PaintCanvas* canvas, ScrollbarPart part));
+
+ private:
+  ~MockScrollbar() override = default;
 };
 
 TEST(PaintedScrollbarLayerTest, NeedsPaint) {
@@ -36,9 +39,9 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   auto layer_tree_host = FakeLayerTreeHost::Create(
       &fake_client_, &task_graph_runner_, animation_host.get());
 
-  MockScrollbar* scrollbar = new MockScrollbar();
+  auto scrollbar = base::MakeRefCounted<MockScrollbar>();
   scoped_refptr<PaintedScrollbarLayer> scrollbar_layer =
-      PaintedScrollbarLayer::Create(std::unique_ptr<Scrollbar>(scrollbar));
+      PaintedScrollbarLayer::Create(scrollbar);
 
   scrollbar_layer->SetIsDrawable(true);
   scrollbar_layer->SetBounds(gfx::Size(100, 100));
@@ -55,13 +58,13 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   EXPECT_CALL(*scrollbar, PaintPart(_, THUMB)).Times(1);
   EXPECT_CALL(*scrollbar, PaintPart(_, TRACK)).Times(1);
   scrollbar_layer->Update();
-  Mock::VerifyAndClearExpectations(scrollbar);
+  Mock::VerifyAndClearExpectations(scrollbar.get());
 
   // The next update will paint nothing because the first update caused a paint.
   EXPECT_CALL(*scrollbar, PaintPart(_, THUMB)).Times(0);
   EXPECT_CALL(*scrollbar, PaintPart(_, TRACK)).Times(0);
   scrollbar_layer->Update();
-  Mock::VerifyAndClearExpectations(scrollbar);
+  Mock::VerifyAndClearExpectations(scrollbar.get());
 
   // Enable the thumb.
   EXPECT_CALL(*scrollbar, PaintPart(_, THUMB)).Times(1);
@@ -69,7 +72,7 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   scrollbar->set_needs_paint_thumb(true);
   scrollbar->set_needs_paint_track(false);
   scrollbar_layer->Update();
-  Mock::VerifyAndClearExpectations(scrollbar);
+  Mock::VerifyAndClearExpectations(scrollbar.get());
 
   // Enable the track.
   EXPECT_CALL(*scrollbar, PaintPart(_, THUMB)).Times(0);
@@ -77,7 +80,7 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   scrollbar->set_needs_paint_thumb(false);
   scrollbar->set_needs_paint_track(true);
   scrollbar_layer->Update();
-  Mock::VerifyAndClearExpectations(scrollbar);
+  Mock::VerifyAndClearExpectations(scrollbar.get());
 }
 
 }  // namespace

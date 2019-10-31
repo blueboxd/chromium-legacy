@@ -15,7 +15,8 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class FragmentRestoreTest {
     @Rule
-    public WebLayerShellActivityTestRule mActivityTestRule = new WebLayerShellActivityTestRule();
+    public InstrumentationActivityTestRule mActivityTestRule =
+            new InstrumentationActivityTestRule();
 
     @Test
     @SmallTest

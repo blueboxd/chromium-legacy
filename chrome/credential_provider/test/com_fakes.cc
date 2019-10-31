@@ -166,6 +166,96 @@ IMPL_IUNKOWN_NOQI_WITH_REF(FakeCredentialProviderEvents)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+FakeCredentialProviderCredentialEvents::
+    FakeCredentialProviderCredentialEvents() {}
+
+FakeCredentialProviderCredentialEvents::
+    ~FakeCredentialProviderCredentialEvents() {}
+
+HRESULT FakeCredentialProviderCredentialEvents::AppendFieldComboBoxItem(
+    ICredentialProviderCredential* pcpc,
+    DWORD dwFieldID,
+    LPCWSTR pszItem) {
+  return S_OK;
+}
+
+HRESULT FakeCredentialProviderCredentialEvents::DeleteFieldComboBoxItem(
+    ICredentialProviderCredential* pcpc,
+    DWORD dwFieldID,
+    DWORD dwItem) {
+  return S_OK;
+}
+
+HRESULT FakeCredentialProviderCredentialEvents::OnCreatingWindow(
+    HWND* phwndOwner) {
+  return S_OK;
+}
+
+HRESULT FakeCredentialProviderCredentialEvents::SetFieldBitmap(
+    ICredentialProviderCredential* pcpc,
+    DWORD dwFieldID,
+    HBITMAP hbmp) {
+  return S_OK;
+}
+
+HRESULT FakeCredentialProviderCredentialEvents::SetFieldCheckbox(
+    ICredentialProviderCredential* pcpc,
+    DWORD dwFieldID,
+    BOOL bChecked,
+    LPCWSTR pszLabel) {
+  return S_OK;
+}
+
+HRESULT FakeCredentialProviderCredentialEvents::SetFieldComboBoxSelectedItem(
+    ICredentialProviderCredential* pcpc,
+    DWORD dwFieldID,
+    DWORD dwSelectedItem) {
+  return S_OK;
+}
+
+HRESULT FakeCredentialProviderCredentialEvents::SetFieldInteractiveState(
+    ICredentialProviderCredential* pcpc,
+    DWORD dwFieldID,
+    CREDENTIAL_PROVIDER_FIELD_INTERACTIVE_STATE cpfis) {
+  return S_OK;
+}
+
+HRESULT FakeCredentialProviderCredentialEvents::SetFieldState(
+    ICredentialProviderCredential* pcpc,
+    DWORD dwFieldID,
+    CREDENTIAL_PROVIDER_FIELD_STATE cpfs) {
+  field_states_[pcpc][dwFieldID] = cpfs;
+  return S_OK;
+}
+
+HRESULT FakeCredentialProviderCredentialEvents::SetFieldString(
+    ICredentialProviderCredential* pcpc,
+    DWORD dwFieldID,
+    LPCWSTR psz) {
+  return S_OK;
+}
+
+HRESULT FakeCredentialProviderCredentialEvents::SetFieldSubmitButton(
+    ICredentialProviderCredential* pcpc,
+    DWORD dwFieldID,
+    DWORD dwAdjacentTo) {
+  return S_OK;
+}
+
+CREDENTIAL_PROVIDER_FIELD_STATE
+FakeCredentialProviderCredentialEvents::GetFieldState(
+    ICredentialProviderCredential* pcpc,
+    DWORD dwFieldID) {
+  DCHECK(field_states_.count(pcpc));
+  DCHECK(field_states_[pcpc].count(dwFieldID));
+
+  return field_states_[pcpc][dwFieldID];
+}
+
+IMPL_IUNKOWN_NOQI_WITH_REF(FakeCredentialProviderCredentialEvents)
+
+///////////////////////////////////////////////////////////////////////////////
+
 CTestGaiaCredentialProvider::CTestGaiaCredentialProvider() {
   // Set functions for creating test credentials of all types.
   SetCredentialCreatorFunctionsForTesting(

@@ -5,12 +5,14 @@
 #ifndef UI_PLATFORM_WINDOW_COMMON_PLATFORM_WINDOW_DEFAULTS_H_
 #define UI_PLATFORM_WINDOW_COMMON_PLATFORM_WINDOW_DEFAULTS_H_
 
+#include "base/component_export.h"
+
 namespace ui {
 
 // Returns true if PlatformWindow should use test configuration. Will return
 // false by default, unless test::EnableTestConfigForPlatformWindows() has been
 // called, then it will return true.
-bool UseTestConfigForPlatformWindows();
+COMPONENT_EXPORT(PLATFORM_WINDOW_COMMON) bool UseTestConfigForPlatformWindows();
 
 namespace test {
 
@@ -22,6 +24,7 @@ namespace test {
 // various tests, otherwise the call to Show() blocks because it never receives
 // the MapNotify event. It is unclear why this is necessary, but might be
 // related to calls to XInitThreads().
+COMPONENT_EXPORT(PLATFORM_WINDOW_COMMON)
 void EnableTestConfigForPlatformWindows();
 
 }  // namespace test

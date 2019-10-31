@@ -155,6 +155,7 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
   set_ink_drop_visible_opacity(
       ShelfConfig::Get()->shelf_ink_drop_visible_opacity());
 
+  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetInstallFocusRingOnFocus(true);
   focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());

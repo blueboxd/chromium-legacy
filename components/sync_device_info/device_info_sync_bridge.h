@@ -150,7 +150,10 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   std::string local_cache_guid_;
   std::string local_personalizable_device_name_;
   ClientIdToSpecifics all_data_;
+
+  // TODO(crbug.com/1019689): Replace hardware info with a custom data type.
   base::SysInfo::HardwareInfo local_hardware_info_;
+
   base::Optional<SyncMode> sync_mode_;
 
   // Registered observers, not owned.

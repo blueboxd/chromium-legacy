@@ -59,14 +59,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
-namespace {
-
-cc::Layer* GraphicsLayerToCcLayer(blink::GraphicsLayer* layer) {
-  return layer ? layer->CcLayer() : nullptr;
-}
-
-}  // namespace
-
 namespace blink {
 
 ScrollingCoordinator::ScrollingCoordinator(Page* page) : page_(page) {}
@@ -257,8 +249,8 @@ static scoped_refptr<cc::ScrollbarLayerBase> CreateScrollbarLayer(
     Scrollbar& scrollbar,
     float device_scale_factor) {
   ScrollbarTheme& theme = scrollbar.GetTheme();
-  auto scrollbar_delegate =
-      std::make_unique<ScrollbarLayerDelegate>(scrollbar, device_scale_factor);
+  auto scrollbar_delegate = base::MakeRefCounted<ScrollbarLayerDelegate>(
+      scrollbar, device_scale_factor);
   scoped_refptr<cc::ScrollbarLayerBase> scrollbar_layer;
   if (theme.UsesOverlayScrollbars() && theme.UsesNinePatchThumbResource()) {
     scrollbar_layer =
@@ -335,15 +327,15 @@ cc::ScrollbarLayerBase* ScrollingCoordinator::GetScrollbarLayer(
 }
 
 void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
-    ScrollableArea* scrollable_area,
+    PaintLayerScrollableArea* scrollable_area,
     ScrollbarOrientation orientation) {
   if (!page_ || !page_->MainFrame())
     return;
 
   GraphicsLayer* scrollbar_graphics_layer =
       orientation == kHorizontalScrollbar
-          ? scrollable_area->LayerForHorizontalScrollbar()
-          : scrollable_area->LayerForVerticalScrollbar();
+          ? scrollable_area->GraphicsLayerForHorizontalScrollbar()
+          : scrollable_area->GraphicsLayerForVerticalScrollbar();
 
   if (scrollbar_graphics_layer) {
     Scrollbar& scrollbar = orientation == kHorizontalScrollbar
@@ -378,8 +370,7 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
                         std::move(new_scrollbar_layer));
     }
 
-    cc::Layer* scroll_layer =
-        GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
+    cc::Layer* scroll_layer = scrollable_area->LayerForScrolling();
     SetupScrollbarLayer(scrollbar_graphics_layer, scrollbar_layer,
                         scroll_layer);
 
@@ -395,69 +386,53 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
 
 bool ScrollingCoordinator::UpdateCompositedScrollOffset(
     ScrollableArea* scrollable_area) {
-  GraphicsLayer* scroll_layer = scrollable_area->LayerForScrolling();
-  if (!scroll_layer)
-    return false;
-
-  cc::Layer* cc_layer =
-      GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
-  if (!cc_layer)
-    return false;
-
-  cc_layer->SetScrollOffset(
+  cc::Layer* scroll_layer = scrollable_area->LayerForScrolling();
+  scroll_layer->SetScrollOffset(
       static_cast<gfx::ScrollOffset>(scrollable_area->ScrollPosition()));
   return true;
 }
 
 void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
-    ScrollableArea* scrollable_area) {
+    PaintLayerScrollableArea* scrollable_area) {
   if (!page_ || !page_->MainFrame())
     return;
 
-  cc::Layer* cc_layer =
-      GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
+  cc::Layer* cc_layer = scrollable_area->LayerForScrolling();
   if (cc_layer) {
+    auto* graphics_layer = scrollable_area->GraphicsLayerForScrolling();
+    DCHECK(graphics_layer);
     // TODO(bokan): This method shouldn't be resizing the layer geometry. That
     // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
+    DCHECK(scrollable_area->Layer());
+    DCHECK(scrollable_area->GetLayoutBox());
     PhysicalOffset subpixel_accumulation =
-        scrollable_area->Layer()
-            ? scrollable_area->Layer()->SubpixelAccumulation()
-            : PhysicalOffset();
-    PhysicalSize contents_size =
-        scrollable_area->GetLayoutBox()
-            ? PhysicalSize(scrollable_area->GetLayoutBox()->ScrollWidth(),
-                           scrollable_area->GetLayoutBox()->ScrollHeight())
-            : PhysicalSize(scrollable_area->ContentsSize());
+        scrollable_area->Layer()->SubpixelAccumulation();
+    PhysicalSize contents_size(scrollable_area->GetLayoutBox()->ScrollWidth(),
+                               scrollable_area->GetLayoutBox()->ScrollHeight());
     IntSize scroll_contents_size =
         PhysicalRect(subpixel_accumulation, contents_size).PixelSnappedSize();
 
-    if (scrollable_area != &page_->GetVisualViewport()) {
-      IntSize container_size = scrollable_area->VisibleContentRect().Size();
-      cc_layer->SetScrollable(gfx::Size(container_size));
+    IntSize container_size = scrollable_area->VisibleContentRect().Size();
+    cc_layer->SetScrollable(gfx::Size(container_size));
 
-      // The scrolling contents layer must be at least as large as its clip.
-      // The visual viewport is special because the size of its scrolling
-      // content depends on the page scale factor. Its scrollable content is
-      // the layout viewport which is sized based on the minimum allowed page
-      // scale so it actually can be smaller than its clip.
-      scroll_contents_size = scroll_contents_size.ExpandedTo(container_size);
+    // The scrolling contents layer must be at least as large as its clip.
+    // The visual viewport is special because the size of its scrolling
+    // content depends on the page scale factor. Its scrollable content is
+    // the layout viewport which is sized based on the minimum allowed page
+    // scale so it actually can be smaller than its clip.
+    scroll_contents_size = scroll_contents_size.ExpandedTo(container_size);
 
-      // VisualViewport scrolling may involve pinch zoom and gets routed through
-      // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
-      // since it needs to be set in tandem with the page scale delta.
-      cc_layer->set_did_scroll_callback(WTF::BindRepeating(
-          &ScrollingCoordinator::DidScroll, WrapWeakPersistent(this)));
-    }
+    cc_layer->set_did_scroll_callback(WTF::BindRepeating(
+        &ScrollingCoordinator::DidScroll, WrapWeakPersistent(this)));
 
     // This call has to go through the GraphicsLayer method to preserve
     // invalidation code there.
-    scrollable_area->LayerForScrolling()->SetSize(
-        static_cast<gfx::Size>(scroll_contents_size));
+    graphics_layer->SetSize(gfx::Size(scroll_contents_size));
   }
   if (cc::ScrollbarLayerBase* scrollbar_layer =
           GetScrollbarLayer(scrollable_area, kHorizontalScrollbar)) {
     if (GraphicsLayer* horizontal_scrollbar_layer =
-            scrollable_area->LayerForHorizontalScrollbar()) {
+            scrollable_area->GraphicsLayerForHorizontalScrollbar()) {
       SetupScrollbarLayer(horizontal_scrollbar_layer, scrollbar_layer,
                           cc_layer);
     }
@@ -465,24 +440,13 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
   if (cc::ScrollbarLayerBase* scrollbar_layer =
           GetScrollbarLayer(scrollable_area, kVerticalScrollbar)) {
     if (GraphicsLayer* vertical_scrollbar_layer =
-            scrollable_area->LayerForVerticalScrollbar()) {
+            scrollable_area->GraphicsLayerForVerticalScrollbar()) {
       SetupScrollbarLayer(vertical_scrollbar_layer, scrollbar_layer, cc_layer);
     }
   }
 
-  CompositorAnimationTimeline* timeline;
-  // LocalFrameView::CompositorAnimationTimeline() can indirectly return
-  // m_programmaticScrollAnimatorTimeline if it does not have its own
-  // timeline.
-  if (scrollable_area->IsPaintLayerScrollableArea()) {
-    timeline = ToPaintLayerScrollableArea(scrollable_area)
-                   ->GetCompositorAnimationTimeline();
-  } else {
-    timeline = programmatic_scroll_animator_timeline_.get();
-  }
-  scrollable_area->LayerForScrollingDidChange(timeline);
-
-  return;
+  scrollable_area->LayerForScrollingDidChange(
+      scrollable_area->GetCompositorAnimationTimeline());
 }
 
 void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
@@ -647,9 +611,7 @@ bool ScrollingCoordinator::FrameScrollerIsDirty(
     return true;
 
   if (cc::Layer* scroll_layer =
-          frame_view ? GraphicsLayerToCcLayer(
-                           frame_view->LayoutViewport()->LayerForScrolling())
-                     : nullptr) {
+          frame_view->LayoutViewport()->LayerForScrolling()) {
     return static_cast<gfx::Size>(
                frame_view->LayoutViewport()->ContentsSize()) !=
            scroll_layer->bounds();

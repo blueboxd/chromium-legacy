@@ -23,6 +23,12 @@ namespace gles2 {
 class GLES2Interface;
 
 }  // namespace gles2
+
+namespace raster {
+
+class RasterInterface;
+
+}  // namespace raster
 }  // namespace gpu
 
 namespace blink {
@@ -192,6 +198,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;
+  gpu::raster::RasterInterface* RasterInterface() const;
   GrContext* GetGrContext() const;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper() {
     return context_provider_wrapper_;

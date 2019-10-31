@@ -286,6 +286,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void UpdateStickyKeysFromPref();
   void UpdateSwitchAccessFromPref();
   void UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand command);
+  void UpdateSwitchAccessAutoScanEnabledFromPref();
+  void UpdateSwitchAccessAutoScanSpeedFromPref();
+  void UpdateSwitchAccessAutoScanKeyboardSpeedFromPref();
   void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
 

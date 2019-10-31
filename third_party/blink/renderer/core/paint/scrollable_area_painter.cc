@@ -170,16 +170,16 @@ void ScrollableAreaPainter::PaintOverflowControls(
   adjusted_cull_rect.MoveBy(-paint_offset);
 
   if (GetScrollableArea().HorizontalScrollbar() &&
-      !GetScrollableArea().LayerForHorizontalScrollbar()) {
+      !GetScrollableArea().GraphicsLayerForHorizontalScrollbar()) {
     GetScrollableArea().HorizontalScrollbar()->Paint(context,
                                                      adjusted_cull_rect);
   }
   if (GetScrollableArea().VerticalScrollbar() &&
-      !GetScrollableArea().LayerForVerticalScrollbar()) {
+      !GetScrollableArea().GraphicsLayerForVerticalScrollbar()) {
     GetScrollableArea().VerticalScrollbar()->Paint(context, adjusted_cull_rect);
   }
 
-  if (!GetScrollableArea().LayerForScrollCorner()) {
+  if (!GetScrollableArea().GraphicsLayerForScrollCorner()) {
     // We fill our scroll corner with white if we have a scrollbar that doesn't
     // run all the way up to the edge of the box.
     PaintScrollCorner(context, paint_offset, paint_info.GetCullRect());
@@ -232,7 +232,8 @@ PaintLayerScrollableArea& ScrollableAreaPainter::GetScrollableArea() const {
 
 const DisplayItemClient& ScrollableAreaPainter::DisplayItemClientForCorner()
     const {
-  if (const auto* graphics_layer = GetScrollableArea().LayerForScrollCorner())
+  if (const auto* graphics_layer =
+          GetScrollableArea().GraphicsLayerForScrollCorner())
     return *graphics_layer;
   return *GetScrollableArea().GetLayoutBox();
 }

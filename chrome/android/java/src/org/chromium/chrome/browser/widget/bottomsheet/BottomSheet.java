@@ -155,8 +155,8 @@ public class BottomSheet
     /** The desired height of a content that has just been shown or whose height was invalidated. */
     private static final float HEIGHT_UNSPECIFIED = -1.0f;
 
-    /** Invalid height ratio. When specified, a default value is used. */
-    private static final float INVALID_HEIGHT_RATIO = -1.0f;
+    /** A flag to force the small screen state of the bottom sheet. */
+    private static Boolean sIsSmallScreenForTesting;
 
     /** The interpolator that the height animator uses. */
     private final Interpolator mInterpolator = new DecelerateInterpolator(1.0f);
@@ -299,15 +299,6 @@ public class BottomSheet
         boolean swipeToDismissEnabled();
 
         /**
-         * @return Whether the bottom sheet should wrap its content, i.e. its height in the FULL
-         *         state is the minimum height required such that the content is visible. If this
-         *         behavior is enabled, the HALF state of the sheet is disabled.
-         */
-        default boolean wrapContentEnabled() {
-            return false;
-        }
-
-        /**
          * @return Whether this content owns its lifecycle. If false, the content will be hidden
          *         when the user navigates away from the page or switches tab.
          */
@@ -327,30 +318,34 @@ public class BottomSheet
          * @return The height of the peeking state for the content in px or one of the values in
          *         {@link HeightMode}. If {@link HeightMode#DEFAULT}, the system expects
          *         {@link #getToolbarView} to be non-null, where it will then use its height as the
-         *         peeking height.
+         *         peeking height. This method cannot return {@link HeightMode#WRAP_CONTENT}.
          */
         default int getPeekHeight() {
             return HeightMode.DEFAULT;
         }
 
         /**
-         * TODO(jinsukkim): Revise the API in favor of those specifying the height and its behavior
-         *         for each state.
-         * @return Height of the sheet in half state with respect to the container height.
-         *         This is INVALID_HEIGHT_RATIO by default, which lets the BottomSheet use
-         *         a predefined value ({@link #HALF_HEIGHT_RATIO}).
+         * @return The height of the half state for the content as a ratio of the height of the
+         *         content area (ex. 1.f would be full-screen, 0.5f would be half-screen). The
+         *         returned value can also be one of {@link HeightMode}. If
+         *         {@link HeightMode#DEFAULT} is returned, the ratio will be a predefined value. If
+         *         {@link HeightMode#WRAP_CONTENT} is returned by {@link #getFullHeightRatio()}, the
+         *         half height will be disabled. Half height will also be disabled on small screens.
+         *         This method cannot return {@link HeightMode#WRAP_CONTENT}.
          */
-        default float getCustomHalfRatio() {
-            return INVALID_HEIGHT_RATIO;
+        default float getHalfHeightRatio() {
+            return HeightMode.DEFAULT;
         }
 
         /**
-         * @return Height of the sheet in full state with respect to container height.
-         *         This is -1 by default, which lets the BottomSheet use the container height
-         *         minus the top shadow height.
+         * @return The height of the full state for the content as a ratio of the height of the
+         *         content area (ex. 1.f would be full-screen, 0.5f would be half-screen). The
+         *         returned value can also be one of {@link HeightMode}. If
+         *         {@link HeightMode#DEFAULT}, the ratio will be a predefined value. This height
+         *         cannot be disabled. This method cannot return {@link HeightMode#DISABLED}.
          */
-        default float getCustomFullRatio() {
-            return INVALID_HEIGHT_RATIO;
+        default float getFullHeightRatio() {
+            return HeightMode.DEFAULT;
         }
 
         /**
@@ -527,9 +522,7 @@ public class BottomSheet
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         assert heightSize != 0;
         int height = heightSize + mToolbarShadowHeight;
-        int mode = mSheetContent != null && mSheetContent.wrapContentEnabled()
-                ? MeasureSpec.AT_MOST
-                : MeasureSpec.EXACTLY;
+        int mode = isFullHeightWrapContent() ? MeasureSpec.AT_MOST : MeasureSpec.EXACTLY;
         super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(height, mode));
     }
 
@@ -581,7 +574,7 @@ public class BottomSheet
                 mContainerHeight = bottom - top;
 
                 if (previousWidth != mContainerWidth || previousHeight != mContainerHeight) {
-                    if (mCurrentState == SheetState.HALF && shouldSkipHalfState()) {
+                    if (mCurrentState == SheetState.HALF && !isHalfStateEnabled()) {
                         setSheetState(SheetState.FULL, false);
                     }
                     invalidateContentDesiredHeight();
@@ -791,7 +784,7 @@ public class BottomSheet
             return SheetState.HIDDEN;
         } else if (isPeekStateEnabled()) {
             return SheetState.PEEK;
-        } else if (!shouldSkipHalfState()) {
+        } else if (isHalfStateEnabled()) {
             return SheetState.HALF;
         }
         return SheetState.FULL;
@@ -799,13 +792,7 @@ public class BottomSheet
 
     @Override
     public float getMaxOffsetPx() {
-        float maxOffset = getFullRatio() * mContainerHeight;
-        if (mSheetContent != null && mSheetContent.wrapContentEnabled()) {
-            ensureContentDesiredHeightIsComputed();
-            return Math.min(maxOffset, mContentDesiredHeight + mToolbarShadowHeight);
-        }
-
-        return maxOffset;
+        return getFullRatio() * mContainerHeight;
     }
 
     /**
@@ -1056,6 +1043,22 @@ public class BottomSheet
         return mSheetContent != null && mSheetContent.getPeekHeight() != HeightMode.DISABLED;
     }
 
+    /** @return Whether the half-height of the sheet is enabled. */
+    private boolean isHalfStateEnabled() {
+        if (mSheetContent == null) return false;
+
+        // Half state is invalid on small screens, when wrapping content at full height, and when
+        // explicitly disabled.
+        return !isSmallScreen() && mSheetContent.getHalfHeightRatio() != HeightMode.DISABLED
+                && mSheetContent.getFullHeightRatio() != HeightMode.WRAP_CONTENT;
+    }
+
+    /** @return Whether the height mode for the full state is WRAP_CONTENT. */
+    private boolean isFullHeightWrapContent() {
+        return mSheetContent != null
+                && mSheetContent.getFullHeightRatio() == HeightMode.WRAP_CONTENT;
+    }
+
     /**
      * @return The ratio of the height of the screen that the peeking state is.
      */
@@ -1104,10 +1107,14 @@ public class BottomSheet
      */
     @VisibleForTesting
     float getHalfRatio() {
-        if (mContainerHeight <= 0) return 0;
-        float customHalfRatio =
-                mSheetContent != null ? mSheetContent.getCustomHalfRatio() : INVALID_HEIGHT_RATIO;
-        return customHalfRatio < 0 ? HALF_HEIGHT_RATIO : customHalfRatio;
+        if (mContainerHeight <= 0 || !isHalfStateEnabled()) return 0;
+
+        float customHalfRatio = mSheetContent.getHalfHeightRatio();
+        assert customHalfRatio != HeightMode.WRAP_CONTENT
+                : "Half-height cannot be WRAP_CONTENT. This is only supported for full-height.";
+
+
+        return customHalfRatio == HeightMode.DEFAULT ? HALF_HEIGHT_RATIO : customHalfRatio;
     }
 
     /**
@@ -1115,10 +1122,19 @@ public class BottomSheet
      */
     @VisibleForTesting
     float getFullRatio() {
-        if (mContainerHeight <= 0) return 0;
-        float customFullRatio =
-                mSheetContent != null ? mSheetContent.getCustomFullRatio() : INVALID_HEIGHT_RATIO;
-        return customFullRatio < 0
+        if (mContainerHeight <= 0 || mSheetContent == null) return 0;
+
+        float customFullRatio = mSheetContent.getFullHeightRatio();
+        assert customFullRatio != HeightMode.DISABLED : "The full height cannot be DISABLED.";
+
+        if (isFullHeightWrapContent()) {
+            ensureContentDesiredHeightIsComputed();
+            float heightPx =
+                    Math.min(mContainerHeight, mContentDesiredHeight + mToolbarShadowHeight);
+            return heightPx / mContainerHeight;
+        }
+
+        return customFullRatio == HeightMode.DEFAULT
                 ? (mContainerHeight + mToolbarShadowHeight) / (float) mContainerHeight
                 : customFullRatio;
     }
@@ -1197,7 +1213,7 @@ public class BottomSheet
             return;
         }
 
-        if (state == SheetState.HALF && shouldSkipHalfState()) state = SheetState.FULL;
+        if (state == SheetState.HALF && !isHalfStateEnabled()) state = SheetState.FULL;
 
         mTargetState = state;
 
@@ -1302,8 +1318,7 @@ public class BottomSheet
      * @return The height of the sheet at the provided state.
      */
     private float getSheetHeightForState(@SheetState int state) {
-        if (mSheetContent != null && mSheetContent.wrapContentEnabled() && state == SheetState.FULL
-                && mSheetContent.getCustomFullRatio() == INVALID_HEIGHT_RATIO) {
+        if (isFullHeightWrapContent() && state == SheetState.FULL) {
             ensureContentDesiredHeightIsComputed();
             return mContentDesiredHeight + mToolbarShadowHeight;
         }
@@ -1367,7 +1382,7 @@ public class BottomSheet
         if (sheetHeight >= getMaxOffsetPx()) return SheetState.FULL;
 
         boolean isMovingDownward = yVelocity < 0;
-        boolean shouldSkipHalfState = isMovingDownward || shouldSkipHalfState();
+        boolean shouldSkipHalfState = isMovingDownward || !isHalfStateEnabled();
 
         // First, find the two states that the sheet height is between.
         @SheetState
@@ -1403,12 +1418,14 @@ public class BottomSheet
         return prevState;
     }
 
-    private boolean shouldSkipHalfState() {
-        // Half state is neither valid on small screens nor when wrapping the sheet content.
-        return isSmallScreen() || (mSheetContent != null && mSheetContent.wrapContentEnabled());
+    @VisibleForTesting
+    public static void setSmallScreenForTesting(boolean isSmallScreen) {
+        sIsSmallScreenForTesting = isSmallScreen;
     }
 
     public boolean isSmallScreen() {
+        if (sIsSmallScreenForTesting != null) return sIsSmallScreenForTesting;
+
         // A small screen is defined by there being less than 160dp between half and full states.
         float fullHeightRatio =
                 (mContainerHeight + mToolbarShadowHeight) / (float) mContainerHeight;
@@ -1452,7 +1469,7 @@ public class BottomSheet
     protected void onSheetContentChanged(@Nullable final BottomSheetContent content) {
         mSheetContent = content;
 
-        if (content != null && content.wrapContentEnabled()) {
+        if (isFullHeightWrapContent()) {
             // Listen for layout/size changes.
             if (!content.setContentSizeListener(this::onContentSizeChanged)) {
                 content.getContentView().addOnLayoutChangeListener(this);

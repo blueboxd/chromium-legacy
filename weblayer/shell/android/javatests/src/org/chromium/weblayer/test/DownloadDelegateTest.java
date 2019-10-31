@@ -22,7 +22,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.weblayer.DownloadDelegate;
-import org.chromium.weblayer.shell.WebLayerShellActivity;
+import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +33,10 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class DownloadDelegateTest {
     @Rule
-    public WebLayerShellActivityTestRule mActivityTestRule = new WebLayerShellActivityTestRule();
+    public InstrumentationActivityTestRule mActivityTestRule =
+            new InstrumentationActivityTestRule();
 
-    private WebLayerShellActivity mActivity;
+    private InstrumentationActivity mActivity;
     private Delegate mDelegate;
 
     private static class Delegate extends DownloadDelegate {

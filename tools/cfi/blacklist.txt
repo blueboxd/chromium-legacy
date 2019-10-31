@@ -166,6 +166,7 @@ src:*components/os_crypt/*
 src:*content/browser/accessibility/browser_accessibility_auralinux.cc
 src:*ui/accessibility/platform/ax_platform_node_auralinux.cc
 src:*ui/accessibility/platform/ax_platform_atk_hyperlink.cc
+src:*ui/accessibility/platform/ax_platform_node_auralinux_unittest.cc
 
 src:*chrome/browser/ui/zoom/chrome_zoom_level_prefs.cc
 src:*third_party/webrtc/modules/desktop_capture/linux/x_server_pixel_buffer.cc
@@ -188,6 +189,8 @@ src:*third_party/breakpad/breakpad/src/common/linux/http_upload.cc
 
 # Indirect call to Xlib.
 fun:*XImageDeleter*
+
+src:*mojo/public/c/system/thunks.cc
 
 # The follow entries are speculatively disabled. They're included in the
 # chromium build and include calls to dynamically resolved symbols; however,

@@ -8,6 +8,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -37,6 +38,7 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
   explicit AutoHideEventHandler(Shelf* shelf) : shelf_(shelf) {
     Shell::Get()->AddPreTargetHandler(this);
   }
+
   ~AutoHideEventHandler() override {
     Shell::Get()->RemovePreTargetHandler(this);
   }
@@ -55,10 +57,8 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
       return;
 
     // The event target should be the shelf widget or the hotseat widget.
-    aura::Window* target = static_cast<aura::Window*>(event->target());
-    const ShelfWidget* shelf_widget = Shelf::ForWindow(target)->shelf_widget();
-    if (target != shelf_widget->GetNativeView() &&
-        target != shelf_widget->hotseat_widget()->GetNativeView()) {
+    if (!shelf_->shelf_layout_manager()->IsShelfWindow(
+            static_cast<aura::Window*>(event->target()))) {
       return;
     }
 
@@ -77,6 +77,58 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
  private:
   Shelf* shelf_;
   DISALLOW_COPY_AND_ASSIGN(AutoHideEventHandler);
+};
+
+// Shelf::AutoDimEventHandler -----------------------------------------------
+
+// Handles mouse and touch events and determines whether ShelfLayoutManager
+// should update shelf opacity for auto-dimming.
+class Shelf::AutoDimEventHandler : public ui::EventHandler {
+ public:
+  explicit AutoDimEventHandler(Shelf* shelf) : shelf_(shelf) {
+    Shell::Get()->AddPreTargetHandler(this);
+    UndimShelf();
+  }
+
+  ~AutoDimEventHandler() override {
+    Shell::Get()->RemovePreTargetHandler(this);
+  }
+
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    if (shelf_->shelf_layout_manager()->IsShelfWindow(
+            static_cast<aura::Window*>(event->target()))) {
+      UndimShelf();
+    }
+  }
+
+  void OnTouchEvent(ui::TouchEvent* event) override {
+    if (shelf_->shelf_layout_manager()->IsShelfWindow(
+            static_cast<aura::Window*>(event->target()))) {
+      UndimShelf();
+    }
+  }
+
+ private:
+  void DimShelf() { shelf_->shelf_layout_manager()->SetDimmed(true); }
+
+  // Sets shelf as active and sets timer to mark shelf as inactive.
+  void UndimShelf() {
+    shelf_->shelf_layout_manager()->SetDimmed(false);
+    update_shelf_dim_state_timer_.Start(
+        FROM_HERE, kDimDelay,
+        base::BindOnce(&AutoDimEventHandler::DimShelf, base::Unretained(this)));
+  }
+
+  // Unowned pointer to the shelf that owns this event handler.
+  Shelf* shelf_;
+  // OneShotTimer that dims shelf due to inactivity.
+  base::OneShotTimer update_shelf_dim_state_timer_;
+
+  // Delay before dimming the shelf.
+  const base::TimeDelta kDimDelay = base::TimeDelta::FromSeconds(5);
+
+  DISALLOW_COPY_AND_ASSIGN(AutoDimEventHandler);
 };
 
 // Shelf ---------------------------------------------------------------------
@@ -369,6 +421,7 @@ ShelfView* Shelf::GetShelfViewForTesting() {
 void Shelf::WillDeleteShelfLayoutManager() {
   // Clear event handlers that might forward events to the destroyed instance.
   auto_hide_event_handler_.reset();
+  auto_dim_event_handler_.reset();
 
   DCHECK(shelf_layout_manager_);
   shelf_layout_manager_->RemoveObserver(this);
@@ -382,6 +435,10 @@ void Shelf::WillChangeVisibilityState(ShelfVisibilityState new_state) {
     auto_hide_event_handler_.reset();
   } else if (!auto_hide_event_handler_) {
     auto_hide_event_handler_ = std::make_unique<AutoHideEventHandler>(this);
+  }
+  if (!auto_dim_event_handler_ &&
+      base::FeatureList::IsEnabled(ash::features::kShelfDimming)) {
+    auto_dim_event_handler_ = std::make_unique<AutoDimEventHandler>(this);
   }
 }
 

@@ -8,6 +8,10 @@ source_set("storage") {
     "dom_storage/async_dom_storage_database.h",
     "dom_storage/dom_storage_database.cc",
     "dom_storage/dom_storage_database.h",
+    "indexed_db/leveldb/leveldb_factory.cc",
+    "indexed_db/leveldb/leveldb_factory.h",
+    "indexed_db/leveldb/leveldb_state.cc",
+    "indexed_db/leveldb/leveldb_state.h",
     "origin_context_impl.cc",
     "origin_context_impl.h",
     "partition_impl.cc",
@@ -36,9 +40,28 @@ source_set("tests") {
 
   deps = [
     ":storage",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "indexed_db/leveldb/fake_leveldb_factory.cc",
+    "indexed_db/leveldb/fake_leveldb_factory.h",
+    "indexed_db/leveldb/mock_level_db.cc",
+    "indexed_db/leveldb/mock_level_db.h",
+  ]
+
+  deps = [
+    ":storage",
+    "//base",
+    "//testing/gmock",
+    "//third_party/leveldatabase",
   ]
 }

@@ -122,6 +122,7 @@ class WebMediaPlayer {
     int frame_id = -1;
     gfx::Rect visible_rect = {};
     base::TimeDelta timestamp = {};
+    base::TimeDelta expected_timestamp = {};
     bool skipped = false;
   };
 

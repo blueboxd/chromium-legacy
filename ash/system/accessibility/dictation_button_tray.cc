@@ -25,8 +25,6 @@ DictationButtonTray::DictationButtonTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new views::ImageView()) {
   UpdateVisibility();
 
-  SetInkDropMode(InkDropMode::ON);
-
   off_image_ = gfx::CreateVectorIcon(kDictationOffNewuiIcon,
                                      ShelfConfig::Get()->shelf_icon_color());
   on_image_ = gfx::CreateVectorIcon(kDictationOnNewuiIcon,

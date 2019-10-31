@@ -219,6 +219,11 @@ void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
                                   uint32_t module_time_date_stamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  DCHECK(process_type == content::PROCESS_TYPE_BROWSER ||
+         process_type == content::PROCESS_TYPE_RENDERER)
+      << "The current logic in ModuleBlacklistCacheUpdater does not support "
+         "other process types yet. See https://crbug.com/662084 for details.";
+
   ModuleInfo* module_info = nullptr;
   bool new_module = FindOrCreateModuleInfo(
       module_path, module_size, module_time_date_stamp, &module_info);

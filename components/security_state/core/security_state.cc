@@ -320,4 +320,56 @@ bool IsSHA1InChain(const VisibleSecurityState& visible_security_state) {
           net::CERT_STATUS_SHA1_SIGNATURE_PRESENT);
 }
 
+// As an experiment, the info icon should be downgraded to a grey triangle for
+// non-secure connections (crbug.com/997972). This method helps distinguish
+// between cases where the NONE and WARNING security levels should map to
+// neutral (info) or insecure (triangle) for styling purposes.
+//
+// TODO(crbug.com/1015626): Clean this up once the experiment is fully
+// launched and security states refactored.
+bool ShouldDowngradeNeutralStyling(
+    security_state::SecurityLevel security_level,
+    GURL url,
+    IsOriginSecureCallback is_origin_secure_callback) {
+  // This method is only relevant if the info icon is shown, which only occurs
+  // for NONE and WARNING security states.
+  if (security_level != security_state::NONE &&
+      security_level != security_state::WARNING) {
+    return false;
+  }
+
+  // The state should not be downgraded unless the grey triangle experiment
+  // is enabled.
+  bool http_danger_warning_enabled = false;
+  if (base::FeatureList::IsEnabled(features::kMarkHttpAsFeature)) {
+    std::string parameter = base::GetFieldTrialParamValueByFeature(
+        features::kMarkHttpAsFeature,
+        features::kMarkHttpAsFeatureParameterName);
+    if (parameter ==
+        security_state::features::kMarkHttpAsParameterDangerWarning) {
+      http_danger_warning_enabled = true;
+    }
+  }
+  if (!http_danger_warning_enabled)
+    return false;
+
+  bool scheme_is_cryptographic = security_state::IsSchemeCryptographic(url);
+  bool origin_is_secure = scheme_is_cryptographic;
+  if (!scheme_is_cryptographic)
+    origin_is_secure = is_origin_secure_callback.Run(url);
+
+  // The grey danger triangle should be shown on HTTPS pages with passive
+  // mixed content. These pages currently use the NONE security state, but
+  // this is undergoing a refactor.
+  if (security_level == security_state::NONE && scheme_is_cryptographic)
+    return true;
+
+  // The info icon should be used on non-HTTPS secure origins, but other
+  // WARNING states should use they grey danger triangle.
+  if (security_level == security_state::WARNING && !origin_is_secure)
+    return true;
+
+  return false;
+}
+
 }  // namespace security_state

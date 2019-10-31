@@ -25,11 +25,11 @@ class Point;
 class ScrollOffset;
 class SizeF;
 class Vector2dF;
-}
+}  // namespace gfx
 
 namespace ui {
 class LatencyInfo;
-}
+}  // namespace ui
 
 namespace cc {
 
@@ -278,10 +278,10 @@ class CC_EXPORT InputHandler {
   // |natural_displacement_in_viewport| is the estimated total scrolling for
   // the active scroll sequence.
   // Returns false if their is no position to snap to.
-  virtual bool GetSnapFlingInfo(
+  virtual bool GetSnapFlingInfoAndSetSnapTarget(
       const gfx::Vector2dF& natural_displacement_in_viewport,
       gfx::Vector2dF* initial_offset,
-      gfx::Vector2dF* target_offset) const = 0;
+      gfx::Vector2dF* target_offset) = 0;
 
  protected:
   InputHandler() = default;

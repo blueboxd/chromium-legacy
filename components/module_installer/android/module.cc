@@ -7,7 +7,6 @@
 
 #include "base/android/bundle_utils.h"
 #include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,8 +40,8 @@ namespace {
 
 typedef bool JniRegistrationFunction(JNIEnv* env);
 
-void* LoadLibrary(const std::string& library_name) {
-  void* library_handle = nullptr;
+void LoadLibrary(JNIEnv* env, const std::string& library_name) {
+  JniRegistrationFunction* registration_function = nullptr;
 
 #if defined(LOAD_FROM_PARTITIONS)
   // The partition library must be opened via native code (using
@@ -50,28 +49,25 @@ void* LoadLibrary(const std::string& library_name) {
   // operation on the Java side, because JNI registration is done explicitly
   // (hence there is no reason for the Java ClassLoader to be aware of the
   // library, for lazy JNI registration).
-  library_handle = BundleUtils::DlOpenModuleLibraryPartition(library_name);
+  void* library_handle =
+      BundleUtils::DlOpenModuleLibraryPartition(library_name);
 #elif defined(COMPONENT_BUILD)
-  const std::string lib_name = "lib" + library_name + ".so";
-  library_handle = dlopen(lib_name.c_str(), RTLD_LOCAL);
+  const std::string lib_name = "lib" + library_name + ".cr.so";
+  void* library_handle = dlopen(lib_name.c_str(), RTLD_LOCAL);
 #else
 #error "Unsupported configuration."
 #endif  // defined(COMPONENT_BUILD)
   CHECK(library_handle != nullptr)
-      << "Could not open feature library: " << dlerror();
+      << "Could not open feature library:" << dlerror();
 
-  return library_handle;
-}
-
-void RegisterJni(JNIEnv* env, void* library_handle, const std::string& name) {
-  const std::string registration_name = "JNI_OnLoad_" + name;
+  const std::string registration_name = "JNI_OnLoad_" + library_name;
   // Find the module's JNI registration method from the feature library.
   void* symbol = dlsym(library_handle, registration_name.c_str());
-  CHECK(symbol) << "Could not find JNI registration method '"
-                << registration_name << "' for '" << name << "': " << dlerror();
-  auto* registration_function =
-      reinterpret_cast<JniRegistrationFunction*>(symbol);
-  CHECK(registration_function(env)) << "JNI registration failed: " << name;
+  CHECK(symbol != nullptr) << "Could not find JNI registration method: "
+                           << dlerror();
+  registration_function = reinterpret_cast<JniRegistrationFunction*>(symbol);
+  CHECK(registration_function(env))
+      << "JNI registration failed: " << library_name;
 }
 
 void LoadResources(const std::string& name) {
@@ -84,22 +80,12 @@ void LoadResources(const std::string& name) {
 static void JNI_Module_LoadNative(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& jname,
-    const base::android::JavaParamRef<jobjectArray>& jlibraries,
+    jboolean load_library,
     jboolean load_resources) {
   std::string name;
   base::android::ConvertJavaStringToUTF8(env, jname, &name);
-  std::vector<std::string> libraries;
-  base::android::AppendJavaStringArrayToStringVector(env, jlibraries,
-                                                     &libraries);
-  if (libraries.size() > 0) {
-    void* library_handle = nullptr;
-    for (const auto& library : libraries) {
-      library_handle = LoadLibrary(library);
-    }
-    // module libraries are ordered such that the root library will be the last
-    // item in the list. We expect this library to provide the JNI registration
-    // function.
-    RegisterJni(env, library_handle, name);
+  if (load_library) {
+    LoadLibrary(env, name);
   }
   if (load_resources) {
     LoadResources(name);

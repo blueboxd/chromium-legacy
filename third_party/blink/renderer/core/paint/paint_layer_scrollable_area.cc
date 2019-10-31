@@ -48,6 +48,7 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/snap_selection_strategy.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
@@ -244,13 +245,38 @@ SmoothScrollSequencer* PaintLayerScrollableArea::GetSmoothScrollSequencer()
   return &GetLayoutBox()->GetFrame()->GetSmoothScrollSequencer();
 }
 
-GraphicsLayer* PaintLayerScrollableArea::LayerForScrolling() const {
+cc::Layer* PaintLayerScrollableArea::LayerForScrolling() const {
+  if (auto* graphics_layer = GraphicsLayerForScrolling())
+    return graphics_layer->CcLayer();
+  return nullptr;
+}
+
+cc::Layer* PaintLayerScrollableArea::LayerForHorizontalScrollbar() const {
+  if (auto* graphics_layer = GraphicsLayerForHorizontalScrollbar())
+    return graphics_layer->ContentsLayer();
+  return nullptr;
+}
+
+cc::Layer* PaintLayerScrollableArea::LayerForVerticalScrollbar() const {
+  if (auto* graphics_layer = GraphicsLayerForVerticalScrollbar())
+    return graphics_layer->ContentsLayer();
+  return nullptr;
+}
+
+cc::Layer* PaintLayerScrollableArea::LayerForScrollCorner() const {
+  if (auto* graphics_layer = GraphicsLayerForScrollCorner())
+    return graphics_layer->CcLayer();
+  return nullptr;
+}
+
+GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForScrolling() const {
   return Layer()->HasCompositedLayerMapping()
              ? Layer()->GetCompositedLayerMapping()->ScrollingContentsLayer()
              : nullptr;
 }
 
-GraphicsLayer* PaintLayerScrollableArea::LayerForHorizontalScrollbar() const {
+GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForHorizontalScrollbar()
+    const {
   // See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
 
@@ -261,7 +287,8 @@ GraphicsLayer* PaintLayerScrollableArea::LayerForHorizontalScrollbar() const {
              : nullptr;
 }
 
-GraphicsLayer* PaintLayerScrollableArea::LayerForVerticalScrollbar() const {
+GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForVerticalScrollbar()
+    const {
   // See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
 
@@ -270,7 +297,7 @@ GraphicsLayer* PaintLayerScrollableArea::LayerForVerticalScrollbar() const {
              : nullptr;
 }
 
-GraphicsLayer* PaintLayerScrollableArea::LayerForScrollCorner() const {
+GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForScrollCorner() const {
   // See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
 
@@ -346,6 +373,25 @@ IntRect PaintLayerScrollableArea::ScrollCornerRect() const {
         Layer()->SubpixelAccumulation()));
   }
   return IntRect();
+}
+
+void PaintLayerScrollableArea::SetScrollbarNeedsPaintInvalidation(
+    ScrollbarOrientation orientation) {
+  if (auto* graphics_layer = orientation == kHorizontalScrollbar
+                                 ? GraphicsLayerForHorizontalScrollbar()
+                                 : GraphicsLayerForVerticalScrollbar()) {
+    graphics_layer->SetNeedsDisplay();
+    graphics_layer->SetContentsNeedsDisplay();
+  }
+  ScrollableArea::SetScrollbarNeedsPaintInvalidation(orientation);
+}
+
+void PaintLayerScrollableArea::SetScrollCornerNeedsPaintInvalidation() {
+  if (GraphicsLayer* graphics_layer = GraphicsLayerForScrollCorner()) {
+    graphics_layer->SetNeedsDisplay();
+    return;
+  }
+  ScrollableArea::SetScrollCornerNeedsPaintInvalidation();
 }
 
 IntRect
@@ -1644,6 +1690,27 @@ void PaintLayerScrollableArea::SetSnapContainerData(
   EnsureRareData().snap_container_data_ = data;
 }
 
+base::Optional<FloatPoint>
+PaintLayerScrollableArea::GetSnapPositionAndSetTarget(
+    const cc::SnapSelectionStrategy& strategy) {
+  if (!RareData() || !RareData()->snap_container_data_)
+    return base::nullopt;
+
+  cc::SnapContainerData& data = RareData()->snap_container_data_.value();
+  if (!data.size())
+    return base::nullopt;
+
+  cc::TargetSnapAreaElementIds snap_targets;
+  gfx::ScrollOffset snap_position;
+  base::Optional<FloatPoint> snap_point;
+  if (data.FindSnapPosition(strategy, &snap_position, &snap_targets))
+    snap_point = FloatPoint(snap_position.x(), snap_position.y());
+  if (data.SetTargetSnapAreaElementIds(snap_targets))
+    GetLayoutBox()->SetNeedsPaintPropertyUpdate();
+
+  return snap_point;
+}
+
 bool PaintLayerScrollableArea::HasOverflowControls() const {
   // We do not need to check for ScrollCorner because it only exists iff there
   // are scrollbars, see: |ScrollCornerRect| and |UpdateScrollCornerStyle|.
@@ -1847,7 +1914,7 @@ void PaintLayerScrollableArea::UpdateResizerStyle(
       old_style->UnresolvedResize() !=
           GetLayoutBox()->StyleRef().UnresolvedResize()) {
     // Invalidate the composited scroll corner layer on resize style change.
-    if (auto* graphics_layer = LayerForScrollCorner())
+    if (auto* graphics_layer = GraphicsLayerForScrollCorner())
       graphics_layer->SetNeedsDisplay();
   }
 
@@ -2070,7 +2137,7 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndPosition(
           gfx::ScrollOffset(end_point), true, true);
-  end_point = GetSnapPosition(*strategy).value_or(end_point);
+  end_point = GetSnapPositionAndSetTarget(*strategy).value_or(end_point);
   new_scroll_offset = ScrollPositionToOffset(end_point);
 
   if (params.is_for_scroll_sequence) {
@@ -2218,13 +2285,30 @@ ScrollingCoordinator* PaintLayerScrollableArea::GetScrollingCoordinator()
 bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
   if (HasBeenDisposed())
     return true;
+
+  // TODO(crbug.com/985127, crbug.com/1015833): We should just use the main
+  // thread scrolling reasons on the scroll node which should have all required
+  // reasons. If it was not, we would have inconsistent results here and
+  // ScrollNode::GetMainThreadScrollingReasons().
   if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
     if (frame->View()->GetMainThreadScrollingReasons())
       return true;
   }
   if (HasNonCompositedStickyDescendants())
     return true;
-  return ScrollableArea::ShouldScrollOnMainThread();
+
+  if (GraphicsLayer* layer = GraphicsLayerForScrolling()) {
+    // Property tree state is not available until the PrePaint lifecycle stage.
+    DCHECK_GE(GetDocument()->Lifecycle().GetState(),
+              DocumentLifecycle::kPrePaintClean);
+    const auto* scroll = layer->GetPropertyTreeState()
+                             .Transform()
+                             .NearestScrollTranslationNode()
+                             .ScrollNode();
+    DCHECK(scroll);
+    return scroll->GetMainThreadScrollingReasons() != 0;
+  }
+  return true;
 }
 
 static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {
@@ -2645,8 +2729,9 @@ void PaintLayerScrollableArea::WillRemoveScrollbar(
   }
 
   if (!scrollbar.IsCustomScrollbar() &&
-      !(orientation == kHorizontalScrollbar ? LayerForHorizontalScrollbar()
-                                            : LayerForVerticalScrollbar())) {
+      !(orientation == kHorizontalScrollbar
+            ? GraphicsLayerForHorizontalScrollbar()
+            : GraphicsLayerForVerticalScrollbar())) {
     ObjectPaintInvalidator(*GetLayoutBox())
         .SlowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
             scrollbar, PaintInvalidationReason::kScrollControl);
@@ -2748,13 +2833,13 @@ void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
   LayoutBox& box = *GetLayoutBox();
   bool box_geometry_has_been_invalidated = false;
   SetHorizontalScrollbarVisualRect(InvalidatePaintOfScrollbarIfNeeded(
-      HorizontalScrollbar(), LayerForHorizontalScrollbar(),
+      HorizontalScrollbar(), GraphicsLayerForHorizontalScrollbar(),
       horizontal_scrollbar_previously_was_overlay_,
       horizontal_scrollbar_visual_rect_,
       HorizontalScrollbarNeedsPaintInvalidation(), box,
       box_geometry_has_been_invalidated, context));
   SetVerticalScrollbarVisualRect(InvalidatePaintOfScrollbarIfNeeded(
-      VerticalScrollbar(), LayerForVerticalScrollbar(),
+      VerticalScrollbar(), GraphicsLayerForVerticalScrollbar(),
       vertical_scrollbar_previously_was_overlay_,
       vertical_scrollbar_visual_rect_,
       VerticalScrollbarNeedsPaintInvalidation(), box,

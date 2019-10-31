@@ -479,9 +479,8 @@ void DownloadItemView::Layout() {
 
     int status_y =
         file_name_y + font_list_.GetBaseline() + kVerticalTextPadding;
-    status_label_->SetBoundsRect(gfx::Rect(
-        mirrored_x, status_y, status_label_->GetPreferredSize().width(),
-        status_font_list_.GetHeight()));
+    status_label_->SetBoundsRect(gfx::Rect(mirrored_x, status_y, kTextWidth,
+                                           status_font_list_.GetHeight()));
   }
 
   if (mode_ != DANGEROUS_MODE) {
@@ -533,7 +532,7 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
     gfx::Size label_size = file_name_label_->GetPreferredSize();
     label_size.SetToMax(status_label_->GetPreferredSize());
     width = kStartPadding + DownloadShelf::kProgressIndicatorSize +
-            kProgressTextPadding + label_size.width() + kEndPadding;
+            kProgressTextPadding + kTextWidth + kEndPadding;
   }
 
   if (mode_ != DANGEROUS_MODE)

@@ -220,11 +220,6 @@ template("fuzzer_test") {
       if (is_mac) {
         sources += [ "//testing/libfuzzer/libfuzzer_exports.h" ]
       }
-
-      # Used to isolate fuzzer corpus and run fuzzer targets on swarming.
-      data = [
-        "//testing/libfuzzer/fuzzer_corpus_for_bots/${target_name}/",
-      ]
     }
   } else {
     # noop on unsupported platforms.

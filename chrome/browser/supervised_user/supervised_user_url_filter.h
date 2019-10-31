@@ -42,6 +42,8 @@ class SharedURLLoaderFactory;
 //     sources.
 class SupervisedUserURLFilter {
  public:
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.superviseduser
   enum FilteringBehavior {
     ALLOW,
     WARN,

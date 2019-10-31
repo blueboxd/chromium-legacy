@@ -198,27 +198,35 @@ class DeviceSyncCryptAuthFeatureStatusSetterImplTest
       RequestAction request_action,
       base::Optional<NetworkRequestError> error = base::nullopt) {
     ASSERT_TRUE(!batch_set_feature_statuses_requests_.empty());
+
+    cryptauthv2::BatchSetFeatureStatusesRequest current_request =
+        std::move(batch_set_feature_statuses_requests_.front());
+    batch_set_feature_statuses_requests_.pop();
+
+    CryptAuthClient::BatchSetFeatureStatusesCallback current_success_callback =
+        std::move(batch_set_feature_statuses_success_callbacks_.front());
+    batch_set_feature_statuses_success_callbacks_.pop();
+
+    CryptAuthClient::ErrorCallback current_failure_callback =
+        std::move(batch_set_feature_statuses_failure_callbacks_.front());
+    batch_set_feature_statuses_failure_callbacks_.pop();
+
     EXPECT_EQ(expected_request.SerializeAsString(),
-              batch_set_feature_statuses_requests_.front().SerializeAsString());
+              current_request.SerializeAsString());
 
     switch (request_action) {
       case RequestAction::kSucceed:
-        std::move(batch_set_feature_statuses_success_callbacks_.front())
+        std::move(current_success_callback)
             .Run(cryptauthv2::BatchSetFeatureStatusesResponse());
         break;
       case RequestAction::kFail:
         ASSERT_TRUE(error);
-        std::move(batch_set_feature_statuses_failure_callbacks_.front())
-            .Run(*error);
+        std::move(current_failure_callback).Run(*error);
         break;
       case RequestAction::kTimeout:
         mock_timer_->Fire();
         break;
     }
-
-    batch_set_feature_statuses_requests_.pop();
-    batch_set_feature_statuses_success_callbacks_.pop();
-    batch_set_feature_statuses_failure_callbacks_.pop();
   }
 
   void VerifyNumberOfClientAppMetadataFetchAttempts(size_t num_attempts) {

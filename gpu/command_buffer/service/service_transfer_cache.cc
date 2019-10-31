@@ -326,13 +326,10 @@ bool ServiceTransferCache::OnMemoryDump(
 
     if (total_image_count_ > 0) {
       MemoryAllocatorDump* dump_avg_size =
-          pmd->CreateAllocatorDump(base::StringPrintf(
-              "gpu/transfer_cache/avg_image_size/cache_0x%" PRIXPTR,
-              reinterpret_cast<uintptr_t>(this)));
+          pmd->CreateAllocatorDump(dump_name + "/avg_image_size");
       const size_t avg_image_size =
           total_image_size_ / (total_image_count_ * 1.0);
-      dump_avg_size->AddScalar(MemoryAllocatorDump::kNameSize,
-                               MemoryAllocatorDump::kUnitsBytes,
+      dump_avg_size->AddScalar("average_size", MemoryAllocatorDump::kUnitsBytes,
                                avg_image_size);
     }
 

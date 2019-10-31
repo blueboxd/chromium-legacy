@@ -52,6 +52,14 @@ class CORE_EXPORT HitTestLocation {
   explicit HitTestLocation(const DoublePoint&);
   explicit HitTestLocation(const FloatPoint&, const FloatQuad&);
   explicit HitTestLocation(const PhysicalRect&);
+
+  // The bounding box isn't always a 1x1 rect even when the hit test is not
+  // rect-based. When we hit test a transformed box and transform the hit test
+  // location into the box's local coordinate space, the bounding box should
+  // also be transformed accordingly.
+  explicit HitTestLocation(const FloatPoint& point,
+                           const PhysicalRect& bounding_box);
+
   HitTestLocation(const HitTestLocation&, const PhysicalOffset& offset);
   HitTestLocation(const HitTestLocation&);
   ~HitTestLocation();

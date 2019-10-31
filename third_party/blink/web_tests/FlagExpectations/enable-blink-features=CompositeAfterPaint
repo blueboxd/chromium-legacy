@@ -19,6 +19,7 @@ Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
 
 # Filenames are too long on Windows.
 Bug(1014132) virtual/controls-refresh-high-contrast/ [ Skip ]
+Bug(1014132) virtual/controls-refresh/ [ Skip ]
 
 # Fail before CompositeAfterPaint but pass with it.
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
@@ -32,7 +33,7 @@ crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrol
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Pass ]
 
 Bug(none) virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
-Bug(none) virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-hidden.html [ Crash ]
+Bug(none) virtual/android/rootscroller/fixed-chaining-with-implicit-pointer-events-none.html [ Failure ]
 Bug(none) virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Crash ]
 Bug(none) virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Crash ]
 Bug(none) virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Crash ]
@@ -69,13 +70,13 @@ Bug(none) compositing/layer-creation/overlap-transformed-preserved-3d.html [ Fai
 Bug(none) compositing/layer-creation/overlap-transforms.html [ Failure ]
 Bug(none) compositing/layer-creation/scroll-partial-update.html [ Failure ]
 Bug(none) compositing/masks/mask-with-removed-filters.html [ Failure ]
-Bug(none) compositing/nested-multicol-mask-composited-filter-crash.html [ Crash ]
 Bug(none) compositing/overflow/clip-descendents.html [ Failure ]
 Bug(none) compositing/overflow/opt-in-if-composited.html [ Failure ]
 crbug.com/979367 compositing/overflow/overflow-scroll-background-fractional-offset.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-background-transparent-to-opaque.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-content-fractional-offset.html [ Failure ]
+Bug(none) compositing/overflow/overflow-scroll-with-negative-offset-translucent-outline.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-with-opaque-background-will-change.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-with-opaque-background.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-with-transparent-background.html [ Failure ]
@@ -115,7 +116,6 @@ Bug(none) fast/css/outline-offset-large.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-device-emulation-change.html [ Failure ]
 Bug(none) fast/webgl/pixelated.html [ Failure ]
 Bug(none) images/color-profile-svg-foreign-object.html [ Failure ]
-Bug(none) fast/multicol/insane-column-count-and-padding-nested-crash.html [ Crash ]
 Bug(none) fast/sub-pixel/should-not-repaint-subpixel-composited-layer.html [ Failure ]
 Bug(none) fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
 Bug(none) fragmentation/outline-crossing-columns.html [ Crash ]
@@ -136,7 +136,6 @@ Bug(none) virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible
 Bug(none) virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
 Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Failure ]
 Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/scrollbar-mousedown-move-mouseup.html [ Failure ]
-Bug(none) wpt_internal/display-lock/rendersubtree/paint/locked-iframe-doesnt-paint-contents.html [ Failure ]
 
 # Loading an image in a subframe.
 crbug.com/959936 http/tests/images/image-decode-in-frame.html [ Failure ]
@@ -145,12 +144,13 @@ crbug.com/959941 virtual/threaded-prefer-compositing/fast/scrolling/mouse-scroll
 
 crbug.com/907601 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
 
+# Need to create layers for fully invisible content for hit testing.
+crbug.com/937573 virtual/threaded-no-composited-antialiasing/animations/invisible-composited-animations-prevent-scroll.html [ Failure ]
+
 # Scrolling with the mouse wheel does not work.
 crbug.com/979352 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
 crbug.com/979352 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
 crbug.com/979352 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
-crbug.com/979352 virtual/android/rootscroller/fixed-chaining-with-implicit.html [ Failure ]
-crbug.com/979352 virtual/android/rootscroller/fixed-scroller-chaining-with-implicit.html [ Failure ]
 
 # Less invalidations or different invalidations without pixel failures.
 # Some might be good. Some might be under-invalidations for which under-invalidation
@@ -162,7 +162,6 @@ Bug(none) paint/invalidation/scroll/overflow-hidden-yet-scrolled.html [ Failure 
 
 # Under-invalidation
 Bug(none) fast/events/touch/touch-rect-crash-on-unpromote-layer.html [ Crash ]
-Bug(none) paint/background/scrolling-background-with-negative-z-child.html [ Crash ]
 
 # "Missing" raster invalidation because composited layers are re-created.
 crbug.com/842356 paint/invalidation/compositing/containing-block-added-individual.html [ Failure ]
@@ -277,7 +276,6 @@ crbug.com/738613 paint/invalidation/scroll/overflow-scroll-after-move.html [ Fai
 crbug.com/738613 compositing/overflow/overflow-scroll-with-pointer-events-toggle.html [ Failure ]
 
 # Needs fully composited scrollbar support.
-crbug.com/931486 compositing/composite-scrollable-fixed-position-when-descendants-composite.html [ Failure ]
 crbug.com/931486 compositing/force-compositing-mode/overflow-iframe-enter-compositing.html [ Failure ]
 crbug.com/931486 compositing/force-compositing-mode/overflow-iframe-layer.html [ Failure ]
 crbug.com/931486 compositing/iframes/overlapped-iframe-iframe.html [ Failure ]
@@ -422,17 +420,9 @@ crbug.com/980290 scrollingcoordinator/non-fast-scrollable-visibility-change.html
 
 # These failures need to be triaged and are being added to unblock the CQ (see: https://crbug.com/966981).
 crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-frame-no-scroll-manual.tentative.html [ Failure ]
-crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-main-frame-manual.tentative.html [ Failure ]
-crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Failure ]
-crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Failure ]
-crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-wheel-block-manual.tentative.html [ Timeout ]
 crbug.com/966981 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Timeout ]
-crbug.com/966981 virtual/threaded/fast/events/pinch/pinch-zoom-pan-position-fixed.html [ Failure ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scroll-behavior/overscroll-behavior.html [ Failure ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/hover-during-scroll.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-scroll.html [ Failure ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-position-fixed-scrolled-document.html [ Failure ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-position-fixed-scroller-scrolled-document.html [ Failure ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-position-fixed-scroller.html [ Failure ]
@@ -446,14 +436,9 @@ crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/events/overs
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-to-document.html [ Timeout ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Timeout ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-to-window.html [ Timeout ]
-crbug.com/966981 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Failure ]
 
 # Added to land BGPT-fixes
 crbug.com/979002 virtual/threaded-prefer-compositing/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]
-crbug.com/981749 virtual/threaded-prefer-compositing/fast/scrolling/scroll-chaining-from-position-fixed.html [ Failure ]
 
-# These tests are failing due to subpixel differences but can be rebaselined.
-Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/color/color-suggestion-picker-appearance.html [ Failure ]
-Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/color/color-suggestion-picker-appearance-with-scrollbar.html [ Failure ]
-Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/select/select-multiple-appearance-basic.html [ Failure ]
-Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/color-scheme-validation/time-picker/time-picker-appearance.html [ Failure ]
+# We need the inner viewport scroll layer.
+crbug.com/1015625 inspector-protocol/emulation/device-emulation-restore.js [ Crash ]

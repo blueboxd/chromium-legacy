@@ -29,9 +29,14 @@ import java.util.concurrent.Future;
 /**
  * WebLayer's fragment implementation.
  *
+ * This class is an implementation detail and will eventually be hidden. Use
+ * {@link BrowserFragmentController#fromFragment} to get the BrowserFragmentController from a
+ * Fragment created by WebLayer.
+ *
  * All the browser APIs, such as loading pages can be accessed via
- * {@link BrowserFragmentController}, which can be retrieved with {@link #getController} after
- * the fragment received onCreate the call.
+ * {@link BrowserFragmentController}, which can be retrieved with {@link
+ * FragmentSupport#getBrowserFragmentControllerForFragment} after the fragment received onCreate the
+ * call.
  *
  * Attaching a BrowserFragment to an Activity requires WebLayer to be initialized, so
  * BrowserFragment will block the thread in onAttach until it's done. To prevent this,
@@ -153,7 +158,7 @@ public final class BrowserFragment extends Fragment {
      * The controller is available only between BrowserFragment's onCreate() and onDestroy().
      */
     @NonNull
-    public BrowserFragmentController getController() {
+    BrowserFragmentController getController() {
         ThreadCheck.ensureOnUiThread();
         if (mBrowserFragmentController == null) {
             throw new RuntimeException("BrowserFragmentController is available only between "

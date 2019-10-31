@@ -149,6 +149,7 @@ MixerInputConnection::MixerInputConnection(
     const mixer_service::OutputStreamParams& params)
     : mixer_(mixer),
       socket_(std::move(socket)),
+      ignore_for_stream_count_(params.ignore_for_stream_count()),
       fill_size_(GetFillSize(params)),
       num_channels_(params.num_channels()),
       input_samples_per_second_(params.sample_rate()),
@@ -466,7 +467,7 @@ int MixerInputConnection::playout_channel() {
 
 bool MixerInputConnection::active() {
   base::AutoLock lock(lock_);
-  return !paused_;
+  return !ignore_for_stream_count_ && !paused_;
 }
 
 void MixerInputConnection::WritePcm(scoped_refptr<net::IOBuffer> data) {
@@ -630,6 +631,8 @@ void MixerInputConnection::CheckAndStartPlaybackIfNecessary(
     remaining_silence_frames_ = ::media::AudioTimestampHelper::TimeToFrames(
         base::TimeDelta::FromMicroseconds(silence_duration),
         input_samples_per_second_);
+    // Round to nearest multiple of 4 to preserve buffer alignment.
+    remaining_silence_frames_ = ((remaining_silence_frames_ + 2) / 4) * 4;
     started_ = true;
     LOG(INFO) << this << " Should start playback of PTS " << actual_pts_now
               << " at " << (playback_absolute_timestamp + silence_duration);

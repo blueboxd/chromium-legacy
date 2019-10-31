@@ -1000,24 +1000,6 @@
             ]
         }
     ],
-    "AutofillSaveCardShowNoThanks": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20190726",
-                    "enable_features": [
-                        "AutofillSaveCardShowNoThanks"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillSmallFormSupport": [
         {
             "platforms": [
@@ -4394,7 +4376,7 @@
                 {
                     "name": "Enabled_20190712",
                     "params": {
-                        "throttled_traffic_annotation_tags": "727528,727478,18300705"
+                        "throttled_traffic_annotation_tags": "727528,727478"
                     },
                     "enable_features": [
                         "PauseBrowserInitiatedHeavyTrafficForP2P"

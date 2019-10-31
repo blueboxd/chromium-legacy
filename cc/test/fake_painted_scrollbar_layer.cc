@@ -24,20 +24,20 @@ scoped_refptr<FakePaintedScrollbarLayer> FakePaintedScrollbarLayer::Create(
     bool is_left_side_vertical_scrollbar,
     bool is_overlay,
     ElementId scrolling_element_id) {
-  FakeScrollbar* fake_scrollbar =
-      new FakeScrollbar(paint_during_update, has_thumb, orientation,
-                        is_left_side_vertical_scrollbar, is_overlay);
-  return base::WrapRefCounted(
-      new FakePaintedScrollbarLayer(fake_scrollbar, scrolling_element_id));
+  auto fake_scrollbar = base::MakeRefCounted<FakeScrollbar>(
+      paint_during_update, has_thumb, orientation,
+      is_left_side_vertical_scrollbar, is_overlay);
+  return base::WrapRefCounted(new FakePaintedScrollbarLayer(
+      std::move(fake_scrollbar), scrolling_element_id));
 }
 
 FakePaintedScrollbarLayer::FakePaintedScrollbarLayer(
-    FakeScrollbar* fake_scrollbar,
+    scoped_refptr<FakeScrollbar> fake_scrollbar,
     ElementId scroll_element_id)
-    : PaintedScrollbarLayer(std::unique_ptr<Scrollbar>(fake_scrollbar)),
+    : PaintedScrollbarLayer(fake_scrollbar),
       update_count_(0),
       push_properties_count_(0),
-      fake_scrollbar_(fake_scrollbar) {
+      fake_scrollbar_(fake_scrollbar.get()) {
   SetScrollElementId(scroll_element_id);
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);

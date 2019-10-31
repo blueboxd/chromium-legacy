@@ -43,6 +43,23 @@ public class AppMenuTestSupport {
     }
 
     /**
+     * Simulates a click on the menu item matching the provided id.
+     * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
+     * @param menuItemId The id of the menu item to click.
+     */
+    public static void callOnItemClick(AppMenuCoordinator coordinator, int menuItemId) {
+        MenuItem item = ((AppMenuCoordinatorImpl) coordinator)
+                                .getAppMenuHandlerImplForTesting()
+                                .getAppMenu()
+                                .getMenu()
+                                .findItem(menuItemId);
+        ((AppMenuCoordinatorImpl) coordinator)
+                .getAppMenuHandlerImplForTesting()
+                .getAppMenu()
+                .onItemClick(item);
+    }
+
+    /**
      * Show the app menu.
      * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
      * @param anchorView Anchor view (usually a menu button) to be used for the popup, if null is
@@ -66,6 +83,16 @@ public class AppMenuTestSupport {
 
     /**
      * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
+     * @return Whether the app menu component thinks the app menu can currently be shown.
+     */
+    public static boolean shouldShowAppMenu(AppMenuCoordinator coordinator) {
+        return ((AppMenuCoordinatorImpl) coordinator)
+                .getAppMenuHandlerImplForTesting()
+                .shouldShowAppMenu();
+    }
+
+    /**
+     * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
      * @return The {@link ListView} for the app menu.
      */
     public static ListView getListView(AppMenuCoordinator coordinator) {
@@ -73,16 +100,6 @@ public class AppMenuTestSupport {
                 .getAppMenuHandlerImplForTesting()
                 .getAppMenu()
                 .getListView();
-    }
-
-    /**
-     * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
-     * @return Whether the app menu should be shown according to the app menu component.
-     */
-    public static boolean shouldShowAppMenu(AppMenuCoordinator coordinator) {
-        return ((AppMenuCoordinatorImpl) coordinator)
-                .getAppMenuHandlerImplForTesting()
-                .shouldShowAppMenu();
     }
 
     /**

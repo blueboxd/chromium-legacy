@@ -44,8 +44,8 @@ TEST_F(FakeVideoCaptureDeviceTest, FrameCallbacksArriveFromI420Device) {
         }
       }));
 
-  i420_fake_device_proxy_->Start(requestable_settings_,
-                                 std::move(receiver_proxy));
+  i420_fake_device_remote_->Start(requestable_settings_,
+                                  std::move(receiver_proxy));
   wait_loop.Run();
 }
 
@@ -70,8 +70,8 @@ TEST_F(FakeVideoCaptureDeviceTest, FrameCallbacksArriveFromMjpegDevice) {
       }));
   EXPECT_CALL(receiver, OnStartedUsingGpuDecode()).Times(0);
 
-  mjpeg_fake_device_proxy_->Start(requestable_settings_,
-                                  std::move(receiver_proxy));
+  mjpeg_fake_device_remote_->Start(requestable_settings_,
+                                   std::move(receiver_proxy));
   wait_loop.Run();
 }
 
@@ -99,8 +99,8 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetReused) {
         }
       }));
 
-  i420_fake_device_proxy_->Start(requestable_settings_,
-                                 std::move(receiver_proxy));
+  i420_fake_device_remote_->Start(requestable_settings_,
+                                  std::move(receiver_proxy));
   wait_loop.Run();
 
   ASSERT_LT(num_buffers_created, num_frames_arrived);
@@ -130,8 +130,8 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetRetiredWhenDeviceIsStopped) {
             }
           }));
 
-  i420_fake_device_proxy_->Start(requestable_settings_,
-                                 std::move(receiver_proxy));
+  i420_fake_device_remote_->Start(requestable_settings_,
+                                  std::move(receiver_proxy));
   wait_for_frames_loop.Run();
 
   base::RunLoop wait_for_on_stopped_loop;
@@ -147,7 +147,7 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetRetiredWhenDeviceIsStopped) {
           [&wait_for_on_stopped_loop]() { wait_for_on_stopped_loop.Quit(); }));
 
   // Stop the device
-  i420_fake_device_proxy_.reset();
+  i420_fake_device_remote_.reset();
   wait_for_on_stopped_loop.Run();
   ASSERT_TRUE(known_buffer_ids.empty());
 }
@@ -220,8 +220,8 @@ TEST_F(FakeVideoCaptureDeviceTest,
   media::VideoCaptureParams settings_to_request = requestable_settings_;
   settings_to_request.buffer_type =
       media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor;
-  i420_fake_device_proxy_->Start(settings_to_request,
-                                 std::move(receiver_proxy));
+  i420_fake_device_remote_->Start(settings_to_request,
+                                  std::move(receiver_proxy));
   wait_loop.Run();
   EXPECT_FALSE(found_unexpected_all_zero_frame);
 }

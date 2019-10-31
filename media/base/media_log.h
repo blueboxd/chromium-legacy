@@ -92,12 +92,6 @@ class MEDIA_EXPORT MediaLog {
   // Inheritors should override GetErrorMessageLocked().
   std::string GetErrorMessage();
 
-  // Records the domain and registry of the current frame security origin to a
-  // Rappor privacy-preserving metric. See:
-  //   https://www.chromium.org/developers/design-documents/rappor
-  // Inheritors should override RecordRapportWithSecurityOriginLocked().
-  void RecordRapporWithSecurityOrigin(const std::string& metric);
-
   // Helper methods to create events and their parameters.
   std::unique_ptr<MediaLogEvent> CreateEvent(MediaLogEvent::Type type);
   std::unique_ptr<MediaLogEvent> CreateBooleanEvent(MediaLogEvent::Type type,
@@ -155,7 +149,6 @@ class MEDIA_EXPORT MediaLog {
   // Please see the documentation for the corresponding public methods.
   virtual void AddEventLocked(std::unique_ptr<MediaLogEvent> event);
   virtual std::string GetErrorMessageLocked();
-  virtual void RecordRapporWithSecurityOriginLocked(const std::string& metric);
 
   // Notify all child logs that they should stop working.  This should be called
   // to guarantee that no further calls into AddEvent should be allowed.

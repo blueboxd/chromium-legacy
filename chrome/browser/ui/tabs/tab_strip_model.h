@@ -452,6 +452,10 @@ class TabStripModel {
   // behind a feature flag. https://crbug.com/915956.
   void RemoveFromGroup(const std::vector<int>& indices);
 
+  // Register a new TabGroupId in the |group_data_| mapping.
+  void RegisterGroup(TabGroupId id,
+                     base::Optional<TabGroupVisualData> visual_data);
+
   // View API //////////////////////////////////////////////////////////////////
 
   // Context menu functions. Tab groups uses command ids following CommandLast

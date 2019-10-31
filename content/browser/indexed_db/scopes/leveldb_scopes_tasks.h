@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
-#include "content/browser/indexed_db/scopes/leveldb_state.h"
+#include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"

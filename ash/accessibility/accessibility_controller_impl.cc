@@ -36,6 +36,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -251,6 +252,43 @@ std::string PrefKeyForSwitchAccessCommand(SwitchAccessCommand command) {
     case SwitchAccessCommand::kNone:
       NOTREACHED();
       return "";
+  }
+}
+
+std::string UmaNameForSwitchAccessCommand(SwitchAccessCommand command) {
+  switch (command) {
+    case SwitchAccessCommand::kSelect:
+      return "Accessibility.CrosSwitchAccess.SelectKeyCode";
+    case SwitchAccessCommand::kNext:
+      return "Accessibility.CrosSwitchAccess.NextKeyCode";
+    case SwitchAccessCommand::kPrevious:
+      return "Accessibility.CrosSwitchAccess.PreviousKeyCode";
+    case SwitchAccessCommand::kNone:
+      NOTREACHED();
+      return "";
+  }
+}
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SwitchAccessCommandKeyCode {
+  kUnknown = 0,
+  kNone = 1,
+  kSpace = 2,
+  kEnter = 3,
+  kMaxValue = kEnter,
+};
+
+SwitchAccessCommandKeyCode UmaValueForKeyCode(int key_code) {
+  switch (key_code) {
+    case 0:
+      return SwitchAccessCommandKeyCode::kNone;
+    case 13:
+      return SwitchAccessCommandKeyCode::kEnter;
+    case 32:
+      return SwitchAccessCommandKeyCode::kSpace;
+    default:
+      return SwitchAccessCommandKeyCode::kUnknown;
   }
 }
 
@@ -1157,6 +1195,21 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
           &AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref,
           base::Unretained(this), SwitchAccessCommand::kPrevious));
   pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessAutoScanEnabled,
+      base::BindRepeating(&AccessibilityControllerImpl::
+                              UpdateSwitchAccessAutoScanEnabledFromPref,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::UpdateSwitchAccessAutoScanSpeedFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
+      base::BindRepeating(&AccessibilityControllerImpl::
+                              UpdateSwitchAccessAutoScanKeyboardSpeedFromPref,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityVirtualKeyboardEnabled,
       base::BindRepeating(
           &AccessibilityControllerImpl::UpdateVirtualKeyboardFromPref,
@@ -1517,9 +1570,6 @@ void AccessibilityControllerImpl::UpdateSwitchAccessFromPref() {
 
 void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
     SwitchAccessCommand command) {
-  if (!switch_access_event_handler_)
-    return;
-
   DCHECK(active_user_prefs_);
 
   std::string pref_key = PrefKeyForSwitchAccessCommand(command);
@@ -1530,7 +1580,49 @@ void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
     key_codes.insert(key_code);
   }
 
+  std::string uma_name = UmaNameForSwitchAccessCommand(command);
+  if (key_codes.size() == 0) {
+    SwitchAccessCommandKeyCode uma_value = UmaValueForKeyCode(0);
+    base::UmaHistogramEnumeration(uma_name, uma_value);
+  }
+  for (int key_code : key_codes) {
+    SwitchAccessCommandKeyCode uma_value = UmaValueForKeyCode(key_code);
+    base::UmaHistogramEnumeration(uma_name, uma_value);
+  }
+
+  if (!switch_access_event_handler_)
+    return;
+
   switch_access_event_handler_->SetKeyCodesForCommand(key_codes, command);
+}
+
+void AccessibilityControllerImpl::UpdateSwitchAccessAutoScanEnabledFromPref() {
+  DCHECK(active_user_prefs_);
+  const bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilitySwitchAccessAutoScanEnabled);
+
+  base::UmaHistogramBoolean("Accessibility.CrosSwitchAccess.AutoScan", enabled);
+}
+
+void AccessibilityControllerImpl::UpdateSwitchAccessAutoScanSpeedFromPref() {
+  DCHECK(active_user_prefs_);
+  const int speed_ms = active_user_prefs_->GetInteger(
+      prefs::kAccessibilitySwitchAccessAutoScanSpeedMs);
+
+  base::UmaHistogramCustomCounts(
+      "Accessibility.CrosSwitchAccess.AutoScan.SpeedMs", speed_ms, 1 /* min */,
+      10000 /* max */, 100 /* buckets */);
+}
+
+void AccessibilityControllerImpl::
+    UpdateSwitchAccessAutoScanKeyboardSpeedFromPref() {
+  DCHECK(active_user_prefs_);
+  const int speed_ms = active_user_prefs_->GetInteger(
+      prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs);
+
+  base::UmaHistogramCustomCounts(
+      "Accessibility.CrosSwitchAccess.AutoScan.KeyboardSpeedMs", speed_ms,
+      1 /* min */, 10000 /* max */, 100 /* buckets */);
 }
 
 void AccessibilityControllerImpl::MaybeCreateSwitchAccessEventHandler() {
@@ -1574,7 +1666,8 @@ void AccessibilityControllerImpl::UpdateVirtualKeyboardFromPref() {
 
 base::string16 AccessibilityControllerImpl::GetBatteryDescription() const {
   // Pass battery status as string to callback function.
-  return PowerStatus::Get()->GetAccessibleNameString(/*full_description=*/true);
+  return PowerStatus::Get()->GetAccessibleNameString(
+      /*full_description=*/true);
 }
 
 void AccessibilityControllerImpl::SetVirtualKeyboardVisible(bool is_visible) {

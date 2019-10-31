@@ -15,14 +15,20 @@
     {
       "name": "HorizontalScrollbar",
       "bounds": [200, 200],
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
+      "bounds": [200, 1610],
+      "backgroundColor": "#ADD8E6",
       "paintInvalidations": [
         {
           "object": "NGPhysicalTextFragment 'test'",
-          "rect": [0, 160, 22, 20],
+          "rect": [0, 610, 22, 20],
           "reason": "geometry"
         }
       ],
-      "transform": 1
+      "transform": 2
     }
   ],
   "transforms": [

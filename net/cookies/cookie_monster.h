@@ -302,43 +302,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
     COOKIE_SOURCE_LAST_ENTRY
   };
 
-  // Used to populate a histogram for cookie setting in the "delete equivalent"
-  // step. Measures total attempts to delete an equivalent cookie, and
-  // categorizes the outcome.
-  //
-  // * COOKIE_DELETE_EQUIVALENT_ATTEMPT is incremented each time a cookie is
-  //   set, causing the equivalent deletion algorithm to execute.
-  //
-  // * COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE is incremented when a non-secure
-  //   cookie is ignored because an equivalent, but secure, cookie already
-  //   exists.
-  //
-  // * COOKIE_DELETE_EQUIVALENT_WOULD_HAVE_DELETED is incremented when a cookie
-  //   is skipped due to `secure` rules (e.g. whenever
-  //   COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE is incremented), but would have
-  //   caused a deletion without those rules.
-  //
-  //   TODO(mkwst): Now that we've shipped strict secure cookie checks, we don't
-  //   need this value anymore.
-  //
-  // * COOKIE_DELETE_EQUIVALENT_FOUND is incremented each time an equivalent
-  //   cookie is found (and deleted).
-  //
-  // * COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE is incremented each time
-  //   an equivalent cookie that also shared the same value with the new cookie
-  //   is found (and deleted).
-  //
-  // Please do not reorder or remove entries. New entries must be added to the
-  // end of the list, just before COOKIE_DELETE_EQUIVALENT_LAST_ENTRY.
-  enum CookieDeleteEquivalent {
-    COOKIE_DELETE_EQUIVALENT_ATTEMPT = 0,
-    COOKIE_DELETE_EQUIVALENT_FOUND,
-    COOKIE_DELETE_EQUIVALENT_SKIPPING_SECURE,
-    COOKIE_DELETE_EQUIVALENT_WOULD_HAVE_DELETED,
-    COOKIE_DELETE_EQUIVALENT_FOUND_WITH_SAME_VALUE,
-    COOKIE_DELETE_EQUIVALENT_LAST_ENTRY
-  };
-
   // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
   static const int kRecordStatisticsIntervalSeconds = 10 * 60;
 
@@ -434,18 +397,24 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                 CookieStatusList* included_cookies,
                                 CookieStatusList* excluded_cookies);
 
-  // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
-  // |source_secure| indicates if the source may override existing secure
-  // cookies.
+  // Possibly delete an existing cookie equivalent to |cookie_being_set| (same
+  // path, domain, and name).
   //
-  // If |skip_httponly| is true, httponly cookies will not be deleted.  The
-  // return value will be true if |skip_httponly| skipped an httponly cookie or
-  // the cookie to delete was Secure and the scheme of |ecc| is insecure.  |key|
-  // is the key to find the cookie in cookies_; see the comment before the
+  // |source_secure| indicates if the source may override existing secure
+  // cookies. If the source is not secure, and there is an existing "equivalent"
+  // cookie that is Secure, that cookie will be preserved, under "Leave Secure
+  // Cookies Alone" (see
+  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone-01).
+  // ("equivalent" here is in quotes because the equivalency check for the
+  // purposes of preserving existing Secure cookies is slightly more inclusive.)
+  //
+  // If |skip_httponly| is true, httponly cookies will not be deleted even if
+  // they are equivalent.
+  // |key| is the key to find the cookie in cookies_; see the comment before the
   // CookieMap typedef for details.
   //
-  // If a cookie is deleted, and its value matches |ecc|'s value, then
-  // |creation_date_to_inherit| will be set to that cookie's creation date.
+  // If a cookie is deleted, and its value matches |cookie_being_set|'s value,
+  // then |creation_date_to_inherit| will be set to that cookie's creation date.
   //
   // The cookie will not be deleted if |*status| is not "include" when calling
   // the function. The function will update |*status| with exclusion reasons if
@@ -454,7 +423,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // NOTE: There should never be more than a single matching equivalent cookie.
   void MaybeDeleteEquivalentCookieAndUpdateStatus(
       const std::string& key,
-      const CanonicalCookie& ecc,
+      const CanonicalCookie& cookie_being_set,
       bool source_secure,
       bool skip_httponly,
       bool already_expired,
@@ -570,7 +539,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::HistogramBase* histogram_count_;
   base::HistogramBase* histogram_cookie_type_;
   base::HistogramBase* histogram_cookie_source_scheme_;
-  base::HistogramBase* histogram_cookie_delete_equivalent_;
   base::HistogramBase* histogram_time_blocked_on_load_;
 
   CookieMap cookies_;

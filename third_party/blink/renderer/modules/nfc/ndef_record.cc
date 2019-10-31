@@ -6,7 +6,11 @@
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_record_init.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
@@ -68,13 +72,32 @@ String ValidateCustomRecordType(const String& input) {
   return domain + ':' + right;
 }
 
-static NDEFRecord* CreateTextRecord(const String& media_type,
+String getDocumentLanguage(const ExecutionContext* execution_context) {
+  DCHECK(execution_context);
+  String document_language;
+  Element* document_element =
+      To<Document>(execution_context)->documentElement();
+  if (document_element) {
+    document_language = document_element->getAttribute(html_names::kLangAttr);
+  }
+  if (document_language.IsEmpty()) {
+    document_language = "en";
+  }
+  return document_language;
+}
+
+static NDEFRecord* CreateTextRecord(const ExecutionContext* execution_context,
+                                    const String& media_type,
+                                    const String& encoding,
+                                    const String& lang,
                                     const ScriptValue& data,
                                     ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-string-to-ndef
-  if (data.IsEmpty() || !data.V8Value()->IsString()) {
+  if (data.IsEmpty() ||
+      !(data.V8Value()->IsString() || data.V8Value()->IsArrayBuffer() ||
+        data.V8Value()->IsArrayBufferView())) {
     exception_state.ThrowTypeError(
-        "The data for 'text' NDEFRecords must be a String.");
+        "The data for 'text' NDEFRecords must be a String or a BufferSource.");
     return nullptr;
   }
 
@@ -93,9 +116,51 @@ static NDEFRecord* CreateTextRecord(const String& media_type,
     return nullptr;
   }
 
-  String text = ToCoreString(data.V8Value().As<v8::String>());
-  return MakeGarbageCollected<NDEFRecord>("text", mime_type,
-                                          GetUTF8DataFromString(text));
+  // Set language to lang if it exists, or the document element's lang
+  // attribute, or 'en'.
+  String language = lang;
+  if (execution_context && language.IsEmpty()) {
+    language = getDocumentLanguage(execution_context);
+  }
+
+  // Bits 0 to 5 define the length of the language tag
+  // https://w3c.github.io/web-nfc/#text-record
+  if (language.length() > 63) {
+    exception_state.ThrowTypeError("Lang length cannot be stored in 6 bit.");
+    return nullptr;
+  }
+
+  String encoding_label = !encoding.IsEmpty() ? encoding : "utf-8";
+  if (encoding_label != "utf-8" && encoding_label != "utf-16" &&
+      encoding_label != "utf-16be" && encoding_label != "utf-16le") {
+    exception_state.ThrowTypeError(
+        "Encoding must be either \"utf-8\", \"utf-16\", \"utf-16be\", or "
+        "\"utf-16le\".");
+    return nullptr;
+  }
+
+  WTF::Vector<uint8_t> bytes;
+  if (data.V8Value()->IsString()) {
+    String text = ToCoreString(data.V8Value().As<v8::String>());
+    StringUTF8Adaptor utf8_string(text);
+    bytes.Append(utf8_string.data(), utf8_string.size());
+  } else if (data.V8Value()->IsArrayBuffer()) {
+    DOMArrayBuffer* array_buffer =
+        V8ArrayBuffer::ToImpl(data.V8Value().As<v8::Object>());
+    bytes.Append(static_cast<uint8_t*>(array_buffer->Data()),
+                 array_buffer->ByteLength());
+  } else if (data.V8Value()->IsArrayBufferView()) {
+    DOMArrayBufferView* array_buffer_view =
+        V8ArrayBufferView::ToImpl(data.V8Value().As<v8::Object>());
+    bytes.Append(
+        static_cast<uint8_t*>(array_buffer_view->View()->BaseAddress()),
+        array_buffer_view->View()->ByteLength());
+  } else {
+    DCHECK(false);
+  }
+
+  return MakeGarbageCollected<NDEFRecord>("text", mime_type, encoding_label,
+                                          language, std::move(bytes));
 }
 
 static NDEFRecord* CreateUrlRecord(const String& media_type,
@@ -205,7 +270,8 @@ static NDEFRecord* CreateExternalRecord(const String& custom_type,
 }  // namespace
 
 // static
-NDEFRecord* NDEFRecord::Create(const NDEFRecordInit* init,
+NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
+                               const NDEFRecordInit* init,
                                ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#creating-web-nfc-message
   String record_type;
@@ -232,7 +298,9 @@ NDEFRecord* NDEFRecord::Create(const NDEFRecordInit* init,
     return MakeGarbageCollected<NDEFRecord>(record_type, String(),
                                             WTF::Vector<uint8_t>());
   } else if (record_type == "text") {
-    return CreateTextRecord(init->mediaType(), init->data(), exception_state);
+    return CreateTextRecord(execution_context, init->mediaType(),
+                            init->encoding(), init->lang(), init->data(),
+                            exception_state);
   } else if (record_type == "url") {
     return CreateUrlRecord(init->mediaType(), init->data(), exception_state);
   } else if (record_type == "json") {
@@ -260,9 +328,23 @@ NDEFRecord::NDEFRecord(const String& record_type,
       media_type_(media_type),
       payload_data_(std::move(data)) {}
 
-NDEFRecord::NDEFRecord(const String& text)
+NDEFRecord::NDEFRecord(const String& record_type,
+                       const String& media_type,
+                       const String& encoding,
+                       const String& lang,
+                       WTF::Vector<uint8_t> data)
+    : record_type_(record_type),
+      media_type_(media_type),
+      encoding_(encoding),
+      lang_(lang),
+      payload_data_(std::move(data)) {}
+
+NDEFRecord::NDEFRecord(const ExecutionContext* execution_context,
+                       const String& text)
     : record_type_("text"),
       media_type_("text/plain;charset=UTF-8"),
+      encoding_("utf-8"),
+      lang_(getDocumentLanguage(execution_context)),
       payload_data_(GetUTF8DataFromString(text)) {}
 
 NDEFRecord::NDEFRecord(DOMArrayBuffer* array_buffer)
@@ -275,6 +357,8 @@ NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
     : record_type_(record.record_type),
       media_type_(record.media_type),
       id_(record.id),
+      encoding_(record.encoding),
+      lang_(record.lang),
       payload_data_(record.data) {}
 
 const String& NDEFRecord::recordType() const {
@@ -287,6 +371,14 @@ const String& NDEFRecord::mediaType() const {
 
 const String& NDEFRecord::id() const {
   return id_;
+}
+
+const String& NDEFRecord::encoding() const {
+  return encoding_;
+}
+
+const String& NDEFRecord::lang() const {
+  return lang_;
 }
 
 DOMDataView* NDEFRecord::data() const {

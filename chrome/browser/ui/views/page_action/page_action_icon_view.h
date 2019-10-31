@@ -43,6 +43,9 @@ class PageActionIconView : public IconLabelBubbleView {
     // Gets the color to use for the ink highlight.
     virtual SkColor GetPageActionInkDropColor() const = 0;
 
+    // Gets the opacity to use for the ink highlight.
+    virtual float GetPageActionInkDropVisibleOpacity() const;
+
     virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
 
     // Returns the border the icon should use. It depends on what kind of

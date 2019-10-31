@@ -257,8 +257,7 @@ GetStaticSiteCharacteristicsDatabaseParams() {
 
 int GetNumOldestTabsToScoreWithTabRanker() {
   return base::GetFieldTrialParamByFeatureAsInt(
-      features::kTabRanker, "number_of_oldest_tabs_to_score_with_TabRanker",
-      20);
+      features::kTabRanker, "number_of_oldest_tabs_to_score_with_TabRanker", 0);
 }
 
 int GetProcessTypeToScoreWithTabRanker() {

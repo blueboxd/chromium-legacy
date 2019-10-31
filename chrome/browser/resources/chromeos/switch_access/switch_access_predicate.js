@@ -6,8 +6,6 @@ const StateType = chrome.automation.StateType;
 const RoleType = chrome.automation.RoleType;
 const DefaultActionVerb = chrome.automation.DefaultActionVerb;
 
-const GROUP_INTERESTING_CHILD_THRESHOLD = 2;
-
 /**
  * Contains predicates for the chrome automation API. The following basic
  * predicates are available:
@@ -23,6 +21,8 @@ const GROUP_INTERESTING_CHILD_THRESHOLD = 2;
  * restrictions required by TreeWalker for specific traversal situations.
  */
 const SwitchAccessPredicate = {
+  GROUP_INTERESTING_CHILD_THRESHOLD: 2,
+
   /**
    * Returns true if |node| is actionable, meaning that a user can interact with
    * it in some way.
@@ -119,7 +119,8 @@ const SwitchAccessPredicate = {
       if (SwitchAccessPredicate.isInterestingSubtree(child)) {
         interestingBranchesCount += 1;
       }
-      if (interestingBranchesCount >= GROUP_INTERESTING_CHILD_THRESHOLD) {
+      if (interestingBranchesCount >=
+          SwitchAccessPredicate.GROUP_INTERESTING_CHILD_THRESHOLD) {
         return true;
       }
       child = child.nextSibling;

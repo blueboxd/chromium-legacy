@@ -39,8 +39,6 @@ class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherInterface {
       const RequestParams& params) const override;
   base::Optional<RequestAction> GetUpgradeAction(
       const RequestParams& params) const override;
-  base::Optional<RequestAction> GetRedirectOrUpgradeActionByPriority(
-      const RequestParams& params) const override;
   uint8_t GetRemoveHeadersMask(
       const RequestParams& params,
       uint8_t ignored_mask,
@@ -56,15 +54,15 @@ class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherInterface {
  private:
   using UrlPatternIndexMatcher = url_pattern_index::UrlPatternIndexMatcher;
 
-  // Returns the ruleset's matching redirect rule and populates
-  // |redirect_url| if there is a matching redirect rule, otherwise returns
-  // nullptr.
+  // Returns the ruleset's highest priority matching redirect rule and populates
+  // |redirect_url|. Returns nullptr if there is no matching redirect rule.
   const url_pattern_index::flat::UrlRule* GetRedirectRule(
       const RequestParams& params,
       GURL* redirect_url) const;
 
-  // Returns the ruleset's matching upgrade scheme rule or nullptr if no
-  // matching rule is found or if the request's scheme is not upgradeable.
+  // Returns the ruleset's highest priority matching upgrade scheme rule or
+  // nullptr if no matching rule is found or if the request's scheme is not
+  // upgradeable.
   const url_pattern_index::flat::UrlRule* GetUpgradeRule(
       const RequestParams& params) const;
 

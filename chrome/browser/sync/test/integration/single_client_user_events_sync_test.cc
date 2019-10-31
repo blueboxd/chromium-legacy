@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Encryption) {
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
   event_service->RecordUserEvent(test_event1);
   EXPECT_TRUE(ExpectUserEvents({test_event1}));
-  ASSERT_TRUE(EnableEncryption(0));
+  GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase("passphrase");
   event_service->RecordUserEvent(test_event2);
 
   // Just checking that we don't see test_event2 isn't very convincing yet,

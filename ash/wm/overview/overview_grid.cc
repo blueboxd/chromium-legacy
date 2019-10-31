@@ -267,8 +267,8 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
        SplitViewController::LEFT)
           ? SplitViewController::RIGHT
           : SplitViewController::LEFT;
-  gfx::Rect bounds =
-      split_view_controller->GetSnappedWindowBoundsInScreen(opposite_position);
+  gfx::Rect bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
+      opposite_position, /*window_for_minimum_size=*/nullptr);
   if (!divider_changed)
     return bounds;
 

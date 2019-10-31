@@ -202,7 +202,7 @@ static_library("devtools") {
   if (!is_android) {
     deps += [
       ":protocol_generated_sources",
-      "//third_party/inspector_protocol:encoding",
+      "//third_party/inspector_protocol:crdtp",
     ]
     sources += [
       "protocol/browser_handler.cc",

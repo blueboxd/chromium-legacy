@@ -22,6 +22,7 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "base/callback_helpers.h"
 #include "base/strings/strcat.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/display/display.h"
@@ -100,6 +101,10 @@ bool TestBrowserDialog::VerifyUi() {
 // TODO(https://crbug.com/958242) support Mac for pixel tests.
 #if !defined(OS_MACOSX)
   if (pixel_diff_) {
+    dialog_widget->SetBlockCloseForTesting(true);
+    base::ScopedClosureRunner unblock_close(
+        base::BindOnce(&views::Widget::SetBlockCloseForTesting,
+                       base::Unretained(dialog_widget), false));
     // Wait for painting complete.
     auto* compositor = dialog_widget->GetCompositor();
     ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);

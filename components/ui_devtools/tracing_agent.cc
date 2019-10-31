@@ -311,8 +311,7 @@ void TracingAgent::OnTraceDataCollected(
                  trace_data_buffer_state_.offset);
   message += "] } }";
   std::vector<uint8_t> cbor;
-  ::inspector_protocol_encoding::Status status = ConvertJSONToCBOR(
-      ::inspector_protocol_encoding::SpanFrom(message), &cbor);
+  crdtp::Status status = ConvertJSONToCBOR(crdtp::SpanFrom(message), &cbor);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
 
   frontend()->sendRawCBORNotification(std::move(cbor));

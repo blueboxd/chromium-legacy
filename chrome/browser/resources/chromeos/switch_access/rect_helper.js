@@ -100,6 +100,19 @@ const RectHelper = {
     return str;
   },
 
+  /*
+   * @param {chrome.accessibilityPrivate.ScreenRect=} rect1
+   * @param {chrome.accessibilityPrivate.ScreenRect=} rect2
+   */
+  sameRow: (rect1, rect2) => {
+    if (!rect1 || !rect2) return false;
+    const halfHeight = Math.round(rect1.height / 2);
+    const topBound = rect1.top - halfHeight;
+    const bottomBound = rect1.top + halfHeight;
+
+    return topBound <= rect2.top && bottomBound >= rect2.top;
+  },
+
   /**
    * Increases the size of |outer| to entirely enclose |inner|, with |padding|
    * buffer on each side.

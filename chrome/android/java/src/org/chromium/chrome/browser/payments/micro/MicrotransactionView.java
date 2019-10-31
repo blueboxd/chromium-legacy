@@ -119,8 +119,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.HeightMode;
     }
 
     @Override
-    public boolean wrapContentEnabled() {
-        return true;
+    public float getFullHeightRatio() {
+        return HeightMode.WRAP_CONTENT;
     }
 
     @Override

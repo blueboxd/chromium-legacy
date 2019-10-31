@@ -132,15 +132,6 @@ void PageInfoHoverButton::UpdateAccessibleName() {
   HoverButton::SetAccessibleName(accessible_name);
 }
 
-// The following methods of HoverButton are overridden to bypass the layout
-// logic implicit in the HoverButton class hierarchy.
-void PageInfoHoverButton::Layout() {
-  ink_drop_container()->SetBoundsRect(GetLocalBounds());
-  if (GetLayoutManager())
-    GetLayoutManager()->Layout(this);
-  Button::Layout();
-}
-
 gfx::Size PageInfoHoverButton::CalculatePreferredSize() const {
   return Button::CalculatePreferredSize();
 }

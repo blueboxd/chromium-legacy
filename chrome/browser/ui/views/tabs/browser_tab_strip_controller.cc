@@ -101,8 +101,7 @@ class BrowserTabStripController::TabContextMenuContents
   TabContextMenuContents(Tab* tab, BrowserTabStripController* controller)
       : tab_(tab), controller_(controller) {
     model_ = std::make_unique<TabMenuModel>(
-        this, controller->model_,
-        controller->tabstrip_->GetModelIndexOfTab(tab));
+        this, controller->model_, controller->tabstrip_->GetModelIndexOf(tab));
     menu_runner_ = std::make_unique<views::MenuRunner>(
         model_.get(),
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
@@ -195,7 +194,7 @@ void BrowserTabStripController::InitFromModel(TabStrip* tabstrip) {
 bool BrowserTabStripController::IsCommandEnabledForTab(
     TabStripModel::ContextMenuCommand command_id,
     Tab* tab) const {
-  int model_index = tabstrip_->GetModelIndexOfTab(tab);
+  int model_index = tabstrip_->GetModelIndexOf(tab);
   return model_->ContainsIndex(model_index) ?
       model_->IsContextMenuCommandEnabled(model_index, command_id) : false;
 }
@@ -203,13 +202,13 @@ bool BrowserTabStripController::IsCommandEnabledForTab(
 void BrowserTabStripController::ExecuteCommandForTab(
     TabStripModel::ContextMenuCommand command_id,
     Tab* tab) {
-  int model_index = tabstrip_->GetModelIndexOfTab(tab);
+  int model_index = tabstrip_->GetModelIndexOf(tab);
   if (model_->ContainsIndex(model_index))
     model_->ExecuteContextMenuCommand(model_index, command_id);
 }
 
 bool BrowserTabStripController::IsTabPinned(Tab* tab) const {
-  return IsTabPinned(tabstrip_->GetModelIndexOfTab(tab));
+  return IsTabPinned(tabstrip_->GetModelIndexOf(tab));
 }
 
 const ui::ListSelectionModel&
@@ -394,7 +393,7 @@ void BrowserTabStripController::StackedLayoutMaybeChanged() {
                                                tabstrip_->stacked_layout());
 }
 
-void BrowserTabStripController::OnStartedDraggingTabs() {
+void BrowserTabStripController::OnStartedDragging() {
   if (!immersive_reveal_lock_.get()) {
     // The top-of-window views should be revealed while the user is dragging
     // tabs in immersive fullscreen. The top-of-window views may not be already
@@ -413,7 +412,7 @@ void BrowserTabStripController::OnStartedDraggingTabs() {
     source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/true);
 }
 
-void BrowserTabStripController::OnStoppedDraggingTabs() {
+void BrowserTabStripController::OnStoppedDragging() {
   immersive_reveal_lock_.reset();
 
   BrowserView* source_browser_view = GetSourceBrowserViewInTabDragging();
@@ -484,8 +483,8 @@ base::Optional<int> BrowserTabStripController::GetCustomBackgroundId(
 
 base::string16 BrowserTabStripController::GetAccessibleTabName(
     const Tab* tab) const {
-  return browser_view_->GetAccessibleTabLabel(
-      false /* include_app_name */, tabstrip_->GetModelIndexOfTab(tab));
+  return browser_view_->GetAccessibleTabLabel(false /* include_app_name */,
+                                              tabstrip_->GetModelIndexOf(tab));
 }
 
 Profile* BrowserTabStripController::GetProfile() const {

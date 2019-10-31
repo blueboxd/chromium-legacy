@@ -281,38 +281,6 @@ base::string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(
   return user_name;
 }
 
-const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
-    size_t index) const {
-  if (IsUsingGAIAPictureOfProfileAtIndex(index)) {
-    const gfx::Image* image = GetGAIAPictureOfProfileAtIndex(index);
-    if (image)
-      return *image;
-  }
-
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  // Use the high resolution version of the avatar if it exists. Mobile and
-  // ChromeOS don't need the high resolution version so no need to fetch it.
-  const gfx::Image* image = GetHighResAvatarOfProfileAtIndex(index);
-  if (image)
-    return *image;
-#endif
-
-  int resource_id = profiles::GetDefaultAvatarIconResourceIDAtIndex(
-      GetAvatarIconIndexOfProfileAtIndex(index));
-  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      resource_id);
-}
-
-bool ProfileInfoCache::GetBackgroundStatusOfProfileAtIndex(
-    size_t index) const {
-  bool background_app_status;
-  if (!GetInfoForProfileAtIndex(index)->GetBoolean(
-          ProfileAttributesEntry::kBackgroundAppsKey, &background_app_status)) {
-    return false;
-  }
-  return background_app_status;
-}
-
 base::string16 ProfileInfoCache::GetGAIANameOfProfileAtIndex(
     size_t index) const {
   base::string16 name;
@@ -527,18 +495,6 @@ void ProfileInfoCache::SetSupervisedUserIdOfProfileAtIndex(
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
   for (auto& observer : observer_list_)
     observer.OnProfileSupervisedUserIdChanged(profile_path);
-}
-
-void ProfileInfoCache::SetBackgroundStatusOfProfileAtIndex(
-    size_t index,
-    bool running_background_apps) {
-  if (GetBackgroundStatusOfProfileAtIndex(index) == running_background_apps)
-    return;
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetBoolean(ProfileAttributesEntry::kBackgroundAppsKey,
-                   running_background_apps);
-  SetInfoForProfileAtIndex(index, std::move(info));
 }
 
 void ProfileInfoCache::SetGAIANameOfProfileAtIndex(size_t index,

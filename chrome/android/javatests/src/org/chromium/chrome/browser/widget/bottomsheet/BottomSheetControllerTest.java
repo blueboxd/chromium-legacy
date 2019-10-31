@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
@@ -66,6 +67,7 @@ public class BottomSheetControllerTest {
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             ViewGroup coordinator = activity.findViewById(org.chromium.chrome.R.id.coordinator);
+            BottomSheet.setSmallScreenForTesting(false);
             mBottomSheet = activity.getLayoutInflater()
                                    .inflate(org.chromium.chrome.R.layout.bottom_sheet, coordinator)
                                    .findViewById(org.chromium.chrome.R.id.bottom_sheet)
@@ -350,6 +352,50 @@ public class BottomSheetControllerTest {
                 mSheetController.getBottomSheet().getCurrentSheetContent());
     }
 
+    @Test
+    @MediumTest
+    public void testCustomHalfRatio() throws TimeoutException {
+        final float customHalfHeight = 0.3f;
+        int containerHeight =
+                mActivityTestRule.getActivity().getActivityTabProvider().get().getHeight();
+        mLowPriorityContent.setHalfHeightRatio(customHalfHeight);
+        requestContentInSheet(mLowPriorityContent, true);
+
+        expandSheet();
+
+        assertEquals("Half height is incorrect for custom ratio.",
+                customHalfHeight * containerHeight, mBottomSheet.getCurrentOffsetPx(),
+                MathUtils.EPSILON);
+    }
+
+    @Test
+    @MediumTest
+    public void testCustomFullRatio() throws TimeoutException {
+        final float customFullHeight = 0.5f;
+        int containerHeight =
+                mActivityTestRule.getActivity().getActivityTabProvider().get().getHeight();
+        mLowPriorityContent.setFullHeightRatio(customFullHeight);
+        requestContentInSheet(mLowPriorityContent, true);
+
+        maximizeSheet();
+
+        assertEquals("Full height is incorrect for custom ratio.",
+                customFullHeight * containerHeight, mBottomSheet.getCurrentOffsetPx(),
+                MathUtils.EPSILON);
+    }
+
+    @Test
+    @MediumTest
+    public void testExpandWithDisabledHalfState() throws TimeoutException {
+        mLowPriorityContent.setHalfHeightRatio(BottomSheet.HeightMode.DISABLED);
+        requestContentInSheet(mLowPriorityContent, true);
+
+        expandSheet();
+
+        assertEquals("The bottom sheet should be at the full state when half is disabled.",
+                BottomSheet.SheetState.FULL, mBottomSheet.getSheetState());
+    }
+
     /**
      * Request content be shown in the bottom sheet and end animations.
      * @param content The content to show.
@@ -383,6 +429,12 @@ public class BottomSheetControllerTest {
     private void expandSheet() {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mBottomSheet.setSheetState(BottomSheet.SheetState.HALF, false));
+    }
+
+    /** Expand the bottom sheet to it's maximum height. */
+    private void maximizeSheet() {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mBottomSheet.setSheetState(BottomSheet.SheetState.FULL, false));
     }
 
     /**

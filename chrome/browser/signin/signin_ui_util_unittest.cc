@@ -9,6 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -382,7 +383,14 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
   }
 }
 
-TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
+// TODO(https://crbug.com/1014790): This test is timing out on Mac 10.12
+#if defined(OS_MACOSX)
+#define MAYBE_EnableSyncForNewAccountWithNoTab \
+  DISABLED_EnableSyncForNewAccountWithNoTab
+#else
+#define MAYBE_EnableSyncForNewAccountWithNoTab EnableSyncForNewAccountWithNoTab
+#endif
+TEST_F(DiceSigninUiUtilTest, MAYBE_EnableSyncForNewAccountWithNoTab) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 

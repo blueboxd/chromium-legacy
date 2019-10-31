@@ -82,13 +82,6 @@ base::Optional<RequestAction> RulesetMatcher::GetUpgradeAction(
   return url_pattern_index_matcher_.GetUpgradeAction(params);
 }
 
-base::Optional<RequestAction>
-RulesetMatcher::GetRedirectOrUpgradeActionByPriority(
-    const RequestParams& params) const {
-  return url_pattern_index_matcher_.GetRedirectOrUpgradeActionByPriority(
-      params);
-}
-
 uint8_t RulesetMatcher::GetRemoveHeadersMask(
     const RequestParams& params,
     uint8_t ignored_mask,
@@ -99,6 +92,21 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(
 
 bool RulesetMatcher::IsExtraHeadersMatcher() const {
   return url_pattern_index_matcher_.IsExtraHeadersMatcher();
+}
+
+base::Optional<RequestAction>
+RulesetMatcher::GetRedirectOrUpgradeActionByPriority(
+    const RequestParams& params) const {
+  base::Optional<RequestAction> redirect_action = GetRedirectAction(params);
+  base::Optional<RequestAction> upgrade_action = GetUpgradeAction(params);
+
+  if (!redirect_action)
+    return upgrade_action;
+  if (!upgrade_action)
+    return redirect_action;
+  if (upgrade_action->rule_priority >= redirect_action->rule_priority)
+    return upgrade_action;
+  return redirect_action;
 }
 
 RulesetMatcher::RulesetMatcher(

@@ -138,7 +138,8 @@ public class PreferencesLauncher {
             RecordHistogram.recordEnumeratedHistogram(
                     "PasswordManager.ManagePasswordsReferrerSignedInAndSyncing", referrer,
                     ManagePasswordsReferrer.MAX_VALUE + 1);
-            if (!PrefServiceBridge.getInstance().isRememberPasswordsManaged()) {
+            if (!PrefServiceBridge.getInstance().isManagedPreference(
+                        Pref.REMEMBER_PASSWORDS_ENABLED)) {
                 if (tryShowingTheGooglePasswordManager(activity)) return;
             }
         }

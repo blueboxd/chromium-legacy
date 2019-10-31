@@ -40,6 +40,22 @@ bool WebAppInstallManager::CanInstallWebApp(
          IsValidWebAppUrl(web_contents->GetLastCommittedURL());
 }
 
+void WebAppInstallManager::LoadWebAppAndCheckInstallability(
+    const GURL& web_app_url,
+    WebAppInstallabilityCheckCallback callback) {
+  auto task = std::make_unique<WebAppInstallTask>(
+      profile(), shortcut_manager(), finalizer(),
+      data_retriever_factory_.Run());
+
+  task->LoadWebAppAndCheckInstallability(
+      web_app_url, WebappInstallSource::MANAGEMENT_API, url_loader_.get(),
+      base::BindOnce(
+          &WebAppInstallManager::OnLoadWebAppAndCheckInstallabilityCompleted,
+          base::Unretained(this), task.get(), std::move(callback)));
+
+  tasks_.insert(std::move(task));
+}
+
 void WebAppInstallManager::InstallWebAppFromManifest(
     content::WebContents* contents,
     WebappInstallSource install_source,
@@ -50,7 +66,7 @@ void WebAppInstallManager::InstallWebAppFromManifest(
       data_retriever_factory_.Run());
   task->InstallWebAppFromManifest(
       contents, install_source, std::move(dialog_callback),
-      base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
+      base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 
   tasks_.insert(std::move(task));
@@ -67,7 +83,7 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
       data_retriever_factory_.Run());
   task->InstallWebAppFromManifestWithFallback(
       contents, force_shortcut_app, install_source, std::move(dialog_callback),
-      base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
+      base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 
   tasks_.insert(std::move(task));
@@ -83,7 +99,7 @@ void WebAppInstallManager::InstallWebAppFromInfo(
       data_retriever_factory_.Run());
   task->InstallWebAppFromInfo(
       std::move(web_application_info), for_installable_site, install_source,
-      base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
+      base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 
   tasks_.insert(std::move(task));
@@ -99,7 +115,7 @@ void WebAppInstallManager::InstallWebAppWithParams(
       data_retriever_factory_.Run());
   task->InstallWebAppWithParams(
       web_contents, install_params, install_source,
-      base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
+      base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 
   tasks_.insert(std::move(task));
@@ -236,12 +252,16 @@ void WebAppInstallManager::SetDataRetrieverFactoryForTesting(
   data_retriever_factory_ = std::move(data_retriever_factory);
 }
 
-void WebAppInstallManager::OnTaskCompleted(WebAppInstallTask* task,
-                                           OnceInstallCallback callback,
-                                           const AppId& app_id,
-                                           InstallResultCode code) {
+void WebAppInstallManager::DeleteTask(WebAppInstallTask* task) {
   DCHECK(tasks_.contains(task));
   tasks_.erase(task);
+}
+
+void WebAppInstallManager::OnInstallTaskCompleted(WebAppInstallTask* task,
+                                                  OnceInstallCallback callback,
+                                                  const AppId& app_id,
+                                                  InstallResultCode code) {
+  DeleteTask(task);
 
   std::move(callback).Run(app_id, code);
 }
@@ -253,7 +273,7 @@ void WebAppInstallManager::OnQueuedTaskCompleted(WebAppInstallTask* task,
   DCHECK(is_running_queued_task_);
   is_running_queued_task_ = false;
 
-  OnTaskCompleted(task, std::move(callback), app_id, code);
+  OnInstallTaskCompleted(task, std::move(callback), app_id, code);
   task = nullptr;
 
   if (task_queue_.empty()) {
@@ -262,6 +282,17 @@ void WebAppInstallManager::OnQueuedTaskCompleted(WebAppInstallTask* task,
   } else {
     MaybeStartQueuedTask();
   }
+}
+
+void WebAppInstallManager::OnLoadWebAppAndCheckInstallabilityCompleted(
+    WebAppInstallTask* task,
+    WebAppInstallabilityCheckCallback callback,
+    std::unique_ptr<content::WebContents> web_contents,
+    const AppId& app_id,
+    InstallResultCode code) {
+  DeleteTask(task);
+
+  std::move(callback).Run(std::move(web_contents), IsSuccess(code));
 }
 
 void WebAppInstallManager::OnWebAppInstalledAfterSync(

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "media/capture/video/video_capture_device_info.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -43,23 +44,24 @@ class VirtualDeviceEnabledDeviceFactory::VirtualDeviceEntry {
 
   bool HasConsumerBinding() { return consumer_receiver_ != nullptr; }
 
-  void EstablishConsumerBinding(mojom::DeviceRequest device_request,
-                                base::OnceClosure connection_error_handler) {
+  void BindConsumerReceiver(
+      mojo::PendingReceiver<mojom::Device> device_receiver,
+      base::OnceClosure connection_error_handler) {
     switch (device_type_) {
       case DeviceType::kSharedMemory:
         consumer_receiver_ = std::make_unique<mojo::Receiver<mojom::Device>>(
-            shared_memory_device_.get(), std::move(device_request));
+            shared_memory_device_.get(), std::move(device_receiver));
         break;
       case DeviceType::kTexture:
         consumer_receiver_ = std::make_unique<mojo::Receiver<mojom::Device>>(
-            texture_device_.get(), std::move(device_request));
+            texture_device_.get(), std::move(device_receiver));
         break;
     }
     consumer_receiver_->set_disconnect_handler(
         std::move(connection_error_handler));
   }
 
-  void ResetConsumerBinding() { consumer_receiver_.reset(); }
+  void ResetConsumerReceiver() { consumer_receiver_.reset(); }
 
   void StopDevice() {
     if (shared_memory_device_)
@@ -105,19 +107,20 @@ void VirtualDeviceEnabledDeviceFactory::GetDeviceInfos(
 
 void VirtualDeviceEnabledDeviceFactory::CreateDevice(
     const std::string& device_id,
-    mojom::DeviceRequest device_request,
+    mojo::PendingReceiver<mojom::Device> device_receiver,
     CreateDeviceCallback callback) {
   auto virtual_device_iter = virtual_devices_by_id_.find(device_id);
   if (virtual_device_iter != virtual_devices_by_id_.end()) {
     VirtualDeviceEntry& device_entry = virtual_device_iter->second;
     if (device_entry.HasConsumerBinding()) {
       // The requested virtual device is already used by another client.
-      // Revoke the access for the current client, then bind to the new request.
-      device_entry.ResetConsumerBinding();
+      // Revoke the access for the current client, then bind to the new
+      // receiver.
+      device_entry.ResetConsumerReceiver();
       device_entry.StopDevice();
     }
-    device_entry.EstablishConsumerBinding(
-        std::move(device_request),
+    device_entry.BindConsumerReceiver(
+        std::move(device_receiver),
         base::BindOnce(&VirtualDeviceEnabledDeviceFactory::
                            OnVirtualDeviceConsumerConnectionErrorOrClose,
                        base::Unretained(this), device_id));
@@ -125,7 +128,7 @@ void VirtualDeviceEnabledDeviceFactory::CreateDevice(
     return;
   }
 
-  device_factory_->CreateDevice(device_id, std::move(device_request),
+  device_factory_->CreateDevice(device_id, std::move(device_receiver),
                                 std::move(callback));
 }
 

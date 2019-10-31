@@ -14,7 +14,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/devtools_manager_delegate.h"
-#include "third_party/inspector_protocol/encoding/encoding.h"
+#include "third_party/inspector_protocol/crdtp/encoding.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/devtools/protocol/window_manager_handler.h"
@@ -26,15 +26,9 @@ namespace {
 // the error / status propagation story settled, move the common parts
 // into a content public API.
 
-using ::inspector_protocol_encoding::span;
-using ::inspector_protocol_encoding::SpanFrom;
-using ::inspector_protocol_encoding::json::ConvertCBORToJSON;
-using ::inspector_protocol_encoding::json::ConvertJSONToCBOR;
-using IPEStatus = ::inspector_protocol_encoding::Status;
-
 // Platform allows us to inject the string<->double conversion
 // routines from base:: into the inspector_protocol JSON parser / serializer.
-class Platform : public ::inspector_protocol_encoding::json::Platform {
+class Platform : public crdtp::json::Platform {
  public:
   bool StrToD(const char* str, double* result) const override {
     return base::StringToDouble(str, result);
@@ -49,7 +43,7 @@ class Platform : public ::inspector_protocol_encoding::json::Platform {
   }
 };
 
-IPEStatus ConvertCBORToJSON(span<uint8_t> cbor, std::string* json) {
+crdtp::Status ConvertCBORToJSON(crdtp::span<uint8_t> cbor, std::string* json) {
   Platform platform;
   return ConvertCBORToJSON(platform, cbor, json);
 }
@@ -118,7 +112,7 @@ static void SendProtocolResponseOrNotification(
     return;
   }
   std::string json;
-  IPEStatus status = ConvertCBORToJSON(SpanFrom(cbor), &json);
+  crdtp::Status status = ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client->DispatchProtocolMessage(agent_host, json);
 }

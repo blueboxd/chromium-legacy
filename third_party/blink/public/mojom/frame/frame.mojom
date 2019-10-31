@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "cc/mojom/touch_action.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
@@ -94,6 +95,21 @@ interface LocalFrame {
   CheckCompleted();
 };
 
+// Implemented in Browser, this interface defines frame-specific methods that will
+// be invoked from the render process (e.g. blink::RemoteFrame).
+//
+// Note that this is different than content/common/frame.mojom in that the
+// methods defined here are called directly in Blink without passing through
+// content. In the future this interface will likely host more methods as the
+// Onion Soup project advances, which can potentially lead to the removal of
+// content/common/frame.mojom if enough code is moved to Blink.
+interface RemoteFrameHost {
+  // Notifies that an effective touch action has been calculated from an
+  // ancestor of the associated RemoteFrame and should be propogated to
+  // the associated LocalFrame in the other render process.
+  SetInheritedEffectiveTouchAction(cc.mojom.TouchAction touch_action);
+};
+
 // Implemented in Blink, this interface defines frame-specific methods that will
 // be invoked from the browser process (e.g. content::RenderFrameProxyHost).
 //
@@ -118,4 +134,9 @@ interface RemoteFrame {
   // is a hashed set of host/port pairs. See
   // SecurityContext::SetInsecureNavigationsSet.
   EnforceInsecureNavigationsSet(array<uint32> set);
+
+  // Update the replicated origin. Used when the frame is navigated to a
+  // new origin.
+  SetReplicatedOrigin(url.mojom.Origin origin,
+    bool is_potentially_trustworthy_unique_origin);
 };

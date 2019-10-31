@@ -40,11 +40,7 @@ NSString* GetFocusedElementId() {
   NSString* js = @"(function() {"
                   "  return document.activeElement.id;"
                   "})();";
-  NSError* error = nil;
-  NSString* result = [ChromeEarlGreyAppInterface executeJavaScript:js
-                                                             error:&error];
-  GREYAssertTrue(!error, @"Unexpected error when executing JavaScript.");
-  return result;
+  return [ChromeEarlGrey executeJavaScript:js];
 }
 
 // Verifies that |elementId| is the selected element in the web page.

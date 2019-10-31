@@ -292,7 +292,9 @@ void OverlayPanelLayer::SetProperties(
     float spacing_between_icons = 2 * bar_margin_side;
     float margin_from_close_icon = close_icon_width + spacing_between_icons;
     if (is_rtl) {
-      open_tab_left = close_icon_left + margin_from_close_icon;
+      open_tab_left = close_icon_resource_id_ == kInvalidResourceID
+                          ? close_icon_left
+                          : close_icon_left + margin_from_close_icon;
     } else {
       open_tab_left = close_icon_left - margin_from_close_icon;
     }

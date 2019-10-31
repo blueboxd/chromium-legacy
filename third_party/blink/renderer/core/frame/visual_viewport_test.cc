@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/property_tree.h"
+#include "cc/trees/scroll_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -80,6 +82,16 @@ void ConfigureAndroidCompositing(WebSettings* settings) {
   settings->SetViewportEnabled(true);
   settings->SetMainFrameResizesAreOrientationChanges(true);
   settings->SetShrinksViewportContentToFit(true);
+}
+
+const cc::ScrollNode* GetScrollNode(const cc::Layer* layer) {
+  return layer->layer_tree_host()->property_trees()->scroll_tree.Node(
+      layer->scroll_tree_index());
+}
+
+const cc::EffectNode* GetEffectNode(const cc::Layer* layer) {
+  return layer->layer_tree_host()->property_trees()->effect_tree.Node(
+      layer->effect_tree_index());
 }
 
 class VisualViewportTest : public testing::Test,
@@ -512,32 +524,6 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   }
 }
 
-// Test that the container layer gets sized properly if the WebView is resized
-// prior to the VisualViewport being attached to the layer tree.
-TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
-  InitializeWithDesktopSettings();
-  LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
-
-  // Make sure that a resize that comes in while there's no root layer is
-  // honoured when we attach to the layer tree.
-  WebFrameWidgetBase* main_frame_widget =
-      WebView()->MainFrameImpl()->FrameWidgetImpl();
-  main_frame_widget->SetRootGraphicsLayer(nullptr);
-  WebView()->MainFrameWidget()->Resize(IntSize(320, 240));
-
-  NavigateTo("about:blank");
-  UpdateAllLifecyclePhases();
-  main_frame_widget->SetRootGraphicsLayer(
-      frame_view.GetLayoutView()->Compositor()->RootGraphicsLayer());
-
-  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_EQ(IntSize(320, 240),
-            visual_viewport.GetScrollNode()->ContainerRect().Size());
-}
-
 // Make sure that the visibleRect method acurately reflects the scale and scroll
 // location of the viewport.
 TEST_P(VisualViewportTest, TestVisibleRect) {
@@ -853,7 +839,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   // Ensure the scroll contents size matches the frame view's size.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(IntSize(320, 240),
-              IntSize(visual_viewport.ScrollLayer()->Size()));
+              IntSize(visual_viewport.LayerForScrolling()->bounds()));
   }
   EXPECT_EQ(IntSize(320, 240), visual_viewport.GetScrollNode()->ContentsSize());
 
@@ -1672,8 +1658,6 @@ TEST_P(VisualViewportTest,
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_TRUE(visual_viewport.LayerForHorizontalScrollbar());
   EXPECT_TRUE(visual_viewport.LayerForVerticalScrollbar());
-  EXPECT_TRUE(visual_viewport.LayerForHorizontalScrollbar()->Parent());
-  EXPECT_TRUE(visual_viewport.LayerForVerticalScrollbar()->Parent());
 }
 
 // Tests that the layout viewport's scroll layer bounds are updated in a
@@ -1696,15 +1680,13 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
                       "content.style.height = \"2400px\";"));
   frame_view.UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
-  cc::Layer* scroll_layer =
-      frame_view.LayoutViewport()->LayerForScrolling()->CcLayer();
+  const auto* scroll_layer = frame_view.LayoutViewport()->LayerForScrolling();
+  const auto* scroll_node = GetScrollNode(scroll_layer);
 
   EXPECT_EQ(gfx::Size(1500, 2400), scroll_layer->bounds());
-  EXPECT_EQ(IntSize(1500, 2400), frame_view.GetLayoutView()
-                                     ->FirstFragment()
-                                     .PaintProperties()
-                                     ->Scroll()
-                                     ->ContentsSize());
+  float scale = scroll_layer->layer_tree_host()->page_scale_factor();
+  EXPECT_EQ(gfx::Size(100 / scale, 150 / scale), scroll_node->container_bounds);
+  EXPECT_EQ(gfx::Size(1500, 2400), scroll_node->bounds);
 }
 
 // Tests that resizing the visual viepwort keeps its bounds within the outer
@@ -2422,29 +2404,31 @@ TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
   ASSERT_TRUE(vertical_scrollbar);
   ASSERT_TRUE(horizontal_scrollbar);
 
-  auto& vertical_scrollbar_state = vertical_scrollbar->GetPropertyTreeState();
-  auto& horizontal_scrollbar_state =
-      horizontal_scrollbar->GetPropertyTreeState();
-
   ScrollbarThemeOverlay& theme = ScrollbarThemeOverlay::MobileTheme();
   int scrollbar_thickness = clampTo<int>(std::floor(
       GetFrame()->GetPage()->GetChromeClient().WindowToViewportScalar(
           GetFrame(), theme.ScrollbarThickness(kRegularScrollbar))));
 
-  EXPECT_EQ(vertical_scrollbar_state.Effect().GetCompositorElementId(),
-            visual_viewport.GetScrollbarElementId(
-                ScrollbarOrientation::kVerticalScrollbar));
-  EXPECT_EQ(vertical_scrollbar->GetOffsetFromTransformNode(),
-            IntPoint(400 - scrollbar_thickness, 0));
+  EXPECT_EQ(vertical_scrollbar->effect_tree_index(),
+            vertical_scrollbar->layer_tree_host()
+                ->property_trees()
+                ->element_id_to_effect_node_index
+                    [visual_viewport.GetScrollbarElementId(
+                        ScrollbarOrientation::kVerticalScrollbar)]);
+  EXPECT_EQ(vertical_scrollbar->offset_to_transform_parent(),
+            gfx::Vector2dF(400 - scrollbar_thickness, 0));
 
-  EXPECT_EQ(horizontal_scrollbar_state.Effect().GetCompositorElementId(),
-            visual_viewport.GetScrollbarElementId(
-                ScrollbarOrientation::kHorizontalScrollbar));
-  EXPECT_EQ(horizontal_scrollbar->GetOffsetFromTransformNode(),
-            IntPoint(0, 400 - scrollbar_thickness));
+  EXPECT_EQ(horizontal_scrollbar->effect_tree_index(),
+            horizontal_scrollbar->layer_tree_host()
+                ->property_trees()
+                ->element_id_to_effect_node_index
+                    [visual_viewport.GetScrollbarElementId(
+                        ScrollbarOrientation::kHorizontalScrollbar)]);
+  EXPECT_EQ(horizontal_scrollbar->offset_to_transform_parent(),
+            gfx::Vector2dF(0, 400 - scrollbar_thickness));
 
-  EXPECT_EQ(vertical_scrollbar_state.Effect().Parent(),
-            horizontal_scrollbar_state.Effect().Parent());
+  EXPECT_EQ(GetEffectNode(vertical_scrollbar)->parent_id,
+            GetEffectNode(horizontal_scrollbar)->parent_id);
 }
 
 // Make sure we don't crash when the visual viewport's height is 0. This can
@@ -2505,9 +2489,7 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   ASSERT_EQ(1.25f, WebView().MinimumPageScaleFactor());
 
   VisualViewport& visual_viewport = WebView().GetPage()->GetVisualViewport();
-  EXPECT_EQ(gfx::Size(320, 480), visual_viewport.ScrollLayer()->Size());
-  EXPECT_EQ(gfx::Size(320, 480),
-            visual_viewport.ScrollLayer()->CcLayer()->bounds());
+  EXPECT_EQ(gfx::Size(320, 480), visual_viewport.LayerForScrolling()->bounds());
 
   EXPECT_EQ(IntSize(400, 600),
             visual_viewport.GetScrollNode()->ContainerRect().Size());
@@ -2516,9 +2498,7 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   WebView().MainFrameWidget()->ApplyViewportChanges(
       {gfx::ScrollOffset(1, 1), gfx::Vector2dF(), 2, false, 1, 0,
        cc::BrowserControlsState::kBoth});
-  EXPECT_EQ(gfx::Size(320, 480), visual_viewport.ScrollLayer()->Size());
-  EXPECT_EQ(gfx::Size(320, 480),
-            visual_viewport.ScrollLayer()->CcLayer()->bounds());
+  EXPECT_EQ(gfx::Size(320, 480), visual_viewport.LayerForScrolling()->bounds());
 
   EXPECT_EQ(IntSize(400, 600),
             visual_viewport.GetScrollNode()->ContainerRect().Size());

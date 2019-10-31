@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -224,6 +225,9 @@ void CastAudioOutputStream::MixerServiceWrapper::FillNextBuffer(
     int frames,
     int64_t playout_timestamp) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+
+  // Round down to closest multiple of 4 to ensure correct channel alignment.
+  frames = base::bits::AlignDown(frames, 4);
 
   // Acquire running_lock_ for the scope of this fill call to
   // prevent the source callback from closing the output stream

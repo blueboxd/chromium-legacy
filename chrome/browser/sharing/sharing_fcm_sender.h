@@ -14,9 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/gcm_driver/web_push_common.h"
+#include "components/sync/protocol/sharing_message.pb.h"
 #include "components/sync_device_info/device_info.h"
 
 namespace gcm {

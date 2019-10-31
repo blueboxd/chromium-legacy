@@ -185,11 +185,8 @@ class SARootNode {
     this.children_ = [];
   }
 
-  /**
-   * @param {!Array<!SAChildNode>} children
-   * @protected
-   */
-  setChildren_(children) {
+  /** @param {!Array<!SAChildNode>} children */
+  setChildren(children) {
     this.children_ = children;
   }
 
@@ -240,7 +237,8 @@ class SARootNode {
 
   /** @return {!chrome.accessibilityPrivate.ScreenRect} */
   get location() {
-    let childLocations = this.children_.map((c) => c.location);
+    let children = this.children_.filter((c) => !(c instanceof BackButtonNode));
+    let childLocations = children.map((c) => c.location);
     return RectHelper.unionAll(childLocations);
   }
 

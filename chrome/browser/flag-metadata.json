@@ -649,6 +649,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "dim-shelf",
+    "owners": [ "yulunwu" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "direct-actions",
     "owners": [ "szermatt", "tedchoc", "twellington" ],
     "expiry_milestone": 81

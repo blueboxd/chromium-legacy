@@ -83,7 +83,6 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       proxied_loader_binding_(this, std::move(loader_request)),
       target_client_(std::move(client)),
       proxied_client_binding_(this),
-      current_response_(network::mojom::URLResponseHead::New()),
       has_any_extra_headers_listeners_(
           network_service_request_id_ != 0 &&
           ExtensionWebRequestEventRouter::GetInstance()
@@ -279,12 +278,12 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
   if (current_request_uses_header_client_) {
     // Use the headers we got from OnHeadersReceived as that'll contain
     // Set-Cookie if it existed.
-    auto saved_headers = current_response_->headers;
-    current_response_ = std::move(head);
-    current_response_->headers = saved_headers;
+    auto saved_headers = current_response_.headers;
+    current_response_ = head;
+    current_response_.headers = saved_headers;
     ContinueToResponseStarted(net::OK);
   } else {
-    current_response_ = std::move(head);
+    current_response_ = head;
     HandleResponseOrRedirectHeaders(
         base::BindOnce(&InProgressRequest::ContinueToResponseStarted,
                        weak_factory_.GetWeakPtr()));
@@ -305,16 +304,16 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
   if (current_request_uses_header_client_) {
     // Use the headers we got from OnHeadersReceived as that'll contain
     // Set-Cookie if it existed.
-    auto saved_headers = current_response_->headers;
-    current_response_ = std::move(head);
+    auto saved_headers = current_response_.headers;
+    current_response_ = head;
     // If this redirect is from an HSTS upgrade, OnHeadersReceived will not be
     // called before OnReceiveRedirect, so make sure the saved headers exist
     // before setting them.
     if (saved_headers)
-      current_response_->headers = saved_headers;
+      current_response_.headers = saved_headers;
     ContinueToBeforeRedirect(redirect_info, net::OK);
   } else {
-    current_response_ = std::move(head);
+    current_response_ = head;
     HandleResponseOrRedirectHeaders(
         base::BindOnce(&InProgressRequest::ContinueToBeforeRedirect,
                        weak_factory_.GetWeakPtr(), redirect_info));
@@ -370,8 +369,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::HandleAuthRequest(
   // Set-Cookie). So we don't use |response_headers| since it won't have the
   // Set-Cookie headers.
   if (!current_request_uses_header_client_) {
-    current_response_ = network::mojom::URLResponseHead::New();
-    current_response_->headers = response_headers;
+    network::ResourceResponseHead head;
+    head.headers = response_headers;
+    current_response_ = head;
   }
   // We first need to simulate |onHeadersReceived| for the response headers
   // which indicated a need to authenticate.
@@ -433,10 +433,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnHeadersReceived(
   }
 
   on_headers_received_callback_ = std::move(callback);
-  current_response_ = network::mojom::URLResponseHead::New();
-  current_response_->headers =
+  current_response_.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>(headers);
-  current_response_->remote_endpoint = remote_endpoint;
+  current_response_.remote_endpoint = remote_endpoint;
   HandleResponseOrRedirectHeaders(
       base::BindOnce(&InProgressRequest::ContinueToHandleOverrideHeaders,
                      weak_factory_.GetWeakPtr()));
@@ -465,7 +464,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   redirect_info.new_url = redirect_url_;
   redirect_info.new_site_for_cookies = redirect_url_;
 
-  auto head = network::mojom::URLResponseHead::New();
+  network::ResourceResponseHead head;
   std::string headers = base::StringPrintf(
       "HTTP/1.1 %i Internal Redirect\n"
       "Location: %s\n"
@@ -503,11 +502,11 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
           http_origin.c_str());
     }
   }
-  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head->encoded_data_length = 0;
+  head.encoded_data_length = 0;
 
-  current_response_ = std::move(head);
+  current_response_ = head;
   ContinueToBeforeRedirect(redirect_info, net::OK);
 }
 
@@ -677,7 +676,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
     return;
   }
 
-  info_->AddResponseInfoFromResourceResponse(*current_response_);
+  info_->AddResponseInfoFromResourceResponse(current_response_);
   auto continuation =
       base::BindRepeating(&InProgressRequest::OnAuthRequestHandled,
                           weak_factory_.GetWeakPtr(), base::Passed(&callback));
@@ -755,7 +754,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       // Make sure to update current_response_,  since when OnReceiveResponse
       // is called we will not use its headers as it might be missing the
       // Set-Cookie line (as that gets stripped over IPC).
-      current_response_->headers = override_headers_;
+      current_response_.headers = override_headers_;
     }
   }
 
@@ -770,7 +769,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   if (for_cors_preflight_) {
     // If this is for CORS preflight, there is no associated client. We notify
     // the completion here, and deletes |this|.
-    info_->AddResponseInfoFromResourceResponse(*current_response_);
+    info_->AddResponseInfoFromResourceResponse(current_response_);
     ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
         factory_->browser_context_, &info_.value(), net::OK);
     ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
@@ -795,7 +794,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   DCHECK(!current_request_uses_header_client_ || !override_headers_);
   if (override_headers_)
-    current_response_->headers = override_headers_;
+    current_response_.headers = override_headers_;
 
   std::string redirect_location;
   if (override_headers_ && override_headers_->IsRedirect(&redirect_location)) {
@@ -825,13 +824,13 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     return;
   }
 
-  info_->AddResponseInfoFromResourceResponse(*current_response_);
+  info_->AddResponseInfoFromResourceResponse(current_response_);
 
   proxied_client_binding_.ResumeIncomingMethodCallProcessing();
 
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       factory_->browser_context_, &info_.value(), net::OK);
-  target_client_->OnReceiveResponse(std::move(current_response_));
+  target_client_->OnReceiveResponse(current_response_);
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -842,15 +841,14 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     return;
   }
 
-  info_->AddResponseInfoFromResourceResponse(*current_response_);
+  info_->AddResponseInfoFromResourceResponse(current_response_);
 
   if (proxied_client_binding_.is_bound())
     proxied_client_binding_.ResumeIncomingMethodCallProcessing();
 
   ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRedirect(
       factory_->browser_context_, &info_.value(), redirect_info.new_url);
-  target_client_->OnReceiveRedirect(redirect_info,
-                                    std::move(current_response_));
+  target_client_->OnReceiveRedirect(redirect_info, current_response_);
   request_.url = redirect_info.new_url;
   request_.method = redirect_info.new_method;
   request_.site_for_cookies = redirect_info.new_site_for_cookies;
@@ -877,7 +875,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     int result =
         ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
             factory_->browser_context_, &info_.value(), copyable_callback,
-            current_response_->headers.get(), &override_headers_,
+            current_response_.headers.get(), &override_headers_,
             &redirect_url_);
     if (result == net::ERR_BLOCKED_BY_CLIENT) {
       OnRequestError(network::URLLoaderCompletionStatus(result));

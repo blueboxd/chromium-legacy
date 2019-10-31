@@ -203,16 +203,13 @@ class RootNodeWrapper extends SARootNode {
     if (interestingChildren.length < 1) {
       throw new Error('Root node must have at least 1 interesting child.');
     }
+    let children = interestingChildren.map(childConstructor);
 
     const backButton = new BackButtonNode(root);
-
-    let children = interestingChildren.map(childConstructor);
     children.push(backButton);
 
     SARootNode.connectChildren(children);
-    root.setChildren_(children);
-
-    return;
+    root.setChildren(children);
   }
 
   /**
@@ -231,7 +228,7 @@ class RootNodeWrapper extends SARootNode {
     let children = interestingChildren.map(childConstructor);
 
     SARootNode.connectChildren(children);
-    root.setChildren_(children);
+    root.setChildren(children);
 
     return root;
   }

@@ -34,7 +34,8 @@ namespace autotestPrivate {
     BuiltIn,
     Crostini,
     Extension,
-    Web
+    Web,
+    MacNative
   };
 
   // A mapping of apps::mojom::Readiness
@@ -346,6 +347,12 @@ namespace autotestPrivate {
     boolean hasFocus;
     boolean onActiveDesk;
     boolean hasCapture;
+
+    // Window frame info
+    long captionHeight;
+    long captionButtonEnabledStatus;
+    long captionButtonVisibleStatus;
+
     DOMString? arcPackageName;
   };
 

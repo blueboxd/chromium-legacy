@@ -28,7 +28,6 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.weblayer.BrowserController;
-import org.chromium.weblayer.BrowserFragment;
 import org.chromium.weblayer.BrowserFragmentController;
 import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.DownloadDelegate;
@@ -46,12 +45,8 @@ import java.util.List;
  * Activity for managing the Demo Shell.
  */
 public class WebLayerShellActivity extends FragmentActivity {
-    public static final String EXTRA_NO_LOAD = "extra_no_load";
-
     private static final String TAG = "WebLayerShell";
     private static final String KEY_MAIN_VIEW_ID = "mainViewId";
-
-    public static final String EXTRA_PROFILE_NAME = "EXTRA_PROFILE_NAME";
 
     private Profile mProfile;
     private BrowserFragmentController mBrowserFragmentController;
@@ -61,39 +56,6 @@ public class WebLayerShellActivity extends FragmentActivity {
     private View mMainView;
     private int mMainViewId;
     private ViewGroup mTopContentsContainer;
-    private BrowserFragment mFragment;
-    private IntentInterceptor mIntentInterceptor;
-
-    public BrowserController getBrowserController() {
-        return mBrowserController;
-    }
-
-    public BrowserFragmentController getBrowserFragmentController() {
-        return mBrowserFragmentController;
-    }
-
-    /** Interface used to intercept intents for testing. */
-    public static interface IntentInterceptor {
-        void interceptIntent(Fragment fragment, Intent intent, int requestCode, Bundle options);
-    }
-
-    public void setIntentInterceptor(IntentInterceptor interceptor) {
-        mIntentInterceptor = interceptor;
-    }
-
-    @Override
-    public void startActivityFromFragment(
-            Fragment fragment, Intent intent, int requestCode, Bundle options) {
-        if (mIntentInterceptor != null) {
-            mIntentInterceptor.interceptIntent(fragment, intent, requestCode, options);
-            return;
-        }
-        super.startActivityFromFragment(fragment, intent, requestCode, options);
-    }
-
-    public View getTopContentsContainer() {
-        return mTopContentsContainer;
-    }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -161,8 +123,8 @@ public class WebLayerShellActivity extends FragmentActivity {
     private void onWebLayerReady(Bundle savedInstanceState) {
         if (isFinishing() || isDestroyed()) return;
 
-        mFragment = getOrCreateBrowserFragment(savedInstanceState);
-        mBrowserFragmentController = mFragment.getController();
+        Fragment fragment = getOrCreateBrowserFragment(savedInstanceState);
+        mBrowserFragmentController = BrowserFragmentController.fromFragment(fragment);
         mBrowserFragmentController.getBrowserController().setFullscreenDelegate(
                 new FullscreenDelegate() {
                     private int mSystemVisibilityToRestore;
@@ -205,15 +167,11 @@ public class WebLayerShellActivity extends FragmentActivity {
         mBrowserFragmentController.setTopView(mTopContentsContainer);
 
         mBrowserController = mBrowserFragmentController.getBrowserController();
-        boolean blockFirstLoad = getIntent().getExtras() != null
-                && getIntent().getExtras().getBoolean(EXTRA_NO_LOAD, false);
-        if (!blockFirstLoad) {
-            String startupUrl = getUrlFromIntent(getIntent());
-            if (TextUtils.isEmpty(startupUrl)) {
-                startupUrl = "http://google.com";
-            }
-            loadUrl(startupUrl);
+        String startupUrl = getUrlFromIntent(getIntent());
+        if (TextUtils.isEmpty(startupUrl)) {
+            startupUrl = "http://google.com";
         }
+        loadUrl(startupUrl);
         mBrowserController.addObserver(new BrowserObserver() {
             @Override
             public void visibleUrlChanged(Uri uri) {
@@ -244,7 +202,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         });
     }
 
-    private BrowserFragment getOrCreateBrowserFragment(Bundle savedInstanceState) {
+    private Fragment getOrCreateBrowserFragment(Bundle savedInstanceState) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         if (savedInstanceState != null) {
             // FragmentManager could have re-created the fragment.
@@ -253,18 +211,17 @@ public class WebLayerShellActivity extends FragmentActivity {
                 throw new IllegalStateException("More than one fragment added, shouldn't happen");
             }
             if (fragments.size() == 1) {
-                return (BrowserFragment) fragments.get(0);
+                return fragments.get(0);
             }
         }
 
-        String profileName = getIntent().hasExtra(EXTRA_PROFILE_NAME)
-                ? getIntent().getStringExtra(EXTRA_PROFILE_NAME) : "DefaultProfile";
+        String profileName = "DefaultProfile";
         String profilePath = null;
         if (!TextUtils.isEmpty(profileName)) {
             profilePath = new File(getFilesDir(), profileName).getPath();
         } // else create an in-memory Profile.
 
-        BrowserFragment fragment = WebLayer.createBrowserFragment(profilePath);
+        Fragment fragment = WebLayer.createBrowserFragment(profilePath);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(mMainViewId, fragment);
 
@@ -273,11 +230,6 @@ public class WebLayerShellActivity extends FragmentActivity {
         // have to wait until the commit is executed.
         transaction.commitNow();
         return fragment;
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
     }
 
     public void loadUrl(String url) {

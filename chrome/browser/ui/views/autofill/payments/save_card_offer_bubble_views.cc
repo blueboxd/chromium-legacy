@@ -90,11 +90,7 @@ bool SaveCardOfferBubbleViews::Accept() {
 }
 
 int SaveCardOfferBubbleViews::GetDialogButtons() const {
-  if (features::ShouldShowImprovedUserConsentForCreditCardSave() ||
-      base::FeatureList::IsEnabled(features::kAutofillSaveCardShowNoThanks)) {
-    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  }
-  return ui::DIALOG_BUTTON_OK;
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(

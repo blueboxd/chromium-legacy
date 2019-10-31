@@ -560,6 +560,9 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the password icon is hidden when no passwords are available.
 - (void)testPasswordIconIsNotVisibleWhenPasswordStoreEmpty {
+  // Test failing on iOS13.2 (crbug.com/1019535)
+  if (@available(iOS 13.2, *))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.2");
   [AutofillAppInterface clearPasswordStore];
 
   // Bring up the keyboard.

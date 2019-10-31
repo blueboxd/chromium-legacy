@@ -138,11 +138,6 @@ extern const char kEnableAutofillCreditCardUploadEditableExpirationDateName[];
 extern const char
     kEnableAutofillCreditCardUploadEditableExpirationDateDescription[];
 
-// Title and description for the flag to control if no thanks button should be
-// shown when saving a card.
-extern const char kEnableAutofillSaveCardShowNoThanksName[];
-extern const char kEnableAutofillSaveCardShowNoThanksDescription[];
-
 // Title and description for the flag to enable the clipboard provider to
 // suggest searchihng for copied imagse
 extern const char kEnableClipboardProviderImageSuggestionsName[];

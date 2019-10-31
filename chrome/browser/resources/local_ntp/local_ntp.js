@@ -1248,6 +1248,11 @@ function onRealboxWrapperFocusOut(e) {
     // onRealboxWrapperKeydown) and match data intact.
     window.chrome.embeddedSearch.searchBox.stopAutocomplete(
         /*clearResult=*/ true);
+
+    // Clear the input if it was empty when displaying the matches.
+    if (lastInput === '') {
+      updateRealboxOutput({inline: '', text: ''});
+    }
   }
 }
 

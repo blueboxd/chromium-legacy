@@ -11,6 +11,7 @@
 #include "chromecast/media/audio/mixer_service/conversions.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
 #include "chromecast/media/audio/mixer_service/mixer_socket.h"
+#include "chromecast/media/cma/backend/mixer/audio_output_redirector.h"
 #include "chromecast/media/cma/backend/mixer/loopback_handler.h"
 #include "chromecast/media/cma/backend/mixer/mixer_input_connection.h"
 #include "chromecast/media/cma/backend/mixer/mixer_loopback_connection.h"
@@ -150,7 +151,13 @@ void MixerServiceReceiver::CreateLoopbackConnection(
 void MixerServiceReceiver::CreateAudioRedirection(
     std::unique_ptr<mixer_service::MixerSocket> socket,
     const mixer_service::Generic& message) {
-  LOG(INFO) << "Unhandled redirection connection";
+  if (message.redirection_request().has_num_channels() &&
+      message.redirection_request().num_channels() <= 0) {
+    LOG(INFO) << "Bad redirection request";
+    return;
+  }
+  mixer_->AddAudioOutputRedirector(std::make_unique<AudioOutputRedirector>(
+      mixer_, std::move(socket), message));
 }
 
 void MixerServiceReceiver::CreateControlConnection(

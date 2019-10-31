@@ -4,33 +4,41 @@
 
 package org.chromium.chrome.browser.omaha;
 
+import android.app.Activity;
+import android.app.Instrumentation.ActivityResult;
 import android.content.Context;
+import android.support.test.espresso.intent.Intents;
+import android.support.test.espresso.intent.matcher.IntentMatchers;
 import android.support.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.task.PostTask;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
+
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for the UpdateMenuItemHelper.
@@ -40,6 +48,9 @@ import org.chromium.ui.test.util.UiRestriction;
 public class UpdateMenuItemHelperTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
+    private static final String TEST_MARKET_URL =
+            "https://play.google.com/store/apps/details?id=com.android.chrome";
 
     private static final long MS_TIMEOUT = 2000;
     private static final long MS_INTERVAL = 500;
@@ -95,8 +106,26 @@ public class UpdateMenuItemHelperTest {
         }
     }
 
+    private static class TestAppMenuObserver implements AppMenuObserver {
+        CallbackHelper mMenuShownCallback = new CallbackHelper();
+        CallbackHelper mMenuHiddenCallback = new CallbackHelper();
+
+        @Override
+        public void onMenuVisibilityChanged(boolean isVisible) {
+            if (isVisible) {
+                mMenuShownCallback.notifyCalled();
+            } else {
+                mMenuHiddenCallback.notifyCalled();
+            }
+        }
+
+        @Override
+        public void onMenuHighlightChanged(boolean highlighting) {}
+    }
+
     private MockVersionNumberGetter mMockVersionNumberGetter;
     private MockMarketURLGetter mMockMarketURLGetter;
+    private TestAppMenuObserver mMenuObserver;
 
     @Before
     public void setUp() {
@@ -116,12 +145,13 @@ public class UpdateMenuItemHelperTest {
         VersionNumberGetter.setInstanceForTests(mMockVersionNumberGetter);
 
         // Report a dummy URL to Omaha.
-        mMockMarketURLGetter = new MockMarketURLGetter(
-                "https://play.google.com/store/apps/details?id=com.android.chrome");
+        mMockMarketURLGetter = new MockMarketURLGetter(TEST_MARKET_URL);
         MarketURLGetter.setInstanceForTests(mMockMarketURLGetter);
 
         // Start up main.
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
+        mMenuObserver = new TestAppMenuObserver();
+        mActivityTestRule.getAppMenuCoordinator().getAppMenuHandler().addObserver(mMenuObserver);
 
         // Check to make sure that the version numbers get queried.
         versionNumbersQueried();
@@ -220,33 +250,105 @@ public class UpdateMenuItemHelperTest {
                 mActivityTestRule.getMenu().findItem(R.id.update_menu_id).isVisible());
     }
 
-    private void showAppMenuAndAssertMenuShown() {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+    @Test
+    @MediumTest
+    @Feature({"Omaha"})
+    @DisableFeatures("InlineUpdateFlow")
+    public void testClickUpdateMenuItem() throws Exception {
+        checkUpdateMenuItemIsShowing("0.0.0.0", "1.2.3.4");
+
+        Assert.assertEquals(
+                "Incorrect item clicked histogram count", 0, getTotalItemClickedCount());
+        Assert.assertEquals(
+                "Incorrect item not clicked histogram count", 0, getTotalItemNotClickedCount());
+
+        Intents.init();
+        ActivityResult intentResult = new ActivityResult(Activity.RESULT_OK, null);
+        Intents.intending(IntentMatchers.hasData(TEST_MARKET_URL)).respondWith(intentResult);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> AppMenuTestSupport.callOnItemClick(
+                                mActivityTestRule.getAppMenuCoordinator(), R.id.update_menu_id));
+
+        Intents.intended(Matchers.allOf(IntentMatchers.hasData(TEST_MARKET_URL)));
+
+        Assert.assertEquals("Incorrect item clicked histogram count after item clicked", 1,
+                getTotalItemClickedCount());
+        Assert.assertEquals("Incorrect item not clicked histogram count after item clicked", 0,
+                getTotalItemNotClickedCount());
+
+        mMenuObserver.mMenuHiddenCallback.waitForCallback(0);
+        waitForAppMenuDimissedRunnable();
+
+        Assert.assertEquals("Incorrect item clicked histogram count after menu dismissed", 1,
+                getTotalItemClickedCount());
+        Assert.assertEquals("Incorrect item not clicked histogram count after menu dismissed", 0,
+                getTotalItemNotClickedCount());
+
+        Intents.release();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Omaha"})
+    @DisableFeatures("InlineUpdateFlow")
+    public void testHideMenuWithoutClicking() throws Exception {
+        checkUpdateMenuItemIsShowing("0.0.0.0", "1.2.3.4");
+
+        Assert.assertEquals(
+                "Incorrect item clicked histogram count", 0, getTotalItemClickedCount());
+        Assert.assertEquals(
+                "Incorrect item not clicked histogram count", 0, getTotalItemNotClickedCount());
+
+        hideAppMenuAndAssertMenuShown();
+        waitForAppMenuDimissedRunnable();
+
+        Assert.assertEquals("Incorrect item clicked histogram count after menu dismissed", 0,
+                getTotalItemClickedCount());
+        Assert.assertEquals("Incorrect item not clicked histogram count after menu dismissed", 1,
+                getTotalItemNotClickedCount());
+    }
+
+    private void showAppMenuAndAssertMenuShown() throws TimeoutException {
+        int currentCallCount = mMenuObserver.mMenuShownCallback.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivityTestRule.getActivity()
-                        .getRootUiCoordinatorForTesting()
-                        .getAppMenuCoordinatorForTesting()
-                        .getAppMenuHandler()
-                        .isAppMenuShowing();
-            }
-        });
+        mMenuObserver.mMenuShownCallback.waitForCallback(currentCallCount);
     }
 
-    private void hideAppMenuAndAssertMenuShown() {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            mActivityTestRule.getAppMenuCoordinator().getAppMenuHandler().hideAppMenu();
-        });
+    private void hideAppMenuAndAssertMenuShown() throws TimeoutException {
+        int currentCallCount = mMenuObserver.mMenuHiddenCallback.getCallCount();
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getAppMenuCoordinator().getAppMenuHandler().hideAppMenu());
+
+        mMenuObserver.mMenuHiddenCallback.waitForCallback(currentCallCount);
+    }
+
+    private int getTotalItemClickedCount() {
+        return RecordHistogram.getHistogramValueCountForTesting(
+                       UpdateMenuItemHelper.ACTION_TAKEN_ON_MENU_OPEN_HISTOGRAM,
+                       UpdateMenuItemHelper.ITEM_CLICKED_INTENT_FAILED)
+                + RecordHistogram.getHistogramValueCountForTesting(
+                        UpdateMenuItemHelper.ACTION_TAKEN_ON_MENU_OPEN_HISTOGRAM,
+                        UpdateMenuItemHelper.ITEM_CLICKED_INTENT_LAUNCHED);
+    }
+
+    private int getTotalItemNotClickedCount() {
+        return RecordHistogram.getHistogramValueCountForTesting(
+                UpdateMenuItemHelper.ACTION_TAKEN_ON_MENU_OPEN_HISTOGRAM,
+                UpdateMenuItemHelper.ITEM_NOT_CLICKED);
+    }
+
+    private void waitForAppMenuDimissedRunnable() {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !mActivityTestRule.getAppMenuCoordinator()
-                                .getAppMenuHandler()
-                                .isAppMenuShowing();
+                return UpdateMenuItemHelper.getInstance()
+                        .getMenuDismissedRunnableExecutedForTests();
             }
         });
     }

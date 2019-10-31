@@ -19,6 +19,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
+#include "net/base/net_errors.h"
 #include "services/data_decoder/public/cpp/safe_bundled_exchanges_parser.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "url/gurl.h"
@@ -58,7 +59,7 @@ class CONTENT_EXPORT BundledExchangesReader final
   // Starts loading response body. |response| should be obtained by
   // ReadResponse above beforehand. Body will be written into |producer_handle|.
   // After all body data is written, |callback| will be invoked.
-  using BodyCompletionCallback = base::OnceCallback<void(MojoResult result)>;
+  using BodyCompletionCallback = base::OnceCallback<void(net::Error net_error)>;
   void ReadResponseBody(data_decoder::mojom::BundleResponsePtr response,
                         mojo::ScopedDataPipeProducerHandle producer_handle,
                         BodyCompletionCallback callback);

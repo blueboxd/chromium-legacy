@@ -5,6 +5,7 @@
 #ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_DELEGATE_LINUX_H_
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_DELEGATE_LINUX_H_
 
+#include "base/component_export.h"
 #include "ui/base/buildflags.h"
 #include "ui/platform_window/platform_window_delegate_base.h"
 
@@ -23,7 +24,8 @@ namespace ui {
 // This is an optional linux delegate interface, which should be implemented by
 // linux-based platforms. It contains both Wayland and X11 specific and common
 // interfaces.
-class PlatformWindowDelegateLinux : public PlatformWindowDelegateBase {
+class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegateLinux
+    : public PlatformWindowDelegateBase {
  public:
   PlatformWindowDelegateLinux();
   ~PlatformWindowDelegateLinux() override;

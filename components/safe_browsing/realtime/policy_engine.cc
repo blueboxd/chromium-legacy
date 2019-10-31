@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
@@ -44,8 +45,11 @@ bool RealTimePolicyEngine::IsEnabledByPolicy(
 // static
 bool RealTimePolicyEngine::CanPerformFullURLLookup(
     content::BrowserContext* browser_context) {
+#if !defined(OS_ANDROID)
+  // TODO(crbug.com/963165): Remove this flag in M80.
   if (!IsFetchAllowlistEnabled())
     return false;
+#endif
 
   if (IsEnabledByPolicy(browser_context))
     return true;

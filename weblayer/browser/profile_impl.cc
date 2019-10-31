@@ -4,6 +4,8 @@
 
 #include "weblayer/browser/profile_impl.h"
 
+#include "base/callback.h"
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -13,7 +15,10 @@
 #include "weblayer/public/download_delegate.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
+#include "base/android/jni_array.h"
+#include "base/android/scoped_java_ref.h"
 #include "weblayer/browser/java/jni/ProfileImpl_jni.h"
 #endif
 
@@ -155,18 +160,17 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
 
 class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
  public:
-  DataClearer(content::BrowserContext* browser_context, ProfileImpl* profile)
+  DataClearer(content::BrowserContext* browser_context,
+      base::OnceCallback<void()> callback)
       : remover_(
             content::BrowserContext::GetBrowsingDataRemover(browser_context)),
-        profile_(profile) {
+        callback_(std::move(callback)) {
     remover_->AddObserver(this);
   }
 
   ~DataClearer() override { remover_->RemoveObserver(this); }
 
-  void ClearData() {
-    int mask = content::BrowsingDataRemover::DATA_TYPE_COOKIES |
-               content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
+  void ClearData(int mask) {
     int origin_types =
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
         content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
@@ -175,35 +179,52 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
   }
 
   void OnBrowsingDataRemoverDone() override {
-    profile_->OnBrowsingDataCleared();
+    std::move(callback_).Run();
+    delete this;
   }
 
  private:
   content::BrowsingDataRemover* const remover_;
-  ProfileImpl* const profile_;
+  base::OnceCallback<void()> callback_;
 };
 
 ProfileImpl::ProfileImpl(const base::FilePath& path) : path_(path) {
   browser_context_ = std::make_unique<BrowserContextImpl>(path_);
 }
 
-ProfileImpl::~ProfileImpl() = default;
+ProfileImpl::~ProfileImpl() {
+  browser_context_->ShutdownStoragePartitions();
+}
 
 content::BrowserContext* ProfileImpl::GetBrowserContext() {
   return browser_context_.get();
 }
 
-void ProfileImpl::OnBrowsingDataCleared() {
-#if defined(OS_ANDROID)
-  Java_ProfileImpl_onBrowsingDataCleared(AttachCurrentThread(), java_profile_);
-#endif
-}
+void ProfileImpl::ClearBrowsingData(std::vector<BrowsingDataType> data_types,
+                                    base::OnceCallback<void()> callback) {
+  auto* clearer = new DataClearer(browser_context_.get(), std::move(callback));
+  // DataClearer will delete itself in OnBrowsingDataRemoverDone().
+  // If Profile is destroyed during clearing, it would lead to destroying
+  // browser_context_ and then BrowsingDataRemover, which in turn would call
+  // OnBrowsingDataRemoverDone(), even though the clearing hasn't been finished.
 
-void ProfileImpl::ClearBrowsingData() {
-  if (!data_clearer_) {
-    data_clearer_ = std::make_unique<DataClearer>(browser_context_.get(), this);
+  int remove_mask = 0;
+  // This follows what Chrome does: see browsing_data_bridge.cc.
+  for (auto data_type : data_types) {
+    switch (data_type) {
+      case BrowsingDataType::COOKIES_AND_SITE_DATA:
+        remove_mask |= content::BrowsingDataRemover::DATA_TYPE_COOKIES;
+        remove_mask |= content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE;
+        remove_mask |= content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
+        break;
+      case BrowsingDataType::CACHE:
+        remove_mask |= content::BrowsingDataRemover::DATA_TYPE_CACHE;
+        break;
+      default:
+        NOTREACHED();
+    }
   }
-  data_clearer_->ClearData();
+  clearer->ClearData(remove_mask);
 }
 
 std::unique_ptr<Profile> Profile::Create(const base::FilePath& path) {
@@ -211,24 +232,33 @@ std::unique_ptr<Profile> Profile::Create(const base::FilePath& path) {
 }
 
 #if defined(OS_ANDROID)
-ProfileImpl::ProfileImpl(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& java_profile,
+ProfileImpl::ProfileImpl(JNIEnv* env,
     const base::android::JavaParamRef<jstring>& path)
-    : ProfileImpl(base::FilePath(ConvertJavaStringToUTF8(env, path))) {
-  java_profile_.Reset(env, java_profile);
-}
+    : ProfileImpl(base::FilePath(ConvertJavaStringToUTF8(env, path))) {}
 
 static jlong JNI_ProfileImpl_CreateProfile(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& java_profile,
     const base::android::JavaParamRef<jstring>& path) {
-  return reinterpret_cast<jlong>(
-      new weblayer::ProfileImpl(env, java_profile, path));
+  return reinterpret_cast<jlong>(new ProfileImpl(env, path));
 }
 
 static void JNI_ProfileImpl_DeleteProfile(JNIEnv* env, jlong profile) {
   delete reinterpret_cast<ProfileImpl*>(profile);
+}
+
+void ProfileImpl::ClearBrowsingData(JNIEnv* env,
+    const base::android::JavaParamRef<jintArray>& j_data_types,
+    const base::android::JavaRef<jobject>& j_callback) {
+  std::vector<int> data_type_ints;
+  base::android::JavaIntArrayToIntVector(env, j_data_types, &data_type_ints);
+  std::vector<BrowsingDataType> data_types;
+  data_types.reserve(data_type_ints.size());
+  for (int type : data_type_ints) {
+    data_types.push_back(static_cast<BrowsingDataType>(type));
+  }
+  ClearBrowsingData(data_types,
+      base::BindOnce(base::android::RunRunnableAndroid,
+          base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 #endif  // OS_ANDROID
 

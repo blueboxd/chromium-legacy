@@ -314,8 +314,7 @@ HRESULT GlsRunnerTestBase::InternalInitializeProvider(
     return hr;
 
   // Activate the CP.
-  FakeCredentialProviderEvents events;
-  hr = provider->Advise(&fake_provider_events_, 0);
+  hr = provider->Advise(fake_provider_events(), 0);
   if (FAILED(hr))
     return hr;
 
@@ -340,11 +339,12 @@ HRESULT GlsRunnerTestBase::InternalInitializeProvider(
       CComPtr<ICredentialProviderCredential> current_credential;
       hr = gaia_provider_->GetCredentialAt(i, &current_credential);
       if (FAILED(hr))
-        break;
+        return hr;
 
-      hr = current_credential->Advise(nullptr);
+      hr = current_credential->Advise(
+          fake_credential_provider_credential_events());
       if (FAILED(hr))
-        break;
+        return hr;
     }
   }
 
@@ -359,6 +359,28 @@ HRESULT GlsRunnerTestBase::InternalInitializeProvider(
     hr = gaia_provider_->GetFieldDescriptorAt(i, &ppcpfd);
     if (FAILED(hr))
       return hr;
+  }
+
+  // Initialize the default field states by calling GetFieldState of
+  // ICredentialProviderCredential.
+  for (DWORD i = 0; count && i < *count; ++i) {
+    CComPtr<ICredentialProviderCredential> current_credential;
+    hr = gaia_provider_->GetCredentialAt(i, &current_credential);
+    if (FAILED(hr))
+      return hr;
+
+    for (DWORD fieldID = 0; fieldID < field_count; fieldID++) {
+      CREDENTIAL_PROVIDER_FIELD_STATE cpfs;
+      CREDENTIAL_PROVIDER_FIELD_INTERACTIVE_STATE cpfis;
+      hr = current_credential->GetFieldState(fieldID, &cpfs, &cpfis);
+      if (FAILED(hr))
+        return hr;
+
+      hr = fake_credential_provider_credential_events()->SetFieldState(
+          current_credential, fieldID, cpfs);
+      if (FAILED(hr))
+        return hr;
+    }
   }
 
   return S_OK;

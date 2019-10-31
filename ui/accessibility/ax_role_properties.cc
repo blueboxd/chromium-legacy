@@ -157,6 +157,17 @@ bool IsDialog(const ax::mojom::Role role) {
   }
 }
 
+bool IsPlainTextField(const AXNodeData& data) {
+  // We need to check both the role and editable state, because some ARIA text
+  // fields may in fact not be editable, whilst some editable fields might not
+  // have the role.
+  return !data.HasState(ax::mojom::State::kRichlyEditable) &&
+         (data.role == ax::mojom::Role::kTextField ||
+          data.role == ax::mojom::Role::kTextFieldWithComboBox ||
+          data.role == ax::mojom::Role::kSearchBox ||
+          data.GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot));
+}
+
 bool IsHeading(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kHeading:

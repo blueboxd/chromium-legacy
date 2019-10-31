@@ -5,7 +5,7 @@
 ++++++[link] name='link' editable selection_start=0 selection_end=3
 ++++++++[text] name='link' editable selection_start=0 selection_end=3
 ++++++[text] name=' and an ' editable selection_start=0 selection_end=3
-++++++[image] name='Image' editable selection_start=0 selection_end=3
+++++++[image] name='Image' editable
 ++++++[text] name=' and a ' editable selection_start=0 selection_end=3
 ++++++[push button] name='Button' editable selection_start=0 selection_end=3
 ++++++[text] name='.' editable selection_start=0 selection_end=3

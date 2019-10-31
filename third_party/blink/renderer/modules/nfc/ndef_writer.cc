@@ -72,7 +72,7 @@ ScriptPromise NDEFWriter::push(ScriptState* script_state,
   // Step 10.8: Run "create Web NFC message", if this throws an exception,
   // reject p with that exception and abort these steps.
   NDEFMessage* ndef_message =
-      NDEFMessage::Create(push_message, exception_state);
+      NDEFMessage::Create(execution_context, push_message, exception_state);
   if (exception_state.HadException()) {
     return ScriptPromise();
   }

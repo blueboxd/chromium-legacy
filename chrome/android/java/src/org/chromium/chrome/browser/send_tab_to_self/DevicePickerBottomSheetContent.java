@@ -91,13 +91,6 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     }
 
     @Override
-    public boolean wrapContentEnabled() {
-        // Return true to have the bottom sheet only open as far as it needs to display the
-        // list of devices and nothing beyond that.
-        return true;
-    }
-
-    @Override
     public boolean swipeToDismissEnabled() {
         // This ensures that the bottom sheet reappears after the first time. Otherwise, the
         // second time that a user initiates a share, the bottom sheet does not re-appear.
@@ -106,8 +99,15 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
 
     @Override
     public int getPeekHeight() {
-        // Return false to ensure that the entire bottom sheet is shown.
+        // Return DISABLED to ensure that the entire bottom sheet is shown.
         return BottomSheet.HeightMode.DISABLED;
+    }
+
+    @Override
+    public float getFullHeightRatio() {
+        // Return WRAP_CONTENT to have the bottom sheet only open as far as it needs to display the
+        // list of devices and nothing beyond that.
+        return BottomSheet.HeightMode.WRAP_CONTENT;
     }
 
     @Override

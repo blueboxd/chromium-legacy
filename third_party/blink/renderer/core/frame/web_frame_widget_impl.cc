@@ -164,7 +164,6 @@ void WebFrameWidgetImpl::Close() {
 
   animation_host_ = nullptr;
   root_layer_ = nullptr;
-  root_graphics_layer_ = nullptr;
 
   self_keep_alive_.Clear();
 }
@@ -996,11 +995,6 @@ PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
     return nullptr;
 
   return frame->GetDocument()->GetLayoutView()->Compositor();
-}
-
-void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
-  root_graphics_layer_ = layer;
-  SetRootLayer(layer ? layer->CcLayer() : nullptr);
 }
 
 void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {

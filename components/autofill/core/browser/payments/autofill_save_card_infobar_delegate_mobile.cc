@@ -136,11 +136,7 @@ bool AutofillSaveCardInfoBarDelegateMobile::Cancel() {
 }
 
 int AutofillSaveCardInfoBarDelegateMobile::GetButtons() const {
-  if (base::FeatureList::IsEnabled(features::kAutofillSaveCardShowNoThanks)) {
-    return BUTTON_OK | BUTTON_CANCEL;
-  } else {
-    return BUTTON_OK;
-  }
+  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(

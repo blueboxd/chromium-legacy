@@ -32,7 +32,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/common/content_switches.h"
 #include "net/server/http_connection.h"
-#include "third_party/inspector_protocol/encoding/encoding.h"
+#include "third_party/inspector_protocol/crdtp/encoding.h"
 
 const size_t kReceiveBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
 const size_t kWritePacketSize = 1 << 16;
@@ -44,12 +44,7 @@ const int kWriteFD = 4;
 // entire remaining message. Thereby, the length of the byte string
 // also tells us the message size on the wire.
 // The details of the encoding are implemented in
-// third_party/inspector_protocol/encoding/encoding.h.
-using inspector_protocol_encoding::SpanFrom;
-using inspector_protocol_encoding::cbor::InitialByteFor32BitLengthByteString;
-using inspector_protocol_encoding::cbor::InitialByteForEnvelope;
-using inspector_protocol_encoding::cbor::IsCBORMessage;
-
+// third_party/inspector_protocol/crdtp/encoding.h.
 namespace content {
 
 class PipeReaderBase {
@@ -159,7 +154,7 @@ void WriteIntoPipeASCIIZ(int write_fd, const std::string& message) {
 }
 
 void WriteIntoPipeCBOR(int write_fd, const std::string& message) {
-  DCHECK(IsCBORMessage(SpanFrom(message)));
+  DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(message)));
 
   WriteBytes(write_fd, message.data(), message.size());
 }
@@ -224,8 +219,8 @@ class PipeReaderCBOR : public PipeReaderBase {
       if (!ReadBytes(&buffer.front(), kHeaderSize, true))
         break;
       const uint8_t* prefix = reinterpret_cast<const uint8_t*>(buffer.data());
-      if (prefix[0] != InitialByteForEnvelope() ||
-          prefix[1] != InitialByteFor32BitLengthByteString()) {
+      if (prefix[0] != crdtp::cbor::InitialByteForEnvelope() ||
+          prefix[1] != crdtp::cbor::InitialByteFor32BitLengthByteString()) {
         LOG(ERROR) << "Unexpected start of CBOR envelope " << prefix[0] << ","
                    << prefix[1];
         return;

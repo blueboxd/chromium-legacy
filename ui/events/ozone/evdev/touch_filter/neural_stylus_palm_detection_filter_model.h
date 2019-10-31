@@ -48,6 +48,11 @@ struct EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilterModelConfig {
   // greater than or equal to this should be marked as a palm. If <= 0, has no
   // effect
   float heuristic_palm_area_limit = 0.0f;
+
+  // If true, runs the heuristic palm check on short strokes, and enables delay
+  // on them if the heuristic would have marked the touch as a palm at that
+  // point.
+  bool heuristic_delay_start_if_palm = false;
 };
 
 // An abstract model utilized by NueralStylusPalmDetectionFilter.

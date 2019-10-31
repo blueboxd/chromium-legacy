@@ -67,8 +67,7 @@ ExtensionInteractionProvider::Scope::ForToken(
     v8::Local<v8::Context> v8_context,
     std::unique_ptr<InteractionProvider::Token> token) {
   Token* token_impl = static_cast<Token*>(token.get());
-  if (!token_impl->is_for_service_worker() &&
-      base::FeatureList::IsEnabled(features::kUserActivationV2)) {
+  if (!token_impl->is_for_service_worker()) {
     // UserActivationV2 replaces the concept of (scoped) tokens with a
     // frame-wide state, hence skips token forwarding.
     return nullptr;

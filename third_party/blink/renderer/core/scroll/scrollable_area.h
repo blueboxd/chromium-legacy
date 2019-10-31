@@ -47,13 +47,13 @@ class SingleThreadTaskRunner;
 
 namespace cc {
 class AnimationHost;
+class Layer;
 }
 
 namespace blink {
 class ChromeClient;
 class CompositorAnimationTimeline;
 class Document;
-class GraphicsLayer;
 class LayoutBox;
 class LayoutObject;
 class LocalFrame;
@@ -168,8 +168,16 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
       base::ScopedClosureRunner on_finish = base::ScopedClosureRunner());
   bool SnapForEndAndDirection(const ScrollOffset& delta);
 
-  base::Optional<FloatPoint> GetSnapPosition(
-      const cc::SnapSelectionStrategy& strategy) const;
+  // Tries to find a target snap position. If found, returns the target position
+  // and updates the last target snap area element id for the snap container's
+  // data. If not found, then clears the last target snap area element id.
+  //
+  // NOTE: If a target position is found, then it is expected that this position
+  // will be scrolled to.
+  virtual base::Optional<FloatPoint> GetSnapPositionAndSetTarget(
+      const cc::SnapSelectionStrategy& strategy) {
+    return base::nullopt;
+  }
 
   void FinishCurrentScrollAnimations() const;
 
@@ -229,12 +237,13 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // painted.
   virtual bool IsThrottled() const = 0;
   virtual int ScrollSize(ScrollbarOrientation) const = 0;
-  void SetScrollbarNeedsPaintInvalidation(ScrollbarOrientation);
   virtual bool IsScrollCornerVisible() const = 0;
   virtual IntRect ScrollCornerRect() const = 0;
-  void SetScrollCornerNeedsPaintInvalidation();
   virtual bool HasTickmarks() const { return false; }
   virtual Vector<IntRect> GetTickmarks() const { return Vector<IntRect>(); }
+
+  virtual void SetScrollbarNeedsPaintInvalidation(ScrollbarOrientation);
+  virtual void SetScrollCornerNeedsPaintInvalidation();
 
   // Convert points and rects between the scrollbar and its containing
   // EmbeddedContentView. The client needs to implement these in order to be
@@ -344,7 +353,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   void SetUsesCompositedScrolling(bool uses_composited_scrolling) {
     uses_composited_scrolling_ = uses_composited_scrolling;
   }
-  virtual bool ShouldScrollOnMainThread() const;
+  virtual bool ShouldScrollOnMainThread() const { return false; }
 
   // Overlay scrollbars can "fade-out" when inactive.
   virtual bool ScrollbarsHiddenIfOverlay() const;
@@ -367,10 +376,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                    MaximumScrollOffset(orientation));
   }
 
-  virtual GraphicsLayer* LayerForScrolling() const { return nullptr; }
-  virtual GraphicsLayer* LayerForHorizontalScrollbar() const { return nullptr; }
-  virtual GraphicsLayer* LayerForVerticalScrollbar() const { return nullptr; }
-  virtual GraphicsLayer* LayerForScrollCorner() const { return nullptr; }
+  virtual cc::Layer* LayerForScrolling() const { return nullptr; }
+  virtual cc::Layer* LayerForHorizontalScrollbar() const { return nullptr; }
+  virtual cc::Layer* LayerForVerticalScrollbar() const { return nullptr; }
+  virtual cc::Layer* LayerForScrollCorner() const { return nullptr; }
   bool HasLayerForHorizontalScrollbar() const;
   bool HasLayerForVerticalScrollbar() const;
   bool HasLayerForScrollCorner() const;
@@ -508,8 +517,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   bool HasBeenDisposed() const { return has_been_disposed_; }
 
   virtual const Document* GetDocument() const;
-
-  MainThreadScrollingReasons GetMainThreadScrollingReasons() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,

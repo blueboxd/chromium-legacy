@@ -5185,9 +5185,7 @@ const TemplateStamp = dedupingMixin(
       if (!template._templateInfo) {
         let templateInfo = template._templateInfo = {};
         templateInfo.nodeInfoList = [];
-        templateInfo.stripWhiteSpace =
-          (outerTemplateInfo && outerTemplateInfo.stripWhiteSpace) ||
-          template.hasAttribute('strip-whitespace');
+        templateInfo.stripWhiteSpace = true;
         this._parseTemplateContent(template, templateInfo, {parent: null});
       }
       return template._templateInfo;

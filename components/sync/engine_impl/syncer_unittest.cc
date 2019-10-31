@@ -1321,50 +1321,6 @@ TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
   }
 }
 
-TEST_F(SyncerTest, TestPurgeWithJournal) {
-  {
-    directory()->SetDownloadProgress(BOOKMARKS,
-                                     syncable::BuildProgress(BOOKMARKS));
-    syncable::WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    MutableEntry parent(&wtrans, syncable::CREATE, BOOKMARKS, wtrans.root_id(),
-                        "Pete");
-    ASSERT_TRUE(parent.good());
-    parent.PutIsDir(true);
-    parent.PutSpecifics(DefaultBookmarkSpecifics());
-    parent.PutBaseVersion(1);
-    parent.PutId(parent_id_);
-    MutableEntry child(&wtrans, syncable::CREATE, BOOKMARKS, parent_id_,
-                       "Pete");
-    ASSERT_TRUE(child.good());
-    child.PutId(child_id_);
-    child.PutBaseVersion(1);
-    WriteTestDataToEntry(&wtrans, &child);
-
-    MutableEntry parent2(&wtrans, syncable::CREATE, PREFERENCES,
-                         wtrans.root_id(), "Tim");
-    ASSERT_TRUE(parent2.good());
-    parent2.PutIsDir(true);
-    parent2.PutSpecifics(DefaultPreferencesSpecifics());
-    parent2.PutBaseVersion(1);
-    parent2.PutId(TestIdFactory::MakeServer("Tim"));
-  }
-
-  directory()->PurgeEntriesWithTypeIn(ModelTypeSet(PREFERENCES, BOOKMARKS),
-                                      ModelTypeSet(BOOKMARKS), ModelTypeSet());
-  {
-    // Verify bookmark nodes are saved in delete journal but not preference
-    // node.
-    syncable::ReadTransaction rt(FROM_HERE, directory());
-    syncable::DeleteJournal* delete_journal = directory()->delete_journal();
-    EXPECT_EQ(2u, delete_journal->GetDeleteJournalSize(&rt));
-    syncable::EntryKernelSet journal_entries;
-    directory()->delete_journal()->GetDeleteJournals(&rt, BOOKMARKS,
-                                                     &journal_entries);
-    EXPECT_EQ(parent_id_, (*journal_entries.begin())->ref(syncable::ID));
-    EXPECT_EQ(child_id_, (*journal_entries.rbegin())->ref(syncable::ID));
-  }
-}
-
 TEST_F(SyncerTest, ResetVersions) {
   // Download some pref items.
   mock_server_->AddUpdatePref("id1", "", "tag1", 20, 20);

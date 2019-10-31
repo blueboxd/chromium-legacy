@@ -21,13 +21,10 @@ namespace media {
 
 enum SampleFormat : int;
 
-struct AudioOutputRedirectionConfig;
-class AudioOutputRedirectorToken;
 class DirectAudioSource;
 class DirectAudioSourceToken;
 class MediaPipelineBackend;
 struct MediaPipelineDeviceParams;
-class RedirectedAudioOutput;
 class VideoPlane;
 
 // Provides access to platform-specific media systems and hardware resources.
@@ -101,26 +98,6 @@ class CHROMECAST_EXPORT CastMediaShlib {
   static void SetDirectAudioSourceVolume(DirectAudioSourceToken* token,
                                          float multiplier)
       __attribute__((__weak__));
-
-  // Adds an audio output redirector configured according to |config|, where the
-  // matching audio streams will be redirected to |output|. Returns a token that
-  // may be used to remove the redirection (via RemoveAudioOutputRedirection()),
-  // or nullptr if the redirection could not be added (ie, if the config is
-  // invalid).
-  static AudioOutputRedirectorToken* AddAudioOutputRedirection(
-      const AudioOutputRedirectionConfig& config,
-      std::unique_ptr<RedirectedAudioOutput> output) __attribute__((__weak__));
-
-  // Removes an audio output redirector, given the |token| that was returned by
-  // AddAudioOutputRedirection().
-  static void RemoveAudioOutputRedirection(AudioOutputRedirectorToken* token)
-      __attribute__((__weak__));
-
-  // Updates the set of streams that an audio output redirector should apply to.
-  static void ModifyAudioOutputRedirection(
-      AudioOutputRedirectorToken* token,
-      std::vector<std::pair<AudioContentType, std::string /* device ID */>>
-          stream_match_patterns) __attribute__((__weak__));
 };
 
 }  // namespace media

@@ -349,7 +349,6 @@ public abstract class ChromeFeatureList {
     public static final String USAGE_STATS = "UsageStats";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
     public static final String WEBAPK_ADAPTIVE_ICON = "WebApkAdaptiveIcon";
-    public static final String USER_ACTIVATION_V2 = "UserActivationV2";
     public static final String WEB_AUTH = "WebAuthentication";
     public static final String WEB_PAYMENT_MICROTRANSACTION = "WebPaymentMicrotransaction";
     public static final String WEB_PAYMENTS = "WebPayments";

@@ -180,7 +180,6 @@ PaletteTray::PaletteTray(Shelf* shelf)
       scoped_session_observer_(this) {
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
-  SetInkDropMode(InkDropMode::ON);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   icon_ = new views::ImageView();
   icon_->set_tooltip_text(

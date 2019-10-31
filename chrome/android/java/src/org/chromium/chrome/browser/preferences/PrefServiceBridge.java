@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.preferences;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
@@ -30,12 +31,6 @@ import java.util.List;
  * preferences.
  */
 public class PrefServiceBridge {
-    // These values must match the native enum values in
-    // SupervisedUserURLFilter::FilteringBehavior
-    public static final int SUPERVISED_USER_FILTERING_ALLOW = 0;
-    public static final int SUPERVISED_USER_FILTERING_WARN = 1;
-    public static final int SUPERVISED_USER_FILTERING_BLOCK = 2;
-
     private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
     private static final int MIGRATION_CURRENT_VERSION = 4;
 
@@ -145,6 +140,7 @@ public class PrefServiceBridge {
      * @param preference The name of the preference.
      * @return value The value of the specified preference.
      */
+    @NonNull
     public String getString(@Pref int preference) {
         return PrefServiceBridgeJni.get().getString(PrefServiceBridge.this, preference);
     }
@@ -153,7 +149,7 @@ public class PrefServiceBridge {
      * @param preference The name of the preference.
      * @param value The value the specified preference will be set to.
      */
-    public void setString(@Pref int preference, String value) {
+    public void setString(@Pref int preference, @NonNull String value) {
         PrefServiceBridgeJni.get().setString(PrefServiceBridge.this, preference, value);
     }
 
@@ -289,38 +285,6 @@ public class PrefServiceBridge {
      */
     public boolean isBlockThirdPartyCookiesManaged() {
         return PrefServiceBridgeJni.get().getBlockThirdPartyCookiesManaged(PrefServiceBridge.this);
-    }
-
-    public boolean isRememberPasswordsEnabled() {
-        return PrefServiceBridgeJni.get().getRememberPasswordsEnabled(PrefServiceBridge.this);
-    }
-
-    public boolean isPasswordManagerAutoSigninEnabled() {
-        return PrefServiceBridgeJni.get().getPasswordManagerAutoSigninEnabled(
-                PrefServiceBridge.this);
-    }
-
-    public boolean isPasswordLeakDetectionEnabled() {
-        return PrefServiceBridgeJni.get().getPasswordLeakDetectionEnabled(PrefServiceBridge.this);
-    }
-
-    /**
-     * @return Whether password storage is configured by policy
-     */
-    public boolean isRememberPasswordsManaged() {
-        return PrefServiceBridgeJni.get().getRememberPasswordsManaged(PrefServiceBridge.this);
-    }
-
-    public boolean isPasswordManagerAutoSigninManaged() {
-        return PrefServiceBridgeJni.get().getPasswordManagerAutoSigninManaged(
-                PrefServiceBridge.this);
-    }
-
-    /**
-     * @return Whether leak detection is enabled/disabled by policy
-     */
-    public boolean isPasswordLeakDetectionManaged() {
-        return PrefServiceBridgeJni.get().getPasswordLeakDetectionManaged(PrefServiceBridge.this);
     }
 
     /**
@@ -615,19 +579,6 @@ public class PrefServiceBridge {
         PrefServiceBridgeJni.get().setDoNotTrackEnabled(PrefServiceBridge.this, enabled);
     }
 
-    public void setRememberPasswordsEnabled(boolean allow) {
-        PrefServiceBridgeJni.get().setRememberPasswordsEnabled(PrefServiceBridge.this, allow);
-    }
-
-    public void setPasswordManagerAutoSigninEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setPasswordManagerAutoSigninEnabled(
-                PrefServiceBridge.this, enabled);
-    }
-
-    public void setPasswordLeakDetectionEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setPasswordLeakDetectionEnabled(PrefServiceBridge.this, enabled);
-    }
-
     public void setNotificationsVibrateEnabled(boolean enabled) {
         PrefServiceBridgeJni.get().setNotificationsVibrateEnabled(PrefServiceBridge.this, enabled);
     }
@@ -836,35 +787,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return Whether SafeSites for supervised users is enabled.
-     */
-    public boolean isSupervisedUserSafeSitesEnabled() {
-        return PrefServiceBridgeJni.get().getSupervisedUserSafeSitesEnabled(PrefServiceBridge.this);
-    }
-
-    /**
-     * @return the default supervised user filtering behavior
-     */
-    public int getDefaultSupervisedUserFilteringBehavior() {
-        return PrefServiceBridgeJni.get().getDefaultSupervisedUserFilteringBehavior(
-                PrefServiceBridge.this);
-    }
-
-    public String getSupervisedUserCustodianEmail() {
-        return PrefServiceBridgeJni.get().getSupervisedUserCustodianEmail(PrefServiceBridge.this);
-    }
-
-    public String getSupervisedUserSecondCustodianName() {
-        return PrefServiceBridgeJni.get().getSupervisedUserSecondCustodianName(
-                PrefServiceBridge.this);
-    }
-
-    public String getSupervisedUserSecondCustodianEmail() {
-        return PrefServiceBridgeJni.get().getSupervisedUserSecondCustodianEmail(
-                PrefServiceBridge.this);
-    }
-
-    /**
      * @return A sorted list of LanguageItems representing the Chrome accept languages with details.
      *         Languages that are not supported on Android have been filtered out.
      */
@@ -957,43 +879,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @param clicked Whether the update menu item was clicked. The preference is stored to
-     *                facilitate logging whether Chrome was updated after a click on the menu item.
-     */
-    public void setClickedUpdateMenuItem(boolean clicked) {
-        PrefServiceBridgeJni.get().setClickedUpdateMenuItem(PrefServiceBridge.this, clicked);
-    }
-
-    /**
-     * @return Whether the update menu item was clicked.
-     */
-    public boolean getClickedUpdateMenuItem() {
-        return PrefServiceBridgeJni.get().getClickedUpdateMenuItem(PrefServiceBridge.this);
-    }
-
-    /**
-     * @param version The latest version of Chrome available when the update menu item
-     *                was clicked.
-     */
-    public void setLatestVersionWhenClickedUpdateMenuItem(String version) {
-        PrefServiceBridgeJni.get().setLatestVersionWhenClickedUpdateMenuItem(
-                PrefServiceBridge.this, version);
-    }
-
-    /**
-     * @return The latest version of Chrome available when the update menu item was clicked.
-     */
-    public String getLatestVersionWhenClickedUpdateMenuItem() {
-        return PrefServiceBridgeJni.get().getLatestVersionWhenClickedUpdateMenuItem(
-                PrefServiceBridge.this);
-    }
-
-    @VisibleForTesting
-    public void setSupervisedUserId(String supervisedUserId) {
-        PrefServiceBridgeJni.get().setSupervisedUserId(PrefServiceBridge.this, supervisedUserId);
-    }
-
-    /**
      * @return The stored download default directory.
      */
     public String getDownloadDefaultDirectory() {
@@ -1063,12 +948,6 @@ public class PrefServiceBridge {
         boolean getBackgroundSyncEnabled(PrefServiceBridge caller);
         boolean getBlockThirdPartyCookiesEnabled(PrefServiceBridge caller);
         boolean getBlockThirdPartyCookiesManaged(PrefServiceBridge caller);
-        boolean getRememberPasswordsEnabled(PrefServiceBridge caller);
-        boolean getPasswordManagerAutoSigninEnabled(PrefServiceBridge caller);
-        boolean getPasswordLeakDetectionEnabled(PrefServiceBridge caller);
-        boolean getRememberPasswordsManaged(PrefServiceBridge caller);
-        boolean getPasswordManagerAutoSigninManaged(PrefServiceBridge caller);
-        boolean getPasswordLeakDetectionManaged(PrefServiceBridge caller);
         boolean getAllowLocationUserModifiable(PrefServiceBridge caller);
         boolean getLocationAllowedByPolicy(PrefServiceBridge caller);
         boolean getAllowLocationManagedByCustodian(PrefServiceBridge caller);
@@ -1092,7 +971,6 @@ public class PrefServiceBridge {
         boolean getPrintingEnabled(PrefServiceBridge caller);
         boolean getSensorsEnabled(PrefServiceBridge caller);
         boolean getSoundEnabled(PrefServiceBridge caller);
-        boolean getSupervisedUserSafeSitesEnabled(PrefServiceBridge caller);
         void setTranslateEnabled(PrefServiceBridge caller, boolean enabled);
         void migrateJavascriptPreference(PrefServiceBridge caller);
         boolean getBrowsingDataDeletionPreference(
@@ -1111,9 +989,6 @@ public class PrefServiceBridge {
         void setBlockThirdPartyCookiesEnabled(PrefServiceBridge caller, boolean enabled);
         void setClipboardEnabled(PrefServiceBridge caller, boolean enabled);
         void setDoNotTrackEnabled(PrefServiceBridge caller, boolean enabled);
-        void setRememberPasswordsEnabled(PrefServiceBridge caller, boolean allow);
-        void setPasswordManagerAutoSigninEnabled(PrefServiceBridge caller, boolean enabled);
-        void setPasswordLeakDetectionEnabled(PrefServiceBridge caller, boolean enabled);
         boolean getAllowLocationEnabled(PrefServiceBridge caller);
         boolean getNotificationsEnabled(PrefServiceBridge caller);
         boolean getNotificationsVibrateEnabled(PrefServiceBridge caller);
@@ -1139,18 +1014,9 @@ public class PrefServiceBridge {
         void setEulaAccepted(PrefServiceBridge caller);
         void resetAcceptLanguages(PrefServiceBridge caller, String defaultLocale);
         String getSyncLastAccountName(PrefServiceBridge caller);
-        String getSupervisedUserCustodianEmail(PrefServiceBridge caller);
-        int getDefaultSupervisedUserFilteringBehavior(PrefServiceBridge caller);
-        String getSupervisedUserSecondCustodianName(PrefServiceBridge caller);
-        String getSupervisedUserSecondCustodianEmail(PrefServiceBridge caller);
         boolean isMetricsReportingEnabled(PrefServiceBridge caller);
         void setMetricsReportingEnabled(PrefServiceBridge caller, boolean enabled);
         boolean isMetricsReportingManaged(PrefServiceBridge caller);
-        void setClickedUpdateMenuItem(PrefServiceBridge caller, boolean clicked);
-        boolean getClickedUpdateMenuItem(PrefServiceBridge caller);
-        void setLatestVersionWhenClickedUpdateMenuItem(PrefServiceBridge caller, String version);
-        String getLatestVersionWhenClickedUpdateMenuItem(PrefServiceBridge caller);
-        void setSupervisedUserId(PrefServiceBridge caller, String supervisedUserId);
         void getChromeAcceptLanguages(PrefServiceBridge caller, List<LanguageItem> list);
         void getUserAcceptLanguages(PrefServiceBridge caller, List<String> list);
         void updateUserAcceptLanguages(PrefServiceBridge caller, String language, boolean add);

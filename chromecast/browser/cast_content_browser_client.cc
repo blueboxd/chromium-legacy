@@ -884,12 +884,12 @@ void CastContentBrowserClient::CreateGeneralAudienceBrowsingService() {
 }
 
 void CastContentBrowserClient::BindMediaRenderer(
-    mojo::InterfaceRequest<::media::mojom::Renderer> request) {
+    mojo::PendingReceiver<::media::mojom::Renderer> receiver) {
   auto media_task_runner = GetMediaTaskRunner();
   if (!media_task_runner->BelongsToCurrentThread()) {
     media_task_runner->PostTask(
         FROM_HERE, base::BindOnce(&CastContentBrowserClient::BindMediaRenderer,
-                                  base::Unretained(this), std::move(request)));
+                                  base::Unretained(this), std::move(receiver)));
     return;
   }
 
@@ -899,7 +899,7 @@ void CastContentBrowserClient::BindMediaRenderer(
           GetCmaBackendFactory(), std::move(media_task_runner),
           GetVideoModeSwitcher(), GetVideoResolutionPolicy(),
           nullptr /* connector */, nullptr /* host_interfaces */),
-      std::move(request));
+      std::move(receiver));
 }
 
 }  // namespace shell

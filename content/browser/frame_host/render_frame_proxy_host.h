@@ -69,7 +69,8 @@ class RenderWidgetHostView;
 // complete, the RenderFrameHost is deleted.
 class RenderFrameProxyHost : public IPC::Listener,
                              public IPC::Sender,
-                             public mojom::RenderFrameProxyHost {
+                             public mojom::RenderFrameProxyHost,
+                             public blink::mojom::RemoteFrameHost {
  public:
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
 
@@ -144,6 +145,9 @@ class RenderFrameProxyHost : public IPC::Listener,
   const mojo::AssociatedRemote<blink::mojom::RemoteFrame>&
   GetAssociatedRemoteFrame();
 
+  // blink::mojom::RemoteFrameHost
+  void SetInheritedEffectiveTouchAction(cc::TouchAction touch_action) override;
+
  private:
   // IPC Message handlers.
   void OnDetach();
@@ -206,6 +210,9 @@ class RenderFrameProxyHost : public IPC::Listener,
 
   // Holder of Mojo connection with the Frame service in Blink.
   mojo::AssociatedRemote<blink::mojom::RemoteFrame> remote_frame_;
+
+  mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>
+      remote_frame_host_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };

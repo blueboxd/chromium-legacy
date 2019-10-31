@@ -36,5 +36,6 @@
           "mime_types": [{
             "mime_type": "image/*"
           }]
-  }]
+  }],
+  "has_maskable_icon": true
 }

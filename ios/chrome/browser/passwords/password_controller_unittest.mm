@@ -236,7 +236,7 @@ class PasswordControllerTest : public ChromeWebTest {
                                                       delegate:nil
                                                   webStateList:NULL
                                            personalDataManager:NULL
-                                                 passwordStore:NULL];
+                                                 passwordStore:nullptr];
       [accessoryMediator_ injectWebState:web_state()];
       [accessoryMediator_ injectProvider:suggestionController_];
     }

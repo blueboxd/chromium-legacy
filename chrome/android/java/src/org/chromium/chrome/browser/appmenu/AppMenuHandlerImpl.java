@@ -169,7 +169,7 @@ class AppMenuHandlerImpl
             tempMenu.inflate(mMenuResourceId);
             mMenu = tempMenu.getMenu();
         }
-        mDelegate.prepareMenu(mMenu);
+        mDelegate.prepareMenu(mMenu, this);
 
         ContextThemeWrapper wrapper =
                 new ContextThemeWrapper(context, R.style.OverflowMenuThemeOverlay);
@@ -210,7 +210,7 @@ class AppMenuHandlerImpl
         }
         mAppMenu.show(wrapper, anchorView, isByPermanentButton, rotation, appRect, pt.y,
                 footerResourceId, headerResourceId, mHighlightMenuId, mCircleHighlight,
-                showFromBottom);
+                showFromBottom, mDelegate.getCustomViewBinders());
         mAppMenuDragHelper.onShow(startDragging);
         clearMenuHighlight();
         RecordUserAction.record("MobileMenuShow");
@@ -219,6 +219,7 @@ class AppMenuHandlerImpl
 
     void appMenuDismissed() {
         mAppMenuDragHelper.finishDragging();
+        mDelegate.onMenuDismissed();
     }
 
     @Override
@@ -245,6 +246,11 @@ class AppMenuHandlerImpl
     @Override
     public AppMenuButtonHelper createAppMenuButtonHelper() {
         return new AppMenuButtonHelperImpl(this);
+    }
+
+    @Override
+    public void invalidateAppMenu() {
+        if (mAppMenu != null) mAppMenu.invalidate();
     }
 
     @Override

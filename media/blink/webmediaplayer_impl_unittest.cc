@@ -322,11 +322,23 @@ class WebMediaPlayerImplTest : public testing::Test {
     media_thread_.StartAndWaitForTesting();
   }
 
+  void InitializeSurfaceLayerBridge() {
+    surface_layer_bridge_ =
+        std::make_unique<NiceMock<MockSurfaceLayerBridge>>();
+    surface_layer_bridge_ptr_ = surface_layer_bridge_.get();
+
+    if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+      EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+      ON_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
+          .WillByDefault(ReturnRef(surface_id_));
+      ON_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+          .WillByDefault(Return(base::TimeTicks()));
+    }
+  }
+
   void InitializeWebMediaPlayerImpl() {
     auto media_log = std::make_unique<NiceMock<MockMediaLog>>();
-    surface_layer_bridge_ =
-        std::make_unique<StrictMock<MockSurfaceLayerBridge>>();
-    surface_layer_bridge_ptr_ = surface_layer_bridge_.get();
+    InitializeSurfaceLayerBridge();
 
     // Retain a raw pointer to |media_log| for use by tests. Meanwhile, give its
     // ownership to |wmpi_|. Reject attempts to reinitialize to prevent orphaned
@@ -381,7 +393,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         is_background_suspend_enabled_, is_background_video_playback_enabled_,
         true);
 
-    auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
+    auto compositor = std::make_unique<NiceMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
     compositor_ = compositor.get();
 
@@ -713,7 +725,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   blink::WebLocalFrame* web_local_frame_;
 
   scoped_refptr<viz::TestContextProvider> context_provider_;
-  StrictMock<MockVideoFrameCompositor>* compositor_;
+  NiceMock<MockVideoFrameCompositor>* compositor_;
 
   scoped_refptr<NiceMock<MockAudioRendererSink>> audio_sink_;
   MockResourceFetchContext mock_resource_fetch_context_;
@@ -737,8 +749,9 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   NiceMock<MockWebMediaPlayerDelegate> delegate_;
 
-  std::unique_ptr<StrictMock<MockSurfaceLayerBridge>> surface_layer_bridge_;
-  StrictMock<MockSurfaceLayerBridge>* surface_layer_bridge_ptr_ = nullptr;
+  // Use NiceMock since most tests do not care about this.
+  std::unique_ptr<NiceMock<MockSurfaceLayerBridge>> surface_layer_bridge_;
+  NiceMock<MockSurfaceLayerBridge>* surface_layer_bridge_ptr_ = nullptr;
 
   // Only valid once set by InitializeWebMediaPlayerImpl(), this is for
   // verifying a subset of potential media logs.
@@ -946,17 +959,6 @@ TEST_F(WebMediaPlayerImplTest, LazyLoadPreloadMetadataSuspend) {
 
   // Don't set poster, but ensure we still reach suspended state.
 
-  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-        .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  }
-
   LoadAndWaitForReadyState(kVideoOnlyTestFile,
                            blink::WebMediaPlayer::kReadyStateHaveMetadata);
   testing::Mock::VerifyAndClearExpectations(&client_);
@@ -981,17 +983,6 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
   EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
   wmpi_->SetPoster(blink::WebURL(GURL("file://example.com/sample.jpg")));
-
-  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-        .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  }
 
   LoadAndWaitForReadyState(kVideoOnlyTestFile,
                            blink::WebMediaPlayer::kReadyStateHaveMetadata);
@@ -1570,25 +1561,6 @@ TEST_F(WebMediaPlayerImplTest, Encrypted) {
 
 TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
   InitializeWebMediaPlayerImpl();
-  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
-
-  scoped_refptr<cc::Layer> layer = cc::Layer::Create();
-  EXPECT_CALL(*surface_layer_bridge_ptr_, GetCcLayer())
-      .WillRepeatedly(Return(layer.get()));
-
-  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-        .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(true)).Times(1);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false)).Times(1);
-  } else {
-    EXPECT_CALL(client_, SetCcLayer(NotNull()));
-  }
 
   // Use non-encrypted file here since we don't have a CDM. Otherwise pipeline
   // initialization will stall waiting for a CDM to be set.
@@ -1598,8 +1570,6 @@ TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
   EXPECT_CALL(encrypted_client_, DidResumePlaybackBlockedForKey());
 
   OnWaiting(WaitingReason::kNoDecryptionKey);
-
-  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, VideoConfigChange) {
@@ -1609,19 +1579,6 @@ TEST_F(WebMediaPlayerImplTest, VideoConfigChange) {
   metadata.video_decoder_config =
       TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
   metadata.natural_size = gfx::Size(320, 240);
-
-  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-        .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  } else {
-    EXPECT_CALL(client_, SetCcLayer(NotNull()));
-  }
 
   // Arrival of metadata should trigger creation of reporter with video config
   // with profile matching test config.
@@ -1666,19 +1623,6 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
       TestVideoConfig::NormalCodecProfile(kCodecVP8, VP8PROFILE_MIN);
   metadata.natural_size = gfx::Size(320, 240);
 
-  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-        .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  } else {
-    EXPECT_CALL(client_, SetCcLayer(NotNull()));
-  }
-
   OnMetadata(metadata);
   ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
 
@@ -1707,19 +1651,6 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   metadata.video_decoder_config =
       TestVideoConfig::NormalRotated(VIDEO_ROTATION_90);
   metadata.natural_size = gfx::Size(320, 240);
-
-  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-        .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  } else {
-    EXPECT_CALL(client_, SetCcLayer(NotNull()));
-  }
 
   OnMetadata(metadata);
   ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
@@ -1750,19 +1681,6 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   PipelineMetadata metadata;
   metadata.has_video = true;
   metadata.video_decoder_config = TestVideoConfig::Normal();
-
-  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-        .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  } else {
-    EXPECT_CALL(client_, SetCcLayer(NotNull()));
-  }
 
   OnMetadata(metadata);
 
@@ -1827,19 +1745,6 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
   metadata.has_audio = true;
   metadata.audio_decoder_config = TestAudioConfig::Normal();
   metadata.natural_size = gfx::Size(400, 400);
-
-  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
-    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-        .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  } else {
-    EXPECT_CALL(client_, SetCcLayer(NotNull()));
-  }
 
   OnMetadata(metadata);
 

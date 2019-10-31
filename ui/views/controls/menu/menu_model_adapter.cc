@@ -70,6 +70,9 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
   base::Optional<MenuItemView::Type> type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(model_index);
   switch (menu_type) {
+    case ui::MenuModel::TYPE_TITLE:
+      type = MenuItemView::TITLE;
+      break;
     case ui::MenuModel::TYPE_COMMAND:
     case ui::MenuModel::TYPE_BUTTON_ITEM:
       type = MenuItemView::NORMAL;
@@ -275,7 +278,11 @@ void MenuModelAdapter::BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model) {
   for (int i = 0; i < item_count; ++i) {
     MenuItemView* item = AppendMenuItem(menu, model, i);
     if (item) {
-      item->SetEnabled(model->IsEnabledAt(i));
+      // Enabled state should be ignored for titles as they are non-interactive.
+      if (model->GetTypeAt(i) == ui::MenuModel::TYPE_TITLE)
+        item->SetEnabled(false);
+      else
+        item->SetEnabled(model->IsEnabledAt(i));
       item->SetVisible(model->IsVisibleAt(i));
     }
 

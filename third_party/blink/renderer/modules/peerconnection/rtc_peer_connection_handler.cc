@@ -45,9 +45,9 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
-#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
@@ -977,8 +977,9 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       is_closed_(false),
       dependency_factory_(dependency_factory),
       track_adapter_map_(
-          new blink::WebRtcMediaStreamTrackAdapterMap(dependency_factory_,
-                                                      task_runner)),
+          base::MakeRefCounted<blink::WebRtcMediaStreamTrackAdapterMap>(
+              dependency_factory_,
+              task_runner)),
       task_runner_(std::move(task_runner)) {
   CHECK(client_);
 

@@ -79,8 +79,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   base::string16 GetNameOfProfileAtIndex(size_t index) const override;
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   base::FilePath GetPathOfProfileAtIndex(size_t index) const override;
-  // Will be removed SOON with ProfileInfoCache tests. Do not use!
-  base::string16 GetUserNameOfProfileAtIndex(size_t index) const override;
   base::string16 GetGAIANameOfProfileAtIndex(size_t index) const override;
   base::string16 GetGAIAGivenNameOfProfileAtIndex(size_t index) const override;
   std::string GetGAIAIdOfProfileAtIndex(size_t index) const override;
@@ -104,13 +102,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
-  // Warning: This will re-sort profiles and thus may change indices!
   void SetLocalProfileNameOfProfileAtIndex(size_t index,
                                            const base::string16& name);
-  void SetAuthInfoOfProfileAtIndex(size_t index,
-                                   const std::string& gaia_id,
-                                   const base::string16& user_name,
-                                   bool is_consented_primary_account);
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
   void SetIsOmittedProfileAtIndex(size_t index, bool is_omitted);
@@ -151,6 +144,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   bool GetProfileAttributesWithPath(const base::FilePath& path,
                                     ProfileAttributesEntry** entry) override;
+
+  void NotifyProfileAuthInfoChanged(const base::FilePath& profile_path);
 
   static const char kNameKey[];
   static const char kGAIANameKey[];

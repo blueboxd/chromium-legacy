@@ -182,10 +182,11 @@ struct FormDataPredictions {
   array<FormFieldDataPredictions> fields;
 };
 
-// autofill::PasswordAndRealm
-struct PasswordAndRealm {
+// autofill::PasswordAndMetadata
+struct PasswordAndMetadata {
   mojo_base.mojom.String16 password;
   string realm;
+  bool uses_account_store;
 };
 
 // autofill::PasswordFormFillData
@@ -197,7 +198,8 @@ struct PasswordFormFillData {
   FormFieldData password_field;
   bool username_may_use_prefilled_placeholder;
   string preferred_realm;
-  map<mojo_base.mojom.String16, PasswordAndRealm> additional_logins;
+  bool uses_account_store;
+  map<mojo_base.mojom.String16, PasswordAndMetadata> additional_logins;
   bool wait_for_username;
   bool has_renderer_ids;
 };

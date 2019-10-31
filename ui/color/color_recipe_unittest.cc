@@ -41,8 +41,9 @@ TEST(ColorRecipeTest, OneTransform) {
 // Tests that in a recipe with multiple transforms, each is applied.
 TEST(ColorRecipeTest, ChainedTransforms) {
   ColorRecipe recipe;
-  recipe.AddTransform(DeriveDefaultIconColor())
-      .AddTransform(BlendForMinContrast(kColorTest0));
+  recipe.AddTransform(DeriveDefaultIconColor(FromTransformInput()))
+      .AddTransform(BlendForMinContrast(FromTransformInput(),
+                                        FromInputColor(kColorTest0)));
   constexpr SkColor kBackground = SK_ColorWHITE;
   ColorMixer mixer;
   mixer.AddSet({kColorSetTest0, {{kColorTest0, kBackground}}});

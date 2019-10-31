@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/modules/compression/compression_format.h"
 #include "third_party/blink/renderer/modules/compression/zlib_partition_alloc.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
@@ -23,7 +24,7 @@
 namespace blink {
 
 DeflateTransformer::DeflateTransformer(ScriptState* script_state,
-                                       Format format,
+                                       CompressionFormat format,
                                        int level)
     : script_state_(script_state), out_buffer_(kBufferSize) {
   DCHECK(level >= 1 && level <= 9);
@@ -33,11 +34,11 @@ DeflateTransformer::DeflateTransformer(ScriptState* script_state,
   constexpr int kUseGzip = 16;
   int err;
   switch (format) {
-    case Format::kDeflate:
+    case CompressionFormat::kDeflate:
       err = deflateInit2(&stream_, level, Z_DEFLATED, kWindowBits, 8,
                          Z_DEFAULT_STRATEGY);
       break;
-    case Format::kGzip:
+    case CompressionFormat::kGzip:
       err = deflateInit2(&stream_, level, Z_DEFLATED, kWindowBits + kUseGzip, 8,
                          Z_DEFAULT_STRATEGY);
       break;

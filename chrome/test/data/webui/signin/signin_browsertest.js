@@ -8,7 +8,6 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "base/command_line.h"');
 GEN('#include "build/branding_buildflags.h"');
-GEN('#include "chrome/test/data/webui/signin_browsertest.h"');
 GEN('#include "services/network/public/cpp/features.h"');
 
 /**
@@ -18,11 +17,6 @@ GEN('#include "services/network/public/cpp/features.h"');
  */
 // eslint-disable-next-line no-var
 var SigninSyncConfirmationTest = class extends PolymerTest {
-  /** @override */
-  get typedefCppFixture() {
-    return 'SigninBrowserTest';
-  }
-
   /** @override */
   get browsePreload() {
     return 'chrome://sync-confirmation/test_loader.html?module=signin/sync_confirmation_test.js';
@@ -42,13 +36,6 @@ var SigninSyncConfirmationTest = class extends PolymerTest {
   }
 };
 
-// TODO(https://crbug.com/862573): Re-enable when no longer failing when
-// is_chrome_branded is true.
-GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-GEN('#define MAYBE_DialogWithDice DISABLED_DialogWithDice');
-GEN('#else');
-GEN('#define MAYBE_DialogWithDice');
-GEN('#endif');
-TEST_F('SigninSyncConfirmationTest', 'MAYBE_DialogWithDice', function() {
+TEST_F('SigninSyncConfirmationTest', 'Dialog', function() {
   mocha.run();
 });

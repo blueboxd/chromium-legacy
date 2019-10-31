@@ -45,8 +45,6 @@ public class Verifier implements NativeInitObserver {
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final VerifierDelegate mDelegate;
-    // TODO(peconn): Move this up into the coordinator.
-    private final TwaRegistrar mTwaRegistrar;
 
     // These origins need to be verified via OriginVerifier#start, bypassing cache.
     private final Set<Origin> mOriginsToVerify = new HashSet<>();
@@ -101,27 +99,17 @@ public class Verifier implements NativeInitObserver {
             TabObserverRegistrar tabObserverRegistrar,
             CustomTabActivityTabProvider tabProvider,
             CustomTabIntentDataProvider intentDataProvider,
-            VerifierDelegate delegate,
-            TwaRegistrar twaRegistrar) {
+            VerifierDelegate delegate) {
         // TODO(peconn): Change the CustomTabIntentDataProvider to a BrowserServices... once
         // https://chromium-review.googlesource.com/c/chromium/src/+/1877600 has landed.
         mTabProvider = tabProvider;
         mTabObserverRegistrar =  tabObserverRegistrar;
         mIntentDataProvider = intentDataProvider;
         mDelegate = delegate;
-        mTwaRegistrar = twaRegistrar;
 
         tabObserverRegistrar.registerTabObserver(mVerifyOnPageLoadObserver);
         tabProvider.addObserver(mVerifyOnTabSwitchObserver);
         lifecycleDispatcher.register(this);
-    }
-
-    /**
-     * @return package name of the client app hosting this Trusted Web Activity.
-     */
-    public String getClientPackageName() {
-        // TODO(peconn): Remove this method.
-        return mDelegate.getClientPackageName();
     }
 
     /**
@@ -145,6 +133,11 @@ public class Verifier implements NativeInitObserver {
     @Override
     public void onFinishNativeInitialization() {
         Origin initialOrigin = new Origin(mIntentDataProvider.getUrlToLoad());
+        if (!initialOrigin.isValid()) {
+            mTabObserverRegistrar.unregisterTabObserver(mVerifyOnPageLoadObserver);
+            updateState(initialOrigin, VerificationStatus.FAILURE);
+            return;
+        }
 
         collectTrustedOrigins(initialOrigin);
         verifyVisitedOrigin(initialOrigin);
@@ -212,10 +205,6 @@ public class Verifier implements NativeInitObserver {
     }
 
     private void updateState(Origin origin, @VerificationStatus int status) {
-        if (status == VerificationStatus.SUCCESS) {
-            mTwaRegistrar.registerClient(mDelegate.getClientPackageName(), origin);
-        }
-
         mState = new VerificationState(origin, status);
         for (Runnable observer : mObservers) {
             observer.run();

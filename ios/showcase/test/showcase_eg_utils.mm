@@ -4,10 +4,9 @@
 
 #import "ios/showcase/test/showcase_eg_utils.h"
 
-#import <EarlGrey/EarlGrey.h>
-
-#include "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
+#import "ios/showcase/test/showcase_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

@@ -71,6 +71,9 @@ class AutofillPopupLayoutModel {
 
   // Returns the icon image of the item at |index| in the popup.
   gfx::ImageSkia GetIconImage(size_t index) const;
+
+  // Returns the store indicator icon image of the item at |index| in the popup.
+  gfx::ImageSkia GetStoreIndicatorIconImage(size_t index) const;
 #endif
 
   // Convert a y-coordinate to the closest line.
@@ -97,6 +100,8 @@ class AutofillPopupLayoutModel {
   gfx::Rect RoundedElementBounds() const;
 
 #if !defined(OS_ANDROID)
+  gfx::ImageSkia GetIconImageByName(const std::string& icon_str) const;
+
   // The fonts for the popup text.
   // Normal font (readable size, non bold).
   gfx::FontList normal_font_list_;

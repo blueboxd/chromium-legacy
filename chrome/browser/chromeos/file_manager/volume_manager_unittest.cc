@@ -32,8 +32,6 @@
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/drive/chromeos/dummy_file_system.h"
-#include "components/drive/service/dummy_drive_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/user_manager/user.h"
@@ -204,10 +202,8 @@ class VolumeManagerTest : public testing::Test {
               std::make_unique<drive::DriveIntegrationService>(
                   profile_.get(),
                   nullptr,
-                  new drive::DummyDriveService(),
                   std::string(),
-                  base::FilePath(),
-                  new drive::DummyFileSystem())),
+                  base::FilePath())),
           volume_manager_(std::make_unique<VolumeManager>(
               profile_.get(),
               drive_integration_service_.get(),  // DriveIntegrationService

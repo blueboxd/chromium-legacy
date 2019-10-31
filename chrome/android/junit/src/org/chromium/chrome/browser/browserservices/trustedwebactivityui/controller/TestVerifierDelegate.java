@@ -19,12 +19,6 @@ class TestVerifierDelegate implements VerifierDelegate {
     private final Set<Origin> mPreviouslyVerifiedOrigins = new HashSet<>();
     private final Map<Origin, Promise<Boolean>> mPendingVerifications = new HashMap<>();
 
-    private final String mPackageName;
-
-    TestVerifierDelegate(String packageName) {
-        mPackageName = packageName;
-    }
-
     @Override
     public Promise<Boolean> verify(Origin origin) {
         Promise<Boolean> promise = new Promise<>();
@@ -35,11 +29,6 @@ class TestVerifierDelegate implements VerifierDelegate {
     @Override
     public boolean wasPreviouslyVerified(Origin origin) {
         return mPreviouslyVerifiedOrigins.contains(origin);
-    }
-
-    @Override
-    public String getClientPackageName() {
-        return mPackageName;
     }
 
     public void passVerification(Origin origin) {

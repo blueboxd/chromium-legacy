@@ -1866,6 +1866,8 @@ jumbo_source_set("browser") {
     "web_contents/web_drag_dest_mac.mm",
     "web_contents/web_drag_utils_win.cc",
     "web_contents/web_drag_utils_win.h",
+    "web_package/bundled_exchanges_blob_data_source.cc",
+    "web_package/bundled_exchanges_blob_data_source.h",
     "web_package/bundled_exchanges_handle.cc",
     "web_package/bundled_exchanges_handle.h",
     "web_package/bundled_exchanges_handle_tracker.cc",

@@ -221,7 +221,23 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   layout.set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  auto* app_controller = browser_view_->browser()->app_controller();
+  const auto* app_controller = browser_view_->browser()->app_controller();
+
+  if (base::FeatureList::IsEnabled(features::kDesktopMinimalUI) &&
+      app_controller->HasMinimalUiButtons()) {
+    // TODO(crbug.com/1007151): Place buttons at far left of title bar.
+    // TODO(crbug.com/1007151): Make the icons have correct sizes.
+    back_ = AddChildView(CreateBackButton(this, browser_view->browser()));
+    reload_ = AddChildView(CreateReloadButton(browser_view->browser()));
+
+    views::SetHitTestComponent(back_, static_cast<int>(HTCLIENT));
+    views::SetHitTestComponent(reload_, static_cast<int>(HTCLIENT));
+
+    chrome::AddCommandObserver(browser_view->browser(), IDC_BACK, this);
+    chrome::AddCommandObserver(browser_view->browser(), IDC_RELOAD, this);
+    md_observer_.Add(ui::MaterialDesignController::GetInstance());
+  }
+
   if (app_controller->HasTitlebarAppOriginText()) {
     web_app_origin_text_ = AddChildView(
         std::make_unique<WebAppOriginText>(browser_view->browser()));
@@ -281,21 +297,6 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   web_app_menu_button_ =
       AddChildView(std::make_unique<WebAppMenuButton>(browser_view));
 #endif
-
-  if (base::FeatureList::IsEnabled(features::kDesktopMinimalUI)) {
-    // TODO(crbug.com/1007151): Only create buttons for Minimal UI PWAs.
-    // TODO(crbug.com/1007151): Place buttons at far left of title bar.
-    // TODO(crbug.com/1007151): Make the icons have correct sizes.
-    back_ = AddChildView(CreateBackButton(this, browser_view->browser()));
-    reload_ = AddChildView(CreateReloadButton(browser_view->browser()));
-
-    views::SetHitTestComponent(back_, static_cast<int>(HTCLIENT));
-    views::SetHitTestComponent(reload_, static_cast<int>(HTCLIENT));
-
-    chrome::AddCommandObserver(browser_view->browser(), IDC_BACK, this);
-    chrome::AddCommandObserver(browser_view->browser(), IDC_RELOAD, this);
-    md_observer_.Add(ui::MaterialDesignController::GetInstance());
-  }
 
   UpdateChildrenColor();
   UpdateStatusIconsVisibility();

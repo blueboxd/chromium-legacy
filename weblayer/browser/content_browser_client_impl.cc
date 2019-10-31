@@ -37,6 +37,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
+#include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "weblayer/browser/android_descriptors.h"
 #endif
@@ -216,7 +217,12 @@ void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
 
   fd = ui::GetLocalePackFd(&region);
   mappings->ShareWithRegion(kWebLayerLocalePakDescriptor, fd, region);
-#endif
+
+  int crash_signal_fd =
+      crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
+  if (crash_signal_fd >= 0)
+    mappings->Share(service_manager::kCrashDumpSignal, crash_signal_fd);
+#endif  // defined(OS_ANDROID)
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 

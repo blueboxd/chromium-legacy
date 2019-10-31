@@ -31,6 +31,7 @@ PasswordFormFillData::PasswordFormFillData(
       name(form_on_page.form_data.name),
       origin(form_on_page.origin),
       action(form_on_page.action),
+      uses_account_store(preferred_match.IsUsingAccountStore()),
       wait_for_username(wait_for_username),
       has_renderer_ids(form_on_page.has_renderer_ids) {
   // Note that many of the |FormFieldData| members are not initialized for
@@ -68,8 +69,9 @@ PasswordFormFillData::PasswordFormFillData(
   for (const PasswordForm* match : matches) {
     if (match == &preferred_match)
       continue;
-    PasswordAndRealm& value = additional_logins[match->username_value];
+    PasswordAndMetadata& value = additional_logins[match->username_value];
     value.password = match->password_value;
+    value.uses_account_store = match->IsUsingAccountStore();
     if (IsPublicSuffixMatchOrAffiliationBasedMatch(*match))
       value.realm = match->signon_realm;
   }

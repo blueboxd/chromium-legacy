@@ -169,8 +169,9 @@ class InMemoryURLIndexTest : public testing::Test {
   void ExpectPrivateDataEqual(const URLIndexPrivateData& expected,
                               const URLIndexPrivateData& actual);
 
-  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir history_dir_;
+  base::ScopedTempDir temp_dir_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<history::HistoryService> history_service_;
   history::HistoryDatabase* history_database_ = nullptr;
   std::unique_ptr<TemplateURLService> template_url_service_;
@@ -229,9 +230,9 @@ bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
 
 void InMemoryURLIndexTest::SetUp() {
   // We cannot access the database until the backend has been loaded.
-  if (history_dir_.CreateUniqueTempDir())
-    history_service_ =
-        history::CreateHistoryService(history_dir_.GetPath(), true);
+  ASSERT_TRUE(history_dir_.CreateUniqueTempDir());
+  history_service_ =
+      history::CreateHistoryService(history_dir_.GetPath(), true);
   ASSERT_TRUE(history_service_);
   BlockUntilInMemoryURLIndexIsRefreshed(url_index_.get());
 
@@ -1228,9 +1229,8 @@ TEST_F(InMemoryURLIndexTest, DISABLED_CacheSaveRestore) {
 }
 
 TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
-  base::ScopedTempDir temp_directory;
-  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-  set_history_dir(temp_directory.GetPath());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  set_history_dir(temp_dir_.GetPath());
 
   URLIndexPrivateData& private_data(*GetPrivateData());
 
@@ -1302,6 +1302,8 @@ TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
 
   // Compare the captured and restored for equality.
   ExpectPrivateDataEqual(*old_data, new_data);
+
+  set_history_dir(base::FilePath());
 }
 
 TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsets) {
@@ -1433,8 +1435,8 @@ class InMemoryURLIndexCacheTest : public testing::Test {
   void set_history_dir(const base::FilePath& dir_path);
   bool GetCacheFilePath(base::FilePath* file_path) const;
 
-  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<InMemoryURLIndex> url_index_;
 };
 

@@ -41,8 +41,8 @@ using scanner::CameraState;
   return mainController.interfaceProvider.mainInterface.viewController;
 }
 
-+ (UIImage*)closeIcon {
-  return [ChromeIcon closeIcon];
++ (NSString*)closeIconAccessibilityLabel {
+  return [ChromeIcon closeIcon].accessibilityLabel;
 }
 
 #pragma mark Swizzling

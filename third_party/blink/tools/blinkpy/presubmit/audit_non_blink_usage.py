@@ -888,6 +888,8 @@ _CONFIG = [
             'base::StringPrintf',
             'base::Value',
             'base::Unretained',
+            # TODO(crbug.com/787254): Replace base::Thread with the appropriate Blink class.
+            'base::Thread',
             'base::WrapRefCounted',
             'cricket::.*',
             'jingle_glue::JingleThreadWrapper',

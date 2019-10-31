@@ -18,9 +18,9 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.native_test.NativeBrowserTest;
 import org.chromium.native_test.NativeBrowserTestActivity;
+import org.chromium.weblayer.BrowserCallback;
 import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.BrowserFragmentController;
-import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.WebLayer;
 
@@ -88,7 +88,7 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
         mBrowserFragmentController.setTopView(topContentsContainer);
 
         mBrowserController = mBrowserFragmentController.getBrowserController();
-        mBrowserController.addObserver(new BrowserObserver() {
+        mBrowserController.registerBrowserCallback(new BrowserCallback() {
             @Override
             public void visibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());

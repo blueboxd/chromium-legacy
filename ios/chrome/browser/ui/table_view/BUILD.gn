@@ -13,8 +13,6 @@ source_set("table_view") {
     "table_view_model.mm",
     "table_view_navigation_controller.h",
     "table_view_navigation_controller.mm",
-    "table_view_navigation_controller_constants.h",
-    "table_view_navigation_controller_constants.mm",
   ]
   deps = [
     ":feature_flags",
@@ -28,7 +26,16 @@ source_set("table_view") {
     "//ios/third_party/material_components_ios",
   ]
   public_deps = [
+    ":constants",
     "//ios/chrome/browser/ui/table_view/cells",
+  ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "table_view_navigation_controller_constants.h",
+    "table_view_navigation_controller_constants.mm",
   ]
 }
 

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace {
@@ -18,6 +20,8 @@ constexpr const char kExampleURL[] = "http://example.org/";
 namespace web_app {
 
 class WebAppBrowserTest : public WebAppControllerBrowserTest {};
+
+using WebAppOnlyBrowserTest = WebAppBrowserTest;
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CreatedForInstalledPwaForPwa) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
@@ -56,11 +60,45 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ThemeColor) {
   }
 }
 
+// TODO(crbug.com/1014346): Support hosted apps, use WebAppBrowserTest.
+IN_PROC_BROWSER_TEST_P(WebAppOnlyBrowserTest, HasMinimalUiButtons) {
+  int index = 0;
+  auto has_buttons = [this, &index](blink::mojom::DisplayMode display_mode,
+                                    bool open_as_window) -> bool {
+    const std::string base_url = "https://example.com/path";
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = GURL(base_url + base::NumberToString(index++));
+    web_app_info->scope = web_app_info->app_url;
+    web_app_info->display_mode = display_mode;
+    web_app_info->open_as_window = open_as_window;
+    AppId app_id = InstallWebApp(std::move(web_app_info));
+    Browser* app_browser = LaunchWebAppBrowser(app_id);
+    return app_browser->app_controller()->HasMinimalUiButtons();
+  };
+
+  EXPECT_TRUE(has_buttons(blink::mojom::DisplayMode::kBrowser,
+                          /*open_as_window=*/true));
+  EXPECT_TRUE(has_buttons(blink::mojom::DisplayMode::kMinimalUi,
+                          /*open_as_window=*/true));
+  EXPECT_FALSE(has_buttons(blink::mojom::DisplayMode::kStandalone,
+                           /*open_as_window=*/true));
+  EXPECT_FALSE(has_buttons(blink::mojom::DisplayMode::kFullscreen,
+                           /*open_as_window=*/true));
+
+  EXPECT_FALSE(has_buttons(blink::mojom::DisplayMode::kMinimalUi,
+                           /*open_as_window=*/false));
+}
+
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     WebAppBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp));
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    WebAppOnlyBrowserTest,
+    ::testing::Values(ControllerType::kUnifiedControllerWithWebApp));
 
 }  // namespace web_app

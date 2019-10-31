@@ -40,6 +40,7 @@ BrowserUIThreadScheduler::BrowserUIThreadScheduler()
           base::sequence_manager::CreateUnboundSequenceManager(
               base::sequence_manager::SequenceManager::Settings::Builder()
                   .SetMessagePumpType(base::MessagePumpType::UI)
+                  .SetAntiStarvationLogicForPrioritiesDisabled(true)
                   .Build())),
       task_queues_(BrowserThread::UI,
                    owned_sequence_manager_.get(),

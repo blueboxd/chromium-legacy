@@ -218,8 +218,8 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
   }
 
   for (int i = 0;
-       i < static_cast<int>(
-               blink::scheduler::WebSchedulerTrackedFeature::kMaxValue);
+       i <= static_cast<int>(
+                blink::scheduler::WebSchedulerTrackedFeature::kMaxValue);
        i++) {
     blink::scheduler::WebSchedulerTrackedFeature feature =
         static_cast<blink::scheduler::WebSchedulerTrackedFeature>(i);

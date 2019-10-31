@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -32,13 +33,19 @@ bool NGOutlineUtils::ShouldPaintOutline(
   if (layout_object->IsElementContinuation()) {
     // If the |LayoutInline|'s continuation-root generated a fragment, we
     // shouldn't paint the outline.
-    if (layout_object->ContinuationRoot()->FirstInlineFragment())
+    DCHECK(layout_object->ContinuationRoot());
+    NGInlineCursor cursor;
+    cursor.MoveTo(*layout_object->ContinuationRoot());
+    if (cursor)
       return false;
   }
 
-  DCHECK(layout_object->FirstInlineFragment());
-  return &layout_object->FirstInlineFragment()->PhysicalFragment() ==
-         &physical_fragment;
+  // The first fragment paints all outlines. Check if this is the first fragment
+  // for the |layout_object|.
+  NGInlineCursor cursor;
+  cursor.MoveTo(*layout_object);
+  DCHECK(cursor);
+  return cursor.CurrentBoxFragment() == &physical_fragment;
 }
 
 }  // namespace blink

@@ -163,16 +163,20 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     return message_center_view()->scroller_->contents();
   }
 
-  views::View* GetStackingCounter() {
+  StackedNotificationBar* GetNotificationBar() {
     return message_center_view()->notification_bar_;
   }
 
-  views::View* GetStackingCounterLabel() {
+  views::View* GetNotificationBarLabel() {
     return message_center_view()->notification_bar_->count_label_;
   }
 
-  views::View* GetStackingCounterClearAllButton() {
+  views::View* GetNotificationBarClearAllButton() {
     return message_center_view()->notification_bar_->clear_all_button_;
+  }
+
+  views::View* GetNotificationBarExpandAllButton() {
+    return message_center_view()->notification_bar_->expand_all_button_;
   }
 
   message_center::MessageView* ToggleFocusToMessageView(size_t index,
@@ -349,7 +353,7 @@ TEST_F(UnifiedMessageCenterViewTest, ClearAllPressed) {
   AddNotification();
   CreateMessageCenterView();
   EXPECT_TRUE(message_center_view()->GetVisible());
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
 
   // When Clear All button is pressed, all notifications are removed and the
   // view becomes invisible.
@@ -449,19 +453,19 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterLayout) {
   EXPECT_GT(GetMessageListView()->bounds().height(),
             message_center_view()->bounds().height());
 
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
-  EXPECT_EQ(0, GetStackingCounter()->bounds().y());
-  EXPECT_EQ(GetStackingCounter()->bounds().bottom(),
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
+  EXPECT_EQ(0, GetNotificationBar()->bounds().y());
+  EXPECT_EQ(GetNotificationBar()->bounds().bottom(),
             GetScroller()->bounds().y());
-  EXPECT_TRUE(GetStackingCounterLabel()->GetVisible());
-  EXPECT_TRUE(GetStackingCounterClearAllButton()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarLabel()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
 
   // Scroll to the top, making the counter label invisible.
   GetScroller()->ScrollToPosition(GetScrollBar(), 0);
   message_center_view()->OnMessageCenterScrolled();
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
-  EXPECT_FALSE(GetStackingCounterLabel()->GetVisible());
-  EXPECT_TRUE(GetStackingCounterClearAllButton()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
+  EXPECT_FALSE(GetNotificationBarLabel()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
 }
 
 TEST_F(UnifiedMessageCenterViewTest, StackingCounterMessageListScrolled) {
@@ -469,8 +473,8 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterMessageListScrolled) {
     AddNotification();
   CreateMessageCenterView();
   EXPECT_TRUE(message_center_view()->GetVisible());
-  EXPECT_TRUE(GetStackingCounterLabel()->GetVisible());
-  EXPECT_TRUE(GetStackingCounterClearAllButton()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarLabel()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
 
   // MessageCenterView is maxed out.
   EXPECT_GT(GetMessageListView()->bounds().height(),
@@ -479,24 +483,24 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterMessageListScrolled) {
   // Scroll to the top, making the counter label invisible.
   GetScroller()->ScrollToPosition(GetScrollBar(), 0);
   message_center_view()->OnMessageCenterScrolled();
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
-  EXPECT_FALSE(GetStackingCounterLabel()->GetVisible());
-  EXPECT_TRUE(GetStackingCounterClearAllButton()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
+  EXPECT_FALSE(GetNotificationBarLabel()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
 
   // Scrolling past 5 notifications should make the counter label visible.
   const int scroll_amount = (GetMessageViewVisibleBounds(0).height() * 5) + 1;
   GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
 
-  EXPECT_TRUE(GetStackingCounterLabel()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarLabel()->GetVisible());
 
   // Scrolling back to the top should make the
   // counter label invisible again.
   GetScroller()->ScrollToPosition(GetScrollBar(), 0);
   message_center_view()->OnMessageCenterScrolled();
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
-  EXPECT_FALSE(GetStackingCounterLabel()->GetVisible());
-  EXPECT_TRUE(GetStackingCounterClearAllButton()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
+  EXPECT_FALSE(GetNotificationBarLabel()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
 }
 
 TEST_F(UnifiedMessageCenterViewTest, StackingCounterNotificationRemoval) {
@@ -511,14 +515,14 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterNotificationRemoval) {
             message_center_view()->bounds().height());
 
   // Dismiss until there are 2 notifications. The bar should still be visible.
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
   for (size_t i = 0; i < 4; ++i) {
     MessageCenter::Get()->RemoveNotification(ids[i], true /* by_user */);
     AnimateMessageListToEnd();
   }
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
-  EXPECT_FALSE(GetStackingCounterLabel()->GetVisible());
-  EXPECT_TRUE(GetStackingCounterClearAllButton()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
+  EXPECT_FALSE(GetNotificationBarLabel()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
 
   // The MessageCenterView should be tall enough to contain the bar, two
   // notifications, and extra padding.
@@ -532,24 +536,24 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterNotificationRemoval) {
   // Dismiss until there is only 1 notification left. The bar should be
   // hidden after an animation.
   MessageCenter::Get()->RemoveNotification(ids[4], true /* by_user */);
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
 
   // The HIDE_STACKING_BAR animation starts after the notification is slid out.
   AnimateMessageListToEnd();
   auto* hide_animation = GetMessageCenterAnimation();
   EXPECT_TRUE(hide_animation->is_animating());
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
 
   // Animate to middle. The bar should still be visible.
   AnimateMessageListToMiddle();
   hide_animation->SetCurrentValue(0.5);
   message_center_view()->AnimationProgressed(hide_animation);
-  EXPECT_TRUE(GetStackingCounter()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
 
   // Animate to end. The bar should now be hidden.
   AnimateMessageListToEnd();
   hide_animation->End();
-  EXPECT_FALSE(GetStackingCounter()->GetVisible());
+  EXPECT_FALSE(GetNotificationBar()->GetVisible());
 }
 
 TEST_F(UnifiedMessageCenterViewTest, StackingCounterLabelRelaidOutOnScroll) {
@@ -561,14 +565,14 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterLabelRelaidOutOnScroll) {
   model()->SetTargetNotification(id);
 
   CreateMessageCenterView();
-  EXPECT_FALSE(GetStackingCounterLabel()->GetVisible());
+  EXPECT_FALSE(GetNotificationBarLabel()->GetVisible());
 
   // Scroll past 5 notifications so the count label becomes visible
   int scroll_amount = (GetMessageViewVisibleBounds(0).height() * 5) + 1;
   GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
-  EXPECT_TRUE(GetStackingCounterLabel()->GetVisible());
-  int label_width = GetStackingCounterLabel()->bounds().width();
+  EXPECT_TRUE(GetNotificationBarLabel()->GetVisible());
+  int label_width = GetNotificationBarLabel()->bounds().width();
   EXPECT_GT(label_width, 0);
 
   // Scroll past 14 notifications so the label width must be expanded to
@@ -576,7 +580,7 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterLabelRelaidOutOnScroll) {
   scroll_amount = (GetMessageViewVisibleBounds(0).height() * 14) + 1;
   GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
-  EXPECT_GT(GetStackingCounterLabel()->bounds().width(), label_width);
+  EXPECT_GT(GetNotificationBarLabel()->bounds().width(), label_width);
 }
 
 TEST_F(UnifiedMessageCenterViewTest, RectBelowScroll) {
@@ -707,6 +711,71 @@ TEST_F(UnifiedMessageCenterViewTest, FocusClearedAfterNotificationRemoval) {
   EXPECT_FALSE(message_center_view()->GetFocusManager()->GetFocusedView());
 
   widget->GetRootView()->RemoveChildView(message_center_view());
+}
+
+TEST_F(UnifiedMessageCenterViewTest, CollapseAndExpand_NonAnimated) {
+  AddNotification();
+  AddNotification();
+  CreateMessageCenterView();
+  EXPECT_TRUE(GetScroller()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
+  EXPECT_FALSE(GetNotificationBarExpandAllButton()->GetVisible());
+
+  // Set to collapsed state.
+  message_center_view()->SetCollapsed(false /* animate */);
+  EXPECT_FALSE(GetScroller()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarExpandAllButton()->GetVisible());
+  EXPECT_FALSE(GetNotificationBarClearAllButton()->GetVisible());
+
+  // Set back to expanded state.
+  message_center_view()->SetExpanded();
+  EXPECT_FALSE(GetNotificationBarExpandAllButton()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
+  EXPECT_TRUE(GetScroller()->GetVisible());
+}
+
+TEST_F(UnifiedMessageCenterViewTest, CollapseAndExpand_Animated) {
+  AddNotification();
+  CreateMessageCenterView();
+  EXPECT_TRUE(GetScroller()->GetVisible());
+  EXPECT_FALSE(GetNotificationBar()->GetVisible());
+
+  // Set to collapsed state with animation.
+  message_center_view()->SetCollapsed(true /* animate */);
+  auto* collapse_animation = GetMessageCenterAnimation();
+  EXPECT_TRUE(collapse_animation->is_animating());
+
+  // The scroller should be hidden at the half way point.
+  collapse_animation->SetCurrentValue(0.5);
+  message_center_view()->AnimationProgressed(collapse_animation);
+  EXPECT_FALSE(GetScroller()->GetVisible());
+  EXPECT_TRUE(GetNotificationBar()->GetVisible());
+
+  collapse_animation->End();
+  AnimateMessageListToEnd();
+  EXPECT_TRUE(GetNotificationBarExpandAllButton()->GetVisible());
+  EXPECT_FALSE(GetNotificationBarClearAllButton()->GetVisible());
+
+  // Set back to expanded state.
+  message_center_view()->SetExpanded();
+  EXPECT_FALSE(GetNotificationBarExpandAllButton()->GetVisible());
+  EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
+  EXPECT_TRUE(GetScroller()->GetVisible());
+  EXPECT_FALSE(GetNotificationBar()->GetVisible());
+}
+
+TEST_F(UnifiedMessageCenterViewTest, CollapseAndExpand_NoNotifications) {
+  CreateMessageCenterView();
+  EXPECT_FALSE(message_center_view()->GetVisible());
+
+  // Setting to the collapsed state should do nothing.
+  message_center_view()->SetCollapsed(true /* animate */);
+  EXPECT_FALSE(message_center_view()->GetVisible());
+
+  // Same with setting it back to the expanded state.
+  message_center_view()->SetExpanded();
+  EXPECT_FALSE(message_center_view()->GetVisible());
 }
 
 }  // namespace ash

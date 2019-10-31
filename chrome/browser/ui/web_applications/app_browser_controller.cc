@@ -208,6 +208,10 @@ bool AppBrowserController::UseTitlebarTerminalSystemAppMenu() const {
 }
 #endif
 
+bool AppBrowserController::HasMinimalUiButtons() const {
+  return false;
+}
+
 bool AppBrowserController::IsInstalled() const {
   return false;
 }

@@ -24,7 +24,7 @@ import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 /**
  * Represents a web-browser. More specifically, owns a NavigationController, and allows configuring
- * state of the browser, such as delegates and observers.
+ * state of the browser, such as delegates and callbacks.
  */
 public final class BrowserController {
     /** The top level key of the JSON object returned by executeScript(). */
@@ -33,7 +33,7 @@ public final class BrowserController {
     private final IBrowserController mImpl;
     private FullscreenDelegateClientImpl mFullscreenDelegateClient;
     private final NavigationController mNavigationController;
-    private final ObserverList<BrowserObserver> mObservers;
+    private final ObserverList<BrowserCallback> mCallbacks;
     private DownloadDelegateClientImpl mDownloadDelegateClient;
 
     BrowserController(IBrowserController impl) {
@@ -44,7 +44,7 @@ public final class BrowserController {
             throw new APICallException(e);
         }
 
-        mObservers = new ObserverList<BrowserObserver>();
+        mCallbacks = new ObserverList<BrowserCallback>();
         mNavigationController = NavigationController.create(mImpl);
     }
 
@@ -128,14 +128,14 @@ public final class BrowserController {
         return mNavigationController;
     }
 
-    public void addObserver(@Nullable BrowserObserver observer) {
+    public void registerBrowserCallback(@Nullable BrowserCallback callback) {
         ThreadCheck.ensureOnUiThread();
-        mObservers.addObserver(observer);
+        mCallbacks.addObserver(callback);
     }
 
-    public void removeObserver(@Nullable BrowserObserver observer) {
+    public void unregisterBrowserCallback(@Nullable BrowserCallback callback) {
         ThreadCheck.ensureOnUiThread();
-        mObservers.removeObserver(observer);
+        mCallbacks.removeObserver(callback);
     }
 
     IBrowserController getIBrowserController() {
@@ -146,8 +146,8 @@ public final class BrowserController {
         @Override
         public void visibleUrlChanged(String url) {
             Uri uri = Uri.parse(url);
-            for (BrowserObserver observer : mObservers) {
-                observer.visibleUrlChanged(uri);
+            for (BrowserCallback callback : mCallbacks) {
+                callback.visibleUrlChanged(uri);
             }
         }
     }

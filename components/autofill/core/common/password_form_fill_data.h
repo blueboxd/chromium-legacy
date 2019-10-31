@@ -21,16 +21,17 @@ struct ParsingResult {
   uint32_t confirm_password_renderer_id;
 };
 
-struct PasswordAndRealm {
+struct PasswordAndMetadata {
   base::string16 password;
   std::string realm;
+  bool uses_account_store;
 };
 
 // Structure used for autofilling password forms. Note that the realms in this
 // struct are only set when the password's realm differs from the realm of the
 // form that we are filling.
 struct PasswordFormFillData {
-  using LoginCollection = std::map<base::string16, PasswordAndRealm>;
+  using LoginCollection = std::map<base::string16, PasswordAndMetadata>;
 
   PasswordFormFillData();
 
@@ -85,7 +86,11 @@ struct PasswordFormFillData {
   // The signon realm of the preferred user/pass pair.
   std::string preferred_realm;
 
-  // A list of other matching username->PasswordAndRealm pairs for the form.
+  // True iff the password originated from the account store rather than the
+  // local password store.
+  bool uses_account_store = false;
+
+  // A list of other matching username->PasswordAndMetadata pairs for the form.
   LoginCollection additional_logins;
 
   // Tells us whether we need to wait for the user to enter a valid username

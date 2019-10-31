@@ -44,7 +44,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
   def SerializeIntermediateResults(self, *test_results):
     testing.SerializeIntermediateResults(test_results, os.path.join(
-        self.intermediate_dir, processor.TELEMETRY_RESULTS))
+        self.intermediate_dir, processor.TEST_RESULTS))
 
   def CreateHistogramsArtifact(self, hist):
     """Create an artifact with histograms."""

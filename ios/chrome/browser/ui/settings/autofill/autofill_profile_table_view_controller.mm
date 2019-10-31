@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
@@ -33,8 +34,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kAutofillProfileTableViewID = @"kAutofillProfileTableViewID";
 
 namespace {
 

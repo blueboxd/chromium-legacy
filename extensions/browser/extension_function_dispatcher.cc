@@ -157,8 +157,7 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
       int worker_thread_id)
       : dispatcher_(dispatcher),
         observer_(this),
-        render_process_host_(render_process_host),
-        worker_thread_id_(worker_thread_id) {
+        render_process_host_(render_process_host) {
     observer_.Add(render_process_host_);
 
     DCHECK(ExtensionsClient::Get()
@@ -179,10 +178,11 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
     CleanUp();
   }
 
-  ExtensionFunction::ResponseCallback CreateCallback(int request_id) {
+  ExtensionFunction::ResponseCallback CreateCallback(int request_id,
+                                                     int worker_thread_id) {
     return base::Bind(
         &UIThreadWorkerResponseCallbackWrapper::OnExtensionFunctionCompleted,
-        weak_ptr_factory_.GetWeakPtr(), request_id);
+        weak_ptr_factory_.GetWeakPtr(), request_id, worker_thread_id);
   }
 
  private:
@@ -196,6 +196,7 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
   }
 
   void OnExtensionFunctionCompleted(int request_id,
+                                    int worker_thread_id,
                                     ExtensionFunction::ResponseType type,
                                     const base::ListValue& results,
                                     const std::string& error) {
@@ -204,7 +205,7 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
       return;
     }
     render_process_host_->Send(new ExtensionMsg_ResponseWorker(
-        worker_thread_id_, request_id, type == ExtensionFunction::SUCCEEDED,
+        worker_thread_id, request_id, type == ExtensionFunction::SUCCEEDED,
         results, error));
   }
 
@@ -212,7 +213,6 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
   ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
       observer_{this};
   content::RenderProcessHost* const render_process_host_;
-  const int worker_thread_id_;
   base::WeakPtrFactory<UIThreadWorkerResponseCallbackWrapper> weak_ptr_factory_{
       this};
 
@@ -317,7 +317,8 @@ void ExtensionFunctionDispatcher::Dispatch(
     }
     DispatchWithCallbackInternal(
         params, nullptr, render_process_id,
-        callback_wrapper->CreateCallback(params.request_id));
+        callback_wrapper->CreateCallback(params.request_id,
+                                         params.worker_thread_id));
   }
 }
 

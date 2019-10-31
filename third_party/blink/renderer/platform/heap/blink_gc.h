@@ -47,11 +47,7 @@ using MovingObjectCallback = void (*)(MovableReference from,
   H(NormalPage2)          \
   H(NormalPage3)          \
   H(NormalPage4)          \
-  H(Vector1)              \
-  H(Vector2)              \
-  H(Vector3)              \
-  H(Vector4)              \
-  H(InlineVector)         \
+  H(Vector)               \
   H(HashTable)            \
   H(Node)                 \
   H(CSSValue)             \

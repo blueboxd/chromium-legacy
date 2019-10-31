@@ -227,7 +227,7 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   const GCInfo* gc_info =
       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
   if (!IsInConstruction(header)) {
-    MarkHeader(header, gc_info->trace);
+    MarkHeader(header, {header->Payload(), gc_info->trace});
     return;
   }
 

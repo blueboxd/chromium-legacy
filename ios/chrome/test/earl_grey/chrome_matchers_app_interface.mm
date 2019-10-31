@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
@@ -31,6 +32,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
@@ -602,8 +604,7 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)contentSuggestionCollectionView {
-  return grey_accessibilityID(
-      [ContentSuggestionsViewController collectionAccessibilityIdentifier]);
+  return grey_accessibilityID(kContentSuggestionsCollectionIdentifier);
 }
 
 + (id<GREYMatcher>)warningMessageView {

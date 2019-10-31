@@ -169,6 +169,13 @@ blink::mojom::DisplayMode BookmarkAppRegistrar::GetAppUserDisplayMode(
   }
 }
 
+blink::mojom::DisplayMode BookmarkAppRegistrar::GetAppEffectiveDisplayMode(
+    const web_app::AppId& app_id) const {
+  // TODO(crbug.com/1014346): Consider app's requested display mode. Support
+  // minimal-ui.
+  return GetAppUserDisplayMode(app_id);
+}
+
 std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {
   std::vector<web_app::AppId> app_ids;
   for (scoped_refptr<const Extension> app :

@@ -88,6 +88,7 @@ jumbo_static_library("ui") {
     "browser_ui_prefs.h",
     "chrome_select_file_policy.cc",
     "chrome_select_file_policy.h",
+    "color/chrome_color_id.h",
     "color_chooser.h",
     "confirm_bubble.h",
     "crypto_module_password_dialog.h",
@@ -370,6 +371,7 @@ jumbo_static_library("ui") {
     "//components/translate/content/browser",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
+    "//ui/color:color",
   ]
   deps = [
     "//base",
@@ -2931,6 +2933,8 @@ jumbo_static_library("ui") {
       "views/native_file_system/native_file_system_ui_helpers.h",
       "views/native_file_system/native_file_system_usage_bubble_view.cc",
       "views/native_file_system/native_file_system_usage_bubble_view.h",
+      "views/omnibox/omnibox_color_mixer.cc",
+      "views/omnibox/omnibox_color_mixer.h",
       "views/omnibox/omnibox_match_cell_view.cc",
       "views/omnibox/omnibox_match_cell_view.h",
       "views/omnibox/omnibox_popup_contents_view.cc",

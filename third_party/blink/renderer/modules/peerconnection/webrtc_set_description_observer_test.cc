@@ -16,10 +16,10 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
-#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
-#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/test/mock_peerconnectioninterface.h"
 #include "third_party/webrtc/media/base/fake_media_engine.h"
@@ -223,8 +223,9 @@ class WebRtcSetDescriptionObserverHandlerTest
     pc_ = new webrtc::MockPeerConnectionInterface;
     dependency_factory_.reset(new blink::MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
-    track_adapter_map_ = new blink::WebRtcMediaStreamTrackAdapterMap(
-        dependency_factory_.get(), main_thread_);
+    track_adapter_map_ =
+        base::MakeRefCounted<blink::WebRtcMediaStreamTrackAdapterMap>(
+            dependency_factory_.get(), main_thread_);
     observer_ = base::MakeRefCounted<WebRtcSetDescriptionObserverForTest>();
     observer_handler_ = std::make_unique<ObserverHandlerWrapper>(
         handler_type_, main_thread_,

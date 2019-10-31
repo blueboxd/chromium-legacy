@@ -9698,6 +9698,11 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Decompressed in a background or a foreground tab"/>
 </enum>
 
+<enum name="CompressionStreamsFormat">
+  <int value="0" label="gzip"/>
+  <int value="1" label="deflate"/>
+</enum>
+
 <enum name="ComputeCurrentSigninStatus">
   <obsolete>
     Deprecated as of Jun 2016. The enum was added for debugging purpose and is
@@ -13850,6 +13855,7 @@ Called by update_net_error_codes.py.-->
   <int value="32" label="Audits' view trace clicked"/>
   <int value="33" label="Network panel film strip started recording"/>
   <int value="34" label="Coverage report was filtered"/>
+  <int value="35" label="Coverage started (per block)"/>
 </enum>
 
 <enum name="DevToolsBackgroundService">
@@ -35727,6 +35733,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1767470652" label="out-of-process-pdf"/>
   <int value="-1766791501" label="WebUITabStrip:enabled"/>
   <int value="-1766648764" label="OmniboxShortBookmarkSuggestions:disabled"/>
+  <int value="-1766162197" label="AppServiceInstanceRegistry:enabled"/>
   <int value="-1766129470" label="DataSaverLiteModeRebranding:disabled"/>
   <int value="-1760624380"
       label="ImprovedCookieControlsForThirdPartyCookieBlocking:enabled"/>
@@ -38581,6 +38588,7 @@ from previous Chrome versions.
   <int value="1932204471" label="SyncPseudoUSSThemes:disabled"/>
   <int value="1932732886" label="OpenVR:enabled"/>
   <int value="1933282728" label="OmniboxUICuesForSearchHistoryMatches:enabled"/>
+  <int value="1935405622" label="AppServiceInstanceRegistry:disabled"/>
   <int value="1936810062" label="WebVrVsyncAlign:enabled"/>
   <int value="1938279796" label="PromosOnLocalNtp:disabled"/>
   <int value="1939413645" label="enable-invalid-cert-collection"/>

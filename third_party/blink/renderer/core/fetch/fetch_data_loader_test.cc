@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
 #include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
@@ -604,7 +605,8 @@ TEST_F(FetchDataLoaderTest, LoadAsString) {
   BytesConsumer::Client* client = nullptr;
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
-  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
+  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
+      TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 
@@ -643,7 +645,8 @@ TEST_F(FetchDataLoaderTest, LoadAsStringWithNullBytes) {
   BytesConsumer::Client* client = nullptr;
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
-  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
+  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
+      TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 
@@ -683,7 +686,8 @@ TEST_F(FetchDataLoaderTest, LoadAsStringError) {
   BytesConsumer::Client* client = nullptr;
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
-  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
+  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
+      TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 
@@ -721,7 +725,8 @@ TEST_F(FetchDataLoaderTest, LoadAsStringCancel) {
   BytesConsumer::Client* client = nullptr;
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
-  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString();
+  FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
+      TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 

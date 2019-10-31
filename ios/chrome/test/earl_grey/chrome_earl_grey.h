@@ -432,6 +432,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // browser state.
 - (void)setPopupPrefValue:(ContentSetting)value;
 
+// The count of key commands registered with the currently active BVC.
+- (NSInteger)registeredKeyCommandCount;
+
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"

@@ -15,7 +15,7 @@
 
 namespace {
 
-const char kChromeVoxPanelRelativeUrl[] = "/cvox2/background/panel.html";
+const char kChromeVoxPanelRelativeUrl[] = "/background/panel/panel.html";
 const char kDisableSpokenFeedbackURLFragment[] = "close";
 const char kFocusURLFragment[] = "focus";
 const char kFullscreenURLFragment[] = "fullscreen";

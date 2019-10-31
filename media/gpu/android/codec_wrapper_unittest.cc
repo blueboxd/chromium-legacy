@@ -232,9 +232,9 @@ TEST_F(CodecWrapperTest, OutputBufferReleaseCbIsCalledWhenDestructing) {
 }
 
 TEST_F(CodecWrapperTest, OutputBufferReflectsDrainingOrDrainedStatus) {
-  wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
+  wrapper_->QueueInputBuffer(*fake_decoder_buffer_);
   auto eos = DecoderBuffer::CreateEOSBuffer();
-  wrapper_->QueueInputBuffer(*eos, EncryptionScheme());
+  wrapper_->QueueInputBuffer(*eos);
   ASSERT_TRUE(wrapper_->IsDraining());
   auto codec_buffer = DequeueCodecOutputBuffer();
   EXPECT_CALL(output_buffer_release_cb_, Run(true)).Times(1);
@@ -247,22 +247,22 @@ TEST_F(CodecWrapperTest, CodecStartsInFlushedState) {
 }
 
 TEST_F(CodecWrapperTest, CodecIsNotInFlushedStateAfterAnInputIsQueued) {
-  wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
+  wrapper_->QueueInputBuffer(*fake_decoder_buffer_);
   ASSERT_FALSE(wrapper_->IsFlushed());
   ASSERT_FALSE(wrapper_->IsDraining());
   ASSERT_FALSE(wrapper_->IsDrained());
 }
 
 TEST_F(CodecWrapperTest, FlushTransitionsToFlushedState) {
-  wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
+  wrapper_->QueueInputBuffer(*fake_decoder_buffer_);
   wrapper_->Flush();
   ASSERT_TRUE(wrapper_->IsFlushed());
 }
 
 TEST_F(CodecWrapperTest, EosTransitionsToDrainingState) {
-  wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
+  wrapper_->QueueInputBuffer(*fake_decoder_buffer_);
   auto eos = DecoderBuffer::CreateEOSBuffer();
-  wrapper_->QueueInputBuffer(*eos, EncryptionScheme());
+  wrapper_->QueueInputBuffer(*eos);
   ASSERT_TRUE(wrapper_->IsDraining());
 }
 
@@ -284,10 +284,9 @@ TEST_F(CodecWrapperTest, RejectedInputBuffersAreReused) {
   EXPECT_CALL(*codec_, QueueInputBuffer(666, _, _, _))
       .WillOnce(Return(MEDIA_CODEC_NO_KEY))
       .WillOnce(Return(MEDIA_CODEC_OK));
-  auto status =
-      wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
+  auto status = wrapper_->QueueInputBuffer(*fake_decoder_buffer_);
   ASSERT_EQ(status, CodecWrapper::QueueStatus::kNoKey);
-  wrapper_->QueueInputBuffer(*fake_decoder_buffer_, EncryptionScheme());
+  wrapper_->QueueInputBuffer(*fake_decoder_buffer_);
 }
 
 TEST_F(CodecWrapperTest, SurfaceBundleIsInitializedByConstructor) {
@@ -312,7 +311,7 @@ TEST_F(CodecWrapperTest, EOSWhileFlushedOrDrainedIsElided) {
 
   // Codec starts in the flushed state.
   auto eos = DecoderBuffer::CreateEOSBuffer();
-  wrapper_->QueueInputBuffer(*eos, EncryptionScheme());
+  wrapper_->QueueInputBuffer(*eos);
   std::unique_ptr<CodecOutputBuffer> codec_buffer;
   bool is_eos = false;
   wrapper_->DequeueOutputBuffer(nullptr, &is_eos, &codec_buffer);
@@ -322,7 +321,7 @@ TEST_F(CodecWrapperTest, EOSWhileFlushedOrDrainedIsElided) {
   // it is elided here too.
   ASSERT_TRUE(wrapper_->IsDrained());
   eos = DecoderBuffer::CreateEOSBuffer();
-  wrapper_->QueueInputBuffer(*eos, EncryptionScheme());
+  wrapper_->QueueInputBuffer(*eos);
   is_eos = false;
   wrapper_->DequeueOutputBuffer(nullptr, &is_eos, &codec_buffer);
   ASSERT_TRUE(is_eos);

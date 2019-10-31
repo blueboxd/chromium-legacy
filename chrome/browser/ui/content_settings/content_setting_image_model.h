@@ -101,8 +101,13 @@ class ContentSettingImageModel {
     explanatory_string_id_ = text_id;
   }
 
+  bool ShouldNotifyAccessibility(content::WebContents* contents) const;
+  void AccessibilityWasNotified(content::WebContents* contents);
+
  protected:
-  explicit ContentSettingImageModel(ImageType type);
+  explicit ContentSettingImageModel(
+      ImageType type,
+      bool image_type_should_notify_accessibility = false);
 
   // Notifies this model that its setting might have changed and it may need to
   // update its visibility, icon and tooltip. This method returns whether the
@@ -122,13 +127,14 @@ class ContentSettingImageModel {
   void set_tooltip(const base::string16& tooltip) { tooltip_ = tooltip; }
 
  private:
-  bool is_visible_;
+  bool is_visible_ = false;
 
   const gfx::VectorIcon* icon_;
   const gfx::VectorIcon* icon_badge_;
-  int explanatory_string_id_;
+  int explanatory_string_id_ = 0;
   base::string16 tooltip_;
   const ImageType image_type_;
+  const bool image_type_should_notify_accessibility_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModel);
 };
@@ -136,8 +142,10 @@ class ContentSettingImageModel {
 // A subclass for an image model tied to a single content type.
 class ContentSettingSimpleImageModel : public ContentSettingImageModel {
  public:
-  ContentSettingSimpleImageModel(ImageType type,
-                                 ContentSettingsType content_type);
+  ContentSettingSimpleImageModel(
+      ImageType type,
+      ContentSettingsType content_type,
+      bool image_type_should_notify_accessibility = false);
 
   // ContentSettingImageModel implementation.
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(

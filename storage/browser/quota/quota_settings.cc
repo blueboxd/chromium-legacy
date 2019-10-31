@@ -21,10 +21,40 @@ namespace storage {
 
 namespace {
 
+const int64_t kMBytes = 1024 * 1024;
+const int kRandomizedPercentage = 10;
+
 // Skews |value| by +/- |percent|.
 int64_t RandomizeByPercent(int64_t value, int percent) {
   double random_percent = (base::RandDouble() - 0.5) * percent * 2;
   return value + (value * (random_percent / 100.0));
+}
+
+storage::QuotaSettings CalculateIncognitoDynamicSettings(
+    int64_t physical_memory_amount) {
+  // The incognito pool size is a fraction of the amount of system memory,
+  // and the amount is capped to a hard limit.
+  double kIncognitoPoolSizeRatio = 0.1;  // 10%
+  int64_t kMaxIncognitoPoolSize = 300 * kMBytes;
+  if (base::FeatureList::IsEnabled(features::kIncognitoDynamicQuota)) {
+    const double lower_bound = features::kIncognitoQuotaRatioLowerBound.Get();
+    const double upper_bound = features::kIncognitoQuotaRatioUpperBound.Get();
+    kIncognitoPoolSizeRatio =
+        lower_bound + (base::RandDouble() * (upper_bound - lower_bound));
+    kMaxIncognitoPoolSize = std::numeric_limits<int64_t>::max();
+  } else {
+    kMaxIncognitoPoolSize =
+        RandomizeByPercent(kMaxIncognitoPoolSize, kRandomizedPercentage);
+  }
+
+  storage::QuotaSettings settings;
+  settings.pool_size = std::min(
+      kMaxIncognitoPoolSize,
+      static_cast<int64_t>(physical_memory_amount * kIncognitoPoolSizeRatio));
+  settings.per_host_quota = settings.pool_size / 3;
+  settings.session_only_per_host_quota = settings.per_host_quota;
+  settings.refresh_interval = base::TimeDelta::Max();
+  return settings;
 }
 
 base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
@@ -33,34 +63,10 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
     QuotaDiskInfoHelper* disk_info_helper) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  const int64_t kMBytes = 1024 * 1024;
-  const int kRandomizedPercentage = 10;
 
   if (is_incognito) {
-    // The incognito pool size is a fraction of the amount of system memory,
-    // and the amount is capped to a hard limit.
-    double kIncognitoPoolSizeRatio = 0.1;  // 10%
-    int64_t kMaxIncognitoPoolSize = 300 * kMBytes;
-    if (base::FeatureList::IsEnabled(features::kIncognitoDynamicQuota)) {
-      const double lower_bound = features::kIncognitoQuotaRatioLowerBound.Get();
-      const double upper_bound = features::kIncognitoQuotaRatioUpperBound.Get();
-      kIncognitoPoolSizeRatio =
-          lower_bound + (base::RandDouble() * (upper_bound - lower_bound));
-      kMaxIncognitoPoolSize = std::numeric_limits<int64_t>::max();
-    } else {
-      kMaxIncognitoPoolSize =
-          RandomizeByPercent(kMaxIncognitoPoolSize, kRandomizedPercentage);
-    }
-
-    storage::QuotaSettings settings;
-    settings.pool_size =
-        std::min(kMaxIncognitoPoolSize,
-                 static_cast<int64_t>(base::SysInfo::AmountOfPhysicalMemory() *
-                                      kIncognitoPoolSizeRatio));
-    settings.per_host_quota = settings.pool_size / 3;
-    settings.session_only_per_host_quota = settings.per_host_quota;
-    settings.refresh_interval = base::TimeDelta::Max();
-    return settings;
+    return CalculateIncognitoDynamicSettings(
+        base::SysInfo::AmountOfPhysicalMemory());
   }
 
   // The fraction of the device's storage the browser is willing to
@@ -143,6 +149,10 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
 }
 
 }  // namespace
+
+int64_t GetIncognitoPoolSizeForTesting(int64_t physical_memory_amount) {
+  return CalculateIncognitoDynamicSettings(physical_memory_amount).pool_size;
+}
 
 void GetNominalDynamicSettings(const base::FilePath& partition_path,
                                bool is_incognito,

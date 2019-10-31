@@ -53,6 +53,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -205,6 +206,7 @@ class ConfigParserTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
+  data_decoder::test::InProcessDataDecoder data_decoder_;
 };
 
 ConfigParserTest::ConfigParserTest()

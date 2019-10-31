@@ -34,6 +34,7 @@ public final class NdefMessageUtils {
     public static final String RECORD_TYPE_EMPTY = "empty";
     public static final String RECORD_TYPE_TEXT = "text";
     public static final String RECORD_TYPE_URL = "url";
+    public static final String RECORD_TYPE_ABSOLUTE_URL = "absolute-url";
     public static final String RECORD_TYPE_JSON = "json";
     public static final String RECORD_TYPE_OPAQUE = "opaque";
     public static final String RECORD_TYPE_SMART_POSTER = "smart-poster";
@@ -111,7 +112,9 @@ public final class NdefMessageUtils {
                    UnsupportedEncodingException {
         switch (record.recordType) {
             case RECORD_TYPE_URL:
-                return android.nfc.NdefRecord.createUri(new String(record.data, "UTF-8"));
+                return createPlatformUrlRecord(record.data, false /* isAbsUrl */);
+            case RECORD_TYPE_ABSOLUTE_URL:
+                return createPlatformUrlRecord(record.data, true /* isAbsUrl */);
             case RECORD_TYPE_TEXT:
                 byte[] payload = createPayloadForTextRecord(record);
                 return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
@@ -149,7 +152,7 @@ public final class NdefMessageUtils {
                         new String(ndefRecord.getType(), "UTF-8"), ndefRecord.getPayload());
                 break;
             case android.nfc.NdefRecord.TNF_ABSOLUTE_URI:
-                record = createURLRecord(ndefRecord.toUri());
+                record = createURLRecord(ndefRecord.toUri(), true /* isAbsUrl */);
                 break;
             case android.nfc.NdefRecord.TNF_WELL_KNOWN:
                 record = createWellKnownRecord(ndefRecord);
@@ -186,17 +189,22 @@ public final class NdefMessageUtils {
     }
 
     /**
-     * Constructs URL NdefRecord
+     * Constructs url NdefRecord
      */
-    private static NdefRecord createURLRecord(Uri uri) {
+    private static NdefRecord createURLRecord(Uri uri, boolean isAbsUrl) {
         if (uri == null) return null;
         NdefRecord nfcRecord = new NdefRecord();
-        nfcRecord.recordType = RECORD_TYPE_URL;
+        if (isAbsUrl) {
+            nfcRecord.recordType = RECORD_TYPE_ABSOLUTE_URL;
+        } else {
+            nfcRecord.recordType = RECORD_TYPE_URL;
+        }
         nfcRecord.mediaType = TEXT_MIME;
         nfcRecord.data = ApiCompatibilityUtils.getBytesUtf8(uri.toString());
         return nfcRecord;
     }
 
+    /**
     /**
      * Constructs MIME or JSON NdefRecord
      */
@@ -246,7 +254,7 @@ public final class NdefMessageUtils {
     private static NdefRecord createWellKnownRecord(android.nfc.NdefRecord record)
             throws UnsupportedEncodingException {
         if (Arrays.equals(record.getType(), android.nfc.NdefRecord.RTD_URI)) {
-            return createURLRecord(record.toUri());
+            return createURLRecord(record.toUri(), false /* isAbsUrl */);
         }
 
         if (Arrays.equals(record.getType(), android.nfc.NdefRecord.RTD_TEXT)) {
@@ -278,6 +286,23 @@ public final class NdefMessageUtils {
         nfcRecord.mediaType = OCTET_STREAM_MIME;
         nfcRecord.data = payload;
         return nfcRecord;
+    }
+
+    /**
+     * Creates a TNF_WELL_KNOWN + RTD_URI or TNF_ABSOLUTE_URI android.nfc.NdefRecord.
+     */
+    public static android.nfc.NdefRecord createPlatformUrlRecord(byte[] url, boolean isAbsUrl)
+            throws UnsupportedEncodingException {
+        if (isAbsUrl) {
+            Uri uri = Uri.parse(new String(url, "UTF-8"));
+            if (uri == null) throw new NullPointerException("uri is null");
+            uri = uri.normalizeScheme();
+            String uriString = uri.toString();
+            if (uriString.length() == 0) throw new IllegalArgumentException("uri is empty");
+            return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_ABSOLUTE_URI,
+                    ApiCompatibilityUtils.getBytesUtf8(uriString), null, null);
+        }
+        return android.nfc.NdefRecord.createUri(new String(url, "UTF-8"));
     }
 
     /**

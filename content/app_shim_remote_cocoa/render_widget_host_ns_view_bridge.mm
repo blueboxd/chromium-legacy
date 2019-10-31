@@ -72,7 +72,12 @@ void RenderWidgetHostNSViewBridge::SetParentWebContentsNSView(
   // done by WebContentsViewMac.
   [cocoa_view_ setFrame:[parent_ns_view bounds]];
   [cocoa_view_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-  [parent_ns_view addSubview:cocoa_view_];
+  // Place the new view below all other views, matching the behavior in
+  // WebContentsViewMac::CreateViewForWidget.
+  // https://crbug.com/1017446
+  [parent_ns_view addSubview:cocoa_view_
+                  positioned:NSWindowBelow
+                  relativeTo:nil];
 }
 
 void RenderWidgetHostNSViewBridge::MakeFirstResponder() {

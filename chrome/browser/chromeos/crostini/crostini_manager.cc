@@ -2082,13 +2082,10 @@ void CrostiniManager::OnContainerStarted(
   if (signal.vm_name() == kCrostiniDefaultVmName &&
       signal.container_name() == kCrostiniDefaultContainerName &&
       ShouldConfigureDefaultContainer(profile_)) {
-    AddLinuxPackageOperationProgressObserver(
-        AnsibleManagementService::GetForProfile(profile_));
-
     AnsibleManagementService::GetForProfile(profile_)
-        ->InstallAnsibleInDefaultContainer(base::BindOnce(
-            &CrostiniManager::OnAnsibleInDefaultContainerInstalled,
-            weak_ptr_factory_.GetWeakPtr()));
+        ->ConfigureDefaultContainer(
+            base::BindOnce(&CrostiniManager::OnDefaultContainerConfigured,
+                           weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -2097,45 +2094,10 @@ void CrostiniManager::OnContainerStarted(
       CrostiniResult::SUCCESS);
 }
 
-void CrostiniManager::OnAnsibleInDefaultContainerInstalled(bool success) {
-  RemoveLinuxPackageOperationProgressObserver(
-      AnsibleManagementService::GetForProfile(profile_));
-
-  if (!success) {
-    LOG(ERROR) << "Failed to install Ansible in default Crostini container";
-    // TODO(https://crbug.com/998124): Add a proper error.
-    InvokeAndErasePendingContainerCallbacks(
-        &start_container_callbacks_, kCrostiniDefaultVmName,
-        kCrostiniDefaultContainerName, CrostiniResult::UNKNOWN_ERROR);
-    return;
-  }
-
-  const base::FilePath ansible_playbook_file_path =
-      profile_->GetPrefs()->GetFilePath(
-          prefs::kCrostiniAnsiblePlaybookFilePath);
-  std::string playbook_content;
-  if (!base::ReadFileToString(ansible_playbook_file_path, &playbook_content)) {
-    LOG(ERROR) << "Failed to retrieve Ansible playbook content from "
-               << ansible_playbook_file_path.value();
-    InvokeAndErasePendingContainerCallbacks(
-        &start_container_callbacks_, kCrostiniDefaultVmName,
-        kCrostiniDefaultContainerName, CrostiniResult::UNKNOWN_ERROR);
-    return;
-  }
-
-  AnsibleManagementService::GetForProfile(profile_)
-      ->ApplyAnsiblePlaybookToDefaultContainer(
-          playbook_content,
-          base::BindOnce(
-              &CrostiniManager::OnAnsiblePlaybookToDefaultContainerApplied,
-              weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CrostiniManager::OnAnsiblePlaybookToDefaultContainerApplied(bool success) {
+void CrostiniManager::OnDefaultContainerConfigured(bool success) {
   CrostiniResult result = CrostiniResult::SUCCESS;
   if (!success) {
-    LOG(ERROR) << "Failed to apply Ansible playbook to default Crostini "
-               << "container";
+    LOG(ERROR) << "Failed to configure default Crostini container";
     // TODO(https://crbug.com/998124): Add a proper error.
     result = CrostiniResult::UNKNOWN_ERROR;
   }

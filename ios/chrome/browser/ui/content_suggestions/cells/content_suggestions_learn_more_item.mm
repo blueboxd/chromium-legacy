@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/common/string_util.h"
@@ -42,7 +43,7 @@ const CGFloat kBottomLabelMargin = 8;
 - (void)configureCell:(ContentSuggestionsLearnMoreCell*)cell {
   [super configureCell:cell];
   [cell setText:[self text]];
-  cell.accessibilityIdentifier = [[self class] accessibilityIdentifier];
+  cell.accessibilityIdentifier = kContentSuggestionsLearnMoreIdentifier;
 }
 
 - (NSString*)text {
@@ -53,10 +54,6 @@ const CGFloat kBottomLabelMargin = 8;
 - (CGFloat)cellHeightForWidth:(CGFloat)width {
   return [ContentSuggestionsLearnMoreCell heightForWidth:width
                                                 withText:[self text]];
-}
-
-+ (NSString*)accessibilityIdentifier {
-  return @"Learn more";
 }
 
 @end

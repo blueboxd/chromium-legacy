@@ -91,10 +91,12 @@ class PLATFORM_EXPORT HeapAllocator {
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
     DCHECK(state->IsAllocationAllowed());
     uint32_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
-    NormalPageArena* arena = static_cast<NormalPageArena*>(
-        state->Heap().VectorBackingArena(gc_info_index));
-    return reinterpret_cast<T*>(MarkAsConstructed(arena->AllocateObject(
-        ThreadHeap::AllocationSizeFromSize(size), gc_info_index)));
+    const char* type_name =
+        WTF_HEAP_PROFILER_TYPE_NAME(HeapHashTableBacking<HeapVectorBacking<T>>);
+    return reinterpret_cast<T*>(
+        MarkAsConstructed(state->Heap().AllocateOnArenaIndex(
+            state, ThreadHeap::AllocationSizeFromSize(size),
+            BlinkGC::kVectorArenaIndex, gc_info_index, type_name)));
   }
   template <typename T>
   static T* AllocateExpandedVectorBacking(size_t size) {
@@ -102,32 +104,18 @@ class PLATFORM_EXPORT HeapAllocator {
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
     DCHECK(state->IsAllocationAllowed());
     uint32_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
-    NormalPageArena* arena = static_cast<NormalPageArena*>(
-        state->Heap().ExpandedVectorBackingArena(gc_info_index));
-    return reinterpret_cast<T*>(MarkAsConstructed(arena->AllocateObject(
-        ThreadHeap::AllocationSizeFromSize(size), gc_info_index)));
+    const char* type_name =
+        WTF_HEAP_PROFILER_TYPE_NAME(HeapHashTableBacking<HeapVectorBacking<T>>);
+    return reinterpret_cast<T*>(
+        MarkAsConstructed(state->Heap().AllocateOnArenaIndex(
+            state, ThreadHeap::AllocationSizeFromSize(size),
+            BlinkGC::kVectorArenaIndex, gc_info_index, type_name)));
   }
   static void FreeVectorBacking(void*);
   static bool ExpandVectorBacking(void*, size_t);
   static bool ShrinkVectorBacking(void* address,
                                   size_t quantized_current_size,
                                   size_t quantized_shrunk_size);
-  template <typename T>
-  static T* AllocateInlineVectorBacking(size_t size) {
-    uint32_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
-    ThreadState* state =
-        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    const char* type_name = WTF_HEAP_PROFILER_TYPE_NAME(HeapVectorBacking<T>);
-    return reinterpret_cast<T*>(
-        MarkAsConstructed(state->Heap().AllocateOnArenaIndex(
-            state, size, BlinkGC::kInlineVectorArenaIndex, gc_info_index,
-            type_name)));
-  }
-  static void FreeInlineVectorBacking(void*);
-  static bool ExpandInlineVectorBacking(void*, size_t);
-  static bool ShrinkInlineVectorBacking(void* address,
-                                        size_t quantized_current_size,
-                                        size_t quantized_shrunk_size);
 
   template <typename T, typename HashTable>
   static T* AllocateHashTableBacking(size_t size) {

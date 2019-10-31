@@ -305,6 +305,13 @@ void StabilityMetricsHelper::LogRendererCrash(
       else
         IncrementPrefValue(prefs::kStabilityRendererFailedLaunchCount);
       break;
+#if defined(OS_WIN)
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "BrowserRenderProcessHost.ChildCodeIntegrityFailures", histogram_type,
+          RENDERER_TYPE_COUNT);
+      break;
+#endif
     case base::TERMINATION_STATUS_MAX_ENUM:
       NOTREACHED();
       break;

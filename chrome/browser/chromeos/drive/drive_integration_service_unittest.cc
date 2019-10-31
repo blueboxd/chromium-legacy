@@ -7,8 +7,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/drive/chromeos/dummy_file_system.h"
-#include "components/drive/service/dummy_drive_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/test_utils.h"

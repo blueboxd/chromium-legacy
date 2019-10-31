@@ -831,8 +831,7 @@ bool MediaCodecVideoDecoder::QueueInput() {
     return false;
 
   PendingDecode& pending_decode = pending_decodes_.front();
-  auto status = codec_->QueueInputBuffer(*pending_decode.buffer,
-                                         decoder_config_.encryption_scheme());
+  auto status = codec_->QueueInputBuffer(*pending_decode.buffer);
   DVLOG((status == CodecWrapper::QueueStatus::kTryAgainLater ||
                  status == CodecWrapper::QueueStatus::kOk
              ? 3

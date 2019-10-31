@@ -127,7 +127,8 @@ class MEDIA_EXPORT MediaCodecLoop {
     base::TimeDelta presentation_time;
 
     bool is_eos = false;
-    EncryptionScheme encryption_scheme;
+    EncryptionMode encryption_scheme = EncryptionMode::kUnencrypted;
+    base::Optional<EncryptionPattern> encryption_pattern;
   };
 
   // Handy enum for "no buffer".

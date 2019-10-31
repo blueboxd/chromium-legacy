@@ -37,13 +37,9 @@ class AnsibleManagementService : public KeyedService,
   explicit AnsibleManagementService(Profile* profile);
   ~AnsibleManagementService() override;
 
-  // |callback| is called once Ansible installation is finished.
-  void InstallAnsibleInDefaultContainer(
-      base::OnceCallback<void(bool success)> callback);
-
-  // |callback| is called once Ansible playbook application is finished.
-  void ApplyAnsiblePlaybookToDefaultContainer(
-      const std::string& playbook,
+  // |callback| is called once default Crostini container configuration is
+  // finished.
+  void ConfigureDefaultContainer(
       base::OnceCallback<void(bool success)> callback);
 
   // LinuxPackageOperationProgressObserver:
@@ -61,20 +57,21 @@ class AnsibleManagementService : public KeyedService,
   void RemoveObserver(Observer* observer);
 
  private:
+  void InstallAnsibleInDefaultContainer();
   void OnInstallAnsibleInDefaultContainer(CrostiniResult result);
-
-  // Callback for
-  // CrostiniAnsibleManagementService::ApplyAnsiblePlaybookToDefaultContainer
+  void ApplyAnsiblePlaybookToDefaultContainer();
   void OnApplyAnsiblePlaybook(
       base::Optional<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
           response);
 
+  // Helper function that runs relevant callback and notifies observers.
+  void OnConfigurationFinished(bool success);
+
+  std::string GetAnsiblePlaybookToApply();
+
   Profile* profile_;
   base::ObserverList<Observer> observers_;
-  base::OnceCallback<void(bool success)>
-      ansible_installation_finished_callback_;
-  base::OnceCallback<void(bool success)>
-      ansible_playbook_application_finished_callback_;
+  base::OnceCallback<void(bool success)> configuration_finished_callback_;
   base::WeakPtrFactory<AnsibleManagementService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AnsibleManagementService);

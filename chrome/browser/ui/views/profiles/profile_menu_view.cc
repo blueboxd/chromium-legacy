@@ -154,6 +154,12 @@ SkColor GetSyncErrorBackgroundColor(bool sync_paused) {
   return SkColorSetA(base_color, kAlpha);
 }
 
+bool IsSyncPaused(Profile* profile) {
+  int unused;
+  return sync_ui_util::GetMessagesForAvatarSyncError(
+             profile, &unused, &unused) == sync_ui_util::AUTH_ERROR;
+}
+
 }  // namespace
 
 // ProfileMenuView ---------------------------------------------------------
@@ -448,10 +454,12 @@ void ProfileMenuView::BuildIdentity() {
   }
 
   if (account_info.has_value()) {
-    SetIdentityInfo(account_info.value().account_image.AsImageSkia(),
-                    GetSyncIcon(),
-                    base::UTF8ToUTF16(account_info.value().full_name),
-                    base::UTF8ToUTF16(account_info.value().email));
+    SetIdentityInfo(
+        account_info.value().account_image.AsImageSkia(), GetSyncIcon(),
+        base::UTF8ToUTF16(account_info.value().full_name),
+        IsSyncPaused(profile)
+            ? l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE)
+            : base::UTF8ToUTF16(account_info.value().email));
   } else {
     SetIdentityInfo(
         profile_attributes->GetAvatarIcon().AsImageSkia(), GetSyncIcon(),
@@ -523,8 +531,15 @@ void ProfileMenuView::BuildAutofillButtons() {
 }
 
 void ProfileMenuView::BuildSyncInfo() {
+  Profile* profile = browser()->profile();
+  // Only show the sync info if signin and sync are allowed.
+  if (!profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed) ||
+      !profile->IsSyncAllowed()) {
+    return;
+  }
+
   signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(browser()->profile());
+      IdentityManagerFactory::GetForProfile(profile);
 
   if (identity_manager->HasPrimaryAccount()) {
     // Show sync state.
@@ -593,7 +608,7 @@ void ProfileMenuView::BuildFeatureButtons() {
   const bool has_primary_account =
       !is_guest && identity_manager->HasPrimaryAccount();
 
-  if (has_unconsented_account) {
+  if (has_unconsented_account && !IsSyncPaused(profile)) {
     AddFeatureButton(
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
         // The Google G icon needs to be shrunk, so it won't look too big

@@ -402,7 +402,8 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   if (!have_to_make_network_request)
     return;  // |request| is destructed by now.
 
-  CHECK(request->state() == NavigationRequest::STARTED);
+  CHECK(request->state() >= NavigationRequest::WILL_START_NAVIGATION &&
+        request->state() < NavigationRequest::RESPONSE_STARTED);
 
   if (!request->loader_for_testing()) {
     base::RunLoop loop;

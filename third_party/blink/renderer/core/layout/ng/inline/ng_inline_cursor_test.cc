@@ -98,12 +98,27 @@ TEST_P(NGInlineCursorTest, ContainingLine) {
   EXPECT_EQ(line2, cursor);
 }
 
-TEST_P(NGInlineCursorTest, CulledInline) {
+TEST_P(NGInlineCursorTest, CulledInlineWithRoot) {
   NGInlineCursor cursor =
       SetupCursor("<div id=root><a><b>abc</b><br><i>xyz</i></a></div>");
   const LayoutInline& layout_inline =
       ToLayoutInline(*cursor.GetLayoutBlockFlow()->FirstChild());
   cursor.MoveTo(layout_inline);
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToNextForSameLayoutObject();
+  }
+  EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
+}
+
+TEST_P(NGInlineCursorTest, CulledInlineWithoutRoot) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="root"><a id="a"><b>abc</b><br><i>xyz</i></a></div>
+  )HTML");
+  const LayoutObject* layout_inline_a = GetLayoutObjectByElementId("a");
+  NGInlineCursor cursor;
+  cursor.MoveTo(*layout_inline_a);
   Vector<String> list;
   while (cursor) {
     list.push_back(ToDebugString(cursor));

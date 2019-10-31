@@ -210,12 +210,8 @@ void ServicesDelegateDesktop::CreateBinaryUploadService(Profile* profile) {
   DCHECK(profile);
   auto it = binary_upload_service_map_.find(profile);
   DCHECK(it == binary_upload_service_map_.end());
-  std::unique_ptr<BinaryUploadService> service;
-  if (services_creator_ && services_creator_->CanCreateBinaryUploadService())
-    service = base::WrapUnique(services_creator_->CreateBinaryUploadService());
-  else
-    service = std::make_unique<BinaryUploadService>(
-        safe_browsing_service_->GetURLLoaderFactory(), profile);
+  auto service = std::make_unique<BinaryUploadService>(
+      safe_browsing_service_->GetURLLoaderFactory(), profile);
   binary_upload_service_map_[profile] = std::move(service);
 }
 

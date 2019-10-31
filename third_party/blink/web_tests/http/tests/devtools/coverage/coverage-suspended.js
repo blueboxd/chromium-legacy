@@ -11,7 +11,7 @@
     `);
   await TestRunner.addStylesheetTag('resources/highlight-in-source.css');
 
-  await CoverageTestRunner.startCoverage();
+  await CoverageTestRunner.startCoverage(true);
   await CoverageTestRunner.suspendCoverageModel();
   await TestRunner.addScriptTag('resources/coverage.js');
   await TestRunner.evaluateInPagePromise('performActions()');
@@ -20,7 +20,7 @@
   TestRunner.addResult('Initial');
   CoverageTestRunner.dumpCoverageListView();
 
-  await CoverageTestRunner.startCoverage();
+  await CoverageTestRunner.startCoverage(true);
   await CoverageTestRunner.suspendCoverageModel();
   await CoverageTestRunner.resumeCoverageModel();
   await CoverageTestRunner.stopCoverage();
@@ -33,7 +33,7 @@
   var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
   coverageView._clear();
 
-  await CoverageTestRunner.startCoverage();
+  await CoverageTestRunner.startCoverage(true);
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();
   TestRunner.addResult('After clear');

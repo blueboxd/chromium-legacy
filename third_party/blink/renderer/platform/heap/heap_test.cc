@@ -3965,8 +3965,9 @@ namespace {
 void ExpectObjectMarkedAndUnmark(MarkingWorklist* worklist, void* expected) {
   MarkingItem item;
   CHECK(worklist->Pop(0, &item));
-  CHECK_EQ(expected, item.object);
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(item.object);
+  CHECK_EQ(expected, item.base_object_payload);
+  HeapObjectHeader* header =
+      HeapObjectHeader::FromPayload(item.base_object_payload);
   CHECK(header->IsMarked());
   header->Unmark();
   CHECK(worklist->IsGlobalEmpty());

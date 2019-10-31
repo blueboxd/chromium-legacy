@@ -38,16 +38,17 @@ chromevox_modules = [
   "braille/nav_braille.js",
   "braille/pan_strategy.js",
   "braille/spans.js",
-  "chromevox/background/background.js",
-  "chromevox/background/braille_captions_background.js",
-  "chromevox/background/injected_script_loader.js",
-  "chromevox/background/kbexplorer.js",
-  "chromevox/background/keymaps/key_map.js",
-  "chromevox/background/options.js",
-  "chromevox/background/prefs.js",
-  "chromevox/background/tabs_api_handler.js",
-  "cvox2/injected/api_implementation.js",
-  "cvox2/injected/script_installer.js",
+  "background/background.js",
+  "background/classic_background.js",
+  "background/braille_captions_background.js",
+  "background/injected_script_loader.js",
+  "background/learn_mode/kbexplorer.js",
+  "background/keymaps/key_map.js",
+  "background/options/options.js",
+  "background/prefs.js",
+  "background/tabs_api_handler.js",
+  "injected/api_implementation.js",
+  "injected/script_installer.js",
   "common/chromevox.js",
   "common/command_store.js",
   "common/composite_tts.js",
@@ -59,62 +60,61 @@ chromevox_modules = [
   "common/nav_description.js",
   "common/spannable.js",
   "common/string_util.js",
-  "cvox2/background/automation_object_constructor_installer.js",
-  "cvox2/background/automation_predicate.js",
-  "cvox2/background/automation_util.js",
-  "cvox2/background/background.js",
-  "cvox2/background/base_automation_handler.js",
-  "cvox2/background/braille_command_data.js",
-  "cvox2/background/braille_command_handler.js",
-  "cvox2/background/color.js",
-  "cvox2/background/chromevox_state.js",
-  "cvox2/background/command_handler.js",
-  "cvox2/background/console_tts.js",
-  "cvox2/background/constants.js",
-  "cvox2/background/cursors.js",
-  "cvox2/background/custom_automation_event.js",
-  "cvox2/background/desktop_automation_handler.js",
-  "cvox2/background/download_handler.js",
-  "cvox2/background/earcon_engine.js",
-  "cvox2/background/editing.js",
-  "cvox2/background/event_source.js",
-  "cvox2/background/event_stream_logger.js",
-  "cvox2/background/find_handler.js",
-  "cvox2/background/gesture_command_data.js",
-  "cvox2/background/gesture_command_handler.js",
-  "cvox2/background/i_search.js",
-  "cvox2/background/language_switching.js",
-  "cvox2/background/keyboard_handler.js",
-  "cvox2/background/live_regions.js",
-  "cvox2/background/log.js",
-  "cvox2/background/log_store.js",
-  "cvox2/background/log_types.js",
-  "cvox2/background/math_handler.js",
-  "cvox2/background/media_automation_handler.js",
-  "cvox2/background/mouse_handler.js",
-  "cvox2/background/next_earcons.js",
-  "cvox2/background/notifications.js",
-  "cvox2/background/output.js",
-  "cvox2/background/output_logger.js",
-  "cvox2/background/panel.js",
-  "cvox2/background/panel_command.js",
-  "cvox2/background/panel_menu.js",
-  "cvox2/background/panel_menu_item.js",
-  "cvox2/background/phonetic_data.js",
-  "cvox2/background/recovery_strategy.js",
-  "cvox2/background/tree_dumper.js",
-  "cvox2/background/tree_walker.js",
-  "cvox2/background/tutorial.js",
-  "cvox2/injected/loader.js",
-  "host/chrome/braille_background.js",
-  "host/chrome/classic_earcons.js",
-  "host/chrome/extension_bridge.js",
-  "host/chrome/tts_background.js",
-  "host/chrome/tts_base.js",
-  "host/interface/abstract_earcons.js",
-  "host/interface/abstract_tts.js",
-  "host/interface/braille_interface.js",
-  "host/interface/tts_interface.js",
+  "background/automation_object_constructor_installer.js",
+  "background/automation_predicate.js",
+  "background/automation_util.js",
+  "background/base_automation_handler.js",
+  "background/braille_command_data.js",
+  "background/braille_command_handler.js",
+  "background/color.js",
+  "background/chromevox_state.js",
+  "background/command_handler.js",
+  "common/console_tts.js",
+  "background/constants.js",
+  "background/cursors.js",
+  "background/custom_automation_event.js",
+  "background/desktop_automation_handler.js",
+  "background/download_handler.js",
+  "background/earcon_engine.js",
+  "background/editing.js",
+  "background/event_source.js",
+  "background/logging/event_stream_logger.js",
+  "background/find_handler.js",
+  "background/gesture_command_data.js",
+  "background/gesture_command_handler.js",
+  "background/panel/i_search.js",
+  "background/language_switching.js",
+  "background/keyboard_handler.js",
+  "background/live_regions.js",
+  "background/logging/log.js",
+  "background/logging/log_store.js",
+  "background/logging/log_types.js",
+  "background/math_handler.js",
+  "background/media_automation_handler.js",
+  "background/mouse_handler.js",
+  "background/next_earcons.js",
+  "background/notifications.js",
+  "background/output.js",
+  "background/logging/output_logger.js",
+  "background/panel/panel.js",
+  "background/panel/panel_command.js",
+  "background/panel/panel_menu.js",
+  "background/panel/panel_menu_item.js",
+  "background/phonetic_data.js",
+  "background/recovery_strategy.js",
+  "background/logging/tree_dumper.js",
+  "background/tree_walker.js",
+  "background/panel/tutorial.js",
+  "injected/loader.js",
+  "background/braille_background.js",
+  "common/classic_earcons.js",
+  "common/extension_bridge.js",
+  "common/tts_background.js",
+  "common/tts_base.js",
+  "common/abstract_earcons.js",
+  "common/abstract_tts.js",
+  "common/braille_interface.js",
+  "common/tts_interface.js",
   "third_party/tamachiyomi/ja_phonetic_data.js",
 ]
 
@@ -149,7 +149,7 @@ group("chromevox") {
   if (chromevox_compress_js) {
     deps += [
       ":chromevox_background_script",
-      ":chromevox_kbexplorer_script",
+      ":chromevox_learn_mode_script",
       ":chromevox_log_script",
       ":chromevox_min_content_script",
       ":chromevox_options_script",
@@ -160,12 +160,12 @@ group("chromevox") {
   }
 }
 
-chromevox_background_script_loader_file = "cvox2/background/loader.js"
-chromevox_kbexplorer_loader_file = "chromevox/background/kbexplorer_loader.js"
-chromevox_log_loader_file = "cvox2/background/log_loader.js"
-chromevox_min_content_script_loader_file = "cvox2/injected/loader.js"
-chromevox_options_script_loader_file = "chromevox/background/options_loader.js"
-chromevox_panel_script_loader_file = "cvox2/background/panel_loader.js"
+chromevox_background_script_loader_file = "background/loader.js"
+chromevox_learn_mode_loader_file = "background/learn_mode/kbexplorer_loader.js"
+chromevox_log_loader_file = "background/logging/log_loader.js"
+chromevox_min_content_script_loader_file = "injected/loader.js"
+chromevox_options_script_loader_file = "background/options/options_loader.js"
+chromevox_panel_script_loader_file = "background/panel/panel_loader.js"
 
 # Instead of setting up one copy target for each subdirectory, use a script
 # to copy all files.
@@ -173,50 +173,48 @@ run_jsbundler("chromevox_copied_files") {
   mode = "copy"
   dest_dir = chromevox_out_dir
   sources = [
-    "chromevox/background/background.html",
-    "chromevox/background/checked.png",
-    "chromevox/background/earcons/alert_modal.ogg",
-    "chromevox/background/earcons/alert_nonmodal.ogg",
-    "chromevox/background/earcons/button.ogg",
-    "chromevox/background/earcons/check_off.ogg",
-    "chromevox/background/earcons/check_on.ogg",
-    "chromevox/background/earcons/editable_text.ogg",
-    "chromevox/background/earcons/invalid_keypress.ogg",
-    "chromevox/background/earcons/link.ogg",
-    "chromevox/background/earcons/list_item.ogg",
-    "chromevox/background/earcons/listbox.ogg",
-    "chromevox/background/earcons/long_desc.ogg",
-    "chromevox/background/earcons/math.ogg",
-    "chromevox/background/earcons/object_close.ogg",
-    "chromevox/background/earcons/object_enter.ogg",
-    "chromevox/background/earcons/object_exit.ogg",
-    "chromevox/background/earcons/object_open.ogg",
-    "chromevox/background/earcons/object_select.ogg",
-    "chromevox/background/earcons/page_finish_loading.ogg",
-    "chromevox/background/earcons/page_start_loading.ogg",
-    "chromevox/background/earcons/recover_focus.ogg",
-    "chromevox/background/earcons/selection.ogg",
-    "chromevox/background/earcons/selection_reverse.ogg",
-    "chromevox/background/earcons/skip.ogg",
-    "chromevox/background/earcons/wrap.ogg",
-    "chromevox/background/earcons/wrap_edge.ogg",
-    "chromevox/background/kbexplorer.html",
-    "chromevox/background/keymaps/next_keymap.json",
-    "chromevox/background/options.css",
-    "chromevox/background/options.html",
-    "chromevox/background/unchecked.png",
-    "cvox2/background/background.html",
-    "cvox2/background/earcons/control.wav",
-    "cvox2/background/earcons/selection.wav",
-    "cvox2/background/earcons/selection_reverse.wav",
-    "cvox2/background/earcons/skim.wav",
-    "cvox2/background/earcons/small_room_2.wav",
-    "cvox2/background/earcons/static.wav",
-    "cvox2/background/log.css",
-    "cvox2/background/log.html",
-    "cvox2/background/panel.css",
-    "cvox2/background/panel.html",
-    "cvox2/injected/api.js",
+    "background/background.html",
+    "background/earcons/alert_modal.ogg",
+    "background/earcons/alert_nonmodal.ogg",
+    "background/earcons/button.ogg",
+    "background/earcons/check_off.ogg",
+    "background/earcons/check_on.ogg",
+    "background/earcons/control.wav",
+    "background/earcons/editable_text.ogg",
+    "background/earcons/invalid_keypress.ogg",
+    "background/earcons/link.ogg",
+    "background/earcons/list_item.ogg",
+    "background/earcons/listbox.ogg",
+    "background/earcons/long_desc.ogg",
+    "background/earcons/math.ogg",
+    "background/earcons/object_close.ogg",
+    "background/earcons/object_enter.ogg",
+    "background/earcons/object_exit.ogg",
+    "background/earcons/object_open.ogg",
+    "background/earcons/object_select.ogg",
+    "background/earcons/page_finish_loading.ogg",
+    "background/earcons/page_start_loading.ogg",
+    "background/earcons/recover_focus.ogg",
+    "background/earcons/selection.ogg",
+    "background/earcons/selection.wav",
+    "background/earcons/selection_reverse.ogg",
+    "background/earcons/selection_reverse.wav",
+    "background/earcons/skim.wav",
+    "background/earcons/skip.ogg",
+    "background/earcons/small_room_2.wav",
+    "background/earcons/static.wav",
+    "background/earcons/wrap.ogg",
+    "background/earcons/wrap_edge.ogg",
+    "background/keymaps/next_keymap.json",
+    "background/learn_mode/kbexplorer.html",
+    "background/logging/log.css",
+    "background/logging/log.html",
+    "background/options/checked.png",
+    "background/options/options.css",
+    "background/options/options.html",
+    "background/options/unchecked.png",
+    "background/panel/panel.css",
+    "background/panel/panel.html",
     "images/chromevox-128.png",
     "images/chromevox-16.png",
     "images/chromevox-19.png",
@@ -227,13 +225,14 @@ run_jsbundler("chromevox_copied_files") {
     "images/options-19.png",
     "images/options-hover-19.png",
     "images/triangle-6.png",
+    "injected/api.js",
   ]
   if (!chromevox_compress_js) {
     sources += chromevox_modules
     sources += [
       "closure/closure_preinit.js",
       chromevox_background_script_loader_file,
-      chromevox_kbexplorer_loader_file,
+      chromevox_learn_mode_loader_file,
       chromevox_log_loader_file,
       chromevox_min_content_script_loader_file,
       chromevox_options_script_loader_file,
@@ -341,9 +340,9 @@ if (chromevox_compress_js) {
     }
   }
 
-  compress_js("chromevox_kbexplorer_script") {
+  compress_js("chromevox_learn_mode_script") {
     sources = [
-      chromevox_kbexplorer_loader_file,
+      chromevox_learn_mode_loader_file,
     ]
     output_file = "$chromevox_out_dir/chromeVoxKbExplorerScript.js"
   }
@@ -366,14 +365,14 @@ if (chromevox_compress_js) {
     sources = [
       chromevox_background_script_loader_file,
     ]
-    output_file = "$chromevox_out_dir/chromeVox2ChromeBackgroundScript.js"
+    output_file = "$chromevox_out_dir/chromeVoxChromeBackgroundScript.js"
   }
 
   compress_js("chromevox_min_content_script") {
     sources = [
       chromevox_min_content_script_loader_file,
     ]
-    output_file = "$chromevox_out_dir/chromeVox2ChromePageScript.js"
+    output_file = "$chromevox_out_dir/chromeVoxChromePageScript.js"
   }
 
   compress_js("chromevox_panel_script") {
@@ -467,7 +466,7 @@ js2gtest("chromevox_unitjs_tests") {
     "braille/braille_input_handler_test.unitjs",
     "braille/expanding_braille_translator_test.unitjs",
     "braille/pan_strategy_test.unitjs",
-"common/spannable_test.unitjs",
+    "common/spannable_test.unitjs",
     "testing/mock_feedback_test.unitjs",
   ]
   gen_include_files = [
@@ -488,26 +487,26 @@ if (is_chromeos) {
   js2gtest("chromevox_extjs_tests") {
     test_type = "extension"
     sources = [
+      "background/automation_util_test.extjs",
+      "background/background_test.extjs",
+      "background/braille_command_data_test.extjs",
+      "background/color_test.extjs",
+      "background/cursors_test.extjs",
+      "background/download_handler_test.extjs",
+      "background/editing_test.extjs",
+      "background/keyboard_handler_test.extjs",
+      "background/language_switching_test.extjs",
+      "background/live_regions_test.extjs",
+      "background/logging/log_store_test.extjs",
+      "background/output_test.extjs",
+      "background/panel/i_search_test.extjs",
+      "background/panel/panel_test.extjs",
+      "background/recovery_strategy_test.extjs",
+      "background/tree_walker_test.extjs",
       "braille/braille_table_test.extjs",
       "braille/braille_translator_manager_test.extjs",
       "braille/liblouis_test.extjs",
-      "cvox2/background/automation_util_test.extjs",
-      "cvox2/background/background_test.extjs",
-      "cvox2/background/braille_command_data_test.extjs",
-      "cvox2/background/color_test.extjs",
-      "cvox2/background/cursors_test.extjs",
-      "cvox2/background/download_handler_test.extjs",
-      "cvox2/background/editing_test.extjs",
-      "cvox2/background/i_search_test.extjs",
-      "cvox2/background/keyboard_handler_test.extjs",
-      "cvox2/background/language_switching_test.extjs",
-      "cvox2/background/live_regions_test.extjs",
-      "cvox2/background/log_store_test.extjs",
-      "cvox2/background/output_test.extjs",
-      "cvox2/background/panel_test.extjs",
-      "cvox2/background/recovery_strategy_test.extjs",
-      "cvox2/background/tree_walker_test.extjs",
-      "host/chrome/tts_background_test.extjs",
+      "common/tts_background_test.extjs",
     ]
     gen_include_files = [
       "testing/assert_additions.js",
@@ -530,7 +529,7 @@ if (is_chromeos) {
 
 js_library("tree_walker") {
   sources = [
-    "cvox2/background/tree_walker.js",
+    "background/tree_walker.js",
   ]
   deps = [
     ":automation_predicate",
@@ -544,7 +543,7 @@ js_library("tree_walker") {
 
 js_library("automation_predicate") {
   sources = [
-    "cvox2/background/automation_predicate.js",
+    "background/automation_predicate.js",
   ]
   deps = [
     ":constants",
@@ -557,6 +556,6 @@ js_library("automation_predicate") {
 
 js_library("constants") {
   sources = [
-    "cvox2/background/constants.js",
+    "background/constants.js",
   ]
 }

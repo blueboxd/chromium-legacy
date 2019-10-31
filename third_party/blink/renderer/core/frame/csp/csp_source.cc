@@ -168,7 +168,7 @@ CSPSource::PortMatchingResult CSPSource::PortMatches(
   is_scheme_http = scheme_.IsEmpty() ? policy_->ProtocolEqualsSelf("http")
                                      : EqualIgnoringASCIICase("http", scheme_);
 
-  if ((port_ == 80 || (port_ == 0 && is_scheme_http)) &&
+  if ((port_ == 80 || ((port_ == 0 || port_ == 443) && is_scheme_http)) &&
       (port == 443 || (port == 0 && DefaultPortForProtocol(protocol) == 443)))
     return PortMatchingResult::kMatchingUpgrade;
 

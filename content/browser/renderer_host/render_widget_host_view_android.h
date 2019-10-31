@@ -278,6 +278,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       TextSuggestionHostAndroid* text_suggestion_host) {
     text_suggestion_host_ = text_suggestion_host;
   }
+  TextSuggestionHostAndroid* text_suggestion_host() const {
+    return text_suggestion_host_;
+  }
   void set_gesture_listener_manager(GestureListenerManager* manager) {
     gesture_listener_manager_ = manager;
   }

@@ -56,20 +56,6 @@ class WTF_EXPORT PartitionAllocator {
     // we can skip reallocation.
     return quantized_current_size == quantized_shrunk_size;
   }
-  template <typename T>
-  static T* AllocateInlineVectorBacking(size_t size) {
-    return AllocateVectorBacking<T>(size);
-  }
-  static inline void FreeInlineVectorBacking(void* address) {
-    FreeVectorBacking(address);
-  }
-  static inline bool ExpandInlineVectorBacking(void*, size_t) { return false; }
-  static inline bool ShrinkInlineVectorBacking(void* address,
-                                               size_t quantized_current_size,
-                                               size_t quantized_shrunk_size) {
-    return ShrinkVectorBacking(address, quantized_current_size,
-                               quantized_shrunk_size);
-  }
 
   template <typename T, typename HashTable>
   static T* AllocateHashTableBacking(size_t size) {

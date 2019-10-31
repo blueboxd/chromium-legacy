@@ -47,23 +47,22 @@ public class TrustedWebActivityDisclosureControllerTest {
     @Mock public ActivityLifecycleDispatcher mLifecycleDispatcher;
     @Mock public Verifier mVerifier;
     @Mock public TrustedWebActivityUmaRecorder mRecorder;
+    @Mock public ClientPackageNameProvider mClientPackageNameProvider;
 
     @Captor public ArgumentCaptor<Runnable> mVerificationObserverCaptor;
 
     public TrustedWebActivityModel mModel = new TrustedWebActivityModel();
 
-    private TrustedWebActivityDisclosureController mDisclosureController;
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        doReturn(CLIENT_PACKAGE).when(mVerifier).getClientPackageName();
+        doReturn(CLIENT_PACKAGE).when(mClientPackageNameProvider).get();
         doNothing().when(mVerifier).addVerificationObserver(mVerificationObserverCaptor.capture());
         doReturn(false).when(mPreferences).hasUserAcceptedTwaDisclosureForPackage(anyString());
 
-        mDisclosureController = new TrustedWebActivityDisclosureController(
-                mPreferences, mModel, mLifecycleDispatcher, mVerifier, mRecorder);
+        new TrustedWebActivityDisclosureController(mPreferences, mModel, mLifecycleDispatcher,
+                mVerifier, mRecorder, mClientPackageNameProvider);
     }
 
     @Test

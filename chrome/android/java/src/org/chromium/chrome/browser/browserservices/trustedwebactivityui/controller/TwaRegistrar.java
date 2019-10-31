@@ -60,7 +60,7 @@ public class TwaRegistrar {
      * for PostMessage). Only at step 4 do we know that Chrome should associate the browsing data
      * for that origin with that app.
      */
-    void registerClient(String packageName, Origin origin) {
+    public void registerClient(String packageName, Origin origin) {
         if (mRegisteredOrigins.contains(origin)) return;
 
         // Register that we should wipe data for this origin when the client app is uninstalled.

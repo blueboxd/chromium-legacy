@@ -2000,6 +2000,10 @@ are declared in tools/grit/grit_rule.gni.
                    desc="Text for the search button in the touch bar when Google is the default search provider. Pressing the button will bring focus to the omnibox.">
           Search or type URL
         </message>
+        <message name="IDS_TOUCH_BAR_NO_DEFAULT_SEARCH"
+          desc="Text for the search button in the touch bar when there is no default search provider. Pressing the button will bring focus to the omnibox.">
+          Type URL
+        </message>
         <message name="IDS_TOUCH_BAR_SEARCH"
                    desc="Text for the search button in the touch bar when Google is not the default search provider. Pressing the button will bring focus to the omnibox. $1 is the name of the search provider)">
           Search <ph name="SEARCH_ENGINE">$1<ex>Bing</ex></ph>

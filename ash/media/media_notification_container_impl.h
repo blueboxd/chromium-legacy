@@ -37,6 +37,7 @@ class ASH_EXPORT MediaNotificationContainerImpl
       const override;
   void SetExpanded(bool expanded) override;
   void UpdateCornerRadius(int top_radius, int bottom_radius) override;
+  void UpdateControlButtonsVisibility() override;
 
   // media_message_center::MediaNotificationContainer:
   void OnExpanded(bool expanded) override;
@@ -47,7 +48,7 @@ class ASH_EXPORT MediaNotificationContainerImpl
       const base::flat_set<media_session::mojom::MediaSessionAction>& actions)
       override {}
   void OnMediaArtworkChanged(const gfx::ImageSkia& image) override {}
-  void OnColorsChanged(SkColor foreground, SkColor background) override {}
+  void OnColorsChanged(SkColor foreground, SkColor background) override;
 
   // views::View:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -55,6 +56,10 @@ class ASH_EXPORT MediaNotificationContainerImpl
  private:
   void UpdateControlButtonsVisibilityWithNotification(
       const message_center::Notification& notification);
+
+  // Contains |control_buttons_view_| and puts a circular colored background
+  // behind it to ensure proper contrast.
+  views::View* control_buttons_container_ = nullptr;
 
   // View containing close and settings buttons.
   message_center::NotificationControlButtonsView* control_buttons_view_ =

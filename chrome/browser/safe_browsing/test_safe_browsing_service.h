@@ -7,7 +7,6 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
-#include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 
@@ -74,12 +73,10 @@ class TestSafeBrowsingService : public SafeBrowsingService,
   bool CanCreateDownloadProtectionService() override;
   bool CanCreateIncidentReportingService() override;
   bool CanCreateResourceRequestDetector() override;
-  bool CanCreateBinaryUploadService() override;
   SafeBrowsingDatabaseManager* CreateDatabaseManager() override;
   DownloadProtectionService* CreateDownloadProtectionService() override;
   IncidentReportingService* CreateIncidentReportingService() override;
   ResourceRequestDetector* CreateResourceRequestDetector() override;
-  BinaryUploadService* CreateBinaryUploadService() override;
 
  private:
   std::unique_ptr<V4ProtocolConfig> v4_protocol_config_;

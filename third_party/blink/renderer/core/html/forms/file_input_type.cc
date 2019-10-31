@@ -377,6 +377,9 @@ void FileInputType::SetFilesAndDispatchEvents(FileList* files) {
     // input instance is safe since it is ref-counted.
     GetElement().DispatchInputEvent();
     GetElement().DispatchChangeEvent();
+    if (AXObjectCache* cache =
+            GetElement().GetDocument().ExistingAXObjectCache())
+      cache->HandleValueChanged(&GetElement());
   }
 }
 

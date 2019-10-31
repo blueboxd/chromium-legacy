@@ -60,7 +60,7 @@ class StrikeDatabaseTest : public ::testing::Test {
   StrikeDatabaseTest() {}
 
   void SetUp() override {
-    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     db_provider_ = std::make_unique<leveldb_proto::ProtoDatabaseProvider>(
         temp_dir_.GetPath());
@@ -129,10 +129,10 @@ class StrikeDatabaseTest : public ::testing::Test {
 
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
+  base::ScopedTempDir temp_dir_;
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> db_provider_;
   std::unique_ptr<TestStrikeDatabase> strike_database_;
-  base::ScopedTempDir temp_dir_;
 
  private:
   base::HistogramTester histogram_tester_;

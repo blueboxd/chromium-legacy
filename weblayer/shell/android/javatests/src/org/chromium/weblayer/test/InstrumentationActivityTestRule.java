@@ -22,7 +22,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.Navigation;
-import org.chromium.weblayer.NavigationObserver;
+import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.lang.reflect.Field;
@@ -41,7 +41,7 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         private boolean mDoneLoading;
         private CallbackHelper mCallbackHelper = new CallbackHelper();
 
-        private NavigationObserver mNavigationObserver = new NavigationObserver() {
+        private NavigationCallback mNavigationCallback = new NavigationCallback() {
             @Override
             public void navigationCompleted(Navigation navigation) {
                 if (navigation.getUri().toString().equals(mUrl)) {
@@ -64,7 +64,8 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
         public void navigateAndWait() {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                mController.getNavigationController().addObserver(mNavigationObserver);
+                mController.getNavigationController().registerNavigationCallback(
+                        mNavigationCallback);
                 mController.getNavigationController().navigate(Uri.parse(mUrl));
             });
             try {
@@ -73,7 +74,8 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
                 throw new RuntimeException(e);
             }
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                mController.getNavigationController().removeObserver(mNavigationObserver);
+                mController.getNavigationController().unregisterNavigationCallback(
+                        mNavigationCallback);
             });
         }
 

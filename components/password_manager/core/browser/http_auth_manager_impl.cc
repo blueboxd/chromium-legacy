@@ -128,6 +128,13 @@ void HttpAuthManagerImpl::OnLoginSuccesfull() {
   if (!form_manager_->is_submitted())
     return;
 
+  if (form_manager_->GetFormFetcher()->GetState() ==
+      FormFetcher::State::WAITING) {
+    // We have a provisional save manager, but it didn't finish matching yet.
+    // We just give up.
+    return;
+  }
+
   // TODO(crbug/831123) Move the logic into the PasswordFormManager.
   bool is_update = form_manager_->IsPasswordUpdate();
   bool is_new_login = form_manager_->IsNewLogin();

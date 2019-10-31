@@ -18,8 +18,4 @@ public interface VerifierDelegate {
 
     /** Synchronously checks whether verification was successful for the given Origin. */
     boolean wasPreviouslyVerified(Origin origin);
-
-    // TODO(peconn): Get rid of this method.
-    /** Gets the package name of the connected app. */
-    String getClientPackageName();
 }

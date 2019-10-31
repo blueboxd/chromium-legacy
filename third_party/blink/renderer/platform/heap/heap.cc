@@ -97,9 +97,7 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       region_tree_(std::make_unique<RegionTree>()),
       address_cache_(std::make_unique<AddressCache>()),
       free_page_pool_(std::make_unique<PagePool>()),
-      process_heap_reporter_(std::make_unique<ProcessHeapReporter>()),
-      vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
-      current_arena_ages_(0) {
+      process_heap_reporter_(std::make_unique<ProcessHeapReporter>()) {
   if (ThreadState::Current()->IsMainThread())
     main_thread_heap_ = this;
 
@@ -108,10 +106,6 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
     arenas_[arena_index] = new NormalPageArena(thread_state_, arena_index);
   arenas_[BlinkGC::kLargeObjectArenaIndex] =
       new LargeObjectArena(thread_state_, BlinkGC::kLargeObjectArenaIndex);
-
-  likely_to_be_promptly_freed_ =
-      std::make_unique<int[]>(kLikelyToBePromptlyFreedArraySize);
-  ClearArenaAges();
 
   stats_collector()->RegisterObserver(process_heap_reporter_.get());
 }
@@ -256,17 +250,19 @@ void ThreadHeap::InvokeEphemeronCallbacks(MarkingVisitor* visitor) {
   // Then we iterate over the new callbacks found by the marking visitor.
   // Callbacks found by the concurrent marking will be flushed eventually
   // and then invoked by the mutator thread (in the atomic pause at latest).
-  while (!weak_table_worklist_->IsGlobalEmpty()) {
+  while (
+      !weak_table_worklist_->IsLocalViewEmpty(WorklistTaskId::MutatorThread)) {
     // Read ephemeron callbacks from worklist to ephemeron_callbacks_ hashmap.
     WeakTableWorklist::View ephemerons_worklist(weak_table_worklist_.get(),
                                                 WorklistTaskId::MutatorThread);
     WeakTableItem item;
     while (ephemerons_worklist.Pop(&item)) {
-      auto result = ephemeron_callbacks_.insert(item.object, item.callback);
+      auto result =
+          ephemeron_callbacks_.insert(item.base_object_payload, item.callback);
       DCHECK(result.is_new_entry ||
              result.stored_value->value == item.callback);
       if (result.is_new_entry) {
-        item.callback(visitor, item.object);
+        item.callback(visitor, item.base_object_payload);
       }
     }
   }
@@ -314,9 +310,9 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
           deadline, marking_worklist_.get(),
           [visitor](const MarkingItem& item) {
             HeapObjectHeader* header =
-                HeapObjectHeader::FromPayload(item.object);
-            DCHECK(!header->IsInConstruction());
-            item.callback(visitor, item.object);
+                HeapObjectHeader::FromPayload(item.base_object_payload);
+            DCHECK(!MarkingVisitor::IsInConstruction(header));
+            item.callback(visitor, item.base_object_payload);
             visitor->AccountMarkedBytes(header);
           },
           WorklistTaskId::MutatorThread);
@@ -326,7 +322,7 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
       finished = DrainWorklistWithDeadline(
           deadline, write_barrier_worklist_.get(),
           [visitor](HeapObjectHeader* header) {
-            DCHECK(!header->IsInConstruction());
+            DCHECK(!MarkingVisitor::IsInConstruction(header));
             GCInfoTable::Get()
                 .GCInfoFromIndex(header->GcInfoIndex())
                 ->trace(visitor, header->Payload());
@@ -352,7 +348,7 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
     InvokeEphemeronCallbacks(visitor);
 
     // Rerun loop if ephemeron processing queued more objects for tracing.
-  } while (!marking_worklist_->IsGlobalEmpty());
+  } while (!marking_worklist_->IsLocalViewEmpty(WorklistTaskId::MutatorThread));
 
   FlushV8References();
 
@@ -367,9 +363,10 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
   finished = DrainWorklistWithDeadline(
       deadline, marking_worklist_.get(),
       [visitor](const MarkingItem& item) {
-        HeapObjectHeader* header = HeapObjectHeader::FromPayload(item.object);
-        DCHECK(!header->IsInConstruction());
-        item.callback(visitor, item.object);
+        HeapObjectHeader* header =
+            HeapObjectHeader::FromPayload(item.base_object_payload);
+        DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
+        item.callback(visitor, item.base_object_payload);
         visitor->AccountMarkedBytes(header);
       },
       visitor->task_id());
@@ -379,7 +376,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
   finished = DrainWorklistWithDeadline(
       deadline, write_barrier_worklist_.get(),
       [visitor](HeapObjectHeader* header) {
-        DCHECK(!header->IsInConstruction());
+        DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
         GCInfoTable::Get()
             .GCInfoFromIndex(header->GcInfoIndex())
             ->trace(visitor, header->Payload());
@@ -402,7 +399,7 @@ void ThreadHeap::WeakProcessing(MarkingVisitor* visitor) {
   // Call weak callbacks on objects that may now be pointing to dead objects.
   CustomCallbackItem item;
   while (weak_callback_worklist_->Pop(WorklistTaskId::MutatorThread, &item)) {
-    item.callback(visitor, item.object);
+    item.callback(visitor, item.base_object_payload);
   }
   // Weak callbacks should not add any new objects for marking.
   DCHECK(marking_worklist_->IsGlobalEmpty());
@@ -469,7 +466,7 @@ void ThreadHeap::Compact() {
 
   // Compact the hash table backing store arena first, it usually has
   // higher fragmentation and is larger.
-  for (int i = BlinkGC::kHashTableArenaIndex; i >= BlinkGC::kVector1ArenaIndex;
+  for (int i = BlinkGC::kHashTableArenaIndex; i >= BlinkGC::kVectorArenaIndex;
        --i)
     static_cast<NormalPageArena*>(arenas_[i])->SweepAndCompact();
   Compaction()->Finish();
@@ -497,54 +494,6 @@ void ThreadHeap::InvokeFinalizersOnSweptPages() {
   for (size_t i = BlinkGC::kNormalPage1ArenaIndex;
        i < BlinkGC::kNumberOfArenas; i++)
     arenas_[i]->InvokeFinalizersOnSweptPages();
-}
-
-void ThreadHeap::ClearArenaAges() {
-  memset(arena_ages_, 0, sizeof(size_t) * BlinkGC::kNumberOfArenas);
-  memset(likely_to_be_promptly_freed_.get(), 0,
-         sizeof(int) * kLikelyToBePromptlyFreedArraySize);
-  current_arena_ages_ = 0;
-}
-
-int ThreadHeap::ArenaIndexOfVectorArenaLeastRecentlyExpanded(
-    int begin_arena_index,
-    int end_arena_index) {
-  size_t min_arena_age = arena_ages_[begin_arena_index];
-  int arena_index_with_min_arena_age = begin_arena_index;
-  for (int arena_index = begin_arena_index + 1; arena_index <= end_arena_index;
-       arena_index++) {
-    if (arena_ages_[arena_index] < min_arena_age) {
-      min_arena_age = arena_ages_[arena_index];
-      arena_index_with_min_arena_age = arena_index;
-    }
-  }
-  DCHECK(IsVectorArenaIndex(arena_index_with_min_arena_age));
-  return arena_index_with_min_arena_age;
-}
-
-BaseArena* ThreadHeap::ExpandedVectorBackingArena(uint32_t gc_info_index) {
-  uint32_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
-  --likely_to_be_promptly_freed_[entry_index];
-  int arena_index = vector_backing_arena_index_;
-  arena_ages_[arena_index] = ++current_arena_ages_;
-  vector_backing_arena_index_ = ArenaIndexOfVectorArenaLeastRecentlyExpanded(
-      BlinkGC::kVector1ArenaIndex, BlinkGC::kVector4ArenaIndex);
-  return arenas_[arena_index];
-}
-
-void ThreadHeap::AllocationPointAdjusted(int arena_index) {
-  arena_ages_[arena_index] = ++current_arena_ages_;
-  if (vector_backing_arena_index_ == arena_index) {
-    vector_backing_arena_index_ = ArenaIndexOfVectorArenaLeastRecentlyExpanded(
-        BlinkGC::kVector1ArenaIndex, BlinkGC::kVector4ArenaIndex);
-  }
-}
-
-void ThreadHeap::PromptlyFreed(uint32_t gc_info_index) {
-  DCHECK(thread_state_->CheckThread());
-  uint32_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
-  // See the comment in vectorBackingArena() for why this is +3.
-  likely_to_be_promptly_freed_[entry_index] += 3;
 }
 
 #if defined(ADDRESS_SANITIZER)

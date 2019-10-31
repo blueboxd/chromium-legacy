@@ -48,3 +48,11 @@ class OverloadGroup(WithIdentifier):
     @property
     def is_static(self):
         return self._is_static
+
+    @property
+    def min_num_of_required_arguments(self):
+        """
+        Returns the minimum number of required arguments of overloaded
+        functions.
+        """
+        return min(map(lambda func: func.num_of_required_arguments, self))

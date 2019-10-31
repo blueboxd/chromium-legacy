@@ -1037,7 +1037,7 @@ NavigationRequest::NavigationRequest(
 NavigationRequest::~NavigationRequest() {
   TRACE_EVENT_ASYNC_END0("navigation", "NavigationRequest", this);
   ResetExpectedProcess();
-  if (state_ == STARTED) {
+  if (state_ >= WILL_START_NAVIGATION && state_ < RESPONSE_STARTED) {
     devtools_instrumentation::OnNavigationRequestFailed(
         *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   }
@@ -1071,7 +1071,7 @@ void NavigationRequest::BeginNavigation() {
   DCHECK(!loader_);
   DCHECK(!render_frame_host_);
 
-  state_ = STARTED;
+  state_ = WILL_START_NAVIGATION;
 
 #if defined(OS_ANDROID)
   base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
@@ -1275,8 +1275,8 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
         common_params_->url, *common_params_->referrer);
   }
 
-  DCHECK_EQ(handle_state_, NOT_CREATED);
-  handle_state_ = INITIAL;
+  DCHECK(!IsNavigationStarted());
+  state_ = WILL_START_REQUEST;
   navigation_handle_id_ = CreateUniqueHandleID();
 
   request_headers_ = std::move(headers);
@@ -1317,11 +1317,12 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
     TraceNavigationEnd();
   }
 
-  // Reset the states of the NavigationRequest.
+  // Reset the states of the NavigationRequest, and the navigation_handle_id.
   StopCommitTimeout();
   state_ = NOT_STARTED;
   handle_state_ = NOT_CREATED;
   processing_navigation_throttle_ = false;
+  navigation_handle_id_ = 0;
 
 #if defined(OS_ANDROID)
   if (navigation_handle_proxy_)
@@ -1583,7 +1584,7 @@ void NavigationRequest::OnResponseStarted(
     RecordDownloadUseCountersPostPolicyCheck();
   request_id_ = request_id;
 
-  DCHECK_EQ(state_, STARTED);
+  DCHECK(IsNavigationStarted());
   DCHECK(response_head);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "OnResponseStarted");
@@ -1869,7 +1870,8 @@ void NavigationRequest::OnRequestFailedInternal(
     bool skip_throttles,
     const base::Optional<std::string>& error_page_content,
     bool collapse_frame) {
-  DCHECK(state_ == STARTED || state_ == RESPONSE_STARTED);
+  DCHECK(state_ == WILL_START_NAVIGATION || state_ == WILL_START_REQUEST ||
+         state_ == RESPONSE_STARTED || state_ == CANCELING);
   DCHECK(!(status.error_code == net::ERR_ABORTED &&
            error_page_content.has_value()));
 
@@ -2918,12 +2920,12 @@ void NavigationRequest::OnNavigationEventProcessed(
 
 void NavigationRequest::OnWillStartRequestProcessed(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(WILL_START_REQUEST, handle_state_);
+  DCHECK_EQ(WILL_START_REQUEST, state_);
   DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
   DCHECK(processing_navigation_throttle_);
   processing_navigation_throttle_ = false;
   if (result.action() != NavigationThrottle::PROCEED)
-    handle_state_ = CANCELING;
+    state_ = CANCELING;
 
   // TODO(zetamoo): Remove CompleteCallback, and call NavigationRequest methods
   // directly.
@@ -2941,7 +2943,7 @@ void NavigationRequest::OnWillRedirectRequestProcessed(
     if (GetDelegate())
       GetDelegate()->DidRedirectNavigation(this);
   } else {
-    handle_state_ = CANCELING;
+    state_ = CANCELING;
   }
   RunCompleteCallback(result);
 }
@@ -2956,7 +2958,7 @@ void NavigationRequest::OnWillFailRequestProcessed(
     result = NavigationThrottle::ThrottleCheckResult(
         NavigationThrottle::PROCEED, net_error_);
   } else {
-    handle_state_ = CANCELING;
+    state_ = CANCELING;
   }
   RunCompleteCallback(result);
 }
@@ -2975,7 +2977,7 @@ void NavigationRequest::OnWillProcessResponseProcessed(
     if (render_frame_host_)
       ReadyToCommitNavigation(false);
   } else {
-    handle_state_ = CANCELING;
+    state_ = CANCELING;
   }
   RunCompleteCallback(result);
 }
@@ -3031,12 +3033,12 @@ void NavigationRequest::CancelDeferredNavigationInternal(
          result.action() == NavigationThrottle::CANCEL ||
          result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
   DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
-         handle_state_ == WILL_START_REQUEST ||
+         state_ == WILL_START_REQUEST ||
          handle_state_ == WILL_REDIRECT_REQUEST);
 
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "CancelDeferredNavigation");
-  handle_state_ = CANCELING;
+  state_ = CANCELING;
   RunCompleteCallback(result);
 }
 
@@ -3044,18 +3046,12 @@ void NavigationRequest::WillStartRequest(
     ThrottleChecksFinishedCallback callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "WillStartRequest");
-  // WillStartRequest should only be called once.
-  if (handle_state_ != INITIAL) {
-    handle_state_ = CANCELING;
-    RunCompleteCallback(NavigationThrottle::CANCEL);
-    return;
-  }
+  DCHECK_EQ(state_, WILL_START_REQUEST);
 
-  handle_state_ = WILL_START_REQUEST;
   complete_callback_ = std::move(callback);
 
   if (IsSelfReferentialURL()) {
-    handle_state_ = CANCELING;
+    state_ = CANCELING;
     RunCompleteCallback(NavigationThrottle::CANCEL);
     return;
   }
@@ -3088,7 +3084,7 @@ void NavigationRequest::WillRedirectRequest(
   UpdateSiteURL(post_redirect_process);
 
   if (IsSelfReferentialURL()) {
-    handle_state_ = CANCELING;
+    state_ = CANCELING;
     RunCompleteCallback(NavigationThrottle::CANCEL);
     return;
   }
@@ -3472,8 +3468,7 @@ void NavigationRequest::RemoveRequestHeader(const std::string& header_name) {
 
 void NavigationRequest::SetRequestHeader(const std::string& header_name,
                                          const std::string& header_value) {
-  DCHECK(handle_state_ == INITIAL ||
-         handle_state_ == WILL_START_REQUEST ||
+  DCHECK(state_ == WILL_START_REQUEST ||
          handle_state_ == WILL_REDIRECT_REQUEST);
   modified_request_headers_.SetHeader(header_name, header_value);
 }
@@ -3530,10 +3525,7 @@ bool NavigationRequest::IsSignedExchangeInnerResponse() {
 }
 
 net::IPEndPoint NavigationRequest::GetSocketAddress() {
-  // This is CANCELING because although the data comes in after
-  // WILL_PROCESS_RESPONSE, it's possible for the navigation to be cancelled
-  // after and the caller might want this value.
-  DCHECK_GE(handle_state_, CANCELING);
+  DCHECK_GE(handle_state_, WILL_PROCESS_RESPONSE);
   return response() ? response()->head.remote_endpoint : net::IPEndPoint();
 }
 
@@ -3812,7 +3804,7 @@ NavigationRequest* NavigationRequest::From(NavigationHandle* handle) {
 }
 
 bool NavigationRequest::IsNavigationStarted() const {
-  return handle_state_ >= INITIAL;
+  return navigation_handle_id_;
 }
 
 bool NavigationRequest::RequiresSourceSiteInstance() const {

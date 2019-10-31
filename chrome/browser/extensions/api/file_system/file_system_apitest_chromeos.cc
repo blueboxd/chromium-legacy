@@ -164,7 +164,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     SetUpTestFileHierarchy();
 
     integration_service_ = new drive::DriveIntegrationService(
-        profile, nullptr, nullptr, "", test_cache_root_.GetPath(), nullptr,
+        profile, nullptr, "", test_cache_root_.GetPath(),
         fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
     return integration_service_;
   }
@@ -311,7 +311,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
         profile, drivefs_root_.GetPath().Append("drive-user"));
 
     return new drive::DriveIntegrationService(
-        profile, nullptr, nullptr, "", {}, nullptr,
+        profile, nullptr, "", {},
         fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
   }
 

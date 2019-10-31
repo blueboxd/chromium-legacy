@@ -140,8 +140,7 @@ class CheckClientDownloadRequestBase {
 
   // If ShouldUploadBinary is true, actually performs the upload to Safe
   // Browsing for deep scanning.
-  virtual void UploadBinary(DownloadCheckResult result,
-                            DownloadCheckResultReason reason) = 0;
+  virtual void UploadBinary(DownloadCheckResultReason reason) = 0;
 
   // Called whenever a request has completed.
   virtual void NotifyRequestFinished(DownloadCheckResult result,

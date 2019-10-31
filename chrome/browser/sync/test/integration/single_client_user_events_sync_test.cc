@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -181,7 +182,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoSessions) {
   EXPECT_TRUE(ExpectUserEvents({specifics}));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Encryption) {
+// Flaky tests on ASan/TSan on linux: http://crbug.com/1020070
+#if defined(OS_LINUX) && \
+    (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER))
+#define MAYBE_Encryption DISABLED_Encryption
+#else
+#define MAYBE_Encryption Encryption
+#endif
+
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, MAYBE_Encryption) {
   const UserEventSpecifics test_event1 =
       CreateTestEvent(base::Time() + base::TimeDelta::FromMicroseconds(1));
   const UserEventSpecifics test_event2 =
@@ -192,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Encryption) {
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
   event_service->RecordUserEvent(test_event1);
   EXPECT_TRUE(ExpectUserEvents({test_event1}));
-  GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase("passphrase");
+  ASSERT_TRUE(EnableEncryption(0));
   event_service->RecordUserEvent(test_event2);
 
   // Just checking that we don't see test_event2 isn't very convincing yet,

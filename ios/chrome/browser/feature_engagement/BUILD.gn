@@ -44,7 +44,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/browser/ui/table_view:constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",

@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -81,9 +82,13 @@ void CheckResponseStream(ScriptState* script_state,
   EXPECT_CALL(*client2, DidFetchDataLoadedString(String("Hello, world")));
 
   response->InternalBodyBuffer()->StartLoading(
-      FetchDataLoader::CreateLoaderAsString(), client1, ASSERT_NO_EXCEPTION);
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client1, ASSERT_NO_EXCEPTION);
   cloned_response->InternalBodyBuffer()->StartLoading(
-      FetchDataLoader::CreateLoaderAsString(), client2, ASSERT_NO_EXCEPTION);
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client2, ASSERT_NO_EXCEPTION);
   blink::test::RunPendingTasks();
 }
 
@@ -182,9 +187,13 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
   EXPECT_CALL(*client2, DidFetchDataLoadFailed());
 
   response->InternalBodyBuffer()->StartLoading(
-      FetchDataLoader::CreateLoaderAsString(), client1, ASSERT_NO_EXCEPTION);
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client1, ASSERT_NO_EXCEPTION);
   cloned_response->InternalBodyBuffer()->StartLoading(
-      FetchDataLoader::CreateLoaderAsString(), client2, ASSERT_NO_EXCEPTION);
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client2, ASSERT_NO_EXCEPTION);
   blink::test::RunPendingTasks();
 }
 

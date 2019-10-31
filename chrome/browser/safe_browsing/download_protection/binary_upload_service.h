@@ -40,7 +40,7 @@ class BinaryUploadService {
   BinaryUploadService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<BinaryFCMService> binary_fcm_service);
-  virtual ~BinaryUploadService();
+  ~BinaryUploadService();
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -125,7 +125,7 @@ class BinaryUploadService {
 
   // Upload the given file contents for deep scanning if the browser is
   // authorized to upload data, otherwise queue the request.
-  virtual void MaybeUploadForDeepScanning(std::unique_ptr<Request> request);
+  void MaybeUploadForDeepScanning(std::unique_ptr<Request> request);
 
   // Indicates whether the browser is allowed to upload data.
   using AuthorizationCallback = base::OnceCallback<void(bool)>;
@@ -140,9 +140,6 @@ class BinaryUploadService {
   // Returns whether a download should be blocked based on file size alone. It
   // checks the enterprise policy BlockLargeFileTransfer to decide this.
   static bool ShouldBlockFileSize(size_t file_size);
-
-  // Returns the URL that requests are uploaded to.
-  static GURL GetUploadUrl();
 
  private:
   friend class BinaryUploadServiceTest;

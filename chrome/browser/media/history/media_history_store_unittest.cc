@@ -46,6 +46,9 @@ class MediaHistoryStoreUnitTest : public testing::Test {
     EXPECT_TRUE(db_.Open(db_file));
   }
 
+ private:
+  base::ScopedTempDir temp_dir_;
+
  protected:
   sql::Database& GetDB() { return db_; }
   content::BrowserTaskEnvironment task_environment_;
@@ -53,7 +56,6 @@ class MediaHistoryStoreUnitTest : public testing::Test {
  private:
   sql::Database db_;
   std::unique_ptr<MediaHistoryStore> media_history_store_;
-  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(MediaHistoryStoreUnitTest, CreateDatabaseTables) {

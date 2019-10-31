@@ -4437,26 +4437,6 @@
             ]
         }
     ],
-    "PerNavigationMojoInterface": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows",
-                "android",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "PerNavigationMojoInterface",
-                    "enable_features": [
-                        "PerNavigationMojoInterface"
-                    ]
-                }
-            ]
-        }
-    ],
     "PerProcessReclaim": [
         {
             "platforms": [

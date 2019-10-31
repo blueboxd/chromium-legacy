@@ -153,6 +153,10 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
       return "crashed";
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
       return "failed to launch";
+#if defined(OS_WIN)
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+      return "integrity failure";
+#endif
     case base::TERMINATION_STATUS_MAX_ENUM:
       break;
   }

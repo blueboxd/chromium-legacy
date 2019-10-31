@@ -54,6 +54,12 @@
 
 namespace blink {
 
+const V8PrivateProperty::SymbolKey kSymbolKeyDocument;
+const V8PrivateProperty::SymbolKey kSymbolKeyIsInterfacePrototypeObject;
+const V8PrivateProperty::SymbolKey kSymbolKeyNamespaceURI;
+const V8PrivateProperty::SymbolKey kSymbolKeyTagName;
+const V8PrivateProperty::SymbolKey kSymbolKeyType;
+
 static void ConstructCustomElement(const v8::FunctionCallbackInfo<v8::Value>&);
 
 V0CustomElementConstructorBuilder::V0CustomElementConstructorBuilder(
@@ -199,12 +205,13 @@ bool V0CustomElementConstructorBuilder::CreateConstructor(
     v8_type = v8::Null(isolate);
 
   v8::Local<v8::Object> data = v8::Object::New(isolate);
-  V8PrivateProperty::GetCustomElementDocument(isolate).Set(
-      data, ToV8(document, context->Global(), isolate));
-  V8PrivateProperty::GetCustomElementNamespaceURI(isolate).Set(
-      data, V8String(isolate, descriptor.NamespaceURI()));
-  V8PrivateProperty::GetCustomElementTagName(isolate).Set(data, v8_tag_name);
-  V8PrivateProperty::GetCustomElementType(isolate).Set(data, v8_type);
+  V8PrivateProperty::GetSymbol(isolate, kSymbolKeyDocument)
+      .Set(data, ToV8(document, context->Global(), isolate));
+  V8PrivateProperty::GetSymbol(isolate, kSymbolKeyNamespaceURI)
+      .Set(data, V8String(isolate, descriptor.NamespaceURI()));
+  V8PrivateProperty::GetSymbol(isolate, kSymbolKeyTagName)
+      .Set(data, v8_tag_name);
+  V8PrivateProperty::GetSymbol(isolate, kSymbolKeyType).Set(data, v8_type);
 
   v8::Local<v8::FunctionTemplate> constructor_template =
       v8::FunctionTemplate::New(isolate);
@@ -266,8 +273,8 @@ bool V0CustomElementConstructorBuilder::CreateConstructor(
     return false;
   }
 
-  V8PrivateProperty::GetCustomElementIsInterfacePrototypeObject(isolate).Set(
-      prototype_, v8::True(isolate));
+  V8PrivateProperty::GetSymbol(isolate, kSymbolKeyIsInterfacePrototypeObject)
+      .Set(prototype_, v8::True(isolate));
 
   bool configured_constructor;
   if (!prototype_
@@ -288,7 +295,8 @@ bool V0CustomElementConstructorBuilder::PrototypeIsValid(
   v8::Local<v8::Context> context = script_state_->GetContext();
 
   if (prototype_->InternalFieldCount() ||
-      V8PrivateProperty::GetCustomElementIsInterfacePrototypeObject(isolate)
+      V8PrivateProperty::GetSymbol(isolate,
+                                   kSymbolKeyIsInterfacePrototypeObject)
           .HasValue(prototype_)) {
     V0CustomElementException::ThrowException(
         V0CustomElementException::kPrototypeInUse, type, exception_state);
@@ -356,14 +364,14 @@ static void ConstructCustomElement(
 
   v8::Local<v8::Object> data = v8::Local<v8::Object>::Cast(info.Data());
   v8::Local<v8::Value> document_value;
-  if (!V8PrivateProperty::GetCustomElementDocument(isolate)
+  if (!V8PrivateProperty::GetSymbol(isolate, kSymbolKeyDocument)
            .GetOrUndefined(data)
            .ToLocal(&document_value)) {
     return;
   }
   Document* document = V8Document::ToImpl(document_value.As<v8::Object>());
   v8::Local<v8::Value> namespace_uri_value;
-  if (!V8PrivateProperty::GetCustomElementNamespaceURI(isolate)
+  if (!V8PrivateProperty::GetSymbol(isolate, kSymbolKeyNamespaceURI)
            .GetOrUndefined(data)
            .ToLocal(&namespace_uri_value) ||
       namespace_uri_value->IsUndefined()) {
@@ -371,7 +379,7 @@ static void ConstructCustomElement(
   }
   TOSTRING_VOID(V8StringResource<>, namespace_uri, namespace_uri_value);
   v8::Local<v8::Value> tag_name_value;
-  if (!V8PrivateProperty::GetCustomElementTagName(isolate)
+  if (!V8PrivateProperty::GetSymbol(isolate, kSymbolKeyTagName)
            .GetOrUndefined(data)
            .ToLocal(&tag_name_value) ||
       tag_name_value->IsUndefined()) {
@@ -379,7 +387,7 @@ static void ConstructCustomElement(
   }
   TOSTRING_VOID(V8StringResource<>, tag_name, tag_name_value);
   v8::Local<v8::Value> maybe_type;
-  if (!V8PrivateProperty::GetCustomElementType(isolate)
+  if (!V8PrivateProperty::GetSymbol(isolate, kSymbolKeyType)
            .GetOrUndefined(data)
            .ToLocal(&maybe_type) ||
       maybe_type->IsUndefined()) {

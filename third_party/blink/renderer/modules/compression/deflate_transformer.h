@@ -14,11 +14,11 @@
 
 namespace blink {
 
+enum class CompressionFormat;
+
 class DeflateTransformer final : public TransformStreamTransformer {
  public:
-  enum class Format { kGzip, kDeflate };
-
-  DeflateTransformer(ScriptState*, Format, int level);
+  DeflateTransformer(ScriptState*, CompressionFormat, int level);
   ~DeflateTransformer() override;
 
   ScriptPromise Transform(v8::Local<v8::Value> chunk,

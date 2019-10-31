@@ -1,3 +1,7 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_COMPRESSION_INFLATE_TRANSFORMER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_COMPRESSION_INFLATE_TRANSFORMER_H_
 
@@ -10,11 +14,11 @@
 
 namespace blink {
 
+enum class CompressionFormat;
+
 class InflateTransformer final : public TransformStreamTransformer {
  public:
-  enum class Format { kDeflate, kGzip };
-
-  InflateTransformer(ScriptState*, Format format);
+  InflateTransformer(ScriptState*, CompressionFormat);
   ~InflateTransformer() override;
 
   ScriptPromise Transform(v8::Local<v8::Value> chunk,

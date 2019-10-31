@@ -48,7 +48,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub
     private TopControlsContainerView mTopControlsContainerView;
     private ProfileImpl mProfile;
     private WebContents mWebContents;
-    private BrowserObserverProxy mBrowserObserverProxy;
+    private BrowserCallbackProxy mBrowserCallbackProxy;
     private NavigationControllerImpl mNavigationController;
     private DownloadDelegateProxy mDownloadDelegateProxy;
     private FullscreenDelegateProxy mFullscreenDelegateProxy;
@@ -163,7 +163,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub
 
     @Override
     public void setClient(IBrowserControllerClient client) {
-        mBrowserObserverProxy = new BrowserObserverProxy(mNativeBrowserController, client);
+        mBrowserCallbackProxy = new BrowserCallbackProxy(mNativeBrowserController, client);
     }
 
     @Override
@@ -217,9 +217,9 @@ public final class BrowserControllerImpl extends IBrowserController.Stub
                 mNativeBrowserController, BrowserControllerImpl.this, 0);
         mTopControlsContainerView.destroy();
         mContentViewRenderView.destroy();
-        if (mBrowserObserverProxy != null) {
-            mBrowserObserverProxy.destroy();
-            mBrowserObserverProxy = null;
+        if (mBrowserCallbackProxy != null) {
+            mBrowserCallbackProxy.destroy();
+            mBrowserCallbackProxy = null;
         }
         if (mDownloadDelegateProxy != null) {
             mDownloadDelegateProxy.destroy();

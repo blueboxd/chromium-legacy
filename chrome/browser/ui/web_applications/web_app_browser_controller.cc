@@ -12,6 +12,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -31,6 +32,11 @@ base::Optional<AppId> WebAppBrowserController::GetAppId() const {
 
 bool WebAppBrowserController::CreatedForInstalledPwa() const {
   return !registrar().IsShortcutApp(app_id_);
+}
+
+bool WebAppBrowserController::HasMinimalUiButtons() const {
+  return registrar().GetAppEffectiveDisplayMode(app_id_) ==
+         blink::mojom::DisplayMode::kMinimalUi;
 }
 
 bool WebAppBrowserController::IsHostedApp() const {

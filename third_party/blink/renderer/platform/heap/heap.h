@@ -63,11 +63,7 @@ class PagePool;
 class ProcessHeapReporter;
 class RegionTree;
 
-struct MarkingItem {
-  void* object;
-  TraceCallback callback;
-};
-
+using MarkingItem = TraceDescriptor;
 using CustomCallbackItem = MarkingItem;
 using NotFullyConstructedItem = void*;
 using WeakTableItem = MarkingItem;
@@ -328,60 +324,10 @@ class PLATFORM_EXPORT ThreadHeap {
     return arenas_[arena_index];
   }
 
-  // VectorBackingArena() returns an arena that the vector allocation should
-  // use.  We have four vector arenas and want to choose the best arena here.
-  //
-  // The goal is to improve the succession rate where expand and
-  // promptlyFree happen at an allocation point. This is a key for reusing
-  // the same memory as much as possible and thus improves performance.
-  // To achieve the goal, we use the following heuristics:
-  //
-  // - A vector that has been expanded recently is likely to be expanded
-  //   again soon.
-  // - A vector is likely to be promptly freed if the same type of vector
-  //   has been frequently promptly freed in the past.
-  // - Given the above, when allocating a new vector, look at the four vectors
-  //   that are placed immediately prior to the allocation point of each arena.
-  //   Choose the arena where the vector is least likely to be expanded
-  //   nor promptly freed.
-  //
-  // To implement the heuristics, we add an arenaAge to each arena. The arenaAge
-  // is updated if:
-  //
-  // - a vector on the arena is expanded; or
-  // - a vector that meets the condition (*) is allocated on the arena
-  //
-  //   (*) More than 33% of the same type of vectors have been promptly
-  //       freed since the last GC.
-  //
-  BaseArena* VectorBackingArena(uint32_t gc_info_index) {
-    DCHECK(thread_state_->CheckThread());
-    uint32_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
-    --likely_to_be_promptly_freed_[entry_index];
-    int arena_index = vector_backing_arena_index_;
-    // If likely_to_be_promptly_freed_[entryIndex] > 0, that means that
-    // more than 33% of vectors of the type have been promptly freed
-    // since the last GC.
-    if (likely_to_be_promptly_freed_[entry_index] > 0) {
-      arena_ages_[arena_index] = ++current_arena_ages_;
-      vector_backing_arena_index_ =
-          ArenaIndexOfVectorArenaLeastRecentlyExpanded(
-              BlinkGC::kVector1ArenaIndex, BlinkGC::kVector4ArenaIndex);
-    }
-    DCHECK(IsVectorArenaIndex(arena_index));
-    return arenas_[arena_index];
-  }
-  BaseArena* ExpandedVectorBackingArena(uint32_t gc_info_index);
   static bool IsVectorArenaIndex(int arena_index) {
-    return BlinkGC::kVector1ArenaIndex <= arena_index &&
-           arena_index <= BlinkGC::kVector4ArenaIndex;
+    return BlinkGC::kVectorArenaIndex == arena_index;
   }
   static bool IsNormalArenaIndex(int);
-  void AllocationPointAdjusted(int arena_index);
-  void PromptlyFreed(uint32_t gc_info_index);
-  void ClearArenaAges();
-  int ArenaIndexOfVectorArenaLeastRecentlyExpanded(int begin_arena_index,
-                                                   int end_arena_index);
 
   void MakeConsistentForGC();
   // MakeConsistentForMutator() drops marks from marked objects and rebuild
@@ -489,18 +435,6 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<HeapCompact> compaction_;
 
   BaseArena* arenas_[BlinkGC::kNumberOfArenas];
-  int vector_backing_arena_index_;
-  size_t arena_ages_[BlinkGC::kNumberOfArenas];
-  size_t current_arena_ages_;
-
-  // Ideally we want to allocate an array of size |gcInfoTableMax| but it will
-  // waste memory. Thus we limit the array size to 2^8 and share one entry
-  // with multiple types of vectors. This won't be an issue in practice,
-  // since there will be less than 2^8 types of objects in common cases.
-  static const int kLikelyToBePromptlyFreedArraySize = (1 << 8);
-  static const int kLikelyToBePromptlyFreedArrayMask =
-      kLikelyToBePromptlyFreedArraySize - 1;
-  std::unique_ptr<int[]> likely_to_be_promptly_freed_;
 
   static ThreadHeap* main_thread_heap_;
 

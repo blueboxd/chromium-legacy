@@ -414,7 +414,7 @@ source_set("video_facing") {
 if (is_android) {
   java_cpp_enum("java_enums") {
     sources = [
-      "encryption_scheme.h",
+      "decrypt_config.h",
       "video_codecs.h",
     ]
   }

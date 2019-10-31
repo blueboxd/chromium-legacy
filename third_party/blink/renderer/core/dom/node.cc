@@ -26,6 +26,8 @@
 
 #include "third_party/blink/renderer/core/dom/node.h"
 
+#include <algorithm>
+
 #include "third_party/blink/renderer/bindings/core/v8/node_or_string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -616,13 +618,13 @@ void Node::CallDistributeScroll(ScrollState& scroll_state) {
     return;
   }
   if (callback->NativeScrollBehavior() !=
-      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+      NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
   if (callback->NativeScrollBehavior() !=
-      WebNativeScrollBehavior::kDisableNativeScroll)
+      NativeScrollBehavior::kDisableNativeScroll)
     NativeDistributeScroll(scroll_state);
   if (callback->NativeScrollBehavior() ==
-      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+      NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
 }
 
@@ -662,13 +664,13 @@ void Node::CallApplyScroll(ScrollState& scroll_state) {
     return;
   }
   if (callback->NativeScrollBehavior() !=
-      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+      NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
   if (callback->NativeScrollBehavior() !=
-      WebNativeScrollBehavior::kDisableNativeScroll)
+      NativeScrollBehavior::kDisableNativeScroll)
     NativeApplyScroll(scroll_state);
   if (callback->NativeScrollBehavior() ==
-      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+      NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
 }
 
@@ -1636,12 +1638,15 @@ const ComputedStyle* Node::VirtualEnsureComputedStyle(
 
 void Node::SetForceReattachLayoutTree() {
   DCHECK(!GetDocument().GetStyleEngine().InRebuildLayoutTree());
+  DCHECK(IsElementNode() || IsTextNode());
   if (GetForceReattachLayoutTree())
     return;
   if (!InActiveDocument())
     return;
-  if (!IsContainerNode() && !IsTextNode())
+  if (IsElementNode() && !GetComputedStyle()) {
+    DCHECK(!GetLayoutObject());
     return;
+  }
   SetFlag(kForceReattachLayoutTree);
   if (!NeedsStyleRecalc()) {
     // Make sure we traverse down to this node during style recalc.

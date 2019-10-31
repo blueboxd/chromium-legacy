@@ -42,8 +42,7 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   bool Flush();
   bool SetSurface(scoped_refptr<CodecSurfaceBundle> surface_bundle);
   scoped_refptr<CodecSurfaceBundle> SurfaceBundle();
-  QueueStatus QueueInputBuffer(const DecoderBuffer& buffer,
-                               const EncryptionScheme& encryption_scheme);
+  QueueStatus QueueInputBuffer(const DecoderBuffer& buffer);
   DequeueStatus DequeueOutputBuffer(
       base::TimeDelta* presentation_time,
       bool* end_of_stream,
@@ -212,8 +211,7 @@ bool CodecWrapperImpl::Flush() {
 }
 
 CodecWrapperImpl::QueueStatus CodecWrapperImpl::QueueInputBuffer(
-    const DecoderBuffer& buffer,
-    const EncryptionScheme& encryption_scheme) {
+    const DecoderBuffer& buffer) {
   DVLOG(4) << __func__;
   base::AutoLock l(lock_);
   DCHECK(codec_ && state_ != State::kError);
@@ -264,7 +262,8 @@ CodecWrapperImpl::QueueStatus CodecWrapperImpl::QueueInputBuffer(
     status = codec_->QueueSecureInputBuffer(
         input_buffer, buffer.data(), buffer.data_size(),
         decrypt_config->key_id(), decrypt_config->iv(),
-        decrypt_config->subsamples(), encryption_scheme, buffer.timestamp());
+        decrypt_config->subsamples(), decrypt_config->encryption_mode(),
+        decrypt_config->encryption_pattern(), buffer.timestamp());
   } else {
     status = codec_->QueueInputBuffer(input_buffer, buffer.data(),
                                       buffer.data_size(), buffer.timestamp());
@@ -480,9 +479,8 @@ bool CodecWrapper::Flush() {
 }
 
 CodecWrapper::QueueStatus CodecWrapper::QueueInputBuffer(
-    const DecoderBuffer& buffer,
-    const EncryptionScheme& encryption_scheme) {
-  return impl_->QueueInputBuffer(buffer, encryption_scheme);
+    const DecoderBuffer& buffer) {
+  return impl_->QueueInputBuffer(buffer);
 }
 
 CodecWrapper::DequeueStatus CodecWrapper::DequeueOutputBuffer(

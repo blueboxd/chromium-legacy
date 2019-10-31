@@ -302,18 +302,23 @@ struct StructTraits<autofill::mojom::FormDataPredictionsDataView,
 };
 
 template <>
-struct StructTraits<autofill::mojom::PasswordAndRealmDataView,
-                    autofill::PasswordAndRealm> {
-  static const base::string16& password(const autofill::PasswordAndRealm& r) {
+struct StructTraits<autofill::mojom::PasswordAndMetadataDataView,
+                    autofill::PasswordAndMetadata> {
+  static const base::string16& password(
+      const autofill::PasswordAndMetadata& r) {
     return r.password;
   }
 
-  static const std::string& realm(const autofill::PasswordAndRealm& r) {
+  static const std::string& realm(const autofill::PasswordAndMetadata& r) {
     return r.realm;
   }
 
-  static bool Read(autofill::mojom::PasswordAndRealmDataView data,
-                   autofill::PasswordAndRealm* out);
+  static bool uses_account_store(const autofill::PasswordAndMetadata& r) {
+    return r.uses_account_store;
+  }
+
+  static bool Read(autofill::mojom::PasswordAndMetadataDataView data,
+                   autofill::PasswordAndMetadata* out);
 };
 
 template <>
@@ -351,7 +356,11 @@ struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
     return r.preferred_realm;
   }
 
-  static const std::map<base::string16, autofill::PasswordAndRealm>&
+  static bool uses_account_store(const autofill::PasswordFormFillData& r) {
+    return r.uses_account_store;
+  }
+
+  static const std::map<base::string16, autofill::PasswordAndMetadata>&
   additional_logins(const autofill::PasswordFormFillData& r) {
     return r.additional_logins;
   }

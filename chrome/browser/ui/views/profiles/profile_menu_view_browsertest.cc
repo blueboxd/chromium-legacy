@@ -575,18 +575,9 @@ class ProfileMenuViewExtensionsTestWithScopedAccountConsistency
 
 // Open the profile chooser to increment the Dice sign-in promo show counter
 // below the threshold.
-// TODO(https://crbug.com/862573): Re-enable when no longer failing when
-// is_chrome_branded is true.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#define MAYBE_IncrementDiceSigninPromoShowCounter \
-  DISABLED_IncrementDiceSigninPromoShowCounter
-#else
-#define MAYBE_IncrementDiceSigninPromoShowCounter \
-  IncrementDiceSigninPromoShowCounter
-#endif
 IN_PROC_BROWSER_TEST_F(
     ProfileMenuViewExtensionsTestWithScopedAccountConsistency,
-    MAYBE_IncrementDiceSigninPromoShowCounter) {
+    IncrementDiceSigninPromoShowCounter) {
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 7);
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
@@ -595,18 +586,9 @@ IN_PROC_BROWSER_TEST_F(
 
 // The DICE sync illustration is shown only the first 10 times. This test
 // ensures that the profile chooser is shown correctly above this threshold.
-// TODO(https://crbug.com/862573): Re-enable when no longer failing when
-// is_chrome_branded is true.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#define MAYBE_DiceSigninPromoWithoutIllustration \
-  DISABLED_DiceSigninPromoWithoutIllustration
-#else
-#define MAYBE_DiceSigninPromoWithoutIllustration \
-  DiceSigninPromoWithoutIllustration
-#endif
 IN_PROC_BROWSER_TEST_F(
     ProfileMenuViewExtensionsTestWithScopedAccountConsistency,
-    MAYBE_DiceSigninPromoWithoutIllustration) {
+    DiceSigninPromoWithoutIllustration) {
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 10);
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
@@ -888,6 +870,62 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SyncError,
   ASSERT_FALSE(sync_service()->IsSyncFeatureEnabled());
 
   RunTest();
+}
+
+// List of actionable items in the correct order as they appear in the menu.
+// If a new button is added to the menu, it should also be added to this list.
+constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncPaused[] = {
+    ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+    ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+    ProfileMenuViewBase::ActionableItem::kAddressesButton,
+    ProfileMenuViewBase::ActionableItem::kSyncErrorButton,
+    ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+    ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+    ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+    // The first button is added again to finish the cycle and test that
+    // there are no other buttons at the end.
+    ProfileMenuViewBase::ActionableItem::kPasswordsButton};
+
+PROFILE_MENU_CLICK_TEST(kActionableItems_SyncPaused,
+                        ProfileMenuClickTest_SyncPaused) {
+  ASSERT_TRUE(sync_harness()->SetupSync());
+  sync_harness()->EnterSyncPausedStateForPrimaryAccount();
+  // Check that the setup was successful.
+  ASSERT_TRUE(identity_manager()->HasPrimaryAccount());
+  ASSERT_FALSE(sync_service()->HasDisableReason(
+      syncer::SyncService::DISABLE_REASON_PAUSED));
+
+  RunTest();
+}
+
+// List of actionable items in the correct order as they appear in the menu.
+// If a new button is added to the menu, it should also be added to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_SigninDisallowed[] = {
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
+
+PROFILE_MENU_CLICK_TEST(kActionableItems_SigninDisallowed,
+                        ProfileMenuClickTest_SigninDisallowed) {
+  // Check that the setup was successful.
+  ASSERT_FALSE(
+      browser()->profile()->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+
+  RunTest();
+}
+
+// Setup for the above test.
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SigninDisallowed,
+                       PRE_ProfileMenuClickTest_SigninDisallowed) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSigninAllowedOnNextStartup, false);
 }
 
 // List of actionable items in the correct order as they appear in the menu.

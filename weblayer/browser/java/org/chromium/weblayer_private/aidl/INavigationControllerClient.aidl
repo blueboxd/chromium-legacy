@@ -6,7 +6,7 @@ package org.chromium.weblayer_private.aidl;
 
 /**
  * Interface used by NavigationController to inform the client of changes. This largely duplicates
- * the NavigationObserver interface, but is a singleton to avoid unnecessary IPC.
+ * the NavigationCallback interface, but is a singleton to avoid unnecessary IPC.
  */
 interface INavigationControllerClient {
   IClientNavigation createClientNavigation(in INavigation impl) = 0;

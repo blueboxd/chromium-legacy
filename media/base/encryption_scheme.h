@@ -19,7 +19,6 @@ class MEDIA_EXPORT EncryptionScheme {
  public:
   // Algorithm and mode used for encryption. CIPHER_MODE_UNENCRYPTED indicates
   // no encryption.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
   enum CipherMode {
     CIPHER_MODE_UNENCRYPTED,
     CIPHER_MODE_AES_CTR,

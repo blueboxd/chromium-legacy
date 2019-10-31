@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
@@ -118,9 +119,18 @@ base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
 }
 
 blink::mojom::DisplayMode WebAppRegistrar::GetAppUserDisplayMode(
-    const web_app::AppId& app_id) const {
+    const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->user_display_mode()
+                 : blink::mojom::DisplayMode::kUndefined;
+}
+
+blink::mojom::DisplayMode WebAppRegistrar::GetAppEffectiveDisplayMode(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? ResolveEffectiveDisplayMode(
+                       /*app_display_mode=*/web_app->display_mode(),
+                       /*user_display_mode=*/web_app->user_display_mode())
                  : blink::mojom::DisplayMode::kUndefined;
 }
 

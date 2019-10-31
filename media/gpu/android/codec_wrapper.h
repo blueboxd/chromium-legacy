@@ -131,8 +131,7 @@ class MEDIA_GPU_EXPORT CodecWrapper {
 
   // Queues |buffer| if the codec has an available input buffer.
   enum class QueueStatus { kOk, kError, kTryAgainLater, kNoKey };
-  QueueStatus QueueInputBuffer(const DecoderBuffer& buffer,
-                               const EncryptionScheme& encryption_scheme);
+  QueueStatus QueueInputBuffer(const DecoderBuffer& buffer);
 
   // Like MediaCodecBridge::DequeueOutputBuffer() but it outputs a
   // CodecOutputBuffer instead of an index. |*codec_buffer| must be null.

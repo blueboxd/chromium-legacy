@@ -40,7 +40,6 @@
 
 namespace {
 
-const char kGAIAIdKey[] = "gaia_id";
 const char kIsUsingDefaultNameKey[] = "is_using_default_name";
 const char kIsUsingDefaultAvatarKey[] = "is_using_default_avatar";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
@@ -153,7 +152,7 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
 
   std::unique_ptr<base::DictionaryValue> info(new base::DictionaryValue);
   info->SetString(kNameKey, name);
-  info->SetString(kGAIAIdKey, gaia_id);
+  info->SetString(ProfileAttributesEntry::kGAIAIdKey, gaia_id);
   info->SetString(ProfileAttributesEntry::kUserNameKey, user_name);
   DCHECK(!is_consented_primary_account || !gaia_id.empty() ||
          !user_name.empty());
@@ -273,14 +272,6 @@ base::FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
   return user_data_dir_.AppendASCII(keys_[index]);
 }
 
-base::string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(
-    size_t index) const {
-  base::string16 user_name;
-  GetInfoForProfileAtIndex(index)->GetString(
-      ProfileAttributesEntry::kUserNameKey, &user_name);
-  return user_name;
-}
-
 base::string16 ProfileInfoCache::GetGAIANameOfProfileAtIndex(
     size_t index) const {
   base::string16 name;
@@ -298,7 +289,8 @@ base::string16 ProfileInfoCache::GetGAIAGivenNameOfProfileAtIndex(
 std::string ProfileInfoCache::GetGAIAIdOfProfileAtIndex(
     size_t index) const {
   std::string gaia_id;
-  GetInfoForProfileAtIndex(index)->GetString(kGAIAIdKey, &gaia_id);
+  GetInfoForProfileAtIndex(index)->GetString(ProfileAttributesEntry::kGAIAIdKey,
+                                             &gaia_id);
   return gaia_id;
 }
 
@@ -412,36 +404,8 @@ void ProfileInfoCache::SetLocalProfileNameOfProfileAtIndex(
   NotifyIfProfileNamesHaveChanged();
 }
 
-void ProfileInfoCache::SetAuthInfoOfProfileAtIndex(
-    size_t index,
-    const std::string& gaia_id,
-    const base::string16& user_name,
-    bool is_consented_primary_account) {
-  bool is_consented_primary_account_state;
-  GetInfoForProfileAtIndex(index)->GetBoolean(
-      ProfileAttributesEntry::kIsConsentedPrimaryAccountKey,
-      &is_consented_primary_account_state);
-
-  // If gaia_id, username and consent state are unchanged, abort early.
-  if (is_consented_primary_account_state == is_consented_primary_account &&
-      gaia_id == GetGAIAIdOfProfileAtIndex(index) &&
-      user_name == GetUserNameOfProfileAtIndex(index)) {
-    return;
-  }
-
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-
-  info->SetString(kGAIAIdKey, gaia_id);
-  info->SetString(ProfileAttributesEntry::kUserNameKey, user_name);
-  DCHECK(!is_consented_primary_account || !gaia_id.empty() ||
-         !user_name.empty());
-  info->SetBoolean(ProfileAttributesEntry::kIsConsentedPrimaryAccountKey,
-                   is_consented_primary_account);
-
-  SetInfoForProfileAtIndex(index, std::move(info));
-
-  base::FilePath profile_path = GetPathOfProfileAtIndex(index);
+void ProfileInfoCache::NotifyProfileAuthInfoChanged(
+    const base::FilePath& profile_path) {
   for (auto& observer : observer_list_)
     observer.OnProfileAuthInfoChanged(profile_path);
 }
@@ -763,8 +727,8 @@ void ProfileInfoCache::RemoveProfileByAccountId(const AccountId& account_id) {
     if ((account_id.HasAccountIdKey() &&
          info->GetString(kAccountIdKey, &account_id_key) &&
          account_id_key == account_id.GetAccountIdKey()) ||
-        (info->GetString(kGAIAIdKey, &gaia_id) && !gaia_id.empty() &&
-         account_id.GetGaiaId() == gaia_id) ||
+        (info->GetString(ProfileAttributesEntry::kGAIAIdKey, &gaia_id) &&
+         !gaia_id.empty() && account_id.GetGaiaId() == gaia_id) ||
         (info->GetString(ProfileAttributesEntry::kUserNameKey, &user_name) &&
          !user_name.empty() && account_id.GetUserEmail() == user_name)) {
       RemoveProfile(GetPathOfProfileAtIndex(i));

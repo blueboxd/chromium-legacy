@@ -224,7 +224,9 @@ public class UrlOverridingTest {
                 Assert.fail("Haven't received navigation failure of intents.");
                 return;
             }
-        } else if (createsNewTab) {
+        }
+
+        if (createsNewTab) {
             try {
                 destroyedCallback.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
             } catch (TimeoutException ex) {
@@ -403,7 +405,7 @@ public class UrlOverridingTest {
         boolean opensNewTab =
                 !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_USER_GESTURE_PAGE), true,
-                opensNewTab, true, null, false);
+                opensNewTab, true, null, true);
     }
 
     @Test
@@ -413,7 +415,7 @@ public class UrlOverridingTest {
         boolean opensNewTab =
                 !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_LINK_USER_GESTURE_PAGE),
-                true, opensNewTab, true, null, false, "link");
+                true, opensNewTab, true, null, true, "link");
     }
 
     @Test
@@ -423,7 +425,7 @@ public class UrlOverridingTest {
         boolean opensNewTab =
                 !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_SVG_USER_GESTURE_PAGE), true,
-                opensNewTab, true, null, false, "link");
+                opensNewTab, true, null, true, "link");
     }
 
     @Test

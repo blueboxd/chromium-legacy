@@ -39,6 +39,7 @@ class WebAppBrowserController : public AppBrowserController {
   // AppBrowserController:
   base::Optional<AppId> GetAppId() const override;
   bool CreatedForInstalledPwa() const override;
+  bool HasMinimalUiButtons() const override;
   gfx::ImageSkia GetWindowAppIcon() const override;
   gfx::ImageSkia GetWindowIcon() const override;
   base::Optional<SkColor> GetThemeColor() const override;

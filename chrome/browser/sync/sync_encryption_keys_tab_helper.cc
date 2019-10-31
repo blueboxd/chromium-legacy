@@ -54,13 +54,13 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
 
   // chrome::mojom::SyncEncryptionKeysExtension:
   void SetEncryptionKeys(const std::vector<std::string>& encryption_keys,
-                         const std::string& account_id,
+                         const std::string& gaia_id,
                          SetEncryptionKeysCallback callback) override {
     CHECK_EQ(bindings_.GetCurrentTargetFrame()->GetLastCommittedOrigin(),
              GetAllowedOrigin());
 
     sync_service_->GetUserSettings()->AddTrustedVaultDecryptionKeys(
-        CoreAccountId(account_id), encryption_keys);
+        gaia_id, encryption_keys);
     std::move(callback).Run();
   }
 

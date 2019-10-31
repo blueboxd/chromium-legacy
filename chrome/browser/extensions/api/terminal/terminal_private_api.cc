@@ -12,23 +12,18 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/strings/stringprintf.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/extensions/api/terminal/crostini_startup_status.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/terminal_private.h"
-#include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/process_proxy/process_proxy_registry.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -118,112 +113,6 @@ int GetTabOrWindowSessionId(content::BrowserContext* browser_context,
   return window ? window->session_id().id() : -1;
 }
 
-class CrostiniRestartObserver
-    : public crostini::CrostiniManager::RestartObserver {
- public:
-  CrostiniRestartObserver(
-      base::RepeatingCallback<void(const std::string&)> print,
-      base::OnceClosure callback)
-      : print_(std::move(print)), callback_(std::move(callback)) {}
-
-  void OnCrostiniRestarted(crostini::CrostiniResult result) {
-    if (result != crostini::CrostiniResult::SUCCESS) {
-      LOG(ERROR) << "Error starting crostini for terminal: "
-                 << static_cast<int>(result);
-      PrintWithTimestamp(base::StringPrintf(
-          "Error starting penguin container: %d\r\n", result));
-    } else {
-      PrintWithTimestamp("Ready\r\n");
-    }
-    std::move(callback_).Run();
-    delete this;
-  }
-
- private:
-  // crostini::CrostiniManager::RestartObserver
-  void OnStageStarted(InstallerState stage) override {
-    switch (stage) {
-      case InstallerState::kStart:
-        PrintWithTimestamp("Chrome OS " + version_info::GetVersionNumber() +
-                           " " +
-                           chromeos::version_loader::GetVersion(
-                               chromeos::version_loader::VERSION_FULL) +
-                           "\r\n");
-        PrintWithTimestamp("Starting terminal...\r\n");
-        break;
-      case InstallerState::kInstallImageLoader:
-        PrintWithTimestamp("Checking cros-termina component... ");
-        break;
-      case InstallerState::kStartConcierge:
-        PrintWithTimestamp("Starting VM controller... ");
-        break;
-      case InstallerState::kCreateDiskImage:
-        PrintWithTimestamp("Creating termina VM image... ");
-        break;
-      case InstallerState::kStartTerminaVm:
-        PrintWithTimestamp("Starting termina VM... ");
-        break;
-      case InstallerState::kCreateContainer:
-        PrintWithTimestamp("Creating penguin container... ");
-        break;
-      case InstallerState::kSetupContainer:
-        PrintWithTimestamp("Checking penguin container setup... ");
-        break;
-      case InstallerState::kStartContainer:
-        PrintWithTimestamp("Starting penguin container... ");
-        break;
-      case InstallerState::kFetchSshKeys:
-        PrintWithTimestamp("Fetching penguin container ssh keys... ");
-        break;
-      case InstallerState::kMountContainer:
-        PrintWithTimestamp("Mounting penguin container sshfs... ");
-        break;
-    }
-  }
-  void OnComponentLoaded(crostini::CrostiniResult result) override {
-    PrintCrostiniResult(result);
-  }
-  void OnConciergeStarted(bool success) override { PrintSuccess(success); }
-  void OnDiskImageCreated(bool success,
-                          vm_tools::concierge::DiskImageStatus status,
-                          int64_t disk_size_available) override {
-    PrintSuccess(success);
-  }
-  void OnVmStarted(bool success) override { PrintSuccess(success); }
-  void OnContainerDownloading(int32_t download_percent) override { Print("."); }
-  void OnContainerCreated(crostini::CrostiniResult result) override {
-    PrintCrostiniResult(result);
-  }
-  void OnContainerSetup(bool success) override { PrintSuccess(success); }
-  void OnContainerStarted(crostini::CrostiniResult result) override {
-    PrintCrostiniResult(result);
-  }
-  void OnSshKeysFetched(bool success) override { PrintSuccess(success); }
-  void OnContainerMounted(bool success) override { PrintSuccess(success); }
-
-  void Print(const std::string& output) { print_.Run(output); }
-  void PrintWithTimestamp(const std::string& output) {
-    base::Time::Exploded exploded;
-    base::Time::Now().LocalExplode(&exploded);
-    Print(base::StringPrintf(
-        "%04d-%02d-%02d %02d:%02d:%02d.%03d %s", exploded.year, exploded.month,
-        exploded.day_of_month, exploded.hour, exploded.minute, exploded.second,
-        exploded.millisecond, output.c_str()));
-  }
-  void Println(const std::string& output) { Print(output + "\r\n"); }
-  void PrintCrostiniResult(crostini::CrostiniResult result) {
-    if (result == crostini::CrostiniResult::SUCCESS) {
-      Println("done");
-    } else {
-      Println(base::StringPrintf("error=%d", result));
-    }
-  }
-  void PrintSuccess(bool success) { Println(success ? "done" : "error"); }
-
-  base::RepeatingCallback<void(const std::string& output)> print_;
-  base::OnceClosure callback_;
-};
-
 }  // namespace
 
 namespace extensions {
@@ -295,19 +184,24 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
     auto open_process =
         base::BindOnce(&TerminalPrivateOpenTerminalProcessFunction::OpenProcess,
                        this, user_id_hash, tab_id, vmshell_cmd.argv());
-    auto* observer = new CrostiniRestartObserver(
+    auto* mgr = crostini::CrostiniManager::GetForProfile(
+        Profile::FromBrowserContext(browser_context()));
+    bool verbose =
+        !mgr->GetContainerInfo(crostini::kCrostiniDefaultVmName,
+                               crostini::kCrostiniDefaultContainerName)
+             .has_value();
+    auto* observer = new CrostiniStartupStatus(
         base::BindRepeating(&NotifyProcessOutput, browser_context(), tab_id,
                             startup_id,
                             api::terminal_private::ToString(
                                 api::terminal_private::OUTPUT_TYPE_STDOUT)),
-        std::move(open_process));
-    crostini::CrostiniManager::GetForProfile(
-        Profile::FromBrowserContext(browser_context()))
-        ->RestartCrostini(
-            vm_name, container_name,
-            base::BindOnce(&CrostiniRestartObserver::OnCrostiniRestarted,
-                           base::Unretained(observer)),
-            observer);
+        verbose, std::move(open_process));
+    observer->ShowStatusLineAtInterval();
+    mgr->RestartCrostini(
+        vm_name, container_name,
+        base::BindOnce(&CrostiniStartupStatus::OnCrostiniRestarted,
+                       base::Unretained(observer)),
+        observer);
   } else {
     // command=[unrecognized].
     return RespondNow(Error("Invalid process name: " + params->process_name));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/peerconnection/media_stream_video_webrtc_sink.h"
+#include "third_party/blink/renderer/modules/peerconnection/media_stream_video_webrtc_sink.h"
 
 #include <algorithm>
 #include <memory>

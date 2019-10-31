@@ -333,7 +333,7 @@ id<GREYMatcher> SearchIconButton() {
 - (void)testKeyboardCommandsRegistered_AddBookmark {
   // Add the bookmark.
   [BookmarksTestCase starCurrentTab];
-  GREYAssertTrue(chrome_test_util::GetRegisteredKeyCommandsCount() > 0,
+  GREYAssertTrue([ChromeEarlGrey registeredKeyCommandCount] > 0,
                  @"Some keyboard commands are registered.");
 }
 
@@ -363,7 +363,7 @@ id<GREYMatcher> SearchIconButton() {
                                  kPopupMenuToolsMenuTableViewId)]
         performAction:grey_tap()];
   }
-  GREYAssertTrue(chrome_test_util::GetRegisteredKeyCommandsCount() == 0,
+  GREYAssertTrue([ChromeEarlGrey registeredKeyCommandCount] == 0,
                  @"No keyboard commands are registered.");
 }
 

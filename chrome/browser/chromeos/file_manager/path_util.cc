@@ -206,8 +206,8 @@ bool MigrateToDriveFs(Profile* profile,
     return false;
   }
   *new_path = integration_service->GetMountPointPath();
-  return drive::util::GetDriveMountPointPath(profile).AppendRelativePath(
-      old_path, new_path);
+  return drive::util::GetDriveGrandRootPath().AppendRelativePath(
+      drive::util::ExtractDrivePath(old_path), new_path);
 }
 
 std::string GetDownloadsMountPointName(Profile* profile) {

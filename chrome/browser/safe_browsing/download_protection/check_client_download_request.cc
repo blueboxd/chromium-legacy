@@ -330,11 +330,7 @@ bool CheckClientDownloadRequest::ShouldUploadBinary(
 }
 
 void CheckClientDownloadRequest::UploadBinary(
-    DownloadCheckResult result,
     DownloadCheckResultReason reason) {
-  saved_result_ = result;
-  saved_reason_ = reason;
-
   bool upload_for_dlp = ShouldUploadForDlpScan();
   bool upload_for_malware = ShouldUploadForMalwareScan(reason);
   auto request = std::make_unique<DownloadItemRequest>(
@@ -446,10 +442,11 @@ void CheckClientDownloadRequest::OnDeepScanningComplete(
         item_->GetTotalBytes(), result, response);
   }
 
-  // In case of error, restore the original result and reason from the server.
-  DownloadCheckResult download_result = saved_result_;
-  DownloadCheckResultReason download_reason = saved_reason_;
+  DownloadCheckResult download_result = DownloadCheckResult::SAFE;
+  DownloadCheckResultReason download_reason =
+      DownloadCheckResultReason::REASON_DOWNLOAD_SAFE;
 
+  // Fails open in case of error.
   if (result == BinaryUploadService::Result::SUCCESS) {
     DeepScanningClientResponseToDownloadCheckResult(response, &download_result,
                                                     &download_reason);

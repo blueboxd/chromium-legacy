@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "third_party/blink/public/web/modules/peerconnection/fake_rtc_rtp_transceiver_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/fake_rtc_rtp_transceiver_impl.h"
 
 namespace blink {
 

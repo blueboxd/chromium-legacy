@@ -4,6 +4,8 @@
 
 import copy
 
+from blinkbuild.name_style_converter import NameStyleConverter
+
 
 class CodeGenerationContext(object):
     """
@@ -15,7 +17,7 @@ class CodeGenerationContext(object):
     as "${interface}".
     """
 
-    # "world" attribute values
+    # "for_world" attribute values
     MAIN_WORLD = "main"
     ALL_WORLDS = "all"
 
@@ -32,8 +34,11 @@ class CodeGenerationContext(object):
             "callback_function": None,
             "callback_interface": None,
             "dictionary": None,
+            "enumeration": None,
             "interface": None,
             "namespace": None,
+            "typedef": None,
+            "union": None,
 
             # Class-member-ish definition
             "attribute": None,
@@ -47,14 +52,20 @@ class CodeGenerationContext(object):
             "operation_group": None,
 
             # Main world or all worlds
-            "world": cls.ALL_WORLDS,
+            "for_world": cls.ALL_WORLDS,
         }
 
         # List of computational attribute names
         cls._computational_attrs = (
             "class_like",
+            "function_like",
+            "idl_definition",
+            "is_return_by_argument",
+            "may_throw_exception",
             "member_like",
             "property_",
+            "return_type",
+            "v8_class",
         )
 
         # Define public readonly properties of this class.
@@ -138,6 +149,12 @@ class CodeGenerationContext(object):
         return (self.callback_function or self.constructor or self.operation)
 
     @property
+    def idl_definition(self):
+        return (self.callback_function or self.callback_interface
+                or self.dictionary or self.enumeration or self.interface
+                or self.namespace or self.typedef or self.union)
+
+    @property
     def is_return_by_argument(self):
         if self.return_type is None:
             return None
@@ -174,6 +191,14 @@ class CodeGenerationContext(object):
         if self.operation:
             return self.operation.return_type
         return None
+
+    @property
+    def v8_class(self):
+        if not self.idl_definition:
+            return None
+        return "V8{}".format(
+            NameStyleConverter(
+                self.idl_definition.identifier).to_upper_camel_case())
 
 
 CodeGenerationContext.init()

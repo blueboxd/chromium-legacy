@@ -1822,6 +1822,7 @@ test("content_unittests") {
     "../browser/web_contents/web_contents_view_mac_unittest.mm",
     "../browser/web_contents/web_drag_dest_mac_unittest.mm",
     "../browser/web_contents/web_drag_source_mac_unittest.mm",
+    "../browser/web_package/bundled_exchanges_blob_data_source_unittest.cc",
     "../browser/web_package/bundled_exchanges_reader_unittest.cc",
     "../browser/web_package/bundled_exchanges_url_loader_factory_unittest.cc",
     "../browser/web_package/bundled_exchanges_utils_unittest.cc",

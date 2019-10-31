@@ -326,7 +326,7 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
   data.password_field.value = test_password_;
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
   data.additional_logins[additional_username] = additional;
@@ -386,7 +386,7 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
   data.username_field.value = test_username_;
   data.preferred_realm = "android://hash@com.example1.android/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "android://hash@com.example2.android/";
   base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
   data.additional_logins[additional_username] = additional;
@@ -417,7 +417,7 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
   data.password_field.value = test_password_;
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
   data.additional_logins[additional_username] = additional;
@@ -454,7 +454,7 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   data.password_field.value = base::ASCIIToUTF16("foobar");
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
@@ -490,7 +490,7 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
   data.password_field.value = base::ASCIIToUTF16("foobar");
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
@@ -523,7 +523,7 @@ TEST_F(PasswordAutofillManagerTest,
   data.password_field.value = base::ASCIIToUTF16("foobar");
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
@@ -562,7 +562,7 @@ TEST_F(PasswordAutofillManagerTest,
   data.password_field.value = base::ASCIIToUTF16("foobar");
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
@@ -825,4 +825,32 @@ TEST_F(PasswordAutofillManagerTest,
           element_bounds, base::i18n::RIGHT_TO_LEFT,
           /*show_password_suggestions=*/false));
 }
+
+TEST_F(PasswordAutofillManagerTest, DisplayAccountSuggestionsIndicatorIcon) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
+
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  data.username_field.value = test_username_;
+  data.password_field.value = base::ASCIIToUTF16("foobar");
+  data.uses_account_store = true;
+
+  password_autofill_manager_->OnAddPasswordFillData(data);
+
+  std::vector<autofill::Suggestion> suggestions;
+  EXPECT_CALL(*autofill_client, ShowAutofillPopup(element_bounds, _, _, false,
+                                                  PopupType::kPasswords, _))
+      .WillOnce(testing::SaveArg<2>(&suggestions));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      base::i18n::RIGHT_TO_LEFT, base::string16(), false, element_bounds);
+  ASSERT_THAT(suggestions.size(), testing::Ge(1u));  // No footer on Android.
+  EXPECT_THAT(suggestions[0].store_indicator_icon, "google");
+}
+
 }  // namespace password_manager

@@ -82,6 +82,11 @@ void GetNominalDynamicSettings(const base::FilePath& partition_path,
                                QuotaDiskInfoHelper* diskInfoHelper,
                                OptionalQuotaSettingsCallback callback);
 
+COMPONENT_EXPORT(STORAGE_BROWSER)
+// TODO(https://crbug.com/1017120): Add memory size mocking support to
+// QuotaDiskInfoHelper and remove this function.
+int64_t GetIncognitoPoolSizeForTesting(int64_t physical_memory_amount);
+
 // Returns settings with a poolsize of zero and no per host quota.
 inline QuotaSettings GetNoQuotaSettings() {
   return QuotaSettings();

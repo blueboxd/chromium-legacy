@@ -13,6 +13,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * A controller class could enable or disable web content dark mode feature based on the night mode
@@ -20,7 +21,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
  */
 public class WebContentsDarkModeController implements ApplicationStateListener {
     private NightModeStateProvider.Observer mNightModeObserver;
-    private ChromePreferenceManager.Observer mPreferenceObserver;
+    private SharedPreferencesManager.Observer mPreferenceObserver;
 
     private static WebContentsDarkModeController sController;
 
@@ -73,7 +74,7 @@ public class WebContentsDarkModeController implements ApplicationStateListener {
         };
         enableWebContentsDarkMode(shouldEnableWebContentsDarkMode());
         GlobalNightModeStateProviderHolder.getInstance().addObserver(mNightModeObserver);
-        ChromePreferenceManager.getInstance().addObserver(mPreferenceObserver);
+        SharedPreferencesManager.getInstance().addObserver(mPreferenceObserver);
     }
 
     /**
@@ -82,7 +83,7 @@ public class WebContentsDarkModeController implements ApplicationStateListener {
     private void stop() {
         if (mNightModeObserver == null) return;
         GlobalNightModeStateProviderHolder.getInstance().removeObserver(mNightModeObserver);
-        ChromePreferenceManager.getInstance().removeObserver(mPreferenceObserver);
+        SharedPreferencesManager.getInstance().removeObserver(mPreferenceObserver);
         mNightModeObserver = null;
         mPreferenceObserver = null;
     }

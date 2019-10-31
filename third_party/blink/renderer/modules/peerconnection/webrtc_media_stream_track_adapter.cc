@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter.h"
+#include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter.h"
 
 #include "base/bind.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
-#include "third_party/blink/public/web/modules/peerconnection/media_stream_video_webrtc_sink.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/media_stream_video_webrtc_sink.h"
 
 namespace blink {
 
@@ -22,7 +22,7 @@ WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
   DCHECK(main_thread->BelongsToCurrentThread());
   DCHECK(!web_track.IsNull());
   scoped_refptr<WebRtcMediaStreamTrackAdapter> local_track_adapter(
-      new WebRtcMediaStreamTrackAdapter(factory, main_thread));
+      base::AdoptRef(new WebRtcMediaStreamTrackAdapter(factory, main_thread)));
   if (web_track.Source().GetType() == blink::WebMediaStreamSource::kTypeAudio) {
     local_track_adapter->InitializeLocalAudioTrack(web_track);
   } else {
@@ -43,7 +43,7 @@ WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
   DCHECK(!main_thread->BelongsToCurrentThread());
   DCHECK(webrtc_track);
   scoped_refptr<WebRtcMediaStreamTrackAdapter> remote_track_adapter(
-      new WebRtcMediaStreamTrackAdapter(factory, main_thread));
+      base::AdoptRef(new WebRtcMediaStreamTrackAdapter(factory, main_thread)));
   if (webrtc_track->kind() == webrtc::MediaStreamTrackInterface::kAudioKind) {
     remote_track_adapter->InitializeRemoteAudioTrack(base::WrapRefCounted(
         static_cast<webrtc::AudioTrackInterface*>(webrtc_track.get())));

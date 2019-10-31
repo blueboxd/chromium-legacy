@@ -23,20 +23,14 @@ namespace leveldb_proto {
 class SharedProtoDatabaseClientTest : public testing::Test {
  public:
   void SetUp() override {
-    temp_dir_.reset(new base::ScopedTempDir());
-    ASSERT_TRUE(temp_dir_->CreateUniqueTempDir());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     db_ = base::WrapRefCounted(
-        new SharedProtoDatabase("client", temp_dir_->GetPath()));
-  }
-
-  void TearDown() override {
-    db_->database_task_runner_for_testing()->DeleteSoon(FROM_HERE,
-                                                        std::move(temp_dir_));
+        new SharedProtoDatabase("client", temp_dir_.GetPath()));
   }
 
  protected:
   scoped_refptr<SharedProtoDatabase> db() { return db_; }
-  base::ScopedTempDir* temp_dir() { return temp_dir_.get(); }
+  base::ScopedTempDir* temp_dir() { return &temp_dir_; }
 
   LevelDB* GetLevelDB() const { return db_->GetLevelDBForTesting(); }
 
@@ -288,10 +282,9 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   }
 
  private:
+  base::ScopedTempDir temp_dir_;
   base::test::TaskEnvironment task_environment_;
-
   scoped_refptr<SharedProtoDatabase> db_;
-  std::unique_ptr<base::ScopedTempDir> temp_dir_;
 };
 
 TEST_F(SharedProtoDatabaseClientTest, InitSuccess) {

@@ -47,6 +47,10 @@ class CORE_EXPORT NGInlineCursor {
                           ItemsSpan items);
   explicit NGInlineCursor(const NGPaintFragment& root_paint_fragment);
   NGInlineCursor(const NGInlineCursor& other);
+
+  // Creates an |NGInlineCursor| without the root. Even when callers don't know
+  // the root of the inline formatting context, this cursor can |MoveTo()|
+  // specific |LayoutObject|.
   NGInlineCursor();
 
   bool operator==(const NGInlineCursor& other) const;
@@ -56,6 +60,10 @@ class CORE_EXPORT NGInlineCursor {
 
   bool IsItemCursor() const { return fragment_items_; }
   bool IsPaintFragmentCursor() const { return root_paint_fragment_; }
+
+  // True if this cursor has the root to traverse. Only the default constructor
+  // creates a cursor without the root.
+  bool HasRoot() const { return IsItemCursor() || IsPaintFragmentCursor(); }
 
   const NGFragmentItems& Items() const {
     DCHECK(fragment_items_);
@@ -150,6 +158,9 @@ class CORE_EXPORT NGInlineCursor {
   TextDirection CurrentResolvedDirection() const;
   const ComputedStyle& CurrentStyle() const;
 
+  // InkOverflow of itself, including contents if they contribute to the ink
+  // overflow of this object (e.g. when not clipped,) in the local coordinate.
+  const PhysicalRect CurrentInkOverflow() const;
   // The offset relative to the root of the inline formatting context.
   const PhysicalOffset CurrentOffset() const;
   const PhysicalRect CurrentRect() const;
@@ -262,6 +273,7 @@ class CORE_EXPORT NGInlineCursor {
   void SetRoot(const NGFragmentItems& items);
   void SetRoot(const NGFragmentItems& fragment_items, ItemsSpan items);
   void SetRoot(const NGPaintFragment& root_paint_fragment);
+  void SetRoot(const LayoutBlockFlow& block_flow);
 
   void MoveToItem(const ItemsSpan::iterator& iter);
   void MoveToNextItem();

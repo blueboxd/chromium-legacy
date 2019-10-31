@@ -10,6 +10,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/payments/core/features.h"
 #import "components/ukm/ios/features.h"
+#import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
@@ -586,6 +587,15 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   ios::HostContentSettingsMapFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState())
       ->SetDefaultContentSetting(ContentSettingsType::POPUPS, value);
+}
+
+#pragma mark - Keyboard Command Utilities
+
++ (NSInteger)registeredKeyCommandCount {
+  UIViewController* mainViewController =
+      chrome_test_util::GetMainController()
+          .interfaceProvider.mainInterface.viewController;
+  return mainViewController.keyCommands.count;
 }
 
 @end

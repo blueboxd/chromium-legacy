@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/accelerometer/accelerometer_constants.h"
 #include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
@@ -21,7 +22,6 @@ class TabletModeWindowManager;
 class TabletModeControllerTestApi {
  public:
   static constexpr float kDegreesToRadians = 3.1415926f / 180.0f;
-  static constexpr float kMeanGravity = 9.8066f;
 
   TabletModeControllerTestApi();
   ~TabletModeControllerTestApi();

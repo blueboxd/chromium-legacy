@@ -108,8 +108,8 @@ void SyncEncryptionKeysExtension::SetSyncEncryptionKeys(gin::Arguments* args) {
     return;
   }
 
-  std::string account_id;
-  if (!args->GetNext(&account_id)) {
+  std::string gaia_id;
+  if (!args->GetNext(&gaia_id)) {
     DLOG(ERROR) << "No account ID";
     args->ThrowError();
     return;
@@ -130,7 +130,7 @@ void SyncEncryptionKeysExtension::SetSyncEncryptionKeys(gin::Arguments* args) {
   }
 
   remote_->SetEncryptionKeys(
-      encryption_keys, account_id,
+      encryption_keys, gaia_id,
       base::BindOnce(&SyncEncryptionKeysExtension::RunCompletionCallback,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(global_callback)));

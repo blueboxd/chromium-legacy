@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
 
 #include <stddef.h>
 
@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
-#include "third_party/blink/public/web/modules/peerconnection/mock_data_channel_impl.h"
-#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_data_channel_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 

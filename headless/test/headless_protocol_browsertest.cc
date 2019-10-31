@@ -304,7 +304,9 @@ class HeadlessProtocolCompositorBrowserTest
 // chromium/src/headless/lib/browser/protocol/target_handler.cc?
 // rcl=5811aa08e60ba5ac7622f029163213cfbdb682f7&l=32
 // TODO(crbug.com/954398): Suite is timeout-flaky on Windows.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// TODO(crbug.com/1020046): Suite is flaky on TSan Linux.
+#if defined(OS_MACOSX) || defined(OS_WIN) || \
+    (defined(OS_LINUX) && defined(THREAD_SANITIZER))
 #define HEADLESS_PROTOCOL_COMPOSITOR_TEST(TEST_NAME, SCRIPT_NAME) \
   IN_PROC_BROWSER_TEST_F(HeadlessProtocolCompositorBrowserTest,   \
                          DISABLED_##TEST_NAME) {                  \

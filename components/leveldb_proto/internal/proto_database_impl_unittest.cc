@@ -164,11 +164,6 @@ class ProtoDatabaseImplTest : public testing::Test {
         kDefaultClientName, shared_db_temp_dir_->GetPath()));
   }
 
-  void TearDown() override {
-    temp_dir_.reset();
-    shared_db_temp_dir_.reset();
-  }
-
   void SetUpExperimentParams(std::map<std::string, std::string> params) {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         kProtoDBSharedMigration, params);
@@ -394,6 +389,7 @@ class ProtoDatabaseImplTest : public testing::Test {
 
  private:
   std::unique_ptr<base::ScopedTempDir> temp_dir_;
+  std::unique_ptr<base::ScopedTempDir> shared_db_temp_dir_;
   base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -401,7 +397,6 @@ class ProtoDatabaseImplTest : public testing::Test {
   std::unique_ptr<base::Thread> test_thread_;
   std::unique_ptr<base::Thread> shared_db_thread_;
   scoped_refptr<SharedProtoDatabase> shared_db_;
-  std::unique_ptr<base::ScopedTempDir> shared_db_temp_dir_;
 };
 
 using ProtoDatabaseImplTestConfig = testing::Types<TestProto, ClientStruct>;

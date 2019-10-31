@@ -158,7 +158,7 @@ See [Run Web Tests Directly with Content Shell](#Run-Web-Tests-Directly-with-Con
 In most cases you don't need `--single-process` because `content_shell` is
 in single process mode when running most web tests.
 
-See [DevTools frontend](../../third_party/blink/renderer/devtools/readme.md#basics)
+See [DevTools frontend](../../third_party/devtools-frontend/src/README.md#basics)
 for the commands that are useful for debugging devtools web tests.
 
 ### In The Default Multiple Process Mode

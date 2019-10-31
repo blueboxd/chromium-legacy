@@ -26,7 +26,7 @@ android_library("java") {
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
     "org/chromium/weblayer_private/BrowserFragmentControllerImpl.java",
     "org/chromium/weblayer_private/BrowserFragmentImpl.java",
-    "org/chromium/weblayer_private/BrowserObserverProxy.java",
+    "org/chromium/weblayer_private/BrowserCallbackProxy.java",
     "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
     "org/chromium/weblayer_private/ContentView.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
@@ -49,8 +49,11 @@ android_library("java") {
     ":weblayer_resources",
     "//base:base_java",
     "//base:jni_java",
+    "//components/crash/android:handler_java",
+    "//components/crash/android:java",
     "//components/embedder_support/android:application_java",
     "//components/embedder_support/android:web_contents_delegate_java",
+    "//components/version_info/android:version_constants_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//ui/android:ui_java",
@@ -69,8 +72,8 @@ android_library("java") {
 
 generate_jni("jni") {
   sources = [
+    "org/chromium/weblayer_private/BrowserCallbackProxy.java",
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
-    "org/chromium/weblayer_private/BrowserObserverProxy.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/DownloadDelegateProxy.java",
     "org/chromium/weblayer_private/FullscreenDelegateProxy.java",

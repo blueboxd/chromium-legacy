@@ -160,6 +160,10 @@ GpuTerminationStatus ConvertToGpuTerminationStatus(
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       return GpuTerminationStatus::PROCESS_WAS_KILLED;
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
+#if defined(OS_WIN)
+    // Treat integrity failure as a crash on Windows.
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+#endif
       return GpuTerminationStatus::PROCESS_CRASHED;
     case base::TERMINATION_STATUS_STILL_RUNNING:
       return GpuTerminationStatus::STILL_RUNNING;
@@ -722,7 +726,7 @@ GpuProcessHost::~GpuProcessHost() {
         UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationOrigin",
                                   termination_origin_,
                                   GpuTerminationOrigin::kMax);
-        message += "was killded by you! Why?";
+        message += "was killed by you! Why?";
         break;
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
         message += "crashed!";
@@ -746,6 +750,11 @@ GpuProcessHost::~GpuProcessHost() {
       case base::TERMINATION_STATUS_OOM:
         message += "died due to out of memory.";
         break;
+#if defined(OS_WIN)
+      case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+        message += "failed integrity checks.";
+        break;
+#endif
       case base::TERMINATION_STATUS_MAX_ENUM:
         NOTREACHED();
         break;

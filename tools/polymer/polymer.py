@@ -387,12 +387,13 @@ def _process_style_module(js_file, html_file):
   # example cr_icons_css.html.
   js_template = \
 """%(js_imports)s
-const styleElement = document.createElement('dom-module');
-styleElement.setAttribute('assetpath', 'chrome://resources/');
-styleElement.innerHTML = `%(html_template)s`;
-styleElement.register('%(style_id)s');""" % {
-  'js_imports': '\n'.join(js_imports),
+const template = document.createElement('template');
+template.innerHTML = `
+<dom-module id="%(style_id)s" assetpath="chrome://resources/">%(html_template)s</dom-module>
+`;
+document.body.appendChild(template.content.cloneNode(true));""" % {
   'html_template': html_template,
+  'js_imports': '\n'.join(js_imports),
   'style_id': style_id,
 }
 

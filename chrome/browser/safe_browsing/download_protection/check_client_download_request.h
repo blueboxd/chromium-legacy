@@ -67,8 +67,7 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
   // Uploads the binary for deep scanning if the reason and policies indicate
   // it should be.
   bool ShouldUploadBinary(DownloadCheckResultReason reason) override;
-  void UploadBinary(DownloadCheckResult result,
-                    DownloadCheckResultReason reason) override;
+  void UploadBinary(DownloadCheckResultReason reason) override;
 
   // Called when this request is completed.
   void NotifyRequestFinished(DownloadCheckResult result,
@@ -91,11 +90,6 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
   // canceled. Must be accessed only on UI thread.
   download::DownloadItem* item_;
   CheckDownloadRepeatingCallback callback_;
-
-  // When uploading files for deep scanning, we need to preserve the original
-  // result and reason from the server, just in case deep scanning fails.
-  DownloadCheckResult saved_result_;
-  DownloadCheckResultReason saved_reason_;
 
   base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_{this};
 

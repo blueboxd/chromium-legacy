@@ -51,6 +51,7 @@ const char ProfileAttributesEntry::kAvatarIconKey[] = "avatar_icon";
 const char ProfileAttributesEntry::kBackgroundAppsKey[] = "background_apps";
 const char ProfileAttributesEntry::kProfileIsEphemeral[] = "is_ephemeral";
 const char ProfileAttributesEntry::kUserNameKey[] = "user_name";
+const char ProfileAttributesEntry::kGAIAIdKey[] = "gaia_id";
 const char ProfileAttributesEntry::kIsConsentedPrimaryAccountKey[] =
     "is_consented_primary_account";
 
@@ -490,8 +491,23 @@ void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {
 void ProfileAttributesEntry::SetAuthInfo(const std::string& gaia_id,
                                          const base::string16& user_name,
                                          bool is_consented_primary_account) {
-  profile_info_cache_->SetAuthInfoOfProfileAtIndex(
-      profile_index(), gaia_id, user_name, is_consented_primary_account);
+  // If gaia_id, username and consent state are unchanged, abort early.
+  if (GetBool(kIsConsentedPrimaryAccountKey) == is_consented_primary_account &&
+      gaia_id == GetGAIAId() && user_name == GetUserName()) {
+    return;
+  }
+
+  const base::Value* old_data = GetEntryData();
+  base::Value new_data = old_data ? GetEntryData()->Clone()
+                                  : base::Value(base::Value::Type::DICTIONARY);
+  new_data.SetStringKey(kGAIAIdKey, gaia_id);
+  new_data.SetStringKey(kUserNameKey, user_name);
+  DCHECK(!is_consented_primary_account || !gaia_id.empty() ||
+         !user_name.empty());
+  new_data.SetBoolKey(kIsConsentedPrimaryAccountKey,
+                      is_consented_primary_account);
+  SetEntryData(std::move(new_data));
+  profile_info_cache_->NotifyProfileAuthInfoChanged(profile_path_);
 }
 
 size_t ProfileAttributesEntry::profile_index() const {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/accelerometer/accelerometer_reader.h"
+#include "ash/accelerometer/accelerometer_constants.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -90,9 +91,6 @@ const size_t kMaxAsciiUintLength = 21;
 
 // The size of individual values.
 const size_t kDataSize = 2;
-
-// The mean acceleration due to gravity on Earth in m/s^2.
-const float kMeanGravity = 9.80665f;
 
 // The number of axes for which there are acceleration readings.
 const int kNumberOfAxes = 3;

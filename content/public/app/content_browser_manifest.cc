@@ -206,7 +206,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.PrefetchURLLoaderService",
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.SharedWorkerConnector",
-                  "blink.mojom.TextSuggestionHost",
                   "blink.mojom.UnhandledTapNotifier",
                   "content.mojom.BrowserTarget",
                   "content.mojom.InputInjector",

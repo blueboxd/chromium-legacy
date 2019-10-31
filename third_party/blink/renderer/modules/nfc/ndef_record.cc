@@ -163,13 +163,15 @@ static NDEFRecord* CreateTextRecord(const ExecutionContext* execution_context,
                                           language, std::move(bytes));
 }
 
-static NDEFRecord* CreateUrlRecord(const String& media_type,
+// Create a 'url' record or an 'absolute-url' record.
+static NDEFRecord* CreateUrlRecord(const String& record_type,
+                                   const String& media_type,
                                    const ScriptValue& data,
                                    ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-url-to-ndef
   if (data.IsEmpty() || !data.V8Value()->IsString()) {
     exception_state.ThrowTypeError(
-        "The data for 'url' NDEFRecord must be a String.");
+        "The data for url NDEFRecord must be a String.");
     return nullptr;
   }
 
@@ -177,10 +179,10 @@ static NDEFRecord* CreateUrlRecord(const String& media_type,
   String url = ToCoreString(data.V8Value().As<v8::String>());
   if (!KURL(NullURL(), url).IsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
-                                      "Cannot parse data for 'url' record.");
+                                      "Cannot parse data for url record.");
     return nullptr;
   }
-  return MakeGarbageCollected<NDEFRecord>("url", media_type,
+  return MakeGarbageCollected<NDEFRecord>(record_type, media_type,
                                           GetUTF8DataFromString(url));
 }
 
@@ -301,8 +303,9 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
     return CreateTextRecord(execution_context, init->mediaType(),
                             init->encoding(), init->lang(), init->data(),
                             exception_state);
-  } else if (record_type == "url") {
-    return CreateUrlRecord(init->mediaType(), init->data(), exception_state);
+  } else if (record_type == "url" || record_type == "absolute-url") {
+    return CreateUrlRecord(record_type, init->mediaType(), init->data(),
+                           exception_state);
   } else if (record_type == "json") {
     return CreateJsonRecord(init->mediaType(), init->data(), exception_state);
   } else if (record_type == "opaque") {
@@ -400,7 +403,7 @@ String NDEFRecord::text() const {
 
 DOMArrayBuffer* NDEFRecord::arrayBuffer() const {
   if (record_type_ == "empty" || record_type_ == "text" ||
-      record_type_ == "url") {
+      record_type_ == "url" || record_type_ == "absolute-url") {
     return nullptr;
   }
   DCHECK(record_type_ == "json" || record_type_ == "opaque" ||
@@ -412,7 +415,7 @@ DOMArrayBuffer* NDEFRecord::arrayBuffer() const {
 ScriptValue NDEFRecord::json(ScriptState* script_state,
                              ExceptionState& exception_state) const {
   if (record_type_ == "empty" || record_type_ == "text" ||
-      record_type_ == "url") {
+      record_type_ == "url" || record_type_ == "absolute-url") {
     return ScriptValue::CreateNull(script_state->GetIsolate());
   }
   DCHECK(record_type_ == "json" || record_type_ == "opaque" ||

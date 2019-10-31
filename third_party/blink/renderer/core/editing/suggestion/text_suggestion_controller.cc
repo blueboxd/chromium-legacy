@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -234,7 +234,7 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
     return;
 
   if (!text_suggestion_host_) {
-    GetFrame().GetInterfaceProvider().GetInterface(
+    GetFrame().GetBrowserInterfaceBroker().GetInterface(
         text_suggestion_host_.BindNewPipeAndPassReceiver());
   }
 

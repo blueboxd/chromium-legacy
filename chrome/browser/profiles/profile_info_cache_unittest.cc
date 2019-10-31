@@ -433,12 +433,19 @@ TEST_F(ProfileInfoCacheTest, DeleteProfile) {
 }
 
 TEST_F(ProfileInfoCacheTest, MutateProfile) {
-  GetCache()->AddProfileToCache(
-      GetProfilePath("path_1"), ASCIIToUTF16("name_1"), std::string(),
-      base::string16(), false, 0, std::string(), EmptyAccountId());
-  GetCache()->AddProfileToCache(
-      GetProfilePath("path_2"), ASCIIToUTF16("name_2"), std::string(),
-      base::string16(), false, 0, std::string(), EmptyAccountId());
+  base::FilePath profile_path_1 = GetProfilePath("path_1");
+  GetCache()->AddProfileToCache(profile_path_1, ASCIIToUTF16("name_1"),
+                                std::string(), base::string16(), false, 0,
+                                std::string(), EmptyAccountId());
+
+  base::FilePath profile_path_2 = GetProfilePath("path_2");
+  GetCache()->AddProfileToCache(profile_path_2, ASCIIToUTF16("name_2"),
+                                std::string(), base::string16(), false, 0,
+                                std::string(), EmptyAccountId());
+  ProfileAttributesEntry* entry1;
+  GetCache()->GetProfileAttributesWithPath(profile_path_1, &entry1);
+  ProfileAttributesEntry* entry2;
+  GetCache()->GetProfileAttributesWithPath(profile_path_2, &entry2);
 
   base::string16 new_name = ASCIIToUTF16("new_name");
   GetCache()->SetLocalProfileNameOfProfileAtIndex(1, new_name);
@@ -447,10 +454,10 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
 
   base::string16 new_user_name = ASCIIToUTF16("user_name");
   std::string new_gaia_id = "12345";
-  GetCache()->SetAuthInfoOfProfileAtIndex(1, new_gaia_id, new_user_name, true);
-  EXPECT_EQ(new_user_name, GetCache()->GetUserNameOfProfileAtIndex(1));
+  entry2->SetAuthInfo(new_gaia_id, new_user_name, true);
+  EXPECT_EQ(new_user_name, entry2->GetUserName());
   EXPECT_EQ(new_gaia_id, GetCache()->GetGAIAIdOfProfileAtIndex(1));
-  EXPECT_NE(new_user_name, GetCache()->GetUserNameOfProfileAtIndex(0));
+  EXPECT_NE(new_user_name, entry1->GetUserName());
 
   // Avatar icons not used on Android.
 #if !defined(OS_ANDROID)

@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/protected_memory_cfi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
@@ -981,13 +980,9 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueChangedSignal) {
   // There's a chance we may be compiled with a newer version of ATK and then
   // run with an older one, so we need to do a runtime check for this method
   // that is available in ATK 2.12 instead of linking directly.
-  static PROTECTED_MEMORY_SECTION base::ProtectedMemory<SetValueFunction>
-      g_atk_value_set_value;
-  static base::ProtectedMemory<SetValueFunction>::Initializer
-      init_atk_value_set_value(&g_atk_value_set_value,
-                               reinterpret_cast<SetValueFunction>(
-                                   dlsym(RTLD_DEFAULT, "atk_value_set_value")));
-  if (!*g_atk_value_set_value) {
+  SetValueFunction atk_value_set_value = reinterpret_cast<SetValueFunction>(
+      dlsym(RTLD_DEFAULT, "atk_value_set_value"));
+  if (!atk_value_set_value) {
     LOG(WARNING) << "Skipping TestAtkValueChangedSignal"
                     " because ATK version < 2.12 detected.";
     return;
@@ -1012,7 +1007,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueChangedSignal) {
       }),
       &saw_value_change);
 
-  base::UnsanitizedCfiCall(g_atk_value_set_value)(ATK_VALUE(root_object), 24.0);
+  atk_value_set_value(ATK_VALUE(root_object), 24.0);
   GetRootPlatformNode()->NotifyAccessibilityEvent(
       ax::mojom::Event::kValueChanged);
 
@@ -1023,8 +1018,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueChangedSignal) {
   EXPECT_TRUE(saw_value_change);
 
   saw_value_change = false;
-  base::UnsanitizedCfiCall(g_atk_value_set_value)(ATK_VALUE(root_object),
-                                                  100.0);
+  atk_value_set_value(ATK_VALUE(root_object), 100.0);
   GetRootPlatformNode()->NotifyAccessibilityEvent(
       ax::mojom::Event::kValueChanged);
 

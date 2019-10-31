@@ -199,7 +199,7 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
 TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
   KURL base;
 
-  // source scheme is "http"
+  // source scheme is "http", source port is 80
   {
     CSPSource source(csp.Get(), "http", "example.com", 80, "/",
                      CSPSource::kNoWildcard, CSPSource::kNoWildcard);
@@ -222,6 +222,13 @@ TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
     EXPECT_FALSE(source.Matches(KURL(base, "https://not-example.com/")));
     EXPECT_FALSE(source.Matches(KURL(base, "https://not-example.com:80/")));
     EXPECT_FALSE(source.Matches(KURL(base, "https://not-example.com:443/")));
+  }
+
+  // source scheme is "http", source port is 443
+  {
+    CSPSource source(csp.Get(), "http", "example.com", 443, "/",
+                     CSPSource::kNoWildcard, CSPSource::kNoWildcard);
+    EXPECT_TRUE(source.Matches(KURL(base, "https://example.com/")));
   }
 
   // source scheme is empty

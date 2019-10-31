@@ -101,6 +101,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   void SetOffset(const PhysicalOffset& offset) { rect_.offset = offset; }
 
   PhysicalRect LocalRect() const { return {PhysicalOffset(), Size()}; }
+  PhysicalRect InkOverflow() const;
   PhysicalRect SelfInkOverflow() const;
 
   // Count of following items that are descendants of this item in the box tree,

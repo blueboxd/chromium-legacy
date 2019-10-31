@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/peerconnection/transceiver_state_surfacer.h"
+#include "third_party/blink/renderer/modules/peerconnection/transceiver_state_surfacer.h"
 
 #include <memory>
 #include <tuple>
@@ -19,9 +19,9 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
-#include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
 
 using testing::AnyNumber;
 using testing::Return;
@@ -45,8 +45,9 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
   void SetUp() override {
     dependency_factory_.reset(new blink::MockPeerConnectionDependencyFactory());
     main_task_runner_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
-    track_adapter_map_ = new blink::WebRtcMediaStreamTrackAdapterMap(
-        dependency_factory_.get(), main_task_runner_);
+    track_adapter_map_ =
+        base::MakeRefCounted<blink::WebRtcMediaStreamTrackAdapterMap>(
+            dependency_factory_.get(), main_task_runner_);
     surfacer_.reset(new TransceiverStateSurfacer(main_task_runner_,
                                                  signaling_task_runner()));
     peer_connection_ = dependency_factory_->CreatePeerConnection(

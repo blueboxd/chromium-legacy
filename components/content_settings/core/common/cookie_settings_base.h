@@ -29,14 +29,19 @@ namespace content_settings {
 // Example:
 // https://a.com/index.html
 // <html>
-// <body>
-//   <iframe href="https://b.com/frame.html">
-//     <img href="https://a.com/img.jpg>
-//     <img href="https://b.com/img.jpg>
-//     <img href="https://c.com/img.jpg>
-//   </iframe>
-// </body>
-// </html>
+//  <body>
+//    <iframe href="https://b.com/frame.html">
+//      #document
+//      <html>
+//        <body>
+//          <img href="https://a.com/img.jpg>
+//          <img href="https://b.com/img.jpg>
+//          <img href="https://c.com/img.jpg>
+//        </body>
+//      </html>
+//    </iframe>
+//  </body>
+//</html>
 //
 // When each of these resources get fetched, |top_frame_origin| will always be
 // "https://a.com" and |site_for_cookies| is set the following:

@@ -295,7 +295,7 @@ class GetUnmaskDetailsRequest : public PaymentsRequest {
       unmask_details_.fido_request_options = dictionary_value->Clone();
 
     const auto* fido_eligible_card_ids = response.FindKeyOfType(
-        "fido_eligible_credit_card_id", base::Value::Type::LIST);
+        "fido_eligible_card_id", base::Value::Type::LIST);
     if (fido_eligible_card_ids) {
       for (const base::Value& result : fido_eligible_card_ids->GetList()) {
         unmask_details_.fido_eligible_card_ids.insert(result.GetString());

@@ -155,6 +155,7 @@ class ProfileAttributesEntry {
   static const char kBackgroundAppsKey[];
   static const char kProfileIsEphemeral[];
   static const char kUserNameKey[];
+  static const char kGAIAIdKey[];
   static const char kIsConsentedPrimaryAccountKey[];
 
  private:

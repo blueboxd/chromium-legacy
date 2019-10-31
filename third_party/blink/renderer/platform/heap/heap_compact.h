@@ -37,7 +37,7 @@ class PLATFORM_EXPORT HeapCompact final {
  public:
   // Returns |true| if the ongoing GC may compact the given arena/sub-heap.
   static bool IsCompactableArena(int arena_index) {
-    return arena_index >= BlinkGC::kVector1ArenaIndex &&
+    return arena_index >= BlinkGC::kVectorArenaIndex &&
            arena_index <= BlinkGC::kHashTableArenaIndex;
   }
 
@@ -103,12 +103,7 @@ class PLATFORM_EXPORT HeapCompact final {
 
   // Returns true if one or more vector arenas are being compacted.
   bool IsCompactingVectorArenasForTesting() const {
-    for (int i = BlinkGC::kVector1ArenaIndex; i <= BlinkGC::kVector4ArenaIndex;
-         ++i) {
-      if (IsCompactingArena(i))
-        return true;
-    }
-    return false;
+    return IsCompactingArena(BlinkGC::kVectorArenaIndex);
   }
 
   size_t LastFixupCountForTesting() const {

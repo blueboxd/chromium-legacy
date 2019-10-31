@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../testing/chromevox_unittest_base.js',
-            '../testing/assert_additions.js']);
+GEN_INCLUDE(['//chrome/browser/resources/chromeos/chromevox/testing/chromevox_unittest_base.js',
+            '//chrome/browser/resources/chromeos/chromevox/testing/assert_additions.js']);
 
 /**
  * Test fixture.

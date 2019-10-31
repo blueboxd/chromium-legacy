@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
@@ -84,7 +85,10 @@ class ActivityLoggerTest : public testing::Test {
         web_view_helper_.GetWebView()->MainFrameImpl(), "about:blank");
   }
 
-  ~ActivityLoggerTest() override { WebCache::Clear(); }
+  ~ActivityLoggerTest() override {
+    WebCache::Clear();
+    V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  }
 
   void ExecuteScriptInMainWorld(const String& script) const {
     v8::HandleScope scope(v8::Isolate::GetCurrent());

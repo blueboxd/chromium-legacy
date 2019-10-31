@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -571,6 +572,12 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_FALSE(IsUIShowing());
 }
 
+// Disabled due to consistent failure: http://crbug.com/1020109
+#if defined(OS_LINUX)
+#define MAYBE_TriggersOnEditDistance DISABLED_TriggersOnEditDistance
+#else
+#define MAYBE_TriggersOnEditDistance TriggersOnEditDistance
+#endif
 // Tests that Safety Tips trigger (or not) on lookalike domains with edit
 // distance when enabled, and not otherwise.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
@@ -625,9 +632,15 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                                1);
 }
 
+// Disabled due to consistent failure: http://crbug.com/1020109
+#if defined(OS_LINUX)
+#define MAYBE_InteractionsHistogram DISABLED_InteractionsHistogram
+#else
+#define MAYBE_InteractionsHistogram InteractionsHistogram
+#endif
 // Tests that Safety Tip interactions are recorded in a histogram.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
-                       InteractionsHistogram) {
+                       MAYBE_InteractionsHistogram) {
   const std::string kHistogramPrefix = "Security.SafetyTips.Interaction.";
 
   // These histograms are only recorded when the UI feature is enabled, so bail

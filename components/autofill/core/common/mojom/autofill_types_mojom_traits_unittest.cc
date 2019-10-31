@@ -51,16 +51,19 @@ void CreateTestPasswordFormFillData(PasswordFormFillData* fill_data) {
                               "TestPasswordFieldValue", kOptions, kOptions, 4,
                               &fill_data->password_field);
   fill_data->preferred_realm = "https://foo.com/";
+  fill_data->uses_account_store = true;
 
   base::string16 name;
-  PasswordAndRealm pr;
+  PasswordAndMetadata pr;
   name = base::ASCIIToUTF16("Tom");
   pr.password = base::ASCIIToUTF16("Tom_Password");
   pr.realm = "https://foo.com/";
+  pr.uses_account_store = false;
   fill_data->additional_logins[name] = pr;
   name = base::ASCIIToUTF16("Jerry");
   pr.password = base::ASCIIToUTF16("Jerry_Password");
   pr.realm = "https://bar.com/";
+  pr.uses_account_store = true;
   fill_data->additional_logins[name] = pr;
 
   fill_data->wait_for_username = true;
@@ -129,6 +132,7 @@ void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
   EXPECT_EQ(expected.username_field, actual.username_field);
   EXPECT_EQ(expected.password_field, actual.password_field);
   EXPECT_EQ(expected.preferred_realm, actual.preferred_realm);
+  EXPECT_EQ(expected.uses_account_store, actual.uses_account_store);
 
   {
     EXPECT_EQ(expected.additional_logins.size(),
@@ -141,6 +145,8 @@ void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
       EXPECT_EQ(iter1->first, iter2->first);
       EXPECT_EQ(iter1->second.password, iter2->second.password);
       EXPECT_EQ(iter1->second.realm, iter2->second.realm);
+      EXPECT_EQ(iter1->second.uses_account_store,
+                iter2->second.uses_account_store);
     }
     ASSERT_EQ(iter1, end1);
     ASSERT_EQ(iter2, end2);

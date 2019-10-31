@@ -458,14 +458,16 @@ class FetchDataLoaderAsString final : public FetchDataLoader,
   USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsString);
 
  public:
+  explicit FetchDataLoaderAsString(const TextResourceDecoderOptions& options)
+      : decoder_options_(options) {}
+
   void Start(BytesConsumer* consumer,
              FetchDataLoader::Client* client) override {
     DCHECK(!client_);
     DCHECK(!decoder_);
     DCHECK(!consumer_);
     client_ = client;
-    decoder_ = std::make_unique<TextResourceDecoder>(
-        TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+    decoder_ = std::make_unique<TextResourceDecoder>(decoder_options_);
     consumer_ = consumer;
     consumer_->SetClient(this);
     OnStateChange();
@@ -516,6 +518,7 @@ class FetchDataLoaderAsString final : public FetchDataLoader,
   Member<FetchDataLoader::Client> client_;
 
   std::unique_ptr<TextResourceDecoder> decoder_;
+  TextResourceDecoderOptions decoder_options_;
   StringBuilder builder_;
 };
 
@@ -683,8 +686,9 @@ FetchDataLoader* FetchDataLoader::CreateLoaderAsFormData(
   return MakeGarbageCollected<FetchDataLoaderAsFormData>(multipartBoundary);
 }
 
-FetchDataLoader* FetchDataLoader::CreateLoaderAsString() {
-  return MakeGarbageCollected<FetchDataLoaderAsString>();
+FetchDataLoader* FetchDataLoader::CreateLoaderAsString(
+    const TextResourceDecoderOptions& options) {
+  return MakeGarbageCollected<FetchDataLoaderAsString>(options);
 }
 
 FetchDataLoader* FetchDataLoader::CreateLoaderAsDataPipe(

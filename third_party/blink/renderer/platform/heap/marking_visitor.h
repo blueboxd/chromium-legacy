@@ -33,12 +33,11 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
                                WeakCallback,
                                void*,
                                bool) final;
-  bool VisitEphemeronKeyValuePair(
-      void* key,
-      void* value,
-      bool strong_handling,
-      EphemeronTracingCallback key_trace_callback,
-      EphemeronTracingCallback value_trace_callback) final;
+  bool VisitEphemeronKeyValuePair(void*,
+                                  void*,
+                                  bool,
+                                  EphemeronTracingCallback,
+                                  EphemeronTracingCallback) final;
 
   // Used to only mark the backing store when it has been registered for weak
   // processing. In this case, the contents are processed separately using
@@ -124,7 +123,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public MarkingVisitorCommon {
   ~MarkingVisitorBase() override = default;
 
   // Marks an object and adds a tracing callback for processing of the object.
-  void MarkHeader(HeapObjectHeader*, TraceCallback);
+  void MarkHeader(HeapObjectHeader*, const TraceDescriptor&);
 };
 
 template <class Specialized>
@@ -137,23 +136,21 @@ inline void MarkingVisitorBase<Specialized>::Visit(void* object,
     not_fully_constructed_worklist_.Push(object);
     return;
   }
-  MarkHeader(HeapObjectHeader::FromPayload(desc.base_object_payload),
-             desc.callback);
+  MarkHeader(HeapObjectHeader::FromPayload(desc.base_object_payload), desc);
 }
 
 // Marks an object and adds a tracing callback for processing of the object.
 template <class Specialized>
 ALWAYS_INLINE void MarkingVisitorBase<Specialized>::MarkHeader(
     HeapObjectHeader* header,
-    TraceCallback callback) {
+    const TraceDescriptor& desc) {
   DCHECK(header);
-  DCHECK(callback);
+  DCHECK(desc.callback);
 
   if (Specialized::IsInConstruction(header)) {
     not_fully_constructed_worklist_.Push(header->Payload());
   } else if (MarkHeaderNoTracing(header)) {
-    marking_worklist_.Push(
-        {reinterpret_cast<void*>(header->Payload()), callback});
+    marking_worklist_.Push(desc);
   }
 }
 

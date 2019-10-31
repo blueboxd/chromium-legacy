@@ -193,6 +193,10 @@ class ArcAuthService : public KeyedService,
   // Response for |mojom::GetMainAccountResolutionStatus|.
   void OnMainAccountResolutionStatus(mojom::MainAccountResolutionStatus status);
 
+  // Removes secondary accounts from ARC. For child device accounts propagation
+  // of secondary accounts from Chrome OS Account Manager to ARC is not allowed.
+  void RemoveSecondaryAccountsFromArc();
+
   // Non-owning pointers.
   Profile* const profile_;
   signin::IdentityManager* const identity_manager_;

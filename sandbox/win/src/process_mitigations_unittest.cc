@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
+#include "base/process/kill.h"
 #include "base/scoped_native_library.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/windows_version.h"
@@ -877,6 +878,11 @@ TEST(ProcessMitigationsTest, MAYBE_CheckWin10MsSigned_FailurePreSpawn) {
     return;
 
   ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
+
+  // Other code in base/process relies on this invariant.
+  static_assert(
+      base::win::kStatusInvalidImageHashExitCode == STATUS_INVALID_IMAGE_HASH,
+      "Invalid hash exit code does not match between base and sandbox.");
 
 #if defined(COMPONENT_BUILD)
   // In a component build, the executable will fail to start-up because

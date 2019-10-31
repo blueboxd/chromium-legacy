@@ -22,6 +22,13 @@ TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText() {
                                     UTF8Encoding(), nullptr, NullURL());
 }
 
+TextResourceDecoderOptions
+TextResourceDecoderOptions::CreateAlwaysUseUTF8WithoutBOMForText() {
+  TextResourceDecoderOptions options = CreateAlwaysUseUTF8ForText();
+  options.no_bom_decoding_ = true;
+  return options;
+}
+
 TextResourceDecoderOptions TextResourceDecoderOptions::CreateWithAutoDetection(
     ContentType content_type,
     const WTF::TextEncoding& default_encoding,
@@ -41,6 +48,7 @@ TextResourceDecoderOptions::TextResourceDecoderOptions(
     : encoding_detection_option_(encoding_detection_option),
       content_type_(content_type),
       default_encoding_(default_encoding),
+      no_bom_decoding_(false),
       use_lenient_xml_decoding_(false),
       hint_encoding_(hint_encoding),
       hint_url_(hint_url) {

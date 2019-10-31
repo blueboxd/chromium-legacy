@@ -220,4 +220,30 @@ TEST_F(HttpAuthManagerTest, NavigationWithoutSubmission) {
   httpauth_manager()->DetachObserver(&observer);
 }
 
+TEST_F(HttpAuthManagerTest, NavigationWhenMatchingNotReady) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  PasswordForm observed_form;
+  observed_form.scheme = PasswordForm::Scheme::kBasic;
+  observed_form.origin = GURL("http://proxy.com/");
+  observed_form.signon_realm = "proxy.com/realm";
+
+  MockHttpAuthObserver observer;
+  // The password store is queried but it's slow and won't respond.
+  EXPECT_CALL(*store_, GetLogins);
+  // Initiate creating a form manager.
+  httpauth_manager()->SetObserverAndDeliverCredentials(&observer,
+                                                       observed_form);
+
+  PasswordForm submitted_form = observed_form;
+  submitted_form.username_value = ASCIIToUTF16("user");
+  submitted_form.password_value = ASCIIToUTF16("1234");
+  httpauth_manager()->OnPasswordFormSubmitted(submitted_form);
+  httpauth_manager()->OnPasswordFormDismissed();
+
+  // Expect no prompt as the password store didn't reply.
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr()).Times(0);
+  httpauth_manager()->OnDidFinishMainFrameNavigation();
+  httpauth_manager()->DetachObserver(&observer);
+}
+
 }  // namespace password_manager

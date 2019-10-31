@@ -2,6 +2,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("compression") {
   sources = [
+    "compression_format.cc",
+    "compression_format.h",
     "compression_stream.cc",
     "compression_stream.h",
     "decompression_stream.cc",

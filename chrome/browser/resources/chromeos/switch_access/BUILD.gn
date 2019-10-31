@@ -28,8 +28,8 @@ run_jsbundler("switch_access_copied_files") {
   mode = "copy"
   dest_dir = switch_access_dir
   sources = [
-    "../chromevox/cvox2/background/constants.js",
-    "../chromevox/cvox2/background/tree_walker.js",
+    "../chromevox/background/constants.js",
+    "../chromevox/background/tree_walker.js",
     "../select_to_speak/closure_shim.js",
     "//third_party/chromevox/third_party/closure-library/closure/goog/base.js",
     "auto_scan_manager.js",
@@ -85,7 +85,7 @@ run_jsbundler("switch_access_copied_files") {
   rewrite_rules = [
     rebase_path(".", root_build_dir) + ":",
     rebase_path(closure_library_dir, root_build_dir) + ":closure",
-    rebase_path("../chromevox/cvox2/background", root_build_dir) + ":",
+    rebase_path("../chromevox/background", root_build_dir) + ":",
     rebase_path("../select_to_speak", root_build_dir) + ":",
   ]
 }

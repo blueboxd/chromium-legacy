@@ -16,7 +16,7 @@ PASS Reject promise with exceptions thrown from serializing the 'json' record da
 PASS NDEFWriter.push should fail with TypeError when invalid target value is provided.
 PASS Test that WebNFC API is not accessible from iframe context.
 PASS NDEFWriter.push should succeed when NFC HW is enabled
-PASS NDEFWriter.push NDEFMessage containing text, json, opaque, url and external records with default NDEFPushOptions.
+PASS NDEFWriter.push NDEFMessage containing text, json, opaque, url, absolute-url and external records with default NDEFPushOptions.
 PASS Test that NDEFWriter.push succeeds when message is DOMString.
 PASS Test that NDEFWriter.push succeeds when message is ArrayBuffer.
 PASS NDEFWriter.push with 'empty' record should succeed.
@@ -31,7 +31,6 @@ PASS Test that recordType should be set to 'json' if NDEFRecordInit.record's rec
 PASS Test that mediaType should be set to 'text/plain' if NDEFRecordInit.record's recordType is 'text' and NDEFRecordInit.record's mediaType is undefined.
 PASS Test that mediaType should be set to 'application/octet-stream' if NDEFRecordInit.record's recordType is 'opaque' and NDEFRecordInit.record's mediaType is undefined.
 PASS Test that mediaType should be set to 'application/json' if NDEFRecordInit.record's recordType is 'json' and NDEFRecordInit.record's mediaType is undefined.
-FAIL Test that mediaType should be set to 'text/plain' if NDEFRecordInit.record's recordType is 'url' and NDEFRecordInit.record's mediaType is undefined. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'substring' of null"
 PASS Test that mediaType should be set to 'application/octet-stream' if NDEFRecordInit.record's recordType is external type and NDEFRecordInit.record's mediaType is undefined.
 PASS NDEFWriter.push should fail when the NFC device does not expose NDEF technology.
 PASS NDEFWriter.push should succeed to push data to an unformatted NFC device when the NDEFPushOptions.overwrite is false.

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -383,6 +384,25 @@ TEST_F(NodeTest, ContainsPseudo) {
   PseudoElement* pseudo = a->GetPseudoElement(kPseudoIdBefore);
   ASSERT_TRUE(pseudo);
   EXPECT_TRUE(a->contains(pseudo));
+}
+
+TEST_F(NodeTest, SkipForceReattachDisplayNone) {
+  SetBodyContent("<div id=host><span style='display:none'></span></div>");
+  Element* host = GetDocument().getElementById("host");
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString("<slot name='target'></slot>");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* span = To<Element>(host->firstChild());
+  span->setAttribute(html_names::kSlotAttr, "target");
+  GetDocument().GetSlotAssignmentEngine().RecalcSlotAssignments();
+
+  // Node::FlatTreeParentChanged for a display:none could trigger style recalc,
+  // but we should skip a forced re-attach for nodes with a null ComputedStyle.
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_TRUE(span->NeedsStyleRecalc());
+  EXPECT_FALSE(span->GetForceReattachLayoutTree());
 }
 
 }  // namespace blink

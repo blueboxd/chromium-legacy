@@ -13,6 +13,7 @@
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_app_interface.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -213,7 +214,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE)) performAction:grey_tap()];
 
   // Make sure to scroll to the bottom.
-  [CellWithMatcher(grey_accessibilityID(@"Learn more"))
+  [CellWithMatcher(grey_accessibilityID(kContentSuggestionsLearnMoreIdentifier))
       assertWithMatcher:grey_notNil()];
 
   // Open the last item. After the extra space of the last suggestion is
@@ -248,7 +249,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)testLearnMore {
   id<GREYAction> action =
       grey_scrollInDirectionWithStartPoint(kGREYDirectionDown, 200, 0.5, 0.5);
-  [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Learn more")]
+  [[[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kContentSuggestionsLearnMoreIdentifier)]
          usingSearchAction:action
       onElementWithMatcher:chrome_test_util::ContentSuggestionCollectionView()]
       assertWithMatcher:grey_nil()];
@@ -256,7 +259,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   [ContentSuggestionsAppInterface addNumberOfSuggestions:1
                                 additionalSuggestionsURL:nil];
 
-  [CellWithMatcher(grey_accessibilityID(@"Learn more"))
+  [CellWithMatcher(grey_accessibilityID(kContentSuggestionsLearnMoreIdentifier))
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

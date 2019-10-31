@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -125,14 +126,18 @@ TEST_F(BodyStreamBufferTest, Tee) {
   EXPECT_FALSE(buffer->HasPendingActivity());
 
   checkpoint.Call(0);
-  new1->StartLoading(FetchDataLoader::CreateLoaderAsString(), client1,
-                     exception_state);
+  new1->StartLoading(
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client1, exception_state);
   checkpoint.Call(1);
   test::RunPendingTasks();
   checkpoint.Call(2);
 
-  new2->StartLoading(FetchDataLoader::CreateLoaderAsString(), client2,
-                     exception_state);
+  new2->StartLoading(
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client2, exception_state);
   checkpoint.Call(3);
   test::RunPendingTasks();
   checkpoint.Call(4);
@@ -194,14 +199,18 @@ TEST_F(BodyStreamBufferTest, TeeFromHandleMadeFromStream) {
   EXPECT_TRUE(buffer->IsStreamDisturbed(exception_state).value_or(false));
   EXPECT_FALSE(buffer->HasPendingActivity());
 
-  new1->StartLoading(FetchDataLoader::CreateLoaderAsString(), client1,
-                     exception_state);
+  new1->StartLoading(
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client1, exception_state);
   checkpoint.Call(1);
   test::RunPendingTasks();
   checkpoint.Call(2);
 
-  new2->StartLoading(FetchDataLoader::CreateLoaderAsString(), client2,
-                     exception_state);
+  new2->StartLoading(
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client2, exception_state);
   checkpoint.Call(3);
   test::RunPendingTasks();
   checkpoint.Call(4);
@@ -439,8 +448,10 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsString) {
   src->Add(Command(Command::kDone));
   BodyStreamBuffer* buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
-  buffer->StartLoading(FetchDataLoader::CreateLoaderAsString(), client,
-                       ASSERT_NO_EXCEPTION);
+  buffer->StartLoading(
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client, ASSERT_NO_EXCEPTION);
 
   EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
   EXPECT_TRUE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(false));
@@ -475,8 +486,10 @@ TEST_F(BodyStreamBufferTest, LoadClosedHandle) {
   EXPECT_FALSE(buffer->HasPendingActivity());
 
   checkpoint.Call(1);
-  buffer->StartLoading(FetchDataLoader::CreateLoaderAsString(), client,
-                       ASSERT_NO_EXCEPTION);
+  buffer->StartLoading(
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client, ASSERT_NO_EXCEPTION);
   checkpoint.Call(2);
 
   EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
@@ -505,8 +518,10 @@ TEST_F(BodyStreamBufferTest, LoadErroredHandle) {
   EXPECT_FALSE(buffer->HasPendingActivity());
 
   checkpoint.Call(1);
-  buffer->StartLoading(FetchDataLoader::CreateLoaderAsString(), client,
-                       ASSERT_NO_EXCEPTION);
+  buffer->StartLoading(
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client, ASSERT_NO_EXCEPTION);
   checkpoint.Call(2);
 
   EXPECT_TRUE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(false));
@@ -531,8 +546,10 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer) {
   src->Add(Command(Command::kDone));
   Persistent<BodyStreamBuffer> buffer = MakeGarbageCollected<BodyStreamBuffer>(
       scope.GetScriptState(), src, nullptr);
-  buffer->StartLoading(FetchDataLoader::CreateLoaderAsString(), client,
-                       ASSERT_NO_EXCEPTION);
+  buffer->StartLoading(
+      FetchDataLoader::CreateLoaderAsString(
+          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+      client, ASSERT_NO_EXCEPTION);
 
   ThreadState::Current()->CollectAllGarbageForTesting();
   checkpoint.Call(1);

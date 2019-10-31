@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/disallow_new_wrapper.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -252,8 +253,14 @@ ScriptPromise Body::formData(ScriptState* script_state,
     }
   } else if (parsedType == "application/x-www-form-urlencoded") {
     if (BodyBuffer()) {
+      // According to https://fetch.spec.whatwg.org/#concept-body-package-data
+      // application/x-www-form-urlencoded FormData bytes are parsed using
+      // https://url.spec.whatwg.org/#concept-urlencoded-parser
+      // which does not decode BOM.
       BodyBuffer()->StartLoading(
-          FetchDataLoader::CreateLoaderAsString(),
+          FetchDataLoader::CreateLoaderAsString(
+              TextResourceDecoderOptions::
+                  CreateAlwaysUseUTF8WithoutBOMForText()),
           MakeGarbageCollected<BodyFormDataConsumer>(resolver),
           exception_state);
       if (exception_state.HadException()) {
@@ -298,9 +305,10 @@ ScriptPromise Body::json(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
-    BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
-                               MakeGarbageCollected<BodyJsonConsumer>(resolver),
-                               exception_state);
+    BodyBuffer()->StartLoading(
+        FetchDataLoader::CreateLoaderAsString(
+            TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+        MakeGarbageCollected<BodyJsonConsumer>(resolver), exception_state);
     if (exception_state.HadException()) {
       // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
       resolver->Resolve();
@@ -326,9 +334,10 @@ ScriptPromise Body::text(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
-    BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
-                               MakeGarbageCollected<BodyTextConsumer>(resolver),
-                               exception_state);
+    BodyBuffer()->StartLoading(
+        FetchDataLoader::CreateLoaderAsString(
+            TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+        MakeGarbageCollected<BodyTextConsumer>(resolver), exception_state);
     if (exception_state.HadException()) {
       // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
       resolver->Resolve();

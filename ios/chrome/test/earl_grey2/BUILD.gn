@@ -72,6 +72,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/download:eg2_tests",
     "//ios/chrome/browser/ui/fullscreen:eg2_tests",
     "//ios/chrome/browser/ui/integration_tests:eg2_tests",
+    "//ios/chrome/browser/ui/keyboard:eg2_tests",
     "//ios/chrome/browser/ui/ntp:eg2_tests",
     "//ios/chrome/browser/ui/omnibox/popup:eg2_tests",
     "//ios/chrome/browser/ui/omnibox/popup/shortcuts:eg2_tests",

@@ -87,13 +87,25 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
     // request is created, this stage is skipped.
     WAITING_FOR_RENDERER_RESPONSE,
 
-    // The request was sent to the IO thread and the NavigatorDelegate has been
-    // notified.
-    STARTED,
+    // TODO(zetamoo): Merge this state with WILL_START_REQUEST.
+    // Temporary state where:
+    //  - Before unload handlers have run and this navigation is allowed to
+    //    start.
+    //  - The navigation is still not visible to embedders (via
+    //    NavigationHandle).
+    WILL_START_NAVIGATION,
+
+    // The navigation is visible to embedders (via NavigationHandle). Wait for
+    // the NavigationThrottles to finish running the WillStartRequest event.
+    // This is potentially asynchronous.
+    WILL_START_REQUEST,
 
     // The response started on the IO thread and is ready to be committed. This
     // is one of the two final states for the request.
     RESPONSE_STARTED,
+
+    // The request is being canceled.
+    CANCELING,
 
     // The request failed on the IO thread and an error page should be
     // displayed. This is one of the two final states for the request.
@@ -108,11 +120,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   //                the duplicates.
   enum NavigationHandleState {
     NOT_CREATED = 0,
-    INITIAL,
-    WILL_START_REQUEST,
     WILL_REDIRECT_REQUEST,
     WILL_FAIL_REQUEST,
-    CANCELING,
     WILL_PROCESS_RESPONSE,
     READY_TO_COMMIT,
     DID_COMMIT,
@@ -484,12 +493,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   NavigatorDelegate* GetDelegate() const;
 
   blink::mojom::RequestContextType request_context_type() const {
-    DCHECK_GE(handle_state_, WILL_START_REQUEST);
     return begin_params_->request_context_type;
   }
 
   blink::WebMixedContentContextType mixed_content_context_type() const {
-    DCHECK_GE(handle_state_, WILL_START_REQUEST);
     return begin_params_->mixed_content_context_type;
   }
 

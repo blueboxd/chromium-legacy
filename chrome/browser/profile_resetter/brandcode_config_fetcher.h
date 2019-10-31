@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 class BrandcodedDefaultSettings;
 class GURL;
@@ -46,6 +47,8 @@ class BrandcodeConfigFetcher {
 
  private:
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+  void OnXmlConfigParsed(
+      data_decoder::DataDecoder::ValueOrError value_or_error);
 
   void OnDownloadTimeout();
 

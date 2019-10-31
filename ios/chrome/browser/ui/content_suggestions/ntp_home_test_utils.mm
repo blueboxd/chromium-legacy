@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/status.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
@@ -89,7 +90,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 UICollectionView* CollectionView() {
   return base::mac::ObjCCast<UICollectionView>(
       SubviewWithAccessibilityIdentifier(
-          [ContentSuggestionsViewController collectionAccessibilityIdentifier],
+          kContentSuggestionsCollectionIdentifier,
           [[UIApplication sharedApplication] keyWindow]));
 }
 

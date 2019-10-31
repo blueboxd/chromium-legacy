@@ -38,7 +38,6 @@
 #include "services/preferences/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
-#include "third_party/blink/public/mojom/input/input_host.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 
@@ -150,7 +149,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             service_manager::Manifest::InterfaceList<
                 autofill::mojom::AutofillDriver,
                 autofill::mojom::PasswordManagerDriver,
-                blink::mojom::TextSuggestionHost,
                 chrome::mojom::OfflinePageAutoFetcher,
                 chrome::mojom::PrerenderCanceler,
 #if defined(OS_CHROMEOS)

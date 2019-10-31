@@ -303,8 +303,9 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
 void UnpackedInstaller::GetAbsolutePath() {
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
+  // Set priority explicitly to avoid unwanted task priority inheritance.
   base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&UnpackedInstaller::CheckExtensionFileAccess, this));
 }
 
@@ -326,13 +327,17 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
 void UnpackedInstaller::LoadWithFileAccess(int flags) {
   std::string error;
   if (!LoadExtension(Manifest::UNPACKED, flags, &error)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
+    // Set priority explicitly to avoid unwanted task priority inheritance.
+    base::PostTask(FROM_HERE,
+                   {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
                    base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError,
                                   this, error));
     return;
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
+  // Set priority explicitly to avoid unwanted task priority inheritance.
+  base::PostTask(FROM_HERE,
+                 {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
                  base::BindOnce(&UnpackedInstaller::StartInstallChecks, this));
 }
 

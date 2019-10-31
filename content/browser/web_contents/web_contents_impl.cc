@@ -1601,6 +1601,9 @@ bool WebContentsImpl::IsCrashed() {
 #if defined(OS_ANDROID)
     case base::TERMINATION_STATUS_OOM_PROTECTED:
 #endif
+#if defined(OS_WIN)
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+#endif
       return true;
     case base::TERMINATION_STATUS_NORMAL_TERMINATION:
     case base::TERMINATION_STATUS_STILL_RUNNING:

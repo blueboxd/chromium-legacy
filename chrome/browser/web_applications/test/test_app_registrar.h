@@ -58,7 +58,9 @@ class TestAppRegistrar : public AppRegistrar {
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
   blink::mojom::DisplayMode GetAppUserDisplayMode(
-      const web_app::AppId& app_id) const override;
+      const AppId& app_id) const override;
+  blink::mojom::DisplayMode GetAppEffectiveDisplayMode(
+      const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
 
  private:

@@ -97,6 +97,8 @@ jumbo_static_library("weblayer_lib") {
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
     "//cc",
+    "//components/crash/content/app",
+    "//components/crash/content/browser",
     "//components/safe_browsing",
     "//components/safe_browsing/browser",
     "//components/safe_browsing/db:database_manager",
@@ -137,7 +139,15 @@ jumbo_static_library("weblayer_lib") {
   ]
 
   if (is_android) {
-    deps += [ "//components/safe_browsing/android:remote_database_manager" ]
+    sources += [
+      "common/crash_reporter_client.cc",
+      "common/crash_reporter_client.h",
+    ]
+    deps += [
+      "//components/crash/android:crashpad_main",
+      "//components/safe_browsing/android:remote_database_manager",
+      "//components/version_info/android:channel_getter",
+    ]
   }
 
   if (enable_vulkan) {
@@ -174,8 +184,8 @@ jumbo_static_library("weblayer_lib") {
     sources += [
       "app/jni_onload.cc",
       "app/jni_onload.h",
-      "browser/browser_observer_proxy.cc",
-      "browser/browser_observer_proxy.h",
+      "browser/browser_callback_proxy.cc",
+      "browser/browser_callback_proxy.h",
       "browser/content_view_render_view.cc",
       "browser/content_view_render_view.h",
       "browser/download_delegate_proxy.cc",

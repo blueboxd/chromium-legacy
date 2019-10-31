@@ -85,6 +85,8 @@ class SubresourceFilterRulesetPublisherImplTest : public ::testing::Test {
 
   content::TestBrowserContext* browser_context() { return &browser_context_; }
 
+  base::FilePath temp_dir() const { return scoped_temp_dir_.GetPath(); }
+
   base::FilePath scoped_temp_file() const {
     return scoped_temp_dir_.GetPath().AppendASCII("data");
   }
@@ -155,11 +157,8 @@ TEST_F(SubresourceFilterRulesetPublisherImplTest,
   // Regression test for crbug.com/817308. Test verifies that ruleset is
   // published on browser startup via exactly one PostTask.
 
-  // Create a temporary directory for the indexed ruleset data.
-  base::ScopedTempDir scoped_temp_dir;
-  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   const base::FilePath base_dir =
-      scoped_temp_dir.GetPath().AppendASCII("Rules").AppendASCII("Indexed");
+      temp_dir().AppendASCII("Rules").AppendASCII("Indexed");
 
   // Create a testing ruleset.
   testing::TestRulesetPair ruleset;

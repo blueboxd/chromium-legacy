@@ -1001,8 +1001,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
 }
 
-// This test is flaky. See https://crbug.com/1013824
-IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DISABLED_WAADisabledByPolicy) {
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByPolicy) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_WAA_DISABLED_BY_POLICY);
 

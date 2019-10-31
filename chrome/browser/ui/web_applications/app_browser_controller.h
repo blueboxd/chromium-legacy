@@ -74,6 +74,9 @@ class AppBrowserController : public TabStripModelObserver,
   virtual bool UseTitlebarTerminalSystemAppMenu() const;
 #endif
 
+  // Whether to show the Back and Refresh buttons in the web app toolbar.
+  virtual bool HasMinimalUiButtons() const;
+
   // Returns the app icon for the window to use in the task list.
   virtual gfx::ImageSkia GetWindowAppIcon() const = 0;
 

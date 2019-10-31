@@ -8,7 +8,6 @@
 #include "content/browser/android/render_widget_host_connector.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/mojom/input/input_host.mojom.h"
 #include "third_party/blink/public/mojom/input/input_messages.mojom.h"
 
@@ -88,12 +87,6 @@ class TextSuggestionHostAndroid : public RenderWidgetHostConnector,
   // suggestion menu timer.
   void StopSuggestionMenuTimer();
 
-  // WebContentsObserver overrides
-  void OnInterfaceRequestFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
-
  private:
   RenderFrameHost* GetFocusedFrame();
   base::android::ScopedJavaLocalRef<jobject> GetJavaTextSuggestionHost();
@@ -104,7 +97,6 @@ class TextSuggestionHostAndroid : public RenderWidgetHostConnector,
   void OnSuggestionMenuTimeout();
   double DpToPxIfNeeded(double value);
 
-  service_manager::BinderRegistry registry_;
   // Current RenderWidgetHostView connected to this instance. Can be null.
   RenderWidgetHostViewAndroid* rwhva_;
   JavaObjectWeakGlobalRef java_text_suggestion_host_;

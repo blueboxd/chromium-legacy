@@ -10,17 +10,6 @@ chromevox_out_dir = "$root_out_dir/resources/chromeos/chromevox"
 group("chromevox_third_party_resources") {
   deps = [
     ":chromevox_third_party_background_resources",
-    ":chromevox_third_party_injected_resources",
-  ]
-}
-
-copy("chromevox_third_party_injected_resources") {
-  sources = [
-    "chromevox/injected/mathjax.js",
-    "chromevox/injected/mathjax_external_util.js",
-  ]
-  outputs = [
-    "$chromevox_out_dir/chromevox/injected/{{source_file_part}}",
   ]
 }
 
@@ -29,6 +18,6 @@ copy("chromevox_third_party_background_resources") {
     "third_party/sre/sre_browser.js",
   ]
   outputs = [
-    "$chromevox_out_dir/cvox2/background/{{source_file_part}}",
+    "$chromevox_out_dir/background/{{source_file_part}}",
   ]
 }

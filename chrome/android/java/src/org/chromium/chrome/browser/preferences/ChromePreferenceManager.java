@@ -4,19 +4,12 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.content.SharedPreferences;
-
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -317,23 +310,10 @@ public class ChromePreferenceManager {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
     }
 
-    /**
-     * Observes preference changes.
-     */
-    public interface Observer {
-        /**
-         * Notifies when a preference maintained by {@link ChromePreferenceManager} is changed.
-         * @param key The key of the preference changed.
-         */
-        void onPreferenceChanged(String key);
-    }
-
-    private final SharedPreferences mSharedPreferences;
-    private final Map<Observer, SharedPreferences.OnSharedPreferenceChangeListener> mObservers =
-            new HashMap<>();
+    private final SharedPreferencesManager mManager;
 
     private ChromePreferenceManager() {
-        mSharedPreferences = ContextUtils.getAppSharedPreferences();
+        mManager = SharedPreferencesManager.getInstance();
     }
 
     /**
@@ -345,39 +325,16 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * @param observer The {@link Observer} to be added for observing preference changes.
-     */
-    public void addObserver(Observer observer) {
-        SharedPreferences.OnSharedPreferenceChangeListener listener =
-                (SharedPreferences sharedPreferences, String s) -> observer.onPreferenceChanged(s);
-        mObservers.put(observer, listener);
-        mSharedPreferences.registerOnSharedPreferenceChangeListener(listener);
-    }
-
-    /**
-     * @param observer The {@link Observer} to be removed from observing preference changes.
-     */
-    public void removeObserver(Observer observer) {
-        SharedPreferences.OnSharedPreferenceChangeListener listener = mObservers.get(observer);
-        if (listener == null) return;
-        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
-    }
-
-    /**
      * @return Number of times of successful crash upload.
      */
     public int getCrashSuccessUploadCount(@ProcessType String process) {
         // Convention to keep all the key in preference lower case.
-        return mSharedPreferences.getInt(successUploadKey(process), 0);
+        return mManager.readInt(successUploadKey(process));
     }
 
     public void setCrashSuccessUploadCount(@ProcessType String process, int count) {
-        SharedPreferences.Editor sharedPreferencesEditor;
-
-        sharedPreferencesEditor = mSharedPreferences.edit();
         // Convention to keep all the key in preference lower case.
-        sharedPreferencesEditor.putInt(successUploadKey(process), count);
-        sharedPreferencesEditor.apply();
+        mManager.writeInt(successUploadKey(process), count);
     }
 
     public void incrementCrashSuccessUploadCount(@ProcessType String process) {
@@ -392,15 +349,11 @@ public class ChromePreferenceManager {
      * @return Number of times of failure crash upload after reaching the max number of tries.
      */
     public int getCrashFailureUploadCount(@ProcessType String process) {
-        return mSharedPreferences.getInt(failureUploadKey(process), 0);
+        return mManager.readInt(failureUploadKey(process));
     }
 
     public void setCrashFailureUploadCount(@ProcessType String process, int count) {
-        SharedPreferences.Editor sharedPreferencesEditor;
-
-        sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putInt(failureUploadKey(process), count);
-        sharedPreferencesEditor.apply();
+        mManager.writeInt(failureUploadKey(process), count);
     }
 
     public void incrementCrashFailureUploadCount(@ProcessType String process) {
@@ -416,15 +369,14 @@ public class ChromePreferenceManager {
      * isn't known.
      */
     public int getSigninPromoLastShownVersion() {
-        return mSharedPreferences.getInt(SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION, 0);
+        return mManager.readInt(SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION);
     }
 
     /**
      * Sets Chrome major version number when signin promo was last shown.
      */
     public void setSigninPromoLastShownVersion(int majorVersion) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putInt(SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION, majorVersion).apply();
+        mManager.writeInt(SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION, majorVersion);
     }
 
     /**
@@ -432,7 +384,7 @@ public class ChromePreferenceManager {
      * or null if promo hasn't been shown yet.
      */
     public Set<String> getSigninPromoLastAccountNames() {
-        return mSharedPreferences.getStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, null);
+        return mManager.readStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, null);
     }
 
     /**
@@ -446,7 +398,7 @@ public class ChromePreferenceManager {
      * @return The last time the search provider icon was animated on tap.
      */
     public long getContextualSearchLastAnimationTime() {
-        return mSharedPreferences.getLong(CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME, 0);
+        return mManager.readLong(CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME);
     }
 
     /**
@@ -454,9 +406,7 @@ public class ChromePreferenceManager {
      * @param time The last time the search provider icon was animated on tap.
      */
     public void setContextualSearchLastAnimationTime(long time) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putLong(CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME, time);
-        ed.apply();
+        mManager.writeLong(CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME, time);
     }
 
     /**
@@ -464,7 +414,7 @@ public class ChromePreferenceManager {
      *         if in the disabled state.
      */
     public int getContextualSearchTapTriggeredPromoCount() {
-        return mSharedPreferences.getInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, 0);
+        return mManager.readInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT);
     }
 
     /**
@@ -481,7 +431,7 @@ public class ChromePreferenceManager {
      * @return The current week number, persisted for weekly CTR recording.
      */
     public int getContextualSearchCurrentWeekNumber() {
-        return mSharedPreferences.getInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER, 0);
+        return mManager.readInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER);
     }
 
     /**
@@ -569,55 +519,60 @@ public class ChromePreferenceManager {
      * Reads set of String values from preferences.
      *
      * Note that you must not modify the set instance returned by this call.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public Set<String> readStringSet(String key) {
-        return mSharedPreferences.getStringSet(key, Collections.emptySet());
+        return mManager.readStringSet(key);
     }
 
     /**
      * Adds a value to string set in shared preferences.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public void addToStringSet(String key, String value) {
-        Set<String> values = new HashSet<>(readStringSet(key));
-        values.add(value);
-        writeStringSet(key, values);
+        mManager.addToStringSet(key, value);
     }
 
     /**
      * Removes value from string set in shared preferences.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public void removeFromStringSet(String key, String value) {
-        Set<String> values = new HashSet<>(readStringSet(key));
-        if (values.remove(value)) {
-            writeStringSet(key, values);
-        }
+        mManager.removeFromStringSet(key, value);
     }
 
     /**
      * Writes string set to shared preferences.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public void writeStringSet(String key, Set<String> values) {
-        mSharedPreferences.edit().putStringSet(key, values).apply();
+        mManager.writeStringSet(key, values);
     }
 
     /**
      * Writes the given int value to the named shared preference.
      * @param key The name of the preference to modify.
      * @param value The new value for the preference.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public void writeInt(String key, int value) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putInt(key, value);
-        ed.apply();
+        mManager.writeInt(key, value);
     }
 
     /**
      * Reads the given int value from the named shared preference, defaulting to 0 if not found.
      * @param key The name of the preference to return.
      * @return The value of the preference.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public int readInt(String key) {
-        return readInt(key, 0);
+        return mManager.readInt(key);
     }
 
     /**
@@ -625,11 +580,11 @@ public class ChromePreferenceManager {
      * @param key The name of the preference to return.
      * @param defaultValue The default value to return if the preference is not set.
      * @return The value of the preference.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public int readInt(String key, int defaultValue) {
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getInt(key, defaultValue);
-        }
+        return mManager.readInt(key, defaultValue);
     }
 
     /**
@@ -637,11 +592,11 @@ public class ChromePreferenceManager {
      * an initial value of 0 is assumed and incremented, so a new value of 1 is set.
      * @param key The key specifying which integer value to increment.
      * @return The newly incremented value.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public int incrementInt(String key) {
-        int value = mSharedPreferences.getInt(key, 0);
-        writeInt(key, ++value);
-        return value;
+        return mManager.incrementInt(key);
     }
 
     /**
@@ -649,11 +604,11 @@ public class ChromePreferenceManager {
      *
      * @param key The name of the preference to modify.
      * @param value The new value for the preference.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public void writeLong(String key, long value) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putLong(key, value);
-        ed.apply();
+        mManager.writeLong(key, value);
     }
 
     /**
@@ -662,11 +617,11 @@ public class ChromePreferenceManager {
      * @param key The name of the preference to return.
      * @param defaultValue The default value to return if there's no value stored.
      * @return The value of the preference if stored; defaultValue otherwise.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public long readLong(String key, long defaultValue) {
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getLong(key, defaultValue);
-        }
+        return mManager.readLong(key, defaultValue);
     }
 
     /**
@@ -674,11 +629,11 @@ public class ChromePreferenceManager {
      *
      * @param key The name of the preference to modify.
      * @param value The new value for the preference.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public void writeBoolean(String key, boolean value) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putBoolean(key, value);
-        ed.apply();
+        mManager.writeBoolean(key, value);
     }
 
     /**
@@ -687,11 +642,11 @@ public class ChromePreferenceManager {
      * @param key The name of the preference to return.
      * @param defaultValue The default value to return if there's no value stored.
      * @return The value of the preference if stored; defaultValue otherwise.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public boolean readBoolean(String key, boolean defaultValue) {
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getBoolean(key, defaultValue);
-        }
+        return mManager.readBoolean(key, defaultValue);
     }
 
     /**
@@ -699,11 +654,11 @@ public class ChromePreferenceManager {
      *
      * @param key The name of the preference to modify.
      * @param value The new value for the preference.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public void writeString(String key, String value) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putString(key, value);
-        ed.apply();
+        mManager.writeString(key, value);
     }
 
     /**
@@ -712,21 +667,21 @@ public class ChromePreferenceManager {
      * @param key The name of the preference to return.
      * @param defaultValue The default value to return if there's no value stored.
      * @return The value of the preference if stored; defaultValue otherwise.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public String readString(String key, @Nullable String defaultValue) {
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getString(key, defaultValue);
-        }
+        return mManager.readString(key, defaultValue);
     }
 
     /**
      * Removes the shared preference entry.
      *
      * @param key The key of the preference to remove.
+     * @deprecated Use {@link SharedPreferencesManager} instead.
      */
+    @Deprecated
     public void removeKey(String key) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.remove(key);
-        ed.apply();
+        mManager.removeKey(key);
     }
 }

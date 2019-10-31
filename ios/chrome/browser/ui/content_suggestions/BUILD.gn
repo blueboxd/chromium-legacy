@@ -85,6 +85,14 @@ source_set("content_suggestions") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("constants") {
+  sources = [
+    "content_suggestions_constants.h",
+    "content_suggestions_constants.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("content_suggestions_ui") {
   sources = [
     "content_suggestions_collection_controlling.h",
@@ -112,6 +120,7 @@ source_set("content_suggestions_ui") {
     "user_account_image_update_delegate.h",
   ]
   deps = [
+    ":constants",
     ":content_suggestions_constant",
     ":content_suggestions_ui_util",
     "resources:content_suggestions_no_image",
@@ -240,6 +249,7 @@ source_set("eg2_tests") {
     "content_suggestions_egtest.mm",
   ]
   deps = [
+    ":constants",
     ":content_suggestions_constant",
     ":eg_test_support+eg2",
     "//base",
@@ -263,6 +273,7 @@ source_set("eg_tests") {
     "ntp_home_egtest.mm",
   ]
   deps = [
+    ":constants",
     ":content_suggestions_constant",
     ":content_suggestions_ui",
     ":content_suggestions_ui_util",
@@ -340,6 +351,7 @@ source_set("eg_app_support+eg2") {
   ]
 
   deps = [
+    ":constants",
     ":content_suggestions_constant",
     ":content_suggestions_ui",
     ":content_suggestions_ui_util",
@@ -370,6 +382,7 @@ source_set("test_support") {
     "ntp_home_test_utils.mm",
   ]
   deps = [
+    ":constants",
     ":content_suggestions_ui_util",
     "//components/keyed_service/ios",
     "//components/ntp_snippets",

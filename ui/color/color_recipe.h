@@ -30,7 +30,7 @@ class COMPONENT_EXPORT(COLOR) ColorRecipe {
 
   // Adds a transform to the end of the current recipe.  Returns a non-const ref
   // to allow chaining calls.
-  ColorRecipe& AddTransform(ColorTransform&& transform);
+  ColorRecipe& AddTransform(ColorTransform transform);
 
   // Generates the output color for |input| by applying all transforms.  |mixer|
   // is passed to each transform, since it might need to request other colors.

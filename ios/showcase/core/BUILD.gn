@@ -24,6 +24,27 @@ source_set("core") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("main_eg2") {
+  testonly = true
+  sources = [
+    "main.mm",
+  ]
+  deps = [
+    ":core",
+    "//base",
+    "//ios/chrome/browser/ui/settings",
+    "//ios/chrome/browser/ui/toolbar/keyboard_assist",
+
+    # Needed to disable the tests hooks.
+    "//ios/chrome/test/earl_grey:hooks",
+
+    # Needed for including ios/chrome/browser/ui.
+    "//ios/chrome/browser/tabs:tabs_internal",
+  ]
+  libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("main") {
   sources = [
     "main.mm",

@@ -115,8 +115,10 @@ bool LoadScriptContent(const HostID& host_id,
     if (verifier.get()) {
       // Call VerifyContent() after yielding on UI thread so it is ensured that
       // ContentVerifierIOData is populated at the time we call VerifyContent().
+      // Priority set explicitly to avoid unwanted task priority inheritance.
       base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+          FROM_HERE,
+          {content::BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
           base::BindOnce(
               &ForwardVerifyContentToIO,
               VerifyContentInfo(verifier, host_id.id(),
@@ -193,9 +195,12 @@ void LoadScriptsOnFileTaskRunner(
   LoadUserScripts(user_scripts.get(), hosts_info, added_script_ids, verifier);
   base::ReadOnlySharedMemoryRegion memory =
       UserScriptLoader::Serialize(*user_scripts);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback), std::move(user_scripts),
-                                std::move(memory)));
+  // Explicit priority to prevent unwanted task priority inheritance.
+  base::PostTask(
+      FROM_HERE,
+      {content::BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(std::move(callback), std::move(user_scripts),
+                     std::move(memory)));
 }
 
 }  // namespace

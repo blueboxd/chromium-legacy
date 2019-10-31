@@ -104,6 +104,9 @@ uint32_t DisplayList::UpdateDisplay(const Display& display, Type type) {
     local_display->set_color_depth(color_depth);
     changed_values |= DisplayObserver::DISPLAY_METRIC_COLOR_SPACE;
   }
+  if (local_display->GetSizeInPixel() != display.GetSizeInPixel()) {
+    local_display->set_size_in_pixels(display.GetSizeInPixel());
+  }
   if (should_notify_observers()) {
     for (DisplayObserver& observer : observers_)
       observer.OnDisplayMetricsChanged(*local_display, changed_values);

@@ -83,8 +83,11 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/date_time_chooser_android.h"
+#include "content/browser/android/text_suggestion_host_mojo_impl_android.h"
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
+#include "third_party/blink/public/mojom/input/input_host.mojom.h"
 #endif
 
 namespace content {
@@ -149,6 +152,15 @@ void BindDateTimeChooserForFrame(
   auto* date_time_chooser = DateTimeChooserAndroid::FromWebContents(
       WebContents::FromRenderFrameHost(host));
   date_time_chooser->OnDateTimeChooserReceiver(std::move(receiver));
+}
+
+void BindTextSuggestionHostForFrame(
+    content::RenderFrameHost* host,
+    mojo::PendingReceiver<blink::mojom::TextSuggestionHost> receiver) {
+  auto* view = static_cast<RenderWidgetHostViewAndroid*>(host->GetView());
+  DCHECK(view);
+  TextSuggestionHostMojoImplAndroid::Create(view->text_suggestion_host(),
+                                            std::move(receiver));
 }
 #endif
 
@@ -314,6 +326,8 @@ void PopulateBinderMapWithContext(
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::DateTimeChooser>(
       base::BindRepeating(&BindDateTimeChooserForFrame));
+  map->Add<blink::mojom::TextSuggestionHost>(
+      base::BindRepeating(&BindTextSuggestionHostForFrame));
 #endif  // defined(OS_ANDROID)
 
   GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(map);

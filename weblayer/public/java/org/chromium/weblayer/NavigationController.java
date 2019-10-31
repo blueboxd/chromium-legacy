@@ -21,7 +21,7 @@ import org.chromium.weblayer_private.aidl.INavigationControllerClient;
  */
 public final class NavigationController {
     private INavigationController mNavigationController;
-    private final ObserverList<NavigationObserver> mObservers;
+    private final ObserverList<NavigationCallback> mCallbacks;
 
     static NavigationController create(IBrowserController browserController) {
         NavigationController navigationController = new NavigationController();
@@ -36,7 +36,7 @@ public final class NavigationController {
     }
 
     private NavigationController() {
-        mObservers = new ObserverList<NavigationObserver>();
+        mCallbacks = new ObserverList<NavigationCallback>();
     }
 
     public void navigate(@NonNull Uri uri) {
@@ -130,14 +130,14 @@ public final class NavigationController {
         }
     }
 
-    public void addObserver(@NonNull NavigationObserver observer) {
+    public void registerNavigationCallback(@NonNull NavigationCallback callback) {
         ThreadCheck.ensureOnUiThread();
-        mObservers.addObserver(observer);
+        mCallbacks.addObserver(callback);
     }
 
-    public void removeObserver(@NonNull NavigationObserver observer) {
+    public void unregisterNavigationCallback(@NonNull NavigationCallback callback) {
         ThreadCheck.ensureOnUiThread();
-        mObservers.removeObserver(observer);
+        mCallbacks.removeObserver(callback);
     }
 
     private final class NavigationControllerClientImpl extends INavigationControllerClient.Stub {
@@ -148,57 +148,57 @@ public final class NavigationController {
 
         @Override
         public void navigationStarted(IClientNavigation navigation) {
-            for (NavigationObserver observer : mObservers) {
-                observer.navigationStarted((Navigation) navigation);
+            for (NavigationCallback callback : mCallbacks) {
+                callback.navigationStarted((Navigation) navigation);
             }
         }
 
         @Override
         public void navigationRedirected(IClientNavigation navigation) {
-            for (NavigationObserver observer : mObservers) {
-                observer.navigationRedirected((Navigation) navigation);
+            for (NavigationCallback callback : mCallbacks) {
+                callback.navigationRedirected((Navigation) navigation);
             }
         }
 
         @Override
         public void readyToCommitNavigation(IClientNavigation navigation) {
-            for (NavigationObserver observer : mObservers) {
-                observer.readyToCommitNavigation((Navigation) navigation);
+            for (NavigationCallback callback : mCallbacks) {
+                callback.readyToCommitNavigation((Navigation) navigation);
             }
         }
 
         @Override
         public void navigationCompleted(IClientNavigation navigation) {
-            for (NavigationObserver observer : mObservers) {
-                observer.navigationCompleted((Navigation) navigation);
+            for (NavigationCallback callback : mCallbacks) {
+                callback.navigationCompleted((Navigation) navigation);
             }
         }
 
         @Override
         public void navigationFailed(IClientNavigation navigation) {
-            for (NavigationObserver observer : mObservers) {
-                observer.navigationFailed((Navigation) navigation);
+            for (NavigationCallback callback : mCallbacks) {
+                callback.navigationFailed((Navigation) navigation);
             }
         }
 
         @Override
         public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
-            for (NavigationObserver observer : mObservers) {
-                observer.loadStateChanged(isLoading, toDifferentDocument);
+            for (NavigationCallback callback : mCallbacks) {
+                callback.loadStateChanged(isLoading, toDifferentDocument);
             }
         }
 
         @Override
         public void loadProgressChanged(double progress) {
-            for (NavigationObserver observer : mObservers) {
-                observer.loadProgressChanged(progress);
+            for (NavigationCallback callback : mCallbacks) {
+                callback.loadProgressChanged(progress);
             }
         }
 
         @Override
         public void onFirstContentfulPaint() {
-            for (NavigationObserver observer : mObservers) {
-                observer.onFirstContentfulPaint();
+            for (NavigationCallback callback : mCallbacks) {
+                callback.onFirstContentfulPaint();
             }
         }
     }

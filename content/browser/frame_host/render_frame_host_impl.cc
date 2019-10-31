@@ -1235,8 +1235,7 @@ void RenderFrameHostImpl::DisableBackForwardCache() {
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
   was_granted_media_access_ = true;
-  MaybeEvictFromBackForwardCache(
-      BackForwardCacheMetrics::NotRestoredReason::kGrantedMediaStreamAccess);
+  MaybeEvictFromBackForwardCache();
 }
 
 void RenderFrameHostImpl::OnPortalActivated(
@@ -2535,8 +2534,7 @@ void RenderFrameHostImpl::UpdateActiveSchedulerTrackedFeatures(
   TRACE_EVENT0("toplevel", "UpdateActiveSchedulerTrackedFeatures");
   renderer_reported_scheduler_tracked_features_ = features_mask;
 
-  MaybeEvictFromBackForwardCache(
-      BackForwardCacheMetrics::NotRestoredReason::kSchedulerTrackedFeatureUsed);
+  MaybeEvictFromBackForwardCache();
 }
 
 void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
@@ -2545,8 +2543,7 @@ void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
   browser_reported_scheduler_tracked_features_ |=
       1 << static_cast<uint64_t>(feature);
 
-  MaybeEvictFromBackForwardCache(
-      BackForwardCacheMetrics::NotRestoredReason::kSchedulerTrackedFeatureUsed);
+  MaybeEvictFromBackForwardCache();
 }
 
 bool RenderFrameHostImpl::IsFrozen() {
@@ -3702,6 +3699,13 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
 
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
     BackForwardCacheMetrics::NotRestoredReason reason) {
+  BackForwardCacheMetrics::NotRestoredReasons reasons;
+  reasons.set(static_cast<size_t>(reason));
+  EvictFromBackForwardCacheWithReasons(reasons);
+}
+
+void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
+    const BackForwardCacheMetrics::NotRestoredReasons& reasons) {
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)
@@ -3718,11 +3722,8 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
   // TODO(hajimehoshi): Record the 'race condition' by JavaScript execution when
   // |is_in_back_forward_cache()| is false.
   BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
-  if (is_in_back_forward_cache() && metrics) {
-    BackForwardCacheMetrics::NotRestoredReasons reasons;
-    reasons.set(static_cast<size_t>(reason));
+  if (is_in_back_forward_cache() && metrics)
     metrics->MarkNotRestoredWithReasons(reasons);
-  }
 
   if (!in_back_forward_cache) {
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
@@ -7806,8 +7807,7 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
   }
 }
 
-void RenderFrameHostImpl::MaybeEvictFromBackForwardCache(
-    BackForwardCacheMetrics::NotRestoredReason reason) {
+void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   if (!is_in_back_forward_cache_)
     return;
 
@@ -7821,9 +7821,9 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache(
   if (can_store)
     return;
 
-  // TODO(hajimehoshi): The not-restored reasons at
-  // |can_store.not_stored_reasons| should also be passed.
-  EvictFromBackForwardCacheWithReason(reason);
+  // TODO(hajimehoshi): Pass and record the other information of |can_store|
+  // like blocklisted features.
+  EvictFromBackForwardCacheWithReasons(can_store.not_stored_reasons);
 }
 
 void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(

@@ -231,6 +231,7 @@ source_set("test_support") {
     "//components/translate/core/browser",
     "//components/ukm/ios:features",
     "//components/unified_consent",
+    "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/content_settings:content_settings",
@@ -245,6 +246,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/bookmarks:bookmarks_ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/commands:commands",
+    "//ios/chrome/browser/ui/content_suggestions:constants",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
     "//ios/chrome/browser/ui/history:constants",
@@ -259,6 +261,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/safe_mode:test_support",
     "//ios/chrome/browser/ui/settings:settings",
     "//ios/chrome/browser/ui/settings/autofill",
+    "//ios/chrome/browser/ui/settings/autofill:constants",
     "//ios/chrome/browser/ui/settings/autofill:feature_flags",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/clear_browsing_data",
@@ -356,6 +359,7 @@ source_set("eg_app_support+eg2") {
     "//components/translate/core/browser",
     "//components/ukm/ios:features",
     "//components/unified_consent",
+    "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/autofill/automation:eg_app_support+eg2",
@@ -370,6 +374,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/autofill/manual_fill",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
     "//ios/chrome/browser/ui/bookmarks:bookmarks_ui",
+    "//ios/chrome/browser/ui/content_suggestions:constants",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
     "//ios/chrome/browser/ui/content_suggestions:eg_app_support+eg2",
@@ -386,6 +391,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/settings:eg_app_support+eg2",
     "//ios/chrome/browser/ui/settings:settings",
     "//ios/chrome/browser/ui/settings/autofill",
+    "//ios/chrome/browser/ui/settings/autofill:constants",
     "//ios/chrome/browser/ui/settings/autofill:feature_flags",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/clear_browsing_data",
@@ -477,8 +483,11 @@ source_set("eg_test_support+eg2") {
     "//ios/third_party/gtx:gtx+link",
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
-    "//net:test_support",
     "//ui/base",
     "//url",
+  ]
+
+  public_deps = [
+    "//net:test_support",
   ]
 }

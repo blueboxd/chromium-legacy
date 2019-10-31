@@ -724,6 +724,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface setPopupPrefValue:value];
 }
 
+- (NSInteger)registeredKeyCommandCount {
+  return [ChromeEarlGreyAppInterface registeredKeyCommandCount];
+}
+
 @end
 
 // The helpers below only compile under EarlGrey1.

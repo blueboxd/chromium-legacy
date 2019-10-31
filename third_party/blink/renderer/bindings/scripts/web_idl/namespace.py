@@ -100,9 +100,29 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         ])
 
     @property
+    def inherited(self):
+        """Returns the inherited namespace or None."""
+        return None
+
+    @property
     def attributes(self):
         """Returns attributes."""
         return self._attributes
+
+    @property
+    def constants(self):
+        """Returns constants."""
+        return ()
+
+    @property
+    def constructors(self):
+        """Returns constructors."""
+        return ()
+
+    @property
+    def constructor_groups(self):
+        """Returns groups of constructors."""
+        return ()
 
     @property
     def operations(self):

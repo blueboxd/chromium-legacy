@@ -23,8 +23,7 @@ void NGInlineCursor::MoveToItem(const ItemsSpan::iterator& iter) {
 void NGInlineCursor::SetRoot(const NGFragmentItems& fragment_items,
                              ItemsSpan items) {
   DCHECK(items.data() || !items.size());
-  DCHECK_EQ(root_paint_fragment_, nullptr);
-  DCHECK_EQ(current_paint_fragment_, nullptr);
+  DCHECK(!HasRoot());
   fragment_items_ = &fragment_items;
   items_ = items;
   MoveToItem(items_.begin());
@@ -36,16 +35,17 @@ void NGInlineCursor::SetRoot(const NGFragmentItems& items) {
 
 void NGInlineCursor::SetRoot(const NGPaintFragment& root_paint_fragment) {
   DCHECK(&root_paint_fragment);
+  DCHECK(!HasRoot());
   root_paint_fragment_ = &root_paint_fragment;
   current_paint_fragment_ = root_paint_fragment.FirstChild();
 }
 
-NGInlineCursor::NGInlineCursor(const LayoutBlockFlow& block_flow) {
+void NGInlineCursor::SetRoot(const LayoutBlockFlow& block_flow) {
   DCHECK(&block_flow);
+  DCHECK(!HasRoot());
 
   if (const NGPhysicalBoxFragment* fragment = block_flow.CurrentFragment()) {
     if (const NGFragmentItems* items = fragment->Items()) {
-      fragment_items_ = items;
       SetRoot(*items);
       return;
     }
@@ -59,6 +59,10 @@ NGInlineCursor::NGInlineCursor(const LayoutBlockFlow& block_flow) {
   // We reach here in case of |ScrollANchor::NotifyBeforeLayout()| via
   // |LayoutText::PhysicalLinesBoundingBox()|
   // See external/wpt/css/css-scroll-anchoring/wrapped-text.html
+}
+
+NGInlineCursor::NGInlineCursor(const LayoutBlockFlow& block_flow) {
+  SetRoot(block_flow);
 }
 
 NGInlineCursor::NGInlineCursor(const NGFragmentItems& fragment_items,
@@ -380,6 +384,15 @@ Node* NGInlineCursor::CurrentNode() const {
   return nullptr;
 }
 
+const PhysicalRect NGInlineCursor::CurrentInkOverflow() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->InkOverflow();
+  if (current_item_)
+    return current_item_->InkOverflow();
+  NOTREACHED();
+  return PhysicalRect();
+}
+
 const PhysicalOffset NGInlineCursor::CurrentOffset() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->InlineOffsetToContainerBox();
@@ -517,18 +530,29 @@ void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
 void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext()) << layout_object;
   InternalMoveTo(layout_object);
-  if (IsNotNull() || !layout_object.IsLayoutInline()) {
+  if (*this) {
     layout_inline_ = nullptr;
     return;
   }
-  // In case of |layout_object| is cullred inline.
-  if (!fragment_items_ && !root_paint_fragment_) {
-    root_paint_fragment_ =
-        layout_object.RootInlineFormattingContext()->PaintFragment();
-    if (!root_paint_fragment_)
-      return MakeNull();
+
+  // This |layout_object| did not produce any fragments.
+  //
+  // Try to find ancestors if this is a culled inline.
+  layout_inline_ = ToLayoutInlineOrNull(&layout_object);
+  if (!layout_inline_)
+    return;
+
+  // If this cursor is rootless, find the root of the inline formatting context.
+  if (!HasRoot()) {
+    const LayoutBlockFlow* root = layout_object.RootInlineFormattingContext();
+    DCHECK(root);
+    SetRoot(*root);
+    if (!HasRoot()) {
+      DCHECK(IsNull());
+      return;
+    }
   }
-  layout_inline_ = ToLayoutInline(&layout_object);
+
   MoveToFirst();
   while (IsNotNull() && !IsInclusiveDescendantOf(layout_object))
     MoveToNext();

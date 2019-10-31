@@ -389,11 +389,7 @@ class VectorBufferBase {
     DCHECK_LE(new_capacity,
               Allocator::template MaxElementCountInBackingStore<T>());
     size_t size_to_allocate = AllocationSize(new_capacity);
-    if (hasInlineCapacity)
-      buffer_ =
-          Allocator::template AllocateInlineVectorBacking<T>(size_to_allocate);
-    else
-      buffer_ = Allocator::template AllocateVectorBacking<T>(size_to_allocate);
+    buffer_ = Allocator::template AllocateVectorBacking<T>(size_to_allocate);
     capacity_ = static_cast<wtf_size_t>(size_to_allocate / sizeof(T));
     Allocator::BackingWriteBarrier(buffer_, 0);
   }
@@ -401,12 +397,8 @@ class VectorBufferBase {
   void AllocateExpandedBuffer(wtf_size_t new_capacity) {
     DCHECK(new_capacity);
     size_t size_to_allocate = AllocationSize(new_capacity);
-    if (hasInlineCapacity)
-      buffer_ =
-          Allocator::template AllocateInlineVectorBacking<T>(size_to_allocate);
-    else
-      buffer_ = Allocator::template AllocateExpandedVectorBacking<T>(
-          size_to_allocate);
+    buffer_ =
+        Allocator::template AllocateExpandedVectorBacking<T>(size_to_allocate);
     capacity_ = static_cast<wtf_size_t>(size_to_allocate / sizeof(T));
     Allocator::BackingWriteBarrier(buffer_, 0);
   }
@@ -594,7 +586,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   }
 
   NOINLINE void ReallyDeallocateBuffer(T* buffer_to_deallocate) {
-    Allocator::FreeInlineVectorBacking(buffer_to_deallocate);
+    Allocator::FreeVectorBacking(buffer_to_deallocate);
   }
 
   void DeallocateBuffer(T* buffer_to_deallocate) {
@@ -608,7 +600,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       return false;
 
     size_t size_to_allocate = AllocationSize(new_capacity);
-    if (Allocator::ExpandInlineVectorBacking(buffer_, size_to_allocate)) {
+    if (Allocator::ExpandVectorBacking(buffer_, size_to_allocate)) {
       capacity_ = static_cast<wtf_size_t>(size_to_allocate / sizeof(T));
       return true;
     }
@@ -624,8 +616,8 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
     }
     DCHECK_NE(buffer_, InlineBuffer());
     size_t new_size = AllocationSize(new_capacity);
-    if (!Allocator::ShrinkInlineVectorBacking(
-            buffer_, AllocationSize(capacity()), new_size))
+    if (!Allocator::ShrinkVectorBacking(buffer_, AllocationSize(capacity()),
+                                        new_size))
       return false;
     capacity_ = static_cast<wtf_size_t>(new_size / sizeof(T));
     return true;

@@ -91,7 +91,7 @@ id<GREYMatcher> VisibleInteractableEnabled() {
 // Returns the GREYMatcher for the button that closes the QR Scanner.
 id<GREYMatcher> QrScannerCloseButton() {
   return chrome_test_util::ButtonWithAccessibilityLabel(
-      [QRScannerAppInterface.closeIcon accessibilityLabel]);
+      QRScannerAppInterface.closeIconAccessibilityLabel);
 }
 
 // Returns the GREYMatcher for the button which indicates that torch is off and
@@ -571,11 +571,6 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // the camera state changes after the QRScannerViewController is presented.
 // TODO(crbug.com/1019211): Re-enable test on iOS12.
 - (void)testDialogIsDisplayedIfCameraStateChanges {
-#if defined(CHROME_EARL_GREY_2)
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
-  }
-#endif
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -610,11 +605,6 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Tests that a new dialog replaces an old dialog if the camera state changes.
 // TODO(crbug.com/1019211): Re-enable test on iOS12.
 - (void)testDialogIsReplacedIfCameraStateChanges {
-#if defined(CHROME_EARL_GREY_2)
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
-  }
-#endif
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -655,11 +645,6 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Tests that an error dialog is dismissed if the camera becomes available.
 // TODO(crbug.com/1019211): Re-enable test on iOS12.
 - (void)testDialogDismissedIfCameraBecomesAvailable {
-#if defined(CHROME_EARL_GREY_2)
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Test fails iOS 12.2");
-  }
-#endif  // defined(CHROME_EARL_GREY_2)
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];

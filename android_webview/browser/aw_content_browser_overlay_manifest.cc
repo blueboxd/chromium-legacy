@@ -11,7 +11,6 @@
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "third_party/blink/public/mojom/input/input_host.mojom.h"
 
 namespace android_webview {
 
@@ -27,7 +26,7 @@ const service_manager::Manifest& GetAWContentBrowserOverlayManifest() {
               service_manager::Manifest::InterfaceList<
                   autofill::mojom::AutofillDriver,
                   autofill::mojom::PasswordManagerDriver,
-                  blink::mojom::TextSuggestionHost, mojom::JsToJavaMessaging>())
+                  mojom::JsToJavaMessaging>())
           .Build()};
   return *manifest;
 }

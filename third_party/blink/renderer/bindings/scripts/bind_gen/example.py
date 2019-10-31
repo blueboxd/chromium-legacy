@@ -30,7 +30,7 @@ def _upper_camel_case(name):
     return NameStyleConverter(name).to_upper_camel_case()
 
 
-def bind_common_local_vars(code_node, cg_context):
+def bind_callback_local_vars(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
     assert isinstance(cg_context, CodeGenerationContext)
 
@@ -253,7 +253,7 @@ def bind_v8_set_return_value(code_node, cg_context):
         # Render a SymbolNode |return_value| discarding the content text, and
         # let a symbol definition be added.
         pattern = "<% str(return_value) %>"
-    elif (cg_context.world == cg_context.MAIN_WORLD
+    elif (cg_context.for_world == cg_context.MAIN_WORLD
           and cg_context.return_type.unwrap().is_interface):
         _1 = "V8SetReturnValueForMainWorld"
     elif cg_context.return_type.unwrap().is_interface:
@@ -281,7 +281,7 @@ def make_attribute_get_def(cg_context):
     body.add_template_vars(cg_context.template_bindings())
 
     binders = [
-        bind_common_local_vars,
+        bind_callback_local_vars,
         bind_blink_api_arguments,
         bind_blink_api_call,
         bind_return_value,
@@ -313,7 +313,7 @@ def make_operation_def(cg_context):
     body.add_template_vars(cg_context.template_bindings())
 
     binders = [
-        bind_common_local_vars,
+        bind_callback_local_vars,
         bind_blink_api_arguments,
         bind_blink_api_call,
         bind_return_value,
@@ -329,6 +329,85 @@ def make_operation_def(cg_context):
     return func_def
 
 
+def bind_template_installer_local_vars(code_node, cg_context):
+    assert isinstance(code_node, SymbolScopeNode)
+    assert isinstance(cg_context, CodeGenerationContext)
+
+    S = SymbolNode
+
+    local_vars = []
+
+    local_vars.extend([
+        S("instance_template",
+          ("v8::Local<v8::ObjectTemplate> ${instance_template} = "
+           "${interface_template}->InstanceTemplate();")),
+        S("prototype_template",
+          ("v8::Local<v8::ObjectTemplate> ${prototype_template} = "
+           "${interface_template}->PrototypeTemplate();")),
+        S("signature",
+          ("v8::Local<v8::Signature> ${signature} = "
+           "v8::Signature::New(${isolate}, ${interface_template});")),
+        S("wrapper_type_info",
+          ("const WrapperTypeInfo* const ${wrapper_type_info} = "
+           "${v8_class}::GetWrapperTypeInfo();")),
+    ])
+
+    pattern = (
+        "v8::Local<v8::FunctionTemplate> ${parent_interface_template}{_1};")
+    _1 = (" = ${wrapper_type_info}->parent_class->dom_template_function"
+          "(${isolate}, ${world})")
+    if not cg_context.class_like.inherited:
+        _1 = ""
+    local_vars.append(S("parent_interface_template", _format(pattern, _1=_1)))
+
+    code_node.register_code_symbols(local_vars)
+
+
+def make_install_interface_template_def(cg_context):
+    assert isinstance(cg_context, CodeGenerationContext)
+
+    L = LiteralNode
+    T = TextNode
+
+    func_def = FunctionDefinitionNode(
+        name=L("InstallInterfaceTemplate"),
+        arg_decls=[
+            L("v8::Isolate* isolate"),
+            L("const DOMWrapperWorld& world"),
+            L("v8::Local<v8::FunctionTemplate> interface_template"),
+        ],
+        return_type=L("void"))
+
+    body = func_def.body
+    body.add_template_var("isolate", "isolate")
+    body.add_template_var("world", "world")
+    body.add_template_var("interface_template", "interface_template")
+    body.add_template_vars(cg_context.template_bindings())
+
+    binders = [
+        bind_template_installer_local_vars,
+    ]
+    for bind in binders:
+        bind(body, cg_context)
+
+    body.extend([
+        T("V8DOMConfiguration::InitializeDOMInterfaceTemplate("
+          "${isolate}, ${interface_template}, "
+          "${wrapper_type_info}->interface_name, ${parent_interface_template}, "
+          "kV8DefaultWrapperInternalFieldCount);"),
+    ])
+
+    if cg_context.class_like.constructor_groups:
+        body.extend([
+            T("${interface_template}->SetCallHandler(ConstructorCallback);"),
+            T("${interface_template}->SetLength("
+              "${class_like.constructor_groups[0]"
+              ".min_num_of_required_arguments});"),
+        ])
+
+    return func_def
+
+
 def run_example(web_idl_database, output_dirs):
     renderer = MakoRenderer()
 
@@ -340,15 +419,19 @@ def run_example(web_idl_database, output_dirs):
     cg_context = CodeGenerationContext(namespace=namespace)
 
     root_node = SymbolScopeNode(separator_last="\n", renderer=renderer)
+
     for attribute in namespace.attributes:
         root_node.append(
             make_attribute_get_def(cg_context.make_copy(attribute=attribute)))
+
     for operation_group in namespace.operation_groups:
         for operation in operation_group:
             root_node.append(
                 make_operation_def(
                     cg_context.make_copy(
                         operation_group=operation_group, operation=operation)))
+
+    root_node.append(make_install_interface_template_def(cg_context))
 
     prev = ''
     current = str(root_node)

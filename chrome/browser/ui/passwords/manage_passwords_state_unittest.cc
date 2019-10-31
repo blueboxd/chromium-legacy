@@ -594,4 +594,38 @@ TEST_F(ManagePasswordsStateTest, ChooseCredentialLocalWithNonEmptyFederation) {
   passwords_data().ChooseCredential(&local_federated_form());
 }
 
+TEST_F(ManagePasswordsStateTest, AutofillCausedByInternalFormManager) {
+  struct OwningPasswordFormManagerForUI : public MockPasswordFormManagerForUI {
+    GURL origin;
+    std::vector<const autofill::PasswordForm*> best_matches;
+    std::vector<const autofill::PasswordForm*> federated_matches;
+
+    const GURL& GetOrigin() const override { return origin; }
+    const std::vector<const autofill::PasswordForm*>& GetBestMatches()
+        const override {
+      return best_matches;
+    }
+    std::vector<const autofill::PasswordForm*> GetFederatedMatches()
+        const override {
+      return federated_matches;
+    }
+  };
+
+  auto test_form_manager = std::make_unique<OwningPasswordFormManagerForUI>();
+  auto* weak_manager = test_form_manager.get();
+  test_form_manager->origin = saved_match().origin;
+  test_form_manager->best_matches = {&saved_match()};
+  test_form_manager->federated_matches = {&local_federated_form()};
+  passwords_data().OnPendingPassword(std::move(test_form_manager));
+
+  // Force autofill with the parameters coming from the object to be destroyed.
+  passwords_data().OnPasswordAutofilled(weak_manager->best_matches,
+                                        weak_manager->origin,
+                                        &weak_manager->federated_matches);
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              UnorderedElementsAre(Pointee(local_federated_form()),
+                                   Pointee(saved_match())));
+  EXPECT_EQ(saved_match().origin, passwords_data().origin());
+}
+
 }  // namespace

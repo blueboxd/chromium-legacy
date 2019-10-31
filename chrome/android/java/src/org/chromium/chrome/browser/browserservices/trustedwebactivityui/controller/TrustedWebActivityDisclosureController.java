@@ -30,6 +30,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
     private final TrustedWebActivityModel mModel;
     private final Verifier mVerifier;
     private final TrustedWebActivityUmaRecorder mRecorder;
+    private final ClientPackageNameProvider mClientPackageNameProvider;
 
     @Inject
     TrustedWebActivityDisclosureController(
@@ -37,11 +38,13 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
             TrustedWebActivityModel model,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             Verifier verifier,
-            TrustedWebActivityUmaRecorder recorder) {
+            TrustedWebActivityUmaRecorder recorder,
+            ClientPackageNameProvider clientPackageNameProvider) {
         mVerifier = verifier;
         mPreferenceManager = preferenceManager;
         mModel = model;
         mRecorder = recorder;
+        mClientPackageNameProvider = clientPackageNameProvider;
         model.set(DISCLOSURE_EVENTS_CALLBACK, this);
         verifier.addVerificationObserver(this::onVerificationStatusChanged);
         lifecycleDispatcher.register(this);
@@ -58,7 +61,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
     @Override
     public void onDisclosureAccepted() {
         mRecorder.recordDisclosureAccepted();
-        mPreferenceManager.setUserAcceptedTwaDisclosureForPackage(mVerifier.getClientPackageName());
+        mPreferenceManager.setUserAcceptedTwaDisclosureForPackage(mClientPackageNameProvider.get());
         mModel.set(DISCLOSURE_STATE, DISCLOSURE_STATE_DISMISSED_BY_USER);
     }
 
@@ -80,7 +83,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
     /** Has a disclosure been dismissed for this client package before? */
     private boolean wasDismissed() {
         return mPreferenceManager.hasUserAcceptedTwaDisclosureForPackage(
-                mVerifier.getClientPackageName());
+                mClientPackageNameProvider.get());
     }
 
     @Override

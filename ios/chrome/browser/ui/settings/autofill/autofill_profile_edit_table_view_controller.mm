@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -28,8 +29,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kAutofillProfileEditTableViewId =
-    @"kAutofillProfileEditTableViewId";
 
 namespace {
 using ::AutofillTypeFromAutofillUIType;

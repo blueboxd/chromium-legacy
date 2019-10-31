@@ -1,5 +1,6 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
 
+# https://crrev.com/c/1890403
 # FrameService expects the old document to be deleted, but it isn't, because of
 # the BackForwardCache.
 -FrameServiceBaseTest.DidFinishNavigation
@@ -8,13 +9,16 @@
 # Expects the process used by the previous document to exit.
 -RenderFrameHostManagerTest.DeleteFrameAfterSwapOutACK
 
+# https://crbug.com/1019077
 # Check failed: is_waiting_for_swapout_ack_.
 # The swap out mechanism isn't used with the BackForwardCache.
 -RenderFrameHostManagerTest.CommitNewNavigationBeforeSendingSwapOut
 -RenderFrameHostManagerTest.SwapOutFrameAfterSwapOutACK
 
+# https://crbug.com/1019077
 # navigation_simulator_impl.cc(581)] Check failed: state_ <= READY_TO_COMMIT
 -RenderFrameHostManagerTest.NavigateAfterMissingSwapOutACK
 
+# https://crrev.com/c/1892476
 # NavigationSimulator.CommitErrorPage() is not supported.
 -RenderProcessHostUnitTest.DoNotReuseError

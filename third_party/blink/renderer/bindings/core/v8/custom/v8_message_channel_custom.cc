@@ -39,6 +39,9 @@
 
 namespace blink {
 
+const V8PrivateProperty::SymbolKey kSymbolKeyPort1;
+const V8PrivateProperty::SymbolKey kSymbolKeyPort2;
+
 void V8MessageChannel::ConstructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
@@ -51,10 +54,10 @@ void V8MessageChannel::ConstructorCustom(
   // Create references from the MessageChannel wrapper to the two
   // MessagePort wrappers to make sure that the MessagePort wrappers
   // stay alive as long as the MessageChannel wrapper is around.
-  V8PrivateProperty::GetMessageChannelPort1(isolate).Set(
-      wrapper, ToV8(channel->port1(), wrapper, isolate));
-  V8PrivateProperty::GetMessageChannelPort2(isolate).Set(
-      wrapper, ToV8(channel->port2(), wrapper, isolate));
+  V8PrivateProperty::GetSymbol(isolate, kSymbolKeyPort1)
+      .Set(wrapper, ToV8(channel->port1(), wrapper, isolate));
+  V8PrivateProperty::GetSymbol(isolate, kSymbolKeyPort2)
+      .Set(wrapper, ToV8(channel->port2(), wrapper, isolate));
 
   V8SetReturnValue(info, V8DOMWrapper::AssociateObjectWithWrapper(
                              isolate, channel, GetWrapperTypeInfo(), wrapper));

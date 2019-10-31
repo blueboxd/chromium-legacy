@@ -196,12 +196,15 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
       // Inspect backing stores to allow specifying objects that are only
       // reachable through a backing store.
       if (!ThreadHeap::IsNormalArenaIndex(
-              PageFromObject(item.object)->Arena()->ArenaIndex())) {
+              PageFromObject(item.base_object_payload)
+                  ->Arena()
+                  ->ArenaIndex())) {
         backing_visitor_.ProcessBackingStore(
-            HeapObjectHeader::FromPayload(item.object));
+            HeapObjectHeader::FromPayload(item.base_object_payload));
         continue;
       }
-      auto** pos = std::find(objects_.begin(), objects_.end(), item.object);
+      auto** pos =
+          std::find(objects_.begin(), objects_.end(), item.base_object_payload);
       if (objects_.end() != pos)
         objects_.erase(pos);
     }
@@ -1485,7 +1488,7 @@ TEST_F(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
   while (scope.marking_worklist()->Pop(WorklistTaskId::MutatorThread,
                                        &marking_item)) {
     HeapObjectHeader* header =
-        HeapObjectHeader::FromPayload(marking_item.object);
+        HeapObjectHeader::FromPayload(marking_item.base_object_payload);
     if (header->IsMarked())
       header->Unmark();
   }

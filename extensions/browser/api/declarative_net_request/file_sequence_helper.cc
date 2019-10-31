@@ -369,8 +369,10 @@ void FileSequenceHelper::LoadRulesets(
   }
 
   if (success) {
+    // Set priority explicitly to avoid unwanted task priority inheritance.
     base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+        FROM_HERE,
+        {content::BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
         base::BindOnce(std::move(ui_callback), std::move(load_data)));
     return;
   }
@@ -402,9 +404,12 @@ void FileSequenceHelper::UpdateDynamicRules(
                                               UpdateDynamicRulesStatus status) {
     base::UmaHistogramEnumeration(kUpdateDynamicRulesStatusHistogram, status);
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(std::move(ui_callback), std::move(load_data),
-                                  std::move(error)));
+    // Set priority explicitly to avoid unwanted task priority inheritance.
+    base::PostTask(
+        FROM_HERE,
+        {content::BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
+        base::BindOnce(std::move(ui_callback), std::move(load_data),
+                       std::move(error)));
   };
 
   int new_ruleset_checksum = -1;
@@ -449,8 +454,10 @@ void FileSequenceHelper::OnRulesetsReindexed(LoadRulesetsUICallback ui_callback,
   }
 
   // The UI thread will handle success or failure.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(ui_callback), std::move(load_data)));
+  base::PostTask(
+      FROM_HERE,
+      {content::BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(std::move(ui_callback), std::move(load_data)));
 }
 
 }  // namespace declarative_net_request

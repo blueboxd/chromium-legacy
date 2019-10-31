@@ -11,8 +11,20 @@
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
+
+namespace {
+
+// Width/height of the dismiss button.
+constexpr int kDismissButtonIconSideLength = 12;
+
+// Width/height of the colored-background container of the dismiss button.
+constexpr int kControlButtonsContainerSideLength =
+    2 * kDismissButtonIconSideLength;
+
+}  // anonymous namespace
 
 MediaNotificationContainerImpl::MediaNotificationContainerImpl(
     const message_center::Notification& notification,
@@ -20,12 +32,34 @@ MediaNotificationContainerImpl::MediaNotificationContainerImpl(
     : message_center::MessageView(notification) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
+  auto control_buttons_container = std::make_unique<views::View>();
+
+  // We paint to a layer here so that we can modify opacity of that layer to
+  // match the opacity of the |control_buttons_view_| layer.
+  control_buttons_container->SetPaintToLayer();
+  control_buttons_container->layer()->SetFillsBoundsOpaquely(false);
+
+  // Vertically center the dismiss icon within the container.
+  constexpr int top_margin =
+      (kControlButtonsContainerSideLength - kDismissButtonIconSideLength) / 2;
+  control_buttons_container->SetProperty(views::kMarginsKey,
+                                         gfx::Insets(top_margin, 0, 0, 0));
+
+  control_buttons_container->SetPreferredSize(gfx::Size(
+      kControlButtonsContainerSideLength, kControlButtonsContainerSideLength));
+  control_buttons_container->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  control_buttons_container_ = control_buttons_container.get();
+
   auto control_buttons_view =
       std::make_unique<message_center::NotificationControlButtonsView>(this);
-  control_buttons_view_ = control_buttons_view.get();
+  control_buttons_view->SetBackground(
+      views::CreateSolidBackground(SK_ColorTRANSPARENT));
+  control_buttons_view_ =
+      control_buttons_container_->AddChildView(std::move(control_buttons_view));
 
   auto view = std::make_unique<media_message_center::MediaNotificationView>(
-      this, std::move(item), std::move(control_buttons_view),
+      this, std::move(item), std::move(control_buttons_container),
       message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
       message_center::kNotificationWidth,
       /*should_show_icon=*/true);
@@ -62,8 +96,26 @@ void MediaNotificationContainerImpl::UpdateCornerRadius(int top_radius,
   view_->UpdateCornerRadius(top_radius, bottom_radius);
 }
 
+void MediaNotificationContainerImpl::UpdateControlButtonsVisibility() {
+  message_center::MessageView::UpdateControlButtonsVisibility();
+
+  // The above call may update the opacity of the control buttons to 0 or 1. We
+  // need to update the container layer opacity to match.
+  control_buttons_container_->layer()->SetOpacity(
+      control_buttons_view_->layer()->opacity());
+}
+
 void MediaNotificationContainerImpl::OnExpanded(bool expanded) {
   PreferredSizeChanged();
+}
+
+void MediaNotificationContainerImpl::OnColorsChanged(SkColor foreground,
+                                                     SkColor background) {
+  // We need to update the foreground and background colors of the dismiss icon
+  // to ensure proper contrast against the artwork.
+  control_buttons_view_->SetButtonIconColors(foreground);
+  control_buttons_container_->SetBackground(views::CreateRoundedRectBackground(
+      background, kControlButtonsContainerSideLength / 2));
 }
 
 void MediaNotificationContainerImpl::OnMouseEvent(ui::MouseEvent* event) {

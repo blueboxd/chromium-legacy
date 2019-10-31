@@ -1274,12 +1274,13 @@ PhysicalRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
 PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     PhysicalRect result;
-    NGPaintFragment::InlineFragmentsIncludingCulledFor(
-        *this, [&result](const NGPaintFragment* fragment) {
-          PhysicalRect child_rect = fragment->InkOverflow();
-          child_rect.offset += fragment->InlineOffsetToContainerBox();
-          result.Unite(child_rect);
-        });
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
+      PhysicalRect child_rect = cursor.CurrentInkOverflow();
+      child_rect.offset += cursor.CurrentOffset();
+      result.Unite(child_rect);
+    }
     return result;
   }
 

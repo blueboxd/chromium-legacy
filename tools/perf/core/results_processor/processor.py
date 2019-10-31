@@ -31,10 +31,6 @@ from tracing.value import histogram
 from tracing.value import histogram_set
 from tracing.value import legacy_unit_info
 
-# Telemetry results file is deprecated.
-# TODO(crbug.com/981349): Remove this constant after Telemetry swithes to
-# the new file.
-TELEMETRY_RESULTS = '_telemetry_results.jsonl'
 TEST_RESULTS = '_test_results.jsonl'
 DIAGNOSTICS_NAME = 'diagnostics.json'
 MEASUREMENTS_NAME = 'measurements.json'
@@ -143,31 +139,13 @@ def GenerateExitCode(test_results):
 
 def _LoadTestResults(intermediate_dir):
   """Load intermediate results from a file into a list of test results."""
-  # Try to load the results from the new file first, then from the old one.
-  # TODO(crbug.com/981349): Remove fallback when Telemetry switches to the
-  # new format.
   intermediate_file = os.path.join(intermediate_dir, TEST_RESULTS)
-  if not os.path.exists(intermediate_file):
-    intermediate_file = os.path.join(intermediate_dir, TELEMETRY_RESULTS)
-
-  benchmark_run = {}
   test_results = []
   with open(intermediate_file) as f:
     for line in f:
       record = json.loads(line)
-      # TODO(crbug.com/981349): Stop reading benchmarkRun messages when
-      # Telemetry switches to the new format.
-      if 'benchmarkRun' in record:
-        benchmark_run.update(record['benchmarkRun'])
       if 'testResult' in record:
-        # TODO(crbug.com/1018248): Remove this after the field is renamed
-        # in Telemetry.
-        if 'isExpected' in record['testResult']:
-          record['testResult']['expected'] = record['testResult']['isExpected']
-          del record['testResult']['isExpected']
         test_results.append(record['testResult'])
-  for test_result in test_results:
-    test_result['_benchmarkRun'] = benchmark_run
   return test_results
 
 
@@ -242,17 +220,12 @@ def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label):
   if DIAGNOSTICS_NAME in artifacts:
     with open(artifacts[DIAGNOSTICS_NAME]['filePath']) as f:
       diagnostics = json.load(f)['diagnostics']
-  # TODO(crbug.com/981349): Remove this branch when Telemetry switches to the
-  # new format.
-  else:
-    diagnostics = test_result.get('_benchmarkRun', {}).get('diagnostics', {})
-
-  for name, diag in diagnostics.items():
-    # For now, we only support GenericSet diagnostics that are serialized
-    # as lists of values.
-    assert isinstance(diag, list)
-    test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
-        name, generic_set.GenericSet(diag))
+    for name, diag in diagnostics.items():
+      # For now, we only support GenericSet diagnostics that are serialized
+      # as lists of values.
+      assert isinstance(diag, list)
+      test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
+          name, generic_set.GenericSet(diag))
 
   timestamp_ms = util.IsoTimestampToEpoch(test_suite_start) * 1e3
   test_result['_histograms'].AddSharedDiagnosticToAllHistograms(

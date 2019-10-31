@@ -65,10 +65,11 @@ public class VerifierTest {
     @Mock CustomTabActivityTabProvider mTabProvider;
     @Mock CustomTabIntentDataProvider mIntentDataProvider;
     @Mock Tab mTab;
-    @Mock TwaRegistrar mTwaRegistrar;
+    @Mock
+    ClientPackageNameProvider mClientPackageNameProvider;
     @Captor ArgumentCaptor<TabObserver> mTabObserverCaptor;
 
-    TestVerifierDelegate mVerifierDelegate = new TestVerifierDelegate(PACKAGE_NAME);
+    TestVerifierDelegate mVerifierDelegate = new TestVerifierDelegate();
 
     private Verifier mVerifier;
 
@@ -76,11 +77,12 @@ public class VerifierTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mTabProvider.getTab()).thenReturn(mTab);
+        when(mClientPackageNameProvider.get()).thenReturn(PACKAGE_NAME);
         doNothing().when(mTabObserverRegistrar).registerTabObserver(mTabObserverCaptor.capture());
         when(mIntentDataProvider.getTrustedWebActivityAdditionalOrigins())
                 .thenReturn(Collections.singletonList("https://www.origin2.com/"));
         mVerifier = new Verifier(mLifecycleDispatcher, mTabObserverRegistrar,
-                mTabProvider, mIntentDataProvider, mVerifierDelegate, mTwaRegistrar);
+                mTabProvider, mIntentDataProvider, mVerifierDelegate);
         // TODO(peconn): Add check on permission updated being updated.
     }
 

@@ -122,8 +122,15 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
   EXPECT_TRUE(IsShowingWebContentsModalDialog(web_contents));
 }
 
+// TODO(https://crbug.com/1020038): Crashy on Linux
+#if defined(OS_LINUX)
+#define MAYBE_ReleaseWebContents DISABLED_ReleaseWebContents
+#else
+#define MAYBE_ReleaseWebContents ReleaseWebContents
+#endif
 // Tests that ReleaseWebContents() works.
-IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, ReleaseWebContents) {
+IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
+                       MAYBE_ReleaseWebContents) {
   auto delegate = std::make_unique<ui::test::TestWebDialogDelegate>(
       GURL(chrome::kChromeUIConstrainedHTMLTestURL));
   WebContents* web_contents =

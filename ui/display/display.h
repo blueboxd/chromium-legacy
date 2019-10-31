@@ -193,9 +193,7 @@ class DISPLAY_EXPORT Display final {
 
   // Returns the display's size in pixel coordinates.
   gfx::Size GetSizeInPixel() const;
-#if defined(OS_ANDROID)
   void set_size_in_pixels(const gfx::Size& size) { size_in_pixels_ = size; }
-#endif  // defined(OS_ANDROID)
 
   // Returns a string representation of the display;
   std::string ToString() const;

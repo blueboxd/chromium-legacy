@@ -280,8 +280,9 @@ def main():
   assert vc_lib_path
   print('vc_lib_path = ' + gn_helpers.ToGNString(vc_lib_path))
   if (target_store != True):
-    # Path is assumed not to exist for desktop applications
-    assert vc_lib_atlmfc_path
+    # Path is assumed to exist for desktop applications.
+    assert vc_lib_atlmfc_path, ("Microsoft.VisualStudio.Component.VC.ATLMFC " +
+                                "is not found, check if it's installed.")
   # Possible atlmfc library path gets introduced in the future for store thus
   # output result if a result exists.
   if (vc_lib_atlmfc_path != ''):

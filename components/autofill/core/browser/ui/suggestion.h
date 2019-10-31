@@ -53,8 +53,12 @@ struct Suggestion {
   base::string16 additional_label;
   // Contains an image to display for the suggestion.
   gfx::Image custom_icon;
+  // TODO(crbug.com/1019660): Identify icons with enum instead of strings.
   // If |custom_icon| is empty, the name of the fallback built-in icon.
   std::string icon;
+  // This icon string shows whether the suggestion originates from local or
+  // account store. If it's empty, no store indication should be shown.
+  std::string store_indicator_icon;
   MatchMode match = PREFIX_MATCH;
   // |value| should be displayed as secondary text.
   bool is_value_secondary = false;

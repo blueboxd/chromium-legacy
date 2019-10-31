@@ -13,7 +13,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * Holds an instance of {@link NightModeStateProvider} that provides night mode state for the entire
@@ -65,7 +65,7 @@ public class GlobalNightModeStateProviderHolder {
             } else {
                 sInstance = new GlobalNightModeStateController(SystemNightModeMonitor.getInstance(),
                         PowerSavingModeMonitor.getInstance(),
-                        ChromePreferenceManager.getInstance());
+                        SharedPreferencesManager.getInstance());
             }
         }
         return sInstance;

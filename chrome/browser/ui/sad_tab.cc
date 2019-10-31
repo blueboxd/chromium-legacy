@@ -94,6 +94,9 @@ bool SadTab::ShouldShow(base::TerminationStatus status) {
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
+#if defined(OS_WIN)
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+#endif
     case base::TERMINATION_STATUS_OOM:
       return true;
     case base::TERMINATION_STATUS_NORMAL_TERMINATION:

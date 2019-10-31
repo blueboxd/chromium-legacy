@@ -1,3 +1,7 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "third_party/blink/renderer/modules/compression/inflate_transformer.h"
 
 #include <string.h>
@@ -11,6 +15,7 @@
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/modules/compression/compression_format.h"
 #include "third_party/blink/renderer/modules/compression/zlib_partition_alloc.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
@@ -18,7 +23,8 @@
 
 namespace blink {
 
-InflateTransformer::InflateTransformer(ScriptState* script_state, Format format)
+InflateTransformer::InflateTransformer(ScriptState* script_state,
+                                       CompressionFormat format)
     : script_state_(script_state), out_buffer_(kBufferSize) {
   memset(&stream_, 0, sizeof(z_stream));
   ZlibPartitionAlloc::Configure(&stream_);
@@ -26,10 +32,10 @@ InflateTransformer::InflateTransformer(ScriptState* script_state, Format format)
   constexpr int kUseGzip = 16;
   int err;
   switch (format) {
-    case Format::kDeflate:
+    case CompressionFormat::kDeflate:
       err = inflateInit2(&stream_, kWindowBits);
       break;
-    case Format::kGzip:
+    case CompressionFormat::kGzip:
       err = inflateInit2(&stream_, kWindowBits + kUseGzip);
       break;
   }

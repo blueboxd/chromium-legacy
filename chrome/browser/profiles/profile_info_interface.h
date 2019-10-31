@@ -30,8 +30,6 @@ class ProfileInfoInterface {
 
   virtual base::FilePath GetPathOfProfileAtIndex(size_t index) const = 0;
 
-  virtual base::string16 GetUserNameOfProfileAtIndex(size_t index) const = 0;
-
   virtual base::string16 GetGAIANameOfProfileAtIndex(size_t index) const = 0;
 
   virtual base::string16 GetGAIAGivenNameOfProfileAtIndex(

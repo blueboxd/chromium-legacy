@@ -278,11 +278,11 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
 
  private:
+  base::ScopedTempDir temp_dir_;
+
   base::SimpleTestClock test_clock_;
 
   std::unique_ptr<MediaEngagementService> service_;
-
-  base::ScopedTempDir temp_dir_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 };

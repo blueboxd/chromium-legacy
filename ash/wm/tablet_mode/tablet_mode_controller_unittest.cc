@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accelerometer/accelerometer_constants.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accelerometer/accelerometer_types.h"
 #include "ash/app_list/app_list_controller_impl.h"
@@ -61,8 +62,6 @@
 namespace ash {
 
 namespace {
-
-constexpr float kMeanGravity = TabletModeControllerTestApi::kMeanGravity;
 
 // The strings are "Touchview" as they're already used in metrics.
 constexpr char kTabletModeInitiallyDisabled[] = "Touchview_Initially_Disabled";

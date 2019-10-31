@@ -19,7 +19,6 @@ from core import results_processor
 from core import testing
 
 from telemetry import decorators
-from telemetry.internal.browser import browser_finder
 from telemetry.testing import progress_reporter
 
 from py_utils import discover
@@ -228,14 +227,9 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
       options = GenerateBenchmarkOptions(
           output_dir=temp_dir,
           benchmark_cls=SinglePageBenchmark)
-      possible_browser = browser_finder.FindBrowser(options)
-      if possible_browser is None:
-        self.skipTest('Cannot find the browser to run the test.')
-
       simplified_test_name = self.id().replace(
           'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.',
           '')
-
       # Sanity check to ensure that that substring removal was effective.
       assert len(simplified_test_name) < len(self.id())
 

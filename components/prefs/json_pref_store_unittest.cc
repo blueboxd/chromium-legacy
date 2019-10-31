@@ -183,10 +183,10 @@ class JsonPrefStoreTest
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  base::test::TaskEnvironment task_environment_;
-
   // The path to temporary directory used to contain the test operations.
   base::ScopedTempDir temp_dir_;
+
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStoreTest);
 };

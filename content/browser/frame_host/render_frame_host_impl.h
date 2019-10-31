@@ -325,6 +325,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void EvictFromBackForwardCacheWithReason(
       BackForwardCacheMetrics::NotRestoredReason reason);
+  void EvictFromBackForwardCacheWithReasons(
+      const BackForwardCacheMetrics::NotRestoredReasons& reasons);
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -1917,8 +1919,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Evicts the document from the BackForwardCache if it is in the cache,
   // and ineligible for caching.
-  void MaybeEvictFromBackForwardCache(
-      BackForwardCacheMetrics::NotRestoredReason reason);
+  void MaybeEvictFromBackForwardCache();
 
   // Helper for handling download-related IPCs.
   void DownloadUrl(

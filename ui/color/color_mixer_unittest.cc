@@ -86,7 +86,8 @@ TEST(ColorMixerTest, GetInputColorPreviousMixer) {
 TEST(ColorMixerTest, GetInputColorIgnoresRecipe) {
   ColorMixer mixer;
   mixer.AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
-  mixer.AddRecipe(kColorTest0).AddTransform(GetColorWithMaxContrast());
+  mixer.AddRecipe(kColorTest0)
+      .AddTransform(GetColorWithMaxContrast(FromTransformInput()));
   EXPECT_EQ(SK_ColorGREEN, mixer.GetInputColor(kColorTest0));
 }
 
@@ -96,7 +97,8 @@ TEST(ColorMixerTest, GetInputColorIgnoresRecipe) {
 TEST(ColorMixerTest, GetInputColorRespectsRecipePreviousMixer) {
   ColorMixer mixer0;
   mixer0.AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
-  mixer0.AddRecipe(kColorTest0).AddTransform(GetColorWithMaxContrast());
+  mixer0.AddRecipe(kColorTest0)
+      .AddTransform(GetColorWithMaxContrast(FromTransformInput()));
   ColorMixer mixer1(&mixer0);
   mixer1.AddSet({kColorSetTest1, {{kColorTest1, SK_ColorRED}}});
   EXPECT_EQ(color_utils::GetColorWithMaxContrast(SK_ColorGREEN),
@@ -167,7 +169,8 @@ TEST(ColorMixerTest, GetOriginalColorFromSetPreviousMixer) {
 TEST(ColorMixerTest, GetOriginalColorFromSetIgnoresRecipe) {
   ColorMixer mixer;
   mixer.AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
-  mixer.AddRecipe(kColorTest0).AddTransform(GetColorWithMaxContrast());
+  mixer.AddRecipe(kColorTest0)
+      .AddTransform(GetColorWithMaxContrast(FromTransformInput()));
   EXPECT_EQ(SK_ColorGREEN,
             mixer.GetOriginalColorFromSet(kColorTest0, kColorSetTest0));
 }
@@ -178,7 +181,8 @@ TEST(ColorMixerTest, GetOriginalColorFromSetIgnoresRecipe) {
 TEST(ColorMixerTest, GetOriginalColorFromSetIgnoresRecipePreviousMixer) {
   ColorMixer mixer0;
   mixer0.AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
-  mixer0.AddRecipe(kColorTest0).AddTransform(GetColorWithMaxContrast());
+  mixer0.AddRecipe(kColorTest0)
+      .AddTransform(GetColorWithMaxContrast(FromTransformInput()));
   ColorMixer mixer1(&mixer0);
   mixer1.AddSet({kColorSetTest1, {{kColorTest1, SK_ColorRED}}});
   EXPECT_EQ(SK_ColorGREEN,
@@ -204,7 +208,8 @@ TEST(ColorMixerTest, GetResultColorNoRecipe) {
 TEST(ColorMixerTest, GetResultColorNoSet) {
   ColorMixer mixer;
   mixer.AddRecipe(kColorTest0).AddTransform(FromColor(SK_ColorGREEN));
-  mixer.AddRecipe(kColorTest1).AddTransform(GetColorWithMaxContrast());
+  mixer.AddRecipe(kColorTest1)
+      .AddTransform(GetColorWithMaxContrast(FromTransformInput()));
   EXPECT_EQ(SK_ColorGREEN, mixer.GetResultColor(kColorTest0));
   EXPECT_NE(gfx::kPlaceholderColor, mixer.GetResultColor(kColorTest1));
 }
@@ -228,11 +233,12 @@ TEST(ColorMixerTest, GetResultColorChained) {
   mixer.AddSet({kColorSetTest0, {{kColorTest1, SK_ColorWHITE}}});
   mixer.AddRecipe(kColorTest0).AddTransform(FromColor(gfx::kGoogleBlue050));
   mixer.AddRecipe(kColorTest1)
-      .AddTransform(GetColorWithMaxContrast())
-      .AddTransform(BlendTowardMaxContrast(0x29));
+      .AddTransform(BlendTowardMaxContrast(
+          GetColorWithMaxContrast(FromTransformInput()), 0x29));
   mixer.AddRecipe(kColorTest2)
-      .AddTransform(FromColor(gfx::kGoogleBlue500))
-      .AddTransform(BlendForMinContrast(kColorTest1, kColorTest0));
+      .AddTransform(BlendForMinContrast(FromColor(gfx::kGoogleBlue500),
+                                        FromResultColor(kColorTest1),
+                                        FromResultColor(kColorTest0)));
   EXPECT_EQ(SkColorSetRGB(0x89, 0xB3, 0xF8), mixer.GetResultColor(kColorTest2));
 }
 

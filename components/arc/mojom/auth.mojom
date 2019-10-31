@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 23
+// Next MinVersion: 24
 
 module arc.mojom;
 
@@ -338,7 +338,7 @@ interface AuthHost {
   [MinVersion=20] HandleUpdateCredentialsRequest@17(string account_name);
 };
 
-// Next Method ID: 6
+// Next Method ID: 7
 interface AuthInstance {
   // DEPRECATED: Please use Init@2 instead.
   InitDeprecated@0(AuthHost host_ptr);
@@ -371,4 +371,12 @@ interface AuthInstance {
   // Gets resolution status of main account for statistics reporting.
   [MinVersion=22] GetMainAccountResolutionStatus@5()
       => (MainAccountResolutionStatus status);
+
+  // A notification that all secondary accounts should be removed from ARC.
+  // Equivalent to calling |OnAccountUpdated| with AccountUpdateType::REMOVAL
+  // for each secondary account and in case of inconsistency between Chrome OS
+  // Account Manager and ARC accounts, inconsistent accounts will be also
+  // removed from ARC. Should be called on transition from Regular to Child
+  // account type.
+  [MinVersion=23] RemoveSecondaryAccounts@6();
 };

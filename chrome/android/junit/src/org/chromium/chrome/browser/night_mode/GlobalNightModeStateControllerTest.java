@@ -32,6 +32,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
 
 /**
@@ -61,9 +62,9 @@ public class GlobalNightModeStateControllerTest {
         MockitoAnnotations.initMocks(this);
         captureObservers();
 
-        mGlobalNightModeStateController = new GlobalNightModeStateController(
-                mSystemNightModeMonitor, mPowerSavingMonitor,
-                ChromePreferenceManager.getInstance());
+        mGlobalNightModeStateController =
+                new GlobalNightModeStateController(mSystemNightModeMonitor, mPowerSavingMonitor,
+                        SharedPreferencesManager.getInstance());
 
         mGlobalNightModeStateController.onApplicationStateChange(HAS_RUNNING_ACTIVITIES);
 

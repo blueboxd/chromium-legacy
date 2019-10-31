@@ -10,7 +10,7 @@
     `);
   await TestRunner.addScriptTag('resources/coverage.js');
 
-  await CoverageTestRunner.startCoverage();
+  await CoverageTestRunner.startCoverage(true);
   await TestRunner.evaluateInPagePromise('performActions()');
   await CoverageTestRunner.stopCoverage();
   await UI.inspectorView.showPanel('sources');

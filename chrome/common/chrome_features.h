@@ -55,6 +55,8 @@ extern const base::Feature kAppNotificationStatusMessaging;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceAsh;
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppServiceInstanceRegistry;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceIntentHandling;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceShelf;

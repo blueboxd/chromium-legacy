@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/peerconnection/rtc_rtp_transceiver_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver_impl.h"
 
 #include "base/bind.h"
 #include "base/logging.h"

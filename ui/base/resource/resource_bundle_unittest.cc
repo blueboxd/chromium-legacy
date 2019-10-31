@@ -108,7 +108,11 @@ class ResourceBundleTest : public testing::Test {
   ~ResourceBundleTest() override {}
 
   // Overridden from testing::Test:
-  void TearDown() override { delete resource_bundle_; }
+  void TearDown() override {
+    delete resource_bundle_;
+    if (temp_dir_.IsValid())
+      ASSERT_TRUE(temp_dir_.Delete());
+  }
 
   // Returns new ResoureBundle with the specified |delegate|. The
   // ResourceBundleTest class manages the lifetime of the returned
@@ -121,6 +125,7 @@ class ResourceBundleTest : public testing::Test {
   }
 
  protected:
+  base::ScopedTempDir temp_dir_;
   ResourceBundle* resource_bundle_;
 
  private:
@@ -248,10 +253,9 @@ TEST_F(ResourceBundleTest, DelegateGetRawDataResource) {
 }
 
 TEST_F(ResourceBundleTest, IsGzipped) {
-  base::ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath data_path =
-      dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
   // Dump contents into a pak file and load it.
   ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
                             kSampleCompressPakSizeV5),
@@ -268,10 +272,9 @@ TEST_F(ResourceBundleTest, IsGzipped) {
 }
 
 TEST_F(ResourceBundleTest, IsBrotli) {
-  base::ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath data_path =
-      dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
   // Dump contents into a pak file and load it.
   ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
                             kSampleCompressPakSizeV5),
@@ -363,8 +366,9 @@ class ResourceBundleImageTest : public ResourceBundleTest {
   ~ResourceBundleImageTest() override {}
 
   void SetUp() override {
+    ResourceBundleTest::SetUp();
     // Create a temporary directory to write test resource bundles to.
-    ASSERT_TRUE(dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
   // Returns resource bundle which uses an empty data pak for locale data.
@@ -383,7 +387,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
   }
 
   // Returns the path of temporary directory to write test data packs into.
-  const base::FilePath& dir_path() { return dir_.GetPath(); }
+  const base::FilePath& dir_path() { return temp_dir_.GetPath(); }
 
   // Returns the number of DataPacks managed by |resource_bundle|.
   size_t NumDataPacksInResourceBundle(ResourceBundle* resource_bundle) {
@@ -393,7 +397,6 @@ class ResourceBundleImageTest : public ResourceBundleTest {
 
  private:
   std::unique_ptr<DataPack> locale_pack_;
-  base::ScopedTempDir dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundleImageTest);
 };

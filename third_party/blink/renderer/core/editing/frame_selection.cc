@@ -920,9 +920,17 @@ void FrameSelection::SetFocusedNodeIfNeeded() {
 }
 
 static EphemeralRangeInFlatTree ComputeRangeForSerialization(
-    const SelectionInDOMTree& selection) {
-  const EphemeralRangeInFlatTree& range =
-      ConvertToSelectionInFlatTree(selection).ComputeRange();
+    const SelectionInDOMTree& selection_in_dom_tree) {
+  const SelectionInFlatTree& selection =
+      ConvertToSelectionInFlatTree(selection_in_dom_tree);
+  // TODO(crbug.com/1019152): Once we know the root cause of having
+  // seleciton with |base.IsNull() != extent.IsNull()|, we should get rid of
+  // this if-statement.
+  if (selection.Base().IsNull() || selection.Extent().IsNull()) {
+    DCHECK(selection.IsNone());
+    return EphemeralRangeInFlatTree();
+  }
+  const EphemeralRangeInFlatTree& range = selection.ComputeRange();
   const PositionInFlatTree& start =
       CreateVisiblePosition(range.StartPosition()).DeepEquivalent();
   const PositionInFlatTree& end =

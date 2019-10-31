@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recording.h"
@@ -200,10 +201,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   }
 }
 
-+ (NSString*)collectionAccessibilityIdentifier {
-  return @"ContentSuggestionsCollectionIdentifier";
-}
-
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
@@ -215,7 +212,7 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   self.collectionView.contentInsetAdjustmentBehavior =
       UIScrollViewContentInsetAdjustmentNever;
   self.collectionView.accessibilityIdentifier =
-      [[self class] collectionAccessibilityIdentifier];
+      kContentSuggestionsCollectionIdentifier;
   _collectionUpdater.collectionViewController = self;
 
   self.collectionView.delegate = self;

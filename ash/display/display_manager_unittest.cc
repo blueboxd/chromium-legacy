@@ -5,6 +5,7 @@
 #include "ui/display/manager/display_manager.h"
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/accelerometer/accelerometer_constants.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accelerometer/accelerometer_types.h"
 #include "ash/app_list/app_list_controller_impl.h"
@@ -3594,7 +3595,6 @@ class DisplayManagerOrientationTest : public DisplayManagerTest {
 
   void SetUp() override {
     DisplayManagerTest::SetUp();
-    const float kMeanGravity = 9.8066f;
     portrait_primary->Set(ACCELEROMETER_SOURCE_SCREEN, false,
                           -kMeanGravity, 0.f, 0.f);
     portrait_secondary->Set(ACCELEROMETER_SOURCE_SCREEN, false,

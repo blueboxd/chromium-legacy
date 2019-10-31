@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/accelerometer/accelerometer_constants.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accelerometer/accelerometer_types.h"
 #include "ash/display/screen_orientation_controller.h"
@@ -42,7 +43,6 @@ namespace ash {
 namespace {
 
 const float kDegreesToRadians = 3.1415926f / 180.0f;
-const float kMeanGravity = -9.8066f;
 
 display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
                                               const gfx::Rect& bounds) {
@@ -366,13 +366,13 @@ TEST_F(ScreenOrientationControllerTest, DisplayRotation) {
   EnableTabletMode(true);
 
   // Now test rotating in all directions.
-  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
@@ -381,15 +381,15 @@ TEST_F(ScreenOrientationControllerTest, DisplayRotation) {
 TEST_F(ScreenOrientationControllerTest, RotationIgnoresLowAngles) {
   EnableTabletMode(true);
 
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, -kMeanGravity));
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, kMeanGravity));
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
-  TriggerLidUpdate(gfx::Vector3dF(-2.0f, 0.0f, -kMeanGravity));
+  TriggerLidUpdate(gfx::Vector3dF(-2.0f, 0.0f, kMeanGravity));
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, 2.0f, -kMeanGravity));
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, 2.0f, kMeanGravity));
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
-  TriggerLidUpdate(gfx::Vector3dF(2.0f, 0.0f, -kMeanGravity));
+  TriggerLidUpdate(gfx::Vector3dF(2.0f, 0.0f, kMeanGravity));
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, -2.0f, -kMeanGravity));
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, -2.0f, kMeanGravity));
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
@@ -398,30 +398,30 @@ TEST_F(ScreenOrientationControllerTest, RotationIgnoresLowAngles) {
 TEST_F(ScreenOrientationControllerTest, RotationSticky) {
   EnableTabletMode(true);
 
-  gfx::Vector3dF gravity(0.0f, -kMeanGravity, 0.0f);
+  gfx::Vector3dF gravity(0.0f, kMeanGravity, 0.0f);
   TriggerLidUpdate(gravity);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   // Turn past half-way point to next direction and rotation should remain
   // the same.
   float degrees = 50.0;
-  gravity.set_x(-sin(degrees * kDegreesToRadians) * kMeanGravity);
-  gravity.set_y(-cos(degrees * kDegreesToRadians) * kMeanGravity);
+  gravity.set_x(-sin(degrees * kDegreesToRadians) * -kMeanGravity);
+  gravity.set_y(-cos(degrees * kDegreesToRadians) * -kMeanGravity);
   TriggerLidUpdate(gravity);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   // Turn more and the screen should rotate.
   degrees = 70.0;
-  gravity.set_x(-sin(degrees * kDegreesToRadians) * kMeanGravity);
-  gravity.set_y(-cos(degrees * kDegreesToRadians) * kMeanGravity);
+  gravity.set_x(-sin(degrees * kDegreesToRadians) * -kMeanGravity);
+  gravity.set_y(-cos(degrees * kDegreesToRadians) * -kMeanGravity);
   TriggerLidUpdate(gravity);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
   // Turn back just beyond the half-way point and the new rotation should
   // still be in effect.
   degrees = 40.0;
-  gravity.set_x(-sin(degrees * kDegreesToRadians) * kMeanGravity);
-  gravity.set_y(-cos(degrees * kDegreesToRadians) * kMeanGravity);
+  gravity.set_x(-sin(degrees * kDegreesToRadians) * -kMeanGravity);
+  gravity.set_y(-cos(degrees * kDegreesToRadians) * -kMeanGravity);
   TriggerLidUpdate(gravity);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
@@ -434,8 +434,8 @@ TEST_F(ScreenOrientationControllerTest, RotationLockPreventsRotation) {
 
   // Turn past the threshold for rotation.
   float degrees = 90.0;
-  gfx::Vector3dF gravity(-sin(degrees * kDegreesToRadians) * kMeanGravity,
-                         -cos(degrees * kDegreesToRadians) * kMeanGravity,
+  gfx::Vector3dF gravity(-sin(degrees * kDegreesToRadians) * -kMeanGravity,
+                         -cos(degrees * kDegreesToRadians) * -kMeanGravity,
                          0.0f);
   TriggerLidUpdate(gravity);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
@@ -485,7 +485,7 @@ TEST_F(ScreenOrientationControllerTest, BlockRotationNotifications) {
   // via the accelerometer while in tablet mode
   // Rotate the screen 90 degrees
   ASSERT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
-  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
   ASSERT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   EXPECT_EQ(0u, message_center->NotificationCount());
   EXPECT_FALSE(message_center->HasPopupNotifications());
@@ -516,7 +516,7 @@ TEST_F(ScreenOrientationControllerTest, ResetUserRotationUponExit) {
   SetInternalDisplayRotation(display::Display::ROTATE_90);
   EnableTabletMode(true);
 
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
 
   EnableTabletMode(false);
@@ -549,13 +549,13 @@ TEST_F(ScreenOrientationControllerTest, LandscapeOrientationAllowsRotation) {
   EXPECT_TRUE(RotationLocked());
 
   // Inverse of orientation is allowed
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
 
   // Display rotations between are not allowed
-  TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
 }
 
@@ -572,13 +572,13 @@ TEST_F(ScreenOrientationControllerTest, PortraitOrientationAllowsRotation) {
   EXPECT_TRUE(RotationLocked());
 
   // Inverse of orientation is allowed
-  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
   // Display rotations between are not allowed
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 }
 
@@ -595,11 +595,11 @@ TEST_F(ScreenOrientationControllerTest, OrientationLockDisallowsRotation) {
   EXPECT_TRUE(RotationLocked());
 
   // Rotation does not change.
-  TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
-  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 }
 
@@ -619,7 +619,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
   EXPECT_TRUE(UserRotationLocked());
 
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
@@ -768,14 +768,14 @@ TEST_F(ScreenOrientationControllerTest, ClamshellPhysicalTabletState) {
   TabletModeControllerTestApi tablet_mode_controller_test_api;
   EXPECT_FALSE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
-  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   // Once the device goes into tablet mode, it becomes possible to auto-rotate.
   tablet_mode_controller_test_api.OpenLidToAngle(270);
   EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
   EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
-  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravity, 0.0f, 0.0f));
+  TriggerLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
   // Hooking an external pointing device will exits tablet UI mode, but the
@@ -784,7 +784,7 @@ TEST_F(ScreenOrientationControllerTest, ClamshellPhysicalTabletState) {
   tablet_mode_controller_test_api.AttachExternalMouse();
   EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
   EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
   EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
 }
 

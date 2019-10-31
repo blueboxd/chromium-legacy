@@ -346,6 +346,11 @@
 // browser state.
 + (void)setPopupPrefValue:(ContentSetting)value;
 
+#pragma mark - Keyboard Command utilities
+
+// The count of key commands registered with the currently active BVC.
++ (NSInteger)registeredKeyCommandCount;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_APP_INTERFACE_H_

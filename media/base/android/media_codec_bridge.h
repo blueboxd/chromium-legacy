@@ -15,12 +15,13 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "media/base/decrypt_config.h"
+#include "media/base/encryption_pattern.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
 
-class EncryptionScheme;
 struct SubsampleEntry;
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
@@ -92,7 +93,8 @@ class MEDIA_EXPORT MediaCodecBridge {
       const std::string& key_id,
       const std::string& iv,
       const std::vector<SubsampleEntry>& subsamples,
-      const EncryptionScheme& encryption_scheme,
+      EncryptionMode encryption_scheme,
+      base::Optional<EncryptionPattern> encryption_pattern,
       base::TimeDelta presentation_time) = 0;
 
   // Submits an empty buffer with the END_OF_STREAM flag set.

@@ -1445,6 +1445,11 @@
     "label": "//ios/showcase:ios_showcase_egtests",
     "type": "raw",
   },
+  "ios_showcase_eg2tests_module": {
+    "args":[],
+    "label": "//ios/showcase:ios_showcase_eg2tests_module",
+    "type": "raw",
+  },
   "ios_web_inttests": {
     "args": [],
     "label": "//ios/web:ios_web_inttests",

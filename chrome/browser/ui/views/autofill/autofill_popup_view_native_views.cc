@@ -424,6 +424,13 @@ void AutofillPopupItemView::CreateContent() {
   }
 
   AddChildView(std::move(all_labels));
+  const gfx::ImageSkia store_indicator_icon =
+      controller->layout_model().GetStoreIndicatorIconImage(line_number());
+  if (!store_indicator_icon.isNull()) {
+    AddSpacerWithSize(GetHorizontalMargin(),
+                      /*resize=*/true, layout_manager);
+    AddIcon(store_indicator_icon);
+  }
 }
 
 void AutofillPopupItemView::RefreshStyle() {

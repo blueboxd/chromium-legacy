@@ -99,6 +99,11 @@ bool NGFragmentItem::IsListMarker() const {
   return false;
 }
 
+PhysicalRect NGFragmentItem::InkOverflow() const {
+  // TODO(yosin): Implement.
+  return LocalRect();
+}
+
 PhysicalRect NGFragmentItem::SelfInkOverflow() const {
   // TODO(kojii): Implement.
   return LocalRect();

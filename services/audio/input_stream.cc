@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/audio_parameters.h"
@@ -199,8 +200,11 @@ void InputStream::OnError(InputController::ErrorCode error_code) {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "Error", this);
 
   client_->OnError();
-  if (log_)
+  if (log_) {
     log_->OnError();
+    log_->OnLogMessage(
+        base::StringPrintf("AIC::OnError: %d", error_code).c_str());
+  }
   OnStreamError(true);
 }
 
@@ -224,6 +228,10 @@ void InputStream::OnStreamError(bool signalPlatformError) {
         static_cast<uint32_t>(media::mojom::AudioInputStreamObserver::
                                   DisconnectReason::kPlatformError),
         std::string());
+  }
+
+  if (signalPlatformError && log_) {
+    log_->OnLogMessage(base::StringPrintf("IC::OnStreamError").c_str());
   }
 
   // Defer callback so we're not destructed while in the constructor.

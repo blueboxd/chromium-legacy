@@ -211,6 +211,11 @@ wtf_size_t TextResourceDecoder::CheckForBOM(const char* data, wtf_size_t len) {
   // respectively.
   DCHECK(!checked_for_bom_);
 
+  if (options_.GetNoBOMDecoding()) {
+    checked_for_bom_ = true;
+    return 0;
+  }
+
   wtf_size_t length_of_bom = 0;
   const wtf_size_t max_bom_length = 3;
 

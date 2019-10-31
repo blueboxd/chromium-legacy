@@ -316,18 +316,12 @@ void HeapCompact::MovableObjectFixups::VerifyUpdatedSlot(
 HeapCompact::HeapCompact(ThreadHeap* heap) : heap_(heap) {
   // The heap compaction implementation assumes the contiguous range,
   //
-  //   [Vector1ArenaIndex, HashTableArenaIndex]
+  //   [VectorArenaIndex, HashTableArenaIndex]
   //
   // in a few places. Use static asserts here to not have that assumption
   // be silently invalidated by ArenaIndices changes.
-  static_assert(BlinkGC::kVector1ArenaIndex + 3 == BlinkGC::kVector4ArenaIndex,
+  static_assert(BlinkGC::kVectorArenaIndex + 1 == BlinkGC::kHashTableArenaIndex,
                 "unexpected ArenaIndices ordering");
-  static_assert(
-      BlinkGC::kVector4ArenaIndex + 1 == BlinkGC::kInlineVectorArenaIndex,
-      "unexpected ArenaIndices ordering");
-  static_assert(
-      BlinkGC::kInlineVectorArenaIndex + 1 == BlinkGC::kHashTableArenaIndex,
-      "unexpected ArenaIndices ordering");
 }
 
 HeapCompact::~HeapCompact() = default;
@@ -393,7 +387,7 @@ void HeapCompact::UpdateHeapResidency() {
 #if DEBUG_HEAP_FREELIST
   std::stringstream stream;
 #endif
-  for (int i = BlinkGC::kVector1ArenaIndex; i <= BlinkGC::kHashTableArenaIndex;
+  for (int i = BlinkGC::kVectorArenaIndex; i <= BlinkGC::kHashTableArenaIndex;
        ++i) {
     NormalPageArena* arena = static_cast<NormalPageArena*>(heap_->Arena(i));
     size_t arena_size = arena->ArenaSize();

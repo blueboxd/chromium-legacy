@@ -1861,6 +1861,9 @@ extern const char kAllowDisableMouseAccelerationDescription[];
 extern const char kAppServiceAshName[];
 extern const char kAppServiceAshDescription[];
 
+extern const char kAppServiceInstanceRegistryName[];
+extern const char kAppServiceInstanceRegistryDescription[];
+
 extern const char kAppServiceIntentHandlingName[];
 extern const char kAppServiceIntentHandlingDescription[];
 

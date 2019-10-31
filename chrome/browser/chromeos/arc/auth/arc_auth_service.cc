@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
@@ -283,6 +284,13 @@ void ArcAuthService::OnConnectionReady() {
   if (arc::IsArcProvisioned(profile_)) {
     TriggerAccountManagerMigrationsIfRequired(profile_);
     TriggerAccountsPushToArc(false /* filter_primary_account */);
+    if (chromeos::features::IsEduCoexistenceEnabled() &&
+        GetSupervisionTransition(profile_) ==
+            ArcSupervisionTransition::REGULAR_TO_CHILD) {
+      // If profile transitioned from Child to Regular, accounts have already
+      // been pushed to ARC.
+      RemoveSecondaryAccountsFromArc();
+    }
   }
 
   if (pending_get_arc_accounts_callback_)
@@ -557,6 +565,11 @@ void ArcAuthService::OnRefreshTokenUpdatedForAccount(
   if (!arc::IsArcProvisioned(profile_))
     return;
 
+  // For child device accounts do not allow the propagation of secondary
+  // accounts from Chrome OS Account Manager to ARC.
+  if (profile_->IsChild() && !IsPrimaryGaiaAccount(account_info.gaia))
+    return;
+
   if (identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
           account_info.account_id)) {
     VLOG(1) << "Ignoring account update due to lack of a valid token: "
@@ -817,6 +830,15 @@ void ArcAuthService::DispatchAccountsInArc(
 void ArcAuthService::OnMainAccountResolutionStatus(
     mojom::MainAccountResolutionStatus status) {
   UpdateMainAccountResolutionStatus(profile_, status);
+}
+
+void ArcAuthService::RemoveSecondaryAccountsFromArc() {
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
+                                               RemoveSecondaryAccounts);
+  if (!instance)
+    return;
+
+  instance->RemoveSecondaryAccounts();
 }
 
 }  // namespace arc

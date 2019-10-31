@@ -360,10 +360,10 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password_field.form_control_type = "password";
     fill_data_.password_field = password_field;
 
-    PasswordAndRealm password2;
+    PasswordAndMetadata password2;
     password2.password = password2_;
     fill_data_.additional_logins[username2_] = password2;
-    PasswordAndRealm password3;
+    PasswordAndMetadata password3;
     password3.password = password3_;
     fill_data_.additional_logins[username3_] = password3;
 
@@ -3587,7 +3587,7 @@ TEST_F(PasswordAutofillAgentTest, PSLMatchedPasswordIsNotAutofill) {
   UpdateOriginForHTML(kFormWithPrefilledUsernameHTML);
 
   // Add PSL matched credentials with username equal to prefilled one.
-  PasswordAndRealm psl_credentials;
+  PasswordAndMetadata psl_credentials;
   psl_credentials.password = ASCIIToUTF16("pslpassword");
   // Non-empty realm means PSL matched credentials.
   psl_credentials.realm = "example.com";

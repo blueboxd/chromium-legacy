@@ -9,7 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
@@ -247,12 +246,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(CheckInitialState(0));
   ASSERT_TRUE(CheckInitialState(1));
 
-  GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase("passphrase");
-  ASSERT_TRUE(
-      PassphraseRequiredStateChecker(GetSyncService(1), /*desired_state=*/true)
-          .Wait());
-  ASSERT_TRUE(GetSyncService(1)->GetUserSettings()->SetDecryptionPassphrase(
-      "passphrase"));
+  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(1));
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(IsEncryptionComplete(0));
+  ASSERT_TRUE(IsEncryptionComplete(1));
 
   EXPECT_TRUE(OpenTab(0, GURL(kURL1)));
   WaitForForeignSessionsToSync(0, 1);

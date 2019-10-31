@@ -27,13 +27,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.chromium.weblayer.BrowserCallback;
 import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.BrowserFragmentController;
-import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.DownloadDelegate;
 import org.chromium.weblayer.FullscreenDelegate;
+import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
-import org.chromium.weblayer.NavigationObserver;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
@@ -172,24 +172,25 @@ public class WebLayerShellActivity extends FragmentActivity {
             startupUrl = "http://google.com";
         }
         loadUrl(startupUrl);
-        mBrowserController.addObserver(new BrowserObserver() {
+        mBrowserController.registerBrowserCallback(new BrowserCallback() {
             @Override
             public void visibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
             }
         });
-        mBrowserController.getNavigationController().addObserver(new NavigationObserver() {
-            @Override
-            public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
-                mLoadProgressBar.setVisibility(
-                        isLoading && toDifferentDocument ? View.VISIBLE : View.INVISIBLE);
-            }
+        mBrowserController.getNavigationController().registerNavigationCallback(
+                new NavigationCallback() {
+                    @Override
+                    public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
+                        mLoadProgressBar.setVisibility(
+                                isLoading && toDifferentDocument ? View.VISIBLE : View.INVISIBLE);
+                    }
 
-            @Override
-            public void loadProgressChanged(double progress) {
-                mLoadProgressBar.setProgress((int) Math.round(100 * progress));
-            }
-        });
+                    @Override
+                    public void loadProgressChanged(double progress) {
+                        mLoadProgressBar.setProgress((int) Math.round(100 * progress));
+                    }
+                });
         mBrowserController.setDownloadDelegate(new DownloadDelegate() {
             @Override
             public void downloadRequested(String url, String userAgent, String contentDisposition,

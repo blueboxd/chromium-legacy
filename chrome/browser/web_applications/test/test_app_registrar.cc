@@ -136,6 +136,12 @@ blink::mojom::DisplayMode TestAppRegistrar::GetAppUserDisplayMode(
   return blink::mojom::DisplayMode::kBrowser;
 }
 
+blink::mojom::DisplayMode TestAppRegistrar::GetAppEffectiveDisplayMode(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return blink::mojom::DisplayMode::kBrowser;
+}
+
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {
   std::vector<AppId> result;
   for (const std::pair<AppId, AppInfo>& it : installed_apps_) {

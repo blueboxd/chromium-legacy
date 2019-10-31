@@ -137,22 +137,25 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
 
 void ManagePasswordsState::OnPasswordAutofilled(
     const std::vector<const PasswordForm*>& password_forms,
-    const GURL& origin,
+    GURL origin,
     const std::vector<const PasswordForm*>* federated_matches) {
   DCHECK(!password_forms.empty() ||
          (federated_matches && !federated_matches->empty()));
-  ClearData();
-  local_credentials_forms_ = DeepCopyNonPSLVector(password_forms);
+  auto local_credentials_forms = DeepCopyNonPSLVector(password_forms);
   if (federated_matches)
-    AppendDeepCopyVector(*federated_matches, &local_credentials_forms_);
+    AppendDeepCopyVector(*federated_matches, &local_credentials_forms);
 
-  if (local_credentials_forms_.empty()) {
+  // Delete |form_manager_| only when the parameters are processed. They may be
+  // coming from |form_manager_|.
+  ClearData();
+
+  if (local_credentials_forms.empty()) {
     // Don't show the UI for PSL matched passwords. They are not stored for this
     // page and cannot be deleted.
-    origin_ = GURL();
-    SetState(password_manager::ui::INACTIVE_STATE);
+    OnInactive();
   } else {
-    origin_ = origin;
+    origin_ = std::move(origin);
+    local_credentials_forms_ = std::move(local_credentials_forms);
     SetState(password_manager::ui::MANAGE_STATE);
   }
 }

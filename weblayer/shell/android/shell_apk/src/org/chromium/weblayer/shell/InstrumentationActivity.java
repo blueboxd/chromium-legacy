@@ -21,9 +21,9 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import org.chromium.weblayer.BrowserCallback;
 import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.BrowserFragmentController;
-import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
@@ -125,7 +125,7 @@ public class InstrumentationActivity extends FragmentActivity {
         mBrowserFragmentController.setTopView(mTopContentsContainer);
 
         mBrowserController = mBrowserFragmentController.getBrowserController();
-        mBrowserController.addObserver(new BrowserObserver() {
+        mBrowserController.registerBrowserCallback(new BrowserCallback() {
             @Override
             public void visibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());

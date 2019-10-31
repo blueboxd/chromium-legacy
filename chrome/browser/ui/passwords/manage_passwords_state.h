@@ -70,7 +70,7 @@ class ManagePasswordsState {
   // federated credentials to show to the user as well.
   void OnPasswordAutofilled(
       const std::vector<const autofill::PasswordForm*>& password_forms,
-      const GURL& origin,
+      GURL origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches);
 
   // Move to INACTIVE_STATE.

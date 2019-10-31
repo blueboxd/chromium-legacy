@@ -18,8 +18,8 @@
 @property(nonatomic, class, readonly)
     UIViewController* currentBrowserViewController;
 
-// Returns the image used for the close icon.
-@property(nonatomic, class, readonly) UIImage* closeIcon;
+// Returns the accessibility used for the close button icon.
+@property(nonatomic, class, readonly) NSString* closeIconAccessibilityLabel;
 
 #pragma mark Swizzling
 

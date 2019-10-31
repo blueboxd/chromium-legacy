@@ -34,9 +34,6 @@ ios::ChromeBrowserState* GetOriginalBrowserState();
 // Returns the current incognito ChromeBrowserState
 ios::ChromeBrowserState* GetCurrentIncognitoBrowserState();
 
-// Returns the number of key commands currently registered with the main BVC.
-NSUInteger GetRegisteredKeyCommandsCount();
-
 // Returns the dispatcher for the main BVC.
 // TODO(crbug.com/738881): Use DispatcherForActiveBrowserViewController()
 // instead.

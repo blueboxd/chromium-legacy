@@ -44,3 +44,10 @@ class FunctionLike(WithIdentifier):
     def is_static(self):
         """Returns True if this is a static function."""
         return self._is_static
+
+    @property
+    def num_of_required_arguments(self):
+        """Returns the number of required arguments."""
+        return len(
+            filter(lambda arg: not (arg.is_optional or arg.is_variadic),
+                   self.arguments))

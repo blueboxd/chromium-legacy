@@ -18,7 +18,7 @@ ColorRecipe& ColorRecipe::operator=(ColorRecipe&&) noexcept = default;
 
 ColorRecipe::~ColorRecipe() = default;
 
-ColorRecipe& ColorRecipe::AddTransform(ColorTransform&& transform) {
+ColorRecipe& ColorRecipe::AddTransform(ColorTransform transform) {
   transforms_.push_back(std::move(transform));
   return *this;
 }

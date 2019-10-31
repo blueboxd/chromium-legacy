@@ -3153,6 +3153,11 @@ const char kAppServiceAshName[] = "App Service Ash";
 const char kAppServiceAshDescription[] =
     "Use the App Service to provide data to the Ash UI, such as the app list.";
 
+const char kAppServiceInstanceRegistryName[] = "App Service Instance Registry";
+const char kAppServiceInstanceRegistryDescription[] =
+    "Use the App Service to provide app instance information, such as the "
+    "app window running status.";
+
 const char kAppServiceIntentHandlingName[] = "App Service Intent Handling";
 const char kAppServiceIntentHandlingDescription[] =
     "Use the App Service to provide data for intent handling.";

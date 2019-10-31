@@ -47,10 +47,7 @@ TextSuggestionHostAndroid::TextSuggestionHostAndroid(JNIEnv* env,
       rwhva_(nullptr),
       suggestion_menu_timeout_(base::BindRepeating(
           &TextSuggestionHostAndroid::OnSuggestionMenuTimeout,
-          base::Unretained(this))) {
-  registry_.AddInterface(base::BindRepeating(
-      &TextSuggestionHostMojoImplAndroid::Create, base::Unretained(this)));
-}
+          base::Unretained(this))) {}
 
 TextSuggestionHostAndroid::~TextSuggestionHostAndroid() {
   JNIEnv* env = AttachCurrentThread();
@@ -226,13 +223,6 @@ void TextSuggestionHostAndroid::OnKeyEvent() {
 
 void TextSuggestionHostAndroid::StopSuggestionMenuTimer() {
   suggestion_menu_timeout_.Stop();
-}
-
-void TextSuggestionHostAndroid::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 RenderFrameHost* TextSuggestionHostAndroid::GetFocusedFrame() {

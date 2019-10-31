@@ -103,4 +103,35 @@ TEST_F(QuotaSettingsTest, UnlimitedTempPool) {
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_executed);
 }
+
+TEST_F(QuotaSettingsTest, IncognitoQuotaCapped) {
+  const int64_t kMBytes = 1024 * 1024;
+  const int64_t kMaxIncognitoPoolSize = 330 * kMBytes;  // 300 MB + 10%
+
+  scoped_feature_list_.InitAndDisableFeature(features::kIncognitoDynamicQuota);
+  EXPECT_GE(kMaxIncognitoPoolSize,
+            GetIncognitoPoolSizeForTesting(kMaxIncognitoPoolSize * 1000));
+}
+
+TEST_F(QuotaSettingsTest, IncognitoQuotaDynamic) {
+  const int64_t kMBytes = 1024 * 1024;
+  const int64_t kMaxIncognitoPoolSize = 330 * kMBytes;  // 300 MB + 10%
+  const int64_t test_cases[] = {
+      kMaxIncognitoPoolSize / 10, kMaxIncognitoPoolSize,
+      kMaxIncognitoPoolSize * 100, kMaxIncognitoPoolSize * 1000};
+
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kIncognitoDynamicQuota,
+      {{"IncognitoQuotaRatioLowerBound", "0.1"},
+       {"IncognitoQuotaRatioLowerBound", "0.2"}});
+
+  for (const int64_t physical_memory_amount : test_cases) {
+    EXPECT_LE(physical_memory_amount / 10,
+              GetIncognitoPoolSizeForTesting(physical_memory_amount))
+        << physical_memory_amount;
+    EXPECT_GE(physical_memory_amount / 5,
+              GetIncognitoPoolSizeForTesting(physical_memory_amount))
+        << physical_memory_amount;
+  }
+}
 }  // namespace storage

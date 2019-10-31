@@ -54,17 +54,12 @@ void HeapAllocator::BackingFree(void* address) {
   if (!result.can_modify)
     return;
 
-  state->Heap().PromptlyFreed(result.header->GcInfoIndex());
   static_cast<NormalPage*>(result.page)
       ->ArenaForNormalPage()
       ->PromptlyFreeObject(result.header);
 }
 
 void HeapAllocator::FreeVectorBacking(void* address) {
-  BackingFree(address);
-}
-
-void HeapAllocator::FreeInlineVectorBacking(void* address) {
   BackingFree(address);
 }
 
@@ -93,18 +88,10 @@ bool HeapAllocator::BackingExpand(void* address, size_t new_size) {
 
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(address);
   NormalPageArena* arena = static_cast<NormalPage*>(page)->ArenaForNormalPage();
-  bool succeed = arena->ExpandObject(header, new_size);
-  if (succeed) {
-    state->Heap().AllocationPointAdjusted(arena->ArenaIndex());
-  }
-  return succeed;
+  return arena->ExpandObject(header, new_size);
 }
 
 bool HeapAllocator::ExpandVectorBacking(void* address, size_t new_size) {
-  return BackingExpand(address, new_size);
-}
-
-bool HeapAllocator::ExpandInlineVectorBacking(void* address, size_t new_size) {
   return BackingExpand(address, new_size);
 }
 
@@ -139,22 +126,13 @@ bool HeapAllocator::BackingShrink(void* address,
       !arena->IsObjectAllocatedAtAllocationPoint(result.header))
     return true;
 
-  bool succeeded_at_allocation_point =
-      arena->ShrinkObject(result.header, quantized_shrunk_size);
-  if (succeeded_at_allocation_point)
-    state->Heap().AllocationPointAdjusted(arena->ArenaIndex());
+  arena->ShrinkObject(result.header, quantized_shrunk_size);
   return true;
 }
 
 bool HeapAllocator::ShrinkVectorBacking(void* address,
                                         size_t quantized_current_size,
                                         size_t quantized_shrunk_size) {
-  return BackingShrink(address, quantized_current_size, quantized_shrunk_size);
-}
-
-bool HeapAllocator::ShrinkInlineVectorBacking(void* address,
-                                              size_t quantized_current_size,
-                                              size_t quantized_shrunk_size) {
   return BackingShrink(address, quantized_current_size, quantized_shrunk_size);
 }
 

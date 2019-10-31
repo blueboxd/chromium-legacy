@@ -23,8 +23,8 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.weblayer.Navigation;
+import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
-import org.chromium.weblayer.NavigationObserver;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class NavigationTest {
     private static final String URL2 = "data:text,bar";
     private static final String URL3 = "data:text,baz";
 
-    private static class Observer extends NavigationObserver {
+    private static class Callback extends NavigationCallback {
         public static class NavigationCallbackHelper extends CallbackHelper {
             private Uri mUri;
             private boolean mIsSameDocument;
@@ -75,7 +75,7 @@ public class NavigationTest {
             }
         }
 
-        public static class NavigationObserverValueRecorder {
+        public static class NavigationCallbackValueRecorder {
             private List<String> mObservedValues =
                     Collections.synchronizedList(new ArrayList<String>());
 
@@ -103,10 +103,10 @@ public class NavigationTest {
         public NavigationCallbackHelper onStartedCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onReadyToCommitCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onCompletedCallback = new NavigationCallbackHelper();
-        public NavigationObserverValueRecorder loadStateChangedCallback =
-                new NavigationObserverValueRecorder();
-        public NavigationObserverValueRecorder loadProgressChangedCallback =
-                new NavigationObserverValueRecorder();
+        public NavigationCallbackValueRecorder loadStateChangedCallback =
+                new NavigationCallbackValueRecorder();
+        public NavigationCallbackValueRecorder loadProgressChangedCallback =
+                new NavigationCallbackValueRecorder();
         public CallbackHelper onFirstContentfulPaintCallback = new CallbackHelper();
 
         @Override
@@ -142,50 +142,50 @@ public class NavigationTest {
         }
     }
 
-    private final Observer mObserver = new Observer();
+    private final Callback mCallback = new Callback();
 
     @Test
     @SmallTest
     public void testNavigationEvents() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
 
-        setNavigationObserver(activity);
-        int curStartedCount = mObserver.onStartedCallback.getCallCount();
-        int curCommittedCount = mObserver.onReadyToCommitCallback.getCallCount();
-        int curCompletedCount = mObserver.onCompletedCallback.getCallCount();
+        setNavigationCallback(activity);
+        int curStartedCount = mCallback.onStartedCallback.getCallCount();
+        int curCommittedCount = mCallback.onReadyToCommitCallback.getCallCount();
+        int curCompletedCount = mCallback.onCompletedCallback.getCallCount();
         int curOnFirstContentfulPaintCount =
-                mObserver.onFirstContentfulPaintCallback.getCallCount();
+                mCallback.onFirstContentfulPaintCallback.getCallCount();
 
         mActivityTestRule.navigateAndWait(URL2);
 
-        mObserver.onStartedCallback.assertCalledWith(curStartedCount, URL2);
-        mObserver.onReadyToCommitCallback.assertCalledWith(curCommittedCount, URL2);
-        mObserver.onCompletedCallback.assertCalledWith(curCompletedCount, URL2);
-        mObserver.onFirstContentfulPaintCallback.waitForCallback(curOnFirstContentfulPaintCount);
+        mCallback.onStartedCallback.assertCalledWith(curStartedCount, URL2);
+        mCallback.onReadyToCommitCallback.assertCalledWith(curCommittedCount, URL2);
+        mCallback.onCompletedCallback.assertCalledWith(curCompletedCount, URL2);
+        mCallback.onFirstContentfulPaintCallback.waitForCallback(curOnFirstContentfulPaintCount);
     }
 
     @Test
     @SmallTest
     public void testLoadStateUpdates() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
-        setNavigationObserver(activity);
+        setNavigationCallback(activity);
         mActivityTestRule.navigateAndWait(URL1);
 
-        /* Wait until the NavigationObserver is notified of load completion. */
-        mObserver.loadStateChangedCallback.waitUntilValueObserved("false false");
-        mObserver.loadProgressChangedCallback.waitUntilValueObserved("load complete");
+        /* Wait until the NavigationCallback is notified of load completion. */
+        mCallback.loadStateChangedCallback.waitUntilValueObserved("false false");
+        mCallback.loadProgressChangedCallback.waitUntilValueObserved("load complete");
 
-        /* Verify that the NavigationObserver was notified of load progress /before/ load
+        /* Verify that the NavigationCallback was notified of load progress /before/ load
          * completion.
          */
         int finishStateIndex =
-                mObserver.loadStateChangedCallback.getObservedValues().indexOf("false false");
+                mCallback.loadStateChangedCallback.getObservedValues().indexOf("false false");
         int finishProgressIndex =
-                mObserver.loadProgressChangedCallback.getObservedValues().indexOf("load complete");
+                mCallback.loadProgressChangedCallback.getObservedValues().indexOf("load complete");
         int startStateIndex =
-                mObserver.loadStateChangedCallback.getObservedValues().lastIndexOf("true true");
+                mCallback.loadStateChangedCallback.getObservedValues().lastIndexOf("true true");
         int startProgressIndex =
-                mObserver.loadProgressChangedCallback.getObservedValues().lastIndexOf(
+                mCallback.loadProgressChangedCallback.getObservedValues().lastIndexOf(
                         "load started");
 
         assertNotEquals(startStateIndex, -1);
@@ -201,7 +201,7 @@ public class NavigationTest {
     @SmallTest
     public void testGoBackAndForward() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
-        setNavigationObserver(activity);
+        setNavigationCallback(activity);
 
         mActivityTestRule.navigateAndWait(URL2);
         mActivityTestRule.navigateAndWait(URL3);
@@ -239,26 +239,27 @@ public class NavigationTest {
     @SmallTest
     public void testSameDocument() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
-        setNavigationObserver(activity);
+        setNavigationCallback(activity);
 
-        int curCompletedCount = mObserver.onCompletedCallback.getCallCount();
+        int curCompletedCount = mCallback.onCompletedCallback.getCallCount();
 
         mActivityTestRule.executeScriptSync("history.pushState(null, '', '#bar');");
 
-        mObserver.onCompletedCallback.assertCalledWith(
+        mCallback.onCompletedCallback.assertCalledWith(
                 curCompletedCount, "data:text,foo#bar", true);
     }
 
-    private void setNavigationObserver(InstrumentationActivity activity) {
-        runOnUiThreadBlocking(() ->
-            activity.getBrowserController().getNavigationController().addObserver(mObserver)
-        );
+    private void setNavigationCallback(InstrumentationActivity activity) {
+        runOnUiThreadBlocking(()
+                                      -> activity.getBrowserController()
+                                                 .getNavigationController()
+                                                 .registerNavigationCallback(mCallback));
     }
 
     private void navigateAndWaitForCompletion(String expectedUrl, Runnable navigateRunnable)
             throws Exception {
-        int currentCallCount = mObserver.onCompletedCallback.getCallCount();
+        int currentCallCount = mCallback.onCompletedCallback.getCallCount();
         runOnUiThreadBlocking(navigateRunnable);
-        mObserver.onCompletedCallback.assertCalledWith(currentCallCount, expectedUrl);
+        mCallback.onCompletedCallback.assertCalledWith(currentCallCount, expectedUrl);
     }
 }

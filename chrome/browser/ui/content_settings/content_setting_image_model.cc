@@ -250,8 +250,11 @@ const ContentSettingsImageDetails* GetImageDetails(ContentSettingsType type) {
 
 ContentSettingSimpleImageModel::ContentSettingSimpleImageModel(
     ImageType image_type,
-    ContentSettingsType content_type)
-    : ContentSettingImageModel(image_type), content_type_(content_type) {}
+    ContentSettingsType content_type,
+    bool image_type_should_notify_accessibility)
+    : ContentSettingImageModel(image_type,
+                               image_type_should_notify_accessibility),
+      content_type_(content_type) {}
 
 std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingSimpleImageModel::CreateBubbleModelImpl(
@@ -322,6 +325,10 @@ void ContentSettingImageModel::Update(content::WebContents* contents) {
   if (contents && !is_visible_) {
     ContentSettingImageModelStates::Get(contents)->SetAnimationHasRun(
         image_type(), false);
+    if (image_type_should_notify_accessibility_) {
+      ContentSettingImageModelStates::Get(contents)->SetAccessibilityNotified(
+          image_type(), false);
+    }
   }
 }
 
@@ -336,6 +343,19 @@ void ContentSettingImageModel::SetAnimationHasRun(
     content::WebContents* contents) {
   DCHECK(contents);
   ContentSettingImageModelStates::Get(contents)->SetAnimationHasRun(
+      image_type(), true);
+}
+
+bool ContentSettingImageModel::ShouldNotifyAccessibility(
+    content::WebContents* contents) const {
+  return image_type_should_notify_accessibility_ &&
+         !ContentSettingImageModelStates::Get(contents)
+              ->GetAccessibilityNotified(image_type());
+}
+
+void ContentSettingImageModel::AccessibilityWasNotified(
+    content::WebContents* contents) {
+  ContentSettingImageModelStates::Get(contents)->SetAccessibilityNotified(
       image_type(), true);
 }
 
@@ -799,8 +819,10 @@ bool ContentSettingPopupImageModel::UpdateAndGetVisibility(
 // Notifications --------------------------------------------------------------
 
 ContentSettingNotificationsImageModel::ContentSettingNotificationsImageModel()
-    : ContentSettingSimpleImageModel(ImageType::NOTIFICATIONS_QUIET_PROMPT,
-                                     ContentSettingsType::NOTIFICATIONS) {
+    : ContentSettingSimpleImageModel(
+          ImageType::NOTIFICATIONS_QUIET_PROMPT,
+          ContentSettingsType::NOTIFICATIONS,
+          true /* image_type_should_notify_accessibility */) {
   set_icon(vector_icons::kNotificationsOffIcon, gfx::kNoneIcon);
   set_tooltip(
       l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_OFF_EXPLANATORY_TEXT));
@@ -833,12 +855,14 @@ gfx::Image ContentSettingImageModel::GetIcon(SkColor icon_color) const {
                                                    icon_color, *icon_badge_));
 }
 
-ContentSettingImageModel::ContentSettingImageModel(ImageType image_type)
-    : is_visible_(false),
-      icon_(&gfx::kNoneIcon),
+ContentSettingImageModel::ContentSettingImageModel(
+    ImageType image_type,
+    bool image_type_should_notify_accessibility)
+    : icon_(&gfx::kNoneIcon),
       icon_badge_(&gfx::kNoneIcon),
-      explanatory_string_id_(0),
-      image_type_(image_type) {}
+      image_type_(image_type),
+      image_type_should_notify_accessibility_(
+          image_type_should_notify_accessibility) {}
 
 std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingImageModel::CreateBubbleModel(

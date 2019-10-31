@@ -5,13 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_STATE_CALLBACK_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_STATE_CALLBACK_H_
 
-#include "third_party/blink/public/platform/web_native_scroll_behavior.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_state_callback.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
 class ScrollState;
+
+enum class NativeScrollBehavior {
+  kDisableNativeScroll,
+  kPerformBeforeNativeScroll,
+  kPerformAfterNativeScroll,
+};
 
 class ScrollStateCallback : public GarbageCollected<ScrollStateCallback> {
  public:
@@ -21,18 +26,18 @@ class ScrollStateCallback : public GarbageCollected<ScrollStateCallback> {
 
   virtual void Invoke(ScrollState*) = 0;
 
-  WebNativeScrollBehavior NativeScrollBehavior() const {
+  NativeScrollBehavior NativeScrollBehavior() const {
     return native_scroll_behavior_;
   }
 
  protected:
   explicit ScrollStateCallback(
-      WebNativeScrollBehavior native_scroll_behavior =
-          WebNativeScrollBehavior::kDisableNativeScroll)
+      enum NativeScrollBehavior native_scroll_behavior =
+          NativeScrollBehavior::kDisableNativeScroll)
       : native_scroll_behavior_(native_scroll_behavior) {}
 
  private:
-  const WebNativeScrollBehavior native_scroll_behavior_;
+  const enum NativeScrollBehavior native_scroll_behavior_;
 };
 
 class ScrollStateCallbackV8Impl : public ScrollStateCallback {
@@ -47,7 +52,7 @@ class ScrollStateCallbackV8Impl : public ScrollStateCallback {
 
   explicit ScrollStateCallbackV8Impl(
       V8ScrollStateCallback* callback,
-      WebNativeScrollBehavior native_scroll_behavior)
+      enum NativeScrollBehavior native_scroll_behavior)
       : ScrollStateCallback(native_scroll_behavior), callback_(callback) {}
   ~ScrollStateCallbackV8Impl() override = default;
 
@@ -56,7 +61,7 @@ class ScrollStateCallbackV8Impl : public ScrollStateCallback {
   void Invoke(ScrollState*) override;
 
  private:
-  static WebNativeScrollBehavior ParseNativeScrollBehavior(
+  static enum NativeScrollBehavior ParseNativeScrollBehavior(
       const String& native_scroll_behavior);
 
   Member<V8ScrollStateCallback> callback_;

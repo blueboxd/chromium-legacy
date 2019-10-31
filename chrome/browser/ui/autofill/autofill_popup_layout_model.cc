@@ -48,6 +48,9 @@ const size_t kSeparatorHeight = 1;
 #if !defined(OS_ANDROID)
 // Size difference between the normal font and the smaller font, in pixels.
 const int kSmallerFontSizeDelta = -1;
+
+// Default sice for icons in the autofill popup.
+constexpr int kIconSize = 16;
 #endif
 
 // Used in the IDS_ space as a placeholder for resources that don't exist.
@@ -210,46 +213,13 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   if (!suggestions[index].custom_icon.IsEmpty())
     return suggestions[index].custom_icon.AsImageSkia();
 
-  const std::string& icon_str = suggestions[index].icon;
-  if (icon_str.empty())
-    return gfx::ImageSkia();
+  return GetIconImageByName(suggestions[index].icon);
+}
 
-  constexpr int kIconSize = 16;
-
-  // For http warning message, get icon images from VectorIcon, which is the
-  // same as security indicator icons in location bar.
-  if (icon_str == "httpWarning") {
-    return gfx::CreateVectorIcon(omnibox::kHttpIcon, kIconSize,
-                                 gfx::kChromeIconGrey);
-  }
-  if (icon_str == "httpsInvalid") {
-    return gfx::CreateVectorIcon(omnibox::kNotSecureWarningIcon, kIconSize,
-                                 gfx::kGoogleRed700);
-  }
-  if (icon_str == "keyIcon") {
-    return gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey);
-  }
-  if (icon_str == "globeIcon") {
-    return gfx::CreateVectorIcon(kGlobeIcon, kIconSize, gfx::kChromeIconGrey);
-  }
-  if (icon_str == "google") {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    return gfx::CreateVectorIcon(kGoogleGLogoIcon, kIconSize,
-                                 gfx::kPlaceholderColor);
-#else
-    return gfx::ImageSkia();
-#endif
-  }
-
-#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (icon_str == "googlePay" || icon_str == "googlePayDark") {
-    return gfx::ImageSkia();
-  }
-#endif
-  // For other suggestion entries, get icon from PNG files.
-  int icon_id = GetIconResourceID(icon_str);
-  DCHECK_NE(kResourceNotFoundId, icon_id);
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id);
+gfx::ImageSkia AutofillPopupLayoutModel::GetStoreIndicatorIconImage(
+    size_t index) const {
+  return GetIconImageByName(
+      delegate_->GetSuggestions()[index].store_indicator_icon);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -307,5 +277,48 @@ void AutofillPopupLayoutModel::SetUpForTesting(
 gfx::Rect AutofillPopupLayoutModel::RoundedElementBounds() const {
   return gfx::ToEnclosingRect(delegate_->element_bounds());
 }
+
+#if !defined(OS_ANDROID)
+gfx::ImageSkia AutofillPopupLayoutModel::GetIconImageByName(
+    const std::string& icon_str) const {
+  if (icon_str.empty())
+    return gfx::ImageSkia();
+
+  // For http warning message, get icon images from VectorIcon, which is the
+  // same as security indicator icons in location bar.
+  if (icon_str == "httpWarning") {
+    return gfx::CreateVectorIcon(omnibox::kHttpIcon, kIconSize,
+                                 gfx::kChromeIconGrey);
+  }
+  if (icon_str == "httpsInvalid") {
+    return gfx::CreateVectorIcon(omnibox::kNotSecureWarningIcon, kIconSize,
+                                 gfx::kGoogleRed700);
+  }
+  if (icon_str == "keyIcon") {
+    return gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey);
+  }
+  if (icon_str == "globeIcon") {
+    return gfx::CreateVectorIcon(kGlobeIcon, kIconSize, gfx::kChromeIconGrey);
+  }
+  if (icon_str == "google") {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    return gfx::CreateVectorIcon(kGoogleGLogoIcon, kIconSize,
+                                 gfx::kPlaceholderColor);
+#else
+    return gfx::ImageSkia();
+#endif
+  }
+
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (icon_str == "googlePay" || icon_str == "googlePayDark") {
+    return gfx::ImageSkia();
+  }
+#endif
+  // For other suggestion entries, get icon from PNG files.
+  int icon_id = GetIconResourceID(icon_str);
+  DCHECK_NE(kResourceNotFoundId, icon_id);
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id);
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace autofill

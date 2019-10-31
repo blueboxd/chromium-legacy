@@ -347,10 +347,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   base::WeakPtr<Client> client_;
   std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
 
-  // WeakPtr<> pointing to |this| for use in posting tasks from the
-  // image_processor_ back to the child thread.
-  // Tasks posted onto encoder and poll threads can use base::Unretained(this),
-  // as both threads will not outlive this object.
+  // WeakPtr<> pointing to |this| for use in posting tasks to
+  // |encoder_thread_.task_runner()|. It guarantees no task will be executed
+  // after DestroyTask().
   base::WeakPtr<V4L2VideoEncodeAccelerator> weak_this_;
   base::WeakPtrFactory<V4L2VideoEncodeAccelerator> weak_this_ptr_factory_;
 

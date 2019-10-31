@@ -4,14 +4,17 @@
 
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
 
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/prefs/pref_service.h"
 
 namespace crostini {
 
@@ -65,15 +68,22 @@ AnsibleManagementService::AnsibleManagementService(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {}
 AnsibleManagementService::~AnsibleManagementService() = default;
 
-void AnsibleManagementService::InstallAnsibleInDefaultContainer(
+void AnsibleManagementService::ConfigureDefaultContainer(
     base::OnceCallback<void(bool success)> callback) {
-  DCHECK(ansible_installation_finished_callback_.is_null());
-  ansible_installation_finished_callback_ = std::move(callback);
+  DCHECK(!configuration_finished_callback_);
+  configuration_finished_callback_ = std::move(callback);
+
+  // TODO(okalitova): Show Ansible software config dialog.
+
+  CrostiniManager::GetForProfile(profile_)
+      ->AddLinuxPackageOperationProgressObserver(this);
+  InstallAnsibleInDefaultContainer();
+}
+
+void AnsibleManagementService::InstallAnsibleInDefaultContainer() {
   for (auto& observer : observers_) {
     observer.OnAnsibleSoftwareConfigurationStarted();
   }
-
-  // TODO(chrisgunadi): Show Ansible software config dialog.
 
   CrostiniManager::GetForProfile(profile_)->InstallLinuxPackageFromApt(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
@@ -87,10 +97,7 @@ void AnsibleManagementService::OnInstallAnsibleInDefaultContainer(
     CrostiniResult result) {
   if (result == CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED) {
     LOG(ERROR) << "Ansible installation failed";
-    std::move(ansible_installation_finished_callback_).Run(/*success=*/false);
-    for (auto& observer : observers_) {
-      observer.OnAnsibleSoftwareConfigurationFinished(false);
-    }
+    OnConfigurationFinished(false);
     return;
   }
 
@@ -110,13 +117,15 @@ void AnsibleManagementService::OnInstallLinuxPackageProgress(
 
   switch (status) {
     case InstallLinuxPackageProgressStatus::SUCCEEDED:
-      std::move(ansible_installation_finished_callback_).Run(/*success=*/true);
+      CrostiniManager::GetForProfile(profile_)
+          ->RemoveLinuxPackageOperationProgressObserver(this);
+      ApplyAnsiblePlaybookToDefaultContainer();
       return;
     case InstallLinuxPackageProgressStatus::FAILED:
-      std::move(ansible_installation_finished_callback_).Run(/*success=*/false);
-      for (auto& observer : observers_) {
-        observer.OnAnsibleSoftwareConfigurationFinished(false);
-      }
+      LOG(ERROR) << "Ansible installation failed";
+      CrostiniManager::GetForProfile(profile_)
+          ->RemoveLinuxPackageOperationProgressObserver(this);
+      OnConfigurationFinished(false);
       return;
     // TODO(okalitova): Report Ansible downloading/installation progress.
     case InstallLinuxPackageProgressStatus::DOWNLOADING:
@@ -130,30 +139,17 @@ void AnsibleManagementService::OnInstallLinuxPackageProgress(
   }
 }
 
-void AnsibleManagementService::OnUninstallPackageProgress(
-    const ContainerId& container_id,
-    UninstallPackageProgressStatus status,
-    int progress_percent) {
-  NOTIMPLEMENTED();
-}
+void AnsibleManagementService::ApplyAnsiblePlaybookToDefaultContainer() {
+  std::string playbook = GetAnsiblePlaybookToApply();
 
-void AnsibleManagementService::ApplyAnsiblePlaybookToDefaultContainer(
-    const std::string& playbook,
-    base::OnceCallback<void(bool success)> callback) {
   if (!GetCiceroneClient()->IsApplyAnsiblePlaybookProgressSignalConnected()) {
     // Technically we could still start the application, but we wouldn't be able
     // to detect when the application completes, successfully or otherwise.
     LOG(ERROR)
         << "Attempted to apply playbook when progress signal not connected.";
-    std::move(callback).Run(/*success=*/false);
-    for (auto& observer : observers_) {
-      observer.OnAnsibleSoftwareConfigurationFinished(false);
-    }
+    OnConfigurationFinished(false);
     return;
   }
-
-  DCHECK(ansible_playbook_application_finished_callback_.is_null());
-  ansible_playbook_application_finished_callback_ = std::move(callback);
 
   vm_tools::cicerone::ApplyAnsiblePlaybookRequest request;
   request.set_owner_id(CryptohomeIdForProfile(profile_));
@@ -171,11 +167,7 @@ void AnsibleManagementService::OnApplyAnsiblePlaybook(
     base::Optional<vm_tools::cicerone::ApplyAnsiblePlaybookResponse> response) {
   if (!response) {
     LOG(ERROR) << "Failed to apply Ansible playbook. Empty response.";
-    std::move(ansible_playbook_application_finished_callback_)
-        .Run(/*success=*/false);
-    for (auto& observer : observers_) {
-      observer.OnAnsibleSoftwareConfigurationFinished(false);
-    }
+    OnConfigurationFinished(false);
     return;
   }
 
@@ -183,11 +175,7 @@ void AnsibleManagementService::OnApplyAnsiblePlaybook(
       vm_tools::cicerone::ApplyAnsiblePlaybookResponse::FAILED) {
     LOG(ERROR) << "Failed to apply Ansible playbook: "
                << response->failure_reason();
-    std::move(ansible_playbook_application_finished_callback_)
-        .Run(/*success=*/false);
-    for (auto& observer : observers_) {
-      observer.OnAnsibleSoftwareConfigurationFinished(false);
-    }
+    OnConfigurationFinished(false);
     return;
   }
 
@@ -199,18 +187,11 @@ void AnsibleManagementService::OnApplyAnsiblePlaybookProgress(
     vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::Status status) {
   switch (status) {
     case vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::SUCCEEDED:
-      std::move(ansible_playbook_application_finished_callback_)
-          .Run(/*success=*/true);
-      for (auto& observer : observers_) {
-        observer.OnAnsibleSoftwareConfigurationFinished(true);
-      }
+      OnConfigurationFinished(true);
       break;
     case vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::FAILED:
-      std::move(ansible_playbook_application_finished_callback_)
-          .Run(/*success=*/false);
-      for (auto& observer : observers_) {
-        observer.OnAnsibleSoftwareConfigurationFinished(false);
-      }
+      LOG(ERROR) << "Ansible playbook application has failed";
+      OnConfigurationFinished(false);
       break;
     case vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::IN_PROGRESS:
       // TODO(okalitova): Report Ansible playbook application progress.
@@ -227,6 +208,34 @@ void AnsibleManagementService::AddObserver(Observer* observer) {
 
 void AnsibleManagementService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void AnsibleManagementService::OnUninstallPackageProgress(
+    const ContainerId& container_id,
+    UninstallPackageProgressStatus status,
+    int progress_percent) {
+  NOTIMPLEMENTED();
+}
+
+void AnsibleManagementService::OnConfigurationFinished(bool success) {
+  std::move(configuration_finished_callback_).Run(success);
+  for (auto& observer : observers_) {
+    observer.OnAnsibleSoftwareConfigurationFinished(success);
+  }
+}
+
+std::string AnsibleManagementService::GetAnsiblePlaybookToApply() {
+  const base::FilePath& ansible_playbook_file_path =
+      profile_->GetPrefs()->GetFilePath(
+          prefs::kCrostiniAnsiblePlaybookFilePath);
+  std::string playbook_content;
+  if (!base::ReadFileToString(ansible_playbook_file_path, &playbook_content)) {
+    LOG(ERROR) << "Failed to retrieve Ansible playbook content from "
+               << ansible_playbook_file_path.value();
+    std::move(configuration_finished_callback_).Run(/*success=*/false);
+    return std::string();
+  }
+  return playbook_content;
 }
 
 }  // namespace crostini

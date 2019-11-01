@@ -15,13 +15,12 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/api/declarative_net_request.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -36,11 +35,9 @@ class ReindexHelper {
   // Starts re-indexing rulesets. Must be called on the extension file task
   // runner.
   using ReindexCallback = base::OnceCallback<void(LoadRequestData)>;
-  static void Start(service_manager::Connector* connector,
-                    LoadRequestData data,
-                    ReindexCallback callback) {
+  static void Start(LoadRequestData data, ReindexCallback callback) {
     auto* helper = new ReindexHelper(std::move(data), std::move(callback));
-    helper->Start(connector);
+    helper->Start();
   }
 
  private:
@@ -49,10 +46,8 @@ class ReindexHelper {
       : data_(std::move(data)), callback_(std::move(callback)) {}
   ~ReindexHelper() = default;
 
-  void Start(service_manager::Connector* connector) {
+  void Start() {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
-
-    base::Token token = base::Token::CreateRandom();
 
     // Post tasks to reindex individual rulesets.
     bool did_post_task = false;
@@ -66,7 +61,7 @@ class ReindexHelper {
                                      base::Unretained(this), &ruleset);
       callback_count_++;
       did_post_task = true;
-      ruleset.source().IndexAndPersistJSONRuleset(connector, token,
+      ruleset.source().IndexAndPersistJSONRuleset(&decoder_,
                                                   std::move(callback));
     }
 
@@ -122,6 +117,10 @@ class ReindexHelper {
   LoadRequestData data_;
   ReindexCallback callback_;
   int callback_count_ = 0;
+
+  // We use a single shared Data Decoder service instance to process all of the
+  // rulesets for this ReindexHelper.
+  data_decoder::DataDecoder decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(ReindexHelper);
 };
@@ -349,8 +348,7 @@ LoadRequestData::~LoadRequestData() = default;
 LoadRequestData::LoadRequestData(LoadRequestData&&) = default;
 LoadRequestData& LoadRequestData::operator=(LoadRequestData&&) = default;
 
-FileSequenceHelper::FileSequenceHelper()
-    : connector_(content::GetSystemConnector()->Clone()) {}
+FileSequenceHelper::FileSequenceHelper() = default;
 
 FileSequenceHelper::~FileSequenceHelper() {
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
@@ -384,8 +382,7 @@ void FileSequenceHelper::LoadRulesets(
   auto reindex_callback =
       base::BindOnce(&FileSequenceHelper::OnRulesetsReindexed,
                      weak_factory_.GetWeakPtr(), std::move(ui_callback));
-  ReindexHelper::Start(connector_.get(), std::move(load_data),
-                       std::move(reindex_callback));
+  ReindexHelper::Start(std::move(load_data), std::move(reindex_callback));
 }
 
 void FileSequenceHelper::UpdateDynamicRules(

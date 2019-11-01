@@ -8,6 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -73,6 +74,110 @@ TEST_F(MultipartUploadRequestTest, RetriesCorrectly) {
       }));
   mock_request.Start();
   task_environment_.FastForwardUntilNoTasksRemain();
+}
+
+TEST_F(MultipartUploadRequestTest,
+       EmitsNetworkRequestResponseCodeOrErrorHistogram) {
+  {
+    base::HistogramTester histograms;
+    MockMultipartUploadRequest mock_request;
+
+    EXPECT_CALL(mock_request, SendRequest())
+        .WillRepeatedly(Invoke([&mock_request]() {
+          mock_request.RetryOrFinish(net::OK, net::HTTP_OK,
+                                     std::make_unique<std::string>("response"));
+        }));
+    mock_request.Start();
+    task_environment_.FastForwardUntilNoTasksRemain();
+
+    histograms.ExpectUniqueSample(
+        "SBMultipartUploader.NetworkRequestResponseCodeOrError", net::HTTP_OK,
+        1);
+  }
+
+  {
+    base::HistogramTester histograms;
+    MockMultipartUploadRequest mock_request;
+
+    EXPECT_CALL(mock_request, SendRequest())
+        .WillRepeatedly(Invoke([&mock_request]() {
+          mock_request.RetryOrFinish(net::OK, net::HTTP_FORBIDDEN,
+                                     std::make_unique<std::string>("response"));
+        }));
+    mock_request.Start();
+    task_environment_.FastForwardUntilNoTasksRemain();
+
+    histograms.ExpectUniqueSample(
+        "SBMultipartUploader.NetworkRequestResponseCodeOrError",
+        net::HTTP_FORBIDDEN, 3);
+  }
+
+  {
+    base::HistogramTester histograms;
+    MockMultipartUploadRequest mock_request;
+
+    EXPECT_CALL(mock_request, SendRequest())
+        .WillRepeatedly(Invoke([&mock_request]() {
+          mock_request.RetryOrFinish(net::ERR_FAILED, net::HTTP_OK,
+                                     std::make_unique<std::string>("response"));
+        }));
+    mock_request.Start();
+    task_environment_.FastForwardUntilNoTasksRemain();
+
+    histograms.ExpectUniqueSample(
+        "SBMultipartUploader.NetworkRequestResponseCodeOrError",
+        net::ERR_FAILED, 3);
+  }
+}
+
+TEST_F(MultipartUploadRequestTest, EmitsUploadSuccessHistogram) {
+  {
+    base::HistogramTester histograms;
+    MockMultipartUploadRequest mock_request;
+
+    EXPECT_CALL(mock_request, SendRequest())
+        .WillRepeatedly(Invoke([&mock_request]() {
+          mock_request.RetryOrFinish(net::OK, net::HTTP_OK,
+                                     std::make_unique<std::string>("response"));
+        }));
+    mock_request.Start();
+    task_environment_.FastForwardUntilNoTasksRemain();
+
+    histograms.ExpectUniqueSample("SBMultipartUploader.UploadSuccess", true, 1);
+  }
+
+  {
+    base::HistogramTester histograms;
+    MockMultipartUploadRequest mock_request;
+
+    EXPECT_CALL(mock_request, SendRequest())
+        .WillRepeatedly(Invoke([&mock_request]() {
+          mock_request.RetryOrFinish(net::OK, net::HTTP_FORBIDDEN,
+                                     std::make_unique<std::string>("response"));
+        }));
+    mock_request.Start();
+    task_environment_.FastForwardUntilNoTasksRemain();
+
+    histograms.ExpectUniqueSample("SBMultipartUploader.UploadSuccess", false,
+                                  1);
+  }
+}
+
+TEST_F(MultipartUploadRequestTest, EmitsRetriesNeededHistogram) {
+  {
+    base::HistogramTester histograms;
+    MockMultipartUploadRequest mock_request;
+
+    EXPECT_CALL(mock_request, SendRequest())
+        .WillRepeatedly(Invoke([&mock_request]() {
+          mock_request.RetryOrFinish(net::OK, net::HTTP_OK,
+                                     std::make_unique<std::string>("response"));
+        }));
+    mock_request.Start();
+    task_environment_.FastForwardUntilNoTasksRemain();
+
+    histograms.ExpectUniqueSample("SBMultipartUploader.RetriesNeeded", 0, 1);
+  }
 }
 
 }  // namespace safe_browsing

@@ -9,11 +9,9 @@ import static org.chromium.chrome.browser.ChromeSwitches.DISABLE_FIRST_RUN_EXPER
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.UiDevice;
-import android.view.ViewGroup;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -86,39 +84,18 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         }
     }
 
-    /** A bottom sheet to test with. */
-    private BottomSheet mBottomSheet;
+    /** A handle to the controller for the sheet. */
+    private BottomSheetController mSheetController;
 
     /** A handle to the sheet's observer. */
     private Observer mObserver;
 
-    private @BottomSheetController.SheetState int mStartingBottomSheetState =
-            BottomSheetController.SheetState.FULL;
-
     protected void afterStartingActivity() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ViewGroup coordinator = getActivity().findViewById(R.id.coordinator);
-            mBottomSheet = getActivity()
-                                   .getLayoutInflater()
-                                   .inflate(R.layout.bottom_sheet, coordinator)
-                                   .findViewById(R.id.bottom_sheet);
-            mBottomSheet.init(coordinator, getActivity().getActivityTabProvider(),
-                    getActivity().getFullscreenManager(), getActivity().getWindow(),
-                    getActivity().getWindowAndroid().getKeyboardDelegate());
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mSheetController = getActivity().getBottomSheetController(); });
 
         mObserver = new Observer();
-        getBottomSheet().addObserver(mObserver);
-
-        if (mStartingBottomSheetState == BottomSheetController.SheetState.PEEK) return;
-
-        setSheetState(mStartingBottomSheetState, /* animate = */ false);
-    }
-
-    public void startMainActivityOnBottomSheet(
-            @BottomSheetController.SheetState int startingSheetState) {
-        mStartingBottomSheetState = startingSheetState;
-        startMainActivityOnBlankPage();
+        mSheetController.addObserver(mObserver);
     }
 
     // TODO (aberent): The Chrome test rules currently bypass ActivityTestRule.launchActivity, hence
@@ -135,8 +112,12 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         return mObserver;
     }
 
+    public BottomSheetController getBottomSheetController() {
+        return mSheetController;
+    }
+
     public BottomSheet getBottomSheet() {
-        return mBottomSheet;
+        return mSheetController.getBottomSheet();
     }
 
     /**
@@ -160,7 +141,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     }
 
     public BottomSheetContent getBottomSheetContent() {
-        return getBottomSheet().getCurrentSheetContent();
+        return mSheetController.getCurrentSheetContent();
     }
 
     /**

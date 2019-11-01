@@ -21,6 +21,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -101,8 +102,8 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
 
     test_system_tray_client_ = GetSystemTrayClient();
 
-    service_manager::mojom::ConnectorRequest request;
-    connector_ = service_manager::Connector::Create(&request);
+    mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
+    connector_ = service_manager::Connector::Create(&receiver);
 
     fake_multidevice_setup_ =
         std::make_unique<chromeos::multidevice_setup::FakeMultiDeviceSetup>();

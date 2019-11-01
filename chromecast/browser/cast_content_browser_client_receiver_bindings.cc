@@ -22,6 +22,7 @@
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "chromecast/media/service/cast_mojo_media_client.h"
+#include "chromecast/media/service/video_geometry_setter_service.h"
 #include "media/mojo/mojom/constants.mojom.h"   // nogncheck
 #include "media/mojo/services/media_service.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
@@ -52,22 +53,6 @@ namespace chromecast {
 namespace shell {
 
 namespace {
-
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
-static void CreateMediaService(CastContentBrowserClient* browser_client,
-                               service_manager::mojom::ServiceRequest request) {
-  std::unique_ptr<::media::MediaService> service;
-  auto mojo_media_client = std::make_unique<media::CastMojoMediaClient>(
-      browser_client->GetCmaBackendFactory(),
-      base::Bind(&CastContentBrowserClient::CreateCdmFactory,
-                 base::Unretained(browser_client)),
-      browser_client->GetVideoModeSwitcher(),
-      browser_client->GetVideoResolutionPolicy());
-  service = std::make_unique<::media::MediaService>(
-      std::move(mojo_media_client), std::move(request));
-  service_manager::Service::RunAsyncUntilTermination(std::move(service));
-}
-#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
 void CreateOriginId(cdm::MediaDrmStorageImpl::OriginIdObtainedCB callback) {
@@ -147,6 +132,60 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
       std::move(application_session_id), mixer_audio_enabled));
 }
 
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+void CastContentBrowserClient::CreateMediaService(
+    service_manager::mojom::ServiceRequest request) {
+  std::unique_ptr<::media::MediaService> service;
+  DCHECK(GetMediaTaskRunner() &&
+         GetMediaTaskRunner()->BelongsToCurrentThread());
+  if (!video_geometry_setter_service_) {
+    CreateVideoGeometrySetterServiceOnMediaThread();
+  }
+  auto mojo_media_client = std::make_unique<media::CastMojoMediaClient>(
+      GetCmaBackendFactory(),
+      base::Bind(&CastContentBrowserClient::CreateCdmFactory,
+                 base::Unretained(this)),
+      GetVideoModeSwitcher(), GetVideoResolutionPolicy());
+  mojo_media_client->SetVideoGeometrySetterService(
+      video_geometry_setter_service_.get());
+  service = std::make_unique<::media::MediaService>(
+      std::move(mojo_media_client), std::move(request));
+  service_manager::Service::RunAsyncUntilTermination(std::move(service));
+}
+
+void CastContentBrowserClient::CreateVideoGeometrySetterServiceOnMediaThread() {
+  DCHECK(GetMediaTaskRunner() &&
+         GetMediaTaskRunner()->BelongsToCurrentThread());
+  DCHECK(!video_geometry_setter_service_);
+  video_geometry_setter_service_ =
+      std::unique_ptr<media::VideoGeometrySetterService,
+                      base::OnTaskRunnerDeleter>(
+          new media::VideoGeometrySetterService,
+          base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
+}
+
+void CastContentBrowserClient::BindVideoGeometrySetterServiceOnMediaThread(
+    mojo::GenericPendingReceiver receiver) {
+  DCHECK(GetMediaTaskRunner() &&
+         GetMediaTaskRunner()->BelongsToCurrentThread());
+  if (!video_geometry_setter_service_) {
+    CreateVideoGeometrySetterServiceOnMediaThread();
+  }
+  if (auto r = receiver.As<media::mojom::VideoGeometrySetter>()) {
+    video_geometry_setter_service_->GetVideoGeometrySetter(std::move(r));
+  }
+}
+
+void CastContentBrowserClient::BindGpuHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  DCHECK(GetMediaTaskRunner());
+  GetMediaTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&CastContentBrowserClient::
+                                    BindVideoGeometrySetterServiceOnMediaThread,
+                                base::Unretained(this), std::move(receiver)));
+}
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+
 void CastContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
@@ -154,8 +193,8 @@ void CastContentBrowserClient::RunServiceInstance(
   if (identity.name() == ::media::mojom::kMediaRendererServiceName) {
     service_manager::mojom::ServiceRequest request(std::move(*receiver));
     GetMediaTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CreateMediaService, this, std::move(request)));
+        FROM_HERE, base::BindOnce(&CastContentBrowserClient::CreateMediaService,
+                                  base::Unretained(this), std::move(request)));
     return;
   }
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)

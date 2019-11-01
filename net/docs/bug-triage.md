@@ -14,8 +14,8 @@ generating and modifying shifts
 
 ### Required, in rough order of priority:
 * Identify new network bugs on the tracker.
-* Investigate recent Internals>Network issues with no subcomponent.
-* Follow up on Needs-Feedback issues for all network components.
+* Investigate recent `Internals>Network` issues with no subcomponent.
+* Follow up on `Needs-Feedback` issues for all network components.
 * Identify and file bugs for significant new crashers.
 
 ### Best effort, also in rough priority order:
@@ -42,7 +42,7 @@ uniform, predictable two day commitment for all triagers.
     for suspected network bugs, a network component assigned and a
     chrome://net-export/ log requested.  Suggested text: "Please collect and
     attach a chrome://net-export log. Instructions can be found here:
-    https://sites.google.com/a/chromium.org/dev/for-testers/providing-network-details".
+    https://chromium.org/for-testers/providing-network-details".
     A link to the instructions appears on net-export, for easy reference.
     When asking for a log or more details, attach the Needs-Feedback label.
 
@@ -55,16 +55,16 @@ uniform, predictable two day commitment for all triagers.
   and major crashers.  This will generally take up the majority of your time as
   triager. Continue digging until you can do one of the following:
 
-    * Mark it as *WontFix* (working as intended, obsolete issue) or a
+    * Mark it as `WontFix` (working as intended, obsolete issue) or a
       duplicate.
 
     * Mark it as a feature request.
 
-    * Mark it as Needs-Feedback.
+    * Mark it as `Needs-Feedback`.
 
-    * Remove the Internals>Network component, replacing it with at least one
+    * Remove the `Internals>Network` component, replacing it with at least one
       more specific network component or non-network component. Replacing the
-      Internals>Network component gets it off the next triager's radar, and
+      `Internals>Network` component gets it off the next triager's radar, and
       in front of someone more familiar with the relevant code.  Note that
       due to the way the bug report wizard works, a lot of bugs incorrectly end
       up with the network component.
@@ -83,7 +83,7 @@ uniform, predictable two day commitment for all triagers.
     * Remove label once feedback is provided.  Continue to investigate, if
       the previous section applies.
 
-    * If the Needs-Feedback label has been present for one week, ping the
+    * If the `Needs-Feedback` label has been present for one week, ping the
       reporter.
 
     * Archive after two weeks with no feedback, telling users to file a new
@@ -95,7 +95,7 @@ uniform, predictable two day commitment for all triagers.
 
 ### Best Effort (As you have time):
 
-* Investigate old bugs, and bugs associated with Internals>Network
+* Investigate old bugs, and bugs associated with `Internals>Network`
   subcomponents.
 
 * Investigate unowned and owned but forgotten net/ crashers that are still

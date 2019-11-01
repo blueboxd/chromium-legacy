@@ -63,6 +63,9 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   void UpdateHistogramsForTesting() override;
 
+  // Returns whether caret browsing is enabled for this browser session.
+  bool IsCaretBrowsingEnabled() const;
+
   // AXModeObserver
   void OnAXModeAdded(ui::AXMode mode) override;
 

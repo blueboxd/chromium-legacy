@@ -35,6 +35,11 @@ public class WebappInfo {
         mProvider = provider;
     }
 
+    @NonNull
+    public BrowserServicesIntentDataProvider getProvider() {
+        return mProvider;
+    }
+
     public String id() {
         return getWebappExtras().id;
     }

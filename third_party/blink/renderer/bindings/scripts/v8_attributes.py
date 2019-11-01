@@ -146,7 +146,6 @@ def attribute_context(interface, attribute, interfaces, component_info):
         use_private_property_in_getter and
         use_private_property_in_setter
     )
-    private_property_key_name = create_private_property_key_name(attribute)
 
     does_use_private_property = (
         use_private_property_in_getter or
@@ -240,7 +239,6 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'origin_trial_feature_name':
             v8_utilities.origin_trial_feature_name(attribute, runtime_features),  # [RuntimeEnabled] for origin trial
         'private_property_is_shared_between_getter_and_setter': private_property_is_shared_between_getter_and_setter,
-        'private_property_key_name': private_property_key_name,
         'property_attributes': property_attributes(interface, attribute),
         'reflect_empty': extended_attributes.get('ReflectEmpty'),
         'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
@@ -275,10 +273,6 @@ def attribute_context(interface, attribute, interfaces, component_info):
             raise Exception('[CrossOrigin] cannot be used for constructors: %s.%s', interface.name, attribute.name)
 
     return context
-
-
-def create_private_property_key_name(attribute):
-    return NameStyleConverter(attribute.name + '_key').to_snake_case()
 
 
 def runtime_call_stats_context(interface, attribute, context):

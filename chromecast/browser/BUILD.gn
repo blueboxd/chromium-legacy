@@ -168,6 +168,7 @@ cast_source_set("browser") {
     "//chromecast/media:libcast_media",
     "//chromecast/media/base:video_plane_controller",
     "//chromecast/media/service",
+    "//chromecast/media/service/mojom",
     "//chromecast/net",
     "//chromecast/service",
     "//components/download/public/common:public",

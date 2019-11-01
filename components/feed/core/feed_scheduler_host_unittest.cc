@@ -54,9 +54,7 @@ class FeedSchedulerHostTest : public ::testing::Test {
 
  protected:
   FeedSchedulerHostTest() {
-    FeedSchedulerHost::RegisterProfilePrefs(profile_prefs_.registry());
-    RefreshThrottler::RegisterProfilePrefs(profile_prefs_.registry());
-    UserClassifier::RegisterProfilePrefs(profile_prefs_.registry());
+    feed::RegisterProfilePrefs(profile_prefs_.registry());
     local_state()->registry()->RegisterBooleanPref(::prefs::kEulaAccepted,
                                                    true);
     profile_prefs()->registry()->RegisterBooleanPref(

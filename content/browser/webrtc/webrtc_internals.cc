@@ -253,7 +253,7 @@ void WebRTCInternals::OnUpdatePeerConnection(
 
 void WebRTCInternals::OnAddStandardStats(base::ProcessId pid,
                                          int lid,
-                                         const base::ListValue& value) {
+                                         base::Value value) {
   if (!observers_.might_have_observers())
     return;
 
@@ -261,14 +261,14 @@ void WebRTCInternals::OnAddStandardStats(base::ProcessId pid,
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetInteger("lid", lid);
 
-  dict->SetKey("reports", value.Clone());
+  dict->SetKey("reports", std::move(value));
 
   SendUpdate("addStandardStats", std::move(dict));
 }
 
 void WebRTCInternals::OnAddLegacyStats(base::ProcessId pid,
                                        int lid,
-                                       const base::ListValue& value) {
+                                       base::Value value) {
   if (!observers_.might_have_observers())
     return;
 
@@ -276,7 +276,7 @@ void WebRTCInternals::OnAddLegacyStats(base::ProcessId pid,
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetInteger("lid", lid);
 
-  dict->SetKey("reports", value.Clone());
+  dict->SetKey("reports", std::move(value));
 
   SendUpdate("addLegacyStats", std::move(dict));
 }

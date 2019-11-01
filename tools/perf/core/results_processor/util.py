@@ -62,3 +62,4 @@ def SetUnexpectedFailure(test_result):
   """Update fields of a test result in a case of processing failure."""
   test_result['status'] = 'FAIL'
   test_result['expected'] = False
+  logging.error('Processing failed for test %s', test_result['testPath'])

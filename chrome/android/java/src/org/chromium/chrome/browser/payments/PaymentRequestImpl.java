@@ -202,6 +202,12 @@ public class PaymentRequestImpl
          * the browser UI has closed.
          */
         void onCompleteReplied();
+
+        /**
+         * Called when the renderer is closing the mojo connection (e.g. upon show promise
+         * rejection).
+         */
+        void onRendererClosedMojoConnection();
     }
 
     /**
@@ -455,6 +461,12 @@ public class PaymentRequestImpl
     private SkipToGPayHelper mSkipToGPayHelper;
 
     /**
+     * When true skip UI is available for non-url based payment method identifiers (e.g.
+     * basic-card).
+     */
+    private boolean mSkipUiForNonUrlPaymentMethodIdentifiers;
+
+    /**
      * Builds the PaymentRequest service implementation.
      *
      * @param renderFrameHost The host of the frame that has invoked the PaymentRequest API.
@@ -491,6 +503,8 @@ public class PaymentRequestImpl
 
         mJourneyLogger = new JourneyLogger(mIsIncognito, mWebContents);
         mCurrencyFormatterMap = new HashMap<>();
+
+        mSkipUiForNonUrlPaymentMethodIdentifiers = mDelegate.skipUiForBasicCard();
 
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
     }
@@ -657,18 +671,21 @@ public class PaymentRequestImpl
         }
         mJourneyLogger.setRequestedPaymentMethodTypes(mMerchantSupportsAutofillPaymentInstruments,
                 requestedMethodGoogle, requestedMethodOther);
-        calculateWhetherShouldSkipShowingPaymentRequestUi(mDelegate.skipUiForBasicCard());
     }
 
     /**
      * Calculate whether the browser payment sheet should be skipped directly into the payment app.
-     *
-     * @param skipUiForNonUrlPaymentMethodIdentifiersForTest Whether non-URL payment method
-     *                                                       identifiers should skip UI. Used only
-     *                                                       in tests.
      */
-    private void calculateWhetherShouldSkipShowingPaymentRequestUi(
-            boolean skipUiForNonUrlPaymentMethodIdentifiersForTest) {
+    private void calculateWhetherShouldSkipShowingPaymentRequestUi() {
+        // This should be called after all payment instruments are ready and request.show() is
+        // called, since only then whether or not should skip payment sheet UI is determined.
+        assert isFinishedQueryingPaymentApps();
+        assert mIsCurrentPaymentRequestShowing;
+
+        assert mPaymentMethodsSection != null;
+        PaymentInstrument selectedInstrument =
+                (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
+
         // If there is a single payment method and the merchant has not requested any other
         // information, we can safely go directly to the payment app instead of showing
         // Payment Request UI.
@@ -682,7 +699,14 @@ public class PaymentRequestImpl
                 // the payment request UI, thus can't be skipped.
                 && mMethodData.keySet().iterator().next() != null
                 && (mMethodData.keySet().iterator().next().startsWith(UrlConstants.HTTPS_URL_PREFIX)
-                        || skipUiForNonUrlPaymentMethodIdentifiersForTest);
+                        || mSkipUiForNonUrlPaymentMethodIdentifiers)
+                // Skip to payment app only if it is the only available payment instrument, and it
+                // can be pre-selected.
+                && mPaymentMethodsSection.getSize() == 1
+                && selectedInstrument != null
+                // Skip to payment app only if user gesture is provided when it is required to
+                // skip-UI.
+                && (mIsUserGestureShow || !selectedInstrument.isUserGestureRequiredToSkipUi());
     }
 
     /** @return Whether the UI was built. */
@@ -725,7 +749,6 @@ public class PaymentRequestImpl
                     activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
         }
 
-        setShowingPaymentRequest(this);
         mUI = new PaymentRequestUI(activity, this, mRequestShipping,
                 /* requestShippingOption= */ mRequestShipping,
                 mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail,
@@ -846,6 +869,7 @@ public class PaymentRequestImpl
             return;
         }
 
+        setShowingPaymentRequest(this);
         mIsCurrentPaymentRequestShowing = true;
         mJourneyLogger.setTriggerTime();
         if (disconnectIfNoPaymentMethodsSupported()) return;
@@ -861,9 +885,14 @@ public class PaymentRequestImpl
         mIsUserGestureShow = isUserGesture;
         mWaitForUpdatedDetails = waitForUpdatedDetails;
 
-        if (!mShouldSkipShowingPaymentRequestUi && mSkipToGPayHelper == null) {
+        if (isFinishedQueryingPaymentApps()) {
+            // Calculate skip ui and build ui only after all payment instruments are ready and
+            // request.show() is called.
+            calculateWhetherShouldSkipShowingPaymentRequestUi();
             if (!buildUI(chromeActivity)) return;
-            mUI.show();
+            if (!mShouldSkipShowingPaymentRequestUi && mSkipToGPayHelper == null) {
+                mUI.show();
+            }
         }
 
         triggerPaymentAppUiSkipIfApplicable(chromeActivity);
@@ -891,39 +920,28 @@ public class PaymentRequestImpl
                 && isFinishedQueryingPaymentApps() && mIsCurrentPaymentRequestShowing
                 && !mWaitForUpdatedDetails) {
             assert !mPaymentMethodsSection.isEmpty();
+            assert mUI != null;
 
             if (isMicrotransactionUiApplicable()) {
                 triggerMicrotransactionUi(chromeActivity);
                 return;
             }
 
+            assert !mPaymentMethodsSection.isEmpty();
             PaymentInstrument selectedInstrument =
                     (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
-            if (!buildUI(chromeActivity)) return;
-
-            // Do not skip to payment app if it is not the only one, it's not pre-selected, or if
-            // skip-UI requires a user gesture in show(), which was not present.
-            // Note that ServiceWorkerPaymentApp cannot be pre-selected if its name and/or icon is
-            // missing.
-            if (mPaymentMethodsSection.getSize() > 1 || selectedInstrument == null
-                    || (selectedInstrument.isUserGestureRequiredToSkipUi()
-                            && !mIsUserGestureShow)) {
-                mUI.show();
-            } else {
-                dimBackgroundIfNotBottomSheetPaymentHandler(selectedInstrument);
-                mDidRecordShowEvent = true;
-                mShouldRecordAbortReason = true;
-                mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
-                assert mRawTotal != null;
-                // The total amount in details should be finalized at this point. So it is safe to
-                // record the triggered transaction amount.
-                assert !mWaitForUpdatedDetails;
-                mJourneyLogger.recordTransactionAmount(
-                        mRawTotal.amount.currency, mRawTotal.amount.value, false /*completed*/);
-
-                onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */,
-                        selectedInstrument);
-            }
+            dimBackgroundIfNotBottomSheetPaymentHandler(selectedInstrument);
+            mDidRecordShowEvent = true;
+            mShouldRecordAbortReason = true;
+            mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
+            assert mRawTotal != null;
+            // The total amount in details should be finalized at this point. So it is safe to
+            // record the triggered transaction amount.
+            assert !mWaitForUpdatedDetails;
+            mJourneyLogger.recordTransactionAmount(
+                    mRawTotal.amount.currency, mRawTotal.amount.value, false /*completed*/);
+            onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */,
+                    selectedInstrument);
         }
     }
 
@@ -953,7 +971,6 @@ public class PaymentRequestImpl
                     mCurrencyFormatterMap.get(mRawTotal.amount.currency),
                     mUiShoppingCart.getTotal(), this::onMicrotransactionUiConfirmed,
                     this::onMicrotransactionUiDismissed)) {
-            setShowingPaymentRequest(this);
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
             mJourneyLogger.setEventOccurred(Event.SHOWN);
@@ -1274,10 +1291,10 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mRequestShipping) createShippingSection(chromeActivity, mAutofillProfiles);
-
-        if (!mShouldSkipShowingPaymentRequestUi) {
-            enableUserInterfaceAfterPaymentRequestUpdateEvent();
+        // Do not create shipping section When UI is not built yet. This happens when the show
+        // promise gets resolved before all instruments are ready.
+        if (mUI != null && mRequestShipping) {
+            createShippingSection(chromeActivity, mAutofillProfiles);
         }
 
         mWaitForUpdatedDetails = false;
@@ -1294,6 +1311,10 @@ public class PaymentRequestImpl
         }
 
         triggerPaymentAppUiSkipIfApplicable(chromeActivity);
+
+        if (isFinishedQueryingPaymentApps() && !mShouldSkipShowingPaymentRequestUi) {
+            enableUserInterfaceAfterPaymentRequestUpdateEvent();
+        }
     }
 
     /**
@@ -1561,7 +1582,12 @@ public class PaymentRequestImpl
     public void getDefaultPaymentInformation(Callback<PaymentInformation> callback) {
         mPaymentInformationCallback = callback;
 
-        if (mPaymentMethodsSection == null || mWaitForUpdatedDetails) return;
+        // mUI.show() is called only after request.show() is called and all payment instruments are
+        // ready.
+        assert mIsCurrentPaymentRequestShowing;
+        assert isFinishedQueryingPaymentApps();
+
+        if (mWaitForUpdatedDetails) return;
 
         mHandler.post(() -> {
             if (mUI != null) providePaymentInformation();
@@ -2233,6 +2259,7 @@ public class PaymentRequestImpl
         if (mClient == null) return;
         closeClient();
         mJourneyLogger.setAborted(AbortReason.MOJO_RENDERER_CLOSING);
+        if (sObserverForTest != null) sObserverForTest.onRendererClosedMojoConnection();
         closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
         if (mNativeObserverForTest != null) mNativeObserverForTest.onConnectionTerminated();
     }
@@ -2383,12 +2410,17 @@ public class PaymentRequestImpl
 
         updateInstrumentModifiedTotals();
 
-        // UI has requested the full list of payment instruments. Provide it now.
-        if (mPaymentInformationCallback != null && !mWaitForUpdatedDetails) {
-            providePaymentInformation();
-        }
-
         SettingsAutofillAndPaymentsObserver.getInstance().registerObserver(this);
+
+        if (mIsCurrentPaymentRequestShowing) {
+            // Calculate skip ui and build ui only after all payment instruments are ready and
+            // request.show() is called.
+            calculateWhetherShouldSkipShowingPaymentRequestUi();
+            if (!buildUI(chromeActivity)) return;
+            if (!mShouldSkipShowingPaymentRequestUi && mSkipToGPayHelper == null) {
+                mUI.show();
+            }
+        }
 
         triggerPaymentAppUiSkipIfApplicable(chromeActivity);
     }
@@ -2618,7 +2650,6 @@ public class PaymentRequestImpl
         if (mMicrotransactionUi != null) {
             mMicrotransactionUi.hide();
             mMicrotransactionUi = null;
-            setShowingPaymentRequest(null);
         }
 
         if (mUI != null) {
@@ -2630,9 +2661,9 @@ public class PaymentRequestImpl
                 closeClient();
             });
             mUI = null;
-            setShowingPaymentRequest(null);
         }
 
+        setShowingPaymentRequest(null);
         mIsCurrentPaymentRequestShowing = false;
 
         if (mPaymentMethodsSection != null) {
@@ -2708,8 +2739,7 @@ public class PaymentRequestImpl
 
     @VisibleForTesting
     /* package */ void setSkipUIForNonURLPaymentMethodIdentifiersForTest() {
-        calculateWhetherShouldSkipShowingPaymentRequestUi(
-                true /* skipUiForNonUrlPaymentMethodIdentifiersForTest */);
+        mSkipUiForNonUrlPaymentMethodIdentifiers = true;
     }
 
     /**

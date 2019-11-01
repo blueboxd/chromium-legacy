@@ -99,6 +99,9 @@ bool EnumTraits<blink::mojom::CredentialManagerError,
     case blink::mojom::CredentialManagerError::RESIDENT_CREDENTIALS_UNSUPPORTED:
     case blink::mojom::CredentialManagerError::PROTECTION_POLICY_INCONSISTENT:
     case blink::mojom::CredentialManagerError::ABORT:
+    case blink::mojom::CredentialManagerError::OPAQUE_DOMAIN:
+    case blink::mojom::CredentialManagerError::INVALID_PROTOCOL:
+    case blink::mojom::CredentialManagerError::BAD_RELYING_PARTY_ID:
     case blink::mojom::CredentialManagerError::UNKNOWN:
       *output = password_manager::CredentialManagerError::UNKNOWN;
       return true;

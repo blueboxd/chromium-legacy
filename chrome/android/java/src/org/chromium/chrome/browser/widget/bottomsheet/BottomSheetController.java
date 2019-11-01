@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -23,7 +24,9 @@ import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.PriorityQueue;
 
 /**
@@ -79,14 +82,14 @@ public class BottomSheetController implements Destroyable {
     /** The initial capacity for the priority queue handling pending content show requests. */
     private static final int INITIAL_QUEUE_CAPACITY = 1;
 
-    /** The parameters that controll how the scrim behaves while the sheet is open. */
-    private final ScrimParams mScrimParams;
-
-    /** A handle to the {@link BottomSheet} that this class controls. */
-    private final BottomSheet mBottomSheet;
-
     /** A {@link VrModeObserver} that observers events of entering and exiting VR mode. */
     private final VrModeObserver mVrModeObserver;
+
+    /** The parameters that control how the scrim behaves while the sheet is open. */
+    private ScrimParams mScrimParams;
+
+    /** A handle to the {@link BottomSheet} that this class controls. */
+    private BottomSheet mBottomSheet;
 
     /** A queue for content that is waiting to be shown in the {@link BottomSheet}. */
     private PriorityQueue<BottomSheetContent> mContentQueue;
@@ -106,26 +109,62 @@ public class BottomSheetController implements Destroyable {
     /** The last known activity tab, if available. */
     private Tab mLastActivityTab;
 
+    /** A runnable that initializes the bottom sheet when necessary. */
+    private Runnable mSheetInitializer;
+
+    /**
+     * A list of observers maintained by this controller until the bottom sheet is created, at which
+     * point they will be added to the bottom  sheet.
+     */
+    private List<BottomSheetObserver> mPendingSheetObservers;
+
     /**
      * Build a new controller of the bottom sheet.
      * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the {@code activity}.
      * @param activityTabProvider The provider of the activity's current tab.
      * @param scrim The scrim that shows when the bottom sheet is opened.
-     * @param bottomSheet The bottom sheet that this class will be controlling.
+     * @param bottomSheetSupplier A mechanism for creating a {@link BottomSheet}.
      * @param overlayManager The manager for overlay panels to attach listeners to.
      */
     public BottomSheetController(final ActivityLifecycleDispatcher lifecycleDispatcher,
             final ActivityTabProvider activityTabProvider, final ScrimView scrim,
-            BottomSheet bottomSheet, OverlayPanelManager overlayManager) {
-        mBottomSheet = bottomSheet;
+            Supplier<BottomSheet> bottomSheetSupplier, OverlayPanelManager overlayManager) {
         mTabProvider = activityTabProvider;
         mOverlayPanelManager = overlayManager;
+        mPendingSheetObservers = new ArrayList<>();
+
+        mVrModeObserver = new VrModeObserver() {
+            @Override
+            public void onEnterVr() {
+                suppressSheet(StateChangeReason.VR);
+            }
+
+            @Override
+            public void onExitVr() {
+                unsuppressSheet();
+            }
+        };
+
+        mSheetInitializer = () -> initializeSheet(lifecycleDispatcher, scrim, bottomSheetSupplier);
+    }
+
+    /**
+     * Do the actual initialization of the bottom sheet.
+     * @param lifecycleDispatcher A means of binding to the activity's lifecycle.
+     * @param scrim The scrim to show behind the sheet.
+     * @param bottomSheetSupplier A means of creating the bottom sheet.
+     */
+    private void initializeSheet(final ActivityLifecycleDispatcher lifecycleDispatcher,
+            final ScrimView scrim, Supplier<BottomSheet> bottomSheetSupplier) {
+        mBottomSheet = bottomSheetSupplier.get();
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
                 (content1, content2) -> content1.getPriority() - content2.getPriority());
 
         lifecycleDispatcher.register(this);
+
+        VrModuleProvider.registerVrModeObserver(mVrModeObserver);
 
         final TabObserver tabObserver = new EmptyTabObserver() {
             @Override
@@ -143,23 +182,11 @@ public class BottomSheetController implements Destroyable {
                 if (mLastActivityTab != tab) return;
                 mLastActivityTab = null;
 
-                // Remove the suppressed sheet if its lifecycle is tied to the tab being destroyed.
+                // Remove the suppressed sheet if its lifecycle is tied to the tab being
+                // destroyed.
                 clearRequestsAndHide();
             }
         };
-
-        mVrModeObserver = new VrModeObserver() {
-            @Override
-            public void onEnterVr() {
-                suppressSheet(StateChangeReason.VR);
-            }
-
-            @Override
-            public void onExitVr() {
-                unsuppressSheet();
-            }
-        };
-        VrModuleProvider.registerVrModeObserver(mVrModeObserver);
 
         mTabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
             @Override
@@ -219,8 +246,8 @@ public class BottomSheetController implements Destroyable {
 
                 scrim.hideScrim(true);
 
-                // If the sheet is closed, it is an opportunity for another content to try to take
-                // its place if it is a higher priority.
+                // If the sheet is closed, it is an opportunity for another content to try to
+                // take its place if it is a higher priority.
                 BottomSheetContent content = mBottomSheet.getCurrentSheetContent();
                 BottomSheetContent nextContent = mContentQueue.peek();
                 if (content != null && nextContent != null
@@ -240,13 +267,66 @@ public class BottomSheetController implements Destroyable {
                 showNextContent(true);
             }
         });
+
+        // Add any of the pending observers that were added prior to the sheet being created.
+        for (int i = 0; i < mPendingSheetObservers.size(); i++) {
+            mBottomSheet.addObserver(mPendingSheetObservers.get(i));
+        }
+        mPendingSheetObservers.clear();
+
+        mSheetInitializer = null;
     }
 
     // Destroyable implementation.
     @Override
     public void destroy() {
         VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
-        mBottomSheet.destroy();
+        if (mBottomSheet != null) mBottomSheet.destroy();
+    }
+
+    /**
+     * Handle a back press event. If the sheet is open it will be closed.
+     * @return True if the sheet handled the back press.
+     */
+    public boolean handleBackPress() {
+        if (mBottomSheet == null || !mBottomSheet.isSheetOpen()) return false;
+
+        int sheetState = mBottomSheet.getMinSwipableSheetState();
+        mBottomSheet.setSheetState(sheetState, true, StateChangeReason.BACK_PRESS);
+        return true;
+    }
+
+    /** @return The content currently showing in the bottom sheet. */
+    public BottomSheetContent getCurrentSheetContent() {
+        return mBottomSheet == null ? null : mBottomSheet.getCurrentSheetContent();
+    }
+
+    /** @return The current state of the bottom sheet. */
+    @SheetState
+    public int getSheetState() {
+        return mBottomSheet == null ? SheetState.HIDDEN : mBottomSheet.getSheetState();
+    }
+
+    /**
+     * @param observer The observer to add.
+     */
+    public void addObserver(BottomSheetObserver observer) {
+        if (mBottomSheet == null) {
+            mPendingSheetObservers.add(observer);
+            return;
+        }
+        mBottomSheet.addObserver(observer);
+    }
+
+    /**
+     * @param observer The observer to remove.
+     */
+    public void removeObserver(BottomSheetObserver observer) {
+        if (mBottomSheet != null) {
+            mBottomSheet.removeObserver(observer);
+        } else {
+            mPendingSheetObservers.remove(observer);
+        }
     }
 
     /**
@@ -294,6 +374,8 @@ public class BottomSheetController implements Destroyable {
      *         state, or the browser is in a mode that does not support showing the sheet.
      */
     public boolean requestShowContent(BottomSheetContent content, boolean animate) {
+        if (mBottomSheet == null) mSheetInitializer.run();
+
         // If already showing the requested content, do nothing.
         if (content == mBottomSheet.getCurrentSheetContent()) return true;
 
@@ -326,6 +408,8 @@ public class BottomSheetController implements Destroyable {
      * @param animate Whether the sheet should animate when hiding.
      */
     public void hideContent(BottomSheetContent content, boolean animate) {
+        if (mBottomSheet == null) return;
+
         if (content != mBottomSheet.getCurrentSheetContent()) {
             mContentQueue.remove(content);
             return;
@@ -347,6 +431,8 @@ public class BottomSheetController implements Destroyable {
      * Expand the {@link BottomSheet}. If there is no content in the sheet, this is a noop.
      */
     public void expandSheet() {
+        if (mBottomSheet == null) return;
+
         if (mBottomSheet.getCurrentSheetContent() == null) return;
         mBottomSheet.setSheetState(SheetState.HALF, true);
         if (mOverlayPanelManager.getActivePanel() != null) {

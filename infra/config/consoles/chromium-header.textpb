@@ -146,6 +146,11 @@ links {
     alt: "Chromium Perf FYI console"
   }
   links {
+    text: "swangle"
+    url: "/p/chromium/g/chromium.swangle"
+    alt: "Chromium SWANGLE console"
+  }
+  links {
     text: "webrtc"
     url: "/p/chromium/g/chromium.webrtc"
     alt: "Chromium WebRTC console"
@@ -192,6 +197,11 @@ links {
     text: "mac"
     url: "/p/chromium/g/tryserver.chromium.mac/builders"
     alt: "Mac"
+  }
+  links {
+    text: "swangle"
+    url: "/p/chromium/g/tryserver.chromium.swangle/builders"
+    alt: "SWANGLE"
   }
   links {
     text: "win"

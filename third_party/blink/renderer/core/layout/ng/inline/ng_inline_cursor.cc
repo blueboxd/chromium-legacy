@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -208,6 +209,10 @@ bool NGInlineCursor::IsHiddenForPaint() const {
     return current_item_->IsHiddenForPaint();
   NOTREACHED();
   return false;
+}
+
+bool NGInlineCursor::IsHorizontal() const {
+  return CurrentStyle().GetWritingMode() == WritingMode::kHorizontalTb;
 }
 
 bool NGInlineCursor::IsInlineLeaf() const {
@@ -496,6 +501,36 @@ LayoutUnit NGInlineCursor::InlinePositionForOffset(unsigned offset) const {
   }
   NOTREACHED();
   return LayoutUnit();
+}
+
+PhysicalOffset NGInlineCursor::LineStartPoint() const {
+  DCHECK(IsLineBox()) << this;
+  const LogicalOffset logical_start;  // (0, 0)
+  const PhysicalSize pixel_size(LayoutUnit(1), LayoutUnit(1));
+  return logical_start.ConvertToPhysical(CurrentStyle().GetWritingMode(),
+                                         CurrentBaseDirection(), CurrentSize(),
+                                         pixel_size);
+}
+
+PhysicalOffset NGInlineCursor::LineEndPoint() const {
+  DCHECK(IsLineBox()) << this;
+  const LayoutUnit inline_size =
+      IsHorizontal() ? CurrentSize().width : CurrentSize().height;
+  const LogicalOffset logical_end(inline_size, LayoutUnit());
+  const PhysicalSize pixel_size(LayoutUnit(1), LayoutUnit(1));
+  return logical_end.ConvertToPhysical(CurrentStyle().GetWritingMode(),
+                                       CurrentBaseDirection(), CurrentSize(),
+                                       pixel_size);
+}
+
+PositionWithAffinity NGInlineCursor::PositionForPoint(
+    const PhysicalOffset& point) const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->PositionForPoint(point);
+  if (current_item_)
+    return current_item_->PositionForPoint(point);
+  NOTREACHED();
+  return PositionWithAffinity();
 }
 
 void NGInlineCursor::MakeNull() {

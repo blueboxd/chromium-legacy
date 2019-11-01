@@ -39,10 +39,6 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
     },
 #endif
     {
-        supervised_users::kApprovedExtensions,
-        prefs::kSupervisedUserApprovedExtensions,
-    },
-    {
         supervised_users::kContentPackDefaultFilteringBehavior,
         prefs::kDefaultSupervisedUserFilteringBehavior,
     },

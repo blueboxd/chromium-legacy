@@ -28,7 +28,7 @@ namespace {
 class CacheCreator {
  public:
   CacheCreator(const base::FilePath& path,
-               bool force,
+               disk_cache::ResetHandling reset_handling,
                int64_t max_bytes,
                net::CacheType type,
                net::BackendType backend_type,
@@ -54,7 +54,7 @@ class CacheCreator {
   void OnIOComplete(int result);
 
   const base::FilePath path_;
-  bool force_;
+  disk_cache::ResetHandling reset_handling_;
   bool retry_;
   int64_t max_bytes_;
   net::CacheType type_;
@@ -74,7 +74,7 @@ class CacheCreator {
 
 CacheCreator::CacheCreator(
     const base::FilePath& path,
-    bool force,
+    disk_cache::ResetHandling reset_handling,
     int64_t max_bytes,
     net::CacheType type,
     net::BackendType backend_type,
@@ -86,7 +86,7 @@ CacheCreator::CacheCreator(
     base::OnceClosure post_cleanup_callback,
     net::CompletionOnceCallback callback)
     : path_(path),
-      force_(force),
+      reset_handling_(reset_handling),
       retry_(false),
       max_bytes_(max_bytes),
       type_(type),
@@ -108,6 +108,12 @@ net::Error CacheCreator::Run() {
 #else
   static const bool kSimpleBackendIsDefault = false;
 #endif
+  if (!retry_ && reset_handling_ == disk_cache::ResetHandling::kReset) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&CacheCreator::OnIOComplete,
+                                  base::Unretained(this), net::ERR_IO_PENDING));
+    return net::ERR_IO_PENDING;
+  }
   if (backend_type_ == net::CACHE_BACKEND_SIMPLE ||
       (backend_type_ == net::CACHE_BACKEND_DEFAULT &&
        kSimpleBackendIsDefault)) {
@@ -182,14 +188,15 @@ void CacheCreator::DoCallback(int result) {
   delete this;
 }
 
-// If the initialization of the cache fails, and |force| is true, we will
-// discard the whole cache and create a new one.
+// If the initialization of the cache fails, and |reset_handling| isn't set to
+// kNeverReset, we will discard the whole cache and create a new one.
 void CacheCreator::OnIOComplete(int result) {
-  if (result == net::OK || !force_ || retry_)
+  if (result == net::OK ||
+      reset_handling_ == disk_cache::ResetHandling::kNeverReset || retry_) {
     return DoCallback(result);
+  }
 
-  // This is a failure and we are supposed to try again, so delete the object,
-  // delete all the files, and try again.
+  // We are supposed to try again, so delete the object and all files and do so.
   retry_ = true;
   created_cache_.reset();
   if (!disk_cache::DelayedCacheCleanup(path_))
@@ -210,7 +217,7 @@ net::Error CreateCacheBackendImpl(
     net::BackendType backend_type,
     const base::FilePath& path,
     int64_t max_bytes,
-    bool force,
+    ResetHandling reset_handling,
 #if defined(OS_ANDROID)
     base::android::ApplicationStatusListener* app_status_listener,
 #endif
@@ -238,7 +245,7 @@ net::Error CreateCacheBackendImpl(
 
   bool had_post_cleanup_callback = !post_cleanup_callback.is_null();
   CacheCreator* creator = new CacheCreator(
-      path, force, max_bytes, type, backend_type,
+      path, reset_handling, max_bytes, type, backend_type,
 #if defined(OS_ANDROID)
       std::move(app_status_listener),
 #endif
@@ -255,16 +262,16 @@ net::Error CreateCacheBackend(net::CacheType type,
                               net::BackendType backend_type,
                               const base::FilePath& path,
                               int64_t max_bytes,
-                              bool force,
+                              ResetHandling reset_handling,
                               net::NetLog* net_log,
                               std::unique_ptr<Backend>* backend,
                               net::CompletionOnceCallback callback) {
-  return CreateCacheBackendImpl(type, backend_type, path, max_bytes, force,
+  return CreateCacheBackendImpl(
+      type, backend_type, path, max_bytes, reset_handling,
 #if defined(OS_ANDROID)
-                                nullptr,
+      nullptr,
 #endif
-                                net_log, backend, base::OnceClosure(),
-                                std::move(callback));
+      net_log, backend, base::OnceClosure(), std::move(callback));
 }
 
 #if defined(OS_ANDROID)
@@ -273,14 +280,14 @@ NET_EXPORT net::Error CreateCacheBackend(
     net::BackendType backend_type,
     const base::FilePath& path,
     int64_t max_bytes,
-    bool force,
+    ResetHandling reset_handling,
     net::NetLog* net_log,
     std::unique_ptr<Backend>* backend,
     net::CompletionOnceCallback callback,
     base::android::ApplicationStatusListener* app_status_listener) {
-  return CreateCacheBackendImpl(type, backend_type, path, max_bytes, force,
-                                std::move(app_status_listener), net_log,
-                                backend, base::OnceClosure(),
+  return CreateCacheBackendImpl(type, backend_type, path, max_bytes,
+                                reset_handling, std::move(app_status_listener),
+                                net_log, backend, base::OnceClosure(),
                                 std::move(callback));
 }
 #endif
@@ -289,13 +296,13 @@ net::Error CreateCacheBackend(net::CacheType type,
                               net::BackendType backend_type,
                               const base::FilePath& path,
                               int64_t max_bytes,
-                              bool force,
+                              ResetHandling reset_handling,
                               net::NetLog* net_log,
                               std::unique_ptr<Backend>* backend,
                               base::OnceClosure post_cleanup_callback,
                               net::CompletionOnceCallback callback) {
   return CreateCacheBackendImpl(
-      type, backend_type, path, max_bytes, force,
+      type, backend_type, path, max_bytes, reset_handling,
 #if defined(OS_ANDROID)
       nullptr,
 #endif

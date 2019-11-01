@@ -49,13 +49,13 @@ OpenXrApiWrapper::~OpenXrApiWrapper() {
 }
 
 void OpenXrApiWrapper::Reset() {
-  session_ended_ = false;
   local_space_ = XR_NULL_HANDLE;
   stage_space_ = XR_NULL_HANDLE;
   view_space_ = XR_NULL_HANDLE;
   color_swapchain_ = XR_NULL_HANDLE;
   session_ = XR_NULL_HANDLE;
   blend_mode_ = XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM;
+  stage_bounds_ = {};
   system_ = kInvalidSystem;
   instance_ = XR_NULL_HANDLE;
 
@@ -69,7 +69,7 @@ void OpenXrApiWrapper::Reset() {
 
 bool OpenXrApiWrapper::Initialize() {
   Reset();
-
+  session_ended_ = false;
   if (XR_FAILED(CreateInstance(&instance_))) {
     return false;
   }
@@ -114,6 +114,7 @@ void OpenXrApiWrapper::Uninitialize() {
     test_hook_->DetachCurrentThread();
 
   Reset();
+  session_ended_ = true;
 }
 
 bool OpenXrApiWrapper::HasInstance() const {
@@ -595,6 +596,29 @@ XrResult OpenXrApiWrapper::ProcessEvents() {
         default:
           break;
       }
+    } else if (event_data.type == XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING) {
+      DCHECK(session_ != XR_NULL_HANDLE);
+      Uninitialize();
+    } else if (event_data.type ==
+               XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING) {
+      XrEventDataReferenceSpaceChangePending* reference_space_change_pending =
+          reinterpret_cast<XrEventDataReferenceSpaceChangePending*>(
+              &event_data);
+      DCHECK(reference_space_change_pending->session == session_);
+      // TODO(crbug.com/1015049)
+      // Currently WMR only throw reference space change event for stage.
+      // Other runtimes may decide to do it differently.
+      if (reference_space_change_pending->referenceSpaceType ==
+          XR_REFERENCE_SPACE_TYPE_STAGE) {
+        UpdateStageBounds();
+      }
+    } else if (event_data.type ==
+               XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED) {
+      XrEventDataInteractionProfileChanged* interaction_profile_changed =
+          reinterpret_cast<XrEventDataInteractionProfileChanged*>(&event_data);
+      DCHECK(interaction_profile_changed->session == session_);
+      interaction_profile_changed_callback_.Run(&xr_result);
+      RETURN_IF_XR_FAILED(xr_result);
     }
     event_data.type = XR_TYPE_EVENT_DATA_BUFFER;
     xr_result = xrPollEvent(instance_, &event_data);
@@ -696,6 +720,13 @@ bool OpenXrApiWrapper::GetStageParameters(XrExtent2Df* stage_bounds,
 
   *local_from_stage = gfx::ComposeTransform(local_from_stage_decomp);
   return true;
+}
+
+void OpenXrApiWrapper::RegisterInteractionProfileChangeCallback(
+    const base::RepeatingCallback<void(XrResult*)>&
+        interaction_profile_callback) {
+  interaction_profile_changed_callback_ =
+      std::move(interaction_profile_callback);
 }
 
 VRTestHook* OpenXrApiWrapper::test_hook_ = nullptr;

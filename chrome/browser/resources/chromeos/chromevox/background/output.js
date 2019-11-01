@@ -35,6 +35,7 @@ var DescriptionFromType = chrome.automation.DescriptionFromType;
 var Dir = constants.Dir;
 var EventType = chrome.automation.EventType;
 var NameFromType = chrome.automation.NameFromType;
+var Restriction = chrome.automation.Restriction;
 var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
 
@@ -343,8 +344,8 @@ Output.INPUT_TYPE_MESSAGE_IDS_ = {
  * @private
  */
 Output.RESTRICTION_STATE_MAP = {};
-Output.RESTRICTION_STATE_MAP[chrome.automation.Restriction.DISABLED] =
-    'aria_disabled_true';
+Output.RESTRICTION_STATE_MAP[Restriction.DISABLED] = 'aria_disabled_true';
+Output.RESTRICTION_STATE_MAP[Restriction.READ_ONLY] = 'aria_readonly_true';
 
 /**
  * Rules for mapping the checked property to a msg id

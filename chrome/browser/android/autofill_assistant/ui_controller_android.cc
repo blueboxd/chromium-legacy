@@ -20,6 +20,7 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantCollectUserDataModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetailsModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetails_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantDimension_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormInput_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantHeaderModel_jni.h"
@@ -77,6 +78,26 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDateTime(
   return Java_AssistantCollectUserDataModel_createAssistantDateTime(
       env, (int)proto.date().year(), proto.date().month(), proto.date().day(),
       proto.time().hour(), proto.time().minute(), proto.time().second());
+}
+
+base::android::ScopedJavaLocalRef<jobject> CreateJavaClientDimension(
+    JNIEnv* env,
+    const ClientDimensionProto& proto) {
+  switch (proto.size_case()) {
+    case ClientDimensionProto::kDpi:
+      return Java_AssistantDimension_createFromDpi(env, proto.dpi());
+      break;
+    case ClientDimensionProto::kWidthFactor:
+      return Java_AssistantDimension_createFromWidthFactor(
+          env, proto.width_factor());
+      break;
+    case ClientDimensionProto::kHeightFactor:
+      return Java_AssistantDimension_createFromHeightFactor(
+          env, proto.height_factor());
+      break;
+    case ClientDimensionProto::SIZE_NOT_SET:
+      return nullptr;
+  }
 }
 
 // Returns a 32-bit integer representing |color_string| in Java. Uses
@@ -1029,9 +1050,31 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
 
 void UiControllerAndroid::OnClientSettingsChanged(
     const ClientSettings& settings) {
+  JNIEnv* env = AttachCurrentThread();
   Java_AssistantOverlayModel_setTapTracking(
-      AttachCurrentThread(), GetOverlayModel(), settings.tap_count,
+      env, GetOverlayModel(), settings.tap_count,
       settings.tap_tracking_duration.InMilliseconds());
+  if (settings.overlay_image.has_value()) {
+    const auto& image = *(settings.overlay_image);
+
+    auto text_color = CreateJavaColor(env, image.text_color());
+    if (!text_color.has_value()) {
+      DVLOG(1) << __func__ << "Invalid text color for overlay image: "
+               << image.text_color();
+      Java_AssistantOverlayModel_clearOverlayImage(env, GetOverlayModel());
+    } else {
+      Java_AssistantOverlayModel_setOverlayImage(
+          env, GetOverlayModel(),
+          base::android::ConvertUTF8ToJavaString(env, image.image_url()),
+          CreateJavaClientDimension(env, image.image_size()),
+          CreateJavaClientDimension(env, image.image_top_margin()),
+          CreateJavaClientDimension(env, image.image_bottom_margin()),
+          base::android::ConvertUTF8ToJavaString(env, image.text()),
+          *text_color, CreateJavaClientDimension(env, image.text_size()));
+    }
+  } else {
+    Java_AssistantOverlayModel_clearOverlayImage(env, GetOverlayModel());
+  }
 }
 
 void UiControllerAndroid::OnCounterChanged(int input_index,

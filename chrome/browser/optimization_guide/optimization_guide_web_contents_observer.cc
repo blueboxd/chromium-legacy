@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
+#include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/hints_processing_util.h"
@@ -81,6 +82,9 @@ void OptimizationGuideWebContentsObserver::DidStartNavigation(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!navigation_handle->IsInMainFrame())
     return;
+
+  OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlacklist(
+      navigation_handle);
 
   // Record the HintsFetcher coverage for the navigation, regardless if the
   // keyed service is active or not.

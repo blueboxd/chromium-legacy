@@ -7,12 +7,14 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/notifications/fullscreen_notification_blocker.h"
 #include "chrome/browser/notifications/popups_only_ui_controller.h"
 #include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/notifications/screen_lock_notification_blocker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -270,8 +272,8 @@ void NotificationUIManagerImpl::RemoveProfileNotification(
   // b) A crash like https://crbug.com/649971 because it can trigger
   //    shutdown process while we're still inside the call stack from UI
   //    framework.
-  content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
-                                     it->second.release());
+  base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
+                   it->second.release());
   profile_notifications_.erase(it);
 }
 

@@ -81,7 +81,7 @@ public class CustomTabActivityTabProvider {
         return mSpeculatedUrl;
     }
 
-    void setInitialTab(@NonNull Tab tab, @TabCreationMode int creationMode) {
+    public void setInitialTab(@NonNull Tab tab, @TabCreationMode int creationMode) {
         assert mTab == null;
         assert creationMode != TabCreationMode.NONE;
         mTab = tab;
@@ -107,7 +107,7 @@ public class CustomTabActivityTabProvider {
         }
     }
 
-    void swapTab(@Nullable Tab tab) {
+    public void swapTab(@Nullable Tab tab) {
         assert mTab != null : "swapTab shouldn't be called before setInitialTab";
         if (mTab == tab) return;
         mTab = tab;
@@ -126,7 +126,7 @@ public class CustomTabActivityTabProvider {
      * Observer that gets notified about changes of the Tab currently managed by Custom Tab
      * activity.
      */
-    public static abstract class Observer {
+    public abstract static class Observer {
         /**
          * Fired when the initial tab has been created.
          */
@@ -148,5 +148,4 @@ public class CustomTabActivityTabProvider {
          */
         public void onAllTabsClosed() {}
     }
-
 }

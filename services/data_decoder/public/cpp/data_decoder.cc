@@ -60,6 +60,9 @@ class ValueParseRequest : public base::RefCounted<ValueParseRequest<T>> {
   // Handles a successful parse from the service.
   void OnServiceValueOrError(base::Optional<base::Value> value,
                              const base::Optional<std::string>& error) {
+    if (!callback())
+      return;
+
     DataDecoder::ValueOrError result;
     if (value)
       result.value = std::move(value);
@@ -85,9 +88,11 @@ class ValueParseRequest : public base::RefCounted<ValueParseRequest<T>> {
   ~ValueParseRequest() = default;
 
   void OnRemoteDisconnected() {
-    std::move(callback())
-        .Run(DataDecoder::ValueOrError::Error(
-            "Data Decoder terminated unexpectedly"));
+    if (callback()) {
+      std::move(callback())
+          .Run(DataDecoder::ValueOrError::Error(
+              "Data Decoder terminated unexpectedly"));
+    }
   }
 
   mojo::Remote<T> remote_;

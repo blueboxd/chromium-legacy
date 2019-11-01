@@ -166,8 +166,8 @@ static void ReadonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Functio
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  static const V8PrivateProperty::SymbolKey keep_alive_key;
-  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
+  static const V8PrivateProperty::SymbolKey kKeepAliveKey;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), kKeepAliveKey)
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -1992,7 +1992,7 @@ static void ActivityLoggingSetterForAllWorldsLongAttributeAttributeSetter(
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey cached_attribute_any_attribute_key;
+static const V8PrivateProperty::SymbolKey kCachedAttributeAnyAttribute;
 
 static void CachedAttributeAnyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -2002,7 +2002,7 @@ static void CachedAttributeAnyAttributeAttributeGetter(const v8::FunctionCallbac
   // [CachedAttribute]
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
-          cached_attribute_any_attribute_key);
+          kPrivatePropertyCachedAttributeAnyAttribute);
   if (!static_cast<const TestObject*>(impl)->isValueDirty()) {
     v8::Local<v8::Value> v8_value;
     if (property_symbol.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
@@ -2039,12 +2039,12 @@ static void CachedAttributeAnyAttributeAttributeSetter(
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
       isolate,
-      cached_attribute_any_attribute_key)
+      kPrivatePropertyCachedAttributeAnyAttribute)
       .DeleteProperty(holder, v8::Undefined(isolate));
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey cached_array_attribute_key;
+static const V8PrivateProperty::SymbolKey kCachedArrayAttribute;
 
 static void CachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -2054,7 +2054,7 @@ static void CachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
   // [CachedAttribute]
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
-          cached_array_attribute_key);
+          kPrivatePropertyCachedArrayAttribute);
   if (!static_cast<const TestObject*>(impl)->isFrozenArrayDirty()) {
     v8::Local<v8::Value> v8_value;
     if (property_symbol.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
@@ -2095,7 +2095,7 @@ static void CachedArrayAttributeAttributeSetter(
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
       isolate,
-      cached_array_attribute_key)
+      kPrivatePropertyCachedArrayAttribute)
       .DeleteProperty(holder, v8::Undefined(isolate));
 }
 
@@ -2105,11 +2105,11 @@ static void ReadonlyCachedAttributeAttributeGetter(const v8::FunctionCallbackInf
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // [CachedAttribute]
-  static const V8PrivateProperty::SymbolKey readonly_cached_attribute_key;
+  static const V8PrivateProperty::SymbolKey kPrivatePropertyReadonlyCachedAttribute;
 
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
-          readonly_cached_attribute_key);
+          kPrivatePropertyReadonlyCachedAttribute);
   if (!static_cast<const TestObject*>(impl)->isStringDirty()) {
     v8::Local<v8::Value> v8_value;
     if (property_symbol.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
@@ -2128,7 +2128,7 @@ static void ReadonlyCachedAttributeAttributeGetter(const v8::FunctionCallbackInf
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey cached_string_or_none_attribute_key;
+static const V8PrivateProperty::SymbolKey kCachedStringOrNoneAttribute;
 
 static void CachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -2138,7 +2138,7 @@ static void CachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbac
   // [CachedAttribute]
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
-          cached_string_or_none_attribute_key);
+          kPrivatePropertyCachedStringOrNoneAttribute);
   if (!static_cast<const TestObject*>(impl)->isStringDirty()) {
     v8::Local<v8::Value> v8_value;
     if (property_symbol.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
@@ -2177,7 +2177,7 @@ static void CachedStringOrNoneAttributeAttributeSetter(
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
       isolate,
-      cached_string_or_none_attribute_key)
+      kPrivatePropertyCachedStringOrNoneAttribute)
       .DeleteProperty(holder, v8::Undefined(isolate));
 }
 
@@ -2522,8 +2522,8 @@ static void PerWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(c
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  static const V8PrivateProperty::SymbolKey keep_alive_key;
-  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
+  static const V8PrivateProperty::SymbolKey kKeepAliveKey;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), kKeepAliveKey)
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -2541,8 +2541,8 @@ static void PerWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterFo
   if (cpp_value && DOMDataStore::SetReturnValueForMainWorld(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  static const V8PrivateProperty::SymbolKey keep_alive_key;
-  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
+  static const V8PrivateProperty::SymbolKey kKeepAliveKey;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), kKeepAliveKey)
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -3138,7 +3138,7 @@ static void RaisesExceptionTestInterfaceEmptyAttributeAttributeSetter(
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey cached_attribute_raises_exception_getter_any_attribute_key;
+static const V8PrivateProperty::SymbolKey kCachedAttributeRaisesExceptionGetterAnyAttribute;
 
 static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -3148,7 +3148,7 @@ static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(cons
   // [CachedAttribute]
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
-          cached_attribute_raises_exception_getter_any_attribute_key);
+          kPrivatePropertyCachedAttributeRaisesExceptionGetterAnyAttribute);
   if (!static_cast<const TestObject*>(impl)->isValueDirty()) {
     v8::Local<v8::Value> v8_value;
     if (property_symbol.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
@@ -3192,7 +3192,7 @@ static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
       isolate,
-      cached_attribute_raises_exception_getter_any_attribute_key)
+      kPrivatePropertyCachedAttributeRaisesExceptionGetterAnyAttribute)
       .DeleteProperty(holder, v8::Undefined(isolate));
 }
 
@@ -4105,8 +4105,8 @@ static void SameObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  static const V8PrivateProperty::SymbolKey keep_alive_key;
-  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
+  static const V8PrivateProperty::SymbolKey kKeepAliveKey;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), kKeepAliveKey)
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -4116,9 +4116,9 @@ static void SaveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   v8::Local<v8::Object> holder = info.Holder();
 
   // [SaveSameObject]
-  static const V8PrivateProperty::SymbolKey save_same_object_key;
+  static const V8PrivateProperty::SymbolKey kSaveSameObjectKey;
   auto private_same_object =
-      V8PrivateProperty::GetSymbol(info.GetIsolate(), save_same_object_key);
+      V8PrivateProperty::GetSymbol(info.GetIsolate(), kSaveSameObjectKey);
   {
     v8::Local<v8::Value> v8_value;
     if (private_same_object.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
@@ -4136,8 +4136,8 @@ static void SaveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  static const V8PrivateProperty::SymbolKey keep_alive_key;
-  V8PrivateProperty::GetSymbol(info.GetIsolate(), keep_alive_key)
+  static const V8PrivateProperty::SymbolKey kKeepAliveKey;
+  V8PrivateProperty::GetSymbol(info.GetIsolate(), kKeepAliveKey)
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -4150,9 +4150,9 @@ static void StaticSaveSameObjectAttributeAttributeGetter(const v8::FunctionCallb
   v8::Local<v8::Object> holder = info.Holder();
 
   // [SaveSameObject]
-  static const V8PrivateProperty::SymbolKey save_same_object_key;
+  static const V8PrivateProperty::SymbolKey kSaveSameObjectKey;
   auto private_same_object =
-      V8PrivateProperty::GetSymbol(info.GetIsolate(), save_same_object_key);
+      V8PrivateProperty::GetSymbol(info.GetIsolate(), kSaveSameObjectKey);
   {
     v8::Local<v8::Value> v8_value;
     if (private_same_object.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {

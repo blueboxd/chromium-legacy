@@ -45,9 +45,9 @@ bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
   // we are just comparing that bytes are exactly same in both files and not
   // doing anything smart with text formatting.
 #if defined(OS_WIN)
-  std::ifstream file1(as_wcstr(filename1.value()),
+  std::ifstream file1(filename1.value().c_str(),
                       std::ios::in | std::ios::binary);
-  std::ifstream file2(as_wcstr(filename2.value()),
+  std::ifstream file2(filename2.value().c_str(),
                       std::ios::in | std::ios::binary);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::ifstream file1(filename1.value(), std::ios::in | std::ios::binary);
@@ -81,8 +81,8 @@ bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 
 bool TextContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 #if defined(OS_WIN)
-  std::ifstream file1(as_wcstr(filename1.value()), std::ios::in);
-  std::ifstream file2(as_wcstr(filename2.value()), std::ios::in);
+  std::ifstream file1(filename1.value().c_str(), std::ios::in);
+  std::ifstream file2(filename2.value().c_str(), std::ios::in);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::ifstream file1(filename1.value(), std::ios::in);
   std::ifstream file2(filename2.value(), std::ios::in);

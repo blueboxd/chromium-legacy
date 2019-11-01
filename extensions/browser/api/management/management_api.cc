@@ -337,22 +337,30 @@ ManagementGetPermissionWarningsByManifestFunction::Run() {
     delegate->GetPermissionWarningsByManifestFunctionDelegate(
         this, params->manifest_str);
 
-    // Matched with a Release() in OnParseSuccess/Failure().
+    // Matched with a Release() in OnParse().
     AddRef();
 
-    // Response is sent async in OnParseSuccess/Failure().
+    // Response is sent async in OnParse().
     return RespondLater();
   } else {
     // TODO(lfg) add error string
     return RespondNow(Error(kUnknownErrorDoNotUse));
   }
 }
+void ManagementGetPermissionWarningsByManifestFunction::OnParse(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    Respond(Error(*result.error));
 
-void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
-    base::Value value) {
+    // Matched with AddRef() in Run().
+    Release();
+    return;
+  }
+
   const base::DictionaryValue* parsed_manifest;
-  if (!value.GetAsDictionary(&parsed_manifest)) {
-    OnParseFailure(keys::kManifestParseError);
+  if (!result.value->GetAsDictionary(&parsed_manifest)) {
+    Respond(Error(keys::kManifestParseError));
+    Release();
     return;
   }
 
@@ -362,21 +370,14 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
                         *parsed_manifest, Extension::NO_FLAGS, &error);
   // TODO(lazyboy): Do we need to use |error|?
   if (!extension) {
-    OnParseFailure(keys::kExtensionCreateError);
+    Respond(Error(keys::kExtensionCreateError));
+    Release();
     return;
   }
 
   std::vector<std::string> warnings = CreateWarningsList(extension.get());
   Respond(ArgumentList(
       management::GetPermissionWarningsByManifest::Results::Create(warnings)));
-
-  // Matched with AddRef() in Run().
-  Release();
-}
-
-void ManagementGetPermissionWarningsByManifestFunction::OnParseFailure(
-    const std::string& error) {
-  Respond(Error(error));
 
   // Matched with AddRef() in Run().
   Release();

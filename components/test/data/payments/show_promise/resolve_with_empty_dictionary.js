@@ -8,7 +8,7 @@
  * Launch PaymentRequest with a show promise that resolves with an empty
  * dictionary.
  */
-function buy() {  // eslint-disable-line no-unused-vars
+function buy() { // eslint-disable-line no-unused-vars
   try {
     var request = new PaymentRequest(
         [{supportedMethods: 'basic-card'}], {

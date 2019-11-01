@@ -20,9 +20,9 @@ class MockVideoSourceProvider
   MockVideoSourceProvider();
   ~MockVideoSourceProvider() override;
 
-  void GetVideoSource(
-      const std::string& device_id,
-      video_capture::mojom::VideoSourceRequest source_request) override;
+  void GetVideoSource(const std::string& device_id,
+                      mojo::PendingReceiver<video_capture::mojom::VideoSource>
+                          source_receiver) override;
 
   void GetSourceInfos(GetSourceInfosCallback callback) override;
 
@@ -47,9 +47,10 @@ class MockVideoSourceProvider
   void Close(CloseCallback callback) override;
 
   MOCK_METHOD1(DoGetSourceInfos, void(GetSourceInfosCallback& callback));
-  MOCK_METHOD2(DoGetVideoSource,
-               void(const std::string& device_id,
-                    video_capture::mojom::VideoSourceRequest* request));
+  MOCK_METHOD2(
+      DoGetVideoSource,
+      void(const std::string& device_id,
+           mojo::PendingReceiver<video_capture::mojom::VideoSource>* receiver));
   MOCK_METHOD3(
       DoAddVirtualDevice,
       void(

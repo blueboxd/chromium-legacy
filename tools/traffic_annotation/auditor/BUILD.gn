@@ -70,8 +70,7 @@ source_set("auditor_sources") {
     ":traffic_annotation",
     "//base",
     "//net/traffic_annotation",
-    "//third_party/libxml:xml_reader",  # Safe, consumes Chromium-produced file.
-    "//third_party/libxml:xml_writer",
+    "//third_party/libxml",
     "//third_party/protobuf:protobuf_full",
     "//third_party/re2",
   ]

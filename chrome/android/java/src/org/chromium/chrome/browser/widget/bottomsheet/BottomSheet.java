@@ -27,7 +27,6 @@ import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
@@ -223,23 +222,6 @@ public class BottomSheet
         mIsTouchEnabled = false;
         mObservers.clear();
         endAnimations();
-    }
-
-    /**
-     * Handle a back press event.
-     *     - If the navigation stack is empty, the sheet will be opened to the half state.
-     *         - If the tab switcher is visible, {@link ChromeActivity} will handle the event.
-     *     - If the sheet is open it will be closed unless it was opened by a back press.
-     * @return True if the sheet handled the back press.
-     */
-    public boolean handleBackPress() {
-        if (isSheetOpen()) {
-            int sheetState = getMinSwipableSheetState();
-            setSheetState(sheetState, true, StateChangeReason.BACK_PRESS);
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -1020,7 +1002,7 @@ public class BottomSheet
      *         state the sheet is animating to.
      */
     @SheetState
-    public int getSheetState() {
+    int getSheetState() {
         return mCurrentState;
     }
 
@@ -1082,11 +1064,9 @@ public class BottomSheet
         return mSettleAnimator != null;
     }
 
-    /**
-     * @return The current sheet content, or null if there is no content.
-     */
-    @VisibleForTesting
-    public @Nullable BottomSheetContent getCurrentSheetContent() {
+    /** @return The current sheet content, or null if there is no content. */
+    @Nullable
+    BottomSheetContent getCurrentSheetContent() {
         return mSheetContent;
     }
 
@@ -1134,7 +1114,7 @@ public class BottomSheet
      * Adds an observer to the bottom sheet.
      * @param observer The observer to add.
      */
-    public void addObserver(BottomSheetObserver observer) {
+    void addObserver(BottomSheetObserver observer) {
         mObservers.addObserver(observer);
     }
 
@@ -1142,7 +1122,7 @@ public class BottomSheet
      * Removes an observer to the bottom sheet.
      * @param observer The observer to remove.
      */
-    public void removeObserver(BottomSheetObserver observer) {
+    void removeObserver(BottomSheetObserver observer) {
         mObservers.removeObserver(observer);
     }
 

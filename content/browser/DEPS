@@ -28,6 +28,7 @@ include_rules = [
   "+components/payments",
   "+components/rappor/public",
   "+components/services/heap_profiling/public",
+  "+components/system_media_controls",
   "+components/tracing",
   "+components/ukm",
   "+components/url_formatter",

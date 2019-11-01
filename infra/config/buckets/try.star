@@ -1655,6 +1655,80 @@ mac_ios_builder(
 )
 
 
+def swangle_builder(*, name, **kwargs):
+  return try_builder(
+      name = name,
+      builderless = True,
+      mastername = 'tryserver.chromium.swangle',
+      service_account = 'chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
+      **kwargs
+  )
+
+
+def swangle_linux_builder(*, name, **kwargs):
+  return swangle_builder(
+      name = name,
+      os = os.LINUX_DEFAULT,
+      **kwargs
+  )
+
+swangle_linux_builder(
+    name = 'linux-swangle-try-tot-angle-x64'
+)
+
+swangle_linux_builder(
+    name = 'linux-swangle-try-tot-angle-x86'
+)
+
+swangle_linux_builder(
+    name = 'linux-swangle-try-tot-swiftshader-x64'
+)
+
+swangle_linux_builder(
+    name = 'linux-swangle-try-tot-swiftshader-x86'
+)
+
+swangle_linux_builder(
+    name = 'linux-swangle-try-x64'
+)
+
+swangle_linux_builder(
+    name = 'linux-swangle-try-x86'
+)
+
+
+def swangle_windows_builder(*, name, **kwargs):
+  return swangle_builder(
+      name = name,
+      os = os.WINDOWS_DEFAULT,
+      **kwargs
+  )
+
+swangle_windows_builder(
+    name = 'win-swangle-try-tot-angle-x64'
+)
+
+swangle_windows_builder(
+    name = 'win-swangle-try-tot-angle-x86'
+)
+
+swangle_windows_builder(
+    name = 'win-swangle-try-tot-swiftshader-x64'
+)
+
+swangle_windows_builder(
+    name = 'win-swangle-try-tot-swiftshader-x86'
+)
+
+swangle_windows_builder(
+    name = 'win-swangle-try-x64'
+)
+
+swangle_windows_builder(
+    name = 'win-swangle-try-x86'
+)
+
+
 def win_builder(*, name, builderless=True, os=os.WINDOWS_DEFAULT, **kwargs):
   return try_builder(
       name = name,

@@ -445,7 +445,7 @@ void DialogClientView::SetupViews() {
   if (extra_view_)
     return;
 
-  extra_view_ = GetDialogDelegate()->CreateExtraView().release();
+  extra_view_ = GetDialogDelegate()->DisownExtraView().release();
   if (extra_view_ && Button::AsButton(extra_view_))
     extra_view_->SetGroup(kButtonGroup);
 }

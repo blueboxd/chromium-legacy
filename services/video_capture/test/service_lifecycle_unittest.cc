@@ -75,9 +75,9 @@ TEST_F(VideoCaptureServiceLifecycleTest,
 // provider.
 TEST_F(VideoCaptureServiceLifecycleTest,
        ServiceQuitsWhenSingleVideoSourceProviderClientDisconnected) {
-  mojom::VideoSourceProviderPtr source_provider;
+  mojo::Remote<mojom::VideoSourceProvider> source_provider;
   service_remote_->ConnectToVideoSourceProvider(
-      mojo::MakeRequest(&source_provider));
+      source_provider.BindNewPipeAndPassReceiver());
   source_provider.reset();
   service_idle_wait_loop_.Run();
 }
@@ -85,9 +85,9 @@ TEST_F(VideoCaptureServiceLifecycleTest,
 // Tests that the service quits when the only client disconnects after
 // enumerating devices via the video source provider.
 TEST_F(VideoCaptureServiceLifecycleTest, ServiceQuitsAfterEnumeratingDevices) {
-  mojom::VideoSourceProviderPtr source_provider;
+  mojo::Remote<mojom::VideoSourceProvider> source_provider;
   service_remote_->ConnectToVideoSourceProvider(
-      mojo::MakeRequest(&source_provider));
+      source_provider.BindNewPipeAndPassReceiver());
 
   base::RunLoop wait_loop;
   EXPECT_CALL(device_info_receiver_, Run(_))
@@ -108,9 +108,9 @@ TEST_F(VideoCaptureServiceLifecycleTest, ServiceQuitsAfterEnumeratingDevices) {
 // reconnects via the video source provider.
 TEST_F(VideoCaptureServiceLifecycleTest, EnumerateDevicesAfterReconnect) {
   // Connect |source_provider|.
-  mojom::VideoSourceProviderPtr source_provider;
+  mojo::Remote<mojom::VideoSourceProvider> source_provider;
   service_remote_->ConnectToVideoSourceProvider(
-      mojo::MakeRequest(&source_provider));
+      source_provider.BindNewPipeAndPassReceiver());
 
   // Disconnect |source_provider| and wait for the disconnect to propagate to
   // the service.
@@ -124,7 +124,7 @@ TEST_F(VideoCaptureServiceLifecycleTest, EnumerateDevicesAfterReconnect) {
 
   // Reconnect |source_provider|.
   service_remote_->ConnectToVideoSourceProvider(
-      mojo::MakeRequest(&source_provider));
+      source_provider.BindNewPipeAndPassReceiver());
 
   // Enumerate devices.
   base::RunLoop wait_loop;

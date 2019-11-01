@@ -370,10 +370,6 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
     }
   }
 
-  UMA_HISTOGRAM_COUNTS_100(
-      "Extensions.ExtensionUpdaterRawUpdateCalls",
-      request.in_progress_ids_.size() + update_check_params.update_info.size());
-
   // StartAllPending() might call OnExtensionDownloadFailed/Finished before
   // it returns, which would cause NotifyIfFinished to incorrectly try to
   // send out a notification. So check before we call StartAllPending if any

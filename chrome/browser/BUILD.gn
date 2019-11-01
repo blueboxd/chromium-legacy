@@ -2170,7 +2170,7 @@ jumbo_static_library("browser") {
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libaddressinput",
-    "//third_party/libxml:xml_writer",
+    "//third_party/libxml",
     "//third_party/libyuv",
     "//third_party/metrics_proto",
     "//third_party/re2",

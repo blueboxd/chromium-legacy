@@ -179,7 +179,9 @@ inline ModelType ModelTypeFromInt(int i) {
 // them via ModelTypeHistogramValue(model_type).
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. When you add a new entry or when you
-// deprecate an existing one, also update SyncModelTypes in enums.xml
+// deprecate an existing one, also update SyncModelTypes in enums.xml and
+// SyncModelType and SyncModelTypeByMacro suffixes in histograms.xml.
+// TODO(crbug.com/1019744): Remove the SyncModelTypeByMacro suffixes.
 enum class ModelTypeForHistograms {
   kUnspecified = 0,
   kTopLevelFolder = 1,

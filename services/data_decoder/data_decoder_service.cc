@@ -81,6 +81,8 @@ void DataDecoderService::BindImageDecoder(
 #if defined(OS_IOS)
   LOG(FATAL) << "ImageDecoder not supported on iOS.";
 #else
+  if (drop_image_decoders_)
+    return;
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<ImageDecoderImpl>(keepalive_.CreateRef()),
       std::move(receiver));
@@ -89,6 +91,8 @@ void DataDecoderService::BindImageDecoder(
 
 void DataDecoderService::BindJsonParser(
     mojo::PendingReceiver<mojom::JsonParser> receiver) {
+  if (drop_json_parsers_)
+    return;
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<JsonParserImpl>(keepalive_.CreateRef()),
       std::move(receiver));

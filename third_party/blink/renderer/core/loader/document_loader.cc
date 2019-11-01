@@ -1420,15 +1420,6 @@ void DocumentLoader::DidCommitNavigation() {
   // resumed.
   frame_->ResumeSubresourceLoading();
 
-  // DidObserveLoadingBehavior() must be called after DispatchDidCommitLoad() is
-  // called for the metrics tracking logic to handle it properly.
-  if (service_worker_network_provider_ &&
-      service_worker_network_provider_->GetControllerServiceWorkerMode() ==
-          blink::mojom::ControllerServiceWorkerMode::kControlled) {
-    GetLocalFrameClient().DidObserveLoadingBehavior(
-        kLoadingBehaviorServiceWorkerControlled);
-  }
-
   Document* document = frame_->GetDocument();
   InteractiveDetector* interactive_detector =
       InteractiveDetector::From(*document);
@@ -1599,6 +1590,15 @@ void DocumentLoader::InstallNewDocument(
 
 void DocumentLoader::CreateParserPostCommit() {
   Document* document = frame_->GetDocument();
+
+  // DidObserveLoadingBehavior() must be called after DispatchDidCommitLoad() is
+  // called for the metrics tracking logic to handle it properly.
+  if (service_worker_network_provider_ &&
+      service_worker_network_provider_->GetControllerServiceWorkerMode() ==
+          blink::mojom::ControllerServiceWorkerMode::kControlled) {
+    GetLocalFrameClient().DidObserveLoadingBehavior(
+        kLoadingBehaviorServiceWorkerControlled);
+  }
 
   // Links with media values need more information (like viewport information).
   // This happens after the first chunk is parsed in HTMLDocumentParser.

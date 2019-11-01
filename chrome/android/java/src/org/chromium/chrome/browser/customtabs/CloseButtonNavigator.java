@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
+import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.Tab;
@@ -30,11 +30,11 @@ import javax.inject.Inject;
 @ActivityScope
 public class CloseButtonNavigator {
     @Nullable private PageCriteria mLandingPageCriteria;
-    private final CustomTabActivityTabController mTabController;
+    private final BrowserServicesActivityTabController mTabController;
     private final CustomTabActivityTabProvider mTabProvider;
 
     @Inject
-    public CloseButtonNavigator(CustomTabActivityTabController tabController,
+    public CloseButtonNavigator(BrowserServicesActivityTabController tabController,
             CustomTabActivityTabProvider tabProvider) {
         mTabController = tabController;
         mTabProvider = tabProvider;

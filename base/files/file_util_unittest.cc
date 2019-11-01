@@ -114,13 +114,13 @@ typedef struct _REPARSE_DATA_BUFFER {
 // Sets a reparse point. |source| will now point to |target|. Returns true if
 // the call succeeds, false otherwise.
 bool SetReparsePoint(HANDLE source, const FilePath& target_path) {
-  string16 kPathPrefix = FILE_PATH_LITERAL("\\??\\");
-  string16 target_str;
+  std::wstring kPathPrefix = FILE_PATH_LITERAL("\\??\\");
+  std::wstring target_str;
   // The juction will not work if the target path does not start with \??\ .
   if (kPathPrefix != target_path.value().substr(0, kPathPrefix.size()))
     target_str += kPathPrefix;
   target_str += target_path.value();
-  const wchar_t* target = as_wcstr(target_str);
+  const wchar_t* target = target_str.c_str();
   USHORT size_target = static_cast<USHORT>(wcslen(target)) * sizeof(target[0]);
   char buffer[2000] = {0};
   DWORD returned;
@@ -159,15 +159,13 @@ bool DeleteReparsePoint(HANDLE source) {
 // Method that wraps the win32 GetShortPathName API. Returns an empty path on
 // error.
 FilePath MakeShortFilePath(const FilePath& input) {
-  DWORD path_short_len =
-      ::GetShortPathName(as_wcstr(input.value()), nullptr, 0);
+  DWORD path_short_len = ::GetShortPathName(input.value().c_str(), nullptr, 0);
   if (path_short_len == 0UL)
     return FilePath();
 
-  string16 path_short_str;
+  std::wstring path_short_str;
   path_short_len = ::GetShortPathName(
-      as_wcstr(input.value()),
-      as_writable_wcstr(WriteInto(&path_short_str, path_short_len)),
+      input.value().c_str(), WriteInto(&path_short_str, path_short_len),
       path_short_len);
   if (path_short_len == 0UL)
     return FilePath();
@@ -181,7 +179,7 @@ class ReparsePoint {
   // Creates a reparse point from |source| (an empty directory) to |target|.
   ReparsePoint(const FilePath& source, const FilePath& target) {
     dir_.Set(
-        ::CreateFile(as_wcstr(source.value()), GENERIC_READ | GENERIC_WRITE,
+        ::CreateFile(source.value().c_str(), GENERIC_READ | GENERIC_WRITE,
                      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                      NULL, OPEN_EXISTING,
                      FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
@@ -228,11 +226,11 @@ void ChangePosixFilePermissions(const FilePath& path,
 void SetReadOnly(const FilePath& path, bool read_only) {
 #if defined(OS_WIN)
   // On Windows, it involves setting/removing the 'readonly' bit.
-  DWORD attrs = GetFileAttributes(as_wcstr(path.value()));
+  DWORD attrs = GetFileAttributes(path.value().c_str());
   ASSERT_NE(INVALID_FILE_ATTRIBUTES, attrs);
   ASSERT_TRUE(SetFileAttributes(
-      as_wcstr(path.value()), read_only ? (attrs | FILE_ATTRIBUTE_READONLY)
-                                        : (attrs & ~FILE_ATTRIBUTE_READONLY)));
+      path.value().c_str(), read_only ? (attrs | FILE_ATTRIBUTE_READONLY)
+                                      : (attrs & ~FILE_ATTRIBUTE_READONLY)));
 
   DWORD expected =
       read_only
@@ -241,7 +239,7 @@ void SetReadOnly(const FilePath& path, bool read_only) {
           : (attrs & (FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_DIRECTORY));
 
   // Ignore FILE_ATTRIBUTE_NOT_CONTENT_INDEXED if present.
-  attrs = GetFileAttributes(as_wcstr(path.value())) &
+  attrs = GetFileAttributes(path.value().c_str()) &
           ~FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
   ASSERT_EQ(expected, attrs);
 #else
@@ -254,7 +252,7 @@ void SetReadOnly(const FilePath& path, bool read_only) {
 
 bool IsReadOnly(const FilePath& path) {
 #if defined(OS_WIN)
-  DWORD attrs = GetFileAttributes(as_wcstr(path.value()));
+  DWORD attrs = GetFileAttributes(path.value().c_str());
   EXPECT_NE(INVALID_FILE_ATTRIBUTES, attrs);
   return attrs & FILE_ATTRIBUTE_READONLY;
 #else
@@ -318,7 +316,7 @@ void CreateTextFile(const FilePath& filename,
                     const std::wstring& contents) {
   std::wofstream file;
 #if defined(OS_WIN)
-  file.open(as_wcstr(filename.value()));
+  file.open(filename.value().c_str());
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   file.open(filename.value());
 #endif  // OS_WIN
@@ -332,7 +330,7 @@ std::wstring ReadTextFile(const FilePath& filename) {
   wchar_t contents[64];
   std::wifstream file;
 #if defined(OS_WIN)
-  file.open(as_wcstr(filename.value()));
+  file.open(filename.value().c_str());
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   file.open(filename.value());
 #endif  // OS_WIN
@@ -472,9 +470,9 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
   FilePath base_a = temp_dir_.GetPath().Append(FPL("base_a"));
 #if defined(OS_WIN)
   // TEMP can have a lower case drive letter.
-  string16 temp_base_a = base_a.value();
+  std::wstring temp_base_a = base_a.value();
   ASSERT_FALSE(temp_base_a.empty());
-  *temp_base_a.begin() = ToUpperASCII(*temp_base_a.begin());
+  temp_base_a[0] = ToUpperASCII(char16{temp_base_a[0]});
   base_a = FilePath(temp_base_a);
 #endif
   ASSERT_TRUE(CreateDirectory(base_a));
@@ -587,17 +585,17 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
 
 TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   // Get a drive letter.
-  string16 real_drive_letter =
-      ToUpperASCII(temp_dir_.GetPath().value().substr(0, 2));
+  std::wstring real_drive_letter = AsWString(
+      ToUpperASCII(AsStringPiece16(temp_dir_.GetPath().value().substr(0, 2))));
   if (!isalpha(real_drive_letter[0]) || ':' != real_drive_letter[1]) {
     LOG(ERROR) << "Can't get a drive letter to test with.";
     return;
   }
 
   // Get the NT style path to that drive.
-  char16 device_path[MAX_PATH] = {'\0'};
-  ASSERT_TRUE(::QueryDosDevice(as_wcstr(real_drive_letter),
-                               as_writable_wcstr(device_path), MAX_PATH));
+  wchar_t device_path[MAX_PATH] = {'\0'};
+  ASSERT_TRUE(
+      ::QueryDosDevice(real_drive_letter.c_str(), device_path, MAX_PATH));
   FilePath actual_device_path(device_path);
   FilePath win32_path;
 
@@ -3266,7 +3264,7 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
   EXPECT_TRUE(StringToUint(switch_string, &switch_uint));
   win::ScopedHandle sync_event(win::Uint32ToHandle(switch_uint));
 
-  HANDLE ph = CreateNamedPipe(as_wcstr(pipe_path.value()), PIPE_ACCESS_OUTBOUND,
+  HANDLE ph = CreateNamedPipe(pipe_path.value().c_str(), PIPE_ACCESS_OUTBOUND,
                               PIPE_WAIT, 1, 0, 0, 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
@@ -3293,7 +3291,7 @@ MULTIPROCESS_TEST_MAIN(MoreThanBufferSizeChildMain) {
   EXPECT_TRUE(StringToUint(switch_string, &switch_uint));
   win::ScopedHandle sync_event(win::Uint32ToHandle(switch_uint));
 
-  HANDLE ph = CreateNamedPipe(as_wcstr(pipe_path.value()), PIPE_ACCESS_OUTBOUND,
+  HANDLE ph = CreateNamedPipe(pipe_path.value().c_str(), PIPE_ACCESS_OUTBOUND,
                               PIPE_WAIT, 1, data.size(), data.size(), 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));

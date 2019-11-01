@@ -77,6 +77,7 @@ Polymer({
       return;
     }
     e.preventDefault();
+    this.lastFocusedElement = e.target;
     this.showThirdPartyOverlay(e.target.href);
   },
 
@@ -87,16 +88,19 @@ Polymer({
   showThirdPartyOverlay: function(url) {
     this.$['webview-container'].classList.add('overlay-loading');
     this.$['overlay-webview'].src = url;
-
-    var overlay = this.$['third-party-overlay'];
-    overlay.hidden = false;
+    this.$['third-party-overlay'].showModal();
+    this.$['overlay-close-button'].focus();
   },
 
   /**
    * Hides overlay dialog.
    */
   hideOverlay: function() {
-    this.$['third-party-overlay'].hidden = true;
+    this.$['third-party-overlay'].close();
+    if (this.lastFocusedElement) {
+      this.lastFocusedElement.focus();
+      this.lastFocusedElement = null;
+    }
   },
 
   /**

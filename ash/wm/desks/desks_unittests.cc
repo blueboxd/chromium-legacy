@@ -30,6 +30,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -131,10 +132,10 @@ void ClickOnMiniView(const DeskMiniView* desk_mini_view,
   event_generator->ClickLeftButton();
 }
 
-void LongGestureTapOnView(const views::View* view,
-                          ui::test::EventGenerator* event_generator) {
-  event_generator->set_current_screen_location(
-      view->GetBoundsInScreen().CenterPoint());
+void LongGestureTap(const gfx::Point& screen_location,
+                    ui::test::EventGenerator* event_generator,
+                    bool release_touch = true) {
+  event_generator->set_current_screen_location(screen_location);
   event_generator->PressTouch();
   ui::GestureConfiguration* gesture_config =
       ui::GestureConfiguration::GetInstance();
@@ -145,7 +146,8 @@ void LongGestureTapOnView(const views::View* view,
       FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(long_press_delay_ms));
   run_loop.Run();
-  event_generator->ReleaseTouch();
+  if (release_touch)
+    event_generator->ReleaseTouch();
 }
 
 void GestureTapOnView(const views::View* view,
@@ -284,6 +286,25 @@ class DesksTest : public AshTestBase,
 
   DISALLOW_COPY_AND_ASSIGN(DesksTest);
 };
+
+TEST_F(DesksTest, LongPressOverviewItemInClamshellModeWithOnlyOneVirtualDesk) {
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->StartOverview());
+  OverviewSession* overview_session = overview_controller->overview_session();
+  OverviewItem* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  LongGestureTap(
+      gfx::ToRoundedPoint(overview_item->target_bounds().CenterPoint()),
+      event_generator, /*release_touch=*/false);
+  EXPECT_TRUE(overview_item->IsDragItem());
+  EXPECT_EQ(
+      OverviewWindowDragController::DragBehavior::kUndefined,
+      overview_session->window_drag_controller()->current_drag_behavior());
+  event_generator->ReleaseTouch();
+  EXPECT_FALSE(overview_item->IsDragItem());
+}
 
 TEST_F(DesksTest, DesksCreationAndRemoval) {
   TestObserver observer;
@@ -1994,11 +2015,13 @@ TEST_F(DesksTest, MiniViewsTouchGestures) {
   // Long gesture tapping on one mini_view shows its close button, and hides
   // those of other mini_views.
   auto* event_generator = GetEventGenerator();
-  LongGestureTapOnView(desk_1_mini_view, event_generator);
+  LongGestureTap(desk_1_mini_view->GetBoundsInScreen().CenterPoint(),
+                 event_generator);
   EXPECT_TRUE(desk_1_mini_view->close_desk_button()->GetVisible());
   EXPECT_FALSE(desk_2_mini_view->close_desk_button()->GetVisible());
   EXPECT_FALSE(desk_3_mini_view->close_desk_button()->GetVisible());
-  LongGestureTapOnView(desk_2_mini_view, event_generator);
+  LongGestureTap(desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
+                 event_generator);
   EXPECT_FALSE(desk_1_mini_view->close_desk_button()->GetVisible());
   EXPECT_TRUE(desk_2_mini_view->close_desk_button()->GetVisible());
   EXPECT_FALSE(desk_3_mini_view->close_desk_button()->GetVisible());

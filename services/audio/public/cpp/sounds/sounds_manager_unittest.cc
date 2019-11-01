@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/simple_sources.h"
 #include "media/audio/test_audio_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/audio/public/cpp/sounds/audio_stream_handler.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/audio/public/cpp/sounds/test_data.h"
@@ -28,8 +29,8 @@ class SoundsManagerTest : public testing::Test {
   ~SoundsManagerTest() override = default;
 
   void SetUp() override {
-    service_manager::mojom::ConnectorRequest connector_request;
-    connector_ = service_manager::Connector::Create(&connector_request);
+    mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
+    connector_ = service_manager::Connector::Create(&connector_receiver);
     SoundsManager::Create(connector_->Clone());
     base::RunLoop().RunUntilIdle();
   }

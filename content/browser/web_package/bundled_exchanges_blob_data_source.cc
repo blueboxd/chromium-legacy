@@ -119,7 +119,8 @@ BundledExchangesBlobDataSource::BundledExchangesBlobDataSource(
 
 BundledExchangesBlobDataSource::~BundledExchangesBlobDataSource() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DeleteCore(std::move(core_));
+  if (core_)
+    base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, std::move(core_));
 
   auto tasks = std::move(pending_get_core_tasks_);
   for (auto& task : tasks) {
@@ -157,21 +158,10 @@ void BundledExchangesBlobDataSource::SetCoreOnUI(
   if (!weak_ptr) {
     // This happens when the BundledExchangesBlobDataSource was deleted before
     // SetCoreOnUI() is called.
-    DeleteCore(std::move(core));
+    base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, std::move(core));
     return;
   }
   weak_ptr->SetCoreOnUIImpl(std::move(weak_core), std::move(core));
-}
-
-// static
-void BundledExchangesBlobDataSource::DeleteCore(
-    std::unique_ptr<BlobDataSourceCore> core) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!core)
-    return;
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce([](std::unique_ptr<BlobDataSourceCore> core) {},
-                                std::move(core)));
 }
 
 void BundledExchangesBlobDataSource::ReadToDataPipe(

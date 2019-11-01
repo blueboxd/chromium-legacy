@@ -64,10 +64,6 @@ class DialogClientViewTest : public test::WidgetTest,
     // DialogDelegateView would delete this, but |this| is owned by the test.
   }
 
-  std::unique_ptr<View> CreateExtraView() override {
-    return std::move(next_extra_view_);
-  }
-
   int GetDialogButtons() const override { return dialog_buttons_; }
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
     return button == ui::DIALOG_BUTTON_CANCEL && !cancel_label_.empty()
@@ -99,14 +95,14 @@ class DialogClientViewTest : public test::WidgetTest,
     DialogModelChanged();
   }
 
-  // Sets the view to provide to CreateExtraView() and updates the dialog. This
+  // Sets the view to provide to DisownExtraView() and updates the dialog. This
   // can only be called a single time because DialogClientView caches the result
-  // of CreateExtraView() and never calls it again.
-  void SetExtraView(View* view) {
-    EXPECT_FALSE(next_extra_view_);
-    next_extra_view_ = base::WrapUnique(view);
+  // of DisownExtraView() and never calls it again.
+  template <typename T>
+  T* SetExtraView(std::unique_ptr<T> view) {
+    T* passed_view = DialogDelegate::SetExtraView(std::move(view));
     DialogModelChanged();
-    EXPECT_FALSE(next_extra_view_);
+    return passed_view;
   }
 
   void SetSizeConstraints(const gfx::Size& min_size,
@@ -143,9 +139,6 @@ class DialogClientViewTest : public test::WidgetTest,
 
   // The bitmask of buttons to show in the dialog.
   int dialog_buttons_ = ui::DIALOG_BUTTON_NONE;
-
-  // Set and cleared in SetExtraView().
-  std::unique_ptr<View> next_extra_view_;
 
   gfx::Size preferred_size_;
   gfx::Size min_size_;
@@ -236,9 +229,9 @@ TEST_F(DialogClientViewTest, SetupFocusChain) {
   }
 
   // Add extra view and remove OK button.
-  View* extra_view = new StaticSizedView(gfx::Size(200, 200));
+  View* extra_view =
+      SetExtraView(std::make_unique<StaticSizedView>(gfx::Size(200, 200)));
   extra_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  SetExtraView(extra_view);
   SetDialogButtons(ui::DIALOG_BUTTON_CANCEL);
 
   EXPECT_EQ(extra_view, FocusableViewAfter(GetContentsView()));
@@ -278,8 +271,8 @@ TEST_F(DialogClientViewTest, LayoutWithButtons) {
             client_view()->bounds().bottom());
   const gfx::Size no_extra_view_size = client_view()->bounds().size();
 
-  View* extra_view = new StaticSizedView(gfx::Size(200, 200));
-  SetExtraView(extra_view);
+  View* extra_view =
+      SetExtraView(std::make_unique<StaticSizedView>(gfx::Size(200, 200)));
   CheckContentsIsSetToPreferredSize();
   EXPECT_GT(client_view()->bounds().height(), no_extra_view_size.height());
 
@@ -348,7 +341,7 @@ TEST_F(DialogClientViewTest, MinMaxPreferredSize) {
 }
 
 // Ensure button widths are linked under MD.
-TEST_F(DialogClientViewTest, LinkedWidths) {
+TEST_F(DialogClientViewTest, LinkedWidthDoesLink) {
   test::TestLayoutProvider layout_provider;
   layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
   SetLongCancelLabel();
@@ -389,39 +382,57 @@ TEST_F(DialogClientViewTest, LinkedWidths) {
   layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
 
   // The extra view should also match, if it's a matching button type.
-  LabelButton* extra_button = new LabelButton(nullptr, base::string16());
-  SetExtraView(extra_button);
+  View* extra_button =
+      SetExtraView(std::make_unique<LabelButton>(nullptr, base::string16()));
   CheckContentsIsSetToPreferredSize();
   EXPECT_EQ(cancel_button_width, extra_button->width());
+}
 
-  // Remove |extra_button| from the View hierarchy so that it can be replaced.
-  delete extra_button;
+TEST_F(DialogClientViewTest, LinkedWidthDoesntLink) {
+  test::TestLayoutProvider layout_provider;
+  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
+  SetLongCancelLabel();
+
+  // Ensure there is no default button since getting a bold font can throw off
+  // the cached sizes.
+  set_default_button(ui::DIALOG_BUTTON_NONE);
+
+  SetDialogButtons(ui::DIALOG_BUTTON_OK);
+  CheckContentsIsSetToPreferredSize();
+  const int ok_button_only_width = client_view()->ok_button()->width();
+
+  SetDialogButtons(ui::DIALOG_BUTTON_CANCEL);
+  CheckContentsIsSetToPreferredSize();
+  const int cancel_button_width = client_view()->cancel_button()->width();
+  EXPECT_LT(cancel_button_width, 200);
+
+  // Ensure the single buttons have different preferred widths when alone, and
+  // that the Cancel button is bigger (so that it dominates the size).
+  EXPECT_GT(cancel_button_width, ok_button_only_width);
+
+  SetDialogButtons(ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK);
+  CheckContentsIsSetToPreferredSize();
+
+  // Cancel button shouldn't have changed widths.
+  EXPECT_EQ(cancel_button_width, client_view()->cancel_button()->width());
+
+  // OK button should now match the bigger, cancel button.
+  EXPECT_EQ(cancel_button_width, client_view()->ok_button()->width());
+
+  // But not when the size of the cancel button exceeds the max linkable width.
+  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 100);
+  EXPECT_GT(cancel_button_width, 100);
+
+  DialogModelChanged();
+  CheckContentsIsSetToPreferredSize();
+  EXPECT_EQ(ok_button_only_width, client_view()->ok_button()->width());
+  layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
 
   // Checkbox extends LabelButton, but it should not participate in linking.
-  extra_button = new Checkbox(base::string16());
-  SetExtraView(extra_button);
+  View* extra_button =
+      SetExtraView(std::make_unique<Checkbox>(base::string16()));
   CheckContentsIsSetToPreferredSize();
   EXPECT_NE(cancel_button_width, extra_button->width());
-
-  // Remove |extra_button| from the View hierarchy so that it can be replaced.
-  delete extra_button;
-
-  // ImageButton extends Button, but it should not participate in linking. Even
-  // without an image, the minimum size (16x14) of the button should be smaller
-  // than the dialog buttons.
-  ImageButton* image_button = new ImageButton(nullptr);
-  SetExtraView(image_button);
-  CheckContentsIsSetToPreferredSize();
-  EXPECT_NE(cancel_button_width, image_button->width());
-
-  // Remove |image_button| from the View hierarchy so that it can be replaced.
-  delete image_button;
-
-  // Non-buttons should always be sized to their preferred size.
-  View* boring_view = new StaticSizedView(gfx::Size(20, 20));
-  SetExtraView(boring_view);
-  CheckContentsIsSetToPreferredSize();
-  EXPECT_EQ(20, boring_view->width());
 }
 
 TEST_F(DialogClientViewTest, ButtonPosition) {

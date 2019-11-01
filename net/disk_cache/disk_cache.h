@@ -49,28 +49,36 @@ class Backend;
 class EntryResult;
 using EntryResultCallback = base::OnceCallback<void(EntryResult)>;
 
+// How to handle resetting the back-end cache from the previous session.
+// See CreateCacheBackend() for its usage.
+enum class ResetHandling { kReset, kResetOnError, kNeverReset };
+
 // Returns an instance of a Backend of the given |type|. |path| points to a
 // folder where the cached data will be stored (if appropriate). This cache
 // instance must be the only object that will be reading or writing files to
 // that folder (if another one exists, and |type| is not net::DISK_CACHE this
 // operation will not complete until the previous duplicate gets destroyed and
-// finishes all I/O).
+// finishes all I/O). The returned object should be deleted when not needed
+// anymore.
 //
-// The returned object should be deleted when not needed anymore.
-// If |force| is true, and there is a problem with the cache initialization, the
-// files will be deleted and a new set will be created. |max_bytes| is the
-// maximum size the cache can grow to. If zero is passed in as |max_bytes|, the
-// cache will determine the value to use. The returned pointer can be
-// NULL if a fatal error is found. The actual return value of the function is a
-// net error code. If this function returns ERR_IO_PENDING, the |callback| will
-// be invoked when a backend is available or a fatal error condition is reached.
-// The pointer to receive the |backend| must remain valid until the operation
-// completes (the callback is notified).
+// If |reset_handling| is set to kResetOnError and there is a problem with the
+// cache initialization, the files will be deleted and a new set will be
+// created. If it's set to kReset, this will happen even if there isn't a
+// problem with cache initialization. Finally, if it's set to kNeverReset, the
+// cache creation will fail if there is a problem with cache initialization.
+//
+// |max_bytes| is the maximum size the cache can grow to. If zero is passed in
+// as |max_bytes|, the cache will determine the value to use. The returned
+// pointer can be nullptr if a fatal error is found. The actual return value of
+// the function is a net error code. If this function returns ERR_IO_PENDING,
+// the |callback| will be invoked when a backend is available or a fatal error
+// condition is reached.  The pointer to receive the |backend| must remain valid
+// until the operation completes (the callback is notified).
 NET_EXPORT net::Error CreateCacheBackend(net::CacheType type,
                                          net::BackendType backend_type,
                                          const base::FilePath& path,
                                          int64_t max_bytes,
-                                         bool force,
+                                         ResetHandling reset_handling,
                                          net::NetLog* net_log,
                                          std::unique_ptr<Backend>* backend,
                                          net::CompletionOnceCallback callback);
@@ -84,7 +92,7 @@ NET_EXPORT net::Error CreateCacheBackend(
     net::BackendType backend_type,
     const base::FilePath& path,
     int64_t max_bytes,
-    bool force,
+    ResetHandling reset_handling,
     net::NetLog* net_log,
     std::unique_ptr<Backend>* backend,
     net::CompletionOnceCallback callback,
@@ -105,7 +113,7 @@ NET_EXPORT net::Error CreateCacheBackend(
     net::BackendType backend_type,
     const base::FilePath& path,
     int64_t max_bytes,
-    bool force,
+    ResetHandling reset_handling,
     net::NetLog* net_log,
     std::unique_ptr<Backend>* backend,
     base::OnceClosure post_cleanup_callback,

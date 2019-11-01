@@ -9,7 +9,7 @@
 #include "base/task_runner_util.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/extension_resource_path_normalizer.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace extensions {
@@ -56,8 +56,7 @@ int WriteFile(const base::FilePath& path,
 
 // static
 std::unique_ptr<ImageSanitizer> ImageSanitizer::CreateAndStart(
-    service_manager::Connector* connector,
-    const service_manager::ServiceFilter& service_filter,
+    data_decoder::DataDecoder* decoder,
     const base::FilePath& image_dir,
     const std::set<base::FilePath>& image_paths,
     ImageDecodedCallback image_decoded_callback,
@@ -65,7 +64,7 @@ std::unique_ptr<ImageSanitizer> ImageSanitizer::CreateAndStart(
   std::unique_ptr<ImageSanitizer> sanitizer(new ImageSanitizer(
       image_dir, image_paths, std::move(image_decoded_callback),
       std::move(done_callback)));
-  sanitizer->Start(connector, service_filter);
+  sanitizer->Start(decoder);
   return sanitizer;
 }
 
@@ -81,9 +80,7 @@ ImageSanitizer::ImageSanitizer(
 
 ImageSanitizer::~ImageSanitizer() = default;
 
-void ImageSanitizer::Start(
-    service_manager::Connector* connector,
-    const service_manager::ServiceFilter& service_filter) {
+void ImageSanitizer::Start(data_decoder::DataDecoder* decoder) {
   if (image_paths_.empty()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&ImageSanitizer::ReportSuccess,
@@ -91,8 +88,8 @@ void ImageSanitizer::Start(
     return;
   }
 
-  connector->Connect(service_filter,
-                     image_decoder_.BindNewPipeAndPassReceiver());
+  decoder->GetService()->BindImageDecoder(
+      image_decoder_.BindNewPipeAndPassReceiver());
   image_decoder_.set_disconnect_handler(
       base::BindOnce(&ImageSanitizer::ReportError, weak_factory_.GetWeakPtr(),
                      Status::kServiceError, base::FilePath()));

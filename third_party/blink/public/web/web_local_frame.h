@@ -17,6 +17,7 @@
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
+#include "third_party/blink/public/mojom/portal/portal.mojom-shared.h"
 #include "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -605,7 +606,8 @@ class WebLocalFrame : public WebFrame {
   // a mojo interface to communicate back with the caller of the portal's
   // mojo interface. |data| is an optional message sent together with the
   // portal's activation.
-  using OnPortalActivatedCallback = base::OnceCallback<void(bool)>;
+  using OnPortalActivatedCallback =
+      base::OnceCallback<void(mojom::PortalActivateResult)>;
   virtual void OnPortalActivated(
       const base::UnguessableToken& portal_token,
       mojo::ScopedInterfaceEndpointHandle portal_pipe,

@@ -10,6 +10,8 @@ cast_source_set("service") {
     "cast_mojo_media_client.h",
     "cast_renderer.cc",
     "cast_renderer.h",
+    "video_geometry_setter_service.cc",
+    "video_geometry_setter_service.h",
   ]
 
   public_deps = [
@@ -23,7 +25,9 @@ cast_source_set("service") {
     "//chromecast/base",
     "//chromecast/common/mojom",
     "//chromecast/media",
+    "//chromecast/media/service/mojom",
     "//media",
+    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 }

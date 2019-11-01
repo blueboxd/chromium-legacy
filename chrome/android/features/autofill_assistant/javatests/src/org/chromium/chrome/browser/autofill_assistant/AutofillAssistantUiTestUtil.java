@@ -30,6 +30,7 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -38,7 +39,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.snackbar.BottomContainer;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -207,18 +207,19 @@ class AutofillAssistantUiTestUtil {
     static BottomSheetController createBottomSheetController(ChromeActivity activity) {
         // Copied from {@link ChromeActivity#initializeBottomSheet}.
 
-        ViewGroup coordinator = activity.findViewById(R.id.coordinator);
-        LayoutInflater.from(activity).inflate(R.layout.bottom_sheet, coordinator);
-        BottomSheet bottomSheet = coordinator.findViewById(R.id.bottom_sheet);
-        bottomSheet.init(coordinator, activity.getActivityTabProvider(),
-                activity.getFullscreenManager(), activity.getWindow(),
-                activity.getWindowAndroid().getKeyboardDelegate());
+        Supplier<BottomSheet> sheetSupplier = () -> {
+            ViewGroup coordinator = activity.findViewById(R.id.coordinator);
+            LayoutInflater.from(activity).inflate(R.layout.bottom_sheet, coordinator);
+            BottomSheet bottomSheet = coordinator.findViewById(R.id.bottom_sheet);
+            bottomSheet.init(coordinator, activity.getActivityTabProvider(),
+                    activity.getFullscreenManager(), activity.getWindow(),
+                    activity.getWindowAndroid().getKeyboardDelegate());
 
-        ((BottomContainer) activity.findViewById(R.id.bottom_container))
-                .setBottomSheet(bottomSheet);
+            return bottomSheet;
+        };
 
         return new BottomSheetController(activity.getLifecycleDispatcher(),
-                activity.getActivityTabProvider(), activity.getScrim(), bottomSheet,
+                activity.getActivityTabProvider(), activity.getScrim(), sheetSupplier,
                 activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager());
     }
 

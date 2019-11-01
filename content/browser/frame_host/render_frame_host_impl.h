@@ -93,6 +93,7 @@
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
+#include "third_party/blink/public/mojom/portal/portal.mojom-forward.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
@@ -156,6 +157,7 @@ class ResourceRequestBody;
 namespace content {
 class AppCacheNavigationHandle;
 class AuthenticatorImpl;
+class BackForwardCacheMetrics;
 class BundledExchangesHandle;
 class FrameTree;
 class FrameTreeNode;
@@ -972,6 +974,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return is_evicted_from_back_forward_cache_;
   }
 
+  void AddServiceWorkerProviderHost(ServiceWorkerProviderHost* host);
+  void RemoveServiceWorkerProviderHost(ServiceWorkerProviderHost* host);
+
   // Called to taint |this| so the pages which have requested MediaStream
   // (audio/video/etc capture stream) access would not enter BackForwardCache.
   void OnGrantedMediaStreamAccess();
@@ -997,7 +1002,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
       mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
       blink::TransferableMessage data,
-      base::OnceCallback<void(bool)> callback);
+      base::OnceCallback<void(blink::mojom::PortalActivateResult)> callback);
 
   // Called on the main frame of a page embedded in a Portal to forward a
   // message from the host of a portal.
@@ -2507,6 +2512,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Salt for generating frame-specific media device IDs.
   std::string media_device_id_salt_base_;
+
+  // Keep the list of ServiceWorkerProviderHosts so that they can observe when
+  // the frame goes in/out of BackForwardCache.
+  // TODO(yuzus): Make this a single pointer. A frame should only have a single
+  // provider host, but probably during a navigation the old provider host is
+  // still alive when the new provider host is created and added to this vector,
+  // and the old provider host is destroyed shortly after navigation.
+  std::vector<ServiceWorkerProviderHost*> service_worker_provider_hosts_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

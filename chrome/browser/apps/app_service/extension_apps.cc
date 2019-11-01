@@ -548,6 +548,13 @@ void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
   }
 }
 
+void ExtensionApps::OnPreferredAppSet(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter,
+    apps::mojom::IntentPtr intent) {
+  NOTIMPLEMENTED();
+}
+
 void ExtensionApps::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -927,6 +934,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
                              : apps::mojom::OptionalBool::kFalse;
   app->recommendable = apps::mojom::OptionalBool::kTrue;
   app->searchable = apps::mojom::OptionalBool::kTrue;
+  app->paused = apps::mojom::OptionalBool::kFalse;
   SetShowInFields(app, extension, profile_);
 
   // Get the intent filters for PWAs.

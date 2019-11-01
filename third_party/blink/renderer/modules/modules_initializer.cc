@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
@@ -316,6 +317,11 @@ void ModulesInitializer::RegisterInterfaces(
   registry.AddInterface(
       ConvertToBaseCallback(CrossThreadBindRepeating(&WebDatabaseImpl::Create)),
       Platform::Current()->GetIOTaskRunner());
+  registry.AddInterface(
+      ConvertToBaseCallback(CrossThreadBindRepeating(
+          &PeerConnectionTracker::Bind,
+          WTF::CrossThreadUnretained(PeerConnectionTracker::GetInstance()))),
+      Thread::MainThread()->GetTaskRunner());
 }
 
 }  // namespace blink

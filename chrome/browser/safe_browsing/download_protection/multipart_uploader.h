@@ -69,6 +69,12 @@ class MultipartUploadRequest {
  private:
   FRIEND_TEST_ALL_PREFIXES(MultipartUploadRequestTest, GeneratesCorrectBody);
   FRIEND_TEST_ALL_PREFIXES(MultipartUploadRequestTest, RetriesCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(MultipartUploadRequestTest,
+                           EmitsNetworkRequestResponseCodeOrErrorHistogram);
+  FRIEND_TEST_ALL_PREFIXES(MultipartUploadRequestTest,
+                           EmitsUploadSuccessHistogram);
+  FRIEND_TEST_ALL_PREFIXES(MultipartUploadRequestTest,
+                           EmitsRetriesNeededHistogram);
 
   // Set the boundary between parts.
   void set_boundary(const std::string& boundary) { boundary_ = boundary; }
@@ -102,6 +108,8 @@ class MultipartUploadRequest {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   net::NetworkTrafficAnnotationTag traffic_annotation_;
+
+  base::Time start_time_;
 
   base::WeakPtrFactory<MultipartUploadRequest> weak_factory_{this};
 };

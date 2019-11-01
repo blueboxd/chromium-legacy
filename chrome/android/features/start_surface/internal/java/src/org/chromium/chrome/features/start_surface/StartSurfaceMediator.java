@@ -118,27 +118,33 @@ class StartSurfaceMediator
             });
             mPropertyModel.set(IS_INCOGNITO, mIsIncognito);
 
-            mPropertyModel.set(
-                    BOTTOM_BAR_CLICKLISTENER, new StartSurfaceProperties.BottomBarClickListener() {
-                        // TODO(crbug.com/982018): Animate switching between explore and home
-                        // surface.
-                        @Override
-                        public void onHomeButtonClicked() {
-                            setExploreSurfaceVisibility(false);
-                            notifyStateChange();
-                            RecordUserAction.record("StartSurface.TwoPanes.BottomBar.TapHome");
-                        }
+            if (mSurfaceMode == SurfaceMode.TWO_PANES) {
+                mPropertyModel.set(BOTTOM_BAR_CLICKLISTENER,
+                        new StartSurfaceProperties.BottomBarClickListener() {
+                            // TODO(crbug.com/982018): Animate switching between explore and home
+                            // surface.
+                            @Override
+                            public void onHomeButtonClicked() {
+                                setExploreSurfaceVisibility(false);
+                                notifyStateChange();
+                                RecordUserAction.record("StartSurface.TwoPanes.BottomBar.TapHome");
+                            }
 
-                        @Override
-                        public void onExploreButtonClicked() {
-                            // TODO(crbug.com/982018): Hide the Tab switcher toolbar when showing
-                            // explore surface.
-                            setExploreSurfaceVisibility(true);
-                            notifyStateChange();
-                            RecordUserAction.record(
-                                    "StartSurface.TwoPanes.BottomBar.TapExploreSurface");
-                        }
-                    });
+                            @Override
+                            public void onExploreButtonClicked() {
+                                // TODO(crbug.com/982018): Hide the Tab switcher toolbar when
+                                // showing explore surface.
+                                setExploreSurfaceVisibility(true);
+                                notifyStateChange();
+                                RecordUserAction.record(
+                                        "StartSurface.TwoPanes.BottomBar.TapExploreSurface");
+                            }
+                        });
+                mPropertyModel.set(BOTTOM_BAR_HEIGHT,
+                        ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
+                                R.dimen.ss_bottom_bar_height));
+                mPropertyModel.set(IS_BOTTOM_BAR_VISIBLE, !mIsIncognito);
+            }
 
             if (mSurfaceMode == SurfaceMode.SINGLE_PANE) {
                 mPropertyModel.set(MORE_TABS_CLICK_LISTENER, this);
@@ -153,12 +159,6 @@ class StartSurfaceMediator
                             || ReturnToStartSurfaceUtil.shouldShowExploreSurface())
                     && !mIsIncognito;
             setExploreSurfaceVisibility(shouldShowExploreSurface);
-            if (mSurfaceMode == SurfaceMode.TWO_PANES) {
-                mPropertyModel.set(BOTTOM_BAR_HEIGHT,
-                        ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                                R.dimen.ss_bottom_bar_height));
-                mPropertyModel.set(IS_BOTTOM_BAR_VISIBLE, !mIsIncognito);
-            }
             mPropertyModel.set(MV_TILES_VISIBLE, !mIsIncognito);
 
             // Note that isVoiceSearchEnabled will return false in incognito mode.

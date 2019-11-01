@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
 
@@ -67,9 +68,9 @@ void InvokeRequestHandlerOnCoreThread(
     SingleRequestURLLoaderFactory::RequestHandler handler,
     const network::ResourceRequest& resource_request,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    network::mojom::URLLoaderClientPtrInfo client_info) {
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  network::mojom::URLLoaderClientPtr client(std::move(client_info));
+  network::mojom::URLLoaderClientPtr client(std::move(client_remote));
   std::move(handler).Run(resource_request, std::move(receiver),
                          std::move(client));
 }

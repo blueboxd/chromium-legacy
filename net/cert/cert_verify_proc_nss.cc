@@ -504,7 +504,7 @@ SECStatus PKIXVerifyCert(CERTCertificate* cert_handle,
   cvin.push_back(in_param);
 
   SECStatus rv = CERT_PKIXVerifyCert(cert_handle, certificateUsageSSLServer,
-                                     &cvin[0], cvout, NULL);
+                                     cvin.data(), cvout, nullptr);
   if (rv != SECSuccess) {
     rv = RetryPKIXVerifyCertWithWorkarounds(cert_handle, num_policy_oids, &cvin,
                                             cvout);

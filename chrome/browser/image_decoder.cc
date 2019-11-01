@@ -38,9 +38,10 @@ void OnDecodeImageDone(
     fail_callback.Run(request_id);
 }
 
-void BindToBrowserConnector(service_manager::mojom::ConnectorRequest request) {
+void BindToBrowserConnector(
+    mojo::PendingReceiver<service_manager::mojom::Connector> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::GetSystemConnector()->BindConnectorRequest(std::move(request));
+  content::GetSystemConnector()->BindConnectorReceiver(std::move(receiver));
 }
 
 void RunDecodeCallbackOnTaskRunner(
@@ -59,12 +60,12 @@ void DecodeImage(
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  service_manager::mojom::ConnectorRequest connector_request;
+  mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
   std::unique_ptr<service_manager::Connector> connector =
-      service_manager::Connector::Create(&connector_request);
+      service_manager::Connector::Create(&connector_receiver);
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&BindToBrowserConnector, std::move(connector_request)));
+      base::BindOnce(&BindToBrowserConnector, std::move(connector_receiver)));
 
   data_decoder::DecodeImage(
       connector.get(), image_data, codec, shrink_to_fit, kMaxImageSizeInBytes,

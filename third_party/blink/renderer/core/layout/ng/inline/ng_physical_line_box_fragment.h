@@ -64,11 +64,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
                                   const ComputedStyle* container_style,
                                   PhysicalSize container_physical_size) const;
 
-  // Returns a point at the visual start/end of the line.
-  // Encapsulates the handling of text direction and writing mode.
-  PhysicalOffset LineStartPoint() const;
-  PhysicalOffset LineEndPoint() const;
-
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;
 

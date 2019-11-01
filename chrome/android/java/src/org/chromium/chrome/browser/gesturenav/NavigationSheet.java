@@ -9,7 +9,6 @@ import android.view.View;
 
 import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationHistory;
 
@@ -64,10 +63,9 @@ public interface NavigationSheet {
      * @return {@code true} if another instance of NavigationSheet is already showing.
      */
     public static boolean isInstanceShowing(BottomSheetController controller) {
-        if (controller == null) return false;
-        BottomSheet sheet = controller.getBottomSheet();
-        return (sheet.getCurrentSheetContent() instanceof NavigationSheetCoordinator)
-                && sheet.isSheetOpen();
+        if (controller == null || controller.getBottomSheet() == null) return false;
+        return (controller.getCurrentSheetContent() instanceof NavigationSheetCoordinator)
+                && controller.getBottomSheet().isSheetOpen();
     }
 
     /**

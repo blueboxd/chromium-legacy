@@ -1886,10 +1886,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
 
     @Override
     public boolean handleBackPressed() {
-        // BottomSheet can be opened before native is initialized.
-        if (!mUIWithNativeInitialized) {
-            return getBottomSheet() != null && getBottomSheet().handleBackPress();
-        }
+        if (!mUIWithNativeInitialized) return false;
 
         if (getManualFillingComponent().handleBackPress()) return true;
 
@@ -1900,7 +1897,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             return true;
         }
 
-        if (getBottomSheet() != null && getBottomSheet().handleBackPress()) return true;
+        if (getBottomSheetController().handleBackPress()) return true;
 
         if (mTabModalHandler.handleBackPress()) return true;
 
@@ -2273,10 +2270,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         if (!mNavigationSheet.startAndExpand(/* forward=*/false, /* animate=*/true)) {
             mNavigationSheet = null;
         } else {
-            getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
+            getBottomSheetController().addObserver(new EmptyBottomSheetObserver() {
                 @Override
                 public void onSheetClosed(int reason) {
-                    getBottomSheet().removeObserver(this);
+                    getBottomSheetController().removeObserver(this);
                     mNavigationSheet = null;
                 }
             });

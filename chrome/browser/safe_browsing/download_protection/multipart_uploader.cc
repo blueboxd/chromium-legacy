@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -37,6 +38,10 @@ const char kUploadContentType[] = "multipart/related; boundary=";
 // Content type of the metadata and file contents.
 const char kDataContentType[] = "Content-Type: application/octet-stream";
 
+void RecordUploadSuccessHistogram(bool success) {
+  base::UmaHistogramBoolean("SBMultipartUploader.UploadSuccess", success);
+}
+
 }  // namespace
 
 MultipartUploadRequest::MultipartUploadRequest(
@@ -63,6 +68,7 @@ MultipartUploadRequest::~MultipartUploadRequest() {}
 void MultipartUploadRequest::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  start_time_ = base::Time::Now();
   SendRequest();
 }
 
@@ -83,7 +89,11 @@ void MultipartUploadRequest::SendRequest() {
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation_);
   url_loader_->SetAllowHttpErrorResults(true);
-  url_loader_->AttachStringForUpload(GenerateRequestBody(metadata_, data_),
+
+  std::string request_body = GenerateRequestBody(metadata_, data_);
+  base::UmaHistogramMemoryKB("SBMultipartUploader.UploadSize",
+                             request_body.size());
+  url_loader_->AttachStringForUpload(request_body,
                                      kUploadContentType + boundary_);
 
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
@@ -107,8 +117,17 @@ void MultipartUploadRequest::RetryOrFinish(
     int net_error,
     int response_code,
     std::unique_ptr<std::string> response_body) {
-  // TODO(drubery): Add metrics for success rates here.
+  base::UmaHistogramSparse(
+      "SBMultipartUploader.NetworkRequestResponseCodeOrError",
+      net_error == net::OK ? response_code : net_error);
+
   if (net_error == net::OK && response_code == net::HTTP_OK) {
+    RecordUploadSuccessHistogram(/*success=*/true);
+    base::UmaHistogramExactLinear("SBMultipartUploader.RetriesNeeded",
+                                  retry_count_, kMaxRetryAttempts);
+    base::UmaHistogramMediumTimes(
+        "SBMultipartUploader.SuccessfulUploadDuration",
+        base::Time::Now() - start_time_);
     std::move(callback_).Run(/*success=*/true, *response_body.get());
   } else {
     if (retry_count_ < kMaxRetryAttempts) {
@@ -119,6 +138,9 @@ void MultipartUploadRequest::RetryOrFinish(
       current_backoff_ *= kBackoffFactor;
       retry_count_++;
     } else {
+      RecordUploadSuccessHistogram(/*success=*/false);
+      base::UmaHistogramMediumTimes("SBMultipartUploader.FailedUploadDuration",
+                                    base::Time::Now() - start_time_);
       std::move(callback_).Run(/*success=*/false, *response_body.get());
     }
   }

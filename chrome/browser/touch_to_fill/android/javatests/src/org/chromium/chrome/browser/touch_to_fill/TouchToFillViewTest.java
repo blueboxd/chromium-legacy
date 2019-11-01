@@ -234,7 +234,7 @@ public class TouchToFillViewTest {
 
     private @SheetState int getBottomSheetState() {
         pollUiThread(() -> getActivity().getBottomSheet() != null);
-        return getActivity().getBottomSheet().getSheetState();
+        return getActivity().getBottomSheetController().getSheetState();
     }
 
     private RecyclerView getCredentials() {

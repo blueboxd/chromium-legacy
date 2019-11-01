@@ -6,23 +6,23 @@
 #define UI_BASE_ACCELERATORS_SYSTEM_MEDIA_CONTROLS_MEDIA_KEYS_LISTENER_H_
 
 #include "base/containers/flat_set.h"
+#include "components/system_media_controls/system_media_controls_observer.h"
 #include "ui/base/accelerators/media_keys_listener.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/base/win/system_media_controls/system_media_controls_service_observer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace system_media_controls {
-class SystemMediaControlsService;
+class SystemMediaControls;
 }  // namespace system_media_controls
 
 namespace ui {
 
-// Implementation of MediaKeysListener that uses the System Media Transport
-// Controls API to listen for media key presses. It only allows for a single
-// instance to be created in order to prevent conflicts from multiple listeners.
+// Implementation of MediaKeysListener that uses the SystemMediaControls API to
+// listen for media key presses. It only allows for a single instance to be
+// created in order to prevent conflicts from multiple listeners.
 class UI_BASE_EXPORT SystemMediaControlsMediaKeysListener
     : public MediaKeysListener,
-      public system_media_controls::SystemMediaControlsServiceObserver {
+      public system_media_controls::SystemMediaControlsObserver {
  public:
   explicit SystemMediaControlsMediaKeysListener(
       MediaKeysListener::Delegate* delegate);
@@ -37,15 +37,15 @@ class UI_BASE_EXPORT SystemMediaControlsMediaKeysListener
   void StopWatchingMediaKey(KeyboardCode key_code) override;
   void SetIsMediaPlaying(bool is_playing) override;
 
-  // system_media_controls::SystemMediaControlsServiceObserver implementation.
+  // system_media_controls::SystemMediaControlsObserver implementation.
   void OnNext() override;
   void OnPrevious() override;
   void OnPause() override;
   void OnStop() override;
   void OnPlay() override;
 
-  void SetSystemMediaControlsServiceForTesting(
-      system_media_controls::SystemMediaControlsService* service) {
+  void SetSystemMediaControlsForTesting(
+      system_media_controls::SystemMediaControls* service) {
     service_ = service;
   }
 
@@ -60,7 +60,7 @@ class UI_BASE_EXPORT SystemMediaControlsMediaKeysListener
   // Set of keys codes that we're currently listening for.
   base::flat_set<KeyboardCode> key_codes_;
 
-  system_media_controls::SystemMediaControlsService* service_ = nullptr;
+  system_media_controls::SystemMediaControls* service_ = nullptr;
 
   bool is_media_playing_ = false;
 

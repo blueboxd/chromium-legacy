@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_PEER_CONNECTION_TRACKER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_PEER_CONNECTION_TRACKER_HOST_H_
 
-#include <stdint.h>
+#include <string>
 
 #include "base/macros.h"
 #include "base/power_monitor/power_observer.h"

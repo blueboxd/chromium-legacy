@@ -87,7 +87,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
         break;
       case ServiceApi::kMultiClient:
         GetVideoCaptureService().ConnectToVideoSourceProvider(
-            mojo::MakeRequest(&video_source_provider_));
+            video_source_provider_.BindNewPipeAndPassReceiver());
         video_source_provider_->GetSourceInfos(base::BindOnce(
             &WebRtcVideoCaptureSharedDeviceBrowserTest::OnSourceInfosReceived,
             weak_factory_.GetWeakPtr(), GetParam().buffer_type_to_request));
@@ -164,8 +164,9 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
       media::VideoCaptureBufferType buffer_type_to_request,
       const std::vector<media::VideoCaptureDeviceInfo>& infos) {
     ASSERT_FALSE(infos.empty());
-    video_source_provider_->GetVideoSource(infos[0].descriptor.device_id,
-                                           mojo::MakeRequest(&video_source_));
+    video_source_provider_->GetVideoSource(
+        infos[0].descriptor.device_id,
+        video_source_.BindNewPipeAndPassReceiver());
 
     media::VideoCaptureParams requestable_settings;
     ASSERT_FALSE(infos[0].supported_formats.empty());
@@ -197,8 +198,9 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   mojo::Remote<video_capture::mojom::Device> device_;
 
   // For multi-client API case only
-  video_capture::mojom::VideoSourceProviderPtr video_source_provider_;
-  video_capture::mojom::VideoSourcePtr video_source_;
+  mojo::Remote<video_capture::mojom::VideoSourceProvider>
+      video_source_provider_;
+  mojo::Remote<video_capture::mojom::VideoSource> video_source_;
   mojo::Remote<video_capture::mojom::PushVideoStreamSubscription> subscription_;
 
   mojo::PendingRemote<video_capture::mojom::Receiver> subscriber_;

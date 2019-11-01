@@ -40,6 +40,9 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_content_browser_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -193,7 +196,8 @@ class RequestInterceptor {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(url_to_intercept.is_valid());
 
-    test_client_ptr_info_ = test_client_.CreateInterfacePtr().PassInterface();
+    pending_test_client_remote_ =
+        test_client_.CreateInterfacePtr().PassInterface();
   }
 
   ~RequestInterceptor() {
@@ -335,10 +339,10 @@ class RequestInterceptor {
     // Inject |test_client_| into the request.
     DCHECK(!original_client_);
     original_client_ = std::move(params->client);
-    test_client_ptr_.Bind(std::move(test_client_ptr_info_));
-    test_client_binding_ =
-        std::make_unique<mojo::Binding<network::mojom::URLLoaderClient>>(
-            test_client_ptr_.get(), mojo::MakeRequest(&params->client));
+    test_client_remote_.Bind(std::move(pending_test_client_remote_));
+    test_client_receiver_ =
+        std::make_unique<mojo::Receiver<network::mojom::URLLoaderClient>>(
+            test_client_remote_.get(), mojo::MakeRequest(&params->client));
 
     // Forward the request to the original URLLoaderFactory.
     return false;
@@ -392,8 +396,8 @@ class RequestInterceptor {
 
     // Reset all temporary mojo bindings.
     original_client_.reset();
-    test_client_binding_.reset();
-    test_client_ptr_.reset();
+    test_client_receiver_.reset();
+    test_client_remote_.reset();
   }
 
   const GURL url_to_intercept_;
@@ -402,9 +406,10 @@ class RequestInterceptor {
   base::Optional<url::Origin> request_initiator_to_inject_;
   base::Optional<network::mojom::RequestMode> request_mode_to_inject_;
 
-  // |test_client_ptr_info_| below is used to transition results of
+  // |pending_test_client_remote_| below is used to transition results of
   // |test_client_.CreateInterfacePtr()| into IO thread.
-  network::mojom::URLLoaderClientPtrInfo test_client_ptr_info_;
+  mojo::PendingRemote<network::mojom::URLLoaderClient>
+      pending_test_client_remote_;
 
   // UI thread state:
   network::TestURLLoaderClient test_client_;
@@ -416,9 +421,9 @@ class RequestInterceptor {
   network::mojom::URLLoaderClientPtr original_client_;
   bool request_intercepted_ = false;
   scoped_refptr<base::SingleThreadTaskRunner> interceptor_task_runner_;
-  network::mojom::URLLoaderClientPtr test_client_ptr_;
-  std::unique_ptr<mojo::Binding<network::mojom::URLLoaderClient>>
-      test_client_binding_;
+  mojo::Remote<network::mojom::URLLoaderClient> test_client_remote_;
+  std::unique_ptr<mojo::Receiver<network::mojom::URLLoaderClient>>
+      test_client_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestInterceptor);
 };

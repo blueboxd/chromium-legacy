@@ -40,3 +40,6 @@ crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap.html [ Skip ]
 
 # createImageBitmap fails for HTMLVideoElement
 crbug.com/1003799 fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Skip ]
+
+# Crashing third_party/blink/tools/blinkpy/common/message_pool.py
+crbug.com/1018884 compositing/overflow/scrollbar-layer-placement.html [ Skip ]

@@ -38,6 +38,7 @@
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/system_headers/linux_futex.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+#include "sandbox/linux/system_headers/linux_time.h"
 #include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
@@ -394,7 +395,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
                  DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   struct timespec ts;
-  syscall(SYS_clock_gettime, CLOCK_MONOTONIC_RAW, &ts);
+  syscall(SYS_clock_gettime, (~0) | CLOCKFD, &ts);
 }
 
 #if !defined(GRND_RANDOM)

@@ -85,10 +85,9 @@ BPF_TEST_C(ParameterRestrictions,
            RestrictClockIdPolicy) {
   CheckClock(CLOCK_MONOTONIC);
   CheckClock(CLOCK_MONOTONIC_COARSE);
+  CheckClock(CLOCK_MONOTONIC_RAW);
   CheckClock(CLOCK_PROCESS_CPUTIME_ID);
-#if defined(OS_ANDROID)
   CheckClock(CLOCK_BOOTTIME);
-#endif
   CheckClock(CLOCK_REALTIME);
   CheckClock(CLOCK_REALTIME_COARSE);
   CheckClock(CLOCK_THREAD_CPUTIME_ID);
@@ -100,11 +99,11 @@ BPF_TEST_C(ParameterRestrictions,
 }
 
 BPF_DEATH_TEST_C(ParameterRestrictions,
-                 clock_gettime_crash_monotonic_raw,
+                 clock_gettime_crash_clock_fd,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  RestrictClockIdPolicy) {
   struct timespec ts;
-  syscall(SYS_clock_gettime, CLOCK_MONOTONIC_RAW, &ts);
+  syscall(SYS_clock_gettime, (~0) | CLOCKFD, &ts);
 }
 
 #if !defined(OS_ANDROID)

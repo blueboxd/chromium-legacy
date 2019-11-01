@@ -18,6 +18,7 @@
 #include "components/language/content/browser/ulp_language_code_locator/ulp_language_code_locator.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/prefs/testing_pref_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace language {
@@ -27,8 +28,8 @@ class GeoLanguageProviderTest : public testing::Test {
   GeoLanguageProviderTest()
       : geo_language_provider_(task_environment_.GetMainThreadTaskRunner()),
         mock_ip_geo_location_provider_(&mock_geo_location_) {
-    service_manager::mojom::ConnectorRequest request;
-    connector_ = service_manager::Connector::Create(&request);
+    mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
+    connector_ = service_manager::Connector::Create(&receiver);
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::PublicIpAddressGeolocationProvider::Name_,

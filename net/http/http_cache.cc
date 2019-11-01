@@ -82,16 +82,20 @@ int HttpCache::DefaultBackend::CreateBackend(
     std::unique_ptr<disk_cache::Backend>* backend,
     CompletionOnceCallback callback) {
   DCHECK_GE(max_bytes_, 0);
+  // TODO(crbug.com/1002220): Implement a forced reset for the http_cache when
+  // the Finch experiment status changes the cache configuration.
 #if defined(OS_ANDROID)
   if (app_status_listener_) {
     return disk_cache::CreateCacheBackend(
-        type_, backend_type_, path_, max_bytes_, true, net_log, backend,
+        type_, backend_type_, path_, max_bytes_,
+        disk_cache::ResetHandling::kResetOnError, net_log, backend,
         std::move(callback), app_status_listener_);
   }
 #endif
-  return disk_cache::CreateCacheBackend(type_, backend_type_, path_, max_bytes_,
-                                        true, net_log, backend,
-                                        std::move(callback));
+  return disk_cache::CreateCacheBackend(
+      type_, backend_type_, path_, max_bytes_,
+      disk_cache::ResetHandling::kResetOnError, net_log, backend,
+      std::move(callback));
 }
 
 #if defined(OS_ANDROID)

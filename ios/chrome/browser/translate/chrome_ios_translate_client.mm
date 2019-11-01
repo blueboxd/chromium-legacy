@@ -31,6 +31,8 @@
 #import "ios/chrome/browser/translate/translate_option_selection_handler.h"
 #include "ios/chrome/browser/translate/translate_ranker_factory.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/translate/translate_notification_handler.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/browser_state.h"
@@ -91,13 +93,20 @@ translate::TranslateManager* ChromeIOSTranslateClient::GetTranslateManager() {
 
 std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  TranslateInfoBarController* controller = [[TranslateInfoBarController alloc]
-      initWithInfoBarDelegate:delegate.get()];
-  controller.languageSelectionHandler = language_selection_handler_;
-  controller.translateOptionSelectionHandler =
-      translate_option_selection_handler_;
-  controller.translateNotificationHandler = translate_notification_handler_;
-  return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
+  if (IsTranslateInfobarMessagesUIEnabled()) {
+    TranslateInfobarCoordinator* coordinator =
+        [[TranslateInfobarCoordinator alloc]
+            initWithInfoBarDelegate:delegate.get()];
+    return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
+  } else {
+    TranslateInfoBarController* controller = [[TranslateInfoBarController alloc]
+        initWithInfoBarDelegate:delegate.get()];
+    controller.languageSelectionHandler = language_selection_handler_;
+    controller.translateOptionSelectionHandler =
+        translate_option_selection_handler_;
+    controller.translateNotificationHandler = translate_notification_handler_;
+    return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
+  }
 }
 
 bool ChromeIOSTranslateClient::ShowTranslateUI(

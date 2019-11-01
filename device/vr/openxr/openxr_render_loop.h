@@ -8,8 +8,10 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "device/vr/windows/compositor_base.h"
+#include "third_party/openxr/src/include/openxr/openxr.h"
 
 struct XrView;
 

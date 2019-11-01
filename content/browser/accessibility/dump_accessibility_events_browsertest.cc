@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -22,6 +23,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -473,6 +475,24 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsCheckboxValidity) {
   RunEventTest(FILE_PATH_LITERAL("checkbox-validity.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsCaretBrowsingEnabled) {
+  // Add command line switch that forces caret browsing on.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableCaretBrowsing);
+
+  RunEventTest(FILE_PATH_LITERAL("caret-browsing-enabled.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsCaretBrowsingDisabled) {
+  // Make sure command line switch that forces caret browsing on is not set.
+  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCaretBrowsing));
+
+  RunEventTest(FILE_PATH_LITERAL("caret-browsing-disabled.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,

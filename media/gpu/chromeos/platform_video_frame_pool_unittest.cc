@@ -60,17 +60,18 @@ class PlatformVideoFramePoolTest
     pool_.reset(new PlatformVideoFramePool(
         base::BindRepeating(&CreateDmabufVideoFrame)));
     pool_->set_parent_task_runner(base::ThreadTaskRunnerHandle::Get());
-    pool_->SetMaxNumFrames(10);
   }
 
-  void SetFrameFormat(VideoPixelFormat format) {
-    gfx::Size coded_size(320, 240);
-    visible_rect_.set_size(coded_size);
-    natural_size_ = coded_size;
-    layout_ = VideoFrameLayout::Create(format, coded_size);
+  void RequestFrames(VideoPixelFormat format) {
+    constexpr gfx::Size kCodedSize(320, 240);
+    constexpr size_t kNumFrames = 10;
+
+    visible_rect_.set_size(kCodedSize);
+    natural_size_ = kCodedSize;
+    layout_ = VideoFrameLayout::Create(format, kCodedSize);
     DCHECK(layout_);
 
-    pool_->NegotiateFrameFormat(*layout_, visible_rect_, natural_size_);
+    pool_->RequestFrames(*layout_, visible_rect_, natural_size_, kNumFrames);
   }
 
   scoped_refptr<VideoFrame> GetFrame(int timestamp_ms) {
@@ -107,7 +108,7 @@ INSTANTIATE_TEST_SUITE_P(,
                                          PIXEL_FORMAT_ARGB));
 
 TEST_F(PlatformVideoFramePoolTest, SingleFrameReuse) {
-  SetFrameFormat(PIXEL_FORMAT_I420);
+  RequestFrames(PIXEL_FORMAT_I420);
   scoped_refptr<VideoFrame> frame = GetFrame(10);
   DmabufId id = DmabufVideoFramePool::GetDmabufId(*frame);
 
@@ -121,7 +122,7 @@ TEST_F(PlatformVideoFramePoolTest, SingleFrameReuse) {
 }
 
 TEST_F(PlatformVideoFramePoolTest, MultipleFrameReuse) {
-  SetFrameFormat(PIXEL_FORMAT_I420);
+  RequestFrames(PIXEL_FORMAT_I420);
   scoped_refptr<VideoFrame> frame1 = GetFrame(10);
   scoped_refptr<VideoFrame> frame2 = GetFrame(20);
   DmabufId id1 = DmabufVideoFramePool::GetDmabufId(*frame1);
@@ -144,7 +145,7 @@ TEST_F(PlatformVideoFramePoolTest, MultipleFrameReuse) {
 }
 
 TEST_F(PlatformVideoFramePoolTest, FormatChange) {
-  SetFrameFormat(PIXEL_FORMAT_I420);
+  RequestFrames(PIXEL_FORMAT_I420);
   scoped_refptr<VideoFrame> frame_a = GetFrame(10);
   scoped_refptr<VideoFrame> frame_b = GetFrame(10);
 
@@ -158,13 +159,13 @@ TEST_F(PlatformVideoFramePoolTest, FormatChange) {
 
   // Verify that requesting a frame with a different format causes the pool
   // to get drained.
-  SetFrameFormat(PIXEL_FORMAT_I420A);
+  RequestFrames(PIXEL_FORMAT_I420A);
   scoped_refptr<VideoFrame> new_frame = GetFrame(10);
   CheckPoolSize(0u);
 }
 
 TEST_F(PlatformVideoFramePoolTest, UnwrapVideoFrame) {
-  SetFrameFormat(PIXEL_FORMAT_I420);
+  RequestFrames(PIXEL_FORMAT_I420);
   scoped_refptr<VideoFrame> frame_1 = GetFrame(10);
   scoped_refptr<VideoFrame> frame_2 = VideoFrame::WrapVideoFrame(
       frame_1, frame_1->format(), frame_1->visible_rect(),

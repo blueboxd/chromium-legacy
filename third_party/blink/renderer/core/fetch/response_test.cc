@@ -83,11 +83,11 @@ void CheckResponseStream(ScriptState* script_state,
 
   response->InternalBodyBuffer()->StartLoading(
       FetchDataLoader::CreateLoaderAsString(
-          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+          TextResourceDecoderOptions::CreateUTF8Decode()),
       client1, ASSERT_NO_EXCEPTION);
   cloned_response->InternalBodyBuffer()->StartLoading(
       FetchDataLoader::CreateLoaderAsString(
-          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+          TextResourceDecoderOptions::CreateUTF8Decode()),
       client2, ASSERT_NO_EXCEPTION);
   blink::test::RunPendingTasks();
 }
@@ -188,11 +188,11 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
 
   response->InternalBodyBuffer()->StartLoading(
       FetchDataLoader::CreateLoaderAsString(
-          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+          TextResourceDecoderOptions::CreateUTF8Decode()),
       client1, ASSERT_NO_EXCEPTION);
   cloned_response->InternalBodyBuffer()->StartLoading(
       FetchDataLoader::CreateLoaderAsString(
-          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+          TextResourceDecoderOptions::CreateUTF8Decode()),
       client2, ASSERT_NO_EXCEPTION);
   blink::test::RunPendingTasks();
 }

@@ -1189,6 +1189,8 @@ void RenderFrameHostImpl::EnterBackForwardCache() {
     StartBackForwardCacheEvictionTimer();
   for (auto& child : children_)
     child->current_frame_host()->EnterBackForwardCache();
+  for (auto* host : service_worker_provider_hosts_)
+    host->OnEnterBackForwardCache();
 }
 
 // The frame as been restored from the BackForwardCache.
@@ -1200,6 +1202,9 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
     back_forward_cache_eviction_timer_.Stop();
   for (auto& child : children_)
     child->current_frame_host()->LeaveBackForwardCache();
+
+  for (auto* host : service_worker_provider_hosts_)
+    host->OnRestoreFromBackForwardCache();
 }
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
@@ -1243,10 +1248,26 @@ void RenderFrameHostImpl::OnPortalActivated(
     mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
     mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
     blink::TransferableMessage data,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(blink::mojom::PortalActivateResult)> callback) {
   GetNavigationControl()->OnPortalActivated(
       portal_token, std::move(portal), std::move(portal_client),
-      std::move(data), std::move(callback));
+      std::move(data),
+      base::BindOnce(
+          [](base::OnceCallback<void(blink::mojom::PortalActivateResult)>
+                 callback,
+             blink::mojom::PortalActivateResult result) {
+            switch (result) {
+              case blink::mojom::PortalActivateResult::kPredecessorWillUnload:
+              case blink::mojom::PortalActivateResult::kPredecessorWasAdopted:
+                // These values are acceptable from the renderer.
+                break;
+                // TODO(jbroman): Some future values may represent browser-side
+                // values which the renderer should not be able to forge. We
+                // should call mojo::ReportBadMessage here if so.
+            }
+            std::move(callback).Run(result);
+          },
+          std::move(callback)));
 }
 
 void RenderFrameHostImpl::ForwardMessageFromHost(
@@ -3690,7 +3711,6 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
 
 void RenderFrameHostImpl::EvictFromBackForwardCache() {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::EvictFromBackForwardCache");
-
   // TODO(hajimehoshi): This function should take the reason from the renderer
   // side.
   EvictFromBackForwardCacheWithReason(
@@ -7525,6 +7545,20 @@ RenderFrameHostImpl::BuildCommitFailedNavigationCallback(
   return base::BindOnce(
       &RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation,
       base::Unretained(this), navigation_request);
+}
+
+void RenderFrameHostImpl::AddServiceWorkerProviderHost(
+    ServiceWorkerProviderHost* host) {
+  DCHECK(!base::Contains(service_worker_provider_hosts_, host));
+  service_worker_provider_hosts_.push_back(host);
+}
+
+void RenderFrameHostImpl::RemoveServiceWorkerProviderHost(
+    ServiceWorkerProviderHost* host) {
+  DCHECK(base::Contains(service_worker_provider_hosts_, host));
+  service_worker_provider_hosts_.erase(
+      std::find(service_worker_provider_hosts_.begin(),
+                service_worker_provider_hosts_.end(), host));
 }
 
 void RenderFrameHostImpl::UpdateFrameFrozenState() {

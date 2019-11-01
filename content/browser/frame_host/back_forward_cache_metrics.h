@@ -60,7 +60,8 @@ class BackForwardCacheMetrics
     kSchedulerTrackedFeatureUsed = 19,
     kConflictingBrowsingInstance = 20,
     kCacheFlushed = 21,
-    kMaxValue = kCacheFlushed,
+    kServiceWorkerVersionActivation = 22,
+    kMaxValue = kServiceWorkerVersionActivation,
   };
 
   using NotRestoredReasons =

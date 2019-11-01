@@ -168,7 +168,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
             mContentView = null;
             return false;
         }
-        mBottomSheetController.get().getBottomSheet().addObserver(mSheetObserver);
+        mBottomSheetController.get().addObserver(mSheetObserver);
         mSheetTriggered = true;
         mFullyExpand = fullyExpand;
         if (fullyExpand || history.getEntryCount() <= SKIP_PEEK_COUNT) expandSheet();
@@ -237,7 +237,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     @Override
     public void close(boolean animate) {
         if (!isHidden()) mBottomSheetController.get().hideContent(this, animate);
-        mBottomSheetController.get().getBottomSheet().removeObserver(mSheetObserver);
+        mBottomSheetController.get().removeObserver(mSheetObserver);
         mMediator.clear();
     }
 
@@ -260,7 +260,9 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         if (sheet == null) return BottomSheetController.SheetState.NONE;
         @SheetState
         int state = sheet.getTargetSheetState();
-        return state != BottomSheetController.SheetState.NONE ? state : sheet.getSheetState();
+        return state != BottomSheetController.SheetState.NONE
+                ? state
+                : mBottomSheetController.get().getSheetState();
     }
 
     @Override

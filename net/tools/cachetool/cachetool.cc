@@ -262,9 +262,9 @@ class StreamCommandMarshal final : public CommandMarshal {
       return "";
     }
     std::vector<char> tmp_buffer(string_size + 1);
-    std::cin.read(&tmp_buffer[0], string_size);
+    std::cin.read(tmp_buffer.data(), string_size);
     tmp_buffer[string_size] = 0;
-    return std::string(&tmp_buffer[0], string_size);
+    return std::string(tmp_buffer.data(), string_size);
   }
 
   // Implements CommandMarshal.
@@ -709,9 +709,10 @@ int main(int argc, char* argv[]) {
 
   std::unique_ptr<Backend> cache_backend;
   net::TestCompletionCallback cb;
-  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, backend_type,
-                                          cache_path, INT_MAX, false, nullptr,
-                                          &cache_backend, cb.callback());
+  int rv = disk_cache::CreateCacheBackend(
+      net::DISK_CACHE, backend_type, cache_path, INT_MAX,
+      disk_cache::ResetHandling::kNeverReset, nullptr, &cache_backend,
+      cb.callback());
   if (cb.GetResult(rv) != net::OK) {
     std::cerr << "Invalid cache." << std::endl;
     return 1;

@@ -166,13 +166,16 @@ ControllerFrameData XRTestHookWrapper::WaitGetControllerData(
   return {};
 }
 
-bool XRTestHookWrapper::WaitGetSessionStateStopping() {
+device_test::mojom::EventData XRTestHookWrapper::WaitGetEventData() {
+  device_test::mojom::EventData ret = {};
   if (hook_) {
-    bool stopping = false;
-    hook_->WaitGetSessionStateStopping(&stopping);
-    return stopping;
+    device_test::mojom::EventDataPtr data;
+    hook_->WaitGetEventData(&data);
+    if (data) {
+      ret = *data;
+    }
   }
-  return false;
+  return ret;
 }
 
 void XRTestHookWrapper::AttachCurrentThread() {

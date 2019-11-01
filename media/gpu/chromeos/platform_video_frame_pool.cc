@@ -62,7 +62,7 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   base::AutoLock auto_lock(lock_);
 
   if (!frame_layout_) {
-    VLOGF(1) << "Please call NegotiateFrameFormat() first.";
+    VLOGF(1) << "Please call RequestFrames() first.";
     return nullptr;
   }
 
@@ -104,22 +104,17 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   return wrapped_frame;
 }
 
-void PlatformVideoFramePool::SetMaxNumFrames(size_t max_num_frames) {
-  DVLOGF(4);
-  base::AutoLock auto_lock(lock_);
-
-  max_num_frames_ = max_num_frames;
-
-  if (frame_available_cb_ && !IsExhausted_Locked())
-    std::move(frame_available_cb_).Run();
-}
-
-base::Optional<VideoFrameLayout> PlatformVideoFramePool::NegotiateFrameFormat(
+base::Optional<VideoFrameLayout> PlatformVideoFramePool::RequestFrames(
     const VideoFrameLayout& layout,
     const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size) {
+    const gfx::Size& natural_size,
+    size_t max_num_frames) {
   DVLOGF(4);
   base::AutoLock auto_lock(lock_);
+
+  visible_rect_ = visible_rect;
+  natural_size_ = natural_size;
+  max_num_frames_ = max_num_frames;
 
   // If the frame layout changed we need to allocate new frames so we will clear
   // the pool here. If only the visible or natural size changed we don't need to
@@ -131,20 +126,22 @@ base::Optional<VideoFrameLayout> PlatformVideoFramePool::NegotiateFrameFormat(
     free_frames_.clear();
   }
 
-  visible_rect_ = visible_rect;
-  natural_size_ = natural_size;
-
   // Create a temporary frame in order to know VideoFrameLayout that VideoFrame
   // that will be allocated in GetFrame() has.
   auto frame = create_frame_cb_.Run(gpu_memory_buffer_factory_, layout.format(),
-                                    layout.coded_size(), visible_rect,
+                                    layout.coded_size(), visible_rect_,
                                     natural_size_, base::TimeDelta());
   if (!frame) {
     VLOGF(1) << "Failed to create video frame";
     return base::nullopt;
   }
-  frame_layout_ = base::make_optional<VideoFrameLayout>(frame->layout());
 
+  // The pool might become available because of |max_num_frames_| increased.
+  // Notify the client if so.
+  if (frame_available_cb_ && !IsExhausted_Locked())
+    std::move(frame_available_cb_).Run();
+
+  frame_layout_ = base::make_optional<VideoFrameLayout>(frame->layout());
   return frame_layout_;
 }
 

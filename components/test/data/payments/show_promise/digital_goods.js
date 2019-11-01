@@ -9,7 +9,7 @@ var request = null;
 /**
  * Create an instance of PaymentRequest.
  */
-function create() {  // eslint-disable-line no-unused-vars
+function create() { // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest([{supportedMethods: 'basic-card'}], {
       total:
@@ -23,7 +23,7 @@ function create() {  // eslint-disable-line no-unused-vars
 /**
  * Launch PaymentRequest with a show promise for digital goods.
  */
-function buy() {  // eslint-disable-line no-unused-vars
+function buy() { // eslint-disable-line no-unused-vars
   try {
     request
         .show(new Promise(function(resolve) {

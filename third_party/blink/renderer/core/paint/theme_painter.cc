@@ -147,6 +147,8 @@ bool ThemePainter::Paint(const LayoutObject& o,
   if (LayoutTheme::GetTheme().ShouldUseFallbackTheme(style))
     return PaintUsingFallbackTheme(node, style, paint_info, r);
 
+  // TODO(tkent): Clean the counting code when M80 is promoted to the stable
+  // channel.
   if (part == kButtonPart && node) {
     if (IsA<HTMLAnchorElement>(node)) {
       Deprecation::CountDeprecation(

@@ -264,8 +264,8 @@ class DisplayPanel extends HTMLElement {
         if (summaryPanel.indicator != 'largeprogress') {
           summaryPanel.indicator = 'largeprogress';
         }
-        // TODO(crbug.com/947388) i18n this string (add setter).
-        summaryPanel.primaryText = total.toFixed(0) + '% complete';
+        summaryPanel.primaryText =
+            util.strf('PERCENT_COMPLETE', total.toFixed(0));
         summaryPanel.progress = total;
         summaryPanel.setAttribute('count', progressCount);
         summaryPanel.errorMarkerVisibility =
@@ -277,8 +277,8 @@ class DisplayPanel extends HTMLElement {
           summaryPanel.indicator = 'status';
           summaryPanel.status = 'failure';
         }
-        // TODO(crbug.com/947388) i18n this string (add setter/callback?).
-        summaryPanel.primaryText = errors + ' errors';
+        summaryPanel.primaryText =
+            util.strf('ERROR_PROGRESS_SUMMARY_PLURAL', errors);
       }
     }
   }

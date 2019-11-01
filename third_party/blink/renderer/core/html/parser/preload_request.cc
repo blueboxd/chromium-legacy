@@ -90,8 +90,7 @@ Resource* PreloadRequest::Start(Document* document) {
 
   if (script_type_ == mojom::ScriptType::kModule) {
     DCHECK_EQ(resource_type_, ResourceType::kScript);
-    params.SetDecoderOptions(
-        TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+    params.SetDecoderOptions(TextResourceDecoderOptions::CreateUTF8Decode());
   } else if (resource_type_ == ResourceType::kScript ||
              resource_type_ == ResourceType::kCSSStyleSheet ||
              resource_type_ == ResourceType::kImportResource) {

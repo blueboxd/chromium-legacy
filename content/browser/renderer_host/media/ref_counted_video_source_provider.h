@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 
 namespace content {
@@ -20,12 +21,13 @@ class CONTENT_EXPORT RefCountedVideoSourceProvider
     : public base::RefCounted<RefCountedVideoSourceProvider> {
  public:
   RefCountedVideoSourceProvider(
-      video_capture::mojom::VideoSourceProviderPtr source_provider,
+      mojo::Remote<video_capture::mojom::VideoSourceProvider> source_provider,
       base::OnceClosure destruction_cb);
 
   base::WeakPtr<RefCountedVideoSourceProvider> GetWeakPtr();
 
-  const video_capture::mojom::VideoSourceProviderPtr& source_provider() {
+  const mojo::Remote<video_capture::mojom::VideoSourceProvider>&
+  source_provider() {
     return source_provider_;
   }
 
@@ -36,7 +38,7 @@ class CONTENT_EXPORT RefCountedVideoSourceProvider
   friend class base::RefCounted<RefCountedVideoSourceProvider>;
   ~RefCountedVideoSourceProvider();
 
-  video_capture::mojom::VideoSourceProviderPtr source_provider_;
+  mojo::Remote<video_capture::mojom::VideoSourceProvider> source_provider_;
   base::OnceClosure destruction_cb_;
   base::WeakPtrFactory<RefCountedVideoSourceProvider> weak_ptr_factory_{this};
 

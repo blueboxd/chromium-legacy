@@ -78,8 +78,8 @@ PepperProxyLookupHelper::PepperProxyLookupHelper() {}
 PepperProxyLookupHelper::~PepperProxyLookupHelper() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
-                            std::move(ui_thread_helper_));
+  base::DeleteSoon(FROM_HERE, {BrowserThread::UI},
+                   std::move(ui_thread_helper_));
 }
 
 void PepperProxyLookupHelper::Start(

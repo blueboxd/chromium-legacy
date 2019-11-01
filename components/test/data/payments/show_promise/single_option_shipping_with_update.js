@@ -9,7 +9,7 @@
  * for shipping worldwide and a handler for shipping address change events that
  * does not change anything.
  */
-function buy() {  // eslint-disable-line no-unused-vars
+function buy() { // eslint-disable-line no-unused-vars
   var finalizedDetails = {
     total: {label: 'Total', amount: {currency: 'USD', value: '1.00'}},
     shippingOptions: [{

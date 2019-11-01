@@ -105,6 +105,8 @@ void FeedInternalsPageHandler::GetLastFetchProperties(
       ToMojoTime(pref_service_->GetTime(feed::prefs::kLastFetchAttemptTime));
   properties->refresh_suppress_time =
       ToMojoTime(feed_scheduler_host_->GetSuppressRefreshesUntilForDebugging());
+  properties->last_bless_nonce =
+      pref_service_->GetString(feed::prefs::kHostOverrideBlessNonce);
 
   std::move(callback).Run(std::move(properties));
 }
@@ -168,4 +170,8 @@ void FeedInternalsPageHandler::GetFeedHistograms(
   std::string log;
   base::StatisticsRecorder::WriteGraph(kFeedHistogramPrefix, &log);
   std::move(callback).Run(log);
+}
+
+void FeedInternalsPageHandler::OverrideFeedHost(const std::string& host) {
+  return pref_service_->SetString(feed::prefs::kHostOverrideHost, host);
 }

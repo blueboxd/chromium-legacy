@@ -33,7 +33,7 @@ class XRTestHookWrapper : public VRTestHook {
       unsigned int index) override;
   TrackedDeviceClass WaitGetTrackedDeviceClass(unsigned int index) override;
   ControllerFrameData WaitGetControllerData(unsigned int index) override;
-  bool WaitGetSessionStateStopping() override;
+  device_test::mojom::EventData WaitGetEventData() override;
   void AttachCurrentThread() override;
   void DetachCurrentThread() override;
 

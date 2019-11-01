@@ -24,13 +24,13 @@ namespace content {
 
 namespace {
 
-static const char kContraints[] = "c";
-static const char kRtcConfiguration[] = "r";
-static const char kUrl[] = "u";
-static const char* kWakeLockConnectingValues[] = {"checking", "connected",
-                                                  "completed"};
-static const char* kWakeLockDisconnectingValues[] = {"disconnected", "closed",
-                                                     "failed", "new"};
+const char kContraints[] = "c";
+const char kRtcConfiguration[] = "r";
+const char kUrl[] = "u";
+const char* const kWakeLockConnectingValues[] = {"checking", "connected",
+                                                 "completed"};
+const char* const kWakeLockDisconnectingValues[] = {"disconnected", "closed",
+                                                    "failed", "new"};
 
 class MockWebRtcInternalsProxy : public WebRTCInternalsUIObserver {
  public:
@@ -136,11 +136,13 @@ class WebRtcInternalsTest : public testing::Test {
     EXPECT_EQ(expected, actual);
   }
 
-  void VerifyList(const base::DictionaryValue* dict,
-                  const std::string& key,
-                  const base::ListValue& expected) {
-    const base::ListValue* actual = nullptr;
-    EXPECT_TRUE(dict->GetList(key, &actual));
+  void VerifyList(const base::Value& dict,
+                  base::StringPiece key,
+                  const base::Value& expected) {
+    ASSERT_TRUE(dict.is_dict());
+    ASSERT_TRUE(expected.is_list());
+    const base::Value* actual = dict.FindListKey(key);
+    ASSERT_TRUE(actual);
     EXPECT_TRUE(expected.Equals(actual));
   }
 
@@ -431,7 +433,9 @@ TEST_F(WebRtcInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
 }
 
 TEST_F(WebRtcInternalsTest, OnAddStandardStats) {
-  const int rid = 0, pid = 1, lid = 2;
+  const int rid = 0;
+  const int pid = 1;
+  const int lid = 2;
   base::RunLoop loop;
   MockWebRtcInternalsProxy observer(&loop);
   WebRTCInternalsForTest webrtc_internals;
@@ -439,10 +443,10 @@ TEST_F(WebRtcInternalsTest, OnAddStandardStats) {
   webrtc_internals.OnAddPeerConnection(rid, pid, lid, kUrl, kRtcConfiguration,
                                        kContraints);
 
-  base::ListValue list;
-  list.AppendString("xxx");
-  list.AppendString("yyy");
-  webrtc_internals.OnAddStandardStats(pid, lid, list);
+  base::Value list(base::Value::Type::LIST);
+  list.Append("xxx");
+  list.Append("yyy");
+  webrtc_internals.OnAddStandardStats(pid, lid, list.Clone());
 
   loop.Run();
 
@@ -454,13 +458,15 @@ TEST_F(WebRtcInternalsTest, OnAddStandardStats) {
 
   VerifyInt(dict, "pid", pid);
   VerifyInt(dict, "lid", lid);
-  VerifyList(dict, "reports", list);
+  VerifyList(*dict, "reports", list);
 
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(WebRtcInternalsTest, OnAddLegacyStats) {
-  const int rid = 0, pid = 1, lid = 2;
+  const int rid = 0;
+  const int pid = 1;
+  const int lid = 2;
   base::RunLoop loop;
   MockWebRtcInternalsProxy observer(&loop);
   WebRTCInternalsForTest webrtc_internals;
@@ -468,10 +474,10 @@ TEST_F(WebRtcInternalsTest, OnAddLegacyStats) {
   webrtc_internals.OnAddPeerConnection(rid, pid, lid, kUrl, kRtcConfiguration,
                                        kContraints);
 
-  base::ListValue list;
-  list.AppendString("xxx");
-  list.AppendString("yyy");
-  webrtc_internals.OnAddLegacyStats(pid, lid, list);
+  base::Value list(base::Value::Type::LIST);
+  list.Append("xxx");
+  list.Append("yyy");
+  webrtc_internals.OnAddLegacyStats(pid, lid, list.Clone());
 
   loop.Run();
 
@@ -483,7 +489,7 @@ TEST_F(WebRtcInternalsTest, OnAddLegacyStats) {
 
   VerifyInt(dict, "pid", pid);
   VerifyInt(dict, "lid", lid);
-  VerifyList(dict, "reports", list);
+  VerifyList(*dict, "reports", list);
 
   base::RunLoop().RunUntilIdle();
 }

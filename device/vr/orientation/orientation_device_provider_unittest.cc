@@ -18,6 +18,7 @@
 #include "device/vr/orientation/orientation_device_provider.h"
 #include "device/vr/test/fake_orientation_provider.h"
 #include "device/vr/test/fake_sensor_provider.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
@@ -45,8 +46,8 @@ class VROrientationDeviceProviderTest : public testing::Test {
         sizeof(SensorReadingSharedBuffer) *
         (static_cast<uint64_t>(mojom::SensorType::kMaxValue) + 1));
 
-    service_manager::mojom::ConnectorRequest request;
-    connector_ = service_manager::Connector::Create(&request);
+    mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
+    connector_ = service_manager::Connector::Create(&receiver);
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(mojom::kServiceName),
         mojom::SensorProvider::Name_,

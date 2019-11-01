@@ -1227,6 +1227,10 @@ WebContentsAccessibilityAndroid::GetCharacterBoundingBoxes(
     return nullptr;
   }
 
+  float dip_scale = use_zoom_for_dsf_enabled_
+                        ? 1 / root_manager_->device_scale_factor()
+                        : 1.0;
+
   gfx::Rect object_bounds = node->GetUnclippedRootFrameBoundsRect();
   int coords[4 * len];
   for (int i = 0; i < len; i++) {
@@ -1234,6 +1238,9 @@ WebContentsAccessibilityAndroid::GetCharacterBoundingBoxes(
         start + i, start + i + 1);
     if (char_bounds.IsEmpty())
       char_bounds = object_bounds;
+
+    char_bounds = gfx::ScaleToEnclosingRect(char_bounds, dip_scale, dip_scale);
+
     coords[4 * i + 0] = char_bounds.x();
     coords[4 * i + 1] = char_bounds.y();
     coords[4 * i + 2] = char_bounds.right();

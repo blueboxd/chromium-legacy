@@ -19,6 +19,7 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
+#include "ui/views/window/dialog_delegate.h"
 
 using base::ASCIIToUTF16;
 
@@ -45,6 +46,11 @@ class DialogExample::Delegate : public virtual DialogType {
     body->SetBackground(CreateSolidBackground(SkColorSetRGB(0, 255, 255)));
     this->AddChildView(body);
 
+    if (parent_->has_extra_button_->GetChecked()) {
+      DialogDelegate::SetExtraView(MdTextButton::CreateSecondaryUiButton(
+          nullptr, parent_->extra_button_label_->GetText()));
+    }
+
     // Give the example code a way to change the body text.
     parent_->last_body_label_ = body;
   }
@@ -57,14 +63,6 @@ class DialogExample::Delegate : public virtual DialogType {
 
   base::string16 GetWindowTitle() const override {
     return parent_->title_->GetText();
-  }
-
-  std::unique_ptr<View> CreateExtraView() override {
-    if (!parent_->has_extra_button_->GetChecked())
-      return nullptr;
-    auto view = MdTextButton::CreateSecondaryUiButton(
-        nullptr, parent_->extra_button_label_->GetText());
-    return view;
   }
 
   bool Cancel() override { return parent_->AllowDialogClose(false); }

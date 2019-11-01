@@ -305,8 +305,7 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
   void TearDown() override {
     // Delete the host object on the UI thread and release the
     // SafeBrowsingService.
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
-                              csd_host_.release());
+    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, csd_host_.release());
     database_manager_ = NULL;
     ui_manager_ = NULL;
     base::RunLoop().RunUntilIdle();

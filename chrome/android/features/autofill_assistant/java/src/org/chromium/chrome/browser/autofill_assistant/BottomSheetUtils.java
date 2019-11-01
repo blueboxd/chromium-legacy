@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.view.View;
 
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -18,9 +17,7 @@ class BottomSheetUtils {
             AssistantBottomSheetContent content, boolean animate) {
         // Add an observer that makes sure the bottom sheet content is always shown, even in the
         // peek state.
-        BottomSheet bottomSheet = controller.getBottomSheet();
-        View bottomSheetContainer = bottomSheet.findViewById(R.id.bottom_sheet_content);
-        bottomSheet.addObserver(new EmptyBottomSheetObserver() {
+        controller.addObserver(new EmptyBottomSheetObserver() {
             private boolean mEnabled;
 
             @Override
@@ -30,7 +27,7 @@ class BottomSheetUtils {
                 } else if (mEnabled) {
                     // Content was shown then hidden: remove this observer.
                     mEnabled = false;
-                    bottomSheet.removeObserver(this);
+                    controller.removeObserver(this);
                 }
             }
 
@@ -41,10 +38,12 @@ class BottomSheetUtils {
                 // When scrolling with y < peekHeight, the BottomSheet will make the content
                 // invisible. This is a workaround to prevent that as our toolbar is transparent and
                 // we want to sheet content to stay visible.
-                if ((bottomSheet.getSheetState() == BottomSheetController.SheetState.SCROLLING
-                            || bottomSheet.getSheetState() == BottomSheetController.SheetState.PEEK)
-                        && bottomSheet.getCurrentSheetContent() == content) {
-                    bottomSheetContainer.setVisibility(View.VISIBLE);
+                if ((controller.getSheetState() == BottomSheetController.SheetState.SCROLLING
+                            || controller.getSheetState() == BottomSheetController.SheetState.PEEK)
+                        && controller.getCurrentSheetContent() == content) {
+                    controller.getBottomSheet()
+                            .findViewById(R.id.bottom_sheet_content)
+                            .setVisibility(View.VISIBLE);
                 }
             }
 
@@ -53,11 +52,13 @@ class BottomSheetUtils {
                 if (!mEnabled) return;
 
                 if (newState == BottomSheetController.SheetState.PEEK
-                        && bottomSheet.getCurrentSheetContent() == content) {
+                        && controller.getCurrentSheetContent() == content) {
                     // When in the peek state, the BottomSheet hides the content view. We override
                     // that because we artificially increase the height of the transparent toolbar
                     // to show parts of the content view.
-                    bottomSheetContainer.setVisibility(View.VISIBLE);
+                    controller.getBottomSheet()
+                            .findViewById(R.id.bottom_sheet_content)
+                            .setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -68,11 +69,11 @@ class BottomSheetUtils {
         } else {
             // If the content is not directly shown, add an observer that will expand the sheet when
             // it is.
-            bottomSheet.addObserver(new EmptyBottomSheetObserver() {
+            controller.addObserver(new EmptyBottomSheetObserver() {
                 @Override
                 public void onSheetContentChanged(BottomSheetContent newContent) {
                     if (newContent == content) {
-                        bottomSheet.removeObserver(this);
+                        controller.removeObserver(this);
                         controller.expandSheet();
                     }
                 }

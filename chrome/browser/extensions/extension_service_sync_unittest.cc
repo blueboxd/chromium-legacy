@@ -1874,18 +1874,8 @@ class ExtensionServiceTestSupervised
   void SimulateCustodianApprovalChangeViaSync(const std::string& extension_id,
                                               const std::string& version,
                                               SyncChange::SyncChangeType type) {
-    std::string key = SupervisedUserSettingsService::MakeSplitSettingKey(
-        supervised_users::kApprovedExtensions, extension_id);
-    syncer::SyncData sync_data =
-        SupervisedUserSettingsService::CreateSyncDataForSetting(
-            key, base::Value(version));
-
-    SyncChangeList list(1, SyncChange(FROM_HERE, type, sync_data));
-
-    SupervisedUserSettingsService* supervised_user_settings_service =
-        SupervisedUserSettingsServiceFactory::GetForKey(
-            profile()->GetProfileKey());
-    supervised_user_settings_service->ProcessSyncChanges(FROM_HERE, list);
+    supervised_user_service()->UpdateApprovedExtensions(extension_id, version,
+                                                        type);
   }
 
   void CheckDisabledForCustodianApproval(const std::string& extension_id) {
@@ -1898,6 +1888,11 @@ class ExtensionServiceTestSupervised
 
   SupervisedUserService* supervised_user_service() {
     return SupervisedUserServiceFactory::GetForProfile(profile());
+  }
+
+  SupervisedUserSettingsService* supervised_user_settings_service() {
+    return SupervisedUserSettingsServiceFactory::GetForKey(
+        profile()->GetProfileKey());
   }
 
   static std::string RequestId(const std::string& extension_id,
@@ -2209,9 +2204,10 @@ TEST_F(ExtensionServiceTestSupervised,
   // Prefs are updated via Sync.  If the prefs are updated, then the new
   // approved version has been pushed to Sync as well.
   std::string approved_version;
-  PrefService* pref_service = profile()->GetPrefs();
+  std::string key = SupervisedUserSettingsService::MakeSplitSettingKey(
+      supervised_users::kApprovedExtensions, id);
   const base::DictionaryValue* approved_extensions =
-      pref_service->GetDictionary(prefs::kSupervisedUserApprovedExtensions);
+      supervised_user_settings_service()->GetDictionaryAndSplitKey(&key);
   approved_extensions->GetStringWithoutPathExpansion(id, &approved_version);
 
   EXPECT_EQ(base::Version(approved_version), extension->version());

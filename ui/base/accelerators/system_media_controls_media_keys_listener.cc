@@ -4,8 +4,8 @@
 
 #include "ui/base/accelerators/system_media_controls_media_keys_listener.h"
 
+#include "components/system_media_controls/system_media_controls.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/win/system_media_controls/system_media_controls_service.h"
 
 namespace ui {
 
@@ -28,11 +28,11 @@ SystemMediaControlsMediaKeysListener::~SystemMediaControlsMediaKeysListener() {
 bool SystemMediaControlsMediaKeysListener::Initialize() {
   // |service_| can be set for tests.
   if (!service_)
-    service_ = system_media_controls::SystemMediaControlsService::GetInstance();
+    service_ = system_media_controls::SystemMediaControls::GetInstance();
 
-  // If we still don't have a service, then that means the
-  // SystemMediaControlsService failed to connect to the
-  // SystemMediaTransportControls. If that's the case, return false.
+  // If we still don't have a service, then either System Media Controls isn't
+  // supported on this platform or it failed to initialize. If that's the case,
+  // return false.
   if (!service_)
     return false;
 

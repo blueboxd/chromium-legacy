@@ -55,6 +55,10 @@ FakeIntentHelperInstance::~FakeIntentHelperInstance() {}
 void FakeIntentHelperInstance::AddPreferredPackage(
     const std::string& package_name) {}
 
+void FakeIntentHelperInstance::AddPreferredApp(const std::string& package_name,
+                                               IntentFilter intent_filter,
+                                               mojom::IntentInfoPtr intent) {}
+
 void FakeIntentHelperInstance::GetFileSizeDeprecated(
     const std::string& url,
     GetFileSizeDeprecatedCallback callback) {}

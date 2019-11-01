@@ -217,9 +217,6 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
   target.setAttribute(html_names::kStyleAttr, "box-shadow: inset 3px 2px");
   ExpectFullPaintInvalidationOnGeometryChange("With box-shadow");
 
-  target.setAttribute(html_names::kStyleAttr, "-webkit-appearance: button");
-  ExpectFullPaintInvalidationOnGeometryChange("With appearance");
-
   target.setAttribute(html_names::kStyleAttr,
                       "clip-path: circle(50% at 0 50%)");
   ExpectFullPaintInvalidationOnGeometryChange("With clip-path");

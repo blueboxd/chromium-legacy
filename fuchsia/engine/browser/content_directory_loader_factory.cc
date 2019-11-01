@@ -23,6 +23,8 @@
 #include "base/task/task_traits.h"
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
@@ -188,18 +190,18 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
     return true;
   }
 
-  // Initiates data transfer from |file_channel| to |client_info|.
+  // Initiates data transfer from |file_channel| to |client_remote|.
   // |metadata_channel|, if it is connected to a file, is accessed to get the
   // MIME type and charset of the file.
   static void CreateAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtrInfo client_info,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
       fidl::InterfaceHandle<fuchsia::io::Node> file_channel,
       fidl::InterfaceHandle<fuchsia::io::Node> metadata_channel) {
     std::unique_ptr<ContentDirectoryURLLoader> loader =
         std::make_unique<ContentDirectoryURLLoader>();
-    loader->Start(request, std::move(client_info), std::move(file_channel),
+    loader->Start(request, std::move(client_remote), std::move(file_channel),
                   std::move(metadata_channel));
 
     // |loader|'s lifetime is bound to the lifetime of the URLLoader Mojo
@@ -209,10 +211,10 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
   }
 
   void Start(const network::ResourceRequest& request,
-             network::mojom::URLLoaderClientPtrInfo client_info,
+             mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
              fidl::InterfaceHandle<fuchsia::io::Node> file_channel,
              fidl::InterfaceHandle<fuchsia::io::Node> metadata_channel) {
-    client_.Bind(std::move(client_info));
+    client_.Bind(std::move(client_remote));
 
     if (!MapFile(std::move(file_channel), &mmap_)) {
       client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
@@ -325,7 +327,7 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
   }
 
   // Used for sending status codes and response payloads to the client.
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   // A read-only, memory mapped view of the file being loaded.
   base::MemoryMappedFile mmap_;

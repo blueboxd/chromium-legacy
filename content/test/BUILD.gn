@@ -1660,6 +1660,7 @@ test("content_unittests") {
     "../browser/media/session/media_session_impl_uma_unittest.cc",
     "../browser/media/session/media_session_impl_unittest.cc",
     "../browser/media/session/media_session_uma_helper_unittest.cc",
+    "../browser/media/system_media_controls_notifier_unittest.cc",
     "../browser/media/webaudio/audio_context_manager_impl_unittest.cc",
     "../browser/memory/swap_metrics_driver_impl_unittest.cc",
     "../browser/native_file_system/file_system_chooser_unittest.cc",
@@ -1963,6 +1964,7 @@ test("content_unittests") {
     "//components/rappor:test_support",
     "//components/services/storage",
     "//components/services/storage:test_support",
+    "//components/system_media_controls:test_support",
     "//components/ukm:test_support",
     "//components/viz/client",
     "//components/viz/common",
@@ -2075,6 +2077,7 @@ test("content_unittests") {
     "//ui/accessibility:test_support",
     "//ui/base:test_support",
     "//ui/base/clipboard:clipboard_test_support",
+    "//ui/base/idle:test_support",
     "//ui/base/ime/init",
     "//ui/compositor:test_support",
     "//ui/display",
@@ -2162,13 +2165,10 @@ test("content_unittests") {
     }
   }
   if (is_win) {
-    sources += [ "../browser/media/system_media_controls_notifier_unittest.cc" ]
     deps += [
       "//third_party/blink/public/common",
       "//third_party/blink/public/common:font_unique_name_table_proto",
       "//third_party/iaccessible2",
-      "//ui/base/idle:test_support",
-      "//ui/base/win/system_media_controls:test_support",
     ]
     libs = [
       "dwrite.lib",

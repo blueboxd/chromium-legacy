@@ -9,7 +9,7 @@
 namespace content {
 
 RefCountedVideoSourceProvider::RefCountedVideoSourceProvider(
-    video_capture::mojom::VideoSourceProviderPtr source_provider,
+    mojo::Remote<video_capture::mojom::VideoSourceProvider> source_provider,
     base::OnceClosure destruction_cb)
     : source_provider_(std::move(source_provider)),
       destruction_cb_(std::move(destruction_cb)) {}

@@ -60,15 +60,15 @@ V8V0CustomElementLifecycleCallbacks::Create(
 
 // A given object can only be used as a Custom Element prototype
 // once; see customElementIsInterfacePrototypeObject
-#define SET_PRIVATE_PROPERTY(Maybe, Name)                      \
-  static const V8PrivateProperty::SymbolKey kSymbolKey##Name;  \
-  V8PrivateProperty::Symbol symbol##Name =                     \
-      V8PrivateProperty::GetSymbol(isolate, kSymbolKey##Name); \
-  DCHECK(!symbol##Name.HasValue(prototype));                   \
-  {                                                            \
-    v8::Local<v8::Function> function;                          \
-    if (Maybe.ToLocal(&function))                              \
-      symbol##Name.Set(prototype, function);                   \
+#define SET_PRIVATE_PROPERTY(Maybe, Name)                            \
+  static const V8PrivateProperty::SymbolKey kPrivateProperty##Name;  \
+  V8PrivateProperty::Symbol symbol##Name =                           \
+      V8PrivateProperty::GetSymbol(isolate, kPrivateProperty##Name); \
+  DCHECK(!symbol##Name.HasValue(prototype));                         \
+  {                                                                  \
+    v8::Local<v8::Function> function;                                \
+    if (Maybe.ToLocal(&function))                                    \
+      symbol##Name.Set(prototype, function);                         \
   }
 
   CALLBACK_LIST(SET_PRIVATE_PROPERTY)

@@ -95,8 +95,8 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
     int rv = CreateCacheBackend(
         net::MEMORY_CACHE, net::CACHE_BACKEND_DEFAULT, base::FilePath(),
         (CacheStorageBlobToDiskCache::kBufferSize * 100) /* max bytes */,
-        false /* force */, nullptr /* net log */, &cache_backend_,
-        base::DoNothing());
+        disk_cache::ResetHandling::kNeverReset, nullptr /* net log */,
+        &cache_backend_, base::DoNothing());
     // The memory cache runs synchronously.
     EXPECT_EQ(net::OK, rv);
     EXPECT_TRUE(cache_backend_);

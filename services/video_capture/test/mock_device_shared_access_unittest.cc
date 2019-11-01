@@ -69,7 +69,7 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     // CreateDevice.
     wait_loop.Run();
     source_provider_->GetVideoSource(mock_descriptor.device_id,
-                                     mojo::MakeRequest(&source_));
+                                     source_.BindNewPipeAndPassReceiver());
 
     requestable_settings_.requested_format.frame_size = gfx::Size(800, 600);
     requestable_settings_.requested_format.frame_rate = 15;
@@ -255,7 +255,7 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
   media::MockDeviceFactory* mock_device_factory_;
   std::unique_ptr<DeviceFactoryMediaToMojoAdapter> service_device_factory_;
   std::unique_ptr<VideoSourceProviderImpl> source_provider_;
-  mojom::VideoSourcePtr source_;
+  mojo::Remote<mojom::VideoSource> source_;
   media::VideoCaptureParams requestable_settings_;
 
   mojo::Remote<mojom::PushVideoStreamSubscription> subscription_1_;

@@ -7,6 +7,7 @@
 
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -126,6 +127,9 @@ class CORE_EXPORT NGInlineCursor {
   // end.
   bool IsHiddenForPaint() const;
 
+  // True if the current position's writing mode in style is horizontal.
+  bool IsHorizontal() const;
+
   // True if the current position is text or atomic inline box.
   bool IsInlineLeaf() const;
 
@@ -184,6 +188,15 @@ class CORE_EXPORT NGInlineCursor {
   // Relative to fragment of the current position. It is error to call other
   // than text.
   LayoutUnit InlinePositionForOffset(unsigned offset) const;
+
+  // Returns a point at the visual start/end of the line.
+  // Encapsulates the handling of text direction and writing mode.
+  PhysicalOffset LineStartPoint() const;
+  PhysicalOffset LineEndPoint() const;
+
+  // Converts the given point, relative to the fragment itself, into a position
+  // in DOM tree.
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const;
 
   //
   // Functions to move the current position.

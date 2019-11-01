@@ -488,7 +488,8 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
                                                     : View.VISIBLE);
                                 }
                             };
-                            mTab.getActivity().getBottomSheet().addObserver(mBottomSheetObserver);
+                            mTab.getActivity().getBottomSheetController().addObserver(
+                                    mBottomSheetObserver);
                         }
 
                         for (InfoBarContainer.InfoBarContainerObserver observer : mObservers) {
@@ -529,7 +530,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
 
         ChromeActivity activity = mTab.getActivity();
         if (activity != null && mBottomSheetObserver != null && activity.getBottomSheet() != null) {
-            activity.getBottomSheet().removeObserver(mBottomSheetObserver);
+            activity.getBottomSheetController().removeObserver(mBottomSheetObserver);
         }
 
         mTab.getWindowAndroid().getKeyboardDelegate().removeKeyboardVisibilityListener(this);

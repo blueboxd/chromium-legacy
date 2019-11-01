@@ -13,11 +13,28 @@
 #include "components/viz/service/display/overlay_candidate_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
+#if defined(IS_CHROMECAST)
+#include "base/no_destructor.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#endif
+
 namespace viz {
 namespace {
 
 base::LazyInstance<OverlayStrategyUnderlayCast::OverlayCompositedCallback>::
     DestructorAtExit g_overlay_composited_callback = LAZY_INSTANCE_INITIALIZER;
+
+#if defined(IS_CHROMECAST)
+// This persistent mojo::Remote is bound then used by all the instances
+// of OverlayStrategyUnderlayCast.
+mojo::Remote<chromecast::media::mojom::VideoGeometrySetter>&
+GetVideoGeometrySetter() {
+  static base::NoDestructor<
+      mojo::Remote<chromecast::media::mojom::VideoGeometrySetter>>
+      g_video_geometry_setter;
+  return *g_video_geometry_setter;
+}
+#endif
 
 }  // namespace
 
@@ -94,19 +111,23 @@ bool OverlayStrategyUnderlayCast::Attempt(
         continue;
       }
 
-      // TODO(guohuideng): activate overlay through MediaServe when it's
-      // ready, using |overlay_plane_id|. see b/79266094.
-      base::UnguessableToken overlay_plane_id =
-          VideoHoleDrawQuad::MaterialCast(*it)->overlay_plane_id;
-      ANALYZER_ALLOW_UNUSED(overlay_plane_id);
+      // TODO(guohuideng): when migration to GPU process complete, remove
+      // the code that's for the browser process compositor.
+#if defined(IS_CHROMECAST)
+      if (g_overlay_composited_callback.Get().is_null()) {
+        DCHECK(GetVideoGeometrySetter());
+        GetVideoGeometrySetter()->SetVideoGeometry(
+            candidate.display_rect, candidate.transform,
+            VideoHoleDrawQuad::MaterialCast(*it)->overlay_plane_id);
+      } else {
+        g_overlay_composited_callback.Get().Run(candidate.display_rect,
+                                                candidate.transform);
+      }
+#endif
 
       render_pass->quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(
           it);
 
-      if (!g_overlay_composited_callback.Get().is_null()) {
-        g_overlay_composited_callback.Get().Run(candidate.display_rect,
-                                                candidate.transform);
-      }
       break;
     }
   }
@@ -127,5 +148,14 @@ void OverlayStrategyUnderlayCast::SetOverlayCompositedCallback(
     const OverlayCompositedCallback& cb) {
   g_overlay_composited_callback.Get() = cb;
 }
+
+#if defined(IS_CHROMECAST)
+// static
+void OverlayStrategyUnderlayCast::ConnectVideoGeometrySetter(
+    mojo::PendingRemote<chromecast::media::mojom::VideoGeometrySetter>
+        video_geometry_setter) {
+  GetVideoGeometrySetter().Bind(std::move(video_geometry_setter));
+}
+#endif
 
 }  // namespace viz

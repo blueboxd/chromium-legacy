@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -56,8 +57,8 @@ import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
+import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -80,9 +81,10 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
 
     private WebappInfo mWebappInfo;
 
-    private TabObserverRegistrar mTabObserverRegistrar;
-
+    private CustomTabActivityNavigationController mNavigationController;
+    private WebappActivityTabController mTabController;
     private SplashController mSplashController;
+    private TabObserverRegistrar mTabObserverRegistrar;
 
     private WebappDisclosureSnackbarController mDisclosureSnackbarController;
 
@@ -189,7 +191,7 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
     @Override
     public void initializeState() {
         super.initializeState();
-        mTabObserverRegistrar.addObserversForTab(getActivityTab());
+        mTabController.setInitialTab(getActivityTab());
         initializeUI(getSavedInstanceState());
     }
 
@@ -329,8 +331,15 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
 
     @Override
     protected WebappActivityComponent createComponent(ChromeActivityCommonsModule commonsModule) {
+        WebappActivityModule webappModule = new WebappActivityModule(mWebappInfo.getProvider());
         WebappActivityComponent component =
-                ChromeApplication.getComponent().createWebappActivityComponent(commonsModule);
+                ChromeApplication.getComponent().createWebappActivityComponent(
+                        commonsModule, webappModule);
+        mTabController = component.resolveTabController();
+        mNavigationController = component.resolveNavigationController();
+        mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
+        mNavigationController.setLandingPageOnCloseCriterion(
+                url -> WebappScopePolicy.isUrlInScope(scopePolicy(), getWebappInfo(), url));
 
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
         mSplashController = component.resolveSplashController();
@@ -419,6 +428,11 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
     public void onPauseWithNative() {
         WebappActionsNotificationManager.cancelNotification();
         super.onPauseWithNative();
+    }
+
+    @Override
+    protected boolean handleBackPressed() {
+        return mNavigationController.navigateOnBack();
     }
 
     @Override
@@ -644,19 +658,7 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
      * Moves the user back in history to most recent on-origin location.
      */
     private void onToolbarCloseButtonClicked() {
-        NavigationController nc = getActivityTab().getWebContents().getNavigationController();
-
-        final int lastIndex = nc.getLastCommittedEntryIndex();
-        int index = lastIndex;
-        while (index > 0
-                && !WebappScopePolicy.isUrlInScope(
-                           scopePolicy(), getWebappInfo(), nc.getEntryAtIndex(index).getUrl())) {
-            index--;
-        }
-
-        if (index != lastIndex) {
-            nc.goToNavigationIndex(index);
-        }
+        mNavigationController.navigateOnClose();
     }
 
     private void updateTaskDescription() {
@@ -824,6 +826,14 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
         }
         ScreenOrientationProvider.getInstance().lockOrientation(
                 getWindowAndroid(), (byte) mWebappInfo.orientation());
+    }
+
+    /**
+     * Handles finishing activity on behalf of {@link CustomTabNavigationController}.
+     * Overridden by {@link WebApkActivity}.
+     */
+    protected void handleFinishAndClose() {
+        finish();
     }
 
     protected boolean isSplashShowing() {

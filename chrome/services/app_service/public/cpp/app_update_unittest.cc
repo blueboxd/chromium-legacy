@@ -69,6 +69,9 @@ class AppUpdateTest : public testing::Test {
   apps::mojom::OptionalBool expect_show_in_management_;
   bool expect_show_in_management_changed_;
 
+  apps::mojom::OptionalBool expect_paused_;
+  bool expect_paused_changed_;
+
   std::vector<apps::mojom::IntentFilterPtr> expect_intent_filters_;
   bool expect_intent_filters_changed_;
 
@@ -103,6 +106,7 @@ class AppUpdateTest : public testing::Test {
     expect_show_in_launcher_changed_ = false;
     expect_show_in_search_changed_ = false;
     expect_show_in_management_changed_ = false;
+    expect_paused_changed_ = false;
     expect_intent_filters_changed_ = false;
   }
 
@@ -162,6 +166,9 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_show_in_management_, u.ShowInManagement());
     EXPECT_EQ(expect_show_in_management_changed_, u.ShowInManagementChanged());
 
+    EXPECT_EQ(expect_paused_, u.Paused());
+    EXPECT_EQ(expect_paused_changed_, u.PausedChanged());
+
     EXPECT_EQ(expect_intent_filters_, u.IntentFilters());
     EXPECT_EQ(expect_intent_filters_changed_, u.IntentFiltersChanged());
   }
@@ -191,6 +198,7 @@ class AppUpdateTest : public testing::Test {
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_management_ = apps::mojom::OptionalBool::kUnknown;
+    expect_paused_ = apps::mojom::OptionalBool::kUnknown;
     expect_intent_filters_.clear();
     ExpectNoChange();
     CheckExpects(u);
@@ -564,6 +572,28 @@ class AppUpdateTest : public testing::Test {
       delta->show_in_management = apps::mojom::OptionalBool::kTrue;
       expect_show_in_management_ = apps::mojom::OptionalBool::kTrue;
       expect_show_in_management_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // Pause tests.
+
+    if (state) {
+      state->paused = apps::mojom::OptionalBool::kFalse;
+      expect_paused_ = apps::mojom::OptionalBool::kFalse;
+      expect_paused_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->paused = apps::mojom::OptionalBool::kTrue;
+      expect_paused_ = apps::mojom::OptionalBool::kTrue;
+      expect_paused_changed_ = true;
       CheckExpects(u);
     }
 

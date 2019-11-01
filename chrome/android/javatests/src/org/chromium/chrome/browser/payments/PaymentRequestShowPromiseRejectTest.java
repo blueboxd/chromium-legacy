@@ -43,7 +43,7 @@ public class PaymentRequestShowPromiseRejectTest implements MainActivityStartCal
     public void testReject() throws TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
-        mRule.openPageAndClickNodeAndWait("buy", mRule.getDismissed());
+        mRule.openPageAndClickNodeAndWait("buy", mRule.getRendererClosedMojoConnection());
         mRule.expectResultContains(new String[] {"AbortError"});
     }
 }

@@ -37,12 +37,15 @@
 
 namespace blink {
 
+const V8PrivateProperty::SymbolKey kPrivatePropertyState;
+
 // Save the state value to a hidden attribute in the V8PopStateEvent, and return
 // it, for convenience.
 static v8::Local<v8::Value> CacheState(ScriptState* script_state,
                                        v8::Local<v8::Object> pop_state_event,
                                        v8::Local<v8::Value> state) {
-  V8PrivateProperty::GetPopStateEventState(script_state->GetIsolate())
+  V8PrivateProperty::GetSymbol(script_state->GetIsolate(),
+                               kPrivatePropertyState)
       .Set(pop_state_event, state);
   return state;
 }
@@ -52,7 +55,7 @@ void V8PopStateEvent::StateAttributeGetterCustom(
   v8::Isolate* isolate = info.GetIsolate();
   ScriptState* script_state = ScriptState::Current(isolate);
   V8PrivateProperty::Symbol property_symbol =
-      V8PrivateProperty::GetPopStateEventState(isolate);
+      V8PrivateProperty::GetSymbol(isolate, kPrivatePropertyState);
   v8::Local<v8::Value> result;
 
   if (property_symbol.GetOrUndefined(info.Holder()).ToLocal(&result) &&

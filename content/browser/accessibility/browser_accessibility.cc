@@ -1275,8 +1275,10 @@ bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
   if (!focus_object)
     return false;
 
-  // Selection or caret will be visible in a focused editable area.
-  if (HasState(ax::mojom::State::kEditable)) {
+  // Selection or caret will be visible in a focused editable area, or if caret
+  // browsing is enabled.
+  if (HasState(ax::mojom::State::kEditable) ||
+      BrowserAccessibilityStateImpl::GetInstance()->IsCaretBrowsingEnabled()) {
     return IsPlainTextField() ? focus_object == this
                               : focus_object->IsDescendantOf(this);
   }

@@ -15,6 +15,9 @@ import static org.hamcrest.Matchers.not;
 
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.test.InstrumentationRegistry;
@@ -30,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayImage;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
@@ -70,8 +74,13 @@ public class AutofillAssistantOverlayUiTest {
     /** Creates a coordinator for use in UI tests. */
     private AssistantOverlayCoordinator createCoordinator(AssistantOverlayModel model)
             throws ExecutionException {
+        Bitmap testImage = BitmapFactory.decodeResource(mTestRule.getActivity().getResources(),
+                org.chromium.chrome.autofill_assistant.R.drawable.btn_close);
+
         return runOnUiThreadBlocking(
-                () -> new AssistantOverlayCoordinator(mTestRule.getActivity(), model));
+                ()
+                        -> new AssistantOverlayCoordinator(mTestRule.getActivity(), model,
+                                new AutofillAssistantUiTestUtil.MockImageFetcher(testImage, null)));
     }
 
     /** Tests assumptions about the initial state of the infobox. */
@@ -104,6 +113,25 @@ public class AutofillAssistantOverlayUiTest {
         assertScrimDisplayed(false);
         tapElement("touch_area_one");
         assertThat(checkElementExists("touch_area_one"), is(false));
+    }
+
+    /** Tests assumptions about the full overlay. */
+    @Test
+    @MediumTest
+    public void testFullOverlayWithImage() throws Exception {
+        AssistantOverlayModel model = new AssistantOverlayModel();
+        AssistantOverlayCoordinator coordinator = createCoordinator(model);
+
+        AssistantOverlayImage image = new AssistantOverlayImage("http://localhost/example.png",
+                AssistantDimension.createFromDpi(24), AssistantDimension.createFromDpi(24),
+                AssistantDimension.createFromDpi(20), "example.com", Color.parseColor("#B3FFFFFF"),
+                AssistantDimension.createFromDpi(14));
+        runOnUiThreadBlocking(() -> {
+            model.set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
+            model.set(AssistantOverlayModel.OVERLAY_IMAGE, image);
+        });
+        assertScrimDisplayed(true);
+        // TODO(b/143452916): Test that the overlay image is actually being displayed.
     }
 
     /** Tests assumptions about the partial overlay. */

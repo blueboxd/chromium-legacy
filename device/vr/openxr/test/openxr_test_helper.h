@@ -56,6 +56,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrActionSet CreateActionSet(const XrActionSetCreateInfo& createInfo);
   XrSpace CreateActionSpace(XrAction);
   XrPath GetPath(const char* path_string);
+  XrPath GetCurrentInteractionProfile();
 
   XrResult GetSession(XrSession* session);
   XrResult BeginSession();
@@ -75,9 +76,8 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   uint32_t NextSwapchainImageIndex();
   XrTime NextPredictedDisplayTime();
 
-  bool UpdateSessionStateEventQueue();
-  bool HasPendingSessionStateEvent();
-  XrEventDataSessionStateChanged GetNextSessionStateEvent();
+  void UpdateEventQueue();
+  XrResult PollEvent(XrEventDataBuffer* event_data);
 
   // Methods that validate the parameter with the current state of the runtime.
   XrResult ValidateAction(XrAction action) const;
@@ -169,9 +169,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
 
   std::array<device::ControllerFrameData, device::kMaxTrackedDevices> data_arr_;
 
-  // session_state_event_queue_ is used to store XrEventDataSessionStateChanged
-  // event whenever session state changes.
-  std::queue<XrEventDataSessionStateChanged> session_state_event_queue_;
+  std::queue<XrEventDataBuffer> event_queue_;
 
   device::VRTestHook* test_hook_ GUARDED_BY(lock_) = nullptr;
   base::Lock lock_;

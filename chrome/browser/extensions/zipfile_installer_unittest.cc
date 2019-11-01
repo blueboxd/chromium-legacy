@@ -29,10 +29,7 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "services/data_decoder/data_decoder_service.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -98,12 +95,7 @@ struct UnzipFileFilterTestCase {
 class ZipFileInstallerTest : public testing::Test {
  public:
   ZipFileInstallerTest()
-      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
-        data_decoder_(test_connector_factory_.RegisterInstance(
-            data_decoder::mojom::kServiceName)),
-        connector_(test_connector_factory_.CreateConnector()) {
-    test_connector_factory_.set_ignore_quit_requests(true);
-  }
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     extensions::LoadErrorReporter::Init(/*enable_noisy_errors=*/false);
@@ -142,7 +134,6 @@ class ZipFileInstallerTest : public testing::Test {
                         .AppendASCII(zip_name);
     ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
     zipfile_installer_ = ZipFileInstaller::Create(
-        connector_.get(),
         MakeRegisterInExtensionServiceCallback(extension_service_));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -180,9 +171,7 @@ class ZipFileInstallerTest : public testing::Test {
 #endif
 
  private:
-  service_manager::TestConnectorFactory test_connector_factory_;
-  data_decoder::DataDecoderService data_decoder_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 };
 
 TEST_F(ZipFileInstallerTest, GoodZip) {

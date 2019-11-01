@@ -17,7 +17,7 @@ interface VideoSourceProvider {
   // This essentially constrains things down to a particular source. This is
   // useful for subsequently passing the resulting |stream| to clients that
   // are supposed to get access to only a particular source.
-  GetVideoSource(string source_id, VideoSource& stream);
+  GetVideoSource(string source_id, pending_receiver<VideoSource> stream);
 
   // Creates a new virtual capture device, which will be exposed
   // using the given |device_info|. The returned |virtual_device| is to

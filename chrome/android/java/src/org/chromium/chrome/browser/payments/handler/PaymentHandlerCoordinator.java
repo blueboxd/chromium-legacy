@@ -56,7 +56,7 @@ public class PaymentHandlerCoordinator {
         PaymentHandlerMediator mediator =
                 new PaymentHandlerMediator(model, this::hide, webContents);
         BottomSheetController bottomSheetController = activity.getBottomSheetController();
-        bottomSheetController.getBottomSheet().addObserver(mediator);
+        bottomSheetController.addObserver(mediator);
         webContents.addObserver(mediator);
 
         PaymentHandlerView view = new PaymentHandlerView(
@@ -65,7 +65,7 @@ public class PaymentHandlerCoordinator {
                 PropertyModelChangeProcessor.create(model, view, PaymentHandlerViewBinder::bind);
         mHider = () -> {
             changeProcessor.destroy();
-            bottomSheetController.getBottomSheet().removeObserver(mediator);
+            bottomSheetController.removeObserver(mediator);
             bottomSheetController.hideContent(/*content=*/view, /*animate=*/true);
             webContents.destroy();
         };

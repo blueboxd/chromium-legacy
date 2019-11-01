@@ -165,15 +165,19 @@ Polymer({
     this.$['overlay-additional-info-text'].innerHTML =
         this.sanitizer_.sanitizeHtml(additionalInfo);
 
-    var overlay = this.$['learn-more-overlay'];
-    overlay.hidden = false;
+    this.$['learn-more-overlay'].showModal();
+    this.$['overlay-close-button'].focus();
   },
 
   /**
    * Hides overlay dialog.
    */
   hideOverlay: function() {
-    this.$['learn-more-overlay'].hidden = true;
+    this.$['learn-more-overlay'].close();
+    if (this.lastFocusedElement) {
+      this.lastFocusedElement.focus();
+      this.lastFocusedElement = null;
+    }
   },
 
   /**
@@ -305,9 +309,10 @@ Polymer({
       learnMoreLink.className = 'learn-more-link';
       learnMoreLink.textContent = data['popupLink'];
       learnMoreLink.setAttribute('href', 'javascript:void(0)');
-      learnMoreLink.onclick = function(title, additionalInfo) {
+      learnMoreLink.onclick = function(title, additionalInfo, focus) {
+        this.lastFocusedElement = focus;
         this.showLearnMoreOverlay(title, additionalInfo);
-      }.bind(this, data['title'], data['additionalInfo']);
+      }.bind(this, data['title'], data['additionalInfo'], learnMoreLink);
 
       description.appendChild(learnMoreLink);
       zippy.appendChild(description);

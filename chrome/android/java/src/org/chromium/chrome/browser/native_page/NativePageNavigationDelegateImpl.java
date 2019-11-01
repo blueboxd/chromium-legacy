@@ -90,7 +90,7 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
         // all tabs opened in the background.
         // TODO(twellington): Replace this with an animation.
         if (mActivity.getBottomSheet() != null
-                && mActivity.getBottomSheet().getSheetState()
+                && mActivity.getBottomSheetController().getSheetState()
                         == BottomSheetController.SheetState.FULL
                 && DeviceClassManager.enableAnimations()) {
             Toast.makeText(mActivity, R.string.open_in_new_tab_toast, Toast.LENGTH_SHORT).show();

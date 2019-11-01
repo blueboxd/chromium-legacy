@@ -16,36 +16,19 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 
+using gfx::CocoaScrollbarPainter;
+
 namespace views {
 
 namespace {
 
-// The thickness of the normal and expanded scrollbars.
-constexpr int kScrollbarThickness = 12;
-constexpr int kExpandedScrollbarThickness = 16;
-
-// The width of the scroller track border.
-constexpr int kScrollerTrackBorderWidth = 1;
-
-// The amount the thumb is inset from the ends and the inside edge of track
-// border.
-constexpr int kScrollbarThumbInset = 2;
-
-// Scrollbar thumb colors.
-constexpr SkColor kScrollerDefaultThumbColor = SkColorSetARGB(0x38, 0, 0, 0);
-constexpr SkColor kScrollerHoverThumbColor = SkColorSetARGB(0x80, 0, 0, 0);
+// The thickness of the normal, overlay, and expanded overlay scrollbars.
+constexpr int kScrollbarThickness = 15;
+constexpr int kOverlayScrollbarThickness = 12;
+constexpr int kExpandedOverlayScrollbarThickness = 16;
 
 // Opacity of the overlay scrollbar.
 constexpr float kOverlayOpacity = 0.8f;
-
-// Scroller track colors.
-constexpr SkColor kScrollerTrackGradientColors[] = {
-    SkColorSetRGB(0xEF, 0xEF, 0xEF), SkColorSetRGB(0xF9, 0xF9, 0xF9),
-    SkColorSetRGB(0xFD, 0xFD, 0xFD), SkColorSetRGB(0xF6, 0xF6, 0xF6)};
-constexpr SkColor kScrollerTrackInnerBorderColor =
-    SkColorSetRGB(0xE4, 0xE4, 0xE4);
-constexpr SkColor kScrollerTrackOuterBorderColor =
-    SkColorSetRGB(0xEF, 0xEF, 0xEF);
 
 }  // namespace
 
@@ -116,27 +99,10 @@ gfx::Size CocoaScrollBarThumb::CalculatePreferredSize() const {
 }
 
 void CocoaScrollBarThumb::OnPaint(gfx::Canvas* canvas) {
-  SkColor thumb_color = kScrollerDefaultThumbColor;
-  if (cocoa_scroll_bar_->GetScrollerStyle() == NSScrollerStyleOverlay ||
-      IsStateHovered() || IsStatePressed()) {
-    thumb_color = kScrollerHoverThumbColor;
-  }
-
-  gfx::Rect bounds(GetLocalBounds());
-  bounds.Inset(kScrollbarThumbInset, kScrollbarThumbInset);
-  if (IsHorizontal())
-    bounds.Inset(0, kScrollerTrackBorderWidth, 0, 0);
-  else if (base::i18n::IsRTL())
-    bounds.Inset(0, 0, kScrollerTrackBorderWidth, 0);
-  else
-    bounds.Inset(kScrollerTrackBorderWidth, 0, 0, 0);
-
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(thumb_color);
-  const SkScalar radius = std::min(bounds.width(), bounds.height());
-  canvas->DrawRoundRect(bounds, radius, flags);
+  auto params = cocoa_scroll_bar_->GetPainterParams();
+  // Set the hover state based only on the thumb.
+  params.hovered = IsStateHovered() || IsStatePressed();
+  CocoaScrollbarPainter::PaintThumb(canvas, GetLocalBounds(), params);
 }
 
 bool CocoaScrollBarThumb::OnMousePressed(const ui::MouseEvent& event) {
@@ -239,42 +205,11 @@ gfx::Size CocoaScrollBar::CalculatePreferredSize() const {
 void CocoaScrollBar::OnPaint(gfx::Canvas* canvas) {
   if (!has_scrolltrack_)
     return;
-
-  // Paint the scrollbar track background.
-  gfx::Rect track_rect = GetLocalBounds();
-
-  SkPoint gradient_bounds[2];
-  if (IsHorizontal()) {
-    gradient_bounds[0].set(track_rect.x(), track_rect.y());
-    gradient_bounds[1].set(track_rect.x(), track_rect.bottom());
-  } else {
-    gradient_bounds[0].set(track_rect.x(), track_rect.y());
-    gradient_bounds[1].set(track_rect.right(), track_rect.y());
-  }
-  cc::PaintFlags gradient;
-  gradient.setShader(cc::PaintShader::MakeLinearGradient(
-      gradient_bounds, kScrollerTrackGradientColors, nullptr,
-      base::size(kScrollerTrackGradientColors), SkTileMode::kClamp));
-  canvas->DrawRect(track_rect, gradient);
-
-  // Draw the inner border: top if horizontal, left if vertical.
-  cc::PaintFlags flags;
-  flags.setColor(kScrollerTrackInnerBorderColor);
-  gfx::Rect inner_border(track_rect);
-  if (IsHorizontal())
-    inner_border.set_height(kScrollerTrackBorderWidth);
-  else
-    inner_border.set_width(kScrollerTrackBorderWidth);
-  canvas->DrawRect(inner_border, flags);
-
-  // Draw the outer border: bottom if horizontal, right if veritcal.
-  flags.setColor(kScrollerTrackOuterBorderColor);
-  gfx::Rect outer_border(inner_border);
-  if (IsHorizontal())
-    outer_border.set_y(track_rect.bottom());
-  else
-    outer_border.set_x(track_rect.right());
-  canvas->DrawRect(outer_border, flags);
+  auto params = GetPainterParams();
+  // Transparency of the track is handled by the View opacity, so always draw
+  // using the non-overlay path.
+  params.overlay = false;
+  CocoaScrollbarPainter::PaintTrack(canvas, GetLocalBounds(), params);
 }
 
 bool CocoaScrollBar::OnMousePressed(const ui::MouseEvent& event) {
@@ -449,12 +384,25 @@ int CocoaScrollBar::ScrollbarThickness() const {
   if (scroller_style_ == NSScrollerStyleLegacy)
     return kScrollbarThickness;
 
-  return thickness_animation_.CurrentValueBetween(kScrollbarThickness,
-                                                  kExpandedScrollbarThickness);
+  return thickness_animation_.CurrentValueBetween(
+      kOverlayScrollbarThickness, kExpandedOverlayScrollbarThickness);
 }
 
 bool CocoaScrollBar::IsScrollbarFullyHidden() const {
   return layer()->opacity() == 0.0f;
+}
+
+CocoaScrollbarPainter::Params CocoaScrollBar::GetPainterParams() const {
+  CocoaScrollbarPainter::Params params;
+  if (IsHorizontal())
+    params.orientation = CocoaScrollbarPainter::Orientation::kHorizontal;
+  else if (base::i18n::IsRTL())
+    params.orientation = CocoaScrollbarPainter::Orientation::kVerticalOnLeft;
+  else
+    params.orientation = CocoaScrollbarPainter::Orientation::kVerticalOnRight;
+  params.overlay = GetScrollerStyle() == NSScrollerStyleOverlay;
+  params.dark_mode = GetNativeTheme()->ShouldUseDarkColors();
+  return params;
 }
 
 //////////////////////////////////////////////////////////////////

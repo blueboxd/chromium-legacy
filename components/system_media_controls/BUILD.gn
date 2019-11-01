@@ -1,0 +1,48 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("system_media_controls") {
+  public = [
+    "system_media_controls.h",
+    "system_media_controls_observer.h",
+  ]
+
+  defines = [ "IS_SYSTEM_MEDIA_CONTROLS_IMPL" ]
+
+  deps = [
+    "//base",
+    "//ui/gfx",
+  ]
+
+  public_deps = [
+    "//skia",
+  ]
+
+  # TODO(https://crbug.com/949596): Move MPRIS and Now Playing here.
+  if (is_win) {
+    sources = [
+      "win/system_media_controls_win.cc",
+      "win/system_media_controls_win.h",
+    ]
+  } else {
+    sources = [
+      "system_media_controls_stub.cc",
+    ]
+  }
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_system_media_controls.cc",
+    "mock_system_media_controls.h",
+  ]
+
+  deps = [
+    ":system_media_controls",
+    "//base",
+    "//testing/gmock",
+  ]
+}

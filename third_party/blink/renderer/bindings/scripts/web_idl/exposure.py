@@ -36,7 +36,7 @@ class Exposure(object):
             self._global_names_and_features = tuple()
             self._runtime_enabled_features = tuple()
             self._context_enabled_features = tuple()
-            self._only_in_secure_contexts = False
+            self._only_in_secure_contexts = None
 
     @property
     def global_names_and_features(self):
@@ -50,7 +50,7 @@ class Exposure(object):
     def runtime_enabled_features(self):
         """
         Returns a list of runtime enabled features.  This construct is exposed
-        only when these features are enabled.
+        only when one of these features is enabled.
         """
         return self._runtime_enabled_features
 
@@ -58,7 +58,7 @@ class Exposure(object):
     def context_enabled_features(self):
         """
         Returns a list of context enabled features.  This construct is exposed
-        only when these features are enabled in the context.
+        only when one of these features is enabled in the context.
         """
         return self._context_enabled_features
 
@@ -66,11 +66,14 @@ class Exposure(object):
     def only_in_secure_contexts(self):
         """
         Returns whether this construct is available only in secure contexts or
-        not.  The returned value will be either of a boolean (always true or
-        false) or a flag name (only when the flag is enabled).
+        not.  The returned value is either of a boolean (True: unconditionally
+        restricted in secure contexts, or False: never restricted) or a list of
+        flag names (restricted only when all flags are enabled).
 
         https://heycam.github.io/webidl/#dfn-available-only-in-secure-contexts
         """
+        if self._only_in_secure_contexts is None:
+            return False
         return self._only_in_secure_contexts
 
 
@@ -81,7 +84,7 @@ class ExposureMutable(Exposure):
         self._global_names_and_features = []
         self._runtime_enabled_features = []
         self._context_enabled_features = []
-        self._only_in_secure_contexts = False
+        self._only_in_secure_contexts = None
 
     def __getstate__(self):
         assert False, "ExposureMutable must not be pickled."
@@ -102,6 +105,13 @@ class ExposureMutable(Exposure):
         self._context_enabled_features.append(name)
 
     def set_only_in_secure_contexts(self, value):
-        assert isinstance(value, (bool, str))
-        assert self._only_in_secure_contexts is False and value is not False
-        self._only_in_secure_contexts = value
+        assert (isinstance(value, (bool, str))
+                or (isinstance(value, (list, tuple))
+                    and all(isinstance(name, str) for name in value)))
+        assert self._only_in_secure_contexts is None
+        if isinstance(value, bool):
+            self._only_in_secure_contexts = value
+        elif isinstance(value, str):
+            self._only_in_secure_contexts = (value, )
+        else:
+            self._only_in_secure_contexts = tuple(value)

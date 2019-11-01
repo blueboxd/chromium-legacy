@@ -33,7 +33,7 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//skia",
-    "//third_party/libxml:xml_reader",
+    "//third_party/libxml",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -119,8 +119,7 @@ fuzzer_test("xml_parser_fuzzer") {
   deps = [
     ":lib",
     "//base",
-    "//third_party/libxml:libxml_utils",
-    "//third_party/libxml:xml_reader",
+    "//third_party/libxml:libxml",
   ]
   dict = "//third_party/libxml/fuzz/xml.dict"
   seed_corpus = "//third_party/libxml/fuzz/seed_corpus"

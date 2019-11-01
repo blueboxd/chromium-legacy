@@ -118,6 +118,6 @@ public class TouchToFillIntegrationTest {
 
     private @SheetState int getBottomSheetState() {
         pollUiThread(() -> mActivityTestRule.getActivity().getBottomSheet() != null);
-        return mActivityTestRule.getActivity().getBottomSheet().getSheetState();
+        return mActivityTestRule.getActivity().getBottomSheetController().getSheetState();
     }
 }

@@ -102,12 +102,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Returns whether the specified dialog button is enabled.
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const;
 
-  // Override this function to display an extra view adjacent to the buttons.
-  // Overrides may construct the view; this will only be called once per dialog.
-  // DEPRECATED: Prefer to use SetExtraView() below; this method is being
-  // removed. See https://crbug.com/1011446.
-  virtual std::unique_ptr<View> CreateExtraView();
-
   // Override this function to display a footnote view below the buttons.
   // Overrides may construct the view; this will only be called once per dialog.
   virtual std::unique_ptr<View> CreateFootnoteView();
@@ -183,6 +177,39 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   void set_button_label(ui::DialogButton button, base::string16 label) {
     params_.button_labels[button] = label;
   }
+
+  // Returns ownership of the extra view for this dialog, if one was provided
+  // via SetExtraView(). This is only for use by DialogClientView; don't call
+  // it.
+  // It would be good to instead have a DialogClientView::SetExtraView method
+  // that passes ownership into DialogClientView once. Unfortunately doing this
+  // broke a bunch of tests in a subtle way: the obvious place to call
+  // DCV::SetExtraView was from DD::OnWidgetInitialized.  DCV::SetExtraView
+  // would then add the new view to DCV, which would invalidate its layout.
+  // However, many tests were doing essentially this:
+  //
+  //   TestDialogDelegate delegate;
+  //   ShowBubble(&delegate);
+  //   TryToUseExtraView();
+  //
+  // and then trying to use the extra view's bounds, most commonly by
+  // synthesizing mouse clicks on it. At this point the extra view's layout is
+  // invalid *but* it has not yet been laid out, because View::InvalidateLayout
+  // schedules a deferred re-layout later. The design where DCV pulls the extra
+  // view from DD doesn't have this issue: during the initial construction of
+  // DCV, DCV fetches the extra view and slots it into its layout, and then the
+  // initial layout pass in Widget::Init causes the extra view to get laid out.
+  // Deferring inserting the extra view until after Widget::Init has finished is
+  // what causes the extra view to not be laid out (and hence the tests to
+  // fail).
+  //
+  // Potential future fixes:
+  // 1) The tests could manually force a re-layout here, or
+  // 2) The tests could be rewritten to not depend on the extra view's
+  //    bounds, by not trying to deliver mouse events to it somehow, or
+  // 3) DCV::SetupLayout could always force an explicit Layout, ignoring the
+  //    lazy layout system in View::InvalidateLayout
+  std::unique_ptr<View> DisownExtraView();
 
  protected:
   ~DialogDelegate() override;

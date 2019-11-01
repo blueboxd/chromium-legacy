@@ -9,10 +9,11 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/broadcasting_receiver.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
@@ -31,7 +32,7 @@ class VideoSourceImpl : public mojom::VideoSource {
                   base::RepeatingClosure on_last_binding_closed_cb);
   ~VideoSourceImpl() override;
 
-  void AddToBindingSet(mojom::VideoSourceRequest request);
+  void AddToReceiverSet(mojo::PendingReceiver<VideoSource> receiver);
 
   // mojom::VideoSource implementation.
   void CreatePushSubscription(
@@ -61,7 +62,7 @@ class VideoSourceImpl : public mojom::VideoSource {
 
   mojom::DeviceFactory* const device_factory_;
   const std::string device_id_;
-  mojo::BindingSet<mojom::VideoSource> bindings_;
+  mojo::ReceiverSet<mojom::VideoSource> receivers_;
   base::RepeatingClosure on_last_binding_closed_cb_;
 
   // We use the address of each instance as keys to itself.

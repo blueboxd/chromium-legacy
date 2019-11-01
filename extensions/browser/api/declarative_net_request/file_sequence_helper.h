@@ -17,10 +17,6 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/common/extension_id.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace extensions {
 
 namespace api {
@@ -136,8 +132,6 @@ class FileSequenceHelper {
   // Callback invoked when the JSON rulesets are reindexed.
   void OnRulesetsReindexed(LoadRulesetsUICallback ui_callback,
                            LoadRequestData load_data) const;
-
-  const std::unique_ptr<service_manager::Connector> connector_;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details. Mutable to allow GetWeakPtr() usage from const methods.

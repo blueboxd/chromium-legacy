@@ -5,6 +5,7 @@
 #ifndef NET_DNS_ADDRESS_INFO_H_
 #define NET_DNS_ADDRESS_INFO_H_
 
+#include <memory>
 #include <string>
 #include <tuple>
 

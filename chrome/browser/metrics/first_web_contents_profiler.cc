@@ -52,33 +52,17 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
 
   // content::WebContentsObserver:
   void DidFirstVisuallyNonEmptyPaint() override;
-  void DocumentOnLoadCompletedInMainFrame() override;
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
-  // Whether this instance has finished collecting first-paint and main-frame-
-  // load metrics (navigation metrics are recorded on a best effort but don't
-  // prevent the FirstWebContentsProfiler from calling it).
-  bool IsFinishedCollectingMetrics();
-
   // Logs |finish_reason| to UMA and deletes this FirstWebContentsProfiler.
   void FinishedCollectingMetrics(FinishReason finish_reason);
 
-  // Whether an attempt was made to collect the "NonEmptyPaint" metric.
-  bool collected_paint_metric_;
-
-  // Whether an attempt was made to collect the "MainFrameLoad" metric.
-  bool collected_load_metric_;
-
-  // Whether an attempt was made to collect the "MainNavigationStart" metric.
-  bool collected_main_navigation_start_metric_;
-
-  // Whether an attempt was made to collect the "MainNavigationFinished" metric.
-  bool collected_main_navigation_finished_metric_;
+  // Whether an attempt was made to collect the "MainNavigationStart/Finished"
+  // metrics.
+  bool collected_main_navigation_metrics_;
 
   const startup_metric_utils::WebContentsWorkload workload_;
 
@@ -89,66 +73,38 @@ FirstWebContentsProfiler::FirstWebContentsProfiler(
     content::WebContents* web_contents,
     startup_metric_utils::WebContentsWorkload workload)
     : content::WebContentsObserver(web_contents),
-      collected_paint_metric_(false),
-      collected_load_metric_(false),
-      collected_main_navigation_start_metric_(false),
-      collected_main_navigation_finished_metric_(false),
+      collected_main_navigation_metrics_(false),
       workload_(workload) {}
 
 void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
-  if (collected_paint_metric_)
-    return;
   if (startup_metric_utils::WasMainWindowStartupInterrupted()) {
     FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
     return;
   }
 
-  collected_paint_metric_ = true;
   startup_metric_utils::RecordFirstWebContentsNonEmptyPaint(
       base::TimeTicks::Now(), web_contents()
                                   ->GetMainFrame()
                                   ->GetProcess()
                                   ->GetInitTimeForNavigationMetrics());
 
-  if (IsFinishedCollectingMetrics())
-    FinishedCollectingMetrics(FinishReason::DONE);
-}
-
-void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
-  if (collected_load_metric_)
-    return;
-  if (startup_metric_utils::WasMainWindowStartupInterrupted()) {
-    FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
-    return;
-  }
-
-  collected_load_metric_ = true;
-  startup_metric_utils::RecordFirstWebContentsMainFrameLoad(
-      base::TimeTicks::Now());
-
-  if (IsFinishedCollectingMetrics())
-    FinishedCollectingMetrics(FinishReason::DONE);
-}
-
-void FirstWebContentsProfiler::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (collected_main_navigation_start_metric_)
-    return;
-  if (startup_metric_utils::WasMainWindowStartupInterrupted()) {
-    FinishedCollectingMetrics(FinishReason::ABANDON_BLOCKING_UI);
-    return;
-  }
+  FinishedCollectingMetrics(FinishReason::DONE);
 }
 
 void FirstWebContentsProfiler::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (collected_main_navigation_finished_metric_) {
+  if (collected_main_navigation_metrics_) {
     // Abandon profiling on a top-level navigation to a different page as it:
     //   (1) is no longer a fair timing; and
     //   (2) can cause http://crbug.com/525209 where one of the timing
     //       heuristics (e.g. first paint) didn't fire for the initial content
     //       but fires after a lot of idle time when the user finally navigates
     //       to another page that does trigger it.
+    //
+    // TODO(https://crbug.com/1020549): Determine whether
+    // Startup.FirstWebContents.NonEmptyPaint2 can be recorded for a non-initial
+    // navigation if there are multiple DidStartNavigation() before the first
+    // paint.
     if (navigation_handle->IsInMainFrame() &&
         navigation_handle->HasCommitted() &&
         !navigation_handle->IsSameDocument()) {
@@ -173,11 +129,9 @@ void FirstWebContentsProfiler::DidFinishNavigation(
 
   startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
       navigation_handle->NavigationStart(), workload_);
-  collected_main_navigation_start_metric_ = true;
-
-  collected_main_navigation_finished_metric_ = true;
   startup_metric_utils::RecordFirstWebContentsMainNavigationFinished(
       base::TimeTicks::Now());
+  collected_main_navigation_metrics_ = true;
 }
 
 void FirstWebContentsProfiler::OnVisibilityChanged(
@@ -193,23 +147,10 @@ void FirstWebContentsProfiler::WebContentsDestroyed() {
   FinishedCollectingMetrics(FinishReason::ABANDON_CONTENT_DESTROYED);
 }
 
-bool FirstWebContentsProfiler::IsFinishedCollectingMetrics() {
-  return collected_paint_metric_ && collected_load_metric_;
-}
-
 void FirstWebContentsProfiler::FinishedCollectingMetrics(
     FinishReason finish_reason) {
   UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason",
                             finish_reason, FinishReason::ENUM_MAX);
-  if (!collected_paint_metric_) {
-    UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoPaint",
-                              finish_reason, FinishReason::ENUM_MAX);
-  }
-  if (!collected_load_metric_) {
-    UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason_NoLoad",
-                              finish_reason, FinishReason::ENUM_MAX);
-  }
-
   delete this;
 }
 

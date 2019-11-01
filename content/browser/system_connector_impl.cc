@@ -34,7 +34,7 @@ void BindReceiverOnMainThread(
       << "Connector set on the main thread. If this is a unit test "
       << "environment, consider calling SetSystemConnectorForTesting in test "
          "setup.";
-  main_thread_connector->BindConnectorRequest(std::move(receiver));
+  main_thread_connector->BindConnectorReceiver(std::move(receiver));
 }
 
 }  // namespace
@@ -63,7 +63,7 @@ void SetSystemConnector(std::unique_ptr<service_manager::Connector> connector) {
     return;
   }
   mojo::PendingRemote<service_manager::mojom::Connector> remote;
-  connector->BindConnectorRequest(remote.InitWithNewPipeAndPassReceiver());
+  connector->BindConnectorReceiver(remote.InitWithNewPipeAndPassReceiver());
   GetConnectorStorage().emplace(std::move(remote));
 }
 

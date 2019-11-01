@@ -168,6 +168,12 @@ void CrostiniApps::OpenNativeSettings(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
 
+void CrostiniApps::OnPreferredAppSet(const std::string& app_id,
+                                     apps::mojom::IntentFilterPtr intent_filter,
+                                     apps::mojom::IntentPtr intent) {
+  NOTIMPLEMENTED();
+}
+
 void CrostiniApps::OnRegistryUpdated(
     crostini::CrostiniRegistryService* registry_service,
     const std::vector<std::string>& updated_apps,
@@ -292,6 +298,8 @@ apps::mojom::AppPtr CrostiniApps::Convert(
   // TODO(crbug.com/955937): Enable once Crostini apps are managed inside App
   // Management.
   app->show_in_management = apps::mojom::OptionalBool::kFalse;
+
+  app->paused = apps::mojom::OptionalBool::kFalse;
 
   return app;
 }

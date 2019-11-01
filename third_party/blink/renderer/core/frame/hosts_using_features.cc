@@ -150,15 +150,6 @@ void HostsUsingFeatures::Value::Aggregate(HostsUsingFeatures::Value other) {
 }
 
 void HostsUsingFeatures::Value::RecordHostToRappor(const String& host) {
-  if (Get(Feature::kElementCreateShadowRoot))
-    Platform::Current()->RecordRappor("WebComponents.ElementCreateShadowRoot",
-                                      host);
-  if (Get(Feature::kElementAttachShadow))
-    Platform::Current()->RecordRappor("WebComponents.ElementAttachShadow",
-                                      host);
-  if (Get(Feature::kDocumentRegisterElement))
-    Platform::Current()->RecordRappor("WebComponents.DocumentRegisterElement",
-                                      host);
   if (Get(Feature::kEventPath))
     Platform::Current()->RecordRappor("WebComponents.EventPath", host);
   if (Get(Feature::kDeviceMotionInsecureHost))

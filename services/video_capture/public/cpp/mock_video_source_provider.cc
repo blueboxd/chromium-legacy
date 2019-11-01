@@ -12,8 +12,8 @@ MockVideoSourceProvider::~MockVideoSourceProvider() = default;
 
 void MockVideoSourceProvider::GetVideoSource(
     const std::string& device_id,
-    video_capture::mojom::VideoSourceRequest source_request) {
-  DoGetVideoSource(device_id, &source_request);
+    mojo::PendingReceiver<video_capture::mojom::VideoSource> source_receiver) {
+  DoGetVideoSource(device_id, &source_receiver);
 }
 
 void MockVideoSourceProvider::GetSourceInfos(GetSourceInfosCallback callback) {

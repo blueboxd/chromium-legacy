@@ -168,12 +168,19 @@ class CONTENT_EXPORT ServiceWorkerVersion
     // OnControlleeAdded/Removed are called asynchronously. It is possible the
     // provider host identified by |client_uuid| was already destroyed when they
     // are called.
+    // Note regarding BackForwardCache integration:
+    // OnControlleeRemoved is called when a controllee enters back-forward
+    // cache, and OnControlleeAdded is called when a controllee is restored from
+    // back-forward cache.
     virtual void OnControlleeAdded(ServiceWorkerVersion* version,
                                    const std::string& client_uuid,
                                    const ServiceWorkerClientInfo& client_info) {
     }
     virtual void OnControlleeRemoved(ServiceWorkerVersion* version,
                                      const std::string& client_uuid) {}
+    // Called when all controllees are removed.
+    // Note regarding BackForwardCache integration:
+    // Clients in back-forward cache don't count as controllees.
     virtual void OnNoControllees(ServiceWorkerVersion* version) {}
     virtual void OnNoWork(ServiceWorkerVersion* version) {}
     virtual void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
@@ -358,11 +365,29 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void AddControllee(ServiceWorkerProviderHost* provider_host);
   void RemoveControllee(const std::string& client_uuid);
 
-  // Returns if it has controllee.
+  // Called when a controllee goes into back-forward cache.
+  void MoveControlleeToBackForwardCacheMap(const std::string& client_uuid);
+  // Called when a back-forward cached controllee is restored.
+  void RestoreControlleeFromBackForwardCacheMap(const std::string& client_uuid);
+  // Called when a back-forward cached controllee is evicted or destroyed.
+  void RemoveControlleeFromBackForwardCacheMap(const std::string& client_uuid);
+  // Called when a controllee is destroyed. Remove controllee from whichever
+  // map it belongs to, or do nothing when it is already removed.
+  void OnControlleeDestroyed(const std::string& client_uuid);
+
+  // Returns true if this version has a controllee.
+  // Note regarding BackForwardCache:
+  // Clients in back-forward cache don't count as controllees.
   bool HasControllee() const { return !controllee_map_.empty(); }
   std::map<std::string, ServiceWorkerProviderHost*> controllee_map() {
     return controllee_map_;
   }
+
+  // BackForwardCache:
+  // Evicts all the controllees from back-forward cache. The controllees in
+  // |bfcached_controllee_map_| will be removed asynchronously as a result of
+  // eviction.
+  void EvictBackForwardCachedControllees();
 
   // The provider host hosting this version. Only valid while the version is
   // running.
@@ -904,7 +929,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // running.
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
 
+  // |controllee_map_| and |bfcached_controllee_map_| should not share the same
+  // controllee.
   std::map<std::string, ServiceWorkerProviderHost*> controllee_map_;
+  std::map<std::string, ServiceWorkerProviderHost*> bfcached_controllee_map_;
+
   // Will be null while shutting down.
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::ObserverList<Observer>::Unchecked observers_;

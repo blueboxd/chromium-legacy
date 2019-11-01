@@ -52,6 +52,7 @@ function updatePageWithLastFetchProperties() {
     $('last-fetch-time').textContent = toDateString(properties.lastFetchTime);
     $('refresh-suppress-time').textContent =
         toDateString(properties.refreshSuppressTime);
+    $('last-fetch-bless-nonce').textContent = properties.lastBlessNonce;
   });
 }
 
@@ -148,6 +149,10 @@ function setupEventListeners() {
       $('feed-histograms-log').textContent = response.log;
       $('feed-histograms-details').open = true;
     });
+  });
+
+  $('feed-host-override-apply').addEventListener('click', function() {
+    pageHandler.overrideFeedHost($('feed-host-override').value);
   });
 }
 

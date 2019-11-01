@@ -39,8 +39,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 
@@ -69,15 +67,12 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
       // |caret_position| here.
       return PositionWithAffinityTemplate<Strategy>();
     }
-    DCHECK(caret_position.PaintFragment());
-    DCHECK(caret_position.PaintFragment()->ContainerLineBox());
-    const NGPaintFragment* line_box_paint =
-        caret_position.PaintFragment()->ContainerLineBox();
-    const NGPhysicalLineBoxFragment& line_box =
-        To<NGPhysicalLineBoxFragment>(line_box_paint->PhysicalFragment());
+    NGInlineCursor line_box = caret_position.cursor;
+    line_box.MoveToContainingLine();
+    DCHECK(line_box.IsLineBox()) << line_box;
     const PhysicalOffset start_point = line_box.LineStartPoint();
     return FromPositionInDOMTree<Strategy>(
-        line_box_paint->PositionForPoint(start_point));
+        line_box.PositionForPoint(start_point));
   }
 
   const InlineBox* inline_box =
@@ -255,15 +250,11 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
       // |caret_position| here.
       return PositionWithAffinityTemplate<Strategy>();
     }
-    DCHECK(caret_position.PaintFragment());
-    DCHECK(caret_position.PaintFragment()->ContainerLineBox());
-    const NGPaintFragment* line_box_paint =
-        caret_position.PaintFragment()->ContainerLineBox();
-    const NGPhysicalLineBoxFragment& line_box =
-        To<NGPhysicalLineBoxFragment>(line_box_paint->PhysicalFragment());
+    NGInlineCursor line_box = caret_position.cursor;
+    line_box.MoveToContainingLine();
     const PhysicalOffset end_point = line_box.LineEndPoint();
     return FromPositionInDOMTree<Strategy>(
-        line_box_paint->PositionForPoint(end_point));
+        line_box.PositionForPoint(end_point));
   }
 
   const InlineBox* inline_box =

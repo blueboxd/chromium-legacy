@@ -3839,6 +3839,23 @@
     },
   },
   {
+    'name': 'chromium.swangle',
+    'machines': {
+      'linux-swangle-tot-angle-x64' : {},
+      'linux-swangle-tot-angle-x86' : {},
+      'linux-swangle-tot-swiftshader-x64' : {},
+      'linux-swangle-tot-swiftshader-x86' : {},
+      'linux-swangle-x64' : {},
+      'linux-swangle-x86' : {},
+      'win-swangle-tot-angle-x64' : {},
+      'win-swangle-tot-angle-x86' : {},
+      'win-swangle-tot-swiftshader-x64' : {},
+      'win-swangle-tot-swiftshader-x86' : {},
+      'win-swangle-x64' : {},
+      'win-swangle-x86' : {},
+    },
+  },
+  {
     'name': 'chromium.swarm',
     'machines': {
       'Android N5 Swarm': {

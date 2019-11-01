@@ -198,10 +198,11 @@ void ScriptPromisePropertyBase::CheckWrappers() {
 
 V8PrivateProperty::Symbol ScriptPromisePropertyBase::PromiseSymbol() {
   switch (name_) {
-#define P(Interface, Name)                                     \
-  case Name:                                                   \
-    return V8PrivateProperty::V8_PRIVATE_PROPERTY_GETTER_NAME( \
-        Interface, Name##Promise)(isolate_);
+#define P(Interface, Name)                                                     \
+  case Name:                                                                   \
+    static const V8PrivateProperty::SymbolKey kPrivateProperty##Name##Promise; \
+    return V8PrivateProperty::GetSymbol(isolate_,                              \
+                                        kPrivateProperty##Name##Promise);
 
     SCRIPT_PROMISE_PROPERTIES(P)
 
@@ -213,10 +214,12 @@ V8PrivateProperty::Symbol ScriptPromisePropertyBase::PromiseSymbol() {
 
 V8PrivateProperty::Symbol ScriptPromisePropertyBase::ResolverSymbol() {
   switch (name_) {
-#define P(Interface, Name)                                     \
-  case Name:                                                   \
-    return V8PrivateProperty::V8_PRIVATE_PROPERTY_GETTER_NAME( \
-        Interface, Name##Resolver)(isolate_);
+#define P(Interface, Name)                        \
+  case Name:                                      \
+    static const V8PrivateProperty::SymbolKey     \
+        kPrivateProperty##Name##Resolver;         \
+    return V8PrivateProperty::GetSymbol(isolate_, \
+                                        kPrivateProperty##Name##Resolver);
 
     SCRIPT_PROMISE_PROPERTIES(P)
 

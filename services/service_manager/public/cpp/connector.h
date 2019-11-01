@@ -14,6 +14,7 @@
 #include "base/sequence_checker.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/export.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -64,13 +65,14 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
     Connector* connector_;
   };
 
-  explicit Connector(mojom::ConnectorPtrInfo unbound_state);
-  explicit Connector(mojom::ConnectorPtr connector);
+  explicit Connector(mojo::PendingRemote<mojom::Connector> unbound_state);
+  explicit Connector(mojo::Remote<mojom::Connector> connector);
   ~Connector();
 
-  // Creates a new Connector instance and fills in |*request| with a request
+  // Creates a new Connector instance and fills in |*receiver| with a request
   // for the other end the Connector's interface.
-  static std::unique_ptr<Connector> Create(mojom::ConnectorRequest* request);
+  static std::unique_ptr<Connector> Create(
+      mojo::PendingReceiver<mojom::Connector>* receiver);
 
   // Asks the Service Manager to ensure that there's a running service instance
   // which would match |filter| from the caller's perspective. Useful when
@@ -236,8 +238,8 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
       mojo::PendingReceiver<mojom::InterfaceProvider> receiver,
       mojo::PendingRemote<mojom::InterfaceProvider> target);
 
-  // Binds a Connector request to the other end of this Connector.
-  void BindConnectorRequest(mojom::ConnectorRequest request);
+  // Binds a Connector receiver to the other end of this Connector.
+  void BindConnectorReceiver(mojo::PendingReceiver<mojom::Connector> receiver);
 
   base::WeakPtr<Connector> GetWeakPtr();
 
@@ -261,8 +263,8 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   void OnConnectionError();
   bool BindConnectorIfNecessary();
 
-  mojom::ConnectorPtrInfo unbound_state_;
-  mojom::ConnectorPtr connector_;
+  mojo::PendingRemote<mojom::Connector> unbound_state_;
+  mojo::Remote<mojom::Connector> connector_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

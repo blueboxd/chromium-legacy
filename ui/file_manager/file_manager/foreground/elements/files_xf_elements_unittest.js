@@ -134,6 +134,11 @@ async function testDisplayPanelChangingPanelTypes(done) {
   done();
 }
 
+// Override thr formatting function for unit testing.
+util.strf = (end, option) => {
+  return option + end;
+};
+
 function testFilesDisplayPanelErrorMarker() {
   // Get the host display panel container element.
   /** @type {!DisplayPanel|!Element} */

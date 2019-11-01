@@ -599,12 +599,12 @@ TEST(FileTest, GetInfoForDirectory) {
       temp_dir.GetPath().Append(FILE_PATH_LITERAL("gpfi_test"));
   ASSERT_TRUE(CreateDirectory(empty_dir));
 
-  base::File dir(::CreateFile(
-      base::as_wcstr(empty_dir.value()), GENERIC_READ | GENERIC_WRITE,
-      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
-      OPEN_EXISTING,
-      FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
-      NULL));
+  base::File dir(
+      ::CreateFile(empty_dir.value().c_str(), GENERIC_READ | GENERIC_WRITE,
+                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+                   OPEN_EXISTING,
+                   FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
+                   NULL));
   ASSERT_TRUE(dir.IsValid());
 
   base::File::Info info;

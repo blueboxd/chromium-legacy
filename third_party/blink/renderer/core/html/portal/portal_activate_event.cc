@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/portal/portal_activate_event.h"
 
 #include <utility>
+#include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
@@ -132,7 +133,8 @@ HTMLPortalElement* PortalActivateEvent::adoptPredecessor(
   adopted_portal_ = MakeGarbageCollected<HTMLPortalElement>(
       *document_, predecessor_portal_token_, std::move(predecessor_portal_),
       std::move(predecessor_portal_client_receiver_));
-  std::move(on_portal_activated_callback_).Run(true);
+  std::move(on_portal_activated_callback_)
+      .Run(mojom::blink::PortalActivateResult::kPredecessorWasAdopted);
   return adopted_portal_;
 }
 
@@ -150,7 +152,8 @@ void PortalActivateEvent::ExpireAdoptionLifetime() {
   // End the special privilege associated with the predecessor contents if it
   // was not adopted. This may destroy the guest contents.
   if (predecessor_portal_) {
-    std::move(on_portal_activated_callback_).Run(false);
+    std::move(on_portal_activated_callback_)
+        .Run(mojom::blink::PortalActivateResult::kPredecessorWillUnload);
     predecessor_portal_.reset();
   }
 }

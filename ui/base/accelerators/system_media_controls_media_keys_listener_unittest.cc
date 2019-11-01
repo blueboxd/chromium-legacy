@@ -6,10 +6,10 @@
 
 #include <memory>
 
+#include "components/system_media_controls/mock_system_media_controls.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/win/system_media_controls/mock_system_media_controls_service.h"
 
 using testing::_;
 using testing::Expectation;
@@ -38,14 +38,14 @@ class SystemMediaControlsMediaKeysListenerTest : public testing::Test {
   SystemMediaControlsMediaKeysListenerTest() {
     listener_ =
         std::make_unique<SystemMediaControlsMediaKeysListener>(&delegate_);
-    listener_->SetSystemMediaControlsServiceForTesting(
+    listener_->SetSystemMediaControlsForTesting(
         &mock_system_media_controls_service_);
   }
 
   ~SystemMediaControlsMediaKeysListenerTest() override = default;
 
  protected:
-  system_media_controls::testing::MockSystemMediaControlsService&
+  system_media_controls::testing::MockSystemMediaControls&
   mock_system_media_controls_service() {
     return mock_system_media_controls_service_;
   }
@@ -53,7 +53,7 @@ class SystemMediaControlsMediaKeysListenerTest : public testing::Test {
   SystemMediaControlsMediaKeysListener* listener() { return listener_.get(); }
 
  private:
-  system_media_controls::testing::MockSystemMediaControlsService
+  system_media_controls::testing::MockSystemMediaControls
       mock_system_media_controls_service_;
   MockMediaKeysListenerDelegate delegate_;
   std::unique_ptr<SystemMediaControlsMediaKeysListener> listener_;
@@ -61,8 +61,7 @@ class SystemMediaControlsMediaKeysListenerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SystemMediaControlsMediaKeysListenerTest);
 };
 
-TEST_F(SystemMediaControlsMediaKeysListenerTest,
-       ListensToSystemMediaControlsService) {
+TEST_F(SystemMediaControlsMediaKeysListenerTest, ListensToSystemMediaControls) {
   EXPECT_CALL(mock_system_media_controls_service(), AddObserver(listener()));
   listener()->Initialize();
 }

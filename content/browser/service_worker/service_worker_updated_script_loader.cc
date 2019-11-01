@@ -59,7 +59,7 @@ ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
         int32_t request_id,
         uint32_t options,
         const network::ResourceRequest& resource_request,
-        network::mojom::URLLoaderClientPtrInfo client,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
         const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   auto wrapper = base::WrapUnique(new ThrottlingURLLoaderCoreWrapper());
@@ -78,16 +78,17 @@ ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
 
 // static
 void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
-    StartInternalOnUI(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                          loader_factory_info,
-                      BrowserContextGetter browser_context_getter,
-                      int32_t routing_id,
-                      int32_t request_id,
-                      uint32_t options,
-                      network::ResourceRequest resource_request,
-                      network::mojom::URLLoaderClientPtrInfo client_info,
-                      net::NetworkTrafficAnnotationTag traffic_annotation,
-                      LoaderOnUI* loader_on_ui) {
+    StartInternalOnUI(
+        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+            loader_factory_info,
+        BrowserContextGetter browser_context_getter,
+        int32_t routing_id,
+        int32_t request_id,
+        uint32_t options,
+        network::ResourceRequest resource_request,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
+        net::NetworkTrafficAnnotationTag traffic_annotation,
+        LoaderOnUI* loader_on_ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserContext* browser_context = browser_context_getter.Run();
   if (!browser_context)
@@ -103,7 +104,7 @@ void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
           resource_request, browser_context, std::move(wc_getter),
           /*navigation_ui_data=*/nullptr, RenderFrameHost::kNoFrameTreeNodeId);
 
-  network::mojom::URLLoaderClientPtr client(std::move(client_info));
+  network::mojom::URLLoaderClientPtr client(std::move(client_remote));
   auto loader = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       network::SharedURLLoaderFactory::Create(std::move(loader_factory_info)),
       std::move(throttles), routing_id, request_id, options, &resource_request,

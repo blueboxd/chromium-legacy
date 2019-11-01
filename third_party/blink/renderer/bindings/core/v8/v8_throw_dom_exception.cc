@@ -7,11 +7,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
+
+// extern
+const V8PrivateProperty::SymbolKey kPrivatePropertyDOMExceptionError;
 
 // static
 void V8ThrowDOMException::Init() {
@@ -70,7 +72,8 @@ v8::Local<v8::Value> V8ThrowDOMException::CreateOrEmpty(
                     DomExceptionStackSetter, error)
       .ToChecked();
 
-  auto private_error = V8PrivateProperty::GetDOMExceptionError(isolate);
+  auto private_error =
+      V8PrivateProperty::GetSymbol(isolate, kPrivatePropertyDOMExceptionError);
   private_error.Set(exception_obj, error);
 
   return exception_obj;

@@ -76,6 +76,36 @@ message SupportsScriptResponseProto {
   optional ClientSettingsProto client_settings = 3;
 }
 
+// Represents a dimension, e.g., width or height.
+message ClientDimensionProto {
+  oneof size {
+    int32 dpi = 1;
+    // Factor to multiply with the client's total width.
+    float width_factor = 2;
+    // Factor to multiply with the client's total height.
+    float height_factor = 3;
+  }
+}
+
+// Overlay image to be drawn on top of full overlays.
+message OverlayImageProto {
+  // The image to display. If set, |image_size| is mandatory.
+  optional string image_url = 1;
+  // The size of the image to display.
+  optional ClientDimensionProto image_size = 2;
+  // The margin between the top of the page (anchor) and the image.
+  optional ClientDimensionProto image_top_margin = 3;
+  // The margin between the bottom of the image and the baseline of the text.
+  optional ClientDimensionProto image_bottom_margin = 4;
+  // The text to display beneath the image. If set, |text_color| and |text_size|
+  // are mandatory.
+  optional string text = 5;
+  // Supported formats: #RRGGBB or #AARRGGBB.
+  optional string text_color = 6;
+  // The size of the text to display.
+  optional ClientDimensionProto text_size = 7;
+}
+
 message ClientSettingsProto {
   reserved 10, 11;
 
@@ -127,6 +157,9 @@ message ClientSettingsProto {
   // How much time to give users to tap undo when after |tap_count| unexpected
   // taps where
   optional int32 tap_shutdown_delay_ms = 15;
+
+  // Optional image drawn on top of overlays.
+  optional OverlayImageProto overlay_image = 16;
 }
 
 message ScriptTimeoutError {

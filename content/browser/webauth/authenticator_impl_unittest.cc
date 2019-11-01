@@ -54,6 +54,7 @@
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_fido_device_factory.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -110,6 +111,7 @@ typedef struct {
   const char* origin;
   // Either a relying party ID or a U2F AppID.
   const char* claimed_authority;
+  AuthenticatorStatus expected_status;
 } OriginClaimedAuthorityPair;
 
 // The size of credential IDs returned by GetTestCredentials().
@@ -141,107 +143,139 @@ constexpr char kTestSignClientDataJsonString[] =
     R"("https://a.google.com", "type":"webauthn.get"})";
 
 constexpr OriginClaimedAuthorityPair kValidRelyingPartyTestCases[] = {
-    {"http://localhost", "localhost"},
-    {"https://myawesomedomain", "myawesomedomain"},
-    {"https://foo.bar.google.com", "foo.bar.google.com"},
-    {"https://foo.bar.google.com", "bar.google.com"},
-    {"https://foo.bar.google.com", "google.com"},
-    {"https://earth.login.awesomecompany", "login.awesomecompany"},
-    {"https://google.com:1337", "google.com"},
+    {"http://localhost", "localhost", AuthenticatorStatus::SUCCESS},
+    {"https://myawesomedomain", "myawesomedomain",
+     AuthenticatorStatus::SUCCESS},
+    {"https://foo.bar.google.com", "foo.bar.google.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://foo.bar.google.com", "bar.google.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://foo.bar.google.com", "google.com", AuthenticatorStatus::SUCCESS},
+    {"https://earth.login.awesomecompany", "login.awesomecompany",
+     AuthenticatorStatus::SUCCESS},
+    {"https://google.com:1337", "google.com", AuthenticatorStatus::SUCCESS},
 
     // Hosts with trailing dot valid for rpIds with or without trailing dot.
     // Hosts without trailing dots only matches rpIDs without trailing dot.
     // Two trailing dots only matches rpIDs with two trailing dots.
-    {"https://google.com.", "google.com"},
-    {"https://google.com.", "google.com."},
-    {"https://google.com..", "google.com.."},
+    {"https://google.com.", "google.com", AuthenticatorStatus::SUCCESS},
+    {"https://google.com.", "google.com.", AuthenticatorStatus::SUCCESS},
+    {"https://google.com..", "google.com..", AuthenticatorStatus::SUCCESS},
 
     // Leading dots are ignored in canonicalized hosts.
-    {"https://.google.com", "google.com"},
-    {"https://..google.com", "google.com"},
-    {"https://.google.com", ".google.com"},
-    {"https://..google.com", ".google.com"},
-    {"https://accounts.google.com", ".google.com"},
+    {"https://.google.com", "google.com", AuthenticatorStatus::SUCCESS},
+    {"https://..google.com", "google.com", AuthenticatorStatus::SUCCESS},
+    {"https://.google.com", ".google.com", AuthenticatorStatus::SUCCESS},
+    {"https://..google.com", ".google.com", AuthenticatorStatus::SUCCESS},
+    {"https://accounts.google.com", ".google.com",
+     AuthenticatorStatus::SUCCESS},
 };
 
 constexpr OriginClaimedAuthorityPair kInvalidRelyingPartyTestCases[] = {
-    {"https://google.com", "com"},
-    {"http://google.com", "google.com"},
-    {"http://myawesomedomain", "myawesomedomain"},
-    {"https://google.com", "foo.bar.google.com"},
-    {"http://myawesomedomain", "randomdomain"},
-    {"https://myawesomedomain", "randomdomain"},
-    {"https://notgoogle.com", "google.com)"},
-    {"https://not-google.com", "google.com)"},
-    {"https://evil.appspot.com", "appspot.com"},
-    {"https://evil.co.uk", "co.uk"},
+    {"https://google.com", "com", AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"http://google.com", "google.com", AuthenticatorStatus::INVALID_DOMAIN},
+    {"http://myawesomedomain", "myawesomedomain",
+     AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://google.com", "foo.bar.google.com",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"http://myawesomedomain", "randomdomain",
+     AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://myawesomedomain", "randomdomain",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://notgoogle.com", "google.com)",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://not-google.com", "google.com)",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://evil.appspot.com", "appspot.com",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://evil.co.uk", "co.uk", AuthenticatorStatus::BAD_RELYING_PARTY_ID},
 
-    {"https://google.com", "google.com."},
-    {"https://google.com", "google.com.."},
-    {"https://google.com", ".google.com"},
-    {"https://google.com..", "google.com"},
-    {"https://.com", "com."},
-    {"https://.co.uk", "co.uk."},
+    {"https://google.com", "google.com.",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://google.com", "google.com..",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://google.com", ".google.com",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://google.com..", "google.com",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://.com", "com.", AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://.co.uk", "co.uk.", AuthenticatorStatus::BAD_RELYING_PARTY_ID},
 
-    {"https://1.2.3", "1.2.3"},
-    {"https://1.2.3", "2.3"},
+    {"https://1.2.3", "1.2.3", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://1.2.3", "2.3", AuthenticatorStatus::INVALID_DOMAIN},
 
-    {"https://127.0.0.1", "127.0.0.1"},
-    {"https://127.0.0.1", "27.0.0.1"},
-    {"https://127.0.0.1", ".0.0.1"},
-    {"https://127.0.0.1", "0.0.1"},
+    {"https://127.0.0.1", "127.0.0.1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://127.0.0.1", "27.0.0.1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://127.0.0.1", ".0.0.1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://127.0.0.1", "0.0.1", AuthenticatorStatus::INVALID_DOMAIN},
 
-    {"https://[::127.0.0.1]", "127.0.0.1"},
-    {"https://[::127.0.0.1]", "[127.0.0.1]"},
+    {"https://[::127.0.0.1]", "127.0.0.1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[::127.0.0.1]", "[127.0.0.1]",
+     AuthenticatorStatus::INVALID_DOMAIN},
 
-    {"https://[::1]", "1"},
-    {"https://[::1]", "1]"},
-    {"https://[::1]", "::1"},
-    {"https://[::1]", "[::1]"},
-    {"https://[1::1]", "::1"},
-    {"https://[1::1]", "::1]"},
-    {"https://[1::1]", "[::1]"},
+    {"https://[::1]", "1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[::1]", "1]", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[::1]", "::1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[::1]", "[::1]", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[1::1]", "::1", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[1::1]", "::1]", AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://[1::1]", "[::1]", AuthenticatorStatus::INVALID_DOMAIN},
 
-    {"http://google.com:443", "google.com"},
-    {"data:google.com", "google.com"},
-    {"data:text/html,google.com", "google.com"},
-    {"ws://google.com", "google.com"},
-    {"gopher://google.com", "google.com"},
-    {"ftp://google.com", "google.com"},
-    {"file:///google.com", "google.com"},
+    {"http://google.com:443", "google.com",
+     AuthenticatorStatus::INVALID_DOMAIN},
+    {"data:google.com", "google.com", AuthenticatorStatus::OPAQUE_DOMAIN},
+    {"data:text/html,google.com", "google.com",
+     AuthenticatorStatus::OPAQUE_DOMAIN},
+    {"ws://google.com", "google.com", AuthenticatorStatus::INVALID_DOMAIN},
+    {"gopher://google.com", "google.com", AuthenticatorStatus::OPAQUE_DOMAIN},
+    {"ftp://google.com", "google.com", AuthenticatorStatus::INVALID_DOMAIN},
+    {"file:///google.com", "google.com", AuthenticatorStatus::INVALID_PROTOCOL},
     // Use of webauthn from a WSS origin may be technically valid, but we
     // prohibit use on non-HTTPS origins. (At least for now.)
-    {"wss://google.com", "google.com"},
+    {"wss://google.com", "google.com", AuthenticatorStatus::INVALID_PROTOCOL},
 
-    {"data:,", ""},
-    {"https://google.com", ""},
-    {"ws:///google.com", ""},
-    {"wss:///google.com", ""},
-    {"gopher://google.com", ""},
-    {"ftp://google.com", ""},
-    {"file:///google.com", ""},
+    {"data:,", "", AuthenticatorStatus::OPAQUE_DOMAIN},
+    {"https://google.com", "", AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"ws:///google.com", "", AuthenticatorStatus::INVALID_DOMAIN},
+    {"wss:///google.com", "", AuthenticatorStatus::INVALID_PROTOCOL},
+    {"gopher://google.com", "", AuthenticatorStatus::OPAQUE_DOMAIN},
+    {"ftp://google.com", "", AuthenticatorStatus::INVALID_DOMAIN},
+    {"file:///google.com", "", AuthenticatorStatus::INVALID_PROTOCOL},
 
     // This case is acceptable according to spec, but both renderer
     // and browser handling currently do not permit it.
-    {"https://login.awesomecompany", "awesomecompany"},
+    {"https://login.awesomecompany", "awesomecompany",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
 
     // These are AppID test cases, but should also be invalid relying party
     // examples too.
-    {"https://example.com", "https://com/"},
-    {"https://example.com", "https://com/foo"},
-    {"https://example.com", "https://foo.com/"},
-    {"https://example.com", "http://example.com"},
-    {"http://example.com", "https://example.com"},
-    {"https://127.0.0.1", "https://127.0.0.1"},
+    {"https://example.com", "https://com/",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://example.com", "https://com/foo",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://example.com", "https://foo.com/",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://example.com", "http://example.com",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"http://example.com", "https://example.com",
+     AuthenticatorStatus::INVALID_DOMAIN},
+    {"https://127.0.0.1", "https://127.0.0.1",
+     AuthenticatorStatus::INVALID_DOMAIN},
     {"https://www.notgoogle.com",
-     "https://www.gstatic.com/securitykey/origins.json"},
+     "https://www.gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
     {"https://www.google.com",
-     "https://www.gstatic.com/securitykey/origins.json#x"},
+     "https://www.gstatic.com/securitykey/origins.json#x",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
     {"https://www.google.com",
-     "https://www.gstatic.com/securitykey/origins.json2"},
-    {"https://www.google.com", "https://gstatic.com/securitykey/origins.json"},
-    {"https://ggoogle.com", "https://www.gstatic.com/securitykey/origi"},
-    {"https://com", "https://www.gstatic.com/securitykey/origins.json"},
+     "https://www.gstatic.com/securitykey/origins.json2",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://www.google.com", "https://gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://ggoogle.com", "https://www.gstatic.com/securitykey/origi",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
+    {"https://com", "https://www.gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::BAD_RELYING_PARTY_ID},
 };
 
 using TestIsUvpaaCallback = device::test::ValueCallbackReceiver<bool>;
@@ -410,7 +444,7 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
   mojo::Remote<blink::mojom::Authenticator> ConstructAuthenticatorWithTimer(
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    connector_ = service_manager::Connector::Create(&request_);
+    connector_ = service_manager::Connector::Create(&receiver_);
     fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
@@ -512,7 +546,7 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
  protected:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
-  service_manager::mojom::ConnectorRequest request_;
+  mojo::PendingReceiver<service_manager::mojom::Connector> receiver_;
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
@@ -538,7 +572,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     authenticator->MakeCredential(std::move(options),
                                   callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 
   // These instances time out with NOT_ALLOWED_ERROR due to unsupported
@@ -853,23 +887,32 @@ TEST_F(AuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     authenticator->GetAssertion(std::move(options),
                                 callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 }
 
 constexpr OriginClaimedAuthorityPair kValidAppIdCases[] = {
-    {"https://example.com", "https://example.com"},
-    {"https://www.example.com", "https://example.com"},
-    {"https://example.com", "https://www.example.com"},
-    {"https://example.com", "https://foo.bar.example.com"},
-    {"https://example.com", "https://foo.bar.example.com/foo/bar"},
-    {"https://google.com", "https://www.gstatic.com/securitykey/origins.json"},
+    {"https://example.com", "https://example.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://www.example.com", "https://example.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://example.com", "https://www.example.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://example.com", "https://foo.bar.example.com",
+     AuthenticatorStatus::SUCCESS},
+    {"https://example.com", "https://foo.bar.example.com/foo/bar",
+     AuthenticatorStatus::SUCCESS},
+    {"https://google.com", "https://www.gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::SUCCESS},
     {"https://www.google.com",
-     "https://www.gstatic.com/securitykey/origins.json"},
+     "https://www.gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::SUCCESS},
     {"https://www.google.com",
-     "https://www.gstatic.com/securitykey/a/google.com/origins.json"},
+     "https://www.gstatic.com/securitykey/a/google.com/origins.json",
+     AuthenticatorStatus::SUCCESS},
     {"https://accounts.google.com",
-     "https://www.gstatic.com/securitykey/origins.json"},
+     "https://www.gstatic.com/securitykey/origins.json",
+     AuthenticatorStatus::SUCCESS},
 };
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -899,13 +942,15 @@ TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
       continue;
     }
 
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN,
-              TryAuthenticationWithAppId(test_case.origin,
-                                         test_case.claimed_authority));
+    AuthenticatorStatus test_status = TryAuthenticationWithAppId(
+        test_case.origin, test_case.claimed_authority);
+    EXPECT_TRUE(test_status == AuthenticatorStatus::INVALID_DOMAIN ||
+                test_status == test_case.expected_status);
 
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN,
-              TryRegistrationWithAppIdExclude(test_case.origin,
-                                              test_case.claimed_authority));
+    test_status = TryRegistrationWithAppIdExclude(test_case.origin,
+                                                  test_case.claimed_authority);
+    EXPECT_TRUE(test_status == AuthenticatorStatus::INVALID_DOMAIN ||
+                test_status == test_case.expected_status);
   }
 }
 
@@ -2572,7 +2617,7 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
   mojo::Remote<blink::mojom::Authenticator> ConstructFakeAuthenticatorWithTimer(
       std::unique_ptr<MockAuthenticatorRequestDelegateObserver> delegate,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    connector_ = service_manager::Connector::Create(&request_);
+    connector_ = service_manager::Connector::Create(&receiver_);
     fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
@@ -4370,7 +4415,7 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
   ConstructAuthenticatorWithTimer(
       GURL effective_origin_url,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    connector_ = service_manager::Connector::Create(&request_);
+    connector_ = service_manager::Connector::Create(&receiver_);
     fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
@@ -4388,7 +4433,7 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
 
  protected:
   std::unique_ptr<InternalAuthenticatorImpl> internal_authenticator_impl_;
-  service_manager::mojom::ConnectorRequest request_;
+  mojo::PendingReceiver<service_manager::mojom::Connector> receiver_;
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
 };
@@ -4417,7 +4462,7 @@ TEST_F(InternalAuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     authenticator->MakeCredential(std::move(options),
                                   callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 
   // These instances should bypass security errors, by setting the effective
@@ -4440,7 +4485,7 @@ TEST_F(InternalAuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     authenticator->MakeCredential(std::move(options),
                                   callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 }
 
@@ -4470,7 +4515,7 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     authenticator->GetAssertion(std::move(options),
                                 callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 
   // These instances should bypass security errors, by setting the effective
@@ -4496,7 +4541,7 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     authenticator->GetAssertion(std::move(options),
                                 callback_receiver.callback());
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
 }
 

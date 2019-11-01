@@ -206,9 +206,10 @@ ControlPart LayoutTheme::AdjustAppearanceWithElementType(
       // even if their default appearances are different from the keywords.
 
     case kButtonPart:
-      if (IsA<HTMLSelectElement>(*element) || IsA<HTMLAnchorElement>(*element))
-        return auto_appearance;
-      return part;
+      return (auto_appearance == kPushButtonPart ||
+              auto_appearance == kSquareButtonPart)
+                 ? part
+                 : auto_appearance;
 
     case kMenulistButtonPart:
       return auto_appearance == kMenulistPart ? part : auto_appearance;

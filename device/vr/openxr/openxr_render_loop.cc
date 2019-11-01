@@ -104,6 +104,10 @@ bool OpenXrRenderLoop::StartRuntime() {
   openxr_ = std::move(openxr);
   texture_helper_.SetDefaultSize(openxr_->GetViewSize());
 
+  openxr_->RegisterInteractionProfileChangeCallback(
+      base::BindRepeating(&OpenXRInputHelper::OnInteractionProfileChanged,
+                          input_helper_->GetWeakPtr()));
+
   DCHECK(openxr_);
   DCHECK(input_helper_);
   InitializeDisplayInfo();

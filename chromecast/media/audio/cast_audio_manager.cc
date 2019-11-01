@@ -270,18 +270,18 @@ void CastAudioManager::SetConnectorForTesting(
 
 service_manager::Connector* CastAudioManager::GetConnector() {
   if (!connector_) {
-    service_manager::mojom::ConnectorRequest request;
-    connector_ = service_manager::Connector::Create(&request);
+    mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
+    connector_ = service_manager::Connector::Create(&receiver);
     browser_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&CastAudioManager::BindConnectorRequest,
-                                  weak_this_, std::move(request)));
+        FROM_HERE, base::BindOnce(&CastAudioManager::BindConnectorReceiver,
+                                  weak_this_, std::move(receiver)));
   }
   return connector_.get();
 }
 
-void CastAudioManager::BindConnectorRequest(
-    service_manager::mojom::ConnectorRequest request) {
-  browser_connector_->BindConnectorRequest(std::move(request));
+void CastAudioManager::BindConnectorReceiver(
+    mojo::PendingReceiver<service_manager::mojom::Connector> receiver) {
+  browser_connector_->BindConnectorReceiver(std::move(receiver));
 }
 
 bool CastAudioManager::UseMixerOutputStream(

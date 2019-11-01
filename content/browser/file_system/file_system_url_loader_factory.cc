@@ -26,10 +26,10 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
 #include "net/base/completion_repeating_callback.h"
@@ -116,12 +116,12 @@ class FileSystemEntryURLLoader
 
   void Start(const network::ResourceRequest& request,
              mojo::PendingReceiver<network::mojom::URLLoader> loader,
-             network::mojom::URLLoaderClientPtrInfo client_info,
+             mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
              scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
     io_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(&FileSystemEntryURLLoader::StartOnIOThread, AsWeakPtr(),
-                       request, std::move(loader), std::move(client_info)));
+                       request, std::move(loader), std::move(client_remote)));
   }
 
   void MaybeDeleteSelf() {
@@ -144,21 +144,22 @@ class FileSystemEntryURLLoader
   }
 
   mojo::Receiver<network::mojom::URLLoader> receiver_{this};
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
   FactoryParams params_;
   std::unique_ptr<mojo::DataPipeProducer> data_producer_;
   net::HttpByteRange byte_range_;
   FileSystemURL url_;
 
  private:
-  void StartOnIOThread(const network::ResourceRequest& request,
-                       mojo::PendingReceiver<network::mojom::URLLoader> loader,
-                       network::mojom::URLLoaderClientPtrInfo client_info) {
+  void StartOnIOThread(
+      const network::ResourceRequest& request,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote) {
     receiver_.Bind(std::move(loader));
     receiver_.set_disconnect_handler(base::BindOnce(
         &FileSystemEntryURLLoader::OnMojoDisconnect, base::Unretained(this)));
 
-    client_.Bind(std::move(client_info));
+    client_.Bind(std::move(client_remote));
 
     if (!request.url.is_valid()) {
       OnClientComplete(net::ERR_INVALID_URL);
@@ -234,16 +235,16 @@ class FileSystemDirectoryURLLoader : public FileSystemEntryURLLoader {
   static void CreateAndStart(
       const network::ResourceRequest& request,
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      network::mojom::URLLoaderClientPtrInfo client_info,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
       FactoryParams params,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
-    // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
+    // Owns itself. Will live as long as its URLLoader and URLLoaderClient
     // bindings are alive - essentially until either the client gives up or all
     // file directory has been sent to it.
     auto* filesystem_loader =
         new FileSystemDirectoryURLLoader(std::move(params));
-    filesystem_loader->Start(request, std::move(loader), std::move(client_info),
-                             io_task_runner);
+    filesystem_loader->Start(request, std::move(loader),
+                             std::move(client_remote), io_task_runner);
   }
 
  private:
@@ -396,17 +397,17 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
   static void CreateAndStart(
       const network::ResourceRequest& request,
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      network::mojom::URLLoaderClientPtrInfo client_info,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
       FactoryParams params,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
-    // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
+    // Owns itself. Will live as long as its URLLoader and URLLoaderClient
     // bindings are alive - essentially until either the client gives up or all
     // file data has been sent to it.
     auto* filesystem_loader =
         new FileSystemFileURLLoader(std::move(params), request, io_task_runner);
 
-    filesystem_loader->Start(request, std::move(loader), std::move(client_info),
-                             io_task_runner);
+    filesystem_loader->Start(request, std::move(loader),
+                             std::move(client_remote), io_task_runner);
   }
 
  private:

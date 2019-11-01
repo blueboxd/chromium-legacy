@@ -120,8 +120,10 @@ std::vector<mojom::XRInputSourceStatePtr> OpenXRInputHelper::GetInputState(
     // To ensure that we don't have any collisions with other ids, increment
     // all of the ids by one.
     state->source_id = i + 1;
-
     state->description = controller->GetDescription(predicted_display_time);
+    if (!state->description) {
+      continue;
+    }
 
     state->mojo_from_input = controller->GetMojoFromGripTransform(
         predicted_display_time, local_space_);
@@ -136,6 +138,19 @@ std::vector<mojom::XRInputSourceStatePtr> OpenXRInputHelper::GetInputState(
   }
 
   return input_states;
+}
+
+void OpenXRInputHelper::OnInteractionProfileChanged(XrResult* xr_result) {
+  for (OpenXrControllerState& controller_state : controller_states_) {
+    *xr_result = controller_state.controller.UpdateInteractionProfile();
+    if (XR_FAILED(*xr_result)) {
+      return;
+    }
+  }
+}
+
+base::WeakPtr<OpenXRInputHelper> OpenXRInputHelper::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 base::Optional<Gamepad> OpenXRInputHelper::GetWebXRGamepad(

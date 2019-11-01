@@ -147,20 +147,18 @@ class TabGridSheetMediator {
 
     private void showTabGridSheet(TabGridSheetContent sheetContent) {
         updateBottomSheet();
-        mBottomSheetController.getBottomSheet().addObserver(mSheetObserver);
+        mBottomSheetController.addObserver(mSheetObserver);
         mBottomSheetController.requestShowContent(sheetContent, true);
         mBottomSheetController.expandSheet();
     }
 
     private void hideTabGridSheet() {
         mBottomSheetController.hideContent(getCurrentSheetContent(), true);
-        mBottomSheetController.getBottomSheet().removeObserver(mSheetObserver);
+        mBottomSheetController.removeObserver(mSheetObserver);
     }
 
     private BottomSheetContent getCurrentSheetContent() {
-        return mBottomSheetController.getBottomSheet() != null
-                ? mBottomSheetController.getBottomSheet().getCurrentSheetContent()
-                : null;
+        return mBottomSheetController.getCurrentSheetContent();
     }
 
     private void updateBottomSheet() {

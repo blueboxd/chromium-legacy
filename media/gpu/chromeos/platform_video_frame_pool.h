@@ -43,11 +43,11 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   ~PlatformVideoFramePool() override;
 
   // VideoFramePoolBase Implementation.
-  void SetMaxNumFrames(size_t max_num_frames) override;
-  base::Optional<VideoFrameLayout> NegotiateFrameFormat(
+  base::Optional<VideoFrameLayout> RequestFrames(
       const VideoFrameLayout& layout,
       const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size) override;
+      const gfx::Size& natural_size,
+      size_t max_num_frames) override;
   scoped_refptr<VideoFrame> GetFrame() override;
   bool IsExhausted() override;
   void NotifyWhenFrameAvailable(base::OnceClosure cb) override;

@@ -37,7 +37,7 @@ class TouchToFillView implements BottomSheetContent {
             super.onSheetClosed(reason);
             assert mDismissHandler != null;
             mDismissHandler.onResult(reason);
-            mBottomSheetController.getBottomSheet().removeObserver(mBottomSheetObserver);
+            mBottomSheetController.removeObserver(mBottomSheetObserver);
         }
 
         @Override
@@ -46,7 +46,7 @@ class TouchToFillView implements BottomSheetContent {
             if (newState != BottomSheetController.SheetState.HIDDEN) return;
             // This is a fail-safe for cases where onSheetClosed isn't triggered.
             mDismissHandler.onResult(BottomSheetController.StateChangeReason.NONE);
-            mBottomSheetController.getBottomSheet().removeObserver(mBottomSheetObserver);
+            mBottomSheetController.removeObserver(mBottomSheetObserver);
         }
     };
 
@@ -80,7 +80,7 @@ class TouchToFillView implements BottomSheetContent {
      */
     void setVisible(boolean isVisible) {
         if (isVisible) {
-            mBottomSheetController.getBottomSheet().addObserver(mBottomSheetObserver);
+            mBottomSheetController.addObserver(mBottomSheetObserver);
             mBottomSheetController.requestShowContent(this, true);
         } else {
             mBottomSheetController.hideContent(this, true);
@@ -102,7 +102,7 @@ class TouchToFillView implements BottomSheetContent {
 
     @Override
     public void destroy() {
-        mBottomSheetController.getBottomSheet().removeObserver(mBottomSheetObserver);
+        mBottomSheetController.removeObserver(mBottomSheetObserver);
     }
 
     @Override

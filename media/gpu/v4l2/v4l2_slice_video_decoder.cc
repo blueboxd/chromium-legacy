@@ -331,7 +331,8 @@ V4L2SliceVideoDecoder::UpdateVideoFramePoolFormat(
   }
 
   gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
-  return frame_pool_->NegotiateFrameFormat(*layout, visible_rect, natural_size);
+  return frame_pool_->RequestFrames(*layout, visible_rect, natural_size,
+                                    num_output_frames_);
 }
 
 void V4L2SliceVideoDecoder::Reset(base::OnceClosure closure) {
@@ -437,6 +438,8 @@ bool V4L2SliceVideoDecoder::ChangeResolution(gfx::Size pic_size,
   DCHECK_EQ(input_queue_->QueuedBuffersCount(), 0u);
   DCHECK_EQ(output_queue_->QueuedBuffersCount(), 0u);
 
+  num_output_frames_ = num_output_frames;
+
   if (!StopStreamV4L2Queue())
     return false;
 
@@ -473,12 +476,11 @@ bool V4L2SliceVideoDecoder::ChangeResolution(gfx::Size pic_size,
     SetState(State::kError);
     return false;
   }
-  if (output_queue_->AllocatedBuffersCount() != num_output_frames) {
+  if (output_queue_->AllocatedBuffersCount() != num_output_frames_) {
     VLOGF(1) << "Could not allocate requested number of output buffers.";
     SetState(State::kError);
     return false;
   }
-  frame_pool_->SetMaxNumFrames(num_output_frames);
 
   if (!StartStreamV4L2Queue()) {
     SetState(State::kError);

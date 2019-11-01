@@ -101,7 +101,7 @@ public class MicrotransactionCoordinator {
         mMediator = new MicrotransactionMediator(
                 context, instrument, model, confirmObserver, dismissObserver, this::hide);
 
-        bottomSheetController.getBottomSheet().addObserver(mMediator);
+        bottomSheetController.addObserver(mMediator);
 
         MicrotransactionView view = new MicrotransactionView(context);
         view.mToolbarPayButton.setOnClickListener(mMediator);
@@ -113,7 +113,7 @@ public class MicrotransactionCoordinator {
         mHider = () -> {
             mMediator.hide();
             changeProcessor.destroy();
-            bottomSheetController.getBottomSheet().removeObserver(mMediator);
+            bottomSheetController.removeObserver(mMediator);
             bottomSheetController.hideContent(/*content=*/view, /*animate=*/true);
         };
 

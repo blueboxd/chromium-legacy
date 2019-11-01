@@ -53,6 +53,7 @@ unity_launcher_entry_set_progress_func entry_set_progress = nullptr;
 unity_launcher_entry_set_progress_visible_func entry_set_progress_visible =
     nullptr;
 
+NO_SANITIZE("cfi-icall")
 void EnsureLibUnityLoaded() {
   using base::nix::GetDesktopEnvironment;
 

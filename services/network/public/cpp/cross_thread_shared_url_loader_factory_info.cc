@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -41,7 +42,7 @@ class CrossThreadSharedURLLoaderFactoryInfo::State
       int32_t request_id,
       uint32_t options,
       const ResourceRequest& request,
-      mojom::URLLoaderClientPtrInfo client,
+      mojo::PendingRemote<mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
 
   void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver);
@@ -192,7 +193,7 @@ void CrossThreadSharedURLLoaderFactoryInfo::State::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& request,
-    mojom::URLLoaderClientPtrInfo client,
+    mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base_factory_->CreateLoaderAndStart(

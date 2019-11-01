@@ -89,7 +89,7 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
   auto networking_host = std::make_unique<FeedNetworkingHost>(
       identity_manager, api_key,
       storage_partition->GetURLLoaderFactoryForBrowserProcess(),
-      base::DefaultTickClock::GetInstance());
+      base::DefaultTickClock::GetInstance(), profile->GetPrefs());
 
   auto scheduler_host = std::make_unique<FeedSchedulerHost>(
       profile->GetPrefs(), g_browser_process->local_state(),

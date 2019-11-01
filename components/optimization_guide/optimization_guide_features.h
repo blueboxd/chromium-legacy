@@ -22,6 +22,7 @@ extern const base::Feature kOptimizationHints;
 extern const base::Feature kOptimizationHintsExperiments;
 constexpr char kOptimizationHintsExperimentNameParam[] = "experiment_name";
 extern const base::Feature kOptimizationHintsFetching;
+extern const base::Feature kOptimizationHintsFetchingAnonymousDataConsent;
 extern const base::Feature kOptimizationGuideKeyedService;
 extern const base::Feature kOptimizationTargetPrediction;
 
@@ -70,6 +71,10 @@ bool IsOptimizationHintsEnabled();
 // Returns true if the feature to fetch hints from the remote Optimization Guide
 // Service is enabled.
 bool IsHintsFetchingEnabled();
+
+// Returns true if the feature to fetch hints for users that have consented to
+// anonymous data collection is enabled but are not Data Saver users.
+bool IsHintsFetchingForAnonymousDataConsentEnabled();
 
 // Returns true if the initialization of the Optimization Guide Keyed Service is
 // enabled.

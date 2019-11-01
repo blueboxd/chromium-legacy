@@ -47,8 +47,8 @@ class WebSocketFrameTestMaskBenchmark : public ::testing::Test {
     auto reporter = SetUpWebSocketFrameMaskReporter(story);
     base::ElapsedTimer timer;
     for (int x = 0; x < kIterations; ++x) {
-      MaskWebSocketFramePayload(
-          masking_key, x % size, &scratch.front(), scratch.size());
+      MaskWebSocketFramePayload(masking_key, x % size, scratch.data(),
+                                scratch.size());
     }
     reporter.AddResult(kMetricMaskTimeMs, timer.Elapsed().InMillisecondsF());
   }
@@ -61,7 +61,7 @@ TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskShortPayload) {
 
 TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskLongPayload) {
   std::vector<char> payload(kLongPayloadSize, 'a');
-  Benchmark("long_payload", &payload.front(), payload.size());
+  Benchmark("long_payload", payload.data(), payload.size());
 }
 
 // A 31-byte payload is guaranteed to do 7 byte mask operations and 3 vector
@@ -69,7 +69,7 @@ TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskLongPayload) {
 // back to the byte-only code path and do 31 byte mask operations.
 TEST_F(WebSocketFrameTestMaskBenchmark, Benchmark31BytePayload) {
   std::vector<char> payload(31, 'a');
-  Benchmark("31_payload", &payload.front(), payload.size());
+  Benchmark("31_payload", payload.data(), payload.size());
 }
 
 }  // namespace

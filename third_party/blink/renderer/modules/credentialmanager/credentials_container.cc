@@ -125,6 +125,7 @@ void AssertSecurityRequirementsBeforeResponse(
                  IsSameOriginWithAncestors(resolver->GetFrame()));
 }
 
+#if defined(OS_ANDROID)
 bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
                                         const String& relying_party_id) {
   const SecurityOrigin* origin =
@@ -204,6 +205,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   }
   return true;
 }
+#endif  // defined(OS_ANDROID)
 
 // Checks if the icon URL is an a-priori authenticated URL.
 // https://w3c.github.io/webappsec-credential-management/#dom-credentialuserdata-iconurl
@@ -299,6 +301,21 @@ DOMException* CredentialManagerErrorToDOMException(
     case CredentialManagerError::ABORT:
       return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
                                                 "Request has been aborted.");
+    case CredentialManagerError::OPAQUE_DOMAIN:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotAllowedError,
+          "The current origin is an opaque origin and hence not allowed to "
+          "access 'PublicKeyCredential' objects.");
+    case CredentialManagerError::INVALID_PROTOCOL:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "Public-key credentials are only available to HTTPS origin or HTTP "
+          "origins that fall under 'localhost'. See https://crbug.com/824383");
+    case CredentialManagerError::BAD_RELYING_PARTY_ID:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "The relying party ID is not a registrable domain suffix of, nor "
+          "equal to the current domain.");
     case CredentialManagerError::UNKNOWN:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotReadableError,
@@ -381,8 +398,6 @@ void OnMakePublicKeyCredentialComplete(
   auto* resolver = scoped_resolver->Release();
   const auto required_origin_type = RequiredOriginType::kSecure;
 
-  // TODO(crbug.com/803080): Introduce the assert counterpart of
-  // CheckPublicKeySecurityRequirements().
   AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
   if (status == AuthenticatorStatus::SUCCESS) {
     DCHECK(credential);
@@ -503,9 +518,15 @@ ScriptPromise CredentialsContainer::get(
     }
 #endif
 
+#if defined(OS_ANDROID)
+    // TODO(kenrb): Remove this for Android when we can plumb the security
+    // failure error codes from GMSCore. Until then, this has to be here so
+    // informative console messages can appear on security check failures.
+    // https://crbug.com/827542.
     const String& relying_party_id = options->publicKey()->rpId();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
       return promise;
+#endif
 
     if (options->publicKey()->hasExtensions()) {
       if (options->publicKey()->extensions()->hasAppid()) {
@@ -698,9 +719,15 @@ ScriptPromise CredentialsContainer::create(
           WebFeature::kCredentialManagerCreatePublicKeyCredential);
     }
 
+#if defined(OS_ANDROID)
+    // TODO(kenrb): Remove this for Android when we can plumb the security
+    // failure error codes from GMSCore. Until then, this has to be here so
+    // informative console messages can appear on security check failures.
+    // https://crbug.com/827542
     const String& relying_party_id = options->publicKey()->rp()->id();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
       return promise;
+#endif
 
     if (options->publicKey()->hasExtensions()) {
       if (options->publicKey()->extensions()->hasAppid()) {

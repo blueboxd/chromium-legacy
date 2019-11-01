@@ -17,6 +17,7 @@ import("//build/config/python.gni")
 #   shared_libraries: (Optional) List of shared_library targets the module
 #     requires at runtime. Will consider all transitively depended on
 #     shared_libraries.
+#   paks: (Optional) PAK files going into the module.
 template("module_desc_java") {
   _target_name = target_name
 
@@ -55,6 +56,13 @@ template("module_desc_java") {
       "--output",
       rebase_path(_srcjar, root_out_dir),
     ]
+    if (defined(invoker.paks)) {
+      _rebased_paks = []
+      foreach(_pak, invoker.paks) {
+        _rebased_paks += [ rebase_path(_pak, root_out_dir) ]
+      }
+      args += [ "--paks=$_rebased_paks" ]
+    }
   }
 
   android_library(_target_name) {

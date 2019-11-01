@@ -41,7 +41,7 @@ public class PaymentRequestShowPromiseUnsupportedTest implements MainActivitySta
     @MediumTest
     @Feature({"Payments"})
     public void testReject() throws TimeoutException {
-        mRule.openPageAndClickNodeAndWait("buy", mRule.getDismissed());
+        mRule.openPageAndClickNodeAndWait("buy", mRule.getShowFailed());
         mRule.expectResultContains(
                 new String[] {"NotSupportedError: Payment method not supported"});
     }

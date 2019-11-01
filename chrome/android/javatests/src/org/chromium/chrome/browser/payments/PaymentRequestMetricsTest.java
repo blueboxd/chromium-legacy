@@ -352,8 +352,8 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
                         "PaymentRequest.TransactionAmount.Completed"));
 
         // Make sure the events were logged correctly.
-        int expectedSample = Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_SHIPPING
-                | Event.REQUEST_METHOD_GOOGLE | Event.COULD_NOT_SHOW;
+        int expectedSample =
+                Event.REQUEST_SHIPPING | Event.REQUEST_METHOD_GOOGLE | Event.COULD_NOT_SHOW;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -393,8 +393,8 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
                         "PaymentRequest.TransactionAmount.Completed"));
 
         // Make sure the events were logged correctly.
-        int expectedSample = Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.REQUEST_SHIPPING
-                | Event.REQUEST_METHOD_OTHER | Event.COULD_NOT_SHOW;
+        int expectedSample =
+                Event.REQUEST_SHIPPING | Event.REQUEST_METHOD_OTHER | Event.COULD_NOT_SHOW;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));

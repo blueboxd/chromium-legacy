@@ -17,6 +17,7 @@
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
@@ -137,8 +138,7 @@ bool StructTraits<blink::mojom::FetchAPIDataElementDataView,
         return false;
       }
       out->expected_file_modification_time_ = expected_time.ToDoubleT();
-      out->filename_ =
-          WTF::String(file_path.value().data(), file_path.value().size());
+      out->filename_ = blink::FilePathToString(file_path);
       break;
     }
     case network::mojom::DataElementType::kDataPipe: {

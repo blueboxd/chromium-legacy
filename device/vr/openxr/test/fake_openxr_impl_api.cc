@@ -558,6 +558,24 @@ XrResult xrGetInstanceProperties(XrInstance instance,
   return XR_SUCCESS;
 }
 
+XrResult xrGetCurrentInteractionProfile(
+    XrSession session,
+    XrPath topLevelUserPath,
+    XrInteractionProfileState* interactionProfile) {
+  DVLOG(1) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateSession(session));
+  RETURN_IF(interactionProfile->type != XR_TYPE_INTERACTION_PROFILE_STATE,
+            XR_ERROR_VALIDATION_FAILURE,
+            "xrGetCurrentInteractionProfile type is not "
+            "XR_TYPE_INTERACTION_PROFILE_STATE");
+  RETURN_IF_XR_FAILED(g_test_helper.ValidatePath(topLevelUserPath));
+  interactionProfile->interactionProfile =
+      g_test_helper.GetCurrentInteractionProfile();
+  return XR_SUCCESS;
+}
+
 XrResult xrGetReferenceSpaceBoundsRect(XrSession session,
                                        XrReferenceSpaceType referenceSpaceType,
                                        XrExtent2Df* bounds) {
@@ -655,17 +673,8 @@ XrResult xrPollEvent(XrInstance instance, XrEventDataBuffer* event_data) {
   RETURN_IF_FALSE(event_data->type == XR_TYPE_EVENT_DATA_BUFFER,
                   XR_ERROR_VALIDATION_FAILURE,
                   "xrPollEvent event_data type invalid");
-  RETURN_IF_FALSE(g_test_helper.UpdateSessionStateEventQueue(),
-                  XR_ERROR_VALIDATION_FAILURE,
-                  "Update SessionStateEventQueue failed.");
-  if (g_test_helper.HasPendingSessionStateEvent()) {
-    XrEventDataSessionStateChanged* event_data_ptr =
-        reinterpret_cast<XrEventDataSessionStateChanged*>(event_data);
-    *event_data_ptr = g_test_helper.GetNextSessionStateEvent();
-    return XR_SUCCESS;
-  }
 
-  return XR_EVENT_UNAVAILABLE;
+  return g_test_helper.PollEvent(event_data);
 }
 
 XrResult xrReleaseSwapchainImage(
@@ -721,6 +730,34 @@ XrResult xrStringToPath(XrInstance instance,
   RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
 
   *path = g_test_helper.GetPath(pathString);
+
+  return XR_SUCCESS;
+}
+
+XrResult xrPathToString(XrInstance instance,
+                        XrPath path,
+                        uint32_t bufferCapacityInput,
+                        uint32_t* bufferCountOutput,
+                        char* buffer) {
+  DVLOG(1) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
+  RETURN_IF_XR_FAILED(g_test_helper.ValidatePath(path));
+
+  std::string path_string = g_test_helper.PathToString(path);
+
+  if (bufferCapacityInput == 0) {
+    // OpenXR spec counts terminating '\0'
+    *bufferCountOutput = path_string.size() + 1;
+    return XR_SUCCESS;
+  }
+
+  RETURN_IF(
+      *bufferCountOutput <= path_string.size(), XR_ERROR_SIZE_INSUFFICIENT,
+      "xrPathToString inputsize is not large enough to hold the output string");
+  errno_t error = strcpy_s(buffer, *bufferCountOutput, path_string.data());
+  DCHECK(error == 0);
 
   return XR_SUCCESS;
 }

@@ -38,17 +38,14 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
   virtual void set_parent_task_runner(
       scoped_refptr<base::SequencedTaskRunner> parent_task_runner);
 
-  // Sets the maximum number of frames which can be allocated.
-  // Used to prevent client from draining all memory.
-  virtual void SetMaxNumFrames(size_t max_num_frames) = 0;
-
-  // Sets the parameters of allocating frames and returns a valid
-  // VideoFrameLayout that VideoFrame will be created by GetFrame() has.
-  // This method must be called before GetFrame() is called.
-  virtual base::Optional<VideoFrameLayout> NegotiateFrameFormat(
+  // Sets the parameters of allocating frames and the maximum number of frames
+  // which can be allocated. Returns a valid VideoFrameLayout that VideoFrame
+  // will be created by GetFrame().
+  virtual base::Optional<VideoFrameLayout> RequestFrames(
       const VideoFrameLayout& layout,
       const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size) = 0;
+      const gfx::Size& natural_size,
+      size_t max_num_frames) = 0;
 
   // Returns a frame from the pool with the parameters assigned by
   // SetFrameFormat() and zero timestamp. Returns nullptr if the pool is

@@ -52,6 +52,11 @@ struct App {
   OptionalBool show_in_search;
   OptionalBool show_in_management;
 
+  // Paused apps cannot be launched, and any running apps that become paused
+  // will be stopped. This is independent of whether or not the app is ready to
+  // be launched (defined by the Readiness field).
+  OptionalBool paused;
+
   // This vector stores all the intent filters defined in this app. Each
   // intent filter defines a matching criteria for whether an intent can
   // be handled by this app. One app can have multiple intent filters.

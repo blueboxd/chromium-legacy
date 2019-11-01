@@ -39,9 +39,10 @@ ContentIndex* ServiceWorkerRegistrationContentIndex::index(
 ContentIndex* ServiceWorkerRegistrationContentIndex::index() {
   if (!content_index_) {
     ExecutionContext* execution_context = registration_->GetExecutionContext();
+    // TODO(falken): Consider defining a task source in the spec for this event.
     content_index_ = MakeGarbageCollected<ContentIndex>(
         registration_,
-        execution_context->GetTaskRunner(TaskType::kInternalIPC));
+        execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI));
   }
 
   return content_index_.Get();

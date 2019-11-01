@@ -71,6 +71,7 @@ jumbo_source_set("browser") {
     "//components/services/filesystem:lib",
     "//components/services/quarantine:quarantine",
     "//components/services/storage",
+    "//components/system_media_controls",
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//components/tracing/common:interfaces",
@@ -1227,6 +1228,8 @@ jumbo_source_set("browser") {
     "media/session/media_session_service_impl.h",
     "media/session/media_session_uma_helper.cc",
     "media/session/media_session_uma_helper.h",
+    "media/system_media_controls_notifier.cc",
+    "media/system_media_controls_notifier.h",
     "media/url_provision_fetcher.cc",
     "media/url_provision_fetcher.h",
     "media/video_decoder_proxy.cc",
@@ -2140,15 +2143,10 @@ jumbo_source_set("browser") {
       # with the windows 8 sdk it does the wrong thing.
       "__ATLHOST_H__",
     ]
-    sources += [
-      "media/system_media_controls_notifier.cc",
-      "media/system_media_controls_notifier.h",
-    ]
     deps += [
       "//third_party/blink/public/common:font_unique_name_table_proto",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
-      "//ui/base/win/system_media_controls",
     ]
     libs += [
       "comctl32.lib",

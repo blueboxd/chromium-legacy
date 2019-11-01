@@ -39,6 +39,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/service_worker_external_request_result.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/result_codes.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -744,13 +745,63 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   controllee_map_.erase(client_uuid);
 
   embedded_worker_->UpdateForegroundPriority();
-
   // Notify observers asynchronously since this gets called during
   // ServiceWorkerProviderHost's destructor, and we don't want observers to do
   // work during that.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeRemoved,
                                 weak_factory_.GetWeakPtr(), client_uuid));
+}
+
+void ServiceWorkerVersion::MoveControlleeToBackForwardCacheMap(
+    const std::string& client_uuid) {
+  DCHECK(IsBackForwardCacheEnabled());
+  DCHECK(base::Contains(controllee_map_, client_uuid));
+  DCHECK(!base::Contains(bfcached_controllee_map_, client_uuid));
+  bfcached_controllee_map_[client_uuid] = controllee_map_[client_uuid];
+  RemoveControllee(client_uuid);
+}
+
+void ServiceWorkerVersion::RestoreControlleeFromBackForwardCacheMap(
+    const std::string& client_uuid) {
+  DCHECK(IsBackForwardCacheEnabled());
+  DCHECK(!base::Contains(controllee_map_, client_uuid));
+  DCHECK(base::Contains(bfcached_controllee_map_, client_uuid));
+  AddControllee(bfcached_controllee_map_[client_uuid]);
+  bfcached_controllee_map_.erase(client_uuid);
+}
+
+void ServiceWorkerVersion::RemoveControlleeFromBackForwardCacheMap(
+    const std::string& client_uuid) {
+  DCHECK(IsBackForwardCacheEnabled());
+  DCHECK(base::Contains(bfcached_controllee_map_, client_uuid));
+  bfcached_controllee_map_.erase(client_uuid);
+}
+
+void ServiceWorkerVersion::OnControlleeDestroyed(
+    const std::string& client_uuid) {
+  if (!IsBackForwardCacheEnabled() ||
+      !ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
+    RemoveControllee(client_uuid);
+
+  if (base::Contains(controllee_map_, client_uuid)) {
+    RemoveControllee(client_uuid);
+  } else if (base::Contains(bfcached_controllee_map_, client_uuid)) {
+    RemoveControlleeFromBackForwardCacheMap(client_uuid);
+  }
+  // It is possible that the controllee belongs to neither |controllee_map_| or
+  // |bfcached_controllee_map_|. This happens when a BackForwardCached
+  // controllee is deleted after eviction, which has already removed it from
+  // |bfcached_controllee_map_|.
+}
+
+void ServiceWorkerVersion::EvictBackForwardCachedControllees() {
+  DCHECK(IsBackForwardCacheEnabled());
+  while (!bfcached_controllee_map_.empty()) {
+    auto controllee = bfcached_controllee_map_.begin();
+    controllee->second->EvictFromBackForwardCache();
+    RemoveControlleeFromBackForwardCacheMap(controllee->second->client_uuid());
+  }
 }
 
 void ServiceWorkerVersion::AddObserver(Observer* observer) {

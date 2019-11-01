@@ -4,12 +4,15 @@
 
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
+import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifierDelegate;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.VerifierDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.customtabs.content.DefaultCustomTabIntentHandlingStrategy;
@@ -42,8 +45,19 @@ public class CustomTabActivityModule {
     }
 
     @Provides
-    public CustomTabIntentDataProvider provideIntentDataProvider() {
+    public CustomTabIntentDataProvider provideCustomTabIntentDataProvider() {
         return mIntentDataProvider;
+    }
+
+    @Provides
+    public BrowserServicesIntentDataProvider providesBrowserServicesIntentDataProvider() {
+        return mIntentDataProvider;
+    }
+
+    @Provides
+    public BrowserServicesActivityTabController provideTabController(
+            CustomTabActivityTabController customTabActivityTabController) {
+        return customTabActivityTabController;
     }
 
     @Provides

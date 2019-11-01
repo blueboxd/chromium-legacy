@@ -354,7 +354,6 @@ class ProfilePrefStoreManagerTest : public testing::Test,
 
   base::test::ScopedFeatureList feature_list_;
   bool reset_recorded_;
-  service_manager::mojom::ConnectorRequest connector_request_;
   mojo::ReceiverSet<prefs::mojom::ResetOnLoadObserver>
       reset_on_load_observer_receivers_;
 };

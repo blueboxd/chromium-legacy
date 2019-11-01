@@ -8,15 +8,10 @@
 <script src="/gen/url/mojom/url.mojom-lite.js"></script>
 <script src="/gen/third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-lite.js"></script>
 <script src="/gen/third_party/blink/public/mojom/webauthn/authenticator.mojom-lite.js"></script>
+<script src="/gen/third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom-lite.js"></script>
 <script src="test-inputs.js"></script>
-<script src="mock-navigator-credentials.js"></script>
+<script src="virtual-navigator-credentials.js"></script>
 <script>
-mockAuthenticator.setRawId(RAW_ID);
-mockAuthenticator.setId(ID);
-mockAuthenticator.setClientDataJson(CLIENT_DATA_JSON);
-mockAuthenticator.setAttestationObject(ATTESTATION_OBJECT);
-mockAuthenticator.setAuthenticatorStatus(
-    blink.mojom.AuthenticatorStatus.SUCCESS);
 let queryParams = new URLSearchParams(window.location.search);
 var relyingPartyId = queryParams.has('rpId') ? queryParams.get('rpId') : document.domain;
 var customPublicKey = {
@@ -25,10 +20,10 @@ var customPublicKey = {
     user: PUBLIC_KEY_USER,
     pubKeyCredParams: PUBLIC_KEY_PARAMETERS,
 };
-
 let responder =  window.opener || window.parent;
 
-navigator.credentials.create({publicKey : customPublicKey})
-  .then(r => responder.postMessage("SUCCESS", "*"))
-  .catch(t => responder.postMessage(t.name, "*"));
+navigator.credentials.test.createAuthenticator().then(() => {
+  return navigator.credentials.create({publicKey : customPublicKey});
+}).then(r => responder.postMessage("SUCCESS", "*"))
+  .catch(t => responder.postMessage(t.name, "*"));;
 </script>

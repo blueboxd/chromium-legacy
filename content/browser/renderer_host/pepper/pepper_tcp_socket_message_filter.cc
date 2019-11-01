@@ -126,8 +126,7 @@ PepperTCPSocketMessageFilter::~PepperTCPSocketMessageFilter() {
 #if defined(OS_CHROMEOS)
   // Close the firewall hole on UI thread if there is one.
   if (firewall_hole_) {
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
-                              std::move(firewall_hole_));
+    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, std::move(firewall_hole_));
   }
 #endif  // defined(OS_CHROMEOS)
   --g_num_tcp_filter_instances;

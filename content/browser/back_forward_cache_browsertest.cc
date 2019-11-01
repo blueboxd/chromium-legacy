@@ -14,6 +14,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -62,8 +63,10 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
         switches::kIgnoreCertificateErrors);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    feature_list_.InitAndEnableFeatureWithParameters(
-        features::kBackForwardCache, GetFeatureParams());
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache, {GetFeatureParams()}},
+         {features::kServiceWorkerOnUI, {}}},
+        {});
 
     ContentBrowserTest::SetUpCommandLine(command_line);
   }
@@ -176,6 +179,12 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
               histogram_tester_.GetAllSamples(
                   "BackForwardCache.EvictedAfterDocumentRestoredReason"))
         << location.ToString();
+  }
+
+  void EvictByJavaScript(RenderFrameHostImpl* rfh) {
+    // Run JavaScript on a page in the back-forward cache. The page should be
+    // evicted. As the frame is deleted, ExecJs returns false without executing.
+    EXPECT_FALSE(ExecJs(rfh, "console.log('hi');"));
   }
 
  private:
@@ -1648,10 +1657,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
 
   // 3) Execute JavaScript on A.
-  //
-  // Run JavaScript on a page in the back-forward cache. The page should be
-  // evicted. As the frame is deleted, ExecJs returns false without executing.
-  EXPECT_FALSE(ExecJs(rfh_a, "console.log('hi');"));
+  EvictByJavaScript(rfh_a);
 
   // RenderFrameHost A is evicted from the BackForwardCache:
   delete_observer_rfh_a.WaitUntilDeleted();
@@ -1696,8 +1702,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 3) Execute JavaScript on B.
   //
-  // As the frame is deleted, ExecJs returns false without executing.
-  EXPECT_FALSE(ExecJs(rfh_b, "console.log('hi');"));
+  EvictByJavaScript(rfh_b);
 
   // The A(B) page is evicted. So A and B are removed:
   delete_observer_rfh_a.WaitUntilDeleted();
@@ -2094,7 +2099,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(navigation_manager.WaitForRequestStart());
   // Try to execute javascript, this will cause the document we are restoring to
   // get evicted from the cache.
-  EXPECT_FALSE(ExecJs(rfh_a, "console.log('hi');"));
+  EvictByJavaScript(rfh_a);
 
   // The navigation should get reissued, and ultimately finish.
   navigation_manager.WaitForNavigationFinished();
@@ -2397,6 +2402,27 @@ void RegisterServiceWorker(RenderFrameHostImpl* rfh) {
   )"));
 }
 
+// Returns a unique script for each request, to test service worker update.
+std::unique_ptr<net::test_server::HttpResponse> RequestHandlerForUpdateWorker(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != "/back_forward_cache/service-worker.js")
+    return std::unique_ptr<net::test_server::HttpResponse>();
+  static int counter = 0;
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
+  const char script[] = R"(
+    // counter = $1
+    self.addEventListener('activate', function(event) {
+      event.waitUntil(self.clients.claim());
+    });
+  )";
+  http_response->set_content(JsReplace(script, counter++));
+  http_response->set_content_type("text/javascript");
+  http_response->AddCustomHeader("Cache-Control",
+                                 "no-cache, no-store, must-revalidate");
+  return http_response;
+}
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -2479,6 +2505,50 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_FALSE(deleted.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+                       EvictIfCacheBlocksServiceWorkerVersionActivation) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.RegisterRequestHandler(
+      base::BindRepeating(&RequestHandlerForUpdateWorker));
+  https_server.AddDefaultHandlers(GetTestDataFilePath());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  SetupCrossSiteRedirector(&https_server);
+  ASSERT_TRUE(https_server.Start());
+  Shell* tab_x = shell();
+  Shell* tab_y = CreateBrowser();
+  // 1) Navigate to A in tab X.
+  EXPECT_TRUE(NavigateToURL(
+      tab_x, https_server.GetURL("a.com", "/back_forward_cache/empty.html")));
+  // 2) Register a service worker.
+  RegisterServiceWorker(current_frame_host());
+
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver deleted(rfh_a);
+  // 3) Navigate away to B in tab X.
+  EXPECT_TRUE(
+      NavigateToURL(tab_x, https_server.GetURL("b.com", "/title1.html")));
+  EXPECT_FALSE(deleted.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  // 4) Navigate to A in tab Y.
+  EXPECT_TRUE(NavigateToURL(
+      tab_y, https_server.GetURL("a.com", "/back_forward_cache/empty.html")));
+  // 5) Close tab Y to activate a service worker version.
+  // This should evict |rfh_a| from the cache.
+  tab_y->Close();
+  deleted.WaitUntilDeleted();
+  // 6) Navigate to A in tab X.
+  tab_x->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(tab_x->web_contents()));
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
+                FROM_HERE);
+  ExpectNotRestored(
+      {
+          BackForwardCacheMetrics::NotRestoredReason::
+              kServiceWorkerVersionActivation,
+      },
+      FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {

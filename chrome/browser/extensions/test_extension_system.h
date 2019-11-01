@@ -9,6 +9,7 @@
 
 #include "base/one_shot_event.h"
 #include "extensions/browser/extension_system.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
@@ -25,12 +26,6 @@ class FilePath;
 namespace content {
 class BrowserContext;
 }
-
-namespace service_manager {
-class Connector;
-class Service;
-class TestConnectorFactory;
-}  // namespace service_manager
 
 namespace extensions {
 
@@ -107,10 +102,9 @@ class TestExtensionSystem : public ExtensionSystem {
   std::unique_ptr<QuotaService> quota_service_;
   std::unique_ptr<AppSorting> app_sorting_;
   base::OneShotEvent ready_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
 
-  std::unique_ptr<service_manager::Service> data_decoder_;
+  std::unique_ptr<data_decoder::test::InProcessDataDecoder>
+      in_process_data_decoder_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;

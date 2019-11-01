@@ -40,16 +40,6 @@ namespace {
 
 const int32_t kEnableTracingTimeoutSeconds = 10;
 
-perfetto::TraceConfig AdjustTraceConfig(
-    const perfetto::TraceConfig& trace_config) {
-  perfetto::TraceConfig trace_config_copy(trace_config);
-  // Clock snapshotting is incompatible with chrome's process sandboxing.
-  // Telemetry uses its own way of snapshotting clocks anyway.
-  auto* builtin_data_sources = trace_config_copy.mutable_builtin_data_sources();
-  builtin_data_sources->set_disable_clock_snapshotting(true);
-  return trace_config_copy;
-}
-
 }  // namespace
 
 class ConsumerHost::StreamWriter {
@@ -148,10 +138,9 @@ ConsumerHost::TracingSession::TracingSession(
     }
   }
 #endif
-  perfetto::TraceConfig trace_config_copy = AdjustTraceConfig(trace_config);
 
   filtered_pids_.clear();
-  for (const auto& ds_config : trace_config_copy.data_sources()) {
+  for (const auto& ds_config : trace_config.data_sources()) {
     if (ds_config.config().name() == mojom::kTraceEventDataSourceName) {
       for (const auto& filter : ds_config.producer_name_filter()) {
         base::ProcessId pid;
@@ -167,7 +156,7 @@ ConsumerHost::TracingSession::TracingSession(
   base::EraseIf(*pending_enable_tracing_ack_pids_,
                 [this](base::ProcessId pid) { return !IsExpectedPid(pid); });
 
-  host_->consumer_endpoint()->EnableTracing(trace_config_copy);
+  host_->consumer_endpoint()->EnableTracing(trace_config);
   MaybeSendEnableTracingAck();
 
   if (pending_enable_tracing_ack_pids_) {
@@ -285,8 +274,7 @@ void ConsumerHost::TracingSession::ChangeTraceConfig(
     const perfetto::TraceConfig& trace_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  perfetto::TraceConfig trace_config_copy = AdjustTraceConfig(trace_config);
-  host_->consumer_endpoint()->ChangeTraceConfig(trace_config_copy);
+  host_->consumer_endpoint()->ChangeTraceConfig(trace_config);
 }
 
 void ConsumerHost::TracingSession::DisableTracing() {

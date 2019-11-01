@@ -156,24 +156,6 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    protected boolean handleBackPressed() {
-        if (super.handleBackPressed()) return true;
-
-        if (getWebApkInfo().isSplashProvidedByWebApk() && isSplashShowing()) {
-            // When the WebAPK provides the splash screen, the splash screen activity is stacked
-            // underneath the WebAPK. The splash screen finishes itself in
-            // {@link Activity#onResume()}. When finishing the WebApkActivity, there is sometimes a
-            // frame of the splash screen drawn prior to the splash screen activity finishing
-            // itself. There are no glitches when the activity stack is finished via
-            // {@link ActivityManager.AppTask#finishAndRemoveTask()}.
-            WebApkServiceClient.getInstance().finishAndRemoveTaskSdk23(this);
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
         WebApkInfo webApkInfo = (WebApkInfo) webappInfo;
         WebApkInfo.ShareData shareData = webApkInfo.shareData();
@@ -202,5 +184,20 @@ public class WebApkActivity extends WebappActivity {
                 addSplashscreenObserver(new WebApkSplashscreenMetrics(shellLaunchTimestampMs));
             }
         }
+    }
+
+    @Override
+    protected void handleFinishAndClose() {
+        if (getWebApkInfo().isSplashProvidedByWebApk() && isSplashShowing()) {
+            // When the WebAPK provides the splash screen, the splash screen activity is stacked
+            // underneath the WebAPK. The splash screen finishes itself in
+            // {@link Activity#onResume()}. When finishing the WebApkActivity, there is sometimes a
+            // frame of the splash screen drawn prior to the splash screen activity finishing
+            // itself. There are no glitches when the activity stack is finished via
+            // {@link ActivityManager.AppTask#finishAndRemoveTask()}.
+            WebApkServiceClient.getInstance().finishAndRemoveTaskSdk23(this);
+            return;
+        }
+        finish();
     }
 }

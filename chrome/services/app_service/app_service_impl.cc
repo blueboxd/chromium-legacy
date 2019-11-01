@@ -160,15 +160,21 @@ void AppServiceImpl::OpenNativeSettings(apps::mojom::AppType app_type,
   iter->second->OpenNativeSettings(app_id);
 }
 
-void AppServiceImpl::AddPreferredApp(
-    apps::mojom::AppType app_type,
-    const std::string& app_id,
-    apps::mojom::IntentFilterPtr intent_filter) {
+void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
+                                     const std::string& app_id,
+                                     apps::mojom::IntentFilterPtr intent_filter,
+                                     apps::mojom::IntentPtr intent) {
   preferred_apps_.AddPreferredApp(app_id, intent_filter);
   for (auto& subscriber : subscribers_) {
     subscriber->OnPreferredAppSet(app_id, intent_filter->Clone());
   }
-  // TODO(crbug.com/853604): Update to the corresponding publisher.
+
+  auto iter = publishers_.find(app_type);
+  if (iter == publishers_.end()) {
+    return;
+  }
+  iter->second->OnPreferredAppSet(app_id, std::move(intent_filter),
+                                  std::move(intent));
 }
 
 void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {

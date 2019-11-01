@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
@@ -102,6 +103,11 @@ bool NGFragmentItem::IsListMarker() const {
 PhysicalRect NGFragmentItem::InkOverflow() const {
   // TODO(yosin): Implement.
   return LocalRect();
+}
+
+PositionWithAffinity NGFragmentItem::PositionForPoint(
+    const PhysicalOffset&) const {
+  return PositionWithAffinity();
 }
 
 PhysicalRect NGFragmentItem::SelfInkOverflow() const {

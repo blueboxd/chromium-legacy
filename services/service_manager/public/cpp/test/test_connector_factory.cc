@@ -125,8 +125,8 @@ Connector* TestConnectorFactory::GetDefaultConnector() {
 }
 
 std::unique_ptr<Connector> TestConnectorFactory::CreateConnector() {
-  mojom::ConnectorPtr proxy;
-  impl_->Clone(mojo::MakeRequest(&proxy));
+  mojo::PendingRemote<mojom::Connector> proxy;
+  impl_->Clone(proxy.InitWithNewPipeAndPassReceiver());
   return std::make_unique<Connector>(std::move(proxy));
 }
 

@@ -153,7 +153,7 @@ public class AssistantOnboardingCoordinatorTest {
                 AssistantOverlayState.FULL, overlay.getModel().get(AssistantOverlayModel.STATE));
 
         // The bottom sheet content is still the assistant one.
-        assertThat(mBottomSheetController.getBottomSheet().getCurrentSheetContent(),
+        assertThat(mBottomSheetController.getCurrentSheetContent(),
                 instanceOf(AssistantBottomSheetContent.class));
     }
 

@@ -477,7 +477,7 @@ class Cache::CodeCacheHandleCallbackForPut final
     // See crbug.com/743311.
     std::unique_ptr<TextResourceDecoder> text_decoder =
         std::make_unique<TextResourceDecoder>(
-            TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+            TextResourceDecoderOptions::CreateUTF8Decode());
 
     return V8CodeCache::GenerateFullCodeCache(
         script_state_,

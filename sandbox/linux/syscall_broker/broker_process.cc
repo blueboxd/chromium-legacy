@@ -73,6 +73,7 @@ bool BrokerProcess::Init(
     return false;
 
   if (child_pid) {
+    VLOG(3) << "BrokerProcess::Init(), in parent, child is " << child_pid;
     // We are the parent and we have just forked our broker process.
     ipc_reader.reset();
     broker_pid_ = child_pid;
@@ -85,6 +86,7 @@ bool BrokerProcess::Init(
 
   // We are the broker process. Make sure to close the writer's end so that
   // we get notified if the client disappears.
+  VLOG(3) << "BrokerProcess::Init(), in child";
   ipc_writer.reset();
   CHECK(std::move(broker_process_init_callback).Run());
   BrokerHost broker_host(broker_permission_list_, allowed_command_set_,

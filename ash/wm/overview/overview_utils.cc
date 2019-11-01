@@ -251,11 +251,12 @@ gfx::Rect GetGridBoundsInScreenForSplitview(
 
 base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
     aura::Window* window) {
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+  if (!ShouldAllowSplitView())
     return base::nullopt;
   auto* overview_session =
       Shell::Get()->overview_controller()->overview_session();
   DCHECK(overview_session);
+  DCHECK(overview_session->split_view_drag_indicators());
   // TODO(sammiequon): This does not work for drag from top as they have
   // different drag indicators object as regular overview.
   auto indicator_state =

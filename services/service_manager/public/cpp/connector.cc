@@ -10,23 +10,24 @@
 
 namespace service_manager {
 
-Connector::Connector(mojom::ConnectorPtrInfo unbound_state)
+Connector::Connector(mojo::PendingRemote<mojom::Connector> unbound_state)
     : unbound_state_(std::move(unbound_state)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-Connector::Connector(mojom::ConnectorPtr connector)
+Connector::Connector(mojo::Remote<mojom::Connector> connector)
     : connector_(std::move(connector)) {
-  connector_.set_connection_error_handler(
+  connector_.set_disconnect_handler(
       base::BindOnce(&Connector::OnConnectionError, base::Unretained(this)));
 }
 
 Connector::~Connector() = default;
 
-std::unique_ptr<Connector> Connector::Create(mojom::ConnectorRequest* request) {
-  mojom::ConnectorPtr proxy;
-  *request = mojo::MakeRequest(&proxy);
-  return std::make_unique<Connector>(proxy.PassInterface());
+std::unique_ptr<Connector> Connector::Create(
+    mojo::PendingReceiver<mojom::Connector>* receiver) {
+  mojo::PendingRemote<mojom::Connector> proxy;
+  *receiver = proxy.InitWithNewPipeAndPassReceiver();
+  return std::make_unique<Connector>(std::move(proxy));
 }
 
 void Connector::WarmService(const ServiceFilter& filter,
@@ -81,10 +82,10 @@ void Connector::BindInterface(const ServiceFilter& filter,
 }
 
 std::unique_ptr<Connector> Connector::Clone() {
-  mojom::ConnectorPtrInfo connector;
-  auto request = mojo::MakeRequest(&connector);
+  mojo::PendingRemote<mojom::Connector> connector;
+  auto receiver = connector.InitWithNewPipeAndPassReceiver();
   if (BindConnectorIfNecessary())
-    connector_->Clone(std::move(request));
+    connector_->Clone(std::move(receiver));
   return std::make_unique<Connector>(std::move(connector));
 }
 
@@ -104,10 +105,11 @@ void Connector::FilterInterfaces(
                                std::move(target));
 }
 
-void Connector::BindConnectorRequest(mojom::ConnectorRequest request) {
+void Connector::BindConnectorReceiver(
+    mojo::PendingReceiver<mojom::Connector> receiver) {
   if (!BindConnectorIfNecessary())
     return;
-  connector_->Clone(std::move(request));
+  connector_->Clone(std::move(receiver));
 }
 
 base::WeakPtr<Connector> Connector::GetWeakPtr() {
@@ -163,7 +165,7 @@ bool Connector::BindConnectorIfNecessary() {
     }
 
     connector_.Bind(std::move(unbound_state_));
-    connector_.set_connection_error_handler(
+    connector_.set_disconnect_handler(
         base::BindOnce(&Connector::OnConnectionError, base::Unretained(this)));
   }
 

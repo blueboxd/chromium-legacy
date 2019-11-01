@@ -59,6 +59,7 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
                             ? apps::mojom::OptionalBool::kTrue
                             : apps::mojom::OptionalBool::kFalse;
   app->show_in_management = apps::mojom::OptionalBool::kFalse;
+  app->paused = apps::mojom::OptionalBool::kFalse;
 
   return app;
 }
@@ -178,6 +179,13 @@ void BuiltInChromeOsApps::Uninstall(const std::string& app_id,
 }
 
 void BuiltInChromeOsApps::OpenNativeSettings(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void BuiltInChromeOsApps::OnPreferredAppSet(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter,
+    apps::mojom::IntentPtr intent) {
   NOTIMPLEMENTED();
 }
 

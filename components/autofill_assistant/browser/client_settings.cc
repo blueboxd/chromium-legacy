@@ -4,11 +4,30 @@
 
 #include "components/autofill_assistant/browser/client_settings.h"
 
-#include "components/autofill_assistant/browser/service.pb.h"
+namespace {
+
+bool IsValidOverlayImageProto(
+    const autofill_assistant::OverlayImageProto& proto) {
+  if (!proto.image_url().empty() && !proto.has_image_size()) {
+    DVLOG(1) << __func__ << ": Missing image_size in overlay_image, ignoring";
+    return false;
+  }
+
+  if (!proto.text().empty() &&
+      (!proto.has_text_color() || !proto.has_text_size())) {
+    DVLOG(1) << __func__
+             << ": Missing text_color or text_size in overlay_image, ignoring";
+    return false;
+  }
+  return true;
+}
+
+}  // namespace
 
 namespace autofill_assistant {
 
 ClientSettings::ClientSettings() = default;
+ClientSettings::~ClientSettings() = default;
 
 void ClientSettings::UpdateFromProto(const ClientSettingsProto& proto) {
   if (proto.has_periodic_script_check_interval_ms()) {
@@ -57,6 +76,12 @@ void ClientSettings::UpdateFromProto(const ClientSettingsProto& proto) {
   if (proto.has_tap_shutdown_delay_ms()) {
     tap_shutdown_delay =
         base::TimeDelta::FromMilliseconds(proto.tap_shutdown_delay_ms());
+  }
+  if (proto.has_overlay_image() &&
+      IsValidOverlayImageProto(proto.overlay_image())) {
+    overlay_image = proto.overlay_image();
+  } else {
+    overlay_image.reset();
   }
 }
 

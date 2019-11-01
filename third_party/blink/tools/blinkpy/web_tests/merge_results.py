@@ -551,10 +551,13 @@ class JSONTestResultsMerger(JSONMerger):
             ':random_order_seed$',
             ':version$',
         ]
-        for match_name in matching:
-            self.add_helper(
-                NameRegexMatch(match_name),
-                self.merge_equal)
+        # Note: the regex matcher is quite fast, so take advantage of it to
+        # combine identical actions into one. The JSON files contain many keys,
+        # and the cost of iterating over and executing multiple identical
+        # helpers is measurable.
+        self.add_helper(
+            NameRegexMatch('|'.join(matching)),
+            self.merge_equal)
 
         # These keys are accumulated sums we want to add together.
         addable = [
@@ -567,10 +570,9 @@ class JSONTestResultsMerger(JSONMerger):
             # All keys inside the num_failures_by_type entry.
             ':num_failures_by_type:',
         ]
-        for match_name in addable:
-            self.add_helper(
-                NameRegexMatch(match_name),
-                lambda o, name=None: sum(o))
+        self.add_helper(
+            NameRegexMatch('|'.join(addable)),
+            lambda o, name=None: sum(o))
 
         # If any shard is interrupted, mark the whole thing as interrupted.
         self.add_helper(

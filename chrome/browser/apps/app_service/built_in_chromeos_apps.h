@@ -57,6 +57,9 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
                  bool clear_site_data,
                  bool report_abuse) override;
   void OpenNativeSettings(const std::string& app_id) override;
+  void OnPreferredAppSet(const std::string& app_id,
+                         apps::mojom::IntentFilterPtr intent_filter,
+                         apps::mojom::IntentPtr intent) override;
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
 

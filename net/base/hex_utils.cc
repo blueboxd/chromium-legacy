@@ -17,7 +17,7 @@ std::string HexDecode(base::StringPiece input) {
   std::vector<uint8_t> output;
   std::string result;
   if (base::HexStringToBytes(input, &output))
-    result.assign(reinterpret_cast<const char*>(&output[0]), output.size());
+    result.assign(reinterpret_cast<const char*>(output.data()), output.size());
   return result;
 }
 

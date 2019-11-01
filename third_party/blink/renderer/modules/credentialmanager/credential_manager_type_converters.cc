@@ -153,6 +153,12 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
     case blink::mojom::blink::AuthenticatorStatus::
         PROTECTION_POLICY_INCONSISTENT:
       return CredentialManagerError::PROTECTION_POLICY_INCONSISTENT;
+    case blink::mojom::blink::AuthenticatorStatus::OPAQUE_DOMAIN:
+      return CredentialManagerError::OPAQUE_DOMAIN;
+    case blink::mojom::blink::AuthenticatorStatus::INVALID_PROTOCOL:
+      return CredentialManagerError::INVALID_PROTOCOL;
+    case blink::mojom::blink::AuthenticatorStatus::BAD_RELYING_PARTY_ID:
+      return CredentialManagerError::BAD_RELYING_PARTY_ID;
     case blink::mojom::blink::AuthenticatorStatus::SUCCESS:
       NOTREACHED();
       break;

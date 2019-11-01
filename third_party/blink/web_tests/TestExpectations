@@ -5355,9 +5355,6 @@ crbug.com/972476 std-switch/switch-appearance-theme.html [ Failure ]
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] virtual/audio-service/media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 
-# Sheriff 2019-05-27
-crbug.com/942411 [ Win ] http/tests/devtools/network/network-search.js [ Pass Timeout ]
-
 # Failing because of revert of If931c1faff528a87d8a78808f30225ebe2377072.
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_tracks.html [ Failure ]
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/3_tracks.html [ Failure ]
@@ -5755,3 +5752,4 @@ crbug.com/963183 http/tests/devtools/network/network-close-request-view.js [ Pas
 crbug.com/963183 http/tests/devtools/network/network-cookies-pane.js [ Pass Timeout Failure ]
 crbug.com/963183 http/tests/devtools/network/preview-searchable.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/network/waterfall-header-height-updates.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/network/network-search.js [ Pass Timeout Failure ]

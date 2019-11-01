@@ -123,20 +123,4 @@ bool NGPhysicalLineBoxFragment::HasSoftWrapToNextLine() const {
   return !break_token.IsFinished() && !break_token.IsForcedBreak();
 }
 
-PhysicalOffset NGPhysicalLineBoxFragment::LineStartPoint() const {
-  const LogicalOffset logical_start;  // (0, 0)
-  const PhysicalSize pixel_size(LayoutUnit(1), LayoutUnit(1));
-  return logical_start.ConvertToPhysical(Style().GetWritingMode(),
-                                         BaseDirection(), Size(), pixel_size);
-}
-
-PhysicalOffset NGPhysicalLineBoxFragment::LineEndPoint() const {
-  const LayoutUnit inline_size =
-      NGFragment(Style().GetWritingMode(), *this).InlineSize();
-  const LogicalOffset logical_end(inline_size, LayoutUnit());
-  const PhysicalSize pixel_size(LayoutUnit(1), LayoutUnit(1));
-  return logical_end.ConvertToPhysical(Style().GetWritingMode(),
-                                       BaseDirection(), Size(), pixel_size);
-}
-
 }  // namespace blink

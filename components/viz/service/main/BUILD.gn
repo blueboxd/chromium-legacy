@@ -49,4 +49,9 @@ source_set("main") {
   if (is_chromeos) {
     deps += [ "//media/gpu" ]
   }
+
+  if (is_chromecast) {
+    defines += [ "IS_CHROMECAST" ]
+    deps += [ "//chromecast/media/service/mojom" ]
+  }
 }

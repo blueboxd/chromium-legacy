@@ -25,6 +25,8 @@ class InProcessDataDecoder : public ServiceProvider {
   InProcessDataDecoder();
   ~InProcessDataDecoder() override;
 
+  DataDecoderService& service() { return service_; }
+
   const mojo::ReceiverSet<mojom::DataDecoderService>& receivers() const {
     return receivers_;
   }

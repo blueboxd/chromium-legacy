@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/security_state/core/security_state.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_google_chrome_strings.h"
@@ -26,6 +27,7 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+#import "ios/web/common/origin_util.h"
 #include "ios/web/public/security/ssl_status.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -70,8 +72,16 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
   // Summary and details.
   SectionStateIcon icon_id = ICON_NONE;
   if (!ssl.certificate) {
-    // Not HTTPS.
-    icon_id = ICON_STATE_INFO;
+    // Not HTTPS. This maps to the WARNING security level. Show the grey
+    // triangle icon in page info based on the same logic used to determine
+    // the iconography in the omnibox.
+    if (security_state::ShouldDowngradeNeutralStyling(
+            security_state::SecurityLevel::WARNING, url,
+            base::BindRepeating(&web::IsOriginSecure))) {
+      icon_id = ICON_STATE_ERROR;
+    } else {
+      icon_id = ICON_STATE_INFO;
+    }
     summary.assign(l10n_util::GetStringUTF16(IDS_PAGE_INFO_NOT_SECURE_SUMMARY));
     details.assign(l10n_util::GetStringUTF16(IDS_PAGE_INFO_NOT_SECURE_DETAILS));
   } else {
@@ -111,8 +121,16 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
             IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
       }
       if (ssl.content_status == web::SSLStatus::DISPLAYED_INSECURE_CONTENT) {
-        // HTTPS with mixed content.
-        icon_id = ICON_STATE_INFO;
+        // HTTPS with mixed content. This maps to the NONE security level. Show
+        // the grey triangle icon in page info based on the same logic used to
+        // determine the iconography in the omnibox.
+        if (security_state::ShouldDowngradeNeutralStyling(
+                security_state::SecurityLevel::NONE, url,
+                base::BindRepeating(&web::IsOriginSecure))) {
+          icon_id = ICON_STATE_ERROR;
+        } else {
+          icon_id = ICON_STATE_INFO;
+        }
         summary.assign(
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY));
         details.assign(

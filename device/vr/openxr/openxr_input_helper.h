@@ -30,6 +30,10 @@ class OpenXRInputHelper {
   std::vector<mojom::XRInputSourceStatePtr> GetInputState(
       XrTime predicted_display_time);
 
+  void OnInteractionProfileChanged(XrResult* xr_result);
+
+  base::WeakPtr<OpenXRInputHelper> GetWeakPtr();
+
  private:
   base::Optional<Gamepad> GetWebXRGamepad(
       const OpenXrController& controller) const;
@@ -46,6 +50,9 @@ class OpenXRInputHelper {
   std::array<OpenXrControllerState,
              static_cast<size_t>(OpenXrHandednessType::kCount)>
       controller_states_;
+
+  // This must be the last member
+  base::WeakPtrFactory<OpenXRInputHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OpenXRInputHelper);
 };

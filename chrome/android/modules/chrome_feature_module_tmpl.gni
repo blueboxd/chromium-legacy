@@ -57,9 +57,20 @@ template("chrome_feature_module") {
     not_needed([ "_is_monochrome_or_trichrome" ])
   }
 
+  if (defined(_module_desc.pak_deps)) {
+    android_assets("${target_name}__pak_assets") {
+      sources = _module_desc.paks
+      deps = _module_desc.pak_deps
+      disable_compression = true
+    }
+  }
+
   module_desc_java("${target_name}__module_desc_java") {
     module_name = _module_desc.name
     shared_libraries = _shared_libraries
+    if (defined(_module_desc.pak_deps)) {
+      paks = _module_desc.paks
+    }
   }
 
   android_app_bundle_module(target_name) {
@@ -78,6 +89,9 @@ template("chrome_feature_module") {
     deps = [
       ":${target_name}__module_desc_java",
     ]
+    if (defined(_module_desc.pak_deps)) {
+      deps += [ ":${target_name}__pak_assets" ]
+    }
     if (defined(_module_desc.java_deps)) {
       deps += _module_desc.java_deps
     }

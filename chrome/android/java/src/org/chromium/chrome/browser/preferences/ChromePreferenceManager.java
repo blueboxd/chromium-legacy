@@ -391,7 +391,7 @@ public class ChromePreferenceManager {
      * Stores a set of account names on the device when signin promo is shown.
      */
     public void setSigninPromoLastAccountNames(Set<String> accountNames) {
-        writeStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, accountNames);
+        mManager.writeStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, accountNames);
     }
 
     /**
@@ -424,7 +424,7 @@ public class ChromePreferenceManager {
      *        to record that the counter has been disabled.
      */
     public void setContextualSearchTapTriggeredPromoCount(int count) {
-        writeInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, count);
+        mManager.writeInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, count);
     }
 
     /**
@@ -439,7 +439,7 @@ public class ChromePreferenceManager {
      * @param weekNumber The week number to store.
      */
     public void setContextualSearchCurrentWeekNumber(int weekNumber) {
-        writeInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER, weekNumber);
+        mManager.writeInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER, weekNumber);
     }
 
     /**
@@ -448,7 +448,7 @@ public class ChromePreferenceManager {
      * @return the epoch time in milliseconds (see {@link System#currentTimeMillis()}).
      */
     public long getNewTabPageSigninPromoSuppressionPeriodStart() {
-        return readLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, 0);
+        return mManager.readLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
     }
 
     /**
@@ -457,7 +457,7 @@ public class ChromePreferenceManager {
      * @param timeMillis the epoch time in milliseconds (see {@link System#currentTimeMillis()}).
      */
     public void setNewTabPageSigninPromoSuppressionPeriodStart(long timeMillis) {
-        writeLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, timeMillis);
+        mManager.writeLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, timeMillis);
     }
 
     /**
@@ -465,7 +465,7 @@ public class ChromePreferenceManager {
      * Tab Page are no longer suppressed.
      */
     public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
-        removeKey(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
+        mManager.removeKey(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
     }
 
     /**
@@ -475,7 +475,7 @@ public class ChromePreferenceManager {
     public Set<String> getVerifiedDigitalAssetLinks() {
         // From the official docs, modifying the result of a SharedPreferences.getStringSet can
         // cause bad things to happen including exceptions or ruining the data.
-        return new HashSet<>(readStringSet(VERIFIED_DIGITAL_ASSET_LINKS));
+        return new HashSet<>(mManager.readStringSet(VERIFIED_DIGITAL_ASSET_LINKS));
     }
 
     /**
@@ -483,12 +483,12 @@ public class ChromePreferenceManager {
      * Can be retrieved by {@link #getVerifiedDigitalAssetLinks()}.
      */
     public void setVerifiedDigitalAssetLinks(Set<String> links) {
-        writeStringSet(VERIFIED_DIGITAL_ASSET_LINKS, links);
+        mManager.writeStringSet(VERIFIED_DIGITAL_ASSET_LINKS, links);
     }
 
     /** Do not modify the set returned by this method. */
     private Set<String> getTrustedWebActivityDisclosureAcceptedPackages() {
-        return readStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES);
+        return mManager.readStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES);
     }
 
     /**
@@ -496,7 +496,7 @@ public class ChromePreferenceManager {
      * TWAs launched by the given package.
      */
     public void setUserAcceptedTwaDisclosureForPackage(String packageName) {
-        addToStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
+        mManager.addToStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
     }
 
     /**
@@ -504,7 +504,8 @@ public class ChromePreferenceManager {
      * TWAs launched by the given package.
      */
     public void removeTwaDisclosureAcceptanceForPackage(String packageName) {
-        removeFromStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
+        mManager.removeFromStringSet(
+                TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
     }
 
     /**
@@ -513,44 +514,6 @@ public class ChromePreferenceManager {
      */
     public boolean hasUserAcceptedTwaDisclosureForPackage(String packageName) {
         return getTrustedWebActivityDisclosureAcceptedPackages().contains(packageName);
-    }
-
-    /**
-     * Reads set of String values from preferences.
-     *
-     * Note that you must not modify the set instance returned by this call.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public Set<String> readStringSet(String key) {
-        return mManager.readStringSet(key);
-    }
-
-    /**
-     * Adds a value to string set in shared preferences.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void addToStringSet(String key, String value) {
-        mManager.addToStringSet(key, value);
-    }
-
-    /**
-     * Removes value from string set in shared preferences.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void removeFromStringSet(String key, String value) {
-        mManager.removeFromStringSet(key, value);
-    }
-
-    /**
-     * Writes string set to shared preferences.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void writeStringSet(String key, Set<String> values) {
-        mManager.writeStringSet(key, values);
     }
 
     /**
@@ -597,31 +560,6 @@ public class ChromePreferenceManager {
     @Deprecated
     public int incrementInt(String key) {
         return mManager.incrementInt(key);
-    }
-
-    /**
-     * Writes the given long to the named shared preference.
-     *
-     * @param key The name of the preference to modify.
-     * @param value The new value for the preference.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void writeLong(String key, long value) {
-        mManager.writeLong(key, value);
-    }
-
-    /**
-     * Reads the given long value from the named shared preference.
-     *
-     * @param key The name of the preference to return.
-     * @param defaultValue The default value to return if there's no value stored.
-     * @return The value of the preference if stored; defaultValue otherwise.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public long readLong(String key, long defaultValue) {
-        return mManager.readLong(key, defaultValue);
     }
 
     /**

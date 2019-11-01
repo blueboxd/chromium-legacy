@@ -445,6 +445,17 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void CreatePaymentManager(
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
 
+  // BackForwardCache:
+  // For service worker clients that are windows.
+  bool IsInBackForwardCache() const;
+  void EvictFromBackForwardCache();
+  // Called when this provider host's frame goes into BackForwardCache.
+  void OnEnterBackForwardCache();
+  // Called when a frame gets restored from BackForwardCache. Note that a
+  // BackForwardCached frame can be deleted while in the cache but in this case
+  // OnRestoreFromBackForwardCache will not be called.
+  void OnRestoreFromBackForwardCache();
+
  private:
   // For service worker clients. The flow is kInitial -> kResponseCommitted ->
   // kExecutionReady.

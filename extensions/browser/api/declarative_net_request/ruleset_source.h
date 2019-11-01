@@ -15,17 +15,13 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
 
-namespace base {
-class Token;
-}  // namespace base
-
 namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+namespace data_decoder {
+class DataDecoder;
+}  // namespace data_decoder
 
 namespace extensions {
 class Extension;
@@ -182,15 +178,12 @@ class RulesetSource {
   using IndexAndPersistJSONRulesetCallback =
       base::OnceCallback<void(IndexAndPersistJSONRulesetResult)>;
   // Same as IndexAndPersistJSONRulesetUnsafe but parses the JSON rules file
-  // out-of-process. |connector| should be a connector to the ServiceManager
-  // usable on the current sequence. Optionally clients can pass a valid
-  // |decoder_batch_id| to be used when accessing the data decoder service,
-  // which is used internally to parse JSON.
+  // out-of-process. |decoder| corresponds to a Data Decoder service instance
+  // to use for decode operations related to this call.
   //
   // NOTE: This must be called on a sequence where file IO is allowed.
   void IndexAndPersistJSONRuleset(
-      service_manager::Connector* connector,
-      const base::Optional<base::Token>& decoder_batch_id,
+      data_decoder::DataDecoder* decoder,
       IndexAndPersistJSONRulesetCallback callback) const;
 
   // Indexes the given |rules| in indexed/flatbuffer format. Populates

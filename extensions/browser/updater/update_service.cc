@@ -275,13 +275,6 @@ void UpdateService::StartUpdateCheck(
       batch_data.emplace(it->first, std::move(it->second));
     }
 
-    UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateCalls",
-                             batch_size);
-    // This UMA histogram measures update check requests of the unified
-    // extension updater.
-    UMA_HISTOGRAM_COUNTS_100("Extensions.UnifiedExtensionUpdaterUpdateCalls",
-                             batch_size);
-
     update_client_->Update(
         batch_ids,
         base::BindOnce(&UpdateDataProvider::GetData, update_data_provider_,
@@ -367,8 +360,6 @@ void UpdateService::HandleComponentUpdateErrorEvent(
 
 void UpdateService::HandleComponentUpdateFoundEvent(
     const std::string& extension_id) const {
-  UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateFoundCount", 1);
-
   update_client::CrxUpdateItem update_item;
   if (!update_client_->GetCrxUpdateState(extension_id, &update_item)) {
     return;

@@ -4,9 +4,15 @@
 
 package org.chromium.chrome.browser.autofill_assistant.overlay;
 
+import android.graphics.Bitmap;
 import android.graphics.RectF;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
@@ -23,11 +29,19 @@ public class AssistantOverlayCoordinator {
     private final AssistantOverlayEventFilter mEventFilter;
     private final AssistantOverlayDrawable mDrawable;
     private final ScrimView mScrim;
+    private final ImageFetcher mImageFetcher;
     private boolean mScrimEnabled;
 
     public AssistantOverlayCoordinator(ChromeActivity activity, AssistantOverlayModel model) {
+        this(activity, model,
+                ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY));
+    }
+
+    public AssistantOverlayCoordinator(
+            ChromeActivity activity, AssistantOverlayModel model, ImageFetcher imageFetcher) {
         mActivity = activity;
         mModel = model;
+        mImageFetcher = imageFetcher;
         mScrim = mActivity.getScrim();
         mEventFilter = new AssistantOverlayEventFilter(
                 mActivity, mActivity.getFullscreenManager(), mActivity.getCompositorViewHolder());
@@ -65,6 +79,23 @@ public class AssistantOverlayCoordinator {
             } else if (AssistantOverlayModel.TAP_TRACKING_DURATION_MS == propertyKey) {
                 mEventFilter.setTapTrackingDurationMs(
                         model.get(AssistantOverlayModel.TAP_TRACKING_DURATION_MS));
+            } else if (AssistantOverlayModel.OVERLAY_IMAGE == propertyKey) {
+                AssistantOverlayImage image = model.get(AssistantOverlayModel.OVERLAY_IMAGE);
+                if (image != null && !TextUtils.isEmpty(image.mImageUrl)
+                        && image.mImageSize != null) {
+                    DisplayMetrics displayMetrics = mActivity.getResources().getDisplayMetrics();
+                    // TODO(b/143517837) Merge autofill assistant image fetcher UMA names.
+                    mImageFetcher.fetchImage(image.mImageUrl,
+                            ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, result -> {
+                                int imageSizePixels =
+                                        image.mImageSize.getSizeInPixels(displayMetrics);
+                                image.mImageBitmap = Bitmap.createScaledBitmap(
+                                        result, imageSizePixels, imageSizePixels, true);
+                                mDrawable.setFullOverlayImage(image);
+                            });
+                } else {
+                    mDrawable.setFullOverlayImage(image);
+                }
             }
         });
     }

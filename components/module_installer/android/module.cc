@@ -74,9 +74,9 @@ void RegisterJni(JNIEnv* env, void* library_handle, const std::string& name) {
   CHECK(registration_function(env)) << "JNI registration failed: " << name;
 }
 
-void LoadResources(const std::string& name) {
+void LoadResources(const std::string& pak) {
   module_installer::ScopedAllowModulePakLoad scoped_allow_module_pak_load;
-  ui::LoadPackFileFromApk("assets/" + name + "_resources.pak");
+  ui::LoadPackFileFromApk("assets/" + pak);
 }
 
 }  // namespace
@@ -85,7 +85,7 @@ static void JNI_Module_LoadNative(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& jname,
     const base::android::JavaParamRef<jobjectArray>& jlibraries,
-    jboolean load_resources) {
+    const base::android::JavaParamRef<jobjectArray>& jpaks) {
   std::string name;
   base::android::ConvertJavaStringToUTF8(env, jname, &name);
   std::vector<std::string> libraries;
@@ -101,8 +101,10 @@ static void JNI_Module_LoadNative(
     // function.
     RegisterJni(env, library_handle, name);
   }
-  if (load_resources) {
-    LoadResources(name);
+  std::vector<std::string> paks;
+  base::android::AppendJavaStringArrayToStringVector(env, jpaks, &paks);
+  for (const auto& pak : paks) {
+    LoadResources(pak);
   }
 }
 

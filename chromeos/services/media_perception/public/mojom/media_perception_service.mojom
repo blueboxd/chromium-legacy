@@ -25,6 +25,5 @@ interface MediaPerceptionControllerClient {
   // Interface for the service to connect to the Video Capture Service
   // directly via a Mojo pipe set up through a DeviceFactory request.
   ConnectToVideoCaptureService@0(
-      video_capture.mojom.VideoSourceProvider& request);
+      pending_receiver<video_capture.mojom.VideoSourceProvider> receiver);
 };
-

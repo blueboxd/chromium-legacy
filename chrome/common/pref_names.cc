@@ -167,11 +167,6 @@ const char kSupervisedUserManualHosts[] = "profile.managed.manual_hosts";
 // Maps URLs to whether the URL is manually allowed or blocked.
 const char kSupervisedUserManualURLs[] = "profile.managed.manual_urls";
 
-// Maps extension ids to the approved version of this extension for a
-// supervised user. Missing extensions are not approved.
-const char kSupervisedUserApprovedExtensions[] =
-    "profile.managed.approved_extensions";
-
 // Stores whether the SafeSites filter is enabled.
 const char kSupervisedUserSafeSites[] = "profile.managed.safe_sites";
 

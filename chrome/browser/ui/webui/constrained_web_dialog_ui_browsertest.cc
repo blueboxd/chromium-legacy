@@ -108,7 +108,13 @@ class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
 };
 
 // Tests that opening/closing the constrained window won't crash it.
-IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, BasicTest) {
+// Flaky on trusty builder: http://crbug.com/1020490.
+#if defined(OS_LINUX)
+#define MAYBE_BasicTest DISABLED_BasicTest
+#else
+#define MAYBE_BasicTest BasicTest
+#endif
+IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest, MAYBE_BasicTest) {
   auto delegate = std::make_unique<ui::test::TestWebDialogDelegate>(
       GURL(chrome::kChromeUIConstrainedHTMLTestURL));
   WebContents* web_contents =

@@ -311,6 +311,10 @@ XrPath OpenXrTestHelper::GetPath(const char* path_string) {
   return paths_.size() - 1;
 }
 
+XrPath OpenXrTestHelper::GetCurrentInteractionProfile() {
+  return GetPath("/interaction_profiles/microsoft/motion_controller");
+}
+
 XrResult OpenXrTestHelper::BeginSession() {
   RETURN_IF(session_state_ != XR_SESSION_STATE_READY,
             XR_ERROR_VALIDATION_FAILURE,
@@ -468,19 +472,27 @@ XrResult OpenXrTestHelper::UpdateAction(XrAction action) {
 
 void OpenXrTestHelper::SetSessionState(XrSessionState state) {
   session_state_ = state;
-  XrEventDataSessionStateChanged event = {
-      XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED};
-  event.session = session_;
-  event.state = session_state_;
-  event.time = next_predicted_display_time_;
-  session_state_event_queue_.push(event);
+  XrEventDataBuffer event_data;
+  XrEventDataSessionStateChanged* event_data_ptr =
+      reinterpret_cast<XrEventDataSessionStateChanged*>(&event_data);
+
+  event_data_ptr->type = XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED;
+  event_data_ptr->session = session_;
+  event_data_ptr->state = session_state_;
+  event_data_ptr->time = next_predicted_display_time_;
+
+  event_queue_.push(event_data);
 }
 
-XrEventDataSessionStateChanged OpenXrTestHelper::GetNextSessionStateEvent() {
-  DCHECK(HasPendingSessionStateEvent());
-  XrEventDataSessionStateChanged front = session_state_event_queue_.front();
-  session_state_event_queue_.pop();
-  return front;
+XrResult OpenXrTestHelper::PollEvent(XrEventDataBuffer* event_data) {
+  UpdateEventQueue();
+  if (!event_queue_.empty()) {
+    *event_data = event_queue_.front();
+    event_queue_.pop();
+    return XR_SUCCESS;
+  }
+
+  return XR_EVENT_UNAVAILABLE;
 }
 
 const std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>>&
@@ -498,20 +510,24 @@ XrTime OpenXrTestHelper::NextPredictedDisplayTime() {
   return ++next_predicted_display_time_;
 }
 
-bool OpenXrTestHelper::UpdateSessionStateEventQueue() {
+void OpenXrTestHelper::UpdateEventQueue() {
   base::AutoLock auto_lock(lock_);
   if (test_hook_) {
-    if (test_hook_->WaitGetSessionStateStopping()) {
-      SetSessionState(XR_SESSION_STATE_STOPPING);
-    }
-    return true;
+    device_test::mojom::EventData data = {};
+    do {
+      data = test_hook_->WaitGetEventData();
+      if (data.type == device_test::mojom::EventType::kSessionLost) {
+        SetSessionState(XR_SESSION_STATE_STOPPING);
+      } else if (data.type == device_test::mojom::EventType::kInstanceLost) {
+        XrEventDataBuffer event_data = {
+            XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING};
+        event_queue_.push(event_data);
+      } else if (data.type != device_test::mojom::EventType::kNoEvent) {
+        NOTREACHED() << "Event changed tests other than session lost and "
+                        "instance lost is not implemented";
+      }
+    } while (data.type != device_test::mojom::EventType::kNoEvent);
   }
-
-  return false;
-}
-
-bool OpenXrTestHelper::HasPendingSessionStateEvent() {
-  return !session_state_event_queue_.empty();
 }
 
 base::Optional<gfx::Transform> OpenXrTestHelper::GetPose() {

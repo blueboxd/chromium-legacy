@@ -86,7 +86,7 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
         break;
       case ServiceApi::kMultiClient:
         GetVideoCaptureService().ConnectToVideoSourceProvider(
-            mojo::MakeRequest(&video_source_provider_));
+            video_source_provider_.BindNewPipeAndPassReceiver());
         video_source_provider_->RegisterVirtualDevicesChangedObserver(
             std::move(observer),
             false /*raise_event_if_virtual_devices_already_present*/);
@@ -166,7 +166,7 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
 
   void DisconnectFromService() {
     factory_.reset();
-    video_source_provider_ = nullptr;
+    video_source_provider_.reset();
   }
 
   void EnumerateDevicesInRendererAndVerifyDeviceCount(
@@ -234,7 +234,8 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
       devices_changed_observer_receiver_{this};
   base::test::ScopedFeatureList scoped_feature_list_;
   mojo::Remote<video_capture::mojom::DeviceFactory> factory_;
-  video_capture::mojom::VideoSourceProviderPtr video_source_provider_;
+  mojo::Remote<video_capture::mojom::VideoSourceProvider>
+      video_source_provider_;
   base::OnceClosure closure_to_be_called_on_devices_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCaptureServiceEnumerationBrowserTest);

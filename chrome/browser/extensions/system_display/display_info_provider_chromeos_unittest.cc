@@ -69,8 +69,8 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
 
     // Create a local service manager connector to handle requests to
     // ash::mojom::CrosDisplayConfigController.
-    service_manager::mojom::ConnectorRequest request;
-    connector_ = service_manager::Connector::Create(&request);
+    mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
+    connector_ = service_manager::Connector::Create(&receiver);
     service_manager::Connector::TestApi test_api(connector_.get());
     test_api.OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),

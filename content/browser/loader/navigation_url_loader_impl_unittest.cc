@@ -33,6 +33,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_navigation_url_loader_delegate.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -140,9 +141,9 @@ class NavigationURLLoaderImplTest : public testing::Test {
     // BrowserContext::GetDefaultStoragePartition will segfault when
     // ContentBrowserClient::CreateNetworkContext tries to call
     // GetNetworkService.
-    service_manager::mojom::ConnectorRequest connector_request;
+    mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
     SetSystemConnectorForTesting(
-        service_manager::Connector::Create(&connector_request));
+        service_manager::Connector::Create(&connector_receiver));
 
     browser_context_.reset(new TestBrowserContext);
     http_test_server_.AddDefaultHandlers(

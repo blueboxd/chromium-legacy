@@ -497,12 +497,6 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Successful) {
   const auto& request = update_client()->update_request(0);
   EXPECT_THAT(request.extension_ids,
               testing::ElementsAre("A", "B", "C", "D", "E"));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
-      testing::ElementsAre(base::Bucket(5, 1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
-              testing::ElementsAre(base::Bucket(5, 1)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed);
@@ -542,12 +536,6 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Duplicate) {
   const auto& request = update_client()->update_request(0);
   EXPECT_THAT(request.extension_ids,
               testing::ElementsAre("A", "B", "C", "D", "E"));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
-      testing::ElementsAre(base::Bucket(5, 1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
-              testing::ElementsAre(base::Bucket(5, 1)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed1);
@@ -586,12 +574,6 @@ TEST_F(UpdateServiceTest, InProgressUpdate_NonOverlapped) {
 
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
-      testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
-              testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed1);
@@ -632,12 +614,6 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Overlapped) {
 
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D"));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
-      testing::ElementsAre(base::Bucket(1, 1), base::Bucket(3, 1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
-              testing::ElementsAre(base::Bucket(1, 1), base::Bucket(3, 1)));
 
   update_client()->RunDelayedUpdate(0);
   ASSERT_TRUE(executed1);
@@ -694,12 +670,6 @@ TEST_F(UpdateServiceTest, InProgressUpdate_3Overlapped) {
 
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
-      testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
-              testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
 
   update_client()->RunDelayedUpdate(0);
   ASSERT_TRUE(executed1);
@@ -771,14 +741,6 @@ TEST_F(UpdateServiceTest, InProgressUpdate_4Overlapped) {
   EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
   EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
   EXPECT_THAT(request3.extension_ids, testing::ElementsAre("G", "H", "I", "J"));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
-      testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1),
-                           base::Bucket(4, 1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
-              testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1),
-                                   base::Bucket(4, 1)));
 
   update_client()->RunDelayedUpdate(0);
   ASSERT_TRUE(executed1);
@@ -833,13 +795,6 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Batch) {
               testing::ElementsAre("A44", "A45", "A46", "A47", "A48", "A49",
                                    "A50", "A51", "A52", "A53", "A54", "A55",
                                    "A56", "A57", "A58", "A59"));
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
-      testing::ElementsAre(base::Bucket(16, 1), base::Bucket(22, 2)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
-              testing::ElementsAre(base::Bucket(16, 1), base::Bucket(22, 2)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_FALSE(executed);
@@ -902,15 +857,6 @@ TEST_F(UpdateServiceTest, InProgressUpdate_NoBatchAndBatch) {
   EXPECT_THAT(request4.extension_ids,
               testing::ElementsAre("A44", "A45", "A46", "A47", "A48", "A49",
                                    "A50", "A51", "A52", "A53", "A54"));
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
-      testing::ElementsAre(base::Bucket(4, 1), base::Bucket(11, 1),
-                           base::Bucket(22, 2)));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
-              testing::ElementsAre(base::Bucket(4, 1), base::Bucket(11, 1),
-                                   base::Bucket(22, 2)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed1);

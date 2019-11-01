@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace resource_coordinator {
 namespace testing {
@@ -111,9 +112,9 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
   LocalSiteCharacteristicsDataStoreFactory::EnableForTesting();
 
   // TODO(siggi): Can this die now?
-  service_manager::mojom::ConnectorRequest connector_request;
+  mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
   content::SetSystemConnectorForTesting(
-      service_manager::Connector::Create(&connector_request));
+      service_manager::Connector::Create(&connector_receiver));
   ChromeRenderViewHostTestHarness::SetUp();
 }
 

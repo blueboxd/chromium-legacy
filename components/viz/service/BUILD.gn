@@ -238,6 +238,11 @@ viz_component("service") {
     deps += [ "//components/arc/video_accelerator" ]
   }
 
+  if (is_chromecast) {
+    defines += [ "IS_CHROMECAST" ]
+    deps += [ "//chromecast/media/service/mojom" ]
+  }
+
   if (is_mac) {
     sources += [
       "display_embedder/overlay_candidate_validator_mac.cc",

@@ -18,6 +18,7 @@
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
@@ -227,10 +228,10 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
       std::move(accelerator_factory));
 #endif  // defined(OS_CHROMEOS)
 
-  video_capture::mojom::VideoSourceProviderPtr source_provider;
+  mojo::Remote<video_capture::mojom::VideoSourceProvider> source_provider;
   GetVideoCaptureService().ConnectToVideoSourceProvider(
-      mojo::MakeRequest(&source_provider));
-  source_provider.set_connection_error_handler(base::BindOnce(
+      source_provider.BindNewPipeAndPassReceiver());
+  source_provider.set_disconnect_handler(base::BindOnce(
       &ServiceVideoCaptureProvider::OnLostConnectionToSourceProvider,
       weak_ptr_factory_.GetWeakPtr()));
   auto result = base::MakeRefCounted<RefCountedVideoSourceProvider>(

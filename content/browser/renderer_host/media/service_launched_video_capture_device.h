@@ -17,7 +17,7 @@ namespace content {
 class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
  public:
   ServiceLaunchedVideoCaptureDevice(
-      video_capture::mojom::VideoSourcePtr source,
+      mojo::Remote<video_capture::mojom::VideoSource> source,
       mojo::Remote<video_capture::mojom::PushVideoStreamSubscription>
           subscription,
       base::OnceClosure connection_lost_cb);
@@ -52,7 +52,7 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
       media::VideoCaptureDevice::TakePhotoCallback callback,
       media::mojom::BlobPtr blob);
 
-  video_capture::mojom::VideoSourcePtr source_;
+  mojo::Remote<video_capture::mojom::VideoSource> source_;
   mojo::Remote<video_capture::mojom::PushVideoStreamSubscription> subscription_;
   base::OnceClosure connection_lost_cb_;
   base::SequenceChecker sequence_checker_;

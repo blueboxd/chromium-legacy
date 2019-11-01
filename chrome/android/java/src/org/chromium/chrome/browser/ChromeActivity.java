@@ -47,6 +47,7 @@ import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ObservableSupplier;
 import org.chromium.base.ObservableSupplierImpl;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.Supplier;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -1357,9 +1358,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @Override
     public SnackbarManager getSnackbarManager() {
-        boolean useBottomSheetContainer = mBottomSheetController != null
-                && mBottomSheetController.getBottomSheet().isSheetOpen()
-                && !mBottomSheetController.getBottomSheet().isHiding();
+        if (getBottomSheetController() == null) return mSnackbarManager;
+
+        BottomSheet sheet = getBottomSheetController().getBottomSheet();
+        boolean useBottomSheetContainer = sheet != null && sheet.isSheetOpen() && !sheet.isHiding();
         return useBottomSheetContainer ? mBottomSheetSnackbarManager : mSnackbarManager;
     }
 
@@ -1437,6 +1439,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mDirectActionInitializer != null) {
             registerDirectActions();
         }
+
+        initializeBottomSheetController();
     }
 
     /**
@@ -1470,19 +1474,31 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * Initializes the {@link BottomSheet} and {@link BottomSheetController} for use.
+     * Initializes the {@link BottomSheetController}. The {@link BottomSheet} is only initialized
+     * after content is requested for the first time.
      */
-    protected void initializeBottomSheet() {
-        ViewGroup coordinator = findViewById(R.id.coordinator);
-        getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
-        mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
-        mBottomSheet.init(coordinator, getActivityTabProvider(), getFullscreenManager(),
-                getWindow(), getWindowAndroid().getKeyboardDelegate());
+    protected void initializeBottomSheetController() {
+        Supplier<BottomSheet> sheetSupplier = () -> {
+            ViewGroup coordinator = findViewById(R.id.coordinator);
+            getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
+            mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
+            mBottomSheet.init(coordinator, getActivityTabProvider(), getFullscreenManager(),
+                    getWindow(), getWindowAndroid().getKeyboardDelegate());
 
-        mBottomSheetSnackbarManager = new SnackbarManager(
-                this, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
+            mBottomSheetSnackbarManager = new SnackbarManager(
+                    this, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
 
-        mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
+            return mBottomSheet;
+        };
+
+        mBottomSheetController = new BottomSheetController(getLifecycleDispatcher(),
+                mActivityTabProvider, mScrimView, sheetSupplier,
+                getCompositorViewHolder().getLayoutManager().getOverlayPanelManager());
+
+        ((BottomContainer) findViewById(R.id.bottom_container))
+                .setBottomSheetController(mBottomSheetController);
+
+        mBottomSheetController.addObserver(new EmptyBottomSheetObserver() {
             /** A token for suppressing app modal dialogs. */
             private int mAppModalToken = TokenHolder.INVALID_TOKEN;
             /** A token for suppressing tab modal dialogs. */
@@ -1521,12 +1537,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 mBottomSheetSnackbarManager.dismissAllSnackbars();
             }
         });
-
-        ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
-
-        mBottomSheetController = new BottomSheetController(getLifecycleDispatcher(),
-                mActivityTabProvider, mScrimView, mBottomSheet,
-                getCompositorViewHolder().getLayoutManager().getOverlayPanelManager());
     }
 
     /**
@@ -2548,7 +2558,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      *         a new controller is created.
      */
     public BottomSheetController getBottomSheetController() {
-        if (mBottomSheetController == null) initializeBottomSheet();
         return mBottomSheetController;
     }
 

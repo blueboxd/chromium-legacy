@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
 #include "chromecast/base/cast_features.h"
@@ -53,6 +54,7 @@
 #include "chromecast/media/cma/backend/cma_backend_factory_impl.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/media/service/cast_renderer.h"
+#include "chromecast/media/service/mojom/video_geometry_setter.mojom.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -75,7 +77,6 @@
 #include "content/public/common/web_preferences.h"
 #include "media/audio/audio_thread_impl.h"
 #include "media/base/media_switches.h"
-#include "media/mojo/buildflags.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -133,19 +134,31 @@
 #include "chromecast/browser/webview/webview_controller.h"
 #endif  // BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
 
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+#include "base/sequenced_task_runner.h"
+#include "chromecast/media/service/video_geometry_setter_service.h"
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+
 namespace chromecast {
 namespace shell {
 
 CastContentBrowserClient::CastContentBrowserClient(
     CastFeatureListCreator* cast_feature_list_creator)
-    : cast_browser_main_parts_(nullptr),
+    :
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+      video_geometry_setter_service_(
+          std::unique_ptr<media::VideoGeometrySetterService,
+                          base::OnTaskRunnerDeleter>(
+              nullptr,
+              base::OnTaskRunnerDeleter(nullptr))),
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+      cast_browser_main_parts_(nullptr),
       cast_network_contexts_(
           std::make_unique<CastNetworkContexts>(GetCorsExemptHeadersList())),
       url_request_context_factory_(new URLRequestContextFactory()),
       cast_feature_list_creator_(cast_feature_list_creator) {
   cast_feature_list_creator_->SetExtraEnableFeatures({
-    ::media::kInternalMediaSession,
-    features::kNetworkServiceInProcess,
+    ::media::kInternalMediaSession, features::kNetworkServiceInProcess,
 #if defined(OS_ANDROID)
         // TODO(awolter): Remove this once the feature is on by default.
         features::kAudioServiceAudioStreams,
@@ -898,7 +911,8 @@ void CastContentBrowserClient::BindMediaRenderer(
       std::make_unique<media::CastRenderer>(
           GetCmaBackendFactory(), std::move(media_task_runner),
           GetVideoModeSwitcher(), GetVideoResolutionPolicy(),
-          nullptr /* connector */, nullptr /* host_interfaces */),
+          base::UnguessableToken::Create(), nullptr /* connector */,
+          nullptr /* host_interfaces */),
       std::move(receiver));
 }
 

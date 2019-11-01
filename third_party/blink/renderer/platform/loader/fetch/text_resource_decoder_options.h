@@ -38,11 +38,11 @@ class PLATFORM_EXPORT TextResourceDecoderOptions final {
 
   // Corresponds to utf-8 decode in Encoding spec:
   // https://encoding.spec.whatwg.org/#utf-8-decode.
-  static TextResourceDecoderOptions CreateAlwaysUseUTF8ForText();
+  static TextResourceDecoderOptions CreateUTF8Decode();
 
   // Corresponds to utf-8 decode without BOM in Encoding spec:
   // https://encoding.spec.whatwg.org/#utf-8-decode-without-bom.
-  static TextResourceDecoderOptions CreateAlwaysUseUTF8WithoutBOMForText();
+  static TextResourceDecoderOptions CreateUTF8DecodeWithoutBOM();
 
   static TextResourceDecoderOptions CreateWithAutoDetection(
       ContentType,

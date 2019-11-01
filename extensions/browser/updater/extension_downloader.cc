@@ -495,8 +495,6 @@ void ExtensionDownloader::StartUpdateCheck(
         ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST);
     manifests_queue_.active_request()->Merge(*fetch_data);
   } else {
-    UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateCalls",
-                             fetch_data->extension_ids().size());
     UMA_HISTOGRAM_COUNTS_1M(
         "Extensions.UpdateCheckUrlLength",
         fetch_data->full_url().possibly_invalid_spec().length());
@@ -642,26 +640,6 @@ void ExtensionDownloader::OnManifestLoadComplete(
     VLOG(1) << "Failed to fetch manifest '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
     const auto* loader = manifest_loader_.get();
-    if (request_failure_count == 0) {
-      DCHECK(loader);
-      // This is the first failure for this batch request, record the
-      // http/network error for each extension in the batch request.
-      const int error =
-          response_code == -1 ? loader->NetError() : response_code;
-      const std::string uma_histogram_name =
-          url.DomainIs(kGoogleDotCom)
-              ? std::string(
-                    "Extensions."
-                    "ExtensionUpdaterFirstUpdateCheckErrorsGoogleUrl")
-              : std::string(
-                    "Extensions."
-                    "ExtensionUpdaterFirstUpdateCheckErrorsNonGoogleUrl");
-      const auto& extension_ids =
-          manifests_queue_.active_request()->extension_ids();
-      for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
-        base::UmaHistogramSparse(uma_histogram_name, error);
-      }
-    }
     if (ShouldRetryRequest(loader) && request_failure_count < kMaxRetries) {
       NotifyExtensionsDownloadStageChanged(
           manifests_queue_.active_request()->extension_ids(),
@@ -852,8 +830,6 @@ void ExtensionDownloader::DetermineUpdates(
   for (const std::string& extension_id : fetch_data.extension_ids()) {
     const auto it = update_groups.find(extension_id);
     if (it == update_groups.end()) {
-      UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateManifestDuplicateEntryCount",
-                               0);
       VLOG(2) << "Manifest doesn't have an update entry for " << extension_id;
       errors->insert(extension_id);
       continue;
@@ -862,9 +838,6 @@ void ExtensionDownloader::DetermineUpdates(
     const std::vector<const UpdateManifestResult*>& possible_candidates =
         it->second;
     DCHECK(!possible_candidates.empty());
-
-    UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateManifestDuplicateEntryCount",
-                             possible_candidates.size());
 
     VLOG(2) << "Manifest has " << possible_candidates.size()
             << " update entries for " << extension_id;
@@ -1171,8 +1144,6 @@ void ExtensionDownloader::NotifyExtensionsDownloadFailed(
 
 void ExtensionDownloader::NotifyUpdateFound(const std::string& id,
                                             const std::string& version) {
-  UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateFoundCount", 1);
-
   UpdateDetails updateInfo(id, base::Version(version));
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,

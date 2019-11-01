@@ -8,7 +8,7 @@
  * Launch PaymentRequest by resolving the promised passed into the shoe() method
  * with empty lists of display items, modifiers, and shipping options.
  */
-function buy() {  // eslint-disable-line no-unused-vars
+function buy() { // eslint-disable-line no-unused-vars
   try {
     var request = new PaymentRequest(
         [{supportedMethods: 'basic-card'}], {

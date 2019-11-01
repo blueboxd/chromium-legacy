@@ -234,16 +234,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
 
     if (dfmify_dev_ui && (_target_type == "android_apk" ||
                           _target_type == "instrumentation_test_apk")) {
-      # Native resource split moves resources out of resources.pak, but this
-      # is a DFM feature, which APKs don't use. To make the resources split
-      # available for APKs, add dependencies to (1) Java classes, (2)
-      # resources of the resource split's DFM (e.g., DevUI DFM). The Java
-      # classes tells Chrome that the DFM is installed, which then causes the
-      # included resources to be loaded when needed.
-      deps += [
-        "//chrome/android/features/dev_ui:java",  # (1) from above.
-        "//chrome/android/features/dev_ui:pak_assets",  # (2) from above.
-      ]
+      # Dev UI is a feature in a DFM, and APKs don't use DFMs. To make the code
+      # available for APKs add a dependency on it.
+      deps += [ "//chrome/android/features/dev_ui:java" ]
     }
 
     if (!is_java_debug) {
@@ -318,6 +311,8 @@ template("chrome_public_common_apk_or_module_tmpl") {
 #     static library target to provide certain shared library deps, and that
 #     this target should not package webview deps.
 template("monochrome_public_common_apk_or_module_tmpl") {
+  _is_bundle_module = defined(invoker.target_type) &&
+                      invoker.target_type == "android_app_bundle_module"
   if (defined(invoker.enable_multidex)) {
     _enable_multidex = invoker.enable_multidex
   } else {
@@ -440,7 +435,12 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     # Android N+ better supports multiple locales (https://crbug.com/780847).
     support_zh_hk = false
 
-    _deps += [ "//chrome/android:${_pak_prefix}_apk_pak_assets" ]
+    if (_is_bundle_module) {
+      _pak_prefix += "_bundle_module"
+    } else {
+      _pak_prefix += "_apk"
+    }
+    _deps += [ "//chrome/android:${_pak_prefix}_pak_assets" ]
 
     if (_enable_multidex && invoker.target_type == "android_apk" &&
         !defined(invoker.negative_main_dex_globs)) {

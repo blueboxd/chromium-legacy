@@ -141,7 +141,7 @@ TEST(WebSocketFrameParserTest, DecodeManyFrames) {
   WebSocketFrameParser parser;
 
   std::vector<std::unique_ptr<WebSocketFrameChunk>> frames;
-  EXPECT_TRUE(parser.Decode(&input.front(), input.size(), &frames));
+  EXPECT_TRUE(parser.Decode(input.data(), input.size(), &frames));
   EXPECT_EQ(kWebSocketNormalClosure, parser.websocket_error());
   ASSERT_EQ(static_cast<size_t>(kNumInputs), frames.size());
 
@@ -333,7 +333,7 @@ TEST(WebSocketFrameParserTest, DecodeFramesOfVariousLengths) {
 
     std::vector<std::unique_ptr<WebSocketFrameChunk>> frames;
     EXPECT_EQ(kFrameHeaderTests[i].error_code == kWebSocketNormalClosure,
-              parser.Decode(&input.front(), input.size(), &frames));
+              parser.Decode(input.data(), input.size(), &frames));
     EXPECT_EQ(kFrameHeaderTests[i].error_code, parser.websocket_error());
     if (kFrameHeaderTests[i].error_code != kWebSocketNormalClosure) {
       EXPECT_EQ(0u, frames.size());

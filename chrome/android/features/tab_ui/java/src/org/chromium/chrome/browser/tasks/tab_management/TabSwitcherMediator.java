@@ -275,9 +275,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
         // TODO(crbug.com/982018): Let the start surface pass in the parameter and add unit test for
         // it. This is a temporary solution to keep this change minimum.
-        String feature = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
-        mShowTabsInMruOrder = feature.equals("twopanes") || feature.equals("single");
+        mShowTabsInMruOrder = isShowingTabsInMRUOrder();
     }
 
     /**
@@ -536,6 +534,16 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      */
     void setIphProvider(IphProvider iphProvider) {
         mIphProvider = iphProvider;
+    }
+
+    /**
+     * Check if tabs should show in MRU order in current start surface tab switcher.
+     *  @return whether tabs should show in MRU order
+     */
+    static boolean isShowingTabsInMRUOrder() {
+        String feature = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
+        return feature.equals("twopanes") || feature.equals("single");
     }
 
     /**

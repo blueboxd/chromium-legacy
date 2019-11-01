@@ -30,6 +30,7 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "components/sync/model/sync_change.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/management_policy.h"
@@ -177,6 +178,17 @@ class SupervisedUserService : public KeyedService,
   void SetPrimaryPermissionCreatorForTest(
       std::unique_ptr<PermissionRequestCreator> permission_creator);
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Updates the map of approved extensions.
+  // If |type| is SyncChangeType::ADD, then add custodian approval for enabling
+  // the extension by adding the approved version to the map of approved
+  // extensions. If |type| is SyncChangeType::DELETE, then remove the extension
+  // from the map of approved extensions.
+  void UpdateApprovedExtensions(const std::string& extension_id,
+                                const std::string& version,
+                                syncer::SyncChange::SyncChangeType type);
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
  private:
   friend class SupervisedUserServiceExtensionTestBase;
   friend class SupervisedUserServiceFactory;
@@ -238,11 +250,7 @@ class SupervisedUserService : public KeyedService,
   // Enables/Disables extensions upon change in approved version of the
   // extension_id.
   void ChangeExtensionStateIfNecessary(const std::string& extension_id);
-
-  // Updates the map of approved extensions when the corresponding preference
-  // is changed.
-  void UpdateApprovedExtensions();
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   SupervisedUserSettingsService* GetSettingsService();
 

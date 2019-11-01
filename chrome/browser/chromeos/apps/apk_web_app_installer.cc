@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -98,9 +99,9 @@ void ApkWebAppInstaller::Start(service_manager::Connector* connector,
 
   // Set up the connection to the service manager to decode the raw PNG icon
   // bytes into SkBitmaps.
-  service_manager::mojom::ConnectorRequest connector_request;
-  connector_ = service_manager::Connector::Create(&connector_request);
-  connector->BindConnectorRequest(std::move(connector_request));
+  mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
+  connector_ = service_manager::Connector::Create(&connector_receiver);
+  connector->BindConnectorReceiver(std::move(connector_receiver));
 
   // Decode the image in a sandboxed process off the main thread.
   // base::Unretained is safe because this object owns itself.

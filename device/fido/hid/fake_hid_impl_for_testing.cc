@@ -8,6 +8,7 @@
 
 #include "device/fido/fido_parsing_utils.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -210,8 +211,8 @@ void FakeFidoHidManager::RemoveDevice(const std::string device_guid) {
 }
 
 ScopedFakeFidoHidManager::ScopedFakeFidoHidManager() {
-  service_manager::mojom::ConnectorRequest request;
-  connector_ = service_manager::Connector::Create(&request);
+  mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
+  connector_ = service_manager::Connector::Create(&receiver);
   connector_->OverrideBinderForTesting(
       service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
       device::mojom::HidManager::Name_,

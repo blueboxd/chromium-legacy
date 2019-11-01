@@ -14,6 +14,7 @@
 #include "base/test/task_environment.h"
 #include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
+#include "chrome/services/app_service/public/cpp/intent_util.h"
 #include "chrome/services/app_service/public/cpp/preferred_apps.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -85,6 +86,10 @@ class FakePublisher : public apps::mojom::Publisher {
                  bool report_abuse) override {}
 
   void OpenNativeSettings(const std::string& app_id) override {}
+
+  void OnPreferredAppSet(const std::string& app_id,
+                         apps::mojom::IntentFilterPtr intent_filter,
+                         apps::mojom::IntentPtr intent) override {}
 
   void CallOnApps(apps::mojom::Subscriber* subscriber,
                   std::vector<std::string>& app_ids) {
@@ -282,7 +287,8 @@ TEST_F(AppServiceImplTest, PreferredApps) {
             sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
 
   impl.AddPreferredApp(apps::mojom::AppType::kUnknown, kAppId2,
-                       std::move(intent_filter));
+                       std::move(intent_filter),
+                       apps_util::CreateIntentFromUrl(filter_url));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));

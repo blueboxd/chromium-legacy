@@ -8,7 +8,7 @@
  * Launch PaymentRequest with a show promise and an unsupported payment method
  * identifier.
  */
-function buy() {  // eslint-disable-line no-unused-vars
+function buy() { // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest([{supportedMethods: 'foo'}], {
       total:

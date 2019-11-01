@@ -180,7 +180,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
   // Manager. Created preemptively by every unbound ServiceBinding so that
   // |connector()| may begin pipelining outgoing requests even before the
   // ServiceBinding is bound to a Service receiver.
-  mojom::ConnectorRequest pending_connector_request_;
+  mojo::PendingReceiver<mojom::Connector> pending_connector_receiver_;
 
   mojo::Receiver<mojom::Service> receiver_{this};
   Identity identity_;

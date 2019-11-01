@@ -1340,8 +1340,8 @@ TEST_P(X509CertificateNameVerifyTest, VerifyHostname) {
         std::vector<uint8_t> bytes;
         EXPECT_TRUE(base::HexStringToBytes(addr_ascii, &bytes))
             << "Could not parse hex address " << addr_ascii << " i = " << i;
-        ip_addressses.push_back(std::string(reinterpret_cast<char*>(&bytes[0]),
-                                            bytes.size()));
+        ip_addressses.push_back(
+            std::string(reinterpret_cast<char*>(bytes.data()), bytes.size()));
         ASSERT_EQ(16U, ip_addressses.back().size()) << i;
       } else {  // Decimal groups
         std::vector<std::string> decimals_ascii = base::SplitString(

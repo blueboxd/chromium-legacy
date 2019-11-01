@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tabmodel;
 import android.app.Activity;
 
 import org.chromium.base.ActivityState;
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -99,7 +98,7 @@ public class SingleTabModel implements TabModel {
     @Override
     public boolean closeTab(Tab tab, boolean animate, boolean uponExit, boolean canUndo) {
         if (mTab == null || mTab.getId() != tab.getId()) return false;
-        closeTabAndFinish();
+        setTab(null);
         return true;
     }
 
@@ -109,17 +108,12 @@ public class SingleTabModel implements TabModel {
         return closeTab(tab, animate, uponExit, canUndo);
     }
 
-    private void closeTabAndFinish() {
-        setTab(null);
-        ApiCompatibilityUtils.finishAndRemoveTask(mActivity);
-    }
-
     @Override
     public void closeMultipleTabs(List<Tab> tabs, boolean canUndo) {
         if (mTab == null) return;
         for (Tab tab : tabs) {
             if (tab.getId() == mTab.getId()) {
-                closeTabAndFinish();
+                setTab(null);
                 return;
             }
         }
@@ -132,7 +126,7 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public void closeAllTabs(boolean allowDelegation, boolean uponExit) {
-        closeTabAndFinish();
+        setTab(null);
     }
 
     // Tab retrieval functions.

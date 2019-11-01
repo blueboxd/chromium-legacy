@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+#import "ios/web/common/origin_util.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
@@ -320,8 +321,15 @@
     return [self imageForOfflinePage];
   }
 
-  return GetLocationBarSecurityIconForSecurityState(
-      self.locationBarModel->GetSecurityLevel());
+  security_state::SecurityLevel securityLevel =
+      self.locationBarModel->GetSecurityLevel();
+
+  bool shouldDowngrade = security_state::ShouldDowngradeNeutralStyling(
+      securityLevel, self.locationBarModel->GetURL(),
+      base::BindRepeating(&web::IsOriginSecure));
+
+  return GetLocationBarSecurityIconForSecurityState(securityLevel,
+                                                    shouldDowngrade);
 }
 
 // Returns a location icon for offline pages.

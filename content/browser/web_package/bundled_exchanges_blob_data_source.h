@@ -116,8 +116,6 @@ class CONTENT_EXPORT BundledExchangesBlobDataSource {
       base::WeakPtr<BlobDataSourceCore> weak_core,
       std::unique_ptr<BlobDataSourceCore> core);
 
-  static void DeleteCore(std::unique_ptr<BlobDataSourceCore> core);
-
   void WaitForCore(base::OnceClosure callback);
 
   void ReadToDataPipeImpl(uint64_t offset,

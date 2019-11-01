@@ -66,6 +66,5 @@
     # These probably have mtimes in the zip headers and the scripts creating
     # them probably should use build_utils.ZipDir() instead.
     'mini_installer_tests.zip',
-    'policy_templates.zip',
   ],
 }

@@ -21,6 +21,7 @@
 #include "chromecast/media/cma/base/demuxer_stream_adapter.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
+#include "chromecast/media/service/video_geometry_setter_service.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/volume_control.h"
@@ -60,18 +61,21 @@ CastRenderer::CastRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     VideoModeSwitcher* video_mode_switcher,
     VideoResolutionPolicy* video_resolution_policy,
+    const base::UnguessableToken& overlay_plane_id,
     service_manager::Connector* connector,
     service_manager::mojom::InterfaceProvider* host_interfaces)
     : backend_factory_(backend_factory),
       task_runner_(task_runner),
       video_mode_switcher_(video_mode_switcher),
       video_resolution_policy_(video_resolution_policy),
+      overlay_plane_id_(overlay_plane_id),
       connector_(connector),
       host_interfaces_(host_interfaces),
       client_(nullptr),
       cast_cdm_context_(nullptr),
       media_task_runner_factory_(
           new BalancedMediaTaskRunnerFactory(kMaxDeltaFetcher)),
+      video_geometry_setter_service_(nullptr),
       weak_factory_(this) {
   DCHECK(backend_factory_);
   LOG(INFO) << __FUNCTION__ << ": " << this;
@@ -88,14 +92,39 @@ CastRenderer::~CastRenderer() {
     video_resolution_policy_->RemoveObserver(this);
 }
 
+void CastRenderer::SetVideoGeometrySetterService(
+    VideoGeometrySetterService* video_geometry_setter_service) {
+  video_geometry_setter_service_ = video_geometry_setter_service;
+}
+
 void CastRenderer::Initialize(::media::MediaResource* media_resource,
                               ::media::RendererClient* client,
                               ::media::PipelineStatusCallback init_cb) {
   LOG(INFO) << __FUNCTION__ << ": " << this;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!application_media_info_manager_remote_);
 
   init_cb_ = std::move(init_cb);
+
+  if (video_geometry_setter_service_) {
+    video_geometry_setter_service_->GetVideoGeometryChangeSubscriber(
+        video_geometry_change_subcriber_remote_.BindNewPipeAndPassReceiver());
+    DCHECK(video_geometry_change_subcriber_remote_);
+
+    video_geometry_change_subcriber_remote_->SubscribeToVideoGeometryChange(
+        overlay_plane_id_,
+        video_geometry_change_client_receiver_.BindNewPipeAndPassRemote(),
+        base::BindOnce(&CastRenderer::OnSubscribeToVideoGeometryChange,
+                       base::Unretained(this), media_resource, client));
+  } else {
+    OnSubscribeToVideoGeometryChange(media_resource, client);
+  }
+}
+
+void CastRenderer::OnSubscribeToVideoGeometryChange(
+    ::media::MediaResource* media_resource,
+    ::media::RendererClient* client) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(!application_media_info_manager_remote_);
 
   // Retrieve application_media_info_manager_remote_ if it is available via
   // CastApplicationMediaInfoManager.
@@ -346,6 +375,11 @@ void CastRenderer::OnVideoResolutionPolicyChanged() {
     OnError(::media::PIPELINE_ERROR_DECODE);
 }
 
+void CastRenderer::OnVideoGeometryChange(const gfx::RectF& rect_f,
+                                         gfx::OverlayTransform transform) {
+  GetOverlayCompositedCallback().Run(rect_f, transform);
+}
+
 void CastRenderer::OnError(::media::PipelineStatus status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_->OnError(status);
@@ -391,6 +425,12 @@ void CastRenderer::OnVideoOpacityChange(bool opaque) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(opaque);
   client_->OnVideoOpacityChange(opaque);
+}
+
+// static
+void CastRenderer::SetOverlayCompositedCallback(
+    const OverlayCompositedCallback& cb) {
+  GetOverlayCompositedCallback() = cb;
 }
 
 }  // namespace media

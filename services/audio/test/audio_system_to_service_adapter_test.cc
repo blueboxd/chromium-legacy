@@ -9,6 +9,7 @@
 #include "base/test/task_environment.h"
 #include "media/audio/audio_system_test_util.h"
 #include "media/audio/test_audio_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/audio/in_process_audio_manager_accessor.h"
 #include "services/audio/public/mojom/constants.mojom.h"
@@ -41,8 +42,8 @@ class AudioSystemToServiceAdapterTestBase : public testing::Test {
     system_info_receiver_ = std::make_unique<mojo::Receiver<mojom::SystemInfo>>(
         system_info_impl_.get());
 
-    service_manager::mojom::ConnectorRequest ignored_request;
-    auto connector = service_manager::Connector::Create(&ignored_request);
+    mojo::PendingReceiver<service_manager::mojom::Connector> ignored_receiver;
+    auto connector = service_manager::Connector::Create(&ignored_receiver);
     connector->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(mojom::kServiceName),
         mojom::SystemInfo::Name_,
@@ -405,8 +406,8 @@ class AudioSystemToServiceAdapterDisconnectTest : public testing::Test {
   };  // class MockSystemInfo
 
   std::unique_ptr<service_manager::Connector> GetConnector() {
-    service_manager::mojom::ConnectorRequest ignored_request;
-    auto connector = service_manager::Connector::Create(&ignored_request);
+    mojo::PendingReceiver<service_manager::mojom::Connector> ignored_receiver;
+    auto connector = service_manager::Connector::Create(&ignored_receiver);
     connector->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(mojom::kServiceName),
         mojom::SystemInfo::Name_,

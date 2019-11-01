@@ -73,7 +73,8 @@ void SetPageFrozenImpl(
 bool IsServiceWorkerSupported() {
   static constexpr base::FeatureParam<bool> service_worker_supported(
       &features::kBackForwardCache, "service_worker_supported", false);
-  return service_worker_supported.Get();
+  return service_worker_supported.Get() &&
+         base::FeatureList::IsEnabled(features::kServiceWorkerOnUI);
 }
 
 bool IsGeolocationSupported() {
@@ -249,6 +250,8 @@ BackForwardCacheImpl::CanStoreDocumentResult::NotRestoredReasonToString(
       return "conflicting BrowsingInstance";
     case Reason::kCacheFlushed:
       return "cache flushed";
+    case Reason::kServiceWorkerVersionActivation:
+      return "service worker version is activated";
   }
 }
 

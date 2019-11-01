@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/audio/audio_manager_base.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 // NOTE: CastAudioManager receives a |device_id| from the audio service, and
@@ -120,7 +121,8 @@ class CastAudioManager : public ::media::AudioManagerBase {
   friend class CastAudioManagerTest;
   friend class CastAudioOutputStreamTest;
   service_manager::Connector* GetConnector();
-  void BindConnectorRequest(service_manager::mojom::ConnectorRequest request);
+  void BindConnectorReceiver(
+      mojo::PendingReceiver<service_manager::mojom::Connector> receiver);
 
   CastAudioManager(
       std::unique_ptr<::media::AudioThread> audio_thread,

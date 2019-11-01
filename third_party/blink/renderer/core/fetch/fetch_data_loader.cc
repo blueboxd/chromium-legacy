@@ -399,7 +399,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
       } else {
         if (!string_decoder_) {
           string_decoder_ = std::make_unique<TextResourceDecoder>(
-              TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+              TextResourceDecoderOptions::CreateUTF8Decode());
         }
         string_builder_.reset(new StringBuilder);
       }

@@ -674,9 +674,9 @@ Or you can fabricate a brand new `Connector` right from where you're standing,
 and asynchronously associate it with one on another thread:
 
 ``` cpp
-service_manager::mojom::ConnectorRequest request;
+mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
 std::unique_ptr<service_manager::Connector> new_connector =
-    service_manager::Connector::Create(&request);
+    service_manager::Connector::Create(&receiver);
 
 // |new_connector| can be used to start issuing calls immediately, despite not
 // yet being associated with the establshed Connector. The calls will queue as
@@ -684,9 +684,10 @@ std::unique_ptr<service_manager::Connector> new_connector =
 
 base::PostTask(
     ...[over to the correct thread]...,
-    base::BindOnce([](service_manager::ConnectorRequest request) {
+    base::BindOnce([](
+      mojo::PendingReceiver<service_manager::Connector> receiver) {
       service_manager::Connector* connector = GetMyConnectorForThisThread();
-      connector->BindConnectorRequest(std::move(request));
+      connector->BindConnectorReceiver(std::move(receiver));
     }));
 ```
 

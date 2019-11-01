@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/task/post_task.h"
@@ -20,7 +22,7 @@ PeerConnectionTrackerHost::PeerConnectionTrackerHost(RenderProcessHost* rph)
   base::PowerMonitor::AddObserver(this);
 
   mojo::PendingRemote<blink::mojom::PeerConnectionManager> pending_tracker;
-  content::BindInterface(rph, &pending_tracker);
+  BindInterface(rph, &pending_tracker);
   tracker_.Bind(std::move(pending_tracker));
 }
 
@@ -40,7 +42,7 @@ void PeerConnectionTrackerHost::AddPeerConnection(
         info->rtc_configuration, info->constraints);
   }
 
-  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+  WebRtcEventLogger* logger = WebRtcEventLogger::Get();
   if (logger) {
     logger->PeerConnectionAdded(render_process_id_, info->lid,
                                 base::OnceCallback<void(bool)>());
@@ -54,7 +56,7 @@ void PeerConnectionTrackerHost::RemovePeerConnection(int lid) {
   if (webrtc_internals) {
     webrtc_internals->OnRemovePeerConnection(peer_pid_, lid);
   }
-  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+  WebRtcEventLogger* logger = WebRtcEventLogger::Get();
   if (logger) {
     logger->PeerConnectionRemoved(render_process_id_, lid,
                                   base::OnceCallback<void(bool)>());
@@ -68,7 +70,7 @@ void PeerConnectionTrackerHost::UpdatePeerConnection(int lid,
 
   // TODO(eladalon): Get rid of magic value. https://crbug.com/810383
   if (type == "stop") {
-    WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+    WebRtcEventLogger* logger = WebRtcEventLogger::Get();
     if (logger) {
       logger->PeerConnectionStopped(render_process_id_, lid,
                                     base::OnceCallback<void(bool)>());
@@ -86,38 +88,27 @@ void PeerConnectionTrackerHost::OnPeerConnectionSessionIdSet(
     const std::string& session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
-  if (!logger) {
-    return;
+  WebRtcEventLogger* logger = WebRtcEventLogger::Get();
+  if (logger) {
+    logger->PeerConnectionSessionIdSet(render_process_id_, lid, session_id,
+                                       base::OnceCallback<void(bool)>());
   }
-  logger->PeerConnectionSessionIdSet(render_process_id_, lid, session_id,
-                                     base::OnceCallback<void(bool)>());
 }
 
 void PeerConnectionTrackerHost::AddStandardStats(int lid, base::Value value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
-  if (webrtc_internals) {
-    // Churn to convert from base::Value to std::unique_ptr<base::ListValue>.
-    auto value_ptr = base::Value::ToUniquePtrValue(std::move(value));
-    auto list_value_ptr = base::ListValue::From(std::move(value_ptr));
-    webrtc_internals->OnAddStandardStats(peer_pid_, lid,
-                                         std::move(*list_value_ptr.get()));
-  }
+  if (webrtc_internals)
+    webrtc_internals->OnAddStandardStats(peer_pid_, lid, std::move(value));
 }
 
 void PeerConnectionTrackerHost::AddLegacyStats(int lid, base::Value value) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
-  if (webrtc_internals) {
-    // Churn to convert from base::Value to std::unique_ptr<base::ListValue>.
-    auto value_ptr = base::Value::ToUniquePtrValue(std::move(value));
-    auto list_value_ptr = base::ListValue::From(std::move(value_ptr));
-    webrtc_internals->OnAddLegacyStats(peer_pid_, lid,
-                                       std::move(*list_value_ptr.get()));
-  }
+  if (webrtc_internals)
+    webrtc_internals->OnAddLegacyStats(peer_pid_, lid, std::move(value));
 }
 
 void PeerConnectionTrackerHost::GetUserMedia(
@@ -140,7 +131,7 @@ void PeerConnectionTrackerHost::WebRtcEventLogWrite(int lid,
                                                     const std::string& output) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
+  WebRtcEventLogger* logger = WebRtcEventLogger::Get();
   if (logger) {
     logger->OnWebRtcEventLogWrite(
         render_process_id_, lid, output,

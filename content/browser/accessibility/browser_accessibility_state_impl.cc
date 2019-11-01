@@ -156,6 +156,13 @@ void BrowserAccessibilityStateImpl::UpdateHistogramsForTesting() {
   UpdateHistogramsOnOtherThread();
 }
 
+bool BrowserAccessibilityStateImpl::IsCaretBrowsingEnabled() const {
+  // TODO(crbug.com/1018947): Refine this check once UX provided to toggle caret
+  // browsing mode.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCaretBrowsing);
+}
+
 void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
   UpdatePlatformSpecificHistogramsOnUIThread();
 

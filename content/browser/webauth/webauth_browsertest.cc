@@ -98,8 +98,8 @@ constexpr char kResidentCredentialsErrorMessage[] =
     "'allowCredentials' lists are not supported at this time.";
 
 constexpr char kRelyingPartySecurityErrorMessage[] =
-    "webauth: SecurityError: The relying party ID 'localhost' is not a "
-    "registrable domain suffix of, nor equal to 'https://www.acme.com";
+    "webauth: SecurityError: The relying party ID is not a registrable domain "
+    "suffix of, nor equal to the current domain.";
 
 constexpr char kRelyingPartyUserIconUrlSecurityErrorMessage[] =
     "webauth: SecurityError: 'user.icon' should be a secure URL";

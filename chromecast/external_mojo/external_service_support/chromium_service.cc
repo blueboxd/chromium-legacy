@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -87,9 +88,9 @@ std::unique_ptr<service_manager::Connector> CreateChromiumConnector(
   mojo::MessagePipe pipe;
   connector->SendChromiumConnectorRequest(std::move(pipe.handle1));
   return std::make_unique<service_manager::Connector>(
-      service_manager::mojom::ConnectorPtr(
-          service_manager::mojom::ConnectorPtrInfo(std::move(pipe.handle0),
-                                                   0)));
+      mojo::Remote<service_manager::mojom::Connector>(
+          mojo::PendingRemote<service_manager::mojom::Connector>(
+              std::move(pipe.handle0), 0)));
 }
 
 }  // namespace external_service_support

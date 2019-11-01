@@ -110,6 +110,9 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   if (delta->show_in_management != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_management = delta->show_in_management;
   }
+  if (delta->paused != apps::mojom::OptionalBool::kUnknown) {
+    state->paused = delta->paused;
+  }
 
   if (!delta->intent_filters.empty()) {
     state->intent_filters.clear();
@@ -443,6 +446,21 @@ bool AppUpdate::ShowInManagementChanged() const {
          (delta_->show_in_management != apps::mojom::OptionalBool::kUnknown) &&
          (!state_ ||
           (delta_->show_in_management != state_->show_in_management));
+}
+
+apps::mojom::OptionalBool AppUpdate::Paused() const {
+  if (delta_ && (delta_->paused != apps::mojom::OptionalBool::kUnknown)) {
+    return delta_->paused;
+  }
+  if (state_) {
+    return state_->paused;
+  }
+  return apps::mojom::OptionalBool::kUnknown;
+}
+
+bool AppUpdate::PausedChanged() const {
+  return delta_ && (delta_->paused != apps::mojom::OptionalBool::kUnknown) &&
+         (!state_ || (delta_->paused != state_->paused));
 }
 
 std::vector<apps::mojom::IntentFilterPtr> AppUpdate::IntentFilters() const {

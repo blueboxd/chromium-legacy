@@ -320,7 +320,7 @@ TEST_F(FilePathTest, Append) {
     // TODO(erikkay): It would be nice to have a unicode test append value to
     // handle the case when AppendASCII is passed UTF8
 #if defined(OS_WIN)
-    std::string ascii = UTF16ToUTF8(leaf);
+    std::string ascii = WideToUTF8(leaf);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     std::string ascii = leaf;
 #endif

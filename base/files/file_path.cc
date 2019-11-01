@@ -38,6 +38,20 @@ namespace {
 const char* const kCommonDoubleExtensionSuffixes[] = { "gz", "z", "bz2", "bz" };
 const char* const kCommonDoubleExtensions[] = { "user.js" };
 
+// Compatibility shim for cross-platform code that passes a StringPieceType to a
+// string utility function. Most of these functions are only implemented for
+// base::StringPiece and base::StringPiece16, which is why base::WStringPieces
+// need to be converted.
+#if defined(OS_WIN)
+StringPiece16 AsCommonStringPiece(WStringPiece str) {
+  return AsStringPiece16(str);
+}
+#else
+StringPiece AsCommonStringPiece(StringPiece str) {
+  return str;
+}
+#endif
+
 const FilePath::CharType kStringTerminator = FILE_PATH_LITERAL('\0');
 
 // If this FilePath contains a drive letter specification, returns the
@@ -68,7 +82,8 @@ bool EqualDriveLetterCaseInsensitive(StringPieceType a, StringPieceType b) {
 
   StringPieceType a_letter(a.substr(0, a_letter_pos + 1));
   StringPieceType b_letter(b.substr(0, b_letter_pos + 1));
-  if (!StartsWith(a_letter, b_letter, CompareCase::INSENSITIVE_ASCII))
+  if (!StartsWith(AsCommonStringPiece(a_letter), AsCommonStringPiece(b_letter),
+                  CompareCase::INSENSITIVE_ASCII))
     return false;
 
   StringPieceType a_rest(a.substr(a_letter_pos + 1));
@@ -139,13 +154,13 @@ StringType::size_type ExtensionSeparatorPosition(const StringType& path) {
 
   for (auto* i : kCommonDoubleExtensions) {
     StringType extension(path, penultimate_dot + 1);
-    if (LowerCaseEqualsASCII(extension, i))
+    if (LowerCaseEqualsASCII(AsCommonStringPiece(extension), i))
       return penultimate_dot;
   }
 
   StringType extension(path, last_dot + 1);
   for (auto* i : kCommonDoubleExtensionSuffixes) {
-    if (LowerCaseEqualsASCII(extension, i)) {
+    if (LowerCaseEqualsASCII(AsCommonStringPiece(extension), i)) {
       if ((last_dot - penultimate_dot) <= 5U &&
           (last_dot - penultimate_dot) > 1U) {
         return penultimate_dot;
@@ -279,7 +294,9 @@ bool FilePath::AppendRelativePath(const FilePath& child,
   // never case sensitive.
   if ((FindDriveLetter(*parent_comp) != StringType::npos) &&
       (FindDriveLetter(*child_comp) != StringType::npos)) {
-    if (!StartsWith(*parent_comp, *child_comp, CompareCase::INSENSITIVE_ASCII))
+    if (!StartsWith(AsCommonStringPiece(*parent_comp),
+                    AsCommonStringPiece(*child_comp),
+                    CompareCase::INSENSITIVE_ASCII))
       return false;
     ++parent_comp;
     ++child_comp;
@@ -422,7 +439,7 @@ FilePath FilePath::InsertBeforeExtensionASCII(StringPiece suffix)
     const {
   DCHECK(IsStringASCII(suffix));
 #if defined(OS_WIN)
-  return InsertBeforeExtension(ASCIIToUTF16(suffix));
+  return InsertBeforeExtension(UTF8ToWide(suffix));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return InsertBeforeExtension(suffix);
 #endif
@@ -449,7 +466,7 @@ FilePath FilePath::AddExtension(StringPieceType extension) const {
 FilePath FilePath::AddExtensionASCII(StringPiece extension) const {
   DCHECK(IsStringASCII(extension));
 #if defined(OS_WIN)
-  return AddExtension(ASCIIToUTF16(extension));
+  return AddExtension(UTF8ToWide(extension));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return AddExtension(extension);
 #endif
@@ -534,7 +551,7 @@ FilePath FilePath::Append(const FilePath& component) const {
 FilePath FilePath::AppendASCII(StringPiece component) const {
   DCHECK(base::IsStringASCII(component));
 #if defined(OS_WIN)
-  return Append(ASCIIToUTF16(component));
+  return Append(UTF8ToWide(component));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return Append(component);
 #endif
@@ -598,31 +615,31 @@ bool FilePath::ReferencesParent() const {
 #if defined(OS_WIN)
 
 string16 FilePath::LossyDisplayName() const {
-  return path_;
+  return string16(as_u16cstr(path_.data()), path_.size());
 }
 
 std::string FilePath::MaybeAsASCII() const {
-  if (base::IsStringASCII(path_))
-    return UTF16ToASCII(path_);
+  if (base::IsStringASCII(AsCommonStringPiece(path_)))
+    return UTF16ToASCII(AsCommonStringPiece(path_));
   return std::string();
 }
 
 std::string FilePath::AsUTF8Unsafe() const {
-  return UTF16ToUTF8(value());
+  return UTF16ToUTF8(AsCommonStringPiece(value()));
 }
 
 string16 FilePath::AsUTF16Unsafe() const {
-  return value();
+  return string16(AsCommonStringPiece(value()));
 }
 
 // static
 FilePath FilePath::FromUTF8Unsafe(StringPiece utf8) {
-  return FilePath(UTF8ToUTF16(utf8));
+  return FilePath(UTF8ToWide(utf8));
 }
 
 // static
 FilePath FilePath::FromUTF16Unsafe(StringPiece16 utf16) {
-  return FilePath(utf16);
+  return FilePath(WStringPiece(as_wcstr(utf16.data()), utf16.size()));
 }
 
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -678,7 +695,7 @@ FilePath FilePath::FromUTF16Unsafe(StringPiece16 utf16) {
 
 void FilePath::WriteToPickle(Pickle* pickle) const {
 #if defined(OS_WIN)
-  pickle->WriteString16(path_);
+  pickle->WriteString16(AsCommonStringPiece(path_));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   pickle->WriteString(path_);
 #else
@@ -688,8 +705,10 @@ void FilePath::WriteToPickle(Pickle* pickle) const {
 
 bool FilePath::ReadFromPickle(PickleIterator* iter) {
 #if defined(OS_WIN)
-  if (!iter->ReadString16(&path_))
+  base::string16 path;
+  if (!iter->ReadString16(&path))
     return false;
+  path_ = UTF16ToWide(path);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   if (!iter->ReadString(&path_))
     return false;

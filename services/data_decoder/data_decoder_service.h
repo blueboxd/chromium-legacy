@@ -46,6 +46,17 @@ class DataDecoderService : public service_manager::Service,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  // Configures the service to drop ImageDecoder receivers instead of binding
+  // them. Useful for tests simulating service failures.
+  void SimulateImageDecoderCrashForTesting(bool drop) {
+    drop_image_decoders_ = drop;
+  }
+
+  // Same as above but for JsonParser receivers.
+  void SimulateJsonParserCrashForTesting(bool drop) {
+    drop_json_parsers_ = drop;
+  }
+
  private:
   // mojom::DataDecoderService implementation:
   void BindImageDecoder(
@@ -65,6 +76,9 @@ class DataDecoderService : public service_manager::Service,
   service_manager::ServiceBinding binding_{this};
   service_manager::ServiceKeepalive keepalive_;
   mojo::Receiver<mojom::DataDecoderService> receiver_{this};
+
+  bool drop_image_decoders_ = false;
+  bool drop_json_parsers_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DataDecoderService);
 };

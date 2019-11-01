@@ -17,16 +17,16 @@ VideoSourceProviderImpl::VideoSourceProviderImpl(
     : device_factory_(device_factory),
       on_last_client_disconnected_cb_(
           std::move(on_last_client_disconnected_cb)) {
-  // Unretained |this| is safe because |bindings_| is owned by |this|.
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  // Unretained |this| is safe because |receivers_| is owned by |this|.
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &VideoSourceProviderImpl::OnClientDisconnected, base::Unretained(this)));
 }
 
 VideoSourceProviderImpl::~VideoSourceProviderImpl() = default;
 
 void VideoSourceProviderImpl::AddClient(
-    mojom::VideoSourceProviderRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<mojom::VideoSourceProvider> receiver) {
+  receivers_.Add(this, std::move(receiver));
   client_count_++;
 }
 
@@ -36,7 +36,7 @@ void VideoSourceProviderImpl::GetSourceInfos(GetSourceInfosCallback callback) {
 
 void VideoSourceProviderImpl::GetVideoSource(
     const std::string& device_id,
-    mojom::VideoSourceRequest source_request) {
+    mojo::PendingReceiver<mojom::VideoSource> source_receiver) {
   auto source_iter = sources_.find(device_id);
   if (source_iter == sources_.end()) {
     auto video_source = std::make_unique<VideoSourceImpl>(
@@ -48,7 +48,7 @@ void VideoSourceProviderImpl::GetVideoSource(
         sources_.insert(std::make_pair(device_id, std::move(video_source)))
             .first;
   }
-  source_iter->second->AddToBindingSet(std::move(source_request));
+  source_iter->second->AddToReceiverSet(std::move(source_receiver));
 }
 
 void VideoSourceProviderImpl::AddSharedMemoryVirtualDevice(

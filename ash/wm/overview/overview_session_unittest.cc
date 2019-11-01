@@ -12,6 +12,7 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/exit_warning_handler.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
@@ -4106,6 +4107,34 @@ TEST_P(SplitViewOverviewSessionTest, Clipping) {
   }
 }
 
+// Tests that when splitview is inactive, there is no need for aspect ratio
+// changes, so there is no clipping on the overview windows. Regression test for
+// crbug.com/1020440.
+TEST_P(SplitViewOverviewSessionTest, NoClippingWhenSplitviewDisabled) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+
+  // Splitview is disabled when chromeVox is enabled.
+  Shell::Get()->accessibility_controller()->SetSpokenFeedbackEnabled(
+      true, A11Y_NOTIFICATION_NONE);
+  ASSERT_FALSE(ShouldAllowSplitView());
+  const gfx::Rect clipping1 = window1->layer()->clip_rect();
+  const gfx::Rect clipping2 = window2->layer()->clip_rect();
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_EQ(clipping1, window1->layer()->clip_rect());
+  EXPECT_EQ(clipping2, window2->layer()->clip_rect());
+
+  // Drag to the edge of the screen. There should be no clipping and no crash.
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  overview_session()->InitiateDrag(item1, item1->target_bounds().CenterPoint(),
+                                   /*is_touch_dragging=*/false);
+  overview_session()->Drag(item1, gfx::PointF());
+  EXPECT_EQ(clipping1, window1->layer()->clip_rect());
+  EXPECT_EQ(clipping2, window1->layer()->clip_rect());
+}
+
 // Tests that if there is only one window in the MRU window list in the overview
 // mode, snapping the window to one side of the screen will not end the overview
 // mode even if there is no more window left in the overview window grid.
@@ -4121,7 +4150,7 @@ TEST_P(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   DragWindowTo(overview_item1, gfx::PointF());
 
   // Test that overview mode is active in this single window case.
-  EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kLeftSnapped);
   EXPECT_TRUE(overview_controller()->InOverviewSession());

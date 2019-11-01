@@ -71,7 +71,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
-#include "net/url_request/url_request_http_job_histogram.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_redirect_job.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -152,88 +151,6 @@ void RecordCTHistograms(const net::SSLInfo& ssl_info) {
         ssl_info.ct_policy_compliance,
         net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
   }
-}
-
-net::CookieNetworkSecurity HistogramEntryForCookie(
-    const net::CanonicalCookie& cookie,
-    const net::URLRequest& request,
-    const net::HttpRequestInfo& request_info) {
-  if (!request_info.url.SchemeIsCryptographic()) {
-    return net::CookieNetworkSecurity::k1pNonsecureConnection;
-  }
-
-  if (cookie.IsSecure()) {
-    return net::CookieNetworkSecurity::k1pSecureAttribute;
-  }
-
-  net::TransportSecurityState* transport_security_state =
-      request.context()->transport_security_state();
-  net::TransportSecurityState::STSState sts_state;
-  const std::string cookie_domain =
-      cookie.IsHostCookie() ? request.url().host() : cookie.Domain().substr(1);
-  const bool hsts =
-      transport_security_state->GetSTSState(cookie_domain, &sts_state) &&
-      sts_state.ShouldUpgradeToSSL();
-  if (!hsts) {
-    return net::CookieNetworkSecurity::k1pSecureConnection;
-  }
-
-  if (cookie.IsHostCookie()) {
-    if (cookie.IsPersistent() && sts_state.expiry >= cookie.ExpiryDate()) {
-      return net::CookieNetworkSecurity::k1pHSTSHostCookie;
-    } else {
-      // Session cookies are assumed to live forever.
-      return net::CookieNetworkSecurity::k1pExpiringHSTSHostCookie;
-    }
-  }
-
-  // Domain cookies require HSTS to include subdomains to prevent spoofing.
-  if (sts_state.include_subdomains) {
-    if (cookie.IsPersistent() && sts_state.expiry >= cookie.ExpiryDate()) {
-      return net::CookieNetworkSecurity::k1pHSTSSubdomainsIncluded;
-    } else {
-      // Session cookies are assumed to live forever.
-      return net::CookieNetworkSecurity::k1pExpiringHSTSSubdomainsIncluded;
-    }
-  }
-
-  return net::CookieNetworkSecurity::k1pHSTSSpoofable;
-}
-
-void LogCookieUMA(const net::CookieList& cookie_list,
-                  const net::URLRequest& request,
-                  const net::HttpRequestInfo& request_info) {
-  const bool secure_request = request_info.url.SchemeIsCryptographic();
-  const bool same_site = net::registry_controlled_domains::SameDomainOrHost(
-      request.url(), request.site_for_cookies(),
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-
-  const base::Time now = base::Time::Now();
-  base::Time oldest = base::Time::Max();
-  for (const auto& cookie : cookie_list) {
-    const std::string histogram_name =
-        std::string("Cookie.AllAgesFor") +
-        (secure_request ? "Secure" : "NonSecure") +
-        (same_site ? "SameSite" : "CrossSite") + "Request";
-    const int age_in_days = (now - cookie.CreationDate()).InDays();
-    base::UmaHistogramCounts1000(histogram_name, age_in_days);
-    oldest = std::min(cookie.CreationDate(), oldest);
-
-    net::CookieNetworkSecurity entry =
-        HistogramEntryForCookie(cookie, request, request_info);
-    if (!same_site) {
-      entry =
-          static_cast<net::CookieNetworkSecurity>(static_cast<int>(entry) | 1);
-    }
-    UMA_HISTOGRAM_ENUMERATION("Cookie.NetworkSecurity", entry,
-                              net::CookieNetworkSecurity::kCount);
-  }
-
-  const std::string histogram_name =
-      std::string("Cookie.AgeFor") + (secure_request ? "Secure" : "NonSecure") +
-      (same_site ? "SameSite" : "CrossSite") + "Request";
-  const int age_in_days = (now - oldest).InDays();
-  base::UmaHistogramCounts1000(histogram_name, age_in_days);
 }
 
 }  // namespace
@@ -657,8 +574,6 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
   bool can_get_cookies = CanGetCookies(cookie_list);
   if (!cookies_with_status_list.empty() && can_get_cookies) {
-    LogCookieUMA(cookie_list, *request_, request_info_);
-
     std::string cookie_line =
         CanonicalCookie::BuildCookieLine(cookies_with_status_list);
     UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());

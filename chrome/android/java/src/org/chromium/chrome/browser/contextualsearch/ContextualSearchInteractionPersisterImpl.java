@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInteractionRecorder.Feature;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 import java.util.Map;
 
@@ -69,40 +70,40 @@ class ContextualSearchInteractionPersisterImpl implements ContextualSearchIntera
 
     /** @param eventId An event ID to write to local storage. */
     private void writeEventIDToPersistantStorage(long eventId) {
-        ChromePreferenceManager.getInstance().writeLong(
+        SharedPreferencesManager.getInstance().writeLong(
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID, eventId);
     }
 
     /** @return The event ID from local storage. */
     private long readEventIdFromPersistantStorage() {
-        return ChromePreferenceManager.getInstance().readLong(
+        return SharedPreferencesManager.getInstance().readLong(
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID,
                 NO_EVENT_ID);
     }
 
     /** @param bitEncodedValue An encoded outcome to write to local storage. */
     private void writeOutcomesToPersistantStorage(int bitEncodedValue) {
-        ChromePreferenceManager.getInstance().writeInt(
+        SharedPreferencesManager.getInstance().writeInt(
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_ENCODED_OUTCOMES,
                 bitEncodedValue);
     }
 
     /** @return The encoded outcome from local storage. */
     private int readOutcomesFromPersistantStorage() {
-        return ChromePreferenceManager.getInstance().readInt(
+        return SharedPreferencesManager.getInstance().readInt(
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_ENCODED_OUTCOMES);
     }
 
     /** Writes the current time stamp to local storage. */
     private void writeTimestampToPersistantStorage(long timestamp) {
-        ChromePreferenceManager.getInstance().writeLong(
+        SharedPreferencesManager.getInstance().writeLong(
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_TIMESTAMP,
                 timestamp);
     }
 
     /** @return The time stamp when we wrote the outcome to local storage. */
     private long readTimestampFromPersistantStorage() {
-        return ChromePreferenceManager.getInstance().readLong(
+        return SharedPreferencesManager.getInstance().readLong(
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_TIMESTAMP, 0);
     }
 

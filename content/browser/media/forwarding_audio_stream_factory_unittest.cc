@@ -20,6 +20,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "services/audio/public/mojom/constants.mojom.h"
@@ -186,7 +187,7 @@ class MockLoopbackSink : public AudioStreamBroker::LoopbackSink {
 class ForwardingAudioStreamFactoryTest : public RenderViewHostTestHarness {
  public:
   ForwardingAudioStreamFactoryTest()
-      : connector_(service_manager::Connector::Create(&connector_request_)),
+      : connector_(service_manager::Connector::Create(&connector_receiver_)),
         broker_factory_(std::make_unique<MockBrokerFactory>()) {
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
@@ -245,7 +246,7 @@ class ForwardingAudioStreamFactoryTest : public RenderViewHostTestHarness {
   static const uint32_t kSharedMemoryCount;
   static const bool kEnableAgc;
   MockStreamFactory stream_factory_;
-  service_manager::mojom::ConnectorRequest connector_request_;
+  mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver_;
   std::unique_ptr<service_manager::Connector> connector_;
   RenderFrameHost* other_rfh_;
   std::unique_ptr<MockBrokerFactory> broker_factory_;

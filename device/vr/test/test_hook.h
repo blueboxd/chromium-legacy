@@ -6,6 +6,7 @@
 #define DEVICE_VR_TEST_TEST_HOOK_H_
 
 #include "base/logging.h"
+#include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
 #include "ui/gfx/transform.h"
 
 #include <cstdint>
@@ -145,7 +146,7 @@ class VRTestHook {
       unsigned int index) = 0;
   virtual TrackedDeviceClass WaitGetTrackedDeviceClass(unsigned int index) = 0;
   virtual ControllerFrameData WaitGetControllerData(unsigned int index) = 0;
-  virtual bool WaitGetSessionStateStopping() = 0;
+  virtual device_test::mojom::EventData WaitGetEventData() = 0;
 
   virtual void AttachCurrentThread() = 0;
   virtual void DetachCurrentThread() = 0;

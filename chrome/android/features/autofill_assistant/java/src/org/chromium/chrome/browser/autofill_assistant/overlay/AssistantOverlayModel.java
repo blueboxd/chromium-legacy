@@ -6,11 +6,13 @@ package org.chromium.chrome.browser.autofill_assistant.overlay;
 
 import android.graphics.Color;
 import android.graphics.RectF;
+import android.support.annotation.Nullable;
 
 import androidx.annotation.ColorInt;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.autofill_assistant.AssistantDimension;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -47,9 +49,13 @@ public class AssistantOverlayModel extends PropertyModel {
     public static final WritableObjectPropertyKey<Long> TAP_TRACKING_DURATION_MS =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<AssistantOverlayImage> OVERLAY_IMAGE =
+            new WritableObjectPropertyKey<>();
+
     public AssistantOverlayModel() {
         super(STATE, TOUCHABLE_AREA, RESTRICTED_AREA, VISUAL_VIEWPORT, DELEGATE, BACKGROUND_COLOR,
-                HIGHLIGHT_BORDER_COLOR, TAP_TRACKING_COUNT, TAP_TRACKING_DURATION_MS);
+                HIGHLIGHT_BORDER_COLOR, TAP_TRACKING_COUNT, TAP_TRACKING_DURATION_MS,
+                OVERLAY_IMAGE);
     }
 
     @CalledByNative
@@ -104,6 +110,21 @@ public class AssistantOverlayModel extends PropertyModel {
     @CalledByNative
     private void clearHighlightBorderColor() {
         set(HIGHLIGHT_BORDER_COLOR, null);
+    }
+
+    @CalledByNative
+    private void setOverlayImage(String imageUrl, @Nullable AssistantDimension imageSize,
+            @Nullable AssistantDimension imageTopMargin,
+            @Nullable AssistantDimension imageBottomMargin, String text, @ColorInt int textColor,
+            @Nullable AssistantDimension textSize) {
+        set(OVERLAY_IMAGE,
+                new AssistantOverlayImage(imageUrl, imageSize, imageTopMargin, imageBottomMargin,
+                        text, textColor, textSize));
+    }
+
+    @CalledByNative
+    private void clearOverlayImage() {
+        set(OVERLAY_IMAGE, null);
     }
 
     /**

@@ -12,6 +12,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/x/events_x_utils.h"
+#include "ui/events/x/x11_event_translation.h"
 #include "ui/gfx/x/x11.h"
 
 #if defined(OS_CHROMEOS)
@@ -19,167 +20,6 @@
 #endif
 
 namespace ui {
-
-namespace {
-
-Event::Properties GetEventPropertiesFromXKeyEvent(const XKeyEvent& xev) {
-  using Values = std::vector<uint8_t>;
-  Event::Properties properties;
-
-  // Keyboard group
-  uint8_t group = XkbGroupForCoreState(xev.state);
-  properties.emplace(kPropertyKeyboardGroup, Values{group});
-
-  // IBus-gtk specific flags
-  uint8_t ibus_flags = (xev.state >> kPropertyKeyboardIBusFlagOffset) &
-                       kPropertyKeyboardIBusFlagMask;
-  properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
-
-  return properties;
-}
-
-std::unique_ptr<KeyEvent> CreateKeyEvent(const XEvent& xev) {
-  // In CrOS/Linux builds, keep DomCode/DomKey unset in KeyEvent translation,
-  // so they are extracted lazily in KeyEvent::ApplyLayout() which makes it
-  // possible for CrOS to support host system keyboard layouts.
-#if defined(OS_CHROMEOS)
-  auto key_event = std::make_unique<KeyEvent>(EventTypeFromXEvent(xev),
-                                              KeyboardCodeFromXKeyEvent(&xev),
-                                              EventFlagsFromXEvent(xev));
-#else
-  base::TimeTicks timestamp = EventTimeFromXEvent(xev);
-  ValidateEventTimeClock(&timestamp);
-  auto key_event = std::make_unique<KeyEvent>(
-      EventTypeFromXEvent(xev), KeyboardCodeFromXKeyEvent(&xev),
-      CodeFromXEvent(&xev), EventFlagsFromXEvent(xev),
-      GetDomKeyFromXEvent(&xev), timestamp);
-#endif
-  // Attach keyboard group to |key_event|'s properties
-  key_event->SetProperties(GetEventPropertiesFromXKeyEvent(xev.xkey));
-  return key_event;
-}
-
-std::unique_ptr<TouchEvent> CreateTouchEvent(EventType event_type,
-                                             const XEvent& xev) {
-  std::unique_ptr<TouchEvent> event = std::make_unique<TouchEvent>(
-      event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-      GetTouchPointerDetailsFromXEvent(xev));
-
-  // Touch events don't usually have |root_location| set differently than
-  // |location|, since there is a touch device to display association, but this
-  // doesn't happen in Ozone X11.
-  event->set_root_location(EventSystemLocationFromXEvent(xev));
-
-  return event;
-}
-
-// Translates XI2 XEvent into a ui::Event.
-std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
-  EventType event_type = EventTypeFromXEvent(xev);
-  switch (event_type) {
-    case ET_KEY_PRESSED:
-    case ET_KEY_RELEASED: {
-      XEvent xkeyevent;
-      xkeyevent.xkey = {};
-      InitXKeyEventFromXIDeviceEvent(xev, &xkeyevent);
-      return CreateKeyEvent(xkeyevent);
-    }
-    case ET_MOUSE_PRESSED:
-    case ET_MOUSE_MOVED:
-    case ET_MOUSE_DRAGGED:
-    case ET_MOUSE_RELEASED:
-      return std::make_unique<MouseEvent>(
-          event_type, EventLocationFromXEvent(xev),
-          EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-          EventFlagsFromXEvent(xev), GetChangedMouseButtonFlagsFromXEvent(xev));
-    case ET_MOUSEWHEEL:
-      return std::make_unique<MouseWheelEvent>(
-          GetMouseWheelOffsetFromXEvent(xev), EventLocationFromXEvent(xev),
-          EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-          EventFlagsFromXEvent(xev), GetChangedMouseButtonFlagsFromXEvent(xev));
-    case ET_SCROLL_FLING_START:
-    case ET_SCROLL_FLING_CANCEL: {
-      float x_offset, y_offset, x_offset_ordinal, y_offset_ordinal;
-      GetFlingDataFromXEvent(xev, &x_offset, &y_offset, &x_offset_ordinal,
-                             &y_offset_ordinal, nullptr);
-      return std::make_unique<ScrollEvent>(
-          event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-          EventFlagsFromXEvent(xev), x_offset, y_offset, x_offset_ordinal,
-          y_offset_ordinal, 0);
-    }
-    case ET_SCROLL: {
-      float x_offset, y_offset, x_offset_ordinal, y_offset_ordinal;
-      int finger_count;
-      GetScrollOffsetsFromXEvent(xev, &x_offset, &y_offset, &x_offset_ordinal,
-                                 &y_offset_ordinal, &finger_count);
-      return std::make_unique<ScrollEvent>(
-          event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-          EventFlagsFromXEvent(xev), x_offset, y_offset, x_offset_ordinal,
-          y_offset_ordinal, finger_count);
-    }
-    case ET_TOUCH_MOVED:
-    case ET_TOUCH_PRESSED:
-    case ET_TOUCH_CANCELLED:
-    case ET_TOUCH_RELEASED:
-      return CreateTouchEvent(event_type, xev);
-    case ET_UNKNOWN:
-      return nullptr;
-    default:
-      break;
-  }
-  return nullptr;
-}
-
-// Translates a XEvent into a ui::Event.
-std::unique_ptr<ui::Event> TranslateXEventToEvent(const XEvent& xev) {
-  int flags = EventFlagsFromXEvent(xev);
-  switch (xev.type) {
-    case LeaveNotify:
-    case EnterNotify:
-      // Don't generate synthetic mouse move events for EnterNotify/LeaveNotify
-      // from nested XWindows. https://crbug.com/792322
-      if (xev.xcrossing.detail == NotifyInferior)
-        return nullptr;
-
-      return std::make_unique<MouseEvent>(EventTypeFromXEvent(xev),
-                                          EventLocationFromXEvent(xev),
-                                          EventSystemLocationFromXEvent(xev),
-                                          EventTimeFromXEvent(xev), flags, 0);
-
-    case KeyPress:
-    case KeyRelease:
-      return CreateKeyEvent(xev);
-    case ButtonPress:
-    case ButtonRelease: {
-      switch (EventTypeFromXEvent(xev)) {
-        case ET_MOUSEWHEEL:
-          return std::make_unique<MouseWheelEvent>(
-              GetMouseWheelOffsetFromXEvent(xev), EventLocationFromXEvent(xev),
-              EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-              flags, 0);
-        case ET_MOUSE_PRESSED:
-        case ET_MOUSE_RELEASED:
-          return std::make_unique<MouseEvent>(
-              EventTypeFromXEvent(xev), EventLocationFromXEvent(xev),
-              EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-              flags, GetChangedMouseButtonFlagsFromXEvent(xev));
-        case ET_UNKNOWN:
-          // No event is created for X11-release events for mouse-wheel
-          // buttons.
-          break;
-        default:
-          NOTREACHED();
-      }
-      break;
-    }
-
-    case GenericEvent:
-      return TranslateXI2EventToEvent(xev);
-  }
-  return nullptr;
-}
-
-}  // namespace
 
 X11EventSourceDefault::X11EventSourceDefault(XDisplay* display)
     : event_source_(this, display), watcher_controller_(FROM_HERE) {
@@ -235,7 +75,7 @@ void X11EventSourceDefault::RestoreOverridenXEventDispatcher() {
 }
 
 void X11EventSourceDefault::ProcessXEvent(XEvent* xevent) {
-  std::unique_ptr<ui::Event> translated_event = TranslateXEventToEvent(*xevent);
+  auto translated_event = ui::BuildEventFromXEvent(*xevent);
   if (translated_event) {
 #if defined(OS_CHROMEOS)
     if (translated_event->IsLocatedEvent()) {

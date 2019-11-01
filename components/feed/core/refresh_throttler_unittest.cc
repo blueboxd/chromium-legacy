@@ -12,7 +12,6 @@
 #include "components/feed/core/pref_names.h"
 #include "components/feed/core/user_classifier.h"
 #include "components/feed/feed_feature_list.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +27,7 @@ char kNowString[] = "2018-06-11 15:41";
 class RefreshThrottlerTest : public testing::Test {
  public:
   RefreshThrottlerTest() {
-    RefreshThrottler::RegisterProfilePrefs(test_prefs_.registry());
+    feed::RegisterProfilePrefs(test_prefs_.registry());
 
     base::Time now;
     EXPECT_TRUE(base::Time::FromUTCString(kNowString, &now));

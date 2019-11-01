@@ -33,11 +33,7 @@
 #include "extensions/common/verifier_formats.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "extensions/test/test_extensions_client.h"
-#include "services/data_decoder/data_decoder_service.h"
-#include "services/data_decoder/public/cpp/test_data_decoder_service.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -140,9 +136,7 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
 class SandboxedUnpackerTest : public ExtensionsTest {
  public:
   SandboxedUnpackerTest()
-      : ExtensionsTest(content::BrowserTaskEnvironment::IO_MAINLOOP) {
-    test_connector_factory_.set_ignore_quit_requests(true);
-  }
+      : ExtensionsTest(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     ExtensionsTest::SetUp();
@@ -152,7 +146,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     // It will delete itself.
     client_ = new MockSandboxedUnpackerClient;
 
-    InitSanboxedUnpacker(/*data_decode_service=*/nullptr);
+    InitSandboxedUnpacker();
 
     // By default, we host an in-process UnzipperImpl to support any service
     // clients. Tests may explicitly override the launch callback to prevent
@@ -161,27 +155,10 @@ class SandboxedUnpackerTest : public ExtensionsTest {
         base::BindRepeating(&unzip::LaunchInProcessUnzipper));
   }
 
-  void InitSanboxedUnpacker(
-      std::unique_ptr<service_manager::Service> data_decoder_service) {
-    if (data_decoder_service) {
-      data_decoder_service_ = std::move(data_decoder_service);
-    } else {
-      data_decoder_service_ =
-          std::make_unique<data_decoder::DataDecoderService>(
-              RegisterDataDecoder());
-    }
-
-    connector_ = test_connector_factory_.CreateConnector();
-
-    sandboxed_unpacker_ =
-        new SandboxedUnpacker(connector_->Clone(), Manifest::INTERNAL,
-                              Extension::NO_FLAGS, extensions_dir_.GetPath(),
-                              base::ThreadTaskRunnerHandle::Get(), client_);
-  }
-
-  service_manager::mojom::ServiceRequest RegisterDataDecoder() {
-    return test_connector_factory_.RegisterInstance(
-        data_decoder::mojom::kServiceName);
+  void InitSandboxedUnpacker() {
+    sandboxed_unpacker_ = new SandboxedUnpacker(
+        Manifest::INTERNAL, Extension::NO_FLAGS, extensions_dir_.GetPath(),
+        base::ThreadTaskRunnerHandle::Get(), client_);
   }
 
   void TearDown() override {
@@ -267,6 +244,10 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     EXPECT_TRUE(client_deleted);
   }
 
+  data_decoder::test::InProcessDataDecoder& in_process_data_decoder() {
+    return in_process_data_decoder_;
+  }
+
  protected:
   base::ScopedTempDir extensions_dir_;
   MockSandboxedUnpackerClient* client_;
@@ -274,10 +255,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
 
-  service_manager::TestConnectorFactory test_connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
-
-  std::unique_ptr<service_manager::Service> data_decoder_service_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 };
 
 TEST_F(SandboxedUnpackerTest, EmptyDefaultLocale) {
@@ -475,7 +453,7 @@ TEST_F(SandboxedUnpackerTest, UnzipperServiceFails) {
     return remote;
   }));
 
-  InitSanboxedUnpacker(/*data_decoder_service=*/nullptr);
+  InitSandboxedUnpacker();
   SetupUnpacker("good_package.crx", "");
   EXPECT_FALSE(InstallSucceeded());
   EXPECT_FALSE(GetInstallErrorMessage().empty());
@@ -486,8 +464,9 @@ TEST_F(SandboxedUnpackerTest, UnzipperServiceFails) {
 }
 
 TEST_F(SandboxedUnpackerTest, JsonParserFails) {
-  InitSanboxedUnpacker(std::make_unique<data_decoder::CrashyDataDecoderService>(
-      RegisterDataDecoder(), /*crash_json=*/true, /*crash_image=*/false));
+  in_process_data_decoder().service().SimulateJsonParserCrashForTesting(true);
+  InitSandboxedUnpacker();
+
   SetupUnpacker("good_package.crx", "");
   EXPECT_FALSE(InstallSucceeded());
   EXPECT_FALSE(GetInstallErrorMessage().empty());
@@ -496,8 +475,8 @@ TEST_F(SandboxedUnpackerTest, JsonParserFails) {
 }
 
 TEST_F(SandboxedUnpackerTest, ImageDecoderFails) {
-  InitSanboxedUnpacker(std::make_unique<data_decoder::CrashyDataDecoderService>(
-      RegisterDataDecoder(), /*crash_json=*/false, /*crash_image=*/true));
+  in_process_data_decoder().service().SimulateImageDecoderCrashForTesting(true);
+  InitSandboxedUnpacker();
   SetupUnpacker("good_package.crx", "");
   EXPECT_FALSE(InstallSucceeded());
   EXPECT_FALSE(GetInstallErrorMessage().empty());

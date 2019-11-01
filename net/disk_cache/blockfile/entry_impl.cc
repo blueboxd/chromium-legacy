@@ -131,7 +131,7 @@ class EntryImpl::UserBuffer {
   // Prepare this buffer for reuse.
   void Reset();
 
-  char* Data() { return buffer_.size() ? &buffer_[0] : nullptr; }
+  char* Data() { return buffer_.data(); }
   int Size() { return static_cast<int>(buffer_.size()); }
   int Start() { return offset_; }
   int End() { return offset_ + Size(); }

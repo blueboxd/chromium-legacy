@@ -139,13 +139,6 @@ void SupervisedUserSettingsService::UploadItem(
   PushItemToSync(key, std::move(value));
 }
 
-void SupervisedUserSettingsService::UpdateSetting(
-    const std::string& key,
-    std::unique_ptr<base::Value> value) {
-  PushItemToSync(key, std::move(value));
-  InformSubscribers();
-}
-
 void SupervisedUserSettingsService::PushItemToSync(
     const std::string& key,
     std::unique_ptr<base::Value> value) {
@@ -438,6 +431,24 @@ SupervisedUserSettingsService::LocalSettingsForTest() const {
   return local_settings_.get();
 }
 
+base::DictionaryValue* SupervisedUserSettingsService::GetDictionaryAndSplitKey(
+    std::string* key) const {
+  size_t pos = key->find_first_of(kSplitSettingKeySeparator);
+  if (pos == std::string::npos)
+    return GetAtomicSettings();
+
+  base::DictionaryValue* split_settings = GetSplitSettings();
+  std::string prefix = key->substr(0, pos);
+  base::DictionaryValue* dict = nullptr;
+  if (!split_settings->GetDictionary(prefix, &dict)) {
+    DCHECK(!split_settings->HasKey(prefix));
+    dict = split_settings->SetDictionary(
+        prefix, std::make_unique<base::DictionaryValue>());
+  }
+  key->erase(0, pos + 1);
+  return dict;
+}
+
 base::DictionaryValue* SupervisedUserSettingsService::GetOrCreateDictionary(
     const std::string& key) const {
   base::Value* value = nullptr;
@@ -464,24 +475,6 @@ base::DictionaryValue* SupervisedUserSettingsService::GetSplitSettings() const {
 
 base::DictionaryValue* SupervisedUserSettingsService::GetQueuedItems() const {
   return GetOrCreateDictionary(kQueuedItems);
-}
-
-base::DictionaryValue* SupervisedUserSettingsService::GetDictionaryAndSplitKey(
-    std::string* key) const {
-  size_t pos = key->find_first_of(kSplitSettingKeySeparator);
-  if (pos == std::string::npos)
-    return GetAtomicSettings();
-
-  base::DictionaryValue* split_settings = GetSplitSettings();
-  std::string prefix = key->substr(0, pos);
-  base::DictionaryValue* dict = nullptr;
-  if (!split_settings->GetDictionary(prefix, &dict)) {
-    DCHECK(!split_settings->HasKey(prefix));
-    dict = split_settings->SetDictionary(
-        prefix, std::make_unique<base::DictionaryValue>());
-  }
-  key->erase(0, pos + 1);
-  return dict;
 }
 
 std::unique_ptr<base::DictionaryValue>

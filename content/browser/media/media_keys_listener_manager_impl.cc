@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "components/system_media_controls/system_media_controls.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/hardware_key_media_controller.h"
+#include "content/browser/media/system_media_controls_notifier.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/mpris/buildflags/buildflags.h"
@@ -22,10 +24,6 @@
 #if defined(OS_MACOSX)
 #include "content/browser/media/now_playing_info_center_notifier.h"
 #include "ui/base/now_playing/now_playing_info_center_delegate.h"
-#endif
-
-#if defined(OS_WIN)
-#include "content/browser/media/system_media_controls_notifier.h"
 #endif
 
 namespace content {
@@ -169,6 +167,19 @@ void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
   if (auxiliary_services_started_)
     return;
 
+  // Keep the SystemMediaControls notified of media playback state and metadata.
+  //
+  // TODO(https://crbug.com/949596): Remove the MprisNotifier and
+  // NowPlayingInfoCenterNotifier once those are moved into the
+  // platform-agnostic SystemMediaControls.
+  system_media_controls::SystemMediaControls* system_media_controls =
+      system_media_controls::SystemMediaControls::GetInstance();
+  if (system_media_controls) {
+    system_media_controls_notifier_ =
+        std::make_unique<SystemMediaControlsNotifier>(connector_,
+                                                      system_media_controls);
+  }
+
 #if BUILDFLAG(USE_MPRIS)
   mpris::MprisService::GetInstance()->StartService();
 
@@ -191,12 +202,6 @@ void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
             connector_, std::move(now_playing_info_center_delegate));
   }
 #endif
-
-#if defined(OS_WIN)
-  system_media_controls_notifier_ =
-      std::make_unique<SystemMediaControlsNotifier>(connector_);
-  system_media_controls_notifier_->Initialize();
-#endif  // defined(OS_WIN)
 
   auxiliary_services_started_ = true;
 }

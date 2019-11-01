@@ -78,6 +78,9 @@ XrResult XRAPI_PTR GetInstanceProcAddress(XrInstance instance,
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetActionStatePose);
   } else if (strcmp(name, "xrGetInstanceProperties") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetInstanceProperties);
+  } else if (strcmp(name, "xrGetCurrentInteractionProfile") == 0) {
+    *function =
+        reinterpret_cast<PFN_xrVoidFunction>(xrGetCurrentInteractionProfile);
   } else if (strcmp(name, "xrGetReferenceSpaceBoundsRect") == 0) {
     *function =
         reinterpret_cast<PFN_xrVoidFunction>(xrGetReferenceSpaceBoundsRect);
@@ -98,6 +101,8 @@ XrResult XRAPI_PTR GetInstanceProcAddress(XrInstance instance,
         xrSuggestInteractionProfileBindings);
   } else if (strcmp(name, "xrStringToPath") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrStringToPath);
+  } else if (strcmp(name, "xrPathToString") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrPathToString);
   } else if (strcmp(name, "xrSyncActions") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrSyncActions);
   } else if (strcmp(name, "xrWaitFrame") == 0) {

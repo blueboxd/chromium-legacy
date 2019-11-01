@@ -44,7 +44,7 @@ TEST(WebSocketFrameHeaderTest, FrameLengths) {
         kTests[i].frame_header + kTests[i].frame_header_length);
     std::vector<char> output(expected_output.size());
     EXPECT_EQ(static_cast<int>(expected_output.size()),
-              WriteWebSocketFrameHeader(header, nullptr, &output.front(),
+              WriteWebSocketFrameHeader(header, nullptr, output.data(),
                                         output.size()));
     EXPECT_EQ(expected_output, output);
   }
@@ -89,8 +89,8 @@ TEST(WebSocketFrameHeaderTest, FrameLengthsWithMasking) {
         kTests[i].frame_header + kTests[i].frame_header_length);
     std::vector<char> output(expected_output.size());
     EXPECT_EQ(static_cast<int>(expected_output.size()),
-              WriteWebSocketFrameHeader(
-                  header, &masking_key, &output.front(), output.size()));
+              WriteWebSocketFrameHeader(header, &masking_key, output.data(),
+                                        output.size()));
     EXPECT_EQ(expected_output, output);
   }
 }
@@ -132,7 +132,7 @@ TEST(WebSocketFrameHeaderTest, FrameOpCodes) {
         kTests[i].frame_header + kTests[i].frame_header_length);
     std::vector<char> output(expected_output.size());
     EXPECT_EQ(static_cast<int>(expected_output.size()),
-              WriteWebSocketFrameHeader(header, nullptr, &output.front(),
+              WriteWebSocketFrameHeader(header, nullptr, output.data(),
                                         output.size()));
     EXPECT_EQ(expected_output, output);
   }
@@ -171,7 +171,7 @@ TEST(WebSocketFrameHeaderTest, FinalBitAndReservedBits) {
         kTests[i].frame_header + kTests[i].frame_header_length);
     std::vector<char> output(expected_output.size());
     EXPECT_EQ(static_cast<int>(expected_output.size()),
-              WriteWebSocketFrameHeader(header, nullptr, &output.front(),
+              WriteWebSocketFrameHeader(header, nullptr, output.data(),
                                         output.size()));
     EXPECT_EQ(expected_output, output);
   }
@@ -246,9 +246,9 @@ TEST(WebSocketFrameTest, MaskPayload) {
                                  kTests[i].input + kTests[i].data_length);
     std::vector<char> expected_output(kTests[i].output,
                                       kTests[i].output + kTests[i].data_length);
-    MaskWebSocketFramePayload(
-        masking_key, kTests[i].frame_offset,
-        frame_data.empty() ? nullptr : &frame_data.front(), frame_data.size());
+    MaskWebSocketFramePayload(masking_key, kTests[i].frame_offset,
+                              frame_data.empty() ? nullptr : frame_data.data(),
+                              frame_data.size());
     EXPECT_EQ(expected_output, frame_data);
   }
 }

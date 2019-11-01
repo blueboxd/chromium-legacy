@@ -7,19 +7,25 @@
 #include <memory>
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
+#include "components/system_media_controls/mock_system_media_controls.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
 #include "ui/base/idle/scoped_set_idle_state.h"
-#include "ui/base/win/system_media_controls/mock_system_media_controls_service.h"
+#endif  // defined(OS_WIN)
 
 namespace content {
 
-using ABI::Windows::Media::MediaPlaybackStatus;
 using media_session::mojom::MediaPlaybackState;
 using media_session::mojom::MediaSessionInfo;
 using media_session::mojom::MediaSessionInfoPtr;
+using PlaybackStatus =
+    system_media_controls::SystemMediaControls::PlaybackStatus;
 using testing::_;
 using testing::Expectation;
 
@@ -30,11 +36,8 @@ class SystemMediaControlsNotifierTest : public testing::Test {
   ~SystemMediaControlsNotifierTest() override = default;
 
   void SetUp() override {
-    notifier_ =
-        std::make_unique<SystemMediaControlsNotifier>(/*connector=*/nullptr);
-    notifier_->SetSystemMediaControlsServiceForTesting(
-        &mock_system_media_controls_service_);
-    notifier_->Initialize();
+    notifier_ = std::make_unique<SystemMediaControlsNotifier>(
+        /*connector=*/nullptr, &mock_system_media_controls_);
   }
 
  protected:
@@ -76,42 +79,39 @@ class SystemMediaControlsNotifierTest : public testing::Test {
   }
 
   SystemMediaControlsNotifier& notifier() { return *notifier_; }
-  system_media_controls::testing::MockSystemMediaControlsService&
-  mock_system_media_controls_service() {
-    return mock_system_media_controls_service_;
+  system_media_controls::testing::MockSystemMediaControls&
+  mock_system_media_controls() {
+    return mock_system_media_controls_;
   }
 
+#if defined(OS_WIN)
   base::RepeatingTimer& lock_polling_timer() {
     return notifier_->lock_polling_timer_;
   }
 
   base::OneShotTimer& hide_smtc_timer() { return notifier_->hide_smtc_timer_; }
+#endif  // defined(OS_WIN)
 
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<SystemMediaControlsNotifier> notifier_;
-  system_media_controls::testing::MockSystemMediaControlsService
-      mock_system_media_controls_service_;
+  system_media_controls::testing::MockSystemMediaControls
+      mock_system_media_controls_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMediaControlsNotifierTest);
 };
 
 TEST_F(SystemMediaControlsNotifierTest, ProperlyUpdatesPlaybackState) {
-  Expectation playing = EXPECT_CALL(
-      mock_system_media_controls_service(),
-      SetPlaybackStatus(MediaPlaybackStatus::MediaPlaybackStatus_Playing));
-  Expectation paused =
-      EXPECT_CALL(
-          mock_system_media_controls_service(),
-          SetPlaybackStatus(MediaPlaybackStatus::MediaPlaybackStatus_Paused))
-          .After(playing);
-  Expectation stopped =
-      EXPECT_CALL(
-          mock_system_media_controls_service(),
-          SetPlaybackStatus(MediaPlaybackStatus::MediaPlaybackStatus_Stopped))
-          .After(paused);
-  EXPECT_CALL(mock_system_media_controls_service(), ClearMetadata())
-      .After(stopped);
+  Expectation playing =
+      EXPECT_CALL(mock_system_media_controls(),
+                  SetPlaybackStatus(PlaybackStatus::kPlaying));
+  Expectation paused = EXPECT_CALL(mock_system_media_controls(),
+                                   SetPlaybackStatus(PlaybackStatus::kPaused))
+                           .After(playing);
+  Expectation stopped = EXPECT_CALL(mock_system_media_controls(),
+                                    SetPlaybackStatus(PlaybackStatus::kStopped))
+                            .After(paused);
+  EXPECT_CALL(mock_system_media_controls(), ClearMetadata()).After(stopped);
 
   SimulatePlaying();
   SimulatePaused();
@@ -119,33 +119,34 @@ TEST_F(SystemMediaControlsNotifierTest, ProperlyUpdatesPlaybackState) {
 }
 
 TEST_F(SystemMediaControlsNotifierTest, ProperlyUpdatesMetadata) {
-  base::string16 title = L"title";
-  base::string16 artist = L"artist";
+  base::string16 title = base::ASCIIToUTF16("title");
+  base::string16 artist = base::ASCIIToUTF16("artist");
 
-  EXPECT_CALL(mock_system_media_controls_service(), SetTitle(title));
-  EXPECT_CALL(mock_system_media_controls_service(), SetArtist(artist));
-  EXPECT_CALL(mock_system_media_controls_service(), ClearMetadata()).Times(0);
-  EXPECT_CALL(mock_system_media_controls_service(), UpdateDisplay());
+  EXPECT_CALL(mock_system_media_controls(), SetTitle(title));
+  EXPECT_CALL(mock_system_media_controls(), SetArtist(artist));
+  EXPECT_CALL(mock_system_media_controls(), ClearMetadata()).Times(0);
+  EXPECT_CALL(mock_system_media_controls(), UpdateDisplay());
 
   SimulateMetadataChanged(false, title, artist);
 }
 
 TEST_F(SystemMediaControlsNotifierTest, ProperlyUpdatesNullMetadata) {
-  EXPECT_CALL(mock_system_media_controls_service(), SetTitle(_)).Times(0);
-  EXPECT_CALL(mock_system_media_controls_service(), SetArtist(_)).Times(0);
-  EXPECT_CALL(mock_system_media_controls_service(), ClearMetadata());
+  EXPECT_CALL(mock_system_media_controls(), SetTitle(_)).Times(0);
+  EXPECT_CALL(mock_system_media_controls(), SetArtist(_)).Times(0);
+  EXPECT_CALL(mock_system_media_controls(), ClearMetadata());
 
-  SimulateMetadataChanged(true, L"", L"");
+  SimulateMetadataChanged(true, base::string16(), base::string16());
 }
 
 TEST_F(SystemMediaControlsNotifierTest, ProperlyUpdatesImage) {
-  EXPECT_CALL(mock_system_media_controls_service(), SetThumbnail(_));
+  EXPECT_CALL(mock_system_media_controls(), SetThumbnail(_));
 
   SimulateImageChanged();
 }
 
+#if defined(OS_WIN)
 TEST_F(SystemMediaControlsNotifierTest, DisablesOnLockAndEnablesOnUnlock) {
-  EXPECT_CALL(mock_system_media_controls_service(), SetEnabled(false));
+  EXPECT_CALL(mock_system_media_controls(), SetEnabled(false));
 
   {
     // Lock the screen.
@@ -158,11 +159,10 @@ TEST_F(SystemMediaControlsNotifierTest, DisablesOnLockAndEnablesOnUnlock) {
   }
 
   // Ensure that the service was disabled.
-  testing::Mock::VerifyAndClearExpectations(
-      &mock_system_media_controls_service());
+  testing::Mock::VerifyAndClearExpectations(&mock_system_media_controls());
 
   // The service should be reenabled on unlock.
-  EXPECT_CALL(mock_system_media_controls_service(), SetEnabled(true));
+  EXPECT_CALL(mock_system_media_controls(), SetEnabled(true));
 
   {
     // Unlock the screen.
@@ -176,7 +176,7 @@ TEST_F(SystemMediaControlsNotifierTest, DisablesOnLockAndEnablesOnUnlock) {
 }
 
 TEST_F(SystemMediaControlsNotifierTest, DoesNotDisableOnLockWhenPlaying) {
-  EXPECT_CALL(mock_system_media_controls_service(), SetEnabled(_)).Times(0);
+  EXPECT_CALL(mock_system_media_controls(), SetEnabled(_)).Times(0);
 
   SimulatePlaying();
 
@@ -190,16 +190,13 @@ TEST_F(SystemMediaControlsNotifierTest, DoesNotDisableOnLockWhenPlaying) {
 }
 
 TEST_F(SystemMediaControlsNotifierTest, DisablesAfterPausingOnLockScreen) {
-  Expectation playing = EXPECT_CALL(
-      mock_system_media_controls_service(),
-      SetPlaybackStatus(MediaPlaybackStatus::MediaPlaybackStatus_Playing));
-  Expectation paused =
-      EXPECT_CALL(
-          mock_system_media_controls_service(),
-          SetPlaybackStatus(MediaPlaybackStatus::MediaPlaybackStatus_Paused))
-          .After(playing);
-  EXPECT_CALL(mock_system_media_controls_service(), SetEnabled(false))
-      .After(paused);
+  Expectation playing =
+      EXPECT_CALL(mock_system_media_controls(),
+                  SetPlaybackStatus(PlaybackStatus::kPlaying));
+  Expectation paused = EXPECT_CALL(mock_system_media_controls(),
+                                   SetPlaybackStatus(PlaybackStatus::kPaused))
+                           .After(playing);
+  EXPECT_CALL(mock_system_media_controls(), SetEnabled(false)).After(paused);
 
   SimulatePlaying();
 
@@ -222,5 +219,6 @@ TEST_F(SystemMediaControlsNotifierTest, DisablesAfterPausingOnLockScreen) {
   // Force the timer to fire now. This should disable the service.
   hide_smtc_timer().FireNow();
 }
+#endif  // defined(OS_WIN)
 
 }  // namespace content

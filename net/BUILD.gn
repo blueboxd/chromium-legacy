@@ -1677,7 +1677,6 @@ component("net") {
       "url_request/url_request_filter.h",
       "url_request/url_request_http_job.cc",
       "url_request/url_request_http_job.h",
-      "url_request/url_request_http_job_histogram.h",
       "url_request/url_request_intercepting_job_factory.cc",
       "url_request/url_request_intercepting_job_factory.h",
       "url_request/url_request_interceptor.cc",

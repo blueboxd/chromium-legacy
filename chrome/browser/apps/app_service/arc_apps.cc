@@ -433,6 +433,81 @@ void ArcApps::OpenNativeSettings(const std::string& app_id) {
                        display::Screen::GetScreen()->GetPrimaryDisplay().id());
 }
 
+void ArcApps::OnPreferredAppSet(const std::string& app_id,
+                                apps::mojom::IntentFilterPtr intent_filter,
+                                apps::mojom::IntentPtr intent) {
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  arc::mojom::IntentHelperInstance* instance = nullptr;
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(),
+        AddPreferredApp);
+  }
+  if (!instance) {
+    return;
+  }
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
+  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs->GetApp(app_id);
+  if (!app_info) {
+    LOG(ERROR) << "Launch App failed, could not find app with id " << app_id;
+    return;
+  }
+
+  auto arc_intent = CreateArcViewIntent(std::move(intent));
+
+  std::vector<std::string> schemes;
+  std::vector<arc::IntentFilter::AuthorityEntry> authorities;
+  std::vector<arc::IntentFilter::PatternMatcher> paths;
+  for (auto& condition : intent_filter->conditions) {
+    switch (condition->condition_type) {
+      case apps::mojom::ConditionType::kScheme:
+        for (auto& condition_value : condition->condition_values) {
+          schemes.push_back(condition_value->value);
+        }
+        break;
+      case apps::mojom::ConditionType::kHost:
+        for (auto& condition_value : condition->condition_values) {
+          authorities.push_back(
+              arc::IntentFilter::AuthorityEntry(condition_value->value, 0));
+        }
+        break;
+      case apps::mojom::ConditionType::kPattern:
+        for (auto& condition_value : condition->condition_values) {
+          arc::mojom::PatternType match_type;
+          switch (condition_value->match_type) {
+            case apps::mojom::PatternMatchType::kLiteral:
+              match_type = arc::mojom::PatternType::PATTERN_LITERAL;
+              break;
+            case apps::mojom::PatternMatchType::kPrefix:
+              match_type = arc::mojom::PatternType::PATTERN_PREFIX;
+              break;
+            case apps::mojom::PatternMatchType::kGlob:
+              match_type = arc::mojom::PatternType::PATTERN_SIMPLE_GLOB;
+              break;
+            case apps::mojom::PatternMatchType::kNone:
+              NOTREACHED();
+              return;
+          }
+          paths.push_back(arc::IntentFilter::PatternMatcher(
+              condition_value->value, match_type));
+        }
+        break;
+    }
+  }
+  // TODO(crbug.com/853604): Add support for other action and category types.
+  arc::IntentFilter arc_intent_filter(app_info->package_name,
+                                      std::move(authorities), std::move(paths),
+                                      std::move(schemes));
+  instance->AddPreferredApp(app_info->package_name,
+                            std::move(arc_intent_filter),
+                            std::move(arc_intent));
+}
+
 void ArcApps::OnAppRegistered(const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
@@ -623,6 +698,8 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   app->show_in_search = show;
   app->show_in_management = show;
 
+  app->paused = apps::mojom::OptionalBool::kFalse;
+
   std::unique_ptr<ArcAppListPrefs::PackageInfo> package =
       prefs->GetPackage(app_info.package_name);
   if (package) {
@@ -711,8 +788,6 @@ void ArcApps::UpdateAppIntentFilters(
         case arc::mojom::PatternType::PATTERN_SIMPLE_GLOB:
           match_type = apps::mojom::PatternMatchType::kGlob;
           break;
-        default:
-          NOTREACHED();
       }
       path_condition_values.push_back(
           apps_util::MakeConditionValue(path.pattern(), match_type));

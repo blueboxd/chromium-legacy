@@ -343,11 +343,12 @@ void AppServiceProxy::AddPreferredApp(const std::string& app_id,
   if (intent_filter) {
     preferred_apps_.AddPreferredApp(app_id, intent_filter);
     if (app_service_.is_connected()) {
-      cache_.ForOneApp(
-          app_id, [this, &intent_filter](const apps::AppUpdate& update) {
-            app_service_->AddPreferredApp(update.AppType(), update.AppId(),
-                                          std::move(intent_filter));
-          });
+      cache_.ForOneApp(app_id, [this, &intent_filter,
+                                &intent](const apps::AppUpdate& update) {
+        app_service_->AddPreferredApp(update.AppType(), update.AppId(),
+                                      std::move(intent_filter),
+                                      intent->Clone());
+      });
     }
   }
 }

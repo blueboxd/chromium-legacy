@@ -606,7 +606,7 @@ TEST_F(FetchDataLoaderTest, LoadAsString) {
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
-      TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+      TextResourceDecoderOptions::CreateUTF8Decode());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 
@@ -646,7 +646,7 @@ TEST_F(FetchDataLoaderTest, LoadAsStringWithNullBytes) {
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
-      TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+      TextResourceDecoderOptions::CreateUTF8Decode());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 
@@ -687,7 +687,7 @@ TEST_F(FetchDataLoaderTest, LoadAsStringError) {
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
-      TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+      TextResourceDecoderOptions::CreateUTF8Decode());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 
@@ -726,7 +726,7 @@ TEST_F(FetchDataLoaderTest, LoadAsStringCancel) {
   auto* consumer = MakeGarbageCollected<MockBytesConsumer>();
 
   FetchDataLoader* fetch_data_loader = FetchDataLoader::CreateLoaderAsString(
-      TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+      TextResourceDecoderOptions::CreateUTF8Decode());
   auto* fetch_data_loader_client =
       MakeGarbageCollected<MockFetchDataLoaderClient>();
 

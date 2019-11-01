@@ -164,7 +164,7 @@ jumbo_component("events_base") {
     "//ui/gfx/geometry",
   ]
 
-  if (use_x11) {
+  if (use_x11 || ozone_platform_x11) {
     public_deps += [ "//ui/events/keycodes:x11" ]
   }
 
@@ -274,6 +274,11 @@ jumbo_component("events") {
       "x/events_x.cc",
       "x/keyboard_hook_x11.cc",
     ]
+  }
+
+  if (use_x11 || ozone_platform_x11) {
+    public += [ "x/x11_event_translation.h" ]
+    sources += [ "x/x11_event_translation.cc" ]
     configs += [ "//build/config/linux:x11" ]
     deps += [
       "//ui/events/devices",
@@ -490,12 +495,9 @@ jumbo_static_library("test_support") {
     deps += [
       "//ui/events/devices/x11",
       "//ui/events/keycodes:x11",
+      "//ui/events/x",
       "//ui/gfx/x",
     ]
-  }
-
-  if (use_x11 || ozone_platform_x11) {
-    deps += [ "//ui/events/x" ]
   }
 }
 

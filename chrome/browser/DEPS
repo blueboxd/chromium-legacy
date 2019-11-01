@@ -390,11 +390,12 @@ include_rules = [
   "+content/public/network",
 
   # Other libraries.
+  "+libxml",
   "+third_party/google_toolbox_for_mac/src",
   "+third_party/icu/source/common/unicode",
   "+third_party/icu/source/i18n/unicode",
   "+third_party/leveldatabase",
-  "+third_party/libxml/chromium/xml_writer.h",
+  "+third_party/libxml",
   "+third_party/mozilla",     # Mozilla interface headers.
   "+third_party/ocmock/gtest_support.h",
   "+third_party/protobuf/src/google/protobuf",

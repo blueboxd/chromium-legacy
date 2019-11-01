@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -283,9 +282,6 @@ void PreviewsUITabHelper::DidStartNavigation(
     return;
 
   MaybeRecordPreviewReload(navigation_handle);
-
-  OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlacklist(
-      navigation_handle);
 
   MaybeShowInfoBar(navigation_handle);
 }

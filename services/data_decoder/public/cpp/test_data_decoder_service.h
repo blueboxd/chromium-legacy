@@ -41,56 +41,6 @@ class TestDataDecoderService {
   DISALLOW_COPY_AND_ASSIGN(TestDataDecoderService);
 };
 
-// An implementation of the DataDecoderService that closes the connection when
-// a call is made on an interface.
-// Can be used with a TestConnectorFactory to simulate crashes in the service
-// while processing a call.
-class CrashyDataDecoderService : public service_manager::Service,
-                                 public mojom::ImageDecoder,
-                                 public mojom::JsonParser {
- public:
-  CrashyDataDecoderService(service_manager::mojom::ServiceRequest request,
-                           bool crash_json,
-                           bool crash_image);
-  ~CrashyDataDecoderService() override;
-
-  // service_manager::Service:
-  void OnStart() override;
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
-
-  // mojom::ImageDecoder implementation:
-  void DecodeImage(const std::vector<uint8_t>& encoded_data,
-                   mojom::ImageCodec codec,
-                   bool shrink_to_fit,
-                   int64_t max_size_in_bytes,
-                   const gfx::Size& desired_image_frame_size,
-                   DecodeImageCallback callback) override;
-  void DecodeAnimation(const std::vector<uint8_t>& encoded_data,
-                       bool shrink_to_fit,
-                       int64_t max_size_in_bytes,
-                       DecodeAnimationCallback callback) override;
-
-  // mojom::JsonParser implementation.
-  void Parse(const std::string& json, ParseCallback callback) override;
-
- private:
-  service_manager::ServiceBinding binding_;
-
-  std::unique_ptr<mojo::Receiver<mojom::ImageDecoder>> image_decoder_receiver_;
-  std::unique_ptr<mojo::Receiver<mojom::JsonParser>> json_parser_receiver_;
-
-  // An instance of the actual DataDecoderService we forward requests to for
-  // interfaces that should not crash.
-  DataDecoderService real_service_;
-
-  bool crash_json_ = false;
-  bool crash_image_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(CrashyDataDecoderService);
-};
-
 }  // namespace data_decoder
 
 #endif  // SERVICES_DATA_DECODER_PUBLIC_CPP_TEST_DATA_DECODER_SERVICE_H_

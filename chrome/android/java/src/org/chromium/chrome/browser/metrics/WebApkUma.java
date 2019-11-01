@@ -19,6 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.webapps.WebApkDistributor;
 import org.chromium.chrome.browser.webapps.WebApkUkmRecorder;
@@ -126,8 +127,8 @@ public class WebApkUma {
 
     /** Makes recordings that were deferred in order to not load native. */
     public static void recordDeferredUma() {
-        ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
-        Set<String> uninstalledPackages = preferenceManager.readStringSet(
+        SharedPreferencesManager preferencesManager = SharedPreferencesManager.getInstance();
+        Set<String> uninstalledPackages = preferencesManager.readStringSet(
                 ChromePreferenceManager.WEBAPK_UNINSTALLED_PACKAGES);
         if (uninstalledPackages.isEmpty()) return;
 
@@ -150,7 +151,7 @@ public class WebApkUma {
                         uninstallTimestamp - webappDataStorage.getWebApkInstallTimestamp());
             }
         }
-        preferenceManager.writeStringSet(
+        preferencesManager.writeStringSet(
                 ChromePreferenceManager.WEBAPK_UNINSTALLED_PACKAGES, new HashSet<String>());
 
         // TODO(http://crbug.com/1000312): Clear WebappDataStorage for uninstalled WebAPK.
@@ -158,7 +159,7 @@ public class WebApkUma {
 
     /** Sets WebAPK uninstall to be recorded next time that native is loaded. */
     public static void deferRecordWebApkUninstalled(String packageName) {
-        ChromePreferenceManager.getInstance().addToStringSet(
+        SharedPreferencesManager.getInstance().addToStringSet(
                 ChromePreferenceManager.WEBAPK_UNINSTALLED_PACKAGES, packageName);
         String webApkId = WebappRegistry.webApkIdForPackage(packageName);
         WebappRegistry.warmUpSharedPrefsForId(webApkId);

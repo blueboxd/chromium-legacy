@@ -21,7 +21,9 @@
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/file_data_source.h"
@@ -97,13 +99,13 @@ class ContentURLLoader : public network::mojom::URLLoader {
   static void CreateAndStart(
       const network::ResourceRequest& request,
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      network::mojom::URLLoaderClientPtrInfo client_info) {
-    // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote) {
+    // Owns itself. Will live as long as its URLLoader and URLLoaderClient
     // bindings are alive - essentially until either the client gives up or all
     // file data has been sent to it.
     auto* content_url_loader = new ContentURLLoader;
     content_url_loader->Start(request, std::move(loader),
-                              std::move(client_info));
+                              std::move(client_remote));
   }
 
   // network::mojom::URLLoader:
@@ -119,17 +121,18 @@ class ContentURLLoader : public network::mojom::URLLoader {
   ContentURLLoader() = default;
   ~ContentURLLoader() override = default;
 
-  void Start(const network::ResourceRequest& request,
-             mojo::PendingReceiver<network::mojom::URLLoader> loader,
-             network::mojom::URLLoaderClientPtrInfo client_info) {
+  void Start(
+      const network::ResourceRequest& request,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote) {
     network::ResourceResponseHead head;
     head.request_start = head.response_start = base::TimeTicks::Now();
     receiver_.Bind(std::move(loader));
     receiver_.set_disconnect_handler(base::BindOnce(
         &ContentURLLoader::OnMojoDisconnect, base::Unretained(this)));
 
-    network::mojom::URLLoaderClientPtr client;
-    client.Bind(std::move(client_info));
+    mojo::Remote<network::mojom::URLLoaderClient> client(
+        std::move(client_remote));
 
     DCHECK(request.url.SchemeIs("content"));
     base::FilePath path = base::FilePath(request.url.spec());
@@ -221,7 +224,7 @@ class ContentURLLoader : public network::mojom::URLLoader {
                                          base::Unretained(this)));
   }
 
-  void CompleteWithFailure(network::mojom::URLLoaderClientPtr client,
+  void CompleteWithFailure(mojo::Remote<network::mojom::URLLoaderClient> client,
                            net::Error net_error) {
     client->OnComplete(network::URLLoaderCompletionStatus(net_error));
     MaybeDeleteSelf();
@@ -257,7 +260,7 @@ class ContentURLLoader : public network::mojom::URLLoader {
 
   std::unique_ptr<mojo::DataPipeProducer> data_producer_;
   mojo::Receiver<network::mojom::URLLoader> receiver_{this};
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   // In case of successful loads, this holds the total of bytes written.
   // It is used to set some of the URLLoaderCompletionStatus data passed back

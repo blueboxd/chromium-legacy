@@ -117,28 +117,39 @@ bool OriginIsCryptoTokenExtension(const url::Origin& origin) {
   return cryptotoken_origin == origin;
 }
 
-// Ensure that the origin's effective domain is a valid domain.
-// Only the domain format of host is valid.
+// Returns AuthenticatorStatus::SUCCESS if the domain is valid and an error
+// if it fails one of the criteria below.
 // Reference https://url.spec.whatwg.org/#valid-domain-string and
 // https://html.spec.whatwg.org/multipage/origin.html#concept-origin-effective-domain.
-bool HasValidEffectiveDomain(url::Origin caller_origin) {
+blink::mojom::AuthenticatorStatus ValidateEffectiveDomain(
+    url::Origin caller_origin) {
   // For calls originating in the CryptoToken U2F extension, allow CryptoToken
   // to validate domain.
   if (OriginIsCryptoTokenExtension(caller_origin)) {
-    return true;
+    return blink::mojom::AuthenticatorStatus::SUCCESS;
   }
 
-  return !caller_origin.opaque() &&
-         !url::HostIsIPAddress(caller_origin.host()) &&
-         content::IsOriginSecure(caller_origin.GetURL()) &&
-         // Additionally, the scheme is required to be HTTP(S). Other schemes
-         // may be supported in the future but the webauthn relying party is
-         // just the domain of the origin so we would have to define how the
-         // authority part of other schemes maps to a "domain" without
-         // collisions. Given the |IsOriginSecure| check, just above, HTTP is
-         // effectively restricted to just "localhost".
-         (caller_origin.scheme() == url::kHttpScheme ||
-          caller_origin.scheme() == url::kHttpsScheme);
+  if (caller_origin.opaque()) {
+    return blink::mojom::AuthenticatorStatus::OPAQUE_DOMAIN;
+  }
+
+  if (url::HostIsIPAddress(caller_origin.host()) ||
+      !content::IsOriginSecure(caller_origin.GetURL())) {
+    return blink::mojom::AuthenticatorStatus::INVALID_DOMAIN;
+  }
+
+  // Additionally, the scheme is required to be HTTP(S). Other schemes
+  // may be supported in the future but the webauthn relying party is
+  // just the domain of the origin so we would have to define how the
+  // authority part of other schemes maps to a "domain" without
+  // collisions. Given the |IsOriginSecure| check, just above, HTTP is
+  // effectively restricted to just "localhost".
+  if (caller_origin.scheme() != url::kHttpScheme &&
+      caller_origin.scheme() != url::kHttpsScheme) {
+    return blink::mojom::AuthenticatorStatus::INVALID_PROTOCOL;
+  }
+
+  return blink::mojom::AuthenticatorStatus::SUCCESS;
 }
 
 // Ensure the relying party ID is a registrable domain suffix of or equal
@@ -216,7 +227,7 @@ base::Optional<std::string> ProcessAppIdExtension(std::string appid,
   // caller, no additional processing is necessary and the operation may
   // proceed."
 
-  // Webauthn is only supported on secure origins and |HasValidEffectiveDomain|
+  // Webauthn is only supported on secure origins and |ValidateEffectiveDomain|
   // has already checked this property of |origin| before this call. Thus this
   // step is moot.
   DCHECK(content::IsOriginSecure(origin.GetURL()));
@@ -726,25 +737,23 @@ void AuthenticatorCommon::MakeCredential(
   }
   DCHECK(!request_);
 
-  if (!HasValidEffectiveDomain(caller_origin)) {
+  blink::mojom::AuthenticatorStatus domain_validation =
+      ValidateEffectiveDomain(caller_origin);
+  if (domain_validation != blink::mojom::AuthenticatorStatus::SUCCESS) {
     ReportSecurityCheckFailure(
         RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
-    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
-                                    bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
-    InvokeCallbackAndCleanup(std::move(callback),
-                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-                             nullptr, Focus::kDontCheck);
+    InvokeCallbackAndCleanup(std::move(callback), domain_validation, nullptr,
+                             Focus::kDontCheck);
     return;
   }
 
   if (!IsRelyingPartyIdValid(options->relying_party.id, caller_origin)) {
     ReportSecurityCheckFailure(
         RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
-    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
-                                    bad_message::AUTH_INVALID_RELYING_PARTY);
-    InvokeCallbackAndCleanup(std::move(callback),
-                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-                             nullptr, Focus::kDontCheck);
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        blink::mojom::AuthenticatorStatus::BAD_RELYING_PARTY_ID, nullptr,
+        Focus::kDontCheck);
     return;
   }
 
@@ -932,25 +941,21 @@ void AuthenticatorCommon::GetAssertion(
   }
   DCHECK(!request_);
 
-  if (!HasValidEffectiveDomain(caller_origin)) {
+  blink::mojom::AuthenticatorStatus domain_validation =
+      ValidateEffectiveDomain(caller_origin);
+  if (domain_validation != blink::mojom::AuthenticatorStatus::SUCCESS) {
     ReportSecurityCheckFailure(
         RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
-    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
-                                    bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
-    InvokeCallbackAndCleanup(std::move(callback),
-                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-                             nullptr);
+    InvokeCallbackAndCleanup(std::move(callback), domain_validation, nullptr);
     return;
   }
 
   if (!IsRelyingPartyIdValid(options->relying_party_id, caller_origin)) {
     ReportSecurityCheckFailure(
         RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
-    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
-                                    bad_message::AUTH_INVALID_RELYING_PARTY);
-    InvokeCallbackAndCleanup(std::move(callback),
-                             blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-                             nullptr);
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        blink::mojom::AuthenticatorStatus::BAD_RELYING_PARTY_ID, nullptr);
     return;
   }
 

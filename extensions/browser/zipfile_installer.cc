@@ -17,8 +17,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
 #include "extensions/strings/grit/extensions_strings.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
@@ -61,12 +59,9 @@ base::Optional<std::string> ReadFileContent(const base::FilePath& path) {
 
 // static
 scoped_refptr<ZipFileInstaller> ZipFileInstaller::Create(
-    service_manager::Connector* connector,
     DoneCallback done_callback) {
-  DCHECK(connector);
   DCHECK(done_callback);
-  return base::WrapRefCounted(
-      new ZipFileInstaller(connector, std::move(done_callback)));
+  return base::WrapRefCounted(new ZipFileInstaller(std::move(done_callback)));
 }
 
 void ZipFileInstaller::LoadFromZipFile(const base::FilePath& zip_file) {
@@ -99,9 +94,8 @@ void ZipFileInstaller::LoadFromZipFileImpl(const base::FilePath& zip_file,
       base::BindOnce(&ZipFileInstaller::Unzip, this));
 }
 
-ZipFileInstaller::ZipFileInstaller(service_manager::Connector* connector,
-                                   DoneCallback done_callback)
-    : done_callback_(std::move(done_callback)), connector_(connector) {}
+ZipFileInstaller::ZipFileInstaller(DoneCallback done_callback)
+    : done_callback_(std::move(done_callback)) {}
 
 ZipFileInstaller::~ZipFileInstaller() = default;
 
@@ -140,21 +134,22 @@ void ZipFileInstaller::ManifestRead(
     return;
   }
 
-  data_decoder::SafeJsonParser::Parse(
-      connector_, *manifest_content,
-      base::BindOnce(&ZipFileInstaller::ManifestParsed, this, unzip_dir),
-      base::BindOnce(&ZipFileInstaller::ManifestParsingFailed, this));
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *manifest_content,
+      base::BindOnce(&ZipFileInstaller::ManifestParsed, this, unzip_dir));
 }
 
-void ZipFileInstaller::ManifestParsingFailed(const std::string& error) {
-  ReportFailure(std::string(kExtensionHandlerFileUnzipError));
-}
+void ZipFileInstaller::ManifestParsed(
+    const base::FilePath& unzip_dir,
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    ReportFailure(std::string(kExtensionHandlerFileUnzipError));
+    return;
+  }
 
-void ZipFileInstaller::ManifestParsed(const base::FilePath& unzip_dir,
-                                      base::Value manifest_value) {
   std::unique_ptr<base::DictionaryValue> manifest_dictionary =
       base::DictionaryValue::From(
-          base::Value::ToUniquePtrValue(std::move(manifest_value)));
+          base::Value::ToUniquePtrValue(std::move(*result.value)));
   if (!manifest_dictionary) {
     ReportFailure(std::string(kExtensionHandlerFileUnzipError));
     return;

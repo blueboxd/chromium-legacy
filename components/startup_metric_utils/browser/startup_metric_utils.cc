@@ -494,19 +494,6 @@ void RecordRendererMainEntryTime(base::TimeTicks ticks) {
     g_renderer_main_entry_point_ticks = ticks;
 }
 
-void RecordFirstWebContentsMainFrameLoad(base::TimeTicks ticks) {
-  static bool is_first_call = true;
-  if (!is_first_call || ticks.is_null())
-    return;
-  is_first_call = false;
-  if (!ShouldLogStartupHistogram())
-    return;
-
-  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.MainFrameLoad2",
-      g_process_creation_ticks, ticks);
-}
-
 void RecordFirstWebContentsNonEmptyPaint(
     base::TimeTicks now,
     base::TimeTicks render_process_host_init_time) {

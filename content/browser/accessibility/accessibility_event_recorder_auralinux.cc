@@ -164,6 +164,8 @@ void AccessibilityEventRecorderAuraLinux::AddATKEventListeners() {
   AddATKEventListener("ATK:AtkObject:children-changed");
   AddATKEventListener("ATK:AtkText:text-insert");
   AddATKEventListener("ATK:AtkText:text-remove");
+  AddATKEventListener("ATK:AtkText:text-selection-changed");
+  AddATKEventListener("ATK:AtkText:text-caret-moved");
   AddATKEventListener("ATK:AtkSelection:selection-changed");
 }
 

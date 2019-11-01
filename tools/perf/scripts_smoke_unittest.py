@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -161,8 +162,7 @@ class ScriptsSmokeTest(unittest.TestCase):
 
   # Android: crbug.com/932301
   # ChromeOS: crbug.com/754913
-  # Linux: crbug.com/996003
-  @decorators.Disabled('chromeos', 'android', 'linux')
+  @decorators.Disabled('chromeos', 'android')
   def testRunPerformanceTestsTelemetrySharded_end2end(self):
     tempdir = tempfile.mkdtemp()
     env = os.environ.copy()
@@ -182,34 +182,39 @@ class ScriptsSmokeTest(unittest.TestCase):
             self.options.browser_type,
             os.path.join(tempdir, 'output.json')
         ), env=env)
-    self.assertEquals(return_code, 0, stdout)
+    test_results = None
     try:
+      self.assertEquals(return_code, 0)
       expected_benchmark_folders = (
           'dummy_benchmark.stable_benchmark_1',
           'dummy_benchmark.stable_benchmark_1.reference')
       with open(os.path.join(tempdir, 'output.json')) as f:
         test_results = json.load(f)
-        self.assertIsNotNone(
-            test_results, 'json_test_results should be populated: ' + stdout)
-        test_repeats = test_results['num_failures_by_type']['PASS']
-        self.assertEqual(
-            test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
+      self.assertIsNotNone(
+          test_results, 'json_test_results should be populated.')
+      test_repeats = test_results['num_failures_by_type']['PASS']
+      self.assertEqual(
+          test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
       for folder in expected_benchmark_folders:
         with open(os.path.join(tempdir, folder, 'test_results.json')) as f:
           test_results = json.load(f)
-          self.assertIsNotNone(
-              test_results, 'json test results should be populated: ' + stdout)
-          test_repeats = test_results['num_failures_by_type']['PASS']
-          self.assertEqual(
-              test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
+        self.assertIsNotNone(
+            test_results, 'json test results should be populated.')
+        test_repeats = test_results['num_failures_by_type']['PASS']
+        self.assertEqual(
+            test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
         with open(os.path.join(tempdir, folder, 'perf_results.json')) as f:
           perf_results = json.load(f)
-          self.assertIsNotNone(
-              perf_results, 'json perf results should be populated: ' + stdout)
-    except IOError as e:
-      self.fail('IOError: ' + stdout + str(e))
-    except KeyError as e:
-      self.fail('KeyError: ' + stdout + str(e))
+        self.assertIsNotNone(
+            perf_results, 'json perf results should be populated.')
+    except Exception as exc:
+      logging.error(
+          'Failed with error: %s\nOutput from run_performance_tests.py:\n\n%s',
+          exc, stdout)
+      if test_results is not None:
+        logging.error(
+            'Got test_results: %s\n', json.dumps(test_results, indent=2))
+      raise
     finally:
       shutil.rmtree(tempdir)
 

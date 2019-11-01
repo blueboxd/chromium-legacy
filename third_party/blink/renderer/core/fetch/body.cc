@@ -259,8 +259,7 @@ ScriptPromise Body::formData(ScriptState* script_state,
       // which does not decode BOM.
       BodyBuffer()->StartLoading(
           FetchDataLoader::CreateLoaderAsString(
-              TextResourceDecoderOptions::
-                  CreateAlwaysUseUTF8WithoutBOMForText()),
+              TextResourceDecoderOptions::CreateUTF8DecodeWithoutBOM()),
           MakeGarbageCollected<BodyFormDataConsumer>(resolver),
           exception_state);
       if (exception_state.HadException()) {
@@ -307,7 +306,7 @@ ScriptPromise Body::json(ScriptState* script_state,
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(
         FetchDataLoader::CreateLoaderAsString(
-            TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+            TextResourceDecoderOptions::CreateUTF8Decode()),
         MakeGarbageCollected<BodyJsonConsumer>(resolver), exception_state);
     if (exception_state.HadException()) {
       // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
@@ -336,7 +335,7 @@ ScriptPromise Body::text(ScriptState* script_state,
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(
         FetchDataLoader::CreateLoaderAsString(
-            TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText()),
+            TextResourceDecoderOptions::CreateUTF8Decode()),
         MakeGarbageCollected<BodyTextConsumer>(resolver), exception_state);
     if (exception_state.HadException()) {
       // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().

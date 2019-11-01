@@ -75,11 +75,13 @@ interface AppService {
       AppType app_type,
       string app_id);
 
-  // Set app identified by |app_id| as preferred app for |intent_fitler|.
+  // Set app identified by |app_id| as preferred app for |intent_filter|.
+  // |intent| is needed to set the preferred app in ARC.
   AddPreferredApp(
       AppType app_type,
       string app_id,
-      IntentFilter intent_filter);
+      IntentFilter intent_filter,
+      Intent intent);
 };
 
 interface Publisher {
@@ -130,6 +132,15 @@ interface Publisher {
 
   OpenNativeSettings(
       string app_id);
+
+  // Indicates that the app identified by |app_id| has been set as a preferred
+  // app for |intent_fitler|. This method is used by the App Service to sync
+  // the change to publishers. |intent| is needed to set the preferred app
+  // in ARC.
+  OnPreferredAppSet(
+      string app_id,
+      IntentFilter intent_filter,
+      Intent intent);
 };
 
 interface Subscriber {

@@ -507,7 +507,7 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
     sec_channel_bindings_buffer.resize(sizeof(SEC_CHANNEL_BINDINGS));
     SEC_CHANNEL_BINDINGS* bindings_desc =
         reinterpret_cast<SEC_CHANNEL_BINDINGS*>(
-            &sec_channel_bindings_buffer.front());
+            sec_channel_bindings_buffer.data());
     bindings_desc->cbApplicationDataLength = channel_bindings.size();
     bindings_desc->dwApplicationDataOffset = sizeof(SEC_CHANNEL_BINDINGS);
     sec_channel_bindings_buffer.insert(sec_channel_bindings_buffer.end(),
@@ -519,7 +519,7 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
     SecBuffer& sec_buffer = in_buffers[in_buffer_desc.cBuffers++];
     sec_buffer.BufferType = SECBUFFER_CHANNEL_BINDINGS;
     sec_buffer.cbBuffer = sec_channel_bindings_buffer.size();
-    sec_buffer.pvBuffer = &sec_channel_bindings_buffer.front();
+    sec_buffer.pvBuffer = sec_channel_bindings_buffer.data();
   }
 
   if (in_buffer_desc.cBuffers > 0)

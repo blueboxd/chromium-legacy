@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <map>
 #include <unordered_map>
+#include <vector>
 
 #include "base/optional.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -53,7 +54,7 @@ class OpenXrController {
   uint32_t GetId() const;
   device::mojom::XRHandedness GetHandness() const;
 
-  device::mojom::XRInputSourceDescriptionPtr GetDescription(
+  mojom::XRInputSourceDescriptionPtr GetDescription(
       XrTime predicted_display_time);
 
   base::Optional<GamepadButton> GetButton(OpenXrButtonType type) const;
@@ -62,6 +63,8 @@ class OpenXrController {
   base::Optional<gfx::Transform> GetMojoFromGripTransform(
       XrTime predicted_display_time,
       XrSpace local_space) const;
+
+  XrResult UpdateInteractionProfile();
 
  private:
   // ActionButton struct is used to store all XrAction that is related to the
@@ -78,14 +81,12 @@ class OpenXrController {
   };
 
   XrResult InitializeMicrosoftMotionControllerActions(
-      XrInstance instance,
       const std::string& type_string,
       std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
 
   XrResult InitializeMicrosoftMotionControllerSpaces();
 
   XrResult CreateAction(
-      XrInstance instance,
       XrActionType type,
       const char* interaction_profile_name,
       const std::string& binding_string,
@@ -102,6 +103,8 @@ class OpenXrController {
       XrTime predicted_display_time,
       XrSpace target,
       XrSpace origin) const;
+
+  std::vector<std::string> GetProfiles() const;
 
   template <typename T>
   XrResult QueryState(XrAction action, T* action_state) const {
@@ -154,12 +157,16 @@ class OpenXrController {
   device::mojom::XRInputSourceDescriptionPtr description_;
 
   OpenXrHandednessType type_;
+  XrInstance instance_;
   XrSession session_;
   XrActionSet action_set_;
   XrAction grip_pose_action_;
   XrSpace grip_pose_space_;
   XrAction pointer_pose_action_;
   XrSpace pointer_pose_space_;
+
+  std::string interaction_profile_;
+  std::string top_level_user_path_string_;
 
   std::unordered_map<OpenXrButtonType, ActionButton> button_action_map_;
   std::unordered_map<OpenXrAxisType, XrAction> axis_action_map_;

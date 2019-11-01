@@ -363,7 +363,7 @@ if (enable_webui_tab_strip) {
 }
 
 repack("dev_ui_paks") {
-  output = "$root_gen_dir/chrome/dev_ui_page_resources.pak"
+  output = "$root_gen_dir/chrome/dev_ui_resources.pak"
 
   sources = [
     "$root_gen_dir/chrome/bluetooth_internals_resources.pak",

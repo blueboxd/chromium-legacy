@@ -1102,10 +1102,6 @@ class ExtensionUpdaterTest : public testing::Test {
                                          &not_updateable, &errors);
     EXPECT_THAT(not_updateable, testing::UnorderedElementsAre(id1, id4));
     EXPECT_THAT(errors, testing::UnorderedElementsAre(id2, id5, id7));
-    EXPECT_THAT(histogram_tester.GetAllSamples(
-                    "Extensions.UpdateManifestDuplicateEntryCount"),
-                testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 3),
-                                     base::Bucket(2, 2), base::Bucket(4, 1)));
     ASSERT_EQ(2u, updateable.size());
     EXPECT_EQ("1.3.1.0", updateable[0]->version);
     EXPECT_EQ("1.6.1.0", updateable[1]->version);

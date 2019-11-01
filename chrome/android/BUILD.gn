@@ -1265,11 +1265,15 @@ if (current_toolchain == default_toolchain) {
   #
   # Variables:
   #    is_monochrome: If true, generate Monochrome targets rather than Chrome.
-  #    is_trichrome: Optionally generate Trichrome targets that use monochrome
+  #    is_trichrome: (Optional) Generate Trichrome targets that use monochrome
   #      library targets but don't include webview resources.
+  #    is_bundle_module: (Optional) If true, generate targets for base bundle
+  #      module.
   template("resource_packaging") {
     _is_monochrome = invoker.is_monochrome
     _is_trichrome = defined(invoker.is_trichrome) && invoker.is_trichrome
+    _is_bundle_module =
+        defined(invoker.is_bundle_module) && invoker.is_bundle_module
 
     if (_is_trichrome) {
       _variant = "trichrome_chrome"
@@ -1278,7 +1282,11 @@ if (current_toolchain == default_toolchain) {
     } else {
       _variant = "chrome"
     }
-    _variant += "_apk"
+    if (_is_bundle_module) {
+      _variant += "_bundle_module"
+    } else {
+      _variant += "_apk"
+    }
 
     if (enable_resource_whitelist_generation) {
       if (_is_trichrome || _is_monochrome) {
@@ -1397,9 +1405,8 @@ if (current_toolchain == default_toolchain) {
           "//weblayer:resources",
         ]
       }
-      if (!dfmify_dev_ui) {
-        additional_extra_paks +=
-            [ "$root_gen_dir/chrome/dev_ui_page_resources.pak" ]
+      if (!dfmify_dev_ui || !_is_bundle_module) {
+        additional_extra_paks += [ "$root_gen_dir/chrome/dev_ui_resources.pak" ]
         deps += [ "//chrome/browser/resources:dev_ui_paks" ]
       }
 
@@ -1454,12 +1461,25 @@ if (current_toolchain == default_toolchain) {
   resource_packaging("chrome_apk_pak_assets") {
     is_monochrome = false
   }
+  resource_packaging("chrome_bundle_module_pak_assets") {
+    is_monochrome = false
+    is_bundle_module = true
+  }
   resource_packaging("monochrome_apk_pak_assets") {
     is_monochrome = true
+  }
+  resource_packaging("monochrome_bundle_module_pak_assets") {
+    is_monochrome = true
+    is_bundle_module = true
   }
   resource_packaging("trichrome_chrome_apk_pak_assets") {
     is_monochrome = false
     is_trichrome = true
+  }
+  resource_packaging("trichrome_chrome_bundle_module_pak_assets") {
+    is_monochrome = false
+    is_trichrome = true
+    is_bundle_module = true
   }
 }  # current_toolchain == host_toolchain
 
@@ -1621,6 +1641,7 @@ static_library("browser_test_support") {
 #    target, intended for Android L and M only.
 template("chrome_public_apk_or_module_tmpl") {
   _is_modern = defined(invoker.is_modern) && invoker.is_modern
+  _is_bundle_module = invoker.target_type == "android_app_bundle_module"
   chrome_public_common_apk_or_module_tmpl(target_name) {
     forward_variables_from(invoker,
                            [
@@ -1632,8 +1653,12 @@ template("chrome_public_apk_or_module_tmpl") {
                              "target_type",
                              "enable_multidex",
                            ])
-
-    deps = _chrome_public_shared_deps + [ ":chrome_apk_pak_assets" ]
+    deps = _chrome_public_shared_deps
+    if (_is_bundle_module) {
+      deps += [ ":chrome_bundle_module_pak_assets" ]
+    } else {
+      deps += [ ":chrome_apk_pak_assets" ]
+    }
 
     if (_is_modern) {
       android_manifest = chrome_modern_public_android_manifest

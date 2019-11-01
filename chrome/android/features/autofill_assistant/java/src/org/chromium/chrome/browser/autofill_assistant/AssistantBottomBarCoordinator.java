@@ -86,8 +86,7 @@ class AssistantBottomBarCoordinator
         mModel = model;
         mBottomSheetController = controller;
 
-        BottomSheetContent currentSheetContent =
-                controller.getBottomSheet().getCurrentSheetContent();
+        BottomSheetContent currentSheetContent = controller.getCurrentSheetContent();
         if (currentSheetContent instanceof AssistantBottomSheetContent) {
             mContent = (AssistantBottomSheetContent) currentSheetContent;
         } else {
@@ -107,7 +106,7 @@ class AssistantBottomBarCoordinator
         // TODO(crbug.com/806868): We should only animate our BottomSheetContent instead of the root
         // view. However, it looks like doing that is not well supported by the BottomSheet, so the
         // BottomSheet offset is wrong during the animation.
-        ViewGroup rootView = (ViewGroup) controller.getBottomSheet().getRootView();
+        ViewGroup rootView = (ViewGroup) activity.findViewById(R.id.coordinator);
         setupAnimations(model, rootView);
 
         // Instantiate child components.
@@ -121,8 +120,7 @@ class AssistantBottomBarCoordinator
                 new AssistantSuggestionsCarouselCoordinator(activity, model.getSuggestionsModel());
         mActionsCoordinator =
                 new AssistantActionsCarouselCoordinator(activity, model.getActionsModel());
-        BottomSheet bottomSheet = controller.getBottomSheet();
-        mPeekHeightCoordinator = new AssistantPeekHeightCoordinator(activity, this, bottomSheet,
+        mPeekHeightCoordinator = new AssistantPeekHeightCoordinator(activity, this, controller,
                 mContent.getToolbarView(), mHeaderCoordinator.getView(),
                 mSuggestionsCoordinator.getView(), mActionsCoordinator.getView(),
                 AssistantPeekHeightCoordinator.PeekMode.HANDLE);
@@ -173,7 +171,7 @@ class AssistantBottomBarCoordinator
         setHorizontalMargins(mDetailsCoordinator.getView());
         setHorizontalMargins(mFormCoordinator.getView());
 
-        bottomSheet.addObserver(new EmptyBottomSheetObserver() {
+        controller.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetStateChanged(int newState) {
                 maybeShowHeaderChip();
@@ -204,9 +202,9 @@ class AssistantBottomBarCoordinator
             } else if (AssistantModel.ALLOW_TALKBACK_ON_WEBSITE == propertyKey) {
                 boolean allow = model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE);
                 if (allow) {
-                    activity.removeViewObscuringAllTabs(bottomSheet);
+                    activity.removeViewObscuringAllTabs(controller.getBottomSheet());
                 } else {
-                    activity.addViewObscuringAllTabs(bottomSheet);
+                    activity.addViewObscuringAllTabs(controller.getBottomSheet());
                 }
             } else if (AssistantModel.WEB_CONTENTS == propertyKey) {
                 mWebContents = model.get(AssistantModel.WEB_CONTENTS);
@@ -263,8 +261,8 @@ class AssistantBottomBarCoordinator
     }
 
     private void maybeShowHeaderChip() {
-        boolean showChip = mBottomSheetController.getBottomSheet().getSheetState()
-                        == BottomSheetController.SheetState.PEEK
+        boolean showChip =
+                mBottomSheetController.getSheetState() == BottomSheetController.SheetState.PEEK
                 && mPeekHeightCoordinator.getPeekMode()
                         == AssistantPeekHeightCoordinator.PeekMode.HANDLE_HEADER;
         mModel.getHeaderModel().set(AssistantHeaderModel.CHIP_VISIBLE, showChip);
@@ -379,13 +377,13 @@ class AssistantBottomBarCoordinator
     }
 
     private void updateVisualViewportHeight() {
-        BottomSheet bottomSheet = mBottomSheetController.getBottomSheet();
         if (mViewportMode != AssistantViewportMode.RESIZE_VISUAL_VIEWPORT
-                || bottomSheet.getCurrentSheetContent() != mContent) {
+                || mBottomSheetController.getCurrentSheetContent() != mContent) {
             resetVisualViewportHeight();
             return;
         }
 
+        BottomSheet bottomSheet = mBottomSheetController.getBottomSheet();
         setVisualViewportResizing((int) Math.floor(
                 bottomSheet.getCurrentOffsetPx() - bottomSheet.getToolbarShadowHeight()));
     }
@@ -417,7 +415,7 @@ class AssistantBottomBarCoordinator
     @Override
     public int getHeight() {
         if (mViewportMode == AssistantViewportMode.RESIZE_LAYOUT_VIEWPORT
-                && mBottomSheetController.getBottomSheet().getCurrentSheetContent() == mContent) {
+                && mBottomSheetController.getCurrentSheetContent() == mContent) {
             return mPeekHeightCoordinator.getPeekHeight();
         }
 

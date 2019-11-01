@@ -8,7 +8,6 @@
 #include "base/values.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
@@ -42,10 +41,8 @@ void WebstoreInstallHelper::Start(
     network::mojom::URLLoaderFactory* loader_factory) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  data_decoder::SafeJsonParser::Parse(
-      content::GetSystemConnector(), manifest_,
-      base::BindOnce(&WebstoreInstallHelper::OnJSONParseSucceeded, this),
-      base::BindOnce(&WebstoreInstallHelper::OnJSONParseFailed, this));
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      manifest_, base::BindOnce(&WebstoreInstallHelper::OnJSONParsed, this));
 
   if (icon_url_.is_empty()) {
     icon_decode_complete_ = true;
@@ -110,25 +107,17 @@ void WebstoreInstallHelper::OnFetchComplete(const GURL& url,
   Release();  // Balanced in Start().
 }
 
-void WebstoreInstallHelper::OnJSONParseSucceeded(base::Value result) {
+void WebstoreInstallHelper::OnJSONParsed(
+    data_decoder::DataDecoder::ValueOrError result) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   manifest_parse_complete_ = true;
-  if (result.is_dict()) {
+  if (result.value && result.value->is_dict()) {
     parsed_manifest_ = base::DictionaryValue::From(
-        base::Value::ToUniquePtrValue(std::move(result)));
+        base::Value::ToUniquePtrValue(std::move(*result.value)));
   } else {
+    error_ = result.error.value_or("Invalid JSON response");
     parse_error_ = Delegate::MANIFEST_ERROR;
   }
-
-  ReportResultsIfComplete();
-}
-
-void WebstoreInstallHelper::OnJSONParseFailed(
-    const std::string& error_message) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  manifest_parse_complete_ = true;
-  error_ = error_message;
-  parse_error_ = Delegate::MANIFEST_ERROR;
   ReportResultsIfComplete();
 }
 

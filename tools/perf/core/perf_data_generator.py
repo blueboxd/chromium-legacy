@@ -21,6 +21,7 @@ import csv
 import filecmp
 import json
 import os
+import re
 import sys
 import tempfile
 import textwrap
@@ -928,6 +929,14 @@ NON_WATERFALL_BENCHMARKS = {
     'supersize_archive': BenchmarkMetadata('agrieve@chromium.org'),
 }
 
+# Valid test suite (benchmark) names should match this regex.
+RE_VALID_TEST_SUITE_NAME = r'^[\w._-]+$'
+
+# Do not add names to this list. TODO(crbug.com/1020510): Rename these so all
+# test suites match the regex above.
+BAD_TEST_SUITE_NAMES = frozenset(
+    ['sizes (mac)', 'sizes (win)', 'sizes (linux)'])
+
 
 def _get_telemetry_perf_benchmarks_metadata():
   metadata = {}
@@ -1043,6 +1052,9 @@ def update_benchmark_csv(file_path):
 
   undocumented_benchmarks = set()
   for benchmark_name in benchmark_metadatas:
+    if (not re.match(RE_VALID_TEST_SUITE_NAME, benchmark_name) and
+        benchmark_name not in BAD_TEST_SUITE_NAMES):
+      raise ValueError('Invalid benchmark name: %s' % benchmark_name)
     if not benchmark_metadatas[benchmark_name].documentation_url:
       undocumented_benchmarks.add(benchmark_name)
     csv_data.append([

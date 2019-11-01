@@ -20,12 +20,3 @@ android_library("java") {
   ]
   java_files = [ "java/src/org/chromium/chrome/features/dev_ui/DevUiImpl.java" ]
 }
-
-android_assets("pak_assets") {
-  renaming_sources = [ "$root_gen_dir/chrome/dev_ui_page_resources.pak" ]
-  renaming_destinations = [ "dev_ui_resources.pak" ]
-  deps = [
-    "//chrome/browser/resources:dev_ui_paks",
-  ]
-  disable_compression = true
-}

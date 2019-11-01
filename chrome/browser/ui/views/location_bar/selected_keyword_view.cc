@@ -86,6 +86,7 @@ void SelectedKeywordView::SetKeyword(const base::string16& keyword) {
   // class is calculating the preferred size. It will be updated again in
   // Layout(), taking into account how much space has actually been allotted.
   SetLabelForCurrentWidth();
+  NotifyAccessibilityEvent(ax::mojom::Event::kLiveRegionChanged, true);
 }
 
 int SelectedKeywordView::GetExtraInternalSpacing() const {

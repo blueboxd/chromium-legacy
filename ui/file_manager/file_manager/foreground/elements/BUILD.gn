@@ -163,6 +163,7 @@ js_library("xf_circular_progress") {
 js_library("xf_display_panel") {
   deps = [
     ":xf_panel_item",
+    "//ui/file_manager/file_manager/common/js:util",
   ]
 }
 

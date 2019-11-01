@@ -19,7 +19,6 @@
 #include "components/feed/core/pref_names.h"
 #include "components/feed/core/time_serialization.h"
 #include "components/feed/feed_feature_list.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "net/base/network_change_notifier.h"
@@ -256,13 +255,6 @@ FeedSchedulerHost::FeedSchedulerHost(PrefService* profile_prefs,
 }
 
 FeedSchedulerHost::~FeedSchedulerHost() = default;
-
-// static
-void FeedSchedulerHost::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterTimePref(prefs::kLastFetchAttemptTime, base::Time());
-  registry->RegisterTimeDeltaPref(prefs::kBackgroundRefreshPeriod,
-                                  base::TimeDelta());
-}
 
 void FeedSchedulerHost::Initialize(
     base::RepeatingClosure refresh_callback,

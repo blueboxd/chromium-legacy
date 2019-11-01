@@ -201,9 +201,6 @@ void ParseXmlDone(ParseUpdateManifestCallback callback,
     }
   }
 
-  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateManifestHasProdVersionMinCounts",
-                           prodversionmin_count);
-
   std::move(callback).Run(
       results->list.empty() ? nullptr : std::move(results),
       error_msg.empty() ? base::Optional<std::string>() : error_msg);

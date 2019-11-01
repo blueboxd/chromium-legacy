@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/navigation_policy.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -436,6 +437,12 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
 
   // "5. If exitingWorker is not null,
   if (exiting_version.get()) {
+    // Whenever activation happens, evict bfcached controllees.
+    if (IsBackForwardCacheEnabled() &&
+        ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+      exiting_version->EvictBackForwardCachedControllees();
+    }
+
     // TODO(falken): Update the quoted spec comments once
     // https://github.com/slightlyoff/ServiceWorker/issues/916 is codified in
     // the spec.

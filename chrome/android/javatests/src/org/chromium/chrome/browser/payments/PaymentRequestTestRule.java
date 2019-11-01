@@ -118,6 +118,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     final CallbackHelper mExpirationMonthChange;
     final CallbackHelper mPaymentResponseReady;
     final CallbackHelper mCompleteReplied;
+    final CallbackHelper mRendererClosedMojoConnection;
     PaymentRequestImpl mPaymentRequest;
     PaymentRequestUI mUI;
 
@@ -158,6 +159,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         mCanMakePaymentQueryResponded = new CallbackHelper();
         mHasEnrolledInstrumentQueryResponded = new CallbackHelper();
         mCompleteReplied = new CallbackHelper();
+        mRendererClosedMojoConnection = new CallbackHelper();
         mWebContentsRef = new AtomicReference<>();
         mTestFilePath = testFileName.equals("about:blank") || testFileName.startsWith("data:")
                 ? testFileName
@@ -246,6 +248,9 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     }
     public CallbackHelper getCompleteReplied() {
         return mCompleteReplied;
+    }
+    public CallbackHelper getRendererClosedMojoConnection() {
+        return mRendererClosedMojoConnection;
     }
     public PaymentRequestUI getPaymentRequestUI() {
         return mUI;
@@ -1088,6 +1093,12 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     public void onCompleteReplied() {
         ThreadUtils.assertOnUiThread();
         mCompleteReplied.notifyCalled();
+    }
+
+    @Override
+    public void onRendererClosedMojoConnection() {
+        ThreadUtils.assertOnUiThread();
+        mRendererClosedMojoConnection.notifyCalled();
     }
 
     /**

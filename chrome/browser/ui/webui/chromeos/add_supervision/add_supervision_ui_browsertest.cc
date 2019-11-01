@@ -204,6 +204,8 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest,
   ASSERT_TRUE(ConfirmSignoutDialog::IsShowing());
 }
 
+// Disabled on ASan and LSAn builds, because it's very flaky. See
+// crbug.com/1004237
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
 #define MAYBE_UMATest DISABLED_UMATest
 #else

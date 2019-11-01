@@ -19,14 +19,20 @@
 #include "chromecast/metrics/cast_metrics_service_client.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/content_browser_client.h"
+#include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/url_request/url_request_context.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-forward.h"
+#include "services/service_manager/public/mojom/service.mojom-forward.h"
 #include "storage/browser/quota/quota_settings.h"
 
 class PrefService;
+
+namespace base {
+struct OnTaskRunnerDeleter;
+}
 
 namespace breakpad {
 class CrashHandlerHostLinux;
@@ -62,6 +68,7 @@ class MediaCapsImpl;
 class CmaBackendFactory;
 class MediaPipelineBackendManager;
 class MediaResourceTracker;
+class VideoGeometrySetterService;
 class VideoPlaneController;
 class VideoModeSwitcher;
 class VideoResolutionPolicy;
@@ -247,6 +254,10 @@ class CastContentBrowserClient
       service_manager::mojom::InterfaceProvider* host_interfaces);
 #endif  // BUILDFLAG(USE_CHROMECAST_CDMS)
 
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  void BindGpuHostReceiver(mojo::GenericPendingReceiver receiver) override;
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+
   CastNetworkContexts* cast_network_contexts() {
     return cast_network_contexts_.get();
   }
@@ -306,6 +317,19 @@ class CastContentBrowserClient
 
   // Tracks usage of media resource by e.g. CMA pipeline, CDM.
   media::MediaResourceTracker* media_resource_tracker_ = nullptr;
+
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  void CreateMediaService(service_manager::mojom::ServiceRequest request);
+
+  // VideoGeometrySetterService must be constructed On a sequence, and later
+  // runs and destructs on this sequence.
+  void CreateVideoGeometrySetterServiceOnMediaThread();
+  void BindVideoGeometrySetterServiceOnMediaThread(
+      mojo::GenericPendingReceiver receiver);
+  // video_geometry_setter_service_ lives on media thread.
+  std::unique_ptr<media::VideoGeometrySetterService, base::OnTaskRunnerDeleter>
+      video_geometry_setter_service_;
+#endif
 
   // Created by CastContentBrowserClient but owned by BrowserMainLoop.
   CastBrowserMainParts* cast_browser_main_parts_;

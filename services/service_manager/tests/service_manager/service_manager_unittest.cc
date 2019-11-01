@@ -564,7 +564,7 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
 }
 
 TEST_F(ServiceManagerTest, ClonesDisconnectedConnectors) {
-  Connector connector((mojom::ConnectorPtrInfo()));
+  Connector connector((mojo::PendingRemote<mojom::Connector>()));
   EXPECT_TRUE(connector.Clone());
 }
 

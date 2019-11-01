@@ -16,15 +16,14 @@ TextResourceDecoderOptions::TextResourceDecoderOptions(
                                  nullptr,
                                  KURL()) {}
 
-TextResourceDecoderOptions
-TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText() {
+TextResourceDecoderOptions TextResourceDecoderOptions::CreateUTF8Decode() {
   return TextResourceDecoderOptions(kAlwaysUseUTF8ForText, kPlainTextContent,
                                     UTF8Encoding(), nullptr, NullURL());
 }
 
 TextResourceDecoderOptions
-TextResourceDecoderOptions::CreateAlwaysUseUTF8WithoutBOMForText() {
-  TextResourceDecoderOptions options = CreateAlwaysUseUTF8ForText();
+TextResourceDecoderOptions::CreateUTF8DecodeWithoutBOM() {
+  TextResourceDecoderOptions options = CreateUTF8Decode();
   options.no_bom_decoding_ = true;
   return options;
 }

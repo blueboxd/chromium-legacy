@@ -16,7 +16,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/crx_file/id_util.h"
 #include "components/version_info/version_info.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
@@ -27,7 +26,7 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/features/feature_channel.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -164,9 +163,8 @@ class FileSequenceHelperTest : public ExtensionsTest {
 
   std::unique_ptr<FileSequenceHelper> helper_;
 
-  // Required to use SafeJSONParser for re-indexing.
-  content::TestServiceManagerContext service_manager_context_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  // Required to use DataDecoder's JSON parsing for re-indexing.
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSequenceHelperTest);
 };

@@ -10906,6 +10906,10 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CookieNetworkSecurity">
+  <obsolete>
+    Deprecated 2019-10-31 as part of cookie histogram cleanup
+    (https://crbug.com/993120).
+  </obsolete>
   <int value="0" label="secure attribute (1st party)">
     First party cookie with `Secure` attribute.
   </int>

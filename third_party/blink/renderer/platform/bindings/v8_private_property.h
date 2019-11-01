@@ -24,21 +24,11 @@ class ScriptWrappable;
 // e.g. IDBCursor.Request.
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X)                 \
-  X(DOMException, Error)                                \
-  X(Global, Event)                                      \
   X(MessageEvent, CachedData)                           \
-  X(NamedConstructor, Initialized)                      \
-  X(PopStateEvent, State)                               \
-  SCRIPT_PROMISE_PROPERTIES(X, Promise)                 \
-  SCRIPT_PROMISE_PROPERTIES(X, Resolver)
 
 // The getter's name for a private property.
 #define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \
   Get##InterfaceName##PrivateKeyName
-
-// The string used to create a private symbol.  Must be unique per V8 instance.
-#define V8_PRIVATE_PROPERTY_SYMBOL_STRING(InterfaceName, PrivateKeyName) \
-  #InterfaceName "#" #PrivateKeyName  // NOLINT(whitespace/indent)
 
 // Provides access to V8's private properties.
 //
@@ -144,20 +134,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
 
   // TODO(peria): Do not use this specialized hack. See a TODO comment
   // on m_symbolWindowDocumentCachedAccessor.
-  static Symbol GetWindowDocumentCachedAccessor(v8::Isolate* isolate) {
-    V8PrivateProperty* private_prop =
-        V8PerIsolateData::From(isolate)->PrivateProperty();
-    if (UNLIKELY(
-            private_prop->symbol_window_document_cached_accessor_.IsEmpty())) {
-      private_prop->symbol_window_document_cached_accessor_.Set(
-          isolate, CreateCachedV8Private(
-                       isolate, V8_PRIVATE_PROPERTY_SYMBOL_STRING(
-                                    "Window", "DocumentCachedAccessor")));
-    }
-    return Symbol(
-        isolate, private_prop->symbol_window_document_cached_accessor_.NewLocal(
-                     isolate));
-  }
+  static Symbol GetWindowDocumentCachedAccessor(v8::Isolate* isolate);
 
   static Symbol GetCachedAccessor(v8::Isolate* isolate,
                                   CachedAccessorSymbol symbol_id) {
@@ -174,8 +151,8 @@ class PLATFORM_EXPORT V8PrivateProperty {
   // This is a hack for PopStateEvent to get the same private property of
   // History, named State.
   static Symbol GetHistoryStateSymbol(v8::Isolate* isolate) {
-    static const SymbolKey private_property_key;
-    return GetSymbol(isolate, private_property_key);
+    static const SymbolKey kPrivatePropertyKey;
+    return GetSymbol(isolate, kPrivatePropertyKey);
   }
 
   // Returns a Symbol to access a private property. Symbol instances from same
@@ -191,9 +168,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
  private:
   static v8::Local<v8::Private> CreateV8Private(v8::Isolate*,
                                                 const char* symbol);
-  // TODO(peria): Remove this method. We should not use v8::Private::ForApi().
-  static v8::Local<v8::Private> CreateCachedV8Private(v8::Isolate*,
-                                                      const char* symbol);
 
   // TODO(peria): Do not use this specialized hack for
   // Window#DocumentCachedAccessor. This is required to put v8::Private key in

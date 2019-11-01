@@ -52,6 +52,7 @@ static_library("utility") {
     "//services/service_manager/public/cpp",
     "//skia",
     "//sql",
+    "//third_party/libxml",
     "//third_party/zlib/google:zip",
     "//ui/base:buildflags",
   ]

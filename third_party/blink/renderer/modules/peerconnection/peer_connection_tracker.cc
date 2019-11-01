@@ -1077,8 +1077,13 @@ void PeerConnectionTracker::TrackSessionId(RTCPeerConnectionHandler* pc_handler,
   if (local_id == -1) {
     return;
   }
-  peer_connection_tracker_host_->OnPeerConnectionSessionIdSet(
-      local_id, String::FromUTF8(session_id));
+
+  String wtf_session_id = String::FromUTF8(session_id);
+  if (wtf_session_id.IsNull())
+    wtf_session_id = String("");
+
+  peer_connection_tracker_host_->OnPeerConnectionSessionIdSet(local_id,
+                                                              wtf_session_id);
 }
 
 void PeerConnectionTracker::TrackOnRenegotiationNeeded(
@@ -1108,8 +1113,12 @@ void PeerConnectionTracker::TrackRtcEventLogWrite(
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
-  peer_connection_tracker_host_->WebRtcEventLogWrite(id,
-                                                     String::FromUTF8(output));
+
+  String wtf_output = String::FromUTF8(output);
+  if (wtf_output.IsNull())
+    wtf_output = String("");
+
+  peer_connection_tracker_host_->WebRtcEventLogWrite(id, wtf_output);
 }
 
 int PeerConnectionTracker::GetNextLocalID() {

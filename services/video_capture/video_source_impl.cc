@@ -19,19 +19,20 @@ VideoSourceImpl::VideoSourceImpl(
       on_last_binding_closed_cb_(std::move(on_last_binding_closed_cb)),
       device_status_(DeviceStatus::kNotStarted),
       restart_device_once_when_stop_complete_(false) {
-  // Unretained(this) is safe because |this| owns |bindings_|.
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  // Unretained(this) is safe because |this| owns |receivers_|.
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &VideoSourceImpl::OnClientDisconnected, base::Unretained(this)));
 }
 
 VideoSourceImpl::~VideoSourceImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.set_connection_error_handler(base::DoNothing());
+  receivers_.set_disconnect_handler(base::DoNothing());
 }
 
-void VideoSourceImpl::AddToBindingSet(mojom::VideoSourceRequest request) {
+void VideoSourceImpl::AddToReceiverSet(
+    mojo::PendingReceiver<VideoSource> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void VideoSourceImpl::CreatePushSubscription(
@@ -81,7 +82,7 @@ void VideoSourceImpl::CreatePushSubscription(
 
 void VideoSourceImpl::OnClientDisconnected() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (bindings_.empty()) {
+  if (receivers_.empty()) {
     // Note: Invoking this callback may synchronously trigger the destruction of
     // |this|, so no more member access should be done after it.
     on_last_binding_closed_cb_.Run();

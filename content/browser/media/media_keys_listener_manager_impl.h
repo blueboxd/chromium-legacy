@@ -24,6 +24,7 @@ class Connector;
 namespace content {
 
 class HardwareKeyMediaController;
+class SystemMediaControlsNotifier;
 
 #if defined(OS_MACOSX)
 class NowPlayingInfoCenterNotifier;
@@ -32,10 +33,6 @@ class NowPlayingInfoCenterNotifier;
 #if BUILDFLAG(USE_MPRIS)
 class MprisNotifier;
 #endif
-
-#if defined(OS_WIN)
-class SystemMediaControlsNotifier;
-#endif  // defined(OS_WIN)
 
 // Listens for media keys and decides which listeners receive which events. In
 // particular, it owns one of its delegates (HardwareKeyMediaController), and
@@ -116,6 +113,7 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
   std::unique_ptr<ui::MediaKeysListener> media_keys_listener_;
   service_manager::Connector* connector_;
   std::unique_ptr<HardwareKeyMediaController> hardware_key_media_controller_;
+  std::unique_ptr<SystemMediaControlsNotifier> system_media_controls_notifier_;
 
   // False if media key handling has been explicitly disabled by a call to
   // |DisableInternalMediaKeyHandling()|.
@@ -130,10 +128,6 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
   std::unique_ptr<NowPlayingInfoCenterNotifier>
       now_playing_info_center_notifier_;
 #endif
-
-#if defined(OS_WIN)
-  std::unique_ptr<SystemMediaControlsNotifier> system_media_controls_notifier_;
-#endif  // defined(OS_WIN)
 
 #if BUILDFLAG(USE_MPRIS)
   std::unique_ptr<MprisNotifier> mpris_notifier_;

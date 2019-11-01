@@ -862,6 +862,10 @@ void SVGSMILElement::DiscardOrRevalidateCurrentInterval(
     if (new_end.IsUnresolved()) {
       // No active duration, discard the current interval.
       interval_ = SMILInterval::Unresolved();
+      // If we discarded the first interval, revert to waiting for the first
+      // interval.
+      if (!previous_interval_.IsResolved())
+        is_waiting_for_first_interval_ = true;
       return;
     }
     if (new_end != interval_.end)

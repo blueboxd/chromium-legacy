@@ -412,8 +412,8 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
   CHECK(format);
   frame_layout_ = VideoFrameLayout::Create(*format, pic_size);
   DCHECK(frame_layout_);
-  frame_pool_->NegotiateFrameFormat(*frame_layout_, visible_rect, natural_size);
-  frame_pool_->SetMaxNumFrames(decoder_->GetRequiredNumOfPictures());
+  frame_pool_->RequestFrames(*frame_layout_, visible_rect, natural_size,
+                             decoder_->GetRequiredNumOfPictures());
 
   // All pending decode operations will be completed before triggering a
   // resolution change, so we can safely destroy the context here.

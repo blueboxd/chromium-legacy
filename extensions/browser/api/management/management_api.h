@@ -20,6 +20,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/preload_check.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace extensions {
 
@@ -77,9 +78,8 @@ class ManagementGetPermissionWarningsByManifestFunction
   DECLARE_EXTENSION_FUNCTION("management.getPermissionWarningsByManifest",
                              MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST)
 
-  // Called when utility process finishes.
-  void OnParseSuccess(base::Value value);
-  void OnParseFailure(const std::string& error);
+  // Called when manifest parsing is finished.
+  void OnParse(data_decoder::DataDecoder::ValueOrError result);
 
  protected:
   ~ManagementGetPermissionWarningsByManifestFunction() override {}

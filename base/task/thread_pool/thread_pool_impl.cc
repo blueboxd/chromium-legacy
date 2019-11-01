@@ -163,6 +163,9 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
   task_tracker_->set_io_thread_task_runner(service_thread_->task_runner());
 #endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
 
+  // Update the CanRunPolicy based on |has_disable_best_effort_switch_|.
+  UpdateCanRunPolicy();
+
   // Needs to happen after starting the service thread to get its task_runner().
   scoped_refptr<TaskRunner> service_thread_task_runner =
       service_thread_->task_runner();
@@ -347,17 +350,29 @@ void ThreadPoolImpl::JoinForTesting() {
 #endif
 }
 
-void ThreadPoolImpl::SetHasFence(bool has_fence) {
+void ThreadPoolImpl::BeginFence() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(has_fence_, has_fence);
-  has_fence_ = has_fence;
+  ++num_fences_;
   UpdateCanRunPolicy();
 }
 
-void ThreadPoolImpl::SetHasBestEffortFence(bool has_best_effort_fence) {
+void ThreadPoolImpl::EndFence() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(has_best_effort_fence_, has_best_effort_fence);
-  has_best_effort_fence_ = has_best_effort_fence;
+  DCHECK_GT(num_fences_, 0);
+  --num_fences_;
+  UpdateCanRunPolicy();
+}
+
+void ThreadPoolImpl::BeginBestEffortFence() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ++num_best_effort_fences_;
+  UpdateCanRunPolicy();
+}
+
+void ThreadPoolImpl::EndBestEffortFence() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_GT(num_best_effort_fences_, 0);
+  --num_best_effort_fences_;
   UpdateCanRunPolicy();
 }
 
@@ -508,14 +523,14 @@ void ThreadPoolImpl::UpdateCanRunPolicy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CanRunPolicy can_run_policy;
-  if ((!has_fence_ && !has_best_effort_fence_ &&
+  if ((num_fences_ == 0 && num_best_effort_fences_ == 0 &&
        !has_disable_best_effort_switch_) ||
       task_tracker_->HasShutdownStarted()) {
     can_run_policy = CanRunPolicy::kAll;
-  } else if (has_fence_) {
+  } else if (num_fences_ != 0) {
     can_run_policy = CanRunPolicy::kNone;
   } else {
-    DCHECK(has_best_effort_fence_ || has_disable_best_effort_switch_);
+    DCHECK(num_best_effort_fences_ > 0 || has_disable_best_effort_switch_);
     can_run_policy = CanRunPolicy::kForegroundOnly;
   }
 

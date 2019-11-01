@@ -76,8 +76,5 @@ class TasksSurfaceMediator {
         // Set the initial state.
         mModel.set(IS_FAKE_SEARCH_BOX_VISIBLE, true);
         mModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE, false);
-
-        // TODO(crbug.com/982018): Enable voice recognition button in the fake search box.
-        // TODO(crbug.com/982018): Change the fake search box in dark mode.
     }
 }

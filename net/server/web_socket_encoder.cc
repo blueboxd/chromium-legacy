@@ -180,7 +180,7 @@ void EncodeFrameHybi17(base::StringPiece message,
   } else {
     frame.insert(frame.end(), data, data + data_length);
   }
-  *output = std::string(&frame[0], frame.size());
+  *output = std::string(frame.data(), frame.size());
 }
 
 }  // anonymous namespace
@@ -329,7 +329,7 @@ bool WebSocketEncoder::Inflate(std::string* message) {
   }
 
   *message =
-      output.size() ? std::string(&output[0], output.size()) : std::string();
+      output.size() ? std::string(output.data(), output.size()) : std::string();
   return true;
 }
 

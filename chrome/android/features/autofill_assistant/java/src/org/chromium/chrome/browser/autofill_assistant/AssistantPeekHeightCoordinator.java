@@ -11,7 +11,6 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 
@@ -57,7 +56,7 @@ class AssistantPeekHeightCoordinator {
 
     private final View mToolbarView;
     private final Delegate mDelegate;
-    private final BottomSheet mBottomSheet;
+    private final BottomSheetController mBottomSheetController;
 
     private final int mToolbarHeightWithoutPaddingBottom;
     private final int mDefaultToolbarPaddingBottom;
@@ -70,12 +69,12 @@ class AssistantPeekHeightCoordinator {
     private int mSuggestionsHeight;
     private int mActionsHeight;
 
-    AssistantPeekHeightCoordinator(Context context, Delegate delegate, BottomSheet bottomSheet,
-            View toolbarView, View headerView, View suggestionsView, View actionsView,
-            @PeekMode int initialMode) {
+    AssistantPeekHeightCoordinator(Context context, Delegate delegate,
+            BottomSheetController bottomSheetController, View toolbarView, View headerView,
+            View suggestionsView, View actionsView, @PeekMode int initialMode) {
         mToolbarView = toolbarView;
         mDelegate = delegate;
-        mBottomSheet = bottomSheet;
+        mBottomSheetController = bottomSheetController;
 
         mToolbarHeightWithoutPaddingBottom =
                 context.getResources().getDimensionPixelSize(
@@ -90,7 +89,7 @@ class AssistantPeekHeightCoordinator {
                 context.getResources().getDimensionPixelSize(R.dimen.chip_bg_vertical_inset);
 
         // Show only actions if we are in the peek state and peek mode is HANDLE_HEADER_CAROUSELS.
-        bottomSheet.addObserver(new EmptyBottomSheetObserver() {
+        mBottomSheetController.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetStateChanged(int newState) {
                 maybeShowOnlyCarousels();
@@ -126,7 +125,7 @@ class AssistantPeekHeightCoordinator {
 
     private void maybeShowOnlyCarousels() {
         mDelegate.setShowOnlyCarousels(
-                mBottomSheet.getSheetState() == BottomSheetController.SheetState.PEEK
+                mBottomSheetController.getSheetState() == BottomSheetController.SheetState.PEEK
                 && mPeekMode == PeekMode.HANDLE_HEADER_CAROUSELS);
     }
 

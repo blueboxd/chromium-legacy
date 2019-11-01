@@ -309,6 +309,8 @@ jumbo_component("base") {
       "accelerators/menu_label_accelerator_util_linux.h",
       "accelerators/platform_accelerator_cocoa.h",
       "accelerators/platform_accelerator_cocoa.mm",
+      "accelerators/system_media_controls_media_keys_listener.cc",
+      "accelerators/system_media_controls_media_keys_listener.h",
       "base_window.cc",
       "base_window.h",
       "cocoa/bubble_closer.h",
@@ -358,8 +360,6 @@ jumbo_component("base") {
       "accelerators/global_media_keys_listener_win.cc",
       "accelerators/global_media_keys_listener_win.h",
       "accelerators/media_keys_listener_win.cc",
-      "accelerators/system_media_controls_media_keys_listener.cc",
-      "accelerators/system_media_controls_media_keys_listener.h",
     ]
   } else if (use_mpris) {
     sources += [
@@ -466,9 +466,7 @@ jumbo_component("base") {
     }
   }
 
-  if (is_win) {
-    deps += [ "//ui/base/win/system_media_controls" ]
-  }
+  deps += [ "//components/system_media_controls" ]
 
   if (use_mpris) {
     deps += [
@@ -971,6 +969,7 @@ test("ui_base_unittests") {
       "accelerators/menu_label_accelerator_util_linux_unittest.cc",
       "accelerators/menu_label_accelerator_util_unittest.cc",
       "accelerators/platform_accelerator_cocoa_unittest.mm",
+      "accelerators/system_media_controls_media_keys_listener_unittest.cc",
       "cocoa/base_view_unittest.mm",
       "cocoa/bubble_closer_unittest.mm",
       "cocoa/cocoa_base_utils_unittest.mm",
@@ -989,7 +988,10 @@ test("ui_base_unittests") {
       "text/bytes_formatting_unittest.cc",
       "webui/web_ui_util_unittest.cc",
     ]
-    deps += [ ":pixel_diff_test_support" ]
+    deps += [
+      ":pixel_diff_test_support",
+      "//components/system_media_controls:test_support",
+    ]
   }
 
   if (build_ime) {
@@ -1067,12 +1069,9 @@ test("ui_base_unittests") {
 
   if (is_win) {
     sources += [
-      "accelerators/system_media_controls_media_keys_listener_unittest.cc",
       "dragdrop/os_exchange_data_win_unittest.cc",
       "win/hwnd_subclass_unittest.cc",
     ]
-
-    deps += [ "//ui/base/win/system_media_controls:test_support" ]
 
     ldflags = [
       "/DELAYLOAD:d2d1.dll",

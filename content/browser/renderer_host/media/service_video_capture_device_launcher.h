@@ -47,7 +47,7 @@ class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
   };
 
   void OnCreatePushSubscriptionCallback(
-      video_capture::mojom::VideoSourcePtr source,
+      mojo::Remote<video_capture::mojom::VideoSource> source,
       mojo::Remote<video_capture::mojom::PushVideoStreamSubscription>
           subscription,
       base::OnceClosure connection_lost_cb,

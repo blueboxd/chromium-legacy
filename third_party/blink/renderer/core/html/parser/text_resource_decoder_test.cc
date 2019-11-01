@@ -8,10 +8,10 @@
 
 namespace blink {
 
-TEST(TextResourceDecoderTest, AlwaysUseUTF8) {
+TEST(TextResourceDecoderTest, UTF8Decode) {
   std::unique_ptr<TextResourceDecoder> decoder =
       std::make_unique<TextResourceDecoder>(
-          TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+          TextResourceDecoderOptions::CreateUTF8Decode());
   const unsigned char kFooUTF8WithBOM[] = {0xef, 0xbb, 0xbf, 0x66, 0x6f, 0x6f};
   WTF::String decoded = decoder->Decode(
       reinterpret_cast<const char*>(kFooUTF8WithBOM), sizeof(kFooUTF8WithBOM));
@@ -20,10 +20,10 @@ TEST(TextResourceDecoderTest, AlwaysUseUTF8) {
   EXPECT_EQ("foo", decoded);
 }
 
-TEST(TextResourceDecoderTest, AlwaysUseUTF8WithoutBOM) {
+TEST(TextResourceDecoderTest, UTF8DecodeWithoutBOM) {
   std::unique_ptr<TextResourceDecoder> decoder =
       std::make_unique<TextResourceDecoder>(
-          TextResourceDecoderOptions::CreateAlwaysUseUTF8WithoutBOMForText());
+          TextResourceDecoderOptions::CreateUTF8DecodeWithoutBOM());
   const unsigned char kFooUTF8WithBOM[] = {0xef, 0xbb, 0xbf, 0x66, 0x6f, 0x6f};
   WTF::String decoded = decoder->Decode(
       reinterpret_cast<const char*>(kFooUTF8WithBOM), sizeof(kFooUTF8WithBOM));

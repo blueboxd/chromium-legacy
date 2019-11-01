@@ -50,6 +50,9 @@ struct LastFetchProperties {
   // Time until which the scheduler will stop requesting refreshes, unless there
   // is direct user interaction.
   Time? refresh_suppress_time;
+
+  // For test server authentication.
+  string last_bless_nonce;
 };
 
 // Models a single suggestion in the Feed.
@@ -105,4 +108,7 @@ interface PageHandler {
 
   // Record all Feed metrics into a log.
   GetFeedHistograms() => (string log);
+
+  // Set feed host override. Empty to clear override.
+  OverrideFeedHost(string host);
 };

@@ -99,9 +99,10 @@ class MediaPerceptionAPIManager::MediaPerceptionControllerClient
 
   // media_perception::mojom::MediaPerceptionControllerClient:
   void ConnectToVideoCaptureService(
-      video_capture::mojom::VideoSourceProviderRequest request) override {
+      mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver)
+      override {
     DCHECK(delegate_) << "Delegate not set.";
-    delegate_->BindVideoSourceProvider(std::move(request));
+    delegate_->BindVideoSourceProvider(std::move(receiver));
   }
 
  private:

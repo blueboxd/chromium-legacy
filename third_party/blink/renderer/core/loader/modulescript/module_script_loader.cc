@@ -204,7 +204,7 @@ void ModuleScriptLoader::FetchInternal(
   // <spec step="12.1">Let source text be the result of UTF-8 decoding
   // response's body.</spec>
   fetch_params.SetDecoderOptions(
-      TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
+      TextResourceDecoderOptions::CreateUTF8Decode());
 
   // <spec step="8">If the caller specified custom steps to perform the fetch,
   // perform them on request, setting the is top-level flag if the top-level

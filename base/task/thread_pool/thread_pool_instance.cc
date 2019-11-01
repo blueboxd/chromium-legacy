@@ -29,24 +29,24 @@ ThreadPoolInstance::InitParams::~InitParams() = default;
 
 ThreadPoolInstance::ScopedExecutionFence::ScopedExecutionFence() {
   DCHECK(g_thread_pool);
-  g_thread_pool->SetHasFence(true);
+  g_thread_pool->BeginFence();
 }
 
 ThreadPoolInstance::ScopedExecutionFence::~ScopedExecutionFence() {
   DCHECK(g_thread_pool);
-  g_thread_pool->SetHasFence(false);
+  g_thread_pool->EndFence();
 }
 
 ThreadPoolInstance::ScopedBestEffortExecutionFence::
     ScopedBestEffortExecutionFence() {
   DCHECK(g_thread_pool);
-  g_thread_pool->SetHasBestEffortFence(true);
+  g_thread_pool->BeginBestEffortFence();
 }
 
 ThreadPoolInstance::ScopedBestEffortExecutionFence::
     ~ScopedBestEffortExecutionFence() {
   DCHECK(g_thread_pool);
-  g_thread_pool->SetHasBestEffortFence(false);
+  g_thread_pool->EndBestEffortFence();
 }
 
 #if !defined(OS_NACL)

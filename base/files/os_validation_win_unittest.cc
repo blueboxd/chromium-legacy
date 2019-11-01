@@ -180,7 +180,7 @@ class OpenFileTest : public OsValidationTest,
     ASSERT_TRUE(CreateTemporaryFileInDir(temp_path(), &temp_file_path_));
 
     // Open the file
-    file_handle_.Set(::CreateFileW(as_wcstr(temp_file_path_.value()), access_,
+    file_handle_.Set(::CreateFileW(temp_file_path_.value().c_str(), access_,
                                    share_mode_, nullptr, OPEN_EXISTING,
                                    FILE_ATTRIBUTE_NORMAL, nullptr));
     ASSERT_TRUE(file_handle_.IsValid()) << ::GetLastError();
@@ -229,10 +229,10 @@ class OpenFileTest : public OsValidationTest,
 // Tests that an opened file can be deleted as expected.
 TEST_P(OpenFileTest, DeleteFile) {
   if (CanDeleteFile(access(), share_mode())) {
-    EXPECT_NE(::DeleteFileW(as_wcstr(temp_file_path().value())), 0)
+    EXPECT_NE(::DeleteFileW(temp_file_path().value().c_str()), 0)
         << "Last error code: " << ::GetLastError();
   } else {
-    EXPECT_EQ(::DeleteFileW(as_wcstr(temp_file_path().value())), 0);
+    EXPECT_EQ(::DeleteFileW(temp_file_path().value().c_str()), 0);
   }
 }
 
@@ -240,13 +240,13 @@ TEST_P(OpenFileTest, DeleteFile) {
 TEST_P(OpenFileTest, MoveFileEx) {
   const FilePath dest_path = temp_file_path().InsertBeforeExtension(FPL("bla"));
   if (CanDeleteFile(access(), share_mode())) {
-    EXPECT_NE(::MoveFileExW(as_wcstr(temp_file_path().value()),
-                            as_wcstr(dest_path.value()), 0),
+    EXPECT_NE(::MoveFileExW(temp_file_path().value().c_str(),
+                            dest_path.value().c_str(), 0),
               0)
         << "Last error code: " << ::GetLastError();
   } else {
-    EXPECT_EQ(::MoveFileExW(as_wcstr(temp_file_path().value()),
-                            as_wcstr(dest_path.value()), 0),
+    EXPECT_EQ(::MoveFileExW(temp_file_path().value().c_str(),
+                            dest_path.value().c_str(), 0),
               0);
   }
 }
@@ -257,13 +257,13 @@ TEST_P(OpenFileTest, DeleteThenMove) {
   // Don't test combinations that cannot be deleted.
   if (!CanDeleteFile(access(), share_mode()))
     return;
-  ASSERT_NE(::DeleteFileW(as_wcstr(temp_file_path().value())), 0)
+  ASSERT_NE(::DeleteFileW(temp_file_path().value().c_str()), 0)
       << "Last error code: " << ::GetLastError();
   const FilePath dest_path = temp_file_path().InsertBeforeExtension(FPL("bla"));
   // Move fails with ERROR_ACCESS_DENIED (STATUS_DELETE_PENDING under the
   // covers).
-  EXPECT_EQ(::MoveFileExW(as_wcstr(temp_file_path().value()),
-                          as_wcstr(dest_path.value()), 0),
+  EXPECT_EQ(::MoveFileExW(temp_file_path().value().c_str(),
+                          dest_path.value().c_str(), 0),
             0);
 }
 

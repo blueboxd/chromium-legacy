@@ -356,7 +356,6 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #elif defined(OS_CHROMEOS)
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
@@ -662,9 +661,8 @@ const char* const kPredefinedAllowedSocketOrigins[] = {
 // Enables pre-launch Code Integrity Guard (CIG) for Chrome renderers, when
 // running on Windows 10 1511 and above. See
 // https://blogs.windows.com/blog/tag/code-integrity-guard/.
-// Disabled temporarily. See https://crbug.com/750886.
 const base::Feature kRendererCodeIntegrity{"RendererCodeIntegrity",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD) &&
         // !defined(ADDRESS_SANITIZER)
 
@@ -3036,11 +3034,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #endif
   web_prefs->force_dark_mode_enabled =
       prefs->GetBoolean(prefs::kWebKitForceDarkModeEnabled);
-
-#if defined(OS_CHROMEOS)
-  web_prefs->always_show_focus =
-      prefs->GetBoolean(ash::prefs::kAccessibilityFocusHighlightEnabled);
-#endif
 
 #if defined(OS_ANDROID)
   web_prefs->password_echo_enabled =

@@ -9,6 +9,8 @@ import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQuali
 
 import android.content.Context;
 
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionStore;
@@ -16,13 +18,13 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
 import dagger.Module;
 import dagger.Provides;
 
@@ -42,6 +44,11 @@ public class ChromeAppModule {
     @Provides
     public ChromePreferenceManager providesChromePreferenceManager() {
         return ChromePreferenceManager.getInstance();
+    }
+
+    @Provides
+    public SharedPreferencesManager providesSharedPreferencesManager() {
+        return SharedPreferencesManager.getInstance();
     }
 
     @Provides

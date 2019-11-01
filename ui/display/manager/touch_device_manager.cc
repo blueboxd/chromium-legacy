@@ -249,9 +249,7 @@ std::string TouchDeviceIdentifier::SecondaryIdToString() const {
 bool TouchCalibrationData::CalibrationPointPairCompare(
     const CalibrationPointPair& pair_1,
     const CalibrationPointPair& pair_2) {
-  return pair_1.first.y() < pair_2.first.y()
-             ? true
-             : pair_1.first.x() < pair_2.first.x();
+  return pair_1.first < pair_2.first;
 }
 
 TouchCalibrationData::TouchCalibrationData() {}

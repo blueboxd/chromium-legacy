@@ -21,6 +21,8 @@
 #include "build/build_config.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -52,10 +54,11 @@ class ServiceManagerConnectionImpl::IOThreadContext
  public:
   IOThreadContext(service_manager::mojom::ServiceRequest service_request,
                   scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-                  service_manager::mojom::ConnectorRequest connector_request)
+                  mojo::PendingReceiver<service_manager::mojom::Connector>
+                      connector_receiver)
       : pending_service_request_(std::move(service_request)),
         io_task_runner_(io_task_runner),
-        pending_connector_request_(std::move(connector_request)) {
+        pending_connector_receiver_(std::move(connector_receiver)) {
     // This will be reattached by any of the IO thread functions on first call.
     io_thread_checker_.DetachFromThread();
   }
@@ -186,8 +189,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
     DCHECK(io_thread_checker_.CalledOnValidThread());
     service_binding_ = std::make_unique<service_manager::ServiceBinding>(
         this, std::move(pending_service_request_));
-    service_binding_->GetConnector()->BindConnectorRequest(
-        std::move(pending_connector_request_));
+    service_binding_->GetConnector()->BindConnectorReceiver(
+        std::move(pending_connector_receiver_));
 
     // MessageLoopObserver owns itself.
     message_loop_observer_ =
@@ -300,7 +303,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
   // once the connection is started.
   service_manager::mojom::ServiceRequest pending_service_request_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-  service_manager::mojom::ConnectorRequest pending_connector_request_;
+  mojo::PendingReceiver<service_manager::mojom::Connector>
+      pending_connector_receiver_;
 
   // TaskRunner on which to run our owner's callbacks, i.e. the ones passed to
   // Start().
@@ -333,12 +337,13 @@ jint JNI_ServiceManagerConnectionImpl_GetConnectorMessagePipeHandle(
     JNIEnv* env) {
   DCHECK(ServiceManagerConnection::GetForProcess());
 
-  service_manager::mojom::ConnectorPtrInfo connector_info;
+  mojo::PendingRemote<service_manager::mojom::Connector> connector_remote;
   ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindConnectorRequest(mojo::MakeRequest(&connector_info));
+      ->BindConnectorReceiver(
+          connector_remote.InitWithNewPipeAndPassReceiver());
 
-  return connector_info.PassHandle().release().value();
+  return connector_remote.PassPipe().release().value();
 }
 
 #endif
@@ -388,10 +393,10 @@ ServiceManagerConnection::~ServiceManagerConnection() {}
 ServiceManagerConnectionImpl::ServiceManagerConnectionImpl(
     service_manager::mojom::ServiceRequest request,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
-  service_manager::mojom::ConnectorRequest connector_request;
-  connector_ = service_manager::Connector::Create(&connector_request);
+  mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
+  connector_ = service_manager::Connector::Create(&connector_receiver);
   context_ = new IOThreadContext(std::move(request), io_task_runner,
-                                 std::move(connector_request));
+                                 std::move(connector_receiver));
 }
 
 ServiceManagerConnectionImpl::~ServiceManagerConnectionImpl() {

@@ -215,9 +215,7 @@
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
-#include "components/feed/core/feed_scheduler_host.h"
-#include "components/feed/core/refresh_throttler.h"
-#include "components/feed/core/user_classifier.h"
+#include "components/feed/core/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else   // defined(OS_ANDROID)
 #include "chrome/browser/enterprise_reporting/prefs.h"
@@ -887,9 +885,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   RecentTabsPagePrefs::RegisterProfilePrefs(registry);
   usage_stats::UsageStatsBridge::RegisterProfilePrefs(registry);
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
-  feed::FeedSchedulerHost::RegisterProfilePrefs(registry);
-  feed::RefreshThrottler::RegisterProfilePrefs(registry);
-  feed::UserClassifier::RegisterProfilePrefs(registry);
+  feed::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else
   AppShortcutManager::RegisterProfilePrefs(registry);

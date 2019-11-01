@@ -33,7 +33,9 @@
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/file_data_source.h"
@@ -152,7 +154,7 @@ class FileURLDirectoryLoader
       const base::FilePath& profile_path,
       const network::ResourceRequest& request,
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      network::mojom::URLLoaderClientPtrInfo client_info,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
       std::unique_ptr<FileURLLoaderObserver> observer,
       scoped_refptr<net::HttpResponseHeaders> response_headers) {
     // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
@@ -160,7 +162,7 @@ class FileURLDirectoryLoader
     // file data has been sent to it.
     auto* file_url_loader = new FileURLDirectoryLoader;
     file_url_loader->Start(profile_path, request, std::move(loader),
-                           std::move(client_info), std::move(observer),
+                           std::move(client_remote), std::move(observer),
                            std::move(response_headers));
   }
 
@@ -180,15 +182,15 @@ class FileURLDirectoryLoader
   void Start(const base::FilePath& profile_path,
              const network::ResourceRequest& request,
              mojo::PendingReceiver<network::mojom::URLLoader> loader,
-             network::mojom::URLLoaderClientPtrInfo client_info,
+             mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
              std::unique_ptr<content::FileURLLoaderObserver> observer,
              scoped_refptr<net::HttpResponseHeaders> response_headers) {
     receiver_.Bind(std::move(loader));
     receiver_.set_disconnect_handler(base::BindOnce(
         &FileURLDirectoryLoader::OnMojoDisconnct, base::Unretained(this)));
 
-    network::mojom::URLLoaderClientPtr client;
-    client.Bind(std::move(client_info));
+    mojo::Remote<network::mojom::URLLoaderClient> client(
+        std::move(client_remote));
 
     if (!net::FileURLToFilePath(request.url, &path_)) {
       client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
@@ -346,7 +348,7 @@ class FileURLDirectoryLoader
   int listing_result_;
 
   mojo::Receiver<network::mojom::URLLoader> receiver_{this};
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   std::unique_ptr<mojo::DataPipeProducer> data_producer_;
   std::string pending_data_;
@@ -361,7 +363,7 @@ class FileURLLoader : public network::mojom::URLLoader {
       const base::FilePath& profile_path,
       const network::ResourceRequest& request,
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      network::mojom::URLLoaderClientPtrInfo client_info,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
       DirectoryLoadingPolicy directory_loading_policy,
       FileAccessPolicy file_access_policy,
       LinkFollowingPolicy link_following_policy,
@@ -372,7 +374,7 @@ class FileURLLoader : public network::mojom::URLLoader {
     // file data has been sent to it.
     auto* file_url_loader = new FileURLLoader;
     file_url_loader->Start(
-        profile_path, request, std::move(loader), std::move(client_info),
+        profile_path, request, std::move(loader), std::move(client_remote),
         directory_loading_policy, file_access_policy, link_following_policy,
         std::move(observer), std::move(extra_response_headers));
   }
@@ -431,7 +433,7 @@ class FileURLLoader : public network::mojom::URLLoader {
   void Start(const base::FilePath& profile_path,
              const network::ResourceRequest& request,
              mojo::PendingReceiver<network::mojom::URLLoader> loader,
-             network::mojom::URLLoaderClientPtrInfo client_info,
+             mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote,
              DirectoryLoadingPolicy directory_loading_policy,
              FileAccessPolicy file_access_policy,
              LinkFollowingPolicy link_following_policy,
@@ -449,7 +451,7 @@ class FileURLLoader : public network::mojom::URLLoader {
     receiver_.set_disconnect_handler(base::BindOnce(
         &FileURLLoader::OnMojoDisconnct, base::Unretained(this)));
 
-    client_.Bind(std::move(client_info));
+    client_.Bind(std::move(client_remote));
 
     base::FilePath path;
     if (!net::FileURLToFilePath(request.url, &path)) {

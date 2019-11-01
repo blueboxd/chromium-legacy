@@ -70,10 +70,6 @@ void RecordBrowserOpenTabsDelta(base::TimeDelta delta);
 // function are ignored.
 void RecordRendererMainEntryTime(base::TimeTicks ticks);
 
-// Call this with the time when the first web contents loaded its main frame,
-// only if the first web contents was unimpended in its attempt to do so.
-void RecordFirstWebContentsMainFrameLoad(base::TimeTicks ticks);
-
 // Call this with the time when the first web contents had a non-empty paint,
 // only if the first web contents was unimpeded in its attempt to do so.
 void RecordFirstWebContentsNonEmptyPaint(

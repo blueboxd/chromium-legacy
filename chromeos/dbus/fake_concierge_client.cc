@@ -148,7 +148,8 @@ void FakeConciergeClient::StartTerminaVm(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), start_vm_response_));
 
-  if (start_vm_response_.status() != vm_tools::concierge::VM_STATUS_STARTING) {
+  if (!start_vm_response_ ||
+      start_vm_response_->status() != vm_tools::concierge::VM_STATUS_STARTING) {
     // Don't send the tremplin signal unless the VM was STARTING.
     return;
   }
@@ -264,42 +265,49 @@ void FakeConciergeClient::StartArcVm(
 }
 
 void FakeConciergeClient::InitializeProtoResponses() {
-  create_disk_image_response_.Clear();
-  create_disk_image_response_.set_status(
+  create_disk_image_response_.emplace();
+  create_disk_image_response_->set_status(
       vm_tools::concierge::DISK_STATUS_CREATED);
-  create_disk_image_response_.set_disk_path("foo");
+  create_disk_image_response_->set_disk_path("foo");
 
-  destroy_disk_image_response_.Clear();
-  destroy_disk_image_response_.set_status(
+  destroy_disk_image_response_.emplace();
+  destroy_disk_image_response_->set_status(
       vm_tools::concierge::DISK_STATUS_DESTROYED);
 
-  list_vm_disks_response_.Clear();
-  list_vm_disks_response_.set_success(true);
+  import_disk_image_response_.emplace();
+  cancel_disk_image_response_.emplace();
+  disk_image_status_response_.emplace();
 
-  start_vm_response_.Clear();
-  start_vm_response_.set_status(vm_tools::concierge::VM_STATUS_STARTING);
+  list_vm_disks_response_.emplace();
+  list_vm_disks_response_->set_success(true);
 
-  stop_vm_response_.Clear();
-  stop_vm_response_.set_success(true);
+  start_vm_response_.emplace();
+  start_vm_response_->set_status(vm_tools::concierge::VM_STATUS_STARTING);
 
-  get_vm_info_response_.Clear();
-  get_vm_info_response_.set_success(true);
-  get_vm_info_response_.mutable_vm_info()->set_seneschal_server_handle(1);
+  stop_vm_response_.emplace();
+  stop_vm_response_->set_success(true);
 
-  container_ssh_keys_response_.Clear();
-  container_ssh_keys_response_.set_container_public_key("pubkey");
-  container_ssh_keys_response_.set_host_private_key("privkey");
-  container_ssh_keys_response_.set_hostname("hostname");
+  get_vm_info_response_.emplace();
+  get_vm_info_response_->set_success(true);
+  get_vm_info_response_->mutable_vm_info()->set_seneschal_server_handle(1);
 
-  attach_usb_device_response_.Clear();
-  attach_usb_device_response_.set_success(true);
-  attach_usb_device_response_.set_guest_port(0);
+  get_vm_enterprise_reporting_info_response_.emplace();
+  set_vm_cpu_restriction_response_.emplace();
 
-  detach_usb_device_response_.Clear();
-  detach_usb_device_response_.set_success(true);
+  container_ssh_keys_response_.emplace();
+  container_ssh_keys_response_->set_container_public_key("pubkey");
+  container_ssh_keys_response_->set_host_private_key("privkey");
+  container_ssh_keys_response_->set_hostname("hostname");
 
-  list_usb_devices_response_.Clear();
-  list_usb_devices_response_.set_success(true);
+  attach_usb_device_response_.emplace();
+  attach_usb_device_response_->set_success(true);
+  attach_usb_device_response_->set_guest_port(0);
+
+  detach_usb_device_response_.emplace();
+  detach_usb_device_response_->set_success(true);
+
+  list_usb_devices_response_.emplace();
+  list_usb_devices_response_->set_success(true);
 }
 
 }  // namespace chromeos

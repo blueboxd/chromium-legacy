@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -87,7 +88,7 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
         int32_t request_id,
         uint32_t options,
         const network::ResourceRequest& resource_request,
-        network::mojom::URLLoaderClientPtrInfo client,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
         const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
     // Called on the core thread.
@@ -120,7 +121,7 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
         int32_t request_id,
         uint32_t options,
         network::ResourceRequest resource_request,
-        network::mojom::URLLoaderClientPtrInfo client,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
         net::NetworkTrafficAnnotationTag traffic_annotation,
         LoaderOnUI* loader_on_ui);
 

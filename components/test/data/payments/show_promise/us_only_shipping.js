@@ -7,7 +7,7 @@
 /**
  * Launch PaymentRequest with a show promise and US-only shipping.
  */
-function buy() {  // eslint-disable-line no-unused-vars
+function buy() { // eslint-disable-line no-unused-vars
   var detailsForUSAddress = {
     shippingOptions: [{
       id: '1',

@@ -1368,8 +1368,10 @@ void OverviewItem::HandleLongPressEvent(const gfx::PointF& location_in_screen) {
   if (!IsDragItem())
     return;
 
-  if (ShouldAllowSplitView() || desks_util::ShouldDesksBarBeCreated())
+  if (ShouldAllowSplitView() || (desks_util::ShouldDesksBarBeCreated() &&
+                                 overview_grid_->IsDesksBarViewActive())) {
     overview_session_->StartNormalDragMode(location_in_screen);
+  }
 }
 
 void OverviewItem::HandleFlingStartEvent(const gfx::PointF& location_in_screen,

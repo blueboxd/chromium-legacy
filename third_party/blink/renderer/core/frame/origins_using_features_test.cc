@@ -13,25 +13,14 @@ TEST(HostsUsingFeaturesTest, countName) {
   hosts_using_features.CountName(HostsUsingFeatures::Feature::kEventPath,
                                  "test 1");
   EXPECT_EQ(1u, hosts_using_features.ValueByName().size());
-  hosts_using_features.CountName(
-      HostsUsingFeatures::Feature::kElementCreateShadowRoot, "test 1");
-  EXPECT_EQ(1u, hosts_using_features.ValueByName().size());
   hosts_using_features.CountName(HostsUsingFeatures::Feature::kEventPath,
                                  "test 2");
   EXPECT_EQ(2u, hosts_using_features.ValueByName().size());
 
   EXPECT_TRUE(hosts_using_features.ValueByName().at("test 1").Get(
       HostsUsingFeatures::Feature::kEventPath));
-  EXPECT_TRUE(hosts_using_features.ValueByName().at("test 1").Get(
-      HostsUsingFeatures::Feature::kElementCreateShadowRoot));
-  EXPECT_FALSE(hosts_using_features.ValueByName().at("test 1").Get(
-      HostsUsingFeatures::Feature::kDocumentRegisterElement));
   EXPECT_TRUE(hosts_using_features.ValueByName().at("test 2").Get(
       HostsUsingFeatures::Feature::kEventPath));
-  EXPECT_FALSE(hosts_using_features.ValueByName().at("test 2").Get(
-      HostsUsingFeatures::Feature::kElementCreateShadowRoot));
-  EXPECT_FALSE(hosts_using_features.ValueByName().at("test 2").Get(
-      HostsUsingFeatures::Feature::kDocumentRegisterElement));
 
   hosts_using_features.Clear();
 }

@@ -133,9 +133,8 @@ TEST(X509UtilTest, CreateSelfSigned) {
     0xb1, 0xc5, 0x15, 0xf3
   };
 
-  std::vector<uint8_t> input;
-  input.resize(sizeof(private_key_info));
-  memcpy(&input.front(), private_key_info, sizeof(private_key_info));
+  std::vector<uint8_t> input(std::begin(private_key_info),
+                             std::end(private_key_info));
 
   std::unique_ptr<crypto::RSAPrivateKey> private_key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(input));

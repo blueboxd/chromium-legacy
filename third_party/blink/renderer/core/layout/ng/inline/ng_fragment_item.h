@@ -303,6 +303,10 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   // Note: <span> doesn't have text direction.
   TextDirection ResolvedDirection() const;
 
+  // Converts the given point, relative to the fragment itself, into a position
+  // in DOM tree.
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const;
+
  private:
   const LayoutObject* layout_object_;
 

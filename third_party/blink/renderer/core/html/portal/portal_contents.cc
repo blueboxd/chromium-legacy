@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 
+#include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/referrer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
@@ -67,7 +68,17 @@ ScriptPromise PortalContents::Activate(ScriptState* script_state,
   return activate_resolver_->Promise();
 }
 
-void PortalContents::OnActivateResponse(bool was_adopted) {
+void PortalContents::OnActivateResponse(
+    mojom::blink::PortalActivateResult result) {
+  bool was_adopted = false;
+  switch (result) {
+    case mojom::blink::PortalActivateResult::kPredecessorWasAdopted:
+      was_adopted = true;
+      break;
+    case mojom::blink::PortalActivateResult::kPredecessorWillUnload:
+      break;
+  }
+
   if (was_adopted)
     GetDocument().GetPage()->SetInsidePortal(true);
 

@@ -83,13 +83,14 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         boolean isTabGroupEnabled = FeatureUtilities.isTabGroupsAndroidEnabled();
         boolean isTabGroupUiImprovementEnabled =
                 FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
-        boolean isStartSurfaceEnabled = FeatureUtilities.isStartSurfaceEnabled();
+        boolean isMRUEnabledInTabSwitcher =
+                TabSwitcherMediator.isShowingTabsInMRUOrder() && mActionsOnAllRelatedTabs;
         // Only enable drag for users with group disabled, or with group and group ui improvement
-        // enabled at the same time. Also, disable drag for start surface for now.
+        // enabled at the same time. Also, disable drag for MRU-order tab switcher in start surface.
         // TODO(crbug.com/1005931): Figure out how drag-to-reorder lives in StartSurface MRU
         // ordering scenario.
-        boolean isDragEnabled =
-                !isStartSurfaceEnabled && (!isTabGroupEnabled || isTabGroupUiImprovementEnabled);
+        boolean isDragEnabled = !isMRUEnabledInTabSwitcher
+                && (!isTabGroupEnabled || isTabGroupUiImprovementEnabled);
         mDragFlags = isDragEnabled ? ItemTouchHelper.START | ItemTouchHelper.END
                         | ItemTouchHelper.UP | ItemTouchHelper.DOWN
                                    : 0;

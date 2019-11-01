@@ -41,7 +41,7 @@ public class PaymentRequestShowPromiseInvalidDetailsTest implements MainActivity
     @MediumTest
     @Feature({"Payments"})
     public void testReject() throws TimeoutException {
-        mRule.openPageAndClickNodeAndWait("buy", mRule.getDismissed());
+        mRule.openPageAndClickNodeAndWait("buy", mRule.getRendererClosedMojoConnection());
         mRule.expectResultContains(new String[] {"Total amount value should be non-negative"});
     }
 }

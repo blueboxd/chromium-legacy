@@ -245,7 +245,6 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
     // In clamshell mode, set the opacity of the AppList immediately to
     // instantly hide it. Opacity of the AppList is reset when it is shown
     // again.
-    LOG(ERROR) << "In the if";
     layer->SetOpacity(opacity);
     return;
   }

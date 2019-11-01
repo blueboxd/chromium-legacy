@@ -25,7 +25,7 @@ namespace content {
 namespace {
 
 void ConcludeLaunchDeviceWithSuccess(
-    video_capture::mojom::VideoSourcePtr source,
+    mojo::Remote<video_capture::mojom::VideoSource> source,
     mojo::Remote<video_capture::mojom::PushVideoStreamSubscription>
         subscription,
     base::OnceClosure connection_lost_cb,
@@ -109,9 +109,9 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   // invoked.
   done_cb_ = std::move(done_cb);
   callbacks_ = callbacks;
-  video_capture::mojom::VideoSourcePtr source;
+  mojo::Remote<video_capture::mojom::VideoSource> source;
   service_connection_->source_provider()->GetVideoSource(
-      device_id, mojo::MakeRequest(&source));
+      device_id, source.BindNewPipeAndPassReceiver());
 
   auto receiver_adapter =
       std::make_unique<video_capture::ReceiverMediaToMojoAdapter>(
@@ -172,7 +172,7 @@ void ServiceVideoCaptureDeviceLauncher::AbortLaunch() {
 }
 
 void ServiceVideoCaptureDeviceLauncher::OnCreatePushSubscriptionCallback(
-    video_capture::mojom::VideoSourcePtr source,
+    mojo::Remote<video_capture::mojom::VideoSource> source,
     mojo::Remote<video_capture::mojom::PushVideoStreamSubscription>
         subscription,
     base::OnceClosure connection_lost_cb,

@@ -393,6 +393,9 @@ function strf(id, var_args) {
   return loadTimeData.getStringF.apply(loadTimeData, arguments);
 }
 
+// Export strf() into the util namespace.
+util.strf = strf;
+
 /**
  * @return {boolean} True if the Files app is running as an open files or a
  *     select folder dialog. False otherwise.

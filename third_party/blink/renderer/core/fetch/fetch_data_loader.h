@@ -75,8 +75,8 @@ class CORE_EXPORT FetchDataLoader : public GarbageCollected<FetchDataLoader> {
   static FetchDataLoader* CreateLoaderAsFormData(
       const String& multipart_boundary);
   // The text resource decoder options should be created either by
-  // TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText() or
-  // TextResourceDecoderOptions::CreateAlwaysUseUTF8WithoutBOMForText().
+  // TextResourceDecoderOptions::CreateUTF8Decode() or
+  // TextResourceDecoderOptions::CreateUTF8DecodeWithoutBOM().
   static FetchDataLoader* CreateLoaderAsString(
       const TextResourceDecoderOptions&);
   // The mojo::DataPipe consumer handle is provided via the

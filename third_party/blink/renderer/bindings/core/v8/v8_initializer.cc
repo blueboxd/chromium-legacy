@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_error_event.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_task_runner.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -65,7 +66,6 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
-#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
@@ -263,7 +263,8 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
     // Try to get the stack & location from a wrapped exception object (e.g.
     // DOMException).
     DCHECK(exception->IsObject());
-    auto private_error = V8PrivateProperty::GetDOMExceptionError(isolate);
+    auto private_error = V8PrivateProperty::GetSymbol(
+        isolate, kPrivatePropertyDOMExceptionError);
     v8::Local<v8::Value> error;
     if (private_error.GetOrUndefined(exception.As<v8::Object>())
             .ToLocal(&error) &&

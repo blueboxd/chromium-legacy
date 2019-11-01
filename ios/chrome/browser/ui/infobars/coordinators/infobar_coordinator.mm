@@ -290,8 +290,10 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (void)modalInfobarButtonWasAccepted:(id)sender {
   [self performInfobarAction];
-  [self.badgeDelegate infobarWasAccepted:self.infobarType
-                             forWebState:self.webState];
+  if ([self isInfobarAccepted]) {
+    [self.badgeDelegate infobarWasAccepted:self.infobarType
+                               forWebState:self.webState];
+  }
   [self dismissInfobarModal:sender animated:YES completion:nil];
 }
 

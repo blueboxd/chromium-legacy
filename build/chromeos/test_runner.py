@@ -50,6 +50,12 @@ SANITY_TEST_TARGET = 'cros_browser_sanity_test'
 # depending on which lab machine you're on.
 LAB_DUT_HOSTNAME = 'variable_chromeos_device_hostname'
 
+SYSTEM_LOG_LOCATIONS = [
+    '/var/log/chrome/',
+    '/var/log/messages',
+    '/var/log/ui/',
+]
+
 TAST_DEBUG_DOC = 'https://bit.ly/2LgvIXz'
 
 
@@ -105,10 +111,9 @@ class RemoteTest(object):
           '--device', args.device if args.device else LAB_DUT_HOSTNAME
       ]
     if args.logs_dir:
-      self._test_cmd += [
-          '--results-src', '/var/log/',
-          '--results-dest-dir', args.logs_dir,
-      ]
+      for log in SYSTEM_LOG_LOCATIONS:
+        self._test_cmd += ['--results-src', log]
+      self._test_cmd += ['--results-dest-dir', args.logs_dir]
 
     # This environment variable is set for tests that have been instrumented
     # for code coverage. Its incoming value is expected to be a location
@@ -642,10 +647,9 @@ def host_cmd(args, unknown_args):
     cros_run_test_cmd.append('--debug')
 
   if args.logs_dir:
-    cros_run_test_cmd += [
-        '--results-src', '/var/log/',
-        '--results-dest-dir', args.logs_dir,
-    ]
+    for log in SYSTEM_LOG_LOCATIONS:
+      cros_run_test_cmd += ['--results-src', log]
+    cros_run_test_cmd += ['--results-dest-dir', args.logs_dir]
 
   test_env = setup_env()
   if args.deploy_chrome:

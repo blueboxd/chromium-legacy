@@ -214,9 +214,6 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
       std::move(compare_reader), std::move(copy_reader), std::move(writer),
       /*pause_when_not_identical=*/true);
 
-  network::mojom::URLLoaderClientPtrInfo network_client;
-  network_client_receiver_.Bind(mojo::MakeRequest(&network_client));
-
   // Use NavigationURLLoaderImpl to get a unique request id across
   // browser-initiated navigations and worker script fetch.
   const int request_id =
@@ -224,7 +221,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   network_loader_ = ServiceWorkerUpdatedScriptLoader::
       ThrottlingURLLoaderCoreWrapper::CreateLoaderAndStart(
           loader_factory->Clone(), browser_context_getter, MSG_ROUTING_NONE,
-          request_id, options, resource_request, std::move(network_client),
+          request_id, options, resource_request,
+          network_client_receiver_.BindNewPipeAndPassRemote(),
           kUpdateCheckTrafficAnnotation);
   DCHECK_EQ(network_loader_state_,
             ServiceWorkerUpdatedScriptLoader::LoaderState::kNotStarted);

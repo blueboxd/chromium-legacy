@@ -88,7 +88,7 @@ ServiceBinding::~ServiceBinding() = default;
 
 Connector* ServiceBinding::GetConnector() {
   if (!connector_)
-    connector_ = Connector::Create(&pending_connector_request_);
+    connector_ = Connector::Create(&pending_connector_receiver_);
   return connector_.get();
 }
 
@@ -146,9 +146,9 @@ void ServiceBinding::OnStart(const Identity& identity,
                              OnStartCallback callback) {
   identity_ = identity;
 
-  if (!pending_connector_request_.is_pending())
-    connector_ = Connector::Create(&pending_connector_request_);
-  std::move(callback).Run(std::move(pending_connector_request_),
+  if (!pending_connector_receiver_.is_valid())
+    connector_ = Connector::Create(&pending_connector_receiver_);
+  std::move(callback).Run(std::move(pending_connector_receiver_),
                           service_control_.BindNewEndpointAndPassReceiver());
 
   service_->OnStart();

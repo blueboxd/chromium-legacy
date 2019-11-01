@@ -8,7 +8,7 @@
  * Launches the PaymentRequest UI with Bob Pay and 'basic-card' as
  * payment methods, and Bob Pay modifier.
  */
-function buy() {  // eslint-disable-line no-unused-vars
+function buy() { // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
         [
@@ -54,7 +54,7 @@ function buy() {  // eslint-disable-line no-unused-vars
  * Launches the PaymentRequest UI with 'basic-card' payment method and
  * all cards modifier.
  */
-function buyWithAllCardsModifier() {  // eslint-disable-line no-unused-vars
+function buyWithAllCardsModifier() { // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest([{supportedMethods: 'basic-card'}], {
       total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
@@ -93,7 +93,7 @@ function buyWithAllCardsModifier() {  // eslint-disable-line no-unused-vars
  * Launches the PaymentRequest UI with 'basic-card' as payment method and
  * visa credit card modifier.
  */
-function buyWithVisaCreditModifier() {  // eslint-disable-line no-unused-vars
+function buyWithVisaCreditModifier() { // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
         [{supportedMethods: 'basic-card'}],
@@ -138,7 +138,7 @@ function buyWithVisaCreditModifier() {  // eslint-disable-line no-unused-vars
  * Launches the PaymentRequest UI with 'basic-card' as payment method and
  * visa debit card modifier.
  */
-function buyWithVisaDebitModifier() {  // eslint-disable-line no-unused-vars
+function buyWithVisaDebitModifier() { // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
         [{
@@ -185,7 +185,7 @@ function buyWithVisaDebitModifier() {  // eslint-disable-line no-unused-vars
  * Launches the PaymentRequest UI with 'basic-card' as payment method and
  * credit card modifier.
  */
-function buyWithCreditModifier() {  // eslint-disable-line no-unused-vars
+function buyWithCreditModifier() { // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
         [{
@@ -231,7 +231,7 @@ function buyWithCreditModifier() {  // eslint-disable-line no-unused-vars
  * Launches the PaymentRequest UI with 'basic-card' as payment method and
  * visa card modifier.
  */
-function buyWithVisaModifier() {  // eslint-disable-line no-unused-vars
+function buyWithVisaModifier() { // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
         [{

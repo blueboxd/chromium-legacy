@@ -17,7 +17,6 @@
 #include "components/feed/core/user_classifier.h"
 #include "components/web_resource/eula_accepted_notifier.h"
 
-class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -85,8 +84,6 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
 
   using ScheduleBackgroundTaskCallback =
       base::RepeatingCallback<void(base::TimeDelta)>;
-
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Provide dependent pieces of functionality the scheduler relies on. Should
   // be called exactly once before other public methods are called. This is

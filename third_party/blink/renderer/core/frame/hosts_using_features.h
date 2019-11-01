@@ -27,8 +27,8 @@ class CORE_EXPORT HostsUsingFeatures {
 
   // Features for RAPPOR. Do not reorder or remove!
   enum class Feature {
-    kElementCreateShadowRoot,
-    kDocumentRegisterElement,
+    kElementCreateShadowRoot_Unused,
+    kDocumentRegisterElement_Unused,
     kEventPath,
     kDeviceMotionInsecureHost,
     kDeviceOrientationInsecureHost,
@@ -36,7 +36,7 @@ class CORE_EXPORT HostsUsingFeatures {
     kGeolocationInsecureHost,
     kGetUserMediaInsecureHost,
     kGetUserMediaSecureHost,
-    kElementAttachShadow,
+    kElementAttachShadow_Unused,
     kApplicationCacheManifestSelectInsecureHost,
     kApplicationCacheAPIInsecureHost,
     kRTCPeerConnectionAudio,

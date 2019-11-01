@@ -519,6 +519,21 @@
       'chromeos-kevin-builder-perf-fyi': 'official_cros_chrome_sdk',
     },
 
+    'chromium.swangle': {
+      'linux-swangle-tot-angle-x64': 'deqp_release_trybot',
+      'linux-swangle-tot-angle-x86': 'deqp_release_trybot_x86',
+      'linux-swangle-tot-swiftshader-x64': 'deqp_release_trybot',
+      'linux-swangle-tot-swiftshader-x86': 'deqp_release_trybot_x86',
+      'linux-swangle-x64': 'deqp_release_trybot',
+      'linux-swangle-x86': 'deqp_release_trybot_x86',
+      'win-swangle-tot-angle-x64': 'deqp_release_trybot',
+      'win-swangle-tot-angle-x86': 'deqp_release_trybot_x86',
+      'win-swangle-tot-swiftshader-x64': 'deqp_release_trybot',
+      'win-swangle-tot-swiftshader-x86': 'deqp_release_trybot_x86',
+      'win-swangle-x64': 'deqp_release_trybot',
+      'win-swangle-x86': 'deqp_release_trybot_x86',
+    },
+
     'chromium.swarm': {
       'Android N5 Swarm': 'android_release_bot_minimal_symbols',
       'Android N5X Swarm': 'android_release_bot_minimal_symbols_arm64',
@@ -883,6 +898,21 @@
       'Mac Builder Perf': 'official_goma_mac_perf',
       'Win Builder Perf': 'official_goma_x86',
       'Win x64 Builder Perf': 'official_goma',
+    },
+
+    'tryserver.chromium.swangle': {
+      'linux-swangle-try-tot-angle-x64': 'deqp_release_trybot',
+      'linux-swangle-try-tot-angle-x86': 'deqp_release_trybot_x86',
+      'linux-swangle-try-tot-swiftshader-x64': 'deqp_release_trybot',
+      'linux-swangle-try-tot-swiftshader-x86': 'deqp_release_trybot_x86',
+      'linux-swangle-try-x64': 'deqp_release_trybot',
+      'linux-swangle-try-x86': 'deqp_release_trybot_x86',
+      'win-swangle-try-tot-angle-x64': 'deqp_release_trybot',
+      'win-swangle-try-tot-angle-x86': 'deqp_release_trybot_x86',
+      'win-swangle-try-tot-swiftshader-x64': 'deqp_release_trybot',
+      'win-swangle-try-tot-swiftshader-x86': 'deqp_release_trybot_x86',
+      'win-swangle-try-x64': 'deqp_release_trybot',
+      'win-swangle-try-x86': 'deqp_release_trybot_x86',
     },
 
     'tryserver.chromium.win': {

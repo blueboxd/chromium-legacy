@@ -57,7 +57,7 @@ ConfiguratorImpl::~ConfiguratorImpl() {}
 int ConfiguratorImpl::InitialDelay() const {
   if (initial_delay_)
     return initial_delay_;
-  return fast_update_ ? 10 : (6 * kDelayOneMinute);
+  return fast_update_ ? 10 : kDelayOneMinute;
 }
 
 int ConfiguratorImpl::NextCheckDelay() const {

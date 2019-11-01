@@ -25,6 +25,8 @@
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_byte_range.h"
@@ -201,12 +203,12 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
       void* profile_id,
       const network::ResourceRequest& request,
       network::mojom::URLLoaderRequest loader,
-      network::mojom::URLLoaderClientPtrInfo client_info) {
-    // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote) {
+    // Owns itself. Will live as long as its URLLoader and URLLoaderClient
     // bindings are alive - essentially until either the client gives up or all
     // file data has been sent to it.
     auto* external_file_url_loader = new ExternalFileURLLoader(
-        profile_id, std::move(loader), std::move(client_info));
+        profile_id, std::move(loader), std::move(client_remote));
     external_file_url_loader->Start(request);
   }
 
@@ -223,14 +225,14 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
   explicit ExternalFileURLLoader(
       void* profile_id,
       network::mojom::URLLoaderRequest loader,
-      network::mojom::URLLoaderClientPtrInfo client_info)
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote)
       : binding_(this),
         resolver_(std::make_unique<ExternalFileResolver>(profile_id)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     binding_.Bind(std::move(loader));
     binding_.set_connection_error_handler(base::BindOnce(
         &ExternalFileURLLoader::OnConnectionError, base::Unretained(this)));
-    client_.Bind(std::move(client_info));
+    client_.Bind(std::move(client_remote));
   }
   ~ExternalFileURLLoader() override = default;
 
@@ -323,7 +325,7 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
   }
 
   mojo::Binding<network::mojom::URLLoader> binding_;
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   std::unique_ptr<ExternalFileResolver> resolver_;
   network::ResourceResponseHead head_;

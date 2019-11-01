@@ -17,8 +17,12 @@ namespace device {
 
 namespace {
 
-constexpr char kMicrosoftInteractionProfileName[] =
+constexpr char kMicrosoftMotionControllerInteractionProfile[] =
     "/interaction_profiles/microsoft/motion_controller";
+
+const static std::map<std::string, std::vector<std::string>> profile_map = {
+    {kMicrosoftMotionControllerInteractionProfile,
+     {"windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"}}};
 
 const char* GetStringFromType(OpenXrHandednessType type) {
   switch (type) {
@@ -37,6 +41,7 @@ const char* GetStringFromType(OpenXrHandednessType type) {
 OpenXrController::OpenXrController()
     : description_(nullptr),
       type_(OpenXrHandednessType::kCount),  // COUNT refers to invalid.
+      instance_(XR_NULL_HANDLE),
       session_(XR_NULL_HANDLE),
       action_set_(XR_NULL_HANDLE),
       grip_pose_action_{XR_NULL_HANDLE},
@@ -60,8 +65,11 @@ XrResult OpenXrController::Initialize(
     XrSession session,
     std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings) {
   type_ = type;
+  instance_ = instance;
   session_ = session;
   std::string handedness_string = GetStringFromType(type_);
+
+  top_level_user_path_string_ = std::string("/user/hand/") + handedness_string;
 
   std::string action_set_name = handedness_string + "_action_set";
   XrActionSetCreateInfo action_set_create_info = {
@@ -77,10 +85,10 @@ XrResult OpenXrController::Initialize(
   XrResult xr_result;
 
   RETURN_IF_XR_FAILED(
-      xrCreateActionSet(instance, &action_set_create_info, &action_set_));
+      xrCreateActionSet(instance_, &action_set_create_info, &action_set_));
 
-  RETURN_IF_XR_FAILED(InitializeMicrosoftMotionControllerActions(
-      instance, handedness_string, bindings));
+  RETURN_IF_XR_FAILED(
+      InitializeMicrosoftMotionControllerActions(handedness_string, bindings));
 
   RETURN_IF_XR_FAILED(InitializeMicrosoftMotionControllerSpaces());
 
@@ -88,70 +96,76 @@ XrResult OpenXrController::Initialize(
 }
 
 XrResult OpenXrController::InitializeMicrosoftMotionControllerActions(
-    XrInstance instance,
     const std::string& type_string,
     std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings) {
   XrResult xr_result;
 
-  const std::string binding_prefix = "/user/hand/" + type_string + "/input/";
+  const std::string binding_prefix = top_level_user_path_string_ + "/input/";
   const std::string name_prefix = type_string + "_controller_";
 
   RETURN_IF_XR_FAILED(CreateAction(
-      instance, XR_ACTION_TYPE_BOOLEAN_INPUT, kMicrosoftInteractionProfileName,
+      XR_ACTION_TYPE_BOOLEAN_INPUT,
+      kMicrosoftMotionControllerInteractionProfile,
       binding_prefix + "trigger/value", name_prefix + "trigger_button_press",
       &(button_action_map_[OpenXrButtonType::kTrigger].press_action),
       bindings));
 
   RETURN_IF_XR_FAILED(CreateAction(
-      instance, XR_ACTION_TYPE_FLOAT_INPUT, kMicrosoftInteractionProfileName,
+      XR_ACTION_TYPE_FLOAT_INPUT, kMicrosoftMotionControllerInteractionProfile,
       binding_prefix + "trigger/value", name_prefix + "trigger_button_value",
       &(button_action_map_[OpenXrButtonType::kTrigger].value_action),
       bindings));
 
   RETURN_IF_XR_FAILED(CreateAction(
-      instance, XR_ACTION_TYPE_BOOLEAN_INPUT, kMicrosoftInteractionProfileName,
+      XR_ACTION_TYPE_BOOLEAN_INPUT,
+      kMicrosoftMotionControllerInteractionProfile,
       binding_prefix + "thumbstick/click",
       name_prefix + "thumbstick_button_press",
       &(button_action_map_[OpenXrButtonType::kThumbstick].press_action),
       bindings));
 
   RETURN_IF_XR_FAILED(CreateAction(
-      instance, XR_ACTION_TYPE_BOOLEAN_INPUT, kMicrosoftInteractionProfileName,
+      XR_ACTION_TYPE_BOOLEAN_INPUT,
+      kMicrosoftMotionControllerInteractionProfile,
       binding_prefix + "squeeze/click", name_prefix + "squeeze_button_press",
       &(button_action_map_[OpenXrButtonType::kSqueeze].press_action),
       bindings));
 
   RETURN_IF_XR_FAILED(CreateAction(
-      instance, XR_ACTION_TYPE_BOOLEAN_INPUT, kMicrosoftInteractionProfileName,
+      XR_ACTION_TYPE_BOOLEAN_INPUT,
+      kMicrosoftMotionControllerInteractionProfile,
       binding_prefix + "trackpad/click", name_prefix + "trackpad_button_press",
       &(button_action_map_[OpenXrButtonType::kTrackpad].press_action),
       bindings));
 
   RETURN_IF_XR_FAILED(CreateAction(
-      instance, XR_ACTION_TYPE_BOOLEAN_INPUT, kMicrosoftInteractionProfileName,
+      XR_ACTION_TYPE_BOOLEAN_INPUT,
+      kMicrosoftMotionControllerInteractionProfile,
       binding_prefix + "trackpad/touch", name_prefix + "trackpad_button_touch",
       &(button_action_map_[OpenXrButtonType::kTrackpad].touch_action),
       bindings));
 
-  RETURN_IF_XR_FAILED(CreateAction(
-      instance, XR_ACTION_TYPE_VECTOR2F_INPUT, kMicrosoftInteractionProfileName,
-      binding_prefix + "trackpad", name_prefix + "trackpad_axis",
-      &(axis_action_map_[OpenXrAxisType::kTrackpad]), bindings));
+  RETURN_IF_XR_FAILED(
+      CreateAction(XR_ACTION_TYPE_VECTOR2F_INPUT,
+                   kMicrosoftMotionControllerInteractionProfile,
+                   binding_prefix + "trackpad", name_prefix + "trackpad_axis",
+                   &(axis_action_map_[OpenXrAxisType::kTrackpad]), bindings));
 
   RETURN_IF_XR_FAILED(CreateAction(
-      instance, XR_ACTION_TYPE_VECTOR2F_INPUT, kMicrosoftInteractionProfileName,
+      XR_ACTION_TYPE_VECTOR2F_INPUT,
+      kMicrosoftMotionControllerInteractionProfile,
       binding_prefix + "thumbstick", name_prefix + "thumbstick_axis",
       &(axis_action_map_[OpenXrAxisType::kThumbstick]), bindings));
 
-  RETURN_IF_XR_FAILED(
-      CreateAction(instance, XR_ACTION_TYPE_POSE_INPUT,
-                   kMicrosoftInteractionProfileName, binding_prefix + "grip",
-                   name_prefix + "grip_pose", &grip_pose_action_, bindings));
+  RETURN_IF_XR_FAILED(CreateAction(
+      XR_ACTION_TYPE_POSE_INPUT, kMicrosoftMotionControllerInteractionProfile,
+      binding_prefix + "grip", name_prefix + "grip_pose", &grip_pose_action_,
+      bindings));
 
-  RETURN_IF_XR_FAILED(
-      CreateAction(instance, XR_ACTION_TYPE_POSE_INPUT,
-                   kMicrosoftInteractionProfileName, binding_prefix + "aim",
-                   name_prefix + "aim_pose", &pointer_pose_action_, bindings));
+  RETURN_IF_XR_FAILED(CreateAction(
+      XR_ACTION_TYPE_POSE_INPUT, kMicrosoftMotionControllerInteractionProfile,
+      binding_prefix + "aim", name_prefix + "aim_pose", &pointer_pose_action_,
+      bindings));
 
   return xr_result;
 }
@@ -186,24 +200,22 @@ device::mojom::XRHandedness OpenXrController::GetHandness() const {
   }
 }
 
-device::mojom::XRInputSourceDescriptionPtr OpenXrController::GetDescription(
+mojom::XRInputSourceDescriptionPtr OpenXrController::GetDescription(
     XrTime predicted_display_time) {
+  // Description only need to be set once unless interaction profiles changes.
   if (!description_) {
+    // UpdateInteractionProfile() can not be called inside Initialize() function
+    // because XrGetCurrentInteractionProfile can't be called before
+    // xrSuggestInteractionProfileBindings getting called.
+    if (XR_FAILED(UpdateInteractionProfile())) {
+      return nullptr;
+    }
     description_ = device::mojom::XRInputSourceDescription::New();
     description_->handedness = GetHandness();
     description_->target_ray_mode = device::mojom::XRTargetRayMode::POINTING;
-    // TODO(crbug.com/1006072):
-    // Query  USB vendor and product ID From OpenXR.
-    description_->profiles.push_back("windows-mixed-reality");
-    // This makes it clear that the controller actually has a squeeze button,
-    // trigger button, a touchpad and a thumbstick. Otherwise, it's ambiguous
-    // whether slots like the touchpad buttons + axes are hooked up vs just
-    // placeholders.
-    description_->profiles.push_back(
-        "generic-trigger-squeeze-touchpad-thumbstick");
+    description_->profiles = GetProfiles();
   }
-  // input_from_pointer only need to be set once unless something changed about
-  // controller.
+
   if (!description_->input_from_pointer) {
     description_->input_from_pointer =
         GetPointerFromGripTransform(predicted_display_time);
@@ -259,6 +271,32 @@ std::vector<double> OpenXrController::GetAxis(OpenXrAxisType type) const {
   return {axis_state_v2f.currentState.x, axis_state_v2f.currentState.y};
 }
 
+XrResult OpenXrController::UpdateInteractionProfile() {
+  XrResult xr_result;
+
+  XrPath top_level_user_path;
+  RETURN_IF_XR_FAILED(xrStringToPath(
+      instance_, top_level_user_path_string_.c_str(), &top_level_user_path));
+
+  XrInteractionProfileState interaction_profile_state = {
+      XR_TYPE_INTERACTION_PROFILE_STATE};
+  RETURN_IF_XR_FAILED(xrGetCurrentInteractionProfile(
+      session_, top_level_user_path, &interaction_profile_state));
+
+  uint32_t output_size;
+  RETURN_IF_XR_FAILED(
+      xrPathToString(instance_, interaction_profile_state.interactionProfile, 0,
+                     &output_size, nullptr));
+
+  char out_string[output_size];
+  RETURN_IF_XR_FAILED(
+      xrPathToString(instance_, interaction_profile_state.interactionProfile,
+                     output_size, &output_size, out_string));
+
+  interaction_profile_ = out_string;
+  return xr_result;
+}
+
 base::Optional<gfx::Transform> OpenXrController::GetMojoFromGripTransform(
     XrTime predicted_display_time,
     XrSpace local_space) const {
@@ -297,12 +335,18 @@ base::Optional<gfx::Transform> OpenXrController::GetTransformFromSpaces(
   return gfx::ComposeTransform(decomp);
 }
 
+std::vector<std::string> OpenXrController::GetProfiles() const {
+  // TODO(crbug.com/1006072):
+  // Query  USB vendor and product ID From OpenXR.
+  DCHECK(profile_map.count(interaction_profile_) == 1);
+  return profile_map.at(interaction_profile_);
+}
+
 XrActionSet OpenXrController::GetActionSet() const {
   return action_set_;
 }
 
 XrResult OpenXrController::CreateAction(
-    XrInstance instance,
     XrActionType type,
     const char* interaction_profile_name,
     const std::string& binding_string,
@@ -323,9 +367,9 @@ XrResult OpenXrController::CreateAction(
 
   XrPath profile_path, action_path;
   RETURN_IF_XR_FAILED(
-      xrStringToPath(instance, interaction_profile_name, &profile_path));
+      xrStringToPath(instance_, interaction_profile_name, &profile_path));
   RETURN_IF_XR_FAILED(
-      xrStringToPath(instance, binding_string.c_str(), &action_path));
+      xrStringToPath(instance_, binding_string.c_str(), &action_path));
   (*bindings)[profile_path].push_back({*action, action_path});
 
   return xr_result;

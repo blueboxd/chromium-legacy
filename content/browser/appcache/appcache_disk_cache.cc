@@ -343,12 +343,15 @@ net::Error AppCacheDiskCache::Init(net::CacheType cache_type,
   is_disabled_ = false;
   create_backend_callback_ =
       base::MakeRefCounted<CreateBackendCallbackShim>(this);
+  disk_cache::ResetHandling reset_handling =
+      force ? disk_cache::ResetHandling::kResetOnError
+            : disk_cache::ResetHandling::kNeverReset;
 
   net::Error return_value = disk_cache::CreateCacheBackend(
       cache_type,
       use_simple_cache_ ? net::CACHE_BACKEND_SIMPLE
                         : net::CACHE_BACKEND_DEFAULT,
-      cache_directory, cache_size, force, nullptr,
+      cache_directory, cache_size, reset_handling, nullptr,
       &(create_backend_callback_->backend_ptr_),
       std::move(post_cleanup_callback),
       base::BindOnce(&CreateBackendCallbackShim::Callback,

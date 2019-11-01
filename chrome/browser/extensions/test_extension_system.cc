@@ -34,7 +34,6 @@
 #include "extensions/browser/value_store/testing_value_store.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #if defined(OS_CHROMEOS)
 #include "components/user_manager/user_manager.h"
 #endif
@@ -60,6 +59,7 @@ TestExtensionSystem::~TestExtensionSystem() = default;
 void TestExtensionSystem::Shutdown() {
   if (extension_service_)
     extension_service_->Shutdown();
+  in_process_data_decoder_.reset();
 }
 
 ExtensionService* TestExtensionSystem::CreateExtensionService(
@@ -79,18 +79,10 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
       Blacklist::Get(profile_), autoupdate_enabled, extensions_enabled,
       &ready_));
 
-  if (!connector_factory_) {
-    connector_factory_ =
-        std::make_unique<service_manager::TestConnectorFactory>();
-    connector_factory_->set_ignore_quit_requests(true);
-    data_decoder_ = std::make_unique<data_decoder::DataDecoderService>(
-        connector_factory_->RegisterInstance(
-            data_decoder::mojom::kServiceName));
-    unzip::SetUnzipperLaunchOverrideForTesting(
-        base::BindRepeating(&unzip::LaunchInProcessUnzipper));
-    connector_ = connector_factory_->CreateConnector();
-    CrxInstaller::set_connector_for_test(connector_.get());
-  }
+  unzip::SetUnzipperLaunchOverrideForTesting(
+      base::BindRepeating(&unzip::LaunchInProcessUnzipper));
+  in_process_data_decoder_ =
+      std::make_unique<data_decoder::test::InProcessDataDecoder>();
 
   extension_service_->ClearProvidersForTesting();
   return extension_service_.get();

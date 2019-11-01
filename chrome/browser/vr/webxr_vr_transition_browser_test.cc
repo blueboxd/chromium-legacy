@@ -15,22 +15,6 @@
 
 namespace vr {
 
-class TransitionXRMock : public MockXRDeviceHookBase {
- public:
-  void WaitGetSessionStateStopping(
-      device_test::mojom::XRTestHook::WaitGetSessionStateStoppingCallback
-          callback) final;
-
-  bool session_state_stopping_ = false;
-};
-
-void TransitionXRMock::WaitGetSessionStateStopping(
-    device_test::mojom::XRTestHook::WaitGetSessionStateStoppingCallback
-        callback) {
-  std::move(callback).Run(session_state_stopping_);
-  session_state_stopping_ = false;
-}
-
 // Tests that WebXR is not exposed if the flag is not on and the page does
 // not have an origin trial token.
 void TestApiDisabledWithoutFlagSetImpl(WebXrVrBrowserTestBase* t,
@@ -124,24 +108,35 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestNonImmersiveStopsDuringImmersive) {
 }
 
 #if BUILDFLAG(ENABLE_OPENXR)
-IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestSessionEnded) {
-  TransitionXRMock transition_mock;
-
-  // Load the test page, and enter presentation.
-  this->LoadUrlAndAwaitInitialization(
-      this->GetFileUrlForHtmlTestFile("test_webxr_presentation_ended"));
-  this->EnterSessionWithUserGestureOrFail();
+// Tests that WebXR session ends when certain events are received.
+void TestWebXRSessionEndWhenEventTriggered(
+    WebXrVrBrowserTestBase* t,
+    device_test::mojom::EventType event_type) {
+  MockXRDeviceHookBase transition_mock;
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("test_webxr_presentation_ended"));
+  t->EnterSessionWithUserGestureOrFail();
 
   // Wait for JavaScript to submit at least one frame.
-  ASSERT_TRUE(this->PollJavaScriptBoolean("hasPresentedFrame",
-                                          this->kPollTimeoutMedium))
+  ASSERT_TRUE(
+      t->PollJavaScriptBoolean("hasPresentedFrame", t->kPollTimeoutMedium))
       << "No frame submitted";
-  // Trigger the OpenXr Runtime to send the stop event and wait until we see the
-  // session get terminated.
-  transition_mock.session_state_stopping_ = true;
+  device_test::mojom::EventData data = {};
+  data.type = event_type;
+  transition_mock.PopulateEvent(data);
   // Tell JavaScript that it is done with the test.
-  this->WaitOnJavaScriptStep();
-  this->EndTest();
+  t->WaitOnJavaScriptStep();
+  t->EndTest();
+}
+
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestSessionEnded) {
+  TestWebXRSessionEndWhenEventTriggered(
+      this, device_test::mojom::EventType::kSessionLost);
+}
+
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestInsanceLost) {
+  TestWebXRSessionEndWhenEventTriggered(
+      this, device_test::mojom::EventType::kInstanceLost);
 }
 #endif  // BUILDFLAG(ENABLE_OPENXR)
 

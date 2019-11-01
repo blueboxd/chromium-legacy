@@ -699,8 +699,14 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedLandmarkType(16, ax::mojom::Role::kSearch, "search");
 }
 
+// TODO(https://crbug.com/1020456) re-enable when crashing on linux is resolved.
+#if defined(OS_LINUX)
+#define MAYBE_LocalizedRoleDescription DISABLED_LocalizedRoleDescription
+#else
+#define MAYBE_LocalizedRoleDescription LocalizedRoleDescription
+#endif
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       LocalizedRoleDescription) {
+                       MAYBE_LocalizedRoleDescription) {
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);

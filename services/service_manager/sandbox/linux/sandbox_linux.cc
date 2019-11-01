@@ -115,6 +115,8 @@ bool UpdateProcessTypeAndEnableSandbox(
     new_process_type = "broker";
   }
 
+  VLOG(3) << "UpdateProcessTypeAndEnableSandbox: Updating process type to "
+          << new_process_type;
   command_line->AppendSwitchASCII(switches::kProcessType, new_process_type);
 
   if (broker_side_hook)

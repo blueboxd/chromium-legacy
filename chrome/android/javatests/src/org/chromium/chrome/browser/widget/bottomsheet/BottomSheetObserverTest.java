@@ -39,12 +39,13 @@ public class BottomSheetObserverTest {
 
     @Before
     public void setUp() throws Exception {
-        mBottomSheetTestRule.startMainActivityOnBottomSheet(
-                BottomSheetController.SheetState.HIDDEN);
+        BottomSheet.setSmallScreenForTesting(false);
+        mBottomSheetTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mSheetContent = new TestBottomSheetContent(mBottomSheetTestRule.getActivity(),
                     BottomSheetContent.ContentPriority.HIGH, false);
-            mBottomSheetTestRule.getBottomSheet().showContent(mSheetContent);
+            mBottomSheetTestRule.getBottomSheetController().requestShowContent(
+                    mSheetContent, false);
         });
         mObserver = mBottomSheetTestRule.getObserver();
     }

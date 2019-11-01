@@ -40,9 +40,10 @@ SyncManager* ServiceWorkerRegistrationSync::sync(
 SyncManager* ServiceWorkerRegistrationSync::sync() {
   if (!sync_manager_) {
     ExecutionContext* execution_context = registration_->GetExecutionContext();
+    // TODO(falken): Consider defining a task source in the spec for this event.
     sync_manager_ = SyncManager::Create(
         registration_,
-        execution_context->GetTaskRunner(TaskType::kInternalIPC));
+        execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI));
   }
   return sync_manager_.Get();
 }
@@ -55,9 +56,10 @@ PeriodicSyncManager* ServiceWorkerRegistrationSync::periodicSync(
 PeriodicSyncManager* ServiceWorkerRegistrationSync::periodicSync() {
   if (!periodic_sync_manager_) {
     ExecutionContext* execution_context = registration_->GetExecutionContext();
+    // TODO(falken): Consider defining a task source in the spec for this event.
     periodic_sync_manager_ = PeriodicSyncManager::Create(
         registration_,
-        execution_context->GetTaskRunner(TaskType::kInternalIPC));
+        execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI));
   }
   return periodic_sync_manager_.Get();
 }

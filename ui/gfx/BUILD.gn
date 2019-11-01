@@ -136,6 +136,8 @@ jumbo_component("gfx") {
     "ios/uikit_util.mm",
     "linux/fontconfig_util.cc",
     "linux/fontconfig_util.h",
+    "mac/cocoa_scrollbar_painter.cc",
+    "mac/cocoa_scrollbar_painter.h",
     "mac/coordinate_conversion.h",
     "mac/coordinate_conversion.mm",
     "mac/nswindow_frame_controls.h",
@@ -893,6 +895,20 @@ fuzzer_test("color_transform_fuzzer") {
 fuzzer_test("render_text_fuzzer") {
   sources = [
     "render_text_fuzzer.cc",
+  ]
+
+  deps = [
+    ":gfx",
+    "//base",
+    "//base/test:test_support",
+  ]
+
+  dict = "test/data/render_text/unicode_text_fuzzer.dict"
+}
+
+fuzzer_test("render_text_api_fuzzer") {
+  sources = [
+    "render_text_api_fuzzer.cc",
   ]
 
   deps = [

@@ -232,7 +232,8 @@ interface FrameNavigationControl {
       mojo_base.mojom.UnguessableToken portal_token,
       pending_associated_remote<blink.mojom.Portal> portal,
       pending_associated_receiver<blink.mojom.PortalClient> portal_client,
-      blink.mojom.TransferableMessage data) => (bool was_adopted);
+      blink.mojom.TransferableMessage data)
+      => (blink.mojom.PortalActivateResult result);
 };
 
 // Implemented by the frame (e.g. renderer processes).

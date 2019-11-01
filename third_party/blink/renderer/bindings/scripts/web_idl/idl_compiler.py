@@ -91,6 +91,7 @@ class IdlCompiler(object):
 
         # Make groups of overloaded functions including inherited ones.
         self._group_overloaded_functions()
+        self._calculate_group_exposure()
 
         # Updates on IRs are finished.  Create API objects.
         self._create_public_objects()
@@ -150,6 +151,7 @@ class IdlCompiler(object):
 
         def process_interface_like(ir):
             ir = make_copy(ir)
+            self._ir_map.add(ir)
 
             propagate = functools.partial(propagate_extattr, ir=ir)
             propagate(('ImplementedAs', 'set_receiver_implemented_as'),
@@ -158,8 +160,6 @@ class IdlCompiler(object):
             propagate_to_exposure(propagate)
 
             map(process_member_like, ir.iter_all_members())
-
-            self._ir_map.add(ir)
 
         def process_member_like(ir):
             propagate = functools.partial(propagate_extattr, ir=ir)
@@ -211,6 +211,7 @@ class IdlCompiler(object):
 
         for identifier, old_dictionary in old_dictionaries.iteritems():
             new_dictionary = make_copy(old_dictionary)
+            self._ir_map.add(new_dictionary)
             for partial_dictionary in old_partial_dictionaries.get(
                     identifier, []):
                 new_dictionary.add_components(partial_dictionary.components)
@@ -218,7 +219,6 @@ class IdlCompiler(object):
                     partial_dictionary.debug_info.all_locations)
                 new_dictionary.own_members.extend(
                     make_copy(partial_dictionary.own_members))
-            self._ir_map.add(new_dictionary)
 
     def _merge_interface_mixins(self):
         interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
@@ -237,6 +237,7 @@ class IdlCompiler(object):
     def _merge_interface_like_irs(self, old_irs_to_merge):
         for old_ir, irs_to_be_merged in old_irs_to_merge:
             new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
             for ir in irs_to_be_merged:
                 to_be_merged = make_copy(ir)
                 new_ir.add_components(to_be_merged.components)
@@ -245,7 +246,6 @@ class IdlCompiler(object):
                 new_ir.attributes.extend(to_be_merged.attributes)
                 new_ir.constants.extend(to_be_merged.constants)
                 new_ir.operations.extend(to_be_merged.operations)
-            self._ir_map.add(new_ir)
 
     def _process_interface_inheritances(self):
         def is_own_member(member):
@@ -263,6 +263,7 @@ class IdlCompiler(object):
 
         for old_interface in old_interfaces.itervalues():
             new_interface = make_copy(old_interface)
+            self._ir_map.add(new_interface)
             inheritance_stack = create_inheritance_stack(
                 old_interface, old_interfaces)
             for interface in inheritance_stack[1:]:
@@ -274,7 +275,6 @@ class IdlCompiler(object):
                     make_copy(operation) for operation in interface.operations
                     if is_own_member(operation)
                 ])
-            self._ir_map.add(new_interface)
 
     def _group_overloaded_functions(self):
         old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.CALLBACK_INTERFACE,
@@ -284,22 +284,79 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
 
         for old_ir in old_irs:
-            assert not old_ir.operation_groups
             assert not old_ir.constructor_groups
+            assert not old_ir.operation_groups
             new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
             sort_key = lambda x: x.identifier
+            new_ir.constructor_groups = [
+                ConstructorGroup.IR(constructors=list(constructors))
+                for identifier, constructors in itertools.groupby(
+                    sorted(new_ir.constructors, key=sort_key), key=sort_key)
+            ]
             new_ir.operation_groups = [
                 OperationGroup.IR(operations=list(operations))
                 for identifier, operations in itertools.groupby(
                     sorted(new_ir.operations, key=sort_key), key=sort_key)
                 if identifier
             ]
-            new_ir.constructor_groups = [
-                ConstructorGroup.IR(constructors=list(constructors))
-                for identifier, constructors in itertools.groupby(
-                    sorted(new_ir.constructors, key=sort_key), key=sort_key)
-            ]
+
+    def _calculate_group_exposure(self):
+        old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
+                                            IRMap.IR.Kind.NAMESPACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = make_copy(old_ir)
             self._ir_map.add(new_ir)
+
+            for group in new_ir.constructor_groups + new_ir.operation_groups:
+                exposures = map(lambda overload: overload.exposure, group)
+
+                # [Exposed]
+                if any(not exposure.global_names_and_features
+                       for exposure in exposures):
+                    pass  # Unconditionally exposed by default.
+                else:
+                    for exposure in exposures:
+                        for entry in exposure.global_names_and_features:
+                            group.exposure.add_global_name_and_feature(
+                                entry.global_name, entry.feature)
+
+                # [RuntimeEnabled]
+                if any(not exposure.runtime_enabled_features
+                       for exposure in exposures):
+                    pass  # Unconditionally exposed by default.
+                else:
+                    for exposure in exposures:
+                        for name in exposure.runtime_enabled_features:
+                            group.exposure.add_runtime_enabled_feature(name)
+
+                # [ContextEnabled]
+                if any(not exposure.context_enabled_features
+                       for exposure in exposures):
+                    pass  # Unconditionally exposed by default.
+                else:
+                    for exposure in exposures:
+                        for name in exposure.context_enabled_features:
+                            group.exposure.add_context_enabled_feature(name)
+
+                # [SecureContext]
+                if any(exposure.only_in_secure_contexts is False
+                       for exposure in exposures):
+                    group.exposure.set_only_in_secure_contexts(False)
+                elif all(exposure.only_in_secure_contexts is True
+                         for exposure in exposures):
+                    group.exposure.set_only_in_secure_contexts(True)
+                else:
+                    flag_names = tuple(
+                        itertools.chain.from_iterable([
+                            exposure.only_in_secure_contexts
+                            for exposure in exposures
+                            if exposure.only_in_secure_contexts is not True
+                        ]))
+                    group.exposure.set_only_in_secure_contexts(flag_names)
 
     def _create_public_objects(self):
         """Creates public representations of compiled objects."""

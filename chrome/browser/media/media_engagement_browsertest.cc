@@ -347,7 +347,14 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordEngagement) {
   ExpectScores(1, 1, 1, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordEngagement_AudioOnly) {
+// Flaky tests on CrOS: http://crbug.com/1020131.
+#if defined(OS_CHROMEOS)
+#define MAYBE_RecordEngagement_AudioOnly DISABLED_RecordEngagement_AudioOnly
+#else
+#define MAYBE_RecordEngagement_AudioOnly RecordEngagement_AudioOnly
+#endif
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
+                       MAYBE_RecordEngagement_AudioOnly) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html", false);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();

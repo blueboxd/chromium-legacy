@@ -511,6 +511,7 @@ void Controller::EnterStoppedState() {
   SetDetails(nullptr);
   SetUserActions(nullptr);
   SetCollectUserDataOptions(nullptr, nullptr);
+  SetForm(nullptr, base::DoNothing());
   EnterState(AutofillAssistantState::STOPPED);
 }
 

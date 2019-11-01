@@ -61,7 +61,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         mActivity = activity;
         mBottomSheetController = bottomSheetController;
         mFaviconLoader = new FaviconLoader(mActivity);
-        mBottomSheetController.getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
+        mBottomSheetController.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetStateChanged(int newState) {
                 if (newState == BottomSheetController.SheetState.HIDDEN) destroyContent();
@@ -131,8 +131,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     }
 
     private void onToolbarClick() {
-        if (mBottomSheetController.getBottomSheet().getSheetState()
-                == BottomSheetController.SheetState.PEEK) {
+        if (mBottomSheetController.getSheetState() == BottomSheetController.SheetState.PEEK) {
             mBottomSheetController.expandSheet();
         }
     }

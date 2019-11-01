@@ -139,10 +139,6 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
-std::unique_ptr<View> DialogDelegate::CreateExtraView() {
-  return std::move(extra_view_);
-}
-
 std::unique_ptr<View> DialogDelegate::CreateFootnoteView() {
   return nullptr;
 }
@@ -276,6 +272,10 @@ void DialogDelegate::RemoveObserver(DialogObserver* observer) {
 void DialogDelegate::DialogModelChanged() {
   for (DialogObserver& observer : observer_list_)
     observer.OnDialogChanged();
+}
+
+std::unique_ptr<View> DialogDelegate::DisownExtraView() {
+  return std::move(extra_view_);
 }
 
 DialogDelegate::~DialogDelegate() {

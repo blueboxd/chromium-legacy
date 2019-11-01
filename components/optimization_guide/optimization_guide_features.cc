@@ -51,6 +51,10 @@ const base::Feature kOptimizationHintsFetching{
 #endif  // defined(OS_ANDROID)
 };
 
+const base::Feature kOptimizationHintsFetchingAnonymousDataConsent{
+    "OptimizationHintsFetchingAnonymousDataConsent",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the initialization of the Optimization Guide Keyed Service.
 const base::Feature kOptimizationGuideKeyedService{
     "OptimizationGuideKeyedService", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -158,6 +162,11 @@ bool IsOptimizationHintsEnabled() {
 
 bool IsHintsFetchingEnabled() {
   return base::FeatureList::IsEnabled(kOptimizationHintsFetching);
+}
+
+bool IsHintsFetchingForAnonymousDataConsentEnabled() {
+  return base::FeatureList::IsEnabled(
+      kOptimizationHintsFetchingAnonymousDataConsent);
 }
 
 bool IsOptimizationGuideKeyedServiceEnabled() {

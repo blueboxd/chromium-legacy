@@ -7,7 +7,7 @@
 /**
  * Launch PaymentRequest with a show promise and reject that promise.
  */
-function buy() {  // eslint-disable-line no-unused-vars
+function buy() { // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
         [{supportedMethods: 'basic-card'}],

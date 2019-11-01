@@ -291,8 +291,9 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
       return;
     }
 
-    connector_->BindConnectorRequest(
-        service_manager::mojom::ConnectorRequest(std::move(interface_pipe)));
+    connector_->BindConnectorReceiver(
+        mojo::PendingReceiver<service_manager::mojom::Connector>(
+            std::move(interface_pipe)));
   }
 
   void QueryServiceList(QueryServiceListCallback callback) override {

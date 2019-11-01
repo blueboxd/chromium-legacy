@@ -97,12 +97,6 @@ AudioRendererImpl::~AudioRendererImpl() {
   // After this call, the |sink_| will not call back into |this| anymore.
   sink_->Stop();
 
-  // Trying to track down AudioClock crash, http://crbug.com/674856. If the sink
-  // hasn't truly stopped above we will fail to acquire the lock. The sink must
-  // be stopped to avoid destroying the AudioClock while its still being used.
-  CHECK(lock_.Try());
-  lock_.Release();
-
   if (init_cb_)
     FinishInitialization(PIPELINE_ERROR_ABORT);
 }
@@ -353,18 +347,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(state_ == kUninitialized || state_ == kFlushed);
   DCHECK(sink_.get());
   TRACE_EVENT_ASYNC_BEGIN0("media", "AudioRendererImpl::Initialize", this);
-
-  // Trying to track down AudioClock crash, http://crbug.com/674856.
-  // Initialize should never be called while Rendering is ongoing. This can lead
-  // to race conditions between media/audio-device threads.
-  CHECK(!sink_playing_);
-  // This lock is not required by Initialize, but failing to acquire the lock
-  // would indicate a race with the rendering thread, which should not be active
-  // at this time. This is just extra verification on the |sink_playing_| CHECK
-  // above. We hold |lock_| while setting |sink_playing_|, but release the lock
-  // when calling sink_->Pause() to avoid deadlocking with the AudioMixer.
-  CHECK(lock_.Try());
-  lock_.Release();
 
   // If we are re-initializing playback (e.g. switching media tracks), stop the
   // sink first.

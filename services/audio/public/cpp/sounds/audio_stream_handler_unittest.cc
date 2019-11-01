@@ -20,6 +20,7 @@
 #include "media/audio/simple_sources.h"
 #include "media/audio/test_audio_thread.h"
 #include "media/base/channel_layout.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/audio/public/cpp/output_device.h"
 #include "services/audio/public/cpp/sounds/test_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,8 +33,8 @@ class AudioStreamHandlerTest : public testing::Test {
   ~AudioStreamHandlerTest() override = default;
 
   void SetUp() override {
-    service_manager::mojom::ConnectorRequest connector_request;
-    connector_ = service_manager::Connector::Create(&connector_request);
+    mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
+    connector_ = service_manager::Connector::Create(&connector_receiver);
   }
 
   void SetObserverForTesting(AudioStreamHandler::TestObserver* observer) {

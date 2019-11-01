@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/vr/vr_export.h"
@@ -59,6 +60,9 @@ class OpenXrApiWrapper {
   std::string GetRuntimeName() const;
   bool GetStageParameters(XrExtent2Df* stage_bounds,
                           gfx::Transform* local_from_stage);
+  void RegisterInteractionProfileChangeCallback(
+      const base::RepeatingCallback<void(XrResult*)>&
+          interaction_profile_callback);
 
   static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
 
@@ -95,6 +99,9 @@ class OpenXrApiWrapper {
   XrResult UpdateStageBounds();
 
   bool session_ended_;
+
+  base::RepeatingCallback<void(XrResult*)>
+      interaction_profile_changed_callback_;
 
   // Testing objects
   static VRTestHook* test_hook_;

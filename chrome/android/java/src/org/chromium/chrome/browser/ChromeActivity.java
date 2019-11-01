@@ -66,6 +66,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -432,6 +433,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mScrimView = new ScrimView(
                     this, getStatusBarColorController().getStatusBarScrimDelegate(), coordinator);
 
+            initializeBottomSheetController();
+
             Intent intent = getIntent();
             if (intent != null && getSavedInstanceState() == null) {
                 VrModuleProvider.getDelegate().maybeHandleVrIntentPreNative(this, intent);
@@ -732,15 +735,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public ManualFillingComponent getManualFillingComponent() {
         return mManualFillingComponent;
-    }
-
-    /**
-     * Get the Chrome Home bottom sheet if it exists.
-     * @return The bottom sheet or null.
-     */
-    @Nullable
-    public BottomSheet getBottomSheet() {
-        return mBottomSheet;
     }
 
     /**
@@ -1360,8 +1354,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public SnackbarManager getSnackbarManager() {
         if (getBottomSheetController() == null) return mSnackbarManager;
 
-        BottomSheet sheet = getBottomSheetController().getBottomSheet();
-        boolean useBottomSheetContainer = sheet != null && sheet.isSheetOpen() && !sheet.isHiding();
+        boolean useBottomSheetContainer = getBottomSheetController().isSheetOpen()
+                && getBottomSheetController().isSheetHiding();
         return useBottomSheetContainer ? mBottomSheetSnackbarManager : mSnackbarManager;
     }
 
@@ -1439,8 +1433,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mDirectActionInitializer != null) {
             registerDirectActions();
         }
-
-        initializeBottomSheetController();
     }
 
     /**
@@ -1491,9 +1483,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return mBottomSheet;
         };
 
+        Supplier<OverlayPanelManager> panelManagerSupplier =
+                () -> getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
         mBottomSheetController = new BottomSheetController(getLifecycleDispatcher(),
-                mActivityTabProvider, mScrimView, sheetSupplier,
-                getCompositorViewHolder().getLayoutManager().getOverlayPanelManager());
+                mActivityTabProvider, mScrimView, sheetSupplier, panelManagerSupplier);
 
         ((BottomContainer) findViewById(R.id.bottom_container))
                 .setBottomSheetController(mBottomSheetController);

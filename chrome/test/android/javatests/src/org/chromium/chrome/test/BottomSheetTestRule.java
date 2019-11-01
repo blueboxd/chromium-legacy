@@ -127,7 +127,8 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
      * @param animate If the sheet should animate to the provided state.
      */
     public void setSheetState(int state, boolean animate) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> getBottomSheet().setSheetState(state, animate));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> getBottomSheetController().setSheetStateForTesting(state, animate));
     }
 
     /**

@@ -104,14 +104,13 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   if (block.IsTableCell()) {
     const LayoutNGTableCellInterface& cell =
         ToInterface<LayoutNGTableCellInterface>(block);
+    const ComputedStyle& cell_style = cell.ToLayoutObject()->StyleRef();
+    const ComputedStyle& table_style =
+        cell.TableInterface()->ToLayoutObject()->StyleRef();
     builder.SetIsTableCell(true);
     builder.SetIsRestrictedBlockSizeTableCell(
-        !cell.ToLayoutObject()->StyleRef().LogicalHeight().IsAuto() ||
-        !cell.TableInterface()
-             ->ToLayoutObject()
-             ->StyleRef()
-             .LogicalHeight()
-             .IsAuto());
+        !cell_style.LogicalHeight().IsAuto() ||
+        !table_style.LogicalHeight().IsAuto());
     const LayoutBlock& cell_block = To<LayoutBlock>(*cell.ToLayoutObject());
     builder.SetTableCellBorders(
         {cell_block.BorderStart(), cell_block.BorderEnd(),
@@ -119,6 +118,9 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     builder.SetTableCellIntrinsicPadding(
         {LayoutUnit(), LayoutUnit(), LayoutUnit(cell.IntrinsicPaddingBefore()),
          LayoutUnit(cell.IntrinsicPaddingAfter())});
+    builder.SetHideTableCellIfEmpty(
+        cell_style.EmptyCells() == EEmptyCells::kHide &&
+        table_style.BorderCollapse() == EBorderCollapse::kSeparate);
   }
 
   builder.SetAvailableSize(available_size);

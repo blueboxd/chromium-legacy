@@ -63,9 +63,8 @@ void HeadlessBrowserImpl::Shutdown() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   browser_contexts_.clear();
   if (system_request_context_manager_) {
-    content::BrowserThread::DeleteSoon(
-        content::BrowserThread::IO, FROM_HERE,
-        system_request_context_manager_.release());
+    base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                     system_request_context_manager_.release());
   }
   browser_main_parts_->QuitMainMessageLoop();
 }

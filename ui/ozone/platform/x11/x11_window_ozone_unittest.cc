@@ -248,10 +248,22 @@ TEST_F(X11WindowOzoneTest, MouseEnterAndDelete) {
   EXPECT_CALL(delegate_2, OnMouseEnter()).Times(1);
   window_manager()->MouseOnWindow(static_cast<X11WindowOzone*>(window_2.get()));
 
-  // Removing the window should reset the |window_mouse_currently_on_|.
   EXPECT_EQ(window_2.get(),
             window_manager()->window_mouse_currently_on_for_test());
-  window_2.reset();
+
+  // Dispatch Event on window 1 while event is captured on window 2.
+  ::testing::Mock::VerifyAndClearExpectations(&delegate_1);
+  EXPECT_CALL(delegate_1, OnMouseEnter()).Times(1);
+  window_2->SetCapture();
+  ScopedXI2Event xi_event;
+  xi_event.InitGenericButtonEvent(kPointerDeviceId, ET_MOUSE_PRESSED,
+                                  gfx::Point(0, 0), EF_NONE);
+  DispatchXEvent(xi_event, widget_1);
+  EXPECT_EQ(window_1.get(),
+            window_manager()->window_mouse_currently_on_for_test());
+
+  // Removing the window should reset the |window_mouse_currently_on_|.
+  window_1.reset();
   EXPECT_FALSE(window_manager()->window_mouse_currently_on_for_test());
 }
 

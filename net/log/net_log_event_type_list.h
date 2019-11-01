@@ -53,6 +53,8 @@ EVENT_TYPE(REQUEST_ALIVE)
 //                               the host cache>,
 //     "is_speculative": <Whether this request was started by the DNS
 //                        prefetcher>
+//     "network_isolation_key": <NetworkIsolationKey associated with the
+//                               request>
 //   }
 //
 // If an error occurred, the END phase will contain these parameters:

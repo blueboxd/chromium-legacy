@@ -61,7 +61,7 @@ GPURenderBundleEncoder::~GPURenderBundleEncoder() {
 void GPURenderBundleEncoder::setBindGroup(
     uint32_t index,
     GPUBindGroup* bindGroup,
-    const Vector<uint64_t>& dynamicOffsets) {
+    const Vector<uint32_t>& dynamicOffsets) {
   GetProcs().renderBundleEncoderSetBindGroup(
       GetHandle(), index, bindGroup->GetHandle(), dynamicOffsets.size(),
       dynamicOffsets.data());

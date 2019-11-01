@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -141,7 +142,7 @@ void SystemLogsFetcher::RunCallbackAndDeleteSoon() {
   DCHECK(!callback_.is_null());
   std::move(callback_).Run(std::move(response_));
 
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+  base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
 }
 
 }  // namespace system_logs

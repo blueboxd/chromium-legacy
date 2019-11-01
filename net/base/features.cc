@@ -24,6 +24,9 @@ const base::Feature kNetworkQualityEstimator{"NetworkQualityEstimator",
 const base::Feature kSplitCacheByNetworkIsolationKey{
     "SplitCacheByNetworkIsolationKey", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSplitHostCacheByNetworkIsolationKey{
+    "SplitHostCacheByNetworkIsolationKey", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPartitionConnectionsByNetworkIsolationKey{
     "PartitionConnectionsByNetworkIsolationKey",
     base::FEATURE_DISABLED_BY_DEFAULT};

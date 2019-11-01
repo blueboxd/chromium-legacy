@@ -232,15 +232,13 @@ public class BottomSheet
     }
 
     /** Immediately end all animations and null the animators. */
-    public void endAnimations() {
+    void endAnimations() {
         if (mSettleAnimator != null) mSettleAnimator.end();
         mSettleAnimator = null;
     }
 
-    /**
-     * @return Whether the sheet is in the process of hiding.
-     */
-    public boolean isHiding() {
+    /** @return Whether the sheet is in the process of hiding. */
+    boolean isHiding() {
         return mSettleAnimator != null && mTargetState == SheetState.HIDDEN;
     }
 
@@ -945,11 +943,8 @@ public class BottomSheet
         }
     }
 
-    /**
-     * @see #setSheetState(int, boolean, int)
-     */
-    @VisibleForTesting
-    public void setSheetState(@SheetState int state, boolean animate) {
+    /** @see #setSheetState(int, boolean, int) */
+    void setSheetState(@SheetState int state, boolean animate) {
         setSheetState(state, animate, StateChangeReason.NONE);
     }
 
@@ -993,7 +988,7 @@ public class BottomSheet
      *         stationary or a target state has not been determined, SheetState.NONE will be
      *         returned.
      */
-    public int getTargetSheetState() {
+    int getTargetSheetState() {
         return mTargetState;
     }
 
@@ -1007,7 +1002,7 @@ public class BottomSheet
     }
 
     /** @return Whether the sheet is currently open. */
-    public boolean isSheetOpen() {
+    boolean isSheetOpen() {
         return mIsSheetOpen;
     }
 
@@ -1060,7 +1055,7 @@ public class BottomSheet
      * If the animation to settle the sheet in one of its states is running.
      * @return True if the animation is running.
      */
-    public boolean isRunningSettleAnimation() {
+    private boolean isRunningSettleAnimation() {
         return mSettleAnimator != null;
     }
 
@@ -1189,14 +1184,6 @@ public class BottomSheet
                 (mContainerHeight + mToolbarShadowHeight) / (float) mContainerHeight;
         float fullToHalfDiff = (fullHeightRatio - HALF_HEIGHT_RATIO) * mContainerHeight;
         return fullToHalfDiff < mMinHalfFullDistance;
-    }
-
-    /**
-     * @return The default toolbar view.
-     */
-    @VisibleForTesting
-    public @Nullable View getDefaultToolbarView() {
-        return mDefaultToolbarView;
     }
 
     /**

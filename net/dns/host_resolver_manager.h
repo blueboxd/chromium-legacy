@@ -48,6 +48,7 @@ class MDnsClient;
 class MDnsSocketFactory;
 class NetLog;
 class NetLogWithSource;
+class NetworkIsolationKey;
 class URLRequestContext;
 
 // Scheduler and controller of host resolution requests. Because of the global
@@ -130,6 +131,7 @@ class NET_EXPORT HostResolverManager
   // come from the same ContextHostResolver.
   std::unique_ptr<CancellableRequest> CreateRequest(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters,
       URLRequestContext* request_context,
@@ -264,6 +266,7 @@ class NET_EXPORT HostResolverManager
   // stale cache entries can be returned.
   HostCache::Entry ResolveLocally(
       const std::string& hostname,
+      const NetworkIsolationKey& network_isolation_key,
       DnsQueryType requested_address_family,
       HostResolverSource source,
       HostResolverFlags flags,

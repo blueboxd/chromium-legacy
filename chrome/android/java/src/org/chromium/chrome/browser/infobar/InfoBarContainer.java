@@ -476,8 +476,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
                 new View.OnAttachStateChangeListener() {
                     @Override
                     public void onViewAttachedToWindow(View view) {
-                        if (mTab.getActivity().getBottomSheet() != null
-                                && mBottomSheetObserver == null) {
+                        if (mBottomSheetObserver == null) {
                             mBottomSheetObserver = new EmptyBottomSheetObserver() {
                                 @Override
                                 public void onSheetStateChanged(int sheetState) {
@@ -529,7 +528,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         }
 
         ChromeActivity activity = mTab.getActivity();
-        if (activity != null && mBottomSheetObserver != null && activity.getBottomSheet() != null) {
+        if (activity != null && mBottomSheetObserver != null) {
             activity.getBottomSheetController().removeObserver(mBottomSheetObserver);
         }
 

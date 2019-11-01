@@ -259,7 +259,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         BottomSheet sheet = mBottomSheetController.get().getBottomSheet();
         if (sheet == null) return BottomSheetController.SheetState.NONE;
         @SheetState
-        int state = sheet.getTargetSheetState();
+        int state = mBottomSheetController.get().getTargetSheetState();
         return state != BottomSheetController.SheetState.NONE
                 ? state
                 : mBottomSheetController.get().getSheetState();
@@ -308,7 +308,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         // Makes peek state as 'not present' when bottom sheet is in expanded state (i.e. animating
         // from expanded to close state). It avoids the sheet animating in two distinct steps, which
         // looks awkward.
-        return !mBottomSheetController.get().getBottomSheet().isSheetOpen()
+        return !mBottomSheetController.get().isSheetOpen()
                 ? getSizePx(mParentView.getContext(), R.dimen.navigation_sheet_peek_height)
                 : BottomSheetContent.HeightMode.DISABLED;
     }

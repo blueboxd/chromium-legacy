@@ -476,6 +476,13 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
     ProcessEvent(event);
   return POST_DISPATCH_STOP_PROPAGATION;
 #else
+  // Notify that the mouse gets physically entered to the window regardless of
+  // the grab. This is used to update the mouse cursor state.
+  auto* window_manager = X11WindowManager::GetInstance();
+  DCHECK(window_manager);
+  if (event->IsMouseEvent())
+    window_manager->MouseOnWindow(this);
+
   OnXWindowEvent(event);
   return POST_DISPATCH_STOP_PROPAGATION;
 #endif
@@ -564,9 +571,6 @@ void X11Window::OnXWindowEvent(ui::Event* event) {
     located_events_grabber->OnXWindowEvent(event);
     return;
   }
-
-  if (event->IsMouseEvent())
-    window_manager->MouseOnWindow(this);
 
 #if defined(USE_OZONE)
   DispatchEventFromNativeUiEvent(

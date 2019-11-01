@@ -32,6 +32,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/linked_list.h"
 #include "base/debug/debugger.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -59,10 +60,12 @@
 #include "build/build_config.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
@@ -488,12 +491,18 @@ class HostResolverManager::RequestImpl
  public:
   RequestImpl(const NetLogWithSource& source_net_log,
               const HostPortPair& request_host,
+              const NetworkIsolationKey& network_isolation_key,
               const base::Optional<ResolveHostParameters>& optional_parameters,
               URLRequestContext* request_context,
               HostCache* host_cache,
               base::WeakPtr<HostResolverManager> resolver)
       : source_net_log_(source_net_log),
         request_host_(request_host),
+        network_isolation_key_(
+            base::FeatureList::IsEnabled(
+                net::features::kSplitHostCacheByNetworkIsolationKey)
+                ? network_isolation_key
+                : NetworkIsolationKey()),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
         request_context_(request_context),
@@ -631,6 +640,10 @@ class HostResolverManager::RequestImpl
 
   const HostPortPair& request_host() const { return request_host_; }
 
+  const NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
+
   const ResolveHostParameters& parameters() const { return parameters_; }
 
   URLRequestContext* request_context() const { return request_context_; }
@@ -667,6 +680,8 @@ class HostResolverManager::RequestImpl
                           parameters_.cache_usage !=
                               ResolveHostParameters::CacheUsage::DISALLOWED);
           dict.SetBoolKey("is_speculative", parameters_.is_speculative);
+          dict.SetStringKey("network_isolation_key",
+                            network_isolation_key_.ToDebugString());
           return dict;
         });
   }
@@ -686,6 +701,7 @@ class HostResolverManager::RequestImpl
   const NetLogWithSource source_net_log_;
 
   const HostPortPair request_host_;
+  const NetworkIsolationKey network_isolation_key_;
   ResolveHostParameters parameters_;
   URLRequestContext* const request_context_;
   HostCache* const host_cache_;
@@ -1440,12 +1456,14 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 struct HostResolverManager::JobKey {
   bool operator<(const JobKey& other) const {
     return std::tie(query_type, flags, source, secure_dns_mode, request_context,
-                    hostname) < std::tie(other.query_type, other.flags,
-                                         other.source, other.secure_dns_mode,
-                                         other.request_context, other.hostname);
+                    hostname, network_isolation_key_) <
+           std::tie(other.query_type, other.flags, other.source,
+                    other.secure_dns_mode, other.request_context,
+                    other.hostname, other.network_isolation_key_);
   }
 
   std::string hostname;
+  NetworkIsolationKey network_isolation_key_;
   DnsQueryType query_type;
   HostResolverFlags flags;
   HostResolverSource source;
@@ -1461,6 +1479,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   // request that spawned it.
   Job(const base::WeakPtr<HostResolverManager>& resolver,
       base::StringPiece hostname,
+      const NetworkIsolationKey& network_isolation_key,
       DnsQueryType query_type,
       HostResolverFlags host_resolver_flags,
       HostResolverSource requested_source,
@@ -1475,6 +1494,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       const base::TickClock* tick_clock)
       : resolver_(resolver),
         hostname_(hostname),
+        network_isolation_key_(network_isolation_key),
         query_type_(query_type),
         host_resolver_flags_(host_resolver_flags),
         requested_source_(requested_source),
@@ -1787,7 +1807,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
  private:
   HostCache::Key GenerateCacheKey(bool secure) const {
     HostCache::Key cache_key(hostname_, query_type_, host_resolver_flags_,
-                             requested_source_);
+                             requested_source_, network_isolation_key_);
     cache_key.secure = secure;
     return cache_key;
   }
@@ -2333,6 +2353,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   base::WeakPtr<HostResolverManager> resolver_;
 
   const std::string hostname_;
+  const NetworkIsolationKey network_isolation_key_;
   const DnsQueryType query_type_;
   const HostResolverFlags host_resolver_flags_;
   const HostResolverSource requested_source_;
@@ -2481,6 +2502,7 @@ HostResolverManager::~HostResolverManager() {
 std::unique_ptr<HostResolverManager::CancellableRequest>
 HostResolverManager::CreateRequest(
     const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters,
     URLRequestContext* request_context,
@@ -2493,9 +2515,9 @@ HostResolverManager::CreateRequest(
   if (host_cache)
     DCHECK(host_cache_invalidators_.HasObserver(host_cache->invalidator()));
 
-  return std::make_unique<RequestImpl>(net_log, host, optional_parameters,
-                                       request_context, host_cache,
-                                       weak_ptr_factory_.GetWeakPtr());
+  return std::make_unique<RequestImpl>(
+      net_log, host, network_isolation_key, optional_parameters,
+      request_context, host_cache, weak_ptr_factory_.GetWeakPtr());
 }
 
 std::unique_ptr<HostResolver::MdnsListener>
@@ -2668,8 +2690,9 @@ int HostResolverManager::Resolve(RequestImpl* request) {
   std::deque<TaskType> tasks;
   base::Optional<HostCache::EntryStaleness> stale_info;
   HostCache::Entry results = ResolveLocally(
-      request->request_host().host(), request->parameters().dns_query_type,
-      request->parameters().source, request->host_resolver_flags(),
+      request->request_host().host(), request->network_isolation_key(),
+      request->parameters().dns_query_type, request->parameters().source,
+      request->host_resolver_flags(),
       request->parameters().secure_dns_mode_override,
       request->parameters().cache_usage, request->source_net_log(),
       request->host_cache(), &effective_query_type,
@@ -2696,6 +2719,7 @@ int HostResolverManager::Resolve(RequestImpl* request) {
 
 HostCache::Entry HostResolverManager::ResolveLocally(
     const std::string& hostname,
+    const NetworkIsolationKey& network_isolation_key,
     DnsQueryType dns_query_type,
     HostResolverSource source,
     HostResolverFlags flags,
@@ -2769,7 +2793,8 @@ HostCache::Entry HostResolverManager::ResolveLocally(
        out_tasks->front() == TaskType::INSECURE_CACHE_LOOKUP ||
        out_tasks->front() == TaskType::CACHE_LOOKUP)) {
     HostCache::Key key(hostname, *out_effective_query_type,
-                       *out_effective_host_resolver_flags, source);
+                       *out_effective_host_resolver_flags, source,
+                       network_isolation_key);
 
     if (out_tasks->front() == TaskType::SECURE_CACHE_LOOKUP)
       key.secure = true;
@@ -2815,20 +2840,23 @@ void HostResolverManager::CreateAndStartJob(
     std::deque<TaskType> tasks,
     RequestImpl* request) {
   DCHECK(!tasks.empty());
-  JobKey key = {request->request_host().host(), effective_query_type,
-                effective_host_resolver_flags,  request->parameters().source,
-                effective_secure_dns_mode,      request->request_context()};
+  JobKey key = {
+      request->request_host().host(), request->network_isolation_key(),
+      effective_query_type,           effective_host_resolver_flags,
+      request->parameters().source,   effective_secure_dns_mode,
+      request->request_context()};
 
   auto jobit = jobs_.find(key);
   Job* job;
   if (jobit == jobs_.end()) {
     auto new_job = std::make_unique<Job>(
         weak_ptr_factory_.GetWeakPtr(), request->request_host().host(),
-        effective_query_type, effective_host_resolver_flags,
-        request->parameters().source, request->parameters().cache_usage,
-        effective_secure_dns_mode, request->request_context(),
-        request->host_cache(), std::move(tasks), request->priority(),
-        proc_task_runner_, request->source_net_log(), tick_clock_);
+        request->network_isolation_key(), effective_query_type,
+        effective_host_resolver_flags, request->parameters().source,
+        request->parameters().cache_usage, effective_secure_dns_mode,
+        request->request_context(), request->host_cache(), std::move(tasks),
+        request->priority(), proc_task_runner_, request->source_net_log(),
+        tick_clock_);
     job = new_job.get();
     auto insert_result = jobs_.emplace(std::move(key), std::move(new_job));
     DCHECK(insert_result.second);

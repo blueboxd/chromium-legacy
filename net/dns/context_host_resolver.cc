@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/tick_clock.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
@@ -203,8 +204,10 @@ ContextHostResolver::CreateRequest(
 
   std::unique_ptr<HostResolverManager::CancellableRequest> inner_request;
   if (!shutting_down_) {
-    inner_request = manager_->CreateRequest(
-        host, source_net_log, optional_parameters, context_, host_cache_.get());
+    // TODO(mmenke): Pass in a NetworkIsolationKey.
+    inner_request = manager_->CreateRequest(host, NetworkIsolationKey(),
+                                            source_net_log, optional_parameters,
+                                            context_, host_cache_.get());
   }
 
   auto request = std::make_unique<WrappedRequest>(std::move(inner_request),

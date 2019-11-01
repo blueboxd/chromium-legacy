@@ -173,7 +173,7 @@ TestNetworkInterceptor::TestNetworkInterceptor() {
 }
 
 TestNetworkInterceptor::~TestNetworkInterceptor() {
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, impl_.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, impl_.release());
   interceptor_.reset();
 }
 

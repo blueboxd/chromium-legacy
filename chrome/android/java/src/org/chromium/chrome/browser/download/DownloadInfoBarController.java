@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -372,9 +371,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     public IPHInfoBarSupport.TrackerParameters getTrackerParameters() {
         if (getDownloadCount().inProgress == 0) return null;
 
-        BottomSheet bottomSheet =
-                getCurrentTab() == null ? null : getCurrentTab().getActivity().getBottomSheet();
-        if (bottomSheet != null && bottomSheet.isSheetOpen()) return null;
+        if (getCurrentTab().getActivity().getBottomSheetController().isSheetOpen()) return null;
 
         return new IPHInfoBarSupport.TrackerParameters(
                 FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_FEATURE,

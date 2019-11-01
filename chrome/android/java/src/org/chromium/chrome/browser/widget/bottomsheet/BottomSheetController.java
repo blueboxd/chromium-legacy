@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 import androidx.annotation.IntDef;
 
 import org.chromium.base.Supplier;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -101,7 +102,7 @@ public class BottomSheetController implements Destroyable {
     private boolean mIsSuppressed;
 
     /** The manager for overlay panels to attach listeners to. */
-    private OverlayPanelManager mOverlayPanelManager;
+    private Supplier<OverlayPanelManager> mOverlayPanelManager;
 
     /** A means for getting the activity's current tab and observing change events. */
     private ActivityTabProvider mTabProvider;
@@ -124,11 +125,13 @@ public class BottomSheetController implements Destroyable {
      * @param activityTabProvider The provider of the activity's current tab.
      * @param scrim The scrim that shows when the bottom sheet is opened.
      * @param bottomSheetSupplier A mechanism for creating a {@link BottomSheet}.
-     * @param overlayManager The manager for overlay panels to attach listeners to.
+     * @param overlayManager A supplier of the manager for overlay panels to attach listeners to.
+     *                       This is a supplier to get around wating for native to be initialized.
      */
     public BottomSheetController(final ActivityLifecycleDispatcher lifecycleDispatcher,
             final ActivityTabProvider activityTabProvider, final ScrimView scrim,
-            Supplier<BottomSheet> bottomSheetSupplier, OverlayPanelManager overlayManager) {
+            Supplier<BottomSheet> bottomSheetSupplier,
+            Supplier<OverlayPanelManager> overlayManager) {
         mTabProvider = activityTabProvider;
         mOverlayPanelManager = overlayManager;
         mPendingSheetObservers = new ArrayList<>();
@@ -307,6 +310,22 @@ public class BottomSheetController implements Destroyable {
         return mBottomSheet == null ? SheetState.HIDDEN : mBottomSheet.getSheetState();
     }
 
+    /** @return The target state of the bottom sheet (usually during animations). */
+    @SheetState
+    public int getTargetSheetState() {
+        return mBottomSheet == null ? SheetState.NONE : mBottomSheet.getTargetSheetState();
+    }
+
+    /** @return Whether the bottom sheet is currently open (expanded beyond peek state). */
+    public boolean isSheetOpen() {
+        return mBottomSheet != null && mBottomSheet.isSheetOpen();
+    }
+
+    /** @return Whether the bottom sheet is in the process of hiding. */
+    public boolean isSheetHiding() {
+        return mBottomSheet == null ? false : mBottomSheet.isHiding();
+    }
+
     /**
      * @param observer The observer to add.
      */
@@ -363,6 +382,11 @@ public class BottomSheetController implements Destroyable {
      */
     public BottomSheet getBottomSheet() {
         return mBottomSheet;
+    }
+
+    @VisibleForTesting
+    public void setSheetStateForTesting(@SheetState int state, boolean animate) {
+        mBottomSheet.setSheetState(state, animate);
     }
 
     /**
@@ -435,10 +459,10 @@ public class BottomSheetController implements Destroyable {
 
         if (mBottomSheet.getCurrentSheetContent() == null) return;
         mBottomSheet.setSheetState(SheetState.HALF, true);
-        if (mOverlayPanelManager.getActivePanel() != null) {
+        if (mOverlayPanelManager.get().getActivePanel() != null) {
             // TODO(mdjones): This should only apply to contextual search, but contextual search is
             //                the only implementation. Fix this to only apply to contextual search.
-            mOverlayPanelManager.getActivePanel().closePanel(
+            mOverlayPanelManager.get().getActivePanel().closePanel(
                     OverlayPanel.StateChangeReason.UNKNOWN, true);
         }
     }
@@ -490,7 +514,8 @@ public class BottomSheetController implements Destroyable {
      * @return Whether some other UI is preventing the sheet from showing.
      */
     protected boolean isOtherUIObscuring() {
-        return mOverlayPanelManager.getActivePanel() != null;
+        return mOverlayPanelManager.get() != null
+                && mOverlayPanelManager.get().getActivePanel() != null;
     }
 
     /**

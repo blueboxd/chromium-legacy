@@ -835,12 +835,18 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   PropagateBaselinesFromChildren();
 
   // An exclusion space is confined to nodes within the same formatting context.
-  if (!ConstraintSpace().IsNewFormattingContext()) {
+  if (!ConstraintSpace().IsNewFormattingContext())
     container_builder_.SetExclusionSpace(std::move(exclusion_space_));
-  }
 
   if (ConstraintSpace().UseFirstLineStyle())
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
+
+  // Table-cells with separate borders, "empty-cells: hide", and no children
+  // don't paint.
+  if (ConstraintSpace().HideTableCellIfEmpty()) {
+    container_builder_.SetIsHiddenForPaint(
+        container_builder_.Children().IsEmpty());
+  }
 
   return container_builder_.ToBoxFragment();
 }

@@ -127,8 +127,7 @@ CrossOriginReadBlockingChecker::CrossOriginReadBlockingChecker(
 }
 
 CrossOriginReadBlockingChecker::~CrossOriginReadBlockingChecker() {
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
-                            std::move(blob_io_state_));
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, std::move(blob_io_state_));
 }
 
 int CrossOriginReadBlockingChecker::GetNetError() {

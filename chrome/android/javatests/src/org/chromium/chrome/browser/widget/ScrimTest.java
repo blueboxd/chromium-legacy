@@ -114,8 +114,7 @@ public class ScrimTest {
                     new TestBottomSheetContent(mActivityTestRule.getActivity(),
                             BottomSheetContent.ContentPriority.HIGH, false),
                     false);
-            mSheetController.getBottomSheet().setSheetState(
-                    BottomSheetController.SheetState.HALF, false);
+            mSheetController.setSheetStateForTesting(BottomSheetController.SheetState.HALF, false);
         });
 
         assertScrimVisibility(true);
@@ -125,7 +124,7 @@ public class ScrimTest {
 
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> mSheetController.getBottomSheet().setSheetState(
+                        -> mSheetController.setSheetStateForTesting(
                                 BottomSheetController.SheetState.PEEK, false));
 
         assertScrimVisibility(false);

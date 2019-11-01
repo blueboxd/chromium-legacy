@@ -54,8 +54,8 @@ HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
   web_contents_map_.clear();
 
   if (request_context_manager_) {
-    content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                       request_context_manager_.release());
+    base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                     request_context_manager_.release());
   }
 
   ShutdownStoragePartitions();

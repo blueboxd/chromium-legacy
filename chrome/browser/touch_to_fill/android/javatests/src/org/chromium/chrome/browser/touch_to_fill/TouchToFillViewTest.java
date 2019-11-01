@@ -202,10 +202,10 @@ public class TouchToFillViewTest {
         pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HALF);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            getActivity().getBottomSheet().setSheetState(
-                    BottomSheetController.SheetState.FULL, false);
+            getActivity().getBottomSheetController().setSheetStateForTesting(
+                    SheetState.FULL, false);
         });
-        pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.FULL);
+        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
 
         TextView manageButton = mTouchToFillView.getContentView().findViewById(
                 R.id.touch_to_fill_sheet_manage_passwords);
@@ -233,7 +233,6 @@ public class TouchToFillViewTest {
     }
 
     private @SheetState int getBottomSheetState() {
-        pollUiThread(() -> getActivity().getBottomSheet() != null);
         return getActivity().getBottomSheetController().getSheetState();
     }
 

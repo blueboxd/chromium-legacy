@@ -228,12 +228,8 @@ public class BottomSheetControllerTest {
         expandSheet();
         openNewTabInBackground();
 
-        @BottomSheetController.SheetState
-        int expectedState = getBottomSheet().isSmallScreen()
-                ? BottomSheetController.SheetState.FULL
-                : BottomSheetController.SheetState.HALF;
-        assertEquals("The bottom sheet should be expanded.", expectedState,
-                mSheetController.getSheetState());
+        assertEquals("The bottom sheet should be expanded.", BottomSheetController.SheetState.HALF,
+                getBottomSheet().getSheetState());
         assertEquals("The bottom sheet is showing incorrect content.", mLowPriorityContent,
                 mSheetController.getCurrentSheetContent());
     }

@@ -294,6 +294,12 @@ class CORE_EXPORT NGConstraintSpace final {
   // Whether the current node is a table-cell.
   bool IsTableCell() const { return bitfields_.is_table_cell; }
 
+  // Whether the table-cell fragment should be hidden (not painted) if it has
+  // no children.
+  bool HideTableCellIfEmpty() const {
+    return HasRareData() && rare_data_->hide_table_cell_if_empty;
+  }
+
   // Whether the fragment produced from layout should be anonymous, (e.g. it
   // may be a column in a multi-column layout). In such cases it shouldn't have
   // any borders or padding.
@@ -588,6 +594,7 @@ class CORE_EXPORT NGConstraintSpace final {
     explicit RareData(const NGBfcOffset bfc_offset)
         : bfc_offset(bfc_offset),
           data_union_type(static_cast<unsigned>(kNone)),
+          hide_table_cell_if_empty(false),
           block_direction_fragmentation_type(
               static_cast<unsigned>(kFragmentNone)),
           is_inside_balanced_columns(false),
@@ -601,6 +608,7 @@ class CORE_EXPORT NGConstraintSpace final {
           fragmentainer_block_size(other.fragmentainer_block_size),
           fragmentainer_offset_at_bfc(other.fragmentainer_offset_at_bfc),
           data_union_type(other.data_union_type),
+          hide_table_cell_if_empty(other.hide_table_cell_if_empty),
           block_direction_fragmentation_type(
               other.block_direction_fragmentation_type),
           is_inside_balanced_columns(other.is_inside_balanced_columns),
@@ -657,6 +665,7 @@ class CORE_EXPORT NGConstraintSpace final {
     LayoutUnit fragmentainer_offset_at_bfc;
 
     unsigned data_union_type : 2;
+    unsigned hide_table_cell_if_empty : 1;
     unsigned block_direction_fragmentation_type : 2;
     unsigned is_inside_balanced_columns : 1;
     unsigned is_in_column_bfc : 1;
@@ -666,6 +675,7 @@ class CORE_EXPORT NGConstraintSpace final {
       if (fragmentainer_block_size != other.fragmentainer_block_size ||
           fragmentainer_offset_at_bfc != other.fragmentainer_offset_at_bfc ||
           data_union_type != other.data_union_type ||
+          hide_table_cell_if_empty != other.hide_table_cell_if_empty ||
           block_direction_fragmentation_type !=
               other.block_direction_fragmentation_type ||
           is_inside_balanced_columns != other.is_inside_balanced_columns ||
@@ -689,7 +699,7 @@ class CORE_EXPORT NGConstraintSpace final {
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
       if (fragmentainer_block_size != kIndefiniteSize ||
-          fragmentainer_offset_at_bfc ||
+          fragmentainer_offset_at_bfc || hide_table_cell_if_empty ||
           block_direction_fragmentation_type != kFragmentNone ||
           is_inside_balanced_columns || is_in_column_bfc ||
           early_break_appeal != kBreakAppealLastResort)

@@ -63,9 +63,9 @@ public interface NavigationSheet {
      * @return {@code true} if another instance of NavigationSheet is already showing.
      */
     public static boolean isInstanceShowing(BottomSheetController controller) {
-        if (controller == null || controller.getBottomSheet() == null) return false;
+        if (controller == null) return false;
         return (controller.getCurrentSheetContent() instanceof NavigationSheetCoordinator)
-                && controller.getBottomSheet().isSheetOpen();
+                && controller.isSheetOpen();
     }
 
     /**

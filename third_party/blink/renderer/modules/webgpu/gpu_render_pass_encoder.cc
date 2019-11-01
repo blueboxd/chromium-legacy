@@ -37,7 +37,7 @@ GPURenderPassEncoder::~GPURenderPassEncoder() {
 void GPURenderPassEncoder::setBindGroup(
     uint32_t index,
     GPUBindGroup* bindGroup,
-    const Vector<uint64_t>& dynamicOffsets) {
+    const Vector<uint32_t>& dynamicOffsets) {
   GetProcs().renderPassEncoderSetBindGroup(
       GetHandle(), index, bindGroup->GetHandle(), dynamicOffsets.size(),
       dynamicOffsets.data());

@@ -2062,7 +2062,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
      */
     private Tab launchIntent(String url, String referer, String headers,
             String externalAppId, boolean forceNewTab, Intent intent) {
-        if (mUIWithNativeInitialized && (getBottomSheet() == null || !NewTabPage.isNTPUrl(url))) {
+        if (mUIWithNativeInitialized && !NewTabPage.isNTPUrl(url)) {
             mOverviewModeController.hideOverview(false);
             getToolbarManager().finishAnimations();
         }
@@ -2334,7 +2334,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
      * is used in Chrome Home.
      */
     private void updateAccessibilityVisibility() {
-        if (getBottomSheet() == null || mLayoutManager == null) return;
+        if (mLayoutManager == null) return;
 
         CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
         if (compositorViewHolder != null) {

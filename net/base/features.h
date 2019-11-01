@@ -29,9 +29,14 @@ NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 // quality estimator (NQE).
 NET_EXPORT extern const base::Feature kNetworkQualityEstimator;
 
-// Splits cache entries by the request's network isolation key if one is
+// Splits cache entries by the request's NetworkIsolationKey if one is
 // available.
 NET_EXPORT extern const base::Feature kSplitCacheByNetworkIsolationKey;
+
+// Splits host cache entries by the DNS request's NetworkIsolationKey if one is
+// available. Also prevents merging live DNS lookups when there is a NIK
+// mismatch.
+NET_EXPORT extern const base::Feature kSplitHostCacheByNetworkIsolationKey;
 
 // Partitions connections based on the NetworkIsolationKey associated with a
 // request.

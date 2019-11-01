@@ -212,7 +212,8 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
     @Override
     public boolean start(
             @OverscrollAction int type, float startX, float startY, boolean navigateForward) {
-        if (mTab.getActivity() != null && mTab.getActivity().getBottomSheet() != null) {
+        if (mTab.getActivity() != null
+                && mTab.getActivity().getBottomSheetController().getBottomSheet() != null) {
             Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
             tracker.notifyEvent(EventConstants.PULL_TO_REFRESH);
         }

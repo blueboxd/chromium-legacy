@@ -160,12 +160,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
   switch (volume->type()) {
     case file_manager::VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
     case file_manager::VOLUME_TYPE_MOUNTED_ARCHIVE_FILE: {
-      chromeos::UnmountOptions unmount_options = chromeos::UNMOUNT_OPTIONS_NONE;
-      if (volume->is_read_only())
-        unmount_options = chromeos::UNMOUNT_OPTIONS_LAZY;
-
       DiskMountManager::GetInstance()->UnmountPath(
-          volume->mount_path().value(), unmount_options,
+          volume->mount_path().value(),
           DiskMountManager::UnmountPathCallback());
       break;
     }

@@ -33,6 +33,7 @@
 
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -484,6 +485,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   ukm::SourceId GetUkmSourceId() override;
   void UpdateTaskTime(base::TimeDelta time) override;
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
+  const base::UnguessableToken& GetAgentClusterId() const override;
 
   // Activates the user activation states of this frame and all its ancestors.
   void NotifyUserActivation(bool need_browser_verification);

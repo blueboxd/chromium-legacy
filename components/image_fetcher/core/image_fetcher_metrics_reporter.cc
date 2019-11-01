@@ -5,7 +5,9 @@
 #include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 
 namespace image_fetcher {
 
@@ -32,6 +34,7 @@ constexpr char kImageLoadFromNetworkAfterCacheHitHistogram[] =
 constexpr char kTimeSinceLastLRUEvictionHistogram[] =
     "ImageFetcher.TimeSinceLastCacheLRUEviction";
 constexpr char kLoadImageMetadata[] = "ImageFetcher.LoadImageMetadata";
+constexpr char kNetworkRequestStatusCodes[] = "ImageFetcher.RequestStatusCode";
 
 // Returns a raw pointer to a histogram which is owned
 base::HistogramBase* GetTimeHistogram(const std::string& histogram_name,
@@ -125,6 +128,16 @@ void ImageFetcherMetricsReporter::ReportLoadImageMetadata(
     base::TimeTicks start_time) {
   base::TimeDelta time_delta = base::TimeTicks::Now() - start_time;
   UMA_HISTOGRAM_TIMES(kLoadImageMetadata, time_delta);
+}
+
+// static
+void ImageFetcherMetricsReporter::ReportRequestStatusCode(
+    const std::string& client_name,
+    int code) {
+  DCHECK(!client_name.empty());
+  base::UmaHistogramSparse(kNetworkRequestStatusCodes, code);
+  base::UmaHistogramSparse(
+      kNetworkRequestStatusCodes + std::string(".") + client_name, code);
 }
 
 }  // namespace image_fetcher

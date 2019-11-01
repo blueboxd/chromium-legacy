@@ -220,7 +220,7 @@ class AutofillManager : public AutofillHandler,
       bool autoselect_first_suggestion,
       const std::vector<Suggestion>& suggestions) override;
 
-  // Returns the value of AutofillEnabled pref.
+  // Returns true if either Profile or CreditCard Autofill is enabled.
   virtual bool IsAutofillEnabled() const;
 
   // Returns true if the value of the AutofillProfileEnabled pref is true and

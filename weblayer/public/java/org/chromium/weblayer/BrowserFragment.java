@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserFragment;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
+import org.chromium.weblayer_private.aidl.IRemoteFragment;
 import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
@@ -135,10 +136,21 @@ public final class BrowserFragment extends Fragment {
             }
             return true;
         }
+
+        @Override
+        public boolean shouldShowRequestPermissionRationale(String permission) {
+            return BrowserFragment.this.shouldShowRequestPermissionRationale(permission);
+        }
+
+        @Override
+        public void requestPermissions(String[] permissions, int requestCode) {
+            BrowserFragment.this.requestPermissions(permissions, requestCode);
+        }
     };
 
     // Nonnull after first onAttach().
     private IBrowserFragment mImpl;
+    private IRemoteFragment mRemoteFragment;
     private WebLayer mWebLayer;
 
     // Nonnull between onCreate() and onDestroy().
@@ -171,8 +183,20 @@ public final class BrowserFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnActivityResult(
+            mRemoteFragment.handleOnActivityResult(
                     requestCode, resultCode, ObjectWrapper.wrap(data));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            mRemoteFragment.handleOnRequestPermissionsResult(
+                    requestCode, permissions, grantResults);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -187,7 +211,7 @@ public final class BrowserFragment extends Fragment {
         // the earliest moment when we can initialize WebLayer without missing any lifecycle events.
         ensureConnectedToWebLayer(context.getApplicationContext());
         try {
-            mImpl.asRemoteFragment().handleOnAttach(ObjectWrapper.wrap(context));
+            mRemoteFragment.handleOnAttach(ObjectWrapper.wrap(context));
             // handleOnAttach results in creating BrowserFragmentControllerImpl on the other side.
             // Now we retrieve it, and build BrowserFragmentController on this side.
         } catch (RemoteException e) {
@@ -207,6 +231,7 @@ public final class BrowserFragment extends Fragment {
             Future<WebLayer> future = WebLayer.create(appContext);
             mWebLayer = future.get();
             mImpl = mWebLayer.connectFragment(mClientImpl, args);
+            mRemoteFragment = mImpl.asRemoteFragment();
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize WebLayer", e);
         }
@@ -217,9 +242,8 @@ public final class BrowserFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnCreate(ObjectWrapper.wrap(savedInstanceState));
-            mBrowserFragmentController = new BrowserFragmentController(mImpl.getController(),
-                    mWebLayer.getProfileManager());
+            mRemoteFragment.handleOnCreate(ObjectWrapper.wrap(savedInstanceState));
+            mBrowserFragmentController = new BrowserFragmentController(mImpl.getController());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -230,7 +254,7 @@ public final class BrowserFragment extends Fragment {
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ThreadCheck.ensureOnUiThread();
         try {
-            return ObjectWrapper.unwrap(mImpl.asRemoteFragment().handleOnCreateView(), View.class);
+            return ObjectWrapper.unwrap(mRemoteFragment.handleOnCreateView(), View.class);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -241,8 +265,7 @@ public final class BrowserFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnActivityCreated(
-                    ObjectWrapper.wrap(savedInstanceState));
+            mRemoteFragment.handleOnActivityCreated(ObjectWrapper.wrap(savedInstanceState));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -253,7 +276,7 @@ public final class BrowserFragment extends Fragment {
     public void onStart() {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnStart();
+            mRemoteFragment.handleOnStart();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -264,7 +287,7 @@ public final class BrowserFragment extends Fragment {
     public void onResume() {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnResume();
+            mRemoteFragment.handleOnResume();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -275,7 +298,7 @@ public final class BrowserFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnSaveInstanceState(ObjectWrapper.wrap(outState));
+            mRemoteFragment.handleOnSaveInstanceState(ObjectWrapper.wrap(outState));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -286,7 +309,7 @@ public final class BrowserFragment extends Fragment {
     public void onPause() {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnPause();
+            mRemoteFragment.handleOnPause();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -297,7 +320,7 @@ public final class BrowserFragment extends Fragment {
     public void onStop() {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnStop();
+            mRemoteFragment.handleOnStop();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -308,7 +331,7 @@ public final class BrowserFragment extends Fragment {
     public void onDestroyView() {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnDestroyView();
+            mRemoteFragment.handleOnDestroyView();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -319,7 +342,7 @@ public final class BrowserFragment extends Fragment {
     public void onDestroy() {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnDestroy();
+            mRemoteFragment.handleOnDestroy();
             // The other side does the clean up automatically in handleOnDestroy()
         } catch (RemoteException e) {
             throw new APICallException(e);
@@ -332,7 +355,7 @@ public final class BrowserFragment extends Fragment {
     public void onDetach() {
         ThreadCheck.ensureOnUiThread();
         try {
-            mImpl.asRemoteFragment().handleOnDetach();
+            mRemoteFragment.handleOnDetach();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

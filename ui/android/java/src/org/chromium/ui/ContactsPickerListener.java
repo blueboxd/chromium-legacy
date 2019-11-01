@@ -6,8 +6,12 @@ package org.chromium.ui;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.payments.mojom.PaymentAddress;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,18 +19,28 @@ import java.util.List;
  */
 public interface ContactsPickerListener {
     /**
-     * A container class for exhcanging contact details.
+     * A container class for exchanging contact details.
      */
-    public class Contact {
+    public static class Contact {
         public final List<String> names;
         public final List<String> emails;
         public final List<String> tel;
+        public final List<ByteBuffer> serializedAddresses;
 
-        public Contact(
-                List<String> contactNames, List<String> contactEmails, List<String> contactTel) {
+        public Contact(List<String> contactNames, List<String> contactEmails,
+                List<String> contactTel, List<PaymentAddress> contactAddresses) {
             names = contactNames;
             emails = contactEmails;
             tel = contactTel;
+
+            if (contactAddresses != null) {
+                serializedAddresses = new ArrayList<ByteBuffer>();
+                for (PaymentAddress address : contactAddresses) {
+                    serializedAddresses.add(address.serialize());
+                }
+            } else {
+                serializedAddresses = null;
+            }
         }
     }
 

@@ -27,22 +27,22 @@ enum BookmarkEntryPoint {
 enum BookmarkLaunchLocation {
   BOOKMARK_LAUNCH_LOCATION_NONE,
   BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR = 0,
-  BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR,
+  // BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR = 1, (deprecated)
   // These two are kind of sub-categories of the bookmark bar. Generally
   // a launch from a context menu or subfolder could be classified in one of
   // the other two bar buckets, but doing so is difficult because the menus
   // don't know of their greater place in Chrome.
-  BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER,
-  BOOKMARK_LAUNCH_LOCATION_CONTEXT_MENU,
+  BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER = 2,
+  BOOKMARK_LAUNCH_LOCATION_CONTEXT_MENU = 3,
 
   // Bookmarks menu within app menu.
-  BOOKMARK_LAUNCH_LOCATION_APP_MENU,
+  BOOKMARK_LAUNCH_LOCATION_APP_MENU = 4,
   // Bookmark manager.
-  BOOKMARK_LAUNCH_LOCATION_MANAGER,
+  BOOKMARK_LAUNCH_LOCATION_MANAGER = 5,
   // Autocomplete suggestion.
-  BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
+  BOOKMARK_LAUNCH_LOCATION_OMNIBOX = 6,
   // System application menu (e.g. on Mac).
-  BOOKMARK_LAUNCH_LOCATION_TOP_MENU,
+  BOOKMARK_LAUNCH_LOCATION_TOP_MENU = 7,
 
   BOOKMARK_LAUNCH_LOCATION_LIMIT  // Keep this last.
 };

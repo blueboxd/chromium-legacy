@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.ui.widget.FadingShadow;
 import org.chromium.chrome.browser.ui.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -115,16 +115,16 @@ import org.chromium.ui.base.ActivityWindowAndroid;
     }
 
     @Override
-    @BottomSheet.ContentPriority
+    @ContentPriority
     public int getPriority() {
         // If multiple bottom sheets are queued up to be shown, prioritize payment-handler, because
         // it's triggered by a user gesture, such as a click on <button>Buy this article</button>.
-        return BottomSheet.ContentPriority.HIGH;
+        return BottomSheetContent.ContentPriority.HIGH;
     }
 
     @Override
     public int getPeekHeight() {
-        return BottomSheet.HeightMode.DISABLED;
+        return BottomSheetContent.HeightMode.DISABLED;
     }
 
     @Override

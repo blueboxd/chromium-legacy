@@ -15,7 +15,11 @@ extern const base::FilePath::CharType kUnindexedHintsFileName[];
 extern const char kRulesetFormatVersionString[];
 
 // The remote Optimization Guide Service production server to fetch hints from.
-extern const char kOptimizationGuideServiceDefaultURL[];
+extern const char kOptimizationGuideServiceGetHintsDefaultURL[];
+
+// The remote Optimization Guide Service production server to fetch models and
+// hosts features from.
+extern const char kOptimizationGuideServiceGetModelsDefaultURL[];
 
 // The local histogram used to record that the component hints are stored in
 // the cache and are ready for use.

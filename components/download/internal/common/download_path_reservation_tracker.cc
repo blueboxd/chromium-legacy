@@ -121,7 +121,8 @@ bool IsFileNameInUse(const base::FilePath& path) {
 }
 
 // Returns true if the given path is in use by a path reservation,
-// and has a different key then the item arg.
+// and has a different key then the item arg. Called on the task runner returned
+// by DownloadPathReservationTracker::GetTaskRunner().
 bool IsAdditionalPathReserved(const base::FilePath& path, DownloadItem* item) {
   if (!g_reservation_map)
     return false;
@@ -251,11 +252,8 @@ PathValidationResult ResolveReservationConflicts(
                  : PathValidationResult::CONFLICT;
 
     case DownloadPathReservationTracker::OVERWRITE:
-      if (base::FeatureList::IsEnabled(
-              features::kPreventDownloadsWithSamePath) &&
-          IsPathReserved(*target_path)) {
+      if (IsPathReserved(*target_path))
         return PathValidationResult::CONFLICT;
-      }
       return PathValidationResult::SUCCESS;
 
     case DownloadPathReservationTracker::PROMPT:
@@ -539,10 +537,14 @@ DownloadPathReservationTracker::GetTaskRunner() {
 }
 
 // static
-bool DownloadPathReservationTracker::CheckDownloadPathForExistingDownload(
+void DownloadPathReservationTracker::CheckDownloadPathForExistingDownload(
     const base::FilePath& target_path,
-    DownloadItem* download_item) {
-  return IsAdditionalPathReserved(target_path, download_item);
+    DownloadItem* download_item,
+    CheckDownloadPathCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      GetTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&IsAdditionalPathReserved, target_path, download_item),
+      std::move(callback));
 }
 
 }  // namespace download

@@ -239,6 +239,7 @@ body.hide-fakebox #fakebox {
   background-repeat: no-repeat;
   background-size: 24px;
   font-size: 16px;
+  line-height: 1;
   outline: none;
   overflow: hidden;
   padding-bottom: 8px;

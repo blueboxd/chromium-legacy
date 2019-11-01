@@ -503,7 +503,7 @@ class ThreadedTesterBase {
     std::unique_ptr<Thread> threads[kNumberOfThreads];
     for (auto& thread : threads) {
       thread = Platform::Current()->CreateThread(
-          ThreadCreationParams(WebThreadType::kTestThread)
+          ThreadCreationParams(ThreadType::kTestThread)
               .SetThreadNameForTest("blink gc testing thread"));
       PostCrossThreadTask(
           *thread->GetTaskRunner(), FROM_HERE,

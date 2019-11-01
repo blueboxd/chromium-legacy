@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -21,6 +22,9 @@ struct IDWriteFactory;
 struct IDWriteFont;
 
 namespace gfx {
+
+// Deprecation of PlatformFontWin (See http://crbug.com/944227).
+extern GFX_EXPORT const base::Feature kPlatformFontSkiaOnWindows;
 
 class GFX_EXPORT PlatformFontWin : public PlatformFont {
  public:

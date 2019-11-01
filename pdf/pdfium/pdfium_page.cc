@@ -660,9 +660,9 @@ int PDFiumPage::GetCharCount() {
 }
 
 PDFiumPage::Area PDFiumPage::GetLinkTarget(FPDF_LINK link, LinkTarget* target) {
-  FPDF_DEST dest = FPDFLink_GetDest(engine_->doc(), link);
-  if (dest)
-    return GetDestinationTarget(dest, target);
+  FPDF_DEST dest_link = FPDFLink_GetDest(engine_->doc(), link);
+  if (dest_link)
+    return GetDestinationTarget(dest_link, target);
 
   FPDF_ACTION action = FPDFLink_GetAction(link);
   if (!action)
@@ -670,9 +670,9 @@ PDFiumPage::Area PDFiumPage::GetLinkTarget(FPDF_LINK link, LinkTarget* target) {
 
   switch (FPDFAction_GetType(action)) {
     case PDFACTION_GOTO: {
-      FPDF_DEST dest = FPDFAction_GetDest(engine_->doc(), action);
-      if (dest)
-        return GetDestinationTarget(dest, target);
+      FPDF_DEST dest_action = FPDFAction_GetDest(engine_->doc(), action);
+      if (dest_action)
+        return GetDestinationTarget(dest_action, target);
       // TODO(crbug.com/55776): We don't fully support all types of the
       // in-document links.
       return NONSELECTABLE_AREA;

@@ -22,7 +22,8 @@ class MediaHistoryOriginTable : public MediaHistoryTableBase {
   // MediaHistoryTableBase:
   sql::InitStatus CreateTableIfNonExistent() override;
 
-  void CreateOriginId(const std::string& origin);
+  // Returns a flag indicating whether the origin id was created successfully.
+  bool CreateOriginId(const std::string& origin);
 
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryOriginTable);
 };

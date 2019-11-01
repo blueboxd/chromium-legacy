@@ -105,9 +105,7 @@ void BinaryFCMService::ShutdownHandler() {
   gcm_driver_ = nullptr;
 }
 
-void BinaryFCMService::OnStoreReset() {
-  NOTIMPLEMENTED();
-}
+void BinaryFCMService::OnStoreReset() {}
 
 void BinaryFCMService::OnMessage(const std::string& app_id,
                                  const gcm::IncomingMessage& message) {
@@ -143,20 +141,14 @@ void BinaryFCMService::OnMessage(const std::string& app_id,
   callback_it->second.Run(std::move(response));
 }
 
-void BinaryFCMService::OnMessagesDeleted(const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
+void BinaryFCMService::OnMessagesDeleted(const std::string& app_id) {}
 
 void BinaryFCMService::OnSendError(
     const std::string& app_id,
-    const gcm::GCMClient::SendErrorDetails& send_error_details) {
-  NOTIMPLEMENTED();
-}
+    const gcm::GCMClient::SendErrorDetails& send_error_details) {}
 
 void BinaryFCMService::OnSendAcknowledged(const std::string& app_id,
-                                          const std::string& message_id) {
-  NOTIMPLEMENTED();
-}
+                                          const std::string& message_id) {}
 
 bool BinaryFCMService::CanHandle(const std::string& app_id) const {
   return app_id == kBinaryFCMServiceAppId;

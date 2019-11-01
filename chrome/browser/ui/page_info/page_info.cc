@@ -69,6 +69,7 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -77,6 +78,8 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
@@ -451,6 +454,13 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
     did_perform_action_ = true;
 
   UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action", action, PAGE_INFO_COUNT);
+
+  if (web_contents()) {
+    ukm::builders::PageInfoBubble(
+        ukm::GetSourceIdForWebContentsDocument(web_contents()))
+        .SetActionTaken(action)
+        .Record(ukm::UkmRecorder::Get());
+  }
 
   base::UmaHistogramEnumeration(
       security_state::GetSafetyTipHistogramName(

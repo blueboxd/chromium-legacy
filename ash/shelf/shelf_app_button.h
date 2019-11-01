@@ -107,6 +107,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
   class AppNotificationIndicatorView;
   class AppStatusIndicatorView;
 
+  // views::View:
+  bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
+
   // Updates the parts of the button to reflect the current |state_| and
   // alignment. This may add or remove views, layout and paint.
   void UpdateState();

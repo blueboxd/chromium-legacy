@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.widget.ScrollView;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.download.R;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -36,12 +37,12 @@ final class RenameExtensionDialogCoordinator {
                         .with(ModalDialogProperties.CONTROLLER,
                                 new RenameExtensionDialogController())
                         .with(ModalDialogProperties.TITLE,
-                                context.getString(org.chromium.chrome.download.R.string.rename))
+                                context.getString(R.string.rename_extension_confirmation))
                         .with(ModalDialogProperties.CUSTOM_VIEW, mRenameExtensionDialogCustomView)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, context.getResources(),
-                                org.chromium.chrome.download.R.string.confirm)
+                                R.string.confirm)
                         .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, context.getResources(),
-                                org.chromium.chrome.download.R.string.cancel)
+                                R.string.cancel)
                         .build();
 
         mOnClickEventCallback = onClickCallback;

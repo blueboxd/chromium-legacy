@@ -991,7 +991,8 @@ public class ContextualSearchManager
         }
 
         @Override
-        public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {
+        public void onMainFrameNavigation(
+                String url, boolean isExternalUrl, boolean isFailure, boolean isError) {
             assert mSearchPanel != null;
             if (isExternalUrl) {
                 if (!ContextualSearchFieldTrial.getSwitch(

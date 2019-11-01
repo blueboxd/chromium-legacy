@@ -218,10 +218,9 @@ TEST_P(BoxPainterScrollHitTestTest, ScrollHitTestProperties) {
                        PaintChunk::Id(container, kScrollingBackgroundChunkType),
                        scrolling_contents_properties)));
 
-  // The document should not scroll so there should be no scroll offset
-  // transform.
+  // We always create scroll node for the root layer.
   const auto& root_transform = paint_chunks[0].properties.Transform();
-  EXPECT_EQ(nullptr, root_transform.ScrollNode());
+  EXPECT_NE(nullptr, root_transform.ScrollNode());
 
   // The container's background chunk should not scroll and therefore should use
   // the root transform. Its local transform is actually a paint offset

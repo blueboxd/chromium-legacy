@@ -71,10 +71,6 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   static void ShowBlockingPage(BaseUIManager* ui_manager,
                                const UnsafeResource& resource);
 
-  // Called when there is user interaction with the interstitial (e.g. user
-  // clicks 'Back to Safety' or 'Proceed anyways').
-  void CommandReceived(const std::string& page_cmd) override;
-
   // Makes the passed |factory| the factory used to instantiate
   // SafeBrowsingBlockingPage objects. Useful for tests.
   static void RegisterFactory(SafeBrowsingBlockingPageFactory* factory) {

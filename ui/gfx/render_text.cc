@@ -22,6 +22,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/icu/source/common/unicode/rbbi.h"
+#include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
@@ -192,25 +193,46 @@ void RestoreBreakList(RenderText* render_text, BreakList<T>* break_list) {
   }
 }
 
-// Replace the unicode control characters ISO 6429 (block C0) by their
-// corresponsing visual symbols. Control chracters can't be displayed but
-// their visual symbols can.
+// Replace the codepoints not handled by RenderText by an other compatible
+// codepoint. Replace the unicode control characters ISO 6429 (block C0) by
+// their corresponding visual symbols. Control characters can't be displayed but
+// their visual symbols can. Replace PUA (Private Use Areas) codepoints with the
+// 'replacement character'.
 void ReplaceControlCharactersWithSymbols(bool multiline, base::string16* text) {
+  // 'REPLACEMENT CHARACTER' used to replace an unknown, unrecognized or
+  // unrepresentable character.
+  constexpr base::char16 kReplacementCodepoint = 0xFFFD;
   // Control Pictures block (see: https://unicode.org/charts/PDF/U2400.pdf).
   constexpr base::char16 kSymbolsCodepoint = 0x2400;
-  for (size_t offset = 0; offset < text->size(); ++offset) {
-    base::char16 control_codepoint = (*text)[offset];
-    if (control_codepoint >= 0 && control_codepoint <= 0x1F) {
+
+  size_t next_offset = 0;
+  while (next_offset < text->length()) {
+    size_t offset = next_offset;
+    UChar32 codepoint;
+    U16_NEXT(text->c_str(), next_offset, text->length(), codepoint);
+
+    if (codepoint >= 0 && codepoint <= 0x1F) {
       // The newline character should be kept as-is when rendertext is
       // multiline.
-      if (control_codepoint == '\n' && multiline)
+      if (codepoint == '\n' && multiline)
         continue;
       // Replace codepoints with their visual symbols, which are at the same
       // offset from kSymbolsCodepoint.
-      (*text)[offset] = kSymbolsCodepoint + control_codepoint;
-    } else if (control_codepoint == 0x7F) {
+      (*text)[offset] = kSymbolsCodepoint + codepoint;
+    } else if (codepoint == 0x7F) {
       // Replace the 'del' codepoint by its symbol (u2421).
       (*text)[offset] = kSymbolsCodepoint + 0x21;
+    } else if (codepoint > 0x7F) {
+      // Private use codepoints are working with a pair of font and codepoint,
+      // but they are not used in Chrome.
+      const int8_t codepoint_category = u_charType(codepoint);
+      if (codepoint_category == U_PRIVATE_USE_CHAR ||
+          codepoint_category == U_CONTROL_CHAR) {
+        (*text)[offset] = kReplacementCodepoint;
+        // We may need to replace the surrogate pair.
+        if (next_offset != offset + 1)
+          (*text)[offset + 1] = kReplacementCodepoint;
+      }
     }
   }
 }

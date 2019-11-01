@@ -9,25 +9,6 @@
 
 namespace ui {
 
-namespace {
-
-// Fulfills a PendingReceiver<T> using a PendingRemote<T>.
-//
-// Messages queued on the PendingReceiver's message pipe are preserved and will
-// be eventually delivered to the remote end of PendingRemote<T>'s.
-//
-// PendingRemote<T> must be a brand new interface; i.e., it not have been
-// previously used to send a message.
-template <typename Interface>
-void FulfillPendingReceiver(mojo::PendingReceiver<Interface> receiver,
-                            mojo::PendingRemote<Interface> remote) {
-  MojoResult result =
-      mojo::FuseMessagePipes(remote.PassPipe(), receiver.PassPipe());
-  DCHECK_EQ(result, MOJO_RESULT_OK);
-}
-
-}  // namespace
-
 ScenicGpuService::ScenicGpuService(
     mojo::PendingReceiver<mojom::ScenicGpuHost> gpu_host_receiver)
     : gpu_host_receiver_(std::move(gpu_host_receiver)) {}
@@ -42,7 +23,15 @@ ScenicGpuService::GetBinderCallback() {
 
 void ScenicGpuService::Initialize(
     mojo::PendingRemote<mojom::ScenicGpuHost> gpu_host) {
-  FulfillPendingReceiver(std::move(gpu_host_receiver_), std::move(gpu_host));
+  // The ScenicGpuService acts as a bridge to bind the
+  // Remote<mojom::ScenicGpuHost>, owned by ScenicSurfaceFactory and
+  // received in the constructor, and the mojo::Receiver<mojom::ScenicGpuHost>,
+  // owned by ScenicGpuHost and received as a parameter in this function. Using
+  // mojo::FusePipes is the only way to "bind" a pending remote with a
+  // pending receiver.
+  bool result =
+      mojo::FusePipes(std::move(gpu_host_receiver_), std::move(gpu_host));
+  DCHECK(result);
 }
 
 void ScenicGpuService::AddReceiver(

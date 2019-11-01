@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.DimenRes;
+import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -27,6 +28,8 @@ import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.signin.ChromeSigninController;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 
 /**
@@ -36,6 +39,21 @@ import java.util.Collections;
 class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Observer,
                                         SigninManager.SignInStateObserver,
                                         ProfileSyncService.SyncStateChangedListener {
+    // Visual state of Identity Disc.
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({IdentityDiscState.NONE, IdentityDiscState.SMALL, IdentityDiscState.LARGE})
+    private @interface IdentityDiscState {
+        // Identity Disc is hidden.
+        int NONE = 0;
+
+        // Small Identity Disc is shown.
+        int SMALL = 1;
+
+        // Large Identity Disc is shown.
+        int LARGE = 2;
+        int MAX = 3;
+    }
+
     // Context is used for fetching resources and launching preferences page.
     private final Context mContext;
     // Toolbar manager exposes APIs for manipulating experimental button.
@@ -46,10 +64,16 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
     private SigninManager mSigninManager;
     private ProfileSyncService mProfileSyncService;
 
-    // ProfileDataCache facilitates retrieving profile picture.
-    private ProfileDataCache mProfileDataCache;
+    // ProfileDataCache facilitates retrieving profile picture. Separate objects are maintained
+    // for different visual states to cache profile pictures of different size.
+    // mProfileDataCache[IdentityDiscState.NONE] should always be null since in this state
+    // Identity Disc is not visible.
+    private ProfileDataCache mProfileDataCache[] = new ProfileDataCache[IdentityDiscState.MAX];
 
-    private boolean mIsIdentityDiscVisible;
+    // Identity disc visibility state.
+    @IdentityDiscState
+    private int mState = IdentityDiscState.NONE;
+
     private boolean mIsNTPVisible;
 
     /**
@@ -87,6 +111,13 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
     /**
      * Shows/hides Identity Disc depending on whether NTP is visible.
      */
+    void updateButtonState() {
+        updateButtonState(mIsNTPVisible);
+    }
+
+    /**
+     * Shows/hides Identity Disc depending on whether NTP is visible.
+     */
     void updateButtonState(boolean isNTPVisible) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.IDENTITY_DISC)) return;
         // Sync is disabled. IdentityDisc will never be shown.
@@ -96,16 +127,27 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         String accountName = ChromeSigninController.get().getSignedInAccountName();
         boolean shouldShowIdentityDisc =
                 isNTPVisible && accountName != null && mProfileSyncService.canSyncFeatureStart();
+        @IdentityDiscState
+        int oldState = mState;
 
-        if (shouldShowIdentityDisc == mIsIdentityDiscVisible) return;
+        mState = !shouldShowIdentityDisc
+                ? IdentityDiscState.NONE
+                : mToolbarManager.isBottomToolbarVisible() ? IdentityDiscState.LARGE
+                                                           : IdentityDiscState.SMALL;
 
-        if (shouldShowIdentityDisc) {
-            createProfileDataCache(accountName);
-            showIdentityDisc(accountName);
-            maybeShowIPH();
-            mIsIdentityDiscVisible = true;
-        } else {
-            mIsIdentityDiscVisible = false;
+        if (mState != IdentityDiscState.NONE && mState != oldState) {
+            // When showing Identity Disc or updating its size fetch corresponding profile picture.
+            createProfileDataCache(accountName, mState);
+        }
+
+        if (mState != IdentityDiscState.NONE) {
+            if (oldState == IdentityDiscState.NONE) {
+                showIdentityDisc(accountName);
+                maybeShowIPH();
+            } else if (mState != oldState) {
+                mToolbarManager.updateExperimentalButtonImage(getProfileImage(accountName));
+            }
+        } else if (oldState != IdentityDiscState.NONE) {
             mToolbarManager.disableExperimentalButton();
         }
     }
@@ -114,28 +156,55 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
      * Creates and initializes ProfileDataCache if it wasn't created previously. Subscribes
      * IdentityDiscController for profile data updates.
      */
-    private void createProfileDataCache(String accountName) {
-        if (mProfileDataCache != null) return;
+    private void createProfileDataCache(String accountName, @IdentityDiscState int state) {
+        assert state != IdentityDiscState.NONE;
+        if (mProfileDataCache[state] != null) return;
 
         @DimenRes
         int dimension_id =
-                mToolbarManager.isBottomToolbarVisible() ? R.dimen.toolbar_identity_disc_size_duet
-                                                         : R.dimen.toolbar_identity_disc_size;
+                (state == IdentityDiscState.SMALL) ? R.dimen.toolbar_identity_disc_size
+                                                   : R.dimen.toolbar_identity_disc_size_duet;
         int imageSize = mContext.getResources().getDimensionPixelSize(dimension_id);
-        mProfileDataCache = new ProfileDataCache(mContext, imageSize);
-        mProfileDataCache.addObserver(this);
-        mProfileDataCache.update(Collections.singletonList(accountName));
+        ProfileDataCache profileDataCache = new ProfileDataCache(mContext, imageSize);
+        profileDataCache.addObserver(this);
+        profileDataCache.update(Collections.singletonList(accountName));
+        mProfileDataCache[state] = profileDataCache;
+    }
+
+    /**
+     * Returns Profile picture Drawable. The size of the image corresponds to current visual state.
+     */
+    private Drawable getProfileImage(String accountName) {
+        assert mState != IdentityDiscState.NONE;
+        return mProfileDataCache[mState].getProfileDataOrDefault(accountName).getImage();
     }
 
     /**
      * Triggers profile image fetch and displays Identity Disc on top toolbar.
      */
     private void showIdentityDisc(String accountName) {
-        Drawable profileImage = mProfileDataCache.getProfileDataOrDefault(accountName).getImage();
         mToolbarManager.enableExperimentalButton(view -> {
             recordIdentityDiscUsed();
             PreferencesLauncher.launchSettingsPage(mContext, SyncAndServicesPreferences.class);
-        }, profileImage, R.string.accessibility_toolbar_btn_identity_disc);
+        }, getProfileImage(accountName), R.string.accessibility_toolbar_btn_identity_disc);
+    }
+
+    /**
+     * Hides IdentityDisc and resets all ProfileDataCache objects. Used for flushing cached images
+     * when sign-in state changes.
+     */
+    private void resetIdentityDisc() {
+        for (int i = 0; i < IdentityDiscState.MAX; i++) {
+            if (mProfileDataCache[i] != null) {
+                assert i != IdentityDiscState.NONE;
+                mProfileDataCache[i].removeObserver(this);
+                mProfileDataCache[i] = null;
+            }
+        }
+        if (mState != IdentityDiscState.NONE) {
+            mState = IdentityDiscState.NONE;
+            mToolbarManager.disableExperimentalButton();
+        }
     }
 
     /**
@@ -143,23 +212,19 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
      */
     @Override
     public void onProfileDataUpdated(String accountId) {
-        assert mProfileDataCache != null;
-        if (!mIsIdentityDiscVisible) return;
+        if (mState == IdentityDiscState.NONE) return;
+        assert mProfileDataCache[mState] != null;
 
         String accountName = ChromeSigninController.get().getSignedInAccountName();
         if (accountId.equals(accountName)) {
-            Drawable image = mProfileDataCache.getProfileDataOrDefault(accountName).getImage();
-            mToolbarManager.updateExperimentalButtonImage(image);
+            mToolbarManager.updateExperimentalButtonImage(getProfileImage(accountName));
         }
     }
 
     // SigninManager.SignInStateObserver implementation.
     @Override
     public void onSignedIn() {
-        String accountName = ChromeSigninController.get().getSignedInAccountName();
-        if (mProfileDataCache != null && accountName != null) {
-            mProfileDataCache.update(Collections.singletonList(accountName));
-        }
+        resetIdentityDisc();
         updateButtonState(mIsNTPVisible);
     }
 
@@ -183,9 +248,11 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
             mActivityLifecycleDispatcher = null;
         }
 
-        if (mProfileDataCache != null) {
-            mProfileDataCache.removeObserver(this);
-            mProfileDataCache = null;
+        for (int i = 0; i < IdentityDiscState.MAX; i++) {
+            if (mProfileDataCache[i] != null) {
+                mProfileDataCache[i].removeObserver(this);
+                mProfileDataCache[i] = null;
+            }
         }
         if (mSigninManager != null) {
             mSigninManager.removeSignInStateObserver(this);

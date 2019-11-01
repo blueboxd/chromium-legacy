@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.content.Context;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -48,7 +49,6 @@ import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiDisableIf;
 
 /**
@@ -89,7 +89,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     @MediumTest
     @DisabledTest(message = "crbug.com/789531")
     public void testManualDismissPromo() {
-        openBookmarkManager();
+        BookmarkTestUtil.showBookmarkManager(mActivityTestRule.getActivity());
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
         onView(withId(R.id.signin_promo_close_button)).perform(click());
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
@@ -102,11 +102,11 @@ public class BookmarkPersonalizedSigninPromoTest {
     public void testAutoDismissPromo() {
         int impressionCap = SigninPromoController.getMaxImpressionsBookmarksForTests();
         for (int impression = 0; impression < impressionCap; impression++) {
-            openBookmarkManager();
+            BookmarkTestUtil.showBookmarkManager(mActivityTestRule.getActivity());
             onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
             pressBack();
         }
-        openBookmarkManager();
+        BookmarkTestUtil.showBookmarkManager(mActivityTestRule.getActivity());
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
     }
 
@@ -117,10 +117,10 @@ public class BookmarkPersonalizedSigninPromoTest {
                 .when(SigninActivityLauncher.get())
                 .launchActivityForPromoDefaultFlow(any(Context.class), anyInt(), anyString());
         addTestAccount();
-        openBookmarkManagerAndCheckSigninPromoIsDisplayed();
+        showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_signin_button)).perform(click());
         verify(mMockSigninActivityLauncher)
-                .launchActivityForPromoDefaultFlow(any(BookmarkActivity.class),
+                .launchActivityForPromoDefaultFlow(any(Activity.class),
                         eq(SigninAccessPoint.BOOKMARK_MANAGER), eq(TEST_ACCOUNT_NAME));
     }
 
@@ -131,10 +131,10 @@ public class BookmarkPersonalizedSigninPromoTest {
                 .when(SigninActivityLauncher.get())
                 .launchActivityForPromoChooseAccountFlow(any(Context.class), anyInt(), anyString());
         addTestAccount();
-        openBookmarkManagerAndCheckSigninPromoIsDisplayed();
+        showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_choose_account_button)).perform(click());
         verify(mMockSigninActivityLauncher)
-                .launchActivityForPromoChooseAccountFlow(any(BookmarkActivity.class),
+                .launchActivityForPromoChooseAccountFlow(any(Activity.class),
                         eq(SigninAccessPoint.BOOKMARK_MANAGER), eq(TEST_ACCOUNT_NAME));
     }
 
@@ -144,22 +144,16 @@ public class BookmarkPersonalizedSigninPromoTest {
         doNothing()
                 .when(SigninActivityLauncher.get())
                 .launchActivityForPromoAddAccountFlow(any(Context.class), anyInt());
-        openBookmarkManagerAndCheckSigninPromoIsDisplayed();
+        showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_signin_button)).perform(click());
         verify(mMockSigninActivityLauncher)
                 .launchActivityForPromoAddAccountFlow(
-                        any(BookmarkActivity.class), eq(SigninAccessPoint.BOOKMARK_MANAGER));
+                        any(Activity.class), eq(SigninAccessPoint.BOOKMARK_MANAGER));
     }
 
-    private void openBookmarkManagerAndCheckSigninPromoIsDisplayed() {
-        openBookmarkManager();
+    private void showBookmarkManagerAndCheckSigninPromoIsDisplayed() {
+        BookmarkTestUtil.showBookmarkManager(mActivityTestRule.getActivity());
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
-    }
-
-    private void openBookmarkManager() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> BookmarkUtils.showBookmarkManager(mActivityTestRule.getActivity()));
-        BookmarkTestUtil.waitForBookmarkModelLoaded();
     }
 
     private void addTestAccount() {

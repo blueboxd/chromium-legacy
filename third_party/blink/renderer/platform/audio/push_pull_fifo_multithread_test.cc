@@ -33,7 +33,7 @@ class FIFOClient {
         bus_(AudioBus::Create(fifo->GetStateForTest().number_of_channels,
                               bus_length)),
         client_thread_(Platform::Current()->CreateThread(
-            ThreadCreationParams(WebThreadType::kTestThread)
+            ThreadCreationParams(ThreadType::kTestThread)
                 .SetThreadNameForTest("FIFOClientThread"))),
         done_event_(std::make_unique<base::WaitableEvent>(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,

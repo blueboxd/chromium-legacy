@@ -3,8 +3,54 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
 
-js_type_check("closure_compile") {
+polymer_modulizer("activity_log") {
+  js_file = "activity_log.js"
+  html_file = "activity_log.html"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("activity_log_history") {
+  js_file = "activity_log_history.js"
+  html_file = "activity_log_history.html"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("activity_log_history_item") {
+  js_file = "activity_log_history_item.js"
+  html_file = "activity_log_history_item.html"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("activity_log_stream") {
+  js_file = "activity_log_stream.js"
+  html_file = "activity_log_stream.html"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("activity_log_stream_item") {
+  js_file = "activity_log_stream_item.js"
+  html_file = "activity_log_stream_item.html"
+  html_type = "v3-ready"
+}
+
+group("polymer3_elements") {
+  deps = [
+    ":activity_log_history_item_module",
+    ":activity_log_history_module",
+    ":activity_log_module",
+    ":activity_log_stream_item_module",
+    ":activity_log_stream_module",
+  ]
+}
+
+js_type_check("closure_compile_module") {
+  closure_flags = default_closure_args + [
+                    "js_module_root=../../chrome/browser/resources/extensions/",
+                    "js_module_root=./gen/chrome/browser/resources/extensions/",
+                  ]
+  is_polymer3 = true
   deps = [
     ":activity_log",
     ":activity_log_history",
@@ -14,53 +60,46 @@ js_type_check("closure_compile") {
   ]
 }
 
-js_library("activity_log_history_item") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
-  externs_list = [ "$externs_path/activity_log_private.js" ]
-}
-
-js_library("activity_log_history") {
-  deps = [
-    ":activity_log_history_item",
-    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
-    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
-    "//ui/webui/resources/js:cr",
-  ]
-  externs_list = [ "$externs_path/activity_log_private.js" ]
-}
-
-js_library("activity_log_stream") {
-  deps = [
-    ":activity_log_stream_item",
-    "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted",
-    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
-    "//ui/webui/resources/js:cr",
-  ]
-  externs_list = [ "$externs_path/activity_log_private.js" ]
-}
-
-js_library("activity_log_stream_item") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
-  externs_list = [ "$externs_path/activity_log_private.js" ]
-}
-
 js_library("activity_log") {
   deps = [
     ":activity_log_history",
     ":activity_log_stream",
     "..:item_behavior",
     "..:navigation_helper",
-    "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js/cr/ui:focus_without_ink",
+    "//ui/webui/resources/cr_elements:cr_container_shadow_behavior.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
   externs_list = [
     "$externs_path/activity_log_private.js",
     "$externs_path/developer_private.js",
   ]
+}
+
+js_library("activity_log_history") {
+  deps = [
+    ":activity_log_history_item",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field.m",
+  ]
+  externs_list = [ "$externs_path/activity_log_private.js" ]
+}
+
+js_library("activity_log_history_item") {
+  deps = []
+  externs_list = [ "$externs_path/activity_log_private.js" ]
+}
+
+js_library("activity_log_stream") {
+  deps = [
+    ":activity_log_stream_item",
+    "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field.m",
+  ]
+  externs_list = [ "$externs_path/activity_log_private.js" ]
+}
+
+js_library("activity_log_stream_item") {
+  deps = []
+  externs_list = [ "$externs_path/activity_log_private.js" ]
 }

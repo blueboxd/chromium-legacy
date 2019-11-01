@@ -214,6 +214,9 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
   // the call to store() triggered from the unload handler.
   void TestStoreInUnloadHandlerForCrossSiteNavigation(
       bool preestablish_mojo_pipe) {
+    WebContents()->GetController().GetBackForwardCache().DisableForTesting(
+        content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
+
     const GURL a_url = https_test_server().GetURL("a.com", "/title1.html");
     const GURL b_url = https_test_server().GetURL("b.com", "/title2.html");
 

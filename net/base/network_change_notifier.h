@@ -146,10 +146,6 @@ class NET_EXPORT NetworkChangeNotifier {
    public:
     // Will be called when the DNS settings of the system may have changed.
     virtual void OnDNSChanged() = 0;
-    // Will be called when DNS settings of the system have been loaded.
-    // NOTE(pauljensen): This will not be called if the initial DNS config
-    // has already been read before this observer is registered.
-    virtual void OnInitialDNSConfigRead();
 
    protected:
     DNSObserver();
@@ -448,7 +444,6 @@ class NET_EXPORT NetworkChangeNotifier {
       ConnectionType type);
   static void NotifyObserversOfDNSChangeForTests();
   static void NotifyObserversOfNetworkChangeForTests(ConnectionType type);
-  static void NotifyObserversOfInitialDNSConfigReadForTests();
   static void NotifyObserversOfMaxBandwidthChangeForTests(
       double max_bandwidth_mbps,
       ConnectionType type);
@@ -547,7 +542,6 @@ class NET_EXPORT NetworkChangeNotifier {
   static void NotifyObserversOfIPAddressChange();
   static void NotifyObserversOfConnectionTypeChange();
   static void NotifyObserversOfDNSChange();
-  static void NotifyObserversOfInitialDNSConfigRead();
   static void NotifyObserversOfNetworkChange(ConnectionType type);
   static void NotifyObserversOfMaxBandwidthChange(double max_bandwidth_mbps,
                                                   ConnectionType type);
@@ -578,7 +572,6 @@ class NET_EXPORT NetworkChangeNotifier {
   void NotifyObserversOfIPAddressChangeImpl();
   void NotifyObserversOfConnectionTypeChangeImpl(ConnectionType type);
   void NotifyObserversOfDNSChangeImpl();
-  void NotifyObserversOfInitialDNSConfigReadImpl();
   void NotifyObserversOfNetworkChangeImpl(ConnectionType type);
   void NotifyObserversOfMaxBandwidthChangeImpl(double max_bandwidth_mbps,
                                                ConnectionType type);

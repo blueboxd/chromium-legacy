@@ -149,15 +149,15 @@ bool BrotliDecompress(base::StringPiece input, std::string* output) {
 }
 
 // Helper function for decompressing resource.
-void Decompress(base::StringPiece data, std::string* output) {
-  if (HasGzipHeader(data)) {
+void DecompressIfNeeded(base::StringPiece data, std::string* output) {
+  if (!data.empty() && HasGzipHeader(data)) {
     bool success = compression::GzipUncompress(data, output);
     DCHECK(success);
-  } else if (HasBrotliHeader(data)) {
+  } else if (!data.empty() && HasBrotliHeader(data)) {
     bool success = BrotliDecompress(data, output);
     DCHECK(success);
   } else {
-    NOTREACHED() << "Resource is not compressed";
+    data.CopyToString(output);
   }
 }
 
@@ -588,7 +588,7 @@ base::RefCountedMemory* ResourceBundle::LoadDataResourceBytesForScale(
     if (!data.empty()) {
       if (HasGzipHeader(data) || HasBrotliHeader(data)) {
         base::RefCountedString* bytes_string = new base::RefCountedString();
-        Decompress(data, &(bytes_string->data()));
+        DecompressIfNeeded(data, &(bytes_string->data()));
         bytes = bytes_string;
       } else {
         bytes = new base::RefCountedStaticMemory(data.data(), data.length());
@@ -632,20 +632,20 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   return base::StringPiece();
 }
 
-std::string ResourceBundle::DecompressDataResource(int resource_id) const {
-  return DecompressDataResourceScaled(resource_id, ui::SCALE_FACTOR_NONE);
+std::string ResourceBundle::LoadDataResourceString(int resource_id) const {
+  return LoadDataResourceStringForScale(resource_id, ui::SCALE_FACTOR_NONE);
 }
 
-std::string ResourceBundle::DecompressDataResourceScaled(
+std::string ResourceBundle::LoadDataResourceStringForScale(
     int resource_id,
     ScaleFactor scaling_factor) const {
   std::string output;
-  Decompress(GetRawDataResourceForScale(resource_id, scaling_factor), &output);
+  DecompressIfNeeded(GetRawDataResourceForScale(resource_id, scaling_factor),
+                     &output);
   return output;
 }
 
-std::string ResourceBundle::DecompressLocalizedDataResource(
-    int resource_id) const {
+std::string ResourceBundle::LoadLocalizedResourceString(int resource_id) const {
   base::AutoLock lock_scope(*locale_resources_data_lock_);
   base::StringPiece data;
   if (!(locale_resources_data_.get() &&
@@ -661,7 +661,7 @@ std::string ResourceBundle::DecompressLocalizedDataResource(
     }
   }
   std::string output;
-  Decompress(data, &output);
+  DecompressIfNeeded(data, &output);
   return output;
 }
 

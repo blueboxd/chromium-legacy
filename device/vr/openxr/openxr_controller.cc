@@ -202,10 +202,10 @@ device::mojom::XRInputSourceDescriptionPtr OpenXrController::GetDescription(
     description_->profiles.push_back(
         "generic-trigger-squeeze-touchpad-thumbstick");
   }
-  // pointer_offset only need to be set once unless something changed about
+  // input_from_pointer only need to be set once unless something changed about
   // controller.
-  if (!description_->pointer_offset) {
-    description_->pointer_offset =
+  if (!description_->input_from_pointer) {
+    description_->input_from_pointer =
         GetPointerFromGripTransform(predicted_display_time);
   }
 

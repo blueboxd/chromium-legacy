@@ -89,7 +89,7 @@ base::Optional<base::TimeDelta> GetMaxThrottlingDelay() {
 }  // namespace
 
 WorkerThreadScheduler::WorkerThreadScheduler(
-    WebThreadType thread_type,
+    ThreadType thread_type,
     base::sequence_manager::SequenceManager* sequence_manager,
     WorkerSchedulerProxy* proxy)
     : NonMainThreadSchedulerImpl(sequence_manager,
@@ -116,7 +116,7 @@ WorkerThreadScheduler::WorkerThreadScheduler(
   if (proxy && proxy->parent_frame_type())
     worker_metrics_helper_.SetParentFrameType(*proxy->parent_frame_type());
 
-  if (thread_type == WebThreadType::kDedicatedWorkerThread &&
+  if (thread_type == ThreadType::kDedicatedWorkerThread &&
       base::FeatureList::IsEnabled(kDedicatedWorkerThrottling)) {
     CreateTaskQueueThrottler();
   }

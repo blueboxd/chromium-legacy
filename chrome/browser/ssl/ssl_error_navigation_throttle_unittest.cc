@@ -35,7 +35,7 @@ void MockHandleSSLError(
         blocking_page_ready_callback) {
   std::unique_ptr<SSLBlockingPage> blocking_page(SSLBlockingPage::Create(
       web_contents, cert_error, ssl_info, request_url, 0,
-      base::Time::NowFromSystemTime(), GURL(), nullptr, decision_callback));
+      base::Time::NowFromSystemTime(), GURL(), nullptr));
   if (async) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(blocking_page_ready_callback),

@@ -58,15 +58,15 @@ const char kMonospaceCssClass[] = "monospace";
 std::string GetPlatformSpecificCss() {
 #if defined(OS_IOS)
   return base::StrCat(
-      {ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      {ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
            IDR_DISTILLER_MOBILE_CSS),
-       ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
            IDR_DISTILLER_IOS_CSS)});
 #elif defined(OS_ANDROID)
-  return ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
       IDR_DISTILLER_MOBILE_CSS);
 #else  // Desktop
-  return ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
       IDR_DISTILLER_DESKTOP_CSS);
 #endif
 }
@@ -120,7 +120,7 @@ std::string ReplaceHtmlTemplateValues(
     const DistilledPagePrefs::Theme theme,
     const DistilledPagePrefs::FontFamily font_family) {
   std::string html_template =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_DOM_DISTILLER_VIEWER_HTML);
   std::vector<std::string> substitutions;
 
@@ -233,18 +233,18 @@ const std::string GetUnsafeArticleContentJs(
 
 const std::string GetCss() {
   return base::StrCat(
-      {ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      {ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
            IDR_DISTILLER_CSS),
        GetPlatformSpecificCss()});
 }
 
 const std::string GetLoadingImage() {
-  return ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
       IDR_DISTILLER_LOADING_IMAGE);
 }
 
 const std::string GetJavaScript() {
-  return ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
       IDR_DOM_DISTILLER_VIEWER_JS);
 }
 

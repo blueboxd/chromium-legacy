@@ -17,6 +17,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/clients/mojo_decryptor.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/mojom/decryptor.mojom.h"
@@ -312,12 +313,14 @@ Decryptor* MojoCdm::GetDecryptor() {
     DVLOG(1) << __func__ << ": Using Decryptor exposed by the CDM directly";
     decryptor_remote = std::move(decryptor_ptr_info_);
   } else if (interface_factory_ && cdm_id_ != CdmContext::kInvalidCdmId) {
+#if BUILDFLAG(ENABLE_CDM_PROXY)
     // TODO(xhwang): Pass back info on whether Decryptor is supported by the
     // remote CDM.
     DVLOG(1) << __func__ << ": Using Decryptor associated with CDM ID "
              << cdm_id_ << ", typically hosted by CdmProxy in MediaService";
     interface_factory_->CreateDecryptor(
         cdm_id_, decryptor_remote.InitWithNewPipeAndPassReceiver());
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
   }
 
   if (decryptor_remote)

@@ -118,7 +118,7 @@ TEST(WebResourceTimingInfoTest, CrossThreadCopy) {
   WebResourceTimingInfo info = CreateWebResourceTimingInfo(pseudo_time);
 
   std::unique_ptr<Thread> thread = Platform::Current()->CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread)
+      ThreadCreationParams(ThreadType::kTestThread)
           .SetThreadNameForTest("TestThread"));
   PostCrossThreadTask(*thread->GetTaskRunner(), FROM_HERE,
                       CrossThreadBindOnce(&CheckWebResourceTimingInfoOnThread,

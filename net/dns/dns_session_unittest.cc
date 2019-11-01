@@ -303,8 +303,6 @@ class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
  public:
   void OnDNSChanged() override { ++dns_changed_calls_; }
 
-  void OnInitialDNSConfigRead() override { ++dns_changed_calls_; }
-
   int dns_changed_calls() const { return dns_changed_calls_; }
 
  private:

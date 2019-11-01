@@ -99,4 +99,6 @@ static_library("libxslt") {
   deps = [
     "//third_party/libxml",
   ]
+
+  visibility = [ "//third_party/blink/renderer/*" ]
 }

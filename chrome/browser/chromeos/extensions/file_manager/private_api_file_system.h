@@ -43,7 +43,13 @@ namespace drive {
 namespace util {
 class FileStreamMd5Digester;
 }  // namespace util
-struct HashAndFilePath;
+
+// File path and its MD5 hash obtained from drive.
+struct HashAndFilePath {
+  std::string hash;
+  base::FilePath path;
+};
+
 }  // namespace drive
 
 namespace extensions {

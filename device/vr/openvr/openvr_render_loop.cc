@@ -266,10 +266,11 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
     input_active_state.primary_input_pressed = pressed;
 
     if (pose.bPoseIsValid) {
-      state->grip = HmdMatrix34ToTransform(pose.mDeviceToAbsoluteTracking);
+      state->mojo_from_input =
+          HmdMatrix34ToTransform(pose.mDeviceToAbsoluteTracking);
       // Scoot the grip matrix back a bit so that it actually lines up with the
       // user's palm.
-      state->grip->Translate3d(0, 0, kGripOffsetZMeters);
+      state->mojo_from_input->Translate3d(0, 0, kGripOffsetZMeters);
     }
 
     // Poll controller roll per-frame, since OpenVR controllers can swap hands.
@@ -303,8 +304,8 @@ std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
 
       // Tweak the pointer transform so that it's angled down from the
       // grip. This should be a bit more ergonomic.
-      desc->pointer_offset = gfx::Transform();
-      desc->pointer_offset->RotateAboutXAxis(kPointerErgoAngleDegrees);
+      desc->input_from_pointer = gfx::Transform();
+      desc->input_from_pointer->RotateAboutXAxis(kPointerErgoAngleDegrees);
 
       desc->profiles = input_source_data.profiles;
 

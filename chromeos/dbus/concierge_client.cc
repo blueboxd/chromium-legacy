@@ -17,6 +17,15 @@
 
 namespace concierge = vm_tools::concierge;
 
+namespace {
+
+// TODO(nverne): revert to TIMEOUT_USE_DEFAULT when StartVm no longer requires
+// unnecessary long running crypto calculations _and_ b/143499148 is fixed.
+// TODO(yusukes): Fix b/143499148.
+constexpr int kConciergeDBusTimeoutMs = 160 * 1000;
+
+}  // namespace
+
 namespace chromeos {
 
 class ConciergeClientImpl : public ConciergeClient {
@@ -104,7 +113,7 @@ class ConciergeClientImpl : public ConciergeClient {
     writer.AppendFileDescriptor(fd.get());
 
     concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kConciergeDBusTimeoutMs,
         base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
                            concierge::ImportDiskImageResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -132,11 +141,7 @@ class ConciergeClientImpl : public ConciergeClient {
   void StartTerminaVm(
       const concierge::StartVmRequest& request,
       DBusMethodCallback<concierge::StartVmResponse> callback) override {
-    // TODO(nverne): revert to TIMEOUT_USE_DEFAULT when StartVm no longer
-    // requires unnecessary long running crypto calculations.
-    constexpr int kStartVmTimeoutMs = 160 * 1000;
-    CallMethod(concierge::kStartVmMethod, request, std::move(callback),
-               kStartVmTimeoutMs);
+    CallMethod(concierge::kStartVmMethod, request, std::move(callback));
   }
 
   void StopVm(const concierge::StopVmRequest& request,
@@ -198,7 +203,7 @@ class ConciergeClientImpl : public ConciergeClient {
     writer.AppendFileDescriptor(fd.get());
 
     concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kConciergeDBusTimeoutMs,
         base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
                            concierge::AttachUsbDeviceResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -266,8 +271,7 @@ class ConciergeClientImpl : public ConciergeClient {
   template <typename RequestProto, typename ResponseProto>
   void CallMethod(const std::string& method_name,
                   const RequestProto& request,
-                  DBusMethodCallback<ResponseProto> callback,
-                  int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT) {
+                  DBusMethodCallback<ResponseProto> callback) {
     dbus::MethodCall method_call(concierge::kVmConciergeInterface, method_name);
     dbus::MessageWriter writer(&method_call);
 
@@ -279,7 +283,7 @@ class ConciergeClientImpl : public ConciergeClient {
     }
 
     concierge_proxy_->CallMethod(
-        &method_call, timeout_ms,
+        &method_call, kConciergeDBusTimeoutMs,
         base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<ResponseProto>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }

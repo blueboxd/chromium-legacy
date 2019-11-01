@@ -73,14 +73,84 @@ config("libxml_warnings") {
   }
 }
 
+static_library("xml_reader") {
+  # Do not expand this visibility list without first consulting with the
+  # Security Team.
+  visibility = [
+    "//base/test:test_support",
+    "//components/policy/core/common:unit_tests",
+    "//services/data_decoder:*",
+    "//tools/traffic_annotation/auditor:auditor_sources",
+  ]
+  if (is_win) {
+    visibility += [ "//components/wifi" ]
+  }
+  sources = [
+    "chromium/xml_reader.cc",
+    "chromium/xml_reader.h",
+  ]
+  deps = [
+    ":libxml",
+    ":libxml_utils",
+  ]
+  configs += [ ":libxml_config" ]
+}
+
+static_library("xml_writer") {
+  # The XmlWriter is considered safe to use from any target.
+  visibility = [ "*" ]
+  sources = [
+    "chromium/xml_writer.cc",
+    "chromium/xml_writer.h",
+  ]
+  deps = [
+    ":libxml",
+    ":libxml_utils",
+  ]
+  configs += [ ":libxml_config" ]
+}
+
+static_library("libxml_utils") {
+  # Do not expand this visibility list without first consulting with the
+  # Security Team.
+  visibility = [
+    ":xml_reader",
+    ":xml_writer",
+    "//base/test:test_support",
+    "//services/data_decoder:xml_parser_fuzzer",
+  ]
+  sources = [
+    "chromium/libxml_utils.cc",
+    "chromium/libxml_utils.h",
+  ]
+  deps = [
+    ":libxml",
+  ]
+  public_deps = [
+    "//third_party/icu:icuuc",
+  ]
+  public_configs = [ ":libxml_config" ]
+}
+
 static_library("libxml") {
+  # Do not expand this visibility list without first consulting with the
+  # Security Team.
+  visibility = [
+    ":xml_reader",
+    ":xml_writer",
+    ":libxml_utils",
+    "//components/search_engines",
+    "//testing/libfuzzer/*",
+    "//third_party/blink/renderer/*",
+    "//third_party/fontconfig",
+    "//third_party/libxslt",
+  ]
+
   output_name = "libxml2"
 
   # Commented out sources are libxml2 files we do not want to include. They are
   # here to make it easy to identify files which are new.
   sources = [
-    "chromium/libxml_utils.cc",
-    "chromium/libxml_utils.h",
     "linux/config.h",
     "linux/include/libxml/xmlversion.h",
     "mac/config.h",

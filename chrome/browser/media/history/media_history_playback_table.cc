@@ -6,8 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/updateable_sequenced_task_runner.h"
-#include "chrome/browser/media/history/media_player_watchtime.h"
-#include "content/public/browser/media_player_id.h"
+#include "content/public/browser/media_player_watch_time.h"
 #include "sql/statement.h"
 
 namespace media_history {
@@ -28,9 +27,7 @@ sql::InitStatus MediaHistoryPlaybackTable::CreateTableIfNonExistent() {
       "origin_id INTEGER NOT NULL,"
       "url TEXT,"
       "timestamp_ms INTEGER,"
-      "has_audio INTEGER,"
-      "has_video INTEGER,"
-      "watchtime_ms INTEGER,"
+      "watch_time_ms INTEGER,"
       "CONSTRAINT fk_origin "
       "FOREIGN KEY (origin_id) "
       "REFERENCES origin(id) "
@@ -58,58 +55,26 @@ sql::InitStatus MediaHistoryPlaybackTable::CreateTableIfNonExistent() {
   return sql::INIT_OK;
 }
 
-void MediaHistoryPlaybackTable::SavePlayback(
-    const content::MediaPlayerId& id,
-    const content::MediaPlayerWatchtime& watchtime) {
+bool MediaHistoryPlaybackTable::SavePlayback(
+    const content::MediaPlayerWatchTime& watch_time) {
+  DCHECK_LT(0, DB()->transaction_nesting());
   if (!CanAccessDatabase())
-    return;
-
-  if (!DB()->BeginTransaction())
-    return;
+    return false;
 
   sql::Statement statement(DB()->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO playback "
-      "(origin_id, has_audio, has_video, watchtime_ms, url, timestamp_ms) "
-      "VALUES ((SELECT id FROM origin WHERE origin = ?), ?, ?, ?, ?, ?)"));
-  statement.BindString(0, watchtime.origin);
-  statement.BindBool(1, watchtime.has_audio);
-  statement.BindBool(2, watchtime.has_video);
-  statement.BindInt(3, watchtime.cumulative_watchtime.InMilliseconds());
-  statement.BindString(4, watchtime.url);
-  statement.BindInt(5, watchtime.last_timestamp.InMilliseconds());
+      "(origin_id, url, watch_time_ms, timestamp_ms) "
+      "VALUES ((SELECT id FROM origin WHERE origin = ?), ?, ?, ?)"));
+  statement.BindString(0, watch_time.origin.spec());
+  statement.BindString(1, watch_time.url.spec());
+  statement.BindInt(2, watch_time.cumulative_watch_time.InMilliseconds());
+  statement.BindInt(3, watch_time.last_timestamp.InMilliseconds());
   if (!statement.Run()) {
-    DB()->RollbackTransaction();
-    return;
+    return false;
   }
 
-  DB()->CommitTransaction();
-}
-
-MediaHistoryPlaybackTable::MediaHistoryPlaybacks
-MediaHistoryPlaybackTable::GetRecentPlaybacks(int num_results) {
-  MediaHistoryPlaybacks results;
-
-  sql::Statement statement(
-      DB()->GetCachedStatement(SQL_FROM_HERE,
-                               "SELECT id, origin_id, has_audio, has_video, "
-                               "watchtime_ms, timestamp_ms"
-                               "FROM playback ORDER BY id DESC"
-                               "LIMIT ?"));
-  statement.BindInt(0, num_results);
-
-  while (statement.Step()) {
-    MediaHistoryPlaybackTable::MediaHistoryPlayback playback;
-    playback.has_audio = statement.ColumnInt(2);
-    playback.has_video = statement.ColumnInt(3);
-    playback.watchtime =
-        base::TimeDelta::FromMilliseconds(statement.ColumnInt(4));
-    playback.timestamp =
-        base::TimeDelta::FromMilliseconds(statement.ColumnInt(5));
-    results.push_back(playback);
-  }
-
-  return results;
+  return true;
 }
 
 }  // namespace media_history

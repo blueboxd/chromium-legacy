@@ -111,13 +111,17 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadPathReservationTracker {
   // tests.
   static bool IsPathInUseForTesting(const base::FilePath& path);
 
-  // Returns true if there is an existing path reservation, separate from the
-  // download_item. Called by
+  using CheckDownloadPathCallback =
+      base::OnceCallback<void(bool /* file_exists */)>;
+
+  // Checks to see if there is an existing path reservation that is separate
+  // from the |download_item|, and calls |callback| with the result. Called by
   // ChromeDownloadManagerDelegate::OnDownloadTargetDetermined to see if there
   // is a target collision.
-  static bool CheckDownloadPathForExistingDownload(
+  static void CheckDownloadPathForExistingDownload(
       const base::FilePath& target_path,
-      DownloadItem* download_item);
+      DownloadItem* download_item,
+      CheckDownloadPathCallback callback);
 
   static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 };

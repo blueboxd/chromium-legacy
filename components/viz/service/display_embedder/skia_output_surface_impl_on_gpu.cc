@@ -591,19 +591,27 @@ std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
     ContextLostCallback context_lost_callback,
     GpuVSyncCallback gpu_vsync_callback) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::Create");
+
+  auto context_state = deps->GetSharedContextState();
+  if (!context_state)
+    return nullptr;
+
   auto impl_on_gpu = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
-      util::PassKey<SkiaOutputSurfaceImplOnGpu>(), deps, renderer_settings,
-      sequence_id, std::move(did_swap_buffer_complete_callback),
+      util::PassKey<SkiaOutputSurfaceImplOnGpu>(), deps,
+      context_state->feature_info(), renderer_settings, sequence_id,
+      std::move(did_swap_buffer_complete_callback),
       std::move(buffer_presented_callback), std::move(context_lost_callback),
       std::move(gpu_vsync_callback));
   if (!impl_on_gpu->Initialize())
-    impl_on_gpu = nullptr;
+    return nullptr;
+
   return impl_on_gpu;
 }
 
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     util::PassKey<SkiaOutputSurfaceImplOnGpu> /* pass_key */,
     SkiaOutputSurfaceDependency* deps,
+    scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     const RendererSettings& renderer_settings,
     const gpu::SequenceId sequence_id,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback,
@@ -611,7 +619,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     ContextLostCallback context_lost_callback,
     GpuVSyncCallback gpu_vsync_callback)
     : dependency_(std::move(deps)),
-      feature_info_(dependency_->GetSharedContextState()->feature_info()),
+      feature_info_(std::move(feature_info)),
       sync_point_client_state_(
           CreateSyncPointClientState(dependency_, sequence_id)),
       shared_image_representation_factory_(
@@ -1444,6 +1452,10 @@ const gpu::GpuPreferences& SkiaOutputSurfaceImplOnGpu::GetGpuPreferences()
 
 GpuVSyncCallback SkiaOutputSurfaceImplOnGpu::GetGpuVSyncCallback() {
   return gpu_vsync_callback_;
+}
+
+base::TimeDelta SkiaOutputSurfaceImplOnGpu::GetGpuBlockedTimeSinceLastSwap() {
+  return dependency_->GetGpuBlockedTimeSinceLastSwap();
 }
 
 void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersComplete(

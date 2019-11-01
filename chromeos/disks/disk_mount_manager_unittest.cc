@@ -654,8 +654,6 @@ TEST_F(DiskMountManagerTest, Format_FailToUnmount) {
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(0, fake_cros_disks_client_->format_call_count());
 
   // The device mount should still be here.
@@ -692,8 +690,6 @@ TEST_F(DiskMountManagerTest, Format_FormatFailsToStart) {
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
@@ -750,8 +746,6 @@ TEST_F(DiskMountManagerTest, Format_ConcurrentFormatCalls) {
   EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
@@ -789,8 +783,6 @@ TEST_F(DiskMountManagerTest, Format_FormatFails) {
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
@@ -841,8 +833,6 @@ TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
@@ -892,8 +882,6 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
@@ -925,8 +913,6 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(2, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
@@ -1137,8 +1123,6 @@ TEST_F(DiskMountManagerTest, Rename_FailToUnmount) {
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(0, fake_cros_disks_client_->rename_call_count());
 
   // The device mount should still be here.
@@ -1175,8 +1159,6 @@ TEST_F(DiskMountManagerTest, Rename_RenameFailsToStart) {
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(1, fake_cros_disks_client_->rename_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_rename_device_path());
@@ -1231,8 +1213,6 @@ TEST_F(DiskMountManagerTest, Rename_ConcurrentRenameCalls) {
   EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(1, fake_cros_disks_client_->rename_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_rename_device_path());
@@ -1256,8 +1236,6 @@ TEST_F(DiskMountManagerTest, Rename_RenameFails) {
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(1, fake_cros_disks_client_->rename_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_rename_device_path());
@@ -1305,8 +1283,6 @@ TEST_F(DiskMountManagerTest, Rename_RenameSuccess) {
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(1, fake_cros_disks_client_->rename_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_rename_device_path());
@@ -1353,8 +1329,6 @@ TEST_F(DiskMountManagerTest, Rename_ConsecutiveRenameCalls) {
   EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(1, fake_cros_disks_client_->rename_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_rename_device_path());
@@ -1386,8 +1360,6 @@ TEST_F(DiskMountManagerTest, Rename_ConsecutiveRenameCalls) {
   EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
   EXPECT_EQ(kDevice1MountPath,
             fake_cros_disks_client_->last_unmount_device_path());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(2, fake_cros_disks_client_->rename_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_rename_device_path());
@@ -1461,8 +1433,6 @@ TEST_F(DiskMountManagerTest, UnmountDeviceRecursively) {
   run_loop.Run();
 
   EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, error_code);
 }
 
@@ -1554,8 +1524,6 @@ TEST_F(DiskMountManagerTest, UnmountDeviceRecursively_FailFirst) {
   run_loop.Run();
 
   EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
-            fake_cros_disks_client_->last_unmount_options());
   EXPECT_EQ(chromeos::MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS, error_code);
 }
 

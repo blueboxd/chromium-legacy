@@ -24,6 +24,9 @@ class AppUpdateTest : public testing::Test {
   std::string expect_short_name_;
   bool expect_short_name_changed_;
 
+  std::string expect_publisher_id_;
+  bool expect_publisher_id_changed_;
+
   std::string expect_description_;
   bool expect_description_changed_;
 
@@ -85,6 +88,7 @@ class AppUpdateTest : public testing::Test {
     expect_readiness_changed_ = false;
     expect_name_changed_ = false;
     expect_short_name_changed_ = false;
+    expect_publisher_id_changed_ = false;
     expect_description_changed_ = false;
     expect_version_changed_ = false;
     expect_additional_search_terms_changed_ = false;
@@ -111,6 +115,9 @@ class AppUpdateTest : public testing::Test {
 
     EXPECT_EQ(expect_short_name_, u.ShortName());
     EXPECT_EQ(expect_short_name_changed_, u.ShortNameChanged());
+
+    EXPECT_EQ(expect_publisher_id_, u.PublisherId());
+    EXPECT_EQ(expect_publisher_id_changed_, u.PublisherIdChanged());
 
     EXPECT_EQ(expect_description_, u.Description());
     EXPECT_EQ(expect_description_changed_, u.DescriptionChanged());
@@ -169,6 +176,7 @@ class AppUpdateTest : public testing::Test {
     expect_readiness_ = apps::mojom::Readiness::kUnknown;
     expect_name_ = "";
     expect_short_name_ = "";
+    expect_publisher_id_ = "";
     expect_description_ = "";
     expect_version_ = "";
     expect_additional_search_terms_.clear();
@@ -242,6 +250,28 @@ class AppUpdateTest : public testing::Test {
       delta->short_name = "Bob";
       expect_short_name_ = "Bob";
       expect_short_name_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // PublisherId tests.
+
+    if (state) {
+      state->publisher_id = "com.google.android.youtube";
+      expect_publisher_id_ = "com.google.android.youtube";
+      expect_publisher_id_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->publisher_id = "com.android.youtube";
+      expect_publisher_id_ = "com.android.youtube";
+      expect_publisher_id_changed_ = true;
       CheckExpects(u);
     }
 

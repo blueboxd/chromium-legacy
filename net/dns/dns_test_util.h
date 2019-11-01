@@ -185,7 +185,10 @@ class DnsClient;
 class IPAddress;
 class URLRequestContext;
 
-// Build a DNS response that includes address records.
+// Builds an address record for the given name and IP.
+DnsResourceRecord BuildTestAddressRecord(std::string name, const IPAddress& ip);
+
+// Builds a DNS response that includes address records.
 std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
                                                   const IPAddress& ip);
 std::unique_ptr<DnsResponse> BuildTestDnsResponseWithCname(

@@ -839,9 +839,10 @@ IN_PROC_BROWSER_TEST_P(PublicSessionWithTermsOfServiceOobeTest,
   OobeScreenWaiter(TermsOfServiceScreenView::kScreenId).Wait();
 
   test::OobeJS()
-      .CreateWaiter(test::GetOobeElementPath({"tos-accept-button"}))
+      .CreateWaiter(
+          test::GetOobeElementPath({"terms-of-service", "acceptButton"}))
       ->Wait();
-  test::OobeJS().ClickOnPath({"tos-accept-button"});
+  test::OobeJS().ClickOnPath({"terms-of-service", "acceptButton"});
 
   OobeScreenExitWaiter(TermsOfServiceScreenView::kScreenId).Wait();
 

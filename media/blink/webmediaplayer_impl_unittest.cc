@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
@@ -30,6 +31,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/mock_audio_renderer_sink.h"
+#include "media/base/mock_filters.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
@@ -37,6 +39,7 @@
 #include "media/blink/mock_webassociatedurlloader.h"
 #include "media/blink/resource_multibuffer_data_provider.h"
 #include "media/blink/video_decode_stats_reporter.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
@@ -715,6 +718,39 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   void OnProgress() { wmpi_->OnProgress(); }
 
+  void OnCdmCreated(base::RepeatingClosure quit_closure,
+                    blink::WebContentDecryptionModule* cdm,
+                    const std::string& error_message) {
+    LOG_IF(ERROR, !error_message.empty()) << error_message;
+    EXPECT_TRUE(cdm);
+    web_cdm_.reset(cdm);
+    quit_closure.Run();
+  }
+
+  void CreateCdm() {
+    // Must use a supported key system on a secure context.
+    auto key_system = base::ASCIIToUTF16("org.w3.clearkey");
+    auto test_origin = blink::WebSecurityOrigin::CreateFromString(
+        blink::WebString::FromUTF8("https://test.origin"));
+
+    base::RunLoop run_loop;
+    WebContentDecryptionModuleImpl::Create(
+        &mock_cdm_factory_, key_system, test_origin, CdmConfig(),
+        base::BindOnce(&WebMediaPlayerImplTest::OnCdmCreated,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(web_cdm_);
+  }
+
+  void SetCdm() {
+    DCHECK(web_cdm_);
+    auto* mock_cdm = mock_cdm_factory_.GetCreatedCdm();
+    EXPECT_CALL(*mock_cdm, GetCdmContext())
+        .WillRepeatedly(Return(&mock_cdm_context_));
+
+    wmpi_->SetCdmInternal(web_cdm_.get());
+  }
+
   // "Media" thread. This is necessary because WMPI destruction waits on a
   // WaitableEvent.
   base::Thread media_thread_;
@@ -740,6 +776,11 @@ class WebMediaPlayerImplTest : public testing::Test {
   // The client interface used by |wmpi_|.
   NiceMock<MockWebMediaPlayerClient> client_;
   MockWebMediaPlayerEncryptedMediaClient encrypted_client_;
+
+  // Used to create the MockCdm to test encrypted playback.
+  MockCdmFactory mock_cdm_factory_;
+  std::unique_ptr<blink::WebContentDecryptionModule> web_cdm_;
+  MockCdmContext mock_cdm_context_;
 
   viz::FrameSinkId frame_sink_id_ = viz::FrameSinkId(1, 1);
   viz::LocalSurfaceId local_surface_id_ =
@@ -1541,22 +1582,36 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
   OnMetadata(metadata);
 }
 
-// TODO(xhwang): Use MockCdm in encrypted media related tests.
-
 TEST_F(WebMediaPlayerImplTest, Encrypted) {
   InitializeWebMediaPlayerImpl();
 
-  base::RunLoop loop;
+  // To avoid PreloadMetadataLazyLoad.
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
+
+  EXPECT_CALL(encrypted_client_, DidBlockPlaybackWaitingForKey());
+  EXPECT_CALL(encrypted_client_, DidResumePlaybackBlockedForKey());
   EXPECT_CALL(encrypted_client_,
-              Encrypted(EmeInitDataType::WEBM, NotNull(), Gt(0u)))
-      .WillOnce(RunClosure(loop.QuitClosure()));
+              Encrypted(EmeInitDataType::WEBM, NotNull(), Gt(0u)));
+  LoadAndWaitForReadyState(kEncryptedVideoOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveMetadata);
 
-  // Cannot wait for metadata since we don't have a CDM and pipeline
-  // initialization will stall waiting for a CDM to be set. But Encrypted()
-  // should still be called.
-  Load(kEncryptedVideoOnlyTestFile);
+  CreateCdm();
 
-  loop.Run();
+  // The CDM doesn't support Decryptor nor CDM ID. Pipeline startup will fail.
+  EXPECT_CALL(mock_cdm_context_, GetDecryptor())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(nullptr));
+  mock_cdm_context_.set_cdm_id(CdmContext::kInvalidCdmId);
+
+  // Wait for kNetworkStateFormatError caused by Renderer initialization error.
+  base::RunLoop run_loop;
+  EXPECT_CALL(client_, NetworkStateChanged()).WillOnce(Invoke([&] {
+    if (wmpi_->GetNetworkState() ==
+        blink::WebMediaPlayer::kNetworkStateFormatError)
+      run_loop.QuitClosure().Run();
+  }));
+  SetCdm();
+  run_loop.Run();
 }
 
 TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {

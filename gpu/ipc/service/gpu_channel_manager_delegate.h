@@ -60,6 +60,9 @@ class GpuChannelManagerDelegate {
   // thread.
   virtual bool IsExiting() const = 0;
 
+  // Returns GPU Scheduler
+  virtual gpu::Scheduler* GetGpuScheduler() = 0;
+
 #if defined(OS_WIN)
   // Tells the delegate that |child_window| was created in the GPU process and
   // to send an IPC to make SetParent() syscall. This syscall is blocked by the

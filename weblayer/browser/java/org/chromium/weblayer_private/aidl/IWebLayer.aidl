@@ -34,4 +34,7 @@ interface IWebLayer {
   // (see Fragment#setArguments).
   IBrowserFragment createBrowserFragmentImpl(in IRemoteFragmentClient fragmentClient,
       in IObjectWrapper fragmentArgs) = 3;
+
+  // Create or get the profile matching profilePath.
+  IProfile getProfile(in String profilePath) = 4;
 }

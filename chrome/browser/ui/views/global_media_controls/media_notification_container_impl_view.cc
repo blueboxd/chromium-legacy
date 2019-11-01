@@ -178,6 +178,13 @@ void MediaNotificationContainerImplView::OnColorsChanged(SkColor foreground,
   }
 }
 
+void MediaNotificationContainerImplView::OnHeaderClicked() {
+  // Since we disable the expand button, nothing happens on the
+  // MediaNotificationView when the header is clicked. Treat the click as if we
+  // were clicked directly.
+  ContainerClicked();
+}
+
 ui::Layer* MediaNotificationContainerImplView::GetSlideOutLayer() {
   return swipeable_container_->layer();
 }
@@ -191,8 +198,7 @@ void MediaNotificationContainerImplView::ButtonPressed(views::Button* sender,
   if (sender == dismiss_button_) {
     DismissNotification();
   } else if (sender == this) {
-    for (auto& observer : observers_)
-      observer.OnContainerClicked(id_);
+    ContainerClicked();
   } else {
     NOTREACHED();
   }
@@ -250,4 +256,9 @@ void MediaNotificationContainerImplView::ForceExpandedState() {
     bool should_expand = has_many_actions_ || has_artwork_;
     view_->SetForcedExpandedState(&should_expand);
   }
+}
+
+void MediaNotificationContainerImplView::ContainerClicked() {
+  for (auto& observer : observers_)
+    observer.OnContainerClicked(id_);
 }

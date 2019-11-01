@@ -790,6 +790,9 @@ cr.define('device_page_tests', function() {
             expectFalse(displayPage.showUnifiedDesktop_(
                 false, false, displayPage.displays));
 
+            // Verify that the arrangement section is not shown.
+            expectEquals(null, displayPage.$$('#arrangement-section'));
+
             // Add a second display.
             addDisplay(2);
             fakeSystemDisplay.onDisplayChanged.callListeners();
@@ -818,6 +821,9 @@ cr.define('device_page_tests', function() {
                 true, true, displayPage.displays));
             expectFalse(displayPage.showUnifiedDesktop_(
                 false, false, displayPage.displays));
+
+            // Verify that the arrangement section is shown.
+            expectTrue(!!displayPage.$$('#arrangement-section'));
 
             // Select the second display and make it primary. Also change the
             // orientation of the second display.
@@ -873,6 +879,9 @@ cr.define('device_page_tests', function() {
             expectTrue(displayPage.displays[0].isPrimary);
             expectTrue(displayPage.showMirror_(false, displayPage.displays));
             expectTrue(displayPage.isMirrored_(displayPage.displays));
+
+            // Verify that the arrangement section is shown while mirroring.
+            expectTrue(!!displayPage.$$('#arrangement-section'));
 
             // Ensure that the zoom value remains unchanged while draggging.
             function pointerEvent(eventType, ratio) {

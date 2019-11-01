@@ -62,7 +62,7 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
   // |manager| and |proxy| must remain valid for the entire lifetime of this
   // object.
-  WorkerThreadSchedulerForTest(WebThreadType thread_type,
+  WorkerThreadSchedulerForTest(ThreadType thread_type,
                                base::sequence_manager::SequenceManager* manager,
                                WorkerSchedulerProxy* proxy)
       : WorkerThreadScheduler(thread_type, manager, proxy) {}
@@ -94,7 +94,7 @@ class WorkerSchedulerTest : public testing::Test {
                 nullptr,
                 mock_task_runner_,
                 mock_task_runner_->GetMockTickClock())),
-        scheduler_(new WorkerThreadSchedulerForTest(WebThreadType::kTestThread,
+        scheduler_(new WorkerThreadSchedulerForTest(ThreadType::kTestThread,
                                                     sequence_manager_.get(),
                                                     nullptr /* proxy */)) {
     mock_task_runner_->AdvanceMockTickClock(

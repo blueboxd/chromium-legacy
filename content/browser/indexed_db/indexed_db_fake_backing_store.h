@@ -24,13 +24,13 @@ class IndexedDBKeyRange;
 
 namespace content {
 
-class IndexedDBFactory;
-
 class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
  public:
   IndexedDBFakeBackingStore();
-  IndexedDBFakeBackingStore(IndexedDBFactory* factory,
-                            base::SequencedTaskRunner* task_runner);
+  IndexedDBFakeBackingStore(
+      BlobFilesCleanedCallback blob_files_cleaned,
+      ReportOutstandingBlobsCallback report_outstanding_blobs,
+      base::SequencedTaskRunner* task_runner);
   ~IndexedDBFakeBackingStore() override;
 
   leveldb::Status DeleteDatabase(

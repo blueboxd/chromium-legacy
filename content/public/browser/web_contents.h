@@ -411,6 +411,18 @@ class WebContents : public PageNavigator,
       std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
           property_filters) = 0;
 
+  // A callback that takes a string which contains accessibility event
+  // information.
+  using AccessibilityEventCallback =
+      base::RepeatingCallback<void(const std::string&)>;
+
+  // Starts or stops recording accessibility events. While accessibility events
+  // are being recorded, the callback will be called when an accessibility
+  // event is received. The start paramater says whether the recording is
+  // starting or stopping.
+  virtual void RecordAccessibilityEvents(AccessibilityEventCallback callback,
+                                         bool start) = 0;
+
   virtual const PageImportanceSignals& GetPageImportanceSignals() = 0;
 
   // Tab navigation state ------------------------------------------------------

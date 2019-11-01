@@ -12,7 +12,7 @@ import("//build/config/sysroot.gni")
 #     if different than |target_name|.
 # binary: The executable target which should be launched.
 # manifest: A path to the manifest that will be used.
-#     "testonly" targets default to using //build/config/fuchsia/tests.cmx.
+#     "testonly" targets default to using //build/config/fuchsia/tests-with-exec.cmx.
 #     Non-test targets must explicitly specify a |manifest|.
 # deps: Additional targets to build and include in the package (optional).
 template("fuchsia_package") {
@@ -27,7 +27,10 @@ template("fuchsia_package") {
 
     if (!defined(manifest)) {
       assert(testonly == true)
-      manifest = "//build/config/fuchsia/tests.cmx"
+
+      # TODO(1019938): switch the default to tests.cmx which doesn't request
+      # the deprecated-ambient-replace-as-executable feature.
+      manifest = "//build/config/fuchsia/tests-with-exec.cmx"
     }
   }
   assert(defined(pkg.binary))

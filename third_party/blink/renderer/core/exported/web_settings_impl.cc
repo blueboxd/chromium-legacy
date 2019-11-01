@@ -152,6 +152,10 @@ void WebSettingsImpl::SetAccessibilityFontScaleFactor(float font_scale_factor) {
   settings_->SetAccessibilityFontScaleFactor(font_scale_factor);
 }
 
+void WebSettingsImpl::SetAccessibilityAlwaysShowFocus(bool always_show_focus) {
+  settings_->SetAccessibilityAlwaysShowFocus(always_show_focus);
+}
+
 void WebSettingsImpl::SetAccessibilityPasswordValuesEnabled(bool enabled) {
   settings_->SetAccessibilityPasswordValuesEnabled(enabled);
 }

@@ -17,7 +17,8 @@ enum ContactsPickerPropertiesRequested {
   PROPERTIES_TELS = 1 << 0,
   PROPERTIES_EMAILS = 1 << 1,
   PROPERTIES_NAMES = 1 << 2,
-  PROPERTIES_BOUNDARY = 1 << 3,
+  PROPERTIES_ADDRESSES = 1 << 3,
+  PROPERTIES_BOUNDARY = 1 << 4,
 };
 
 }  // namespace content

@@ -109,14 +109,13 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 // The goal is to verify that cookies set in incognito tabs are available in
 // incognito tabs but not available in normal tabs. Cookies set in incognito
 // tabs are also deleted when all incognito tabs are closed.
-- (void)testClearIncognitoFromMain {
+// TODO(crbug.com/1019670): This test fails on iOS 12/13 under EG2.
 #if defined(CHROME_EARL_GREY_2)
-  // TODO(crbug.com/1019670): This test fails on iOS 12 under EG2.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
-  }
+#define MAYBE_testClearIncognitoFromMain DISABLED_testClearIncognitoFromMain
+#else
+#define MAYBE_testClearIncognitoFromMain testClearIncognitoFromMain
 #endif
-
+- (void)MAYBE_testClearIncognitoFromMain {
   // Loads a dummy page in normal tab. Sets a normal test cookie. Verifies that
   // the incognito test cookie is not found.
   [ChromeEarlGrey
@@ -163,14 +162,14 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 // Tests that a cookie set in incognito tab is removed after closing all
 // incognito tabs and then when new incognito tab is created the cookie will
 // not reappear.
-- (void)testClearIncognitoFromIncognito {
+// TODO(crbug.com/1019670): This test fails on iOS 12/13 under EG2.
 #if defined(CHROME_EARL_GREY_2)
-  // TODO(crbug.com/1019670): This test fails on iOS 12 under EG2.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
-  }
+#define MAYBE_testClearIncognitoFromIncognito \
+  DISABLED_testClearIncognitoFromIncognito
+#else
+#define MAYBE_testClearIncognitoFromIncognito testClearIncognitoFromIncognito
 #endif
-
+- (void)MAYBE_testClearIncognitoFromIncognito {
   // Loads a page in normal tab.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];
@@ -211,14 +210,13 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 }
 
 // Tests that a cookie set in normal tab is not available in an incognito tab.
-- (void)testSwitchToIncognito {
+// TODO(crbug.com/1019670): This test fails on iOS 12/13 under EG2.
 #if defined(CHROME_EARL_GREY_2)
-  // TODO(crbug.com/1019670): This test fails on iOS 12 under EG2.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
-  }
+#define MAYBE_testSwitchToIncognito DISABLED_testSwitchToIncognito
+#else
+#define MAYBE_testSwitchToIncognito testSwitchToIncognito
 #endif
-
+- (void)MAYBE_testSwitchToIncognito {
   // Sets cookie in normal tab.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalSetCookie)];
@@ -252,14 +250,13 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 
 // Tests that a cookie set in incognito tab is only available in another
 // incognito tab. They are not available in a normal tab.
-- (void)testSwitchToMain {
+// TODO(crbug.com/1019670): This test fails on iOS 12/13 under EG2.
 #if defined(CHROME_EARL_GREY_2)
-  // TODO(crbug.com/1019670): This test fails on iOS 12 under EG2.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
-  }
+#define MAYBE_testSwitchToMain DISABLED_testSwitchToMain
+#else
+#define MAYBE_testSwitchToMain testSwitchToMain
 #endif
-
+- (void)MAYBE_testSwitchToMain {
   // Loads a page in normal tab and then switches to a new incognito tab. Sets
   // cookie in incognito tab.
   [ChromeEarlGrey
@@ -295,14 +292,13 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 }
 
 // Tests that a cookie set in a normal tab can be found in another normal tab.
-- (void)testShareCookiesBetweenTabs {
+// TODO(crbug.com/1019670): This test fails on iOS 12/13 under EG2.
 #if defined(CHROME_EARL_GREY_2)
-  // TODO(crbug.com/1019670): This test fails on iOS 12 under EG2.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Test fails on iOS 12 under EG2.");
-  }
+#define MAYBE_testShareCookiesBetweenTabs DISABLED_testShareCookiesBetweenTabs
+#else
+#define MAYBE_testShareCookiesBetweenTabs testShareCookiesBetweenTabs
 #endif
-
+- (void)MAYBE_testShareCookiesBetweenTabs {
   // Loads page and sets cookie in first normal tab.
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalSetCookie)];

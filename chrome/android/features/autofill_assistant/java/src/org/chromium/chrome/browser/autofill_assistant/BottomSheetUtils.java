@@ -8,6 +8,7 @@ import android.view.View;
 
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 
@@ -23,7 +24,7 @@ class BottomSheetUtils {
             private boolean mEnabled;
 
             @Override
-            public void onSheetContentChanged(BottomSheet.BottomSheetContent newContent) {
+            public void onSheetContentChanged(BottomSheetContent newContent) {
                 if (newContent == content) {
                     mEnabled = true;
                 } else if (mEnabled) {
@@ -40,8 +41,8 @@ class BottomSheetUtils {
                 // When scrolling with y < peekHeight, the BottomSheet will make the content
                 // invisible. This is a workaround to prevent that as our toolbar is transparent and
                 // we want to sheet content to stay visible.
-                if ((bottomSheet.getSheetState() == BottomSheet.SheetState.SCROLLING
-                            || bottomSheet.getSheetState() == BottomSheet.SheetState.PEEK)
+                if ((bottomSheet.getSheetState() == BottomSheetController.SheetState.SCROLLING
+                            || bottomSheet.getSheetState() == BottomSheetController.SheetState.PEEK)
                         && bottomSheet.getCurrentSheetContent() == content) {
                     bottomSheetContainer.setVisibility(View.VISIBLE);
                 }
@@ -51,7 +52,7 @@ class BottomSheetUtils {
             public void onSheetStateChanged(int newState) {
                 if (!mEnabled) return;
 
-                if (newState == BottomSheet.SheetState.PEEK
+                if (newState == BottomSheetController.SheetState.PEEK
                         && bottomSheet.getCurrentSheetContent() == content) {
                     // When in the peek state, the BottomSheet hides the content view. We override
                     // that because we artificially increase the height of the transparent toolbar
@@ -69,7 +70,7 @@ class BottomSheetUtils {
             // it is.
             bottomSheet.addObserver(new EmptyBottomSheetObserver() {
                 @Override
-                public void onSheetContentChanged(BottomSheet.BottomSheetContent newContent) {
+                public void onSheetContentChanged(BottomSheetContent newContent) {
                     if (newContent == content) {
                         bottomSheet.removeObserver(this);
                         controller.expandSheet();

@@ -615,4 +615,15 @@ TEST_F(MojoCdmTest, SessionKeysChangeCB_Success) {
   base::RunLoop().RunUntilIdle();
 }
 
+// TODO(xhwang): Refactor MockCdmFactory to mock CdmFactory::Create() so that we
+// can set expectations and default actions on the created MockCdm, e.g. return
+// a non-null Decryptor to test the HasDecryptor case.
+TEST_F(MojoCdmTest, NoDecryptor) {
+  Initialize(SUCCESS);
+  auto* cdm_context = mojo_cdm_->GetCdmContext();
+  EXPECT_TRUE(cdm_context) << "All CDMs should support CdmContext";
+  auto* decryptor = cdm_context->GetDecryptor();
+  EXPECT_FALSE(decryptor);
+}
+
 }  // namespace media

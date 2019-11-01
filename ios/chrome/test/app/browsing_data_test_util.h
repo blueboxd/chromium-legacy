@@ -9,6 +9,10 @@
 
 namespace chrome_test_util {
 
+// Clears browsing cache and returns whether clearing the history was
+// successful or timed out.
+bool RemoveBrowsingCache() WARN_UNUSED_RESULT;
+
 // Clears browsing history and returns whether clearing the history was
 // successful or timed out.
 bool ClearBrowsingHistory() WARN_UNUSED_RESULT;

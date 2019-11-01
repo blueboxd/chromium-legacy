@@ -4,4 +4,20 @@
 
 #include "base/profiler/profile_builder.h"
 
-const size_t base::ProfileBuilder::MAX_METADATA_COUNT;
+namespace base {
+
+const size_t ProfileBuilder::MAX_METADATA_COUNT;
+
+ProfileBuilder::MetadataItem::MetadataItem(uint64_t name_hash,
+                                           Optional<int64_t> key,
+                                           int64_t value)
+    : name_hash(name_hash), key(key), value(value) {}
+
+ProfileBuilder::MetadataItem::MetadataItem() : name_hash(0), value(0) {}
+
+ProfileBuilder::MetadataItem::MetadataItem(const MetadataItem& other) = default;
+
+ProfileBuilder::MetadataItem& ProfileBuilder::MetadataItem::MetadataItem::
+operator=(const MetadataItem& other) = default;
+
+}  // namespace base

@@ -189,6 +189,13 @@ void WebViewAutofillClientIOS::ConfirmAccountNameFixFlow(
   NOTIMPLEMENTED();
 }
 
+void WebViewAutofillClientIOS::ConfirmExpirationDateFixFlow(
+    const CreditCard& card,
+    base::OnceCallback<void(const base::string16&, const base::string16&)>
+        callback) {
+  NOTIMPLEMENTED();
+}
+
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     const LegalMessageLines& legal_message_lines,

@@ -60,7 +60,6 @@ namespace blink {
 enum ResizerHitTestType { kResizerForPointer, kResizerForTouch };
 
 class ComputedStyle;
-class GraphicsLayer;
 class HitTestResult;
 class LayoutBox;
 class LayoutCustomScrollbarPart;
@@ -274,27 +273,21 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // composited at little cost.
   // Note that this is done in CompositedLayerMapping, this function being
   // only a helper.
-  cc::Layer* LayerForScrolling() const override;
+  GraphicsLayer* LayerForScrolling() const override;
 
   void DidScroll(const FloatPoint&) override;
 
   // GraphicsLayers for the scrolling components.
+  //
   // Any function can return nullptr if they are not accelerated.
-  GraphicsLayer* GraphicsLayerForScrolling() const;
-  GraphicsLayer* GraphicsLayerForHorizontalScrollbar() const;
-  GraphicsLayer* GraphicsLayerForVerticalScrollbar() const;
-  GraphicsLayer* GraphicsLayerForScrollCorner() const;
-
-  cc::Layer* LayerForHorizontalScrollbar() const override;
-  cc::Layer* LayerForVerticalScrollbar() const override;
-  cc::Layer* LayerForScrollCorner() const override;
+  GraphicsLayer* LayerForHorizontalScrollbar() const override;
+  GraphicsLayer* LayerForVerticalScrollbar() const override;
+  GraphicsLayer* LayerForScrollCorner() const override;
 
   bool ShouldScrollOnMainThread() const override;
   bool IsActive() const override;
   bool IsScrollCornerVisible() const override;
   IntRect ScrollCornerRect() const override;
-  void SetScrollbarNeedsPaintInvalidation(ScrollbarOrientation) override;
-  void SetScrollCornerNeedsPaintInvalidation() override;
   IntRect ConvertFromScrollbarToContainingEmbeddedContentView(
       const Scrollbar&,
       const IntRect&) const override;
@@ -449,8 +442,16 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // Rectangle encompassing the scroll corner and resizer rect.
   IntRect ScrollCornerAndResizerRect() const;
 
-  void UpdateNeedsCompositedScrolling(bool layer_has_been_composited = false);
-  bool NeedsCompositedScrolling() const { return needs_composited_scrolling_; }
+  bool ComputeNeedsCompositedScrolling(
+      bool force_prefer_compositing_to_lcd_text);
+
+  // These two functions are used by pre-CompositeAfterPaint only.
+  void UpdateNeedsCompositedScrolling(
+      bool force_prefer_compositing_to_lcd_text);
+  bool NeedsCompositedScrolling() const {
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+    return needs_composited_scrolling_;
+  }
 
   IntRect ResizerCornerRect(const IntRect&, ResizerHitTestType) const;
 
@@ -519,6 +520,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void InvalidateStickyConstraintsFor(PaintLayer*,
                                       bool needs_compositing_update = true);
   void InvalidatePaintForStickyDescendants();
+  bool HasNonCompositedStickyDescendants() const;
   uint32_t GetNonCompositedMainThreadScrollingReasons() {
     return non_composited_main_thread_scrolling_reasons_;
   }
@@ -622,8 +624,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return *rare_data_.get();
   }
 
-  bool ComputeNeedsCompositedScrolling(const bool, const PaintLayer*);
-
   IntRect CornerRect(const IntRect& bounds) const;
 
   void ScrollControlWasSetNeedsPaintInvalidation() override;
@@ -631,8 +631,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void SetHorizontalScrollbarVisualRect(const IntRect&);
   void SetVerticalScrollbarVisualRect(const IntRect&);
   void SetScrollCornerAndResizerVisualRect(const IntRect&);
-
-  bool HasNonCompositedStickyDescendants() const;
 
   // PaintLayer is destructed before PaintLayerScrollable area, during this
   // time before PaintLayerScrollableArea has been collected layer_ will

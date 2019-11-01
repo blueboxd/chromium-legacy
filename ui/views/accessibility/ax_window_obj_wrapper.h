@@ -52,9 +52,8 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   void OnWindowTitleChanged(aura::Window* window) override;
 
  private:
-  // Fires an event on a window, taking into account its associated widget and
-  // that widget's root view.
-  void FireEvent(aura::Window* window, ax::mojom::Event event_type);
+  // Fires an accessibility event.
+  void FireEvent(ax::mojom::Event event_type);
 
   aura::Window* window_;
 

@@ -31,6 +31,7 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -421,6 +422,10 @@ void GLES2CommandBufferStub::BufferPresented(
 
 viz::GpuVSyncCallback GLES2CommandBufferStub::GetGpuVSyncCallback() {
   return viz::GpuVSyncCallback();
+}
+
+base::TimeDelta GLES2CommandBufferStub::GetGpuBlockedTimeSinceLastSwap() {
+  return channel_->scheduler()->TakeTotalBlockingTime();
 }
 
 MemoryTracker* GLES2CommandBufferStub::GetMemoryTracker() const {

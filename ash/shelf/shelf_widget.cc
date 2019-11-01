@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/animation/animation_change_type.h"
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
@@ -145,6 +146,7 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   DCHECK(shelf_widget_);
   set_owned_by_client();  // Deleted by DeleteDelegate().
 
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   set_allow_deactivate_on_esc(true);
 
   std::unique_ptr<views::View> drag_handle_ptr =
@@ -340,6 +342,14 @@ bool ShelfWidget::GetHitTestRects(aura::Window* target,
   return true;
 }
 
+void ShelfWidget::ForceToShowHotseat() {
+  if (is_hotseat_forced_to_show_)
+    return;
+
+  is_hotseat_forced_to_show_ = true;
+  shelf_layout_manager_->UpdateVisibilityState();
+}
+
 ShelfWidget::ShelfWidget(Shelf* shelf)
     : shelf_(shelf),
       background_animator_(shelf_, Shell::Get()->wallpaper_controller()),
@@ -350,6 +360,8 @@ ShelfWidget::ShelfWidget(Shelf* shelf)
 }
 
 ShelfWidget::~ShelfWidget() {
+  Shell::Get()->accessibility_controller()->RemoveObserver(this);
+
   // Must call Shutdown() before destruction.
   DCHECK(!status_area_widget_);
 }
@@ -392,6 +404,8 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
   // Sets initial session state to make sure the UI is properly shown.
   OnSessionStateChanged(Shell::Get()->session_controller()->GetSessionState());
   GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
+
+  Shell::Get()->accessibility_controller()->AddObserver(this);
 }
 
 void ShelfWidget::Shutdown() {
@@ -637,6 +651,18 @@ void ShelfWidget::OnGestureEvent(ui::GestureEvent* event) {
   shelf_layout_manager()->ProcessGestureEventFromShelfWidget(&event_in_screen);
   if (!event->handled())
     views::Widget::OnGestureEvent(event);
+}
+
+void ShelfWidget::OnAccessibilityStatusChanged() {
+  // Only handles when the spoken feedback is disabled.
+  if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
+    return;
+
+  if (!is_hotseat_forced_to_show_)
+    return;
+
+  is_hotseat_forced_to_show_ = false;
+  shelf_layout_manager_->UpdateVisibilityState();
 }
 
 }  // namespace ash

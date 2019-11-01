@@ -8,6 +8,7 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/home_screen/home_screen_delegate.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -15,14 +16,29 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/window.h"
 
 namespace ash {
 namespace {
 
-class HomeScreenControllerTest : public AshTestBase {
+// Parameterized depending on whether navigation gestures for swiping from shelf
+// to home/overview are enabled.
+class HomeScreenControllerTest : public AshTestBase,
+                                 public testing::WithParamInterface<bool> {
  public:
-  HomeScreenControllerTest() = default;
+  HomeScreenControllerTest() {
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kHomerviewGesture,
+           features::kDragFromShelfToHomeOrOverview},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kHomerviewGesture,
+               features::kDragFromShelfToHomeOrOverview});
+    }
+  }
   ~HomeScreenControllerTest() override = default;
 
   std::unique_ptr<aura::Window> CreateTestWindow() {
@@ -39,10 +55,14 @@ class HomeScreenControllerTest : public AshTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(HomeScreenControllerTest);
 };
 
-TEST_F(HomeScreenControllerTest, OnlyMinimizeCycleListWindows) {
+INSTANTIATE_TEST_SUITE_P(, HomeScreenControllerTest, testing::Bool());
+
+TEST_P(HomeScreenControllerTest, OnlyMinimizeCycleListWindows) {
   std::unique_ptr<aura::Window> w1(CreateTestWindow());
   std::unique_ptr<aura::Window> w2(CreatePopupTestWindow());
 
@@ -56,7 +76,7 @@ TEST_F(HomeScreenControllerTest, OnlyMinimizeCycleListWindows) {
 
 // Tests that the home screen is visible after rotating the screen in overview
 // mode.
-TEST_F(HomeScreenControllerTest,
+TEST_P(HomeScreenControllerTest,
        HomeScreenVisibleAfterDisplayUpdateInOverview) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   OverviewController* overview_controller = Shell::Get()->overview_controller();

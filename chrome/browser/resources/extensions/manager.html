@@ -1,36 +1,3 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-
-<link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast_manager.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_view_manager/cr_view_manager.html">
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/assert.html">
-<link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="activity_log/activity_log.html">
-<link rel="import" href="detail_view.html">
-<link rel="import" href="drop_overlay.html">
-<link rel="import" href="error_page.html">
-<link rel="import" href="install_warnings_dialog.html">
-<link rel="import" href="item_list.html">
-<link rel="import" href="item_util.html">
-<link rel="import" href="keyboard_shortcuts.html">
-<link rel="import" href="load_error.html">
-<link rel="import" href="navigation_helper.html">
-<link rel="import" href="options_dialog.html">
-<link rel="import" href="service.html">
-<link rel="import" href="sidebar.html">
-<link rel="import" href="toolbar.html">
-
-<if expr="chromeos">
-<link rel="import" href="kiosk_browser_proxy.html">
-<link rel="import" href="kiosk_dialog.html">
-</if>
-
-<dom-module id="extensions-manager">
-  <template>
     <style include="cr-hidden-style">
       :host {
         color: var(--cr-primary-text-color);
@@ -140,6 +107,3 @@
       </extensions-install-warnings-dialog>
     </template>
     <cr-toast-manager></cr-toast-manager>
-  </template>
-  <script src="manager.js"></script>
-</dom-module>

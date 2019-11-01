@@ -991,8 +991,6 @@ message SystemProfileProto {
   // Specifically, whether the enable metrics/crash reporting checkbox that was
   // shown on first run was checked or unchecked by default.
   // This state is recorded on first run, and uploaded in every UMA log.
-  // Consequently this should only be defined for clients that were installed
-  // after the recording code was implemented.
   enum UmaDefaultState {
     // The enable checkbox was unchecked by default.
     OPT_IN = 0;
@@ -1000,6 +998,8 @@ message SystemProfileProto {
     OPT_OUT = 1;
     // Policy mandated that UMA be enabled, the user had no choice.
     POLICY_FORCED_ENABLED = 2;
+    // The client has no record of which consent flow was used.
+    OPT_UNKNOWN = 3;
   }
   optional UmaDefaultState uma_default_state = 22;
 

@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/unguessable_token.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
@@ -49,6 +50,8 @@ class FrameScheduler : public FrameOrWorkerScheduler {
     // accordingly.
     virtual void UpdateActiveSchedulerTrackedFeatures(
         uint64_t features_mask) = 0;
+
+    virtual const base::UnguessableToken& GetAgentClusterId() const = 0;
   };
 
   ~FrameScheduler() override = default;

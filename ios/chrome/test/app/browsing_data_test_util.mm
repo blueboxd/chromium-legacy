@@ -48,6 +48,11 @@ bool ClearBrowsingData(bool off_the_record, BrowsingDataRemoveMask mask) {
 
 namespace chrome_test_util {
 
+bool RemoveBrowsingCache() {
+  return ClearBrowsingData(/*off_the_record=*/false,
+                           BrowsingDataRemoveMask::REMOVE_CACHE_STORAGE);
+}
+
 bool ClearBrowsingHistory() {
   return ClearBrowsingData(/*off_the_record=*/false,
                            BrowsingDataRemoveMask::REMOVE_HISTORY);

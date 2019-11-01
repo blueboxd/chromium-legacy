@@ -251,13 +251,12 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
   display_info.SetRotation(rotation, Display::RotationSource::ACTIVE);
   display_info.set_zoom_factor(zoom_factor);
   display_info.SetBounds(bounds_in_native);
-#if 0
+
   if (!display_modes.size()) {
     display_modes.push_back(ManagedDisplayMode(
         display_info.size_in_pixel(), 60.0f,
         /*interlace=*/false, /*native=*/true, device_scale_factor));
   }
-#endif
 
   display_info.SetManagedDisplayModes(display_modes);
 

@@ -56,6 +56,7 @@ enum Milestone {
   kM78,
   kM79,
   kM80,
+  kM81,
 };
 
 // Returns estimated milestone dates as human-readable strings.
@@ -92,6 +93,8 @@ const char* MilestoneString(Milestone milestone) {
       return "M79, around December 2019";
     case kM80:
       return "M80, around February 2020";
+    case kM81:
+      return "M81, around March 2020";
   }
 
   NOTREACHED();
@@ -133,6 +136,8 @@ double MilestoneDate(Milestone milestone) {
       return 1575950400000;  // December 10, 2019.
     case kM80:
       return 1580529600000;  // February 1, 2020. (This is a guess!)
+    case kM81:
+      return 1585022400000;  // March 24, 2020
   }
 
   NOTREACHED();
@@ -671,6 +676,13 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                             "elements other than <button> and <input "
                             "type=button/color/reset/submit>",
                             kM80, "4867142128238592")};
+    case WebFeature::kObsoleteWebrtcTlsVersion:
+      return {"ObsoleteWebRtcCipherSuite", kM81,
+              String::Format(
+                  "Your partner is negotiating an obsolete (D)TLS version. "
+                  "Support for this will be removed in %s"
+                  "Please check with your partner to have this fixed.",
+                  MilestoneString(kM81))};
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

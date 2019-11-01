@@ -68,7 +68,8 @@ public class TabSwitcherActionMenuRenderTest extends DummyUiActivityTestCase {
             mView = coordinator.getContentView();
             ((ViewGroup) mView.getParent()).removeView(mView);
 
-            int popupWidth = activity.getResources().getDimensionPixelSize(R.dimen.menu_width);
+            int popupWidth =
+                    activity.getResources().getDimensionPixelSize(R.dimen.tab_switcher_menu_width);
             mView.setBackground(ApiCompatibilityUtils.getDrawable(
                     activity.getResources(), R.drawable.popup_bg_tinted));
             activity.setContentView(mView, new LayoutParams(popupWidth, WRAP_CONTENT));

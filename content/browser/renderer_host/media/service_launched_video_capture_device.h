@@ -7,6 +7,7 @@
 
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/public/browser/video_capture_device_launcher.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
 
 namespace content {
@@ -17,7 +18,8 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
  public:
   ServiceLaunchedVideoCaptureDevice(
       video_capture::mojom::VideoSourcePtr source,
-      video_capture::mojom::PushVideoStreamSubscriptionPtr subscription,
+      mojo::Remote<video_capture::mojom::PushVideoStreamSubscription>
+          subscription,
       base::OnceClosure connection_lost_cb);
   ~ServiceLaunchedVideoCaptureDevice() override;
 
@@ -51,7 +53,7 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
       media::mojom::BlobPtr blob);
 
   video_capture::mojom::VideoSourcePtr source_;
-  video_capture::mojom::PushVideoStreamSubscriptionPtr subscription_;
+  mojo::Remote<video_capture::mojom::PushVideoStreamSubscription> subscription_;
   base::OnceClosure connection_lost_cb_;
   base::SequenceChecker sequence_checker_;
 };

@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.OverlayPanelEventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.EphemeralTabSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -133,9 +134,20 @@ public class EphemeralTabPanel extends OverlayPanel {
     }
 
     private class EphemeralTabPanelContentDelegate extends OverlayContentDelegate {
+        /** Whether the currently loaded page is an error (interstitial) page. */
+        private boolean mIsOnErrorPage;
+
         @Override
         public void onMainFrameLoadStarted(String url, boolean isExternalUrl) {
             if (TextUtils.equals(mUrl, url)) return;
+
+            if (mIsOnErrorPage && NewTabPage.isNTPUrl(url)) {
+                // "Back to safety" on interstitial page leads to NTP.
+                // We just close the panel in response.
+                closePanel(StateChangeReason.NAVIGATION, true);
+                mUrl = null;
+                return;
+            }
             mUrl = url;
 
             // Resets to default icon if favicon may need updating.
@@ -143,8 +155,13 @@ public class EphemeralTabPanel extends OverlayPanel {
         }
 
         @Override
-        public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {
+        public void onMainFrameNavigation(
+                String url, boolean isExternalUrl, boolean isFailure, boolean isError) {
+            // Force WebContents to be visible. URLs that are supposed to create a separate tab but
+            // ended up on the preview tab needs this.
+            getWebContents().onShow();
             updateCaption();
+            mIsOnErrorPage = isError;
         }
 
         @Override
@@ -155,6 +172,13 @@ public class EphemeralTabPanel extends OverlayPanel {
         @Override
         public void onSSLStateUpdated() {
             if (isNewLayout()) updateCaption();
+        }
+
+        @Override
+        public void onOpenNewTabRequested(String url) {
+            // We never open a new tab when navigating in an overlay.
+            loadUrlInPanel(url);
+            requestPanelShow(StateChangeReason.CLICK);
         }
     }
 

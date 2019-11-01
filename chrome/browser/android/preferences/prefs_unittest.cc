@@ -88,6 +88,10 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(CLICKED_UPDATE_MENU_ITEM));
   EXPECT_EQ(prefs::kLatestVersionWhenClickedUpdateMenuItem,
             GetPrefName(LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM));
+  EXPECT_EQ(prefs::kBlockThirdPartyCookies,
+            GetPrefName(BLOCK_THIRD_PARTY_COOKIES));
+  EXPECT_EQ(prefs::kEnableDoNotTrack, GetPrefName(ENABLE_DO_NOT_TRACK));
+  EXPECT_EQ(prefs::kPrintingEnabled, GetPrefName(PRINTING_ENABLED));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

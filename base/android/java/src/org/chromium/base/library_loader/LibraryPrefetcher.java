@@ -52,7 +52,7 @@ public class LibraryPrefetcher {
         if (coldStart && CommandLine.getInstance().hasSwitch("log-native-library-residency")) {
             // LibraryPrefetcherJni.get().periodicallyCollectResidency() sleeps, run it on another
             // thread, and not on the thread pool.
-            new Thread(LibraryPrefetcherJni.get()::periodicallyCollectResidency).start();
+            new Thread(() -> LibraryPrefetcherJni.get().periodicallyCollectResidency()).start();
             return;
         }
 

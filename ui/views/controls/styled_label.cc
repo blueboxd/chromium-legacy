@@ -237,33 +237,35 @@ void StyledLabel::Layout() {
     DCHECK_EQ(layout_size_info_.line_sizes.size(),
               layout_views_->views_per_line.size());
     int line_y = GetInsets().top();
-    auto next_custom_view_iter = layout_views_->owned_views.begin();
+    auto next_owned_view = layout_views_->owned_views.begin();
     for (size_t line = 0; line < layout_views_->views_per_line.size(); ++line) {
       const auto& line_size = layout_size_info_.line_sizes[line];
       int x = StartX(width() - line_size.width());
       for (auto* view : layout_views_->views_per_line[line]) {
         gfx::Size size = view->GetPreferredSize();
         size.set_width(std::min(size.width(), width() - x));
-        const gfx::Point origin(
-            x, line_y + (line_size.height() - size.height()) / 2.0f);
-        view->SetBoundsRect({origin, size});
+        // Compute the view y such that the view center y and the line center y
+        // match.  Because of added rounding errors, this is not the same as
+        // doing (line_size.height() - size.height()) / 2.
+        const int y = line_size.height() / 2 - size.height() / 2;
+        view->SetBoundsRect({{x, line_y + y}, size});
         x += size.width();
 
         // Transfer ownership for any views in layout_views_->owned_views.  The
         // actual pointer passed is the same in both arms below, the only
         // difference is whether we're using the unique_ptr or raw pointer
         // version.
-        if ((next_custom_view_iter != layout_views_->owned_views.end()) &&
-            (view == next_custom_view_iter->get())) {
-          AddChildView(std::move(*next_custom_view_iter));
-          ++next_custom_view_iter;
+        if ((next_owned_view != layout_views_->owned_views.end()) &&
+            (view == next_owned_view->get())) {
+          AddChildView(std::move(*next_owned_view));
+          ++next_owned_view;
         } else {
           AddChildView(view);
         }
       }
       line_y += line_size.height();
     }
-    DCHECK(next_custom_view_iter == layout_views_->owned_views.end());
+    DCHECK(next_owned_view == layout_views_->owned_views.end());
 
     layout_views_.reset();
   } else if (horizontal_alignment_ != gfx::ALIGN_LEFT) {

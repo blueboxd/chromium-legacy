@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/broadcasting_receiver.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
@@ -68,7 +69,7 @@ class VideoSourceImpl : public mojom::VideoSource {
            std::unique_ptr<PushVideoStreamSubscriptionImpl>>
       push_subscriptions_;
   BroadcastingReceiver broadcaster_;
-  std::unique_ptr<mojo::Binding<mojom::Receiver>> broadcaster_binding_;
+  mojo::Receiver<mojom::Receiver> broadcaster_receiver_{&broadcaster_};
   DeviceStatus device_status_;
   mojo::Remote<mojom::Device> device_;
   media::VideoCaptureParams device_start_settings_;

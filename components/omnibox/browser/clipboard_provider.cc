@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -93,6 +94,9 @@ void RecordCreatingClipboardSuggestionMetrics(
 void RecordDeletingClipboardSuggestionMetrics(
     AutocompleteMatchType::Type match_type,
     const base::TimeDelta clipboard_contents_age) {
+  base::RecordAction(
+      base::UserMetricsAction("Omnibox.ClipboardSuggestionRemoved"));
+
   UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionRemovedAge",
                                clipboard_contents_age);
   if (match_type == AutocompleteMatchType::CLIPBOARD_URL) {

@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/safe_browsing_controller_client.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/safe_browsing_loud_error_ui.h"
@@ -166,8 +167,7 @@ void BaseBlockingPage::OnDontProceed() {
   OnDontProceedDone();
 }
 
-void BaseBlockingPage::CommandReceived(
-    const std::string& page_cmd) {
+void BaseBlockingPage::CommandReceived(const std::string& page_cmd) {
   if (page_cmd == "\"pageLoadComplete\"") {
     // content::WaitForRenderFrameReady sends this message when the page
     // load completes. Ignore it.
@@ -177,10 +177,20 @@ void BaseBlockingPage::CommandReceived(
   int command = 0;
   bool retval = base::StringToInt(page_cmd, &command);
   DCHECK(retval) << page_cmd;
+  auto interstitial_command =
+      static_cast<security_interstitials::SecurityInterstitialCommand>(command);
 
-  sb_error_ui_->HandleCommand(
-      static_cast<security_interstitials::SecurityInterstitialCommand>(
-          command));
+  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials) &&
+      interstitial_command ==
+          security_interstitials::SecurityInterstitialCommand::CMD_PROCEED) {
+    // With committed interstitials, OnProceed() doesn't get called, so handle
+    // adding to the allow list here.
+    set_proceeded(true);
+    ui_manager()->OnBlockingPageDone(unsafe_resources(), true /* proceed */,
+                                     web_contents(), main_frame_url());
+  }
+
+  sb_error_ui_->HandleCommand(interstitial_command);
 }
 
 bool BaseBlockingPage::ShouldCreateNewNavigation() const {
@@ -348,7 +358,7 @@ BaseBlockingPage::CreateControllerClient(
           unsafe_resources[0].url, GetReportingInfo(unsafe_resources),
           history_service);
 
-  return std::make_unique<SecurityInterstitialControllerClient>(
+  return std::make_unique<SafeBrowsingControllerClient>(
       web_contents, std::move(metrics_helper), pref_service,
       ui_manager->app_locale(), ui_manager->default_safe_page());
 }

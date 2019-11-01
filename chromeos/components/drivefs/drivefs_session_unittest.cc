@@ -79,8 +79,7 @@ TEST_F(DriveFsDiskMounterTest, MountUnmount) {
                       kExpectedMountPath,
                       chromeos::MOUNT_TYPE_NETWORK_STORAGE,
                       {}});
-  EXPECT_CALL(disk_manager_, UnmountPath(kExpectedMountPath,
-                                         chromeos::UNMOUNT_OPTIONS_LAZY, _));
+  EXPECT_CALL(disk_manager_, UnmountPath(kExpectedMountPath, _));
   mounter.reset();
 }
 
@@ -94,19 +93,18 @@ TEST_F(DriveFsDiskMounterTest, DestroyAfterMounted) {
                       kExpectedMountPath,
                       chromeos::MOUNT_TYPE_NETWORK_STORAGE,
                       {}});
-  EXPECT_CALL(disk_manager_, UnmountPath(kExpectedMountPath,
-                                         chromeos::UNMOUNT_OPTIONS_LAZY, _));
+  EXPECT_CALL(disk_manager_, UnmountPath(kExpectedMountPath, _));
 }
 
 TEST_F(DriveFsDiskMounterTest, DestroyBeforeMounted) {
-  EXPECT_CALL(disk_manager_, UnmountPath(_, _, _)).Times(0);
+  EXPECT_CALL(disk_manager_, UnmountPath(_, _)).Times(0);
   auto mounter = DiskMounter::Create(&disk_manager_);
   StartMount(mounter.get());
 }
 
 TEST_F(DriveFsDiskMounterTest, ObserveOtherEvents) {
   EXPECT_CALL(*this, OnCompleted(_)).Times(0);
-  EXPECT_CALL(disk_manager_, UnmountPath(_, _, _)).Times(0);
+  EXPECT_CALL(disk_manager_, UnmountPath(_, _)).Times(0);
 
   auto mounter = DiskMounter::Create(&disk_manager_);
   auto token = StartMount(mounter.get());
@@ -126,7 +124,7 @@ TEST_F(DriveFsDiskMounterTest, ObserveOtherEvents) {
 }
 
 TEST_F(DriveFsDiskMounterTest, MountError) {
-  EXPECT_CALL(disk_manager_, UnmountPath(_, _, _)).Times(0);
+  EXPECT_CALL(disk_manager_, UnmountPath(_, _)).Times(0);
 
   auto mounter = DiskMounter::Create(&disk_manager_);
   auto token = StartMount(mounter.get());

@@ -684,8 +684,8 @@
         <item name="android:layout_gravity">center</item>
     </style>
     <style name="SplitToolbarButton" parent="BottomToolbarButton">
-        <item name="android:layout_height">24dp</item>
-        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">@dimen/split_toolbar_button_height</item>
+        <item name="android:layout_width">@dimen/split_toolbar_button_width</item>
         <item name="android:background">@android:color/transparent</item>
         <item name="android:clickable">false</item>
         <item name="android:importantForAccessibility">no</item>
@@ -695,7 +695,7 @@
         <item name="android:textSize">12sp</item>
     </style>
     <style name="BottomToolbarButtonWrapper">
-        <item name="android:layout_width">56dp</item>
+        <item name="android:layout_width">@dimen/bottom_toolbar_button_wrapper_width</item>
         <item name="android:paddingStart">4dp</item>
         <item name="android:paddingEnd">4dp</item>
         <item name="android:layout_height">match_parent</item>

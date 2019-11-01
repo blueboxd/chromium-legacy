@@ -119,8 +119,15 @@ struct XRInputSourceDescription {
   XRTargetRayMode target_ray_mode;
   XRHandedness handedness;
 
-  // Transform from the grip matrix to the pointer's origin and orientation.
-  gfx.mojom.Transform? pointer_offset;
+  // Pointer ray pose in input device space. The pointer space origin represents
+  // the point on the input device where the ray originates, and the ray travels
+  // along the pointer space negative-Z direction.
+  // For controllers, the input device space is grip space (defined by the
+  // controller's position). For screen input, the input device space is
+  // equivalent to viewer space, and the ray originates from either the actual
+  // screen position (if available), or from an implementation-defined location
+  // such as the near plane intersection.
+  gfx.mojom.Transform? input_from_pointer;
 
   // List of 0 or more names describing both the preferred visual representation
   // and behavior of the associated input source. Each name is lowercase with no
@@ -136,8 +143,9 @@ struct XRInputSourceState {
   // need periodic updates.
   XRInputSourceDescription? description;
 
-  // Transform to the controllers grip (users palm) from start space origin.
-  gfx.mojom.Transform? grip;
+  // Input device pose in mojo space. This is the grip pose for tracked
+  // controllers, and the viewer pose for screen input.
+  gfx.mojom.Transform? mojo_from_input;
 
   // True when position is estimated by something like a neck or arm model.
   // False when position is based on sensors tracking a 6DoF pose.

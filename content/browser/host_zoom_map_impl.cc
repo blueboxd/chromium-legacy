@@ -389,17 +389,6 @@ void HostZoomMapImpl::SetZoomLevelForWebContents(
   }
 }
 
-void HostZoomMapImpl::SetZoomLevelForView(int render_process_id,
-                                          int render_view_id,
-                                          double level,
-                                          const std::string& host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (UsesTemporaryZoomLevel(render_process_id, render_view_id))
-    SetTemporaryZoomLevel(render_process_id, render_view_id, level);
-  else
-    SetZoomLevelForHost(host, level);
-}
-
 void HostZoomMapImpl::SetPageScaleFactorIsOneForView(int render_process_id,
                                                      int render_view_id,
                                                      bool is_one) {
@@ -464,19 +453,6 @@ void HostZoomMapImpl::SetTemporaryZoomLevel(int render_process_id,
   change.zoom_level = level;
 
   zoom_level_changed_callbacks_.Notify(change);
-}
-
-double HostZoomMapImpl::GetZoomLevelForView(const GURL& url,
-                                            int render_process_id,
-                                            int render_view_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderViewKey key(render_process_id, render_view_id);
-
-  if (base::Contains(temporary_zoom_levels_, key))
-    return temporary_zoom_levels_.find(key)->second;
-
-  return GetZoomLevelForHostAndScheme(url.scheme(),
-                                      net::GetHostOrSpecFromURL(url));
 }
 
 void HostZoomMapImpl::ClearZoomLevels(base::Time delete_begin,

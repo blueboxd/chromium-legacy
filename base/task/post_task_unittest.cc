@@ -401,4 +401,65 @@ TEST_F(PostTaskTestWithExecutor, PriorityInherited) {
   executor_.runner()->ClearPendingTasks();
 }
 
+namespace {
+
+class FlagOnDelete {
+ public:
+  FlagOnDelete(bool* deleted) : deleted_(deleted) {}
+
+  // Required for RefCountedData.
+  FlagOnDelete(FlagOnDelete&& other) : deleted_(other.deleted_) {
+    other.deleted_ = nullptr;
+  }
+
+  ~FlagOnDelete() {
+    if (deleted_) {
+      EXPECT_FALSE(*deleted_);
+      *deleted_ = true;
+    }
+  }
+
+ private:
+  bool* deleted_;
+  DISALLOW_COPY_AND_ASSIGN(FlagOnDelete);
+};
+
+}  // namespace
+
+TEST_F(PostTaskTestWithExecutor, DeleteSoon) {
+  constexpr TaskTraits traits = {TestExtensionBoolTrait(),
+                                 TaskPriority::BEST_EFFORT};
+
+  bool deleted = false;
+  auto flag_on_delete = std::make_unique<FlagOnDelete>(&deleted);
+
+  EXPECT_CALL(executor_, CreateSequencedTaskRunner(traits)).Times(1);
+  base::DeleteSoon(FROM_HERE, traits, std::move(flag_on_delete));
+
+  EXPECT_FALSE(deleted);
+
+  EXPECT_TRUE(executor_.runner()->HasPendingTask());
+  executor_.runner()->RunPendingTasks();
+
+  EXPECT_TRUE(deleted);
+}
+
+TEST_F(PostTaskTestWithExecutor, ReleaseSoon) {
+  constexpr TaskTraits traits = {TestExtensionBoolTrait(),
+                                 TaskPriority::BEST_EFFORT};
+
+  bool deleted = false;
+  auto flag_on_delete = MakeRefCounted<RefCountedData<FlagOnDelete>>(&deleted);
+
+  EXPECT_CALL(executor_, CreateSequencedTaskRunner(traits)).Times(1);
+  base::ReleaseSoon(FROM_HERE, traits, std::move(flag_on_delete));
+
+  EXPECT_FALSE(deleted);
+
+  EXPECT_TRUE(executor_.runner()->HasPendingTask());
+  executor_.runner()->RunPendingTasks();
+
+  EXPECT_TRUE(deleted);
+}
+
 }  // namespace base

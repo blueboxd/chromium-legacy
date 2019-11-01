@@ -196,6 +196,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                          const std::string& shader) override;
   void MaybeExitOnContextLost() override;
   bool IsExiting() const override;
+  gpu::Scheduler* GetGpuScheduler() override;
+
 #if defined(OS_WIN)
   void SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
                               gpu::SurfaceHandle child_window) override;
@@ -235,7 +237,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   gpu::SyncPointManager* sync_point_manager() {
     return gpu_channel_manager_->sync_point_manager();
   }
-  gpu::Scheduler* scheduler() { return scheduler_.get(); }
 
   base::TaskRunner* main_runner() { return main_runner_.get(); }
 

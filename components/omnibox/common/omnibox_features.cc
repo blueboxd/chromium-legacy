@@ -78,8 +78,14 @@ const base::Feature kOmniboxLocalEntitySuggestions{
 // there are no more non-URL matches available.) If enabled, there is a
 // companion parameter - OmniboxMaxURLMatches - which specifies the maximum
 // desired number of URL-type matches.
-const base::Feature kOmniboxMaxURLMatches{"OmniboxMaxURLMatches",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOmniboxMaxURLMatches {
+  "OmniboxMaxURLMatches",
+#if defined(OS_IOS) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used to enable entity suggestion images and enhanced presentation
 // showing more context and descriptive text about the entity.
@@ -314,5 +320,10 @@ const base::Feature kOmniboxExperimentalSuggestScoring{
 // the omnibox. See ConfirmNtpSuggestionRemovals for the NTP equivalent.
 const base::Feature kConfirmOmniboxSuggestionRemovals{
     "ConfirmOmniboxSuggestionRemovals", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature that enables not counting submatches towards the maximum
+// suggestion limit.
+const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows{
+    "OmniboxLooseMaxLimitOnDedicatedRows", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace omnibox

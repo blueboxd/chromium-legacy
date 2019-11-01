@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ssl/ssl_blocking_page_base.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
@@ -36,16 +35,13 @@ class MITMSoftwareBlockingPage : public SSLBlockingPageBase {
   // If the blocking page isn't shown, the caller is responsible for cleaning
   // up the blocking page. Otherwise, the interstitial takes ownership when
   // shown.
-  MITMSoftwareBlockingPage(
-      content::WebContents* web_contents,
-      int cert_error,
-      const GURL& request_url,
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      const net::SSLInfo& ssl_info,
-      const std::string& mitm_software_name,
-      bool is_enterprise_managed,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback);
+  MITMSoftwareBlockingPage(content::WebContents* web_contents,
+                           int cert_error,
+                           const GURL& request_url,
+                           std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+                           const net::SSLInfo& ssl_info,
+                           const std::string& mitm_software_name,
+                           bool is_enterprise_managed);
 
   ~MITMSoftwareBlockingPage() override;
 
@@ -57,7 +53,6 @@ class MITMSoftwareBlockingPage : public SSLBlockingPageBase {
   void CommandReceived(const std::string& command) override;
   void OverrideEntry(content::NavigationEntry* entry) override;
   void OverrideRendererPrefs(blink::mojom::RendererPreferences* prefs) override;
-  void OnDontProceed() override;
 
   // SecurityInterstitialPage implementation:
   bool ShouldCreateNewNavigation() const override;
@@ -65,9 +60,6 @@ class MITMSoftwareBlockingPage : public SSLBlockingPageBase {
       base::DictionaryValue* load_time_data) override;
 
  private:
-  void NotifyDenyCertificate();
-
-  base::Callback<void(content::CertificateRequestResultType)> callback_;
   const net::SSLInfo ssl_info_;
 
   const std::unique_ptr<security_interstitials::MITMSoftwareUI>

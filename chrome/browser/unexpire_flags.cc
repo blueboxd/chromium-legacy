@@ -36,6 +36,8 @@ class FlagPredicateSingleton {
 
 const base::Feature kUnexpireFlagsM76{"TemporaryUnexpireFlagsM76",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUnexpireFlagsM78{"TemporaryUnexpireFlagsM78",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool ExpiryEnabledForMstone(int mstone) {
   // generate_expired_list.py will never emit flags with expiry milestone -1, to
@@ -49,14 +51,17 @@ bool ExpiryEnabledForMstone(int mstone) {
   if (mstone == -1)
     return false;
 
-  // Currently expiration targets flags expiring in M76 or earlier. In M79 this
-  // will become M78 or earlier; in M80 it will become M80 or earlier, and in
-  // all future milestones Mx it will be Mx or earlier, so this logic will cease
-  // to hardcode a milestone and instead target the current major version.
+  // In M78 this expired flags with their expirations set to M76 or earlier.
+  // In M79 this expires flags with their expirations set to M78 or earlier.
+  // In M80 and later, this will expire any flags whose expiration is <= the
+  // current mstone, and this block comment will go away along with these
+  // special cases.
   if (mstone < 76)
     return true;
   if (mstone == 76)
     return !base::FeatureList::IsEnabled(kUnexpireFlagsM76);
+  if (mstone == 77 || mstone == 78)
+    return !base::FeatureList::IsEnabled(kUnexpireFlagsM78);
   return false;
 }
 

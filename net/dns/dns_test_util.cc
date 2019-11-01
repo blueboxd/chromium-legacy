@@ -65,20 +65,6 @@ class MockAddressSorter : public AddressSorter {
   }
 };
 
-DnsResourceRecord BuildAddressRecord(std::string name, const IPAddress& ip) {
-  DCHECK(!name.empty());
-  DCHECK(ip.IsValid());
-
-  DnsResourceRecord record;
-  record.name = std::move(name);
-  record.type = ip.IsIPv4() ? dns_protocol::kTypeA : dns_protocol::kTypeAAAA;
-  record.klass = dns_protocol::kClassIN;
-  record.ttl = base::TimeDelta::FromDays(1).InSeconds();
-  record.SetOwnedRdata(net::IPAddressToPackedString(ip));
-
-  return record;
-}
-
 DnsResourceRecord BuildCannonnameRecord(std::string name,
                                         std::string cannonname) {
   DCHECK(!name.empty());
@@ -180,11 +166,26 @@ DnsResourceRecord BuildServiceRecord(std::string name,
 
 }  // namespace
 
+DnsResourceRecord BuildTestAddressRecord(std::string name,
+                                         const IPAddress& ip) {
+  DCHECK(!name.empty());
+  DCHECK(ip.IsValid());
+
+  DnsResourceRecord record;
+  record.name = std::move(name);
+  record.type = ip.IsIPv4() ? dns_protocol::kTypeA : dns_protocol::kTypeAAAA;
+  record.klass = dns_protocol::kClassIN;
+  record.ttl = base::TimeDelta::FromDays(1).InSeconds();
+  record.SetOwnedRdata(net::IPAddressToPackedString(ip));
+
+  return record;
+}
+
 std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
                                                   const IPAddress& ip) {
   DCHECK(ip.IsValid());
 
-  std::vector<DnsResourceRecord> answers = {BuildAddressRecord(name, ip)};
+  std::vector<DnsResourceRecord> answers = {BuildTestAddressRecord(name, ip)};
   std::string dns_name;
   CHECK(DNSDomainFromDot(name, &dns_name));
   base::Optional<DnsQuery> query(
@@ -205,7 +206,7 @@ std::unique_ptr<DnsResponse> BuildTestDnsResponseWithCname(
 
   std::vector<DnsResourceRecord> answers = {
       BuildCannonnameRecord(name, cannonname),
-      BuildAddressRecord(cannonname, ip)};
+      BuildTestAddressRecord(cannonname, ip)};
   std::string dns_name;
   CHECK(DNSDomainFromDot(name, &dns_name));
   base::Optional<DnsQuery> query(

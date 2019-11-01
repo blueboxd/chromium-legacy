@@ -164,6 +164,12 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
 }
 
 TEST_P(PaintLayerPainterTest, CachedSubsequenceOnCullRectChange) {
+  // This test doesn't work in CompositeAfterPaint mode because we always paint
+  // from the local root frame view, and we always expand cull rect for
+  // scrolling.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <div id='container1' style='position: relative; z-index: 1;
        width: 200px; height: 200px; background-color: blue'>
@@ -1051,6 +1057,7 @@ TEST_P(PaintLayerPainterTestCAP, TallScrolledLayerCullRect) {
 }
 
 TEST_P(PaintLayerPainterTestCAP, WholeDocumentCullRect) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
   GetDocument().GetSettings()->SetMainFrameClipsContent(false);
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1128,6 +1135,7 @@ TEST_P(PaintLayerPainterTestCAP, VerticalRightLeftWritingModeDocument) {
 }
 
 TEST_P(PaintLayerPainterTestCAP, ScaledCullRect) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: scaleX(2) scaleY(0.5)'>
@@ -1141,6 +1149,7 @@ TEST_P(PaintLayerPainterTestCAP, ScaledCullRect) {
 }
 
 TEST_P(PaintLayerPainterTestCAP, ScaledAndRotatedCullRect) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: scaleX(2) scaleY(0.5) rotateZ(45deg)'>
@@ -1154,6 +1163,7 @@ TEST_P(PaintLayerPainterTestCAP, ScaledAndRotatedCullRect) {
 }
 
 TEST_P(PaintLayerPainterTestCAP, 3DRotated90DegreesCullRect) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: rotateY(90deg)'>
@@ -1168,6 +1178,7 @@ TEST_P(PaintLayerPainterTestCAP, 3DRotated90DegreesCullRect) {
 }
 
 TEST_P(PaintLayerPainterTestCAP, 3DRotatedNear90DegreesCullRect) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 transform: rotateY(89.9999deg)'>
@@ -1214,11 +1225,12 @@ TEST_P(PaintLayerPainterTestCAP, FixedPositionCullRect) {
     </div>
   )HTML");
 
-  EXPECT_EQ(IntRect(0, 0, 800, 600),
+  EXPECT_EQ(IntRect(-200, -100, 800, 600),
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 
 TEST_P(PaintLayerPainterTestCAP, LayerOffscreenNearCullRect) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 position: absolute; top: 3000px; left: 0px;'>
@@ -1231,6 +1243,7 @@ TEST_P(PaintLayerPainterTestCAP, LayerOffscreenNearCullRect) {
 }
 
 TEST_P(PaintLayerPainterTestCAP, LayerOffscreenFarCullRect) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
   SetBodyInnerHTML(R"HTML(
     <div style='width: 200px; height: 300px; overflow: scroll;
                 position: absolute; top: 9000px'>
@@ -1244,6 +1257,7 @@ TEST_P(PaintLayerPainterTestCAP, LayerOffscreenFarCullRect) {
 }
 
 TEST_P(PaintLayerPainterTestCAP, ScrollingLayerCullRect) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
   SetBodyInnerHTML(R"HTML(
     <style>
       div::-webkit-scrollbar { width: 5px; }
@@ -1261,6 +1275,24 @@ TEST_P(PaintLayerPainterTestCAP, ScrollingLayerCullRect) {
   // the clip is already small. Mapping it down into the graphics layer
   // space yields (0, 0, 195, 193). This is then expanded by 4000px.
   EXPECT_EQ(IntRect(-4000, -4000, 8195, 8193),
+            GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
+}
+
+TEST_P(PaintLayerPainterTestCAP, NonCompositedScrollingLayerCullRect) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div::-webkit-scrollbar { width: 5px; }
+    </style>
+    <div style='width: 200px; height: 200px; overflow: scroll'>
+      <div id='target'
+           style='width: 100px; height: 10000px; position: relative'>
+      </div>
+    </div>
+  )HTML");
+
+  // See ScrollingLayerCullRect for the calculation.
+  EXPECT_EQ(IntRect(0, 0, 195, 193),
             GetPaintLayerByElementId("target")->PreviousCullRect().Rect());
 }
 

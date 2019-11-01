@@ -3,47 +3,55 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for extension-sidebar. */
-cr.define('extension_sidebar_tests', function() {
+import {navigation, Page} from 'chrome://extensions/extensions.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {eventToPromise} from '../test_util.m.js';
+
+import {testVisible} from './test_util.js';
+
+  window.extension_sidebar_tests = {};
+  extension_sidebar_tests.suiteName = 'ExtensionSidebarTest';
+
   /** @enum {string} */
-  const TestNames = {
+  extension_sidebar_tests.TestNames = {
     LayoutAndClickHandlers: 'layout and click handlers',
     SetSelected: 'set selected',
   };
 
-  const suiteName = 'ExtensionSidebarTest';
-
-  suite(suiteName, function() {
+  suite(extension_sidebar_tests.suiteName, function() {
     /** @type {extensions.Sidebar} */
     let sidebar;
 
     setup(function() {
       PolymerTest.clearBody();
-      sidebar = new extensions.Sidebar();
+      sidebar = document.createElement('extensions-sidebar');
       document.body.appendChild(sidebar);
     });
 
-    test(assert(TestNames.SetSelected), function() {
+    test(assert(extension_sidebar_tests.TestNames.SetSelected), function() {
       const selector = '.section-item.iron-selected';
       expectFalse(!!sidebar.$$(selector));
 
       window.history.replaceState(undefined, '', '/shortcuts');
       PolymerTest.clearBody();
-      sidebar = new extensions.Sidebar();
+      sidebar = document.createElement('extensions-sidebar');
       document.body.appendChild(sidebar);
-      const whenSelected =
-          test_util.eventToPromise('iron-select', sidebar.$.sectionMenu);
-      Polymer.dom.flush();
+      const whenSelected = eventToPromise('iron-select', sidebar.$.sectionMenu);
+      flush();
       return whenSelected
           .then(function() {
             expectEquals(sidebar.$$(selector).id, 'sections-shortcuts');
 
             window.history.replaceState(undefined, '', '/');
             PolymerTest.clearBody();
-            sidebar = new extensions.Sidebar();
+            sidebar = document.createElement('extensions-sidebar');
             document.body.appendChild(sidebar);
             const whenSelected =
-                test_util.eventToPromise('iron-select', sidebar.$.sectionMenu);
-            Polymer.dom.flush();
+                eventToPromise('iron-select', sidebar.$.sectionMenu);
+            flush();
             return whenSelected;
           })
           .then(function() {
@@ -51,35 +59,31 @@ cr.define('extension_sidebar_tests', function() {
           });
     });
 
-    test(assert(TestNames.LayoutAndClickHandlers), function(done) {
-      const testVisible = extension_test_util.testVisible.bind(null, sidebar);
-      testVisible('#sections-extensions', true);
-      testVisible('#sections-shortcuts', true);
-      testVisible('#more-extensions', true);
+    test(
+        assert(extension_sidebar_tests.TestNames.LayoutAndClickHandlers),
+        function(done) {
+          const boundTestVisible = testVisible.bind(null, sidebar);
+          boundTestVisible('#sections-extensions', true);
+          boundTestVisible('#sections-shortcuts', true);
+          boundTestVisible('#more-extensions', true);
 
-      sidebar.isSupervised = true;
-      Polymer.dom.flush();
-      testVisible('#more-extensions', false);
+          sidebar.isSupervised = true;
+          flush();
+          boundTestVisible('#more-extensions', false);
 
-      let currentPage;
-      extensions.navigation.addListener(newPage => {
-        currentPage = newPage;
-      });
+          let currentPage;
+          navigation.addListener(newPage => {
+            currentPage = newPage;
+          });
 
-      MockInteractions.tap(sidebar.$$('#sections-shortcuts'));
-      expectDeepEquals(currentPage, {page: extensions.Page.SHORTCUTS});
+          tap(sidebar.$$('#sections-shortcuts'));
+          expectDeepEquals(currentPage, {page: Page.SHORTCUTS});
 
-      MockInteractions.tap(sidebar.$$('#sections-extensions'));
-      expectDeepEquals(currentPage, {page: extensions.Page.LIST});
+          tap(sidebar.$$('#sections-extensions'));
+          expectDeepEquals(currentPage, {page: Page.LIST});
 
-      // Clicking on the link for the current page should close the dialog.
-      sidebar.addEventListener('close-drawer', () => done());
-      MockInteractions.tap(sidebar.$$('#sections-extensions'));
-    });
+          // Clicking on the link for the current page should close the dialog.
+          sidebar.addEventListener('close-drawer', () => done());
+          tap(sidebar.$$('#sections-extensions'));
+        });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

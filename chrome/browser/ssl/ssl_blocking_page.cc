@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -72,9 +71,7 @@ SSLBlockingPage* SSLBlockingPage::Create(
     int options_mask,
     const base::Time& time_triggered,
     const GURL& support_url,
-    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        callback) {
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
   bool overridable = IsOverridable(options_mask);
   std::unique_ptr<ChromeMetricsHelper> metrics_helper(
       CreateSslProblemMetricsHelper(web_contents, cert_error, request_url,
@@ -106,17 +103,16 @@ SSLBlockingPage* SSLBlockingPage::Create(
 
   if (cert_error == net::ERR_CERT_SYMANTEC_LEGACY) {
     GURL symantec_support_url(kSymantecSupportUrl);
-    return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
-                               options_mask, time_triggered,
-                               std::move(symantec_support_url),
-                               std::move(ssl_cert_reporter), overridable,
-                               std::move(metrics_helper), callback);
+    return new SSLBlockingPage(
+        web_contents, cert_error, ssl_info, request_url, options_mask,
+        time_triggered, std::move(symantec_support_url),
+        std::move(ssl_cert_reporter), overridable, std::move(metrics_helper));
   }
 
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
                              options_mask, time_triggered, support_url,
                              std::move(ssl_cert_reporter), overridable,
-                             std::move(metrics_helper), callback);
+                             std::move(metrics_helper));
 }
 
 bool SSLBlockingPage::ShouldCreateNewNavigation() const {
@@ -127,13 +123,7 @@ InterstitialPageDelegate::TypeID SSLBlockingPage::GetTypeForTesting() {
   return SSLBlockingPage::kTypeForTesting;
 }
 
-SSLBlockingPage::~SSLBlockingPage() {
-  if (!callback_.is_null()) {
-    // The page is closed without the user having chosen what to do, default to
-    // deny.
-    NotifyDenyCertificate();
-  }
-}
+SSLBlockingPage::~SSLBlockingPage() = default;
 
 void SSLBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
@@ -153,8 +143,7 @@ SSLBlockingPage::SSLBlockingPage(
     const GURL& support_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     bool overridable,
-    std::unique_ptr<ChromeMetricsHelper> metrics_helper,
-    const base::Callback<void(content::CertificateRequestResultType)>& callback)
+    std::unique_ptr<ChromeMetricsHelper> metrics_helper)
     : SSLBlockingPageBase(web_contents,
                           cert_error,
                           CertificateErrorReport::INTERSTITIAL_SSL,
@@ -169,7 +158,6 @@ SSLBlockingPage::SSLBlockingPage(
                               cert_error,
                               request_url,
                               std::move(metrics_helper))),
-      callback_(callback),
       ssl_info_(ssl_info),
       overridable_(overridable),
       ssl_error_ui_(std::make_unique<SSLErrorUI>(request_url,
@@ -214,31 +202,6 @@ void SSLBlockingPage::OverrideRendererPrefs(
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
-}
-
-void SSLBlockingPage::OnProceed() {
-  OnInterstitialClosing();
-
-  // Accepting the certificate resumes the loading of the page.
-  DCHECK(!callback_.is_null());
-  callback_.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE);
-  callback_.Reset();
-}
-
-void SSLBlockingPage::OnDontProceed() {
-  OnInterstitialClosing();
-  NotifyDenyCertificate();
-}
-
-void SSLBlockingPage::NotifyDenyCertificate() {
-  // It's possible that callback_ may not exist if the user clicks "Proceed"
-  // followed by pressing the back button before the interstitial is hidden.
-  // In that case the certificate will still be treated as allowed.
-  if (callback_.is_null())
-    return;
-
-  callback_.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
-  callback_.Reset();
 }
 
 // static

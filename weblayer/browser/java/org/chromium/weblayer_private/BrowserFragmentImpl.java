@@ -17,17 +17,16 @@ import org.chromium.weblayer_private.aidl.IRemoteFragment;
 import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
 
 public class BrowserFragmentImpl extends RemoteFragmentImpl {
-
     private final ProfileImpl mProfile;
 
     private BrowserFragmentControllerImpl mController;
     private Context mContext;
 
-    public BrowserFragmentImpl(ProfileManager profileManager, IRemoteFragmentClient client,
-            Bundle fragmentArgs) {
+    public BrowserFragmentImpl(
+            ProfileManager profileManager, IRemoteFragmentClient client, Bundle fragmentArgs) {
         super(client);
-        mProfile = profileManager.getProfile(fragmentArgs.getString(
-                BrowserFragmentArgs.PROFILE_PATH));
+        mProfile =
+                profileManager.getProfile(fragmentArgs.getString(BrowserFragmentArgs.PROFILE_PATH));
     }
 
     @Override
@@ -56,6 +55,12 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         mController.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        mController.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override

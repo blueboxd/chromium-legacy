@@ -4752,8 +4752,11 @@
     <message name="IDS_SETTINGS_DISPLAY_ORIENTATION" desc="In Device Settings > Displays, the label for the control for changing a display's orientation.">
       Orientation
     </message>
+    <message name="IDS_SETTINGS_DISPLAY_ORIENTATION_AUTO_ROTATE" desc="In Device Settings > Displays, the label for the entry that enables auto-rotation in tablet mode.">
+      Auto-rotate
+    </message>
     <message name="IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD" desc="In Device Settings > Displays, the label for standard orientation (0 rotation).">
-      Standard
+      0&#x00B0; (Default)
     </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_TEXT" desc="Text explaining that this setting is used to adjust the boundaries of the selected display.">
       Adjust the boundaries of your desktop within the display

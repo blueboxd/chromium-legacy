@@ -58,7 +58,6 @@ const UserMetricsAction* GetActionForLocationAndDisposition(
     WindowOpenDisposition disposition) {
   switch (location) {
     case BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR:
-    case BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR:
       switch (disposition) {
         case WindowOpenDisposition::NEW_BACKGROUND_TAB:
           return &kBookmarkBarNewBackgroundTab;

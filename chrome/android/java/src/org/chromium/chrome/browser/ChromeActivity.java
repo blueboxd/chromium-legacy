@@ -117,9 +117,11 @@ import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorContro
 import org.chromium.chrome.browser.omaha.UpdateInfoBarController;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
-import org.chromium.chrome.browser.omaha.UpdateNotificationController;
+import org.chromium.chrome.browser.omaha.notification.UpdateNotificationController;
+import org.chromium.chrome.browser.omaha.notification.UpdateNotificationControllerFactory;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.TabPrinter;
@@ -1037,7 +1039,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         VrModuleProvider.getDelegate().onNewIntentWithNative(this, intent);
         mIntentHandler.onNewIntent(intent);
         if (mUpdateNotificationController == null) {
-            mUpdateNotificationController = new UpdateNotificationController(this);
+            mUpdateNotificationController = UpdateNotificationControllerFactory.create(this);
         }
         mUpdateNotificationController.onNewIntent(intent);
     }
@@ -1086,7 +1088,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             UpdateInfoBarController.createInstance(ChromeActivity.this);
             if (mUpdateNotificationController == null) {
                 mUpdateNotificationController =
-                        new UpdateNotificationController(ChromeActivity.this);
+                        UpdateNotificationControllerFactory.create(ChromeActivity.this);
             }
             mUpdateNotificationController.onNewIntent(getIntent());
             UpdateMenuItemHelper.getInstance().registerObserver(mUpdateStateChangedListener);
@@ -2193,7 +2195,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         } else if (id == R.id.print_id) {
             PrintingController printingController = PrintingControllerImpl.getInstance();
             if (printingController != null && !printingController.isBusy()
-                    && PrefServiceBridge.getInstance().isPrintingEnabled()) {
+                    && PrefServiceBridge.getInstance().getBoolean(Pref.PRINTING_ENABLED)) {
                 printingController.startPrint(new TabPrinter(currentTab),
                         new PrintManagerDelegateImpl(this));
                 RecordUserAction.record("MobileMenuPrint");

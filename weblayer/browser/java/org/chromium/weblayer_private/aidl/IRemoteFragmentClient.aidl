@@ -28,4 +28,6 @@ interface IRemoteFragmentClient {
                                      int flagsValues,
                                      int extraFlags,
                                      in IObjectWrapper options) = 13;
+  boolean shouldShowRequestPermissionRationale(String permission) = 14;
+  void requestPermissions(in String[] permissions, int requestCode) = 15;
 }

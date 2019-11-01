@@ -173,11 +173,10 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
     requestable_settings.requested_format.frame_size = kVideoSize;
     requestable_settings.buffer_type = buffer_type_to_request;
 
-    video_capture::mojom::PushVideoStreamSubscriptionPtr subscription;
     video_source_->CreatePushSubscription(
         std::move(subscriber_), requestable_settings,
         false /*force_reopen_with_new_settings*/,
-        mojo::MakeRequest(&subscription_),
+        subscription_.BindNewPipeAndPassReceiver(),
         base::BindOnce(&WebRtcVideoCaptureSharedDeviceBrowserTest::
                            OnCreatePushSubscriptionCallback,
                        weak_factory_.GetWeakPtr()));
@@ -200,7 +199,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   // For multi-client API case only
   video_capture::mojom::VideoSourceProviderPtr video_source_provider_;
   video_capture::mojom::VideoSourcePtr video_source_;
-  video_capture::mojom::PushVideoStreamSubscriptionPtr subscription_;
+  mojo::Remote<video_capture::mojom::PushVideoStreamSubscription> subscription_;
 
   mojo::PendingRemote<video_capture::mojom::Receiver> subscriber_;
   base::WeakPtrFactory<WebRtcVideoCaptureSharedDeviceBrowserTest> weak_factory_{

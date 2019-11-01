@@ -7,14 +7,14 @@
 
 #include "chrome/browser/media/history/media_history_table_base.h"
 #include "sql/init_status.h"
+#include "url/gurl.h"
 
 namespace base {
 class UpdateableSequencedTaskRunner;
 }  // namespace base
 
 namespace content {
-struct MediaPlayerId;
-struct MediaPlayerWatchtime;
+struct MediaPlayerWatchTime;
 }  // namespace content
 
 namespace media_history {
@@ -24,9 +24,8 @@ class MediaHistoryPlaybackTable : public MediaHistoryTableBase {
   struct MediaHistoryPlayback {
     MediaHistoryPlayback() = default;
 
-    bool has_audio;
-    bool has_video;
-    base::TimeDelta watchtime;
+    GURL url;
+    base::TimeDelta watch_time;
     base::TimeDelta timestamp;
   };
 
@@ -42,12 +41,8 @@ class MediaHistoryPlaybackTable : public MediaHistoryTableBase {
   // MediaHistoryTableBase:
   sql::InitStatus CreateTableIfNonExistent() override;
 
-  void SavePlayback(const content::MediaPlayerId& id,
-                    const content::MediaPlayerWatchtime& watchtime);
-
-  // Returns |num_results| playbacks sorted by time with the
-  // newest first.
-  MediaHistoryPlaybacks GetRecentPlaybacks(int num_results);
+  // Returns a flag indicating whether the playback was created successfully.
+  bool SavePlayback(const content::MediaPlayerWatchTime& watch_time);
 
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryPlaybackTable);
 };

@@ -188,7 +188,7 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
       transaction_id, std::set<int64_t>(scope.begin(), scope.end()),
       blink::mojom::IDBTransactionMode::ReadOnly,
       new IndexedDBBackingStore::Transaction(
-          backing_store_.get(),
+          backing_store_->AsWeakPtr(),
           blink::mojom::IDBTransactionDurability::Relaxed));
   db_->RegisterAndScheduleTransaction(transaction);
 

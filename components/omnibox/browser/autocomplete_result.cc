@@ -78,9 +78,11 @@ size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
   constexpr size_t kDefaultMaxAutocompleteMatches = 5;
   if (is_zero_suggest)
     return kDefaultMaxAutocompleteMatches;
-#else
+#elif defined(OS_IOS)  // !defined(OS_ANDROID)
   constexpr size_t kDefaultMaxAutocompleteMatches = 6;
-#endif  // defined(OS_ANDROID)
+#else                  // !defined(OS_ANDROID) && !defined(OS_IOS)
+  constexpr size_t kDefaultMaxAutocompleteMatches = 8;
+#endif
   static_assert(kMaxAutocompletePositionValue > kDefaultMaxAutocompleteMatches,
                 "kMaxAutocompletePositionValue must be larger than the largest "
                 "possible autocomplete result size.");
@@ -253,14 +255,8 @@ void AutocompleteResult::SortAndCull(
       (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
     LimitNumberOfURLsShown(max_url_count, comparing_object);
 
-  // In the process of trimming, drop all matches with a demoted relevance
-  // score of 0.
-  const size_t max_num_matches =
-      std::min(GetMaxMatches(input.from_omnibox_focus()), matches_.size());
-  size_t num_matches;
-  for (num_matches = 0u; (num_matches < max_num_matches) &&
-       (comparing_object.GetDemotedRelevance(*match_at(num_matches)) > 0);
-       ++num_matches) {}
+  const size_t num_matches = CalculateNumMatches(input.from_omnibox_focus(),
+                                                 matches_, comparing_object);
   matches_.resize(num_matches);
 
   if (OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() &&
@@ -594,6 +590,31 @@ void AutocompleteResult::DiscourageTopMatchFromBeingSearchEntity(
     matches->insert(matches->begin(), std::move(non_entity_match_copy));
     return;
   }
+}
+
+// static
+size_t AutocompleteResult::CalculateNumMatches(
+    bool input_from_omnibox_focus,
+    const ACMatches& matches,
+    const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
+  // In the process of trimming, drop all matches with a demoted relevance
+  // score of 0.
+  size_t max_matches_by_policy = GetMaxMatches(input_from_omnibox_focus);
+  size_t num_matches = 0;
+  while (num_matches < matches.size() &&
+         comparing_object.GetDemotedRelevance(matches[num_matches]) > 0) {
+    // If IsLooseMaxLimitOnDedicatedRowsEnabled(), don't count submatches
+    // against configured limit.
+    if (matches[num_matches].IsSubMatch() &&
+        OmniboxFieldTrial::IsLooseMaxLimitOnDedicatedRowsEnabled()) {
+      ++max_matches_by_policy;
+    }
+    // Don't increment if at loose limit.
+    if (num_matches >= max_matches_by_policy)
+      break;
+    ++num_matches;
+  }
+  return num_matches;
 }
 
 void AutocompleteResult::Reset() {

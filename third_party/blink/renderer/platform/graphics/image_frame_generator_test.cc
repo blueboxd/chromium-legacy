@@ -267,7 +267,7 @@ TEST_F(ImageFrameGeneratorTest,
   SetFrameStatus(ImageFrame::kFrameComplete);
   AddNewData();
   std::unique_ptr<Thread> thread = Platform::Current()->CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread)
+      ThreadCreationParams(ThreadType::kTestThread)
           .SetThreadNameForTest("DecodeThread"));
   PostCrossThreadTask(
       *thread->GetTaskRunner(), FROM_HERE,

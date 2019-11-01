@@ -15,12 +15,10 @@
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_path_reservation_tracker.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "net/base/filename_util.h"
@@ -354,12 +352,6 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictWithSource) {
 
 // Multiple reservations for the same path should uniquify around each other.
 TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
-  // When kPreventDownloadsWithSamePath is disabled,
-  // an OVERWRITE reservation with a conflicting path should return success
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kPreventDownloadsWithSamePath);
-
   std::unique_ptr<MockDownloadItem> item1 = CreateDownloadItem(1);
   base::FilePath path(
       GetPathInDownloadsDirectory(FILE_PATH_LITERAL("foo.txt")));
@@ -409,8 +401,8 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
   }
   RunUntilIdle();
 
-  // Now acquire an overwriting reservation. We should end up with the same
-  // non-uniquified path for both reservations.
+  // Now acquire an overwriting reservation. It should end up with a CONFLICT
+  // result.
   std::unique_ptr<MockDownloadItem> item3 = CreateDownloadItem(2);
   base::FilePath reserved_path3;
   conflict_action = DownloadPathReservationTracker::OVERWRITE;
@@ -419,7 +411,7 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
   EXPECT_TRUE(IsPathInUse(path));
   EXPECT_FALSE(IsPathInUse(uniquified_path));
 
-  EXPECT_EQ(PathValidationResult::SUCCESS, result);
+  EXPECT_EQ(PathValidationResult::CONFLICT, result);
 
   EXPECT_EQ(path.value(), reserved_path1.value());
   EXPECT_EQ(path.value(), reserved_path3.value());
@@ -428,13 +420,9 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
   SetDownloadItemState(item3.get(), DownloadItem::COMPLETE);
 }
 
-// When kPreventDownloadsWithSamePath flag is enabled, an OVERWRITE reservation
-// with the same path as an active reservation should return a CONFLICT result.
+// An OVERWRITE reservation with the same path as an active reservation should
+// return a CONFLICT result.
 TEST_F(DownloadPathReservationTrackerTest, ConflictingReservation_Prevented) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kPreventDownloadsWithSamePath);
-
   std::unique_ptr<MockDownloadItem> item1 = CreateDownloadItem(1);
   base::FilePath path(
       GetPathInDownloadsDirectory(FILE_PATH_LITERAL("foo.txt")));

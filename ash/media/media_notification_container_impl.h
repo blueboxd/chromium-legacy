@@ -49,6 +49,7 @@ class ASH_EXPORT MediaNotificationContainerImpl
       override {}
   void OnMediaArtworkChanged(const gfx::ImageSkia& image) override {}
   void OnColorsChanged(SkColor foreground, SkColor background) override;
+  void OnHeaderClicked() override {}
 
   // views::View:
   void OnMouseEvent(ui::MouseEvent* event) override;

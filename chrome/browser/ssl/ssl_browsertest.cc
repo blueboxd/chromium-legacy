@@ -5306,8 +5306,7 @@ class SSLBlockingPageIDNTest
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     return SSLBlockingPage::Create(
         contents, net::ERR_CERT_CONTAINS_ERRORS, ssl_info, request_url, 0,
-        base::Time::NowFromSystemTime(), GURL(), nullptr,
-        base::Callback<void(content::CertificateRequestResultType)>());
+        base::Time::NowFromSystemTime(), GURL(), nullptr);
   }
 };
 

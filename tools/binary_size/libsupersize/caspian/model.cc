@@ -98,9 +98,8 @@ NodeStats::~NodeStats() = default;
 
 NodeStats::NodeStats(SectionId sectionId,
                      int32_t count,
-                     int32_t highlight,
                      float size) {
-  child_stats[sectionId] = {count, highlight, size};
+  child_stats[sectionId] = {count, size};
 }
 
 void NodeStats::WriteIntoJson(Json::Value* out) const {
@@ -111,7 +110,6 @@ void NodeStats::WriteIntoJson(Json::Value* out) const {
     (*out)[sectionId] = Json::Value(Json::objectValue);
     (*out)[sectionId]["size"] = stats.size;
     (*out)[sectionId]["count"] = stats.count;
-    (*out)[sectionId]["highlight"] = stats.highlight;
   }
 }
 

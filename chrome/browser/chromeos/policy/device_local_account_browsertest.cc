@@ -47,12 +47,15 @@
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/chromeos/login/test/webview_content_extractor.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
@@ -163,9 +166,10 @@
 namespace em = enterprise_management;
 
 using chromeos::LoginScreenContext;
+using chromeos::test::GetOobeElementPath;
+using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::Return;
-using testing::_;
 
 namespace policy {
 
@@ -2236,22 +2240,11 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
             wizard_controller->current_screen()->screen_id());
 
   // Wait for the Terms of Service to finish downloading.
-  bool done = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(contents_,
-      "var screenElement = document.getElementById('terms-of-service');"
-      "function SendReplyIfDownloadDone() {"
-      "  if (screenElement.classList.contains('tos-loading'))"
-      "    return false;"
-      "  domAutomationController.send(true);"
-      "  observer.disconnect();"
-      "  return true;"
-      "}"
-      "var observer = new MutationObserver(SendReplyIfDownloadDone);"
-      "if (!SendReplyIfDownloadDone()) {"
-      "  var options = { attributes: true, attributeFilter: [ 'class' ] };"
-      "  observer.observe(screenElement, options);"
-      "}",
-      &done));
+  chromeos::test::OobeJS()
+      .CreateWaiter(GetOobeElementPath({"terms-of-service"}) + ".uiState == " +
+                    base::NumberToString(static_cast<int>(
+                        chromeos::TermsOfServiceScreen::ScreenState::LOADED)))
+      ->Wait();
 
   // Verify that the locale and keyboard layout have been applied.
   EXPECT_EQ(kPublicSessionLocale, g_browser_process->GetApplicationLocale());
@@ -2264,27 +2257,12 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
                 .id());
 
   // Wait for 'tos-accept-button' to become enabled.
-  done = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents_,
-      "var screenElement = document.getElementById('tos-accept-button');"
-      "function SendReplyIfAcceptEnabled() {"
-      "  if ($('tos-accept-button').disabled)"
-      "    return false;"
-      "  domAutomationController.send(true);"
-      "  observer.disconnect();"
-      "  return true;"
-      "}"
-      "var observer = new MutationObserver(SendReplyIfAcceptEnabled);"
-      "if (!SendReplyIfAcceptEnabled()) {"
-      "  var options = { attributes: true };"
-      "  observer.observe(screenElement, options);"
-      "}",
-      &done));
+  chromeos::test::OobeJS()
+      .CreateEnabledWaiter(true, {"terms-of-service", "acceptButton"})
+      ->Wait();
 
   // Click the accept button.
-  ASSERT_TRUE(content::ExecuteScript(contents_,
-                                     "$('tos-accept-button').click();"));
+  chromeos::test::OobeJS().ClickOnPath({"terms-of-service", "acceptButton"});
 
   WaitForSessionStart();
 
@@ -2654,13 +2632,17 @@ class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
 };
 
 IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
+  // Parameterization for using valid and invalid URLs.
+  const bool use_valid_url = GetParam();
+
   // Specify Terms of Service URL.
   ASSERT_TRUE(embedded_test_server()->Start());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
-      embedded_test_server()->GetURL(
-            std::string("/") +
-                (GetParam() ? kExistentTermsOfServicePath
-                            : kNonexistentTermsOfServicePath)).spec());
+      embedded_test_server()
+          ->GetURL(std::string("/") + (use_valid_url
+                                           ? kExistentTermsOfServicePath
+                                           : kNonexistentTermsOfServicePath))
+          .spec());
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -2692,89 +2674,54 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   EXPECT_EQ(chromeos::TermsOfServiceScreenView::kScreenId.AsId(),
             wizard_controller->current_screen()->screen_id());
 
-  // Wait for the Terms of Service to finish downloading, then get the status of
-  // the screen's UI elements.
-  std::string json;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      contents_,
-      "var screenElement = document.getElementById('terms-of-service');"
-      "function SendReplyIfDownloadDone() {"
-      "  if (screenElement.classList.contains('tos-loading'))"
-      "    return false;"
-      "  var status = {};"
-      "  status.heading = document.getElementById('tos-heading').textContent;"
-      "  status.subheading ="
-      "      document.getElementById('tos-subheading').textContent;"
-      "  status.contentHeading ="
-      "      document.getElementById('tos-content-heading').textContent;"
-      "  status.error = screenElement.classList.contains('error');"
-      "  status.acceptEnabled ="
-      "      !document.getElementById('tos-accept-button').disabled;"
-      "  var tosWebview = document.getElementById('tos-content-main');"
-      "  if (status.error) {"
-      "    status.content = tosWebview.src;"
-      "    domAutomationController.send(JSON.stringify(status));"
-      "  } else {"
-      "    var extractTos = function() {"
-      "      tosWebview.executeScript("
-      "          {code:'document.body.textContent'},"
-      "          (results) => {"
-      "            status.content = results[0];"
-      "            domAutomationController.send(JSON.stringify(status));"
-      "            tosWebview.removeEventListener('contentload', extractTos);"
-      "          });"
-      "    };"
-      "    tosWebview.addEventListener('contentload', extractTos);"
-      "    extractTos();"
-      "  }"
-      "  observer.disconnect();"
-      "  return true;"
-      "}"
-      "var observer = new MutationObserver(SendReplyIfDownloadDone);"
-      "if (!SendReplyIfDownloadDone()) {"
-      "  var options = { attributes: true, attributeFilter: [ 'class' ] };"
-      "  observer.observe(screenElement, options);"
-      "}",
-      &json));
-  std::unique_ptr<base::Value> value_ptr =
-      base::JSONReader::ReadDeprecated(json);
-  const base::DictionaryValue* status = NULL;
-  ASSERT_TRUE(value_ptr);
-  ASSERT_TRUE(value_ptr->GetAsDictionary(&status));
-  std::string heading;
-  EXPECT_TRUE(status->GetString("heading", &heading));
-  std::string subheading;
-  EXPECT_TRUE(status->GetString("subheading", &subheading));
-  std::string content_heading;
-  EXPECT_TRUE(status->GetString("contentHeading", &content_heading));
-  std::string content;
-  EXPECT_TRUE(status->GetString("content", &content));
-  bool error;
-  EXPECT_TRUE(status->GetBoolean("error", &error));
-  bool accept_enabled;
-  EXPECT_TRUE(status->GetBoolean("acceptEnabled", &accept_enabled));
+  // Wait for the Terms of Service to finish loading.
 
-  // Verify that the screen's headings have been set correctly.
-  EXPECT_EQ(
-      l10n_util::GetStringFUTF8(IDS_TERMS_OF_SERVICE_SCREEN_HEADING,
-                                base::UTF8ToUTF16(kDomain)),
-      heading);
-  EXPECT_EQ(
-      l10n_util::GetStringFUTF8(IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING,
-                                base::UTF8ToUTF16(kDomain)),
-      subheading);
-  EXPECT_EQ(
-      l10n_util::GetStringFUTF8(IDS_TERMS_OF_SERVICE_SCREEN_CONTENT_HEADING,
-                                base::UTF8ToUTF16(kDomain)),
-      content_heading);
-
-  if (!GetParam()) {
+  if (!use_valid_url) {
     // The Terms of Service URL was invalid. Verify that the screen is showing
     // an error and the accept button is disabled.
-    EXPECT_TRUE(error);
-    EXPECT_FALSE(accept_enabled);
+    chromeos::test::OobeJS()
+        .CreateVisibilityWaiter(
+            true, {"terms-of-service", "termsOfServiceErrorDialog"})
+        ->Wait();
+
+    chromeos::test::OobeJS().ExpectTrue(
+        GetOobeElementPath({"terms-of-service"}) + ".uiState == " +
+        base::NumberToString(static_cast<int>(
+            chromeos::TermsOfServiceScreen::ScreenState::ERROR)));
+
+    chromeos::test::OobeJS().ExpectDisabledPath(
+        {"terms-of-service", "acceptButton"});
     return;
   }
+
+  chromeos::test::OobeJS()
+      .CreateWaiter(GetOobeElementPath({"terms-of-service"}) + ".uiState == " +
+                    base::NumberToString(static_cast<int>(
+                        chromeos::TermsOfServiceScreen::ScreenState::LOADED)))
+      ->Wait();
+
+  chromeos::test::OobeJS()
+      .CreateVisibilityWaiter(true, {"terms-of-service", "termsOfServiceFrame"})
+      ->Wait();
+
+  // Get the Terms Of Service from the webview.
+  const std::string content = chromeos::test::GetWebViewContents(
+      {"terms-of-service", "termsOfServiceFrame"});
+
+  // Get the expected values for heading and subheading.
+  const std::string expected_heading = l10n_util::GetStringFUTF8(
+      IDS_TERMS_OF_SERVICE_SCREEN_HEADING, base::UTF8ToUTF16(kDomain));
+  const std::string expected_subheading = l10n_util::GetStringFUTF8(
+      IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING, base::UTF8ToUTF16(kDomain));
+
+  // Compare heading and subheading
+  chromeos::test::OobeJS().ExpectEQ(
+      GetOobeElementPath({"terms-of-service", "tosHeading"}) + ".textContent",
+      expected_heading);
+  chromeos::test::OobeJS().ExpectEQ(
+      GetOobeElementPath({"terms-of-service", "tosSubheading"}) +
+          ".textContent",
+      expected_subheading);
 
   // The Terms of Service URL was valid. Verify that the screen is showing the
   // downloaded Terms of Service and the accept button is enabled.
@@ -2787,12 +2734,17 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
         test_dir.Append(kExistentTermsOfServicePath), &terms_of_service));
   }
   EXPECT_EQ(terms_of_service, content);
-  EXPECT_FALSE(error);
-  EXPECT_TRUE(accept_enabled);
+
+  chromeos::test::OobeJS().ExpectFalse(
+      GetOobeElementPath({"terms-of-service"}) + ".uiState == " +
+      base::NumberToString(static_cast<int>(
+          chromeos::TermsOfServiceScreen::ScreenState::ERROR)));
+
+  chromeos::test::OobeJS().ExpectEnabledPath(
+      {"terms-of-service", "acceptButton"});
 
   // Click the accept button.
-  ASSERT_TRUE(content::ExecuteScript(contents_,
-                                     "$('tos-accept-button').click();"));
+  chromeos::test::OobeJS().ClickOnPath({"terms-of-service", "acceptButton"});
 
   WaitForSessionStart();
 }
@@ -2839,8 +2791,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, DeclineTermsOfService) {
             wizard_controller->current_screen()->screen_id());
 
   // Click the back button.
-  ASSERT_TRUE(
-      content::ExecuteScript(contents_, "$('tos-back-button').click();"));
+  chromeos::test::OobeJS().ClickOnPath({"terms-of-service", "backButton"});
 
   EXPECT_TRUE(session_manager_client()->session_stopped());
 }

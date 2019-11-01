@@ -98,7 +98,8 @@ class GCMSocketStreamTest : public testing::Test {
   net::MockClientSocketFactory socket_factory_;
   net::TestURLRequestContext url_request_context_;
   std::unique_ptr<network::NetworkContext> network_context_;
-  network::mojom::ProxyResolvingSocketFactoryPtr mojo_socket_factory_ptr_;
+  mojo::Remote<network::mojom::ProxyResolvingSocketFactory>
+      mojo_socket_factory_remote_;
   mojo::ScopedDataPipeConsumerHandle receive_pipe_handle_;
   mojo::ScopedDataPipeProducerHandle send_pipe_handle_;
 };
@@ -222,14 +223,14 @@ void GCMSocketStreamTest::WaitForData(int msg_size) {
 
 void GCMSocketStreamTest::OpenConnection() {
   network_context_->CreateProxyResolvingSocketFactory(
-      mojo::MakeRequest(&mojo_socket_factory_ptr_));
+      mojo_socket_factory_remote_.BindNewPipeAndPassReceiver());
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
   const GURL kDestination("https://example.com");
   network::mojom::ProxyResolvingSocketOptionsPtr options =
       network::mojom::ProxyResolvingSocketOptions::New();
   options->use_tls = true;
-  mojo_socket_factory_ptr_->CreateProxyResolvingSocket(
+  mojo_socket_factory_remote_->CreateProxyResolvingSocket(
       kDestination, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       mojo_socket_remote_.BindNewPipeAndPassReceiver(),

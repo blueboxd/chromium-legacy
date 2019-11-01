@@ -77,7 +77,7 @@ class IntranetRedirectDetector
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // network::mojom::DnsConfigChangeManagerClient
-  void OnSystemDnsConfigChanged() override;
+  void OnDnsConfigChanged() override;
 
   void SetupDnsConfigClient();
   void OnDnsConfigClientConnectionError();

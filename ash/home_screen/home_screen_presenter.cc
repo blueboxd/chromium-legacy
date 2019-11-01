@@ -150,9 +150,15 @@ void HomeScreenPresenter::ScheduleOverviewModeAnimation(
     controller_->delegate()->NotifyHomeLauncherAnimationTransition(
         trigger, showing_home);
 
-    // Force the home view into the expected initial state without animation
-    SetFinalHomeTransformForTransition(GetOppositeTransition(transition),
-                                       base::TimeDelta());
+    // Force the home view into the expected initial state without animation,
+    // except when transitioning out from home screen. Gesture handling for the
+    // gesture to move to overview can update the scale before triggering
+    // transition to overview - undoing these changes here would make the UI
+    // jump during the transition.
+    if (transition != TransitionType::kScaleHomeOut) {
+      SetFinalHomeTransformForTransition(GetOppositeTransition(transition),
+                                         base::TimeDelta());
+    }
 
     overview_animation_metrics_reporter_->Start(transition);
   }

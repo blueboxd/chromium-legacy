@@ -49,9 +49,8 @@ void SuspendUnmountManager::SuspendImminent(
                                               "SuspendUnmountManager");
     }
     disk_mount_manager_->UnmountPath(
-        mount_path, UNMOUNT_OPTIONS_NONE,
-        base::BindOnce(&SuspendUnmountManager::OnUnmountComplete,
-                       weak_ptr_factory_.GetWeakPtr(), mount_path));
+        mount_path, base::BindOnce(&SuspendUnmountManager::OnUnmountComplete,
+                                   weak_ptr_factory_.GetWeakPtr(), mount_path));
     unmounting_paths_.insert(mount_path);
   }
 }

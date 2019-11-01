@@ -1639,7 +1639,8 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
   AncestorSkipInfo skip_info(ancestor);
   while (!property_container->FirstFragment().HasLocalBorderBoxProperties()) {
     property_container = property_container->Container(&skip_info);
-    if (!property_container || skip_info.AncestorSkipped())
+    if (!property_container || skip_info.AncestorSkipped() ||
+        property_container->FirstFragment().NextFragment())
       return false;
   }
 

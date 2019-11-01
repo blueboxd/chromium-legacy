@@ -326,7 +326,7 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 bool HomeLauncherGestureHandler::OnReleaseEvent(
     const gfx::Point& location,
     base::Optional<float> velocity_y) {
-  if (IsAnimating())
+  if (mode_ != Mode::kSwipeHomeToOverview && IsAnimating())
     return false;
 
   return OnDragEnded(location, velocity_y);
@@ -547,6 +547,23 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   RemoveObserversAndStopTracking();
 }
 
+bool HomeLauncherGestureHandler::IsAnimating() {
+  if (active_window_ && active_window_->IsAnimating())
+    return true;
+
+  if (secondary_window_ && secondary_window_->IsAnimating())
+    return true;
+
+  if (overview_active_on_gesture_start_ &&
+      Shell::Get()->overview_controller()->InOverviewSession() &&
+      (Shell::Get()->overview_controller()->IsInStartAnimation() ||
+       animating_to_close_overview_)) {
+    return true;
+  }
+
+  return false;
+}
+
 void HomeLauncherGestureHandler::AnimateToFinalState(AnimationTrigger trigger) {
   const bool is_final_state_show = IsFinalStateShow();
   GetHomeScreenDelegate()->NotifyHomeLauncherAnimationTransition(
@@ -716,23 +733,6 @@ void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
 
 bool HomeLauncherGestureHandler::IsIdle() {
   return !IsDragInProgress() && !IsAnimating();
-}
-
-bool HomeLauncherGestureHandler::IsAnimating() {
-  if (active_window_ && active_window_->IsAnimating())
-    return true;
-
-  if (secondary_window_ && secondary_window_->IsAnimating())
-    return true;
-
-  if (overview_active_on_gesture_start_ &&
-      Shell::Get()->overview_controller()->InOverviewSession() &&
-      (Shell::Get()->overview_controller()->IsInStartAnimation() ||
-       animating_to_close_overview_)) {
-    return true;
-  }
-
-  return false;
 }
 
 bool HomeLauncherGestureHandler::IsFinalStateShow() {
@@ -916,7 +916,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(
 void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
   if (mode_ == Mode::kSwipeHomeToOverview) {
     swipe_home_to_overview_controller_ =
-        std::make_unique<SwipeHomeToOverviewController>();
+        std::make_unique<SwipeHomeToOverviewController>(display_.id());
   } else {
     NotifyHomeLauncherTargetPositionChanged(
         mode_ == Mode::kSlideUpToShow /*showing*/, display_.id());

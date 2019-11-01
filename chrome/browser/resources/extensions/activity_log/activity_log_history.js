@@ -2,8 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.m.js';
+import '../shared_style.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ActivityGroup} from './activity_log_history_item.js';
 
   /**
    * The different states the activity log page can be in. Initial state is
@@ -12,10 +21,13 @@ cr.define('extensions', function() {
    * result.
    * @enum {string}
    */
-  const ActivityLogPageState = {LOADING: 'loading', LOADED: 'loaded'};
+  export const ActivityLogPageState = {
+    LOADING: 'loading',
+    LOADED: 'loaded'
+  };
 
   /** @interface */
-  class ActivityLogDelegate {
+  export class ActivityLogDelegate {
     /**
      * @param {string} extensionId
      * @return {!Promise<!chrome.activityLogPrivate.ActivityResultSet>}
@@ -109,7 +121,7 @@ cr.define('extensions', function() {
    * matches to one activity type.
    * @param {!Array<!chrome.activityLogPrivate.ExtensionActivity>}
    *     activityData
-   * @return {!Map<string, !extensions.ActivityGroup>}
+   * @return {!Map<string, !ActivityGroup>}
    */
   function groupActivities(activityData) {
     const groupedActivities = new Map();
@@ -162,8 +174,8 @@ cr.define('extensions', function() {
   /**
    * Sort activities by the total count for each activity group key. Resolve
    * ties by the alphabetical order of the key.
-   * @param {!Map<string, !extensions.ActivityGroup>} groupedActivities
-   * @return {!Array<!extensions.ActivityGroup>}
+   * @param {!Map<string, !ActivityGroup>} groupedActivities
+   * @return {!Array<!ActivityGroup>}
    */
   function sortActivitiesByCallCount(groupedActivities) {
     return Array.from(groupedActivities.values()).sort((a, b) => {
@@ -180,28 +192,30 @@ cr.define('extensions', function() {
     });
   }
 
-  const ActivityLogHistory = Polymer({
+  Polymer({
     is: 'activity-log-history',
+
+    _template: html`{__html_template__}`,
 
     properties: {
       /** @type {!string} */
       extensionId: String,
 
-      /** @type {!extensions.ActivityLogDelegate} */
+      /** @type {!ActivityLogDelegate} */
       delegate: Object,
 
       /**
        * An array representing the activity log. Stores activities grouped by
        * API call or content script name sorted in descending order of the call
        * count.
-       * @private {!Array<!extensions.ActivityGroup>}
+       * @private {!Array<!ActivityGroup>}
        */
       activityData_: {
         type: Array,
         value: () => [],
       },
 
-      /** @private {extensions.ActivityLogPageState} */
+      /** @private {ActivityLogPageState} */
       pageState_: {
         type: String,
         value: ActivityLogPageState.LOADING,
@@ -407,10 +421,3 @@ cr.define('extensions', function() {
       this.refreshActivities_();
     },
   });
-
-  return {
-    ActivityLogDelegate: ActivityLogDelegate,
-    ActivityLogHistory: ActivityLogHistory,
-    ActivityLogPageState: ActivityLogPageState,
-  };
-});

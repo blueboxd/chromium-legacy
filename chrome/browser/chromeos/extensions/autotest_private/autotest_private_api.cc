@@ -8,6 +8,8 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/autotest_private_api_utils.h"
@@ -126,6 +128,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/accelerators/accelerator_history.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/ime_bridge.h"
@@ -138,6 +141,7 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -433,6 +437,8 @@ ash::WMEventType ToWMEventType(api::autotest_private::WMEventType event_type) {
 api::autotest_private::WindowStateType ToWindowStateType(
     ash::WindowStateType state_type) {
   switch (state_type) {
+    // Consider adding DEFAULT type to idl.
+    case ash::WindowStateType::kDefault:
     case ash::WindowStateType::kNormal:
       return api::autotest_private::WindowStateType::WINDOW_STATE_TYPE_NORMAL;
     case ash::WindowStateType::kMinimized:
@@ -512,6 +518,62 @@ Browser* GetFirstRegularBrowser() {
   if (iter == list->end())
     return nullptr;
   return *iter;
+}
+
+ash::AppListViewState ToAppListViewState(
+    api::autotest_private::LauncherStateType state) {
+  switch (state) {
+    case api::autotest_private::LauncherStateType::LAUNCHER_STATE_TYPE_CLOSED:
+      return ash::AppListViewState::kClosed;
+    case api::autotest_private::LauncherStateType::LAUNCHER_STATE_TYPE_PEEKING:
+      return ash::AppListViewState::kPeeking;
+    case api::autotest_private::LauncherStateType::LAUNCHER_STATE_TYPE_HALF:
+      return ash::AppListViewState::kHalf;
+    case api::autotest_private::LauncherStateType::
+        LAUNCHER_STATE_TYPE_FULLSCREENALLAPPS:
+      return ash::AppListViewState::kFullscreenAllApps;
+    case api::autotest_private::LauncherStateType::
+        LAUNCHER_STATE_TYPE_FULLSCREENSEARCH:
+      return ash::AppListViewState::kFullscreenSearch;
+    case api::autotest_private::LauncherStateType::LAUNCHER_STATE_TYPE_NONE:
+      break;
+  }
+  return ash::AppListViewState::kClosed;
+}
+
+ui::KeyboardCode StringToKeyCode(const std::string& str) {
+  constexpr struct Map {
+    const char* str;
+    ui::KeyboardCode key_code;
+  } map[] = {
+      {"search", ui::VKEY_LWIN},
+  };
+  DCHECK(base::IsStringASCII(str));
+  if (str.length() == 1) {
+    char c = str[0];
+    if (c >= 'a' || c <= 'z') {
+      return static_cast<ui::KeyboardCode>(static_cast<int>(ui::VKEY_A) +
+                                           (c - 'a'));
+    }
+    if (c >= '0' || c <= '9') {
+      return static_cast<ui::KeyboardCode>(static_cast<int>(ui::VKEY_0) +
+                                           (c - '0'));
+    }
+  } else {
+    for (auto& entry : map) {
+      if (str == entry.str)
+        return entry.key_code;
+    }
+  }
+  NOTREACHED();
+  return ui::VKEY_A;
+}
+
+aura::Window* GetActiveWindow() {
+  std::vector<aura::Window*> list = ash::GetAppWindowList();
+  if (!list.size())
+    return nullptr;
+  return wm::GetActivationClient(list[0]->GetRootWindow())->GetActiveWindow();
 }
 
 }  // namespace
@@ -3225,6 +3287,80 @@ void AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstalled(
 void AutotestPrivateInstallPWAForCurrentURLFunction::PWATimeout() {
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
   Respond(Error("Install PWA timed out"));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateActivateAcceleratorFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateActivateAcceleratorFunction::
+    AutotestPrivateActivateAcceleratorFunction() = default;
+AutotestPrivateActivateAcceleratorFunction::
+    ~AutotestPrivateActivateAcceleratorFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateActivateAcceleratorFunction::Run() {
+  std::unique_ptr<api::autotest_private::ActivateAccelerator::Params> params(
+      api::autotest_private::ActivateAccelerator::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  int modifiers = (params->accelerator.control ? ui::EF_CONTROL_DOWN : 0) |
+                  (params->accelerator.shift ? ui::EF_SHIFT_DOWN : 0) |
+                  (params->accelerator.alt ? ui::EF_ALT_DOWN : 0) |
+                  (params->accelerator.search ? ui::EF_COMMAND_DOWN : 0);
+  ui::Accelerator accelerator(
+      StringToKeyCode(params->accelerator.key_code), modifiers,
+      params->accelerator.pressed ? ui::Accelerator::KeyState::PRESSED
+                                  : ui::Accelerator::KeyState::RELEASED);
+  auto* accelerator_controller = ash::AcceleratorController::Get();
+  accelerator_controller->GetAcceleratorHistory()->StoreCurrentAccelerator(
+      accelerator);
+
+  if (!accelerator_controller->IsRegistered(accelerator)) {
+    // If it's not ash accelerator, try aplication's accelerator.
+    auto* window = GetActiveWindow();
+    if (!window) {
+      return RespondNow(
+          Error(base::StringPrintf("Accelerator is not registered 1")));
+    }
+    auto* widget = views::Widget::GetWidgetForNativeWindow(window);
+    if (!widget) {
+      return RespondNow(
+          Error(base::StringPrintf("Accelerator is not registered 2")));
+    }
+    bool result = widget->GetFocusManager()->ProcessAccelerator(accelerator);
+    return RespondNow(OneArgument(std::make_unique<base::Value>(result)));
+  }
+  bool result = accelerator_controller->Process(accelerator);
+  return RespondNow(OneArgument(std::make_unique<base::Value>(result)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateWaitForLauncherStateFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateWaitForLauncherStateFunction::
+    AutotestPrivateWaitForLauncherStateFunction() = default;
+AutotestPrivateWaitForLauncherStateFunction::
+    ~AutotestPrivateWaitForLauncherStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateWaitForLauncherStateFunction::Run() {
+  std::unique_ptr<api::autotest_private::WaitForLauncherState::Params> params(
+      api::autotest_private::WaitForLauncherState::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  auto target_state = ToAppListViewState(params->launcher_state);
+  if (WaitForLauncherState(
+          target_state,
+          base::Bind(&AutotestPrivateWaitForLauncherStateFunction::Done,
+                     this))) {
+    return AlreadyResponded();
+  }
+  return RespondLater();
+}
+
+void AutotestPrivateWaitForLauncherStateFunction::Done() {
+  Respond(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

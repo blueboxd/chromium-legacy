@@ -1029,6 +1029,15 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Failed (missing product details)"/>
 </enum>
 
+<enum name="AdbSideloadingPromptEvent">
+  <int value="0" label="Prompt shown"/>
+  <int value="1" label="Prompt skipped"/>
+  <int value="2" label="Canceled by user"/>
+  <int value="3" label="Enabled by user"/>
+  <int value="4" label="Failed to display the prompt"/>
+  <int value="5" label="Failed to enable"/>
+</enum>
+
 <enum name="AddIceCandidateResult">
   <int value="0" label="Success"/>
   <int value="1" label="Closed"/>
@@ -5784,7 +5793,11 @@ Unknown properties are collapsed to zero. -->
 
 <enum name="BookmarkLaunchLocation">
   <int value="0" label="Attached bookmark bar"/>
-  <int value="1" label="Detached (floating) bookmark bar"/>
+  <int value="1" label="Detached (floating) bookmark bar">
+    <obsolete>
+      Deprecated: The detached bookmark bar state no longer exists.
+    </obsolete>
+  </int>
   <int value="2" label="Bookmark bar subfolder"/>
   <int value="3" label="Context menu"/>
   <int value="4" label="Wrench menu"/>
@@ -12137,6 +12150,11 @@ Called by update_net_error_codes.py.-->
   <int value="37" label="CONTAINER_EXPORT_IMPORT_CANCELLED"/>
   <int value="38" label="RESTART_ABORTED"/>
   <int value="39" label="RESTART_FAILED_VM_STOPPED"/>
+</enum>
+
+<enum name="CrostiniSettingsEvent">
+  <int value="0" label="Enable ADB sideloading"/>
+  <int value="1" label="Disable ADB sideloading"/>
 </enum>
 
 <enum name="CrostiniSetupResult">
@@ -21180,6 +21198,8 @@ Called by update_net_error_codes.py.-->
   <int value="1396" label="AUTOTESTPRIVATE_CLOSEAPPWINDOW"/>
   <int value="1397" label="AUTOTESTPRIVATE_REFRESHENTERPRISEPOLICIES"/>
   <int value="1398" label="AUTOTESTPRIVATE_INSTALLPWAFORCURRENTURL"/>
+  <int value="1399" label="AUTOTESTPRIVATE_ACTIVATEACCELERATOR"/>
+  <int value="1400" label="AUTOTESTPRIVATE_WAITFORLAUNCHERSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -25300,6 +25320,7 @@ Called by update_net_error_codes.py.-->
   <int value="3073" label="MouseEventScreenY"/>
   <int value="3074"
       label="CredentialManagerIsUserVerifyingPlatformAuthenticatorAvailable"/>
+  <int value="3075" label="ObsoleteWebrtcTlsVersion"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -30876,10 +30897,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2147024890" label="E_HANDLE"/>
   <int value="-2147024882" label="E_OUTOFMEMORY"/>
   <int value="-2147024809" label="E_INVALIDARG"/>
+  <int value="-2147024726" label="ERROR_BUSY"/>
+  <int value="-2147024713" label="ERROR_ALREADY_EXISTS"/>
   <int value="-2147024703" label="ERROR_BAD_EXE_FORMAT"/>
   <int value="-2147024110" label="ERROR_ACCESS_DISABLED_NO_SAFER_UI_BY_POLICY"/>
   <int value="-2147023838" label="ERROR_SERVICE_DISABLED"/>
+  <int value="-2147023728" label="ERROR_NOT_FOUND"/>
   <int value="-2147023673" label="ERROR_CANCELLED"/>
+  <int value="-2147023605" label="ERROR_DRIVER_PROCESS_TERMINATED"/>
   <int value="-2147023504" label="ERROR_FILE_CORRUPT"/>
   <int value="-2147023436" label="ERROR_TIMEOUT"/>
   <int value="-2147023179" label="RPC_S_UNKNOWN_IF"/>
@@ -30955,6 +30980,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1606219747" label="GOOPDATE_E_APP_USING_EXTERNAL_UPDATER"/>
   <int value="-805306212" label="STATUS_DEVICE_DATA_ERROR"/>
   <int value="-805305979" label="STATUS_IO_DEVICE_ERROR"/>
+  <int value="0" label="S_OK"/>
   <int value="143196161" label="AUDCLNT_S_BUFFER_EMPTY"/>
   <int value="143196162" label="AUDCLNT_S_THREAD_ALREADY_REGISTERED"/>
   <int value="143196163" label="AUDCLNT_S_POSITION_STALLED"/>
@@ -37803,6 +37829,7 @@ from previous Chrome versions.
   <int value="921536672" label="OfflinePagesDescriptiveFailStatus:enabled"/>
   <int value="925712999" label="V8Orinoco:enabled"/>
   <int value="926852901" label="DataReductionProxyMainMenu:disabled"/>
+  <int value="928900043" label="OmniboxLooseMaxLimitOnDedicatedRows:disabled"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
   <int value="934292666" label="DownloadRename:enabled"/>
   <int value="935364646" label="ForceDiceMigration:disabled"/>
@@ -38007,6 +38034,7 @@ from previous Chrome versions.
   <int value="1190035852" label="MediaRemoting:enabled"/>
   <int value="1192302892" label="gesture-typing"/>
   <int value="1192913630" label="OfflinePagesBackgroundLoading:disabled"/>
+  <int value="1193385506" label="OmniboxLooseMaxLimitOnDedicatedRows:enabled"/>
   <int value="1194496204" label="NewWallpaperPicker:enabled"/>
   <int value="1195087468" label="ProminentDarkModeActiveTabTitle:enabled"/>
   <int value="1196644408" label="performance-monitor-gathering"/>

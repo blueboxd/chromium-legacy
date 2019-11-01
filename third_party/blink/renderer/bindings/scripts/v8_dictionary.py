@@ -283,6 +283,8 @@ def member_impl_context(member, interfaces_info, header_includes,
         non_null_type.is_enum or
         non_null_type.is_wrapper_type) else ''
 
+    extended_attributes = member.extended_attributes
+
     return {
         'cpp_default_value': cpp_default_value,
         'cpp_name': cpp_name,
@@ -293,10 +295,10 @@ def member_impl_context(member, interfaces_info, header_includes,
         'has_method_name': has_method_name_for_dictionary_member(member),
         'is_nullable': idl_type.is_nullable,
         'is_traceable': idl_type.is_traceable,
-        'member_cpp_type': idl_type.cpp_type_args(used_in_cpp_sequence=True),
+        'member_cpp_type': idl_type.cpp_type_args(used_in_cpp_sequence=True, extended_attributes=extended_attributes),
         'null_setter_name': null_setter_name_for_dictionary_member(member),
         'nullable_indicator_name': nullable_indicator_name,
-        'rvalue_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True),
+        'rvalue_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True, extended_attributes=extended_attributes),
         'setter_inline': setter_inline,
         'setter_name': setter_name_for_dictionary_member(member),
         'setter_value': setter_value,

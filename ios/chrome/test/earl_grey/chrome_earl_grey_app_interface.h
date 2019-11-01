@@ -24,6 +24,10 @@
 // operation failed.
 + (NSError*)clearBrowsingHistory;
 
+// Clears browsing cache. Returns nil on success, or else an NSError indicating
+// the operation failed.
++ (NSError*)removeBrowsingCache;
+
 // Loads the URL |spec| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
 + (void)startLoadingURL:(NSString*)spec;
@@ -66,6 +70,9 @@
 // If not succeed returns an NSError indicating  why the
 // operation failed, otherwise nil.
 + (NSError*)simulateTabsBackgrounding;
+
+// Persists the current list of tabs to disk immediately.
++ (void)saveSessionImmediately;
 
 // Returns the number of main (non-incognito) tabs currently evicted.
 + (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;

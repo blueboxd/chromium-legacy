@@ -85,7 +85,7 @@ int DecryptingMediaResource::DecryptingDemuxerStreamCountForTesting() const {
 void DecryptingMediaResource::OnDecryptingDemuxerInitialized(
     PipelineStatus status) {
   DVLOG(2) << __func__ << ": DecryptingDemuxerStream initialization ended "
-           << "with the status: " << MediaLog::PipelineStatusToString(status);
+           << "with the status: " << status;
 
   // Decrement the count of DecryptingDemuxerStreams that need to be
   // initialized.

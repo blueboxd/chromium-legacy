@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollect
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.tab.TabViewAndroidDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.WebContents;
@@ -85,7 +86,7 @@ class AssistantBottomBarCoordinator
         mModel = model;
         mBottomSheetController = controller;
 
-        BottomSheet.BottomSheetContent currentSheetContent =
+        BottomSheetContent currentSheetContent =
                 controller.getBottomSheet().getCurrentSheetContent();
         if (currentSheetContent instanceof AssistantBottomSheetContent) {
             mContent = (AssistantBottomSheetContent) currentSheetContent;
@@ -179,7 +180,7 @@ class AssistantBottomBarCoordinator
             }
 
             @Override
-            public void onSheetContentChanged(@Nullable BottomSheet.BottomSheetContent newContent) {
+            public void onSheetContentChanged(@Nullable BottomSheetContent newContent) {
                 // TODO(crbug.com/806868): Make sure this works and does not interfere with Duet
                 // once we are in ChromeTabbedActivity.
                 updateLayoutViewportHeight();
@@ -263,7 +264,7 @@ class AssistantBottomBarCoordinator
 
     private void maybeShowHeaderChip() {
         boolean showChip = mBottomSheetController.getBottomSheet().getSheetState()
-                        == BottomSheet.SheetState.PEEK
+                        == BottomSheetController.SheetState.PEEK
                 && mPeekHeightCoordinator.getPeekMode()
                         == AssistantPeekHeightCoordinator.PeekMode.HANDLE_HEADER;
         mModel.getHeaderModel().set(AssistantHeaderModel.CHIP_VISIBLE, showChip);

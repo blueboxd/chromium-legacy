@@ -492,8 +492,6 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README
     with open(unexpected_manifest_failure_file, 'w') as f:
       f.write(msg_header)
       f.write(msg)
-    #TODO(mheikal): remove once trybot recipe handles failure files.
-    sys.exit(1)
 
 
 def _CreateKeepPredicate(resource_blacklist_regex,

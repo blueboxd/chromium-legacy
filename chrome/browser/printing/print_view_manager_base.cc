@@ -382,6 +382,8 @@ void PrintViewManagerBase::DidStartLoading() {
 
 void PrintViewManagerBase::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
+  PrintManager::RenderFrameDeleted(render_frame_host);
+
   // Terminates or cancels the print job if one was pending.
   if (render_frame_host != printing_rfh_)
     return;

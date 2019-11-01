@@ -382,7 +382,7 @@ const base::Feature kContextualSearchSecondTap{
     "ContextualSearchSecondTap", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchSimplifiedServer{
-    "ContextualSearchSimplifiedServer", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContextualSearchSimplifiedServer", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};

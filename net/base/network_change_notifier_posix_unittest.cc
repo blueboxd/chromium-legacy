@@ -109,8 +109,6 @@ class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
  public:
   void OnDNSChanged() override { dns_changes_++; }
 
-  void OnInitialDNSConfigRead() override { dns_changes_++; }
-
   int dns_changes() const { return dns_changes_; }
 
  private:

@@ -52,8 +52,8 @@ class KeyboardShortcutItemView : public views::View {
   static std::map<ui::KeyboardCode, base::string16>*
   GetKeycodeToString16Cache();
 
-  // Lays out child views for the given |width|.
-  void MaybeCalculateAndDoLayout(int width) const;
+  // Calculates how to layout child views for the given |width|.
+  void CalculateLayout(int width) const;
 
   // Not owned. Pointer to the keyboard shortcut item.
   const KeyboardShortcutItem* shortcut_item_;
@@ -66,8 +66,10 @@ class KeyboardShortcutItemView : public views::View {
   // View of the text listing the keys making up the shortcut.
   views::StyledLabel* shortcut_label_view_;
 
-  // Saves the results of the last MaybeCalculateAndDoLayout() call to avoid
-  // repeated calculation.
+  // Saves the results of the last CalculateLayout() call to avoid repeated
+  // calculation.
+  mutable gfx::Rect description_bounds_;
+  mutable gfx::Rect shortcut_bounds_;
   mutable gfx::Size calculated_size_;
 
   // Accessibility data.

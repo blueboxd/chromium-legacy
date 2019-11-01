@@ -116,7 +116,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
             base::BindOnce(
                 &ExtensionDownloaderDelegate::OnExtensionDownloadFailed,
                 base::Unretained(delegate), id,
-                ExtensionDownloaderDelegate::NO_UPDATE_AVAILABLE,
+                ExtensionDownloaderDelegate::Error::NO_UPDATE_AVAILABLE,
                 ExtensionDownloaderDelegate::PingResult(),
                 fetch_data->request_ids()));
         continue;

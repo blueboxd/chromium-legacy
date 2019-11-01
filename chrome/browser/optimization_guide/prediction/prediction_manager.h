@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
@@ -22,10 +23,16 @@ namespace content {
 class NavigationHandle;
 }  // namespace content
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace optimization_guide {
 
 enum class OptimizationGuideDecision;
 class PredictionModel;
+class PredictionModelFetcher;
+class TopHostProvider;
 
 // A PredictionManager supported by the optimization guide that makes an
 // OptimizationTargetDecision by evaluating the corresponding prediction model
@@ -33,7 +40,9 @@ class PredictionModel;
 class PredictionManager
     : public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
  public:
-  PredictionManager();
+  PredictionManager(
+      TopHostProvider* top_host_provider,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~PredictionManager() override;
 
   // Registers the optimization targets that may have ShouldTargetNavigtation
@@ -61,23 +70,42 @@ class PredictionManager
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override;
 
- protected:
-  // Adds a prediction model for an optimization target into
-  // |optimization_target_prediction_model_map_| for testing.
-  void SeedPredictionModelForTesting(
-      proto::OptimizationTarget optimization_target,
-      std::unique_ptr<PredictionModel> prediction_model);
+  // Sets the prediction model fetcher for testing.
+  void SetPredictionModelFetcherForTesting(
+      std::unique_ptr<PredictionModelFetcher> prediction_model_fetcher);
 
-  // Adds host model features for a host into the |host_model_features_map_|
-  // for testing.
-  void SeedHostModelFeaturesMapForTesting(
-      const std::string& host,
-      base::flat_map<std::string, float> host_model_features);
+  PredictionModelFetcher* prediction_model_fetcher() const {
+    return prediction_model_fetcher_.get();
+  }
+
+ protected:
 
   // Returns the prediction model for the optimization target used by this
   // PredictionManager for testing.
   PredictionModel* GetPredictionModelForTesting(
       proto::OptimizationTarget optimization_target) const;
+
+  // Returns the host model features for all hosts used by this
+  // PredictionManager for testing.
+  base::flat_map<std::string, base::flat_map<std::string, float>>
+  GetHostModelFeaturesForTesting() const;
+
+  // Creates a PredictionModel, virtual for testing.
+  virtual std::unique_ptr<PredictionModel> CreatePredictionModel(
+      const proto::PredictionModel& model,
+      const base::flat_set<std::string>& host_model_features) const;
+
+  // Processes |host_model_features| to be stored in |host_model_features_map|.
+  void UpdateHostModelFeatures(
+      const google::protobuf::RepeatedPtrField<proto::HostModelFeatures>&
+          host_model_features);
+
+  // Processes |prediction_models| to be stored in
+  // |optimization_target_prediction_model_map_|.
+  void UpdatePredictionModels(
+      google::protobuf::RepeatedPtrField<proto::PredictionModel>*
+          prediction_models,
+      const base::flat_set<std::string>& host_model_features);
 
  private:
   // Constructs and returns  a map containing the current feature values for the
@@ -92,6 +120,20 @@ class PredictionManager
   base::Optional<float> GetValueForClientFeature(
       const std::string& model_feature,
       content::NavigationHandle* navigation_handle) const;
+
+  // Called to make a request to fetch models and host model features from the
+  // remote Optimization Guide Service. Used to fetch models for the registered
+  // optimization targets as well as the host model features for top hosts
+  // needed to evaluate these models.
+  void FetchModelsAndHostModelFeatures();
+
+  // Called when the models and host model features have been fetched from the
+  // remote Optimization Guide Service and are ready for parsing. Processes the
+  // prediction models and the host model features in the response and stores
+  // them for use.
+  void OnModelsAndHostFeaturesFetched(
+      base::Optional<std::unique_ptr<proto::GetModelsResponse>>
+          get_models_response_data);
 
   // A map of optimization target to the prediction model capable of making
   // an optimization target decision for it.
@@ -117,11 +159,25 @@ class PredictionManager
   // load of a session).
   base::Optional<float> previous_load_fcp_ms_;
 
+  // The fetcher than handles making requests to update the models and host
+  // model features from the remote Optimization Guide Service.
+  std::unique_ptr<PredictionModelFetcher> prediction_model_fetcher_;
+
+  // The top host provider that can be queried. Not owned.
+  TopHostProvider* top_host_provider_ = nullptr;
+
+  // The URL loader factory used for fetching model and host feature updates
+  // from the remote Optimization Guide Service.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
   // The current estimate of the EffectiveConnectionType.
   net::EffectiveConnectionType current_effective_connection_type_ =
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Used to get |weak_ptr_| to self on the UI thread.
+  base::WeakPtrFactory<PredictionManager> ui_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PredictionManager);
 };

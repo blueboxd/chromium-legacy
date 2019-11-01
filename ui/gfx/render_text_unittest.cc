@@ -4528,6 +4528,21 @@ TEST_F(RenderTextTest, ControlCharacterReplacement) {
   // Setting multiline, the newline character will be back to the original text.
   render_text->SetMultiline(true);
   EXPECT_EQ(WideToUTF16(L"␈␍␇␉\n␋␌"), render_text->GetDisplayText());
+
+  // The generic control characters should have been replaced by the replacement
+  // codepoints.
+  render_text->SetText(WideToUTF16(L"\u008f\u0080"));
+  EXPECT_EQ(WideToUTF16(L"\ufffd\ufffd"), render_text->GetDisplayText());
+}
+
+TEST_F(RenderTextTest, PrivateUseCharacterReplacement) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(UTF8ToUTF16("xx\ue78d\ue78fa\U00100042z"));
+
+  // The private use characters should have been replaced. If the code point is
+  // a surrogate pair, it needs to be replaced by two characters.
+  EXPECT_EQ(WideToUTF16(L"xx\ufffd\ufffda\ufffd\ufffdz"),
+            render_text->GetDisplayText());
 }
 
 // Make sure the horizontal positions of runs in a line (left-to-right for

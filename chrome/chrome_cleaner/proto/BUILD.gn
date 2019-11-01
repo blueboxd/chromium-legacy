@@ -27,12 +27,6 @@ proto_library("shared_pup_enums_proto") {
   ]
 }
 
-proto_library("spec_footprints_proto") {
-  sources = [
-    "spec_footprints.proto",
-  ]
-}
-
 proto_library("uws_spec_by_version_proto") {
   sources = [
     "uws_spec_by_version.proto",

@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/video_capture/public/cpp/mock_push_subscription.h"
 #include "services/video_capture/public/cpp/mock_video_source.h"
 #include "services/video_capture/public/cpp/mock_video_source_provider.h"
@@ -53,9 +54,7 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
 
   void CloseSourceBinding() { source_binding_.reset(); }
 
-  void CloseSubscriptionBindings() {
-    subscription_bindings_.CloseAllBindings();
-  }
+  void CloseSubscriptionReceivers() { subscription_receivers_.Clear(); }
 
  protected:
   void SetUp() override {
@@ -104,8 +103,8 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
                     subscription,
                 video_capture::mojom::VideoSource::
                     CreatePushSubscriptionCallback& callback) {
-              subscription_bindings_.AddBinding(&mock_subscription_,
-                                                std::move(subscription));
+              subscription_receivers_.Add(&mock_subscription_,
+                                          std::move(subscription));
               std::move(callback).Run(
                   video_capture::mojom::CreatePushSubscriptionResultCode::
                       kCreatedWithRequestedSettings,
@@ -131,8 +130,8 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
   std::unique_ptr<mojo::Binding<video_capture::mojom::VideoSource>>
       source_binding_;
   video_capture::MockPushSubcription mock_subscription_;
-  mojo::BindingSet<video_capture::mojom::PushVideoStreamSubscription>
-      subscription_bindings_;
+  mojo::ReceiverSet<video_capture::mojom::PushVideoStreamSubscription>
+      subscription_receivers_;
   std::unique_ptr<ServiceVideoCaptureDeviceLauncher> launcher_;
   base::MockCallback<base::OnceClosure> connection_lost_cb_;
   base::MockCallback<base::OnceClosure> done_cb_;
@@ -217,7 +216,8 @@ void ServiceVideoCaptureDeviceLauncherTest::RunLaunchingDeviceIsAbortedTest(
             // Prepare the callback, but save it for now instead of invoking it.
             create_push_subscription_success_answer_cb = base::BindOnce(
                 [](const media::VideoCaptureParams& requested_settings,
-                   video_capture::mojom::PushVideoStreamSubscriptionRequest
+                   mojo::PendingReceiver<
+                       video_capture::mojom::PushVideoStreamSubscription>
                        subscription,
                    video_capture::mojom::VideoSource::
                        CreatePushSubscriptionCallback callback,
@@ -277,7 +277,8 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
                     [](mojo::PendingRemote<video_capture::mojom::Receiver>
                            subscriber,
                        const media::VideoCaptureParams& requested_settings,
-                       video_capture::mojom::PushVideoStreamSubscriptionRequest
+                       mojo::PendingReceiver<
+                           video_capture::mojom::PushVideoStreamSubscription>
                            subscription,
                        video_capture::mojom::VideoSource::
                            CreatePushSubscriptionCallback callback) {
@@ -394,7 +395,7 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
        ConnectionToSourceLostAfterSuccessfulLaunch) {
   RunConnectionLostAfterSuccessfulStartTest(base::BindOnce(
-      &ServiceVideoCaptureDeviceLauncherTest::CloseSubscriptionBindings,
+      &ServiceVideoCaptureDeviceLauncherTest::CloseSubscriptionReceivers,
       base::Unretained(this)));
 }
 

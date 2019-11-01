@@ -17,6 +17,8 @@
 namespace optimization_guide {
 namespace proto {
 class Hint;
+class HostModelFeatures;
+class PredictionModel;
 class StoreEntry;
 }  // namespace proto
 
@@ -37,15 +39,23 @@ class StoreUpdateData {
       base::Time fetch_update_time,
       base::Time expiry_time);
 
+  // Creates an update data object for a prediction model update.
+  static std::unique_ptr<StoreUpdateData>
+  CreatePredictionModelStoreUpdateData();
+
+  // Creates an update data object for a host model features update.
+  static std::unique_ptr<StoreUpdateData>
+  CreateHostModelFeaturesStoreUpdateData(
+      base::Time host_model_features_update_time,
+      base::Time expiry_time);
+
   // Returns the component version of a component hint update.
   const base::Optional<base::Version> component_version() const {
     return component_version_;
   }
 
-  // Returns the next update time for a fetched hint update.
-  const base::Optional<base::Time> fetch_update_time() const {
-    return fetch_update_time_;
-  }
+  // Returns the next update time for the entries in the store update.
+  const base::Optional<base::Time> update_time() const { return update_time_; }
 
   // Returns the expiry time for the hints in a fetched hint update.
   const base::Optional<base::Time> expiry_time() const { return expiry_time_; }
@@ -54,6 +64,16 @@ class StoreUpdateData {
   // called, |hint| is no longer valid.
   void MoveHintIntoUpdateData(proto::Hint&& hint);
 
+  // Moves |host_model_features| in this update data. Afterwards,
+  // |host_model_features| is no longer valid.
+  void MoveHostModelFeaturesIntoUpdateData(
+      proto::HostModelFeatures&& host_model_features);
+
+  // Moves |prediction_model| in this update data. Afterwards,
+  // |prediction_model| is no longer valid.
+  void MovePredictionModelIntoUpdateData(
+      proto::PredictionModel&& prediction_model);
+
   // Returns the store entry updates along with ownership to them.
   std::unique_ptr<EntryVector> TakeUpdateEntries();
 
@@ -61,19 +81,22 @@ class StoreUpdateData {
   StoreUpdateData(base::Optional<base::Version> component_version,
                   base::Optional<base::Time> fetch_update_time,
                   base::Optional<base::Time> expiry_time);
+  StoreUpdateData(base::Time host_model_features_update_time,
+                  base::Time expiry_time);
+  StoreUpdateData();
 
   // The component version of the update data for a component update.
   base::Optional<base::Version> component_version_;
 
-  // The time when hints in this update need to be updated for a fetch update.
-  base::Optional<base::Time> fetch_update_time_;
+  // The time when the entries in this update need to be updated.
+  base::Optional<base::Time> update_time_;
 
-  // The time when hints in this update expire.
+  // The time when entries in this update expire.
   base::Optional<base::Time> expiry_time_;
 
-  // The prefix to add to the key of every hint entry. It is set
+  // The prefix to add to the key of every store entry. It is set
   // during construction for appropriate type of update.
-  std::string hint_entry_key_prefix_;
+  std::string entry_key_prefix_;
 
   // The vector of entries to save.
   std::unique_ptr<EntryVector> entries_to_save_;

@@ -87,16 +87,13 @@ class ChromiumDepGraph {
             assert dep != null : "No dependency collected for artifact ${artifact.name}"
             dep.supportsAndroid = true
             dep.testOnly = true
-            dep.isShipped = false
         }
 
         buildCompileConfig.resolvedArtifacts.each { artifact ->
             def id = makeModuleId(artifact)
             def dep = dependencies.get(id)
             assert dep != null : "No dependency collected for artifact ${artifact.name}"
-            dep.supportsAndroid = true
             dep.testOnly = false
-            dep.isShipped = false
         }
 
         compileConfig.resolvedArtifacts.each { artifact ->

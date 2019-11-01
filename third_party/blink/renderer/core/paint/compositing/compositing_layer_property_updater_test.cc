@@ -78,9 +78,8 @@ TEST_F(CompositingLayerPropertyUpdaterTest,
   ASSERT_TRUE(scrollable_area);
 
   auto* horizontal_scrollbar_layer =
-      scrollable_area->GraphicsLayerForHorizontalScrollbar();
-  auto* vertical_scrollbar_layer =
-      scrollable_area->GraphicsLayerForVerticalScrollbar();
+      scrollable_area->LayerForHorizontalScrollbar();
+  auto* vertical_scrollbar_layer = scrollable_area->LayerForVerticalScrollbar();
   ASSERT_TRUE(horizontal_scrollbar_layer);
   ASSERT_TRUE(vertical_scrollbar_layer);
 
@@ -147,7 +146,7 @@ TEST_F(CompositingLayerPropertyUpdaterTest,
         document.View()->GetPage()->GetVisualViewport();
 
     auto* vertical_scrollbar_layer =
-        root_scrollable->GraphicsLayerForVerticalScrollbar();
+        root_scrollable->LayerForVerticalScrollbar();
     ASSERT_TRUE(vertical_scrollbar_layer);
     EXPECT_EQ(&vertical_scrollbar_layer->GetPropertyTreeState().Transform(),
               visual_viewport.GetOverscrollElasticityTransformNode()->Parent());
@@ -162,7 +161,7 @@ TEST_F(CompositingLayerPropertyUpdaterTest,
     ASSERT_TRUE(scrollable_area);
 
     auto* vertical_scrollbar_layer =
-        scrollable_area->GraphicsLayerForVerticalScrollbar();
+        scrollable_area->LayerForVerticalScrollbar();
     ASSERT_TRUE(vertical_scrollbar_layer);
 
     auto paint_properties = scroller_layer->GetLayoutObject()

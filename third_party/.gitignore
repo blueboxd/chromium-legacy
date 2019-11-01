@@ -5,6 +5,7 @@
 /accessibility_test_framework/lib/
 /adobe/flash/binaries
 /adobe/flash/symbols
+/aemu-linux-x64
 /amd/
 /android_build_tools/aapt2/aapt2
 /android_build_tools/aapt2/lib64/*.so
@@ -140,6 +141,7 @@
 /libsrtp
 /libsync/src
 /libupnp
+/libunwindstack
 /libvpx/source/libvpx
 /libwebm/source
 /libyuv

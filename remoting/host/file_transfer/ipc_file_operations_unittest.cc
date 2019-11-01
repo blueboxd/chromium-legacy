@@ -114,19 +114,19 @@ class IpcFileOperationsTest : public testing::Test {
 
   base::FilePath TestDir();
 
-  base::test::TaskEnvironment task_environment_;
+  // Points DIR_USER_DESKTOP at a scoped temporary directory.
   base::ScopedPathOverride scoped_path_override_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FileOperations> file_operations_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcFileOperationsTest);
 };
 
 IpcFileOperationsTest::IpcFileOperationsTest()
-    : task_environment_(
+    : scoped_path_override_(base::DIR_USER_DESKTOP),
+      task_environment_(
           base::test::TaskEnvironment::MainThreadType::DEFAULT,
           base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
-      // Points DIR_USER_DESKTOP at a scoped temporary directory.
-      scoped_path_override_(base::DIR_USER_DESKTOP),
       file_operations_(std::make_unique<IpcTestBridge>(
           task_environment_.GetMainThreadTaskRunner())) {}
 

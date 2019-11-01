@@ -29,13 +29,13 @@ constexpr int kDistanceFromArrowToTouchPoint = 64;
 
 // Parameters defining the arrow of the affordance.
 constexpr int kArrowSize = 20;
-constexpr SkColor kArrowColorBeforeComplete = gfx::kGoogleBlue600;
-constexpr SkColor kArrowColorAfterComplete = gfx::kGoogleGrey100;
+constexpr SkColor kArrowColorBeforeActivated = gfx::kGoogleBlue600;
+constexpr SkColor kArrowColorAfterActivated = gfx::kGoogleGrey100;
 
 // Parameters defining the background circle of the affordance.
 constexpr int kBackgroundRadius = 20;
-const SkColor kBackgroundColorBeforeComplete = SK_ColorWHITE;
-const SkColor kBackgroundColorAfterComplete = gfx::kGoogleBlue600;
+const SkColor kBackgroundColorBeforeActivated = SK_ColorWHITE;
+const SkColor kBackgroundColorAfterActivated = gfx::kGoogleBlue600;
 // Y offset of the background shadow.
 const int kBgShadowOffsetY = 2;
 const int kBgShadowBlurRadius = 8;
@@ -90,13 +90,12 @@ class AffordanceView : public views::View {
 
   ~AffordanceView() override = default;
 
-  // Schedule painting on given |drag_progress| and |abort_progress|.
-  void Paint(float drag_progress,
-             float abort_progress,
+  // Schedule painting on given |affordance_progress|, |complete_progress| and
+  // |state|.
+  void Paint(float affordance_progress,
              float complete_progress,
              BackGestureAffordance::State state) {
-    drag_progress_ = drag_progress;
-    abort_progress_ = abort_progress;
+    affordance_progress_ = affordance_progress;
     complete_progress_ = complete_progress;
     state_ = state;
     SchedulePaint();
@@ -109,7 +108,6 @@ class AffordanceView : public views::View {
 
     const gfx::PointF center_point(kMaxBurstRippleRadius,
                                    kMaxBurstRippleRadius);
-    const float progress = (1 - abort_progress_) * drag_progress_;
 
     // Draw the ripple.
     cc::PaintFlags ripple_flags;
@@ -117,7 +115,7 @@ class AffordanceView : public views::View {
     ripple_flags.setStyle(cc::PaintFlags::kFill_Style);
     ripple_flags.setColor(kRippleColor);
 
-    const bool exceed_full_progress = progress >= 1.f;
+    const bool is_activated = affordance_progress_ >= 1.f;
     float ripple_radius = 0.f;
     if (state_ == BackGestureAffordance::State::COMPLETING) {
       const float burst_progress = gfx::Tween::CalculateValue(
@@ -125,13 +123,15 @@ class AffordanceView : public views::View {
       ripple_radius =
           kMaxRippleRadius +
           burst_progress * (kMaxBurstRippleRadius - kMaxRippleRadius);
-    } else if (exceed_full_progress) {
+    } else if (is_activated) {
       const float factor =
           (kMaxRippleRadius - kFullRippleRadius) / (kMaxDragProgress - 1);
-      ripple_radius = (kFullRippleRadius - factor) + factor * progress;
+      ripple_radius =
+          (kFullRippleRadius - factor) + factor * affordance_progress_;
     } else {
-      ripple_radius = kBackgroundRadius +
-                      progress * (kFullRippleRadius - kBackgroundRadius);
+      ripple_radius =
+          kBackgroundRadius +
+          affordance_progress_ * (kFullRippleRadius - kBackgroundRadius);
     }
     canvas->DrawCircle(center_point, ripple_radius, ripple_flags);
 
@@ -143,28 +143,27 @@ class AffordanceView : public views::View {
     shadow.emplace_back(gfx::Vector2d(0, kBgShadowOffsetY), kBgShadowBlurRadius,
                         kBgShadowColor);
     bg_flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
-    bg_flags.setColor(exceed_full_progress ? kBackgroundColorAfterComplete
-                                           : kBackgroundColorBeforeComplete);
+    bg_flags.setColor(is_activated ? kBackgroundColorAfterActivated
+                                   : kBackgroundColorBeforeActivated);
     canvas->DrawCircle(center_point, kBackgroundRadius, bg_flags);
 
     // Draw the arrow.
     const float arrow_x = center_point.x() - kArrowSize / 2.f;
     const float arrow_y = center_point.y() - kArrowSize / 2.f;
-    if (exceed_full_progress) {
+    if (is_activated) {
       canvas->DrawImageInt(
           gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, kArrowSize,
-                                kArrowColorAfterComplete),
+                                kArrowColorAfterActivated),
           static_cast<int>(arrow_x), static_cast<int>(arrow_y));
     } else {
       canvas->DrawImageInt(
           gfx::CreateVectorIcon(vector_icons::kBackArrowIcon, kArrowSize,
-                                kArrowColorBeforeComplete),
+                                kArrowColorBeforeActivated),
           static_cast<int>(arrow_x), static_cast<int>(arrow_y));
     }
   }
 
-  float drag_progress_ = 0.f;
-  float abort_progress_ = 0.f;
+  float affordance_progress_ = 0.f;
   float complete_progress_ = 0.f;
   BackGestureAffordance::State state_ = BackGestureAffordance::State::DRAGGING;
 
@@ -225,7 +224,7 @@ void BackGestureAffordance::Abort() {
 
   state_ = State::ABORTING;
   animation_ = std::make_unique<gfx::LinearAnimation>(
-      drag_progress_ * kAbortAnimationTimeout,
+      GetAffordanceProgress() * kAbortAnimationTimeout,
       gfx::LinearAnimation::kDefaultFrameRate, this);
   animation_->Start();
 }
@@ -237,6 +236,10 @@ void BackGestureAffordance::Complete() {
   animation_ = std::make_unique<gfx::LinearAnimation>(
       kCompleteAnimationTimeout, gfx::LinearAnimation::kDefaultFrameRate, this);
   animation_->Start();
+}
+
+bool BackGestureAffordance::IsActivated() const {
+  return GetAffordanceProgress() >= 1.0f;
 }
 
 void BackGestureAffordance::CreateAffordanceWidget(const gfx::Point& location) {
@@ -258,9 +261,9 @@ void BackGestureAffordance::CreateAffordanceWidget(const gfx::Point& location) {
 }
 
 void BackGestureAffordance::UpdateTransform() {
-  const float progress = (1 - abort_progress_) * drag_progress_;
+  const float progress = GetAffordanceProgress();
   float offset = 0.f;
-  if (progress >= 1.f) {
+  if (IsActivated()) {
     const float factor = (kDistanceForMaxRipple - kDistanceForFullRadius) /
                          (kMaxDragProgress - 1.f);
     offset = (kDistanceForFullRadius - factor) + factor * progress;
@@ -276,7 +279,7 @@ void BackGestureAffordance::UpdateTransform() {
 
 void BackGestureAffordance::SchedulePaint() {
   static_cast<AffordanceView*>(affordance_widget_->GetContentsView())
-      ->Paint(drag_progress_, abort_progress_, complete_progress_, state_);
+      ->Paint(GetAffordanceProgress(), complete_progress_, state_);
 }
 
 void BackGestureAffordance::SetAbortProgress(float progress) {
@@ -306,6 +309,12 @@ void BackGestureAffordance::SetCompleteProgress(float progress) {
                                  1 - complete_progress_));
 
   SchedulePaint();
+}
+
+float BackGestureAffordance::GetAffordanceProgress() const {
+  return drag_progress_ *
+         (1 - gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
+                                         abort_progress_));
 }
 
 void BackGestureAffordance::AnimationEnded(const gfx::Animation* animation) {}

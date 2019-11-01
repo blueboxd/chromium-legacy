@@ -5,6 +5,7 @@
 // Command-line interface for checking the integrity of .size files.
 // Intended to be called from WebAssembly code.
 
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <iostream>
@@ -43,12 +44,35 @@ void LoadSizeFile(const char* compressed, size_t size) {
 void BuildTree(bool group_by_component,
                const char* include_regex_str,
                const char* exclude_regex_str,
-               int minimum_size_bytes) {
+               const char* include_sections,
+               int minimum_size_bytes,
+               int match_flag) {
   std::vector<std::function<bool(const Symbol&)>> filters;
 
   if (minimum_size_bytes > 0) {
     filters.push_back([minimum_size_bytes](const Symbol& sym) -> bool {
       return sym.pss() >= minimum_size_bytes;
+    });
+  }
+
+  // It's currently not useful to filter on more than one flag, so |match_flag|
+  // can be assumed to be a power of two.
+  if (match_flag) {
+    std::cout << "Filtering on flag matching " << match_flag << std::endl;
+    filters.push_back([match_flag](const Symbol& sym) -> bool {
+      return match_flag & sym.flags;
+    });
+  }
+
+  std::array<bool, 256> include_sections_map{};
+  if (include_sections) {
+    std::cout << "Filtering on sections " << include_sections << std::endl;
+    for (const char* c = include_sections; *c; c++) {
+      include_sections_map[static_cast<uint8_t>(*c)] = true;
+    }
+    filters.push_back([&include_sections_map](const Symbol& sym) -> bool {
+      return include_sections_map[static_cast<uint8_t>(
+          info.ShortSectionName(sym.section_name))];
     });
   }
 

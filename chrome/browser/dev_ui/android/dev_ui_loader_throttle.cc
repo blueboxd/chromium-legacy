@@ -133,7 +133,7 @@ void DevUiLoaderThrottle::OnDevUiDfmInstallWithStatus(bool success) {
     Resume();
   } else {
     std::string html = BuildErrorPageHtml();
-    CancelDeferredNavigation({BLOCK_REQUEST, net::ERR_CONNECTION_FAILED, html});
+    CancelDeferredNavigation({CANCEL, net::ERR_CONNECTION_FAILED, html});
   }
 }
 

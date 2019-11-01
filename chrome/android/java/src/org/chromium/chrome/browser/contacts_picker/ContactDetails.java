@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
+import org.chromium.payments.mojom.PaymentAddress;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,19 +43,24 @@ public class ContactDetails implements Comparable<ContactDetails> {
     // The list of phone numbers registered for this contact.
     private final List<String> mPhoneNumbers;
 
+    // The list of addresses registered for this contact.
+    private final List<PaymentAddress> mAddresses;
+
     /**
      * The ContactDetails constructor.
      * @param id The unique identifier of this contact.
      * @param displayName The display name of this contact.
      * @param emails The emails registered for this contact.
      * @param phoneNumbers The phone numbers registered for this contact.
+     * @param addresses The addresses registered for this contact.
      */
-    public ContactDetails(
-            String id, String displayName, List<String> emails, List<String> phoneNumbers) {
+    public ContactDetails(String id, String displayName, List<String> emails,
+            List<String> phoneNumbers, List<PaymentAddress> addresses) {
         mDisplayName = displayName;
-        mEmails = emails != null ? new ArrayList<String>(emails) : new ArrayList<String>();
-        mPhoneNumbers = phoneNumbers != null ? new ArrayList<String>(phoneNumbers)
-                                             : new ArrayList<String>();
+        mEmails = emails != null ? emails : new ArrayList<String>();
+        mPhoneNumbers = phoneNumbers != null ? phoneNumbers : new ArrayList<String>();
+        mAddresses = addresses != null ? addresses : new ArrayList<PaymentAddress>();
+
         mId = id;
     }
 
@@ -68,6 +74,10 @@ public class ContactDetails implements Comparable<ContactDetails> {
 
     public List<String> getPhoneNumbers() {
         return mPhoneNumbers;
+    }
+
+    public List<PaymentAddress> getAddresses() {
+        return mAddresses;
     }
 
     public String getDisplayName() {

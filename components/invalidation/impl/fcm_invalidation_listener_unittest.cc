@@ -22,7 +22,7 @@
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -164,7 +164,6 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
             nullptr /* identity_provider */,
             nullptr /* pref_service */,
             nullptr /* loader_factory */,
-            base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
             "fake_sender_id",
             false) {
     ON_CALL(*this, LookupRegisteredPublicTopicByPrivateTopic)
@@ -285,7 +284,7 @@ class FCMInvalidationListenerTest : public testing::Test {
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   FCMSyncNetworkChannel* fcm_sync_network_channel_;
   MockRegistrationManager* registration_manager_;
 

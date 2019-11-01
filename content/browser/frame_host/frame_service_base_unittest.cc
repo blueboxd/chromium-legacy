@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -118,6 +119,10 @@ TEST_F(FrameServiceBaseTest, RenderFrameDeleted) {
 }
 
 TEST_F(FrameServiceBaseTest, DidFinishNavigation) {
+  // When a page enters the BackForwardCache, the RenderFrameHost is not
+  // deleted.
+  web_contents()->GetController().GetBackForwardCache().DisableForTesting(
+      BackForwardCache::TEST_ASSUMES_NO_CACHING);
   CreateEchoImpl(main_rfh_);
   SimulateNavigation(main_rfh_, GURL(kBarOrigin));
   EXPECT_FALSE(is_echo_impl_alive_);

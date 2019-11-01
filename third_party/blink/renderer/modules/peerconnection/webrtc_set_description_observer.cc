@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "third_party/webrtc/pc/sdp_utils.h"
 
 namespace blink {
 
@@ -16,7 +17,9 @@ WebRtcSetDescriptionObserver::States::States()
 WebRtcSetDescriptionObserver::States::States(States&& other)
     : signaling_state(other.signaling_state),
       sctp_transport_state(std::move(other.sctp_transport_state)),
-      transceiver_states(std::move(other.transceiver_states)) {}
+      transceiver_states(std::move(other.transceiver_states)),
+      pending_local_description(std::move(other.pending_local_description)),
+      current_local_description(std::move(other.current_local_description)) {}
 
 WebRtcSetDescriptionObserver::States::~States() = default;
 
@@ -25,6 +28,8 @@ operator=(States&& other) {
   signaling_state = other.signaling_state;
   sctp_transport_state = std::move(other.sctp_transport_state);
   transceiver_states = std::move(other.transceiver_states);
+  pending_local_description = std::move(other.pending_local_description);
+  current_local_description = std::move(other.current_local_description);
   return *this;
 }
 
@@ -75,24 +80,42 @@ void WebRtcSetDescriptionObserverHandlerImpl::OnSetDescriptionComplete(
       main_task_runner_, signaling_task_runner_);
   transceiver_state_surfacer.Initialize(pc_, track_adapter_map_,
                                         std::move(transceivers));
+  std::unique_ptr<webrtc::SessionDescriptionInterface>
+      pending_local_description = pc_->pending_local_description()
+                                      ? webrtc::CloneSessionDescription(
+                                            pc_->pending_local_description())
+                                      : nullptr;
+  std::unique_ptr<webrtc::SessionDescriptionInterface>
+      current_local_description = pc_->current_local_description()
+                                      ? webrtc::CloneSessionDescription(
+                                            pc_->current_local_description())
+                                      : nullptr;
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WebRtcSetDescriptionObserverHandlerImpl::
                                     OnSetDescriptionCompleteOnMainThread,
                                 this, std::move(error), pc_->signaling_state(),
-                                std::move(transceiver_state_surfacer)));
+                                std::move(transceiver_state_surfacer),
+                                std::move(pending_local_description),
+                                std::move(current_local_description)));
 }
 
 void WebRtcSetDescriptionObserverHandlerImpl::
     OnSetDescriptionCompleteOnMainThread(
         webrtc::RTCError error,
         webrtc::PeerConnectionInterface::SignalingState signaling_state,
-        blink::TransceiverStateSurfacer transceiver_state_surfacer) {
+        blink::TransceiverStateSurfacer transceiver_state_surfacer,
+        std::unique_ptr<webrtc::SessionDescriptionInterface>
+            pending_local_description,
+        std::unique_ptr<webrtc::SessionDescriptionInterface>
+            current_local_description) {
   CHECK(main_task_runner_->BelongsToCurrentThread());
   WebRtcSetDescriptionObserver::States states;
   states.signaling_state = signaling_state;
   states.sctp_transport_state =
       transceiver_state_surfacer.SctpTransportSnapshot();
   states.transceiver_states = transceiver_state_surfacer.ObtainStates();
+  states.pending_local_description = std::move(pending_local_description);
+  states.current_local_description = std::move(current_local_description);
   observer_->OnSetDescriptionComplete(std::move(error), std::move(states));
 }
 

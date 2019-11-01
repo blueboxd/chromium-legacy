@@ -14785,6 +14785,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Omnibox.ClipboardSuggestionRemoved">
+  <owner>gangwu@chromium.org</owner>
+  <owner>lzbylut@google.com</owner>
+  <description>
+    User long pressed a clipboard suggestion from the omnibox suggestion list to
+    remove it from the omnibox suggestion and the system clipboard on Android.
+  </description>
+</action>
+
 <action name="Omnibox.EditUrlSuggestion.Copy">
   <owner>mdjones@chromium.org</owner>
   <owner>lzbylut@google.com</owner>

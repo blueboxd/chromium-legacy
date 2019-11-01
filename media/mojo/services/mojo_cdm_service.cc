@@ -144,6 +144,7 @@ void MojoCdmService::OnCdmCreated(
     InitializeCallback callback,
     const scoped_refptr<::media::ContentDecryptionModule>& cdm,
     const std::string& error_message) {
+  DVLOG(2) << __func__ << ": error_message=" << error_message;
   mojom::CdmPromiseResultPtr cdm_promise_result(mojom::CdmPromiseResult::New());
 
   // TODO(xhwang): This should not happen when KeySystemInfo is properly
@@ -170,6 +171,7 @@ void MojoCdmService::OnCdmCreated(
   mojom::DecryptorPtr decryptor_ptr;
   CdmContext* const cdm_context = cdm_->GetCdmContext();
   if (cdm_context && cdm_context->GetDecryptor()) {
+    DVLOG(2) << __func__ << ": CDM supports Decryptor.";
     // Both |cdm_| and |decryptor_| are owned by |this|, so we don't need to
     // pass in a CdmContextRef.
     decryptor_.reset(

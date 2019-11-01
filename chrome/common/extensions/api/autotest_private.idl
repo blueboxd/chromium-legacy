@@ -79,6 +79,14 @@ namespace autotestPrivate {
     Rotate270
   };
 
+  enum LauncherStateType {
+    Closed,
+    Peeking,
+    Half,
+    FullscreenAllApps,
+    FullscreenSearch
+  };
+
   // A paramter used in setArcAppWindowState() function.
   dictionary WindowStateChangeDict {
     // The WM event to change the ARC window state.
@@ -356,6 +364,15 @@ namespace autotestPrivate {
     DOMString? arcPackageName;
   };
 
+  dictionary Accelerator {
+    DOMString keyCode;
+    boolean shift;
+    boolean control;
+    boolean alt;
+    boolean search;
+    boolean pressed;
+  };
+
   callback GetShelfItemsCallback = void (ShelfItem[] items);
 
   callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
@@ -369,6 +386,8 @@ namespace autotestPrivate {
   callback DOMStringCallback = void (DOMString data);
 
   callback GetAppWindowListCallback = void (AppWindowInfo[] window_list);
+
+  callback AcceleratorCallback = void (boolean success);
 
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
@@ -726,6 +745,19 @@ namespace autotestPrivate {
     static void installPWAForCurrentURL(
         long timeout_ms,
         InstallPWAForCurrentURLCallback callback);
+
+    // Activates shortcut.
+    // |accelerator|: the accelerator to activate.
+    // |callback|: called when the operation has completed.
+    static void activateAccelerator(Accelerator accelerator,
+                                    AcceleratorCallback callback);
+
+    // Wwait until the launcher is transitionto the |launcherState|, if it's not
+    // in that state.
+    // |launcherState|: the target launcher state.
+    // |callback|: called when the operation has completed.
+    static void waitForLauncherState(LauncherStateType launcherState,
+                                     VoidCallback callback);
   };
 
   interface Events {

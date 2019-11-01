@@ -318,9 +318,6 @@ jumbo_component("base") {
     "memory/memory_pressure_monitor.h",
     "memory/platform_shared_memory_region.cc",
     "memory/platform_shared_memory_region.h",
-    "memory/protected_memory.cc",
-    "memory/protected_memory.h",
-    "memory/protected_memory_cfi.h",
     "memory/ptr_util.h",
     "memory/raw_scoped_refptr_mismatch_checker.h",
     "memory/read_only_shared_memory_region.cc",
@@ -897,7 +894,6 @@ jumbo_component("base") {
       "memory/madv_free_discardable_memory_allocator_posix.h",
       "memory/madv_free_discardable_memory_posix.cc",
       "memory/madv_free_discardable_memory_posix.h",
-      "memory/protected_memory_posix.cc",
       "message_loop/watchable_io_message_pump_posix.cc",
       "message_loop/watchable_io_message_pump_posix.h",
       "native_library_posix.cc",
@@ -964,7 +960,6 @@ jumbo_component("base") {
       "files/memory_mapped_file_win.cc",
       "logging_win.cc",
       "logging_win.h",
-      "memory/protected_memory_win.cc",
       "message_loop/message_pump_win.cc",
       "message_loop/message_pump_win.h",
       "native_library_win.cc",
@@ -1323,7 +1318,6 @@ jumbo_component("base") {
     ":logging_buildflags",
     ":orderfile_buildflags",
     ":partition_alloc_buildflags",
-    ":protected_memory_buildflags",
     ":sanitizer_buildflags",
     ":synchronization_buildflags",
     "//base/numerics:base_numerics",
@@ -1586,7 +1580,6 @@ jumbo_component("base") {
       "fuchsia/startup_context.cc",
       "fuchsia/startup_context.h",
       "memory/platform_shared_memory_region_fuchsia.cc",
-      "memory/protected_memory_posix.cc",
       "memory/shared_memory_fuchsia.cc",
       "memory/shared_memory_handle_fuchsia.cc",
       "message_loop/message_pump_fuchsia.cc",
@@ -2153,15 +2146,6 @@ buildflag_header("orderfile_buildflags") {
   ]
 }
 
-# Build flags for ProtectedMemory, temporary workaround for crbug.com/792777
-# TODO(vtsyrklevich): Remove once support for gold on Android/CrOs is dropped
-buildflag_header("protected_memory_buildflags") {
-  header = "protected_memory_buildflags.h"
-  header_dir = "base/memory"
-
-  flags = [ "USE_LLD=$use_lld" ]
-}
-
 buildflag_header("synchronization_buildflags") {
   header = "synchronization_buildflags.h"
   header_dir = "base/synchronization"
@@ -2604,7 +2588,6 @@ test("base_unittests") {
     "memory/memory_pressure_listener_unittest.cc",
     "memory/memory_pressure_monitor_unittest.cc",
     "memory/platform_shared_memory_region_unittest.cc",
-    "memory/protected_memory_unittest.cc",
     "memory/ptr_util_unittest.cc",
     "memory/ref_counted_memory_unittest.cc",
     "memory/ref_counted_unittest.cc",
@@ -3118,6 +3101,8 @@ test("base_unittests") {
       "//third_party/fuchsia-sdk/sdk:sys",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
     ]
+
+    manifest = "//build/config/fuchsia/tests.cmx"
   }
 
   if (!is_fuchsia && !is_ios) {

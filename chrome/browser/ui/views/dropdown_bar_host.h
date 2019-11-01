@@ -115,7 +115,8 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   virtual void OnVisibilityChanged();
 
   // Returns the dropdown bar view.
-  views::View* view() const { return view_; }
+  views::View* view() { return view_; }
+  const views::View* view() const { return view_; }
 
   // Returns the focus tracker.
   views::ExternalFocusTracker* focus_tracker() const {

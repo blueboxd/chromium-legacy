@@ -36,6 +36,7 @@
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/webui_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -50,6 +51,11 @@ constexpr char kInDevModeKey[] = "inDevMode";
 constexpr char kShowActivityLogKey[] = "showActivityLog";
 constexpr char kLoadTimeClassesKey[] = "loadTimeClasses";
 
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+constexpr char kGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/extensions/";
+#endif
+
 std::string GetLoadTimeClasses(bool in_dev_mode) {
   return in_dev_mode ? "in-dev-mode" : std::string();
 }
@@ -58,6 +64,9 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
                                                    bool in_dev_mode) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources chrome://test 'self';");
+
   source->UseStringsJs();
 
   static constexpr LocalizedString kLocalizedStrings[] = {
@@ -296,16 +305,23 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
   source->AddString(kLoadTimeClassesKey, GetLoadTimeClasses(in_dev_mode));
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("crisper.js", IDR_EXTENSIONS_CRISPER_JS);
+  source->AddResourcePath("extensions.js", IDR_EXTENSIONS_CRISPER_JS);
   source->SetDefaultResource(IDR_EXTENSIONS_VULCANIZED_HTML);
 #else
   // Add all MD Extensions resources.
   for (size_t i = 0; i < kExtensionsResourcesSize; ++i) {
-    source->AddResourcePath(kExtensionsResources[i].name,
-                            kExtensionsResources[i].value);
+    std::string path = kExtensionsResources[i].name;
+    if (path.rfind(kGeneratedPath, 0) == 0) {
+      path = path.substr(sizeof(kGeneratedPath) - 1);
+    }
+
+    source->AddResourcePath(path, kExtensionsResources[i].value);
   }
   source->SetDefaultResource(IDR_EXTENSIONS_EXTENSIONS_HTML);
 #endif
+  source->EnableReplaceI18nInJS();
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
   return source;
 }

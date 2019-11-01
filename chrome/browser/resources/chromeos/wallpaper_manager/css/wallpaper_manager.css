@@ -851,8 +851,13 @@ html[dir='rtl'] .top-header-contents .more-options {
   bottom: 12px;
   color: #fff;
   display: block;
+  left: 50%;
+  max-width: 90%;
+  min-width: 75%;
   padding: 8px 28px;
   position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
   visibility: hidden;  /* Need this for correct positioning. */
   z-index: 4;
 }

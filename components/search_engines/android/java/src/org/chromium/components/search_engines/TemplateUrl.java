@@ -86,7 +86,7 @@ public class TemplateUrl {
     }
 
     @NativeMethods
-    interface Natives {
+    public interface Natives {
         String getShortName(long templateUrlPtr);
         String getKeyword(long templateUrlPtr);
         boolean isPrepopulatedOrCreatedByPolicy(long templateUrlPtr);

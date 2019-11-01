@@ -18,13 +18,10 @@ cr.define('cr.ArcGraphicsTracing', function() {
       }, false);
       chrome.send('ready');
       chrome.send('setStopOnJank', [stopOnJank.checked]);
-      initializeUi();
+      initializeGraphicsUi();
     },
 
-    setStatus: function(statusText) {
-      var status = $('arc-graphics-tracing-status');
-      status.textContent = statusText;
-    },
+    setStatus: setStatus,
 
     setModel: function(model) {
       setGraphicBuffersModel(model);

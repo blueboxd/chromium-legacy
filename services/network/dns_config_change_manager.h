@@ -35,7 +35,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) DnsConfigChangeManager
  private:
   // net::NetworkChangeNotifier::DNSObserver implementation:
   void OnDNSChanged() override;
-  void OnInitialDNSConfigRead() override;
 
   mojo::ReceiverSet<mojom::DnsConfigChangeManager> receivers_;
   mojo::RemoteSet<mojom::DnsConfigChangeManagerClient> clients_;

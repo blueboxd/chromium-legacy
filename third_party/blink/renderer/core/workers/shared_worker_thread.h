@@ -53,8 +53,8 @@ class CORE_EXPORT SharedWorkerThread : public WorkerThread {
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) override;
 
-  WebThreadType GetThreadType() const override {
-    return WebThreadType::kSharedWorkerThread;
+  ThreadType GetThreadType() const override {
+    return ThreadType::kSharedWorkerThread;
   }
 
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;

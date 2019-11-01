@@ -24,7 +24,7 @@ class CardNameFixFlowViewBridge : public CardNameFixFlowView {
                             UIViewController* base_view_controller);
   ~CardNameFixFlowViewBridge() override;
 
-  // CardUnmaskPromptView:
+  // CardNameFixFlowView:
   void Show() override;
   void ControllerGone() override;
 

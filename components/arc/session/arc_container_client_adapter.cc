@@ -124,7 +124,7 @@ class ArcContainerClientAdapter
         request, std::move(callback));
   }
 
-  void StopArcInstance() override {
+  void StopArcInstance(bool) override {
     // Since we have the ArcInstanceStopped() callback, we don't need to do
     // anything when StopArcInstance completes.
     chromeos::SessionManagerClient::Get()->StopArcInstance(

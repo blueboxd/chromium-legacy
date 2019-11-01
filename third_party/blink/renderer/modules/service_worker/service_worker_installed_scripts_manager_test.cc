@@ -126,10 +126,10 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
  public:
   ServiceWorkerInstalledScriptsManagerTest()
       : io_thread_(Platform::Current()->CreateThread(
-            ThreadCreationParams(WebThreadType::kTestThread)
+            ThreadCreationParams(ThreadType::kTestThread)
                 .SetThreadNameForTest("io thread"))),
         worker_thread_(Platform::Current()->CreateThread(
-            ThreadCreationParams(WebThreadType::kTestThread)
+            ThreadCreationParams(ThreadType::kTestThread)
                 .SetThreadNameForTest("worker thread"))),
         worker_waiter_(std::make_unique<base::WaitableEvent>(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,

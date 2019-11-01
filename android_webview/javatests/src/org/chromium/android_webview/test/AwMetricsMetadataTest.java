@@ -22,6 +22,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.metrics.ChromeUserMetricsExtensionProtos.ChromeUserMetricsExtension;
 import org.chromium.components.metrics.MetricsSwitches;
+import org.chromium.components.metrics.SystemProfileProtos.SystemProfileProto;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.BlockingQueue;
@@ -108,5 +109,103 @@ public class AwMetricsMetadataTest {
                 ChromeUserMetricsExtension.Product.forNumber(log.getProduct()));
         Assert.assertTrue("Should have some client_id", log.hasClientId());
         Assert.assertTrue("Should have some session_id", log.hasSessionId());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_buildInfo() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some build_timestamp", systemProfile.hasBuildTimestamp());
+        Assert.assertTrue("Should have some app_version", systemProfile.hasAppVersion());
+        Assert.assertTrue("Should have some channel", systemProfile.hasChannel());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_miscellaneousSystemProfileInfo() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        // TODO(ntfschr): assert UMA enabled date when https://crbug.com/995544 is resolved.
+        Assert.assertTrue("Should have some install_date", systemProfile.hasInstallDate());
+        // Don't assert application_locale's value, because we don't want to enforce capitalization
+        // requirements on the metrics service (ex. in case it switches from "en-US" to "en-us" for
+        // some reason).
+        Assert.assertTrue(
+                "Should have some application_locale", systemProfile.hasApplicationLocale());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_osData() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertEquals("Android", systemProfile.getOs().getName());
+        Assert.assertTrue("Should have some os.version", systemProfile.getOs().hasVersion());
+        Assert.assertTrue("Should have some os.build_fingerprint",
+                systemProfile.getOs().hasBuildFingerprint());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_hardwareMiscellaneous() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some hardware.system_ram_mb",
+                systemProfile.getHardware().hasSystemRamMb());
+        Assert.assertTrue("Should have some hardware.hardware_class",
+                systemProfile.getHardware().hasHardwareClass());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_hardwareScreen() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some hardware.screen_count",
+                systemProfile.getHardware().hasScreenCount());
+        Assert.assertTrue("Should have some hardware.primary_screen_width",
+                systemProfile.getHardware().hasPrimaryScreenWidth());
+        Assert.assertTrue("Should have some hardware.primary_screen_height",
+                systemProfile.getHardware().hasPrimaryScreenHeight());
+        Assert.assertTrue("Should have some hardware.primary_screen_scale_factor",
+                systemProfile.getHardware().hasPrimaryScreenScaleFactor());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_hardwareCpu() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some hardware.cpu_architecture",
+                systemProfile.getHardware().hasCpuArchitecture());
+        Assert.assertTrue("Should have some hardware.cpu.vendor_name",
+                systemProfile.getHardware().getCpu().hasVendorName());
+        Assert.assertTrue("Should have some hardware.cpu.signature",
+                systemProfile.getHardware().getCpu().hasSignature());
+        Assert.assertTrue("Should have some hardware.cpu.num_cores",
+                systemProfile.getHardware().getCpu().hasNumCores());
+        Assert.assertTrue("Should have some hardware.cpu.is_hypervisor",
+                systemProfile.getHardware().getCpu().hasIsHypervisor());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_hardwareGpu() throws Throwable {
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertTrue("Should have some hardware.gpu.driver_version",
+                systemProfile.getHardware().getGpu().hasDriverVersion());
+        Assert.assertTrue("Should have some hardware.gpu.gl_vendor",
+                systemProfile.getHardware().getGpu().hasGlVendor());
+        Assert.assertTrue("Should have some hardware.gpu.gl_renderer",
+                systemProfile.getHardware().getGpu().hasGlRenderer());
     }
 }

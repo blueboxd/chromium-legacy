@@ -548,6 +548,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
     kDragCancelInProgress,
     kDragCompleteInProgress,
     kDragAppListInProgress,
+    kDragHomeToOverviewInProgress,
   };
 
   DragStatus drag_status_ = kDragNone;

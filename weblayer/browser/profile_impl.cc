@@ -4,20 +4,21 @@
 
 #include "weblayer/browser/profile_impl.h"
 
-#include "base/callback.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/resource_context.h"
 #include "weblayer/browser/browser_controller_impl.h"
+#include "weblayer/browser/ssl_host_state_delegate_impl.h"
 #include "weblayer/public/download_delegate.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/callback_android.h"
-#include "base/android/jni_string.h"
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "weblayer/browser/java/jni/ProfileImpl_jni.h"
 #endif
@@ -120,7 +121,7 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
   }
 
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override {
-    return nullptr;
+    return &ssl_host_state_delegate_;
   }
 
   content::PermissionControllerDelegate* GetPermissionControllerDelegate()
@@ -154,6 +155,7 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
   base::FilePath path_;
   std::unique_ptr<ResourceContextImpl> resource_context_;
   DownloadManagerDelegateImpl download_delegate_;
+  SSLHostStateDelegateImpl ssl_host_state_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextImpl);
 };
@@ -161,7 +163,7 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
 class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
  public:
   DataClearer(content::BrowserContext* browser_context,
-      base::OnceCallback<void()> callback)
+              base::OnceCallback<void()> callback)
       : remover_(
             content::BrowserContext::GetBrowsingDataRemover(browser_context)),
         callback_(std::move(callback)) {
@@ -233,7 +235,7 @@ std::unique_ptr<Profile> Profile::Create(const base::FilePath& path) {
 
 #if defined(OS_ANDROID)
 ProfileImpl::ProfileImpl(JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& path)
+                         const base::android::JavaParamRef<jstring>& path)
     : ProfileImpl(base::FilePath(ConvertJavaStringToUTF8(env, path))) {}
 
 static jlong JNI_ProfileImpl_CreateProfile(
@@ -246,7 +248,8 @@ static void JNI_ProfileImpl_DeleteProfile(JNIEnv* env, jlong profile) {
   delete reinterpret_cast<ProfileImpl*>(profile);
 }
 
-void ProfileImpl::ClearBrowsingData(JNIEnv* env,
+void ProfileImpl::ClearBrowsingData(
+    JNIEnv* env,
     const base::android::JavaParamRef<jintArray>& j_data_types,
     const base::android::JavaRef<jobject>& j_callback) {
   std::vector<int> data_type_ints;
@@ -256,9 +259,10 @@ void ProfileImpl::ClearBrowsingData(JNIEnv* env,
   for (int type : data_type_ints) {
     data_types.push_back(static_cast<BrowsingDataType>(type));
   }
-  ClearBrowsingData(data_types,
+  ClearBrowsingData(
+      data_types,
       base::BindOnce(base::android::RunRunnableAndroid,
-          base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 #endif  // OS_ANDROID
 

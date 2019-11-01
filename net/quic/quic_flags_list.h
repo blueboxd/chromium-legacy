@@ -375,3 +375,6 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_close_connection_on_wrong_offset,
           false)
+
+// If true, re-calculate pacing rate when cwnd gets bootstrapped.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_pacing_rate, false)

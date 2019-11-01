@@ -194,7 +194,8 @@ Polymer({
     'updateNightLightScheduleSettings_(prefs.ash.night_light.schedule_type.*,' +
         ' prefs.ash.night_light.enabled.*)',
     'onSelectedModeChange_(selectedModePref_.value)',
-    'onSelectedZoomChange_(selectedZoomPref_.value)'
+    'onSelectedZoomChange_(selectedZoomPref_.value)',
+    'onDisplaysChanged_(displays.*)',
   ],
 
   /** @private {number} Selected mode index received from chrome. */
@@ -513,12 +514,11 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @return {boolean}
    * @private
    */
-  hasMultipleDisplays_: function(displays) {
-    return displays.length > 1;
+  hasMultipleDisplays_: function() {
+    return this.displays.length > 1;
   },
 
   /**
@@ -854,13 +854,28 @@ Polymer({
   },
 
   /**
+   * Returns whether the option "Auto-rotate" is one of the shown options in the
+   * rotation drop-down menu.
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @return {boolean|undefined}
+   * @private
+   */
+  showAutoRotateOption_: function(selectedDisplay) {
+    return selectedDisplay.isInTabletPhysicalState;
+  },
+
+  /**
    * @param {!Event} event
    * @private
    */
   onOrientationChange_: function(event) {
     const target = /** @type {!HTMLSelectElement} */ (event.target);
+    const value = /** @type {number} */ (parseInt(target.value, 10));
+
+    assert(value != -1 || this.selectedDisplay.isInTabletPhysicalState);
+
     /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
-      rotation: parseInt(target.value, 10)
+      rotation: value
     };
     settings.display.systemDisplayApi.setDisplayProperties(
         this.selectedDisplay.id, properties,
@@ -937,9 +952,6 @@ Polymer({
     this.setSelectedDisplay_(selectedDisplay);
 
     this.unifiedDesktopMode_ = !!primaryDisplay && primaryDisplay.isUnified;
-
-    this.$.displayLayout.updateDisplays(
-        this.displays, this.layouts, this.mirroringDestinationIds);
   },
 
   /** @private */
@@ -968,6 +980,24 @@ Polymer({
           this.i18n('displayNightLightOnAtSunset');
     } else {
       this.nightLightScheduleSubLabel_ = '';
+    }
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowArrangementSection_: function() {
+    return this.hasMultipleDisplays_() || this.isMirrored_(this.displays);
+  },
+
+  /** @private */
+  onDisplaysChanged_: function() {
+    Polymer.dom.flush();
+    const displayLayout = this.$$('#displayLayout');
+    if (displayLayout) {
+      displayLayout.updateDisplays(
+          this.displays, this.layouts, this.mirroringDestinationIds);
     }
   },
 });

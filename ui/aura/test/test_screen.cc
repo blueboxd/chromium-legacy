@@ -116,26 +116,9 @@ void TestScreen::SetWorkAreaInsets(const gfx::Insets& insets) {
 }
 
 gfx::Transform TestScreen::GetRotationTransform() const {
-  gfx::Transform rotate;
-  display::Display display(GetPrimaryDisplay());
-  switch (display.rotation()) {
-    case display::Display::ROTATE_0:
-      break;
-    case display::Display::ROTATE_90:
-      rotate.Translate(display.bounds().height(), 0);
-      rotate.Rotate(90);
-      break;
-    case display::Display::ROTATE_270:
-      rotate.Translate(0, display.bounds().width());
-      rotate.Rotate(270);
-      break;
-    case display::Display::ROTATE_180:
-      rotate.Translate(display.bounds().width(), display.bounds().height());
-      rotate.Rotate(180);
-      break;
-  }
-
-  return rotate;
+  display::Display display = GetPrimaryDisplay();
+  return display::Display::GetRotationTransform(display.rotation(),
+                                                gfx::SizeF(display.size()));
 }
 
 gfx::Transform TestScreen::GetUIScaleTransform() const {

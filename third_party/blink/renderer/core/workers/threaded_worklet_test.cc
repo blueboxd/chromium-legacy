@@ -74,7 +74,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   static void EnsureSharedBackingThread() {
     DCHECK(IsMainThread());
     WorkletThreadHolder<ThreadedWorkletThreadForTest>::EnsureInstance(
-        ThreadCreationParams(WebThreadType::kTestThread)
+        ThreadCreationParams(ThreadType::kTestThread)
             .SetThreadNameForTest("ThreadedWorkletThreadForTest"));
   }
 
@@ -174,8 +174,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
 
   bool IsOwningBackingThread() const final { return false; }
 
-  WebThreadType GetThreadType() const override {
-    return WebThreadType::kUnspecifiedWorkerThread;
+  ThreadType GetThreadType() const override {
+    return ThreadType::kUnspecifiedWorkerThread;
   }
 };
 

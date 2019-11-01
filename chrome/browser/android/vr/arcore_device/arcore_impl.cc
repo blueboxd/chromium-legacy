@@ -692,12 +692,12 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
     for (auto& input_source_state : *mojo_from_viewer->input_state) {
       if (input_source_state->source_id ==
           native_origin_information->get_input_source_id()) {
-        if (!input_source_state->description->pointer_offset) {
+        if (!input_source_state->description->input_from_pointer) {
           return base::nullopt;
         }
 
         auto view_from_pointer =
-            *input_source_state->description->pointer_offset;
+            *input_source_state->description->input_from_pointer;
 
         auto mojo_from_view = mojo::ConvertTo<gfx::Transform>(mojo_from_viewer);
 

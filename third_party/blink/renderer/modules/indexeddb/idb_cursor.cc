@@ -78,8 +78,9 @@ v8::Local<v8::Object> IDBCursor::AssociateWithWrapper(
   wrapper =
       ScriptWrappable::AssociateWithWrapper(isolate, wrapper_type, wrapper);
   if (!wrapper.IsEmpty()) {
-    V8PrivateProperty::GetIDBCursorRequest(isolate).Set(
-        wrapper, ToV8(request_.Get(), wrapper, isolate));
+    static const V8PrivateProperty::SymbolKey kPrivatePropertyRequest;
+    V8PrivateProperty::GetSymbol(isolate, kPrivatePropertyRequest)
+        .Set(wrapper, ToV8(request_.Get(), wrapper, isolate));
   }
   return wrapper;
 }

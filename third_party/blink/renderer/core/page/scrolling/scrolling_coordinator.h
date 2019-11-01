@@ -44,7 +44,6 @@ class CompositorAnimationTimeline;
 class LocalFrame;
 class LocalFrameView;
 class Page;
-class PaintLayerScrollableArea;
 class ScrollableArea;
 
 using MainThreadScrollingReasons = uint32_t;
@@ -117,8 +116,8 @@ class CORE_EXPORT ScrollingCoordinator final
   // blink uses a separate layer. To ensure the compositor scroll layer has the
   // updated scroll container bounds, this needs to be called when the scrolling
   // contents layer is resized.
-  void ScrollableAreaScrollLayerDidChange(PaintLayerScrollableArea*);
-  void ScrollableAreaScrollbarLayerDidChange(PaintLayerScrollableArea*,
+  void ScrollableAreaScrollLayerDidChange(ScrollableArea*);
+  void ScrollableAreaScrollbarLayerDidChange(ScrollableArea*,
                                              ScrollbarOrientation);
   // LocalFrame* must be a local root if non-null.
   void TouchEventTargetRectsDidChange(LocalFrame*);

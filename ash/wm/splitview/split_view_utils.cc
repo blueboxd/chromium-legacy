@@ -331,8 +331,9 @@ bool CanSnapInSplitview(aura::Window* window) {
   if (!WindowState::Get(window)->CanSnap())
     return false;
 
-  // Return true if |window|'s minimum size, if any, fits into half the work
-  // area lengthwise.
+  // Return true if |window|'s minimum size, if any, fits into the left or top
+  // with the default divider position. (If the work area length is odd, then
+  // the right or bottom will be one pixel larger.)
   if (!window->delegate())
     return true;
   const gfx::Size min_size = window->delegate()->GetMinimumSize();
@@ -340,8 +341,10 @@ bool CanSnapInSplitview(aura::Window* window) {
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window);
   return IsCurrentScreenOrientationLandscape()
-             ? min_size.width() <= work_area.width() / 2
-             : min_size.height() <= work_area.height() / 2;
+             ? min_size.width() <=
+                   work_area.width() / 2 - kSplitviewDividerShortSideLength / 2
+             : min_size.height() <= work_area.height() / 2 -
+                                        kSplitviewDividerShortSideLength / 2;
 }
 
 void ShowAppCannotSnapToast() {
@@ -399,23 +402,18 @@ SplitViewController::SnapPosition GetSnapPosition(
 }
 
 IndicatorState GetIndicatorState(
-    aura::Window* window,
     SplitViewController::SnapPosition snap_position) {
   if (!ShouldAllowSplitView())
     return IndicatorState::kNone;
 
   switch (snap_position) {
+    case SplitViewController::NONE:
+      return IndicatorState::kDragAreaBoth;
     case SplitViewController::LEFT:
       return IndicatorState::kPreviewAreaLeft;
     case SplitViewController::RIGHT:
       return IndicatorState::kPreviewAreaRight;
-    case SplitViewController::NONE:
-      return CanSnapInSplitview(window) ? IndicatorState::kDragArea
-                                        : IndicatorState::kCannotSnap;
   }
-
-  NOTREACHED();
-  return IndicatorState::kNone;
 }
 
 }  // namespace ash

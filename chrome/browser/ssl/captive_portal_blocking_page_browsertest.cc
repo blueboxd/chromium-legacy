@@ -80,8 +80,6 @@ class CaptivePortalBlockingPageForTesting : public CaptivePortalBlockingPage {
       const GURL& login_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback,
       bool is_wifi,
       const std::string& wifi_ssid)
       : CaptivePortalBlockingPage(web_contents,
@@ -89,8 +87,7 @@ class CaptivePortalBlockingPageForTesting : public CaptivePortalBlockingPage {
                                   login_url,
                                   std::move(ssl_cert_reporter),
                                   ssl_info,
-                                  net::ERR_CERT_COMMON_NAME_INVALID,
-                                  callback),
+                                  net::ERR_CERT_COMMON_NAME_INVALID),
         is_wifi_(is_wifi),
         wifi_ssid_(wifi_ssid) {}
 
@@ -151,7 +148,6 @@ CaptivePortalTestingNavigationThrottle::WillFailRequest() {
       new CaptivePortalBlockingPageForTesting(
           navigation_handle()->GetWebContents(), GURL(kBrokenSSL), login_url_,
           std::move(ssl_cert_reporter_), ssl_info,
-          base::Callback<void(content::CertificateRequestResultType)>(),
           is_wifi_connection_, wifi_ssid_);
 
   std::string html = blocking_page->GetHTMLContents();
@@ -453,7 +449,6 @@ class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
     CaptivePortalBlockingPage* blocking_page =
         new CaptivePortalBlockingPageForTesting(
             contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
-            base::Callback<void(content::CertificateRequestResultType)>(),
             false, "");
     return blocking_page;
   }

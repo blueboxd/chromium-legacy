@@ -533,7 +533,7 @@ public class ContextualSearchManagerTest {
      */
     private void fakeContentViewDidNavigate(boolean isFailure) {
         String url = mFakeServer.getLoadedUrl();
-        mManager.getOverlayContentDelegate().onMainFrameNavigation(url, false, isFailure);
+        mManager.getOverlayContentDelegate().onMainFrameNavigation(url, false, isFailure, false);
     }
 
     /**

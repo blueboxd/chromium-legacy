@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
+import {FakeChromeEvent} from '../fake_chrome_event.m.js';
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+
   /** An extensions.Service implementation to be used in tests. */
-  class TestService extends TestBrowserProxy {
+  export class TestService extends TestBrowserProxy {
     constructor() {
       super([
         'addRuntimeHostPermission',
@@ -218,8 +220,3 @@ cr.define('extensions', function() {
       this.methodCalled('downloadActivities', [rawActivityData, fileName]);
     }
   }
-
-  return {
-    TestService: TestService,
-  };
-});

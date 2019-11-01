@@ -412,7 +412,7 @@ class ChromeOSCreditsHandler
     // If we fail to load Chrome OS credits from disk, load it from resources.
     if (contents_.empty() && path_ != kKeyboardUtilsPath) {
       contents_ =
-          ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
               IDR_OS_CREDITS_HTML);
     }
     callback_.Run(base::RefCountedString::TakeString(&contents_));
@@ -482,7 +482,7 @@ class LinuxCreditsHandler
     // TODO(rjwright): Add a linux-specific placeholder in resources.
     if (contents_.empty() && path_ != kKeyboardUtilsPath) {
       contents_ =
-          ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
               IDR_OS_CREDITS_HTML);
     }
     callback_.Run(base::RefCountedString::TakeString(&contents_));
@@ -616,7 +616,7 @@ void AboutUIHTMLSource::StartDataRequest(
       response = about_ui::GetCredits(true /*include_scripts*/);
     } else {
       response =
-          ui::ResourceBundle::GetSharedInstance().DecompressDataResource(idr);
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(idr);
     }
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   } else if (source_name_ == chrome::kChromeUILinuxProxyConfigHost) {

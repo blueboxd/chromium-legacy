@@ -49,7 +49,7 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.ui.modelutil.ListModel;
@@ -248,12 +248,12 @@ public class TouchToFillControllerTest {
     @Test
     public void testCallsDelegateAndHidesOnDismiss() {
         mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL));
-        mMediator.onDismissed(BottomSheet.StateChangeReason.BACK_PRESS);
+        mMediator.onDismissed(BottomSheetController.StateChangeReason.BACK_PRESS);
         verify(mMockDelegate).onDismissed();
         assertThat(mModel.get(VISIBLE), is(false));
         assertThat(RecordHistogram.getHistogramValueCountForTesting(
                            TouchToFillMediator.UMA_TOUCH_TO_FILL_DISMISSAL_REASON,
-                           BottomSheet.StateChangeReason.BACK_PRESS),
+                           BottomSheetController.StateChangeReason.BACK_PRESS),
                 is(1));
         assertThat(RecordHistogram.getHistogramValueCountForTesting(
                            TouchToFillMediator.UMA_TOUCH_TO_FILL_USER_ACTION, UserAction.DISMISS),

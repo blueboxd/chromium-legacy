@@ -496,7 +496,11 @@ chromiumos_builder(
 )
 
 
-def clang_builder(*, name, cores=32, **kwargs):
+def clang_builder(*, name, cores=32, properties=None, **kwargs):
+  properties = properties or {}
+  properties.update({
+    'perf_dashboard_machine_group': 'ChromiumClang',
+  })
   return builder(
       name = name,
       builderless = True,
@@ -506,9 +510,7 @@ def clang_builder(*, name, cores=32, **kwargs):
       # CFI builds will take even longer - around 11h.
       execution_timeout = 12 * time.hour,
       mastername = 'chromium.clang',
-      properties = {
-          'perf_dashboard_machine_group': 'ChromiumClang',
-      },
+      properties = properties,
       **kwargs
   )
 
@@ -668,8 +670,11 @@ def clang_mac_builder(*, name, cores=24, **kwargs):
   return clang_builder(
       name = name,
       cores = cores,
-      os = os.MAC_ANY,
+      os = os.MAC_10_14,
       ssd = True,
+      properties = {
+          'xcode_build_version': '11a1027',
+      },
       **kwargs
   )
 
@@ -689,7 +694,6 @@ clang_mac_builder(
     name = 'ToTMacCoverage',
     executable = luci.recipe(name = 'chromium_clang_coverage_tot'),
 )
-
 
 def dawn_builder(*, name, builderless=True, **kwargs):
   return builder(

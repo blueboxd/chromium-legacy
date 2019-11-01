@@ -598,7 +598,8 @@ bool ShelfLayoutManager::ProcessGestureEvent(
     return StartGestureDrag(event_in_screen);
 
   if (drag_status_ != kDragInProgress &&
-      drag_status_ != kDragAppListInProgress) {
+      drag_status_ != kDragAppListInProgress &&
+      drag_status_ != kDragHomeToOverviewInProgress) {
     return false;
   }
 
@@ -613,10 +614,12 @@ bool ShelfLayoutManager::ProcessGestureEvent(
       last_drag_velocity_ =
           event_in_screen.AsGestureEvent()->details().velocity_y();
     }
-    if (drag_status_ == kDragAppListInProgress)
+    if (drag_status_ == kDragAppListInProgress ||
+        drag_status_ == kDragHomeToOverviewInProgress) {
       CompleteAppListDrag(event_in_screen);
-    else
+    } else {
       CompleteDrag(event_in_screen);
+    }
     return true;
   }
 
@@ -747,8 +750,11 @@ bool ShelfLayoutManager::HasVisibleWindow() const {
 }
 
 void ShelfLayoutManager::CancelDragOnShelfIfInProgress() {
-  if (drag_status_ == kDragInProgress || drag_status_ == kDragAppListInProgress)
+  if (drag_status_ == kDragInProgress ||
+      drag_status_ == kDragAppListInProgress ||
+      drag_status_ == kDragHomeToOverviewInProgress) {
     CancelDrag();
+  }
 }
 
 void ShelfLayoutManager::SuspendVisibilityUpdate() {
@@ -1048,6 +1054,9 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
   if (!IsHotseatEnabled() || !shelf_->IsHorizontalAlignment())
     return HotseatState::kShown;
 
+  if (shelf_widget_->is_hotseat_forced_to_show())
+    return HotseatState::kExtended;
+
   auto* app_list_controller = Shell::Get()->app_list_controller();
   const auto* overview_controller = Shell::Get()->overview_controller();
   const bool in_overview =
@@ -1061,7 +1070,8 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
         split_view_controller && split_view_controller->InSplitViewMode();
   }
   switch (drag_status_) {
-    case kDragNone: {
+    case kDragNone:
+    case kDragHomeToOverviewInProgress: {
       switch (app_list_controller->home_launcher_animation_state()) {
         case AppListControllerImpl::HomeLauncherAnimationState::kShowing:
           return HotseatState::kShown;
@@ -1092,6 +1102,11 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
               !should_hide_hotseat_) {
             return HotseatState::kExtended;
           }
+          // If none of the conditions above were met means that the state
+          // changed because of an action other than a user intervention.
+          // We should hide the hotseat and reset the |is_manually extended|
+          // flag to false.
+          shelf_widget_->hotseat_widget()->set_manually_extended(false);
           return HotseatState::kHidden;
       }
     }
@@ -1749,8 +1764,10 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
-  if (drag_status_ == kDragAppListInProgress)
+  if (drag_status_ == kDragAppListInProgress ||
+      drag_status_ == kDragHomeToOverviewInProgress) {
     return SHELF_AUTO_HIDE_SHOWN;
+  }
 
   if (drag_status_ == kDragCompleteInProgress ||
       drag_status_ == kDragCancelInProgress) {
@@ -1919,8 +1936,10 @@ bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
 
   // Scroll down events should never be handled, unless they are currently being
   // handled
-  if (scroll_y >= 0 && drag_status_ != kDragAppListInProgress)
+  if (scroll_y >= 0 && drag_status_ != kDragAppListInProgress &&
+      drag_status_ != kDragHomeToOverviewInProgress) {
     return false;
+  }
 
   return true;
 }
@@ -1938,12 +1957,16 @@ bool ShelfLayoutManager::StartGestureDrag(
 
   if (ShouldHomeGestureHandleEvent(scroll_y_hint)) {
     DragStatus previous_drag_status = drag_status_;
-    drag_status_ = kDragAppListInProgress;
     HomeLauncherGestureHandler* home_launcher_handler =
         Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
-    if (home_launcher_handler->OnPressEvent(
-            GetHomeLauncherGestureHandlerModeForDrag(),
-            gesture_in_screen.location())) {
+    const HomeLauncherGestureHandler::Mode target_mode =
+        GetHomeLauncherGestureHandlerModeForDrag();
+    drag_status_ =
+        target_mode == HomeLauncherGestureHandler::Mode::kSwipeHomeToOverview
+            ? kDragHomeToOverviewInProgress
+            : kDragAppListInProgress;
+    if (home_launcher_handler->OnPressEvent(target_mode,
+                                            gesture_in_screen.location())) {
       return true;
     }
     drag_status_ = previous_drag_status;
@@ -1995,7 +2018,8 @@ void ShelfLayoutManager::UpdateMouseDrag(
     return;
 
   DCHECK(drag_status_ == kDragAttempt || drag_status_ == kDragInProgress ||
-         drag_status_ == kDragAppListInProgress);
+         drag_status_ == kDragAppListInProgress ||
+         drag_status_ == kDragHomeToOverviewInProgress);
 
   if (drag_status_ == kDragAttempt) {
     // Do not start drag for the small offset.
@@ -2024,6 +2048,7 @@ void ShelfLayoutManager::ReleaseMouseDrag(
 
   DCHECK(drag_status_ == kDragAttempt ||
          drag_status_ == kDragAppListInProgress ||
+         drag_status_ == kDragHomeToOverviewInProgress ||
          drag_status_ == kDragInProgress);
 
   switch (drag_status_) {
@@ -2031,6 +2056,7 @@ void ShelfLayoutManager::ReleaseMouseDrag(
       drag_status_ = kDragNone;
       break;
     case kDragAppListInProgress:
+    case kDragHomeToOverviewInProgress:
       CompleteAppListDrag(mouse_in_screen);
       break;
     case kDragInProgress:
@@ -2240,7 +2266,8 @@ void ShelfLayoutManager::CompleteAppListDrag(
 }
 
 void ShelfLayoutManager::CancelDrag() {
-  if (drag_status_ == kDragAppListInProgress) {
+  if (drag_status_ == kDragAppListInProgress ||
+      drag_status_ == kDragHomeToOverviewInProgress) {
     HomeLauncherGestureHandler* home_launcher_handler =
         Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
     DCHECK(home_launcher_handler);

@@ -10,7 +10,6 @@ import static org.chromium.content_public.browser.test.util.TestThreadUtils.runO
 import static org.chromium.weblayer.BrowsingDataType.CACHE;
 import static org.chromium.weblayer.BrowsingDataType.COOKIES_AND_SITE_DATA;
 
-import android.os.Bundle;
 import android.support.test.filters.SmallTest;
 import android.support.v4.app.FragmentManager;
 
@@ -48,8 +47,14 @@ public class DataClearingTest {
 
     @Test
     @SmallTest
-    public void clearCache_TriggersCallback() throws InterruptedException {
+    public void clearCacheWithPersistedProfile_TriggersCallback() throws InterruptedException {
         checkTriggersCallbackOnClearData(new int[] {CACHE}, "Profile");
+    }
+
+    @Test
+    @SmallTest
+    public void clearCacheWithInMemoryProfile_TriggersCallback() throws InterruptedException {
+        checkTriggersCallbackOnClearData(new int[] {CACHE}, "");
     }
 
     @Test
@@ -69,15 +74,15 @@ public class DataClearingTest {
     @Test
     @SmallTest
     public void twoSuccesiveRequestsTriggerCallbacks() throws InterruptedException {
-        InstrumentationActivity activity = launchWithProfile("profile");
+        InstrumentationActivity activity = mActivityTestRule.launchWithProfile("profile");
 
         CountDownLatch latch = new CountDownLatch(2);
         runOnUiThreadBlocking(() -> {
             Profile profile = activity.getBrowserFragmentController().getProfile();
-            profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA}).addCallback(
-                    (ignored) -> latch.countDown());
-            profile.clearBrowsingData(new int[] {CACHE}).addCallback(
-                    (ignored) -> latch.countDown());
+            profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA})
+                    .addCallback((ignored) -> latch.countDown());
+            profile.clearBrowsingData(new int[] {CACHE})
+                    .addCallback((ignored) -> latch.countDown());
         });
         assertTrue(latch.await(3, TimeUnit.SECONDS));
     }
@@ -85,14 +90,13 @@ public class DataClearingTest {
     @Test
     @SmallTest
     public void clearingAgainAfterClearFinished_TriggersCallback() throws InterruptedException {
-        InstrumentationActivity activity = launchWithProfile("profile");
+        InstrumentationActivity activity = mActivityTestRule.launchWithProfile("profile");
 
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> {
             Profile profile = activity.getBrowserFragmentController().getProfile();
             profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA}).addCallback((v1) -> {
-                profile.clearBrowsingData(new int[] {CACHE}).addCallback(
-                        (v2) -> latch.countDown());
+                profile.clearBrowsingData(new int[] {CACHE}).addCallback((v2) -> latch.countDown());
             });
         });
         assertTrue(latch.await(3, TimeUnit.SECONDS));
@@ -101,7 +105,7 @@ public class DataClearingTest {
     @Test
     @SmallTest
     public void destroyingProfileDuringDataClear_DoesntCrash() throws InterruptedException {
-        InstrumentationActivity activity = launchWithProfile("profile");
+        InstrumentationActivity activity = mActivityTestRule.launchWithProfile("profile");
 
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> {
@@ -120,18 +124,14 @@ public class DataClearingTest {
 
     private void checkTriggersCallbackOnClearData(int[] dataTypes, String profileName)
             throws InterruptedException {
-        InstrumentationActivity activity = launchWithProfile(profileName);
+        InstrumentationActivity activity = mActivityTestRule.launchWithProfile(profileName);
         CountDownLatch latch = new CountDownLatch(1);
-        runOnUiThreadBlocking(() -> activity.getBrowserFragmentController().getProfile()
-                .clearBrowsingData(dataTypes).addCallback((ignored) -> latch.countDown()));
+        runOnUiThreadBlocking(() -> {
+            activity.getBrowserFragmentController()
+                    .getProfile()
+                    .clearBrowsingData(dataTypes)
+                    .addCallback((ignored) -> latch.countDown());
+        });
         assertTrue(latch.await(3, TimeUnit.SECONDS));
-    }
-
-    private InstrumentationActivity launchWithProfile(String profileName) {
-        Bundle extras = new Bundle();
-        extras.putString(InstrumentationActivity.EXTRA_PROFILE_NAME, profileName);
-        String url = "data:text,foo";
-        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url, extras);
-        return activity;
     }
 }

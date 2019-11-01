@@ -188,9 +188,6 @@ ul {
 .grew {
   color: #ea4335;
 }
-.highlight {
-  background: #feefc3;
-}
 
 .diff .size-header::after {
   content: " diff";

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -29,7 +30,8 @@ class TabGridIphItemCoordinator {
                 new TabGridIphItemViewBinder.ViewHolder(contentView, mIphItemView),
                 TabGridIphItemViewBinder::bind);
 
-        mMediator = new TabGridIphItemMediator(iphItemPropertyModel);
+        mMediator = new TabGridIphItemMediator(
+                iphItemPropertyModel, Profile.getLastUsedProfile().getOriginalProfile());
     }
 
     /**

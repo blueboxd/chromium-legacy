@@ -75,6 +75,9 @@ void WindowMiniView::SetShowPreview(bool show) {
     return;
   }
 
+  if (!source_window_)
+    return;
+
   preview_view_ = new WindowPreviewView(source_window_,
                                         /*trilinear_filtering_on_init=*/false);
   AddChildWithLayer(this, preview_view_);
@@ -93,6 +96,8 @@ void WindowMiniView::UpdatePreviewRoundedCorners(bool show, float rounding) {
 
 WindowMiniView::WindowMiniView(aura::Window* source_window)
     : views::Button(nullptr), source_window_(source_window) {
+  window_observer_.Add(source_window);
+
   SetAccessibleName(source_window->GetTitle());
 
   header_view_ = new views::View();
@@ -148,6 +153,15 @@ void WindowMiniView::Layout() {
                                 GetLocalBounds().width() - kWindowMargin,
                                 kHeaderHeightDp);
   header_view_->SetBoundsRect(header_bounds);
+}
+
+void WindowMiniView::OnWindowDestroying(aura::Window* window) {
+  if (window != source_window_)
+    return;
+
+  window_observer_.RemoveAll();
+  source_window_ = nullptr;
+  SetShowPreview(false);
 }
 
 }  // namespace ash

@@ -323,19 +323,14 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
   if (!is_window_considered_moved_)
     return IndicatorState::kNone;
 
-  IndicatorState indicator_state = ::ash::GetIndicatorState(
-      dragged_window_, GetSnapPosition(location_in_screen));
-
+  IndicatorState indicator_state =
+      ::ash::GetIndicatorState(GetSnapPosition(location_in_screen));
   // In portrait screen orientation no top drag indicator since we're dragging
   // from top.
-  if (!IsCurrentScreenOrientationLandscape()) {
-    if (indicator_state == IndicatorState::kDragArea)
-      indicator_state = IndicatorState::kDragAreaRight;
-    else if (indicator_state == IndicatorState::kCannotSnap)
-      indicator_state = IndicatorState::kCannotSnapRight;
-  }
-
-  return indicator_state;
+  return !IsCurrentScreenOrientationLandscape() &&
+                 indicator_state == IndicatorState::kDragAreaBoth
+             ? IndicatorState::kDragAreaRight
+             : indicator_state;
 }
 
 bool TabletModeWindowDragDelegate::ShouldOpenOverviewWhenDragStarts() {

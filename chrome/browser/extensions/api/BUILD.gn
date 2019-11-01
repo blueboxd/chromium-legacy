@@ -34,8 +34,5 @@ function_registration("api_registration") {
     "//third_party/metrics_proto",
     "//ui/accessibility:ax_enums_mojo",
   ]
-  if (is_chromeos) {
-    deps += [ "//components/drive:proto" ]
-  }
   deps += [ "//extensions/common/api" ]
 }

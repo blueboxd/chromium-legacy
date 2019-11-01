@@ -78,9 +78,6 @@ class BrowserViewLayout : public views::LayoutManager {
 
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost();
 
-  // Returns the bounding box, in widget coordinates,  for the find bar.
-  gfx::Rect GetFindBarBoundingBox() const;
-
   // Returns the view against which the dialog is positioned and parented.
   gfx::NativeView GetHostView();
 

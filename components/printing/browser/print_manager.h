@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PRINTING_BROWSER_PRINT_MANAGER_H_
 #define COMPONENTS_PRINTING_BROWSER_PRINT_MANAGER_H_
 
+#include <map>
 #include <memory>
 
 #include "base/macros.h"
@@ -52,6 +53,7 @@ class PrintManager : public content::WebContentsObserver {
   // content::WebContentsObserver
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   // IPC handling support
   struct FrameDispatchHelper;
@@ -103,9 +105,12 @@ class PrintManager : public content::WebContentsObserver {
  private:
   void OnDidGetDocumentCookie(int cookie);
 
-  // Used to transmit mojom interface method calls to the PrintRenderFrame
-  // associated remote.
-  mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> print_render_frame_;
+  // Stores a PrintRenderFrame associated remote with the RenderFrameHost used
+  // to bind it. The PrintRenderFrame is used to transmit mojo interface method
+  // calls to the associated receiver.
+  std::map<content::RenderFrameHost*,
+           mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>>
+      print_render_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintManager);
 };

@@ -344,7 +344,7 @@ bool RendererImpl::HasEncryptedStream() {
 void RendererImpl::FinishInitialization(PipelineStatus status) {
   DCHECK(init_cb_);
   TRACE_EVENT_ASYNC_END1("media", "RendererImpl::Initialize", this, "status",
-                         MediaLog::PipelineStatusToString(status));
+                         PipelineStatusToString(status));
   std::move(init_cb_).Run(status);
 }
 
@@ -889,7 +889,7 @@ void RendererImpl::OnError(PipelineStatus error) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
   TRACE_EVENT1("media", "RendererImpl::OnError", "error",
-               MediaLog::PipelineStatusToString(error));
+               PipelineStatusToString(error));
 
   // An error has already been delivered.
   if (state_ == STATE_ERROR)

@@ -2,7 +2,7 @@
   "layers": [
     {
       "name": "Scrolling background of LayoutView #document",
-      "bounds": [600, 250],
+      "bounds": [2008, 2008],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }
@@ -12,7 +12,7 @@
   "layers": [
     {
       "name": "Scrolling background of LayoutView #document",
-      "bounds": [400, 250],
+      "bounds": [2008, 2008],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }
@@ -22,7 +22,7 @@
   "layers": [
     {
       "name": "Scrolling background of LayoutView #document",
-      "bounds": [400, 600],
+      "bounds": [2008, 2008],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }
@@ -32,7 +32,7 @@
   "layers": [
     {
       "name": "Scrolling background of LayoutView #document",
-      "bounds": [800, 600],
+      "bounds": [2008, 2008],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }

@@ -176,14 +176,23 @@ std::vector<double> ParseGoogMaxDecodeFromWebrtcInternalsTab(
 // This test traces certain categories for a period of time. It follows the
 // lifetime of a single video frame by synchronizing on the timestamps values
 // attached to trace events. Then, it calculates the duration and related stats.
-class WebRtcVideoDisplayPerfBrowserTest
+
+// TODO(https://crbug.com/993020): Fix flakes on Windows bots.
+#if defined(OS_WIN)
+#define MAYBE_WebRtcVideoDisplayPerfBrowserTest \
+  DISABLED_WebRtcVideoDisplayPerfBrowserTest
+#else
+#define MAYBE_WebRtcVideoDisplayPerfBrowserTest \
+  WebRtcVideoDisplayPerfBrowserTest
+#endif
+class MAYBE_WebRtcVideoDisplayPerfBrowserTest
     : public WebRtcTestBase,
       public testing::WithParamInterface<
           std::tuple<gfx::Size /* resolution */,
                      int /* fps */,
                      bool /* disable_render_smoothness_algorithm */>> {
  public:
-  WebRtcVideoDisplayPerfBrowserTest() {
+  MAYBE_WebRtcVideoDisplayPerfBrowserTest() {
     const auto& params = GetParam();
     const gfx::Size& resolution = std::get<0>(params);
     test_config_ = {resolution.width(), resolution.height(),
@@ -450,29 +459,21 @@ class WebRtcVideoDisplayPerfBrowserTest
   std::vector<double> webrtc_decode_latencies_;
 };
 
-// TODO(https://crbug.com/993020): Fix flakes on Windows bots.
-#if defined(OS_WIN)
-#define MAYBE_WebRtcVideoDisplayPerfBrowserTests \
-  DISABLED_WebRtcVideoDisplayPerfBrowserTests
-#else
-#define MAYBE_WebRtcVideoDisplayPerfBrowserTests \
-  WebRtcVideoDisplayPerfBrowserTests
-#endif
-INSTANTIATE_TEST_SUITE_P(MAYBE_WebRtcVideoDisplayPerfBrowserTests,
-                         WebRtcVideoDisplayPerfBrowserTest,
+INSTANTIATE_TEST_SUITE_P(WebRtcVideoDisplayPerfBrowserTests,
+                         MAYBE_WebRtcVideoDisplayPerfBrowserTest,
                          testing::Combine(testing::Values(gfx::Size(1280, 720),
                                                           gfx::Size(1920,
                                                                     1080)),
                                           testing::Values(30, 60),
                                           testing::Bool()));
 
-IN_PROC_BROWSER_TEST_P(WebRtcVideoDisplayPerfBrowserTest,
+IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcVideoDisplayPerfBrowserTest,
                        MANUAL_TestVideoDisplayPerfVP9) {
   TestVideoDisplayPerf("VP9");
 }
 
 #if BUILDFLAG(RTC_USE_H264)
-IN_PROC_BROWSER_TEST_P(WebRtcVideoDisplayPerfBrowserTest,
+IN_PROC_BROWSER_TEST_P(MAYBE_WebRtcVideoDisplayPerfBrowserTest,
                        MANUAL_TestVideoDisplayPerfH264) {
   if (!base::FeatureList::IsEnabled(
           blink::features::kWebRtcH264WithOpenH264FFmpeg)) {

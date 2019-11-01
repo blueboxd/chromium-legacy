@@ -1,0 +1,6 @@
+include_rules = [
+  "+components/security_interstitials/content/renderer",
+  "+components/security_interstitials/core/common",
+  "+content/public/renderer",
+  "+third_party/blink/public/common",
+]

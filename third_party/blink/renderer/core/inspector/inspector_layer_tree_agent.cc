@@ -301,7 +301,8 @@ InspectorLayerTreeAgent::BuildLayerTree() {
   auto* root_frame = inspected_frames_->Root();
   auto* layer_for_scrolling =
       root_frame->View()->LayoutViewport()->LayerForScrolling();
-  int scrolling_layer_id = layer_for_scrolling ? layer_for_scrolling->id() : 0;
+  int scrolling_layer_id =
+      layer_for_scrolling ? layer_for_scrolling->CcLayer()->id() : 0;
   bool have_blocking_wheel_event_handlers =
       root_frame->GetChromeClient().EventListenerProperties(
           root_frame, cc::EventListenerClass::kMouseWheel) ==

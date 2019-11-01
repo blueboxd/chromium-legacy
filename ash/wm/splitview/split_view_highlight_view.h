@@ -47,7 +47,8 @@ class ASH_EXPORT SplitViewHighlightView : public views::View {
   // Called to update the opacity of the highlights view on transition from
   // |previous_indicator_state| to |indicator_state|.
   void OnIndicatorTypeChanged(IndicatorState indicator_state,
-                              IndicatorState previous_indicator_state);
+                              IndicatorState previous_indicator_state,
+                              bool can_dragged_window_be_snapped);
 
  private:
   friend class SplitViewHighlightViewTestApi;

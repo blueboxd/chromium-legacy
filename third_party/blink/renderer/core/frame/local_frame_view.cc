@@ -2674,9 +2674,6 @@ void LocalFrameView::PaintTree() {
             BuildDarkModeSettings(*settings, *GetLayoutView()));
       }
 
-      if (frame_->IsMainFrame())
-        frame_->GetPage()->GetVisualViewport().Paint(graphics_context);
-
       PaintInternal(graphics_context, kGlobalPaintNormalPhase,
                     CullRect::Infinite());
 
@@ -2743,6 +2740,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
             // The layer being scrolled is destroyed before the
             // ScrollingCoordinator.
             WrapWeakPersistent(page->GetScrollingCoordinator())));
+    GetLayoutView()->Compositor()->AttachRootLayerViaChromeClient();
     page->GetChromeClient().AttachRootLayer(
         paint_artifact_compositor_->RootLayer(), &GetFrame());
   }
@@ -2796,8 +2794,15 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
         std::make_unique<PaintController>(PaintController::kTransient);
 
     GraphicsContext context(*paint_controller_);
-    if (frame_->IsMainFrame())
-      frame_->GetPage()->GetVisualViewport().Paint(context);
+    // The inner viewport scroll layer is not drawable, but we still need to
+    // collect it in order to coordinate viewport scrolls.
+    if (frame_->IsMainFrame()) {
+      if (const auto* inner_scroll_layer =
+              frame_->GetPage()->GetVisualViewport().ScrollLayer()) {
+        DCHECK(!inner_scroll_layer->DrawsContent());
+        RecordGraphicsLayerAsForeignLayer(context, inner_scroll_layer);
+      }
+    }
     // Before CompositeAfterPaint, |PaintRootGraphicsLayer| is the ancestor of
     // all drawable layers (see: PaintLayerCompositor::PaintRootGraphicsLayer)
     // so we do not need to collect scrollbars separately.

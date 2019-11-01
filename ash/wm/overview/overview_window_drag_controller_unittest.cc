@@ -403,7 +403,7 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
     EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
               drag_controller()->current_drag_behavior());
     ASSERT_TRUE(drag_indicators());
-    EXPECT_EQ(IndicatorState::kDragArea,
+    EXPECT_EQ(IndicatorState::kDragAreaBoth,
               drag_indicators()->current_indicator_state());
     // Note that it's ok to use screen bounds here since we only have a single
     // primary display.
@@ -457,7 +457,7 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
   // Drag back to the middle, the desks bar should be shifted again.
   event_generator->MoveMouseTo(GetScreenInPixelsPoint(300, 400));
   ASSERT_TRUE(drag_indicators());
-  EXPECT_EQ(IndicatorState::kDragArea,
+  EXPECT_EQ(IndicatorState::kDragAreaBoth,
             drag_indicators()->current_indicator_state());
   EXPECT_EQ(GetExpectedDesksBarShiftAmount(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
@@ -502,7 +502,7 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
   event_generator->MoveMouseTo(
       GetScreenInPixelsPoint(mini_view_location.x(), mini_view_location.y()));
   ASSERT_TRUE(drag_indicators());
-  EXPECT_EQ(IndicatorState::kDragArea,
+  EXPECT_EQ(IndicatorState::kDragAreaBoth,
             drag_indicators()->current_indicator_state());
   EXPECT_EQ(GetExpectedDesksBarShiftAmount(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());

@@ -935,4 +935,8 @@ void GpuServiceImpl::MaybeExit(bool for_context_loss) {
   std::move(exit_callback_).Run();
 }
 
+gpu::Scheduler* GpuServiceImpl::GetGpuScheduler() {
+  return scheduler_.get();
+}
+
 }  // namespace viz

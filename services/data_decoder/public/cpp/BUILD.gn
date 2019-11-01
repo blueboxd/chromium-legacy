@@ -63,7 +63,14 @@ source_set("cpp") {
     sources += [ "json_sanitizer_non_android.cc" ]
   }
 
-  if (!is_ios) {
+  if (is_ios) {
+    # NOTE: We depend on this target here for iOS only, to support in-process
+    # use of the service. Non-test targets in this directory should otherwise
+    # NEVER depend on this target.
+    deps = [
+      "//services/data_decoder:lib",
+    ]
+  } else {
     public += [
       "decode_image.h",
       "safe_bundled_exchanges_parser.h",

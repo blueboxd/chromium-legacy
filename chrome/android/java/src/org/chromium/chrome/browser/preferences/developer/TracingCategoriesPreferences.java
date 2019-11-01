@@ -38,6 +38,7 @@ public class TracingCategoriesPreferences
     private @TracingPreferences.CategoryType int mType;
     private Set<String> mEnabledCategories;
     private List<CheckBoxPreference> mAllPreferences;
+    private CheckBoxPreference mSelectAllPreference;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -55,13 +56,12 @@ public class TracingCategoriesPreferences
         Collections.sort(sortedCategories);
 
         // Special preference to select all or deselect the entire list.
-        CheckBoxPreference selectAllPreference =
-                new ChromeBaseCheckBoxPreference(getStyledContext(), null);
-        selectAllPreference.setKey(SELECT_ALL_KEY);
-        selectAllPreference.setTitle(SELECT_ALL_TITLE);
-        selectAllPreference.setPersistent(false);
-        selectAllPreference.setOnPreferenceChangeListener(this);
-        preferenceScreen.addPreference(selectAllPreference);
+        mSelectAllPreference = new ChromeBaseCheckBoxPreference(getStyledContext(), null);
+        mSelectAllPreference.setKey(SELECT_ALL_KEY);
+        mSelectAllPreference.setTitle(SELECT_ALL_TITLE);
+        mSelectAllPreference.setPersistent(false);
+        mSelectAllPreference.setOnPreferenceChangeListener(this);
+        preferenceScreen.addPreference(mSelectAllPreference);
 
         for (String category : sortedCategories) {
             if (TracingPreferences.getCategoryType(category) == mType) {
@@ -70,7 +70,7 @@ public class TracingCategoriesPreferences
                 preferenceScreen.addPreference(pref);
             }
         }
-        selectAllPreference.setChecked(mEnabledCategories.size() == mAllPreferences.size());
+        mSelectAllPreference.setChecked(mEnabledCategories.size() == mAllPreferences.size());
         setPreferenceScreen(preferenceScreen);
     }
 
@@ -100,6 +100,7 @@ public class TracingCategoriesPreferences
         } else {
             mEnabledCategories.remove(preference.getKey());
         }
+        mSelectAllPreference.setChecked(mEnabledCategories.size() == mAllPreferences.size());
         TracingPreferences.setEnabledCategories(mType, mEnabledCategories);
         return true;
     }

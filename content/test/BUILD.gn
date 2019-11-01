@@ -37,12 +37,6 @@ jumbo_static_library("test_support") {
   }
 
   sources = [
-    "../browser/accessibility/accessibility_event_recorder.cc",
-    "../browser/accessibility/accessibility_event_recorder.h",
-    "../browser/accessibility/accessibility_event_recorder_mac.mm",
-    "../browser/accessibility/accessibility_event_recorder_uia_win.cc",
-    "../browser/accessibility/accessibility_event_recorder_uia_win.h",
-    "../browser/accessibility/accessibility_event_recorder_win.cc",
     "../browser/accessibility/test_browser_accessibility_delegate.cc",
     "../browser/accessibility/test_browser_accessibility_delegate.h",
     "../browser/background_fetch/background_fetch_test_base.cc",
@@ -500,8 +494,6 @@ jumbo_static_library("test_support") {
   }
 
   if (use_atk) {
-    sources +=
-        [ "../browser/accessibility/accessibility_event_recorder_auralinux.cc" ]
     configs += [
       "//build/config/linux/atk",
       "//build/config/linux/atspi2",

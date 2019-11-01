@@ -33,7 +33,7 @@ namespace base {
 // Allows StackSamplingProfiler to recall a thread which should already pretty
 // much be dead (thus it should be a fast Join()).
 class ScopedAllowThreadRecallForStackSamplingProfiler
-    : public base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {};
+    : public ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {};
 
 namespace {
 

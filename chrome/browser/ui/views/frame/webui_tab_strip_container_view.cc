@@ -205,11 +205,30 @@ WebUITabStripContainerView::CreateToggleButton() {
 }
 
 void WebUITabStripContainerView::CloseContainer() {
-  if (!GetVisible())
-    return;
-  SetVisible(false);
-  auto_closer_->set_enabled(false);
-  InvalidateLayout();
+  SetContainerTargetVisibility(false);
+}
+
+void WebUITabStripContainerView::SetContainerTargetVisibility(
+    bool target_visible) {
+  if (target_visible) {
+    SetVisible(true);
+    animation_.Show();
+  } else {
+    animation_.Hide();
+  }
+  auto_closer_->set_enabled(target_visible);
+}
+
+void WebUITabStripContainerView::AnimationEnded(
+    const gfx::Animation* animation) {
+  DCHECK_EQ(&animation_, animation);
+  if (animation_.GetCurrentValue() == 0.0)
+    SetVisible(false);
+}
+
+void WebUITabStripContainerView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  PreferredSizeChanged();
 }
 
 void WebUITabStripContainerView::ShowContextMenuAtPoint(
@@ -231,16 +250,13 @@ TabStripUILayout WebUITabStripContainerView::GetLayout() {
 }
 
 int WebUITabStripContainerView::GetHeightForWidth(int w) const {
-  return desired_height_;
+  return desired_height_ * animation_.GetCurrentValue();
 }
 
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
   if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_TOGGLE_BUTTON) {
-    // TODO(pbos): Trigger a slide animation here.
-    SetVisible(!GetVisible());
-    auto_closer_->set_enabled(GetVisible());
-    InvalidateLayout();
+    SetContainerTargetVisibility(!GetVisible());
   } else if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_NEW_TAB_BUTTON) {
     chrome::ExecuteCommand(browser_, IDC_NEW_TAB);
   } else {
@@ -253,6 +269,9 @@ void WebUITabStripContainerView::OnViewBoundsChanged(View* observed_view) {
   desired_height_ =
       TabStripUILayout::CalculateForWebViewportSize(observed_view->size())
           .CalculateContainerHeight();
+  // TODO(pbos): PreferredSizeChanged seems to cause infinite recursion with
+  // BrowserView::ChildPreferredSizeChanged. InvalidateLayout here should be
+  // replaceable with PreferredSizeChanged.
   InvalidateLayout();
 
   TabStripUI* const tab_strip_ui = static_cast<TabStripUI*>(

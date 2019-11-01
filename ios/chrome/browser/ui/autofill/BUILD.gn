@@ -72,6 +72,8 @@ source_set("autofill") {
 source_set("bridges") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "card_expiration_date_fix_flow_view_bridge.h",
+    "card_expiration_date_fix_flow_view_bridge.mm",
     "card_name_fix_flow_view_bridge.h",
     "card_name_fix_flow_view_bridge.mm",
     "card_unmask_prompt_view_bridge.h",
@@ -104,6 +106,8 @@ source_set("autofill_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "autofill_ui_type.h",
+    "expiration_date_picker.h",
+    "expiration_date_picker.mm",
     "save_card_infobar_controller.h",
     "save_card_infobar_controller.mm",
     "save_card_infobar_view.h",

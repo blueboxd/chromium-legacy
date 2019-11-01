@@ -2,20 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+
+import {ActivityLogDelegate} from './activity_log/activity_log_history.js';
+import {ActivityLogEventDelegate} from './activity_log/activity_log_stream.js';
+import {ErrorPageDelegate} from './error_page.js';
+import {ItemDelegate} from './item.js';
+import {KeyboardShortcutDelegate} from './keyboard_shortcut_delegate.js';
+import {LoadErrorDelegate} from './load_error.js';
+import {Dialog,navigation,Page} from './navigation_helper.js';
+import {PackDialogDelegate} from './pack_dialog.js';
+import {ToolbarDelegate} from './toolbar.js';
+
 
   /**
-   * @implements {extensions.ActivityLogDelegate}
-   * @implements {extensions.ActivityLogEventDelegate}
-   * @implements {extensions.ErrorPageDelegate}
-   * @implements {extensions.ItemDelegate}
-   * @implements {extensions.KeyboardShortcutDelegate}
-   * @implements {extensions.LoadErrorDelegate}
-   * @implements {extensions.PackDialogDelegate}
-   * @implements {extensions.ToolbarDelegate}
+   * @implements {ActivityLogDelegate}
+   * @implements {ActivityLogEventDelegate}
+   * @implements {ErrorPageDelegate}
+   * @implements {ItemDelegate}
+   * @implements {KeyboardShortcutDelegate}
+   * @implements {LoadErrorDelegate}
+   * @implements {PackDialogDelegate}
+   * @implements {ToolbarDelegate}
    */
-  class Service {
+  export class Service {
     constructor() {
       /** @private {boolean} */
       this.isDeleting_ = false;
@@ -273,9 +284,9 @@ cr.define('extensions', function() {
       if (extension.optionsPage.openInTab) {
         chrome.developerPrivate.showOptions(extension.id);
       } else {
-        extensions.navigation.navigateTo({
-          page: extensions.Page.DETAILS,
-          subpage: extensions.Dialog.OPTIONS,
+        navigation.navigateTo({
+          page: Page.DETAILS,
+          subpage: Dialog.OPTIONS,
           extensionId: extension.id,
         });
       }
@@ -352,8 +363,7 @@ cr.define('extensions', function() {
       return new Promise(function(resolve, reject) {
         chrome.activityLogPrivate.getExtensionActivities(
             {
-              activityType:
-                  chrome.activityLogPrivate.ExtensionActivityFilter.ANY,
+              activityType: chrome.activityLogPrivate.ExtensionActivityFilter.ANY,
               extensionId: extensionId
             },
             resolve);
@@ -452,7 +462,4 @@ cr.define('extensions', function() {
     }
   }
 
-  cr.addSingletonGetter(Service);
-
-  return {Service: Service};
-});
+  addSingletonGetter(Service);

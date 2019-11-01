@@ -22,7 +22,7 @@ class JsTranslateManagerTest : public PlatformTest {
     receiver_ = [[CRWTestJSInjectionReceiver alloc] init];
     manager_ = [[JsTranslateManager alloc] initWithReceiver:receiver_];
     std::string script =
-        ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
             IDR_TRANSLATE_JS);
     [manager_ setScript:base::SysUTF8ToNSString(script + "('DummyKey');")];
   }

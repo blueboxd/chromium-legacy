@@ -17,6 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
+#include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_private_key.h"
@@ -25,10 +26,11 @@ namespace chromeos {
 
 ClientCertStoreChromeOS::ClientCertStoreChromeOS(
     std::unique_ptr<CertificateProvider> cert_provider,
-    std::unique_ptr<CertFilter> cert_filter,
+    bool use_system_slot,
+    const std::string& username_hash,
     const PasswordDelegateFactory& password_delegate_factory)
     : cert_provider_(std::move(cert_provider)),
-      cert_filter_(std::move(cert_filter)) {}
+      cert_filter_(use_system_slot, username_hash) {}
 
 ClientCertStoreChromeOS::~ClientCertStoreChromeOS() {}
 
@@ -56,7 +58,7 @@ void ClientCertStoreChromeOS::GetClientCerts(
 
   auto repeating_callback = base::AdaptCallbackForRepeating(
       std::move(get_additional_certs_and_continue));
-  if (cert_filter_->Init(repeating_callback))
+  if (cert_filter_.Init(repeating_callback))
     repeating_callback.Run();
 }
 
@@ -93,8 +95,8 @@ ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread(
   net::ClientCertIdentityList client_certs;
   net::ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
       std::move(password_delegate),
-      base::BindRepeating(&CertFilter::IsCertAllowed,
-                          base::Unretained(cert_filter_.get())),
+      base::BindRepeating(&ClientCertFilterChromeOS::IsCertAllowed,
+                          base::Unretained(&cert_filter_)),
       &client_certs);
 
   client_certs.reserve(client_certs.size() + additional_certs.size());

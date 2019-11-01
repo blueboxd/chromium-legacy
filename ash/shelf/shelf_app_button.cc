@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "skia/ext/image_operations.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
@@ -737,6 +738,14 @@ std::unique_ptr<views::InkDropRipple> ShelfAppButton::CreateInkDropRipple()
 std::unique_ptr<views::InkDropMask> ShelfAppButton::CreateInkDropMask() const {
   // Do not set a mask, allow the ink drop to burst out.
   return nullptr;
+}
+
+bool ShelfAppButton::HandleAccessibleAction(
+    const ui::AXActionData& action_data) {
+  if (action_data.action == ax::mojom::Action::kScrollToMakeVisible)
+    shelf_button_delegate()->HandleAccessibleActionScrollToMakeVisible();
+
+  return views::View::HandleAccessibleAction(action_data);
 }
 
 void ShelfAppButton::UpdateState() {

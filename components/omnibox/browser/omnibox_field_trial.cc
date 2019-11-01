@@ -624,10 +624,10 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
 }
 
 size_t OmniboxFieldTrial::GetMaxURLMatches() {
+  constexpr size_t kDefaultMaxURLMatches = 7;
   return base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kOmniboxMaxURLMatches,
-      OmniboxFieldTrial::kOmniboxMaxURLMatchesParam,
-      0);  // default
+      OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, kDefaultMaxURLMatches);
 }
 
 bool OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled() {
@@ -652,6 +652,11 @@ bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled() {
   return base::FeatureList::IsEnabled(
       omnibox::kOmniboxTabSwitchSuggestionsDedicatedRow);
+}
+
+bool OmniboxFieldTrial::IsLooseMaxLimitOnDedicatedRowsEnabled() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxLooseMaxLimitOnDedicatedRows);
 }
 
 bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {

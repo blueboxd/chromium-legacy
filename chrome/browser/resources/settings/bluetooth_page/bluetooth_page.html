@@ -16,18 +16,12 @@
 
 <dom-module id="settings-bluetooth-page">
   <template>
-    <style include="settings-shared">
-      .link-wrapper {
-        align-items: center;
-        display: flex;
-        flex-grow: 1;
-      }
-    </style>
+    <style include="settings-shared"></style>
     <settings-animated-pages id="pages" section="bluetooth"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
         <template is="dom-if" if="[[!isSecondaryUser_]]">
-          <div id="bluetoothDevices" class="settings-box two-line">
+          <div id="bluetoothDevices" class="settings-box two-line no-padding">
             <div class="link-wrapper" actionable on-click="onTap_">
               <iron-icon icon="[[getIcon_(bluetoothToggleState_)]]"></iron-icon>
               <div class="middle settings-box-text">
@@ -51,6 +45,7 @@
             </div>
             <div class="separator"></div>
             <cr-toggle id="enableBluetooth"
+                class="margin-matches-padding"
                 checked="{{bluetoothToggleState_}}"
                 disabled$="[[!isToggleEnabled_(
                     adapterState_, stateChangeInProgress_)]]"

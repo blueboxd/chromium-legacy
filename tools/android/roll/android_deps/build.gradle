@@ -114,22 +114,19 @@ dependencies {
 
     compile "com.android.support:multidex:1.0.0"
 
-    buildCompile "javax.annotation:jsr250-api:1.0"
-    buildCompile "javax.inject:javax.inject:1"
-
-    // Dagger
-    def daggerVersion = '2.17'
-    buildCompile "com.google.dagger:dagger:${daggerVersion}"
-    annotationProcessor "com.google.dagger:dagger-compiler:${daggerVersion}"
-
-    // JavaPoet
-    // Matches version depended on by Dagger. Uses annotationProcessor so that
-    // it doesn't get supports_android, which is given by compile.
-    annotationProcessor "com.squareup:javapoet:1.11.0"
-
     compile "com.google.protobuf:protobuf-lite:3.0.1"
+    compile "javax.annotation:jsr250-api:1.0"
+    compile "javax.inject:javax.inject:1"
 
-    // Androidx test libraries
+    // buildCompile targets have supports_android = false.
+    def daggerVersion = '2.17'
+    compile "com.google.dagger:dagger:${daggerVersion}"
+    buildCompile "com.google.dagger:dagger-compiler:${daggerVersion}"
+
+    // Matches version depended on by Dagger.
+    buildCompile "com.squareup:javapoet:1.11.0"
+
+    // testCompile targets have test_only = true.
     testCompile "androidx.test:core:1.0.0"
     testCompile "androidx.test:monitor:1.1.0"
     testCompile "androidx.test:rules:1.1.0"

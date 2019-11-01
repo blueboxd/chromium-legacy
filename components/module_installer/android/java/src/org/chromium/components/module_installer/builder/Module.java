@@ -132,22 +132,18 @@ public class Module<T> {
     private static void loadNative(String name) {
         // Can only initialize native once per lifetime of Chrome.
         if (sInitializedModules.contains(name)) return;
-        // TODO(crbug.com/870055): Use |libraries| instead of whitelist to load
-        // native libraries.
         String[] libraries = loadModuleDescriptor(name).getLibraries();
         // TODO(crbug.com/986960): Automatically determine if module has native
         // resources instead of whitelisting.
-        boolean loadLibrary = false;
         boolean loadResources = false;
         if ("test_dummy".equals(name)) {
-            loadLibrary = true;
             loadResources = true;
         }
         if ("dev_ui".equals(name)) {
             loadResources = true;
         }
-        if (loadLibrary || loadResources) {
-            ModuleJni.get().loadNative(name, loadLibrary, loadResources);
+        if (libraries.length > 0 || loadResources) {
+            ModuleJni.get().loadNative(name, libraries, loadResources);
         }
         sInitializedModules.add(name);
     }
@@ -195,6 +191,6 @@ public class Module<T> {
 
     @NativeMethods
     interface Natives {
-        void loadNative(String name, boolean loadLibrary, boolean loadResources);
+        void loadNative(String name, String[] libraries, boolean loadResources);
     }
 }

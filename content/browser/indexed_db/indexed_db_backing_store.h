@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db.h"
-#include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/scopes/scope_lock.h"
@@ -51,12 +50,12 @@ class FileWriterDelegate;
 }
 
 namespace content {
-class IndexedDBFactory;
-struct IndexedDBValue;
+class IndexedDBActiveBlobRegistry;
 class TransactionalLevelDBDatabase;
 class TransactionalLevelDBFactory;
 class TransactionalLevelDBIterator;
 class TransactionalLevelDBTransaction;
+struct IndexedDBValue;
 
 namespace indexed_db_backing_store_unittest {
 class IndexedDBBackingStoreTest;
@@ -133,7 +132,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   class CONTENT_EXPORT Transaction {
    public:
-    explicit Transaction(IndexedDBBackingStore* backing_store,
+    explicit Transaction(base::WeakPtr<IndexedDBBackingStore> backing_store,
                          blink::mojom::IDBTransactionDurability durability);
     virtual ~Transaction();
 
@@ -178,6 +177,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
         int64_t database_id,
         const std::string& object_store_data_key,
         IndexedDBValue* value);
+
+    base::WeakPtr<Transaction> AsWeakPtr();
 
     // This holds a BlobEntryKey and the encoded IndexedDBBlobInfo vector stored
     // under that key.
@@ -270,10 +271,11 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     void PartitionBlobsToRemove(BlobJournalType* dead_blobs,
                                 BlobJournalType* live_blobs) const;
 
-    // The raw pointer is not inherently safe, but IndexedDB destroys
-    // transactions & connections before destroying the backing store.
-    // TODO(dmurph): Convert to WeakPtr. https://crbug.com/960992
-    IndexedDBBackingStore* backing_store_;
+    // This does NOT mean that this class can outlive the IndexedDBBackingStore.
+    // This is only to protect against security issues before this class is
+    // refactored away and this isn't necessary.
+    // https://crbug.com/1012918
+    base::WeakPtr<IndexedDBBackingStore> backing_store_;
     TransactionalLevelDBFactory* const transactional_leveldb_factory_;
     scoped_refptr<TransactionalLevelDBTransaction> transaction_;
     std::map<std::string, std::unique_ptr<BlobChangeRecord>> blob_change_map_;
@@ -348,8 +350,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     virtual bool LoadCurrentRow(leveldb::Status* s) = 0;
 
    protected:
-    Cursor(IndexedDBBackingStore* backing_store,
-           Transaction* transaction,
+    Cursor(base::WeakPtr<Transaction> transaction,
            int64_t database_id,
            const CursorOptions& cursor_options);
     explicit Cursor(const IndexedDBBackingStore::Cursor* other);
@@ -361,14 +362,11 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     bool IsPastBounds() const;
     bool HaveEnteredRange() const;
 
-    // The raw pointer is not inherently safe, but IndexedDB destroys
-    // transactions & connections before destroying the backing store.
-    // TODO(dmurph): Convert to WeakPtr. https://crbug.com/960992
-    IndexedDBBackingStore* backing_store_;
-    // The raw pointer is not inherently safe, but IndexedDB destroys
-    // transactions before cursors.
-    // TODO(dmurph): Convert to WeakPtr. https://crbug.com/960992
-    Transaction* transaction_;
+    // This does NOT mean that this class can outlive the Transaction.
+    // This is only to protect against security issues before this class is
+    // refactored away and this isn't necessary.
+    // https://crbug.com/1012918
+    base::WeakPtr<Transaction> transaction_;
     int64_t database_id_;
     const CursorOptions cursor_options_;
     std::unique_ptr<TransactionalLevelDBIterator> iterator_;
@@ -391,8 +389,14 @@ class CONTENT_EXPORT IndexedDBBackingStore {
                                     IteratorState state,
                                     leveldb::Status*);
 
+    base::WeakPtrFactory<Cursor> weak_factory_{this};
+
     DISALLOW_COPY_AND_ASSIGN(Cursor);
   };
+
+  using BlobFilesCleanedCallback = base::RepeatingClosure;
+  using ReportOutstandingBlobsCallback =
+      base::RepeatingCallback<void(/*outstanding_blobs=*/bool)>;
 
   enum class Mode { kInMemory, kOnDisk };
 
@@ -409,11 +413,12 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   IndexedDBBackingStore(
       Mode backing_store_mode,
-      IndexedDBFactory* indexed_db_factory,
       TransactionalLevelDBFactory* transactional_leveldb_factory,
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
+      BlobFilesCleanedCallback blob_files_cleaned,
+      ReportOutstandingBlobsCallback report_outstanding_blobs,
       base::SequencedTaskRunner* task_runner);
   virtual ~IndexedDBBackingStore();
 
@@ -422,10 +427,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   leveldb::Status Initialize(bool clean_live_blob_journal);
 
   const url::Origin& origin() const { return origin_; }
-  IndexedDBFactory* factory() const { return indexed_db_factory_; }
   base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
   IndexedDBActiveBlobRegistry* active_blob_registry() {
-    return &active_blob_registry_;
+    return active_blob_registry_.get();
   }
 
   void GrantChildProcessPermissions(int child_process_id);
@@ -650,7 +654,6 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   void DidCommitTransaction();
 
   Mode backing_store_mode_;
-  IndexedDBFactory* indexed_db_factory_;
   TransactionalLevelDBFactory* const transactional_leveldb_factory_;
   const url::Origin origin_;
   base::FilePath blob_path_;
@@ -677,9 +680,12 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 #endif
 
   std::unique_ptr<TransactionalLevelDBDatabase> db_;
+
+  BlobFilesCleanedCallback blob_files_cleaned_;
+
   // Whenever blobs are registered in active_blob_registry_,
   // indexed_db_factory_ will hold a reference to this backing store.
-  IndexedDBActiveBlobRegistry active_blob_registry_;
+  std::unique_ptr<IndexedDBActiveBlobRegistry> active_blob_registry_;
 
   // Incremented whenever a transaction starts committing, decremented when
   // complete. While > 0, temporary journal entries may exist so out-of-band

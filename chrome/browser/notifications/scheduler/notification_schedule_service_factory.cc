@@ -22,7 +22,8 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/notifications/scheduler/display_agent_android.h"
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_android.h"
-#endif
+#include "chrome/browser/updates/update_notification_client.h"
+#endif  // defined(OS_ANDROID)
 
 namespace {
 std::unique_ptr<notifications::NotificationSchedulerClientRegistrar>
@@ -30,6 +31,14 @@ RegisterClients() {
   auto client_registrar =
       std::make_unique<notifications::NotificationSchedulerClientRegistrar>();
   // TODO(xingliu): Register clients here.
+#if defined(OS_ANDROID)
+  // Register UpdateNotificationClient.
+  auto chrome_update_client =
+      std::make_unique<updates::UpdateNotificationClient>();
+  client_registrar->RegisterClient(
+      notifications::SchedulerClientType::kChromeUpdate,
+      std::move(chrome_update_client));
+#endif  // defined(OS_ANDROID)
   return client_registrar;
 }
 
@@ -72,7 +81,7 @@ KeyedService* NotificationScheduleServiceFactory::BuildServiceInstanceFor(
   auto display_agent = notifications::DisplayAgent::Create();
   auto background_task_scheduler =
       std::make_unique<NotificationBackgroundTaskSchedulerImpl>();
-#endif
+#endif  // defined(OS_ANDROID)
   auto* db_provider =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetProtoDatabaseProvider();

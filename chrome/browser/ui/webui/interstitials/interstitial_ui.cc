@@ -111,22 +111,18 @@ class InterstitialHTMLSource : public content::URLDataSource {
 // that both Wi-Fi and non Wi-Fi blocking pages can be displayed.
 class CaptivePortalBlockingPageWithNetInfo : public CaptivePortalBlockingPage {
  public:
-  CaptivePortalBlockingPageWithNetInfo(
-      content::WebContents* web_contents,
-      const GURL& request_url,
-      const GURL& login_url,
-      const net::SSLInfo& ssl_info,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback,
-      bool is_wifi,
-      const std::string& wifi_ssid)
+  CaptivePortalBlockingPageWithNetInfo(content::WebContents* web_contents,
+                                       const GURL& request_url,
+                                       const GURL& login_url,
+                                       const net::SSLInfo& ssl_info,
+                                       bool is_wifi,
+                                       const std::string& wifi_ssid)
       : CaptivePortalBlockingPage(web_contents,
                                   request_url,
                                   login_url,
                                   nullptr,
                                   ssl_info,
-                                  net::ERR_CERT_COMMON_NAME_INVALID,
-                                  callback),
+                                  net::ERR_CERT_COMMON_NAME_INVALID),
         is_wifi_(is_wifi),
         wifi_ssid_(wifi_ssid) {}
 
@@ -187,10 +183,9 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
   if (strict_enforcement)
     options_mask |=
         security_interstitials::SSLErrorOptionsMask::STRICT_ENFORCEMENT;
-  return SSLBlockingPage::Create(
-      web_contents, cert_error, ssl_info, request_url, options_mask,
-      time_triggered_, GURL(), nullptr,
-      base::Callback<void(content::CertificateRequestResultType)>());
+  return SSLBlockingPage::Create(web_contents, cert_error, ssl_info,
+                                 request_url, options_mask, time_triggered_,
+                                 GURL(), nullptr);
 }
 
 MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
@@ -208,10 +203,9 @@ MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
 
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
-  return new MITMSoftwareBlockingPage(
-      web_contents, cert_error, request_url, nullptr, ssl_info,
-      mitm_software_name, is_enterprise_managed,
-      base::Callback<void(content::CertificateRequestResultType)>());
+  return new MITMSoftwareBlockingPage(web_contents, cert_error, request_url,
+                                      nullptr, ssl_info, mitm_software_name,
+                                      is_enterprise_managed);
 }
 
 BadClockBlockingPage* CreateBadClockBlockingPage(
@@ -259,10 +253,9 @@ BadClockBlockingPage* CreateBadClockBlockingPage(
   if (strict_enforcement)
     options_mask |=
         security_interstitials::SSLErrorOptionsMask::STRICT_ENFORCEMENT;
-  return new BadClockBlockingPage(
-      web_contents, cert_error, ssl_info, request_url, base::Time::Now(),
-      clock_state, nullptr,
-      base::Callback<void(content::CertificateRequestResultType)>());
+  return new BadClockBlockingPage(web_contents, cert_error, ssl_info,
+                                  request_url, base::Time::Now(), clock_state,
+                                  nullptr);
 }
 
 LookalikeUrlInterstitialPage* CreateLookalikeInterstitialPage(
@@ -425,7 +418,6 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
   CaptivePortalBlockingPage* blocking_page =
       new CaptivePortalBlockingPageWithNetInfo(
           web_contents, request_url, landing_url, ssl_info,
-          base::Callback<void(content::CertificateRequestResultType)>(),
           is_wifi_connection, wifi_ssid);
   return blocking_page;
 }
@@ -524,7 +516,7 @@ void InterstitialHTMLSource::StartDataRequest(
   } else if (interstitial_delegate.get()) {
     html = interstitial_delegate.get()->GetHTMLContents();
   } else {
-    html = ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+    html = ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
         IDR_SECURITY_INTERSTITIAL_UI_HTML);
   }
   scoped_refptr<base::RefCountedString> html_bytes = new base::RefCountedString;

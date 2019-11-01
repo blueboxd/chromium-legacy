@@ -312,6 +312,10 @@ bool MixerSocket::ParseAudio(char* data, int size) {
   data += sizeof(timestamp);
   size -= sizeof(timestamp);
 
+  // Handle padding bytes.
+  data += sizeof(int32_t);
+  size -= sizeof(int32_t);
+
   return delegate_->HandleAudioData(data, size, timestamp);
 }
 

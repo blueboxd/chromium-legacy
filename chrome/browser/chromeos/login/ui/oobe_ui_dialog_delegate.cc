@@ -164,6 +164,8 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
     }
   }
 
+  View* GetInitiallyFocusedView() override { return oobe_view_; }
+
  private:
   OobeUIDialogDelegate* dialog_delegate_ = nullptr;  // Owned by us.
   OobeWebDialogView* oobe_view_ = nullptr;  // Owned by views hierarchy.

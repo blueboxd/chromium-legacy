@@ -1380,10 +1380,40 @@ void AutofillMetrics::LogIsAutofillEnabledAtStartup(bool enabled) {
 }
 
 // static
+void AutofillMetrics::LogIsProfileAutofillEnabledAtStartup(bool enabled) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.Address.IsEnabled.Startup", enabled);
+}
+
+// static
+void AutofillMetrics::LogIsCreditCardAutofillEnabledAtStartup(bool enabled) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.CreditCard.IsEnabled.Startup", enabled);
+}
+
+// static
 void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(
     bool enabled,
     AutofillSyncSigninState sync_state) {
   std::string name("Autofill.IsEnabled.PageLoad");
+  UMA_HISTOGRAM_BOOLEAN(name, enabled);
+  base::UmaHistogramBoolean(name + GetMetricsSyncStateSuffix(sync_state),
+                            enabled);
+}
+
+// static
+void AutofillMetrics::LogIsProfileAutofillEnabledAtPageLoad(
+    bool enabled,
+    AutofillSyncSigninState sync_state) {
+  std::string name("Autofill.Address.IsEnabled.PageLoad");
+  UMA_HISTOGRAM_BOOLEAN(name, enabled);
+  base::UmaHistogramBoolean(name + GetMetricsSyncStateSuffix(sync_state),
+                            enabled);
+}
+
+// static
+void AutofillMetrics::LogIsCreditCardAutofillEnabledAtPageLoad(
+    bool enabled,
+    AutofillSyncSigninState sync_state) {
+  std::string name("Autofill.CreditCard.IsEnabled.PageLoad");
   UMA_HISTOGRAM_BOOLEAN(name, enabled);
   base::UmaHistogramBoolean(name + GetMetricsSyncStateSuffix(sync_state),
                             enabled);

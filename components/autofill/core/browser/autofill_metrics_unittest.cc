@@ -2950,10 +2950,10 @@ TEST_F(AutofillMetricsTest, LogStoredCreditCardMetrics) {
       "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Unmasked", 200, 3);
 }
 
-// Test that we correctly log when Autofill is enabled.
-TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
+// Test that we correctly log when Profile Autofill is enabled at startup.
+TEST_F(AutofillMetricsTest, AutofillProfileIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
-  personal_data_->SetAutofillEnabled(true);
+  personal_data_->SetAutofillProfileEnabled(true);
   personal_data_->Init(scoped_refptr<AutofillWebDataService>(nullptr),
                        /*account_database=*/nullptr,
                        autofill_client_.GetPrefs(),
@@ -2961,13 +2961,14 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
                        /*client_profile_validator=*/nullptr,
                        /*history_service=*/nullptr,
                        /*is_off_the_record=*/false);
-  histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", true, 1);
+  histogram_tester.ExpectUniqueSample("Autofill.Address.IsEnabled.Startup",
+                                      true, 1);
 }
 
-// Test that we correctly log when Autofill is disabled.
-TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
+// Test that we correctly log when Profile Autofill is disabled at startup.
+TEST_F(AutofillMetricsTest, AutofillProfileIsDisabledAtStartup) {
   base::HistogramTester histogram_tester;
-  personal_data_->SetAutofillEnabled(false);
+  personal_data_->SetAutofillProfileEnabled(false);
   personal_data_->Init(scoped_refptr<AutofillWebDataService>(nullptr),
                        /*account_database=*/nullptr,
                        autofill_client_.GetPrefs(),
@@ -2975,7 +2976,38 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
                        /*client_profile_validator=*/nullptr,
                        /*history_service=*/nullptr,
                        /*is_off_the_record=*/false);
-  histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", false, 1);
+  histogram_tester.ExpectUniqueSample("Autofill.Address.IsEnabled.Startup",
+                                      false, 1);
+}
+
+// Test that we correctly log when CreditCard Autofill is enabled at startup.
+TEST_F(AutofillMetricsTest, AutofillCreditCardIsEnabledAtStartup) {
+  base::HistogramTester histogram_tester;
+  personal_data_->SetAutofillCreditCardEnabled(true);
+  personal_data_->Init(scoped_refptr<AutofillWebDataService>(nullptr),
+                       /*account_database=*/nullptr,
+                       autofill_client_.GetPrefs(),
+                       /*identity_manager=*/nullptr,
+                       /*client_profile_validator=*/nullptr,
+                       /*history_service=*/nullptr,
+                       /*is_off_the_record=*/false);
+  histogram_tester.ExpectUniqueSample("Autofill.CreditCard.IsEnabled.Startup",
+                                      true, 1);
+}
+
+// Test that we correctly log when CreditCard Autofill is disabled at startup.
+TEST_F(AutofillMetricsTest, AutofillCreditCardIsDisabledAtStartup) {
+  base::HistogramTester histogram_tester;
+  personal_data_->SetAutofillCreditCardEnabled(false);
+  personal_data_->Init(scoped_refptr<AutofillWebDataService>(nullptr),
+                       /*account_database=*/nullptr,
+                       autofill_client_.GetPrefs(),
+                       /*identity_manager=*/nullptr,
+                       /*client_profile_validator=*/nullptr,
+                       /*history_service=*/nullptr,
+                       /*is_off_the_record=*/false);
+  histogram_tester.ExpectUniqueSample("Autofill.CreditCard.IsEnabled.Startup",
+                                      false, 1);
 }
 
 // Test that we log the number of Autofill suggestions when filling a form.
@@ -6670,20 +6702,40 @@ TEST_F(AutofillMetricsTest, AddressFormEventsAreSegmented) {
   }
 }
 
-// Test that we log that Autofill is enabled when filling a form.
-TEST_F(AutofillMetricsTest, AutofillIsEnabledAtPageLoad) {
+// Test that we log that Profile Autofill is enabled when filling a form.
+TEST_F(AutofillMetricsTest, AutofillProfileIsEnabledAtPageLoad) {
   base::HistogramTester histogram_tester;
-  autofill_manager_->SetAutofillEnabled(true);
+  autofill_manager_->SetProfileAutofillEnabled(true);
   autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks());
-  histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.PageLoad", true, 1);
+  histogram_tester.ExpectUniqueSample("Autofill.Address.IsEnabled.PageLoad",
+                                      true, 1);
 }
 
-// Test that we log that Autofill is disabled when filling a form.
-TEST_F(AutofillMetricsTest, AutofillIsDisabledAtPageLoad) {
+// Test that we log that Profile Autofill is disabled when filling a form.
+TEST_F(AutofillMetricsTest, AutofillProfileIsDisabledAtPageLoad) {
   base::HistogramTester histogram_tester;
-  autofill_manager_->SetAutofillEnabled(false);
+  autofill_manager_->SetProfileAutofillEnabled(false);
   autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks());
-  histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.PageLoad", false, 1);
+  histogram_tester.ExpectUniqueSample("Autofill.Address.IsEnabled.PageLoad",
+                                      false, 1);
+}
+
+// Test that we log that CreditCard Autofill is enabled when filling a form.
+TEST_F(AutofillMetricsTest, AutofillCreditCardIsEnabledAtPageLoad) {
+  base::HistogramTester histogram_tester;
+  autofill_manager_->SetCreditCardAutofillEnabled(true);
+  autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks());
+  histogram_tester.ExpectUniqueSample("Autofill.CreditCard.IsEnabled.PageLoad",
+                                      true, 1);
+}
+
+// Test that we log that CreditCard Autofill is disabled when filling a form.
+TEST_F(AutofillMetricsTest, AutofillCreditCardIsDisabledAtPageLoad) {
+  base::HistogramTester histogram_tester;
+  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks());
+  histogram_tester.ExpectUniqueSample("Autofill.CreditCard.IsEnabled.PageLoad",
+                                      false, 1);
 }
 
 // Test that we log the days since last use of a credit card when it is used.

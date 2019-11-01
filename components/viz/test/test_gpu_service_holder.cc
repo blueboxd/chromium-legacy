@@ -206,7 +206,7 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       /*shutdown_event=*/nullptr);
 
   task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
-      gpu_thread_.task_runner(), gpu_service_->scheduler(),
+      gpu_thread_.task_runner(), gpu_service_->GetGpuScheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
       gpu_service_->share_group(),
       gpu_service_->gpu_channel_manager()

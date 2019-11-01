@@ -1230,15 +1230,13 @@ bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
     // If this is the most specific STS match, add it to the result. Note: a STS
     // entry at a more specific domain overrides a less specific domain whether
     // or not |include_subdomains| is set.
-    if (current_time <= j->second.expiry) {
-      if (i == 0 || j->second.include_subdomains) {
-        *result = j->second;
-        result->domain = DNSDomainToString(host_sub_chunk);
-        return true;
-      }
-
-      break;
+    if (i == 0 || j->second.include_subdomains) {
+      *result = j->second;
+      result->domain = DNSDomainToString(host_sub_chunk);
+      return true;
     }
+
+    break;
   }
 
   return false;
@@ -1271,15 +1269,13 @@ bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
     // If this is the most specific PKP match, add it to the result. Note: a PKP
     // entry at a more specific domain overrides a less specific domain whether
     // or not |include_subdomains| is set.
-    if (current_time <= j->second.expiry) {
-      if (i == 0 || j->second.include_subdomains) {
-        *result = j->second;
-        result->domain = DNSDomainToString(host_sub_chunk);
-        return true;
-      }
-
-      break;
+    if (i == 0 || j->second.include_subdomains) {
+      *result = j->second;
+      result->domain = DNSDomainToString(host_sub_chunk);
+      return true;
     }
+
+    break;
   }
 
   return false;

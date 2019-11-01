@@ -48,7 +48,7 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
     // Networking stubs may have asynchronous initialization.
     base::RunLoop().RunUntilIdle();
 
-    model_ = std::make_unique<UnifiedSystemTrayModel>();
+    model_ = std::make_unique<UnifiedSystemTrayModel>(nullptr);
     controller_ = std::make_unique<UnifiedSystemTrayController>(model());
   }
 

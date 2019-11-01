@@ -49,7 +49,6 @@ group("ensure_py_protos") {
   deps = [
     ":chrome_cleaner_report_proto",
     ":reporter_logs_proto",
-    "//chrome/chrome_cleaner/proto:spec_footprints_proto",
     "//third_party/protobuf:py_proto",
   ]
 }

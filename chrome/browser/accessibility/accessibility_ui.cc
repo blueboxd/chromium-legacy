@@ -54,6 +54,7 @@ static const char kAccessibilityModeField[] = "a11yMode";
 static const char kBrowsersField[] = "browsers";
 static const char kEnabledField[] = "enabled";
 static const char kErrorField[] = "error";
+static const char kEventLogsField[] = "eventLogs";
 static const char kFaviconUrlField[] = "faviconUrl";
 static const char kFlagNameField[] = "flagName";
 static const char kModeIdField[] = "modeId";
@@ -62,9 +63,11 @@ static const char kPagesField[] = "pages";
 static const char kPidField[] = "pid";
 static const char kProcessIdField[] = "processId";
 static const char kRequestTypeField[] = "requestType";
+// TODO rename to routingId to match the name elsewhere.
 static const char kRouteIdField[] = "routeId";
 static const char kSessionIdField[] = "sessionId";
 static const char kShouldRequestTreeField[] = "shouldRequestTree";
+static const char kStartField[] = "start";
 static const char kTreeField[] = "tree";
 static const char kTypeField[] = "type";
 static const char kUrlField[] = "url";
@@ -372,6 +375,11 @@ void AccessibilityUIMessageHandler::RegisterMessages() {
       "requestNativeUITree",
       base::BindRepeating(&AccessibilityUIMessageHandler::RequestNativeUITree,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestAccessibilityEvents",
+      base::BindRepeating(
+          &AccessibilityUIMessageHandler::RequestAccessibilityEvents,
+          base::Unretained(this)));
 }
 
 void AccessibilityUIMessageHandler::ToggleAccessibility(
@@ -611,6 +619,52 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   result->SetString(kTypeField, kBrowser);
   result->SetString(kErrorField, "Browser no longer exists.");
   CallJavascriptFunction(request_type, *(result.get()));
+}
+
+void AccessibilityUIMessageHandler::Callback(const std::string& str) {
+  event_logs_.push_back(str);
+}
+
+void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
+    const base::ListValue* args) {
+  const base::DictionaryValue* data;
+  CHECK(args->GetDictionary(0, &data));
+
+  int process_id = *data->FindIntPath(kProcessIdField);
+  int route_id = *data->FindIntPath(kRouteIdField);
+  bool start = *data->FindBoolPath(kStartField);
+
+  AllowJavascript();
+
+  content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(process_id, route_id);
+  if (!rvh) {
+    return;
+  }
+
+  std::unique_ptr<base::DictionaryValue> result(BuildTargetDescriptor(rvh));
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (start) {
+    web_contents->RecordAccessibilityEvents(
+        base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
+                            base::Unretained(this)),
+        true);
+  } else {
+    web_contents->RecordAccessibilityEvents(
+        base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
+                            base::Unretained(this)),
+        false);
+    std::string event_logs_str;
+    for (std::string log : event_logs_) {
+      event_logs_str += log;
+      event_logs_str += "\n";
+    }
+    result->SetString(kEventLogsField, event_logs_str);
+    event_logs_.clear();
+
+    CallJavascriptFunction("accessibility.startOrStopEvents", *(result.get()));
+  }
 }
 
 // static

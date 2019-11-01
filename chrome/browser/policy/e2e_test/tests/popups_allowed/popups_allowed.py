@@ -27,7 +27,8 @@ class PopupsAllowedForUrlsTest(ChromeEnterpriseTestCase):
   @test
   def test_popup_allow_for_url(self):
     # Enable "Allow popups on these sites" with testing URL
-    test_site = 'www.popuptest.com'
+    # TODO(jxiang, crbug/1020231)
+    test_site = 'www.dummysoftware.com'
     self.SetPolicy('win2012-dc', r'PopupsAllowedForUrls\1', test_site, 'String')
     self.RunCommand('client2012', 'gpupdate /force')
     logging.info('Enabled Allow pop-ups on' + test_site)
@@ -53,5 +54,5 @@ class PopupsAllowedForUrlsTest(ChromeEnterpriseTestCase):
     output = self.RunWebDriverTest(
         'client2012', os.path.join(local_dir,
                                    'popup_allowed_webdriver_test.py'))
-    # Check if the 6 new pop-up windows are blocked
+    # Check if the new pop-up windows are blocked
     self.assertEquals(int(output), 1)

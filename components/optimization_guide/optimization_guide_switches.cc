@@ -32,7 +32,13 @@ const char kFetchHintsOverrideTimer[] =
 
 // Overrides the Optimization Guide Service URL that the HintsFetcher will
 // request remote hints from.
-const char kOptimizationGuideServiceURL[] = "optimization-guide-service-url";
+const char kOptimizationGuideServiceGetHintsURL[] =
+    "optimization-guide-service-get-hosts-url";
+
+// Overrides the Optimization Guide Service URL that the PredictionModelFetcher
+// will request remote models and host features from.
+const char kOptimizationGuideServiceGetModelsURL[] =
+    "optimization-guide-service-get-models-url";
 
 // Overrides the Optimization Guide Service API Key for remote requests to be
 // made.

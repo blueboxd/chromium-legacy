@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.ui.widget.FadingShadow;
 import org.chromium.chrome.browser.ui.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderCoordinates;
@@ -33,7 +34,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 /**
  * Represents ephemeral tab content and the toolbar, which can be included inside the bottom sheet.
  */
-public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent {
+public class EphemeralTabSheetContent implements BottomSheetContent {
     private static final float PEEK_TOOLBAR_HEIGHT_MULTIPLE = 2.f;
 
     private final Context mContext;
@@ -205,7 +206,7 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
 
     @Override
     public int getPriority() {
-        return BottomSheet.ContentPriority.HIGH;
+        return BottomSheetContent.ContentPriority.HIGH;
     }
 
     @Override
@@ -222,7 +223,7 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
 
     @Override
     public float getFullHeightRatio() {
-        return BottomSheet.HeightMode.WRAP_CONTENT;
+        return BottomSheetContent.HeightMode.WRAP_CONTENT;
     }
 
     @Override

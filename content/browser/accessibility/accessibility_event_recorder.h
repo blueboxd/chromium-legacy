@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -35,7 +36,7 @@ class BrowserAccessibilityManager;
 // each platform does most of the work.
 //
 // As currently designed, there should only be one instance of this class.
-class AccessibilityEventRecorder {
+class CONTENT_EXPORT AccessibilityEventRecorder {
  public:
   // Construct the right platform-specific subclass.
   static std::unique_ptr<AccessibilityEventRecorder> Create(

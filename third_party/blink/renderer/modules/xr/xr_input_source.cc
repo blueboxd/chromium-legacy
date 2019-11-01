@@ -81,7 +81,7 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
     updated_source->state_.handedness = desc->handedness;
 
     updated_source->input_from_pointer_ =
-        TryGetTransformationMatrix(desc->pointer_offset);
+        TryGetTransformationMatrix(desc->input_from_pointer);
 
     updated_source->state_.profiles.clear();
     for (const auto& name : state->description->profiles) {
@@ -89,7 +89,8 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
     }
   }
 
-  updated_source->mojo_from_input_ = TryGetTransformationMatrix(state->grip);
+  updated_source->mojo_from_input_ =
+      TryGetTransformationMatrix(state->mojo_from_input);
 
   updated_source->state_.emulated_position = state->emulated_position;
 

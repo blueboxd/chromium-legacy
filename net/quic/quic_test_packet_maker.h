@@ -412,7 +412,6 @@ class QuicTestPacketMaker {
   std::string host_;
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
-  quic::HttpEncoder http_encoder_;
   bool coalesce_http_frames_;
   bool save_packet_frames_;
   DecoderStreamErrorDelegate decoder_stream_error_delegate_;

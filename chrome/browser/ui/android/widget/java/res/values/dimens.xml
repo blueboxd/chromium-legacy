@@ -12,6 +12,9 @@
     <!-- DualControlLayout dimensions -->
     <dimen name="dual_control_margin_between_items">8dp</dimen>
 
+    <!-- RadioButton(WithDescription)Layout dimensions -->
+    <dimen name="default_vertical_margin_between_items">8dp</dimen>
+
     <!-- RadioButtonWithDescription dimensions -->
     <dimen name="radio_button_with_description_lateral_padding">16dp</dimen>
     <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>

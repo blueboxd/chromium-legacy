@@ -35,7 +35,7 @@ std::string GetDistillerScriptWithOptions(
     const dom_distiller::proto::DomDistillerOptions& options,
     bool stringify_output) {
   std::string script =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_DISTILLER_JS);
   if (script.empty()) {
     return "";

@@ -2,9 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  const ItemList = Polymer({
+import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
+import './shared_style.js';
+
+import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ItemDelegate} from './item.js';
+
+  Polymer({
     is: 'extensions-item-list',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [CrContainerShadowBehavior, I18nBehavior],
 
@@ -15,7 +26,7 @@ cr.define('extensions', function() {
       /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
       extensions: Array,
 
-      /** @type {extensions.ItemDelegate} */
+      /** @type {ItemDelegate} */
       delegate: Object,
 
       inDevMode: {
@@ -104,7 +115,7 @@ cr.define('extensions', function() {
     /** @private */
     announceSearchResults_: function() {
       if (this.computedFilter_) {
-        Polymer.IronA11yAnnouncer.requestAvailability();
+        IronA11yAnnouncer.requestAvailability();
         this.async(() => {  // Async to allow list to update.
           const total = this.shownAppsCount_ + this.shownExtensionsCount_;
           this.fire('iron-announce', {
@@ -119,8 +130,3 @@ cr.define('extensions', function() {
       }
     },
   });
-
-  return {
-    ItemList: ItemList,
-  };
-});

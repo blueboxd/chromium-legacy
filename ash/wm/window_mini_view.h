@@ -7,11 +7,10 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/controls/button/button.h"
-
-namespace aura {
-class Window;
-}  // namespace aura
 
 namespace views {
 class ImageView;
@@ -26,7 +25,8 @@ class WindowPreviewView;
 // WindowMiniView is a view which contains a header and optionally a mirror of
 // the given window. Displaying the mirror is chosen by the subclass by calling
 // |SetShowPreview| in their constructors (or later on if they like).
-class ASH_EXPORT WindowMiniView : public views::Button {
+class ASH_EXPORT WindowMiniView : public views::Button,
+                                  public aura::WindowObserver {
  public:
   ~WindowMiniView() override;
 
@@ -52,6 +52,9 @@ class ASH_EXPORT WindowMiniView : public views::Button {
   // views::View:
   void Layout() override;
 
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+
  private:
   // The window this class is meant to be a header for. This class also may
   // optionally show a mirrored view of this window.
@@ -68,6 +71,8 @@ class ASH_EXPORT WindowMiniView : public views::Button {
 
   // Optionally shows a preview of |window_|.
   WindowPreviewView* preview_view_ = nullptr;
+
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowMiniView);
 };

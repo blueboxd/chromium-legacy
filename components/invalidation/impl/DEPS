@@ -20,7 +20,7 @@ include_rules = [
   "+net/url_request",
   "+net/base/load_flags.h",
 
-  "+services/data_decoder/public/cpp/testing_json_parser.h",
+  "+services/data_decoder/public",
   "+services/network/public",
   "+services/network/test",
 ]

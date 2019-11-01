@@ -99,6 +99,7 @@ class MockMediaNotificationContainer : public MediaNotificationContainer {
                void(const base::flat_set<MediaSessionAction>& actions));
   MOCK_METHOD1(OnMediaArtworkChanged, void(const gfx::ImageSkia& image));
   MOCK_METHOD2(OnColorsChanged, void(SkColor foreground, SkColor background));
+  MOCK_METHOD0(OnHeaderClicked, void());
 
   MediaNotificationView* view() const { return view_.get(); }
   void SetView(std::unique_ptr<MediaNotificationView> view) {
@@ -1301,6 +1302,11 @@ TEST_F(MAYBE_MediaNotificationViewTest, AllowsHidingOfAppIcon) {
       GetHeaderRow(&shows_icon)->app_icon_view_for_testing()->GetVisible());
   EXPECT_FALSE(
       GetHeaderRow(&hides_icon)->app_icon_view_for_testing()->GetVisible());
+}
+
+TEST_F(MAYBE_MediaNotificationViewTest, ClickHeader_NotifyContainer) {
+  EXPECT_CALL(container(), OnHeaderClicked());
+  SimulateHeaderClick();
 }
 
 }  // namespace media_message_center

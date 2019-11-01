@@ -179,12 +179,12 @@ device::mojom::XRInputSourceStatePtr GvrInputDelegate::GetInputSourceState() {
     // Get the grip transform
     gfx::Transform grip;
     controller_->GetTransform(&grip);
-    state->grip = grip;
+    state->mojo_from_input = grip;
 
     // Set the pointer offset from the grip transform.
     gfx::Transform pointer;
     controller_->GetRelativePointerTransform(&pointer);
-    state->description->pointer_offset = pointer;
+    state->description->input_from_pointer = pointer;
 
     state->description->profiles.push_back("google-daydream");
 

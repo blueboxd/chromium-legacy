@@ -41,6 +41,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationContainer {
   // Called when MediaNotificationView's colors change.
   virtual void OnColorsChanged(SkColor foreground, SkColor background) = 0;
 
+  // Called when the header row is clicked.
+  virtual void OnHeaderClicked() = 0;
+
  protected:
   virtual ~MediaNotificationContainer() = default;
 };

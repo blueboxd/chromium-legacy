@@ -44,8 +44,8 @@ class WilcoDtcSupportdBridge final
     // that points to the remote implementation of the interface,
     // |remote_endpoint_fd| - file descriptor of the remote endpoint to be sent.
     virtual void CreateWilcoDtcSupportdServiceFactoryMojoInvitation(
-        wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactoryPtr*
-            wilco_dtc_supportd_service_factory_mojo_ptr,
+        mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>*
+            wilco_dtc_supportd_service_factory_mojo_remote,
         base::ScopedFD* remote_endpoint_fd) = 0;
   };
 
@@ -131,8 +131,8 @@ class WilcoDtcSupportdBridge final
 
   // Interface pointers to the Mojo services exposed by the wilco_dtc_supportd
   // daemon.
-  wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactoryPtr
-      wilco_dtc_supportd_service_factory_mojo_ptr_;
+  mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>
+      wilco_dtc_supportd_service_factory_mojo_remote_;
   mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
       wilco_dtc_supportd_service_mojo_remote_;
 

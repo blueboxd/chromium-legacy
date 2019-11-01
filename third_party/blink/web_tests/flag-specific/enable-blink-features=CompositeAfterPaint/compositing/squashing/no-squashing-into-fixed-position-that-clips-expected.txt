@@ -7,6 +7,13 @@
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='fixedpos'",
+      "position": [0, 50],
+      "bounds": [800, 550],
+      "contentsOpaque": true,
+      "backgroundColor": "#ADD8E6"
+    },
+    {
       "name": "LayoutNGBlockFlow (positioned) DIV class='compositedlayer'",
       "bounds": [24, 100],
       "contentsOpaque": true,

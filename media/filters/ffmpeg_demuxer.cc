@@ -1936,7 +1936,7 @@ void FFmpegDemuxer::RunInitCB(PipelineStatus status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(init_cb_);
   TRACE_EVENT_ASYNC_END1("media", "FFmpegDemuxer::Initialize", this, "status",
-                         MediaLog::PipelineStatusToString(status));
+                         PipelineStatusToString(status));
   std::move(init_cb_).Run(status);
 }
 
@@ -1944,7 +1944,7 @@ void FFmpegDemuxer::RunPendingSeekCB(PipelineStatus status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(pending_seek_cb_);
   TRACE_EVENT_ASYNC_END1("media", "FFmpegDemuxer::Seek", this, "status",
-                         MediaLog::PipelineStatusToString(status));
+                         PipelineStatusToString(status));
   std::move(pending_seek_cb_).Run(status);
 }
 

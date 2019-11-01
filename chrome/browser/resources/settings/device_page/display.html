@@ -56,6 +56,10 @@
         margin-inline-end: var(--cr-controlled-by-spacing);
       }
 
+      .underbar {
+        border-bottom: var(--cr-separator-line);
+      }
+
       #controlsDiv > .settings-box:first-of-type {
         border-top: none;
       }
@@ -71,39 +75,41 @@
     </style>
 
     <!-- Arrangement section -->
-    <div class="settings-box first layout vertical self-stretch">
-      <h2 class="layout self-start">
-        $i18n{displayArrangementTitle}
-      </h2>
-      <div class="secondary layout self-start"
-          hidden="[[!hasMultipleDisplays_(displays)]]">
-        $i18n{displayArrangementText}
-      </div>
-      <display-layout id="displayLayout"
-          selected-display="[[selectedDisplay]]"
-          on-select-display="onSelectDisplay_">
-      </display-layout>
-
-      <template is="dom-if" if="[[showMirror_(unifiedDesktopMode_, displays)]]"
-          restamp>
-        <div class="secondary self-start">
-          <cr-checkbox checked="[[isMirrored_(displays)]]"
-              on-click="onMirroredTap_"
-              aria-label="[[getDisplayMirrorText_(displays)]]">
-            <div class="text-area">[[getDisplayMirrorText_(displays)]]</div>
-          </cr-checkbox>
+    <template is="dom-if"
+        if="[[shouldShowArrangementSection_(displays)]]" restamp>
+      <div class="settings-box first layout vertical self-stretch underbar"
+          id="arrangement-section">
+        <h2 class="layout self-start">
+          $i18n{displayArrangementTitle}
+        </h2>`
+        <div class="secondary layout self-start">
+          $i18n{displayArrangementText}
         </div>
-      </template>
-    </div>
+        <display-layout id="displayLayout"
+            selected-display="[[selectedDisplay]]"
+            on-select-display="onSelectDisplay_">
+        </display-layout>
+
+        <template is="dom-if"
+            if="[[showMirror_(unifiedDesktopMode_, displays)]]" restamp>
+          <div class="secondary self-start">
+            <cr-checkbox checked="[[isMirrored_(displays)]]"
+                on-click="onMirroredTap_"
+                aria-label="[[getDisplayMirrorText_(displays)]]">
+              <div class="text-area">[[getDisplayMirrorText_(displays)]]</div>
+            </cr-checkbox>
+          </div>
+        </template>
+      </div>
+    </template>
 
     <!-- Display tabs -->
-    <div hidden="[[!hasMultipleDisplays_(displays)]]" class="settings-box">
+    <div hidden="[[!hasMultipleDisplays_(displays)]]"
+        class="settings-box first">
       <cr-tabs selected="[[selectedTab_]]" class="display-tabs"
           on-selected-changed="onSelectDisplayTab_"
           tab-names="[[displayTabNames_]]"></cr-tabs>
     </div>
-    <div hidden="[[hasMultipleDisplays_(displays)]]"
-        class="settings-box line-only"></div>
 
     <div id="controlsDiv" class="settings-box layout vertical first">
       <h2>[[selectedDisplay.name]]</h2>
@@ -142,7 +148,7 @@
       </template>
 
       <!-- Display zoom selection slider -->
-      <div class="settings-box indented two-line">
+      <div class="settings-box indented two-line first">
         <div class="start text-area layout vertical">
           <div id="displayZoomTitle">$i18n{displayZoomTitle}</div>
           <div class="secondary self-start">$i18n{displayZoomSublabel}</div>
@@ -206,10 +212,14 @@
                 icon-aria-label="$i18n{displayOrientation}">
             </cr-policy-pref-indicator>
           </template>
-          <select class="md-select" value="[[selectedDisplay.rotation]]"
-              disabled="[[selectedDisplay.isTabletMode]]"
+          <select class="md-select"
+              value="[[selectedDisplay.rotation]]"
               aria-labelledby="displayOrientation"
               on-change="onOrientationChange_">
+            <option value="-1"
+                hidden$="[[!showAutoRotateOption_(selectedDisplay)]]">
+              $i18n{displayOrientationAutoRotate}
+            </option>
             <option value="0">$i18n{displayOrientationStandard}</option>
             <option value="90">90&deg;</option>
             <option value="180">180&deg;</option>

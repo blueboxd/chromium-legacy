@@ -82,7 +82,6 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -424,8 +423,7 @@ std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
   return std::unique_ptr<net::ClientCertStore>(
       new chromeos::ClientCertStoreChromeOS(
           certificate_provider_ ? certificate_provider_->Copy() : nullptr,
-          std::make_unique<chromeos::ClientCertFilterChromeOS>(
-              use_system_key_slot, username_hash_),
+          use_system_key_slot, username_hash_,
           base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
                      kCryptoModulePasswordClientAuth)));
 #elif defined(USE_NSS_CERTS)

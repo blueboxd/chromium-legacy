@@ -76,7 +76,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
             StateChangeReason.TAB_PROMOTION, StateChangeReason.CLICK, StateChangeReason.SWIPE,
             StateChangeReason.FLING, StateChangeReason.OPTIN, StateChangeReason.OPTOUT,
             StateChangeReason.CLOSE_BUTTON, StateChangeReason.PANEL_SUPPRESS,
-            StateChangeReason.PANEL_UNSUPPRESS, StateChangeReason.TAP_SUPPRESS})
+            StateChangeReason.PANEL_UNSUPPRESS, StateChangeReason.TAP_SUPPRESS,
+            StateChangeReason.NAVIGATION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface StateChangeReason {
         int UNKNOWN = 0;
@@ -100,8 +101,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         int PANEL_SUPPRESS = 18;
         int PANEL_UNSUPPRESS = 19;
         int TAP_SUPPRESS = 20;
+        int NAVIGATION = 21;
         // Always update MAX_VALUE to match the last StateChangeReason in the list.
-        int MAX_VALUE = 20;
+        int MAX_VALUE = 21;
     }
 
     /** The activity this panel is in. */

@@ -13,8 +13,6 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** A simple sheet content to test with. This only displays two empty white views. */
@@ -50,9 +48,9 @@ public class TestBottomSheetContent implements BottomSheetContent {
      */
     public TestBottomSheetContent(
             Context context, @ContentPriority int priority, boolean hasCustomLifecycle) {
-        mPeekHeight = BottomSheet.HeightMode.DEFAULT;
-        mHalfHeight = BottomSheet.HeightMode.DEFAULT;
-        mFullHeight = BottomSheet.HeightMode.DEFAULT;
+        mPeekHeight = BottomSheetContent.HeightMode.DEFAULT;
+        mHalfHeight = BottomSheetContent.HeightMode.DEFAULT;
+        mFullHeight = BottomSheetContent.HeightMode.DEFAULT;
         mPriority = priority;
         mHasCustomLifecycle = hasCustomLifecycle;
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -141,7 +139,7 @@ public class TestBottomSheetContent implements BottomSheetContent {
     }
 
     @Override
-    public boolean setContentSizeListener(@Nullable BottomSheet.ContentSizeListener listener) {
+    public boolean setContentSizeListener(@Nullable ContentSizeListener listener) {
         return false;
     }
 

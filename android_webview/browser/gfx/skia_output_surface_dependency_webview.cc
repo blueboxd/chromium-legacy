@@ -126,4 +126,10 @@ void SkiaOutputSurfaceDependencyWebView::DidLoseContext(
   LOG(ERROR) << "SkiaRenderer detected lost context.";
 }
 
+base::TimeDelta
+SkiaOutputSurfaceDependencyWebView::GetGpuBlockedTimeSinceLastSwap() {
+  // WebView doesn't track how long GPU thread was blocked
+  return base::TimeDelta();
+}
+
 }  // namespace android_webview

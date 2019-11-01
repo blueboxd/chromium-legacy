@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
@@ -59,7 +60,7 @@ public class BrowsingModeBottomToolbarCoordinator {
      */
     BrowsingModeBottomToolbarCoordinator(View root, ActivityTabProvider tabProvider,
             OnClickListener homeButtonListener, OnClickListener searchAcceleratorListener,
-            OnClickListener shareButtonListener) {
+            OnClickListener shareButtonListener, OnLongClickListener tabSwitcherLongClickListner) {
         BrowsingModeBottomToolbarModel model = new BrowsingModeBottomToolbarModel();
 
         final ViewGroup toolbarRoot = root.findViewById(R.id.bottom_toolbar_browsing);
@@ -86,9 +87,15 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(toolbarRoot);
         // TODO(amaralp): Make this adhere to MVC framework.
-        ((TabSwitcherButtonView) toolbarRoot.findViewById(R.id.tab_switcher_button))
-                .setWrapperView(toolbarRoot.findViewById(R.id.tab_switcher_button_wrapper));
+        TabSwitcherButtonView tabSwitcherButtonView =
+                toolbarRoot.findViewById(R.id.tab_switcher_button);
+        tabSwitcherButtonView.setWrapperView(
+                toolbarRoot.findViewById(R.id.tab_switcher_button_wrapper));
 
+        // TODO(lazzzis): Refactor the long click listener. Have to specify the handler view here
+        //      in order to fix the anchor view of the long-tap menu
+        tabSwitcherButtonView.setOnLongClickListener(
+                (view) -> tabSwitcherLongClickListner.onLongClick(tabSwitcherButtonView));
         mMenuButton = toolbarRoot.findViewById(R.id.menu_button_wrapper);
         mMenuButton.setWrapperView(toolbarRoot.findViewById(R.id.labeled_menu_button_wrapper));
 

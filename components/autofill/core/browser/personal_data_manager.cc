@@ -295,8 +295,13 @@ void PersonalDataManager::Init(
 
   is_off_the_record_ = is_off_the_record;
 
-  if (!is_off_the_record_)
+  if (!is_off_the_record_) {
     AutofillMetrics::LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
+    AutofillMetrics::LogIsProfileAutofillEnabledAtStartup(
+        IsAutofillProfileEnabled());
+    AutofillMetrics::LogIsCreditCardAutofillEnabledAtStartup(
+        IsAutofillCreditCardEnabled());
+  }
 
   client_profile_validator_ = client_profile_validator;
 
@@ -1280,7 +1285,7 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
-  return ::autofill::prefs::IsAutofillEnabled(pref_service_);
+  return IsAutofillProfileEnabled() || IsAutofillCreditCardEnabled();
 }
 
 bool PersonalDataManager::IsAutofillProfileEnabled() const {

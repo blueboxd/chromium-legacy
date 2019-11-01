@@ -43,7 +43,7 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
 
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      GetExecutionContext()->GetTaskRunner(TaskType::kInternalIPC);
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
 
   if (!service_) {
     GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(

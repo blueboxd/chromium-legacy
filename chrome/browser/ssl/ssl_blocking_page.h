@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -63,9 +62,7 @@ class SSLBlockingPage : public SSLBlockingPageBase {
       int options_mask,
       const base::Time& time_triggered,
       const GURL& support_url,
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback);
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
 
   // InterstitialPageDelegate method:
   InterstitialPageDelegate::TypeID GetTypeForTesting() override;
@@ -75,26 +72,21 @@ class SSLBlockingPage : public SSLBlockingPageBase {
   static bool IsOverridable(int options_mask);
 
  protected:
-  SSLBlockingPage(
-      content::WebContents* web_contents,
-      int cert_error,
-      const net::SSLInfo& ssl_info,
-      const GURL& request_url,
-      int options_mask,
-      const base::Time& time_triggered,
-      const GURL& support_url,
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      bool overrideable,
-      std::unique_ptr<ChromeMetricsHelper> metrics_helper,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback);
+  SSLBlockingPage(content::WebContents* web_contents,
+                  int cert_error,
+                  const net::SSLInfo& ssl_info,
+                  const GURL& request_url,
+                  int options_mask,
+                  const base::Time& time_triggered,
+                  const GURL& support_url,
+                  std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+                  bool overrideable,
+                  std::unique_ptr<ChromeMetricsHelper> metrics_helper);
 
   // InterstitialPageDelegate implementation.
   void CommandReceived(const std::string& command) override;
   void OverrideEntry(content::NavigationEntry* entry) override;
   void OverrideRendererPrefs(blink::mojom::RendererPreferences* prefs) override;
-  void OnProceed() override;
-  void OnDontProceed() override;
 
   // SecurityInterstitialPage implementation:
   bool ShouldCreateNewNavigation() const override;
@@ -109,7 +101,6 @@ class SSLBlockingPage : public SSLBlockingPageBase {
                            VerifySecurityInterstitialExtensionEvents);
   void NotifyDenyCertificate();
 
-  base::Callback<void(content::CertificateRequestResultType)> callback_;
   const net::SSLInfo ssl_info_;
   const bool overridable_;  // The UI allows the user to override the error.
 

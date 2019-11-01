@@ -174,7 +174,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsStuck) {
   installation_reporter_->ReportInstallationStage(
       kExtensionId2, InstallationReporter::Stage::DOWNLOADING);
   installation_reporter_->ReportDownloadingStage(
-      kExtensionId2, ExtensionDownloaderDelegate::PENDING);
+      kExtensionId2, ExtensionDownloaderDelegate::Stage::PENDING);
   EXPECT_TRUE(fake_timer_->IsRunning());
   fake_timer_->Fire();
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
@@ -197,11 +197,11 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsAreDownloading) {
   installation_reporter_->ReportInstallationStage(
       kExtensionId1, InstallationReporter::Stage::DOWNLOADING);
   installation_reporter_->ReportDownloadingStage(
-      kExtensionId1, ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST);
+      kExtensionId1, ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST);
   installation_reporter_->ReportInstallationStage(
       kExtensionId2, InstallationReporter::Stage::DOWNLOADING);
   installation_reporter_->ReportDownloadingStage(
-      kExtensionId2, ExtensionDownloaderDelegate::DOWNLOADING_CRX);
+      kExtensionId2, ExtensionDownloaderDelegate::Stage::DOWNLOADING_CRX);
   EXPECT_TRUE(fake_timer_->IsRunning());
   fake_timer_->Fire();
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
@@ -214,10 +214,10 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsAreDownloading) {
   histogram_tester_.ExpectTotalCount(kInstallationDownloadingStages, 2);
   histogram_tester_.ExpectBucketCount(
       kInstallationDownloadingStages,
-      ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST, 1);
+      ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST, 1);
   histogram_tester_.ExpectBucketCount(
       kInstallationDownloadingStages,
-      ExtensionDownloaderDelegate::DOWNLOADING_CRX, 1);
+      ExtensionDownloaderDelegate::Stage::DOWNLOADING_CRX, 1);
   histogram_tester_.ExpectUniqueSample(
       kTotalCountStats,
       prefs_->GetManagedPref(pref_names::kInstallForceList)->DictSize(), 1);

@@ -1657,6 +1657,57 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_EQ(first_web_contents, tab_strip_model->GetActiveWebContents());
 }
 
+// Tests that a same-site iframe runs its beforeunload handler when closing a
+// tab.  Same as the test above, but for a same-site rather than cross-site
+// iframe.  See https://crbug.com/1010456.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       TabCloseWithSameSiteBeforeUnloadIframe) {
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  content::WebContents* first_web_contents =
+      tab_strip_model->GetActiveWebContents();
+
+  // Add a second tab and load a page with a same-site iframe.
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), main_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* second_web_contents =
+      tab_strip_model->GetActiveWebContents();
+  EXPECT_NE(first_web_contents, second_web_contents);
+  content::RenderFrameHost* child =
+      ChildFrameAt(second_web_contents->GetMainFrame(), 0);
+  EXPECT_EQ(child->GetSiteInstance(),
+            second_web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Install a dialog-showing beforeunload handler in the iframe.
+  EXPECT_TRUE(
+      ExecuteScript(child, "window.onbeforeunload = () => { return 'x' };"));
+  content::PrepContentsForBeforeUnloadTest(second_web_contents);
+
+  // Close the second tab.  This should return false to indicate that we're
+  // waiting for the beforeunload dialog.
+  EXPECT_FALSE(
+      tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(), 0));
+
+  // Cancel the dialog and make sure the tab stays alive.
+  auto* dialog = ui_test_utils::WaitForAppModalDialog();
+  dialog->native_dialog()->CancelAppModalDialog();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(second_web_contents, tab_strip_model->GetActiveWebContents());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  // Try closing the tab again.
+  EXPECT_FALSE(
+      tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(), 0));
+
+  // Accept the dialog and wait for tab close to complete.
+  content::WebContentsDestroyedWatcher destroyed_watcher(second_web_contents);
+  dialog = ui_test_utils::WaitForAppModalDialog();
+  dialog->native_dialog()->AcceptAppModalDialog();
+  destroyed_watcher.Wait();
+  EXPECT_EQ(first_web_contents, tab_strip_model->GetActiveWebContents());
+}
+
 // Test that there's no crash in the following scenario:
 // 1. a page opens a cross-site popup, where the popup has a cross-site iframe
 //    with a beforeunload handler.

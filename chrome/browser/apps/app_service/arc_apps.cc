@@ -597,6 +597,7 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
                        : apps::mojom::Readiness::kReady;
   app->name = app_info.name;
   app->short_name = app->name;
+  app->publisher_id = app_info.package_name;
 
   if (update_icon) {
     IconEffects icon_effects = IconEffects::kNone;

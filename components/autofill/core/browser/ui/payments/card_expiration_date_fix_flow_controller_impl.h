@@ -42,6 +42,10 @@ class CardExpirationDateFixFlowControllerImpl
   base::string16 GetTitleText() const override;
   base::string16 GetSaveButtonLabel() const override;
   base::string16 GetCardLabel() const override;
+  base::string16 GetCancelButtonLabel() const override;
+  base::string16 GetInputLabel() const override;
+  base::string16 GetDateSeparator() const override;
+  base::string16 GetInvalidDateError() const override;
 
  private:
   // View that displays the fix flow prompt.

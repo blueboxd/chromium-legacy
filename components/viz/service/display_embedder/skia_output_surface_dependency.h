@@ -97,6 +97,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual void DidLoseContext(bool offscreen,
                               gpu::error::ContextLostReason reason,
                               const GURL& active_url) = 0;
+
+  virtual base::TimeDelta GetGpuBlockedTimeSinceLastSwap() = 0;
 };
 
 }  // namespace viz

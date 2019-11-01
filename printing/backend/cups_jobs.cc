@@ -328,8 +328,20 @@ bool ParsePrinterInfo(ipp_t* response, PrinterInfo* printer_info) {
     }
   }
 
-  return !printer_info->make_and_model.empty() &&
-         !printer_info->ipp_versions.empty();
+  if (printer_info->ipp_versions.empty()) {
+    // ipp-versions-supported is missing from the response.  This is IPP 1.0.
+    printer_info->ipp_versions.push_back(base::Version({1, 0}));
+  }
+
+  // All IPP versions require make and model to be populated so we use it to
+  // verify that we parsed the response.
+  return !printer_info->make_and_model.empty();
+}
+
+// Returns true if |status| represents a complete failure in the IPP request.
+bool StatusError(ipp_status_e status) {
+  return status != IPP_STATUS_OK &&
+         status != IPP_STATUS_OK_IGNORED_OR_SUBSTITUTED;
 }
 
 }  // namespace
@@ -458,7 +470,7 @@ PrinterQueryResult GetPrinterInfo(const std::string& address,
   ScopedIppPtr response =
       GetPrinterAttributes(http.get(), printer_uri, resource,
                            kPrinterInfo.size(), kPrinterInfo.data(), &status);
-  if (status != IPP_STATUS_OK || response.get() == nullptr) {
+  if (StatusError(status) || response.get() == nullptr) {
     LOG(WARNING) << "Get attributes failure: " << status;
     return PrinterQueryResult::UNKNOWN_FAILURE;
   }

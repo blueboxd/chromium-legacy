@@ -851,25 +851,6 @@ void RecordSuffixedRendererMemoryMetrics(
       memory_metrics.total_allocated_per_render_view_mb);
 }
 
-// See also LOG_NAVIGATION_TIMING_HISTOGRAM in NavigationRequest.
-void RecordReadyToCommitUntilCommitHistogram(base::TimeDelta delay,
-                                             ui::PageTransition transition) {
-  UMA_HISTOGRAM_TIMES("Navigation.Renderer.ReadyToCommitUntilCommit", delay);
-  if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
-    UMA_HISTOGRAM_TIMES(
-        "Navigation.Renderer.ReadyToCommitUntilCommit.BackForward", delay);
-  } else if (ui::PageTransitionCoreTypeIs(transition,
-                                          ui::PAGE_TRANSITION_RELOAD)) {
-    UMA_HISTOGRAM_TIMES("Navigation.Renderer.ReadyToCommitUntilCommit.Reload",
-                        delay);
-  } else if (ui::PageTransitionIsNewNavigation(transition)) {
-    UMA_HISTOGRAM_TIMES(
-        "Navigation.Renderer.ReadyToCommitUntilCommit.NewNavigation", delay);
-  } else {
-    NOTREACHED() << "Invalid page transition: " << transition;
-  }
-}
-
 mojo::PendingRemote<blink::mojom::BlobURLToken> CloneBlobURLToken(
     mojo::MessagePipeHandle handle) {
   if (!handle.is_valid())
@@ -899,7 +880,6 @@ std::unique_ptr<DocumentState> BuildDocumentState() {
 std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     const mojom::CommonNavigationParams& common_params,
     const mojom::CommitNavigationParams& commit_params,
-    base::TimeTicks time_commit_requested,
     mojom::FrameNavigationControl::CommitNavigationCallback commit_callback,
     mojom::NavigationClient::CommitNavigationCallback
         per_navigation_mojo_interface_commit_callback,
@@ -929,7 +909,7 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
 
   InternalDocumentStateData::FromDocumentState(document_state.get())
       ->set_navigation_state(NavigationState::CreateBrowserInitiated(
-          common_params.Clone(), commit_params.Clone(), time_commit_requested,
+          common_params.Clone(), commit_params.Clone(),
           std::move(commit_callback),
           std::move(per_navigation_mojo_interface_commit_callback),
           std::move(navigation_client), was_initiated_in_this_frame));
@@ -3387,8 +3367,8 @@ void RenderFrameImpl::CommitNavigationInternal(
 
   int request_id = ResourceDispatcher::MakeRequestID();
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
-      *common_params, *commit_params, base::TimeTicks::Now(),
-      std::move(callback), std::move(per_navigation_mojo_interface_callback),
+      *common_params, *commit_params, std::move(callback),
+      std::move(per_navigation_mojo_interface_callback),
       std::move(navigation_client_impl_), request_id,
       was_initiated_in_this_frame);
 
@@ -3752,9 +3732,8 @@ void RenderFrameImpl::CommitFailedNavigation(
   // was not initiated through BeginNavigation, therefore
   // |was_initiated_in_this_frame| is false.
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
-      *common_params, *commit_params, base::TimeTicks(), base::NullCallback(),
-      std::move(callback), std::move(navigation_client_impl_),
-      ResourceDispatcher::MakeRequestID(),
+      *common_params, *commit_params, base::NullCallback(), std::move(callback),
+      std::move(navigation_client_impl_), ResourceDispatcher::MakeRequestID(),
       false /* was_initiated_in_this_frame */);
 
   // The load of the error page can result in this frame being removed.
@@ -3820,7 +3799,6 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     auto url = common_params->url;
     internal_data->set_navigation_state(NavigationState::CreateBrowserInitiated(
         std::move(common_params), std::move(commit_params),
-        base::TimeTicks(),  // Not used for same-document navigation.
         mojom::FrameNavigationControl::CommitNavigationCallback(),
         mojom::NavigationClient::CommitNavigationCallback(), nullptr,
         false /* was_initiated_in_this_frame */));
@@ -4702,15 +4680,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
                     std::move(document_interface_broker_blink_handle)),
                 std::move(browser_interface_broker_receiver))
           : nullptr);
-
-  // Record time between receiving the message to commit the navigation until it
-  // has committed. Only successful cross-document navigation handled by the
-  // browser process are taken into account.
-  if (!navigation_state->time_commit_requested().is_null()) {
-    RecordReadyToCommitUntilCommitHistogram(
-        base::TimeTicks::Now() - navigation_state->time_commit_requested(),
-        transition);
-  }
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.

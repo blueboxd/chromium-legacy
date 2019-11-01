@@ -680,8 +680,15 @@ class ExtensionWebRequestApiPolicyTest
   std::string test_name_ = "test_cors.html";
 };
 
+// Flaky on Win10: http://crbug.com/1020185
+#if defined(OS_WIN)
+#define MAYBE_WebRequestCORSWithExtraHeaders \
+  DISABLED_WebRequestCORSWithExtraHeaders
+#else
+#define MAYBE_WebRequestCORSWithExtraHeaders WebRequestCORSWithExtraHeaders
+#endif
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiPolicyTest,
-                       WebRequestCORSWithExtraHeaders) {
+                       MAYBE_WebRequestCORSWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("webrequest", test_name())) << message_;
 }
@@ -1911,9 +1918,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
   // We are about to destroy a profile. In production that will only happen
   // as part of the destruction of BrowserProcess's ProfileManager. This
-  // happens in ShutdownPostThreadsStop(). This means that to have this test
-  // represent production we have to make sure that no tasks are pending before
-  // we destroy the profile.
+  // happens in PostMainMessageLoopRun(). This means that to have this test
+  // represent production we have to make sure that no tasks are pending on the
+  // main thread before we destroy the profile. We also would need to prohibit
+  // the posting of new tasks on the main thread as in production the main
+  // thread's message loop will not be accepting them. We fallback on flushing
+  // the ThreadPool here to avoid the posts coming from it.
   content::RunAllTasksUntilIdle();
 
   ProfileDestroyer::DestroyProfileWhenAppropriate(temp_profile);

@@ -6,5 +6,5 @@ include_rules = [
   "+net/http",
   "+net/traffic_annotation",
   "+services/network/test",
-  "+third_party/libxml",
+  "+third_party/libxml/chromium",
 ]

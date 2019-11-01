@@ -33,7 +33,7 @@ public class AddToHomescreenViewBinderTest {
         viewModel.set(AddToHomescreenProperties.NATIVE_INSTALL_BUTTON_TEXT, "Install");
         viewModel.set(AddToHomescreenProperties.NATIVE_APP_RATING, 3.4f);
         viewModel.set(AddToHomescreenProperties.TITLE, "My App");
-        viewModel.set(AddToHomescreenProperties.TYPE, AddToHomescreenProperties.AppType.NATIVE);
+        viewModel.set(AddToHomescreenProperties.TYPE, AppType.NATIVE);
         viewModel.set(AddToHomescreenProperties.URL, "google.com");
 
         // Invoke the binder.
@@ -45,7 +45,7 @@ public class AddToHomescreenViewBinderTest {
         Mockito.verify(view, Mockito.times(1)).setNativeInstallButtonText("Install");
         Mockito.verify(view, Mockito.times(1)).setNativeAppRating(3.4f);
         Mockito.verify(view, Mockito.times(1)).setTitle("My App");
-        Mockito.verify(view, Mockito.times(1)).setType(AddToHomescreenProperties.AppType.NATIVE);
+        Mockito.verify(view, Mockito.times(1)).setType(AppType.NATIVE);
         Mockito.verify(view, Mockito.times(1)).setUrl("google.com");
     }
 }

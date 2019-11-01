@@ -266,6 +266,7 @@ crbug.com/angleproject/2722 [ win nvidia vulkan passthrough ] conformance/render
 crbug.com/angleproject/2939 [ win nvidia vulkan passthrough ] conformance/rendering/gl-scissor-fbo-test.html [ RetryOnFailure ]
 crbug.com/963223 [ win nvidia vulkan passthrough ] conformance/rendering/out-of-bounds-array-buffers.html [ Failure ]
 crbug.com/angleproject/2722 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-attachment-formats.html [ Failure ]
+crbug.com/1020295 [ win7 nvidia vulkan passthrough ] conformance/textures/misc/texture-complete.html [ RetryOnFailure ]
 crbug.com/angleproject/2915 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-size.html [ Failure ]
 crbug.com/angleproject/2930 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
 crbug.com/angleproject/3481 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ Failure ]

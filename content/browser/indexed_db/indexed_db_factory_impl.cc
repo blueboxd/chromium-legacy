@@ -778,10 +778,14 @@ std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
     const url::Origin& origin,
     const base::FilePath& blob_path,
     std::unique_ptr<TransactionalLevelDBDatabase> db,
+    IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
+    IndexedDBBackingStore::ReportOutstandingBlobsCallback
+        report_outstanding_blobs,
     base::SequencedTaskRunner* task_runner) {
   return std::make_unique<IndexedDBBackingStore>(
-      backing_store_mode, this, transactional_leveldb_factory, origin,
-      blob_path, std::move(db), task_runner);
+      backing_store_mode, transactional_leveldb_factory, origin, blob_path,
+      std::move(db), std::move(blob_files_cleaned),
+      std::move(report_outstanding_blobs), task_runner);
 }
 
 std::tuple<std::unique_ptr<IndexedDBBackingStore>,
@@ -908,7 +912,12 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
                                  : IndexedDBBackingStore::Mode::kOnDisk;
   std::unique_ptr<IndexedDBBackingStore> backing_store = CreateBackingStore(
       backing_store_mode, &class_factory_->transactional_leveldb_factory(),
-      origin, blob_path, std::move(database), context_->TaskRunner());
+      origin, blob_path, std::move(database),
+      base::BindRepeating(&IndexedDBFactoryImpl::BlobFilesCleaned,
+                          weak_factory_.GetWeakPtr(), origin),
+      base::BindRepeating(&IndexedDBFactoryImpl::ReportOutstandingBlobs,
+                          weak_factory_.GetWeakPtr(), origin),
+      context_->TaskRunner());
   status = backing_store->Initialize(
       /*cleanup_live_journal=*/(!is_incognito_and_in_memory &&
                                 first_open_since_startup));

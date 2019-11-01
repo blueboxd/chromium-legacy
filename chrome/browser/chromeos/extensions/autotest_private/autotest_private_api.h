@@ -968,6 +968,30 @@ class AutotestPrivateInstallPWAForCurrentURLFunction
   base::OneShotTimer timeout_timer_;
 };
 
+class AutotestPrivateActivateAcceleratorFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateActivateAcceleratorFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.activateAccelerator",
+                             AUTOTESTPRIVATE_ACTIVATEACCELERATOR)
+
+ private:
+  ~AutotestPrivateActivateAcceleratorFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateWaitForLauncherStateFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateWaitForLauncherStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.waitForLauncherState",
+                             AUTOTESTPRIVATE_WAITFORLAUNCHERSTATE)
+
+ private:
+  ~AutotestPrivateWaitForLauncherStateFunction() override;
+  ResponseAction Run() override;
+
+  void Done();
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

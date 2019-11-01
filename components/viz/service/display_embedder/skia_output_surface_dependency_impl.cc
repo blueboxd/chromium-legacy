@@ -26,7 +26,7 @@ SkiaOutputSurfaceDependencyImpl::~SkiaOutputSurfaceDependencyImpl() = default;
 std::unique_ptr<gpu::SingleTaskSequence>
 SkiaOutputSurfaceDependencyImpl::CreateSequence() {
   return std::make_unique<gpu::SchedulerSequence>(
-      gpu_service_impl_->scheduler());
+      gpu_service_impl_->GetGpuScheduler());
 }
 
 bool SkiaOutputSurfaceDependencyImpl::IsUsingVulkan() {
@@ -130,6 +130,11 @@ void SkiaOutputSurfaceDependencyImpl::DidLoseContext(
     gpu::error::ContextLostReason reason,
     const GURL& active_url) {
   gpu_service_impl_->DidLoseContext(offscreen, reason, active_url);
+}
+
+base::TimeDelta
+SkiaOutputSurfaceDependencyImpl::GetGpuBlockedTimeSinceLastSwap() {
+  return gpu_service_impl_->GetGpuScheduler()->TakeTotalBlockingTime();
 }
 
 }  // namespace viz

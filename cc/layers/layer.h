@@ -219,8 +219,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // SetNeedsDisplay() that have not been committed to the compositor thread.
   const gfx::Rect& update_rect() const { return inputs_.update_rect; }
 
-  void ResetUpdateRectForTesting() { inputs_.update_rect = gfx::Rect(); }
-
   // Set or get the rounded corner radii which is applied to the layer and its
   // subtree (as if they are together as a single composited entity) when
   // blitting into their target. Setting this makes the layer masked to bounds.

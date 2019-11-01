@@ -138,6 +138,21 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
   if (style.HasBackdropFilter())
     reasons |= CompositingReason::kBackdropFilter;
 
+  if (auto* scrollable_area = layer->GetScrollableArea()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      bool force_prefer_compositing_to_lcd_text =
+          reasons != CompositingReason::kNone;
+      if (scrollable_area->ComputeNeedsCompositedScrolling(
+              force_prefer_compositing_to_lcd_text)) {
+        reasons |= CompositingReason::kOverflowScrolling;
+      }
+    } else if (scrollable_area->UsesCompositedScrolling()) {
+      // For pre-CompositeAfterPaint, just let |reasons| reflect the current
+      // composited scrolling status.
+      reasons |= CompositingReason::kOverflowScrolling;
+    }
+  }
+
   return reasons;
 }
 

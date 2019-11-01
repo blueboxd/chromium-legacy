@@ -16,6 +16,7 @@
 #include "components/invalidation/impl/status.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "net/http/http_request_headers.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -80,7 +81,6 @@ class PerUserTopicRegistrationRequest {
   // Starts an async request. The callback is invoked when the request succeeds
   // or fails. The callback is not called if the request is destroyed.
   void Start(CompletedCallback callback,
-             const ParseJSONCallback& parsed_json,
              network::mojom::URLLoaderFactory* loader_factory);
 
  private:
@@ -92,8 +92,7 @@ class PerUserTopicRegistrationRequest {
                                   int response_code,
                                   std::unique_ptr<std::string> response_body);
 
-  void OnJsonParseFailure(const std::string& error);
-  void OnJsonParseSuccess(base::Value parsed_json);
+  void OnJsonParse(data_decoder::DataDecoder::ValueOrError result);
 
   // For tests only. Returns the full URL of the request.
   GURL getUrl() const { return url_; }
@@ -104,9 +103,6 @@ class PerUserTopicRegistrationRequest {
   // The callback to notify when URLFetcher finished and results are available.
   // When the request is finished/aborted/destroyed, it's called in the dtor!
   CompletedCallback request_completed_callback_;
-
-  // The callback for Parsing JSON.
-  ParseJSONCallback parse_json_;
 
   // Full URL. Used in tests only.
   GURL url_;

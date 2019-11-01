@@ -178,6 +178,9 @@ bool VerifyUsingPathBuilder(
     path_builder.AddCertIssuerSource(aia_cert_issuer_source.get());
   }
 
+  // TODO(mattm): should this be a command line flag?
+  path_builder.SetExploreAllPaths(true);
+
   // Run the path builder.
   net::CertPathBuilder::Result result = path_builder.Run();
 

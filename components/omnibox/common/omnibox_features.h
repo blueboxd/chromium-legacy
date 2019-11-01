@@ -66,6 +66,10 @@ extern const base::Feature kOmniboxExperimentalSuggestScoring;
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 extern const base::Feature kConfirmOmniboxSuggestionRemovals;
 
+// Flags related to new rows and managing rows in the Omnibox.
+// TODO(krb): Move more flags here.
+extern const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows;
+
 }  // namespace omnibox
 
 #endif  // COMPONENTS_OMNIBOX_COMMON_OMNIBOX_FEATURES_H_

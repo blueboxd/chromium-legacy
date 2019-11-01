@@ -7,10 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
-#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/device_sync/cryptauth_device_notifier.h"
@@ -28,6 +28,12 @@ class CryptAuthGCMManager;
 
 class FakeCryptAuthDeviceNotifier : public CryptAuthDeviceNotifier {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    virtual void OnNotifyDevicesCalled() {}
+  };
+
   struct Request {
     Request(const base::flat_set<std::string>& device_ids,
             cryptauthv2::TargetService target_service,
@@ -49,7 +55,9 @@ class FakeCryptAuthDeviceNotifier : public CryptAuthDeviceNotifier {
   FakeCryptAuthDeviceNotifier();
   ~FakeCryptAuthDeviceNotifier() override;
 
-  base::queue<Request>& requests() { return requests_; }
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+
+  std::vector<Request>& requests() { return requests_; }
 
  private:
   // CryptAuthDeviceNotifier:
@@ -60,7 +68,8 @@ class FakeCryptAuthDeviceNotifier : public CryptAuthDeviceNotifier {
       base::OnceClosure success_callback,
       base::OnceCallback<void(NetworkRequestError)> error_callback) override;
 
-  base::queue<Request> requests_;
+  Delegate* delegate_ = nullptr;
+  std::vector<Request> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthDeviceNotifier);
 };

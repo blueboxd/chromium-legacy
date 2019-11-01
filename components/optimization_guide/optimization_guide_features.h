@@ -57,8 +57,12 @@ base::TimeDelta DurationApplyLowEngagementScoreThreshold();
 // The API key for the One Platform Optimization Guide Service.
 std::string GetOptimizationGuideServiceAPIKey();
 
-// The host for the One Platform Optimization Guide Service.
-GURL GetOptimizationGuideServiceURL();
+// The host for the One Platform Optimization Guide Service for hints.
+GURL GetOptimizationGuideServiceGetHintsURL();
+
+// The host for the One Platform Optimization Guide Service for Models and Host
+// Model Features.
+GURL GetOptimizationGuideServiceGetModelsURL();
 
 // Whether server optimization hints are enabled.
 bool IsOptimizationHintsEnabled();
@@ -90,6 +94,10 @@ base::TimeDelta GetHintsFetchRefreshDuration();
 
 // Returns true if optimization target prediction is enabled.
 bool IsOptimizationTargetPredictionEnabled();
+
+// The amount of time host model features will be considered fresh enough
+// to be used and remain in the HintCacheStore.
+base::TimeDelta StoredHostModelFeaturesFreshnessDuration();
 
 // Returns true if the optimization target decision for |optimization_target|
 // should not be propagated to the caller in an effort to fully understand the

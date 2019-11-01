@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -30,6 +31,7 @@
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/update_counters.h"
@@ -105,6 +107,7 @@ class FakeSyncManagerFactory : public SyncManagerFactory {
       FakeSyncManager** fake_manager,
       network::NetworkConnectionTracker* network_connection_tracker)
       : SyncManagerFactory(network_connection_tracker),
+        should_fail_on_init_(false),
         fake_manager_(fake_manager) {
     *fake_manager_ = nullptr;
   }
@@ -115,7 +118,7 @@ class FakeSyncManagerFactory : public SyncManagerFactory {
       const std::string& /* name */) override {
     *fake_manager_ =
         new FakeSyncManager(initial_sync_ended_types_, progress_marker_types_,
-                            configure_fail_types_);
+                            configure_fail_types_, should_fail_on_init_);
     return std::unique_ptr<SyncManager>(*fake_manager_);
   }
 
@@ -131,10 +134,15 @@ class FakeSyncManagerFactory : public SyncManagerFactory {
     configure_fail_types_ = types;
   }
 
+  void set_should_fail_on_init(bool should_fail_on_init) {
+    should_fail_on_init_ = should_fail_on_init;
+  }
+
  private:
   ModelTypeSet initial_sync_ended_types_;
   ModelTypeSet progress_marker_types_;
   ModelTypeSet configure_fail_types_;
+  bool should_fail_on_init_;
   FakeSyncManager** fake_manager_;
 };
 
@@ -806,6 +814,28 @@ TEST_F(SyncEngineImplTest,
   // At shutdown, we clear the registered invalidation ids.
   EXPECT_CALL(invalidator_,
               UpdateRegisteredInvalidationIds(backend_.get(), ObjectIdSet()));
+}
+
+// Regression test for crbug.com/1019956.
+TEST_F(SyncEngineImplTest, ShouldDestroyAfterInitFailure) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitWithFeatures(
+      /*enable_feature=*/{switches::kSyncUSSPasswords,
+                          switches::kSyncUSSNigori},
+      /*disable_feature=*/{});
+
+  fake_manager_factory_->set_should_fail_on_init(true);
+  // Sync manager will report initialization failure and gets destroyed during
+  // the error handling.
+  InitializeBackend(false);
+
+  backend_->StopSyncingForShutdown();
+  // This line would post the task causing the crash before the fix, because
+  // sync manager was used during the shutdown handling.
+  backend_->Shutdown(STOP_SYNC);
+  backend_.reset();
+
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace

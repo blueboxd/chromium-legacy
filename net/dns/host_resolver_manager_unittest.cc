@@ -1358,14 +1358,6 @@ TEST_F(HostResolverManagerTest, FlushCacheOnIPAddressChange) {
   EXPECT_THAT(cached_response.result_error(), IsOk());
   EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No expected increase.
 
-  // Verify initial DNS config read does not flush cache.
-  NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests();
-  ResolveHostResponseHelper unflushed_response(resolver_->CreateRequest(
-      HostPortPair("host1", 75), NetLogWithSource(), base::nullopt,
-      request_context_.get(), host_cache_.get()));
-  EXPECT_THAT(unflushed_response.result_error(), IsOk());
-  EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No expected increase.
-
   // Flush cache by triggering an IP address change.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
   base::RunLoop().RunUntilIdle();  // Notification happens async.
@@ -1396,24 +1388,6 @@ TEST_F(HostResolverManagerTest, AbortOnIPAddressChanged) {
   EXPECT_THAT(response.result_error(), IsError(ERR_NETWORK_CHANGED));
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_EQ(0u, host_cache_->size());
-}
-
-// Test that initial DNS config read signals do not abort pending requests.
-TEST_F(HostResolverManagerTest, DontAbortOnInitialDNSConfigRead) {
-  ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("host1", 70), NetLogWithSource(), base::nullopt,
-      request_context_.get(), host_cache_.get()));
-
-  ASSERT_FALSE(response.complete());
-  ASSERT_TRUE(proc_->WaitFor(1u));
-
-  // Triggering initial DNS config read signal.
-  NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests();
-  base::RunLoop().RunUntilIdle();  // Notification happens async.
-  proc_->SignalAll();
-
-  EXPECT_THAT(response.result_error(), IsOk());
-  EXPECT_TRUE(response.request()->GetAddressResults());
 }
 
 // Obey pool constraints after IP address has changed.
@@ -6174,6 +6148,59 @@ TEST_F(HostResolverManagerDnsTest, CanonicalNameForcesProc) {
             "canonical");
 }
 
+TEST_F(HostResolverManagerDnsTest, SortsAndDeduplicatesAddresses) {
+  MockDnsClientRuleList rules;
+
+  {
+    std::vector<DnsResourceRecord> answers(
+        3, BuildTestAddressRecord("duplicate", IPAddress::IPv4Localhost()));
+    std::string dns_name;
+    CHECK(DNSDomainFromDot("duplicate", &dns_name));
+    base::Optional<DnsQuery> query(base::in_place, 0, dns_name,
+                                   dns_protocol::kTypeA);
+
+    rules.emplace_back(
+        "duplicate", dns_protocol::kTypeA, false /* secure */,
+        MockDnsClientRule::Result(std::make_unique<DnsResponse>(
+            0, false, std::move(answers),
+            std::vector<DnsResourceRecord>() /* authority_records */,
+            std::vector<DnsResourceRecord>() /* additional_records */, query)),
+        false /* delay */);
+  }
+
+  {
+    std::vector<DnsResourceRecord> answers(
+        3, BuildTestAddressRecord("duplicate", IPAddress::IPv6Localhost()));
+    std::string dns_name;
+    CHECK(DNSDomainFromDot("duplicate", &dns_name));
+    base::Optional<DnsQuery> query(base::in_place, 0, dns_name,
+                                   dns_protocol::kTypeAAAA);
+
+    rules.emplace_back(
+        "duplicate", dns_protocol::kTypeAAAA, false /* secure */,
+        MockDnsClientRule::Result(std::make_unique<DnsResponse>(
+            0, false, std::move(answers),
+            std::vector<DnsResourceRecord>() /* authority_records */,
+            std::vector<DnsResourceRecord>() /* additional_records */, query)),
+        false /* delay */);
+  }
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("duplicate", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  ASSERT_THAT(response.result_error(), IsOk());
+
+  EXPECT_THAT(
+      response.request()->GetAddressResults(),
+      testing::Optional(testing::Property(
+          &AddressList::endpoints,
+          testing::ElementsAre(IPEndPoint(IPAddress::IPv6Localhost(), 80),
+                               IPEndPoint(IPAddress::IPv4Localhost(), 80)))));
+}
+
 TEST_F(HostResolverManagerTest, ResolveLocalHostname) {
   AddressList addresses;
 
@@ -6404,8 +6431,6 @@ class AlwaysFailSocketFactory : public MockClientSocketFactory {
 class TestDnsObserver : public NetworkChangeNotifier::DNSObserver {
  public:
   void OnDNSChanged() override { ++dns_changed_calls_; }
-
-  void OnInitialDNSConfigRead() override { ++dns_changed_calls_; }
 
   int dns_changed_calls() const { return dns_changed_calls_; }
 

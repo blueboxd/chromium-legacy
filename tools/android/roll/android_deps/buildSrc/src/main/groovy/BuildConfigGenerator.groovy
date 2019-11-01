@@ -183,7 +183,13 @@ class BuildConfigGenerator extends DefaultTask {
                   jar_path = "${libPath}/${dependency.fileName}"
                   output_name = "${dependency.id}"
                 """.stripIndent())
-                if (dependency.supportsAndroid) sb.append("  supports_android = true\n")
+                if (dependency.supportsAndroid) {
+                  sb.append("  supports_android = true\n")
+                } else {
+                  // No point in enabling asserts third-party prebuilts.
+                  // Also required to break a dependency cycle for errorprone.
+                  sb.append("  enable_bytecode_rewriter = false\n")
+                }
             } else if (dependency.extension == 'aar') {
                 sb.append("""\
                 android_aar_prebuilt("${targetName}") {

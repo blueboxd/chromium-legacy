@@ -512,10 +512,10 @@ class PersonalDataManager : public KeyedService,
   // credit cardss. On subsequent calls, does nothing.
   void LogStoredCreditCardMetrics() const;
 
-  // Returns the value of the AutofillEnabled pref.
+  // Returns true if either Profile or CreditCard Autofill is enabled.
   virtual bool IsAutofillEnabled() const;
 
-  // Returns the value of the AutofillEnabled pref.
+  // Returns the value of the AutofillProfileEnabled pref.
   virtual bool IsAutofillProfileEnabled() const;
 
   // Returns the value of the AutofillCreditCardEnabled pref.

@@ -6,7 +6,7 @@
  * @fileoverview Fake implementations of ChromeEvent.
  */
 
-class FakeChromeEvent {
+/* #export */ class FakeChromeEvent {
   constructor() {
     /** @type {!Set<!Function>} */
     this.listeners_ = new Set();

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 #include "base/rand_util.h"
 #include "base/sys_byteorder.h"
@@ -135,10 +136,10 @@ std::string HpackFuzzUtil::HeaderBlockPrefix(size_t block_size) {
 
 // static
 void HpackFuzzUtil::InitializeFuzzerContext(FuzzerContext* context) {
-  context->first_stage = SpdyMakeUnique<HpackDecoderAdapter>();
+  context->first_stage = std::make_unique<HpackDecoderAdapter>();
   context->second_stage =
-      SpdyMakeUnique<HpackEncoder>(ObtainHpackHuffmanTable());
-  context->third_stage = SpdyMakeUnique<HpackDecoderAdapter>();
+      std::make_unique<HpackEncoder>(ObtainHpackHuffmanTable());
+  context->third_stage = std::make_unique<HpackDecoderAdapter>();
 }
 
 // static

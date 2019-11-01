@@ -330,12 +330,6 @@ public class TemplateUrlService {
                 mNativeTemplateUrlServiceAndroid, TemplateUrlService.this, keyword, ageInDays);
     }
 
-    @VisibleForTesting
-    public String updateLastVisitedForTesting(String keyword) {
-        return TemplateUrlServiceJni.get().updateLastVisitedForTesting(
-                mNativeTemplateUrlServiceAndroid, TemplateUrlService.this, keyword);
-    }
-
     @NativeMethods
     interface Natives {
         void load(long nativeTemplateUrlServiceAndroid, TemplateUrlService caller);
@@ -366,8 +360,6 @@ public class TemplateUrlService {
         boolean setPlayAPISearchEngine(long nativeTemplateUrlServiceAndroid,
                 TemplateUrlService caller, String name, String keyword, String searchUrl,
                 String suggestUrl, String faviconUrl);
-        String updateLastVisitedForTesting(
-                long nativeTemplateUrlServiceAndroid, TemplateUrlService caller, String keyword);
         void getTemplateUrls(long nativeTemplateUrlServiceAndroid, TemplateUrlService caller,
                 List<TemplateUrl> templateUrls);
         TemplateUrl getDefaultSearchEngine(

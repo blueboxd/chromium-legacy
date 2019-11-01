@@ -37,9 +37,11 @@ PendingAppManager::~PendingAppManager() {
 }
 
 void PendingAppManager::SetSubsystems(AppRegistrar* registrar,
+                                      AppShortcutManager* shortcut_manager,
                                       WebAppUiManager* ui_manager,
                                       InstallFinalizer* finalizer) {
   registrar_ = registrar;
+  shortcut_manager_ = shortcut_manager;
   ui_manager_ = ui_manager;
   finalizer_ = finalizer;
 }

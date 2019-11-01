@@ -812,8 +812,10 @@ autofillManagerFromWebState:(web::WebState*)webState
 // Returns whether Autofill is enabled by checking if Autofill is turned on and
 // if the current URL has a web scheme and the page content is HTML.
 - (BOOL)isAutofillEnabled {
-  if (!autofill::prefs::IsAutofillEnabled(prefService_))
+  if (!autofill::prefs::IsProfileAutofillEnabled(prefService_) &&
+      !autofill::prefs::IsCreditCardAutofillEnabled(prefService_)) {
     return NO;
+  }
 
   // Only web URLs are supported by Autofill.
   return web::UrlHasWebScheme(webState_->GetLastCommittedURL()) &&

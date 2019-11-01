@@ -601,6 +601,7 @@ void Pointer::SetFocus(Surface* surface,
     focus_surface_->AddSurfaceObserver(this);
   }
   delegate_->OnPointerFrame();
+  UpdateCursor();
 }
 
 void Pointer::UpdatePointerSurface(Surface* surface) {

@@ -8,8 +8,8 @@ import("//extensions/buildflags/buildflags.gni")
 
 jumbo_static_library("safe_browsing") {
   sources = [
-    "safe_browsing_controller_client.cc",
-    "safe_browsing_controller_client.h",
+    "chrome_controller_client.cc",
+    "chrome_controller_client.h",
     "safe_browsing_tab_observer.cc",
     "safe_browsing_tab_observer.h",
     "url_checker_delegate_impl.cc",
@@ -293,6 +293,13 @@ source_set("test_support") {
       "//components/safe_browsing/db:test_database_manager",
       "//components/safe_browsing/db:v4_protocol_manager_util",
       "//content/public/browser",
+    ]
+  }
+
+  if (safe_browsing_mode == 1) {
+    sources += [
+      "download_protection/test_binary_upload_service.cc",
+      "download_protection/test_binary_upload_service.h",
     ]
   }
 }

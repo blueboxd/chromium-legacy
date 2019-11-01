@@ -96,7 +96,7 @@ OmniboxPedal::Tokens OmniboxPedalProvider::Tokenize(
 void OmniboxPedalProvider::LoadPedalConcepts() {
   // Load concept data then parse to base::Value in order to construct Pedals.
   std::string uncompressed_data =
-      ui::ResourceBundle::GetSharedInstance().DecompressLocalizedDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceString(
           IDR_OMNIBOX_PEDAL_CONCEPTS);
   const auto concept_data = base::JSONReader::Read(uncompressed_data);
 

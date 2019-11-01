@@ -43,10 +43,10 @@ class WebContentSettingsClient {
   }
 
   // Controls whether access to Indexed DB are allowed for this frame.
-  virtual bool AllowIndexedDB(const WebSecurityOrigin&) { return true; }
+  virtual bool AllowIndexedDB() { return true; }
 
   // Controls whether access to CacheStorage is allowed for this frame.
-  virtual bool AllowCacheStorage(const WebSecurityOrigin&) { return true; }
+  virtual bool AllowCacheStorage() { return true; }
 
   // Controls whether scripts are allowed to execute for this frame.
   virtual bool AllowScript(bool enabled_per_settings) {

@@ -137,7 +137,7 @@ class DnsProbeServiceImpl
   void ProbeDns(DnsProbeService::ProbeCallback callback) override;
 
   // mojom::network::DnsConfigChangeManagerClient implementation:
-  void OnSystemDnsConfigChanged() override;
+  void OnDnsConfigChanged() override;
 
  private:
   enum State {
@@ -225,7 +225,7 @@ void DnsProbeServiceImpl::ProbeDns(ProbeCallback callback) {
   }
 }
 
-void DnsProbeServiceImpl::OnSystemDnsConfigChanged() {
+void DnsProbeServiceImpl::OnDnsConfigChanged() {
   ClearCachedResult();
 }
 

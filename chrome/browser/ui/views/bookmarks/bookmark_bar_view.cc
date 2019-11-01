@@ -1280,10 +1280,9 @@ int BookmarkBarView::GetDragOperationsForView(View* sender,
                                               const gfx::Point& p) {
   if (size_animation_.is_animating() ||
       size_animation_.GetCurrentValue() == 0) {
-    // Don't let the user drag while animating open or we're closed (and not
-    // detached, when detached size_animation_ is always 0). This typically is
-    // only hit if the user does something to inadvertently trigger DnD such as
-    // pressing the mouse and hitting control-b.
+    // Don't let the user drag while animating open or we're closed. This
+    // typically is only hit if the user does something to inadvertently trigger
+    // DnD such as pressing the mouse and hitting control-b.
     return ui::DragDropTypes::DRAG_NONE;
   }
 
@@ -1334,11 +1333,11 @@ void BookmarkBarView::OnMenuButtonClicked(views::Button* view,
                 (event->flags() & ui::EF_PLATFORM_ACCELERATOR))) {
     WindowOpenDisposition disposition_from_event_flags =
         ui::DispositionFromEventFlags(event->flags());
-    RecordBookmarkFolderLaunch(GetBookmarkLaunchLocation());
+    RecordBookmarkFolderLaunch(BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR);
     chrome::OpenAll(GetWidget()->GetNativeWindow(), page_navigator_, node,
                     disposition_from_event_flags, browser_->profile());
   } else {
-    RecordBookmarkFolderOpen(GetBookmarkLaunchLocation());
+    RecordBookmarkFolderOpen(BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR);
     bookmark_menu_ = new BookmarkMenuController(
         browser_, page_navigator_, GetWidget(), node, start_index, false);
     bookmark_menu_->set_observer(this);
@@ -1356,7 +1355,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
                          disposition_from_event_flags,
                          ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
     page_navigator_->OpenURL(params);
-    RecordBookmarkAppsPageOpen(GetBookmarkLaunchLocation());
+    RecordBookmarkAppsPageOpen(BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR);
     return;
   }
 
@@ -1374,7 +1373,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
                        ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
   page_navigator_->OpenURL(params);
   RecordBookmarkLaunch(
-      GetBookmarkLaunchLocation(),
+      BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR,
       ProfileMetrics::GetBrowserProfileType(browser_->profile()));
 }
 
@@ -1419,7 +1418,7 @@ void BookmarkBarView::ShowContextMenuForViewImpl(
   context_menu_ = std::make_unique<BookmarkContextMenu>(
       GetWidget(), browser_, browser_->profile(),
       browser_->tab_strip_model()->GetActiveWebContents(),
-      GetBookmarkLaunchLocation(), parent, nodes, close_on_remove);
+      BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR, parent, nodes, close_on_remove);
   context_menu_->RunMenuAt(point, source_type);
 }
 
@@ -1474,10 +1473,6 @@ void BookmarkBarView::Init() {
     // else case: we'll receive notification back from the BookmarkModel when
     // done loading, then we'll populate the bar.
   }
-}
-
-BookmarkLaunchLocation BookmarkBarView::GetBookmarkLaunchLocation() const {
-  return BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR;
 }
 
 size_t BookmarkBarView::GetFirstHiddenNodeIndex() {

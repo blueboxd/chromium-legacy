@@ -21,7 +21,8 @@ import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
@@ -102,8 +103,8 @@ class TouchToFillMediator {
     public void onDismissed(@StateChangeReason int reason) {
         if (!mModel.get(VISIBLE)) return; // Dismiss only if not dismissed yet.
         mModel.set(VISIBLE, false);
-        RecordHistogram.recordEnumeratedHistogram(
-                UMA_TOUCH_TO_FILL_DISMISSAL_REASON, reason, StateChangeReason.MAX_VALUE + 1);
+        RecordHistogram.recordEnumeratedHistogram(UMA_TOUCH_TO_FILL_DISMISSAL_REASON, reason,
+                BottomSheetController.StateChangeReason.MAX_VALUE + 1);
         RecordHistogram.recordEnumeratedHistogram(
                 UMA_TOUCH_TO_FILL_USER_ACTION, UserAction.DISMISS, UserAction.MAX_VALUE + 1);
         mDelegate.onDismissed();

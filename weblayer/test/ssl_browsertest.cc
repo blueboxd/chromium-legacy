@@ -6,11 +6,13 @@
 
 #include "base/files/file_path.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "weblayer/shell/browser/shell.h"
+#include "weblayer/test/interstitial_utils.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
 namespace weblayer {
 
-IN_PROC_BROWSER_TEST_F(WebLayerBrowserTest, Https) {
+IN_PROC_BROWSER_TEST_F(WebLayerBrowserTest, SSLErrorMismatchedCertificate) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("weblayer/test/data")));
@@ -30,6 +32,7 @@ IN_PROC_BROWSER_TEST_F(WebLayerBrowserTest, Https) {
   ASSERT_EQ("127.0.0.1", initial_url.host());
 
   NavigateAndWaitForCompletion(initial_url, shell());
+  EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->browser_controller()));
 
   // Now do a navigation that should result in an SSL error.
   GURL url_with_mismatched_cert =
@@ -37,9 +40,23 @@ IN_PROC_BROWSER_TEST_F(WebLayerBrowserTest, Https) {
 
   NavigateAndWaitForFailure(url_with_mismatched_cert, shell());
 
-  // TODO(blundell): Adapt the testing of the interstitial appearing from
-  // //chrome's ssl_browsertest.cc:(1462-1465) once the interstitial
-  // functionality is brought up.
+  // First check that there *is* an interstitial.
+  EXPECT_TRUE(IsShowingSecurityInterstitial(shell()->browser_controller()));
+
+  // Now verify that the interstitial is in fact an SSL interstitial.
+  EXPECT_TRUE(IsShowingSSLInterstitial(shell()->browser_controller()));
+
+  // TODO(blundell): Check the security state once security state is available
+  // via the public WebLayer API, following the example of //chrome's
+  // ssl_browsertest.cc's CheckAuthenticationBrokenState() function.
+
+  // TODO(blundell): Bring up test of the "Take me back" functionality
+  // following the example of //chrome's ssl_browsertest.cc:1467, once that
+  // functionality is implemented in weblayer.
+
+  // Check that it's possible to navigate to a new page.
+  NavigateAndWaitForCompletion(initial_url, shell());
+  EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->browser_controller()));
 }
 
 }  // namespace weblayer

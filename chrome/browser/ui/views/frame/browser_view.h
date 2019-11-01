@@ -692,9 +692,9 @@ class BrowserView : public BrowserWindow,
   // |  | Navigation buttons, address bar, menu (toolbar_)           |  |
   // |  --------------------------------------------------------------  |
   // |------------------------------------------------------------------|
-  // | All infobars (infobar_container_) [1]                            |
+  // | Bookmarks (bookmark_bar_view_)                                   |
   // |------------------------------------------------------------------|
-  // | Bookmarks (bookmark_bar_view_) [1]                               |
+  // | All infobars (infobar_container_)                                |
   // |------------------------------------------------------------------|
   // | Contents container (contents_container_)                         |
   // |  --------------------------------------------------------------  |
@@ -705,12 +705,6 @@ class BrowserView : public BrowserWindow,
   // |------------------------------------------------------------------|
   // | Active downloads (download_shelf_)                               |
   // --------------------------------------------------------------------
-  //
-  // [1] The bookmark bar and info bar are swapped when on the new tab page.
-  //     Additionally when the bookmark bar is detached, contents_container_ is
-  //     positioned on top of the bar while the tab's contents are placed below
-  //     the bar.  This allows the find bar to always align with the top of
-  //     contents_container_ regardless if there's bookmark or info bars.
 
   // The view that manages the tab strip, toolbar, and sometimes the bookmark
   // bar. Stacked top in the view hiearachy so it can be used to slide out

@@ -270,8 +270,8 @@ void OverviewWallpaperController::OnBlurChangeCrossFade(
 
     ui::Layer* original_layer = wallpaper_window->layer();
     original_layer->GetAnimator()->StopAnimating();
-    original_layer->SetLayerBlur(should_blur ? kWallpaperBlurSigma
-                                             : kWallpaperClearBlurSigma);
+    wallpaper_widget_controller->wallpaper_view()->RepaintBlurAndOpacity(
+        should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma, 1.f);
     original_layer->SetOpacity(should_blur ? 0.f : 1.f);
 
     ui::Layer* copy_layer = copy_layer_tree ? copy_layer_tree->root() : nullptr;

@@ -1903,7 +1903,7 @@ gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
       overview_session_->split_view_drag_indicators();
   if (split_view_drag_indicators &&
       split_view_drag_indicators->current_indicator_state() ==
-          IndicatorState::kDragArea &&
+          IndicatorState::kDragAreaBoth &&
       !IsCurrentScreenOrientationLandscape() &&
       !SplitViewController::Get(root_window_)->InSplitViewMode()) {
     desks_widget_root_bounds.Offset(

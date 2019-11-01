@@ -5,8 +5,5 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPUShaderModuleDescriptor : GPUObjectDescriptorBase {
-    // TODO(kainino): should be:
-    //   [AllowShared, FlexibleArrayBufferView] required ArrayBufferView code;
-    // (or BufferSource?)
-    required Uint32Array code;
+    [AllowShared] required Uint32Array code;
 };

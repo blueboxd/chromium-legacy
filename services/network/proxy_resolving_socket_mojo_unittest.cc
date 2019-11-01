@@ -13,9 +13,10 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "jingle/glue/fake_ssl_client_socket.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -66,9 +67,9 @@ class ProxyResolvingSocketTestBase {
     // Init() can be called multiple times in a test. Reset the members for each
     // invocation. |context_with_proxy_| must outlive |factory_impl_|, which
     // uses the URLRequestContet.
-    factory_binding_ = nullptr;
+    factory_receiver_ = nullptr;
     factory_impl_ = nullptr;
-    factory_ptr_.reset();
+    factory_remote_.reset();
     context_with_proxy_ = nullptr;
 
     mock_client_socket_factory_ =
@@ -82,9 +83,9 @@ class ProxyResolvingSocketTestBase {
 
     factory_impl_ = std::make_unique<ProxyResolvingSocketFactoryMojo>(
         context_with_proxy_.get());
-    factory_binding_ =
-        std::make_unique<mojo::Binding<mojom::ProxyResolvingSocketFactory>>(
-            factory_impl_.get(), mojo::MakeRequest(&factory_ptr_));
+    factory_receiver_ =
+        std::make_unique<mojo::Receiver<mojom::ProxyResolvingSocketFactory>>(
+            factory_impl_.get(), factory_remote_.BindNewPipeAndPassReceiver());
   }
 
   // Reads |num_bytes| from |handle| or reads until an error occurs. Returns the
@@ -121,7 +122,7 @@ class ProxyResolvingSocketTestBase {
         network::mojom::ProxyResolvingSocketOptions::New();
     options->use_tls = use_tls_;
     options->fake_tls_handshake = fake_tls_handshake_;
-    factory_ptr_->CreateProxyResolvingSocket(
+    factory_remote_->CreateProxyResolvingSocket(
         url, std::move(options),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::move(receiver), std::move(socket_observer),
@@ -150,7 +151,9 @@ class ProxyResolvingSocketTestBase {
   bool use_tls() const { return use_tls_; }
   void set_fake_tls_handshake(bool val) { fake_tls_handshake_ = val; }
 
-  mojom::ProxyResolvingSocketFactory* factory() { return factory_ptr_.get(); }
+  mojom::ProxyResolvingSocketFactory* factory() {
+    return factory_remote_.get();
+  }
 
  private:
   const bool use_tls_;
@@ -158,9 +161,9 @@ class ProxyResolvingSocketTestBase {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::MockClientSocketFactory> mock_client_socket_factory_;
   std::unique_ptr<TestURLRequestContextWithProxy> context_with_proxy_;
-  mojom::ProxyResolvingSocketFactoryPtr factory_ptr_;
-  std::unique_ptr<mojo::Binding<mojom::ProxyResolvingSocketFactory>>
-      factory_binding_;
+  mojo::Remote<mojom::ProxyResolvingSocketFactory> factory_remote_;
+  std::unique_ptr<mojo::Receiver<mojom::ProxyResolvingSocketFactory>>
+      factory_receiver_;
   std::unique_ptr<ProxyResolvingSocketFactoryMojo> factory_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolvingSocketTestBase);

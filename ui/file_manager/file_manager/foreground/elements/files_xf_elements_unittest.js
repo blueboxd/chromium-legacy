@@ -217,6 +217,26 @@ function testFilesDisplayPanelMixedSummary() {
   assertEquals('status', summaryPanelItem.indicator);
 }
 
+function testFilesDisplayPanelCircularProgress() {
+  // Get the host display panel container element.
+  /** @type {!DisplayPanel|!Element} */
+  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
+
+  // Add a progress panel item to the display panel container.
+  const progressPanel = displayPanel.addPanelItem('testpanel1');
+  progressPanel.panelType = progressPanel.panelTypeProgress;
+
+  // Verify the circular progress panel item marker stroke width.
+  const circularProgress = progressPanel.shadowRoot.querySelector('#indicator');
+  const strokeWidthContainerGroup =
+      circularProgress.shadowRoot.querySelector('#circles');
+  assertEquals('3', strokeWidthContainerGroup.getAttribute('stroke-width'));
+
+  // Verify setting large radius on the circular marker changes stroke width.
+  circularProgress.setAttribute('radius', '11');
+  assertEquals('4', strokeWidthContainerGroup.getAttribute('stroke-width'));
+}
+
 async function testFilesDisplayPanelSummaryPanel(done) {
   // Get the host display panel container element.
   /** @type {!DisplayPanel|!Element} */

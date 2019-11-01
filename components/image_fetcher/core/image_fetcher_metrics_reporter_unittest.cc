@@ -28,6 +28,7 @@ const char kNetworkLoadAfterCacheHitHistogram[] =
     "ImageFetcher.ImageLoadFromNetworkAfterCacheHit";
 const char kTimeSinceLastCacheLRUEviction[] =
     "ImageFetcher.TimeSinceLastCacheLRUEviction";
+constexpr char kNetworkRequestStatusCodes[] = "ImageFetcher.RequestStatusCode";
 
 }  // namespace
 
@@ -153,6 +154,12 @@ TEST_F(ImageFetcherMetricsReporterTest,
   ImageFetcherMetricsReporter::ReportTimeSinceLastCacheLRUEviction(
       base::Time());
   histogram_tester().ExpectTotalCount(kTimeSinceLastCacheLRUEviction, 1);
+}
+
+TEST_F(ImageFetcherMetricsReporterTest, TestReportReponseStatusCode) {
+  ImageFetcherMetricsReporter::ReportRequestStatusCode(kUmaClientNameOther,
+                                                       200);
+  histogram_tester().ExpectTotalCount(kNetworkRequestStatusCodes, 1);
 }
 
 }  // namespace image_fetcher

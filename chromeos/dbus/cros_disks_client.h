@@ -119,12 +119,6 @@ enum MountEventType {
   CROS_DISKS_DEVICE_SCANNED,
 };
 
-// Additional unmount flags to be added to unmount request.
-enum UnmountOptions {
-  UNMOUNT_OPTIONS_NONE,
-  UNMOUNT_OPTIONS_LAZY,  // Do lazy unmount.
-};
-
 // Mount option to control write permission to a device.
 enum MountAccessMode {
   MOUNT_ACCESS_MODE_READ_WRITE,
@@ -345,7 +339,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CrosDisksClient : public DBusClient {
   // Calls Unmount method.  On method call completion, |callback| is called
   // with the error code.
   virtual void Unmount(const std::string& device_path,
-                       UnmountOptions options,
                        UnmountCallback callback) = 0;
 
   // Calls EnumerateDevices method.  |callback| is called after the

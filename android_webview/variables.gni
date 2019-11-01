@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+declare_args() {
+  # Show a launcher icon to open WebView developer UI, off by default.
+  webview_devui_show_icon = false
+}
+
 system_webview_android_manifest =
     "$root_gen_dir/android_webview/system_webview_apk/AndroidManifest.xml"
 trichrome_webview_android_manifest =

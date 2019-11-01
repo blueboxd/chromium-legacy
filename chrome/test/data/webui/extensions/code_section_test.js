@@ -3,17 +3,21 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for extensions-code-section. */
-cr.define('extension_code_section_tests', function() {
+import 'chrome://extensions/extensions.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isVisible} from '../test_util.m.js';
+
+  window.extension_code_section_tests = {};
+  extension_code_section_tests.suiteName = 'ExtensionCodeSectionTest';
   /** @enum {string} */
-  const TestNames = {
+  extension_code_section_tests.TestNames = {
     Layout: 'layout',
     LongSource: 'long source',
   };
 
-  const suiteName = 'ExtensionCodeSectionTest';
-
-  suite(suiteName, function() {
-    /** @type {extensions.CodeSection} */
+  suite(extension_code_section_tests.suiteName, function() {
+    /** @type {ExtensionsCodeSectionElement} */
     let codeSection;
 
     const couldNotDisplayCode = 'No code here';
@@ -21,12 +25,12 @@ cr.define('extension_code_section_tests', function() {
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();
-      codeSection = new extensions.CodeSection();
+      codeSection = document.createElement('extensions-code-section');
       codeSection.couldNotDisplayCode = couldNotDisplayCode;
       document.body.appendChild(codeSection);
     });
 
-    test(assert(TestNames.Layout), function() {
+    test(assert(extension_code_section_tests.TestNames.Layout), function() {
       /** @type {chrome.developerPrivate.RequestFileSourceResponse} */
       const code = {
         beforeHighlight: 'this part before the highlight\nAnd this too\n',
@@ -35,7 +39,7 @@ cr.define('extension_code_section_tests', function() {
         message: 'Highlight message',
       };
 
-      const testIsVisible = test_util.isVisible.bind(null, codeSection);
+      const testIsVisible = isVisible.bind(null, codeSection);
       expectFalse(!!codeSection.code);
       expectTrue(codeSection.$$('#scroll-container').hidden);
       expectFalse(testIsVisible('#main'));
@@ -54,11 +58,10 @@ cr.define('extension_code_section_tests', function() {
       expectEquals(code.afterHighlight, codeSections[2].textContent);
 
       expectEquals(
-          '1\n2\n3\n4',
-          codeSection.$$('#line-numbers span').textContent.trim());
+          '1\n2\n3\n4', codeSection.$$('#line-numbers span').textContent.trim());
     });
 
-    test(assert(TestNames.LongSource), function() {
+    test(assert(extension_code_section_tests.TestNames.LongSource), function() {
       /** @type {chrome.developerPrivate.RequestFileSourceResponse} */
       let code;
       let lineNums;
@@ -115,9 +118,3 @@ cr.define('extension_code_section_tests', function() {
       expectTrue(codeSection.$$('#line-numbers .more-code.after').hidden);
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

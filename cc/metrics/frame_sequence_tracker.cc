@@ -15,6 +15,10 @@
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "ui/gfx/presentation_feedback.h"
 
+// This macro is used with DCHECK to provide addition debug info.
+#define TRACKER_DCHECK_MSG \
+  " in " << kFrameSequenceTrackerTypeNames[this->type_] << " tracker"
+
 namespace cc {
 
 constexpr const char* FrameSequenceTracker::kFrameSequenceTrackerTypeNames[] = {
@@ -222,9 +226,12 @@ FrameSequenceTracker::FrameSequenceTracker(FrameSequenceTrackerType type)
 }
 
 FrameSequenceTracker::~FrameSequenceTracker() {
-  DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected);
-  DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected);
-  DCHECK_LE(main_throughput_.frames_produced, impl_throughput_.frames_produced);
+  DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected)
+      << TRACKER_DCHECK_MSG;
+  DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected)
+      << TRACKER_DCHECK_MSG;
+  DCHECK_LE(main_throughput_.frames_produced, impl_throughput_.frames_produced)
+      << TRACKER_DCHECK_MSG;
   TRACE_EVENT_ASYNC_END2(
       "cc,benchmark", "FrameSequenceTracker", this, "args",
       ThroughputData::ToTracedValue(impl_throughput_, main_throughput_),
@@ -332,7 +339,8 @@ void FrameSequenceTracker::ReportSubmitFrame(
         origin_args.sequence_number > last_submitted_main_sequence_) {
       last_submitted_main_sequence_ = origin_args.sequence_number;
       main_frames_.push_back(frame_token);
-      DCHECK_GE(main_throughput_.frames_expected, main_frames_.size());
+      DCHECK_GE(main_throughput_.frames_expected, main_frames_.size())
+          << TRACKER_DCHECK_MSG;
     }
   }
 
@@ -369,7 +377,8 @@ void FrameSequenceTracker::ReportFramePresented(
   const bool was_presented = !feedback.timestamp.is_null();
   if (was_presented && last_submitted_frame_) {
     DCHECK_LT(impl_throughput_.frames_produced,
-              impl_throughput_.frames_expected);
+              impl_throughput_.frames_expected)
+        << TRACKER_DCHECK_MSG;
     ++impl_throughput_.frames_produced;
 
     if (frame_token_acks_last_frame)
@@ -388,8 +397,9 @@ void FrameSequenceTracker::ReportFramePresented(
 
   if (was_presented) {
     if (checkerboarding_.last_frame_had_checkerboarding) {
-      DCHECK(!checkerboarding_.last_frame_timestamp.is_null());
-      DCHECK(!feedback.timestamp.is_null());
+      DCHECK(!checkerboarding_.last_frame_timestamp.is_null())
+          << TRACKER_DCHECK_MSG;
+      DCHECK(!feedback.timestamp.is_null()) << TRACKER_DCHECK_MSG;
 
       // |feedback.timestamp| is the timestamp when the latest frame was
       // presented. |checkerboarding_.last_frame_timestamp| is the timestamp
@@ -402,7 +412,7 @@ void FrameSequenceTracker::ReportFramePresented(
       const auto& interval = feedback.interval.is_zero()
                                  ? viz::BeginFrameArgs::DefaultInterval()
                                  : feedback.interval;
-      DCHECK(!interval.is_zero());
+      DCHECK(!interval.is_zero()) << TRACKER_DCHECK_MSG;
       constexpr base::TimeDelta kEpsilon = base::TimeDelta::FromMilliseconds(1);
       int64_t frames = (difference + kEpsilon) / interval;
       checkerboarding_.frames_checkerboarded += frames;
@@ -434,8 +444,9 @@ void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
       ack.sequence_number < begin_impl_frame_data_.previous_sequence) {
     return;
   }
-  DCHECK_GT(impl_throughput_.frames_expected, 0u);
-  DCHECK_GT(impl_throughput_.frames_expected, impl_throughput_.frames_produced);
+  DCHECK_GT(impl_throughput_.frames_expected, 0u) << TRACKER_DCHECK_MSG;
+  DCHECK_GT(impl_throughput_.frames_expected, impl_throughput_.frames_produced)
+      << TRACKER_DCHECK_MSG;
   --impl_throughput_.frames_expected;
 
   if (begin_impl_frame_data_.previous_sequence == ack.sequence_number)
@@ -457,10 +468,12 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
     return;
   }
 
-  DCHECK_GT(main_throughput_.frames_expected, 0u);
-  DCHECK_GT(main_throughput_.frames_expected, main_throughput_.frames_produced);
+  DCHECK_GT(main_throughput_.frames_expected, 0u) << TRACKER_DCHECK_MSG;
+  DCHECK_GT(main_throughput_.frames_expected, main_throughput_.frames_produced)
+      << TRACKER_DCHECK_MSG;
   --main_throughput_.frames_expected;
-  DCHECK_GE(main_throughput_.frames_expected, main_frames_.size());
+  DCHECK_GE(main_throughput_.frames_expected, main_frames_.size())
+      << TRACKER_DCHECK_MSG;
 
   if (begin_main_frame_data_.previous_sequence == args.sequence_number)
     begin_main_frame_data_.previous_sequence = 0;

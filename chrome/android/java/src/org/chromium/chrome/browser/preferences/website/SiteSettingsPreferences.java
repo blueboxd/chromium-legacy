@@ -11,6 +11,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.LocationSettings;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory.Type;
@@ -154,7 +155,7 @@ public class SiteSettingsPreferences
                 // Show 'disabled' message when permission is not granted in Android.
                 p.setSummary(ContentSettingsResources.getCategorySummary(contentType, false));
             } else if (Type.COOKIES == prefCategory && checked
-                    && prefServiceBridge.isBlockThirdPartyCookiesEnabled()) {
+                    && prefServiceBridge.getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)) {
                 p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());
             } else if (Type.DEVICE_LOCATION == prefCategory && checked
                     && prefServiceBridge.isLocationAllowedByPolicy()) {

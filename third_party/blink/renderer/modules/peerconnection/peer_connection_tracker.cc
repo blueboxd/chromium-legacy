@@ -837,6 +837,16 @@ void PeerConnectionTracker::TrackSetSessionDescription(
       value);
 }
 
+void PeerConnectionTracker::TrackSetSessionDescriptionImplicit(
+    RTCPeerConnectionHandler* pc_handler) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+  int id = GetLocalIDForHandler(pc_handler);
+  if (id == -1)
+    return;
+  SendPeerConnectionUpdate(id, "setLocalDescriptionImplicitCreateOfferOrAnswer",
+                           "");
+}
+
 void PeerConnectionTracker::TrackSetConfiguration(
     RTCPeerConnectionHandler* pc_handler,
     const webrtc::PeerConnectionInterface::RTCConfiguration& config) {
@@ -1036,6 +1046,9 @@ void PeerConnectionTracker::TrackSessionDescriptionCallback(
   switch (action) {
     case ACTION_SET_LOCAL_DESCRIPTION:
       update_type = "setLocalDescription";
+      break;
+    case ACTION_SET_LOCAL_DESCRIPTION_IMPLICIT:
+      update_type = "setLocalDescriptionImplicitCreateOfferOrAnswer";
       break;
     case ACTION_SET_REMOTE_DESCRIPTION:
       update_type = "setRemoteDescription";

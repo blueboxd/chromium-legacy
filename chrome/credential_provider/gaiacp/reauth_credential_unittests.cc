@@ -9,7 +9,6 @@
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
-#include "build/branding_buildflags.h"
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
@@ -181,9 +180,7 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest, FidDescription) {
   USES_CONVERSION;
   // Enable standard escrow service features in non-Chrome builds so that
   // the escrow service code can be tested by the build machines.
-#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
-#endif
+  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
 
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
 

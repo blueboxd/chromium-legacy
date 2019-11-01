@@ -257,10 +257,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // It's easy to get the mapping wrong. For this reason all these methods are
   // private.
 
-  // Returns BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR or
-  // BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR based on detached node_data.
-  BookmarkLaunchLocation GetBookmarkLaunchLocation() const;
-
   // Returns the index of the first hidden bookmark button. If all buttons are
   // visible, this returns GetBookmarkButtonCount().
   size_t GetFirstHiddenNodeIndex();

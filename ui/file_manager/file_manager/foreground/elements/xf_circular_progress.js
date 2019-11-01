@@ -66,9 +66,6 @@ class CircularProgress extends HTMLElement {
                         stroke-linecap: round;
                         fill: none;
                     }
-                    circle {
-                        stroke-width: 3px;
-                    }
                     text {
                         font: bold 14px Roboto;
                         fill: rgb(26, 115, 232);
@@ -77,9 +74,11 @@ class CircularProgress extends HTMLElement {
                 <div class='progress'>
                     <svg xmlns='http://www.w3.org/2000/svg'
                         viewBox='0 0 36 36'>
-                        <circle class='bottom' cx='18' cy='18' r='10'/>
-                        <circle class='top' transform='rotate(-90 18 18)'
+                        <g id='circles' stroke-width='3'>
+                          <circle class='bottom' cx='18' cy='18' r='10'/>
+                          <circle class='top' transform='rotate(-90 18 18)'
                             cx='18' cy='18' r='10' stroke-dasharray='0 1'/>
+                        </g>
                         <text class='label' x='18' y='18' text-anchor='middle'
                             alignment-baseline='central'></text>
                         <circle class='errormark' visibility='hidden'
@@ -161,7 +160,12 @@ class CircularProgress extends HTMLElement {
         if (radius < 0 || radius > 16.5) {
           return;
         }
-        const strokeWidth = 3;
+        let strokeWidth = 3;
+        if (radius > 10) {
+          const circles = this.shadowRoot.querySelector('#circles');
+          circles.setAttribute('stroke-width', '4');
+          strokeWidth = 4;
+        }
         // Position the error indicator relative to the progress circle.
         this.setErrorPosition_(radius, strokeWidth);
         // Calculate the circumference for the progress dash length.

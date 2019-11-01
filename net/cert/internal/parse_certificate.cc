@@ -644,6 +644,16 @@ bool ParseExtension(const der::Input& extension_tlv, ParsedExtension* out) {
   return true;
 }
 
+der::Input SubjectKeyIdentifierOid() {
+  // From RFC 5280:
+  //
+  //     id-ce-subjectKeyIdentifier OBJECT IDENTIFIER ::=  { id-ce 14 }
+  //
+  // In dotted notation: 2.5.29.14
+  static const uint8_t oid[] = {0x55, 0x1d, 0x0e};
+  return der::Input(oid);
+}
+
 der::Input KeyUsageOid() {
   // From RFC 5280:
   //
@@ -691,6 +701,16 @@ der::Input CertificatePoliciesOid() {
   //
   // In dotted notation: 2.5.29.32
   static const uint8_t oid[] = {0x55, 0x1d, 0x20};
+  return der::Input(oid);
+}
+
+der::Input AuthorityKeyIdentifierOid() {
+  // From RFC 5280:
+  //
+  //     id-ce-authorityKeyIdentifier OBJECT IDENTIFIER ::=  { id-ce 35 }
+  //
+  // In dotted notation: 2.5.29.35
+  static const uint8_t oid[] = {0x55, 0x1d, 0x23};
   return der::Input(oid);
 }
 
@@ -962,6 +982,87 @@ bool ParseCrlDistributionPoints(
                                       distribution_points))
       return false;
   }
+
+  return true;
+}
+
+ParsedAuthorityKeyIdentifier::ParsedAuthorityKeyIdentifier() = default;
+ParsedAuthorityKeyIdentifier::~ParsedAuthorityKeyIdentifier() = default;
+ParsedAuthorityKeyIdentifier::ParsedAuthorityKeyIdentifier(
+    ParsedAuthorityKeyIdentifier&& other) = default;
+ParsedAuthorityKeyIdentifier& ParsedAuthorityKeyIdentifier::operator=(
+    ParsedAuthorityKeyIdentifier&& other) = default;
+
+bool ParseAuthorityKeyIdentifier(
+    const der::Input& extension_value,
+    ParsedAuthorityKeyIdentifier* authority_key_identifier) {
+  // RFC 5280, section 4.2.1.1.
+  //    AuthorityKeyIdentifier ::= SEQUENCE {
+  //       keyIdentifier             [0] KeyIdentifier           OPTIONAL,
+  //       authorityCertIssuer       [1] GeneralNames            OPTIONAL,
+  //       authorityCertSerialNumber [2] CertificateSerialNumber OPTIONAL  }
+  //
+  //    KeyIdentifier ::= OCTET STRING
+
+  der::Parser extension_value_parser(extension_value);
+  der::Parser aki_parser;
+  if (!extension_value_parser.ReadSequence(&aki_parser))
+    return false;
+  if (extension_value_parser.HasMore())
+    return false;
+
+  // TODO(mattm): Should having an empty AuthorityKeyIdentifier SEQUENCE be an
+  // error? RFC 5280 doesn't explicitly say it.
+
+  //       keyIdentifier             [0] KeyIdentifier           OPTIONAL,
+  if (!aki_parser.ReadOptionalTag(der::ContextSpecificPrimitive(0),
+                                  &authority_key_identifier->key_identifier)) {
+    return false;
+  }
+
+  //       authorityCertIssuer       [1] GeneralNames            OPTIONAL,
+  if (!aki_parser.ReadOptionalTag(
+          der::ContextSpecificConstructed(1),
+          &authority_key_identifier->authority_cert_issuer)) {
+    return false;
+  }
+
+  //       authorityCertSerialNumber [2] CertificateSerialNumber OPTIONAL  }
+  if (!aki_parser.ReadOptionalTag(
+          der::ContextSpecificPrimitive(2),
+          &authority_key_identifier->authority_cert_serial_number)) {
+    return false;
+  }
+
+  //     -- authorityCertIssuer and authorityCertSerialNumber MUST both
+  //     -- be present or both be absent
+  if (authority_key_identifier->authority_cert_issuer.has_value() !=
+      authority_key_identifier->authority_cert_serial_number.has_value()) {
+    return false;
+  }
+
+  // There shouldn't be any unconsumed data in the AuthorityKeyIdentifier
+  // SEQUENCE.
+  if (aki_parser.HasMore())
+    return false;
+
+  return true;
+}
+
+bool ParseSubjectKeyIdentifier(const der::Input& extension_value,
+                               der::Input* subject_key_identifier) {
+  //    SubjectKeyIdentifier ::= KeyIdentifier
+  //
+  //    KeyIdentifier ::= OCTET STRING
+  der::Parser extension_value_parser(extension_value);
+  if (!extension_value_parser.ReadTag(der::kOctetString,
+                                      subject_key_identifier)) {
+    return false;
+  }
+
+  // There shouldn't be any unconsumed data in the extension SEQUENCE.
+  if (extension_value_parser.HasMore())
+    return false;
 
   return true;
 }

@@ -2,11 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-  const PackDialogAlert = Polymer({
+  Polymer({
     is: 'extensions-pack-dialog-alert',
+
+    _template: html`{__html_template__}`,
+
     properties: {
       /** @private {chrome.developerPrivate.PackDirectoryResponse} */
       model: Object,
@@ -89,6 +96,3 @@ cr.define('extensions', function() {
       this.$.dialog.close();
     }
   });
-
-  return {PackDialogAlert: PackDialogAlert};
-});

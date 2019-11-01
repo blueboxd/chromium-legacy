@@ -274,7 +274,17 @@ source_set("tests") {
     sources += [
       "generic_sensor/platform_sensor_provider_winrt_unittest.cc",
       "generic_sensor/platform_sensor_reader_winrt_unittests.cc",
-      "geolocation/location_provider_winrt_unittest.cc",
+      "geolocation/win/fake_geocoordinate_winrt.cc",
+      "geolocation/win/fake_geocoordinate_winrt.h",
+      "geolocation/win/fake_geolocator_winrt.cc",
+      "geolocation/win/fake_geolocator_winrt.h",
+      "geolocation/win/fake_geoposition_winrt.cc",
+      "geolocation/win/fake_geoposition_winrt.h",
+      "geolocation/win/fake_position_changed_event_args_winrt.cc",
+      "geolocation/win/fake_position_changed_event_args_winrt.h",
+      "geolocation/win/fake_status_changed_event_args_winrt.cc",
+      "geolocation/win/fake_status_changed_event_args_winrt.h",
+      "geolocation/win/location_provider_winrt_unittest.cc",
     ]
 
     # Needed for "generic_sensor/platform_sensor_and_provider_unittest_win.cc"

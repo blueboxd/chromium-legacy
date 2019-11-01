@@ -162,6 +162,7 @@ bool CheckNativeFileSystemWriteRequest::ShouldUploadBinary(
 }
 
 void CheckNativeFileSystemWriteRequest::UploadBinary(
+    DownloadCheckResult result,
     DownloadCheckResultReason reason) {}
 
 void CheckNativeFileSystemWriteRequest::NotifyRequestFinished(

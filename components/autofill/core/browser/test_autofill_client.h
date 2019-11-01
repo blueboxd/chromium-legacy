@@ -81,14 +81,11 @@ class TestAutofillClient : public AutofillClient {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
-#if defined(OS_ANDROID)
   void ConfirmExpirationDateFixFlow(
       const CreditCard& card,
       base::OnceCallback<void(const base::string16&, const base::string16&)>
           callback) override;
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       const LegalMessageLines& legal_message_lines,

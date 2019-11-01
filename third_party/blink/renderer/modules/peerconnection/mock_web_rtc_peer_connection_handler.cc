@@ -270,6 +270,9 @@ void MockWebRTCPeerConnectionHandler::CreateAnswer(
     const WebRTCAnswerOptions&) {}
 
 void MockWebRTCPeerConnectionHandler::SetLocalDescription(
+    const WebRTCVoidRequest&) {}
+
+void MockWebRTCPeerConnectionHandler::SetLocalDescription(
     const WebRTCVoidRequest&,
     const WebRTCSessionDescription&) {}
 

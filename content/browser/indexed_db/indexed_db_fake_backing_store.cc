@@ -28,21 +28,24 @@ TransactionalLevelDBFactory* GetTransactionalLevelDBFactory() {
 
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
     : IndexedDBBackingStore(IndexedDBBackingStore::Mode::kInMemory,
-                            nullptr /* indexed_db_factory */,
                             GetTransactionalLevelDBFactory(),
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             std::unique_ptr<TransactionalLevelDBDatabase>(),
+                            BlobFilesCleanedCallback(),
+                            ReportOutstandingBlobsCallback(),
                             base::SequencedTaskRunnerHandle::Get().get()) {}
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
-    IndexedDBFactory* factory,
+    BlobFilesCleanedCallback blob_files_cleaned,
+    ReportOutstandingBlobsCallback report_outstanding_blobs,
     base::SequencedTaskRunner* task_runner)
     : IndexedDBBackingStore(IndexedDBBackingStore::Mode::kOnDisk,
-                            factory,
                             GetTransactionalLevelDBFactory(),
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             std::unique_ptr<TransactionalLevelDBDatabase>(),
+                            std::move(blob_files_cleaned),
+                            std::move(report_outstanding_blobs),
                             task_runner) {}
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 

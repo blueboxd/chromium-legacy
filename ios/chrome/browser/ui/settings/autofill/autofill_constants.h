@@ -10,4 +10,9 @@
 extern NSString* const kAutofillProfileEditTableViewId;
 extern NSString* const kAutofillProfileTableViewID;
 
+extern NSString* const kAutofillPaymentMethodsToolbarId;
+extern NSString* const kAutofillCreditCardTableViewId;
+extern NSString* const kAutofillCreditCardSwitchViewId;
+extern NSString* const kSettingsAddPaymentMethodButtonId;
+
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_AUTOFILL_CONSTANTS_H_

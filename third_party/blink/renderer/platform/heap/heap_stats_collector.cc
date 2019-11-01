@@ -196,7 +196,7 @@ base::TimeDelta ThreadHeapStatsCollector::Event::foreground_marking_time()
 base::TimeDelta ThreadHeapStatsCollector::Event::background_marking_time()
     const {
   return base::TimeDelta::FromMicroseconds(
-      concurrent_scope_data[kConcurrentMark]);
+      base::subtle::NoBarrier_Load(&concurrent_scope_data[kConcurrentMark]));
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::marking_time() const {

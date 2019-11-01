@@ -43,7 +43,8 @@ class NavigationControllerImpl : public NavigationController,
   bool CanGoBack(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
     return CanGoBack();
   }
-  bool CanGoForward(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+  bool CanGoForward(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj) {
     return CanGoForward();
   }
   void Reload(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {

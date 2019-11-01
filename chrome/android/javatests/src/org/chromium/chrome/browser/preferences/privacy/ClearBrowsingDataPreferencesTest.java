@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences.DialogOption;
 import org.chromium.chrome.browser.tab.Tab;
@@ -639,7 +638,7 @@ public class ClearBrowsingDataPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             for (@DialogOption Integer option : ClearBrowsingDataPreferences.getAllOptions()) {
                 boolean enabled = typesToClear.contains(option);
-                PrefServiceBridge.getInstance().setBrowsingDataDeletionPreference(
+                BrowsingDataBridge.getInstance().setBrowsingDataDeletionPreference(
                         ClearBrowsingDataPreferences.getDataType(option),
                         ClearBrowsingDataTab.ADVANCED, enabled);
             }

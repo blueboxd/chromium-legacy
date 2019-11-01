@@ -139,7 +139,8 @@ OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
   // EnterExitOverviewType can only be set to kWindowMinimized in talbet mode.
   // Fade out the minimized window without animation if switch from tablet mode
   // to clamshell mode.
-  if (type == OverviewSession::EnterExitOverviewType::kSlideOutExit) {
+  if (type == OverviewSession::EnterExitOverviewType::kSlideOutExit ||
+      type == OverviewSession::EnterExitOverviewType::kFadeOutExit) {
     return Shell::Get()->tablet_mode_controller()->InTabletMode()
                ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
                : OVERVIEW_ANIMATION_NONE;
@@ -163,6 +164,8 @@ void SetWidgetBoundsAndMaybeAnimateTransform(
       display::Screen::GetScreen()->GetDisplayNearestWindow(window));
   if (animation_type == OVERVIEW_ANIMATION_NONE ||
       animation_type == OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER) {
+    window->SetTransform(gfx::Transform());
+
     // Make sure that |observer|, which could be a self-deleting object, will
     // not be leaked.
     DCHECK(!observer);
@@ -296,10 +299,14 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
       return;
     }
 
-    FadeOutWidgetAndMaybeSlideOnExit(
-        std::move(item_widget_),
+    OverviewAnimationType animation_type =
         GetExitOverviewAnimationTypeForMinimizedWindow(
-            enter_exit_type, should_animate_when_exiting_));
+            enter_exit_type, should_animate_when_exiting_);
+    FadeOutWidgetAndMaybeSlideOnExit(
+        std::move(item_widget_), animation_type,
+        animation_type == OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER &&
+            enter_exit_type ==
+                OverviewSession::EnterExitOverviewType::kSlideOutExit);
   }
 }
 
@@ -444,14 +451,18 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
           PerformItemSpawnedAnimation(item_widget_->GetNativeWindow(),
                                       gfx::Transform{});
         } else {
-          FadeInWidgetAndMaybeSlideOnEnter(
-              item_widget_.get(),
-              (new_animation_type ==
-               OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER)
-                  ? new_animation_type
-                  : OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-              /*slide=*/false,
-              /*observe=*/true);
+          // Items that are slide in already have their slide in animations
+          // handled in |SlideWindowIn|.
+          const bool slide_in =
+              overview_session_->enter_exit_overview_type() ==
+              OverviewSession::EnterExitOverviewType::kSlideInEnter;
+          if (!slide_in) {
+            FadeInWidgetAndMaybeSlideOnEnter(
+                item_widget_.get(),
+                OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+                /*slide=*/false,
+                /*observe=*/true);
+          }
 
           // Update the item header visibility immediately if entering from home
           // launcher.

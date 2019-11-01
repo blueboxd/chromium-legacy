@@ -114,7 +114,7 @@ TEST(DOMWrapperWorldTest, Basic) {
   // Start a worker thread and create worlds on that.
   std::unique_ptr<WorkerBackingThread> thread =
       std::make_unique<WorkerBackingThread>(
-          ThreadCreationParams(WebThreadType::kTestThread)
+          ThreadCreationParams(ThreadType::kTestThread)
               .SetThreadNameForTest("DOMWrapperWorld test thread"));
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       Thread::Current()->GetTaskRunner();

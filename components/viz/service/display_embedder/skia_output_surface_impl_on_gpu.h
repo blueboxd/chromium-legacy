@@ -95,6 +95,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   SkiaOutputSurfaceImplOnGpu(
       util::PassKey<SkiaOutputSurfaceImplOnGpu> pass_key,
       SkiaOutputSurfaceDependency* deps,
+      scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
       const RendererSettings& renderer_settings,
       const gpu::SequenceId sequence_id,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback,
@@ -184,6 +185,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params) override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   GpuVSyncCallback GetGpuVSyncCallback() override;
+  base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
   void SendOverlayPromotionNotification(
       base::flat_set<gpu::Mailbox> promotion_denied,

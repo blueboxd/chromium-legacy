@@ -168,6 +168,12 @@ void ShelfNavigationWidget::Delegate::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kToolbar;
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ASH_SHELF_ACCESSIBLE_NAME));
+
+  ShelfWidget* shelf_widget =
+      Shelf::ForWindow(GetWidget()->GetNativeWindow())->shelf_widget();
+  GetViewAccessibility().OverrideNextFocus(shelf_widget->hotseat_widget());
+  GetViewAccessibility().OverridePreviousFocus(
+      shelf_widget->status_area_widget());
 }
 
 void ShelfNavigationWidget::Delegate::ReorderChildLayers(

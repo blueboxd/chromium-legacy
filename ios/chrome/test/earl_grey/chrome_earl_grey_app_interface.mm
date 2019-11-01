@@ -62,6 +62,15 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
       @"Clearing browser history timed out");
 }
 
++ (NSError*)removeBrowsingCache {
+  if (chrome_test_util::RemoveBrowsingCache()) {
+    return nil;
+  }
+
+  return testing::NSErrorWithLocalizedDescription(
+      @"Clearing browser cache for main tabs timed out");
+}
+
 + (void)startLoadingURL:(NSString*)spec {
   chrome_test_util::LoadUrl(GURL(base::SysNSStringToUTF8(spec)));
 }
@@ -124,6 +133,10 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
         @"Fail to simulate tab backgrounding.");
   }
   return nil;
+}
+
++ (void)saveSessionImmediately {
+  chrome_test_util::SaveSessionImmediately();
 }
 
 + (NSError*)setCurrentTabsToBeColdStartTabs {

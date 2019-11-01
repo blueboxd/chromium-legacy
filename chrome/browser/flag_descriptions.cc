@@ -2171,6 +2171,10 @@ const char kUnexpireFlagsM76Name[] = "Temporarily unexpire M76 flags.";
 const char kUnexpireFlagsM76Description[] =
     "Temporarily unexpire flags that are expired as of M76. These flags will "
     "be removed soon.";
+const char kUnexpireFlagsM78Name[] = "Temporarily unexpire M78 flags.";
+const char kUnexpireFlagsM78Description[] =
+    "Temporarily unexpire flags that are expired as of M78. These flags will "
+    "be removed soon.";
 
 const char kUnsafeWebGPUName[] = "Unsafe WebGPU";
 const char kUnsafeWebGPUDescription[] =
@@ -2959,6 +2963,12 @@ const char kOmniboxExperimentalKeywordModeName[] =
 const char kOmniboxExperimentalKeywordModeDescription[] =
     "Enables various experimental features related to keyword mode, its "
     "suggestions and layout.";
+
+const char kOmniboxLooseMaxLimitOnDedicatedRowsName[] =
+    "Omnibox Loose Max Limit on Dedicated Rows";
+const char kOmniboxLooseMaxLimitOnDedicatedRowsDescription[] =
+    "Enables not counting submatch suggestions towards total suggestion "
+    "count.";
 
 const char kOmniboxPedalSuggestionsName[] = "Omnibox Pedal suggestions";
 const char kOmniboxPedalSuggestionsDescription[] =

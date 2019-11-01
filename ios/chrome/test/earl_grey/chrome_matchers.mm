@@ -475,6 +475,10 @@ id<GREYMatcher> SettingsCreditCardMatcher() {
   return [ChromeMatchersAppInterface settingsCreditCardMatcher];
 }
 
+id<GREYMatcher> SettingsBottomToolbarDeleteButton() {
+  return [ChromeMatchersAppInterface settingsBottomToolbarDeleteButton];
+}
+
 id<GREYMatcher> AutofillSuggestionViewMatcher() {
   return [ChromeMatchersAppInterface autofillSuggestionViewMatcher];
 }

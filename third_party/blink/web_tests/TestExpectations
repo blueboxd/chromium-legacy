@@ -5625,31 +5625,15 @@ crbug.com/1001936 external/wpt/css/css-masking/clip-path/clip-path-inline-001.ht
 # Sheriff 2019-09-10
 crbug.com/1002527 [ Debug ] virtual/text-antialias/large-text-composed-char.html [ Pass Crash ]
 
-# Tests fail because of scrollbar-width property
+# Tests fail because of missing scroll snap for #target and bugs in scrollIntoView
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-001.html [ Failure ]
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-002.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-003.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-margin-001.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-margin-002.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-margin-003.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-padding-001.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-padding-002.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-padding-003.html [ Failure ]
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-snap-001.html [ Failure ]
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-snap-002.html [ Failure ]
-crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-snap-003.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-align-001.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-align-002.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-align-003.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-margin-001.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-margin-002.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-margin-003.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-padding-001.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-padding-002.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-padding-003.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-001.html [ Failure ]
 crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-002.html [ Failure ]
-crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-target-snap-003.html [ Failure ]
 
 # Sheriff 2019-09-12
 crbug.com/1011515 [ Win7 ] fast/harness/internals-observe-gc.html [ Failure ]
@@ -5741,7 +5725,6 @@ crbug.com/925325 [ Win ] storage/indexeddb/index-population.html [ Pass Timeout 
 crbug.com/1018064 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 
 # Sheriff 2019-10-30
-crbug.com/1018027 virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-var-to-registered.html [ Pass Crash ]
 crbug.com/1014810 [ Mac ] virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
 crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
 crbug.com/1019663 external/wpt/web-nfc/NDEFReader_options.https.html [ Failure Pass ]
@@ -5762,3 +5745,13 @@ crbug.com/940927 external/wpt/trusted-types/eval-with-permissive-csp.tentative.h
 # Sheriff 2019-10-31
 crbug.com/1020034 [ Mac10.10 ] fast/forms/month/month-appearance-l10n.html [ Failure ]
 crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
+
+# Temporarily disabled for landing datagrid Changes in devtools
+crbug.com/963183 http/tests/devtools/components/datagrid.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/components/viewport-datagrid.js [ Pass Failure ]
+
+# Temporarily disabled for landing datagrid Changes in devtools
+crbug.com/963183 http/tests/devtools/network/network-close-request-view.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/network/network-cookies-pane.js [ Pass Timeout Failure ]
+crbug.com/963183 http/tests/devtools/network/preview-searchable.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/network/waterfall-header-height-updates.js [ Pass Failure ]

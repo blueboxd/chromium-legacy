@@ -13,6 +13,10 @@
  * It typically takes about a week of engineering time to reduce Android's
    binary size by 50kb.
  * As of 2019, Chrome for Android (arm32) grows by about 100kb per week.
+ * To get a feeling for how large existing features are, refer to the
+   [milestone size breakdowns] and group by "Component".
+
+[milestone size breakdowns]: https://storage.googleapis.com/chrome-supersize/index.html
 
 ## Optimizing Translations (Strings)
 
@@ -55,6 +59,12 @@
      or just build `ChromePublic.apk` and use `unzip -l` to see the size of the
      images within the built apk.
 
+## Optimizing Android Resources
+ * Use config-specific resource directories sparingly.
+   * Introducing a new config has [a large cost][arsc-bloat].
+
+[arsc-bloat]: https://medium.com/androiddevelopers/smallerapk-part-3-removing-unused-resources-1511f9e3f761#0b72
+
 ## Optimizing Code
 
 In most parts of the codebase, you should try to optimize your code for binary
@@ -76,6 +86,8 @@ Practical advice:
  * Be concise with strings used for error handling.
    * Identical strings throughout the codebase are de-duped. Take advantage of
      this for error-related strings.
+
+### Optimizating Native Code
  * If there's a notable increase in `.data.rel.ro`:
    * Ensure there are not [excessive relocations][relocations].
  * If there's a notable increase in `.rodata`:
@@ -105,7 +117,7 @@ Practical advice:
          separate `const char *` and `const std::string&` overloads rather than
          a single `base::StringPiece`.
 
-Android-specific advice:
+### Optimizating Java Code
  * Prefer fewer large JNI calls over many small JNI calls.
  * Minimize the use of class initializers (`<clinit>()`).
    * If R8 cannot determine that they are "trivial", they will prevent
@@ -116,8 +128,6 @@ Android-specific advice:
  * Don't use default interface methods on interfaces with multiple implementers.
    * Desugaring causes the methods to be added to every implementor separately.
    * It's more efficient to use a base class to add default methods.
- * Use config-specific resource directories sparingly.
-   * Introducing a new config has [a large cost][arsc-bloat].
  * Use `String.format()` instead of concatenation.
    * Concatenation causes a lot of StringBuilder code to be generated.
  * Try to use default values for fields rather than explicit initialization.
@@ -130,23 +140,30 @@ Android-specific advice:
      `onFinished(bool)`.
    * E.g. rather than have `onTextChanged()`, `onDateChanged()`, ..., have a
      single `onChanged()` that assumes everything changed.
-
+ * Ensure unused code is optimized away by ProGuard / R8.
+   * Add `@CheckDiscard` to methods or classes that you expect R8 to inline.
+   * Add `@RemovableInRelease` to force a method to be a no-op in when DCHECKs
+     are disabled.
+   
 [size-trybot]: //tools/binary_size/README.md#Binary-Size-Trybot-android_binary_size
 [diagnose_bloat]: //tools/binary_size/README.md#diagnose_bloat_py
 [relocations]: //docs/native_relocations.md
 [template_bloat]: https://bugs.chromium.org/p/chromium/issues/detail?id=716393
 [supersize-console]: //tools/binary_size/README.md#Usage_console
-[arsc-bloat]: https://medium.com/androiddevelopers/smallerapk-part-3-removing-unused-resources-1511f9e3f761#0b72
 
 ## Optimizing Third-Party Android Dependencies
 
  * Look through SuperSize symbols to see whether unwanted functionality
    is being pulled in.
-   * Use ProGuard's `-whyareyoukeeping` to see why unwanted symbols are kept.
-   * Try adding `-assumenosideeffects` rules to strip out unwanted calls.
+   * Use ProGuard's [-whyareyoukeeping] to see why unwanted symbols are kept
+     (e.g. to [//base/android/proguard/chromium_apk.flags](/base/android/proguard/chromium_apk.flags)).
+   * Try adding [-assumenosideeffects] rules to strip out unwanted calls
+     (equivalent to adding @RemovableInRelease annotations).
  * Consider removing all resources via `strip_resources = true`.
  * Remove specific drawables via `resource_blacklist_regex`.
 
+[-whyareyoukeeping]: https://r8-docs.preemptive.com/#keep-rules
+[-assumenosideeffects]: https://r8-docs.preemptive.com/#general-rules
 ## Size Optimization Help
 
  * Feel free to email [binary-size@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/binary-size).

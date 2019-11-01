@@ -312,9 +312,15 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
   }
 }
 
+// TODO(1020257): Flaky for MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ExtractSuggestions DISABLED_ExtractSuggestions
+#else
+#define MAYBE_ExtractSuggestions ExtractSuggestions
+#endif
 // Test that OnShowPasswordSuggestions correctly matches the given FormFieldData
 // to the known PasswordFormFillData, and extracts the right suggestions.
-TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
+TEST_F(PasswordAutofillManagerTest, MAYBE_ExtractSuggestions) {
   std::unique_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient);
   std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
@@ -373,10 +379,19 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
       element_bounds);
 }
 
+// TODO(1020257): Flaky for MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_PrettifiedAndroidRealmsAreShownAsLabels \
+  DISABLED_PrettifiedAndroidRealmsAreShownAsLabels
+#else
+#define MAYBE_PrettifiedAndroidRealmsAreShownAsLabels \
+  PrettifiedAndroidRealmsAreShownAsLabels
+#endif
 // Verify that, for Android application credentials, the prettified realms of
 // applications are displayed as the labels of suggestions on the UI (for
 // matches of all levels of preferredness).
-TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
+TEST_F(PasswordAutofillManagerTest,
+       MAYBE_PrettifiedAndroidRealmsAreShownAsLabels) {
   std::unique_ptr<TestPasswordManagerClient> client(
       new TestPasswordManagerClient);
   std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
@@ -435,9 +450,18 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
       element_bounds);
 }
 
+// TODO(1020257): Flaky for MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DisplaySuggestionsWithMatchingTokens \
+  DISABLED_DisplaySuggestionsWithMatchingTokens
+#else
+#define MAYBE_DisplaySuggestionsWithMatchingTokens \
+  DisplaySuggestionsWithMatchingTokens
+#endif
 // Verify that typing "foo" into the username field will match usernames
 // "foo.bar@example.com", "bar.foo@example.com" and "example@foo.com".
-TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
+TEST_F(PasswordAutofillManagerTest,
+       MAYBE_DisplaySuggestionsWithMatchingTokens) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(
       autofill::features::kAutofillTokenPrefixMatching);
@@ -502,11 +526,19 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
       base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("oo"), 0, element_bounds);
 }
 
+// TODO(1020257): Flaky for MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_MatchingContentsWithSuggestionTokenSeparator \
+  DISABLED_MatchingContentsWithSuggestionTokenSeparator
+#else
+#define MAYBE_MatchingContentsWithSuggestionTokenSeparator \
+  MatchingContentsWithSuggestionTokenSeparator
+#endif
 // Verify that typing "foo@exam" into the username field will match username
 // "bar.foo@example.com" even if the field contents span accross multiple
 // tokens.
 TEST_F(PasswordAutofillManagerTest,
-       MatchingContentsWithSuggestionTokenSeparator) {
+       MAYBE_MatchingContentsWithSuggestionTokenSeparator) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(
       autofill::features::kAutofillTokenPrefixMatching);
@@ -541,11 +573,19 @@ TEST_F(PasswordAutofillManagerTest,
       element_bounds);
 }
 
+// TODO(1020257): Flaky for MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DisplaySuggestionsWithPrefixesPrecedeSubstringMatched \
+  DISABLED_DisplaySuggestionsWithPrefixesPrecedeSubstringMatched
+#else
+#define MAYBE_DisplaySuggestionsWithPrefixesPrecedeSubstringMatched \
+  DisplaySuggestionsWithPrefixesPrecedeSubstringMatched
+#endif
 // Verify that typing "example" into the username field will match and order
 // usernames "example@foo.com", "foo.bar@example.com" and "bar.foo@example.com"
 // i.e. prefix matched followed by substring matched.
 TEST_F(PasswordAutofillManagerTest,
-       DisplaySuggestionsWithPrefixesPrecedeSubstringMatched) {
+       MAYBE_DisplaySuggestionsWithPrefixesPrecedeSubstringMatched) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(
       autofill::features::kAutofillTokenPrefixMatching);

@@ -132,6 +132,13 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
     views::test::ButtonTestApi(notification_container_).NotifyClick(event);
   }
 
+  void SimulateHeaderClicked() {
+    ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                         ui::EventTimeForNow(), 0, 0);
+    views::test::ButtonTestApi(GetView()->GetHeaderRowForTesting())
+        .NotifyClick(event);
+  }
+
   void SimulateDismissButtonClicked() {
     ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), 0, 0);
@@ -356,6 +363,12 @@ TEST_F(MediaNotificationContainerImplViewTest, SendsDestroyedUpdates) {
 }
 
 TEST_F(MediaNotificationContainerImplViewTest, SendsClicks) {
+  // When the container is clicked directly, it should notify its observers.
   EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId));
   SimulateContainerClicked();
+  testing::Mock::VerifyAndClearExpectations(&observer());
+
+  // It should also notify its observers when the header is clicked.
+  EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId));
+  SimulateHeaderClicked();
 }

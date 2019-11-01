@@ -81,6 +81,9 @@ class BrowserControllerImpl : public BrowserController,
 #endif
 
   // content::WebContentsDelegate:
+  content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) override;
   void DidNavigateMainFramePostCommit(
       content::WebContents* web_contents) override;
   content::ColorChooser* OpenColorChooser(

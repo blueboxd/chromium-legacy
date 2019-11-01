@@ -120,7 +120,8 @@ void UnifiedSystemTray::UiDelegate::HideMessageCenter() {
 UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ui_delegate_(std::make_unique<UiDelegate>(this)),
-      model_(std::make_unique<UnifiedSystemTrayModel>()),
+      model_(std::make_unique<UnifiedSystemTrayModel>(
+          shelf->GetStatusAreaWidget()->GetRootView())),
       slider_bubble_controller_(
           std::make_unique<UnifiedSliderBubbleController>(this)),
       current_locale_view_(new CurrentLocaleView(shelf)),

@@ -241,7 +241,7 @@ class GCMClient {
   //     management featueres so that a delayed task posted to it can wake the
   //     system up from sleep to perform the task.
   // |get_socket_factory_callback|: a callback that can accept a receiver for a
-  //     network::mojom::ProxyResolvingSocketFactoryPtr. It needs to be safe to
+  //     network::mojom::ProxyResolvingSocketFactory. It needs to be safe to
   //     run on any thread.
   // |delegate|: the delegate whose methods will be called asynchronously in
   //     response to events and messages.

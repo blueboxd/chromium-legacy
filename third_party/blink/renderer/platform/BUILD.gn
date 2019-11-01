@@ -555,7 +555,6 @@ jumbo_component("platform") {
     "exported/web_text_input_info.cc",
     "exported/web_text_run.cc",
     "exported/web_thread_safe_data.cc",
-    "exported/web_thread_type.cc",
     "exported/web_time_range.cc",
     "exported/web_touch_event.cc",
     "exported/web_url.cc",

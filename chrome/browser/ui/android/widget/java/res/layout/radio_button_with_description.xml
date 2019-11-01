@@ -4,7 +4,8 @@
      found in the LICENSE file. -->
 
 <!-- RadioButtonWithDescription extends RelativeLayout -->
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <RadioButton
         android:id="@+id/radio_button"

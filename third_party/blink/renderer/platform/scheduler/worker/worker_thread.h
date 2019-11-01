@@ -140,7 +140,7 @@ class PLATFORM_EXPORT WorkerThread : public Thread {
   };
 
   std::unique_ptr<SimpleThreadImpl> thread_;
-  const WebThreadType thread_type_;
+  const ThreadType thread_type_;
   std::unique_ptr<scheduler::WorkerSchedulerProxy> worker_scheduler_proxy_;
   bool supports_gc_;
 };

@@ -20,7 +20,8 @@ namespace {
 
 constexpr char kArcGraphicsTracingJsPath[] = "arc_graphics_tracing.js";
 constexpr char kArcGraphicsTracingUiJsPath[] = "arc_graphics_tracing_ui.js";
-constexpr char kArcGraphicsTracingCssPath[] = "arc_graphics_tracing.css";
+constexpr char kArcTracingUiJsPath[] = "arc_tracing_ui.js";
+constexpr char kArcTracingCssPath[] = "arc_tracing.css";
 
 content::WebUIDataSource* CreateDataSource() {
   content::WebUIDataSource* source =
@@ -31,8 +32,8 @@ content::WebUIDataSource* CreateDataSource() {
                           IDR_ARC_GRAPHICS_TRACING_JS);
   source->AddResourcePath(kArcGraphicsTracingUiJsPath,
                           IDR_ARC_GRAPHICS_TRACING_UI_JS);
-  source->AddResourcePath(kArcGraphicsTracingCssPath,
-                          IDR_ARC_GRAPHICS_TRACING_CSS);
+  source->AddResourcePath(kArcTracingCssPath, IDR_ARC_TRACING_CSS);
+  source->AddResourcePath(kArcTracingUiJsPath, IDR_ARC_TRACING_UI_JS);
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources 'self';");
 

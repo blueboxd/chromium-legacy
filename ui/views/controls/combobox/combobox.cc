@@ -307,11 +307,6 @@ void Combobox::SetInvalid(bool invalid) {
   OnPropertyChanged(&selected_index_, kPropertyEffectsPaint);
 }
 
-void Combobox::Layout() {
-  View::Layout();
-  arrow_button_->SetBounds(0, 0, width(), height());
-}
-
 void Combobox::OnThemeChanged() {
   SetBackground(
       CreateBackgroundFromPainter(Painter::CreateSolidRoundRectPainter(
@@ -357,6 +352,10 @@ gfx::Size Combobox::CalculatePreferredSize() const {
   int total_width = std::max(kMinComboboxWidth, content_size_.width()) +
                     insets.width() + kComboboxArrowContainerWidth;
   return gfx::Size(total_width, content_size_.height() + insets.height());
+}
+
+void Combobox::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  arrow_button_->SetBounds(0, 0, width(), height());
 }
 
 bool Combobox::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {

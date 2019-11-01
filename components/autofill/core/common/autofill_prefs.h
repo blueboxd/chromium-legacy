@@ -66,10 +66,6 @@ void MigrateDeprecatedAutofillPrefs(PrefService* prefs);
 
 bool IsAutocompleteEnabled(const PrefService* prefs);
 
-bool IsAutofillEnabled(const PrefService* prefs);
-
-void SetAutofillEnabled(PrefService* prefs, bool enabled);
-
 bool IsCreditCardFIDOAuthEnabled(PrefService* prefs);
 
 void SetCreditCardFIDOAuthEnabled(PrefService* prefs, bool enabled);

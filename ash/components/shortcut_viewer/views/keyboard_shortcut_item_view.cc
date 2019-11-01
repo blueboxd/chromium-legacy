@@ -158,12 +158,14 @@ void KeyboardShortcutItemView::GetAccessibleNodeData(
 }
 
 int KeyboardShortcutItemView::GetHeightForWidth(int w) const {
-  MaybeCalculateAndDoLayout(w);
+  CalculateLayout(w);
   return calculated_size_.height();
 }
 
 void KeyboardShortcutItemView::Layout() {
-  MaybeCalculateAndDoLayout(width());
+  CalculateLayout(width());
+  description_label_view_->SetBoundsRect(description_bounds_);
+  shortcut_label_view_->SetBoundsRect(shortcut_bounds_);
 }
 
 // static
@@ -179,16 +181,14 @@ KeyboardShortcutItemView::GetKeycodeToString16Cache() {
   return key_code_to_string16_cache.get();
 }
 
-void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
+void KeyboardShortcutItemView::CalculateLayout(int width) const {
   if (width == calculated_size_.width())
     return;
 
-  TRACE_EVENT0("shortcut_viewer", "MaybeCalculateAndDoLayout");
+  TRACE_EVENT0("shortcut_viewer", "CalculateLayout");
 
   const gfx::Insets insets = GetInsets();
-  const int content_width = width - insets.width();
-  if (content_width <= 0)
-    return;
+  const int content_width = std::max(width - insets.width(), 0);
 
   // The max width of |shortcut_label_view_| as a ratio of its parent view's
   // width. This value is chosen to put all the bubble views in one line.
@@ -198,63 +198,53 @@ void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
   constexpr int kMinimumSpacing = 64;
 
   const int shortcut_width = content_width * kShortcutViewPreferredWidthRatio;
-  const int shortcut_height =
-      shortcut_label_view_->GetHeightForWidth(shortcut_width);
-
-  // Sets the bounds and layout in order to get the left most label in the
-  // |shortcut_label_view_|, which is used to calculate the preferred width for
-  // |description_label_view_|.
-  shortcut_label_view_->SetBounds(0, 0, shortcut_width, shortcut_height);
-  const auto& children = shortcut_label_view_->children();
-  DCHECK(!children.empty());
-  // Labels in |shortcut_label_view_| are right aligned, so we need to find the
-  // minimum left coordinates of all the labels.
-  int min_left = shortcut_width;
-  for (const views::View* label : children)
-    min_left = std::min(min_left, label->x());
+  const auto& shortcut_size_info =
+      shortcut_label_view_->GetLayoutSizeInfoForWidth(shortcut_width);
+  const int shortcut_height = shortcut_size_info.total_size.height();
+  const auto top_line_height = [](const auto& size_info) {
+    // When nothing fits, it doesn't really matter what we do; using the overall
+    // height (which is the height of the label insets) is sane.
+    return size_info.line_sizes.empty() ? size_info.total_size.height()
+                                        : size_info.line_sizes[0].height();
+  };
+  const int shortcut_top_line_center_y =
+      shortcut_label_view_->GetInsets().top() +
+      (top_line_height(shortcut_size_info) / 2);
 
   // The width of |description_label_view_| will be dynamically adjusted to fill
   // the spacing.
   int description_width =
-      content_width - (shortcut_width - min_left) - kMinimumSpacing;
+      content_width - shortcut_size_info.total_size.width() - kMinimumSpacing;
   if (description_width < kMinimumSpacing) {
     // The min width of |description_label_view_| as a ratio of its parent
-    // view's width when the |description_width| calculated above is smaller
-    // than |kMinimumSpacing|.
+    // view's width when the |description_view_width| calculated above is
+    // smaller than |kMinimumSpacing|.
     constexpr float kDescriptionViewMinWidthRatio = 0.29f;
     description_width = content_width * kDescriptionViewMinWidthRatio;
   }
-
-  const int description_height =
-      description_label_view_->GetHeightForWidth(description_width);
-
-  // Sets the bounds and layout in order to get the center points of the views
-  // making up the top lines in both the description and shortcut views.
-  // We want the center of the top lines in both views to align with each other.
-  description_label_view_->SetBounds(0, 0, description_width,
-                                     description_height);
-  DCHECK(!shortcut_label_view_->children().empty() &&
-         !description_label_view_->children().empty());
+  const auto& description_size_info =
+      description_label_view_->GetLayoutSizeInfoForWidth(description_width);
+  const int description_height = description_size_info.total_size.height();
   const int description_top_line_center_y =
-      description_label_view_->children().front()->bounds().CenterPoint().y();
-  const int shortcut_top_line_center_y =
-      shortcut_label_view_->children().front()->bounds().CenterPoint().y();
+      description_label_view_->GetInsets().top() +
+      (top_line_height(description_size_info) / 2);
+
   // |shortcut_label_view_| could have bubble view in the top line, whose
   // height is larger than normal text in |description_label_view_|. Otherwise,
   // the top line height in the two views should be equal.
   DCHECK_GE(shortcut_top_line_center_y, description_top_line_center_y);
+
+  // Align the vertical center of the top lines of both views.
   const int description_delta_y =
       shortcut_top_line_center_y - description_top_line_center_y;
 
-  // Center align the top line in the two views.
   // Left align the |description_label_view_|.
-  description_label_view_->SetBounds(insets.left(),
-                                     insets.top() + description_delta_y,
-                                     description_width, description_height);
+  description_bounds_ =
+      gfx::Rect(insets.left(), insets.top() + description_delta_y,
+                description_width, description_height);
   // Right align the |shortcut_label_view_|.
-  shortcut_label_view_->SetBounds(
-      insets.left() + content_width - shortcut_width, insets.top(),
-      shortcut_width, shortcut_height);
+  shortcut_bounds_ = gfx::Rect(insets.left() + content_width - shortcut_width,
+                               insets.top(), shortcut_width, shortcut_height);
   // Add 2 * |description_delta_y| to balance the top and bottom paddings.
   const int content_height =
       std::max(shortcut_height, description_height + 2 * description_delta_y);

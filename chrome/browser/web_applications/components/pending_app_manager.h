@@ -56,6 +56,7 @@ class PendingAppManager {
   virtual ~PendingAppManager();
 
   void SetSubsystems(AppRegistrar* registrar,
+                     AppShortcutManager* shortcut_manager,
                      WebAppUiManager* ui_manager,
                      InstallFinalizer* finalizer);
 

@@ -132,22 +132,18 @@ std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
 
 class TestSSLErrorHandler : public SSLErrorHandler {
  public:
-  TestSSLErrorHandler(
-      std::unique_ptr<Delegate> delegate,
-      content::WebContents* web_contents,
-      Profile* profile,
-      int cert_error,
-      const net::SSLInfo& ssl_info,
-      const GURL& request_url,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback)
+  TestSSLErrorHandler(std::unique_ptr<Delegate> delegate,
+                      content::WebContents* web_contents,
+                      Profile* profile,
+                      int cert_error,
+                      const net::SSLInfo& ssl_info,
+                      const GURL& request_url)
       : SSLErrorHandler(std::move(delegate),
                         web_contents,
                         profile,
                         cert_error,
                         ssl_info,
-                        request_url,
-                        callback) {}
+                        request_url) {}
 
   using SSLErrorHandler::StartHandlingError;
 };
@@ -315,9 +311,7 @@ class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
     error_handler_.reset(new TestSSLErrorHandler(
         std::unique_ptr<SSLErrorHandler::Delegate>(delegate_), web_contents(),
         profile(), net::MapCertStatusToNetError(ssl_info_.cert_status),
-        ssl_info_,
-        GURL(),  // request_url
-        base::Callback<void(content::CertificateRequestResultType)>()));
+        ssl_info_, GURL() /*request_url*/));
   }
 
   void TearDown() override {
@@ -579,9 +573,7 @@ class SSLErrorAssistantProtoTest : public ChromeRenderViewHostTestHarness {
     error_handler_.reset(new TestSSLErrorHandler(
         std::unique_ptr<SSLErrorHandler::Delegate>(delegate_), web_contents(),
         profile(), net::MapCertStatusToNetError(ssl_info_.cert_status),
-        ssl_info_,
-        GURL(),  // request_url
-        base::Callback<void(content::CertificateRequestResultType)>()));
+        ssl_info_, GURL() /*request_url*/));
   }
 
   net::SSLInfo ssl_info_;
@@ -642,9 +634,7 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
     error_handler_.reset(new TestSSLErrorHandler(
         std::unique_ptr<SSLErrorHandler::Delegate>(delegate_), web_contents(),
         profile(), net::MapCertStatusToNetError(ssl_info_.cert_status),
-        ssl_info_,
-        GURL(),  // request_url
-        base::Callback<void(content::CertificateRequestResultType)>()));
+        ssl_info_, GURL() /*request_url*/));
     error_handler_->SetNetworkTimeTrackerForTesting(tracker_.get());
 
     // Fix flakiness in case system time is off and triggers a bad clock

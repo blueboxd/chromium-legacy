@@ -137,13 +137,11 @@ void FakeCrosDisksClient::DidMount(const std::string& source_path,
 }
 
 void FakeCrosDisksClient::Unmount(const std::string& device_path,
-                                  UnmountOptions options,
                                   UnmountCallback callback) {
   DCHECK(!callback.is_null());
 
   unmount_call_count_++;
   last_unmount_device_path_ = device_path;
-  last_unmount_options_ = options;
 
   // Remove the dummy mounted directory if it exists.
   if (mounted_paths_.erase(base::FilePath::FromUTF8Unsafe(device_path))) {

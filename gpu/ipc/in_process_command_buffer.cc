@@ -1772,6 +1772,11 @@ viz::GpuVSyncCallback InProcessCommandBuffer::GetGpuVSyncCallback() {
                              std::move(handle_gpu_vsync_callback));
 }
 
+base::TimeDelta InProcessCommandBuffer::GetGpuBlockedTimeSinceLastSwap() {
+  return gpu_channel_manager_delegate_->GetGpuScheduler()
+      ->TakeTotalBlockingTime();
+}
+
 void InProcessCommandBuffer::HandleGpuVSyncOnOriginThread(
     base::TimeTicks vsync_time,
     base::TimeDelta vsync_interval) {

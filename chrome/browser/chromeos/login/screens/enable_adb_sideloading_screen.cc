@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/enable_adb_sideloading_screen.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -20,6 +21,21 @@ namespace {
 constexpr const char kUserActionCancelPressed[] = "cancel-pressed";
 constexpr const char kUserActionEnablePressed[] = "enable-pressed";
 constexpr const char kUserActionLearnMorePressed[] = "learn-more-link";
+
+// These values are used for metrics and should not change.
+enum class AdbSideloadingPromptEvent {
+  kPromptShown = 0,
+  kSkipped = 1,
+  kCanceled = 2,
+  kEnabled = 3,
+  kFailedToDisplay = 4,
+  kFailedToEnable = 5,
+  kMaxValue = kFailedToEnable,
+};
+
+void LogEvent(AdbSideloadingPromptEvent action) {
+  base::UmaHistogramEnumeration("Arc.AdbSideloadingEnablingScreen", action);
+}
 
 }  // namespace
 
@@ -68,13 +84,20 @@ void EnableAdbSideloadingScreen::OnQueryAdbSideload(bool success,
   DVLOG(1) << "EnableAdbSideloadingScreen::OnQueryAdbSideload"
            << ", success=" << success << ", enabled=" << enabled;
   DCHECK(view_);
-  bool alreadyEnabled = success && enabled;
-  if (alreadyEnabled) {
-    OnCancel();
+  bool already_enabled = success && enabled;
+  if (already_enabled) {
+    LogEvent(AdbSideloadingPromptEvent::kSkipped);
+    exit_callback_.Run();
   } else {
-    view_->SetScreenState(
-        success ? EnableAdbSideloadingScreenView::UIState::UI_STATE_SETUP
-                : EnableAdbSideloadingScreenView::UIState::UI_STATE_ERROR);
+    if (success) {
+      LogEvent(AdbSideloadingPromptEvent::kPromptShown);
+      view_->SetScreenState(
+          EnableAdbSideloadingScreenView::UIState::UI_STATE_SETUP);
+    } else {
+      LogEvent(AdbSideloadingPromptEvent::kFailedToDisplay);
+      view_->SetScreenState(
+          EnableAdbSideloadingScreenView::UIState::UI_STATE_ERROR);
+    }
     view_->Show();
   }
 
@@ -90,6 +113,7 @@ void EnableAdbSideloadingScreen::Hide() {
 }
 
 void EnableAdbSideloadingScreen::OnCancel() {
+  LogEvent(AdbSideloadingPromptEvent::kCanceled);
   exit_callback_.Run();
 }
 
@@ -103,8 +127,10 @@ void EnableAdbSideloadingScreen::OnEnable() {
 
 void EnableAdbSideloadingScreen::OnEnableAdbSideload(bool success) {
   if (success) {
+    LogEvent(AdbSideloadingPromptEvent::kEnabled);
     exit_callback_.Run();
   } else {
+    LogEvent(AdbSideloadingPromptEvent::kFailedToEnable);
     DCHECK(view_);
     view_->SetScreenState(
         EnableAdbSideloadingScreenView::UIState::UI_STATE_ERROR);

@@ -625,7 +625,7 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
       (media_client ? media_client->GetAudioRendererAlgorithmParameters(
                           audio_parameters_)
                     : base::nullopt);
-  if (params) {
+  if (params && !client_->IsVideoStreamAvailable()) {
     algorithm_ = std::make_unique<AudioRendererAlgorithm>(params.value());
   } else {
     algorithm_ = std::make_unique<AudioRendererAlgorithm>();
@@ -651,7 +651,7 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
 void AudioRendererImpl::FinishInitialization(PipelineStatus status) {
   DCHECK(init_cb_);
   TRACE_EVENT_ASYNC_END1("media", "AudioRendererImpl::Initialize", this,
-                         "status", MediaLog::PipelineStatusToString(status));
+                         "status", PipelineStatusToString(status));
   std::move(init_cb_).Run(status);
 }
 
@@ -1165,8 +1165,8 @@ void AudioRendererImpl::HandleAbortedReadOrDecodeError(PipelineStatus status) {
         return;
       }
 
-      MEDIA_LOG(ERROR, media_log_) << "audio error during flushing, status: "
-                                   << MediaLog::PipelineStatusToString(status);
+      MEDIA_LOG(ERROR, media_log_)
+          << "audio error during flushing, status: " << status;
       client_->OnError(status);
       FinishFlush();
       return;
@@ -1175,8 +1175,7 @@ void AudioRendererImpl::HandleAbortedReadOrDecodeError(PipelineStatus status) {
     case kPlaying:
       if (status != PIPELINE_OK) {
         MEDIA_LOG(ERROR, media_log_)
-            << "audio error during playing, status: "
-            << MediaLog::PipelineStatusToString(status);
+            << "audio error during playing, status: " << status;
         client_->OnError(status);
       }
       return;

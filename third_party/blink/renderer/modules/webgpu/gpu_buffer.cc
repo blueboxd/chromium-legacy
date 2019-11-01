@@ -128,13 +128,13 @@ void GPUBuffer::Trace(blink::Visitor* visitor) {
 }
 
 void GPUBuffer::setSubData(uint64_t dst_byte_offset,
-                           const MaybeShared<DOMArrayBufferView>& src,
+                           const FlexibleArrayBufferView& src,
                            uint64_t src_byte_offset,
                            uint64_t byte_length,
                            ExceptionState& exception_state) {
   const uint8_t* src_base =
-      reinterpret_cast<const uint8_t*>(src.View()->BaseAddress());
-  size_t src_byte_length = src.View()->byteLength();
+      reinterpret_cast<const uint8_t*>(src.BaseAddressMaybeOnStack());
+  size_t src_byte_length = src.ByteLength();
 
   if (src_byte_offset > src_byte_length) {
     exception_state.ThrowRangeError("srcOffset is too large");

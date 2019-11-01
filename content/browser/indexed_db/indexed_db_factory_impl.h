@@ -146,6 +146,9 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       const url::Origin& origin,
       const base::FilePath& blob_path,
       std::unique_ptr<TransactionalLevelDBDatabase> db,
+      IndexedDBBackingStore::BlobFilesCleanedCallback blob_files_cleaned,
+      IndexedDBBackingStore::ReportOutstandingBlobsCallback
+          report_outstanding_blobs,
       base::SequencedTaskRunner* task_runner);
 
   IndexedDBContextImpl* context() const { return context_; }
@@ -205,6 +208,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   bool IsBackingStorePendingClose(const url::Origin& origin) const;
 
   SEQUENCE_CHECKER(sequence_checker_);
+  // Raw pointer is safe because IndexedDBContextImpl owns this object.
   IndexedDBContextImpl* context_;
   IndexedDBClassFactory* const class_factory_;
   base::Clock* const clock_;

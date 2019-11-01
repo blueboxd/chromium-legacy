@@ -178,6 +178,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   const GpuPreferences& GetGpuPreferences() const override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   viz::GpuVSyncCallback GetGpuVSyncCallback() override;
+  base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
   // Upstream this function to GpuControl if needs arise. Can be called on any
   // thread.

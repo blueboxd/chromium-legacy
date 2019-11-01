@@ -100,6 +100,25 @@ cr.define('accessibility', function() {
     }
   }
 
+  function requestEvents(data, element) {
+    const start = element.textContent == 'Start recording';
+    if (start) {
+      element.textContent = 'Stop recording';
+      element.setAttribute('aria-expanded', 'true');
+
+      // TODO Hide all other start recording elements. UI should reflect the
+      // fact that there can only be one accessibility recorder at once.
+    } else {
+      element.textContent = 'Start recording';
+      element.setAttribute('aria-expanded', 'false');
+
+      // TODO Show all start recording elements.
+    }
+    chrome.send('requestAccessibilityEvents', [
+      {'processId': data.processId, 'routeId': data.routeId, 'start': start}
+    ]);
+  }
+
   function initialize() {
     console.log('initialize');
     const data = requestData();
@@ -178,7 +197,7 @@ cr.define('accessibility', function() {
   function formatRow(row, data) {
     if (!('url' in data)) {
       if ('error' in data) {
-        row.appendChild(createErrorMessageElement(data, row));
+        row.appendChild(createErrorMessageElement(data));
         return;
       }
     }
@@ -206,14 +225,24 @@ cr.define('accessibility', function() {
 
     row.appendChild(document.createTextNode(' | '));
 
-    if ('tree' in data) {
-      row.appendChild(createTreeButtons(data, row.id));
-    } else {
-      row.appendChild(createShowAccessibilityTreeElement(data, row.id, false));
+    const hasTree = 'tree' in data;
+    row.appendChild(createShowAccessibilityTreeElement(data, row.id, hasTree));
+    if (navigator.clipboard) {
       row.appendChild(createCopyAccessibilityTreeElement(data, row.id));
-      if ('error' in data) {
-        row.appendChild(createErrorMessageElement(data, row));
-      }
+    }
+    if (hasTree) {
+      row.appendChild(createHideAccessibilityTreeElement(row.id));
+    }
+    row.appendChild(
+        createStartStopAccessibilityEventRecordingElement(data, row.id));
+
+    if (hasTree) {
+      row.appendChild(createAccessibilityOutputElement(data, row.id, 'tree'));
+    } else if ('eventLogs' in data) {
+      row.appendChild(
+          createAccessibilityOutputElement(data, row.id, 'eventLogs'));
+    } else if ('error' in data) {
+      row.appendChild(createErrorMessageElement(data));
     }
   }
 
@@ -292,17 +321,6 @@ cr.define('accessibility', function() {
     return link;
   }
 
-  function createTreeButtons(data, id) {
-    const row = document.createElement('span');
-    row.appendChild(createShowAccessibilityTreeElement(data, id, true));
-    if (navigator.clipboard) {
-      row.appendChild(createCopyAccessibilityTreeElement(data, id));
-    }
-    row.appendChild(createHideAccessibilityTreeElement(id));
-    row.appendChild(createAccessibilityTreeElement(data, id));
-    return row;
-  }
-
   function createShowAccessibilityTreeElement(data, id, opt_refresh) {
     const show = document.createElement('button');
     if (opt_refresh) {
@@ -344,6 +362,15 @@ cr.define('accessibility', function() {
     return copy;
   }
 
+  function createStartStopAccessibilityEventRecordingElement(data, id) {
+    const show = document.createElement('button');
+    show.textContent = 'Start recording';
+    show.id = id + ':startOrStopEvents';
+    show.setAttribute('aria-expanded', 'false');
+    show.addEventListener('click', requestEvents.bind(this, data, show));
+    return show;
+  }
+
   function createErrorMessageElement(data) {
     const errorMessageElement = document.createElement('div');
     const errorMessage = data.error;
@@ -373,6 +400,19 @@ cr.define('accessibility', function() {
     row.textContent = '';
     formatRow(row, data);
     $(id + ':showOrRefreshTree').focus();
+  }
+
+  // Called from C++
+  function startOrStopEvents(data) {
+    const id = getIdFromData(data);
+    const row = $(id);
+    if (!row) {
+      return;
+    }
+
+    row.textContent = '';
+    formatRow(row, data);
+    $(id + ':startOrStopEvents').focus();
   }
 
   // Called from C++
@@ -416,15 +456,14 @@ cr.define('accessibility', function() {
     return row;
   }
 
-  function createAccessibilityTreeElement(data, id) {
-    let treeElement = $(id + ':tree');
-    if (treeElement) {
-      treeElement.style.display = '';
-    } else {
+  // type is either 'tree' or 'eventLogs'
+  function createAccessibilityOutputElement(data, id, type) {
+    let treeElement = $(id + ':' + type);
+    if (!treeElement) {
       treeElement = document.createElement('pre');
-      treeElement.id = id + ':tree';
+      treeElement.id = id + ':' + type;
     }
-    treeElement.textContent = data.tree;
+    treeElement.textContent = data[type];
     return treeElement;
   }
 
@@ -432,7 +471,8 @@ cr.define('accessibility', function() {
   return {
     copyTree: copyTree,
     initialize: initialize,
-    showOrRefreshTree: showOrRefreshTree
+    showOrRefreshTree: showOrRefreshTree,
+    startOrStopEvents: startOrStopEvents
   };
 });
 

@@ -72,7 +72,7 @@ enum RTCPeerConnectionState {
 ] interface RTCPeerConnection : EventTarget {
     [CallWith=ScriptState] Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options);
     [CallWith=ScriptState] Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options);
-    [CallWith=ScriptState] Promise<void> setLocalDescription(RTCSessionDescriptionInit description);
+    [CallWith=ScriptState] Promise<void> setLocalDescription(optional RTCSessionDescriptionInit description = {});
     readonly attribute RTCSessionDescription? localDescription;
     readonly attribute RTCSessionDescription? currentLocalDescription;
     readonly attribute RTCSessionDescription? pendingLocalDescription;

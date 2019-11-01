@@ -90,28 +90,6 @@ bool SplitViewDragIndicators::IsPreviewAreaState(
 }
 
 // static
-bool SplitViewDragIndicators::IsLeftIndicatorState(
-    IndicatorState indicator_state) {
-  return indicator_state == IndicatorState::kDragAreaLeft ||
-         indicator_state == IndicatorState::kCannotSnapLeft;
-}
-
-// static
-bool SplitViewDragIndicators::IsRightIndicatorState(
-    IndicatorState indicator_state) {
-  return indicator_state == IndicatorState::kDragAreaRight ||
-         indicator_state == IndicatorState::kCannotSnapRight;
-}
-
-// static
-bool SplitViewDragIndicators::IsCannotSnapState(
-    IndicatorState indicator_state) {
-  return indicator_state == IndicatorState::kCannotSnap ||
-         indicator_state == IndicatorState::kCannotSnapLeft ||
-         indicator_state == IndicatorState::kCannotSnapRight;
-}
-
-// static
 bool SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
     IndicatorState indicator_state) {
   // kPreviewAreaLeft and kPreviewAreaRight correspond with LEFT_SNAPPED and
@@ -168,7 +146,8 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
 
   // Called to update the opacity of the labels view on |indicator_state|.
   void OnIndicatorTypeChanged(IndicatorState indicator_state,
-                              IndicatorState previous_indicator_state) {
+                              IndicatorState previous_indicator_state,
+                              bool can_dragged_window_be_snapped) {
     // In split view, the labels never show, and they do not need to be updated.
     if (SplitViewController::Get(GetWidget()->GetNativeWindow())
             ->InSplitViewMode()) {
@@ -196,19 +175,19 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
     }
 
     // Having ruled out kNone and the "preview area" states, we know that
-    // |indicator_state| is either a "drag area" state or a "cannot snap" state.
-    // If there is an indicator on only one side, and if this, in the sense of
-    // the C++ keyword this, is the label on the opposite side, then bail out.
-    if (is_right_or_bottom_ ? IsLeftIndicatorState(indicator_state)
-                            : IsRightIndicatorState(indicator_state)) {
+    // |indicator_state| is a "drag area" state. If there is an indicator on
+    // only one side, and if this, in the sense of the C++ keyword this, is the
+    // label on the opposite side, then bail out.
+    if (indicator_state == (is_right_or_bottom_
+                                ? IndicatorState::kDragAreaLeft
+                                : IndicatorState::kDragAreaRight)) {
       return;
     }
 
-    // Set the text according to whether |indicator_state| is a "drag area"
-    // state or a "cannot snap" state.
-    SetLabelText(l10n_util::GetStringUTF16(IsCannotSnapState(indicator_state)
-                                               ? IDS_ASH_SPLIT_VIEW_CANNOT_SNAP
-                                               : IDS_ASH_SPLIT_VIEW_GUIDANCE));
+    // Set the text according to |can_dragged_window_be_snapped|.
+    SetLabelText(l10n_util::GetStringUTF16(
+        can_dragged_window_be_snapped ? IDS_ASH_SPLIT_VIEW_GUIDANCE
+                                      : IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
 
     // On transition from a state with no indicators, fade in with an indicator.
     if (previous_indicator_state == IndicatorState::kNone) {
@@ -294,14 +273,20 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     previous_indicator_state_ = indicator_state_;
     indicator_state_ = indicator_state;
 
+    const bool can_dragged_window_be_snapped =
+        dragged_window_ && CanSnapInSplitview(dragged_window_);
     left_rotated_view_->OnIndicatorTypeChanged(indicator_state,
-                                               previous_indicator_state_);
+                                               previous_indicator_state_,
+                                               can_dragged_window_be_snapped);
     right_rotated_view_->OnIndicatorTypeChanged(indicator_state,
-                                                previous_indicator_state_);
+                                                previous_indicator_state_,
+                                                can_dragged_window_be_snapped);
     left_highlight_view_->OnIndicatorTypeChanged(indicator_state,
-                                                 previous_indicator_state_);
-    right_highlight_view_->OnIndicatorTypeChanged(indicator_state,
-                                                  previous_indicator_state_);
+                                                 previous_indicator_state_,
+                                                 can_dragged_window_be_snapped);
+    right_highlight_view_->OnIndicatorTypeChanged(
+        indicator_state, previous_indicator_state_,
+        can_dragged_window_be_snapped);
 
     if (indicator_state != IndicatorState::kNone ||
         IsPreviewAreaState(previous_indicator_state_))

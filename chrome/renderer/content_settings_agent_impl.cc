@@ -292,7 +292,7 @@ bool ContentSettingsAgentImpl::AllowImage(bool enabled_per_settings,
   return allow;
 }
 
-bool ContentSettingsAgentImpl::AllowIndexedDB(const WebSecurityOrigin& origin) {
+bool ContentSettingsAgentImpl::AllowIndexedDB() {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (IsUniqueFrame(frame))
     return false;
@@ -305,8 +305,7 @@ bool ContentSettingsAgentImpl::AllowIndexedDB(const WebSecurityOrigin& origin) {
   return result;
 }
 
-bool ContentSettingsAgentImpl::AllowCacheStorage(
-    const blink::WebSecurityOrigin& origin) {
+bool ContentSettingsAgentImpl::AllowCacheStorage() {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (IsUniqueFrame(frame))
     return false;

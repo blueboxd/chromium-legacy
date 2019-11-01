@@ -440,8 +440,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoPaintForEmptyDocument) {
                                      0);
 }
 
-// TODO(crbug.com/986642): Flaky on Win.
-#if defined(OS_WIN)
+// TODO(crbug.com/986642): Flaky on Win and Linux.
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_NoPaintForEmptyDocumentInChildFrame \
   DISABLED_NoPaintForEmptyDocumentInChildFrame
 #else

@@ -38,32 +38,9 @@ namespace chromecast {
 namespace {
 
 gfx::Transform GetPrimaryDisplayRotationTransform() {
-  // NB: Using gfx::Transform::Rotate() introduces very small errors here
-  // which are later exacerbated by use of gfx::EnclosingRect() in
-  // WindowTreeHost::GetTransformedRootWindowBoundsInPixels().
-  const gfx::Transform rotate_90(0.f, -1.f, 0.f, 0.f,  //
-                                 1.f, 0.f, 0.f, 0.f,   //
-                                 0.f, 0.f, 1.f, 0.f,   //
-                                 0.f, 0.f, 0.f, 1.f);
-  const gfx::Transform rotate_180 = rotate_90 * rotate_90;
-  const gfx::Transform rotate_270 = rotate_180 * rotate_90;
-
-  gfx::Transform translation;
-  display::Display display(display::Screen::GetScreen()->GetPrimaryDisplay());
-  switch (display.rotation()) {
-    case display::Display::ROTATE_0:
-      return translation;
-    case display::Display::ROTATE_90:
-      translation.Translate(display.bounds().height(), 0);
-      return translation * rotate_90;
-    case display::Display::ROTATE_180:
-      translation.Translate(display.bounds().width(),
-                            display.bounds().height());
-      return translation * rotate_180;
-    case display::Display::ROTATE_270:
-      translation.Translate(0, display.bounds().width());
-      return translation * rotate_270;
-  }
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  return display::Display::GetRotationTransform(display.rotation(),
+                                                gfx::SizeF(display.size()));
 }
 
 gfx::Rect GetPrimaryDisplayHostBounds() {

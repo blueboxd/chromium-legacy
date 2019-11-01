@@ -31,7 +31,8 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -82,7 +83,7 @@ public class TouchToFillIntegrationTest {
         runOnUiThreadBlocking(() -> {
             mTouchToFill.showCredentials(EXAMPLE_URL, true, Collections.singletonList(ANA));
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.HALF);
+        pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HALF);
 
         pollUiThread(() -> getCredentials().getChildAt(0) != null);
         TouchCommon.singleClickView(getCredentials().getChildAt(0));
@@ -98,7 +99,7 @@ public class TouchToFillIntegrationTest {
         runOnUiThreadBlocking(() -> {
             mTouchToFill.showCredentials(EXAMPLE_URL, true, Arrays.asList(ANA, BOB));
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.HALF);
+        pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HALF);
 
         Espresso.pressBack();
 

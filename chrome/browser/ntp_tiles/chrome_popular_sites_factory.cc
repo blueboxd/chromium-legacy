@@ -12,8 +12,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 std::unique_ptr<ntp_tiles::PopularSites>
 ChromePopularSitesFactory::NewForProfile(Profile* profile) {
@@ -21,7 +19,5 @@ ChromePopularSitesFactory::NewForProfile(Profile* profile) {
       profile->GetPrefs(), TemplateURLServiceFactory::GetForProfile(profile),
       g_browser_process->variations_service(),
       content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess(),
-      base::BindRepeating(&data_decoder::SafeJsonParser::Parse,
-                          content::GetSystemConnector()));
+          ->GetURLLoaderFactoryForBrowserProcess());
 }

@@ -4,11 +4,13 @@
 
 #include "ash/display/cros_display_config.h"
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/display/touch_calibrator_controller.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/touch/ash_touch_transform_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -332,12 +334,13 @@ TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListBasic) {
   EXPECT_TRUE(info_0.is_primary);
   EXPECT_TRUE(info_0.is_internal);
   EXPECT_TRUE(info_0.is_enabled);
-  EXPECT_FALSE(info_0.is_tablet_mode);
+  EXPECT_FALSE(info_0.is_in_tablet_physical_state);
   EXPECT_FALSE(info_0.has_touch_support);
   EXPECT_FALSE(info_0.has_accelerometer_support);
   EXPECT_EQ(96, info_0.dpi_x);
   EXPECT_EQ(96, info_0.dpi_y);
-  EXPECT_EQ(display::Display::ROTATE_0, info_0.rotation);
+  EXPECT_EQ(mojom::DisplayRotationOptions::kZeroDegrees,
+            info_0.rotation_options);
   EXPECT_EQ("0,0 500x600", info_0.bounds.ToString());
   EXPECT_EQ("0,0,0,0", info_0.overscan.ToString());
 
@@ -348,7 +351,8 @@ TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListBasic) {
   // Second display is left of the primary display whose width 500.
   EXPECT_EQ("500,0 400x520", info_1.bounds.ToString());
   EXPECT_EQ("0,0,0,0", info_1.overscan.ToString());
-  EXPECT_EQ(display::Display::ROTATE_0, info_1.rotation);
+  EXPECT_EQ(mojom::DisplayRotationOptions::kZeroDegrees,
+            info_1.rotation_options);
   EXPECT_FALSE(info_1.is_primary);
   EXPECT_FALSE(info_1.is_internal);
   EXPECT_TRUE(info_1.is_enabled);
@@ -420,7 +424,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
 
   auto properties = mojom::DisplayConfigProperties::New();
   properties->rotation =
-      mojom::DisplayRotation::New(display::Display::ROTATE_90);
+      mojom::DisplayRotation::New(mojom::DisplayRotationOptions::k90Degrees);
   result = SetDisplayProperties(base::NumberToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
@@ -429,7 +433,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
 
   properties = mojom::DisplayConfigProperties::New();
   properties->rotation =
-      mojom::DisplayRotation::New(display::Display::ROTATE_270);
+      mojom::DisplayRotation::New(mojom::DisplayRotationOptions::k270Degrees);
   result = SetDisplayProperties(base::NumberToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
@@ -440,7 +444,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesRotation) {
   properties = mojom::DisplayConfigProperties::New();
   properties->set_primary = true;
   properties->rotation =
-      mojom::DisplayRotation::New(display::Display::ROTATE_180);
+      mojom::DisplayRotation::New(mojom::DisplayRotationOptions::k180Degrees);
   result = SetDisplayProperties(base::NumberToString(secondary.id()),
                                 std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
@@ -710,6 +714,90 @@ TEST_F(CrosDisplayConfigTest, CustomTouchCalibrationSuccess) {
   EXPECT_TRUE(IsTouchCalibrationActive());
   mojom::TouchCalibrationPtr calibration = GetDefaultCalibration();
   EXPECT_TRUE(CompleteCustomTouchCalibration(id, std::move(calibration)));
+}
+
+TEST_F(CrosDisplayConfigTest, TabletModeAutoRotation) {
+  TestObserver observer;
+  mojo::AssociatedRemote<mojom::CrosDisplayConfigObserver> observer_remote;
+  mojo::AssociatedReceiver<mojom::CrosDisplayConfigObserver> receiver(
+      &observer,
+      observer_remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
+  cros_display_config()->AddObserver(observer_remote.Unbind());
+  base::RunLoop().RunUntilIdle();
+
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
+  // Setting the rotation to kAutoRotate from outside the physical tablet state
+  // is treated as a request to set the rotation to 0.
+  const display::Display& display =
+      display_manager()->GetPrimaryDisplayCandidate();
+  auto properties = mojom::DisplayConfigProperties::New();
+  properties->rotation =
+      mojom::DisplayRotation::New(mojom::DisplayRotationOptions::kAutoRotate);
+  auto result = SetDisplayProperties(base::NumberToString(display.id()),
+                                     std::move(properties));
+  EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
+  auto* screen_orientation_controller =
+      Shell::Get()->screen_orientation_controller();
+  EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0, display.rotation());
+
+  TabletModeControllerTestApi tablet_mode_controller_test_api;
+  tablet_mode_controller_test_api.EnterTabletMode();
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsTabletModeStarted());
+
+  // Clear out any pending observer calls.
+  base::RunLoop().RunUntilIdle();
+  observer.reset_display_changes();
+
+  properties = mojom::DisplayConfigProperties::New();
+  properties->rotation =
+      mojom::DisplayRotation::New(mojom::DisplayRotationOptions::k90Degrees);
+  result = SetDisplayProperties(base::NumberToString(display.id()),
+                                std::move(properties));
+  EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
+  EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90, display.rotation());
+  // OnDisplayConfigChanged() will be called twice, once as a result of the
+  // user rotation lock change, and another due to the actual display rotation
+  // change.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, observer.display_changes());
+
+  // Hooking up an external mouse device, should exit UI tablet mode, but the
+  // device is still in a tablet physical state, the API should still be valid
+  // for use.
+  tablet_mode_controller_test_api.AttachExternalMouse();
+  EXPECT_TRUE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
+  EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+
+  // Clear out any pending observer calls.
+  base::RunLoop().RunUntilIdle();
+  observer.reset_display_changes();
+
+  properties = mojom::DisplayConfigProperties::New();
+  properties->rotation =
+      mojom::DisplayRotation::New(mojom::DisplayRotationOptions::kAutoRotate);
+  result = SetDisplayProperties(base::NumberToString(display.id()),
+                                std::move(properties));
+  EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
+  EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
+  // Unlocking auto-rotate doesn't actually change the display rotation. It
+  // simply allows it to auto-rotate in response to accelerometer updates.
+  EXPECT_EQ(display::Display::ROTATE_90, display.rotation());
+  // This time, OnDisplayConfigChanged() will be called only once as a result of
+  // the user rotation lock change.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, observer.display_changes());
+
+  // Once the device is no longer in a physical tablet state, the rotation is
+  // restored.
+  tablet_mode_controller_test_api.LeaveTabletMode();
+  EXPECT_FALSE(tablet_mode_controller_test_api.IsInPhysicalTabletState());
+  EXPECT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+  EXPECT_EQ(display::Display::ROTATE_0, display.rotation());
 }
 
 }  // namespace ash

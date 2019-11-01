@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {KeyboardShortcutDelegate} from './keyboard_shortcut_delegate.js';
+import {hasValidModifiers, isValidKeyCode, Key, keystrokeToString} from './shortcut_util.js';
+
 /** @enum {number} */
 const ShortcutError = {
   NO_ERROR: 0,
@@ -10,15 +22,14 @@ const ShortcutError = {
   NEED_CHARACTER: 3,
 };
 
-cr.define('extensions', function() {
-  'use strict';
-
   // The UI to display and manage keyboard shortcuts set for extension commands.
-  const ShortcutInput = Polymer({
+  Polymer({
     is: 'extensions-shortcut-input',
 
+    _template: html`{__html_template__}`,
+
     properties: {
-      /** @type {!extensions.KeyboardShortcutDelegate} */
+      /** @type {!KeyboardShortcutDelegate} */
       delegate: Object,
 
       item: {
@@ -88,7 +99,7 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!KeyboardEvent} e
+     * @param {!Event} e
      * @private
      */
     onKeyDown_: function(e) {
@@ -96,7 +107,7 @@ cr.define('extensions', function() {
         return;
       }
 
-      if (e.keyCode == extensions.Key.Escape) {
+      if (e.keyCode == Key.Escape) {
         if (!this.capturing_) {
           // If we're not currently capturing, allow escape to propagate.
           return;
@@ -107,7 +118,7 @@ cr.define('extensions', function() {
         e.stopPropagation();
         return;
       }
-      if (e.keyCode == extensions.Key.Tab) {
+      if (e.keyCode == Key.Tab) {
         // Allow tab propagation for keyboard navigation.
         return;
       }
@@ -116,11 +127,11 @@ cr.define('extensions', function() {
         this.startCapture_();
       }
 
-      this.handleKey_(e);
+      this.handleKey_(/** @type {!KeyboardEvent} */ (e));
     },
 
     /**
-     * @param {!KeyboardEvent} e
+     * @param {!Event} e
      * @private
      */
     onKeyUp_: function(e) {
@@ -132,12 +143,11 @@ cr.define('extensions', function() {
         return;
       }
 
-      if (e.keyCode == extensions.Key.Escape ||
-          e.keyCode == extensions.Key.Tab) {
+      if (e.keyCode == Key.Escape || e.keyCode == Key.Tab) {
         return;
       }
 
-      this.handleKey_(e);
+      this.handleKey_(/** @type {!KeyboardEvent} */ (e));
     },
 
     /**
@@ -171,21 +181,21 @@ cr.define('extensions', function() {
       e.stopPropagation();
 
       // We don't allow both Ctrl and Alt in the same keybinding.
-      // TODO(devlin): This really should go in extensions.hasValidModifiers,
+      // TODO(devlin): This really should go in hasValidModifiers,
       // but that requires updating the existing page as well.
       if (e.ctrlKey && e.altKey) {
         this.error_ = ShortcutError.TOO_MANY_MODIFIERS;
         this.$.input.invalid = true;
         return;
       }
-      if (!extensions.hasValidModifiers(e)) {
+      if (!hasValidModifiers(e)) {
         this.pendingShortcut_ = '';
         this.error_ = ShortcutError.INCLUDE_START_MODIFIER;
         this.$.input.invalid = true;
         return;
       }
-      this.pendingShortcut_ = extensions.keystrokeToString(e);
-      if (!extensions.isValidKeyCode(e.keyCode)) {
+      this.pendingShortcut_ = keystrokeToString(e);
+      if (!isValidKeyCode(e.keyCode)) {
         this.error_ = ShortcutError.NEED_CHARACTER;
         this.$.input.invalid = true;
         return;
@@ -232,6 +242,3 @@ cr.define('extensions', function() {
       this.endCapture_();
     },
   });
-
-  return {ShortcutInput: ShortcutInput};
-});

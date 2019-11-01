@@ -543,19 +543,22 @@ void DecoderStream<StreamType>::OnDecodeDone(
         // from being called back.
         fallback_weak_factory_.InvalidateWeakPtrs();
 
-        FUNCTION_DVLOG(1)
-            << ": Falling back to new decoder after initial decode error.";
+        std::string fallback_message =
+            GetStreamTypeString() +
+            " fallback to new decoder after initial decode error.";
+        FUNCTION_DVLOG(1) << ": " << fallback_message;
+        MEDIA_LOG(WARNING, media_log_) << fallback_message;
         state_ = STATE_REINITIALIZING_DECODER;
         SelectDecoder();
-        return;
+      } else {
+        std::string error_message = GetStreamTypeString() + " decode error!";
+        FUNCTION_DVLOG(1) << ": " << error_message;
+        MEDIA_LOG(ERROR, media_log_) << error_message;
+        state_ = STATE_ERROR;
+        ClearOutputs();
+        if (read_cb_)
+          SatisfyRead(DECODE_ERROR, nullptr);
       }
-
-      FUNCTION_DVLOG(1) << ": Decode error!";
-      state_ = STATE_ERROR;
-      MEDIA_LOG(ERROR, media_log_) << GetStreamTypeString() << " decode error";
-      ClearOutputs();
-      if (read_cb_)
-        SatisfyRead(DECODE_ERROR, nullptr);
       return;
 
     case DecodeStatus::ABORTED:

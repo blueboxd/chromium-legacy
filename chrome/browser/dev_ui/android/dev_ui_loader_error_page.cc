@@ -25,7 +25,7 @@ std::string BuildErrorPageHtml() {
       l10n_util::GetStringUTF8(IDS_DEV_UI_LOADER_ERROR_SUGGEST_CHECK_INTERNET);
 
   std::string source =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_DEV_UI_LOADER_ERROR_HTML);
   return ui::ReplaceTemplateExpressions(source, replacements);
 }

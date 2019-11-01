@@ -94,9 +94,8 @@ public class AddToHomescreenManager implements AddToHomescreenViewDelegate {
         // let users change them.
         mViewModel.set(AddToHomescreenProperties.TITLE, title);
         mViewModel.set(AddToHomescreenProperties.URL, url);
-        mViewModel.set(AddToHomescreenProperties.TYPE,
-                isWebapp ? AddToHomescreenProperties.AppType.WEB_APK
-                         : AddToHomescreenProperties.AppType.SHORTCUT);
+        mViewModel.set(
+                AddToHomescreenProperties.TYPE, isWebapp ? AppType.WEBAPK : AppType.SHORTCUT);
     }
 
     @CalledByNative

@@ -2,16 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 
   /**
    * An extensions-toggle-row provides a way of having a clickable row that can
    * modify a cr-toggle, by leveraging the native <label> functionality. It uses
    * a hidden native <input type="checkbox"> to achieve this.
    */
-  const ExtensionsToggleRow = Polymer({
+  Polymer({
     is: 'extensions-toggle-row',
+
+    _template: html`{__html_template__}`,
 
     properties: {
       checked: Boolean,
@@ -25,11 +30,11 @@ cr.define('extensions', function() {
      * @return {!HTMLElement}
      */
     getLabel() {
-      return this.$.label;
+      return /** @type {!HTMLElement} */ (this.$.label);
     },
 
     /**
-     * @param {!Event}
+     * @param {!Event} e
      * @private
      */
     onNativeClick_: function(e) {
@@ -69,6 +74,3 @@ cr.define('extensions', function() {
       this.fire('change', this.checked);
     },
   });
-
-  return {ExtensionsToggleRow: ExtensionsToggleRow};
-});

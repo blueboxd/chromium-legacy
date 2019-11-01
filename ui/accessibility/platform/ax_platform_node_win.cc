@@ -5796,7 +5796,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"strong";
 
     case ax::mojom::Role::kSwitch:
-      return L"checkbox";
+      return L"switch";
 
     case ax::mojom::Role::kRubyAnnotation:
     case ax::mojom::Role::kListMarker:
@@ -6447,7 +6447,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_SpinnerControlTypeId;
 
     case ax::mojom::Role::kSwitch:
-      return UIA_CheckBoxControlTypeId;
+      return UIA_ButtonControlTypeId;
 
     case ax::mojom::Role::kRubyAnnotation:
     case ax::mojom::Role::kListMarker:

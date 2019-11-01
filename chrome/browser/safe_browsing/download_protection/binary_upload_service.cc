@@ -33,8 +33,10 @@ namespace safe_browsing {
 namespace {
 
 const int kScanningTimeoutSeconds = 5 * 60;           // 5 minutes
-const char kSbBinaryUploadUrl[] =
-    "https://safebrowsing.google.com/safebrowsing/uploads/webprotect";
+
+// TODO(crbug/1020434): Once we have an endpoint for uploads, place the URL
+// here.
+const char kSbBinaryUploadUrl[] = "";
 
 std::string* GetTestingDMToken() {
   static std::string dm_token;
@@ -464,6 +466,11 @@ bool BinaryUploadService::ShouldBlockFileSize(size_t file_size) {
     return false;
 
   return (file_size > kMaxUploadSizeBytes);
+}
+
+// static
+GURL BinaryUploadService::GetUploadUrl() {
+  return GURL(kSbBinaryUploadUrl);
 }
 
 }  // namespace safe_browsing

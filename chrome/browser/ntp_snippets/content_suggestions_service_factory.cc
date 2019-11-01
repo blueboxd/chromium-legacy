@@ -41,6 +41,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service_impl.h"
+#include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/prefs/pref_service.h"
@@ -48,10 +49,9 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
@@ -132,6 +132,22 @@ bool IsKeepingPrefetchedSuggestionsEnabled() {
       ntp_snippets::kKeepPrefetchedContentSuggestions);
 }
 
+void ParseJson(const std::string& json,
+               ntp_snippets::SuccessCallback success_callback,
+               ntp_snippets::ErrorCallback error_callback) {
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      json, base::BindOnce(
+                [](ntp_snippets::SuccessCallback success_callback,
+                   ntp_snippets::ErrorCallback error_callback,
+                   data_decoder::DataDecoder::ValueOrError result) {
+                  if (!result.value)
+                    std::move(error_callback).Run(*result.error);
+                  else
+                    std::move(success_callback).Run(std::move(*result.value));
+                },
+                std::move(success_callback), std::move(error_callback)));
+}
+
 void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
                                       Profile* profile,
                                       UserClassifier* user_classifier,
@@ -170,9 +186,8 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
   auto suggestions_fetcher = std::make_unique<RemoteSuggestionsFetcherImpl>(
       identity_manager, url_loader_factory, pref_service, language_histogram,
-      base::BindRepeating(&data_decoder::SafeJsonParser::Parse,
-                          content::GetSystemConnector()),
-      GetFetchEndpoint(), api_key, user_classifier);
+      base::BindRepeating(&ParseJson), GetFetchEndpoint(), api_key,
+      user_classifier);
 
   auto provider = std::make_unique<RemoteSuggestionsProviderImpl>(
       service, pref_service, g_browser_process->GetApplicationLocale(),

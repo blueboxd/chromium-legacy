@@ -4,15 +4,9 @@
 
 package org.chromium.chrome.browser.banners;
 
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.util.Pair;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
-import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -22,6 +16,7 @@ import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenDialog
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenProperties;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenViewBinder;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenViewDelegate;
+import org.chromium.chrome.browser.webapps.addtohomescreen.AppType;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -84,27 +79,6 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenViewDelegate {
     }
 
     @CalledByNative
-    private boolean installOrOpenNativeApp(AppData appData) {
-        Context context = ContextUtils.getApplicationContext();
-        Intent launchIntent;
-        if (PackageUtils.isPackageInstalled(context, appData.packageName())) {
-            launchIntent =
-                    context.getPackageManager().getLaunchIntentForPackage(appData.packageName());
-        } else {
-            launchIntent = appData.installIntent();
-        }
-        if (launchIntent != null && mTab.getActivity() != null) {
-            try {
-                mTab.getActivity().startActivity(launchIntent);
-            } catch (ActivityNotFoundException e) {
-                Log.e(TAG, "Failed to install or open app : %s!", appData.packageName(), e);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @CalledByNative
     private void showAppDetails(AppData appData) {
         mTab.getWindowAndroid().showIntent(appData.detailsIntent(), null, null);
     }
@@ -125,11 +99,11 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenViewDelegate {
     }
 
     @CalledByNative
-    private boolean showNativeAppDialog(String title, Bitmap iconBitmap, AppData appData) {
+    private boolean showNativeAppDialog(Bitmap iconBitmap, AppData appData) {
         mViewModel = createViewModel();
-        mViewModel.set(AddToHomescreenProperties.TITLE, title);
+        mViewModel.set(AddToHomescreenProperties.TITLE, appData.title());
         mViewModel.set(AddToHomescreenProperties.ICON, new Pair<>(iconBitmap, false));
-        mViewModel.set(AddToHomescreenProperties.TYPE, AddToHomescreenProperties.AppType.NATIVE);
+        mViewModel.set(AddToHomescreenProperties.TYPE, AppType.NATIVE);
         mViewModel.set(AddToHomescreenProperties.CAN_SUBMIT, true);
         mViewModel.set(AddToHomescreenProperties.NATIVE_APP_RATING, appData.rating());
         mViewModel.set(
@@ -142,7 +116,7 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenViewDelegate {
             String title, Bitmap iconBitmap, String url, boolean maskable) {
         mViewModel = createViewModel();
         mViewModel.set(AddToHomescreenProperties.TITLE, title);
-        mViewModel.set(AddToHomescreenProperties.TYPE, AddToHomescreenProperties.AppType.WEB_APK);
+        mViewModel.set(AddToHomescreenProperties.TYPE, AppType.WEBAPK);
         mViewModel.set(AddToHomescreenProperties.CAN_SUBMIT, true);
         mViewModel.set(AddToHomescreenProperties.URL, url);
 

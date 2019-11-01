@@ -16,6 +16,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/media_player_watch_time.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/visibility.h"
@@ -446,6 +447,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                            int context_id) {}
   virtual void AudioContextPlaybackStopped(RenderFrameHost* host,
                                            int context_id) {}
+
+  virtual void MediaWatchTimeChanged(
+      const content::MediaPlayerWatchTime& watch_time) {}
 
   // Returns the main frame of the inner delegate that is attached to this
   // delegate using |frame_tree_node|. Returns nullptr if no such inner delegate

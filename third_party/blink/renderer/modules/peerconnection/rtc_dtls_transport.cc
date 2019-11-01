@@ -6,16 +6,19 @@
 
 #include <memory>
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/dtls_transport_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
@@ -96,6 +99,17 @@ webrtc::DtlsTransportInterface* RTCDtlsTransport::native_transport() {
 void RTCDtlsTransport::ChangeState(webrtc::DtlsTransportInformation info) {
   DCHECK(current_state_.state() != webrtc::DtlsTransportState::kClosed);
   current_state_ = info;
+  if (current_state_.state() == webrtc::DtlsTransportState::kConnected) {
+    if (current_state_.tls_version()) {
+      if (*current_state_.tls_version() == DTLS1_VERSION ||
+          *current_state_.tls_version() == SSL3_VERSION ||
+          *current_state_.tls_version() == TLS1_VERSION ||
+          *current_state_.tls_version() == TLS1_1_VERSION) {
+        Deprecation::CountDeprecation(GetExecutionContext(),
+                                      WebFeature::kObsoleteWebrtcTlsVersion);
+      }
+    }
+  }
 }
 
 void RTCDtlsTransport::Close() {

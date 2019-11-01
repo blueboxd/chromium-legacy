@@ -137,7 +137,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, UnregisteredCustomProperty) {
   ASSERT_TRUE(input);
 
   thread_ = blink::Thread::CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
+      ThreadCreationParams(ThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,
@@ -185,7 +185,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, SupportedCrossThreadData) {
   DCHECK(input);
 
   thread_ = blink::Thread::CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
+      ThreadCreationParams(ThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,

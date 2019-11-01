@@ -2,30 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Suite of tests for extension-item. */
-cr.define('extension_item_list_tests', function() {
+/** @fileoverview Suite of tests for extensions-item-list. */
+import 'chrome://extensions/extensions.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {createExtensionInfo, testVisible} from './test_util.js';
+
+  window.extension_item_list_tests = {};
+  extension_item_list_tests.suiteName = 'ExtensionItemListTest';
   /** @enum {string} */
-  const TestNames = {
+  extension_item_list_tests.TestNames = {
     Filtering: 'item list filtering',
     NoItemsMsg: 'empty item list',
     NoSearchResultsMsg: 'empty item list filtering results',
     LoadTimeData: 'loadTimeData contains isManaged and managedByOrg',
   };
 
-  const suiteName = 'ExtensionItemListTest';
-
-  suite(suiteName, function() {
+  suite(extension_item_list_tests.suiteName, function() {
     /** @type {extensions.ItemList} */
     let itemList;
-    let testVisible;
+    let boundTestVisible;
 
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();
-      itemList = new extensions.ItemList();
-      testVisible = extension_test_util.testVisible.bind(null, itemList);
+      itemList = document.createElement('extensions-item-list');
+      boundTestVisible = testVisible.bind(null, itemList);
 
-      const createExt = extension_test_util.createExtensionInfo;
+      const createExt = createExtensionInfo;
       const extensionItems = [
         createExt({name: 'Alpha', id: 'a'.repeat(32)}),
         createExt({name: 'Bravo', id: 'b'.repeat(32)}),
@@ -40,9 +46,9 @@ cr.define('extension_item_list_tests', function() {
       document.body.appendChild(itemList);
     });
 
-    test(assert(TestNames.Filtering), function() {
+    test(assert(extension_item_list_tests.TestNames.Filtering), function() {
       function itemLengthEquals(num) {
-        Polymer.dom.flush();
+        flush();
         expectEquals(
             itemList.shadowRoot.querySelectorAll('extensions-item').length,
             num);
@@ -80,38 +86,34 @@ cr.define('extension_item_list_tests', function() {
       itemLengthEquals(1);
     });
 
-    test(assert(TestNames.NoItemsMsg), function() {
-      Polymer.dom.flush();
-      testVisible('#no-items', false);
-      testVisible('#no-search-results', false);
+    test(assert(extension_item_list_tests.TestNames.NoItemsMsg), function() {
+      flush();
+      boundTestVisible('#no-items', false);
+      boundTestVisible('#no-search-results', false);
 
       itemList.extensions = [];
       itemList.apps = [];
-      Polymer.dom.flush();
-      testVisible('#no-items', true);
-      testVisible('#no-search-results', false);
+      flush();
+      boundTestVisible('#no-items', true);
+      boundTestVisible('#no-search-results', false);
     });
 
-    test(assert(TestNames.NoSearchResultsMsg), function() {
-      Polymer.dom.flush();
-      testVisible('#no-items', false);
-      testVisible('#no-search-results', false);
+    test(
+        assert(extension_item_list_tests.TestNames.NoSearchResultsMsg),
+        function() {
+          flush();
+          boundTestVisible('#no-items', false);
+          boundTestVisible('#no-search-results', false);
 
-      itemList.filter = 'non-existent name';
-      Polymer.dom.flush();
-      testVisible('#no-items', false);
-      testVisible('#no-search-results', true);
-    });
+          itemList.filter = 'non-existent name';
+          flush();
+          boundTestVisible('#no-items', false);
+          boundTestVisible('#no-search-results', true);
+        });
 
-    test(assert(TestNames.LoadTimeData), function() {
+    test(assert(extension_item_list_tests.TestNames.LoadTimeData), function() {
       // Check that loadTimeData contains these values.
       loadTimeData.getBoolean('isManaged');
       loadTimeData.getString('browserManagedByOrg');
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

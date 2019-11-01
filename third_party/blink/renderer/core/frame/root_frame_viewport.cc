@@ -436,10 +436,6 @@ IntSize RootFrameViewport::ContentsSize() const {
   return LayoutViewport().ContentsSize();
 }
 
-bool RootFrameViewport::ShouldScrollOnMainThread() const {
-  return LayoutViewport().ShouldScrollOnMainThread();
-}
-
 bool RootFrameViewport::ScrollbarsCanBeActive() const {
   return LayoutViewport().ScrollbarsCanBeActive();
 }
@@ -458,19 +454,19 @@ void RootFrameViewport::ScrollControlWasSetNeedsPaintInvalidation() {
   LayoutViewport().ScrollControlWasSetNeedsPaintInvalidation();
 }
 
-cc::Layer* RootFrameViewport::LayerForScrolling() const {
+GraphicsLayer* RootFrameViewport::LayerForScrolling() const {
   return LayoutViewport().LayerForScrolling();
 }
 
-cc::Layer* RootFrameViewport::LayerForHorizontalScrollbar() const {
+GraphicsLayer* RootFrameViewport::LayerForHorizontalScrollbar() const {
   return LayoutViewport().LayerForHorizontalScrollbar();
 }
 
-cc::Layer* RootFrameViewport::LayerForVerticalScrollbar() const {
+GraphicsLayer* RootFrameViewport::LayerForVerticalScrollbar() const {
   return LayoutViewport().LayerForVerticalScrollbar();
 }
 
-cc::Layer* RootFrameViewport::LayerForScrollCorner() const {
+GraphicsLayer* RootFrameViewport::LayerForScrollCorner() const {
   return LayoutViewport().LayerForScrollCorner();
 }
 

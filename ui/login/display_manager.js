@@ -103,7 +103,8 @@ cr.define('cr.ui.login', function() {
 
   /**
    * Group of screens (screen IDs) where factory-reset screen invocation is
-   * available.
+   * available. Newer screens using Polymer use the attribute
+   * `resetAllowed` in their `ready()` method.
    * @type Array<string>
    * @const
    */
@@ -119,7 +120,6 @@ cr.define('cr.ui.login', function() {
     SCREEN_ERROR_MESSAGE,
     SCREEN_TPM_ERROR,
     SCREEN_PASSWORD_CHANGED,
-    SCREEN_TERMS_OF_SERVICE,
     SCREEN_ARC_TERMS_OF_SERVICE,
     SCREEN_WRONG_HWID,
     SCREEN_CONFIRM_PASSWORD,
@@ -134,7 +134,8 @@ cr.define('cr.ui.login', function() {
 
   /**
    * Group of screens (screen IDs) where enable debuggingscreen invocation is
-   * available.
+   * available. Newer screens using Polymer use the attribute
+   * `enableDebuggingAllowed` in their `ready()` method.
    * @type Array<string>
    * @const
    */
@@ -142,8 +143,7 @@ cr.define('cr.ui.login', function() {
     SCREEN_OOBE_HID_DETECTION,
     SCREEN_OOBE_NETWORK,
     SCREEN_OOBE_EULA,
-    SCREEN_OOBE_UPDATE,
-    SCREEN_TERMS_OF_SERVICE
+    SCREEN_OOBE_UPDATE
   ];
 
   /**

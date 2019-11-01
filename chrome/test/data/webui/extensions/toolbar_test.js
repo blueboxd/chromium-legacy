@@ -2,79 +2,100 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Suite of tests for extension-toolbar. */
-cr.define('extension_toolbar_tests', function() {
+import {getInstance} from 'chrome://extensions/extensions.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS, isMac} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {eventToPromise} from '../test_util.m.js';
+
+import {TestService} from './test_service.js';
+import {testVisible} from './test_util.js';
+
+  /** @fileoverview Suite of tests for extension-toolbar. */
+  window.extension_toolbar_tests = {};
+  extension_toolbar_tests.suiteName = 'ExtensionToolbarTest';
   /** @enum {string} */
-  const TestNames = {
+  extension_toolbar_tests.TestNames = {
     Layout: 'layout',
     ClickHandlers: 'click handlers',
     DevModeToggle: 'dev mode toggle',
     KioskMode: 'kiosk mode button'
   };
 
-  const suiteName = 'ExtensionToolbarTest';
-  suite(suiteName, function() {
+  suite(extension_toolbar_tests.suiteName, function() {
     /** @type {MockDelegate} */
     let mockDelegate;
 
-    /** @type {extensions.Toolbar} */
+    /** @type {ExtensionsToolbarElement} */
     let toolbar;
 
     setup(function() {
-      toolbar =
-          document.querySelector('extensions-manager').$$('extensions-toolbar');
-      mockDelegate = new extensions.TestService();
+      PolymerTest.clearBody();
+      toolbar = document.createElement('extensions-toolbar');
+      document.body.appendChild(toolbar);
+      toolbar.inDevMode = false;
+      toolbar.devModeControlledByPolicy = false;
+      toolbar.isSupervised = false;
+      if (isChromeOS) {
+        toolbar.kioskEnabled = false;
+      }
+      mockDelegate = new TestService();
       toolbar.set('delegate', mockDelegate);
+
+      // The toast manager is normally a child of the <extensions-manager>
+      // element, so add it separately for this test.
+      const toastManager = document.createElement('cr-toast-manager');
+      document.body.appendChild(toastManager);
     });
 
-    test(assert(TestNames.Layout), function() {
-      const testVisible = extension_test_util.testVisible.bind(null, toolbar);
-      testVisible('#devMode', true);
+    test(assert(extension_toolbar_tests.TestNames.Layout), function() {
+      const boundTestVisible = testVisible.bind(null, toolbar);
+      boundTestVisible('#devMode', true);
       assertEquals(toolbar.$.devMode.disabled, false);
-      testVisible('#loadUnpacked', false);
-      testVisible('#packExtensions', false);
-      testVisible('#updateNow', false);
-
+      boundTestVisible('#loadUnpacked', false);
+      boundTestVisible('#packExtensions', false);
+      boundTestVisible('#updateNow', false);
       toolbar.set('inDevMode', true);
-      Polymer.dom.flush();
+      flush();
 
-      testVisible('#devMode', true);
+      boundTestVisible('#devMode', true);
       assertEquals(toolbar.$.devMode.disabled, false);
-      testVisible('#loadUnpacked', true);
-      testVisible('#packExtensions', true);
-      testVisible('#updateNow', true);
+      boundTestVisible('#loadUnpacked', true);
+      boundTestVisible('#packExtensions', true);
+      boundTestVisible('#updateNow', true);
 
       toolbar.set('canLoadUnpacked', false);
-      Polymer.dom.flush();
+      flush();
 
-      testVisible('#devMode', true);
-      testVisible('#loadUnpacked', false);
-      testVisible('#packExtensions', true);
-      testVisible('#updateNow', true);
+      boundTestVisible('#devMode', true);
+      boundTestVisible('#loadUnpacked', false);
+      boundTestVisible('#packExtensions', true);
+      boundTestVisible('#updateNow', true);
     });
 
-    test(assert(TestNames.DevModeToggle), function() {
+    test(assert(extension_toolbar_tests.TestNames.DevModeToggle), function() {
       const toggle = toolbar.$.devMode;
       assertFalse(toggle.disabled);
 
       // Test that the dev-mode toggle is disabled when a policy exists.
       toolbar.set('devModeControlledByPolicy', true);
-      Polymer.dom.flush();
+      flush();
       assertTrue(toggle.disabled);
 
       toolbar.set('devModeControlledByPolicy', false);
-      Polymer.dom.flush();
+      flush();
       assertFalse(toggle.disabled);
 
       // Test that the dev-mode toggle is disabled when the user is supervised.
       toolbar.set('isSupervised', true);
-      Polymer.dom.flush();
+      flush();
       assertTrue(toggle.disabled);
     });
 
-    test(assert(TestNames.ClickHandlers), function() {
+    test(assert(extension_toolbar_tests.TestNames.ClickHandlers), function() {
       toolbar.set('inDevMode', true);
-      Polymer.dom.flush();
+      flush();
 
       toolbar.$.devMode.click();
       return mockDelegate.whenCalled('setProfileInDevMode')
@@ -90,7 +111,7 @@ cr.define('extension_toolbar_tests', function() {
             return mockDelegate.whenCalled('loadUnpacked');
           })
           .then(function() {
-            const toastManager = cr.toastManager.getInstance();
+            const toastManager = getInstance();
             assertFalse(toastManager.isToastOpen);
             toolbar.$.updateNow.click();
             // Simulate user rapidly clicking update button multiple times.
@@ -102,35 +123,29 @@ cr.define('extension_toolbar_tests', function() {
             assertEquals(1, mockDelegate.getCallCount('updateAllExtensions'));
             assertFalse(!!toolbar.$$('extensions-pack-dialog'));
             toolbar.$.packExtensions.click();
-            Polymer.dom.flush();
+            flush();
             const dialog = toolbar.$$('extensions-pack-dialog');
             assertTrue(!!dialog);
 
-            if (!cr.isMac) {
+            if (!isMac) {
               const whenFocused =
-                  test_util.eventToPromise('focus', toolbar.$.packExtensions);
+                  eventToPromise('focus', toolbar.$.packExtensions);
               dialog.$.dialog.cancel();
               return whenFocused;
             }
           });
     });
 
-    if (cr.isChromeOS) {
-      test(assert(TestNames.KioskMode), function() {
+    if (isChromeOS) {
+      test(assert(extension_toolbar_tests.TestNames.KioskMode), function() {
         const button = toolbar.$.kioskExtensions;
         expectTrue(button.hidden);
         toolbar.kioskEnabled = true;
         expectFalse(button.hidden);
 
-        const whenTapped = test_util.eventToPromise('kiosk-tap', toolbar);
+        const whenTapped = eventToPromise('kiosk-tap', toolbar);
         button.click();
         return whenTapped;
       });
     }
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

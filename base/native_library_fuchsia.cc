@@ -5,6 +5,8 @@
 #include "base/native_library.h"
 
 #include <fcntl.h>
+#include <fuchsia/io/cpp/fidl.h>
+#include <lib/fdio/directory.h>
 #include <lib/fdio/io.h>
 #include <lib/zx/vmo.h>
 #include <stdio.h>
@@ -43,37 +45,29 @@ NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
   FilePath computed_path;
   base::PathService::Get(DIR_SOURCE_ROOT, &computed_path);
   computed_path = computed_path.AppendASCII("lib").Append(components[0]);
-  base::File library(computed_path,
-                     base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!library.IsValid()) {
+
+  // Use fdio_open_fd (a Fuchsia-specific API) here so we can pass the
+  // appropriate FS rights flags to request executability.
+  // TODO(1018538): Teach base::File about FLAG_EXECUTE on Fuchsia, and then
+  // use it here instead of using fdio_open_fd() directly.
+  base::ScopedFD fd;
+  zx_status_t status = fdio_open_fd(
+      computed_path.value().c_str(),
+      fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_EXECUTABLE,
+      base::ScopedFD::Receiver(fd).get());
+  if (status != ZX_OK) {
     if (error) {
-      error->message = base::StringPrintf(
-          "open library: %s",
-          base::File::ErrorToString(library.error_details()).c_str());
+      error->message =
+          base::StringPrintf("fdio_open_fd: %s", zx_status_get_string(status));
     }
     return nullptr;
   }
 
   zx::vmo vmo;
-  zx_status_t status = fdio_get_vmo_clone(library.GetPlatformFile(),
-                                          vmo.reset_and_get_address());
+  status = fdio_get_vmo_exec(fd.get(), vmo.reset_and_get_address());
   if (status != ZX_OK) {
     if (error) {
-      error->message = base::StringPrintf("fdio_get_vmo_clone: %s",
-                                          zx_status_get_string(status));
-    }
-    return nullptr;
-  }
-
-  // VMOs must be marked as exec-capable to be mapped executable in dlopen_vmo,
-  // and fdio_get_vmo_clone shouldn't be marking every VMO it returns
-  // exec-capable.  So we should mark it as exec-capable here.
-  // In the fullness of time, this invalid handle should be swapped out for a
-  // ZX_RSRC_KIND_VMEX handle.
-  status = vmo.replace_as_executable(zx::handle(), &vmo);
-  if (status != ZX_OK) {
-    if (error) {
-      error->message = base::StringPrintf("zx_vmo_replace_as_executable: %s",
+      error->message = base::StringPrintf("fdio_get_vmo_exec: %s",
                                           zx_status_get_string(status));
     }
     return nullptr;

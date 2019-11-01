@@ -35,7 +35,8 @@ public class RenderingTest {
             activity.getBrowserFragmentController().setSupportsEmbedding(true).addCallback(
                     (Boolean result) -> {
                         Assert.assertTrue(result);
-                        activity.getBrowserFragmentController().setSupportsEmbedding(false)
+                        activity.getBrowserFragmentController()
+                                .setSupportsEmbedding(false)
                                 .addCallback((Boolean result2) -> {
                                     Assert.assertTrue(result2);
                                     latch.countDown();

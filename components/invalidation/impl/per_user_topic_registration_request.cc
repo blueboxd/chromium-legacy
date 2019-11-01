@@ -90,11 +90,9 @@ PerUserTopicRegistrationRequest::~PerUserTopicRegistrationRequest() = default;
 
 void PerUserTopicRegistrationRequest::Start(
     CompletedCallback callback,
-    const ParseJSONCallback& parse_json,
     network::mojom::URLLoaderFactory* loader_factory) {
   DCHECK(request_completed_callback_.is_null()) << "Request already running!";
   request_completed_callback_ = std::move(callback);
-  parse_json_ = parse_json;
 
   simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory,
@@ -160,27 +158,24 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
              std::string());
     return;
   }
-  auto success_callback =
-      base::BindOnce(&PerUserTopicRegistrationRequest::OnJsonParseSuccess,
-                     weak_ptr_factory_.GetWeakPtr());
-  auto error_callback =
-      base::BindOnce(&PerUserTopicRegistrationRequest::OnJsonParseFailure,
-                     weak_ptr_factory_.GetWeakPtr());
-  parse_json_.Run(*response_body,
-                  base::AdaptCallbackForRepeating(std::move(success_callback)),
-                  base::AdaptCallbackForRepeating(std::move(error_callback)));
+
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *response_body,
+      base::BindOnce(&PerUserTopicRegistrationRequest::OnJsonParse,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PerUserTopicRegistrationRequest::OnJsonParseFailure(
-    const std::string& error) {
-  RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
-  std::move(request_completed_callback_)
-      .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
-           std::string());
-}
+void PerUserTopicRegistrationRequest::OnJsonParse(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
+    std::move(request_completed_callback_)
+        .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
+             std::string());
+    return;
+  }
 
-void PerUserTopicRegistrationRequest::OnJsonParseSuccess(base::Value value) {
-  const std::string* private_topic_name = GetTopicName(value);
+  const std::string* private_topic_name = GetTopicName(*result.value);
   RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_);
   if (private_topic_name) {
     std::move(request_completed_callback_)

@@ -22,7 +22,7 @@
 #include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -440,7 +440,7 @@ class TestingProfile : public Profile {
       extensions_cookie_store_;
 
   std::unique_ptr<network::mojom::NetworkContext> network_context_;
-  mojo::BindingSet<network::mojom::NetworkContext> network_context_bindings_;
+  mojo::ReceiverSet<network::mojom::NetworkContext> network_context_receivers_;
 
   std::unique_ptr<Profile> incognito_profile_;
   TestingProfile* original_profile_;

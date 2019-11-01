@@ -10,6 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/chrome_cleaner/engines/target/sandbox_request_helper.h"
 #include "chrome/chrome_cleaner/mojom/cleaner_engine_requests.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace chrome_cleaner {
 
@@ -17,7 +19,7 @@ class CleanerEngineRequestsProxy
     : public base::RefCountedThreadSafe<CleanerEngineRequestsProxy> {
  public:
   CleanerEngineRequestsProxy(
-      mojom::CleanerEngineRequestsAssociatedPtr requests_ptr,
+      mojo::PendingAssociatedRemote<mojom::CleanerEngineRequests> requests,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Implements synchronous callbacks to be called on arbitrary threads from the
@@ -38,7 +40,7 @@ class CleanerEngineRequestsProxy
     return task_runner_;
   }
 
-  void UnbindRequestsPtr();
+  void UnbindRequestsRemote();
 
  protected:
   virtual ~CleanerEngineRequestsProxy();
@@ -83,7 +85,7 @@ class CleanerEngineRequestsProxy
 
   // A CleanerEngineRequests that will send the requests over the Mojo
   // connection.
-  mojom::CleanerEngineRequestsAssociatedPtr requests_ptr_;
+  mojo::AssociatedRemote<mojom::CleanerEngineRequests> requests_;
 
   // A task runner for the IPC thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

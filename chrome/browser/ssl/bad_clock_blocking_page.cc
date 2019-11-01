@@ -66,8 +66,7 @@ BadClockBlockingPage::BadClockBlockingPage(
     const GURL& request_url,
     const base::Time& time_triggered,
     ssl_errors::ClockState clock_state,
-    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const base::Callback<void(content::CertificateRequestResultType)>& callback)
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter)
     : SSLBlockingPageBase(
           web_contents,
           cert_error,
@@ -83,7 +82,6 @@ BadClockBlockingPage::BadClockBlockingPage(
               cert_error,
               request_url,
               CreateBadClockMetricsHelper(web_contents, request_url))),
-      callback_(callback),
       ssl_info_(ssl_info),
       bad_clock_ui_(new security_interstitials::BadClockUI(request_url,
                                                            cert_error,
@@ -92,12 +90,7 @@ BadClockBlockingPage::BadClockBlockingPage(
                                                            clock_state,
                                                            controller())) {}
 
-BadClockBlockingPage::~BadClockBlockingPage() {
-  if (!callback_.is_null()) {
-    // Deny when the page is closed.
-    NotifyDenyCertificate();
-  }
-}
+BadClockBlockingPage::~BadClockBlockingPage() = default;
 
 bool BadClockBlockingPage::ShouldCreateNewNavigation() const {
   return true;
@@ -144,19 +137,4 @@ void BadClockBlockingPage::OverrideRendererPrefs(
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
-}
-
-void BadClockBlockingPage::OnDontProceed() {
-  OnInterstitialClosing();
-  NotifyDenyCertificate();
-}
-
-void BadClockBlockingPage::NotifyDenyCertificate() {
-  // It's possible that callback_ may not exist if the user clicks "Proceed"
-  // followed by pressing the back button before the interstitial is hidden.
-  // In that case the certificate will still be treated as allowed.
-  if (callback_.is_null())
-    return;
-
-  std::move(callback_).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
 }

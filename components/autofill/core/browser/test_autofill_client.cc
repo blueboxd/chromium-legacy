@@ -145,9 +145,7 @@ void TestAutofillClient::ConfirmAccountNameFixFlow(
   credit_card_name_fix_flow_bubble_was_shown_ = true;
   std::move(callback).Run(base::string16(base::ASCIIToUTF16("Gaia Name")));
 }
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
-#if defined(OS_ANDROID)
 void TestAutofillClient::ConfirmExpirationDateFixFlow(
     const CreditCard& card,
     base::OnceCallback<void(const base::string16&, const base::string16&)>
@@ -157,7 +155,7 @@ void TestAutofillClient::ConfirmExpirationDateFixFlow(
       base::string16(base::ASCIIToUTF16("03")),
       base::string16(base::ASCIIToUTF16(test::NextYear().c_str())));
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,

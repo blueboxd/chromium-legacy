@@ -23,6 +23,10 @@ class MediaHistoryKeyedService : public KeyedService {
   // Returns the instance attached to the given |profile|.
   static MediaHistoryKeyedService* Get(Profile* profile);
 
+  MediaHistoryStore* GetMediaHistoryStore() {
+    return media_history_store_.get();
+  }
+
  private:
   std::unique_ptr<MediaHistoryStore> media_history_store_;
 

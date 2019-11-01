@@ -3,67 +3,15 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
-
-chromevox_test_data_dir = "$root_build_dir/chromevox_test_data/braille"
-
-# Build Liblouis library
-#
-# This target is used to build and assemble Liblouis braille translator.
-#
-# Variables:
-#   dest_dir: destination path for all translator files
-#   deps: private linked dependencies
-#   testonly: a target must only be used for testing
-template("liblouis_library") {
-  assert(defined(invoker.dest_dir), "Must define dest_dir")
-  forward_variables_from(invoker, [ "dest_dir" ])
-
-  tables_json_target_name = "${target_name}_tables_json"
-  wasm_target_name = "${target_name}_wasm"
-  final_target_name = target_name
-
-  copy(tables_json_target_name) {
-    forward_variables_from(invoker, [ "testonly" ])
-    visibility = [ ":$final_target_name" ]
-    sources = [
-      "tables.json",
-    ]
-    outputs = [
-      "$dest_dir/{{source_file_part}}",
-    ]
-  }
-
-  copy(wasm_target_name) {
-    forward_variables_from(invoker, [ "testonly" ])
-    visibility = [ ":$final_target_name" ]
-    sources = [
-      "wasm/liblouis_wasm.data",
-      "wasm/liblouis_wasm.js",
-      "wasm/liblouis_wasm.wasm",
-      "wasm/liblouis_wrapper.js",
-    ]
-    outputs = [
-      "$dest_dir/{{source_file_part}}",
-    ]
-  }
-
-  group(target_name) {
-    forward_variables_from(invoker, [ "testonly" ])
-    deps = [
-      ":$tables_json_target_name",
-      ":$wasm_target_name",
-    ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-  }
-}
+import("liblouis_library.gni")
 
 liblouis_library("liblouis") {
   dest_dir = "$root_build_dir/resources/chromeos/chromevox/braille"
 }
 
 if (!is_chromecast) {
+  chromevox_test_data_dir = "$root_build_dir/chromevox_test_data/braille"
+
   liblouis_library("liblouis_test_data") {
     testonly = true
     dest_dir = chromevox_test_data_dir

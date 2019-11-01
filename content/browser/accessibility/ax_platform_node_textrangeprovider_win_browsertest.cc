@@ -1824,9 +1824,11 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   AssertMoveByUnitForMarkup(
       TextUnit_Line, "<div style='display:inline-block'>a</div>", {L"a"});
 
+  // This tests a weird edge-case; TextUnit_Line breaks at the beginning of an
+  // inline-block, but not at the end.
   AssertMoveByUnitForMarkup(TextUnit_Line,
                             "a<div style='display:inline-block'>b</div>c",
-                            {L"a", L"b"});
+                            {L"a", L"b\nc"});
 
   // The following test should be enabled when crbug.com/1015100 is fixed.
   // AssertMoveByUnitForMarkup(

@@ -85,12 +85,10 @@ struct SizeInfo {
 
 struct Stat {
   int32_t count = 0;
-  int32_t highlight = 0;
   float size = 0.0f;
 
   void operator+=(const Stat& other) {
     count += other.count;
-    highlight += other.highlight;
     size += other.size;
   }
 };
@@ -98,7 +96,7 @@ struct Stat {
 struct NodeStats {
   NodeStats();
   ~NodeStats();
-  NodeStats(SectionId section, int32_t count, int32_t highlight, float size);
+  NodeStats(SectionId section, int32_t count, float size);
   void WriteIntoJson(Json::Value* out) const;
   NodeStats& operator+=(const NodeStats& other);
   SectionId ComputeBiggestSection() const;

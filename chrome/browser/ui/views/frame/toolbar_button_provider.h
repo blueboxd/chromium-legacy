@@ -47,10 +47,9 @@ class ToolbarButtonProvider {
   // Gets the app menu button.
   virtual AppMenuButton* GetAppMenuButton() = 0;
 
-  // Gets the area available for the find bar in widget space where
-  // |contents_height| is the amount of vertical space available, otherwise if
-  // there is no appropriate anchor point returns empty gfx::Rect.
-  virtual gfx::Rect GetFindBarBoundingBox(int contents_height) const = 0;
+  // Returns a bounding box for the find bar in widget coordinates given the
+  // bottom of the contents container.
+  virtual gfx::Rect GetFindBarBoundingBox(int contents_bottom) const = 0;
 
   // Gives the toolbar focus.
   virtual void FocusToolbar() = 0;

@@ -64,6 +64,7 @@ class MediaNotificationContainerImplView
       override;
   void OnMediaArtworkChanged(const gfx::ImageSkia& image) override;
   void OnColorsChanged(SkColor foreground, SkColor background) override;
+  void OnHeaderClicked() override;
 
   // views::SlideOutControllerDelegate:
   ui::Layer* GetSlideOutLayer() override;
@@ -97,6 +98,9 @@ class MediaNotificationContainerImplView
 
   // Updates the forced expanded state of |view_|.
   void ForceExpandedState();
+
+  // Notify observers that we've been clicked.
+  void ContainerClicked();
 
   const std::string id_;
   views::View* swipeable_container_ = nullptr;

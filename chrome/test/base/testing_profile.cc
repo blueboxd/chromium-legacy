@@ -1116,7 +1116,7 @@ TestingProfile::CreateNetworkContext(
     const base::FilePath& relative_partition_path) {
   if (network_context_) {
     mojo::Remote<network::mojom::NetworkContext> network_context_remote;
-    network_context_bindings_.AddBinding(
+    network_context_receivers_.Add(
         network_context_.get(),
         network_context_remote.BindNewPipeAndPassReceiver());
     return network_context_remote;

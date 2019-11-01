@@ -2,11 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import './toggle_row.js';
+import './shared_style.js';
+import './strings.m.js';
 
-  const HostPermissionsToggleList = Polymer({
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ItemDelegate} from './item.js';
+
+  Polymer({
     is: 'extensions-host-permissions-toggle-list',
+
+    _template: html`{__html_template__}`,
 
     properties: {
       /**
@@ -18,7 +29,7 @@ cr.define('extensions', function() {
       /** @private */
       itemId: String,
 
-      /** @type {!extensions.ItemDelegate} */
+      /** @type {!ItemDelegate} */
       delegate: Object,
     },
 
@@ -78,6 +89,3 @@ cr.define('extensions', function() {
       }
     },
   });
-
-  return {HostPermissionsToggleList: HostPermissionsToggleList};
-});

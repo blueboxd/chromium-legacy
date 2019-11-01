@@ -32,13 +32,12 @@ class ContactsProviderAndroid : public ContactsProvider {
   // Adds one contact to the list of contacts selected. Note, EndContactsList
   // (or EndWithPermissionDenied) must be called to signal the end of the
   // construction of the contacts list.
-  void AddContact(JNIEnv* env,
-                  jboolean includeNames,
-                  jboolean includeEmails,
-                  jboolean includeTel,
-                  const base::android::JavaParamRef<jobjectArray>& names_java,
-                  const base::android::JavaParamRef<jobjectArray>& emails_java,
-                  const base::android::JavaParamRef<jobjectArray>& tel_java);
+  void AddContact(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobjectArray>& names_java,
+      const base::android::JavaParamRef<jobjectArray>& emails_java,
+      const base::android::JavaParamRef<jobjectArray>& tel_java,
+      const base::android::JavaParamRef<jobjectArray>& addresses_java);
 
   // Signals the end of adding contacts to the list. The contact list is
   // returned to the web page, the other params are logged via UKM.

@@ -102,6 +102,7 @@ import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -2075,12 +2076,12 @@ public class CustomTabActivityTest {
         // Needs the browser process to be initialized.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge prefs = PrefServiceBridge.getInstance();
-            boolean old_block_pref = prefs.isBlockThirdPartyCookiesEnabled();
-            prefs.setBlockThirdPartyCookiesEnabled(false);
+            boolean old_block_pref = prefs.getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES);
+            prefs.setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, false);
             Assert.assertTrue(connection.maySpeculate(token));
-            prefs.setBlockThirdPartyCookiesEnabled(true);
+            prefs.setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, true);
             Assert.assertFalse(connection.maySpeculate(token));
-            prefs.setBlockThirdPartyCookiesEnabled(old_block_pref);
+            prefs.setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, old_block_pref);
         });
     }
 

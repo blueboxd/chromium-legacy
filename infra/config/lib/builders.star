@@ -44,6 +44,7 @@ os = struct(
 
     MAC_10_12 = 'Mac-10.12',
     MAC_10_13 = 'Mac-10.13',
+    MAC_10_14 = 'Mac-10.14',
     MAC_DEFAULT = 'Mac-10.13',
     MAC_ANY = 'Mac',
 

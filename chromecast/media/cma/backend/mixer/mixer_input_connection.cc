@@ -225,7 +225,9 @@ MixerInputConnection::~MixerInputConnection() {
 bool MixerInputConnection::HandleMetadata(
     const mixer_service::Generic& message) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  inactivity_timer_.Reset();
+  if (inactivity_timer_.IsRunning()) {
+    inactivity_timer_.Reset();
+  }
 
   if (message.has_set_start_timestamp()) {
     RestartPlaybackAt(message.set_start_timestamp().start_timestamp(),
@@ -247,7 +249,9 @@ bool MixerInputConnection::HandleAudioData(char* data,
                                            int size,
                                            int64_t timestamp) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  inactivity_timer_.Reset();
+  if (inactivity_timer_.IsRunning()) {
+    inactivity_timer_.Reset();
+  }
 
   const int frame_size =
       num_channels_ * mixer_service::GetSampleSizeBytes(sample_format_);
@@ -312,7 +316,9 @@ bool MixerInputConnection::HandleAudioBuffer(
     int size,
     int64_t timestamp) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  inactivity_timer_.Reset();
+  if (inactivity_timer_.IsRunning()) {
+    inactivity_timer_.Reset();
+  }
 
   DCHECK_EQ(data - buffer->data(), kAudioMessageHeaderSize);
   DCHECK_EQ(sample_format_, mixer_service::SAMPLE_FORMAT_FLOAT_P);
@@ -327,6 +333,10 @@ bool MixerInputConnection::HandleAudioBuffer(
 
 void MixerInputConnection::OnConnectionError() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  if (connection_error_) {
+    return;
+  }
+  connection_error_ = true;
   socket_.reset();
   weak_factory_.InvalidateWeakPtrs();
 

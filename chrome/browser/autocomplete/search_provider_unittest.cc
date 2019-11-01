@@ -1339,6 +1339,14 @@ TEST_F(SearchProviderTest, DefaultProviderNoSuggestRelevanceInKeywordMode) {
 // case to this test, please consider adding it to the tests in
 // KeywordFetcherSuggestRelevance below.
 TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
+  // This test was written assuming a different default.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {
+          {omnibox::kUIExperimentMaxAutocompleteMatches,
+           {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}}},
+      },
+      {/* nothing disabled */});
   struct {
     const std::string json;
     const ExpectedMatch matches[6];
@@ -1577,6 +1585,14 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
 // test is added to this TEST_F, please consider if it would be
 // appropriate to add to DefaultFetcherSuggestRelevance as well.
 TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
+  // This test was written assuming a different default.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {
+          {omnibox::kUIExperimentMaxAutocompleteMatches,
+           {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}}},
+      },
+      {/* nothing disabled */});
   struct KeywordFetcherMatch {
     std::string contents;
     bool from_keyword;
@@ -2315,6 +2331,14 @@ TEST_F(SearchProviderTest, DontCacheCalculatorSuggestions) {
 }
 
 TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
+  // This test was written assuming a different default.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {
+          {omnibox::kUIExperimentMaxAutocompleteMatches,
+           {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}}},
+      },
+      {/* nothing disabled */});
   // We hardcode the string "term1" below, so ensure that the search term that
   // got added to history already is that string.
   ASSERT_EQ(ASCIIToUTF16("term1"), term1_);

@@ -30,13 +30,6 @@ FakeDiskMountManager::MountRequest::MountRequest(const MountRequest& other) =
 
 FakeDiskMountManager::MountRequest::~MountRequest() = default;
 
-FakeDiskMountManager::UnmountRequest::UnmountRequest(
-    const std::string& mount_path,
-    chromeos::UnmountOptions options)
-    : mount_path(mount_path),
-      options(options) {
-}
-
 FakeDiskMountManager::RemountAllRequest::RemountAllRequest(
     chromeos::MountAccessMode access_mode)
     : access_mode(access_mode) {}
@@ -100,9 +93,8 @@ void FakeDiskMountManager::MountPath(
 }
 
 void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
-                                       chromeos::UnmountOptions options,
                                        UnmountPathCallback callback) {
-  unmount_requests_.emplace_back(mount_path, options);
+  unmount_requests_.emplace_back(mount_path);
 
   chromeos::MountError error = chromeos::MOUNT_ERROR_NONE;
   auto unmount_iter = unmount_errors_.find(mount_path);

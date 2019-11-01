@@ -252,7 +252,7 @@ DevToolsManagerDelegateAndroid::CreateNewTarget(const GURL& url) {
 }
 
 std::string DevToolsManagerDelegateAndroid::GetDiscoveryPageHTML() {
-  return ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
       IDR_DEVTOOLS_DISCOVERY_PAGE_HTML);
 }
 

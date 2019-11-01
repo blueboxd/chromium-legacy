@@ -19,26 +19,25 @@ ExtensionDownloaderDelegate::~ExtensionDownloaderDelegate() {
 }
 
 void ExtensionDownloaderDelegate::OnExtensionDownloadStageChanged(
-    const std::string& id,
+    const ExtensionId& id,
     ExtensionDownloaderDelegate::Stage stage) {}
 
 void ExtensionDownloaderDelegate::OnExtensionDownloadFailed(
-    const std::string& id,
+    const ExtensionId& id,
     ExtensionDownloaderDelegate::Error error,
     const ExtensionDownloaderDelegate::PingResult& ping_result,
-    const std::set<int>& request_id) {
-}
+    const std::set<int>& request_id) {}
 
 void ExtensionDownloaderDelegate::OnExtensionDownloadRetryForTests() {}
 
 bool ExtensionDownloaderDelegate::GetPingDataForExtension(
-    const std::string& id,
+    const ExtensionId& id,
     ManifestFetchData::PingData* ping) {
   return false;
 }
 
 std::string ExtensionDownloaderDelegate::GetUpdateUrlData(
-    const std::string& id) {
+    const ExtensionId& id) {
   return std::string();
 }
 

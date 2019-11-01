@@ -554,18 +554,14 @@ base::TimeDelta GtkUi::GetCursorBlinkInterval() const {
 }
 
 ui::NativeTheme* GtkUi::GetNativeTheme(aura::Window* window) const {
-  ui::NativeTheme* native_theme_override = nullptr;
-  if (!native_theme_overrider_.is_null())
-    native_theme_override = native_theme_overrider_.Run(window);
-
-  if (native_theme_override)
-    return native_theme_override;
-
-  return native_theme_;
+  return (use_system_theme_callback_.is_null() ||
+          use_system_theme_callback_.Run(window))
+             ? native_theme_
+             : ui::NativeTheme::GetInstanceForNativeUi();
 }
 
-void GtkUi::SetNativeThemeOverride(NativeThemeGetter callback) {
-  native_theme_overrider_ = std::move(callback);
+void GtkUi::SetUseSystemThemeCallback(UseSystemThemeCallback callback) {
+  use_system_theme_callback_ = std::move(callback);
 }
 
 bool GtkUi::GetDefaultUsesSystemTheme() const {

@@ -5,27 +5,15 @@
 package org.chromium.chrome.browser.webapps.addtohomescreen;
 
 import android.graphics.Bitmap;
-import android.support.annotation.IntDef;
 import android.util.Pair;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * Contains the properties that an add-to-homescreen {@link PropertyModel} can have.
  */
 public class AddToHomescreenProperties {
-    @IntDef({AppType.NATIVE, AppType.WEB_APK, AppType.SHORTCUT})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface AppType {
-        int NATIVE = 0;
-        int WEB_APK = 1;
-        int SHORTCUT = 2;
-    }
-
     public static final PropertyModel.WritableObjectPropertyKey<String> TITLE =
             new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyModel.WritableObjectPropertyKey<String> URL =

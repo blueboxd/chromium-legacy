@@ -1422,6 +1422,10 @@ bool AcceleratorControllerImpl::IsRegistered(
   return accelerator_manager_->IsRegistered(accelerator);
 }
 
+ui::AcceleratorHistory* AcceleratorControllerImpl::GetAcceleratorHistory() {
+  return accelerator_history_.get();
+}
+
 bool AcceleratorControllerImpl::IsPreferred(
     const ui::Accelerator& accelerator) const {
   std::map<ui::Accelerator, AcceleratorAction>::const_iterator iter =

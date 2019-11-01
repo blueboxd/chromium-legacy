@@ -36,12 +36,9 @@
 #include "chrome/browser/ui/android/android_about_app_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "components/browsing_data/core/browsing_data_utils.h"
-#include "components/browsing_data/core/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/content_settings/core/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_util.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -117,15 +114,6 @@ bool IsContentSettingUserModifiable(ContentSettingsType content_settings_type) {
 
 PrefService* GetPrefService() {
   return GetOriginalProfile()->GetPrefs();
-}
-
-browsing_data::ClearBrowsingDataTab ToTabEnum(jint clear_browsing_data_tab) {
-  DCHECK_GE(clear_browsing_data_tab, 0);
-  DCHECK_LT(clear_browsing_data_tab,
-            static_cast<int>(browsing_data::ClearBrowsingDataTab::NUM_TYPES));
-
-  return static_cast<browsing_data::ClearBrowsingDataTab>(
-      clear_browsing_data_tab);
 }
 
 }  // namespace
@@ -352,24 +340,6 @@ static jboolean JNI_PrefServiceBridge_GetAutomaticDownloadsEnabled(
   return GetBooleanForContentSetting(ContentSettingsType::AUTOMATIC_DOWNLOADS);
 }
 
-static jboolean JNI_PrefServiceBridge_GetBlockThirdPartyCookiesEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies);
-}
-
-static jboolean JNI_PrefServiceBridge_GetBlockThirdPartyCookiesManaged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(prefs::kBlockThirdPartyCookies);
-}
-
-static jboolean JNI_PrefServiceBridge_GetDoNotTrackEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kEnableDoNotTrack);
-}
-
 static jboolean JNI_PrefServiceBridge_GetNetworkPredictionEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -388,12 +358,6 @@ static jboolean JNI_PrefServiceBridge_GetPasswordEchoEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return GetPrefService()->GetBoolean(prefs::kWebKitPasswordEchoEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetPrintingEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kPrintingEnabled);
 }
 
 static jboolean JNI_PrefServiceBridge_GetTranslateEnabled(
@@ -545,93 +509,6 @@ static jboolean JNI_PrefServiceBridge_IsMetricsReportingManaged(
       metrics::prefs::kMetricsReportingEnabled);
 }
 
-static jboolean JNI_PrefServiceBridge_GetBrowsingDataDeletionPreference(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint data_type,
-    jint clear_browsing_data_tab) {
-  DCHECK_GE(data_type, 0);
-  DCHECK_LT(data_type,
-            static_cast<int>(browsing_data::BrowsingDataType::NUM_TYPES));
-
-  // If there is no corresponding preference for this |data_type|, pretend
-  // that it's set to false.
-  // TODO(msramek): Consider defining native-side preferences for all Java UI
-  // data types for consistency.
-  std::string pref;
-  if (!browsing_data::GetDeletionPreferenceFromDataType(
-          static_cast<browsing_data::BrowsingDataType>(data_type),
-          ToTabEnum(clear_browsing_data_tab), &pref)) {
-    return false;
-  }
-
-  return GetOriginalProfile()->GetPrefs()->GetBoolean(pref);
-}
-
-static void JNI_PrefServiceBridge_SetBrowsingDataDeletionPreference(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint data_type,
-    jint clear_browsing_data_tab,
-    jboolean value) {
-  DCHECK_GE(data_type, 0);
-  DCHECK_LT(data_type,
-            static_cast<int>(browsing_data::BrowsingDataType::NUM_TYPES));
-
-  std::string pref;
-  if (!browsing_data::GetDeletionPreferenceFromDataType(
-          static_cast<browsing_data::BrowsingDataType>(data_type),
-          ToTabEnum(clear_browsing_data_tab), &pref)) {
-    return;
-  }
-
-  GetOriginalProfile()->GetPrefs()->SetBoolean(pref, value);
-}
-
-static jint JNI_PrefServiceBridge_GetBrowsingDataDeletionTimePeriod(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint clear_browsing_data_tab) {
-  return GetPrefService()->GetInteger(
-      browsing_data::GetTimePeriodPreferenceName(
-          ToTabEnum(clear_browsing_data_tab)));
-}
-
-static void JNI_PrefServiceBridge_SetBrowsingDataDeletionTimePeriod(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint clear_browsing_data_tab,
-    jint time_period) {
-  DCHECK_GE(time_period, 0);
-  DCHECK_LE(time_period,
-            static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST));
-  const char* pref_name = browsing_data::GetTimePeriodPreferenceName(
-      ToTabEnum(clear_browsing_data_tab));
-  int previous_value = GetPrefService()->GetInteger(pref_name);
-  if (time_period != previous_value) {
-    browsing_data::RecordTimePeriodChange(
-        static_cast<browsing_data::TimePeriod>(time_period));
-    GetPrefService()->SetInteger(pref_name, time_period);
-  }
-}
-
-static jint JNI_PrefServiceBridge_GetLastClearBrowsingDataTab(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetInteger(
-      browsing_data::prefs::kLastClearBrowsingDataTab);
-}
-
-static void JNI_PrefServiceBridge_SetLastClearBrowsingDataTab(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint tab_index) {
-  DCHECK_GE(tab_index, 0);
-  DCHECK_LT(tab_index, 2);
-  GetPrefService()->SetInteger(browsing_data::prefs::kLastClearBrowsingDataTab,
-                               tab_index);
-}
-
 static void JNI_PrefServiceBridge_SetAutoplayEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -717,13 +594,6 @@ static void JNI_PrefServiceBridge_SetAutomaticDownloadsEnabled(
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
-static void JNI_PrefServiceBridge_SetBlockThirdPartyCookiesEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, enabled);
-}
-
 static void JNI_PrefServiceBridge_SetAllowLocationEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -780,13 +650,6 @@ static jboolean JNI_PrefServiceBridge_CanPrefetchAndPrerender(
     const JavaParamRef<jobject>& obj) {
   return chrome_browser_net::CanPrefetchAndPrerenderUI(GetPrefService()) ==
       chrome_browser_net::NetworkPredictionStatus::ENABLED;
-}
-
-static void JNI_PrefServiceBridge_SetDoNotTrackEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean allow) {
-  GetPrefService()->SetBoolean(prefs::kEnableDoNotTrack, allow);
 }
 
 static ScopedJavaLocalRef<jstring> JNI_PrefServiceBridge_GetSyncLastAccountName(

@@ -8,11 +8,6 @@
 
 namespace quic {
 
-template <typename T, typename... Args>
-std::unique_ptr<T> QuicMakeUniqueImpl(Args&&... args) {
-  return std::make_unique<T>(std::forward<Args>(args)...);
-}
-
 template <typename T>
 std::unique_ptr<T> QuicWrapUniqueImpl(T* ptr) {
   return base::WrapUnique<T>(ptr);

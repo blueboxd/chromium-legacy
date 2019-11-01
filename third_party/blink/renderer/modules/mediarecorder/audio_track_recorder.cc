@@ -52,7 +52,7 @@ AudioTrackRecorder::AudioTrackRecorder(CodecId codec,
                                   std::move(on_encoded_audio_cb),
                                   bits_per_second)),
       encoder_thread_(Thread::CreateThread(
-          ThreadCreationParams(WebThreadType::kAudioEncoderThread))),
+          ThreadCreationParams(ThreadType::kAudioEncoderThread))),
       encoder_task_runner_(encoder_thread_->GetTaskRunner()) {
   DCHECK(IsMainThread());
   DCHECK(track_);

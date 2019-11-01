@@ -235,14 +235,14 @@ void HintCacheStore::UpdateFetchedHints(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(fetched_hints_data);
   DCHECK(!data_update_in_flight_);
-  DCHECK(fetched_hints_data->fetch_update_time());
+  DCHECK(fetched_hints_data->update_time());
 
   if (!IsAvailable()) {
     std::move(callback).Run();
     return;
   }
 
-  fetched_update_time_ = *fetched_hints_data->fetch_update_time();
+  fetched_update_time_ = *fetched_hints_data->update_time();
 
   data_update_in_flight_ = true;
 
@@ -420,6 +420,22 @@ HintCacheStore::EntryKeyPrefix HintCacheStore::GetComponentHintEntryKeyPrefix(
 HintCacheStore::EntryKeyPrefix HintCacheStore::GetFetchedHintEntryKeyPrefix() {
   return base::NumberToString(
              static_cast<int>(HintCacheStore::StoreEntryType::kFetchedHint)) +
+         kKeySectionDelimiter;
+}
+
+// static
+HintCacheStore::EntryKeyPrefix
+HintCacheStore::GetPredictionModelEntryKeyPrefix() {
+  return base::NumberToString(static_cast<int>(
+             HintCacheStore::StoreEntryType::kPredictionModel)) +
+         kKeySectionDelimiter;
+}
+
+// static
+HintCacheStore::EntryKeyPrefix
+HintCacheStore::GetHostModelFeaturesEntryKeyPrefix() {
+  return base::NumberToString(static_cast<int>(
+             HintCacheStore::StoreEntryType::kHostModelFeatures)) +
          kKeySectionDelimiter;
 }
 

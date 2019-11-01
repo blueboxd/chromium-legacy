@@ -14,8 +14,7 @@ using bookmarks::BookmarkNode;
 namespace {
 
 bool IsBookmarkBarLocation(BookmarkLaunchLocation location) {
-  return location == BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR ||
-         location == BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR ||
+  return location == BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR ||
          location == BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER;
 }
 

@@ -10,13 +10,9 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_view.h"
-#include "ash/home_screen/home_launcher_gesture_handler.h"
-#include "ash/home_screen/home_launcher_gesture_handler_observer.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
-#include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/autotest_private_api_utils.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -33,6 +29,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace ash {
@@ -72,67 +69,6 @@ class PointerMoveLoopWaiter : public ui::CompositorObserver {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerMoveLoopWaiter);
-};
-
-class HomeLauncherStateWaiter : public HomeLauncherGestureHandlerObserver {
- public:
-  HomeLauncherStateWaiter(bool target_shown, base::OnceClosure closure)
-      : target_shown_(target_shown), closure_(std::move(closure)) {
-    Shell::Get()
-        ->home_screen_controller()
-        ->home_launcher_gesture_handler()
-        ->AddObserver(this);
-  }
-  ~HomeLauncherStateWaiter() override {
-    Shell::Get()
-        ->home_screen_controller()
-        ->home_launcher_gesture_handler()
-        ->RemoveObserver(this);
-  }
-
- private:
-  // HomeLauncherGestureHandlerObserver:
-  void OnHomeLauncherAnimationComplete(bool shown,
-                                       int64_t display_id) override {
-    if (shown == target_shown_) {
-      std::move(closure_).Run();
-      delete this;
-    }
-  }
-
-  bool target_shown_;
-  base::OnceClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(HomeLauncherStateWaiter);
-};
-
-// A waiter that waits until the animation ended with the target state, and
-// execute the callback.  This self destruction upon completion.
-class LauncherStateWaiter {
- public:
-  LauncherStateWaiter(ash::AppListViewState state, base::OnceClosure closure)
-      : target_state_(state), closure_(std::move(closure)) {
-    Shell::Get()->app_list_controller()->SetStateTransitionAnimationCallback(
-        base::BindRepeating(&LauncherStateWaiter::OnStateChanged,
-                            base::Unretained(this)));
-  }
-  ~LauncherStateWaiter() {
-    Shell::Get()->app_list_controller()->SetStateTransitionAnimationCallback(
-        base::NullCallback());
-  }
-
-  void OnStateChanged(ash::AppListViewState state) {
-    if (target_state_ == state) {
-      std::move(closure_).Run();
-      delete this;
-    }
-  }
-
- private:
-  ash::AppListViewState target_state_;
-  base::OnceClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(LauncherStateWaiter);
 };
 
 }  // namespace
@@ -191,6 +127,13 @@ bool ShellTestApi::IsSystemModalWindowOpen() {
 
 void ShellTestApi::SetTabletModeEnabledForTest(bool enable,
                                                bool wait_for_completion) {
+  // Detach mouse devices, so we can enter tablet mode.
+  // Calling RunUntilIdle() here is necessary before setting the mouse devices
+  // to prevent the callback from evdev thread from overwriting whatever we set
+  // here below. See `InputDeviceFactoryEvdevProxy::OnStartupScanComplete()`.
+  base::RunLoop().RunUntilIdle();
+  ui::DeviceDataManagerTestApi().SetMouseDevices({});
+
   TabletMode::Waiter waiter(enable);
   shell_->tablet_mode_controller()->SetEnabledForTest(enable);
   waiter.Wait();
@@ -257,31 +200,7 @@ void ShellTestApi::WaitForOverviewAnimationState(OverviewAnimationState state) {
 void ShellTestApi::WaitForLauncherAnimationState(
     ash::AppListViewState target_state) {
   base::RunLoop run_loop;
-
-  // In the tablet mode, some of the app-list state switching is handled
-  // differently. For open and close, HomeLauncherGestureHandler handles the
-  // gestures and animation. HomeLauncherStateWaiter can wait for such
-  // animation. For switching between the search and apps-grid,
-  // LauncherStateWaiter can wait for the animation.
-  bool should_wait_for_home_launcher = false;
-  if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
-      target_state != AppListViewState::kFullscreenSearch) {
-    // App-list can't enter into kPeeking or kHalf state. Thus |target_state|
-    // should be either kClosed or kFullscreenAllApps.
-    DCHECK(target_state == AppListViewState::kClosed ||
-           target_state == AppListViewState::kFullscreenAllApps);
-    const AppListViewState current_state =
-        Shell::Get()->app_list_controller()->GetAppListViewState();
-    should_wait_for_home_launcher =
-        (target_state == AppListViewState::kClosed) ||
-        (current_state != AppListViewState::kFullscreenSearch);
-  }
-  if (should_wait_for_home_launcher) {
-    new HomeLauncherStateWaiter(target_state != ash::AppListViewState::kClosed,
-                                run_loop.QuitWhenIdleClosure());
-  } else {
-    new LauncherStateWaiter(target_state, run_loop.QuitWhenIdleClosure());
-  }
+  WaitForLauncherState(target_state, run_loop.QuitWhenIdleClosure());
   run_loop.Run();
 }
 

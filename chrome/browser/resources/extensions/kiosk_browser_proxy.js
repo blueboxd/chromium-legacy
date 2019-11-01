@@ -7,6 +7,8 @@
  * the browser.
  */
 
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+
 /**
  * @typedef {{
  *   kioskEnabled: boolean,
@@ -24,7 +26,7 @@ let KioskSettings;
  *   isLoading: boolean
  * }}
  */
-let KioskApp;
+export let KioskApp;
 
 /**
  * @typedef {{
@@ -33,11 +35,10 @@ let KioskApp;
  *   hasAutoLaunchApp: boolean
  * }}
  */
-let KioskAppSettings;
+export let KioskAppSettings;
 
-cr.define('extensions', function() {
   /** @interface */
-  class KioskBrowserProxy {
+  export class KioskBrowserProxy {
     /** @param {string} appId */
     addKioskApp(appId) {}
 
@@ -60,16 +61,16 @@ cr.define('extensions', function() {
     setDisableBailoutShortcut(disableBailout) {}
   }
 
-  /** @implements {extensions.KioskBrowserProxy} */
-  class KioskBrowserProxyImpl {
+  /** @implements {KioskBrowserProxy} */
+  export class KioskBrowserProxyImpl {
     /** @override */
     initializeKioskAppSettings() {
-      return cr.sendWithPromise('initializeKioskAppSettings');
+      return sendWithPromise('initializeKioskAppSettings');
     }
 
     /** @override */
     getKioskAppSettings() {
-      return cr.sendWithPromise('getKioskAppSettings');
+      return sendWithPromise('getKioskAppSettings');
     }
 
     /** @override */
@@ -98,10 +99,4 @@ cr.define('extensions', function() {
     }
   }
 
-  cr.addSingletonGetter(KioskBrowserProxyImpl);
-
-  return {
-    KioskBrowserProxy: KioskBrowserProxy,
-    KioskBrowserProxyImpl: KioskBrowserProxyImpl,
-  };
-});
+  addSingletonGetter(KioskBrowserProxyImpl);

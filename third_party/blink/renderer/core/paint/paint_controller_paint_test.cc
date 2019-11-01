@@ -180,7 +180,7 @@ TEST_P(PaintControllerPaintTestForCAP, BlockScrollingNonLayeredContents) {
       body { margin: 0 }
       div { width: 100px; height: 100px; background: blue; }
       container { display: block; width: 200px; height: 200px;
-                  overflow: scroll }
+                  overflow: scroll; will-change: transform; }
     </style>
     <container id='container'>
       <div id='div1'></div>

@@ -33,6 +33,8 @@ class MediaHistoryStore {
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);
   ~MediaHistoryStore();
 
+  void SavePlayback(const content::MediaPlayerWatchTime& watch_time);
+
  private:
   scoped_refptr<MediaHistoryStoreInternal> db_;
 };

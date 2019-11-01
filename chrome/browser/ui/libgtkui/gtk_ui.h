@@ -79,7 +79,7 @@ class GtkUi : public views::LinuxUI {
   SkColor GetInactiveSelectionFgColor() const override;
   base::TimeDelta GetCursorBlinkInterval() const override;
   ui::NativeTheme* GetNativeTheme(aura::Window* window) const override;
-  void SetNativeThemeOverride(NativeThemeGetter callback) override;
+  void SetUseSystemThemeCallback(UseSystemThemeCallback callback) override;
   bool GetDefaultUsesSystemTheme() const override;
   gfx::Image GetIconForContentType(const std::string& content_type,
                                    int size) const override;
@@ -201,10 +201,10 @@ class GtkUi : public views::LinuxUI {
   base::flat_map<WindowFrameActionSource, WindowFrameAction>
       window_frame_actions_;
 
-  // Used to override the native theme for a window. If no override is provided
-  // or the callback returns nullptr, GtkUi will default to a NativeThemeGtk
-  // instance.
-  NativeThemeGetter native_theme_overrider_;
+  // Used to determine whether the system theme should be used for a window.  If
+  // no override is provided or the callback returns true, GtkUi will default
+  // to a NativeThemeGtk instance.
+  UseSystemThemeCallback use_system_theme_callback_;
 
   float device_scale_factor_ = 1.0f;
 

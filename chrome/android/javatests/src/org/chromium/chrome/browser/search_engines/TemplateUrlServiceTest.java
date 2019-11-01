@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -172,101 +171,6 @@ public class TemplateUrlServiceTest {
                     }
                 });
         Assert.assertEquals(searchEngines.get(1), defaultSearchEngine);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"SearchEngines"})
-    @DisabledTest(message = "crbug.com/841098")
-    public void testSortandGetCustomSearchEngine() {
-        final TemplateUrlService templateUrlService = waitForTemplateUrlServiceToLoad();
-
-        // Get the number of prepopulated search engine.
-        final int prepopulatedEngineNum = getSearchEngineCount(templateUrlService);
-
-        TemplateUrl defaultSearchEngine =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<TemplateUrl>() {
-                    @Override
-                    public TemplateUrl call() {
-                        return templateUrlService.getDefaultSearchEngineTemplateUrl();
-                    }
-                });
-
-        // Add custom search engines and verified only engines visited within 2 days are added.
-        // Also verified custom engines are sorted correctly.
-        List<TemplateUrl> customSearchEngines =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
-                    @Override
-                    public List<TemplateUrl> call() {
-                        templateUrlService.addSearchEngineForTesting("keyword1", 0);
-                        templateUrlService.addSearchEngineForTesting("keyword2", 0);
-                        templateUrlService.addSearchEngineForTesting("keyword3", 3);
-                        List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
-                        SearchEngineAdapter.sortAndFilterUnnecessaryTemplateUrl(
-                                searchEngines, defaultSearchEngine);
-                        return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
-                    }
-                });
-        Assert.assertEquals(2, customSearchEngines.size());
-        Assert.assertEquals("keyword2", customSearchEngines.get(0).getKeyword());
-        Assert.assertEquals("keyword1", customSearchEngines.get(1).getKeyword());
-
-        // Add more custom search engines and verified at most 3 custom engines are returned.
-        // Also verified custom engines are sorted correctly.
-        customSearchEngines =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
-                    @Override
-                    public List<TemplateUrl> call() {
-                        templateUrlService.addSearchEngineForTesting("keyword4", 0);
-                        templateUrlService.addSearchEngineForTesting("keyword5", 0);
-                        List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
-                        SearchEngineAdapter.sortAndFilterUnnecessaryTemplateUrl(
-                                searchEngines, defaultSearchEngine);
-                        return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
-                    }
-                });
-        Assert.assertEquals(3, customSearchEngines.size());
-        Assert.assertEquals("keyword5", customSearchEngines.get(0).getKeyword());
-        Assert.assertEquals("keyword4", customSearchEngines.get(1).getKeyword());
-        Assert.assertEquals("keyword2", customSearchEngines.get(2).getKeyword());
-
-        // Verified last_visited is updated correctly and sorting in descending order correctly.
-        customSearchEngines =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
-                    @Override
-                    public List<TemplateUrl> call() {
-                        templateUrlService.updateLastVisitedForTesting("keyword3");
-                        List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
-                        SearchEngineAdapter.sortAndFilterUnnecessaryTemplateUrl(
-                                searchEngines, defaultSearchEngine);
-                        return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
-                    }
-                });
-        Assert.assertEquals(3, customSearchEngines.size());
-        Assert.assertEquals("keyword3", customSearchEngines.get(0).getKeyword());
-        Assert.assertEquals("keyword5", customSearchEngines.get(1).getKeyword());
-        Assert.assertEquals("keyword4", customSearchEngines.get(2).getKeyword());
-
-        // Set a custom engine as default provider and verified still 3 custom engines are returned.
-        // Also verified custom engines are sorted correctly.
-        customSearchEngines =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
-                    @Override
-                    public List<TemplateUrl> call() {
-                        templateUrlService.setSearchEngine("keyword4");
-                        List<TemplateUrl> searchEngines = templateUrlService.getTemplateUrls();
-                        TemplateUrl newDefaultSearchEngine =
-                                templateUrlService.getDefaultSearchEngineTemplateUrl();
-                        SearchEngineAdapter.sortAndFilterUnnecessaryTemplateUrl(
-                                searchEngines, newDefaultSearchEngine);
-                        return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
-                    }
-                });
-        Assert.assertEquals(4, customSearchEngines.size());
-        Assert.assertEquals("keyword4", customSearchEngines.get(0).getKeyword());
-        Assert.assertEquals("keyword3", customSearchEngines.get(1).getKeyword());
-        Assert.assertEquals("keyword5", customSearchEngines.get(2).getKeyword());
-        Assert.assertEquals("keyword2", customSearchEngines.get(3).getKeyword());
     }
 
     @Test

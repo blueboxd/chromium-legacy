@@ -94,7 +94,7 @@ class TestProfileBuilder : public ProfileBuilder {
   ModuleCache* GetModuleCache() override { return nullptr; }
 
   void RecordMetadata(
-      base::ProfileBuilder::MetadataProvider* metadata_provider) override {
+      ProfileBuilder::MetadataProvider* metadata_provider) override {
     recorded_metadata_ = true;
   }
 

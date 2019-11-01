@@ -734,16 +734,33 @@ TEST_F(StyledLabelTest, ViewsCenteredWithLinkAndCustomView) {
 
   styled()->SetBounds(0, 0, 1000, 500);
   styled()->Layout();
-  int height = styled()->GetPreferredSize().height();
+  const int height = styled()->GetPreferredSize().height();
+  for (const auto* child : styled()->children())
+    EXPECT_EQ(height / 2, child->bounds().CenterPoint().y());
+}
 
-  ASSERT_EQ(3u, styled()->children().size());
-  const auto is_centered = [this, height](size_t index) {
-    const auto* child = styled()->children()[index];
-    return child->bounds().y() == ((height - child->bounds().height()) / 2);
-  };
-  EXPECT_TRUE(is_centered(0));
-  EXPECT_TRUE(is_centered(1));
-  EXPECT_TRUE(is_centered(2));
+TEST_F(StyledLabelTest, ViewsCenteredForEvenAndOddSizes) {
+  constexpr int kViewWidth = 30;
+  for (int height : {60, 61}) {
+    InitStyledLabel("abc");
+
+    const int view_heights[] = {height, height / 2, height / 2 + 1};
+    for (uint32_t i = 0; i < 3; ++i) {
+      auto view = std::make_unique<StaticSizedView>(
+          gfx::Size(kViewWidth, view_heights[i]));
+      view->set_owned_by_client();
+      StyledLabel::RangeStyleInfo style_info;
+      style_info.custom_view = view.get();
+      styled()->AddStyleRange(gfx::Range(i, i + 1), style_info);
+      styled()->AddCustomView(std::move(view));
+    }
+
+    styled()->SetBounds(0, 0, kViewWidth * 3, height);
+    styled()->Layout();
+
+    for (const auto* child : styled()->children())
+      EXPECT_EQ(height / 2, child->bounds().CenterPoint().y());
+  }
 }
 
 TEST_F(StyledLabelTest, CacheSizeWithAlignment) {

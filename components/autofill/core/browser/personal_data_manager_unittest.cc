@@ -1920,14 +1920,15 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
 
   // Disabling Autofill blows away this cache and shouldn't account for Autofill
   // profiles.
-  prefs::SetAutofillEnabled(prefs_.get(), false);
+  prefs::SetProfileAutofillEnabled(prefs_.get(), false);
+  prefs::SetCreditCardAutofillEnabled(prefs_.get(), false);
   WaitForOnPersonalDataChanged();
   EXPECT_EQ(default_country,
             personal_data_->GetDefaultCountryCodeForNewAddress());
 
   // Enabling Autofill blows away the cached value and should reflect the new
   // value (accounting for profiles).
-  prefs::SetAutofillEnabled(prefs_.get(), true);
+  prefs::SetProfileAutofillEnabled(prefs_.get(), true);
   EXPECT_EQ(base::UTF16ToUTF8(moose.GetRawInfo(ADDRESS_HOME_COUNTRY)),
             personal_data_->GetDefaultCountryCodeForNewAddress());
 }

@@ -88,6 +88,14 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
     EXPECT_FALSE(ash::TabletMode::Get()->InTabletMode());
   }
 
+  void TearDown() override {
+    // Destroy CrosDisplayConfig before the ash::Shell is destroyed, since it
+    // depends on the TabletModeController and the ScreenOrientationController.
+    cros_display_config_.reset();
+
+    ChromeAshTestBase::TearDown();
+  }
+
   void AddCrosDisplayConfigControllerReceiver(
       mojo::ScopedMessagePipeHandle handle) {
     cros_display_config_->BindReceiver(
@@ -1553,15 +1561,16 @@ class DisplayInfoProviderChromeosTouchviewTest
 TEST_F(DisplayInfoProviderChromeosTouchviewTest, GetTabletMode) {
   UpdateDisplay("500x600,400x520");
 
-  // Check initial state. Note: is_tablet_mode is always provided on CrOS.
+  // Check initial state. Note: is_in_tablet_physical_state is always provided
+  // on CrOS.
   DisplayUnitInfoList result = GetAllDisplaysInfo();
   ASSERT_EQ(2u, result.size());
   EXPECT_TRUE(result[0].has_accelerometer_support);
-  ASSERT_TRUE(result[0].is_tablet_mode);
-  EXPECT_FALSE(*result[0].is_tablet_mode);
+  ASSERT_TRUE(result[0].is_in_tablet_physical_state);
+  EXPECT_FALSE(*result[0].is_in_tablet_physical_state);
   EXPECT_FALSE(result[1].has_accelerometer_support);
-  ASSERT_TRUE(result[1].is_tablet_mode);
-  EXPECT_FALSE(*result[1].is_tablet_mode);
+  ASSERT_TRUE(result[1].is_in_tablet_physical_state);
+  EXPECT_FALSE(*result[1].is_in_tablet_physical_state);
 
   // Entering tablet mode will cause DisplayConfigurationObserver to set
   // forced mirror mode. https://crbug.com/733092.
@@ -1573,8 +1582,8 @@ TEST_F(DisplayInfoProviderChromeosTouchviewTest, GetTabletMode) {
   result = GetAllDisplaysInfo();
   ASSERT_EQ(1u, result.size());
   EXPECT_TRUE(result[0].has_accelerometer_support);
-  ASSERT_TRUE(result[0].is_tablet_mode);
-  EXPECT_TRUE(*result[0].is_tablet_mode);
+  ASSERT_TRUE(result[0].is_in_tablet_physical_state);
+  EXPECT_TRUE(*result[0].is_in_tablet_physical_state);
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, SetMIXEDMode) {
@@ -1716,6 +1725,51 @@ TEST_F(DisplayInfoProviderChromeosTest, GetEdid) {
   EXPECT_EQ(kManufacturerId, result[0].edid->manufacturer_id);
   EXPECT_EQ(kProductId, result[0].edid->product_id);
   EXPECT_EQ(kYearOfManufacture, result[0].edid->year_of_manufacture);
+}
+
+TEST_F(DisplayInfoProviderChromeosTouchviewTest, TabletModeAutoRotation) {
+  EnableTabletMode(true);
+
+  using DisplayUnitInfo = api::system_display::DisplayUnitInfo;
+  auto is_in_tablet_physical_state = [](const DisplayUnitInfo& info) {
+    return info.is_in_tablet_physical_state &&
+           *info.is_in_tablet_physical_state;
+  };
+  auto is_auto_rotate = [](const DisplayUnitInfo& info) {
+    return info.rotation == -1;
+  };
+  auto set_rotation_options = [&](int rotation) {
+    api::system_display::DisplayProperties info;
+    info.rotation.reset(new int(rotation));
+    EXPECT_TRUE(CallSetDisplayUnitInfo(
+        base::NumberToString(display::Display::InternalDisplayId()), info));
+  };
+
+  DisplayUnitInfoList result = GetAllDisplaysInfo();
+  EXPECT_TRUE(is_in_tablet_physical_state(result[0]));
+  EXPECT_TRUE(is_auto_rotate(result[0]));
+
+  set_rotation_options(90);
+  result = GetAllDisplaysInfo();
+  EXPECT_TRUE(is_in_tablet_physical_state(result[0]));
+  EXPECT_FALSE(is_auto_rotate(result[0]));
+  EXPECT_EQ(90, result[0].rotation);
+  auto* screen_orientation_controller =
+      ash::Shell::Get()->screen_orientation_controller();
+  EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
+
+  // -1 means auto-rotate.
+  set_rotation_options(-1);
+  result = GetAllDisplaysInfo();
+  EXPECT_TRUE(is_in_tablet_physical_state(result[0]));
+  EXPECT_TRUE(is_auto_rotate(result[0]));
+  EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
+
+  EnableTabletMode(false);
+  result = GetAllDisplaysInfo();
+  EXPECT_FALSE(is_in_tablet_physical_state(result[0]));
+  EXPECT_FALSE(is_auto_rotate(result[0]));
+  EXPECT_EQ(0, result[0].rotation);
 }
 
 }  // namespace

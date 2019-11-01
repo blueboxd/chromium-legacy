@@ -37,6 +37,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
+#include "ios/chrome/browser/ui/autofill/card_expiration_date_fix_flow_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
@@ -276,6 +277,18 @@ void ChromeAutofillClientIOS::ConfirmAccountNameFixFlow(
       new autofill::CardNameFixFlowViewBridge(&card_name_fix_flow_controller_,
                                               base_view_controller_),
       account_name, std::move(callback));
+}
+
+void ChromeAutofillClientIOS::ConfirmExpirationDateFixFlow(
+    const CreditCard& card,
+    base::OnceCallback<void(const base::string16&, const base::string16&)>
+        callback) {
+  card_expiration_date_fix_flow_controller_.Show(
+      // autofill::CardExpirationDateFixFlowViewBridge manages its own lifetime,
+      // so do not use std::unique_ptr<> here.
+      new autofill::CardExpirationDateFixFlowViewBridge(
+          &card_expiration_date_fix_flow_controller_, base_view_controller_),
+      card, std::move(callback));
 }
 
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(

@@ -146,8 +146,12 @@ TEST(PlatformFontWinTest, DefaultFontRenderParams) {
 
 TEST(PlatformFontWinTest, SkiaTypefaceConstructor) {
   gfx::Font default_font;
-  EXPECT_EQ(default_font.platform_font()->GetNativeSkTypefaceIfAvailable(),
-            nullptr);
+
+  // The PlatformFontWin constructor doesn't create a skia typeface.
+  if (!base::FeatureList::IsEnabled(kPlatformFontSkiaOnWindows)) {
+    EXPECT_EQ(default_font.platform_font()->GetNativeSkTypefaceIfAvailable(),
+              nullptr);
+  }
 
   sk_sp<SkFontMgr> font_mgr = SkFontMgr::RefDefault();
   sk_sp<SkTypeface> typeface(

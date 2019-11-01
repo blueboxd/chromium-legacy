@@ -75,7 +75,7 @@ CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
   // The user name is incorrectly marked as optional in the CTAP2 spec.
   user.name = "dummy";
   CtapMakeCredentialRequest req(
-      "" /* client_data_json */, PublicKeyCredentialRpEntity(".dummy"),
+      "" /* client_data_json */, PublicKeyCredentialRpEntity(kDummyRpID),
       std::move(user),
       PublicKeyCredentialParams(
           {{CredentialType::kPublicKey,

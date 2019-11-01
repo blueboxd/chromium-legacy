@@ -238,9 +238,7 @@ void OverviewWindowDragController::StartNormalDragMode(
     overview_session_->SetSplitViewDragIndicatorsDraggedWindow(
         item_->GetWindow());
     overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-        CanSnapInSplitview(item_->GetWindow()) ? IndicatorState::kDragArea
-                                               : IndicatorState::kCannotSnap,
-        gfx::ToRoundedPoint(location_in_screen));
+        IndicatorState::kDragAreaBoth, gfx::ToRoundedPoint(location_in_screen));
     item_->HideCannotSnapWarning();
 
     // Update the split view divider bar status if necessary. If splitview is
@@ -580,8 +578,7 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
     return;
 
   snap_position_ = GetSnapPosition(location_in_screen);
-  IndicatorState indicator_state =
-      GetIndicatorState(item_->GetWindow(), snap_position_);
+  IndicatorState indicator_state = GetIndicatorState(snap_position_);
   overview_session_->SetSplitViewDragIndicatorsIndicatorState(
       indicator_state, gfx::ToRoundedPoint(location_in_screen));
   item_->overview_grid()->RearrangeDuringDrag(item_->GetWindow(),

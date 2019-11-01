@@ -1431,7 +1431,7 @@ void ChunkDemuxer::RunInitCB_Locked(PipelineStatus status) {
   lock_.AssertAcquired();
   DCHECK(init_cb_);
   TRACE_EVENT_ASYNC_END1("media", "ChunkDemuxer::Initialize", this, "status",
-                         MediaLog::PipelineStatusToString(status));
+                         PipelineStatusToString(status));
   std::move(init_cb_).Run(status);
 }
 
@@ -1439,7 +1439,7 @@ void ChunkDemuxer::RunSeekCB_Locked(PipelineStatus status) {
   lock_.AssertAcquired();
   DCHECK(seek_cb_);
   TRACE_EVENT_ASYNC_END1("media", "ChunkDemuxer::Seek", this, "status",
-                         MediaLog::PipelineStatusToString(status));
+                         PipelineStatusToString(status));
   std::move(seek_cb_).Run(status);
 }
 

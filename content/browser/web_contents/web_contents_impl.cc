@@ -41,6 +41,7 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
@@ -186,6 +187,10 @@
 #endif
 
 namespace content {
+
+using AccessibilityEventCallback =
+    base::RepeatingCallback<void(const std::string&)>;
+
 namespace {
 
 const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
@@ -1456,28 +1461,8 @@ void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
     OnPreferredSizeChanged(preferred_size_);
   }
 
-  if (GetVisibility() != Visibility::VISIBLE && !was_captured) {
-    // TODO: Share code with WasShown().
-    SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
-
-    if (auto* view = GetRenderWidgetHostView()) {
-      view->Show();
-#if defined(OS_MACOSX)
-      view->SetActive(true);
-#endif
-    }
-
-    if (!ShowingInterstitialPage())
-      SetVisibilityForChildViews(true);
-
-    for (FrameTreeNode* node : frame_tree_.Nodes()) {
-      RenderFrameProxyHost* parent = node->render_manager()->GetProxyToParent();
-      if (!parent)
-        continue;
-
-      parent->cross_process_frame_connector()->DelegateWasShown();
-    }
-  }
+  if (!was_captured)
+    UpdateVisibilityAndNotifyPageAndView(GetVisibility());
 }
 
 void WebContentsImpl::DecrementCapturerCount() {
@@ -1493,13 +1478,7 @@ void WebContentsImpl::DecrementCapturerCount() {
     const gfx::Size old_size = preferred_size_for_capture_;
     preferred_size_for_capture_ = gfx::Size();
     OnPreferredSizeChanged(old_size);
-
-    if (visibility_ == Visibility::HIDDEN) {
-      DVLOG(1) << "Executing delayed WasHidden().";
-      WasHidden();
-    } else if (visibility_ == Visibility::OCCLUDED) {
-      WasOccluded();
-    }
+    UpdateVisibilityAndNotifyPageAndView(GetVisibility());
   }
 }
 
@@ -1694,67 +1673,11 @@ base::TimeTicks WebContentsImpl::GetLastActiveTime() {
 }
 
 void WebContentsImpl::WasShown() {
-  controller_.SetActive(true);
-
-  // This shows the Page before showing the individual RenderWidgets, as
-  // RenderWidgets will work to produce compositor frames and handle input
-  // as soon as they are shown. But the Page and other classes do not expect to
-  // be producing frames when the Page is hidden. So we make sure the Page is
-  // shown first.
-  SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
-
-  if (auto* view = GetRenderWidgetHostView()) {
-    view->Show();
-#if defined(OS_MACOSX)
-    view->SetActive(true);
-#endif
-  }
-
-  if (!ShowingInterstitialPage())
-    SetVisibilityForChildViews(true);
-
-  last_active_time_ = base::TimeTicks::Now();
-  SetVisibility(Visibility::VISIBLE);
-
-  for (FrameTreeNode* node : frame_tree_.Nodes()) {
-    RenderFrameProxyHost* parent = node->render_manager()->GetProxyToParent();
-    if (!parent)
-      continue;
-
-    parent->cross_process_frame_connector()->DelegateWasShown();
-  }
+  UpdateVisibilityAndNotifyPageAndView(Visibility::VISIBLE);
 }
 
 void WebContentsImpl::WasHidden() {
-  // If there are entities capturing screenshots or video (e.g. mirroring),
-  // or in Picture-in-Picture mode, don't activate the "disable rendering"
-  // optimization.
-  if (!IsBeingCaptured() && !HasPictureInPictureVideo()) {
-    // This hides the individual RenderWidgets before hiding the Page, as
-    // RenderWidgets will work to produce compositor frames and handle input
-    // until they are hidden. But the Page and other classes do not expect to
-    // be producing frames when the Page is hidden. So we stop the widgets,
-    // then hide the Page.
-    //
-    // |GetRenderViewHost()| can be NULL if the user middle clicks a link to
-    // open a tab in the background, then closes the tab before selecting it.
-    // This is because closing the tab calls WebContentsImpl::Destroy(), which
-    // removes the |GetRenderViewHost()|; then when we actually destroy the
-    // window, OnWindowPosChanged() notices and calls WasHidden() (which
-    // calls us).
-    if (auto* view = GetRenderWidgetHostView())
-      view->Hide();
-
-    if (!ShowingInterstitialPage())
-      SetVisibilityForChildViews(false);
-  }
-
-  // Inform the renderer that the page was hidden if there are no entities
-  // capturing screenshots or video (e.g. mirroring).
-  if (!IsBeingCaptured())
-    SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
-
-  SetVisibility(Visibility::HIDDEN);
+  UpdateVisibilityAndNotifyPageAndView(Visibility::HIDDEN);
 }
 
 bool WebContentsImpl::HasRecentInteractiveInputEvent() {
@@ -1785,25 +1708,7 @@ void WebContentsImpl::SetMainFrameImportance(
 #endif
 
 void WebContentsImpl::WasOccluded() {
-  // If there are entities capturing screenshots or video (e.g. mirroring),
-  // or in Picture-in-Picture mode, don't activate the "disable rendering"
-  // optimization.
-  if (!IsBeingCaptured() && !HasPictureInPictureVideo()) {
-    if (auto* main_view = GetRenderWidgetHostView())
-      main_view->WasOccluded();
-    if (!ShowingInterstitialPage()) {
-      // Occluding child view is treated as hiding the view
-      // (https://crbug.com/903455).
-      SetVisibilityForChildViews(false);
-    }
-  }
-
-  // Inform the renderer that the page was hidden if there are no entities
-  // capturing screenshots or video (e.g. mirroring).
-  if (!IsBeingCaptured())
-    SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
-
-  SetVisibility(Visibility::OCCLUDED);
+  UpdateVisibilityAndNotifyPageAndView(Visibility::OCCLUDED);
 }
 
 Visibility WebContentsImpl::GetVisibility() {
@@ -1825,18 +1730,22 @@ bool WebContentsImpl::NeedToFireBeforeUnload() {
   if (GetRenderViewHost()->SuddenTerminationAllowed())
     return false;
 
-  // Check whether the main frame needs to run beforeunload or unload handlers.
-  if (GetMainFrame()->GetSuddenTerminationDisablerState(
-          blink::kBeforeUnloadHandler | blink::kUnloadHandler)) {
-    return true;
+  // Check whether any frame in the frame tree needs to run beforeunload or
+  // unload handlers.
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    RenderFrameHostImpl* rfh = node->current_frame_host();
+
+    // No need to run beforeunload/unload if the RenderFrame isn't live.
+    if (!rfh->IsRenderFrameLive())
+      continue;
+
+    if (rfh->GetSuddenTerminationDisablerState(blink::kBeforeUnloadHandler |
+                                               blink::kUnloadHandler)) {
+      return true;
+    }
   }
 
-  // Check whether any subframes need to run beforeunload handlers.
-  //
-  // TODO(alexmos): Also check whether subframes need to run unload handlers in
-  // addition to beforeunload.
-  return GetMainFrame()->ShouldDispatchBeforeUnload(
-      true /* check_subframes_only */);
+  return false;
 }
 
 void WebContentsImpl::DispatchBeforeUnload(bool auto_cancel) {
@@ -2614,6 +2523,74 @@ void WebContentsImpl::FullscreenFrameSetUpdated() {
     display_cutout_host_impl_->DidAcquireFullscreen(new_fullscreen_frame);
 }
 
+void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
+    Visibility new_visibility) {
+  if (new_visibility == Visibility::VISIBLE)
+    controller_.SetActive(true);
+
+  // Only hide the page if there are no entities capturing screenshots
+  // or video (e.g. mirroring).
+  const bool page_is_visible =
+      new_visibility == Visibility::VISIBLE || IsBeingCaptured();
+  // If there are entities in Picture-in-Picture mode, don't activate
+  // the "disable rendering" optimization.
+  const bool view_is_visible = page_is_visible || HasPictureInPictureVideo();
+
+  // This shows the Page before showing the individual RenderWidgets, as
+  // RenderWidgets will work to produce compositor frames and handle input
+  // as soon as they are shown. But the Page and other classes do not expect to
+  // be producing frames when the Page is hidden. So we make sure the Page is
+  // shown first.
+  if (page_is_visible)
+    SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
+
+  // |GetRenderWidgetHostView()| can be null if the user middle clicks a link to
+  // open a tab in the background, then closes the tab before selecting it.
+  // This is because closing the tab calls WebContentsImpl::Destroy(), which
+  // removes the |GetRenderViewHost()|; then when we actually destroy the
+  // window, OnWindowPosChanged() notices and calls WasHidden() (which
+  // calls us).
+  if (auto* view = GetRenderWidgetHostView()) {
+    if (view_is_visible) {
+      view->Show();
+#if defined(OS_MACOSX)
+      view->SetActive(true);
+#endif
+    } else if (new_visibility == Visibility::HIDDEN) {
+      view->Hide();
+    } else {
+      view->WasOccluded();
+    }
+  }
+
+  if (!ShowingInterstitialPage())
+    SetVisibilityForChildViews(view_is_visible);
+
+  // Make sure to call SetVisibilityAndNotifyObservers(VISIBLE) before notifying
+  // the CrossProcessFrameConnector.
+  if (new_visibility == Visibility::VISIBLE) {
+    last_active_time_ = base::TimeTicks::Now();
+    SetVisibilityAndNotifyObservers(new_visibility);
+  }
+
+  if (!page_is_visible) {
+    // Similar to when showing the page, we only hide the page after
+    // hiding the individual RenderWidgets.
+    SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
+  } else {
+    for (FrameTreeNode* node : frame_tree_.Nodes()) {
+      RenderFrameProxyHost* parent = node->render_manager()->GetProxyToParent();
+      if (!parent)
+        continue;
+
+      parent->cross_process_frame_connector()->DelegateWasShown();
+    }
+  }
+
+  if (new_visibility != Visibility::VISIBLE)
+    SetVisibilityAndNotifyObservers(new_visibility);
+}
+
 #if defined(OS_ANDROID)
 void WebContentsImpl::UpdateUserGestureCarryoverInfo() {
   if (delegate_)
@@ -3280,6 +3257,24 @@ base::string16 WebContentsImpl::DumpAccessibilityTree(
   DCHECK(ax_mgr);
   return AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
       ax_mgr, internal, property_filters);
+}
+
+void WebContentsImpl::RecordAccessibilityEvents(
+    AccessibilityEventCallback callback,
+    bool start) {
+  if (start) {
+    SetAccessibilityMode(ui::AXMode::kWebContents);
+    auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
+    DCHECK(ax_mgr);
+    base::ProcessId pid = base::Process::Current().Pid();
+    event_recorder_ = content::AccessibilityEventRecorder::Create(
+        ax_mgr, pid, base::StringPiece{});
+    event_recorder_->ListenToEvents(callback);
+  } else {
+    DCHECK(event_recorder_);
+    event_recorder_->FlushAsyncEvents();
+    event_recorder_ = nullptr;
+  }
 }
 
 RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
@@ -4080,7 +4075,7 @@ void WebContentsImpl::LoadStateChanged(
   }
 }
 
-void WebContentsImpl::SetVisibility(Visibility visibility) {
+void WebContentsImpl::SetVisibilityAndNotifyObservers(Visibility visibility) {
   const Visibility previous_visibility = visibility_;
   visibility_ = visibility;
 
@@ -7192,6 +7187,12 @@ void WebContentsImpl::AudioContextPlaybackStopped(RenderFrameHost* host,
     observer.AudioContextPlaybackStopped(audio_context_id);
 }
 
+void WebContentsImpl::MediaWatchTimeChanged(
+    const content::MediaPlayerWatchTime& watch_time) {
+  for (auto& observer : observers_)
+    observer.MediaWatchTimeChanged(watch_time);
+}
+
 RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(
     FrameTreeNode* frame_tree_node) {
   if (auto* web_contents = node_.GetInnerWebContentsInFrame(frame_tree_node))
@@ -7240,12 +7241,7 @@ void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {
   if (visibility == visibility_)
     return;
 
-  if (visibility == Visibility::VISIBLE)
-    WasShown();
-  else if (visibility == Visibility::OCCLUDED)
-    WasOccluded();
-  else
-    WasHidden();
+  UpdateVisibilityAndNotifyPageAndView(visibility);
 }
 
 void WebContentsImpl::UpdateOverridingUserAgent() {

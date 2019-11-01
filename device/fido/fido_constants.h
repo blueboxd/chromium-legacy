@@ -259,6 +259,9 @@ extern const std::array<uint8_t, 32> kBogusAppParam;
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const std::array<uint8_t, 32> kBogusChallenge;
 
+// String used as Relying Party ID to check for user presence.
+constexpr char kDummyRpID[] = ".dummy";
+
 // String key values for CTAP request optional parameters and
 // AuthenticatorGetInfo response.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kResidentKeyMapKey[];

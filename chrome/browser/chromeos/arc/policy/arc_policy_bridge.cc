@@ -35,7 +35,6 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
-#include "content/public/browser/system_connector.h"
 #include "crypto/sha2.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 
@@ -299,14 +298,6 @@ std::string GetFilteredJSONPolicies(
   return policy_json;
 }
 
-void OnReportComplianceParseFailure(
-    base::OnceCallback<void(const std::string&)> callback,
-    const std::string& error) {
-  // TODO(poromov@): Report to histogram.
-  DLOG(ERROR) << "Can't parse policy compliance report";
-  std::move(callback).Run(kPolicyCompliantJson);
-}
-
 void UpdateFirstComplianceSinceSignInTiming(
     const base::TimeDelta& elapsed_time) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Arc.FirstComplianceReportTime.SinceSignIn",
@@ -455,11 +446,10 @@ void ArcPolicyBridge::ReportCompliance(const std::string& request,
   // the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  data_decoder::SafeJsonParser::Parse(
-      content::GetSystemConnector(), request,
-      base::BindOnce(&ArcPolicyBridge::OnReportComplianceParseSuccess,
-                     weak_ptr_factory_.GetWeakPtr(), repeating_callback),
-      base::BindOnce(&OnReportComplianceParseFailure, repeating_callback));
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      request,
+      base::BindOnce(&ArcPolicyBridge::OnReportComplianceParse,
+                     weak_ptr_factory_.GetWeakPtr(), repeating_callback));
 }
 
 void ArcPolicyBridge::ReportCloudDpsRequested(
@@ -573,19 +563,26 @@ std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
                                  smart_card_manager);
 }
 
-void ArcPolicyBridge::OnReportComplianceParseSuccess(
+void ArcPolicyBridge::OnReportComplianceParse(
     base::OnceCallback<void(const std::string&)> callback,
-    base::Value parsed_json) {
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    // TODO(poromov@): Report to histogram.
+    DLOG(ERROR) << "Can't parse policy compliance report";
+    std::move(callback).Run(kPolicyCompliantJson);
+    return;
+  }
+
   // Always returns "compliant".
   std::move(callback).Run(kPolicyCompliantJson);
   Profile::FromBrowserContext(context_)->GetPrefs()->SetBoolean(
       prefs::kArcPolicyComplianceReported, true);
 
   const base::DictionaryValue* dict = nullptr;
-  if (parsed_json.GetAsDictionary(&dict)) {
+  if (result.value->GetAsDictionary(&dict)) {
     UpdateComplianceReportMetrics(dict);
     for (Observer& observer : observers_) {
-      observer.OnComplianceReportReceived(&parsed_json);
+      observer.OnComplianceReportReceived(&result.value.value());
     }
   }
 }

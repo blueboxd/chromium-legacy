@@ -18,7 +18,7 @@
 namespace memory {
 
 namespace {
-const int kMinimalResidentSetLimitMb = 2048;
+const int kMinimalResidentSetLimitMb = 1024;
 }  // namespace
 
 EnterpriseMemoryLimitPrefObserver::EnterpriseMemoryLimitPrefObserver(

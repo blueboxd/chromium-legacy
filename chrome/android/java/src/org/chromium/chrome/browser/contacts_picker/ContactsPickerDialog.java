@@ -28,17 +28,18 @@ public class ContactsPickerDialog
      * @param includeNames Whether the contacts data returned includes names.
      * @param includeEmails Whether the contacts data returned includes emails.
      * @param includeTel Whether the contacts data returned includes telephone numbers.
+     * @param includeAddresses Whether the contacts data returned includes addresses.
      * @param formattedOrigin The origin the data will be shared with, formatted for display with
      *                        the scheme omitted.
      */
     public ContactsPickerDialog(Context context, ContactsPickerListener listener,
             boolean allowMultiple, boolean includeNames, boolean includeEmails, boolean includeTel,
-            String formattedOrigin) {
+            boolean includeAddresses, String formattedOrigin) {
         super(context, R.style.Theme_Chromium_Fullscreen);
 
         // Initialize the main content view.
         mCategoryView = new PickerCategoryView(context, allowMultiple, includeNames, includeEmails,
-                includeTel, formattedOrigin, this);
+                includeTel, includeAddresses, formattedOrigin, this);
         mCategoryView.initialize(this, listener);
         setView(mCategoryView);
     }

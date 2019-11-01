@@ -60,4 +60,9 @@
         <attr name="chromeDrawableTint" format="color"/>
     </declare-styleable>
 
+    <declare-styleable name="WrappingLayout">
+        <attr name="horizontalSpacing" format="dimension" />
+        <attr name="verticalSpacing" format="dimension" />
+    </declare-styleable>
+
 </resources>

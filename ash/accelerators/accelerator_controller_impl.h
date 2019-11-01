@@ -159,9 +159,8 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
   bool PerformActionIfEnabled(AcceleratorAction action,
                               const ui::Accelerator& accelerator) override;
   bool OnMenuAccelerator(const ui::Accelerator& accelerator) override;
-
-  // Returns true if the |accelerator| is registered.
-  bool IsRegistered(const ui::Accelerator& accelerator) const;
+  bool IsRegistered(const ui::Accelerator& accelerator) const override;
+  ui::AcceleratorHistory* GetAcceleratorHistory() override;
 
   // Returns true if the |accelerator| is preferred. A preferred accelerator
   // is handled before being passed to an window/web contents, unless

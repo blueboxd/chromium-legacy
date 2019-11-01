@@ -356,6 +356,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #elif defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
@@ -3035,6 +3036,11 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #endif
   web_prefs->force_dark_mode_enabled =
       prefs->GetBoolean(prefs::kWebKitForceDarkModeEnabled);
+
+#if defined(OS_CHROMEOS)
+  web_prefs->always_show_focus =
+      prefs->GetBoolean(ash::prefs::kAccessibilityFocusHighlightEnabled);
+#endif
 
 #if defined(OS_ANDROID)
   web_prefs->password_echo_enabled =

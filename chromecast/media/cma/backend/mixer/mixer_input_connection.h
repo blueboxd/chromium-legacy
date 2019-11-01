@@ -153,6 +153,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   // Only used on the IO thread.
   bool audio_ready_for_playback_fired_ = false;
   base::OneShotTimer inactivity_timer_;
+  bool connection_error_ = false;
 
   base::Lock lock_;
   State state_ GUARDED_BY(lock_) = State::kUninitialized;

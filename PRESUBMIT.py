@@ -4317,7 +4317,7 @@ def _CheckForLongPathnames(input_api, output_api):
   This causes issues on Windows.
   """
   problems = []
-  for f in input_api.AffectedSourceFiles(None):
+  for f in input_api.AffectedTestableFiles():
     local_path = f.LocalPath()
     # Windows has a path limit of 260 characters. Limit path length to 200 so
     # that we have some extra for the prefix on dev machines and the bots.

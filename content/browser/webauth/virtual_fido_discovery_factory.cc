@@ -7,9 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "content/browser/webauth/virtual_authenticator.h"
 #include "content/browser/webauth/virtual_discovery.h"
+#include "content/public/common/content_switches.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_u2f_device.h"
@@ -102,10 +104,12 @@ VirtualFidoDiscoveryFactory::Create(device::FidoTransportProtocol transport,
                                     ::service_manager::Connector* connector) {
   auto discovery = std::make_unique<VirtualFidoDiscovery>(transport);
 
-  if (receivers_.empty() && authenticators_.empty()) {
+  if (receivers_.empty() && authenticators_.empty() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebAuthTestingAPI)) {
     // If no bindings are active then create a virtual device. This is a
-    // stop-gap measure for web-platform tests which assume that they can make
-    // webauthn calls until the WebAuthn Testing API is released.
+    // stop-gap measure for running web-platform tests on the chromium CI.
+    // See crbug.com/1020361
     CreateAuthenticator(
         ::device::ProtocolVersion::kCtap2,
         ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice,

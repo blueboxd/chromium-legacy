@@ -115,13 +115,13 @@ std::string GetOptimizationGuideServiceAPIKey() {
   return google_apis::GetAPIKey();
 }
 
-GURL GetOptimizationGuideServiceURL() {
+GURL GetOptimizationGuideServiceGetHintsURL() {
   // Command line override takes priority.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kOptimizationGuideServiceURL)) {
+  if (command_line->HasSwitch(switches::kOptimizationGuideServiceGetHintsURL)) {
     // Assume the command line switch is correct and return it.
     return GURL(command_line->GetSwitchValueASCII(
-        switches::kOptimizationGuideServiceURL));
+        switches::kOptimizationGuideServiceGetHintsURL));
   }
 
   std::string url = base::GetFieldTrialParamValueByFeature(
@@ -131,10 +131,25 @@ GURL GetOptimizationGuideServiceURL() {
       LOG(WARNING)
           << "Empty or invalid optimization_guide_service_url provided: "
           << url;
-    return GURL(kOptimizationGuideServiceDefaultURL);
+    return GURL(kOptimizationGuideServiceGetHintsDefaultURL);
   }
 
   return GURL(url);
+}
+
+GURL GetOptimizationGuideServiceGetModelsURL() {
+  // Command line override takes priority.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          switches::kOptimizationGuideServiceGetModelsURL)) {
+    // Assume the command line switch is correct and return it.
+    return GURL(command_line->GetSwitchValueASCII(
+        switches::kOptimizationGuideServiceGetModelsURL));
+  }
+
+  GURL get_models_url(kOptimizationGuideServiceGetModelsDefaultURL);
+  CHECK(get_models_url.SchemeIs(url::kHttpsScheme));
+  return get_models_url;
 }
 
 bool IsOptimizationHintsEnabled() {
@@ -169,6 +184,12 @@ GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
 
 base::TimeDelta GetHintsFetchRefreshDuration() {
   return base::TimeDelta::FromHours(72);
+}
+
+base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {
+  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction,
+      "max_store_duration_for_host_model_features_in_days", 7));
 }
 
 bool IsOptimizationTargetPredictionEnabled() {

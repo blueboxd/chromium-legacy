@@ -2456,6 +2456,7 @@ enum WebFeature {
   kMouseEventScreenX = 3072,
   kMouseEventScreenY = 3073,
   kCredentialManagerIsUserVerifyingPlatformAuthenticatorAvailable = 3074,
+  kObsoleteWebrtcTlsVersion = 3075,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

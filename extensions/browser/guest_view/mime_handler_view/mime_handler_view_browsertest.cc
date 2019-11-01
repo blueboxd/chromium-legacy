@@ -255,6 +255,11 @@ class PrintPreviewWaiter : public content::BrowserMessageFilter {
 };
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, EmbeddedThenPrint) {
+  // TODO(1020313): The /0 version of this test is flaky.
+  if (!is_cross_process_mode()) {
+    return;
+  }
+
   RunTest("test_embedded.html");
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   auto* gv_manager = GetGuestViewManager();

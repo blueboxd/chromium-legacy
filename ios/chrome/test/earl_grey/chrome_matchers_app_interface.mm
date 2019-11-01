@@ -46,6 +46,7 @@
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
@@ -758,6 +759,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 
 + (id<GREYMatcher>)autofillSuggestionViewMatcher {
   return grey_accessibilityID(kFormSuggestionLabelAccessibilityIdentifier);
+}
+
++ (id<GREYMatcher>)settingsBottomToolbarDeleteButton {
+  return grey_accessibilityID(kSettingsToolbarDeleteButtonId);
 }
 
 #pragma mark - Manual Fallback

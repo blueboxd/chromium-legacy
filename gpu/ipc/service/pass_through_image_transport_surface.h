@@ -55,6 +55,7 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
  private:
   ~PassThroughImageTransportSurface() override;
 
+  void TrackMultiSurfaceSwap();
   void UpdateVSyncEnabled();
 
   void StartSwapBuffers(gfx::SwapResponse* response);
@@ -74,6 +75,7 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
   int swap_generation_ = 0;
   bool vsync_enabled_ = true;
+  bool multiple_surfaces_swapped_ = false;
 
   // Local swap ids, which are used to make sure the swap order is correct and
   // the presentation callbacks are not called earlier than the swap ack of the

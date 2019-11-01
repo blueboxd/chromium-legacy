@@ -20,9 +20,9 @@ TtsPlatform* TtsPlatform::GetInstance() {
     return result;
 #endif
 
-#if defined(OS_FUCHSIA) || defined(OS_CHROMEOS)
-  // There is no platform TTS definition for Fuchsia. On Chrome OS it's
-  // provided by the content client.
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, the platform TTS definition is provided by the content
+  // client.
   //
   // If this code is reached in production it implies that somebody is
   // trying to do TTS on a platform where the content client implementation

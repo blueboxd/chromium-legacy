@@ -404,8 +404,6 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
       int options_mask,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          decision_callback,
       SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback)
       : web_contents_(web_contents),
         ssl_info_(ssl_info),
@@ -414,8 +412,8 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
         options_mask_(options_mask),
         request_url_(request_url),
         ssl_cert_reporter_(std::move(ssl_cert_reporter)),
-        decision_callback_(decision_callback),
         blocking_page_ready_callback_(std::move(blocking_page_ready_callback)) {
+    DCHECK(!blocking_page_ready_callback_.is_null());
   }
   ~SSLErrorHandlerDelegateImpl() override;
 
@@ -451,8 +449,6 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
   const GURL request_url_;
   std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
-  const base::Callback<void(content::CertificateRequestResultType)>
-      decision_callback_;
   SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback_;
 };
 
@@ -516,7 +512,7 @@ void SSLErrorHandlerDelegateImpl::ShowCaptivePortalInterstitial(
   // Show captive portal blocking page. The interstitial owns the blocking page.
   OnBlockingPageReady(new CaptivePortalBlockingPage(
       web_contents_, request_url_, landing_url, std::move(ssl_cert_reporter_),
-      ssl_info_, cert_error_, decision_callback_));
+      ssl_info_, cert_error_));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial(
@@ -525,8 +521,7 @@ void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial(
   // Show MITM software blocking page. The interstitial owns the blocking page.
   OnBlockingPageReady(new MITMSoftwareBlockingPage(
       web_contents_, cert_error_, request_url_, std::move(ssl_cert_reporter_),
-      ssl_info_, mitm_software_name, is_enterprise_managed,
-      decision_callback_));
+      ssl_info_, mitm_software_name, is_enterprise_managed));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowSSLInterstitial(const GURL& support_url) {
@@ -534,7 +529,7 @@ void SSLErrorHandlerDelegateImpl::ShowSSLInterstitial(const GURL& support_url) {
   OnBlockingPageReady(SSLBlockingPage::Create(
       web_contents_, cert_error_, ssl_info_, request_url_, options_mask_,
       base::Time::NowFromSystemTime(), support_url,
-      std::move(ssl_cert_reporter_), decision_callback_));
+      std::move(ssl_cert_reporter_)));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowBadClockInterstitial(
@@ -543,7 +538,7 @@ void SSLErrorHandlerDelegateImpl::ShowBadClockInterstitial(
   // Show bad clock page. The interstitial owns the blocking page.
   OnBlockingPageReady(new BadClockBlockingPage(
       web_contents_, cert_error_, ssl_info_, request_url_, now, clock_state,
-      std::move(ssl_cert_reporter_), decision_callback_));
+      std::move(ssl_cert_reporter_)));
 }
 
 void SSLErrorHandlerDelegateImpl::ReportNetworkConnectivity(
@@ -560,13 +555,9 @@ void SSLErrorHandlerDelegateImpl::ReportNetworkConnectivity(
 
 void SSLErrorHandlerDelegateImpl::OnBlockingPageReady(
     security_interstitials::SecurityInterstitialPage* interstitial_page) {
-  if (blocking_page_ready_callback_.is_null()) {
-    interstitial_page->Show();
-  } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(blocking_page_ready_callback_),
-                                  base::WrapUnique(interstitial_page)));
-  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(blocking_page_ready_callback_),
+                                base::WrapUnique(interstitial_page)));
 }
 
 }  // namespace
@@ -585,6 +576,9 @@ void SSLErrorHandler::HandleSSLError(
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback) {
+  // TODO(estade): remove |decision_callback| after the churn would no longer
+  // harm WebLayer, approx Dec 2019.
+  DCHECK(decision_callback.is_null());
   DCHECK(!FromWebContents(web_contents));
 
   Profile* profile =
@@ -606,10 +600,9 @@ void SSLErrorHandler::HandleSSLError(
       std::unique_ptr<SSLErrorHandler::Delegate>(
           new SSLErrorHandlerDelegateImpl(
               web_contents, ssl_info, profile, cert_error, options_mask,
-              request_url, std::move(ssl_cert_reporter), decision_callback,
+              request_url, std::move(ssl_cert_reporter),
               std::move(blocking_page_ready_callback))),
-      web_contents, profile, cert_error, ssl_info, request_url,
-      decision_callback);
+      web_contents, profile, cert_error, ssl_info, request_url);
   web_contents->SetUserData(UserDataKey(), base::WrapUnique(error_handler));
   error_handler->StartHandlingError();
 }
@@ -686,23 +679,19 @@ void SSLErrorHandler::SetErrorAssistantProto(
   g_config.Pointer()->SetErrorAssistantProto(std::move(config_proto));
 }
 
-SSLErrorHandler::SSLErrorHandler(
-    std::unique_ptr<Delegate> delegate,
-    content::WebContents* web_contents,
-    Profile* profile,
-    int cert_error,
-    const net::SSLInfo& ssl_info,
-    const GURL& request_url,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        decision_callback)
+SSLErrorHandler::SSLErrorHandler(std::unique_ptr<Delegate> delegate,
+                                 content::WebContents* web_contents,
+                                 Profile* profile,
+                                 int cert_error,
+                                 const net::SSLInfo& ssl_info,
+                                 const GURL& request_url)
     : content::WebContentsObserver(web_contents),
       delegate_(std::move(delegate)),
       web_contents_(web_contents),
       profile_(profile),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
-      request_url_(request_url),
-      decision_callback_(decision_callback) {}
+      request_url_(request_url) {}
 
 SSLErrorHandler::~SSLErrorHandler() {
 }
@@ -956,12 +945,6 @@ void SSLErrorHandler::NavigationStopped() {
 }
 
 void SSLErrorHandler::DeleteSSLErrorHandler() {
-  // Need to explicity deny the certificate via the callback, otherwise memory
-  // is leaked.
-  if (!decision_callback_.is_null()) {
-    std::move(decision_callback_)
-        .Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
-  }
   delegate_.reset();
   // Deletes |this| and also destroys the timer.
   web_contents_->RemoveUserData(UserDataKey());

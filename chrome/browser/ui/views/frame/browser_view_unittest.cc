@@ -26,6 +26,7 @@
 #include "content/public/test/test_service_manager_context.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/scrollbar_size.h"
 #include "ui/views/controls/webview/webview.h"
 
 #if defined(OS_MACOSX)
@@ -187,6 +188,46 @@ TEST_F(BrowserViewTest, DISABLED_BrowserViewLayout) {
   EXPECT_EQ(contents_web_view->y(), devtools_web_view->y());
 
   BookmarkBarView::DisableAnimationsForTesting(false);
+}
+
+// Test the find bar's bounding box when the location bar is visible.
+TEST_F(BrowserViewTest, FindBarBoundingBoxLocationBar) {
+  ASSERT_FALSE(base::i18n::IsRTL());
+  const views::View* location_bar = browser_view()->GetLocationBarView();
+  const views::View* contents_container =
+      browser_view()->GetContentsContainerForTest();
+
+  // Make sure we are testing the case where the location bar is visible.
+  EXPECT_TRUE(location_bar->GetVisible());
+  const gfx::Rect find_bar_bounds = browser_view()->GetFindBarBoundingBox();
+  const gfx::Rect location_bar_bounds =
+      location_bar->ConvertRectToWidget(location_bar->GetLocalBounds());
+  const gfx::Rect contents_bounds = contents_container->ConvertRectToWidget(
+      contents_container->GetLocalBounds());
+
+  const gfx::Rect target(
+      location_bar_bounds.x(), location_bar_bounds.bottom(),
+      location_bar_bounds.width(),
+      contents_bounds.bottom() - location_bar_bounds.bottom());
+  EXPECT_EQ(target.ToString(), find_bar_bounds.ToString());
+}
+
+// Test the find bar's bounding box when the location bar is not visible.
+TEST_F(BrowserViewTest, FindBarBoundingBoxNoLocationBar) {
+  ASSERT_FALSE(base::i18n::IsRTL());
+  const views::View* location_bar = browser_view()->GetLocationBarView();
+  const views::View* contents_container =
+      browser_view()->GetContentsContainerForTest();
+
+  // Make sure we are testing the case where the location bar is absent.
+  browser_view()->GetLocationBarView()->SetVisible(false);
+  EXPECT_FALSE(location_bar->GetVisible());
+  const gfx::Rect find_bar_bounds = browser_view()->GetFindBarBoundingBox();
+  gfx::Rect contents_bounds = contents_container->ConvertRectToWidget(
+      contents_container->GetLocalBounds());
+  contents_bounds.Inset(0, 0, gfx::scrollbar_size(), 0);
+
+  EXPECT_EQ(contents_bounds.ToString(), find_bar_bounds.ToString());
 }
 
 // On macOS, most accelerators are handled by CommandDispatcher.

@@ -28,7 +28,7 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
   WorkerThreadSchedulerForTest(base::sequence_manager::SequenceManager* manager,
                                WorkerSchedulerProxy* proxy,
                                base::WaitableEvent* throtting_state_changed)
-      : WorkerThreadScheduler(WebThreadType::kTestThread, manager, proxy),
+      : WorkerThreadScheduler(ThreadType::kTestThread, manager, proxy),
         throtting_state_changed_(throtting_state_changed) {}
 
   void OnLifecycleStateChanged(
@@ -48,7 +48,7 @@ class WorkerThreadForTest : public WorkerThread {
  public:
   WorkerThreadForTest(FrameScheduler* frame_scheduler,
                       base::WaitableEvent* throtting_state_changed)
-      : WorkerThread(ThreadCreationParams(WebThreadType::kTestThread)
+      : WorkerThread(ThreadCreationParams(ThreadType::kTestThread)
                          .SetFrameOrWorkerScheduler(frame_scheduler)),
         throtting_state_changed_(throtting_state_changed) {}
 

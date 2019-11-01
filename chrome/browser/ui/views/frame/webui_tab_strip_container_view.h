@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/common/buildflags.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/view.h"
 
 #if !BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
@@ -32,6 +33,7 @@ class Browser;
 
 class WebUITabStripContainerView : public TabStripUI::Embedder,
                                    public views::View,
+                                   public gfx::AnimationDelegate,
                                    public views::ButtonListener,
                                    public views::ViewObserver {
  public:
@@ -48,6 +50,8 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
  private:
   class AutoCloser;
 
+  void SetContainerTargetVisibility(bool target_visible);
+
   // TabStripUI::Embedder:
   void CloseContainer() override;
   void ShowContextMenuAtPoint(
@@ -57,6 +61,10 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
 
   // views::View:
   int GetHeightForWidth(int w) const override;
+
+  // gfx::AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -69,6 +77,8 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   views::View* const tab_contents_container_;
 
   int desired_height_ = 0;
+
+  gfx::SlideAnimation animation_{this};
 
   std::unique_ptr<AutoCloser> auto_closer_;
 

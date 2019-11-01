@@ -259,7 +259,6 @@ class VrShell : device::GvrGamepadDataProvider,
 
   // device::GvrGamepadDataProvider implementation.
   void UpdateGamepadData(device::GvrGamepadData) override;
-  void RegisterGvrGamepadDataFetcher(device::GvrGamepadDataFetcher*) override;
 
   // device::CardboardGamepadDataProvider implementation.
   void RegisterCardboardGamepadDataFetcher(
@@ -383,7 +382,6 @@ class VrShell : device::GvrGamepadDataProvider,
 
   // Registered fetchers, must remain alive for UpdateGamepadData calls.
   // That's ok since the fetcher is only destroyed from VrShell's destructor.
-  device::GvrGamepadDataFetcher* gvr_gamepad_data_fetcher_ = nullptr;
   device::CardboardGamepadDataFetcher* cardboard_gamepad_data_fetcher_ =
       nullptr;
   int64_t cardboard_gamepad_timer_ = 0;

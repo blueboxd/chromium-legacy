@@ -49,6 +49,8 @@ class SkiaOutputSurfaceDependencyWebView
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
 
+  base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
+
  private:
   gl::GLSurface* const gl_surface_;
   TaskQueueWebView* task_queue_;

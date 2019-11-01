@@ -764,23 +764,6 @@ int URLRequest::Read(IOBuffer* dest, int dest_size) {
   return rv;
 }
 
-// Deprecated.
-bool URLRequest::Read(IOBuffer* dest, int dest_size, int* bytes_read) {
-  int result = Read(dest, dest_size);
-  if (result >= 0) {
-    *bytes_read = result;
-    return true;
-  }
-
-  if (result == ERR_IO_PENDING) {
-    *bytes_read = 0;
-  } else {
-    *bytes_read = -1;
-  }
-
-  return false;
-}
-
 void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
                                         bool* defer_redirect) {
   is_redirecting_ = true;

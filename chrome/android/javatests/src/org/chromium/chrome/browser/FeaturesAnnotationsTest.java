@@ -22,6 +22,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,22 +46,21 @@ public class FeaturesAnnotationsTest {
     @DisableFeatures("Two")
     public void testFeaturesSetExistingFlags() throws InterruptedException {
         mActivityRule.startMainActivityOnBlankPage();
-        List<String> finalEnabledList = getArgsList(true);
+        List<String> finalEnabledList = getFeatureList(true);
 
         assertThat(finalEnabledList, hasItems("One"));
         assertThat(finalEnabledList.size(), equalTo(1));
 
-        List<String> finalDisabledList = getArgsList(false);
+        List<String> finalDisabledList = getFeatureList(false);
         assertThat(finalDisabledList, hasItems("Two"));
-        // ChromeActivityTestRule disables OFFLINE_INDICATOR feature.
-        assertThat(finalDisabledList.size(), equalTo(2));
+        assertThat(finalDisabledList.size(), equalTo(1));
     }
 
     /**
      * Tests the compatibility between the legacy {@link CommandLineFlags} annotation usage for
      * features and the new dedicated annotations.
      *
-     * If a feature is already present in the command line, it's should not be removed nor alter
+     * If a feature is already present in the command line, it should not be removed nor alter
      * the current feature list.
      */
     @Test
@@ -69,7 +69,7 @@ public class FeaturesAnnotationsTest {
     @EnableFeatures("Two")
     public void testFeaturesDoNotRemoveExistingFlags() throws InterruptedException {
         mActivityRule.startMainActivityOnBlankPage();
-        List<String> finalEnabledList = getArgsList(true);
+        List<String> finalEnabledList = getFeatureList(true);
 
         assertThat(finalEnabledList, hasItems("One", "Two", "Three"));
         assertThat(finalEnabledList.size(), equalTo(3));
@@ -87,14 +87,21 @@ public class FeaturesAnnotationsTest {
     @EnableFeatures({"Three", "Four"})
     public void testFeaturesAddToExistingFlags() throws InterruptedException {
         mActivityRule.startMainActivityOnBlankPage();
-        List<String> finalEnabledList = getArgsList(true);
+        List<String> finalEnabledList = getFeatureList(true);
 
         assertThat(finalEnabledList, hasItems("Four"));
         assertThat(finalEnabledList.size(), equalTo(4));
     }
 
-    private static List<String> getArgsList(boolean enabled) {
+    private static List<String> getFeatureList(boolean enabled) {
         String switchName = enabled ? "enable-features" : "disable-features";
-        return Arrays.asList(CommandLine.getInstance().getSwitchValue(switchName).split(","));
+        ArrayList<String> allFeatures = new ArrayList(
+                Arrays.asList(CommandLine.getInstance().getSwitchValue(switchName).split(",")));
+        // To avoid interferences with features enabled or disabled outside of
+        // this test class, we only return the one we set in the tests.
+        ArrayList<String> relevantFeatures =
+                new ArrayList(Arrays.asList("One", "Two", "Three", "Four"));
+        allFeatures.retainAll(relevantFeatures);
+        return allFeatures;
     }
 }

@@ -60,6 +60,9 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   if (delta->short_name.has_value()) {
     state->short_name = delta->short_name;
   }
+  if (delta->publisher_id.has_value()) {
+    state->publisher_id = delta->publisher_id;
+  }
   if (delta->description.has_value()) {
     state->description = delta->description;
   }
@@ -182,6 +185,21 @@ const std::string& AppUpdate::ShortName() const {
 bool AppUpdate::ShortNameChanged() const {
   return delta_ && delta_->short_name.has_value() &&
          (!state_ || (delta_->short_name != state_->short_name));
+}
+
+const std::string& AppUpdate::PublisherId() const {
+  if (delta_ && delta_->publisher_id.has_value()) {
+    return delta_->publisher_id.value();
+  }
+  if (state_ && state_->publisher_id.has_value()) {
+    return state_->publisher_id.value();
+  }
+  return base::EmptyString();
+}
+
+bool AppUpdate::PublisherIdChanged() const {
+  return delta_ && delta_->publisher_id.has_value() &&
+         (!state_ || (delta_->publisher_id != state_->publisher_id));
 }
 
 const std::string& AppUpdate::Description() const {

@@ -41,6 +41,13 @@ public class BrowserFragmentControllerImpl extends IBrowserFragmentController.St
         }
     }
 
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        if (mWindowAndroid != null) {
+            mWindowAndroid.handlePermissionResult(requestCode, permissions, grantResults);
+        }
+    }
+
     @Override
     public void setTopView(IObjectWrapper view) {
         getBrowserController().setTopView(view);

@@ -94,6 +94,9 @@ class GPU_EXPORT Scheduler {
 
   base::WeakPtr<Scheduler> AsWeakPtr();
 
+  // Takes and resets current accumulated blocking time
+  base::TimeDelta TakeTotalBlockingTime();
+
  private:
 
   struct SchedulingState {
@@ -334,6 +337,9 @@ class GPU_EXPORT Scheduler {
   // If the scheduling queue needs to be rebuild because a sequence changed
   // priority.
   bool rebuild_scheduling_queue_ = false;
+
+  // Accumulated time the thread was blocked during running task
+  base::TimeDelta total_blocked_time_;
 
   base::ThreadChecker thread_checker_;
 

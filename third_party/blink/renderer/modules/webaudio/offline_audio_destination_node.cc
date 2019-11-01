@@ -348,7 +348,7 @@ void OfflineAudioDestinationHandler::PrepareTaskRunnerForRendering() {
     if (!render_thread_) {
       // The context started from the non-AudioWorklet mode.
       render_thread_ = Platform::Current()->CreateThread(
-          ThreadCreationParams(WebThreadType::kOfflineAudioRenderThread));
+          ThreadCreationParams(ThreadType::kOfflineAudioRenderThread));
       render_thread_task_runner_ = render_thread_->GetTaskRunner();
     }
   }

@@ -13,6 +13,7 @@
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_system_impl.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
@@ -85,7 +86,7 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     source_->CreatePushSubscription(
         std::move(receiver_1_), requestable_settings_,
         false /*force_reopen_with_new_settings*/,
-        mojo::MakeRequest(&subscription_1_),
+        subscription_1_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             [](base::RunLoop* run_loop,
                media::VideoCaptureParams* requested_settings,
@@ -114,7 +115,8 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     base::RunLoop run_loop;
     source_->CreatePushSubscription(
         std::move(receiver_2_), requestable_settings_,
-        force_reopen_with_new_settings, mojo::MakeRequest(&subscription_2_),
+        force_reopen_with_new_settings,
+        subscription_2_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             [](base::RunLoop* run_loop,
                media::VideoCaptureParams* requested_settings,
@@ -151,7 +153,7 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     source_->CreatePushSubscription(
         std::move(receiver_1_), requestable_settings_,
         false /*force_reopen_with_new_settings*/,
-        mojo::MakeRequest(&subscription_1_),
+        subscription_1_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             [](base::RunLoop* run_loop_1,
                media::VideoCaptureParams* requested_settings,
@@ -174,7 +176,7 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     source_->CreatePushSubscription(
         std::move(receiver_2_), different_settings,
         false /*force_reopen_with_new_settings*/,
-        mojo::MakeRequest(&subscription_2_),
+        subscription_2_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             [](base::RunLoop* run_loop_2,
                media::VideoCaptureParams* requested_settings,
@@ -256,10 +258,10 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
   mojom::VideoSourcePtr source_;
   media::VideoCaptureParams requestable_settings_;
 
-  mojom::PushVideoStreamSubscriptionPtr subscription_1_;
+  mojo::Remote<mojom::PushVideoStreamSubscription> subscription_1_;
   mojo::PendingRemote<mojom::Receiver> receiver_1_;
   MockReceiver mock_receiver_1_;
-  mojom::PushVideoStreamSubscriptionPtr subscription_2_;
+  mojo::Remote<mojom::PushVideoStreamSubscription> subscription_2_;
   mojo::PendingRemote<mojom::Receiver> receiver_2_;
   MockReceiver mock_receiver_2_;
 

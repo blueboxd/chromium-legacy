@@ -354,7 +354,7 @@ static bool ConvertEventToUpdate(int render_process_id,
     }
     media::PipelineStatus error = static_cast<media::PipelineStatus>(status);
     dict.SetString("params.pipeline_error",
-                   media::MediaLog::PipelineStatusToString(error));
+                   media::PipelineStatusToString(error));
   } else {
     dict.SetKey("params", event.params.Clone());
   }

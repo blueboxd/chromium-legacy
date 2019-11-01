@@ -10,10 +10,11 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
-#include "chrome/chrome_cleaner/mojom/engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
+#include "chrome/chrome_cleaner/mojom/engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace chrome_cleaner {
 
@@ -23,7 +24,7 @@ class EngineRequestsImpl : public mojom::EngineRequests {
                      InterfaceMetadataObserver* metadata_observer = nullptr);
   ~EngineRequestsImpl() override;
 
-  void Bind(mojom::EngineRequestsAssociatedPtrInfo* ptr_info);
+  void Bind(mojo::PendingAssociatedRemote<mojom::EngineRequests>* remote);
 
   // mojom::EngineRequests
   void SandboxGetFileAttributes(
@@ -87,7 +88,7 @@ class EngineRequestsImpl : public mojom::EngineRequests {
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner_;
   InterfaceMetadataObserver* metadata_observer_ = nullptr;
-  mojo::AssociatedBinding<mojom::EngineRequests> binding_;
+  mojo::AssociatedReceiver<mojom::EngineRequests> receiver_{this};
 };
 
 }  // namespace chrome_cleaner

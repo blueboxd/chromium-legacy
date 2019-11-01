@@ -11,3 +11,10 @@
 NSString* const kAutofillProfileEditTableViewId =
     @"kAutofillProfileEditTableViewId";
 NSString* const kAutofillProfileTableViewID = @"kAutofillProfileTableViewID";
+
+NSString* const kAutofillCreditCardTableViewId = @"kAutofillTableViewId";
+NSString* const kAutofillCreditCardSwitchViewId = @"cardItem_switch";
+NSString* const kAutofillPaymentMethodsToolbarId =
+    @"kAutofillPaymentMethodsToolbarId";
+NSString* const kSettingsAddPaymentMethodButtonId =
+    @"kSettingsAddPaymentMethodButtonId";

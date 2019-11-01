@@ -6,7 +6,6 @@ import os
 
 from page_sets.system_health import chrome_stories
 from page_sets.system_health import platforms
-from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
 
 from telemetry import story
@@ -32,9 +31,6 @@ class SystemHealthStorySet(story.StorySet):
           case and not story_class.NAME.startswith(case + ':')):
         continue
       self.AddStory(story_class(self, take_memory_measurement))
-
-  def GetAbridgedStorySetTagFilter(self):
-    return story_tags.HEALTH_CHECK.name
 
 
 class SystemHealthBlankStorySet(story.StorySet):

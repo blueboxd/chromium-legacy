@@ -385,7 +385,7 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
 
   int resource_id = IDR_NET_ERROR_HTML;
   std::string extracted_string =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           resource_id);
   base::StringPiece template_html(extracted_string.data(),
                                   extracted_string.size());

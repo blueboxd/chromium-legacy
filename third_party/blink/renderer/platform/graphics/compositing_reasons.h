@@ -29,7 +29,7 @@ using CompositingReasons = uint64_t;
   V(ActiveBackdropFilterAnimation)                                            \
   V(ImmersiveArOverlay)                                                       \
   V(ScrollDependentPosition)                                                  \
-  V(OverflowScrollingTouch)                                                   \
+  V(OverflowScrolling)                                                        \
   V(OverflowScrollingParent)                                                  \
   V(OutOfFlowClipping)                                                        \
   V(VideoOverlay)                                                             \
@@ -136,7 +136,7 @@ class PLATFORM_EXPORT CompositingReason {
                              kComboAllDirectNonStyleDeterminedReasons,
 
     kComboAllCompositedScrollingDeterminedReasons =
-        kScrollDependentPosition | kOverflowScrollingTouch,
+        kScrollDependentPosition | kOverflowScrolling,
 
     kComboCompositedDescendants =
         kIsolateCompositedDescendants | kOpacityWithCompositedDescendants |
@@ -158,6 +158,8 @@ class PLATFORM_EXPORT CompositingReason {
         k3DTransform | kWillChangeTransform | kWillChangeOther |
         kPerspectiveWith3DDescendants | kPreserve3DWith3DDescendants |
         kActiveTransformAnimation,
+    kDirectReasonsForScrollTranslationProperty =
+        kRootScroller | kOverflowScrolling,
     kDirectReasonsForEffectProperty = kActiveOpacityAnimation |
                                       kWillChangeOpacity | kBackdropFilter |
                                       kActiveBackdropFilterAnimation,

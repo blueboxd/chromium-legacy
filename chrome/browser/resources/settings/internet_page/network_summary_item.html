@@ -35,8 +35,8 @@
         font-size: inherit;
       }
     </style>
-    <div id="outerBox" class="settings-box two-line">
-      <div actionable class="flex layout horizontal center"
+    <div class="settings-box two-line no-padding">
+      <div actionable class="flex layout horizontal center link-wrapper"
           on-click="onShowDetailsTap_">
         <div id="details" no-flex$="[[showSimInfo_(deviceState)]]">
           <cr-network-icon
@@ -76,6 +76,7 @@
       <template is="dom-if" if="[[enableToggleIsVisible_(deviceState)]]">
         <div class="separator"></div>
         <cr-toggle id="deviceEnabledButton"
+            class="margin-matches-padding"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
             disabled="[[!enableToggleIsEnabled_(deviceState)]]"

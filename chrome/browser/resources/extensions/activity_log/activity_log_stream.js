@@ -2,11 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.m.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import '../shared_style.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {StreamArgItem, StreamItem} from './activity_log_stream_item.js';
+
 
   /** @interface */
-  class ActivityLogEventDelegate {
+  export class ActivityLogEventDelegate {
     /** @return {!ChromeEvent} */
     getOnExtensionActivity() {}
   }
@@ -16,7 +24,7 @@ cr.define('extensions', function() {
    * the activity for every script invoked.
    * @param {!chrome.activityLogPrivate.ExtensionActivity}
    *     activity
-   * @return {!Array<!extensions.StreamItem>}
+   * @return {!Array<!StreamItem>}
    */
   function processActivityForStream(activity) {
     const activityType = activity.activityType;
@@ -50,14 +58,16 @@ cr.define('extensions', function() {
                                }));
   }
 
-  const ActivityLogStream = Polymer({
+  Polymer({
     is: 'activity-log-stream',
+
+    _template: html`{__html_template__}`,
 
     properties: {
       /** @type {string} */
       extensionId: String,
 
-      /** @type {!extensions.ActivityLogEventDelegate} */
+      /** @type {!ActivityLogEventDelegate} */
       delegate: Object,
 
       /** @private */
@@ -66,13 +76,13 @@ cr.define('extensions', function() {
         value: false,
       },
 
-      /** @private {!Array<!extensions.StreamItem>} */
+      /** @private {!Array<!StreamItem>} */
       activityStream_: {
         type: Array,
         value: () => [],
       },
 
-      /** @private {!Array<!extensions.StreamItem>} */
+      /** @private {!Array<!StreamItem>} */
       filteredActivityStream_: {
         type: Array,
         computed:
@@ -201,7 +211,7 @@ cr.define('extensions', function() {
 
     /**
      * @private
-     * @return {!Array<!extensions.StreamItem>}
+     * @return {!Array<!StreamItem>}
      */
     computeFilteredActivityStream_: function() {
       if (!this.lastSearch_) {
@@ -223,9 +233,3 @@ cr.define('extensions', function() {
       });
     },
   });
-
-  return {
-    ActivityLogStream: ActivityLogStream,
-    ActivityLogEventDelegate: ActivityLogEventDelegate,
-  };
-});

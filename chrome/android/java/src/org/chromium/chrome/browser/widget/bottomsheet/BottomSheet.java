@@ -20,7 +20,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
@@ -38,14 +37,14 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent.HeightMode;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.KeyboardVisibilityDelegate;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * This class defines the bottom sheet that has multiple states and a persistently showing toolbar.
@@ -60,79 +59,6 @@ import java.lang.annotation.RetentionPolicy;
 public class BottomSheet
         extends FrameLayout implements BottomSheetSwipeDetector.SwipeableBottomSheet,
                                        NativePageHost, View.OnLayoutChangeListener {
-    /** The different states that the bottom sheet can have. */
-    @IntDef({SheetState.NONE, SheetState.HIDDEN, SheetState.PEEK, SheetState.HALF, SheetState.FULL,
-            SheetState.SCROLLING})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface SheetState {
-        /**
-         * NONE is for internal use only and indicates the sheet is not currently
-         * transitioning between states.
-         */
-        int NONE = -1;
-        // Values are used for indexing mStateRatios, should start from 0
-        // and can't have gaps. Additionally order is important for these,
-        // they go from smallest to largest.
-        int HIDDEN = 0;
-        int PEEK = 1;
-        int HALF = 2;
-        int FULL = 3;
-
-        int SCROLLING = 4;
-    }
-
-    /** The different possible height modes for a given state. */
-    @IntDef({HeightMode.DEFAULT, HeightMode.WRAP_CONTENT, HeightMode.DISABLED})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface HeightMode {
-        /**
-         * The sheet will use the stock behavior for the {@link SheetState} this is used for.
-         * Typically this means a pre-defined height ratio, peek being the exception that uses the
-         * feature's toolbar height.
-         */
-        int DEFAULT = 0;
-        /**
-         * The sheet will set its height so the content is completely visible. This mode cannot
-         * be used for the peek state.
-         */
-        int WRAP_CONTENT = -1;
-        /**
-         * The state this mode is used for will be disabled. For example, disabling the peek state
-         * would cause the sheet to automatically expand when triggered.
-         */
-        int DISABLED = -2;
-    }
-
-    /**
-     * The different reasons that the sheet's state can change.
-     *
-     * Needs to stay in sync with BottomSheet.StateChangeReason in enums.xml. These values are
-     * persisted to logs. Entries should not be renumbered and numeric values should never be
-     * reused.
-     */
-    @IntDef({StateChangeReason.NONE, StateChangeReason.SWIPE, StateChangeReason.BACK_PRESS,
-            StateChangeReason.TAP_SCRIM, StateChangeReason.NAVIGATION,
-            StateChangeReason.COMPOSITED_UI, StateChangeReason.VR, StateChangeReason.MAX_VALUE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface StateChangeReason {
-        int NONE = 0;
-        int SWIPE = 1;
-        int BACK_PRESS = 2;
-        int TAP_SCRIM = 3;
-        int NAVIGATION = 4;
-        int COMPOSITED_UI = 5;
-        int VR = 6;
-        int MAX_VALUE = VR;
-    }
-
-    /** The different priorities that the sheet's content can have. */
-    @IntDef({ContentPriority.HIGH, ContentPriority.LOW})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ContentPriority {
-        int HIGH = 0;
-        int LOW = 1;
-    }
-
     /**
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
      * design (this is the minimum time a user is guaranteed to pay attention to something).
@@ -251,154 +177,6 @@ public class BottomSheet
 
     /** The token used to enable browser controls persistence. */
     private int mPersistentControlsToken;
-
-    /**
-     * An interface defining content that can be displayed inside of the bottom sheet for Chrome
-     * Home.
-     */
-    public interface BottomSheetContent {
-        /**
-         * Gets the {@link View} that holds the content to be displayed in the Chrome Home bottom
-         * sheet.
-         * @return The content view.
-         */
-        View getContentView();
-
-        /**
-         * Get the {@link View} that contains the toolbar specific to the content being
-         * displayed. If null is returned, the omnibox is used.
-         *
-         * @return The toolbar view.
-         */
-        @Nullable
-        View getToolbarView();
-
-        /**
-         * @return The vertical scroll offset of the content view.
-         */
-        int getVerticalScrollOffset();
-
-        /**
-         * Called to destroy the {@link BottomSheetContent} when it is dismissed. The means the
-         * sheet is in the {@link SheetState#HIDDEN} state without being suppressed. This method
-         * does not necessarily need to be used but exists for convenience. Cleanup can be done
-         * manually via the owning component (likely watching for the sheet hidden event using an
-         * observer).
-         */
-        void destroy();
-
-        /**
-         * @return The priority of this content.
-         */
-        @ContentPriority
-        int getPriority();
-
-        /**
-         * @return Whether swiping the sheet down hard enough will cause the sheet to be dismissed.
-         */
-        boolean swipeToDismissEnabled();
-
-        /**
-         * @return Whether this content owns its lifecycle. If false, the content will be hidden
-         *         when the user navigates away from the page or switches tab.
-         */
-        default boolean hasCustomLifecycle() {
-            return false;
-        }
-
-        /**
-         * @return Whether this content owns the scrim lifecycle. If false, a default scrim will
-         *         be displayed behind the sheet when this content is shown.
-         */
-        default boolean hasCustomScrimLifecycle() {
-            return false;
-        }
-
-        /**
-         * @return The height of the peeking state for the content in px or one of the values in
-         *         {@link HeightMode}. If {@link HeightMode#DEFAULT}, the system expects
-         *         {@link #getToolbarView} to be non-null, where it will then use its height as the
-         *         peeking height. This method cannot return {@link HeightMode#WRAP_CONTENT}.
-         */
-        default int getPeekHeight() {
-            return HeightMode.DEFAULT;
-        }
-
-        /**
-         * @return The height of the half state for the content as a ratio of the height of the
-         *         content area (ex. 1.f would be full-screen, 0.5f would be half-screen). The
-         *         returned value can also be one of {@link HeightMode}. If
-         *         {@link HeightMode#DEFAULT} is returned, the ratio will be a predefined value. If
-         *         {@link HeightMode#WRAP_CONTENT} is returned by {@link #getFullHeightRatio()}, the
-         *         half height will be disabled. Half height will also be disabled on small screens.
-         *         This method cannot return {@link HeightMode#WRAP_CONTENT}.
-         */
-        default float getHalfHeightRatio() {
-            return HeightMode.DEFAULT;
-        }
-
-        /**
-         * @return The height of the full state for the content as a ratio of the height of the
-         *         content area (ex. 1.f would be full-screen, 0.5f would be half-screen). The
-         *         returned value can also be one of {@link HeightMode}. If
-         *         {@link HeightMode#DEFAULT}, the ratio will be a predefined value. This height
-         *         cannot be disabled. This method cannot return {@link HeightMode#DISABLED}.
-         */
-        default float getFullHeightRatio() {
-            return HeightMode.DEFAULT;
-        }
-
-        /**
-         * Set a {@link ContentSizeListener} that should be notified when the size of the content
-         * has changed. This will be called only if {@link #wrapContentEnabled()} returns {@code
-         * true}. Note that you need to implement this method only if the content view height
-         * changes are animated.
-         *
-         * @return Whether the listener was correctly set.
-         */
-        default boolean setContentSizeListener(@Nullable ContentSizeListener listener) {
-            return false;
-        }
-
-        /**
-         * @return Whether the sheet should be hidden when it is in the PEEK state and the user
-         *         scrolls down the page.
-         */
-        default boolean hideOnScroll() {
-            return true;
-        }
-
-        /**
-         * @return The resource id of the content description for the bottom sheet. This is
-         *         generally the name of the feature/content that is showing. 'Swipe down to close.'
-         *         will be automatically appended after the content description.
-         */
-        int getSheetContentDescriptionStringId();
-
-        /**
-         * @return The resource id of the string announced when the sheet is opened at half height.
-         *         This is typically the name of your feature followed by 'opened at half height'.
-         */
-        int getSheetHalfHeightAccessibilityStringId();
-
-        /**
-         * @return The resource id of the string announced when the sheet is opened at full height.
-         *         This is typically the name of your feature followed by 'opened at full height'.
-         */
-        int getSheetFullHeightAccessibilityStringId();
-
-        /**
-         * @return The resource id of the string announced when the sheet is closed. This is
-         *         typically the name of your feature followed by 'closed'.
-         */
-        int getSheetClosedAccessibilityStringId();
-    }
-
-    /** Interface to listen when the size of a BottomSheetContent changes. */
-    public interface ContentSizeListener {
-        /** Called when the size of the view has changed. */
-        void onSizeChanged(int width, int height, int oldWidth, int oldHeight);
-    }
 
     @Override
     public boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
@@ -859,7 +637,8 @@ public class BottomSheet
 
     /**
      * A notification that the sheet has returned to the peeking state.
-     * @param reason The {@link StateChangeReason} that the sheet was closed, if any.
+     * @param reason The {@link StateChangeReason} that the sheet was closed,
+     *         if any.
      */
     private void onSheetClosed(@StateChangeReason int reason) {
         if (!mIsSheetOpen) return;
@@ -997,14 +776,13 @@ public class BottomSheet
         if (shouldAnimate) {
             float velocityY = getCurrentOffsetPx() - offset;
 
-            @BottomSheet.SheetState
+            @SheetState
             int targetState = getTargetSheetState(offset, -velocityY);
 
-            setSheetState(targetState, true, BottomSheet.StateChangeReason.SWIPE);
+            setSheetState(targetState, true, StateChangeReason.SWIPE);
         } else {
-            setInternalCurrentState(
-                    BottomSheet.SheetState.SCROLLING, BottomSheet.StateChangeReason.SWIPE);
-            setSheetOffsetFromBottom(offset, BottomSheet.StateChangeReason.SWIPE);
+            setInternalCurrentState(SheetState.SCROLLING, StateChangeReason.SWIPE);
+            setSheetOffsetFromBottom(offset, StateChangeReason.SWIPE);
         }
     }
 
@@ -1110,9 +888,9 @@ public class BottomSheet
         if (mContainerHeight <= 0 || !isHalfStateEnabled()) return 0;
 
         float customHalfRatio = mSheetContent.getHalfHeightRatio();
-        assert customHalfRatio != HeightMode.WRAP_CONTENT
-                : "Half-height cannot be WRAP_CONTENT. This is only supported for full-height.";
-
+        assert customHalfRatio
+                != HeightMode.WRAP_CONTENT
+            : "Half-height cannot be WRAP_CONTENT. This is only supported for full-height.";
 
         return customHalfRatio == HeightMode.DEFAULT ? HALF_HEIGHT_RATIO : customHalfRatio;
     }

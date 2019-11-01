@@ -267,21 +267,25 @@ if (!is_android && !is_chromeos) {
 
 if (enable_extensions) {
   grit("extensions_resources") {
+    # The .grd contains references to generated files.
+    source_is_generated = true
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
     if (optimize_webui) {
       source = "extensions/extensions_resources_vulcanized.grd"
-
-      # The .grd contains references to generated files.
-      source_is_generated = true
 
       deps = [
         "//chrome/browser/resources/extensions:build",
       ]
-      grit_flags = [
-        "-E",
-        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-      ]
     } else {
       source = "extensions/extensions_resources.grd"
+
+      deps = [
+        "//chrome/browser/resources/extensions:polymer3_elements",
+      ]
     }
 
     defines = chrome_grit_defines

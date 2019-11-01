@@ -60,7 +60,7 @@ public class MemoryPressureListener {
      */
     @CalledByNative
     private static void addNativeCallback() {
-        addCallback(MemoryPressureListenerJni.get()::onMemoryPressure);
+        addCallback((pressure) -> MemoryPressureListenerJni.get().onMemoryPressure(pressure));
     }
 
     /**

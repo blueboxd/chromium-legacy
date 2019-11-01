@@ -39,6 +39,7 @@ struct SharingDialogData {
   base::string16 title;
   base::string16 error_text;
   int help_text_id = 0;
+  int help_text_origin_id = 0;
   int help_link_text_id = 0;
   const gfx::VectorIcon* header_image_light = nullptr;
   const gfx::VectorIcon* header_image_dark = nullptr;

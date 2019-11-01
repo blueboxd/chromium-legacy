@@ -724,6 +724,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PartialUnloadHandler) {
 //          [6]            [14] |
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        PendingDeletionCheckCompletedOnSubtree) {
+  web_contents()->GetController().GetBackForwardCache().DisableForTesting(
+      content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
+
   GURL url_1(embedded_test_server()->GetURL(
       "a.com",
       "/cross_site_iframe_factory.html?a(a,a,a(a),a(a),a(a),a(a,a),a(a,a))"));

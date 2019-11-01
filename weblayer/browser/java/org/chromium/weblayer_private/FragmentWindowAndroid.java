@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 
-import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 import org.chromium.ui.base.IntentWindowAndroid;
 
@@ -27,7 +26,7 @@ public class FragmentWindowAndroid extends IntentWindowAndroid {
         mFragment = fragment;
 
         setKeyboardDelegate(new ActivityKeyboardVisibilityDelegate(getActivity()));
-        setAndroidPermissionDelegate(new ActivityAndroidPermissionDelegate(getActivity()));
+        setAndroidPermissionDelegate(new FragmentAndroidPermissionDelegate(mFragment));
     }
 
     @Override

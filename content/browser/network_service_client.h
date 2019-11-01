@@ -89,7 +89,6 @@ class CONTENT_EXPORT NetworkServiceClient
 
   // net::NetworkChangeNotifier::DNSObserver implementation:
   void OnDNSChanged() override;
-  void OnInitialDNSConfigRead() override;
 #endif
 
  private:

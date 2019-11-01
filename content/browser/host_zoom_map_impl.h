@@ -70,24 +70,11 @@ class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap {
   void SetZoomLevelForWebContents(WebContentsImpl* web_contents_impl,
                                   double level);
 
-  // Sets the zoom level for the specified view. The level may be set for only
-  // this view, or for the host, depending on UsesTemporaryZoomLevel().
-  void SetZoomLevelForView(int render_process_id,
-                           int render_view_id,
-                           double level,
-                           const std::string& host);
-
   // Returns the temporary zoom level that's only valid for the lifetime of
   // the given WebContents (i.e. isn't saved and doesn't affect other
   // WebContentses) if it exists, the default zoom level otherwise.
   double GetTemporaryZoomLevel(int render_process_id,
                                int render_view_id) const;
-
-  // Returns the zoom level regardless of whether it's temporary, host-keyed or
-  // scheme+host-keyed.
-  double GetZoomLevelForView(const GURL& url,
-                             int render_process_id,
-                             int render_view_id);
 
   void SendErrorPageZoomLevelRefresh();
 

@@ -30,7 +30,6 @@
 <translation id="1113869188872983271">順序変更の取り消し（&amp;U）</translation>
 <translation id="1125573121925420732">ウェブサイトのセキュリティ更新中は警告メッセージが表示されることがあります。これはまもなく改善される予定です。</translation>
 <translation id="1126551341858583091">ローカル ストレージ上のサイズは <ph name="CRASH_SIZE" /> です。</translation>
-<translation id="1127259989763091435">カードを確認して Google アカウントに保存しますか？</translation>
 <translation id="112840717907525620">ポリシー キャッシュは正常です</translation>
 <translation id="1131264053432022307">コピーした画像</translation>
 <translation id="1150979032973867961">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
@@ -158,7 +157,6 @@
 <translation id="1656489000284462475">引取</translation>
 <translation id="1662550410081243962">お支払い方法の保存と入力</translation>
 <translation id="1663943134801823270">Chrome に保存されているクレジット カードと住所です。[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
-<translation id="1669987054044193553">確認して保存</translation>
 <translation id="1671391448414634642">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます。</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Google Chrome から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Google Chrome によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="168841957122794586">サーバー証明書に脆弱な暗号鍵が含まれています。</translation>
@@ -188,7 +186,6 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">カード名義人</translation>
 <translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
-<translation id="1822370876374026111">カードと請求先住所を Google アカウントとこのデバイスに追加すると、次回のお支払いが簡単になります。</translation>
 <translation id="1822540298136254167">アクセスしたウェブサイトと閲覧時間</translation>
 <translation id="1826516787628120939">確認中</translation>
 <translation id="1834321415901700177">このサイトには有害なプログラムが含まれています</translation>
@@ -224,7 +221,6 @@
 <translation id="2003709556000175978">今すぐパスワードを再設定してください</translation>
 <translation id="2003775180883135320">4 穴パンチ（上）</translation>
 <translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
-<translation id="202813660234680402">いいえ、追加しません</translation>
 <translation id="2030481566774242610">もしかして: <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />プロキシとファイアウォールを確認する<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" />のページは翻訳されません。</translation>
@@ -589,6 +585,7 @@
 <translation id="3884278016824448484">競合するデバイス識別子です</translation>
 <translation id="3885155851504623709">教区</translation>
 <translation id="3890664840433101773">メールを追加</translation>
+<translation id="3897092660631435901">メニュー</translation>
 <translation id="3901925938762663762">カードの有効期限が切れています</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
@@ -642,7 +639,6 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{他 <ph name="ITEM_COUNT" /> 件のアイテム}other{他 <ph name="ITEM_COUNT" /> 件のアイテム}}</translation>
 <translation id="4176463684765177261">停止中</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4193750898749511769">カードと請求先住所を Google アカウントに追加すると、次回のお支払いが簡単になります。</translation>
 <translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ファイアウォールとウイルス対策の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9（封筒）</translation>
@@ -761,7 +757,6 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> の検索候補</translation>
 <translation id="4742407542027196863">パスワードを管理…</translation>
 <translation id="4744603770635761495">実行ファイルのパス</translation>
-<translation id="47454865135383664">カードを Google アカウントに追加しますか？</translation>
 <translation id="4750917950439032686">お客様がこのサイトに送信した情報（パスワード、クレジット カード番号など）が第三者に見られることはありません。</translation>
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4758311279753947758">連絡先情報を追加</translation>
@@ -1005,7 +1000,6 @@
 <translation id="5932224571077948991">このサイトでは煩わしい広告や誤解を招く広告が表示されます</translation>
 <translation id="5939847200023027600">PDF コンポジター サービス</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> を開いています…</translation>
-<translation id="5947933617628957894">はい、追加します</translation>
 <translation id="5951495562196540101">一般ユーザー向けアカウントでは登録できません（ライセンス パッケージが利用可能です）。</translation>
 <translation id="5967592137238574583">連絡先情報の編集</translation>
 <translation id="5967867314010545767">履歴から削除</translation>
@@ -1099,7 +1093,6 @@
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> の有効期限と CVC を入力</translation>
 <translation id="6415778972515849510">Chromium には Google アカウントの保護とパスワードの変更をサポートする機能があります。</translation>
 <translation id="6427730057873428458">観音折り</translation>
-<translation id="6431585503458005759">保存しません</translation>
 <translation id="6433490469411711332">連絡先情報の編集</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> で接続が拒否されました。</translation>
 <translation id="6434309073475700221">破棄</translation>
@@ -1115,7 +1108,6 @@
 <translation id="6489534406876378309">クラッシュのアップロードを開始</translation>
 <translation id="6499038740797743453">パスワードを再設定しますか？</translation>
 <translation id="6507833130742554667">クレジット カードとデビットカードをご利用いただけます。</translation>
-<translation id="650855688985305916">はい、保存します</translation>
 <translation id="6508722015517270189">Chrome を再起動する</translation>
 <translation id="6517596291481585650">警告: このポリシーはリストでないため、ポリシーで指定されているとおりにリストとして統合されませんでした。</translation>
 <translation id="6518133107902771759">確認</translation>
@@ -1253,7 +1245,6 @@
 <translation id="7298195798382681320">推奨</translation>
 <translation id="7300012071106347854">コバルトブルー</translation>
 <translation id="7302712225291570345">「<ph name="TEXT" />」</translation>
-<translation id="7303701124147721189">カードと請求先住所を Google アカウントとこのデバイスに保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="7304030187361489308">高め</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" /> にクラッシュ レポートが作成されました（ユーザーからアップロードがリクエストされましたが、まだアップロードされていません）</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />セーフ ブラウジング<ph name="END_LINK" />の警告</translation>
@@ -1480,7 +1471,6 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">有害なプログラムが削除されるより前に<ph name="BEGIN_LINK" />このサイトにアクセスする<ph name="END_LINK" />場合は、セキュリティ上のリスクについてご承知おきください。</translation>
 <translation id="8349305172487531364">ブックマーク バー</translation>
-<translation id="836241887727198552">カードを Google アカウントに保存しますか？</translation>
 <translation id="8363502534493474904">機内モードをオフにする</translation>
 <translation id="8364627913115013041">未設定</translation>
 <translation id="8368476060205742148">Google Play 開発者サービス</translation>
@@ -1498,7 +1488,6 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">ほとんどのウェブサイトからログアウトします。</translation>
 <translation id="8437238597147034694">移動の取り消し（&amp;U）</translation>
-<translation id="8440508849222143646">カードと請求先住所を Google アカウントに保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="8461694314515752532">同期データを同期パスフレーズで暗号化する</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 件のクレジット カード}other{# 件のクレジット カード}}</translation>
 <translation id="8473863474539038330">住所やその他の情報</translation>
@@ -1523,7 +1512,6 @@
 <translation id="861775596732816396">サイズ 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">このカード情報をこのデバイスに保存する</translation>
-<translation id="8626112503828625890">お支払い情報を Google アカウントに保存しますか？</translation>
 <translation id="8647750283161643317">すべてデフォルトに戻す</translation>
 <translation id="8663226718884576429">ご注文の概要、<ph name="TOTAL_LABEL" />、その他の詳細</translation>
 <translation id="8680536109547170164">「<ph name="QUERY" />」に対する答え: 「<ph name="ANSWER" />」</translation>

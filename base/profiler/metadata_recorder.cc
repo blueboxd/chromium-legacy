@@ -20,8 +20,10 @@ MetadataRecorder::MetadataRecorder() {
 
 MetadataRecorder::~MetadataRecorder() = default;
 
-void MetadataRecorder::Set(uint64_t name_hash, int64_t value) {
-  base::AutoLock lock(write_lock_);
+void MetadataRecorder::Set(uint64_t name_hash,
+                           Optional<int64_t> key,
+                           int64_t value) {
+  AutoLock lock(write_lock_);
 
   // Acquiring the |write_lock_| ensures that:
   //
@@ -32,7 +34,7 @@ void MetadataRecorder::Set(uint64_t name_hash, int64_t value) {
   size_t item_slots_used = item_slots_used_.load(std::memory_order_relaxed);
   for (size_t i = 0; i < item_slots_used; ++i) {
     auto& item = items_[i];
-    if (item.name_hash == name_hash) {
+    if (item.name_hash == name_hash && item.key == key) {
       item.value.store(value, std::memory_order_relaxed);
 
       const bool was_active =
@@ -64,18 +66,19 @@ void MetadataRecorder::Set(uint64_t name_hash, int64_t value) {
   // is ready.
   auto& item = items_[item_slots_used];
   item.name_hash = name_hash;
+  item.key = key;
   item.value.store(value, std::memory_order_relaxed);
   item.is_active.store(true, std::memory_order_release);
   item_slots_used_.fetch_add(1, std::memory_order_release);
 }
 
-void MetadataRecorder::Remove(uint64_t name_hash) {
-  base::AutoLock lock(write_lock_);
+void MetadataRecorder::Remove(uint64_t name_hash, Optional<int64_t> key) {
+  AutoLock lock(write_lock_);
 
   size_t item_slots_used = item_slots_used_.load(std::memory_order_relaxed);
   for (size_t i = 0; i < item_slots_used; ++i) {
     auto& item = items_[i];
-    if (item.name_hash == name_hash) {
+    if (item.name_hash == name_hash && item.key == key) {
       // A removed item will occupy its slot until that slot is reclaimed.
       const bool was_active =
           item.is_active.exchange(false, std::memory_order_relaxed);
@@ -132,7 +135,7 @@ size_t MetadataRecorder::GetItems(
     // that field is always set last, we ignore half-created items.
     if (item.is_active.load(std::memory_order_acquire)) {
       (*items)[write_index++] = ProfileBuilder::MetadataItem{
-          item.name_hash, item.value.load(std::memory_order_relaxed)};
+          item.name_hash, item.key, item.value.load(std::memory_order_relaxed)};
     }
   }
 

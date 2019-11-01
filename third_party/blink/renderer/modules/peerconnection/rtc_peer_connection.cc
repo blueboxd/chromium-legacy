@@ -1262,8 +1262,23 @@ void RTCPeerConnection::ReportSetSdpUsage(
 }
 
 ScriptPromise RTCPeerConnection::setLocalDescription(
+    ScriptState* script_state) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+  auto* request = MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
+      base::nullopt, this, resolver, "RTCPeerConnection",
+      "setLocalDescription");
+  peer_handler_->SetLocalDescription(request);
+  return promise;
+}
+
+ScriptPromise RTCPeerConnection::setLocalDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit* session_description_init) {
+  if (session_description_init->type().IsNull() &&
+      session_description_init->sdp().IsNull()) {
+    return setLocalDescription(script_state);
+  }
   MaybeWarnAboutUnsafeSdp(session_description_init);
   ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription,
                     session_description_init);

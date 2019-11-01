@@ -28,6 +28,8 @@
 #include "media/renderers/video_overlay_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -66,7 +68,7 @@ class MojoRendererTest : public ::testing::Test {
       : mojo_cdm_service_(
             std::make_unique<MojoCdmService>(&cdm_factory_,
                                              &mojo_cdm_service_context_)),
-        cdm_binding_(mojo_cdm_service_.get()) {
+        cdm_receiver_(mojo_cdm_service_.get()) {
     std::unique_ptr<StrictMock<MockRenderer>> mock_renderer(
         new StrictMock<MockRenderer>());
     mock_renderer_ = mock_renderer.get();
@@ -180,8 +182,8 @@ class MojoRendererTest : public ::testing::Test {
   }
 
   void CreateCdm() {
-    cdm_binding_.Bind(mojo::MakeRequest(&remote_cdm_));
-    remote_cdm_->Initialize(
+    cdm_receiver_.Bind(cdm_remote_.BindNewPipeAndPassReceiver());
+    cdm_remote_->Initialize(
         kClearKeyKeySystem, url::Origin::Create(GURL("https://www.test.com")),
         CdmConfig(),
         base::Bind(&MojoRendererTest::OnCdmCreated, base::Unretained(this)));
@@ -208,7 +210,7 @@ class MojoRendererTest : public ::testing::Test {
   // Client side mocks and helpers.
   StrictMock<MockRendererClient> renderer_client_;
   StrictMock<MockCdmContext> cdm_context_;
-  mojom::ContentDecryptionModulePtr remote_cdm_;
+  mojo::Remote<mojom::ContentDecryptionModule> cdm_remote_;
 
   // Client side mock demuxer and demuxer streams.
   StrictMock<MockDemuxer> demuxer_;
@@ -220,7 +222,7 @@ class MojoRendererTest : public ::testing::Test {
   MojoCdmServiceContext mojo_cdm_service_context_;
   DefaultCdmFactory cdm_factory_;
   std::unique_ptr<MojoCdmService> mojo_cdm_service_;
-  mojo::Binding<mojom::ContentDecryptionModule> cdm_binding_;
+  mojo::Receiver<mojom::ContentDecryptionModule> cdm_receiver_;
 
   // Service side mocks and helpers.
   StrictMock<MockRenderer>* mock_renderer_;

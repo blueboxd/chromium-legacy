@@ -199,7 +199,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   void CropImages(ImageCache* images) const;
 
   // Set toolbar related elements' colors (e.g. status bubble, info bar,
-  // download shelf, detached bookmark bar) to toolbar color.
+  // download shelf) to toolbar color.
   void SetToolbarRelatedColors();
 
   // Creates a composited toolbar image. Source and destination is |images|.

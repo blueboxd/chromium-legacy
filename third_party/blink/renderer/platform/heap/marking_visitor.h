@@ -97,7 +97,7 @@ ALWAYS_INLINE void MarkingVisitorCommon::AccountMarkedBytes(
 ALWAYS_INLINE bool MarkingVisitorCommon::MarkHeaderNoTracing(
     HeapObjectHeader* header) {
   DCHECK(header);
-  DCHECK(State()->InAtomicMarkingPause() || State()->IsIncrementalMarking());
+  DCHECK(State()->IsIncrementalMarking() || State()->InAtomicMarkingPause());
   // A GC should only mark the objects that belong in its heap.
   DCHECK_EQ(State(),
             PageFromObject(header->Payload())->Arena()->GetThreadState());

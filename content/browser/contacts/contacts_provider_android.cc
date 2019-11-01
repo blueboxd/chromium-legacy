@@ -63,41 +63,56 @@ void ContactsProviderAndroid::Select(bool multiple,
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ContactsDialogHost_showDialog(
       env, dialog_, multiple, include_names, include_emails, include_tel,
+      include_addresses,
       base::android::ConvertUTF16ToJavaString(env, formatted_origin_));
 }
 
 void ContactsProviderAndroid::AddContact(
     JNIEnv* env,
-    jboolean include_names,
-    jboolean include_emails,
-    jboolean include_tel,
     const base::android::JavaParamRef<jobjectArray>& names_java,
     const base::android::JavaParamRef<jobjectArray>& emails_java,
-    const base::android::JavaParamRef<jobjectArray>& tel_java) {
+    const base::android::JavaParamRef<jobjectArray>& tel_java,
+    const base::android::JavaParamRef<jobjectArray>& addresses_java) {
   DCHECK(callback_);
 
   base::Optional<std::vector<std::string>> names;
-  if (include_names) {
+  if (names_java) {
     std::vector<std::string> names_vector;
     AppendJavaStringArrayToStringVector(env, names_java, &names_vector);
-    names = names_vector;
+    names = std::move(names_vector);
   }
 
   base::Optional<std::vector<std::string>> emails;
-  if (include_emails) {
+  if (emails_java) {
     std::vector<std::string> emails_vector;
     AppendJavaStringArrayToStringVector(env, emails_java, &emails_vector);
-    emails = emails_vector;
+    emails = std::move(emails_vector);
   }
 
   base::Optional<std::vector<std::string>> tel;
-  if (include_tel) {
+  if (tel_java) {
     std::vector<std::string> tel_vector;
     AppendJavaStringArrayToStringVector(env, tel_java, &tel_vector);
-    tel = tel_vector;
+    tel = std::move(tel_vector);
   }
 
   base::Optional<std::vector<payments::mojom::PaymentAddressPtr>> addresses;
+  if (addresses_java) {
+    std::vector<payments::mojom::PaymentAddressPtr> addresses_vector;
+
+    for (const base::android::JavaRef<jbyteArray>& j_address :
+         addresses_java.ReadElements<jbyteArray>()) {
+      payments::mojom::PaymentAddressPtr address;
+      if (!payments::mojom::PaymentAddress::Deserialize(
+              static_cast<jbyte*>(env->GetDirectBufferAddress(j_address.obj())),
+              env->GetDirectBufferCapacity(j_address.obj()), &address)) {
+        continue;
+      }
+      addresses_vector.push_back(std::move(address));
+    }
+
+    addresses = std::move(addresses_vector);
+  }
 
   blink::mojom::ContactInfoPtr contact =
       blink::mojom::ContactInfo::New(std::move(names), std::move(emails),

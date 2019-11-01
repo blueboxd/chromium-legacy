@@ -11,6 +11,7 @@
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace chromeos {
@@ -28,7 +29,7 @@ class FakeAssistantSettingsManagerImpl : public AssistantSettingsManager {
                       UpdateSettingsCallback callback) override;
   void StartSpeakerIdEnrollment(
       bool skip_cloud_enrollment,
-      mojom::SpeakerIdEnrollmentClientPtr client) override;
+      mojo::PendingRemote<mojom::SpeakerIdEnrollmentClient> client) override;
   void StopSpeakerIdEnrollment(
       StopSpeakerIdEnrollmentCallback callback) override;
   void SyncSpeakerIdEnrollmentStatus() override {}

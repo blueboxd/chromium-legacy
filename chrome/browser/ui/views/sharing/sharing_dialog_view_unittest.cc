@@ -15,13 +15,16 @@
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/sync_device_info/device_info.h"
+#include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/styled_label.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -115,6 +118,8 @@ class SharingDialogViewTest : public BrowserWithTestWindowTest {
 
     data.help_text_id =
         IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES;
+    data.help_text_origin_id =
+        IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES_ORIGIN;
     data.help_link_text_id =
         IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK;
     data.origin_text_id =
@@ -234,4 +239,43 @@ TEST_F(SharingDialogViewTest, OriginView) {
   // Origin should not be shown in the footnote if the initiating origin does
   // match the main frame origin.
   EXPECT_EQ(nullptr, dialog->CreateFootnoteView());
+}
+
+TEST_F(SharingDialogViewTest, HelpTextContent) {
+  url::Origin current_origin = url::Origin::Create(GURL("https://google.com"));
+  url::Origin other_origin = url::Origin::Create(GURL("https://example.com"));
+  base::string16 link_text = l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK);
+  base::string16 origin_text = url_formatter::FormatOriginForSecurityDisplay(
+      other_origin, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  base::string16 expected_default = l10n_util::GetStringFUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES, link_text);
+  base::string16 expected_origin = l10n_util::GetStringFUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES_ORIGIN,
+      origin_text, link_text);
+
+  // Expect default help text if no initiating origin is set.
+  auto dialog_data = CreateDialogData(/*devices=*/0, /*apps=*/1);
+  auto dialog = CreateDialogView(std::move(dialog_data));
+  auto footnote_view = dialog->CreateFootnoteView();
+  EXPECT_EQ(expected_default,
+            static_cast<views::StyledLabel*>(footnote_view.get())->GetText());
+
+  // Still expect the default help text if the initiating origin matches the
+  // main frame origin.
+  dialog_data = CreateDialogData(/*devices=*/0, /*apps=*/1);
+  dialog_data.initiating_origin = current_origin;
+  dialog = CreateDialogView(std::move(dialog_data));
+  footnote_view = dialog->CreateFootnoteView();
+  EXPECT_EQ(expected_default,
+            static_cast<views::StyledLabel*>(footnote_view.get())->GetText());
+
+  // Expect the origin to be included in the help text if it does not match the
+  // main frame origin.
+  dialog_data = CreateDialogData(/*devices=*/0, /*apps=*/1);
+  dialog_data.initiating_origin = other_origin;
+  dialog = CreateDialogView(std::move(dialog_data));
+  footnote_view = dialog->CreateFootnoteView();
+  EXPECT_EQ(expected_origin,
+            static_cast<views::StyledLabel*>(footnote_view.get())->GetText());
 }

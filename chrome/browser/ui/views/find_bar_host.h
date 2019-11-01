@@ -57,27 +57,28 @@ class FindBarHost : public DropdownBarHost,
   void MoveWindowIfNecessary() override;
   void SetFindTextAndSelectedRange(const base::string16& find_text,
                                    const gfx::Range& selected_range) override;
-  base::string16 GetFindText() override;
-  gfx::Range GetSelectedRange() override;
+  base::string16 GetFindText() const override;
+  gfx::Range GetSelectedRange() const override;
   void UpdateUIForFindResult(const FindNotificationDetails& result,
                              const base::string16& find_text) override;
   void AudibleAlert() override;
-  bool IsFindBarVisible() override;
+  bool IsFindBarVisible() const override;
   void RestoreSavedFocus() override;
-  bool HasGlobalFindPasteboard() override;
+  bool HasGlobalFindPasteboard() const override;
   void UpdateFindBarForChangedWebContents() override;
-  FindBarTesting* GetFindBarTesting() override;
+  const FindBarTesting* GetFindBarTesting() const override;
 
   // Overridden from ui::AcceleratorTarget in DropdownBarHost class:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool CanHandleAccelerators() const override;
 
   // FindBarTesting implementation:
-  bool GetFindBarWindowInfo(gfx::Point* position, bool* fully_visible) override;
-  base::string16 GetFindSelectedText() override;
-  base::string16 GetMatchCountText() override;
-  int GetWidth() override;
-  size_t GetAudibleAlertCount() override;
+  bool GetFindBarWindowInfo(gfx::Point* position,
+                            bool* fully_visible) const override;
+  base::string16 GetFindSelectedText() const override;
+  base::string16 GetMatchCountText() const override;
+  int GetContentsWidth() const override;
+  size_t GetAudibleAlertCount() const override;
 
   // Overridden from DropdownBarHost:
   // Returns the rectangle representing where to position the find bar. It uses
@@ -139,6 +140,9 @@ class FindBarHost : public DropdownBarHost,
 
   // Returns the FindBarView.
   FindBarView* find_bar_view() { return static_cast<FindBarView*>(view()); }
+  const FindBarView* find_bar_view() const {
+    return static_cast<const FindBarView*>(view());
+  }
 
   // A pointer back to the owning controller.
   FindBarController* find_bar_controller_;

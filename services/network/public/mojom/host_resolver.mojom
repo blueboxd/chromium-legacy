@@ -294,9 +294,10 @@ interface HostResolver {
 // A client interface that subscribes to DNS config change events from
 // DnsConfigChangeManager.
 interface DnsConfigChangeManagerClient {
-  // Notifies that a potential change has been detected in the DNS settings of
-  // the system that may affect results of host resolution.
-  OnSystemDnsConfigChanged();
+  // Notifies that a potential change has been detected in the DNS configuration
+  // that may affect results of host resolution. May be a change in system DNS
+  // settings or effective changes added on top by Chrome net code.
+  OnDnsConfigChanged();
 };
 
 // An interface that broadcasts DNS config change events.

@@ -270,7 +270,7 @@ TEST_F(DeferredImageDecoderTest, MAYBE_decodeOnOtherThread) {
 
   // Create a thread to rasterize PaintRecord.
   std::unique_ptr<Thread> thread = Platform::Current()->CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread)
+      ThreadCreationParams(ThreadType::kTestThread)
           .SetThreadNameForTest("RasterThread"));
   PostCrossThreadTask(
       *thread->GetTaskRunner(), FROM_HERE,

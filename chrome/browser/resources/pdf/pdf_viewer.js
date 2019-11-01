@@ -331,7 +331,7 @@ export class PDFViewer {
     this.zoomToolbar_.addEventListener(
         'fit-to-changed',
         e => this.fitToChanged_(
-            /** @type {!CustomEvent<FitToChangedEvent>}} */ (e)));
+            /** @type {!CustomEvent<FitToChangedEvent>} */ (e)));
     this.zoomToolbar_.addEventListener(
         'zoom-in', () => this.viewport_.zoomIn());
     this.zoomToolbar_.addEventListener(
@@ -1477,7 +1477,7 @@ export class PDFViewer {
   /** @private */
   rotateClockwise_() {
     PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
-    this.viewport_.rotateClockwise(1);
+    this.viewport_.rotateClockwise();
     this.currentController_.rotateClockwise();
     this.updateAnnotationAvailable_();
   }
@@ -1485,7 +1485,7 @@ export class PDFViewer {
   /** @private */
   rotateCounterclockwise_() {
     PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
-    this.viewport_.rotateClockwise(3);
+    this.viewport_.rotateCounterclockwise();
     this.currentController_.rotateCounterclockwise();
     this.updateAnnotationAvailable_();
   }

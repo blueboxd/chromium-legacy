@@ -35,26 +35,6 @@ namespace {
 // The delay to wait for an element to appear before tapping on it.
 const NSTimeInterval kWaitElementTimeout = 3;
 
-// Shows the tab switcher by tapping the switcher button.  Works on both phone
-// and tablet.
-bool ShowTabSwitcher() {
-  id<GREYMatcher> matcher = chrome_test_util::TabGridOpenButton();
-  // Perform a tap with a timeout. Occasionally EG doesn't sync up properly to
-  // the animations of tab switcher, so it is necessary to poll here.
-  GREYCondition* tapTabSwitcher =
-      [GREYCondition conditionWithName:@"Tap tab switcher button"
-                                 block:^BOOL {
-                                   NSError* error;
-                                   [[EarlGrey selectElementWithMatcher:matcher]
-                                       performAction:grey_tap()
-                                               error:&error];
-                                   return error == nil;
-                                 }];
-
-  // Wait until 2 seconds for the tap.
-  return [tapTabSwitcher waitWithTimeout:2];
-}
-
 }  // namespace
 
 namespace tab_usage_recorder_test_util {
@@ -78,34 +58,12 @@ bool OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
   return true;
 }
 
-bool RemoveBrowsingCacheForMainTabs() {
-  __block BOOL caches_cleared = NO;
-  [chrome_test_util::GetMainController().sceneController
-      removeBrowsingDataForBrowserState:chrome_test_util::
-                                            GetOriginalBrowserState()
-                             timePeriod:browsing_data::TimePeriod::ALL_TIME
-                             removeMask:BrowsingDataRemoveMask::
-                                            REMOVE_CACHE_STORAGE
-                        completionBlock:^{
-                          caches_cleared = YES;
-                        }];
-
-  GREYCondition* condition =
-      [GREYCondition conditionWithName:@"Wait for clearing caches."
-                                 block:^BOOL {
-                                   return caches_cleared;
-                                 }];
-  GREYAssert([condition waitWithTimeout:20], @"Caches were not cleared.");
-
-  return true;
-}
-
 void SwitchToNormalMode() {
   GREYAssertTrue([ChromeEarlGrey isIncognitoMode],
                  @"Switching to normal mode is only allowed from Incognito.");
 
   // Enter the tab grid to switch modes.
-  GREYAssertTrue(ShowTabSwitcher(), @"Tab switcher could not be tapped.");
+  [ChromeEarlGrey showTabSwitcher];
 
   // Switch modes and exit the tab grid.
   TabModel* model = chrome_test_util::GetMainController()

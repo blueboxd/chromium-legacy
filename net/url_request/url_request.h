@@ -153,12 +153,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   //   Read() initiated by delegate
   //    - OnReadCompleted* (zero or more calls until all data is read)
   //
-  // Read() must be called at least once. Read() returns true when it completed
-  // immediately, and false if an IO is pending or if there is an error.  When
-  // Read() returns false, the caller can check the Request's status() to see
-  // if an error occurred, or if the IO is just pending.  When Read() returns
-  // true with zero bytes read, it indicates the end of the response.
-  //
+  // Read() must be called at least once. Read() returns bytes read when it
+  // completes immediately, and a negative error value if an IO is pending or if
+  // there is an error.
   class NET_EXPORT Delegate {
    public:
     // Called upon receiving a redirect.  The delegate may call the request's
@@ -602,7 +599,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // request.
   void CancelWithSSLError(int error, const SSLInfo& ssl_info);
 
-  //  Read initiates an asynchronous read from the response, and must only be
+  // Read initiates an asynchronous read from the response, and must only be
   // called after the OnResponseStarted callback is received with a net::OK. If
   // data is available, length and the data will be returned immediately. If the
   // request has failed, an error code will be returned. If data is not yet
@@ -617,9 +614,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   //
   // The |max_bytes| parameter is the maximum number of bytes to read.
   int Read(IOBuffer* buf, int max_bytes);
-  // Deprecated.
-  // TODO(maksims): Remove this.
-  bool Read(IOBuffer* buf, int max_bytes, int* bytes_read);
 
   // This method may be called to follow a redirect that was deferred in
   // response to an OnReceivedRedirect call. If non-null,

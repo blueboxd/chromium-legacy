@@ -17,6 +17,7 @@
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/unguessable_token.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -52,6 +53,10 @@ class FrameSchedulerDelegateForTesting : public FrameScheduler::Delegate {
 
   void UpdateTaskTime(base::TimeDelta task_time) override {
     update_task_time_calls_++;
+  }
+
+  const base::UnguessableToken& GetAgentClusterId() const override {
+    return base::UnguessableToken::Null();
   }
 
   MOCK_METHOD1(UpdateActiveSchedulerTrackedFeatures, void(uint64_t));
@@ -1812,41 +1817,47 @@ TEST_F(ThrottleableAndFreezableTaskTypesTest, QueueTraitsFromFieldTrialParams) {
 
   // Check that the overrides work.
   auto task_queue = GetTaskQueue(TaskType::kPostedMessage);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeThrottled(true)
-                                              .SetCanBeFrozen(true)
-                                              .SetCanBePaused(true)
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeThrottled(true)
+                .SetCanBeFrozen(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kMediaElementEvent);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeFrozen(true)
-                                              .SetCanBePaused(true)
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeFrozen(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBePaused(true)
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kDOMManipulation);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeFrozen(true)
-                                              .SetCanBeDeferred(true)
-                                              .SetCanBePaused(true)
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeFrozen(true)
+                .SetCanBeDeferred(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   // Test some task types that were not configured through field trial
   // parameters.
   task_queue = GetTaskQueue(TaskType::kInternalIPC);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kMiscPlatformAPI);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeDeferred(true)
-                                              .SetCanBePaused(true)
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeDeferred(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 }
 
 
@@ -1921,38 +1932,44 @@ TEST_F(ThrottleableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
 
   // Check that the overrides work.
   auto task_queue = GetTaskQueue(TaskType::kPostedMessage);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeThrottled(true)
-                                              .SetCanBePaused(true)
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeThrottled(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kMediaElementEvent);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBePaused(true)
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBePaused(true)
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kDOMManipulation);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeDeferred(true)
-                                              .SetCanBePaused(true)
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeDeferred(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   // Test some task types that were not configured through field trial
   // parameters.
   task_queue = GetTaskQueue(TaskType::kInternalIPC);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                          .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kMiscPlatformAPI);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeDeferred(true)
-                                              .SetCanBePaused(true)
-                                              .SetCanRunWhenVirtualTimePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeDeferred(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 }
 
 class FrameSchedulerImplDatabaseAccessWithoutHighPriority

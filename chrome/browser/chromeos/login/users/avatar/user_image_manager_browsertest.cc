@@ -710,8 +710,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_SetAndClear) {
 // Verifies that the user image can be set through policy. Also verifies that
 // after the policy has been cleared, the user is able to choose a different
 // image.
-// http://crbug.com/396352
-IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
+IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, SetAndClear) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(enterprise_account_id_);
   ASSERT_TRUE(user);

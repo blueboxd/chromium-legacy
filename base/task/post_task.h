@@ -245,6 +245,37 @@ BASE_EXPORT scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
 BASE_EXPORT const scoped_refptr<SequencedTaskRunner>&
 GetContinuationTaskRunner();
 
+// Helpers to send a Delete/ReleaseSoon to a new SequencedTaskRunner created
+// from |traits|. The semantics match base::PostTask in that the deletion is
+// guaranteed to be scheduled in order with other tasks using the same |traits|.
+//
+// Prefer using an existing SequencedTaskRunner's Delete/ReleaseSoon over this
+// to encode execution order requirements when possible.
+//
+// Note: base::ThreadPool is not a valid destination as it'd result in a one-off
+// parallel task which is generally ill-suited for deletion. Use an existing
+// SequencedTaskRunner's DeleteSoon to post a safely ordered deletion.
+template <class T>
+bool DeleteSoon(const Location& from_here,
+                const TaskTraits& traits,
+                const T* object) {
+  DCHECK(!traits.use_thread_pool());
+  return CreateSequencedTaskRunner(traits)->DeleteSoon(from_here, object);
+}
+template <class T>
+bool DeleteSoon(const Location& from_here,
+                const TaskTraits& traits,
+                std::unique_ptr<T> object) {
+  return DeleteSoon(from_here, traits, object.release());
+}
+template <class T>
+void ReleaseSoon(const Location& from_here,
+                 const TaskTraits& traits,
+                 scoped_refptr<T>&& object) {
+  DCHECK(!traits.use_thread_pool());
+  CreateSequencedTaskRunner(traits)->ReleaseSoon(from_here, std::move(object));
+}
+
 }  // namespace base
 
 #endif  // BASE_TASK_POST_TASK_H_

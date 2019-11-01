@@ -6,9 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.view.View;
 
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.tab_ui.R;
 
 /** A {@link BottomSheetContent} that displays tab grid. **/
@@ -56,7 +54,7 @@ public class TabGridSheetContent implements BottomSheetContent {
 
     @Override
     public int getPeekHeight() {
-        return BottomSheet.HeightMode.DISABLED;
+        return BottomSheetContent.HeightMode.DISABLED;
     }
 
     @Override

@@ -3,12 +3,22 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for extension-item. */
-cr.define('extension_item_tests', function() {
+
+import {navigation, Page} from 'chrome://extensions/extensions.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {isVisible} from '../test_util.m.js';
+
+import {TestService} from './test_service.js';
+import {createExtensionInfo, MockItemDelegate, testVisible} from './test_util.js';
+
   /**
    * The data used to populate the extension item.
    * @type {chrome.developerPrivate.ExtensionInfo}
    */
-  const extensionData = extension_test_util.createExtensionInfo();
+  const extensionData = createExtensionInfo();
 
   // The normal elements, which should always be shown.
   const normalElements = [
@@ -34,14 +44,13 @@ cr.define('extension_item_tests', function() {
 
   /**
    * Tests that the elements' visibility matches the expected visibility.
-   * @param {extensions.Item} item
+   * @param {Item} item
    * @param {Array<Object<string>>} elements
    * @param {boolean} visibility
    */
   function testElementsVisibility(item, elements, visibility) {
     elements.forEach(function(element) {
-      extension_test_util.testVisible(
-          item, element.selector, visibility, element.text);
+      testVisible(item, element.selector, visibility, element.text);
     });
   }
 
@@ -65,8 +74,10 @@ cr.define('extension_item_tests', function() {
     testElementsVisibility(item, devElements, false);
   }
 
+  window.extension_item_tests = {};
+  extension_item_tests.suiteName = 'ExtensionItemTest';
   /** @enum {string} */
-  const TestNames = {
+  extension_item_tests.TestNames = {
     ElementVisibilityNormalState: 'element visibility: normal state',
     ElementVisibilityDeveloperState:
         'element visibility: after enabling developer mode',
@@ -79,66 +90,69 @@ cr.define('extension_item_tests', function() {
     HtmlInName: 'html in extension name',
   };
 
-  const suiteName = 'ExtensionItemTest';
-
-  suite(suiteName, function() {
+  suite(extension_item_tests.suiteName, function() {
     /**
      * Extension item created before each test.
-     * @type {extensions.Item}
+     * @type {Item}
      */
     let item;
 
-    /** @type {extension_test_util.MockItemDelegate} */
+    /** @type {MockItemDelegate} */
     let mockDelegate;
 
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();
-      mockDelegate = new extension_test_util.MockItemDelegate();
-      item = new extensions.Item();
-      item.set('data', extensionData);
-      item.set('delegate', mockDelegate);
+      mockDelegate = new MockItemDelegate();
+      item = document.createElement('extensions-item');
+      item.data = createExtensionInfo();
+      item.delegate = mockDelegate;
       document.body.appendChild(item);
       const toastManager = document.createElement('cr-toast-manager');
       document.body.appendChild(toastManager);
     });
 
-    test(assert(TestNames.ElementVisibilityNormalState), function() {
-      testNormalElementsAreVisible(item);
-      testDeveloperElementsAreHidden(item);
+    test(
+        assert(extension_item_tests.TestNames.ElementVisibilityNormalState),
+        function() {
+          testNormalElementsAreVisible(item);
+          testDeveloperElementsAreHidden(item);
 
-      expectTrue(item.$['enable-toggle'].checked);
-      item.set('data.state', 'DISABLED');
-      expectFalse(item.$['enable-toggle'].checked);
-      item.set('data.state', 'BLACKLISTED');
-      expectFalse(item.$['enable-toggle'].checked);
-    });
+          expectTrue(item.$['enable-toggle'].checked);
+          item.set('data.state', 'DISABLED');
+          expectFalse(item.$['enable-toggle'].checked);
+          item.set('data.state', 'BLACKLISTED');
+          expectFalse(item.$['enable-toggle'].checked);
+        });
 
-    test(assert(TestNames.ElementVisibilityDeveloperState), function() {
-      item.set('inDevMode', true);
+    test(
+        assert(extension_item_tests.TestNames.ElementVisibilityDeveloperState),
+        function() {
+          item.set('inDevMode', true);
 
-      testNormalElementsAreVisible(item);
-      testDeveloperElementsAreVisible(item);
+          testNormalElementsAreVisible(item);
+          testDeveloperElementsAreVisible(item);
 
-      // Developer reload button should be visible only for enabled unpacked
-      // extensions.
-      extension_test_util.testVisible(item, '#dev-reload-button', false);
+          // Developer reload button should be visible only for enabled unpacked
+          // extensions.
+          testVisible(item, '#dev-reload-button', false);
 
-      item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
-      Polymer.dom.flush();
-      extension_test_util.testVisible(item, '#dev-reload-button', true);
+          item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
+          flush();
+          testVisible(item, '#dev-reload-button', true);
 
-      item.set('data.state', chrome.developerPrivate.ExtensionState.DISABLED);
-      Polymer.dom.flush();
-      extension_test_util.testVisible(item, '#dev-reload-button', false);
+          item.set('data.state', chrome.developerPrivate.ExtensionState.DISABLED);
+          flush();
+          testVisible(item, '#dev-reload-button', false);
 
-      item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
-      Polymer.dom.flush();
-      extension_test_util.testVisible(item, '#dev-reload-button', false);
-    });
+          item.set(
+              'data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
+          flush();
+          testVisible(item, '#dev-reload-button', false);
+        });
 
     /** Tests that the delegate methods are correctly called. */
-    test(assert(TestNames.ClickableItems), function() {
+    test(assert(extension_item_tests.TestNames.ClickableItems), function() {
       item.set('inDevMode', true);
 
       mockDelegate.testClickingCalls(
@@ -151,96 +165,94 @@ cr.define('extension_item_tests', function() {
 
       // Setup for testing navigation buttons.
       let currentPage = null;
-      extensions.navigation.addListener(newPage => {
+      navigation.addListener(newPage => {
         currentPage = newPage;
       });
 
-      MockInteractions.tap(item.$$('#detailsButton'));
+      tap(item.$$('#detailsButton'));
       expectDeepEquals(
-          currentPage,
-          {page: extensions.Page.DETAILS, extensionId: item.data.id});
+          currentPage, {page: Page.DETAILS, extensionId: item.data.id});
 
       // Reset current page and test inspect-view navigation.
-      extensions.navigation.navigateTo({page: extensions.Page.LIST});
+      navigation.navigateTo({page: Page.LIST});
       currentPage = null;
-      MockInteractions.tap(
-          item.$$('#inspect-views a[is="action-link"]:nth-of-type(2)'));
+      tap(item.$$('#inspect-views a[is="action-link"]:nth-of-type(2)'));
       expectDeepEquals(
-          currentPage,
-          {page: extensions.Page.DETAILS, extensionId: item.data.id});
+          currentPage, {page: Page.DETAILS, extensionId: item.data.id});
 
       item.set('data.disableReasons.corruptInstall', true);
-      Polymer.dom.flush();
+      flush();
       mockDelegate.testClickingCalls(
           item.$$('#repair-button'), 'repairItem', [item.data.id]);
 
       item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
-      Polymer.dom.flush();
+      flush();
       mockDelegate.testClickingCalls(
           item.$$('#terminated-reload-button'), 'reloadItem', [item.data.id],
           Promise.resolve());
 
       item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
       item.set('data.state', chrome.developerPrivate.ExtensionState.ENABLED);
-      Polymer.dom.flush();
+      flush();
     });
 
     /** Tests that the reload button properly fires the load-error event. */
-    test(assert(TestNames.FailedReloadFiresLoadError), function() {
-      item.set('inDevMode', true);
-      item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
-      Polymer.dom.flush();
-      extension_test_util.testVisible(item, '#dev-reload-button', true);
+    test(
+        assert(extension_item_tests.TestNames.FailedReloadFiresLoadError),
+        function() {
+          item.set('inDevMode', true);
+          item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
+          flush();
+          testVisible(item, '#dev-reload-button', true);
 
-      // Check clicking the reload button. The reload button should fire a
-      // load-error event if and only if the reload fails (indicated by a
-      // rejected promise).
-      // This is a bit of a pain to verify because the promises finish
-      // asynchronously, so we have to use setTimeout()s.
-      let firedLoadError = false;
-      item.addEventListener('load-error', () => {
-        firedLoadError = true;
-      });
-
-      // This is easier to test with a TestBrowserProxy-style delegate.
-      const proxyDelegate = new extensions.TestService();
-      item.delegate = proxyDelegate;
-
-      const verifyEventPromise = function(expectCalled) {
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            expectEquals(expectCalled, firedLoadError);
-            resolve();
+          // Check clicking the reload button. The reload button should fire a
+          // load-error event if and only if the reload fails (indicated by a
+          // rejected promise).
+          // This is a bit of a pain to verify because the promises finish
+          // asynchronously, so we have to use setTimeout()s.
+          let firedLoadError = false;
+          item.addEventListener('load-error', () => {
+            firedLoadError = true;
           });
+
+          // This is easier to test with a TestBrowserProxy-style delegate.
+          const proxyDelegate = new TestService();
+          item.delegate = proxyDelegate;
+
+          const verifyEventPromise = function(expectCalled) {
+            return new Promise((resolve, reject) => {
+              setTimeout(() => {
+                expectEquals(expectCalled, firedLoadError);
+                resolve();
+              });
+            });
+          };
+
+          tap(item.$$('#dev-reload-button'));
+          return proxyDelegate.whenCalled('reloadItem')
+              .then(function(id) {
+                expectEquals(item.data.id, id);
+                return verifyEventPromise(false);
+              })
+              .then(function() {
+                proxyDelegate.resetResolver('reloadItem');
+                proxyDelegate.setForceReloadItemError(true);
+                tap(item.$$('#dev-reload-button'));
+                return proxyDelegate.whenCalled('reloadItem');
+              })
+              .then(function(id) {
+                expectEquals(item.data.id, id);
+                return verifyEventPromise(true);
+              });
         });
-      };
 
-      MockInteractions.tap(item.$$('#dev-reload-button'));
-      return proxyDelegate.whenCalled('reloadItem')
-          .then(function(id) {
-            expectEquals(item.data.id, id);
-            return verifyEventPromise(false);
-          })
-          .then(function() {
-            proxyDelegate.resetResolver('reloadItem');
-            proxyDelegate.setForceReloadItemError(true);
-            MockInteractions.tap(item.$$('#dev-reload-button'));
-            return proxyDelegate.whenCalled('reloadItem');
-          })
-          .then(function(id) {
-            expectEquals(item.data.id, id);
-            return verifyEventPromise(true);
-          });
-    });
-
-    test(assert(TestNames.Warnings), function() {
+    test(assert(extension_item_tests.TestNames.Warnings), function() {
       const kCorrupt = 1 << 0;
       const kSuspicious = 1 << 1;
       const kBlacklisted = 1 << 2;
       const kRuntime = 1 << 3;
 
       function assertWarnings(mask) {
-        const isVisible = test_util.isVisible;
         assertEquals(
             !!(mask & kCorrupt), isVisible(item, '#corrupted-warning'));
         assertEquals(
@@ -253,97 +265,91 @@ cr.define('extension_item_tests', function() {
       assertWarnings(0);
 
       item.set('data.disableReasons.corruptInstall', true);
-      Polymer.dom.flush();
+      flush();
       assertWarnings(kCorrupt);
 
       item.set('data.disableReasons.suspiciousInstall', true);
-      Polymer.dom.flush();
+      flush();
       assertWarnings(kCorrupt | kSuspicious);
 
       item.set('data.blacklistText', 'This item is blacklisted');
-      Polymer.dom.flush();
+      flush();
       assertWarnings(kCorrupt | kSuspicious | kBlacklisted);
 
       item.set('data.blacklistText', null);
-      Polymer.dom.flush();
+      flush();
       assertWarnings(kCorrupt | kSuspicious);
 
       item.set('data.runtimeWarnings', ['Dummy warning']);
-      Polymer.dom.flush();
+      flush();
       assertWarnings(kCorrupt | kSuspicious | kRuntime);
 
       item.set('data.disableReasons.corruptInstall', false);
       item.set('data.disableReasons.suspiciousInstall', false);
       item.set('data.runtimeWarnings', []);
-      Polymer.dom.flush();
+      flush();
       assertWarnings(0);
     });
 
-    test(assert(TestNames.SourceIndicator), function() {
-      expectFalse(test_util.isVisible(item, '#source-indicator'));
+    test(assert(extension_item_tests.TestNames.SourceIndicator), function() {
+      expectFalse(isVisible(item, '#source-indicator'));
       item.set('data.location', 'UNPACKED');
-      Polymer.dom.flush();
-      expectTrue(test_util.isVisible(item, '#source-indicator'));
+      flush();
+      expectTrue(isVisible(item, '#source-indicator'));
       const icon = item.$$('#source-indicator iron-icon');
       assertTrue(!!icon);
       expectEquals('extensions-icons:unpacked', icon.icon);
 
       item.set('data.location', 'THIRD_PARTY');
-      Polymer.dom.flush();
-      expectTrue(test_util.isVisible(item, '#source-indicator'));
+      flush();
+      expectTrue(isVisible(item, '#source-indicator'));
       expectEquals('extensions-icons:input', icon.icon);
 
       item.set('data.location', 'UNKNOWN');
-      Polymer.dom.flush();
-      expectTrue(test_util.isVisible(item, '#source-indicator'));
+      flush();
+      expectTrue(isVisible(item, '#source-indicator'));
       expectEquals('extensions-icons:input', icon.icon);
 
       item.set('data.location', 'FROM_STORE');
       item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
-      Polymer.dom.flush();
-      expectTrue(test_util.isVisible(item, '#source-indicator'));
+      flush();
+      expectTrue(isVisible(item, '#source-indicator'));
       expectEquals('extensions-icons:business', icon.icon);
 
       item.set('data.controlledInfo', null);
-      Polymer.dom.flush();
-      expectFalse(test_util.isVisible(item, '#source-indicator'));
+      flush();
+      expectFalse(isVisible(item, '#source-indicator'));
     });
 
-    test(assert(TestNames.EnableToggle), function() {
+    test(assert(extension_item_tests.TestNames.EnableToggle), function() {
       expectFalse(item.$['enable-toggle'].disabled);
 
       // Test case where user does not have permission.
       item.set('data.userMayModify', false);
-      Polymer.dom.flush();
+      flush();
       expectTrue(item.$['enable-toggle'].disabled);
 
       // Test case of a blacklisted extension.
       item.set('data.userMayModify', true);
       item.set('data.state', 'BLACKLISTED');
-      Polymer.dom.flush();
+      flush();
       expectTrue(item.$['enable-toggle'].disabled);
     });
 
-    test(assert(TestNames.RemoveButton), function() {
+    test(assert(extension_item_tests.TestNames.RemoveButton), function() {
       expectFalse(item.$['remove-button'].hidden);
       item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
-      Polymer.dom.flush();
+      flush();
       expectTrue(item.$['remove-button'].hidden);
     });
 
-    test(assert(TestNames.HtmlInName), function() {
+    test(assert(extension_item_tests.TestNames.HtmlInName), function() {
       let name = '<HTML> in the name!';
       item.set('data.name', name);
-      Polymer.dom.flush();
+      flush();
       assertEquals(name, item.$.name.textContent.trim());
       // "Related to $1" is IDS_MD_EXTENSIONS_EXTENSION_A11Y_ASSOCIATION.
       assertEquals(
           `Related to ${name}`, item.$.a11yAssociation.textContent.trim());
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

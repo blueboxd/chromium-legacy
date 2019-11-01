@@ -131,7 +131,7 @@ GURL GetLitePageRedirectURLForURL(const GURL& original_url);
 
 // A class that attempts to intercept requests and fetch the Lite Page version
 // of the request. Its lifetime matches that of the content/ navigation loader
-// code. Currently, not fully implemented.
+// code.
 class PreviewsLitePageRedirectURLLoaderInterceptor
     : public content::URLLoaderRequestInterceptor {
  public:

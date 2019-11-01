@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "net/base/sys_addrinfo.h"
@@ -86,6 +87,26 @@ base::Value AddressList::NetLogParams() const {
   dict.SetKey("address_list", std::move(list));
   dict.SetStringKey("canonical_name", canonical_name());
   return dict;
+}
+
+void AddressList::Deduplicate() {
+  if (size() > 1) {
+    std::vector<std::pair<IPEndPoint, int>> make_me_into_a_map(size());
+    for (auto& addr : *this)
+      make_me_into_a_map.emplace_back(addr, 0);
+    base::flat_map<IPEndPoint, int> inserted(std::move(make_me_into_a_map));
+
+    std::vector<IPEndPoint> deduplicated_addresses;
+    deduplicated_addresses.reserve(inserted.size());
+    for (const auto& addr : *this) {
+      int& count = inserted[addr];
+      if (!count) {
+        deduplicated_addresses.push_back(addr);
+        ++count;
+      }
+    }
+    endpoints_.swap(deduplicated_addresses);
+  }
 }
 
 }  // namespace net

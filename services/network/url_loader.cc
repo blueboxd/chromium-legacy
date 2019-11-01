@@ -1067,14 +1067,10 @@ void URLLoader::ReadMore() {
 
   auto buf = base::MakeRefCounted<NetToMojoIOBuffer>(
       pending_write_.get(), pending_write_buffer_offset_);
-  int bytes_read;
-  url_request_->Read(buf.get(),
-                     static_cast<int>(pending_write_buffer_size_ -
-                                      pending_write_buffer_offset_),
-                     &bytes_read);
-  if (url_request_->status().is_io_pending()) {
-    // Wait for OnReadCompleted.
-  } else {
+  int bytes_read = url_request_->Read(
+      buf.get(), static_cast<int>(pending_write_buffer_size_ -
+                                  pending_write_buffer_offset_));
+  if (bytes_read != net::ERR_IO_PENDING) {
     DidRead(bytes_read, true);
     // |this| may have been deleted.
   }

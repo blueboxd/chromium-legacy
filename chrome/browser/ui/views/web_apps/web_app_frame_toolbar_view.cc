@@ -480,21 +480,23 @@ AppMenuButton* WebAppFrameToolbarView::GetAppMenuButton() {
 }
 
 gfx::Rect WebAppFrameToolbarView::GetFindBarBoundingBox(
-    int contents_height) const {
+    int contents_bottom) const {
   if (!IsDrawn())
     return gfx::Rect();
 
+  // If LTR find bar will be right aligned so align to right edge of app menu
+  // button. Otherwise it will be left aligned so align to the left edge of the
+  // app menu button.
   gfx::Rect anchor_bounds = web_app_menu_button_->ConvertRectToWidget(
       web_app_menu_button_->GetLocalBounds());
+  int x_pos = 0;
+  int width = anchor_bounds.right();
   if (base::i18n::IsRTL()) {
-    // Find bar will be left aligned so align to left edge of app menu button.
-    int widget_width = GetWidget()->GetRootView()->width();
-    return gfx::Rect(anchor_bounds.x(), anchor_bounds.bottom(),
-                     widget_width - anchor_bounds.x(), contents_height);
+    x_pos = anchor_bounds.x();
+    width = GetWidget()->GetRootView()->width() - anchor_bounds.x();
   }
-  // Find bar will be right aligned so align to right edge of app menu button.
-  return gfx::Rect(0, anchor_bounds.bottom(),
-                   anchor_bounds.x() + anchor_bounds.width(), contents_height);
+  return gfx::Rect(x_pos, anchor_bounds.bottom(), width,
+                   contents_bottom - anchor_bounds.bottom());
 }
 
 void WebAppFrameToolbarView::FocusToolbar() {

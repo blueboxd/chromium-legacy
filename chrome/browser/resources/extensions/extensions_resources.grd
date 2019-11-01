@@ -12,6 +12,95 @@
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_EXTENSIONS_CODE_SECTION_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/code_section.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/activity_log/activity_log.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_HISTORY_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/activity_log/activity_log_history.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_HISTORY_ITEM_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/activity_log/activity_log_history_item.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_STREAM_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/activity_log/activity_log_stream.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_STREAM_ITEM_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/activity_log/activity_log_stream_item.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_DETAIL_VIEW_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/detail_view.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_DROP_OVERLAY_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/drop_overlay.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_ERROR_PAGE_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/error_page.js"
+               use_base_dir="false" type ="BINDATA" flattenhtml="true" />
+      <include name="IDR_EXTENSIONS_KEYBOARD_SHORTCUTS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/keyboard_shortcuts.js"
+               use_base_dir="false" type ="BINDATA" />
+    <if expr="chromeos">
+      <include name="IDR_EXTENSIONS_KIOSK_DIALOG_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/kiosk_dialog.js"
+               use_base_dir="false" type ="BINDATA" />
+    </if>
+      <include name="IDR_EXTENSIONS_MANAGER_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/manager.js"
+               use_base_dir="false" type ="BINDATA" flattenhtml="true" />
+      <include name="IDR_EXTENSIONS_ICONS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/icons.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_INSTALL_WARNINGS_DIALOG_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/install_warnings_dialog.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_ITEM_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/item.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_ITEM_LIST_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/item_list.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_LOAD_ERROR_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/load_error.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_HOST_PERMISSIONS_TOGGLE_LIST_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/host_permissions_toggle_list.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_OPTIONS_DIALOG_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/options_dialog.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_PACK_DIALOG_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/pack_dialog.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_PACK_DIALOG_ALERT_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/pack_dialog_alert.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_RUNTIME_HOST_PERMISSIONS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/runtime_host_permissions.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_RUNTIME_HOSTS_DIALOG_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/runtime_hosts_dialog.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_SHARED_STYLE_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/shared_style.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_SHARED_VARS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/shared_vars.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_SHORTCUT_INPUT_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/shortcut_input.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_SIDEBAR_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/sidebar.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_TOGGLE_ROW_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/toggle_row.js"
+               use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_TOOLBAR_JS"
+               file="${root_gen_dir}/chrome/browser/resources/extensions/toolbar.js"
+               use_base_dir="false" type ="BINDATA" flattenhtml="true" />
       <include name="IDR_WEBUI_IMAGES_CHECKUP_IMAGE"
                file="checkup_image.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBUI_IMAGES_CHECKUP_IMAGE_DARKMODE"
@@ -19,9 +108,6 @@
                compress="gzip" />
     </includes>
     <structures>
-      <structure name="IDR_EXTENSIONS_ITEM_BEHAVIOR_HTML"
-                 file="item_behavior.html"
-                 type="chrome_html" />
       <structure name="IDR_EXTENSIONS_ITEM_BEHAVIOR_JS"
                  file="item_behavior.js"
                  type="chrome_html" />
@@ -30,225 +116,32 @@
                  flattenhtml="true"
                  allowexternalscript="true"
                  type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_CODE_SECTION_HTML"
-                 file="code_section.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_CODE_SECTION_JS"
-                 file="code_section.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_HTML"
-                 file="activity_log/activity_log.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_JS"
-                 file="activity_log/activity_log.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_HISTORY_HTML"
-                 file="activity_log/activity_log_history.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_HISTORY_JS"
-                 file="activity_log/activity_log_history.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_HISTORY_ITEM_HTML"
-                 file="activity_log/activity_log_history_item.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_HISTORY_ITEM_JS"
-                 file="activity_log/activity_log_history_item.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_STREAM_HTML"
-                 file="activity_log/activity_log_stream.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_STREAM_JS"
-                 file="activity_log/activity_log_stream.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_STREAM_ITEM_HTML"
-                 file="activity_log/activity_log_stream_item.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ACTIVITY_LOG_ACTIVITY_LOG_STREAM_ITEM_JS"
-                 file="activity_log/activity_log_stream_item.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_DETAIL_VIEW_HTML"
-                 file="detail_view.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_DETAIL_VIEW_JS"
-                 file="detail_view.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_DRAG_AND_DROP_HANDLER_HTML"
-                 file="drag_and_drop_handler.html"
-                 type="chrome_html" />
       <structure name="IDR_EXTENSIONS_DRAG_AND_DROP_HANDLER_JS"
                  file="drag_and_drop_handler.js"
                  type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_DROP_OVERLAY_HTML"
-                 file="drop_overlay.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_DROP_OVERLAY_JS"
-                 file="drop_overlay.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ERROR_PAGE_HTML"
-                 file="error_page.html"
-                 flattenhtml="true"
-                 allowexternalscript="true"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ERROR_PAGE_JS"
-                 file="error_page.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_KEYBOARD_SHORTCUT_DELEGATE_HTML"
-                 file="keyboard_shortcut_delegate.html"
+      <structure name="IDR_EXTENSIONS_EXTENSIONS_JS"
+                 file="extensions.js"
+                 preprocess="true"
                  type="chrome_html" />
       <structure name="IDR_EXTENSIONS_KEYBOARD_SHORTCUT_DELEGATE_JS"
                  file="keyboard_shortcut_delegate.js"
                  type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_KEYBOARD_SHORTCUTS_HTML"
-                 file="keyboard_shortcuts.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_KEYBOARD_SHORTCUTS_JS"
-                 file="keyboard_shortcuts.js"
-                 type="chrome_html" />
     <if expr="chromeos">
-      <structure name="IDR_EXTENSIONS_KIOSK_BROWSER_PROXY_HTML"
-                 file="kiosk_browser_proxy.html"
-                 type="chrome_html" />
       <structure name="IDR_EXTENSIONS_KIOSK_BROWSER_PROXY_JS"
                  file="kiosk_browser_proxy.js"
                  type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_KIOSK_DIALOG_HTML"
-                 file="kiosk_dialog.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_KIOSK_DIALOG_JS"
-                 file="kiosk_dialog.js"
-                 type="chrome_html" />
     </if>
-      <structure name="IDR_EXTENSIONS_MANAGER_HTML"
-                 file="manager.html"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
-      <structure name="IDR_EXTENSIONS_MANAGER_JS"
-                 file="manager.js"
-                 type="chrome_html"
-                 flattenhtml="true" />
-      <structure name="IDR_EXTENSIONS_ICONS_HTML"
-                 file="icons.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_INSTALL_WARNINGS_DIALOG_HTML"
-                 file="install_warnings_dialog.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_INSTALL_WARNINGS_DIALOG_JS"
-                 file="install_warnings_dialog.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ITEM_HTML"
-                 file="item.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ITEM_JS"
-                 file="item.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ITEM_LIST_HTML"
-                 file="item_list.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ITEM_LIST_JS"
-                 file="item_list.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_ITEM_UTIL_HTML"
-                 file="item_util.html"
-                 type="chrome_html" />
       <structure name="IDR_EXTENSIONS_ITEM_UTIL_JS"
                  file="item_util.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_LOAD_ERROR_HTML"
-                 file="load_error.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_LOAD_ERROR_JS"
-                 file="load_error.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_HOST_PERMISSIONS_TOGGLE_LIST_HMTL"
-                 file="host_permissions_toggle_list.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_HOST_PERMISSIONS_TOGGLE_LIST_JS"
-                 file="host_permissions_toggle_list.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_NAVIGATION_HELPER_HTML"
-                 file="navigation_helper.html"
                  type="chrome_html" />
       <structure name="IDR_EXTENSIONS_NAVIGATION_HELPER_JS"
                  file="navigation_helper.js"
                  type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_OPTIONS_DIALOG_HTML"
-                 file="options_dialog.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_OPTIONS_DIALOG_JS"
-                 file="options_dialog.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_PACK_DIALOG_HTML"
-                 file="pack_dialog.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_PACK_DIALOG_JS"
-                 file="pack_dialog.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_PACK_DIALOG_ALERT_HTML"
-                 file="pack_dialog_alert.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_PACK_DIALOG_ALERT_JS"
-                 file="pack_dialog_alert.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_RUNTIME_HOST_PERMISSIONS_HMTL"
-                 file="runtime_host_permissions.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_RUNTIME_HOST_PERMISSIONS_JS"
-                 file="runtime_host_permissions.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_RUNTIME_HOSTS_DIALOG_HTML"
-                 file="runtime_hosts_dialog.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_RUNTIME_HOSTS_DIALOG_JS"
-                 file="runtime_hosts_dialog.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_SERVICE_HTML"
-                 file="service.html"
-                 type="chrome_html" />
       <structure name="IDR_EXTENSIONS_SERVICE_JS"
                  file="service.js"
                  type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_SHARED_STYLE_HTML"
-                 file="shared_style.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_SHARED_VARS_HTML"
-                 file="shared_vars.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_SHORTCUT_INPUT_HTML"
-                 file="shortcut_input.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_SHORTCUT_INPUT_JS"
-                 file="shortcut_input.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_SHORTCUT_UTIL_HTML"
-                 file="shortcut_util.html"
-                 type="chrome_html" />
       <structure name="IDR_EXTENSIONS_SHORTCUT_UTIL_JS"
                  file="shortcut_util.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_SIDEBAR_HTML"
-                 file="sidebar.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_SIDEBAR_JS"
-                 file="sidebar.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_TOGGLE_ROW_HTML"
-                 file="toggle_row.html"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_TOGGLE_ROW_JS"
-                 file="toggle_row.js"
-                 type="chrome_html" />
-      <structure name="IDR_EXTENSIONS_TOOLBAR_HTML"
-                 file="toolbar.html"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
-      <structure name="IDR_EXTENSIONS_TOOLBAR_JS"
-                 file="toolbar.js"
-                 type="chrome_html"
-                 flattenhtml="true" />
-      <structure name="IDR_EXTENSIONS_STRINGS_HTML"
-                 file="strings.html"
                  type="chrome_html" />
     </structures>
   </release>

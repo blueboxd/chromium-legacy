@@ -219,7 +219,7 @@ class ArcSessionImpl
   void OnMojoConnected(std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host);
 
   // Request to stop ARC instance via DBus.
-  void StopArcInstance();
+  void StopArcInstance(bool on_shutdown);
 
   // ArcClientAdapter::Observer:
   void ArcInstanceStopped() override;

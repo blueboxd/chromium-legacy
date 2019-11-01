@@ -22,6 +22,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 class BrowserContextKeyedServiceFactory;
 
@@ -168,9 +169,9 @@ class ArcPolicyBridge : public KeyedService,
   std::string GetCurrentJSONPolicies() const;
 
   // Called when the compliance report from ARC is parsed.
-  void OnReportComplianceParseSuccess(
+  void OnReportComplianceParse(
       base::OnceCallback<void(const std::string&)> callback,
-      base::Value parsed_json);
+      data_decoder::DataDecoder::ValueOrError result);
 
   void UpdateComplianceReportMetrics(const base::DictionaryValue* report);
 

@@ -10,35 +10,41 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:focusable="false">
-
-    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
-        android:id="@+id/system_default"
+    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout
+        android:id="@+id/radio_button_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        app:titleText="@string/themes_system_default_title"
-        app:descriptionText="@string/themes_system_default_summary" />
+        android:layout_height="match_parent">
 
-    <!-- override default padding top and bottom -->
-    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
-        android:id="@+id/light"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/min_touch_target_size"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:background="?attr/selectableItemBackground"
-        app:titleText="@string/light_mode" />
+      <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+          android:id="@+id/system_default"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:background="?attr/selectableItemBackground"
+          app:titleText="@string/themes_system_default_title"
+          app:descriptionText="@string/themes_system_default_summary" />
 
-    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
-        android:id="@+id/dark"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/min_touch_target_size"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:background="?attr/selectableItemBackground"
-        app:titleText="@string/dark_mode" />
+      <!-- override default padding top and bottom -->
+      <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+          android:id="@+id/light"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="@dimen/min_touch_target_size"
+          android:paddingTop="8dp"
+          android:paddingBottom="8dp"
+          android:background="?attr/selectableItemBackground"
+          app:titleText="@string/light_mode" />
+
+      <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+          android:id="@+id/dark"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="@dimen/min_touch_target_size"
+          android:paddingTop="8dp"
+          android:paddingBottom="8dp"
+          android:background="?attr/selectableItemBackground"
+          app:titleText="@string/dark_mode" />
+
+    </org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout>
 
     <!-- Make the row clickable -->
     <LinearLayout

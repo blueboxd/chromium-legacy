@@ -9,7 +9,7 @@
 ] interface GPUBuffer {
     [RaisesException] void setSubData(
         unsigned long long dstOffset,
-        [AllowShared] ArrayBufferView src,
+        [AllowShared, FlexibleArrayBufferView] ArrayBufferView src,
         optional unsigned long long srcOffset = 0,
         optional unsigned long long byteLength = 0);
     [CallWith=ScriptState, RaisesException] Promise<ArrayBuffer> mapReadAsync();

@@ -21,12 +21,10 @@ import org.chromium.weblayer_private.aidl.ObjectWrapper;
  */
 public final class BrowserFragmentController {
     private final IBrowserFragmentController mImpl;
-    private final ProfileManager mProfileManager;
     private BrowserController mController;
 
-    BrowserFragmentController(IBrowserFragmentController impl, ProfileManager profileManager) {
+    BrowserFragmentController(IBrowserFragmentController impl) {
         mImpl = impl;
-        mProfileManager = profileManager;
     }
 
     /**
@@ -88,13 +86,12 @@ public final class BrowserFragmentController {
         ThreadCheck.ensureOnUiThread();
         try {
             final ListenableResult<Boolean> listenableResult = new ListenableResult<Boolean>();
-            mImpl.setSupportsEmbedding(
-                    enable, ObjectWrapper.wrap(new ValueCallback<Boolean>() {
-                        @Override
-                        public void onReceiveValue(Boolean result) {
-                            listenableResult.supplyResult(result);
-                        }
-                    }));
+            mImpl.setSupportsEmbedding(enable, ObjectWrapper.wrap(new ValueCallback<Boolean>() {
+                @Override
+                public void onReceiveValue(Boolean result) {
+                    listenableResult.supplyResult(result);
+                }
+            }));
             return listenableResult;
         } catch (RemoteException e) {
             throw new APICallException(e);
@@ -109,7 +106,7 @@ public final class BrowserFragmentController {
     public Profile getProfile() {
         ThreadCheck.ensureOnUiThread();
         try {
-            return mProfileManager.getProfileFor(mImpl.getProfile());
+            return Profile.of(mImpl.getProfile());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

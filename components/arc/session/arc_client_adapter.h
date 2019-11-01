@@ -40,8 +40,9 @@ class ArcClientAdapter {
   virtual void UpgradeArc(UpgradeParams params,
                           chromeos::VoidDBusMethodCallback callback) = 0;
 
-  // Asynchronously stops the ARC instance.
-  virtual void StopArcInstance() = 0;
+  // Asynchronously stops the ARC instance. |on_shutdown| is true if the method
+  // is called due to the browser being shut down.
+  virtual void StopArcInstance(bool on_shutdown) = 0;
 
   // Sets a hash string of the profile user ID.
   virtual void SetUserIdHashForProfile(const std::string& hash) = 0;

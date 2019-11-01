@@ -305,18 +305,6 @@ TemplateUrlServiceAndroid::AddSearchEngineForTesting(
   return base::android::ConvertUTF16ToJavaString(env, t_url->data().keyword());
 }
 
-base::android::ScopedJavaLocalRef<jstring>
-TemplateUrlServiceAndroid::UpdateLastVisitedForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& jkeyword) {
-  base::string16 keyword =
-      base::android::ConvertJavaStringToUTF16(env, jkeyword);
-  TemplateURL* t_url = template_url_service_->GetTemplateURLForKeyword(keyword);
-  template_url_service_->UpdateTemplateURLVisitTime(t_url);
-  return base::android::ConvertUTF16ToJavaString(env, t_url->data().keyword());
-}
-
 void TemplateUrlServiceAndroid::GetTemplateUrls(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,

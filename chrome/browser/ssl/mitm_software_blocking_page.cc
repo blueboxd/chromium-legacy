@@ -65,8 +65,7 @@ MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
     const std::string& mitm_software_name,
-    bool is_enterprise_managed,
-    const base::Callback<void(content::CertificateRequestResultType)>& callback)
+    bool is_enterprise_managed)
     : SSLBlockingPageBase(
           web_contents,
           cert_error,
@@ -82,7 +81,6 @@ MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
               cert_error,
               request_url,
               CreateMitmSoftwareMetricsHelper(web_contents, request_url))),
-      callback_(callback),
       ssl_info_(ssl_info),
       mitm_software_ui_(
           new security_interstitials::MITMSoftwareUI(request_url,
@@ -92,12 +90,7 @@ MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
                                                      is_enterprise_managed,
                                                      controller())) {}
 
-MITMSoftwareBlockingPage::~MITMSoftwareBlockingPage() {
-  if (!callback_.is_null()) {
-    // Deny when the page is closed.
-    NotifyDenyCertificate();
-  }
-}
+MITMSoftwareBlockingPage::~MITMSoftwareBlockingPage() = default;
 
 bool MITMSoftwareBlockingPage::ShouldCreateNewNavigation() const {
   return true;
@@ -144,20 +137,4 @@ void MITMSoftwareBlockingPage::OverrideRendererPrefs(
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
-}
-
-void MITMSoftwareBlockingPage::OnDontProceed() {
-  OnInterstitialClosing();
-  NotifyDenyCertificate();
-}
-
-void MITMSoftwareBlockingPage::NotifyDenyCertificate() {
-  // It's possible that callback_ may not exist if the user clicks "Proceed"
-  // followed by pressing the back button before the interstitial is hidden.
-  // In that case the certificate will still be treated as allowed.
-  if (callback_.is_null()) {
-    return;
-  }
-
-  std::move(callback_).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
 }

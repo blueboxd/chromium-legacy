@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ssl/ssl_blocking_page_base.h"
 #include "chrome/common/buildflags.h"
@@ -39,15 +38,12 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   // Interstitial type, for testing.
   static const void* const kTypeForTesting;
 
-  CaptivePortalBlockingPage(
-      content::WebContents* web_contents,
-      const GURL& request_url,
-      const GURL& login_url,
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      const net::SSLInfo& ssl_info,
-      int cert_error,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback);
+  CaptivePortalBlockingPage(content::WebContents* web_contents,
+                            const GURL& request_url,
+                            const GURL& login_url,
+                            std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+                            const net::SSLInfo& ssl_info,
+                            int cert_error);
   ~CaptivePortalBlockingPage() override;
 
   // InterstitialPageDelegate method:
@@ -67,8 +63,6 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   // InterstitialPageDelegate method:
   void CommandReceived(const std::string& command) override;
   void OverrideEntry(content::NavigationEntry* entry) override;
-  void OnProceed() override;
-  void OnDontProceed() override;
 
  private:
   // URL of the login page, opened when the user clicks the "Connect" button.
@@ -76,7 +70,6 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   // used.
   const GURL login_url_;
   const net::SSLInfo ssl_info_;
-  base::Callback<void(content::CertificateRequestResultType)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPage);
 };

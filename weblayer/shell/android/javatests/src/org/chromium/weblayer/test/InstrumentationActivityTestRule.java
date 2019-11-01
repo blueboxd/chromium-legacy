@@ -23,6 +23,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
+import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.lang.reflect.Field;
@@ -101,6 +102,14 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public InstrumentationActivityTestRule() {
         super(InstrumentationActivity.class, false, false);
+    }
+
+    public WebLayer getWebLayer() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return WebLayer
+                    .create(InstrumentationRegistry.getTargetContext().getApplicationContext())
+                    .get();
+        });
     }
 
     /**
@@ -209,5 +218,12 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public InstrumentationActivity launchWithProfile(String profileName) {
+        Bundle extras = new Bundle();
+        extras.putString(InstrumentationActivity.EXTRA_PROFILE_NAME, profileName);
+        String url = "data:text,foo";
+        return launchShellWithUrl(url, extras);
     }
 }

@@ -269,7 +269,8 @@ void OverviewSession::Shutdown() {
     // Fade out the no windows widget. This animation continues past the
     // lifetime of |this|.
     FadeOutWidgetAndMaybeSlideOnExit(std::move(no_windows_widget_),
-                                     OVERVIEW_ANIMATION_RESTORE_WINDOW);
+                                     OVERVIEW_ANIMATION_RESTORE_WINDOW,
+                                     /*slide=*/false);
   }
 }
 
@@ -645,9 +646,15 @@ void OverviewSession::OnWindowActivating(
 
   // Do not cancel overview mode if the window activation happens when split
   // view mode is also active. SplitViewController will do the right thing to
-  // handle the window activation change.
-  if (SplitViewController::Get(gained_active)->InSplitViewMode())
+  // handle the window activation change. Check for split view mode without
+  // using |SplitViewController::state_| which is updated asynchronously when
+  // snapping an ARC window.
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(gained_active);
+  if (split_view_controller->left_window() ||
+      split_view_controller->right_window()) {
     return;
+  }
 
   // Do not cancel overview mode if the window activation was caused while
   // dragging overview mode offscreen.

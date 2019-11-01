@@ -15,7 +15,10 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
+#include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
+#include "chrome/browser/android/webapps/add_to_homescreen_installer.h"
+#include "chrome/browser/android/webapps/add_to_homescreen_params.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/banners/app_banner_ui_delegate_android.h"
@@ -210,19 +213,27 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
   content::WebContents* contents = web_contents();
   DCHECK(contents);
 
+  auto a2hs_params = std::make_unique<AddToHomescreenParams>();
+  a2hs_params->primary_icon = primary_icon_;
   if (native_app_data_.is_null()) {
-    ui_delegate_ = AppBannerUiDelegateAndroid::Create(
-        weak_factory_.GetWeakPtr(),
-        ShortcutHelper::CreateShortcutInfo(manifest_url_, manifest_,
-                                           primary_icon_url_, badge_icon_url_),
-        primary_icon_, badge_icon_, install_source, can_install_webapk_,
-        has_maskable_primary_icon_);
+    a2hs_params->app_type = can_install_webapk_
+                                ? AddToHomescreenParams::AppType::WEBAPK
+                                : AddToHomescreenParams::AppType::SHORTCUT;
+    a2hs_params->shortcut_info = ShortcutHelper::CreateShortcutInfo(
+        manifest_url_, manifest_, primary_icon_url_, badge_icon_url_);
+    a2hs_params->install_source = install_source;
+    a2hs_params->badge_icon = badge_icon_;
+    a2hs_params->has_maskable_primary_icon = has_maskable_primary_icon_;
   } else {
-    ui_delegate_ = AppBannerUiDelegateAndroid::Create(
-        weak_factory_.GetWeakPtr(), native_app_title_,
-        base::android::ScopedJavaLocalRef<jobject>(native_app_data_),
-        primary_icon_, native_app_package_);
+    a2hs_params->app_type = AddToHomescreenParams::AppType::NATIVE;
+    a2hs_params->native_app_data = native_app_data_;
+    a2hs_params->native_app_package_name = native_app_package_;
   }
+
+  ui_delegate_ = AppBannerUiDelegateAndroid::Create(
+      weak_factory_.GetWeakPtr(), std::move(a2hs_params),
+      base::Bind(&AppBannerManagerAndroid::RecordEventForAppBanner,
+                 weak_factory_.GetWeakPtr()));
 
   // If we are installing from the ambient badge, it will remove itself.
   if (install_source != WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB &&
@@ -232,16 +243,94 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
 
   if (ui_delegate_->ShowDialog()) {
     if (native_app_data_.is_null()) {
-      RecordDidShowBanner("AppBanner.WebApp.Shown");
-      TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
       ReportStatus(SHOWING_WEB_APP_BANNER);
     } else {
-      RecordDidShowBanner("AppBanner.NativeApp.Shown");
-      TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
       ReportStatus(SHOWING_NATIVE_APP_BANNER);
     }
   } else {
     ReportStatus(FAILED_TO_CREATE_BANNER);
+  }
+}
+
+void AppBannerManagerAndroid::RecordEventForAppBanner(
+    AddToHomescreenInstaller::Event event,
+    const AddToHomescreenParams& a2hs_params) {
+  switch (event) {
+    case AddToHomescreenInstaller::Event::INSTALL_STARTED:
+      TrackDismissEvent(DISMISS_EVENT_DISMISSED);
+      switch (a2hs_params.app_type) {
+        case AddToHomescreenParams::AppType::NATIVE:
+          TrackUserResponse(USER_RESPONSE_NATIVE_APP_ACCEPTED);
+          break;
+        case AddToHomescreenParams::AppType::WEBAPK:
+          FALLTHROUGH;
+        case AddToHomescreenParams::AppType::SHORTCUT:
+          TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
+          AppBannerSettingsHelper::RecordBannerInstallEvent(
+              web_contents(), a2hs_params.shortcut_info->url.spec(),
+              AppBannerSettingsHelper::WEB);
+          break;
+        default:
+          NOTREACHED();
+      }
+      break;
+
+    case AddToHomescreenInstaller::Event::INSTALL_FAILED:
+      TrackDismissEvent(DISMISS_EVENT_ERROR);
+      break;
+
+    case AddToHomescreenInstaller::Event::NATIVE_INSTALL_OR_OPEN_FAILED:
+      DCHECK_EQ(a2hs_params.app_type, AddToHomescreenParams::AppType::NATIVE);
+      TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_TRIGGERED);
+      break;
+
+    case AddToHomescreenInstaller::Event::NATIVE_INSTALL_OR_OPEN_SUCCEEDED:
+      DCHECK_EQ(a2hs_params.app_type, AddToHomescreenParams::AppType::NATIVE);
+      TrackDismissEvent(DISMISS_EVENT_APP_OPEN);
+      break;
+
+    case AddToHomescreenInstaller::Event::INSTALL_REQUEST_FINISHED:
+      SendBannerAccepted();
+      if (a2hs_params.app_type == AddToHomescreenParams::AppType::WEBAPK ||
+          a2hs_params.app_type == AddToHomescreenParams::AppType::SHORTCUT) {
+        OnInstall(a2hs_params.shortcut_info->display);
+      }
+      break;
+
+    case AddToHomescreenInstaller::Event::NATIVE_DETAILS_SHOWN:
+      TrackDismissEvent(DISMISS_EVENT_BANNER_CLICK);
+      break;
+
+    case AddToHomescreenInstaller::Event::UI_SHOWN:
+      if (a2hs_params.app_type == AddToHomescreenParams::AppType::NATIVE) {
+        RecordDidShowBanner("AppBanner.NativeApp.Shown");
+        TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
+      } else {
+        RecordDidShowBanner("AppBanner.WebApp.Shown");
+        TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
+      }
+      break;
+
+    case AddToHomescreenInstaller::Event::UI_DISMISSED:
+      TrackDismissEvent(DISMISS_EVENT_DISMISSED);
+
+      SendBannerDismissed();
+      if (a2hs_params.app_type == AddToHomescreenParams::AppType::NATIVE) {
+        DCHECK(!a2hs_params.native_app_package_name.empty());
+        TrackUserResponse(USER_RESPONSE_NATIVE_APP_DISMISSED);
+        AppBannerSettingsHelper::RecordBannerDismissEvent(
+            web_contents(), a2hs_params.native_app_package_name,
+            AppBannerSettingsHelper::NATIVE);
+      } else {
+        if (a2hs_params.app_type == AddToHomescreenParams::AppType::WEBAPK)
+          webapk::TrackInstallEvent(
+              webapk::ADD_TO_HOMESCREEN_DIALOG_DISMISSED_BEFORE_INSTALLATION);
+        TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
+        AppBannerSettingsHelper::RecordBannerDismissEvent(
+            web_contents(), a2hs_params.shortcut_info->url.spec(),
+            AppBannerSettingsHelper::WEB);
+      }
+      break;
   }
 }
 
@@ -266,8 +355,8 @@ bool AppBannerManagerAndroid::ShouldPerformInstallableNativeAppCheck() {
   if (!manifest_.prefer_related_applications || java_banner_manager_.is_null())
     return false;
 
-  // Ensure there is at least one related app specified that is supported on the
-  // current platform.
+  // Ensure there is at least one related app specified that is supported on
+  // the current platform.
   for (const auto& application : manifest_.related_applications) {
     if (base::EqualsASCII(application.platform.string(), kPlatformPlay))
       return true;
@@ -305,8 +394,8 @@ InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(
   if (id_from_app_url.size() && id != id_from_app_url)
     return IDS_DO_NOT_MATCH;
 
-  // Attach the chrome_inline referrer value, prefixed with "&" if the referrer
-  // is non empty.
+  // Attach the chrome_inline referrer value, prefixed with "&" if the
+  // referrer is non empty.
   std::string referrer = ExtractQueryValueForName(url, "referrer");
   if (!referrer.empty())
     referrer += "&";

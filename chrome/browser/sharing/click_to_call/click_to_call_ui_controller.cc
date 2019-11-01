@@ -187,6 +187,8 @@ SharingDialogData ClickToCallUiController::CreateDialogData(
 
   data.help_text_id =
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES;
+  data.help_text_origin_id =
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES_ORIGIN;
   data.help_link_text_id =
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK;
   data.origin_text_id =

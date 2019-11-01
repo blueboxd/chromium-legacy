@@ -41,10 +41,6 @@ namespace gfx {
 class Image;
 }
 
-namespace ui {
-class NativeTheme;
-}
-
 namespace views {
 class Border;
 class DeviceScaleFactorObserver;
@@ -64,8 +60,8 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
                              public ui::TextEditKeyBindingsDelegateAuraLinux,
                              public ui::CursorThemeManagerLinux {
  public:
-  using NativeThemeGetter =
-      base::RepeatingCallback<ui::NativeTheme*(aura::Window* window)>;
+  using UseSystemThemeCallback =
+      base::RepeatingCallback<bool(aura::Window* window)>;
 
   // Describes the window management actions that could be taken in response to
   // a middle click in the non client area.
@@ -115,8 +111,8 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // style widgets.
   virtual ui::NativeTheme* GetNativeTheme(aura::Window* window) const = 0;
 
-  // Used to set an override NativeTheme.
-  virtual void SetNativeThemeOverride(NativeThemeGetter callback) = 0;
+  // Sets a callback that determines whether to use the system theme.
+  virtual void SetUseSystemThemeCallback(UseSystemThemeCallback callback) = 0;
 
   // Returns whether we should be using the native theme provided by this
   // object by default.

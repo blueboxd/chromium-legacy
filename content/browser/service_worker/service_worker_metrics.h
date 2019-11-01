@@ -180,11 +180,6 @@ class ServiceWorkerMetrics {
   // If the |url| is not a special site, returns Site::OTHER.
   static Site SiteFromURL(const GURL& url);
 
-  // Excludes NTP scope from UMA for now as it tends to dominate the stats and
-  // makes the results largely skewed. Some metrics don't follow this policy
-  // and hence don't call this function.
-  static bool ShouldExcludeSiteFromHistogram(Site site);
-
   // Used for ServiceWorkerDiskCache.
   static void CountInitDiskCacheResult(bool result);
   static void CountReadResponseResult(ReadResponseResult result);

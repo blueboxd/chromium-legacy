@@ -40,6 +40,8 @@ if (is_win || is_mac) {
       "prefs.h",
       "unzipper.cc",
       "unzipper.h",
+      "update_apps.cc",
+      "update_apps.h",
       "updater.cc",
       "updater.h",
       "util.cc",

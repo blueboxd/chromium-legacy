@@ -123,7 +123,7 @@ void AssistantSettingsManagerImpl::UpdateSettings(
 
 void AssistantSettingsManagerImpl::StartSpeakerIdEnrollment(
     bool skip_cloud_enrollment,
-    mojom::SpeakerIdEnrollmentClientPtr client) {
+    mojo::PendingRemote<mojom::SpeakerIdEnrollmentClient> client) {
   DCHECK(HasStarted(assistant_manager_service_));
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
 
@@ -132,7 +132,7 @@ void AssistantSettingsManagerImpl::StartSpeakerIdEnrollment(
   if (!assistant_manager_service_->assistant_manager_internal())
     return;
 
-  speaker_id_enrollment_client_ = std::move(client);
+  speaker_id_enrollment_client_.Bind(std::move(client));
 
   assistant_client::SpeakerIdEnrollmentConfig client_config;
   client_config.user_id = kUserID;

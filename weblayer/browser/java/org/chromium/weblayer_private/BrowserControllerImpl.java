@@ -23,8 +23,8 @@ import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
-import org.chromium.weblayer_private.aidl.IDownloadDelegateClient;
-import org.chromium.weblayer_private.aidl.IFullscreenDelegateClient;
+import org.chromium.weblayer_private.aidl.IDownloadCallbackClient;
+import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
@@ -50,8 +50,8 @@ public final class BrowserControllerImpl extends IBrowserController.Stub
     private WebContents mWebContents;
     private BrowserCallbackProxy mBrowserCallbackProxy;
     private NavigationControllerImpl mNavigationController;
-    private DownloadDelegateProxy mDownloadDelegateProxy;
-    private FullscreenDelegateProxy mFullscreenDelegateProxy;
+    private DownloadCallbackProxy mDownloadCallbackProxy;
+    private FullscreenCallbackProxy mFullscreenCallbackProxy;
     private WebContentsGestureStateTracker mGestureStateTracker;
     /**
      * The value of mCachedDoBrowserControlsShrinkRendererSize is set when
@@ -167,32 +167,32 @@ public final class BrowserControllerImpl extends IBrowserController.Stub
     }
 
     @Override
-    public void setDownloadDelegateClient(IDownloadDelegateClient client) {
+    public void setDownloadCallbackClient(IDownloadCallbackClient client) {
         if (client != null) {
-            if (mDownloadDelegateProxy == null) {
-                mDownloadDelegateProxy =
-                        new DownloadDelegateProxy(mNativeBrowserController, client);
+            if (mDownloadCallbackProxy == null) {
+                mDownloadCallbackProxy =
+                        new DownloadCallbackProxy(mNativeBrowserController, client);
             } else {
-                mDownloadDelegateProxy.setClient(client);
+                mDownloadCallbackProxy.setClient(client);
             }
-        } else if (mDownloadDelegateProxy != null) {
-            mDownloadDelegateProxy.destroy();
-            mDownloadDelegateProxy = null;
+        } else if (mDownloadCallbackProxy != null) {
+            mDownloadCallbackProxy.destroy();
+            mDownloadCallbackProxy = null;
         }
     }
 
     @Override
-    public void setFullscreenDelegateClient(IFullscreenDelegateClient client) {
+    public void setFullscreenCallbackClient(IFullscreenCallbackClient client) {
         if (client != null) {
-            if (mFullscreenDelegateProxy == null) {
-                mFullscreenDelegateProxy =
-                        new FullscreenDelegateProxy(mNativeBrowserController, client);
+            if (mFullscreenCallbackProxy == null) {
+                mFullscreenCallbackProxy =
+                        new FullscreenCallbackProxy(mNativeBrowserController, client);
             } else {
-                mFullscreenDelegateProxy.setClient(client);
+                mFullscreenCallbackProxy.setClient(client);
             }
-        } else if (mFullscreenDelegateProxy != null) {
-            mFullscreenDelegateProxy.destroy();
-            mFullscreenDelegateProxy = null;
+        } else if (mFullscreenCallbackProxy != null) {
+            mFullscreenCallbackProxy.destroy();
+            mFullscreenCallbackProxy = null;
         }
     }
 
@@ -221,13 +221,13 @@ public final class BrowserControllerImpl extends IBrowserController.Stub
             mBrowserCallbackProxy.destroy();
             mBrowserCallbackProxy = null;
         }
-        if (mDownloadDelegateProxy != null) {
-            mDownloadDelegateProxy.destroy();
-            mDownloadDelegateProxy = null;
+        if (mDownloadCallbackProxy != null) {
+            mDownloadCallbackProxy.destroy();
+            mDownloadCallbackProxy = null;
         }
-        if (mFullscreenDelegateProxy != null) {
-            mFullscreenDelegateProxy.destroy();
-            mFullscreenDelegateProxy = null;
+        if (mFullscreenCallbackProxy != null) {
+            mFullscreenCallbackProxy.destroy();
+            mFullscreenCallbackProxy = null;
         }
         mGestureStateTracker.destroy();
         mNavigationController = null;

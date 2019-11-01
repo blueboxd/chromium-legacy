@@ -67,7 +67,6 @@
 #include "content/public/common/url_constants.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_fetcher.h"
 #include "device/vr/android/gvr/gvr_device.h"
-#include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -438,15 +437,11 @@ void VrShell::ToggleGvrGamepad(bool enabled) {
     device::GvrDevice* gvr_device = delegate_provider_->GetGvrDevice();
     if (!gvr_device)
       return;
-
-    device::GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new device::GvrGamepadDataFetcher::Factory(this, gvr_device->GetId()));
     gvr_gamepad_source_active_ = true;
   } else {
     DCHECK(gvr_gamepad_source_active_);
     device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
         device::GAMEPAD_SOURCE_GVR);
-    gvr_gamepad_data_fetcher_ = nullptr;
     gvr_gamepad_source_active_ = false;
   }
 }
@@ -1105,15 +1100,6 @@ void VrShell::ProcessDialogGesture(std::unique_ptr<InputEvent> event) {
 void VrShell::UpdateGamepadData(device::GvrGamepadData pad) {
   if (gvr_gamepad_source_active_ != pad.connected)
     ToggleGvrGamepad(pad.connected);
-
-  if (gvr_gamepad_data_fetcher_)
-    gvr_gamepad_data_fetcher_->SetGamepadData(pad);
-}
-
-void VrShell::RegisterGvrGamepadDataFetcher(
-    device::GvrGamepadDataFetcher* fetcher) {
-  DVLOG(1) << __FUNCTION__ << "(" << fetcher << ")";
-  gvr_gamepad_data_fetcher_ = fetcher;
 }
 
 void VrShell::RegisterCardboardGamepadDataFetcher(

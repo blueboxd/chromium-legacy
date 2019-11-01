@@ -466,6 +466,7 @@ js2gtest("chromevox_unitjs_tests") {
     "braille/braille_input_handler_test.unitjs",
     "braille/expanding_braille_translator_test.unitjs",
     "braille/pan_strategy_test.unitjs",
+    "common/key_sequence_test.unitjs",
     "common/spannable_test.unitjs",
     "testing/mock_feedback_test.unitjs",
   ]

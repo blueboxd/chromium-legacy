@@ -63,7 +63,6 @@ class AccessibilityEventRecorderAuraLinux : public AccessibilityEventRecorder {
   AtspiEventListener* atspi_event_listener_ = nullptr;
   base::ProcessId pid_;
   base::StringPiece application_name_match_pattern_;
-  static std::vector<unsigned int> atk_listener_ids_;
   static AccessibilityEventRecorderAuraLinux* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityEventRecorderAuraLinux);
@@ -72,9 +71,12 @@ class AccessibilityEventRecorderAuraLinux : public AccessibilityEventRecorder {
 // static
 AccessibilityEventRecorderAuraLinux*
     AccessibilityEventRecorderAuraLinux::instance_ = nullptr;
-std::vector<unsigned int>
-    content::AccessibilityEventRecorderAuraLinux::atk_listener_ids_ =
-        std::vector<unsigned int>();
+
+// static
+std::vector<unsigned int>& GetATKListenerIds() {
+  static base::NoDestructor<std::vector<unsigned int>> atk_listener_ids;
+  return *atk_listener_ids;
+}
 
 // static
 gboolean AccessibilityEventRecorderAuraLinux::OnATKEventReceived(
@@ -145,11 +147,12 @@ void AccessibilityEventRecorderAuraLinux::AddATKEventListener(
   if (!id)
     LOG(FATAL) << "atk_add_global_event_listener failed for " << event_name;
 
-  atk_listener_ids_.push_back(id);
+  std::vector<unsigned int>& atk_listener_ids = GetATKListenerIds();
+  atk_listener_ids.push_back(id);
 }
 
 void AccessibilityEventRecorderAuraLinux::AddATKEventListeners() {
-  if (atk_listener_ids_.size() >= 1)
+  if (GetATKListenerIds().size() >= 1)
     return;
   GObject* gobject = G_OBJECT(g_object_new(G_TYPE_OBJECT, nullptr, nullptr));
   g_object_unref(atk_no_op_object_new(gobject));
@@ -165,10 +168,11 @@ void AccessibilityEventRecorderAuraLinux::AddATKEventListeners() {
 }
 
 void AccessibilityEventRecorderAuraLinux::RemoveATKEventListeners() {
-  for (const auto& id : atk_listener_ids_)
+  std::vector<unsigned int>& atk_listener_ids = GetATKListenerIds();
+  for (const auto& id : atk_listener_ids)
     atk_remove_global_event_listener(id);
 
-  atk_listener_ids_.clear();
+  atk_listener_ids.clear();
 }
 
 // Pruning states which are not supported on older bots makes it possible to

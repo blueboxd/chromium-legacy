@@ -469,6 +469,10 @@ void ShaderCacheFactory::ClearByPath(const base::FilePath& path,
                                      base::OnceClosure callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
+  if (path.empty()) {
+    std::move(callback).Run();
+    return;
+  }
 
   auto helper = std::make_unique<ShaderClearHelper>(this, GetByPath(path), path,
                                                     delete_begin, delete_end,

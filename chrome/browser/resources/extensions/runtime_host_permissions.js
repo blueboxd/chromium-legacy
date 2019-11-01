@@ -2,11 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/js/action_link.js';
+import 'chrome://resources/cr_elements/action_link_css.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import './runtime_hosts_dialog.js';
+import './shared_style.js';
+import './strings.m.js';
 
-  const RuntimeHostPermissions = Polymer({
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ItemDelegate} from './item.js';
+
+  Polymer({
     is: 'extensions-runtime-host-permissions',
+
+    _template: html`{__html_template__}`,
 
     properties: {
       /**
@@ -18,7 +38,7 @@ cr.define('extensions', function() {
       /** @private */
       itemId: String,
 
-      /** @type {!extensions.ItemDelegate} */
+      /** @type {!ItemDelegate} */
       delegate: Object,
 
       /**
@@ -96,7 +116,7 @@ cr.define('extensions', function() {
      * @private
      */
     onHostAccessChange_: function(event) {
-      const group = this.$['host-access'];
+      const group = /** @type {!HTMLElement} */ (this.$['host-access']);
       const access = group.selected;
 
       if (access == chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES &&
@@ -170,8 +190,7 @@ cr.define('extensions', function() {
     onHostDialogClose_: function() {
       this.hostDialogModel_ = null;
       this.showHostDialog_ = false;
-      cr.ui.focusWithoutInk(
-          assert(this.hostDialogAnchorElement_, 'Host Anchor'));
+      focusWithoutInk(assert(this.hostDialogAnchorElement_, 'Host Anchor'));
       this.hostDialogAnchorElement_ = null;
       this.oldHostAccess_ = null;
     },
@@ -246,6 +265,3 @@ cr.define('extensions', function() {
       this.actionMenuAnchorElement_ = null;
     },
   });
-
-  return {RuntimeHostPermissions: RuntimeHostPermissions};
-});

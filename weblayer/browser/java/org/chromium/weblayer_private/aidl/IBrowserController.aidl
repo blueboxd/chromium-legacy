@@ -5,7 +5,7 @@
 package org.chromium.weblayer_private.aidl;
 
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
-import org.chromium.weblayer_private.aidl.IFullscreenDelegateClient;
+import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.aidl.INavigationController;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 
@@ -14,9 +14,9 @@ interface IBrowserController {
 
   INavigationController createNavigationController(in INavigationControllerClient client) = 1;
 
-  void setDownloadDelegateClient(IDownloadDelegateClient client) = 2;
+  void setDownloadCallbackClient(IDownloadCallbackClient client) = 2;
 
-  void setFullscreenDelegateClient(in IFullscreenDelegateClient client) = 3;
+  void setFullscreenCallbackClient(in IFullscreenCallbackClient client) = 3;
 
   void executeScript(in String script, in IObjectWrapper callback) = 4;
 }

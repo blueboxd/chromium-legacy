@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+
   /** @polymerBehavior */
-  const ItemBehavior = {
+  export const ItemBehavior = {
     /**
      * @param {chrome.developerPrivate.ExtensionType} type
      * @param {string} appLabel
@@ -25,6 +26,3 @@ cr.define('extensions', function() {
       assertNotReached('Item type is not App or Extension.');
     },
   };
-
-  return {ItemBehavior: ItemBehavior};
-});

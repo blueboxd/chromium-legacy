@@ -962,7 +962,8 @@ QuicTestPacketMaker::MakePushPromisePacket(
     frame.headers = encoded_headers;
     std::unique_ptr<char[]> buffer;
     quic::QuicByteCount frame_length =
-        http_encoder_.SerializePushPromiseFrameWithOnlyPushId(frame, &buffer);
+        quic::HttpEncoder::SerializePushPromiseFrameWithOnlyPushId(frame,
+                                                                   &buffer);
     std::string push_promise_data(buffer.get(), frame_length);
     frames.push_back(
         GenerateNextStreamFrame(stream_id, false, push_promise_data));
@@ -1236,7 +1237,7 @@ QuicTestPacketMaker::MakePriorityPacket(uint64_t packet_number,
           : quic::REQUEST_STREAM;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
-      http_encoder_.SerializePriorityFrame(frame, &buffer);
+      quic::HttpEncoder::SerializePriorityFrame(frame, &buffer);
   std::string priority_data = std::string(buffer.get(), frame_length);
 
   InitializeHeader(packet_number, should_include_version);
@@ -1378,8 +1379,8 @@ std::vector<std::string> QuicTestPacketMaker::QpackEncodeHeaders(
   // Generate HEADERS frame header.
   std::unique_ptr<char[]> headers_frame_header;
   const size_t headers_frame_header_length =
-      http_encoder_.SerializeHeadersFrameHeader(encoded_headers.size(),
-                                                &headers_frame_header);
+      quic::HttpEncoder::SerializeHeadersFrameHeader(encoded_headers.size(),
+                                                     &headers_frame_header);
 
   // Possible add a PUSH stream type.
   if (!quic::QuicUtils::IsBidirectionalStreamId(stream_id) &&
@@ -1489,7 +1490,7 @@ std::string QuicTestPacketMaker::GenerateHttp3SettingsData() {
       quic::kDefaultMaximumBlockedStreams;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
-      http_encoder_.SerializeSettingsFrame(settings, &buffer);
+      quic::HttpEncoder::SerializeSettingsFrame(settings, &buffer);
   return std::string(buffer.get(), frame_length);
 }
 
@@ -1504,7 +1505,7 @@ std::string QuicTestPacketMaker::GenerateHttp3PriorityData(
 
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
-      http_encoder_.SerializePriorityFrame(frame, &buffer);
+      quic::HttpEncoder::SerializePriorityFrame(frame, &buffer);
   return std::string(buffer.get(), frame_length);
 }
 

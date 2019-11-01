@@ -31,6 +31,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -532,5 +533,10 @@ class TabListRecyclerView extends RecyclerView {
         setPadding(mOriginalPadding.left, mOriginalPadding.top, mOriginalPadding.right,
                 mOriginalPadding.bottom);
         setScrollBarStyle(SCROLLBARS_INSIDE_OVERLAY);
+    }
+
+    @VisibleForTesting
+    View getRecyclerViewFooterForTesting() {
+        return mRecyclerViewFooter;
     }
 }

@@ -11,7 +11,7 @@ document Name='Action verbs'
 ++checkbox Toggle.ToggleState='Off'
 ++checkbox Toggle.ToggleState='On'
 ++radio SelectionItem.IsSelected=false
-++checkbox Name='ARIA Switch' Toggle.ToggleState='Off'
+++switch Name='ARIA Switch' Toggle.ToggleState='Off'
 ++group
 ++++button Name='Summary' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++++description Name='Summary'

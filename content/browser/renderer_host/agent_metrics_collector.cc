@@ -13,9 +13,9 @@ namespace content {
 
 namespace {
 
-const char kAgentsByTimeHistogram[] = "PerformanceMonitor.AgentsByTime";
+const char kAgentsByTimeHistogram[] = "PerformanceManager.AgentsByTime";
 const char kAgentsUniqueByTimeHistogram[] =
-    "PerformanceMonitor.AgentsUniqueByTime";
+    "PerformanceManager.AgentsUniqueByTime";
 
 constexpr base::TimeDelta kReportingInterval = base::TimeDelta::FromMinutes(5);
 

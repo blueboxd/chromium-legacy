@@ -34,16 +34,15 @@ CleanerEngineRequestsImpl::CleanerEngineRequestsImpl(
     InterfaceMetadataObserver* metadata_observer,
     std::unique_ptr<chrome_cleaner::FileRemoverAPI> file_remover)
     : mojo_task_runner_(mojo_task_runner),
-      binding_(this),
       metadata_observer_(metadata_observer),
       file_remover_(std::move(file_remover)) {}
 
 CleanerEngineRequestsImpl::~CleanerEngineRequestsImpl() = default;
 
 void CleanerEngineRequestsImpl::Bind(
-    mojom::CleanerEngineRequestsAssociatedPtrInfo* ptr_info) {
-  binding_.Bind(mojo::MakeRequest(ptr_info));
-  // There's no need to call set_connection_error_handler on this since it's an
+    mojo::PendingAssociatedRemote<mojom::CleanerEngineRequests>* remote) {
+  receiver_.Bind(remote->InitWithNewEndpointAndPassReceiver());
+  // There's no need to call set_disconnect_handler on this since it's an
   // associated interface. Any errors will be handled on the main EngineCommands
   // interface.
 }

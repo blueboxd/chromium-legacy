@@ -98,7 +98,7 @@ MainThreadMetricsHelper::MainThreadMetricsHelper(
     bool has_cpu_timing_for_each_task,
     base::TimeTicks now,
     bool renderer_backgrounded)
-    : MetricsHelper(WebThreadType::kMainThread, has_cpu_timing_for_each_task),
+    : MetricsHelper(ThreadType::kMainThread, has_cpu_timing_for_each_task),
       main_thread_scheduler_(main_thread_scheduler),
       renderer_shutting_down_(false),
       main_thread_load_tracker_(

@@ -489,6 +489,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/toolbar/top/TabSwitcherActionMenuRenderTest.java",
   "javatests/src/org/chromium/chrome/browser/translate/TranslateCompactInfoBarTest.java",
   "javatests/src/org/chromium/chrome/browser/translate/TranslateOptionsTest.java",
+  "javatests/src/org/chromium/chrome/browser/ui/widget/WrappingLayoutTest.java",
   "javatests/src/org/chromium/chrome/browser/usage_stats/TabSuspensionTest.java",
   "javatests/src/org/chromium/chrome/browser/video/FullscreenVideoTest.java",
   "javatests/src/org/chromium/chrome/browser/video/VideoTest.java",

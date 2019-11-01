@@ -15,12 +15,5 @@
 # https://chromium-swarm.appspot.com/task?id=48104c14d9892f10
 -BookmarksCommandManagerTest.All
 
-# Time out since the removal of bfcache timed eviction. Probably waiting on the
-# RenderFrameHost deletion.
--CredentialManagerBrowserTest.StoreInUnloadHandler_CrossSite_OnDemandMojoPipe
-
 # https://crbug.com/1017594
 -IsolatedAppTest.CrossProcessClientRedirect
-
-# https://crbug.com/1017597
--ViewSourceWithSplitCacheEnabledTest.NetworkIsolationKeyReusedForBackNavigation/0

@@ -15,8 +15,9 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -72,9 +73,9 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
 
         @Override
         public void onSheetStateChanged(int newState) {
-            if (newState == BottomSheet.SheetState.HIDDEN) {
+            if (newState == BottomSheetController.SheetState.HIDDEN) {
                 mHiddenCallbackHelper.notifyCalled();
-            } else if (newState == BottomSheet.SheetState.FULL) {
+            } else if (newState == BottomSheetController.SheetState.FULL) {
                 mFullCallbackHelper.notifyCalled();
             }
         }
@@ -91,7 +92,8 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     /** A handle to the sheet's observer. */
     private Observer mObserver;
 
-    private @BottomSheet.SheetState int mStartingBottomSheetState = BottomSheet.SheetState.FULL;
+    private @BottomSheetController.SheetState int mStartingBottomSheetState =
+            BottomSheetController.SheetState.FULL;
 
     protected void afterStartingActivity() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -108,12 +110,13 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         mObserver = new Observer();
         getBottomSheet().addObserver(mObserver);
 
-        if (mStartingBottomSheetState == BottomSheet.SheetState.PEEK) return;
+        if (mStartingBottomSheetState == BottomSheetController.SheetState.PEEK) return;
 
         setSheetState(mStartingBottomSheetState, /* animate = */ false);
     }
 
-    public void startMainActivityOnBottomSheet(@BottomSheet.SheetState int startingSheetState) {
+    public void startMainActivityOnBottomSheet(
+            @BottomSheetController.SheetState int startingSheetState) {
         mStartingBottomSheetState = startingSheetState;
         startMainActivityOnBlankPage();
     }

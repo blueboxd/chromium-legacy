@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_SET_DESCRIPTION_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEBRTC_SET_DESCRIPTION_OBSERVER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -50,6 +51,15 @@ class MODULES_EXPORT WebRtcSetDescriptionObserver
     webrtc::PeerConnectionInterface::SignalingState signaling_state;
     blink::WebRTCSctpTransportSnapshot sctp_transport_state;
     std::vector<blink::RtpTransceiverState> transceiver_states;
+    // For now, the session descriptions are only surfaced for the sake of
+    // showing up in chrome://webrtc-internals/ when implicit
+    // setLocalDescription() resolves.
+    // TODO(https://crbug.com/788558): Surface all states to blink at the same,
+    // time, including [current/pending][Local/Remote]Description.
+    std::unique_ptr<webrtc::SessionDescriptionInterface>
+        pending_local_description;
+    std::unique_ptr<webrtc::SessionDescriptionInterface>
+        current_local_description;
 
     DISALLOW_COPY_AND_ASSIGN(States);
   };
@@ -103,7 +113,11 @@ class MODULES_EXPORT WebRtcSetDescriptionObserverHandlerImpl
   void OnSetDescriptionCompleteOnMainThread(
       webrtc::RTCError error,
       webrtc::PeerConnectionInterface::SignalingState signaling_state,
-      blink::TransceiverStateSurfacer transceiver_state_surfacer);
+      blink::TransceiverStateSurfacer transceiver_state_surfacer,
+      std::unique_ptr<webrtc::SessionDescriptionInterface>
+          pending_local_description,
+      std::unique_ptr<webrtc::SessionDescriptionInterface>
+          current_local_description);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;

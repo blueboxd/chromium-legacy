@@ -53,6 +53,9 @@ message CallStackProfile {
     // Index of the hash of the metadata name.
     optional int32 name_hash_index = 1;
 
+    // Optional user-specified key value. Absent if unspecified.
+    optional sint64 key = 3;
+
     // Value for the item. An absent value indicates the metadata has become
     // unset since the previous StackSample.
     optional sint64 value = 2;

@@ -2,16 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import './code_section.js';
+import './shared_style.js';
+
+import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {navigation, Page} from './navigation_helper.js';
+
 /** @typedef {chrome.developerPrivate.ManifestError} */
 let ManifestError;
 /** @typedef {chrome.developerPrivate.RuntimeError} */
 let RuntimeError;
 
-cr.define('extensions', function() {
-  'use strict';
-
   /** @interface */
-  class ErrorPageDelegate {
+  export class ErrorPageDelegate {
     /**
      * @param {string} extensionId
      * @param {!Array<number>=} errorIds
@@ -64,8 +82,10 @@ cr.define('extensions', function() {
     return warn;
   }
 
-  const ErrorPage = Polymer({
+  Polymer({
     is: 'extensions-error-page',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [CrContainerShadowBehavior],
 
@@ -73,7 +93,7 @@ cr.define('extensions', function() {
       /** @type {!chrome.developerPrivate.ExtensionInfo|undefined} */
       data: Object,
 
-      /** @type {!extensions.ErrorPageDelegate|undefined} */
+      /** @type {!ErrorPageDelegate|undefined} */
       delegate: Object,
 
       // Whether or not dev mode is enabled.
@@ -117,7 +137,7 @@ cr.define('extensions', function() {
 
     /** @override */
     ready: function() {
-      cr.ui.FocusOutlineManager.forDocument(document);
+      FocusOutlineManager.forDocument(document);
     },
 
     /** @return {!ManifestError|!RuntimeError} */
@@ -130,8 +150,7 @@ cr.define('extensions', function() {
      * @private
      */
     onViewEnterStart_: function() {
-      Polymer.RenderStatus.afterNextRender(
-          this, () => cr.ui.focusWithoutInk(this.$.closeButton));
+      afterNextRender(this, () => focusWithoutInk(this.$.closeButton));
       chrome.metricsPrivate.recordUserAction('Options_ViewExtensionErrors');
     },
 
@@ -162,7 +181,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onCloseButtonTap_: function() {
-      extensions.navigation.navigateTo({page: extensions.Page.LIST});
+      navigation.navigateTo({page: Page.LIST});
     },
 
     /** @private */
@@ -421,9 +440,3 @@ cr.define('extensions', function() {
           this.selectedEntry_ == e.model.index ? -1 : e.model.index;
     },
   });
-
-  return {
-    ErrorPage: ErrorPage,
-    ErrorPageDelegate: ErrorPageDelegate,
-  };
-});

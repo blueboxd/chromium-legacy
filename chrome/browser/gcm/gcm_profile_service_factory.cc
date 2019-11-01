@@ -45,9 +45,9 @@ namespace gcm {
 namespace {
 
 #if !defined(OS_ANDROID)
-// Requests a ProxyResolvingSocketFactoryPtr on the UI thread. Note that a
-// WeakPtr of GCMProfileService is needed to detect when the KeyedService shuts
-// down, and avoid calling into |profile| which might have also been destroyed.
+// Requests a ProxyResolvingSocketFactory on the UI thread. Note that a WeakPtr
+// of GCMProfileService is needed to detect when the KeyedService shuts down,
+// and avoid calling into |profile| which might have also been destroyed.
 void RequestProxyResolvingSocketFactoryOnUIThread(
     Profile* profile,
     base::WeakPtr<GCMProfileService> service,
@@ -61,7 +61,7 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
   network_context->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
-// A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
+// A thread-safe wrapper to request a ProxyResolvingSocketFactory.
 void RequestProxyResolvingSocketFactory(
     Profile* profile,
     base::WeakPtr<GCMProfileService> service,

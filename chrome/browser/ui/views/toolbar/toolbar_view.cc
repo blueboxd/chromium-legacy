@@ -782,7 +782,7 @@ AppMenuButton* ToolbarView::GetAppMenuButton() {
   return app_menu_button_;
 }
 
-gfx::Rect ToolbarView::GetFindBarBoundingBox(int contents_height) const {
+gfx::Rect ToolbarView::GetFindBarBoundingBox(int contents_bottom) const {
   if (!browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
     return gfx::Rect();
 
@@ -792,7 +792,7 @@ gfx::Rect ToolbarView::GetFindBarBoundingBox(int contents_height) const {
   gfx::Rect bounds =
       location_bar_->ConvertRectToWidget(location_bar_->GetLocalBounds());
   return gfx::Rect(bounds.x(), bounds.bottom(), bounds.width(),
-                   contents_height);
+                   contents_bottom - bounds.bottom());
 }
 
 void ToolbarView::FocusToolbar() {

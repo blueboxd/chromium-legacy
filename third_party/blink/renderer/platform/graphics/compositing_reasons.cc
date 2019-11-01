@@ -40,7 +40,7 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "Is DOM overlay for WebXR immersive-ar mode"},
     {CompositingReason::kScrollDependentPosition, "scrollDependentPosition",
      "Is fixed or sticky position"},
-    {CompositingReason::kOverflowScrollingTouch, "overflowScrollingTouch",
+    {CompositingReason::kOverflowScrolling, "overflowScrolling",
      "Is a scrollable overflow element"},
     {CompositingReason::kOverflowScrollingParent, "overflowScrollingParent",
      "Scroll parent is not an ancestor"},

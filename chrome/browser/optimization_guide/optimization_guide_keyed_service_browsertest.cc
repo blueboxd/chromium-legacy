@@ -681,10 +681,17 @@ class OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest
       default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        optimization_guide::features::kOptimizationTargetPrediction);
+    scoped_feature_list_.InitWithFeatures(
+        {optimization_guide::features::kOptimizationHintsFetching,
+         optimization_guide::features::kOptimizationTargetPrediction},
+        {});
 
     OptimizationGuideKeyedServiceBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
+                           "whatever.com,somehost.com");
   }
 
   void TearDown() override {
@@ -735,12 +742,21 @@ class OptimizationGuideKeyedServiceModelPredictionHoldbackBrowserTest
     : public OptimizationGuideKeyedServiceBrowserTest {
  public:
   OptimizationGuideKeyedServiceModelPredictionHoldbackBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        optimization_guide::features::kOptimizationTargetPrediction,
-        {{"painful_page_load_metrics_only", "true"}});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {base::test::ScopedFeatureList::FeatureAndParams(
+             optimization_guide::features::kOptimizationTargetPrediction,
+             {{"painful_page_load_metrics_only", "true"}}),
+         base::test::ScopedFeatureList::FeatureAndParams(
+             optimization_guide::features::kOptimizationHintsFetching, {{}})},
+        {});
   }
   ~OptimizationGuideKeyedServiceModelPredictionHoldbackBrowserTest() override =
       default;
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
+                           "whatever.com,somehost.com");
+  }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

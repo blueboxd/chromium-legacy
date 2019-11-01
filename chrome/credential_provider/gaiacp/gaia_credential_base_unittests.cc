@@ -8,7 +8,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/branding_buildflags.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
@@ -1356,9 +1355,7 @@ class GcpGaiaCredentialBasePasswordRecoveryTest
 TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   // Enable standard escrow service features in non-Chrome builds so that
   // the escrow service code can be tested by the build machines.
-#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
-#endif
+  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
   USES_CONVERSION;
 
   int generate_public_key_result = std::get<0>(GetParam());
@@ -1592,9 +1589,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
        PasswordRecovery_Disabled) {
   // Enable standard escrow service features in non-Chrome builds so that
   // the escrow service code can be tested by the build machines.
-#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
-#endif
+  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
   USES_CONVERSION;
   const wchar_t* escrow_service_url = GetParam();
 

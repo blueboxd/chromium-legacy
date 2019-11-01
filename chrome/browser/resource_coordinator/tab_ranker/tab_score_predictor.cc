@@ -234,10 +234,10 @@ std::map<int32_t, float> TabScorePredictor::ScoreTabsWithPairwiseScorer(
             [&tabs](const int32_t id1, const int32_t id2) {
               const auto& tab1 = tabs.at(id1);
               const auto& tab2 = tabs.at(id2);
-              if (!tab1)
-                return true;
               if (!tab2)
                 return false;
+              if (!tab1)
+                return true;
               return tab1->mru_index < tab2->mru_index;
             });
 

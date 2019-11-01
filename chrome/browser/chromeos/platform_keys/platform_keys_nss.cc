@@ -24,7 +24,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
-#include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -597,8 +596,7 @@ void SelectCertificatesOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->cert_store_.reset(new ClientCertStoreChromeOS(
       nullptr,  // no additional provider
-      std::make_unique<ClientCertFilterChromeOS>(state->use_system_key_slot_,
-                                                 state->username_hash_),
+      state->use_system_key_slot_, state->username_hash_,
       ClientCertStoreChromeOS::PasswordDelegateFactory()));
 
   SelectCertificatesState* state_ptr = state.get();

@@ -13,9 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.HeightMode;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 
 /** Microtransaction UI. */
 /* package */ class MicrotransactionView implements BottomSheetContent {
@@ -106,11 +104,11 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.HeightMode;
     public void destroy() {}
 
     @Override
-    @BottomSheet.ContentPriority
+    @ContentPriority
     public int getPriority() {
         // If multiple bottom sheets are queued up to be shown, prioritize microtransaction, because
         // it's triggered by a user gesture, such as a click on <button>Buy this article</button>.
-        return BottomSheet.ContentPriority.HIGH;
+        return BottomSheetContent.ContentPriority.HIGH;
     }
 
     @Override

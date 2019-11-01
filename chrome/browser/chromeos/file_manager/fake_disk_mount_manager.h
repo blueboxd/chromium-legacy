@@ -40,14 +40,6 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
     chromeos::MountAccessMode access_mode;
   };
 
-  struct UnmountRequest {
-    UnmountRequest(const std::string& mount_path,
-                   chromeos::UnmountOptions options);
-
-    std::string mount_path;
-    chromeos::UnmountOptions options;
-  };
-
   struct RemountAllRequest {
     explicit RemountAllRequest(chromeos::MountAccessMode access_mode);
     chromeos::MountAccessMode access_mode;
@@ -59,7 +51,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   const std::vector<MountRequest>& mount_requests() const {
     return mount_requests_;
   }
-  const std::vector<UnmountRequest>& unmount_requests() const {
+  const std::vector<std::string>& unmount_requests() const {
     return unmount_requests_;
   }
   const std::vector<RemountAllRequest>& remount_all_requests() const {
@@ -94,7 +86,6 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   // is finished, |callback| will be invoked only when
   // |FinishAllUnmountRequest()| is called.
   void UnmountPath(const std::string& mount_path,
-                   chromeos::UnmountOptions options,
                    UnmountPathCallback callback) override;
   void RemountAllRemovableDrives(
       chromeos::MountAccessMode access_mode) override;
@@ -120,7 +111,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   MountPointMap mount_points_;
 
   std::vector<MountRequest> mount_requests_;
-  std::vector<UnmountRequest> unmount_requests_;
+  std::vector<std::string> unmount_requests_;
   std::vector<RemountAllRequest> remount_all_requests_;
   std::map<std::string, chromeos::MountError> unmount_errors_;
 

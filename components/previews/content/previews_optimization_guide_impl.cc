@@ -269,7 +269,7 @@ void PreviewsOptimizationGuideImpl::FetchHints() {
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
         url_loader_factory_,
-        optimization_guide::features::GetOptimizationGuideServiceURL(),
+        optimization_guide::features::GetOptimizationGuideServiceGetHintsURL(),
         pref_service_);
   }
 

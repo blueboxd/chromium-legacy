@@ -16,6 +16,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/navigation_policy.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "net/base/features.h"
@@ -296,8 +297,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kUseFeatureState},
           {wf::EnableMouseSubframeNoImplicitCapture,
            features::kMouseSubframeNoImplicitCapture, kUseFeatureState},
-          {wf::EnableBackForwardCache, features::kBackForwardCache,
-           kUseFeatureState},
           {wf::EnableCookieDeprecationMessages,
            features::kCookieDeprecationMessages, kEnableOnly},
           {wf::EnableSameSiteByDefaultCookies,
@@ -544,6 +543,9 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
     WebRuntimeFeatures::EnableFeatureFromString("FastBorderRadius", true);
     WebRuntimeFeatures::EnableDisplayLocking(true);
   }
+
+  WebRuntimeFeatures::EnableBackForwardCache(
+      content::IsBackForwardCacheEnabled());
 }
 
 }  // namespace

@@ -35,7 +35,9 @@
 #include "chromeos/services/assistant/service.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -264,15 +266,17 @@ class FakeAssistantSettings
 
   void StartSpeakerIdEnrollment(
       bool skip_cloud_enrollment,
-      chromeos::assistant::mojom::SpeakerIdEnrollmentClientPtr client)
-      override {
+      mojo::PendingRemote<chromeos::assistant::mojom::SpeakerIdEnrollmentClient>
+          client) override {
     if (speaker_id_enrollment_mode_ == SpeakerIdEnrollmentMode::IMMEDIATE) {
-      client->OnSpeakerIdEnrollmentDone();
+      mojo::Remote<chromeos::assistant::mojom::SpeakerIdEnrollmentClient>(
+          std::move(client))
+          ->OnSpeakerIdEnrollmentDone();
       return;
     }
     ASSERT_FALSE(speaker_id_enrollment_client_);
     processed_hotwords_ = 0;
-    speaker_id_enrollment_client_ = std::move(client);
+    speaker_id_enrollment_client_.Bind(std::move(client));
     speaker_id_enrollment_state_ = SpeakerIdEnrollmentState::REQUESTED;
   }
 
@@ -305,7 +309,8 @@ class FakeAssistantSettings
   // Speaker ID enrollment state:
   SpeakerIdEnrollmentState speaker_id_enrollment_state_ =
       SpeakerIdEnrollmentState::IDLE;
-  assistant::mojom::SpeakerIdEnrollmentClientPtr speaker_id_enrollment_client_;
+  mojo::Remote<assistant::mojom::SpeakerIdEnrollmentClient>
+      speaker_id_enrollment_client_;
   int processed_hotwords_ = 0;
 
   // Set of opt ins given by the user.

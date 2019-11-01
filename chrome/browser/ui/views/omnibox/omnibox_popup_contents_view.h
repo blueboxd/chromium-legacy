@@ -119,6 +119,8 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
 
   LocationBarView* location_bar_view_;
 
+  const ui::ThemeProvider* theme_provider_;
+
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsView);
 };
 

@@ -356,13 +356,6 @@ public class ContextualSearchBarControl {
     }
 
     /**
-     * @return The bounds adjustment for the SearchBar's search term.
-     */
-    public int getSearchBarTermBoundsAdjust() {
-        return mSearchTermControl.getBoundsAdjust();
-    }
-
-    /**
      * Sets the quick action if one is available.
      * @param quickActionUri The URI for the intent associated with the quick action.
      * @param quickActionCategory The {@link QuickActionCategory} for the quick action.

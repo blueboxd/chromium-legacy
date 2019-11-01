@@ -24,7 +24,7 @@ class TestDnsConfigChangeManagerClient
     manager_remote->RequestNotifications(receiver_.BindNewPipeAndPassRemote());
   }
 
-  void OnSystemDnsConfigChanged() override {
+  void OnDnsConfigChanged() override {
     num_notifications_++;
     if (num_notifications_ >= num_notifications_expected_)
       run_loop_.Quit();
@@ -68,17 +68,6 @@ TEST_F(DnsConfigChangeManagerTest, Notification) {
   EXPECT_EQ(0, client()->num_notifications());
 
   net::NetworkChangeNotifier::NotifyObserversOfDNSChangeForTests();
-  client()->WaitForNotification(1);
-  EXPECT_EQ(1, client()->num_notifications());
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, client()->num_notifications());
-}
-
-TEST_F(DnsConfigChangeManagerTest, Notification_InitialRead) {
-  EXPECT_EQ(0, client()->num_notifications());
-
-  net::NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests();
   client()->WaitForNotification(1);
   EXPECT_EQ(1, client()->num_notifications());
 

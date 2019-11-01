@@ -38,7 +38,6 @@ class FakeDiskMountManager : public MockDiskMountManager {
 
  private:
   void UnmountPath(const std::string& mount_path,
-                   UnmountOptions options,
                    UnmountPathCallback callback) override {
     unmounting_mount_paths_.push_back(mount_path);
     callbacks_.push_back(std::move(callback));

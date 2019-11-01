@@ -229,7 +229,7 @@ TEST_F(WebBluetoothServiceImplTest,
   EXPECT_FALSE(result->is_error_result());
   EXPECT_TRUE(service_->AreScanFiltersAllowed(filters));
 
-  contents()->SetVisibility(content::Visibility::HIDDEN);
+  contents()->SetVisibilityAndNotifyObservers(content::Visibility::HIDDEN);
 
   // The previously granted Bluetooth scanning permission should be revoked.
   EXPECT_FALSE(service_->AreScanFiltersAllowed(filters));
@@ -245,7 +245,7 @@ TEST_F(WebBluetoothServiceImplTest,
   RequestScanningStart(*filter, &client_impl);
   EXPECT_TRUE(service_->AreScanFiltersAllowed(filters));
 
-  contents()->SetVisibility(content::Visibility::OCCLUDED);
+  contents()->SetVisibilityAndNotifyObservers(content::Visibility::OCCLUDED);
 
   // The previously granted Bluetooth scanning permission should be revoked.
   EXPECT_FALSE(service_->AreScanFiltersAllowed(filters));

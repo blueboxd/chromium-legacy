@@ -272,7 +272,6 @@ WallpaperManager.prototype.placeWallpaperPicker_ = function() {
 
   var totalWidth = this.document_.body.offsetWidth;
   var totalHeight = this.document_.body.offsetHeight;
-  centerElement($('message-container'), totalWidth, null);
   centerElement($('top-header'), totalWidth, null);
   centerElement($('preview-spinner'), totalWidth, totalHeight);
 
@@ -330,8 +329,6 @@ WallpaperManager.prototype.placeWallpaperPicker_ = function() {
  */
 WallpaperManager.prototype.showError_ = function(errorMessage) {
     $('message-container').textContent = errorMessage;
-    centerElement(
-        $('message-container'), this.document_.body.offsetWidth, null);
     $('message-container').style.visibility = 'visible';
 };
 
@@ -1071,7 +1068,6 @@ WallpaperManager.prototype.showSuccessMessageAndQuit_ = function() {
   $('message-container').textContent = str('setSuccessfullyMessage');
   // Success message must be shown in full screen mode.
   chrome.app.window.current().fullscreen();
-  centerElement($('message-container'), this.document_.body.offsetWidth, null);
   $('message-container').style.visibility = 'visible';
   // Close the window after showing the success message.
   window.setTimeout(() => {

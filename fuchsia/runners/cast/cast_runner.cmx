@@ -1,8 +1,5 @@
 {
   "sandbox": {
-    "features": [
-      "deprecated-ambient-replace-as-executable"
-    ],
     "services": [
       "chromium.cast.ApplicationConfigManager",
       "fuchsia.deprecatedtimezone.Timezone",

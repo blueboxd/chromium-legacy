@@ -58,8 +58,8 @@ class WilcoDtcSupportdBridgeDelegateImpl final
 
   // Delegate overrides:
   void CreateWilcoDtcSupportdServiceFactoryMojoInvitation(
-      wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactoryPtr*
-          wilco_dtc_supportd_service_factory_mojo_ptr,
+      mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>*
+          wilco_dtc_supportd_service_factory_mojo_remote,
       base::ScopedFD* remote_endpoint_fd) override;
 
  private:
@@ -74,8 +74,8 @@ WilcoDtcSupportdBridgeDelegateImpl::~WilcoDtcSupportdBridgeDelegateImpl() =
 
 void WilcoDtcSupportdBridgeDelegateImpl::
     CreateWilcoDtcSupportdServiceFactoryMojoInvitation(
-        wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactoryPtr*
-            wilco_dtc_supportd_service_factory_mojo_ptr,
+        mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>*
+            wilco_dtc_supportd_service_factory_mojo_remote,
         base::ScopedFD* remote_endpoint_fd) {
   mojo::OutgoingInvitation invitation;
   mojo::PlatformChannel channel;
@@ -84,7 +84,7 @@ void WilcoDtcSupportdBridgeDelegateImpl::
   mojo::OutgoingInvitation::Send(std::move(invitation),
                                  base::kNullProcessHandle,
                                  channel.TakeLocalEndpoint());
-  wilco_dtc_supportd_service_factory_mojo_ptr->Bind(
+  wilco_dtc_supportd_service_factory_mojo_remote->Bind(
       mojo::InterfacePtrInfo<
           wilco_dtc_supportd::mojom::WilcoDtcSupportdServiceFactory>(
           std::move(server_pipe), 0 /* version */));
@@ -191,16 +191,16 @@ void WilcoDtcSupportdBridge::OnWaitedForDBusService(bool service_is_available) {
 }
 
 void WilcoDtcSupportdBridge::BootstrapMojoConnection() {
-  DCHECK(!wilco_dtc_supportd_service_factory_mojo_ptr_);
+  DCHECK(!wilco_dtc_supportd_service_factory_mojo_remote_);
 
   // Create a Mojo message pipe and attach
-  // |wilco_dtc_supportd_service_factory_mojo_ptr_| to its local endpoint.
+  // |wilco_dtc_supportd_service_factory_mojo_remote_| to its local endpoint.
   base::ScopedFD remote_endpoint_fd;
   delegate_->CreateWilcoDtcSupportdServiceFactoryMojoInvitation(
-      &wilco_dtc_supportd_service_factory_mojo_ptr_, &remote_endpoint_fd);
-  DCHECK(wilco_dtc_supportd_service_factory_mojo_ptr_);
+      &wilco_dtc_supportd_service_factory_mojo_remote_, &remote_endpoint_fd);
+  DCHECK(wilco_dtc_supportd_service_factory_mojo_remote_);
   DCHECK(remote_endpoint_fd.is_valid());
-  wilco_dtc_supportd_service_factory_mojo_ptr_.set_connection_error_handler(
+  wilco_dtc_supportd_service_factory_mojo_remote_.set_disconnect_handler(
       base::BindOnce(&WilcoDtcSupportdBridge::OnMojoConnectionError,
                      weak_ptr_factory_.GetWeakPtr()));
 
@@ -211,7 +211,7 @@ void WilcoDtcSupportdBridge::BootstrapMojoConnection() {
   mojo::PendingRemote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
       self_proxy;
   mojo_self_receiver_.Bind(self_proxy.InitWithNewPipeAndPassReceiver());
-  wilco_dtc_supportd_service_factory_mojo_ptr_->GetService(
+  wilco_dtc_supportd_service_factory_mojo_remote_->GetService(
       wilco_dtc_supportd_service_mojo_remote_.BindNewPipeAndPassReceiver(),
       std::move(self_proxy),
       base::BindOnce(&WilcoDtcSupportdBridge::OnMojoGetServiceCompleted,
@@ -229,7 +229,7 @@ void WilcoDtcSupportdBridge::OnBootstrappedMojoConnection(bool success) {
   if (success)
     return;
   DLOG(ERROR) << "Failed to establish Mojo connection to wilco_dtc_supportd";
-  wilco_dtc_supportd_service_factory_mojo_ptr_.reset();
+  wilco_dtc_supportd_service_factory_mojo_remote_.reset();
   wilco_dtc_supportd_service_mojo_remote_.reset();
   ScheduleWaitingForDBusService();
 }
@@ -245,7 +245,7 @@ void WilcoDtcSupportdBridge::OnMojoGetServiceCompleted() {
 void WilcoDtcSupportdBridge::OnMojoConnectionError() {
   DLOG(WARNING)
       << "Mojo connection to the wilco_dtc_supportd daemon got shut down";
-  wilco_dtc_supportd_service_factory_mojo_ptr_.reset();
+  wilco_dtc_supportd_service_factory_mojo_remote_.reset();
   wilco_dtc_supportd_service_mojo_remote_.reset();
   ScheduleWaitingForDBusService();
 }

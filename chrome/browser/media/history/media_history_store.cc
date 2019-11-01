@@ -4,8 +4,7 @@
 
 #include "chrome/browser/media/history/media_history_store.h"
 
-#include "chrome/browser/media/history/media_player_watchtime.h"
-#include "content/public/browser/media_player_id.h"
+#include "content/public/browser/media_player_watch_time.h"
 
 namespace {
 
@@ -37,17 +36,19 @@ class MediaHistoryStoreInternal
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);
   virtual ~MediaHistoryStoreInternal();
 
-  void SavePlayback(const content::MediaPlayerId& id,
-                    const content::MediaPlayerWatchtime& watchtime);
-
- private:
   // Opens the database file from the profile path. Separated from the
   // constructor to ease construction/destruction of this object on one thread
   // and database access on the DB sequence of |db_task_runner_|.
   void Initialize();
+
   sql::InitStatus CreateOrUpgradeIfNeeded();
   sql::InitStatus InitializeTables();
-  void CreateOriginId(const std::string& origin);
+  sql::Database* DB();
+
+  // Returns a flag indicating whether the origin id was created successfully.
+  bool CreateOriginId(const std::string& origin);
+
+  void SavePlayback(const content::MediaPlayerWatchTime& watch_time);
 
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
   base::FilePath db_path_;
@@ -78,17 +79,28 @@ MediaHistoryStoreInternal::~MediaHistoryStoreInternal() {
   db_task_runner_->DeleteSoon(FROM_HERE, std::move(db_));
 }
 
+sql::Database* MediaHistoryStoreInternal::DB() {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  return db_.get();
+}
+
 void MediaHistoryStoreInternal::SavePlayback(
-    const content::MediaPlayerId& id,
-    const content::MediaPlayerWatchtime& watchtime) {
+    const content::MediaPlayerWatchTime& watch_time) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!initialization_successful_)
     return;
 
-  CreateOriginId(watchtime.origin);
-  db_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&MediaHistoryPlaybackTable::SavePlayback,
-                                playback_table_, id, watchtime));
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  if (CreateOriginId(watch_time.origin.spec()) &&
+      playback_table_->SavePlayback(watch_time)) {
+    DB()->CommitTransaction();
+  } else {
+    DB()->RollbackTransaction();
+  }
 }
 
 void MediaHistoryStoreInternal::Initialize() {
@@ -145,14 +157,12 @@ sql::InitStatus MediaHistoryStoreInternal::InitializeTables() {
   return status;
 }
 
-void MediaHistoryStoreInternal::CreateOriginId(const std::string& origin) {
+bool MediaHistoryStoreInternal::CreateOriginId(const std::string& origin) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!initialization_successful_)
-    return;
+    return false;
 
-  db_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&MediaHistoryOriginTable::CreateOriginId,
-                                origin_table_, origin));
+  return origin_table_->CreateOriginId(origin);
 }
 
 MediaHistoryStore::MediaHistoryStore(
@@ -164,5 +174,15 @@ MediaHistoryStore::MediaHistoryStore(
 }
 
 MediaHistoryStore::~MediaHistoryStore() {}
+
+void MediaHistoryStore::SavePlayback(
+    const content::MediaPlayerWatchTime& watch_time) {
+  if (!db_->initialization_successful_)
+    return;
+
+  db_->db_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::SavePlayback, db_,
+                                watch_time));
+}
 
 }  // namespace media_history

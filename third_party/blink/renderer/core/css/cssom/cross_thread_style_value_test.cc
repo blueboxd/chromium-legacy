@@ -96,7 +96,7 @@ TEST_F(CrossThreadStyleValueTest, PassUnsupportedValueCrossThread) {
 
   // Use a Thread to emulate worklet thread.
   thread_ = blink::Thread::CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
+      ThreadCreationParams(ThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,
@@ -127,7 +127,7 @@ TEST_F(CrossThreadStyleValueTest, PassUnparsedValueCrossThread) {
 
   // Use a Thread to emulate worklet thread.
   thread_ = blink::Thread::CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
+      ThreadCreationParams(ThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,
@@ -159,7 +159,7 @@ TEST_F(CrossThreadStyleValueTest, PassKeywordValueCrossThread) {
 
   // Use a Thread to emulate worklet thread.
   thread_ = blink::Thread::CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
+      ThreadCreationParams(ThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,
@@ -191,7 +191,7 @@ TEST_F(CrossThreadStyleValueTest, PassUnitValueCrossThread) {
 
   // Use a Thread to emulate worklet thread.
   thread_ = blink::Thread::CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
+      ThreadCreationParams(ThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,
@@ -223,7 +223,7 @@ TEST_F(CrossThreadStyleValueTest, PassColorValueCrossThread) {
 
   // Use a Thread to emulate worklet thread.
   thread_ = blink::Thread::CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread).SetSupportsGC(true));
+      ThreadCreationParams(ThreadType::kTestThread).SetSupportsGC(true));
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *thread_->GetTaskRunner(), FROM_HERE,

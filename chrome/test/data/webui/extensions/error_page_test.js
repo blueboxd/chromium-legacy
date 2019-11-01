@@ -3,42 +3,43 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for extensions-detail-view. */
-cr.define('extension_error_page_tests', function() {
+import 'chrome://extensions/extensions.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {isVisible} from '../test_util.m.js';
+
+import {ClickMock, createExtensionInfo} from './test_util.js';
+
+  window.extension_error_page_tests = {};
+  extension_error_page_tests.suiteName = 'ExtensionErrorPageTest';
   /** @enum {string} */
-  const TestNames = {
+  extension_error_page_tests.TestNames = {
     Layout: 'layout',
     CodeSection: 'code section',
     ErrorSelection: 'error selection',
   };
 
-  /**
-   * @constructor
-   * @extends {extension_test_util.ClickMock}
-   * @implements {extensions.ErrorPageDelegate}
-   */
-  function MockErrorPageDelegate() {}
-
-  MockErrorPageDelegate.prototype = {
-    __proto__: extension_test_util.ClickMock.prototype,
+  /** @implements {ErrorPageDelegate} */
+  class MockErrorPageDelegate extends ClickMock {
+    /** @override */
+    deleteErrors(extensionId, errorIds, type) {}
 
     /** @override */
-    deleteErrors: function(extensionId, errorIds, type) {},
-
-    /** @override */
-    requestFileSource: function(args) {
+    requestFileSource(args) {
       this.requestFileSourceArgs = args;
       this.requestFileSourceResolver = new PromiseResolver();
       return this.requestFileSourceResolver.promise;
-    },
-  };
+    }
+  }
 
-  const suiteName = 'ExtensionErrorPageTest';
-
-  suite(suiteName, function() {
+  suite(extension_error_page_tests.suiteName, function() {
     /** @type {chrome.developerPrivate.ExtensionInfo} */
     let extensionData;
 
-    /** @type {extensions.ErrorPage} */
+    /** @type {ExtensionsErrorPageElement} */
     let errorPage;
 
     /** @type {MockErrorPageDelegate} */
@@ -71,21 +72,21 @@ cr.define('extension_error_page_tests', function() {
             severity: chrome.developerPrivate.ErrorLevel.ERROR,
           },
           runtimeErrorBase);
-      extensionData = extension_test_util.createExtensionInfo({
+      extensionData = createExtensionInfo({
         runtimeErrors: [runtimeError],
         manifestErrors: [],
       });
-      errorPage = new extensions.ErrorPage();
+      errorPage = document.createElement('extensions-error-page');
       mockDelegate = new MockErrorPageDelegate();
       errorPage.delegate = mockDelegate;
       errorPage.data = extensionData;
       document.body.appendChild(errorPage);
     });
 
-    test(assert(TestNames.Layout), function() {
-      Polymer.dom.flush();
+    test(assert(extension_error_page_tests.TestNames.Layout), function() {
+      flush();
 
-      const testIsVisible = test_util.isVisible.bind(null, errorPage);
+      const testIsVisible = isVisible.bind(null, errorPage);
       expectTrue(testIsVisible('#closeButton'));
       expectTrue(testIsVisible('#heading'));
       expectTrue(testIsVisible('#errorsList'));
@@ -106,7 +107,7 @@ cr.define('extension_error_page_tests', function() {
           },
           manifestErrorBase);
       errorPage.set('data.manifestErrors', [manifestError]);
-      Polymer.dom.flush();
+      flush();
       errorElements = errorPage.shadowRoot.querySelectorAll('.error-item');
       expectEquals(2, errorElements.length);
       error = errorElements[0];
@@ -120,31 +121,34 @@ cr.define('extension_error_page_tests', function() {
           [extensionId, [manifestError.id]]);
     });
 
-    test(assert(TestNames.CodeSection), function(done) {
-      Polymer.dom.flush();
+    test(
+        assert(extension_error_page_tests.TestNames.CodeSection),
+        function(done) {
+          flush();
 
-      expectTrue(!!mockDelegate.requestFileSourceArgs);
-      args = mockDelegate.requestFileSourceArgs;
-      expectEquals(extensionId, args.extensionId);
-      expectEquals('source.html', args.pathSuffix);
-      expectEquals('message', args.message);
+          assertTrue(!!mockDelegate.requestFileSourceArgs);
+          const args = mockDelegate.requestFileSourceArgs;
+          expectEquals(extensionId, args.extensionId);
+          expectEquals('source.html', args.pathSuffix);
+          expectEquals('message', args.message);
 
-      expectTrue(!!mockDelegate.requestFileSourceResolver);
-      const code = {
-        beforeHighlight: 'foo',
-        highlight: 'bar',
-        afterHighlight: 'baz',
-        message: 'quu',
-      };
-      mockDelegate.requestFileSourceResolver.resolve(code);
-      mockDelegate.requestFileSourceResolver.promise.then(function() {
-        Polymer.dom.flush();
-        expectEquals(code, errorPage.$$('extensions-code-section').code);
-        done();
-      });
-    });
+          expectTrue(!!mockDelegate.requestFileSourceResolver);
+          const code = {
+            beforeHighlight: 'foo',
+            highlight: 'bar',
+            afterHighlight: 'baz',
+            message: 'quu',
+          };
+          mockDelegate.requestFileSourceResolver.resolve(code);
+          mockDelegate.requestFileSourceResolver.promise.then(function() {
+            flush();
+            expectEquals(code, errorPage.$$('extensions-code-section').code);
+            done();
+          });
+        });
 
-    test(assert(TestNames.ErrorSelection), function() {
+    test(assert(extension_error_page_tests.TestNames.ErrorSelection),
+        function() {
       const nextRuntimeError = Object.assign(
           {
             source: 'chrome-extension://' + extensionId + '/other_source.html',
@@ -160,7 +164,7 @@ cr.define('extension_error_page_tests', function() {
           runtimeErrorBase);
       // Add a new runtime error to the end.
       errorPage.push('data.runtimeErrors', nextRuntimeError);
-      Polymer.dom.flush();
+      flush();
 
       const errorElements =
           errorPage.shadowRoot.querySelectorAll('.error-item .start');
@@ -185,7 +189,7 @@ cr.define('extension_error_page_tests', function() {
 
       // Tap the second error. It should now be selected and we should request
       // the source for it.
-      MockInteractions.tap(errorElements[1]);
+      errorElements[1].click();
       expectEquals(nextRuntimeError, errorPage.getSelectedError());
       expectTrue(!!mockDelegate.requestFileSourceArgs);
       args = mockDelegate.requestFileSourceArgs;
@@ -201,9 +205,3 @@ cr.define('extension_error_page_tests', function() {
           ironCollapses[1].querySelector('.context-url').textContent.trim());
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

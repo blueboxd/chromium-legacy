@@ -31,9 +31,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_CHROMEOS)
@@ -64,9 +62,7 @@ std::unique_ptr<InvalidationService> CreateInvalidationServiceForSenderId(
           profile->GetPrefs(),
           base::RetainedRef(
               content::BrowserContext::GetDefaultStoragePartition(profile)
-                  ->GetURLLoaderFactoryForBrowserProcess()),
-          base::BindRepeating(&data_decoder::SafeJsonParser::Parse,
-                              content::GetSystemConnector())),
+                  ->GetURLLoaderFactoryForBrowserProcess())),
       instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
           ->driver(),
       profile->GetPrefs(), sender_id);

@@ -30,8 +30,8 @@ import android.widget.TextView.OnEditorActionListener;
 import org.chromium.weblayer.BrowserCallback;
 import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.BrowserFragmentController;
-import org.chromium.weblayer.DownloadDelegate;
-import org.chromium.weblayer.FullscreenDelegate;
+import org.chromium.weblayer.DownloadCallback;
+import org.chromium.weblayer.FullscreenCallback;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Profile;
@@ -113,8 +113,8 @@ public class WebLayerShellActivity extends FragmentActivity {
             // If activity is re-created during process restart, FragmentManager attaches
             // BrowserFragment immediately, resulting in synchronous init. By the time this line
             // executes, the synchronous init has already happened.
-            WebLayer.create(getApplication()).addCallback(webLayer -> onWebLayerReady(
-                    savedInstanceState));
+            WebLayer.create(getApplication())
+                    .addCallback(webLayer -> onWebLayerReady(savedInstanceState));
         } catch (UnsupportedVersionException e) {
             throw new RuntimeException("Failed to initialize WebLayer", e);
         }
@@ -125,8 +125,8 @@ public class WebLayerShellActivity extends FragmentActivity {
 
         Fragment fragment = getOrCreateBrowserFragment(savedInstanceState);
         mBrowserFragmentController = BrowserFragmentController.fromFragment(fragment);
-        mBrowserFragmentController.getBrowserController().setFullscreenDelegate(
-                new FullscreenDelegate() {
+        mBrowserFragmentController.getBrowserController().setFullscreenCallback(
+                new FullscreenCallback() {
                     private int mSystemVisibilityToRestore;
 
                     @Override
@@ -191,7 +191,7 @@ public class WebLayerShellActivity extends FragmentActivity {
                         mLoadProgressBar.setProgress((int) Math.round(100 * progress));
                     }
                 });
-        mBrowserController.setDownloadDelegate(new DownloadDelegate() {
+        mBrowserController.setDownloadCallback(new DownloadCallback() {
             @Override
             public void downloadRequested(String url, String userAgent, String contentDisposition,
                     String mimetype, long contentLength) {
@@ -264,8 +264,8 @@ public class WebLayerShellActivity extends FragmentActivity {
     @Override
     public void onBackPressed() {
         if (mBrowserFragmentController != null) {
-            NavigationController controller = mBrowserFragmentController.getBrowserController()
-                    .getNavigationController();
+            NavigationController controller =
+                    mBrowserFragmentController.getBrowserController().getNavigationController();
             if (controller.canGoBack()) {
                 controller.goBack();
                 return;

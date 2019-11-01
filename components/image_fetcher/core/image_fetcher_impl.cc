@@ -51,8 +51,8 @@ void ImageFetcherImpl::FetchImageAndData(
     image_data_fetcher_->FetchImageData(
         image_url,
         base::BindOnce(&ImageFetcherImpl::OnImageURLFetched,
-                       base::Unretained(this), image_url, std::move(params)),
-        params.traffic_annotation());
+                       base::Unretained(this), image_url, params),
+        params);
   } else {
     ImageRequest* request = &it->second;
     // Request in progress. Register as an interested callback.

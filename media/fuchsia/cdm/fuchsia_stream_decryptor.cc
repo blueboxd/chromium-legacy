@@ -69,8 +69,8 @@ fuchsia::media::FormatDetails GetClearFormatDetails(
     const std::string& placeholder_key_id) {
   fuchsia::media::EncryptedFormat encrypted_format;
   encrypted_format.set_scheme(fuchsia::media::ENCRYPTION_SCHEME_CENC)
-      .set_key_id_temp(std::vector<uint8_t>(placeholder_key_id.begin(),
-                                            placeholder_key_id.end()))
+      .set_key_id(std::vector<uint8_t>(placeholder_key_id.begin(),
+                                       placeholder_key_id.end()))
       .set_init_vector(std::vector<uint8_t>(DecryptConfig::kDecryptionKeySize));
 
   std::vector<fuchsia::media::SubsampleEntry> subsamples(1);
@@ -90,8 +90,8 @@ fuchsia::media::FormatDetails GetEncryptedFormatDetails(
 
   fuchsia::media::EncryptedFormat encrypted_format;
   encrypted_format.set_scheme(GetEncryptionScheme(config->encryption_mode()))
-      .set_key_id_temp(std::vector<uint8_t>(config->key_id().begin(),
-                                            config->key_id().end()))
+      .set_key_id(std::vector<uint8_t>(config->key_id().begin(),
+                                       config->key_id().end()))
       .set_init_vector(
           std::vector<uint8_t>(config->iv().begin(), config->iv().end()))
       .set_subsamples(GetSubsamples(config->subsamples()));

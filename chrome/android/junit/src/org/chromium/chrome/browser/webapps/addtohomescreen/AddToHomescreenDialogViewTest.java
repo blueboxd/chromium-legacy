@@ -20,7 +20,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenProperties.AppType;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -136,12 +135,12 @@ public class AddToHomescreenDialogViewTest {
     }
 
     /**
-     * Tests the view for {@link AppType#WEB_APK}.
+     * Tests the view for {@link AppType#WEBAPK}.
      */
     @Test
     @Feature({"Webapp"})
     public void testWebAPK() {
-        initDialogView(AppType.WEB_APK);
+        initDialogView(AppType.WEBAPK);
         mAddToHomescreenDialogView.setUrl(TEST_URL);
 
         assertVisibility(R.id.spinny, false);
@@ -205,8 +204,8 @@ public class AddToHomescreenDialogViewTest {
     public void testAddButtonState() {
         PropertyModel shownDialogModel = mModalDialogManager.getShownDialogModel();
 
-        // Assert 'Add' will be enabled for AppType#WEB_APK after #setCanSubmit(true) is called.
-        mAddToHomescreenDialogView.setType(AppType.WEB_APK);
+        // Assert 'Add' will be enabled for AppType#WEBAPK after #setCanSubmit(true) is called.
+        mAddToHomescreenDialogView.setType(AppType.WEBAPK);
         Assert.assertTrue(shownDialogModel.get(ModalDialogProperties.POSITIVE_BUTTON_DISABLED));
         mAddToHomescreenDialogView.setCanSubmit(true);
         Assert.assertFalse(shownDialogModel.get(ModalDialogProperties.POSITIVE_BUTTON_DISABLED));
@@ -279,7 +278,7 @@ public class AddToHomescreenDialogViewTest {
     @Test
     @Feature({"Webapp"})
     public void testInstallCallback() {
-        initDialogView(AppType.WEB_APK);
+        initDialogView(AppType.WEBAPK);
         PropertyModel shownDialogModel = mModalDialogManager.getShownDialogModel();
         Assert.assertEquals(0, mAddCallback.getCallCount());
         shownDialogModel.get(ModalDialogProperties.CONTROLLER)

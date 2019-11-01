@@ -28,7 +28,7 @@ std::string ComputeMurmur2Hash(const std::string& raw_image_data) {
   // image's raw, unsanitized bytes from the web. |raw_image_data| may contain
   // malicious data. Decoding unsanitized bitmap data to an SkBitmap in the
   // browser process is a security bug.
-  uint64_t hash = MurmurHash64A(&raw_image_data.front(), raw_image_data.size(),
+  uint64_t hash = MurmurHash64A(raw_image_data.data(), raw_image_data.size(),
                                 kMurmur2HashSeed);
   return base::NumberToString(hash);
 }

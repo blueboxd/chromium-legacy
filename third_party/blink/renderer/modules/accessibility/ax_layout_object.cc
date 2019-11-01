@@ -1258,7 +1258,8 @@ void AXLayoutObject::LoadInlineTextBoxes() {
 }
 
 static bool ShouldUseLayoutNG(const LayoutObject& layout_object) {
-  return (layout_object.IsLayoutInline() || layout_object.IsText()) &&
+  return (layout_object.IsInline() || layout_object.IsLayoutInline() ||
+          layout_object.IsText()) &&
          layout_object.ContainingNGBlockFlow();
 }
 
@@ -1268,10 +1269,12 @@ static bool ShouldUseLayoutNG(const LayoutObject& layout_object) {
 // See also |PreviousOnLineInternalNG()| which is identical except for using
 // "next" and |back()| instead of "previous" and |front()|.
 static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
-  DCHECK(ax_object.GetLayoutObject());
+  DCHECK(!ax_object.IsDetached());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
-  DCHECK(!layout_object.IsListMarkerIncludingNG()) << layout_object;
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
+  if (layout_object.IsListMarkerIncludingNG())
+    return nullptr;
+
   const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
   if (fragments.IsEmpty() || !fragments.IsInLayoutNGInlineFormattingContext())
     return nullptr;
@@ -1346,10 +1349,12 @@ AXObject* AXLayoutObject::NextOnLine() const {
 // |NextOnLineNG()| which is identical except for using "previous" and |front()|
 // instead of "next" and |back()|.
 static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
-  DCHECK(ax_object.GetLayoutObject());
+  DCHECK(!ax_object.IsDetached());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
-  DCHECK(!layout_object.IsListMarkerIncludingNG()) << layout_object;
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
+  if (layout_object.IsListMarkerIncludingNG())
+    return nullptr;
+
   const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
   if (fragments.IsEmpty() || !fragments.IsInLayoutNGInlineFormattingContext())
     return nullptr;

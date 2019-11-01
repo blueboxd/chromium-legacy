@@ -6,6 +6,7 @@
 #define MEDIA_BASE_PIPELINE_STATUS_H_
 
 #include <stdint.h>
+#include <iosfwd>
 #include <string>
 
 #include "base/callback.h"
@@ -57,6 +58,13 @@ enum PipelineStatus {
   // Must be equal to the largest value ever logged.
   PIPELINE_STATUS_MAX = DEMUXER_ERROR_DETECTED_HLS,
 };
+
+// Returns a string version of the status, unique to each PipelineStatus, and
+// not including any ':'. This makes it suitable for usage in
+// MediaError.message as the UA-specific-error-code.
+MEDIA_EXPORT std::string PipelineStatusToString(PipelineStatus status);
+
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& out, PipelineStatus status);
 
 // TODO(crbug.com/1007799): Delete PipelineStatusCB once all callbacks are
 //                          converted to PipelineStatusCallback.

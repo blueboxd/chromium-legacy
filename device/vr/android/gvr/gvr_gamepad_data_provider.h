@@ -65,11 +65,6 @@ class GvrGamepadDataProvider {
   // GamepadDataFetcherFactory with the GamepadDataFetcherManager as
   // needed.
   virtual void UpdateGamepadData(GvrGamepadData data) = 0;
-
-  // Called by the gamepad data fetcher constructor to register itself
-  // for receiving data via SetGamepadData. The fetcher must remain
-  // alive while the provider is calling SetGamepadData on it.
-  virtual void RegisterGvrGamepadDataFetcher(GvrGamepadDataFetcher*) = 0;
 };
 
 }  // namespace device

@@ -53,6 +53,7 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
   const GpuPreferences& GetGpuPreferences() const override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   viz::GpuVSyncCallback GetGpuVSyncCallback() override;
+  base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
  private:
   bool HandleMessage(const IPC::Message& message) override;

@@ -232,7 +232,7 @@ class ToolbarView : public views::AccessiblePaneView,
   views::View* GetDefaultExtensionDialogAnchorView() override;
   PageActionIconView* GetPageActionIconView(PageActionIconType type) override;
   AppMenuButton* GetAppMenuButton() override;
-  gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
+  gfx::Rect GetFindBarBoundingBox(int contents_bottom) const override;
   void FocusToolbar() override;
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
   views::View* GetAnchorView(PageActionIconType type) override;

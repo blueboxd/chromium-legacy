@@ -199,7 +199,7 @@ void ExternalCacheImpl::OnExtensionDownloadFailed(
     extensions::ExtensionDownloaderDelegate::Error error,
     const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
     const std::set<int>& request_ids) {
-  if (error == NO_UPDATE_AVAILABLE) {
+  if (error == Error::NO_UPDATE_AVAILABLE) {
     if (!cached_extensions_->HasKey(id)) {
       LOG(ERROR) << "ExternalCacheImpl extension " << id
                  << " not found on update server";
@@ -210,7 +210,7 @@ void ExternalCacheImpl::OnExtensionDownloadFailed(
     }
   } else {
     LOG(ERROR) << "ExternalCacheImpl failed to download extension " << id
-               << ", error " << error;
+               << ", error " << static_cast<int>(error);
     delegate_->OnExtensionDownloadFailed(id);
   }
 }

@@ -4,9 +4,14 @@
 
 #include "ash/home_screen/home_screen_controller.h"
 
+#include <vector>
+
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_delegate.h"
+#include "ash/home_screen/window_transform_to_home_screen_animation.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -16,26 +21,27 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
 
 namespace ash {
 namespace {
 
-// Minimizes all windows that aren't in the home screen container. Done in
-// reverse order to preserve the mru ordering.
+// Minimizes all windows in |windows| that aren't in the home screen container,
+// and are not in |windows_to_ignore|. Done in reverse order to preserve the mru
+// ordering.
 // Returns true if any windows are minimized.
-bool MinimizeAllWindows() {
+bool MinimizeAllWindows(const aura::Window::Windows& windows,
+                        const aura::Window::Windows& windows_to_ignore) {
   bool handled = false;
   aura::Window* container = Shell::Get()->GetPrimaryRootWindow()->GetChildById(
       kShellWindowId_HomeScreenContainer);
-  // The home screen opens for the current active desk, there's no need to
-  // minimize windows in the inactive desks.
-  aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   for (auto it = windows.rbegin(); it != windows.rend(); it++) {
-    if (!container->Contains(*it) && !WindowState::Get(*it)->IsMinimized()) {
+    if (!container->Contains(*it) && !base::Contains(windows_to_ignore, *it) &&
+        !WindowState::Get(*it)->IsMinimized()) {
       WindowState::Get(*it)->Minimize();
       handled = true;
     }
@@ -74,31 +80,105 @@ void HomeScreenController::Show() {
 bool HomeScreenController::GoHome(int64_t display_id) {
   DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
-  if (home_launcher_gesture_handler_->ShowHomeLauncher(
-          Shell::Get()->display_manager()->GetDisplayForId(display_id))) {
-    return true;
-  }
-
-  if (Shell::Get()->overview_controller()->InOverviewSession()) {
-    // End overview mode.
-    Shell::Get()->overview_controller()->EndOverview(
-        OverviewSession::EnterExitOverviewType::kSlideOutExit);
-    return true;
-  }
-
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
-  if (split_view_controller->InSplitViewMode()) {
+  const bool split_view_active = split_view_controller->InSplitViewMode();
+
+  if (!features::IsHomerviewGestureEnabled()) {
+    if (home_launcher_gesture_handler_->ShowHomeLauncher(
+            Shell::Get()->display_manager()->GetDisplayForId(display_id))) {
+      return true;
+    }
+
+    if (overview_controller->InOverviewSession()) {
+      // End overview mode.
+      overview_controller->EndOverview(
+          OverviewSession::EnterExitOverviewType::kSlideOutExit);
+      return true;
+    }
+
+    if (split_view_active) {
+      // End split view mode.
+      split_view_controller->EndSplitView(
+          SplitViewController::EndReason::kHomeLauncherPressed);
+      return true;
+    }
+
+    // The home screen opens for the current active desk, there's no need to
+    // minimize windows in the inactive desks.
+    if (MinimizeAllWindows(
+            Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(
+                kActiveDesk),
+            {} /*windows_to_ignore*/)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // The home screen opens for the current active desk, there's no need to
+  // minimize windows in the inactive desks.
+  aura::Window::Windows windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
+
+  // The foreground window or windows (for split mode) - the windows that will
+  // not be minimized without animations (instead they wil bee animated into the
+  // home screen).
+  std::vector<aura::Window*> active_windows;
+  if (split_view_active) {
+    active_windows = {split_view_controller->left_window(),
+                      split_view_controller->right_window()};
+    base::EraseIf(active_windows, [](aura::Window* window) { return !window; });
+  } else if (!windows.empty() && !WindowState::Get(windows[0])->IsMinimized()) {
+    active_windows.push_back(windows[0]);
+  }
+
+  if (split_view_active) {
     // End split view mode.
     split_view_controller->EndSplitView(
         SplitViewController::EndReason::kHomeLauncherPressed);
+
+    // If overview session is active (e.g. on one side of the split view), end
+    // it immediately, to prevent overview UI being visible while transitioning
+    // to home screen.
+    if (overview_controller->InOverviewSession()) {
+      overview_controller->EndOverview(
+          OverviewSession::EnterExitOverviewType::kImmediateExit);
+    }
+  }
+
+  // If overview is active (if overview was active in split view, it exited by
+  // this point), just fade it out to home screen.
+  if (overview_controller->InOverviewSession()) {
+    overview_controller->EndOverview(
+        OverviewSession::EnterExitOverviewType::kFadeOutExit);
     return true;
   }
 
-  if (MinimizeAllWindows())
-    return true;
+  // First minimize all inactive windows.
+  const bool window_minimized =
+      MinimizeAllWindows(windows, active_windows /*windows_to_ignore*/);
 
-  return false;
+  // Animate currently active windows into the home screen - they will be
+  // minimized by WindowTransformToHomeScreenAnimation when the transition
+  // finishes.
+  for (auto* active_window : active_windows) {
+    BackdropWindowMode original_backdrop_mode =
+        active_window->GetProperty(kBackdropWindowMode);
+    active_window->SetProperty(kBackdropWindowMode,
+                               BackdropWindowMode::kDisabled);
+
+    // Do the scale-down transform for the entire transient tree.
+    for (auto* window : GetTransientTreeIterator(active_window)) {
+      // Self-destructed when window transform animation is done.
+      new WindowTransformToHomeScreenAnimation(
+          window, window == active_window
+                      ? base::make_optional(original_backdrop_mode)
+                      : base::nullopt);
+    }
+  }
+  return window_minimized || !active_windows.empty();
 }
 
 void HomeScreenController::SetDelegate(HomeScreenDelegate* delegate) {
@@ -168,6 +248,10 @@ void HomeScreenController::OnOverviewModeEndingAnimationComplete(
   overview_exit_type_ = base::nullopt;
 
   home_screen_presenter_.ScheduleOverviewModeAnimation(transition, animate);
+
+  // Make sure the window visibility is updated, in case it was previously
+  // hidden due to overview being shown.
+  UpdateVisibility();
 }
 
 void HomeScreenController::OnWallpaperPreviewStarted() {

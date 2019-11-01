@@ -20,9 +20,9 @@
                type="BINDATA"
                compress="gzip" />
       <include name="IDR_EXTENSIONS_CRISPER_JS"
-               file="${root_gen_dir}\chrome\browser\resources\extensions\crisper.js"
+               file="${root_gen_dir}\chrome\browser\resources\extensions\extensions.js"
                use_base_dir="false"
-               flattenhtml="true"
+               preprocess="true"
                type="BINDATA"
                compress="gzip" />
     </includes>

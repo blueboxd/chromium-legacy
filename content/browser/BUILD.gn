@@ -306,6 +306,12 @@ jumbo_source_set("browser") {
     "../common/service_manager/child_connection.h",
     "about_url_loader_factory.cc",
     "about_url_loader_factory.h",
+    "accessibility/accessibility_event_recorder.cc",
+    "accessibility/accessibility_event_recorder.h",
+    "accessibility/accessibility_event_recorder_mac.mm",
+    "accessibility/accessibility_event_recorder_uia_win.cc",
+    "accessibility/accessibility_event_recorder_uia_win.h",
+    "accessibility/accessibility_event_recorder_win.cc",
     "accessibility/accessibility_tree_formatter_base.cc",
     "accessibility/accessibility_tree_formatter_base.h",
     "accessibility/accessibility_tree_formatter_blink.cc",
@@ -2035,7 +2041,10 @@ jumbo_source_set("browser") {
   }
 
   if (is_fuchsia) {
-    sources += [ "child_process_launcher_helper_fuchsia.cc" ]
+    sources += [
+      "child_process_launcher_helper_fuchsia.cc",
+      "speech/tts_fuchsia.cc",
+    ]
     deps += [ "//third_party/fuchsia-sdk/sdk:zx" ]
   } else if (is_posix) {
     sources += [
@@ -2276,6 +2285,7 @@ jumbo_source_set("browser") {
 
   if (use_atk) {
     sources += [
+      "accessibility/accessibility_event_recorder_auralinux.cc",
       "accessibility/accessibility_tree_formatter_auralinux.cc",
       "accessibility/accessibility_tree_formatter_utils_auralinux.cc",
       "accessibility/accessibility_tree_formatter_utils_auralinux.h",

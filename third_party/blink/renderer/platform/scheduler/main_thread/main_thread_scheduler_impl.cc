@@ -761,7 +761,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
   // they're not supposed to.
   if (main_thread_only().virtual_time_stopped &&
       main_thread_only().use_virtual_time &&
-      task_queue->ShouldUseVirtualTime()) {
+      !task_queue->CanRunWhenVirtualTimePaused()) {
     task_queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   }
 
@@ -792,7 +792,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTimerTaskQueue(
                           .SetCanBeDeferred(true)
                           .SetCanBeThrottled(true)
                           .SetFrameScheduler(frame_scheduler)
-                          .SetCanRunWhenVirtualTimePaused(true));
+                          .SetCanRunWhenVirtualTimePaused(false));
 }
 
 std::unique_ptr<WebRenderWidgetSchedulingState>
@@ -1833,7 +1833,7 @@ void MainThreadSchedulerImpl::SetVirtualTimeStopped(bool virtual_time_stopped) {
 
 void MainThreadSchedulerImpl::VirtualTimePaused() {
   for (const auto& pair : task_runners_) {
-    if (!pair.first->ShouldUseVirtualTime())
+    if (pair.first->CanRunWhenVirtualTimePaused())
       continue;
     DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
     pair.first->InsertFence(TaskQueue::InsertFencePosition::kNow);
@@ -1842,7 +1842,7 @@ void MainThreadSchedulerImpl::VirtualTimePaused() {
 
 void MainThreadSchedulerImpl::VirtualTimeResumed() {
   for (const auto& pair : task_runners_) {
-    if (!pair.first->ShouldUseVirtualTime())
+    if (pair.first->CanRunWhenVirtualTimePaused())
       continue;
     DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
     DCHECK(pair.first->HasActiveFence());

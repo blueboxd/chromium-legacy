@@ -255,6 +255,14 @@ class AndroidNetworkLibrary {
      */
     @CalledByNative
     public static int getWifiSignalLevel(int countBuckets) {
+        // Some devices unexpectedly have a null context. See https://crbug.com/1019974.
+        if (ContextUtils.getApplicationContext() == null) {
+            return -1;
+        }
+        if (ContextUtils.getApplicationContext().getContentResolver() == null) {
+            return -1;
+        }
+
         Intent intent = null;
         try {
             intent = ContextUtils.getApplicationContext().registerReceiver(

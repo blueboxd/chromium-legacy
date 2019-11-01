@@ -207,7 +207,7 @@ class NetworkServiceAsyncSocket : public jingle_xmpp::AsyncSocket,
   // |socket_factory_| is recreated every time via |get_socket_factory_callback|
   // to handle network service restarts after crashes.
   GetProxyResolvingSocketFactoryCallback get_socket_factory_callback_;
-  network::mojom::ProxyResolvingSocketFactoryPtr socket_factory_;
+  mojo::Remote<network::mojom::ProxyResolvingSocketFactory> socket_factory_;
   // The handle to the proxy resolving socket for the current connection, if one
   // exists.
   mojo::Remote<network::mojom::ProxyResolvingSocket> socket_;

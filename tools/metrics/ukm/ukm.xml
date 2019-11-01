@@ -5332,6 +5332,21 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PageInfoBubble">
+  <owner>chlily@chromium.org</owner>
+  <summary>
+    Recorded when an action on the Page Info Bubble (aka Origin Info Bubble or
+    WebsiteSettings Bubble) is taken. May be recorded multiple times for a
+    single page visit.
+  </summary>
+  <metric name="ActionTaken" enum="WebsiteSettingsAction">
+    <summary>
+      Records an enum value representing which action on the Page Info Bubble
+      was taken.
+    </summary>
+  </metric>
+</event>
+
 <event name="PageLoad" singular="True">
   <owner>bmcquade@chromium.org</owner>
   <summary>
@@ -7067,7 +7082,7 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="ThreadType">
     <summary>
-      blink::WebThreadType for the thread the current task was executed on.
+      blink::ThreadType for the thread the current task was executed on.
     </summary>
   </metric>
   <metric name="UseCase">

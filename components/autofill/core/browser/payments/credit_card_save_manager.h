@@ -224,15 +224,13 @@ class CreditCardSaveManager {
   // Only relevant for mobile as fix flow is two steps on mobile compared to
   // one step on desktop.
   void OnUserDidAcceptAccountNameFixFlow(const base::string16& cardholder_name);
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
-#if defined(OS_ANDROID)
   // Upload the card details with the user provided expiration date month and
   // year. Only relevant for mobile as fix flow is two steps on mobile compared
   // to one step on desktop.
   void OnUserDidAcceptExpirationDateFixFlow(const base::string16& month,
                                             const base::string16& year);
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   // Helper function that calls SendUploadCardRequest by setting
   // UserProvidedCardDetails.

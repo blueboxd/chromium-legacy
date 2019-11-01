@@ -353,9 +353,7 @@ class AutofillClient : public RiskDataLoader {
   // the card should be uploaded to payments with updated name from the user.
   virtual void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) = 0;
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
-#if defined(OS_ANDROID)
   // Display the expiration date fix flow prompt with the |card| details
   // and run the |callback| if the card should be uploaded to payments with
   // updated expiration date from the user.
@@ -363,7 +361,7 @@ class AutofillClient : public RiskDataLoader {
       const CreditCard& card,
       base::OnceCallback<void(const base::string16&, const base::string16&)>
           callback) = 0;
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   // Runs |callback| once the user makes a decision with respect to the
   // offer-to-save prompt. Displays the contents of |legal_message_lines|

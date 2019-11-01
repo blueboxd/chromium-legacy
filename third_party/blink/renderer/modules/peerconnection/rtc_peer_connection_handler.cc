@@ -676,6 +676,15 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
     }
 
     if (handler_) {
+      // Copy/move some of the states to be able to use them after moving
+      // |state| below.
+      webrtc::PeerConnectionInterface::SignalingState signaling_state =
+          states.signaling_state;
+      std::unique_ptr<webrtc::SessionDescriptionInterface>
+          pending_local_description(states.pending_local_description.release());
+      std::unique_ptr<webrtc::SessionDescriptionInterface>
+          current_local_description(states.current_local_description.release());
+
       // Process the rest of the state changes differently depending on SDP
       // semantics.
       if (sdp_semantics_ == webrtc::SdpSemantics::kPlanB) {
@@ -686,11 +695,45 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
       }
 
       // |handler_| can become null after this call.
-      handler_->OnSignalingChange(states.signaling_state);
+      handler_->OnSignalingChange(signaling_state);
 
       if (tracker_ && handler_) {
+        std::string value = "";
+        if (action_ ==
+            PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION_IMPLICIT) {
+          webrtc::SessionDescriptionInterface* created_session_description =
+              nullptr;
+          // Deduce which SDP was created based on signaling state.
+          if (signaling_state ==
+                  webrtc::PeerConnectionInterface::kHaveLocalOffer &&
+              pending_local_description) {
+            created_session_description = pending_local_description.get();
+          } else if (signaling_state ==
+                         webrtc::PeerConnectionInterface::kStable &&
+                     current_local_description) {
+            created_session_description = current_local_description.get();
+          }
+          // Be prepared for not knowing |created_session_description|, even
+          // though a successful implicit setLocalDescription() will always have
+          // created a local or pending description. See
+          // https://crbug.com/1019232 documenting that SLD's observer is
+          // delayed in an OnMessage. It is thus conceivable that the pending or
+          // local description is no longer set when examined here, even though
+          // this would only happen if the application code had rare races.
+          // TODO(hbos): When setLocalDescription() is updated to invoke the
+          // observer synchronously, DCHECK that |created_session_description|
+          // is not null here.
+          if (created_session_description) {
+            std::string sdp;
+            created_session_description->ToString(&sdp);
+            value = "type: " +
+                    std::string(webrtc::SdpTypeToString(
+                        created_session_description->GetType())) +
+                    ", sdp: " + sdp;
+          }
+        }
         tracker_->TrackSessionDescriptionCallback(handler_.get(), action_,
-                                                  "OnSuccess", "");
+                                                  "OnSuccess", value);
       }
     }
     if (action_ == PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION) {
@@ -1202,6 +1245,42 @@ void RTCPeerConnectionHandler::CreateAnswer(
 bool IsOfferOrAnswer(const webrtc::SessionDescriptionInterface* native_desc) {
   DCHECK(native_desc);
   return native_desc->type() == "offer" || native_desc->type() == "answer";
+}
+
+void RTCPeerConnectionHandler::SetLocalDescription(
+    const blink::WebRTCVoidRequest& request) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setLocalDescription");
+
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->TrackSetSessionDescriptionImplicit(this);
+
+  scoped_refptr<WebRtcSetDescriptionObserverImpl> content_observer =
+      base::MakeRefCounted<WebRtcSetDescriptionObserverImpl>(
+          weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
+          task_runner_,
+          PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION_IMPLICIT,
+          configuration_.sdp_semantics);
+
+  // Surfacing transceivers is not applicable in Plan B.
+  bool surface_receivers_only =
+      (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB);
+  scoped_refptr<webrtc::SetSessionDescriptionObserver> webrtc_observer(
+      WebRtcSetLocalDescriptionObserverHandler::Create(
+          task_runner_, signaling_thread(), native_peer_connection_,
+          track_adapter_map_, content_observer, surface_receivers_only)
+          .get());
+
+  signaling_thread()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &RunClosureWithTrace,
+          base::Bind(static_cast<void (webrtc::PeerConnectionInterface::*)(
+                         webrtc::SetSessionDescriptionObserver*)>(
+                         &webrtc::PeerConnectionInterface::SetLocalDescription),
+                     native_peer_connection_,
+                     base::RetainedRef(webrtc_observer)),
+          "SetLocalDescription"));
 }
 
 void RTCPeerConnectionHandler::SetLocalDescription(

@@ -316,7 +316,9 @@ void ConnectionFactoryImpl::StartConnection() {
   GURL current_endpoint = GetCurrentEndpoint();
   recorder_->RecordConnectionInitiated(current_endpoint.host());
 
-  get_socket_factory_callback_.Run(mojo::MakeRequest(&socket_factory_));
+  socket_factory_.reset();
+  get_socket_factory_callback_.Run(
+      socket_factory_.BindNewPipeAndPassReceiver());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("gcm_connection_factory", R"(

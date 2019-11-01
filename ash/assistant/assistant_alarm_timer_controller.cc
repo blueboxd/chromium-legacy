@@ -59,9 +59,9 @@ std::string CreateTimerNotificationMessage(const AlarmTimer& alarm_timer,
 
   // Calculate hours/minutes/seconds remaining.
   const int64_t total_seconds = time_remaining.InSeconds();
-  const int64_t hours = total_seconds / 3600;
-  const int64_t minutes = (total_seconds - hours * 3600) / 60;
-  const int64_t seconds = total_seconds % 60;
+  const int32_t hours = total_seconds / 3600;
+  const int32_t minutes = (total_seconds - hours * 3600) / 60;
+  const int32_t seconds = total_seconds % 60;
 
   // Success of the ICU APIs is tracked by |status|.
   UErrorCode status = U_ZERO_ERROR;
@@ -89,7 +89,7 @@ std::string CreateTimerNotificationMessage(const AlarmTimer& alarm_timer,
   } else {
     // If something went wrong, we'll fall back to using "hh:mm:ss" instead.
     LOG(ERROR) << "Error formatting timer notification message: " << status;
-    message = base::StringPrintf("%02ld:%02ld:%02ld", hours, minutes, seconds);
+    message = base::StringPrintf("%02d:%02d:%02d", hours, minutes, seconds);
   }
 
   // If time has elapsed since the |alarm_timer| has expired, we'll need to

@@ -69,6 +69,9 @@ class ImageFetcherMetricsReporter {
 
   // Report the time it takes to load metadata.
   static void ReportLoadImageMetadata(base::TimeTicks start_time);
+
+  // Report the network error for the network fetch.
+  static void ReportRequestStatusCode(const std::string& client_name, int code);
 };
 
 }  // namespace image_fetcher

@@ -213,7 +213,7 @@ void CheckClientDownloadRequestBase::FinishRequest(
       result = DownloadCheckResult::BLOCKED_TOO_LARGE;
       reason = DownloadCheckResultReason::REASON_BLOCKED_TOO_LARGE;
     } else {
-      UploadBinary(reason);
+      UploadBinary(result, reason);
     }
   }
 

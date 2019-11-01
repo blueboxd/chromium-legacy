@@ -152,8 +152,6 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README
     with open(failure_file_path, 'w') as f:
       f.write(msg_header)
       f.write(msg)
-    #TODO(mheikal): remove once trybot reciepe handles the failure files.
-    sys.exit(1)
 
 
 def _OptimizeWithR8(options,

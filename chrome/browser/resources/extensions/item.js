@@ -2,9 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/js/action_link.js';
+import 'chrome://resources/cr_elements/action_link_css.m.js';
+import './icons.js';
+import './shared_style.js';
+import './shared_vars.js';
+import './strings.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+
+import {getInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ItemBehavior} from './item_behavior.js';
+import {computeInspectableViewLabel, getItemSource, getItemSourceString, isControlled, isEnabled, SourceType, userCanChangeEnablement} from './item_util.js';
+import {navigation, Page} from './navigation_helper.js';
+
   /** @interface */
-  class ItemDelegate {
+  export class ItemDelegate {
     /** @param {string} id */
     deleteItem(id) {}
 
@@ -85,10 +111,12 @@ cr.define('extensions', function() {
     removeRuntimeHostPermission(id, host) {}
   }
 
-  const Item = Polymer({
+  Polymer({
     is: 'extensions-item',
 
-    behaviors: [I18nBehavior, extensions.ItemBehavior],
+    _template: html`{__html_template__}`,
+
+    behaviors: [I18nBehavior, ItemBehavior],
 
     properties: {
       // The item's delegate, or null.
@@ -126,7 +154,7 @@ cr.define('extensions', function() {
 
     /** @return {!HTMLElement} The "Details" button. */
     getDetailsButton: function() {
-      return this.$.detailsButton;
+      return /** @type {!HTMLElement} */ (this.$.detailsButton);
     },
 
     /** @return {?HTMLElement} The "Errors" button, if it exists. */
@@ -146,7 +174,7 @@ cr.define('extensions', function() {
 
     /** @private */
     observeIdVisibility_: function(inDevMode, showingDetails, id) {
-      Polymer.dom.flush();
+      flush();
       const idElement = this.$$('#extension-id');
       if (idElement) {
         assert(this.data);
@@ -190,14 +218,12 @@ cr.define('extensions', function() {
         return;
       }
 
-      extensions.navigation.navigateTo(
-          {page: extensions.Page.ERRORS, extensionId: this.data.id});
+      navigation.navigateTo({page: Page.ERRORS, extensionId: this.data.id});
     },
 
     /** @private */
     onDetailsTap_: function() {
-      extensions.navigation.navigateTo(
-          {page: extensions.Page.DETAILS, extensionId: this.data.id});
+      navigation.navigateTo({page: Page.DETAILS, extensionId: this.data.id});
     },
 
     /**
@@ -210,8 +236,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onExtraInspectTap_: function() {
-      extensions.navigation.navigateTo(
-          {page: extensions.Page.DETAILS, extensionId: this.data.id});
+      navigation.navigateTo({page: Page.DETAILS, extensionId: this.data.id});
     },
 
     /** @private */
@@ -223,7 +248,7 @@ cr.define('extensions', function() {
 
       this.isReloading_ = true;
 
-      const toastManager = cr.toastManager.getInstance();
+      const toastManager = getInstance();
       // Keep the toast open indefinitely.
       toastManager.duration = 0;
       toastManager.show(this.i18n('itemReloading'), false);
@@ -252,7 +277,7 @@ cr.define('extensions', function() {
      * @private
      */
     isControlled_: function() {
-      return extensions.isControlled(this.data);
+      return isControlled(this.data);
     },
 
     /**
@@ -260,7 +285,7 @@ cr.define('extensions', function() {
      * @private
      */
     isEnabled_: function() {
-      return extensions.isEnabled(this.data.state);
+      return isEnabled(this.data.state);
     },
 
     /**
@@ -268,7 +293,7 @@ cr.define('extensions', function() {
      * @private
      */
     isEnableToggleEnabled_: function() {
-      return extensions.userCanChangeEnablement(this.data);
+      return userCanChangeEnablement(this.data);
     },
 
     /**
@@ -307,7 +332,7 @@ cr.define('extensions', function() {
      * @private
      */
     computeSourceIndicatorIcon_: function() {
-      switch (extensions.getItemSource(this.data)) {
+      switch (getItemSource(this.data)) {
         case SourceType.POLICY:
           return 'extensions-icons:business';
         case SourceType.SIDELOADED:
@@ -332,10 +357,10 @@ cr.define('extensions', function() {
         return this.data.locationText;
       }
 
-      const sourceType = extensions.getItemSource(this.data);
+      const sourceType = getItemSource(this.data);
       return sourceType == SourceType.WEBSTORE ?
           '' :
-          extensions.getItemSourceString(sourceType);
+          getItemSourceString(sourceType);
     },
 
     /**
@@ -357,7 +382,7 @@ cr.define('extensions', function() {
       // sometimes it can. Even when it is, the UI behaves properly, but we
       // need to handle the case gracefully.
       return this.data.views.length > 0 ?
-          extensions.computeInspectableViewLabel(this.data.views[0]) :
+          computeInspectableViewLabel(this.data.views[0]) :
           '';
     },
 
@@ -385,7 +410,7 @@ cr.define('extensions', function() {
     computeDevReloadButtonHidden_: function() {
       // Only display the reload spinner if the extension is unpacked and
       // enabled. There's no point in reloading a disabled extension, and we'll
-      // show a crashed reload buton if it's terminated.
+      // show a crashed reload button if it's terminated.
       const showIcon =
           this.data.location == chrome.developerPrivate.Location.UNPACKED &&
           this.data.state == chrome.developerPrivate.ExtensionState.ENABLED;
@@ -419,9 +444,3 @@ cr.define('extensions', function() {
       return this.data.blacklistText ? 'severe' : 'mild';
     },
   });
-
-  return {
-    Item: Item,
-    ItemDelegate: ItemDelegate,
-  };
-});

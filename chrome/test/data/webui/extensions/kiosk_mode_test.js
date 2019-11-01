@@ -3,9 +3,19 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for extension-kiosk-dialog. */
-cr.define('extension_kiosk_mode_tests', function() {
+
+import {KioskBrowserProxyImpl} from 'chrome://extensions/extensions.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {flushTasks} from '../test_util.m.js';
+import {TestKioskBrowserProxy} from './test_kiosk_browser_proxy.js';
+
+  window.extension_kiosk_mode_tests = {};
+  extension_kiosk_mode_tests.suiteName = 'kioskModeTests';
   /** @enum {string} */
-  let TestNames = {
+  extension_kiosk_mode_tests.TestNames = {
     AddButton: 'AddButton',
     AddError: 'AddError',
     AutoLaunch: 'AutoLaunch',
@@ -14,15 +24,11 @@ cr.define('extension_kiosk_mode_tests', function() {
     Updated: 'Updated',
   };
 
-
-  let suiteName = 'kioskModeTests';
-
-  suite(suiteName, function() {
-
-    /** @type {extensions.KioskBrowserProxy} */
+  suite(extension_kiosk_mode_tests.suiteName, function() {
+    /** @type {KioskBrowserProxy} */
     let browserProxy;
 
-    /** @type {extensions.KioskDialog} */
+    /** @type {ExtensionsKioskDialogElement} */
     let dialog;
 
     /** @type {!Array<!KioskApp>} */
@@ -73,18 +79,18 @@ cr.define('extension_kiosk_mode_tests', function() {
       document.body.appendChild(dialog);
 
       return browserProxy.whenCalled('getKioskAppSettings')
-          .then(() => test_util.flushTasks());
+          .then(() => flushTasks());
     }
 
     setup(function() {
       browserProxy = new TestKioskBrowserProxy();
       setAppSettings({apps: basicApps.slice(0)});
-      extensions.KioskBrowserProxyImpl.instance_ = browserProxy;
+      KioskBrowserProxyImpl.instance_ = browserProxy;
 
       return initPage();
     });
 
-    test(assert(TestNames.Layout), function() {
+    test(assert(extension_kiosk_mode_tests.TestNames.Layout), function() {
       const apps = basicApps.slice(0);
       apps[1].autoLaunch = true;
       apps[1].isLoading = true;
@@ -106,8 +112,8 @@ cr.define('extension_kiosk_mode_tests', function() {
             // disabled.
             expectTrue(dialog.$$('cr-checkbox').hidden);
 
-            MockInteractions.tap(items[0].querySelector('.icon-delete-gray'));
-            Polymer.dom.flush();
+            items[0].querySelector('.icon-delete-gray').click();
+            flush();
             return browserProxy.whenCalled('removeKioskApp');
           })
           .then(appId => {
@@ -115,7 +121,7 @@ cr.define('extension_kiosk_mode_tests', function() {
           });
     });
 
-    test(assert(TestNames.AutoLaunch), function() {
+    test(assert(extension_kiosk_mode_tests.TestNames.AutoLaunch), function() {
       const apps = basicApps.slice(0);
       apps[1].autoLaunch = true;
       setAppSettings({apps: apps, hasAutoLaunchApp: true});
@@ -124,19 +130,18 @@ cr.define('extension_kiosk_mode_tests', function() {
       let buttons;
       return initPage()
           .then(() => {
-            buttons =
-                dialog.shadowRoot.querySelectorAll('.list-item cr-button');
+            buttons = dialog.shadowRoot.querySelectorAll('.list-item cr-button');
             // Has permission to edit auto-launch so buttons should be seen.
             expectFalse(buttons[0].hidden);
             expectFalse(buttons[1].hidden);
 
-            MockInteractions.tap(buttons[0]);
+            buttons[0].click();
             return browserProxy.whenCalled('enableKioskAutoLaunch');
           })
           .then(appId => {
             expectEquals(appId, basicApps[0].id);
 
-            MockInteractions.tap(buttons[1]);
+            buttons[1].click();
             return browserProxy.whenCalled('disableKioskAutoLaunch');
           })
           .then(appId => {
@@ -144,7 +149,7 @@ cr.define('extension_kiosk_mode_tests', function() {
           });
     });
 
-    test(assert(TestNames.Bailout), function() {
+    test(assert(extension_kiosk_mode_tests.TestNames.Bailout), function() {
       const apps = basicApps.slice(0);
       apps[1].autoLaunch = true;
       setAppSettings({apps: apps, hasAutoLaunchApp: true});
@@ -163,24 +168,22 @@ cr.define('extension_kiosk_mode_tests', function() {
 
             // Making sure canceling doesn't change anything.
             bailoutCheckbox.click();
-            Polymer.dom.flush();
+            flush();
             expectTrue(dialog.$['confirm-dialog'].open);
 
-            MockInteractions.tap(
-                dialog.$['confirm-dialog'].querySelector('.cancel-button'));
-            Polymer.dom.flush();
+            dialog.$['confirm-dialog'].querySelector('.cancel-button').click();
+            flush();
             expectFalse(bailoutCheckbox.checked);
             expectFalse(dialog.$['confirm-dialog'].open);
             expectTrue(dialog.$.dialog.open);
 
             // Accepting confirmation dialog should trigger browserProxy call.
             bailoutCheckbox.click();
-            Polymer.dom.flush();
+            flush();
             expectTrue(dialog.$['confirm-dialog'].open);
 
-            MockInteractions.tap(
-                dialog.$['confirm-dialog'].querySelector('.action-button'));
-            Polymer.dom.flush();
+            dialog.$['confirm-dialog'].querySelector('.action-button').click();
+            flush();
             expectTrue(bailoutCheckbox.checked);
             expectFalse(dialog.$['confirm-dialog'].open);
             expectTrue(dialog.$.dialog.open);
@@ -201,7 +204,7 @@ cr.define('extension_kiosk_mode_tests', function() {
           });
     });
 
-    test(assert(TestNames.AddButton), function() {
+    test(assert(extension_kiosk_mode_tests.TestNames.AddButton), function() {
       const addButton = dialog.$['add-button'];
       expectTrue(!!addButton);
       expectTrue(addButton.disabled);
@@ -210,19 +213,19 @@ cr.define('extension_kiosk_mode_tests', function() {
       addInput.value = 'blah';
       expectFalse(addButton.disabled);
 
-      MockInteractions.tap(addButton);
+      addButton.click();
       return browserProxy.whenCalled('addKioskApp').then(appId => {
         expectEquals(appId, 'blah');
       });
     });
 
-    test(assert(TestNames.Updated), function() {
+    test(assert(extension_kiosk_mode_tests.TestNames.Updated), function() {
       const items = dialog.shadowRoot.querySelectorAll('.list-item');
       expectTrue(items[0].textContent.includes(basicApps[0].name));
 
       const newName = 'completely different name';
 
-      cr.webUIListenerCallback('kiosk-app-updated', {
+      window.cr.webUIListenerCallback('kiosk-app-updated', {
         id: basicApps[0].id,
         name: newName,
         iconURL: '',
@@ -234,19 +237,13 @@ cr.define('extension_kiosk_mode_tests', function() {
       expectTrue(items[0].textContent.includes(newName));
     });
 
-    test(assert(TestNames.AddError), function() {
+    test(assert(extension_kiosk_mode_tests.TestNames.AddError), function() {
       const addInput = dialog.$['add-input'];
 
       expectFalse(!!addInput.invalid);
-      cr.webUIListenerCallback('kiosk-app-error', basicApps[0].id);
+      window.cr.webUIListenerCallback('kiosk-app-error', basicApps[0].id);
 
       expectTrue(!!addInput.invalid);
       expectTrue(addInput.errorMessage.includes(basicApps[0].id));
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

@@ -24,4 +24,7 @@ interface IRemoteFragment {
   void handleOnActivityResult(int requestCode,
                               int resultCode,
                               in IObjectWrapper data) = 12;
+  void handleOnRequestPermissionsResult(int requestCode,
+                                        in String[] permissions,
+                                        in int[] grantResults) = 13;
 }

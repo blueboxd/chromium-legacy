@@ -252,13 +252,15 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
     if (context_.IsEmpty())
       return;
 
-    // Our heuristic for whether it's worthwhile to cache is that the module
-    // was fully compiled and it is "large". Wire bytes size is likely to be
-    // highly correlated with compiled module size so we use it to avoid the
-    // cost of serializing when not caching.
     v8::MemorySpan<const uint8_t> wire_bytes =
         compiled_module.GetWireBytesRef();
-    const size_t kWireBytesSizeThresholdBytes = 1UL << 17;  // 128 KB.
+    // Our heuristic for whether it's worthwhile to cache is that the module
+    // was fully compiled and the size is such that loading from the cache will
+    // improve startup time. Use wire bytes size since it should be correlated
+    // with module size.
+    // TODO(bbudge) This is set very low to compare performance of caching with
+    // baseline compilation. Adjust this test once we know which sizes benefit.
+    const size_t kWireBytesSizeThresholdBytes = 1UL << 10;  // 1 KB.
     if (wire_bytes.size() < kWireBytesSizeThresholdBytes)
       return;
 

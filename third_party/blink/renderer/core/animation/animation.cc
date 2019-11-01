@@ -942,42 +942,109 @@ void Animation::UnpauseInternal() {
   SetCurrentTimeInternal(CurrentTimeInternal(), kTimingUpdateOnDemand);
 }
 
-// https://drafts.csswg.org/web-animations/#playing-an-animation-section
+// https://drafts.csswg.org/web-animations/#programming-interface.
 void Animation::play(ExceptionState& exception_state) {
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
+  // Begin or resume playback of the animation by running the procedure to
+  // play an animation passing true as the value of the auto-rewind flag.
+  PlayInternal(AutoRewind::kEnabled, exception_state);
+}
 
-  double current_time = this->CurrentTimeInternal();
-  if (playback_rate_ < 0 && (current_time <= 0 || IsNull(current_time)) &&
-      EffectEnd() == std::numeric_limits<double>::infinity()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot play reversed Animation with infinite target effect end.");
-    return;
-  }
+// https://drafts.csswg.org/web-animations/#playing-an-animation-section.
+void Animation::PlayInternal(AutoRewind auto_rewind,
+                             ExceptionState& exception_state) {
+  // 1. Let aborted pause be a boolean flag that is true if animation has a
+  //    pending pause task, and false otherwise.
+  // 2. Let has pending ready promise be a boolean flag that is initially false.
+  bool aborted_pause = pending_pause_;
+  bool has_pending_ready_promise = false;
 
-  if (!Playing()) {
-    start_time_ = base::nullopt;
-  }
-
-  if (PlayStateInternal() == kIdle) {
+  // 3. Perform the steps corresponding to the first matching condition from the
+  //    following, if any:
+  //
+  // 3a If animation’s effective playback rate > 0, the auto-rewind flag is true
+  //    and either animation’s:
+  //      current time is unresolved, or
+  //      current time < zero, or
+  //      current time ≥ target effect end,
+  //    Set animation’s hold time to zero.
+  //
+  // 3b If animation’s effective playback rate < 0, the auto-rewind flag is true
+  //    and either animation’s:
+  //      current time is unresolved, or
+  //      current time ≤ zero, or
+  //      current time > target effect end,
+  //    If target effect end is positive infinity, throw an "InvalidStateError"
+  //    DOMException and abort these steps. Otherwise, set animation’s hold time
+  //    to target effect end.
+  //
+  // 3c If animation’s effective playback rate = 0 and animation’s current time
+  //    is unresolved,
+  //    Set animation’s hold time to zero.
+  double effective_playback_rate = EffectivePlaybackRate();
+  double current_time = CurrentTimeInternal();
+  if (effective_playback_rate > 0 && auto_rewind == AutoRewind::kEnabled &&
+      (IsNull(current_time) || current_time < 0 ||
+       current_time >= EffectEnd())) {
+    hold_time_ = 0;
+  } else if (effective_playback_rate < 0 &&
+             auto_rewind == AutoRewind::kEnabled &&
+             (IsNull(current_time) || current_time <= 0 ||
+              current_time > EffectEnd())) {
+    if (EffectEnd() == std::numeric_limits<double>::infinity()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidStateError,
+          "Cannot play reversed Animation with infinite target effect end.");
+      return;
+    }
+    hold_time_ = EffectEnd();
+  } else if (effective_playback_rate == 0 && IsNull(current_time)) {
     hold_time_ = 0;
   }
 
-  internal_play_state_ = kUnset;
-  pending_play_ = true;
-  pending_pause_ = false;
-  finished_ = false;
-  UnpauseInternal();
-
-  if (playback_rate_ > 0 && (IsNull(current_time) || current_time < 0 ||
-                             current_time >= EffectEnd())) {
-    start_time_ = base::nullopt;
-    SetCurrentTimeInternal(0, kTimingUpdateOnDemand);
-  } else if (playback_rate_ < 0 && (IsNull(current_time) || current_time <= 0 ||
-                                    current_time > EffectEnd())) {
-    start_time_ = base::nullopt;
-    SetCurrentTimeInternal(EffectEnd(), kTimingUpdateOnDemand);
+  // 4. If animation has a pending play task or a pending pause task,
+  //   4.1 Cancel that task.
+  //   4.2 Set has pending ready promise to true.
+  if (pending_play_ || pending_pause_) {
+    pending_play_ = pending_pause_ = false;
+    has_pending_ready_promise = true;
   }
+
+  // 5. If the following three conditions are all satisfied:
+  //      animation’s hold time is unresolved, and
+  //      aborted pause is false, and
+  //      animation does not have a pending playback rate,
+  //    abort this procedure.
+  if (!hold_time_ && !aborted_pause && !active_playback_rate_)
+    return;
+
+  // 6. If animation’s hold time is resolved, let its start time be unresolved.
+  if (hold_time_)
+    start_time_ = base::nullopt;
+
+  // 7. If has pending ready promise is false, let animation’s current ready
+  //    promise be a new promise in the relevant Realm of animation.
+  if (ready_promise_ && !has_pending_ready_promise)
+    ready_promise_->Reset();
+
+  // 8. Schedule a task to run as soon as animation is ready.
+  pending_play_ = true;
+  finished_ = false;
+  // TODO(crbug.com/960944): Deprecate paused_ and internal_play_state_ flags.
+  paused_ = false;
+  internal_play_state_ = kUnset;
+  SetOutdated();
+  SetCompositorPending(/*effect_changed=*/false);
+  NotifyProbe();
+
+  // 9. Run the procedure to update an animation’s finished state for animation
+  //    with the did seek flag set to false, and the synchronously notify flag
+  //    set to false.
+  // Boolean valued arguments replaced with enumerated values for clarity.
+  UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
+
+  // TODO(crbug.com/960944): Deprecate.
+  animation_play_state_ = CalculateAnimationPlayState();
+  internal_play_state_ = CalculatePlayState();
 }
 
 // https://drafts.csswg.org/web-animations/#reversing-an-animation-section
@@ -1144,6 +1211,15 @@ void Animation::AsyncFinishMicrotask() {
 
 void Animation::CommitFinishNotification() {
   pending_finish_notification_ = false;
+  // Play state could have changed since the task was initially scheduled.
+  if (CalculateAnimationPlayState() != kFinished)
+    return;
+
+  if (pending() && ready_promise_ &&
+      ready_promise_->GetState() == AnimationPromise::kPending) {
+    ResolvePromiseMaybeAsync(ready_promise_.Get());
+  }
+
   pending_play_ = pending_pause_ = false;
   animation_play_state_ = kFinished;
 

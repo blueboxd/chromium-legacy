@@ -95,9 +95,8 @@ class FileSystemStatus {
   //     "ANDROID_DEBUGGABLE": false
   //   }
   static bool IsAndroidDebuggable(const base::FilePath& json_path) {
-    // TODO(yusukes): Remove this fallback after adding the json file.
     if (!base::PathExists(json_path))
-      return true;
+      return false;
 
     std::string content;
     if (!base::ReadFileToString(json_path, &content))
@@ -399,7 +398,17 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                        std::move(callback)));
   }
 
-  void StopArcInstance() override {
+  void StopArcInstance(bool on_shutdown) override {
+    if (on_shutdown) {
+      // Do nothing when |on_shutdown| is true because either vm_concierge.conf
+      // job (in case of user session termination) or session_manager (in case
+      // of browser-initiated exit on e.g. chrome://flags or UI language change)
+      // will stop all VMs including ARCVM right after the browser exits.
+      VLOG(1)
+          << "StopArcInstance is called during browser shutdown. Do nothing.";
+      return;
+    }
+
     VLOG(1) << "Stopping arcvm";
     vm_tools::concierge::StopVmRequest request;
     request.set_name(kArcVmName);

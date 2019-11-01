@@ -526,14 +526,13 @@ TEST_F(StorageMonitorCrosTest, EjectTest) {
   EXPECT_EQ(0, observer().detach_calls());
 
   // testing::Invoke doesn't handle move-only types, so use a lambda instead.
-  ON_CALL(*disk_mount_manager_mock_, UnmountPath(_, _, _))
+  ON_CALL(*disk_mount_manager_mock_, UnmountPath(_, _))
       .WillByDefault([](const std::string& location,
-                        chromeos::UnmountOptions options,
                         DiskMountManager::UnmountPathCallback cb) {
         std::move(cb).Run(chromeos::MOUNT_ERROR_NONE);
       });
   EXPECT_CALL(*disk_mount_manager_mock_,
-              UnmountPath(observer().last_attached().location(), _, _));
+              UnmountPath(observer().last_attached().location(), _));
   monitor_->EjectDevice(observer().last_attached().device_id(),
                         base::Bind(&StorageMonitorCrosTest::EjectNotify,
                                    base::Unretained(this)));

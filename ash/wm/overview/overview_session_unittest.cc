@@ -2918,6 +2918,43 @@ TEST_P(OverviewSessionWithHomerviewGestureTest, FadeIn) {
             overview_session()->enter_exit_overview_type());
 }
 
+// Tests exiting the overview session using kFadeOutExit type.
+TEST_P(OverviewSessionWithHomerviewGestureTest, FadeOutExit) {
+  // Create a test window.
+  std::unique_ptr<views::Widget> test_widget(CreateTestWidget());
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+  EXPECT_FALSE(test_widget->IsMinimized());
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Grab the item widget before the session starts shutting down. The widget
+  // should outlive the session, at least until the animations are done - give
+  // tha NON_ZERO_DURATION animation duration scale, it should be safe to
+  // dereference the widget poiner immediately (synchronously) after the session
+  // ends.
+  OverviewItem* item = GetOverviewItemForWindow(test_widget->GetNativeWindow());
+  views::Widget* grid_item_widget = item_widget(item);
+
+  ToggleOverview(OverviewSession::EnterExitOverviewType::kFadeOutExit);
+  ASSERT_FALSE(InOverviewSession());
+
+  // The test window should be minimized as overview fade out exit starts.
+  EXPECT_TRUE(test_widget->IsMinimized());
+
+  // Verify that the item widget's transform is not animated as part of the
+  // animation, and that no transform is applied after minimizing the window.
+  EXPECT_FALSE(grid_item_widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM));
+  EXPECT_EQ(gfx::Transform(), grid_item_widget->GetLayer()->transform());
+
+  // Opacity should be animated to zero opacity.
+  EXPECT_EQ(0.0f, grid_item_widget->GetLayer()->GetTargetOpacity());
+  EXPECT_TRUE(grid_item_widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
+      ui::LayerAnimationElement::OPACITY));
+}
+
 // The class to test overview behavior with kDragFromShelfToHomeOrOverview flag
 // enabled.
 class OverviewSessionWithDragFromShelfFeatureTest : public OverviewSessionTest {
@@ -3132,9 +3169,15 @@ TEST_P(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
   // see if the item moved at all.
   OverviewItem* leftmost_window = GetOverviewItemForWindow(windows[0].get());
 
-  GenerateScrollSequence(gfx::Point(0, 50), gfx::Point(5000, 50));
+  GenerateScrollSequence(
+      gfx::Point(ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset + 5,
+                 50),
+      gfx::Point(5000, 50));
   const gfx::RectF left_bounds = leftmost_window->target_bounds();
-  GenerateScrollSequence(gfx::Point(0, 50), gfx::Point(5000, 50));
+  GenerateScrollSequence(
+      gfx::Point(ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset + 5,
+                 50),
+      gfx::Point(5000, 50));
   EXPECT_EQ(left_bounds, leftmost_window->target_bounds());
 
   // Scroll an extreme amount to see if windows on the far right are still in
@@ -5610,7 +5653,8 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly, Dragging) {
                                    /*is_touch_dragging=*/false);
   const gfx::PointF left_of_middle(1150.f, 300.f);
   overview_session()->Drag(item2, left_of_middle);
-  EXPECT_EQ(IndicatorState::kDragArea, indicators->current_indicator_state());
+  EXPECT_EQ(IndicatorState::kDragAreaBoth,
+            indicators->current_indicator_state());
   overview_session()->CompleteDrag(item2, left_of_middle);
   EXPECT_EQ(SplitViewController::State::kRightSnapped,
             split_view_controller->state());
@@ -5738,6 +5782,9 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(true));
 INSTANTIATE_TEST_SUITE_P(,
                          OverviewSessionWithDragFromShelfFeatureTest,
+                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         OverviewSessionWithHomerviewGestureTest,
                          testing::Bool());
 
 }  // namespace ash

@@ -502,7 +502,6 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
 
   DCHECK(self.cardIssuerIcon);
   DCHECK_GT(self.cardLabel.length, 0UL);
-  DCHECK_GT(self.cardSublabel.length, 0UL);
 
   // The leading edge aligned card details container view. Contains the card
   // issuer network icon, the card label, and the card sublabel.

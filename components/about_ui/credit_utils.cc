@@ -14,7 +14,7 @@ namespace about_ui {
 
 std::string GetCredits(bool include_scripts) {
   std::string response =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_ABOUT_UI_CREDITS_HTML);
   if (include_scripts) {
     response +=

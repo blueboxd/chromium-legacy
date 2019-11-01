@@ -46,7 +46,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
 
   // Deletes the directory created in Mount().
   void Unmount(const std::string& device_path,
-               UnmountOptions options,
                UnmountCallback callback) override;
   void EnumerateDevices(EnumerateDevicesCallback callback,
                         base::OnceClosure error_callback) override;
@@ -90,11 +89,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
   // Returns the |device_path| parameter from the last invocation of Unmount().
   const std::string& last_unmount_device_path() const {
     return last_unmount_device_path_;
-  }
-
-  // Returns the |options| parameter from the last invocation of Unmount().
-  UnmountOptions last_unmount_options() const {
-    return last_unmount_options_;
   }
 
   // Makes the subsequent Unmount() calls fail. Unmount() succeeds by default.
@@ -167,7 +161,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCrosDisksClient
   base::ObserverList<Observer> observer_list_;
   int unmount_call_count_ = 0;
   std::string last_unmount_device_path_;
-  UnmountOptions last_unmount_options_ = UNMOUNT_OPTIONS_NONE;
   MountError unmount_error_ = MOUNT_ERROR_NONE;
   base::RepeatingClosure unmount_listener_;
   int format_call_count_ = 0;

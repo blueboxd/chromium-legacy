@@ -832,9 +832,8 @@ TEST_P(PaintPropertyTreeUpdateTest, ViewportAddRemoveDeviceEmulationNode) {
   EXPECT_FALSE(visual_viewport.LayerForHorizontalScrollbar());
   EXPECT_FALSE(visual_viewport.LayerForVerticalScrollbar());
   ASSERT_TRUE(GetLayoutView().GetScrollableArea());
-  auto* scrollbar_layer = GetLayoutView()
-                              .GetScrollableArea()
-                              ->GraphicsLayerForHorizontalScrollbar();
+  auto* scrollbar_layer =
+      GetLayoutView().GetScrollableArea()->LayerForHorizontalScrollbar();
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     ASSERT_TRUE(scrollbar_layer);
     EXPECT_EQ(&TransformPaintPropertyNode::Root(),

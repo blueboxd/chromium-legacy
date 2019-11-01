@@ -135,6 +135,12 @@
         margin-top: 12px;  /* Align cr-button with <h2>. */
       }
 
+      .link-wrapper {
+        align-items: center;
+        display: flex;
+        flex-grow: 1;
+      }
+
       /* A list-frame is an outer container for list-items. It is intended to be
        * outside of a settings-box. A list-frame is likely to follow a
        * settings box. */
@@ -209,6 +215,18 @@
        * setting section (page or subpage). */
       .settings-box {
         @apply --cr-section;
+      }
+
+      .settings-box.no-padding {
+        padding: 0;
+      }
+
+      .settings-box.no-padding .margin-matches-padding {
+        margin: 0 var(--cr-section-padding);
+      }
+
+      .settings-box.no-padding > .link-wrapper {
+        padding: 0 var(--cr-section-padding);
       }
 
       .settings-box.two-line {
@@ -327,6 +345,10 @@
         /* Match cr-button's default height. */
         height: 32px;
         margin: 0 16px;
+      }
+
+      .settings-box.no-padding > .link-wrapper ~ .separator {
+        margin: 0;
       }
 
       .column-header {

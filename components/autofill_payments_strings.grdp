@@ -195,6 +195,14 @@
   <message name="IDS_AUTOFILL_SAVE_CARD_UPDATE_EXPIRATION_DATE_TITLE" desc="Title for the dialog requesting the user to fill in the expiration date of the credit card during the save card to google flow.">
     Enter expiration date
   </message>
+  <if expr="is_android or is_ios">
+    <message name="IDS_AUTOFILL_SAVE_CARD_UPDATE_EXPIRATION_DATE_TOOLTIP" desc="The tooltip text for the credit card expiration date textfield. Note that the translation should not have period.">
+      Expiration date
+    </message>
+    <message name="IDS_AUTOFILL_SAVE_CARD_UPDATE_EXPIRATION_DATE_ERROR_TRY_AGAIN" desc="Error message that encourages the user to try to re-enter their credit card expiration date after selecting an invalid expiration date.">
+      Enter an expiration date in the future and try again
+    </message>
+  </if>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP" desc="The tooltip hover text that explains why credit card upload to Google Payments is being offered.">
     Chrome is offering to save your cards in your Google Account because you are signed in. You can change this behavior in settings.
   </message>

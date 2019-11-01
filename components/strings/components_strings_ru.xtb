@@ -30,7 +30,6 @@
 <translation id="1113869188872983271">&amp;Отменить изменение порядка</translation>
 <translation id="1125573121925420732">Пока на сайтах обновляются сертификаты безопасности, предупреждения временно могут появляться чаще обычного.</translation>
 <translation id="1126551341858583091">Место на карте памяти: <ph name="CRASH_SIZE" />.</translation>
-<translation id="1127259989763091435">Подтвердить и сохранить карту в аккаунте Google?</translation>
 <translation id="112840717907525620">В кеше политики ошибок не найдено</translation>
 <translation id="1131264053432022307">Скопированное изображение</translation>
 <translation id="1150979032973867961">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Операционная система компьютера не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
@@ -158,7 +157,6 @@
 <translation id="1656489000284462475">Получение</translation>
 <translation id="1662550410081243962">Сохранять и автоматически подставлять платежные данные</translation>
 <translation id="1663943134801823270">Это карты и адреса, указанные в Chrome. Вы можете изменить их на странице <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
-<translation id="1669987054044193553">Подтвердить и сохранить</translation>
 <translation id="1671391448414634642">Страницы на этом языке (<ph name="SOURCE_LANGUAGE" />) будут автоматически переводиться на <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898">На сайте <ph name="SITE" /> для защиты ваших данных обычно используется шифрование. Однако учетные данные, которые мы получили от сайта <ph name="SITE" /> сейчас, отличаются от тех, которые он отправляет обычно. Вероятно, вредоносный сайт пытается выдать себя за <ph name="SITE" />, либо страница подключения к сети Wi-Fi прервала соединение. Ваша информация по-прежнему в безопасности, так как браузер Google Chrome разорвал соединение до того, как произошел обмен данными.</translation>
 <translation id="168841957122794586">Сертификат сервера содержит ненадежный криптографический ключ.</translation>
@@ -188,7 +186,6 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Владелец карты</translation>
 <translation id="1821930232296380041">Недопустимый запрос или неверные параметры запроса</translation>
-<translation id="1822370876374026111">Чтобы ускорить процесс оплаты в будущем, сохраните карту и платежный адрес в аккаунте Google и на этом устройстве.</translation>
 <translation id="1822540298136254167">Сайты, которые вы посещали, и время пребывания на них</translation>
 <translation id="1826516787628120939">Проверка</translation>
 <translation id="1834321415901700177">Сайт содержит вредоносное ПО</translation>
@@ -224,7 +221,6 @@
 <translation id="2003709556000175978">Сброс пароля</translation>
 <translation id="2003775180883135320">Четыре отверстия сверху</translation>
 <translation id="2025186561304664664">Прокси-сервер настраивается автоматически.</translation>
-<translation id="202813660234680402">Не добавлять</translation>
 <translation id="2030481566774242610">Возможно, вы имели в виду <ph name="LINK" />.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверьте настройки прокси-сервера и брандмауэра<ph name="END_LINK" />.</translation>
 <translation id="2053111141626950936">Страницы на этом языке (<ph name="LANGUAGE" />) не будут переводиться автоматически.</translation>
@@ -588,6 +584,7 @@
 <translation id="3884278016824448484">Конфликт идентификаторов устройств</translation>
 <translation id="3885155851504623709">Округ</translation>
 <translation id="3890664840433101773">Добавление адреса электронной почты</translation>
+<translation id="3897092660631435901">Меню</translation>
 <translation id="3901925938762663762">Срок действия карты истек</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
 <translation id="3909695131102177774"><ph name="LABEL" />. <ph name="ERROR" />.</translation>
@@ -641,7 +638,6 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Ещё <ph name="ITEM_COUNT" /> товар}one{Ещё <ph name="ITEM_COUNT" /> товар}few{Ещё <ph name="ITEM_COUNT" /> товара}many{Ещё <ph name="ITEM_COUNT" /> товаров}other{Ещё <ph name="ITEM_COUNT" /> товара}}</translation>
 <translation id="4176463684765177261">Отключено</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" />: <ph name="ROW_CONTENT" /></translation>
-<translation id="4193750898749511769">Чтобы ускорить процесс оплаты в будущем, сохраните карту и платежный адрес в аккаунте Google.</translation>
 <translation id="4196861286325780578">&amp;Повторить перемещение</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Проверьте настройки брандмауэра и антивирусного ПО<ph name="END_LINK" />.</translation>
 <translation id="4215751373031079683">7x9 (конверт)</translation>
@@ -760,7 +756,6 @@
 <translation id="4738601419177586157">Подсказка при поиске "<ph name="TEXT" />"</translation>
 <translation id="4742407542027196863">Управление паролями</translation>
 <translation id="4744603770635761495">Путь к исполняемому файлу</translation>
-<translation id="47454865135383664">Добавить карту в аккаунт Google?</translation>
 <translation id="4750917950439032686">Информация, которую вы сообщаете этому сайту (например, пароли и номера банковских карт), защищена.</translation>
 <translation id="4756388243121344051">&amp;История</translation>
 <translation id="4758311279753947758">Добавить контактные данные</translation>
@@ -1004,7 +999,6 @@
 <translation id="5932224571077948991">Сайт показывает навязчивую или вводящую в заблуждение рекламу</translation>
 <translation id="5939847200023027600">Сервис для компоновки PDF-файлов</translation>
 <translation id="5946937721014915347">Загрузка <ph name="SITE_NAME" />…</translation>
-<translation id="5947933617628957894">Да</translation>
 <translation id="5951495562196540101">Регистрация невозможна, так как тип аккаунта не соответствует лицензии на устройстве.</translation>
 <translation id="5967592137238574583">Измените контактную информацию</translation>
 <translation id="5967867314010545767">Удалить из истории</translation>
@@ -1098,7 +1092,6 @@
 <translation id="6410264514553301377">Введите срок действия и CVC-код карты <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Защитите свой аккаунт Google и смените пароль с помощью Chromium.</translation>
 <translation id="6427730057873428458">Фальцовка калиткой в два сгиба</translation>
-<translation id="6431585503458005759">Не сохранять</translation>
 <translation id="6433490469411711332">Изменить контактную информацию</translation>
 <translation id="6433595998831338502">Сайт <ph name="HOST_NAME" /> не позволяет установить соединение.</translation>
 <translation id="6434309073475700221">Отменить передачу</translation>
@@ -1114,7 +1107,6 @@
 <translation id="6489534406876378309">Начать загрузку сведений об ошибках</translation>
 <translation id="6499038740797743453">Сбросить пароль?</translation>
 <translation id="6507833130742554667">Принимаются кредитные и дебетовые карты.</translation>
-<translation id="650855688985305916">Да</translation>
 <translation id="6508722015517270189">Перезапустите Google Chrome.</translation>
 <translation id="6517596291481585650">Внимание! Это правило не объединено, так как оно не является списком.</translation>
 <translation id="6518133107902771759">Подтвердить</translation>
@@ -1252,7 +1244,6 @@
 <translation id="7298195798382681320">Рекомендованные</translation>
 <translation id="7300012071106347854">Синий (кобальт)</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
-<translation id="7303701124147721189">Чтобы ускорить процесс оплаты в будущем, сохраните карту и платежный адрес в аккаунте Google и на этом устройстве.</translation>
 <translation id="7304030187361489308">Высокий</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" />: отчет о сбое сохранен, но ещё не загружен (пользователь запросил загрузку)</translation>
 <translation id="7313965965371928911">Предупреждения <ph name="BEGIN_LINK" />Безопасного просмотра<ph name="END_LINK" /></translation>
@@ -1479,7 +1470,6 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Если вы готовы подвергнуть риску ваши личные данные, вы можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />, не дожидаясь удаления вредоносного ПО.</translation>
 <translation id="8349305172487531364">Панель закладок</translation>
-<translation id="836241887727198552">Сохранить карту в аккаунте Google?</translation>
 <translation id="8363502534493474904">Отключите режим полета.</translation>
 <translation id="8364627913115013041">Не задано</translation>
 <translation id="8368476060205742148">Сервисы Google Play</translation>
@@ -1497,7 +1487,6 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">На большинстве сайтов будет выполнен выход из аккаунта.</translation>
 <translation id="8437238597147034694">&amp;Отменить перемещение</translation>
-<translation id="8440508849222143646">Чтобы ускорить процесс оплаты в будущем, сохраните карту и платежный адрес в аккаунте Google.</translation>
 <translation id="8461694314515752532">Задать кодовую фразу для шифрования синхронизированных данных</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 банковская карта}one{# банковская карта}few{# банковские карты}many{# банковских карт}other{# банковской карты}}</translation>
 <translation id="8473863474539038330">Адреса и другие данные</translation>
@@ -1521,7 +1510,6 @@
 <translation id="861775596732816396">Размер: 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Сохранить карту на этом устройстве</translation>
-<translation id="8626112503828625890">Сохранить платежные данные в аккаунте Google?</translation>
 <translation id="8647750283161643317">Восстановить настройки по умолчанию</translation>
 <translation id="8663226718884576429">Информация о заказе, <ph name="TOTAL_LABEL" />, дополнительные сведения</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, ответ, <ph name="ANSWER" /></translation>

@@ -164,6 +164,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/gfx/scrollbar_size.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/accessibility/view_accessibility_utils.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -515,7 +516,22 @@ void BrowserView::InitStatusBubble() {
 }
 
 gfx::Rect BrowserView::GetFindBarBoundingBox() const {
-  return GetBrowserViewLayout()->GetFindBarBoundingBox();
+  gfx::Rect contents_bounds = contents_container_->ConvertRectToWidget(
+      contents_container_->GetLocalBounds());
+
+  // If the location bar is visible use it to position the bounding box,
+  // otherwise use the contents container.
+  if (!immersive_mode_controller_->IsEnabled() ||
+      immersive_mode_controller_->IsRevealed()) {
+    const gfx::Rect bounding_box =
+        toolbar_button_provider_->GetFindBarBoundingBox(
+            contents_bounds.bottom());
+    if (!bounding_box.IsEmpty())
+      return bounding_box;
+  }
+
+  contents_bounds.Inset(0, 0, gfx::scrollbar_size(), 0);
+  return contents_container_->GetMirroredRect(contents_bounds);
 }
 
 int BrowserView::GetTabStripHeight() const {

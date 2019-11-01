@@ -228,7 +228,7 @@ HostCache::Entry HostCache::Entry::MergeEntries(Entry front, Entry back) {
   front.error_ =
       front.error() == OK || back.error() == OK ? OK : ERR_NAME_NOT_RESOLVED;
 
-  MergeLists(&front.addresses_, back.addresses());
+  front.MergeAddressesFrom(back);
   MergeLists(&front.text_records_, back.text_records());
   MergeLists(&front.hostnames_, back.hostnames());
   if (back.esni_data_ && !front.esni_data_) {
@@ -357,6 +357,38 @@ void HostCache::Entry::GetStaleness(base::TimeTicks now,
 
 base::Value HostCache::Entry::NetLogParams() const {
   return GetAsValue(false /* include_staleness */);
+}
+
+void HostCache::Entry::MergeAddressesFrom(const HostCache::Entry& source) {
+  MergeLists(&addresses_, source.addresses());
+  if (!addresses_ || addresses_->size() <= 1)
+    return;  // Nothing to do.
+
+  addresses_->Deduplicate();
+
+  auto has_keys = [&](const IPEndPoint& e) {
+    return (esni_data() &&
+            esni_data()->keys_for_addresses().count(e.address())) ||
+           (source.esni_data() &&
+            source.esni_data()->keys_for_addresses().count(e.address()));
+  };
+
+  std::stable_sort(addresses_->begin(), addresses_->end(),
+                   [&](const IPEndPoint& lhs, const IPEndPoint& rhs) {
+                     // Prefer an address with ESNI keys to one without;
+                     // break ties by address family.
+
+                     // Store one lookup's result to avoid repeating the lookup.
+                     bool lhs_has_keys = has_keys(lhs);
+                     if (lhs_has_keys != has_keys(rhs))
+                       return lhs_has_keys;
+
+                     if ((lhs.GetFamily() == ADDRESS_FAMILY_IPV6) !=
+                         (rhs.GetFamily() == ADDRESS_FAMILY_IPV6))
+                       return (lhs.GetFamily() == ADDRESS_FAMILY_IPV6);
+
+                     return false;
+                   });
 }
 
 base::DictionaryValue HostCache::Entry::GetAsValue(

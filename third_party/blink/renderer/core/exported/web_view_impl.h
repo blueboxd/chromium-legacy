@@ -85,6 +85,7 @@ class Frame;
 class FullscreenController;
 class HTMLPlugInElement;
 class PageScaleConstraintsSet;
+class PaintLayerCompositor;
 class UserGestureToken;
 class WebDevToolsAgentImpl;
 class WebElement;
@@ -307,6 +308,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // without coming through WebViewImpl.
   void CleanupPagePopup();
   LocalDOMWindow* PagePopupWindow() const;
+
+  GraphicsLayer* RootGraphicsLayer();
+  PaintLayerCompositor* Compositor() const;
 
   PageScheduler* Scheduler() const override;
   void SetIsHidden(bool hidden, bool is_initial_state) override;
@@ -534,6 +538,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   float DeviceScaleFactor() const;
 
+  void SetRootGraphicsLayer(GraphicsLayer*);
   void SetRootLayer(scoped_refptr<cc::Layer>);
 
   LocalFrame* FocusedLocalFrameInWidget() const;
@@ -662,6 +667,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   cc::AnimationHost* animation_host_ = nullptr;
 
   scoped_refptr<cc::Layer> root_layer_;
+  GraphicsLayer* root_graphics_layer_ = nullptr;
+  GraphicsLayer* visual_viewport_container_layer_ = nullptr;
   bool matches_heuristics_for_gpu_rasterization_ = false;
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;

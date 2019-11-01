@@ -81,6 +81,14 @@ public class TopControlsTest {
         final String url = UrlUtils.encodeHtmlDataUri("<body><p style='height:5000px'>");
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
 
+        // Wait for layout to make sure the top contents container is shown.
+        CallbackHelper helper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            activity.getTopContentsContainer().getViewTreeObserver().addOnGlobalLayoutListener(
+                    helper::notifyCalled);
+        });
+        helper.waitForCallback(0);
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTopControlsHeight = activity.getTopContentsContainer().getHeight();
             Assert.assertTrue(mTopControlsHeight > 0);

@@ -180,9 +180,15 @@ class NET_EXPORT HostCache {
     int network_changes() const { return network_changes_; }
 
     // Merge |front| and |back|, representing results from multiple
-    // transactions for the same overal host resolution query. On merging result
-    // lists, result elements from |front| will be merged in front of elements
-    // from |back|. Fields that cannot be merged take precedence from |front|.
+    // transactions for the same overall host resolution query.
+    //
+    // - When merging result hostname and text record lists, result
+    // elements from |front| will be merged in front of elements from |back|.
+    // - Merging address lists deduplicates addresses and sorts them in a stable
+    // manner by (breaking ties by continuing down the list):
+    //   1. Addresses with associated ESNI keys precede addresses without
+    //   2. IPv6 addresses precede IPv4 addresses
+    // - Fields that cannot be merged take precedence from |front|.
     static Entry MergeEntries(Entry front, Entry back);
 
     // Creates a value representation of the entry for use with NetLog.
@@ -226,6 +232,22 @@ class NET_EXPORT HostCache {
     void GetStaleness(base::TimeTicks now,
                       int network_changes,
                       EntryStaleness* out) const;
+
+    // Combines the addresses of |source| with those already stored,
+    // resulting in the following order:
+    //
+    // 1. IPv6 addresses associated with ESNI keys
+    // 2. IPv4 addresses associated with ESNI keys
+    // 3. IPv6 addresses not associated with ESNI keys
+    // 4. IPv4 addresses not associated with ESNI keys
+    //
+    // - Conducts the merge in a stable fashion (other things equal, addresses
+    // from |*this| will precede those from |source|, and addresses earlier in
+    // one entry's list will precede other addresses from later in the same
+    // list).
+    // - Deduplicates the entries during the merge so that |*this|'s
+    // address list will not contain duplicates after the call.
+    void MergeAddressesFrom(const HostCache::Entry& source);
 
     base::DictionaryValue GetAsValue(bool include_staleness) const;
 

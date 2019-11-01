@@ -472,19 +472,13 @@ void DownloadFileImpl::RenameWithRetryInternal(
     // asynchronous quarantine file may cause a file to be stamped with
     // incorrect mark-of-the-web data. Therefore, fall back to non-service
     // QuarantineFile when kPreventDownloadsWithSamePath is disabled.
-    if (base::FeatureList::IsEnabled(
-            download::features::kPreventDownloadsWithSamePath)) {
-      file_.AnnotateWithSourceInformation(
-          parameters->client_guid, parameters->source_url,
-          parameters->referrer_url, std::move(parameters->remote_quarantine),
-          base::BindOnce(&DownloadFileImpl::OnRenameComplete,
-                         weak_factory_.GetWeakPtr(), new_path,
-                         parameters->completion_callback));
-      return;
-    }
-    reason = file_.AnnotateWithSourceInformationSync(parameters->client_guid,
-                                                     parameters->source_url,
-                                                     parameters->referrer_url);
+    file_.AnnotateWithSourceInformation(
+        parameters->client_guid, parameters->source_url,
+        parameters->referrer_url, std::move(parameters->remote_quarantine),
+        base::BindOnce(&DownloadFileImpl::OnRenameComplete,
+                       weak_factory_.GetWeakPtr(), new_path,
+                       parameters->completion_callback));
+    return;
   }
 
   OnRenameComplete(new_path, parameters->completion_callback, reason);

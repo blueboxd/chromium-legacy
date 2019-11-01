@@ -526,15 +526,20 @@ void AutofillManager::RefetchCardsAndUpdatePopup(
 
 bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms,
                                        const base::TimeTicks timestamp) {
-  bool enabled = IsAutofillEnabled();
+  bool autofill_enabled = IsAutofillEnabled();
   sync_state_ = personal_data_ ? personal_data_->GetSyncSigninState()
                                : AutofillSyncSigninState::kNumSyncStates;
   if (!has_logged_autofill_enabled_) {
-    AutofillMetrics::LogIsAutofillEnabledAtPageLoad(enabled, sync_state_);
+    AutofillMetrics::LogIsAutofillEnabledAtPageLoad(autofill_enabled,
+                                                    sync_state_);
+    AutofillMetrics::LogIsProfileAutofillEnabledAtPageLoad(
+        IsProfileAutofillEnabled(), sync_state_);
+    AutofillMetrics::LogIsCreditCardAutofillEnabledAtPageLoad(
+        IsCreditCardAutofillEnabled(), sync_state_);
     has_logged_autofill_enabled_ = true;
   }
 
-  return enabled;
+  return autofill_enabled;
 }
 
 void AutofillManager::OnFormSubmittedImpl(const FormData& form,
@@ -1343,7 +1348,7 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
-  return ::autofill::prefs::IsAutofillEnabled(client_->GetPrefs());
+  return IsProfileAutofillEnabled() || IsCreditCardAutofillEnabled();
 }
 
 bool AutofillManager::IsProfileAutofillEnabled() const {

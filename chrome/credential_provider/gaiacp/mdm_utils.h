@@ -58,15 +58,13 @@ class GoogleSerialNumberForTesting {
   ~GoogleSerialNumberForTesting();
 };
 
-#if !defined(GOOGLE_CHROME_BUILD)
 // Class used in tests to force password escrow service availability when not
-// in a Google Chrome build.
+// in a Google Chrome build (where the service is disabled).
 class GoogleMdmEscrowServiceEnablerForTesting {
  public:
-  explicit GoogleMdmEscrowServiceEnablerForTesting(bool enable);
+  GoogleMdmEscrowServiceEnablerForTesting();
   ~GoogleMdmEscrowServiceEnablerForTesting();
 };
-#endif
 
 // If MdmEnrollmentEnabled returns true, this function verifies that the machine
 // is enrolled to MDM AND that the server to which it is enrolled is the same

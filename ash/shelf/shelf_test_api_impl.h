@@ -19,6 +19,7 @@ class ShelfTestApiImpl : public ShelfTestApi {
   // ShelfTestApi:
   bool IsVisible() override;
   bool IsAlignmentBottomLocked() override;
+  views::View* GetHomeButton() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfTestApiImpl);

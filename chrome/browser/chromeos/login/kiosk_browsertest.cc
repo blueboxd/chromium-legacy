@@ -346,7 +346,7 @@ class KioskFakeDiskMountManager : public file_manager::FakeDiskMountManager {
 
   void UnMountUsbStick() {
     DCHECK(!usb_mount_path_.empty());
-    UnmountPath(usb_mount_path_, UNMOUNT_OPTIONS_NONE,
+    UnmountPath(usb_mount_path_,
                 disks::DiskMountManager::UnmountPathCallback());
   }
 

@@ -180,7 +180,8 @@ class NET_EXPORT CertPathBuilder {
   void AddCertIssuerSource(CertIssuerSource* cert_issuer_source);
 
   // Sets a limit to the number of times to repeat the process of considering a
-  // new intermediate over all potential paths.
+  // new intermediate over all potential paths. Setting |limit| to 0 disables
+  // the iteration limit, which is the default.
   void SetIterationLimit(uint32_t limit);
 
   // Sets a deadline for completing path building. If |deadline| has passed and
@@ -188,6 +189,12 @@ class NET_EXPORT CertPathBuilder {
   // is not a hard limit, there is no guarantee how far past |deadline| time
   // will be when path building is aborted.
   void SetDeadline(base::TimeTicks deadline);
+
+  // If |explore_all_paths| is false (the default), path building will stop as
+  // soon as a valid path is found. If |explore_all_paths| is true, path
+  // building will continue until all possible paths have been exhausted (or
+  // iteration limit / deadline is exceeded).
+  void SetExploreAllPaths(bool explore_all_paths);
 
   // Returns the deadline for path building, if any. If no deadline is set,
   // |deadline().is_null()| will be true.
@@ -215,6 +222,7 @@ class NET_EXPORT CertPathBuilder {
   const InitialAnyPolicyInhibit initial_any_policy_inhibit_;
   uint32_t max_iteration_count_ = 0;
   base::TimeTicks deadline_;
+  bool explore_all_paths_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CertPathBuilder);
 };

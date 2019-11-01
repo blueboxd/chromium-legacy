@@ -2741,6 +2741,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-loose-max-limit-on-dedicated-rows",
+    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "omnibox-material-design-weather-icons",
     "owners": [ "manukh", "ender", "chromium-omnibox-team" ],
     "expiry_milestone": 80
@@ -3314,6 +3319,11 @@
     "name": "temporary-unexpire-flags-m76",
     "owners": [ "ellyjones", "flags-dev" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "temporary-unexpire-flags-m78",
+    "owners": [ "ellyjones", "flags-dev" ],
+    "expiry_milestone": 81
   },
   {
     "name": "terminal-system-app",

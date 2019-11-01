@@ -3,16 +3,20 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for extension-options-dialog. */
-cr.define('extension_options_dialog_tests', function() {
+import {OptionsDialogMaxHeight, OptionsDialogMinWidth, Service} from 'chrome://extensions/extensions.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {eventToPromise} from '../test_util.m.js';
+
+  window.extension_options_dialog_tests = {};
+  extension_options_dialog_tests.suiteName = 'ExtensionOptionsDialogTests';
   /** @enum {string} */
-  const TestNames = {
+  extension_options_dialog_tests.TestNames = {
     Layout: 'Layout',
   };
 
-  const suiteName = 'ExtensionOptionsDialogTests';
-
-  suite(suiteName, function() {
-    /** @type {extensions.OptionsDialog} */
+  suite(extension_options_dialog_tests.suiteName, function() {
+    /** @type {ExtensionsOptionsDialogElement} */
     let optionsDialog;
 
     /** @type {chrome.developerPrivate.ExtensionInfo} */
@@ -20,10 +24,10 @@ cr.define('extension_options_dialog_tests', function() {
 
     setup(function() {
       PolymerTest.clearBody();
-      optionsDialog = new extensions.OptionsDialog();
+      optionsDialog = document.createElement('extensions-options-dialog');
       document.body.appendChild(optionsDialog);
 
-      const service = extensions.Service.getInstance();
+      const service = Service.getInstance();
       return service.getExtensionsInfo().then(function(info) {
         assertEquals(1, info.length);
         data = info[0];
@@ -36,11 +40,11 @@ cr.define('extension_options_dialog_tests', function() {
       return rect.width * rect.height > 0;
     }
 
-    test(assert(TestNames.Layout), function() {
+    test(assert(extension_options_dialog_tests.TestNames.Layout), function() {
       // Try showing the dialog.
       assertFalse(isDialogVisible());
       optionsDialog.show(data);
-      return test_util.eventToPromise('cr-dialog-open', optionsDialog)
+      return eventToPromise('cr-dialog-open', optionsDialog)
           .then(() => {
             // Wait more than 50ms for the debounced size update.
             return new Promise(r => setTimeout(r, 100));
@@ -50,8 +54,8 @@ cr.define('extension_options_dialog_tests', function() {
 
             const dialogElement = optionsDialog.$.dialog.getNative();
             const rect = dialogElement.getBoundingClientRect();
-            assertGE(rect.width, extensions.OptionsDialogMinWidth);
-            assertLE(rect.height, extensions.OptionsDialogMaxHeight);
+            assertGE(rect.width, OptionsDialogMinWidth);
+            assertLE(rect.height, OptionsDialogMaxHeight);
             // This is the header height with default font size.
             assertGE(rect.height, 68);
 
@@ -62,9 +66,3 @@ cr.define('extension_options_dialog_tests', function() {
           });
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

@@ -1957,6 +1957,9 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
     case ax::mojom::Role::kStrong:
       return content_client->GetLocalizedString(IDS_AX_ROLE_STRONG);
 
+    case ax::mojom::Role::kSwitch:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SWITCH);
+
     case ax::mojom::Role::kTextField: {
       std::string input_type;
       if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,

@@ -27,14 +27,8 @@
       cr-policy-indicator {
         padding: 0 var(--cr-controlled-by-spacing);
       }
-
-      .link-wrapper {
-        align-items: center;
-        display: flex;
-        flex-grow: 1;
-      }
     </style>
-    <div id="card" class="settings-box two-line">
+    <div id="card" class="settings-box two-line no-padding">
       <div class="link-wrapper" actionable
            actionable$="[[hasSubpageClickHandler_(
                feature, pageContentData, subpageRoute)]]"
@@ -73,7 +67,9 @@
         <!-- This settings-multidevice-feature-toggle is the default controller.
         If an element with slot="feature-controller" is attached, it will
         replace this one. -->
-        <settings-multidevice-feature-toggle feature="[[feature]]"
+        <settings-multidevice-feature-toggle
+            class="margin-matches-padding"
+            feature="[[feature]]"
             page-content-data="[[pageContentData]]">
         </settings-multidevice-feature-toggle>
       </slot>

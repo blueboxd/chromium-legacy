@@ -648,5 +648,30 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseWithCrossSiteIframe) {
   ManuallyCloseWindow();
 }
 
+// Tests that a same-site iframe runs its beforeunload handler when closing the
+// browser.  See https://crbug.com/1010456.
+IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseWithSameSiteIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page with a same-site iframe.
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderFrameHost* child =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  EXPECT_EQ(child->GetSiteInstance(),
+            web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Install a dialog-showing beforeunload handler in the iframe.
+  EXPECT_TRUE(
+      ExecuteScript(child, "window.onbeforeunload = () => { return 'x' };"));
+
+  // Close the browser and make sure the beforeunload dialog is shown and can
+  // be clicked.
+  PrepareForDialog(browser());
+  ManuallyCloseWindow();
+}
+
 // TODO(ojan): Add tests for unload/beforeunload that have multiple tabs
 // and multiple windows.

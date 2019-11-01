@@ -133,7 +133,7 @@ void FakeDnsConfigChangeManager::RequestNotifications(
 
 void FakeDnsConfigChangeManager::SimulateDnsConfigChange() {
   ASSERT_TRUE(client_);
-  client_->OnSystemDnsConfigChanged();
+  client_->OnDnsConfigChanged();
 }
 
 }  // namespace chrome_browser_net

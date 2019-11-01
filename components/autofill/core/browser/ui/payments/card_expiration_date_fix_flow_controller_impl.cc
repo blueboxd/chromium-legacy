@@ -98,4 +98,25 @@ base::string16 CardExpirationDateFixFlowControllerImpl::GetCardLabel() const {
   return card_label_;
 }
 
+base::string16 CardExpirationDateFixFlowControllerImpl::GetCancelButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
+}
+
+base::string16 CardExpirationDateFixFlowControllerImpl::GetInputLabel() const {
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_SAVE_CARD_UPDATE_EXPIRATION_DATE_TOOLTIP);
+}
+
+base::string16 CardExpirationDateFixFlowControllerImpl::GetDateSeparator()
+    const {
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_DATE_SEPARATOR);
+}
+
+base::string16 CardExpirationDateFixFlowControllerImpl::GetInvalidDateError()
+    const {
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_SAVE_CARD_UPDATE_EXPIRATION_DATE_ERROR_TRY_AGAIN);
+}
+
 }  // namespace autofill

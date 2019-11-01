@@ -30,7 +30,6 @@
 <translation id="1113869188872983271">&amp;Anulați reordonarea</translation>
 <translation id="1125573121925420732">Este posibil să apară frecvent avertismente pe durata actualizării setărilor de securitate ale site-urilor. Acest aspect va fi îmbunătățit în curând.</translation>
 <translation id="1126551341858583091">Dimensiunea spațiului de stocare local este <ph name="CRASH_SIZE" />.</translation>
-<translation id="1127259989763091435">Confirmi și salvezi cardul în Contul Google?</translation>
 <translation id="112840717907525620">Memoria cache pentru politică este OK</translation>
 <translation id="1131264053432022307">Imaginea copiată de tine</translation>
 <translation id="1150979032973867961">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al computerului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
@@ -158,7 +157,6 @@
 <translation id="1656489000284462475">Preluare</translation>
 <translation id="1662550410081243962">Salvează și completează metodele de plată</translation>
 <translation id="1663943134801823270">Cardurile și adresele sunt din Chrome. Le poți gestiona în <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
-<translation id="1669987054044193553">Confirmă și salvează</translation>
 <translation id="1671391448414634642">Paginile în <ph name="SOURCE_LANGUAGE" /> vor fi traduse în <ph name="TARGET_LANGUAGE" /> de acum înainte.</translation>
 <translation id="1676269943528358898">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Google Chrome a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Google Chrome a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="168841957122794586">Certificatul de server conține o cheie criptografică slabă.</translation>
@@ -188,7 +186,6 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Numele titularului cardului</translation>
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
-<translation id="1822370876374026111">Pentru a plăti mai rapid data viitoare, adaugă cardul și adresa de facturare în Contul Google și pe acest dispozitiv.</translation>
 <translation id="1822540298136254167">Site-urile pe care le-ai accesat și timpul petrecut pe ele</translation>
 <translation id="1826516787628120939">Se verifică</translation>
 <translation id="1834321415901700177">Acest site conține programe dăunătoare</translation>
@@ -224,7 +221,6 @@
 <translation id="2003709556000175978">Resetează parola acum</translation>
 <translation id="2003775180883135320">Perforare cvadruplă în partea de sus</translation>
 <translation id="2025186561304664664">Proxy-ul este setat la Configurat automat.</translation>
-<translation id="202813660234680402">Nu, nu adăuga</translation>
 <translation id="2030481566774242610">Ați dorit să scrieți <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />să verifici proxy-ul și firewallul;<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936">Paginile în <ph name="LANGUAGE" /> nu vor fi traduse.</translation>
@@ -602,6 +598,7 @@
 <translation id="3884278016824448484">Identificator de gadget în conflict</translation>
 <translation id="3885155851504623709">Parohie</translation>
 <translation id="3890664840433101773">Adaugă o adresă de e-mail</translation>
+<translation id="3897092660631435901">Meniu</translation>
 <translation id="3901925938762663762">Cardul este expirat</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
@@ -655,7 +652,6 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Încă <ph name="ITEM_COUNT" /> articol}few{Încă <ph name="ITEM_COUNT" /> articole}other{Încă <ph name="ITEM_COUNT" /> de articole}}</translation>
 <translation id="4176463684765177261">Dezactivat</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4193750898749511769">Pentru a plăti mai rapid data viitoare, adaugă cardul și adresa de facturare în Contul Google.</translation>
 <translation id="4196861286325780578">&amp;Repetați mutarea</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />să verifici configurarea pentru firewall și antivirus;<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Plic)</translation>
@@ -775,7 +771,6 @@
 <translation id="4738601419177586157">Sugestie de căutare <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Gestionează parolele…</translation>
 <translation id="4744603770635761495">Cale executabilă</translation>
-<translation id="47454865135383664">Adaugi cardul în Contul Google?</translation>
 <translation id="4750917950439032686">Informațiile tale (de exemplu, parolele și numerele cardurilor de credit) sunt private când sunt trimise la acest site.</translation>
 <translation id="4756388243121344051">&amp;Istoric</translation>
 <translation id="4758311279753947758">Adaugă informații de contact</translation>
@@ -1019,7 +1014,6 @@
 <translation id="5932224571077948991">Site-ul afișează anunțuri deranjante sau înșelătoare</translation>
 <translation id="5939847200023027600">Serviciul PDF Compositor</translation>
 <translation id="5946937721014915347">Se deschide <ph name="SITE_NAME" />…</translation>
-<translation id="5947933617628957894">Da, adaugă</translation>
 <translation id="5951495562196540101">Nu te poți înscrie cu contul de consumator (este disponibilă o licență din pachet).</translation>
 <translation id="5967592137238574583">Editează informațiile de contact</translation>
 <translation id="5967867314010545767">Eliminați din istoric</translation>
@@ -1113,7 +1107,6 @@
 <translation id="6410264514553301377">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium te poate ajuta să îți protejezi Contul Google și să îți schimbi parola.</translation>
 <translation id="6427730057873428458">Îndoire de tip fereastră</translation>
-<translation id="6431585503458005759">Nu stoca</translation>
 <translation id="6433490469411711332">Editează informațiile de contact</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> a refuzat conexiunea.</translation>
 <translation id="6434309073475700221">Renunță</translation>
@@ -1129,7 +1122,6 @@
 <translation id="6489534406876378309">Începeți încărcarea rapoartelor de blocare</translation>
 <translation id="6499038740797743453">Resetezi parola?</translation>
 <translation id="6507833130742554667">Se acceptă carduri de credit și de debit.</translation>
-<translation id="650855688985305916">Da, stochează</translation>
 <translation id="6508722015517270189">repornește Chrome;</translation>
 <translation id="6517596291481585650">Atenție: această politică nu a fost îmbinată ca listă așa cum este indicat de politică, deoarece nu este o listă.</translation>
 <translation id="6518133107902771759">Confirmați</translation>
@@ -1267,7 +1259,6 @@ Detalii suplimentare:
 <translation id="7298195798382681320">Recomandate</translation>
 <translation id="7300012071106347854">Albastru cobalt</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />”</translation>
-<translation id="7303701124147721189">Pentru a plăti mai rapid data viitoare, stochează cardul și adresa de facturare în Contul Google și pe acest dispozitiv.</translation>
 <translation id="7304030187361489308">Înaltă</translation>
 <translation id="7309308571273880165">Raportul de blocare creat <ph name="CRASH_TIME" /> (utilizatorul a solicitat încărcarea, dar nu a fost încărcat încă)</translation>
 <translation id="7313965965371928911">Avertizări privind <ph name="BEGIN_LINK" />Navigarea sigură<ph name="END_LINK" /></translation>
@@ -1494,7 +1485,6 @@ Detalii suplimentare:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Dacă îți asumi riscurile de securitate, poți să <ph name="BEGIN_LINK" />accesezi acest site<ph name="END_LINK" /> înainte ca programele periculoase să fie eliminate.</translation>
 <translation id="8349305172487531364">Bara de marcaje</translation>
-<translation id="836241887727198552">Stochezi cardul în Contul Google?</translation>
 <translation id="8363502534493474904">să dezactivezi modul Avion;</translation>
 <translation id="8364627913115013041">Nesetată.</translation>
 <translation id="8368476060205742148">Servicii Google Play</translation>
@@ -1512,7 +1502,6 @@ Detalii suplimentare:
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8433057134996913067">Astfel, te vei deconecta de pe majoritatea site-urilor.</translation>
 <translation id="8437238597147034694">&amp;Anulați mutarea</translation>
-<translation id="8440508849222143646">Pentru a plăti mai rapid data viitoare, stochează cardul și adresa de facturare în Contul Google.</translation>
 <translation id="8461694314515752532">Criptează datele sincronizate folosind propria expresie de acces pentru sincronizare</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 card de credit}few{# carduri de credit}other{# de carduri de credit}}</translation>
 <translation id="8473863474539038330">Adrese și altele</translation>
@@ -1537,7 +1526,6 @@ Detalii suplimentare:
 <translation id="861775596732816396">Mărimea 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Salvează cardul pe acest dispozitiv</translation>
-<translation id="8626112503828625890">Stochezi datele de facturare în Contul Google?</translation>
 <translation id="8647750283161643317">Resetați-le pe toate la valorile prestabilite</translation>
 <translation id="8663226718884576429">Rezumatul comenzii, <ph name="TOTAL_LABEL" />, Mai multe detalii</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, răspuns, <ph name="ANSWER" /></translation>

@@ -228,7 +228,8 @@ WebPreferences::WebPreferences()
       picture_in_picture_enabled(true),
       translate_service_available(false),
       network_quality_estimator_web_holdback(
-          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+      always_show_focus(false) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");

@@ -34,8 +34,8 @@ bool StackCopierSuspend::CopyStack(StackBuffer* stack_buffer,
     // The MetadataProvider must be created before the ScopedSuspendThread
     // because it acquires a lock in its constructor that might otherwise be
     // held by the target thread, resulting in deadlock.
-    std::unique_ptr<base::ProfileBuilder::MetadataProvider> get_metadata_items =
-        base::GetSampleMetadataRecorder()->CreateMetadataProvider();
+    std::unique_ptr<ProfileBuilder::MetadataProvider> get_metadata_items =
+        GetSampleMetadataRecorder()->CreateMetadataProvider();
 
     // Allocation of the ScopedSuspendThread object itself is OK since it
     // necessarily occurs before the thread is suspended by the object.

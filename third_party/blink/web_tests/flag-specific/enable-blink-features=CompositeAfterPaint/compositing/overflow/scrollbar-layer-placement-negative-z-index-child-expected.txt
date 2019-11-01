@@ -13,6 +13,21 @@
       "transform": 1
     },
     {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='content'",
+      "position": [17, 17],
+      "bounds": [196, 212],
+      "contentsOpaque": true,
+      "backgroundColor": "#DDDDDD",
+      "transform": 2
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV class='scroller'",
+      "position": [-30, -30],
+      "bounds": [290, 230],
+      "backgroundColor": "#FFFFFF",
+      "transform": 2
+    },
+    {
       "name": "LayoutNGBlockFlow DIV class='scroller'",
       "position": [218, 5],
       "bounds": [7, 160],

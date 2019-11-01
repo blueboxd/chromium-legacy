@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/test/app/browsing_data_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/histogram_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -48,7 +49,6 @@ using chrome_test_util::SettingsMenuPrivacyButton;
 using chrome_test_util::WebViewMatcher;
 
 using tab_usage_recorder_test_util::OpenNewIncognitoTabUsingUIAndEvictMainTabs;
-using tab_usage_recorder_test_util::RemoveBrowsingCacheForMainTabs;
 using tab_usage_recorder_test_util::SwitchToNormalMode;
 
 namespace {
@@ -434,8 +434,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
       std::make_unique<HtmlResponseProvider>(responses), kVerySlowURLDelay));
 
-  GREYAssertTrue(RemoveBrowsingCacheForMainTabs(),
-                 @"Failed to clear cache for main tabs");
+  [ChromeEarlGrey removeBrowsingCache];
 
   SwitchToNormalMode();
 
@@ -512,8 +511,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
       std::make_unique<HtmlResponseProvider>(responses), kVerySlowURLDelay));
 
-  GREYAssertTrue(RemoveBrowsingCacheForMainTabs(),
-                 @"Failed to clear cache for main tabs");
+  [ChromeEarlGrey removeBrowsingCache];
 
   SwitchToNormalMode();
 

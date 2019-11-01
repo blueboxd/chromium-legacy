@@ -57,8 +57,7 @@ class DiskMounterImpl : public DiskMounter,
   void Unmount() {
     disk_mount_manager_->RemoveObserver(this);
     if (!mount_path_.empty()) {
-      disk_mount_manager_->UnmountPath(mount_path_.value(),
-                                       chromeos::UNMOUNT_OPTIONS_LAZY, {});
+      disk_mount_manager_->UnmountPath(mount_path_.value(), {});
       mount_path_.clear();
     }
   }

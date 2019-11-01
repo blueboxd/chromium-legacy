@@ -3,22 +3,31 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for extension-keyboard-shortcuts. */
-cr.define('extension_shortcut_tests', function() {
+
+import {isValidKeyCode, Key, keystrokeToString} from 'chrome://extensions/extensions.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {isVisible} from '../test_util.m.js';
+
+import {TestService} from './test_service.js';
+import {createExtensionInfo} from './test_util.js';
+
+  window.extension_shortcut_tests = {};
+  extension_shortcut_tests.suiteName = 'ExtensionShortcutTest';
   /** @enum {string} */
-  const TestNames = {
+  extension_shortcut_tests.TestNames = {
     IsValidKeyCode: 'isValidKeyCode',
     KeyStrokeToString: 'keystrokeToString',
     Layout: 'Layout',
     ScopeChange: 'ScopeChange',
   };
 
-  const suiteName = 'ExtensionShortcutTest';
-
-  suite(suiteName, function() {
-    /** @type {extensions.KeyboardShortcuts} */
+  suite(extension_shortcut_tests.suiteName, function() {
+    /** @type {KeyboardShortcuts} */
     let keyboardShortcuts;
     /** @type {chrome.developerPrivate.ExtensionInfo} */
-    let noCommand;
+    let noCommands;
     /** @type {chrome.developerPrivate.ExtensionInfo} */
     let oneCommand;
     /** @type {chrome.developerPrivate.ExtensionInfo} */
@@ -26,12 +35,12 @@ cr.define('extension_shortcut_tests', function() {
 
     setup(function() {
       PolymerTest.clearBody();
-      keyboardShortcuts = new extensions.KeyboardShortcuts();
-      keyboardShortcuts.delegate = new extensions.TestService();
+      keyboardShortcuts =
+          document.createElement('extensions-keyboard-shortcuts');
+      keyboardShortcuts.delegate = new TestService();
 
-      const createInfo = extension_test_util.createExtensionInfo;
-      noCommands = createInfo({id: 'a'.repeat(32)});
-      oneCommand = createInfo({
+      noCommands = createExtensionInfo({id: 'a'.repeat(32)});
+      oneCommand = createExtensionInfo({
         id: 'b'.repeat(32),
         commands: [{
           description: 'Description',
@@ -42,7 +51,7 @@ cr.define('extension_shortcut_tests', function() {
           isExtensionAction: true,
         }]
       });
-      twoCommands = createInfo({
+      twoCommands = createExtensionInfo({
         id: 'c'.repeat(32),
         commands: [
           {
@@ -68,14 +77,14 @@ cr.define('extension_shortcut_tests', function() {
 
       document.body.appendChild(keyboardShortcuts);
 
-      Polymer.dom.flush();
+      flush();
     });
 
-    test(assert(TestNames.Layout), function() {
+    test(assert(extension_shortcut_tests.TestNames.Layout), function() {
       const isVisibleOnCard = function(e, s) {
         // We check the light DOM in the card because it's a regular old div,
         // rather than a fancy-schmancy custom element.
-        return test_util.isVisible(e, s, true);
+        return isVisible(e, s, true);
       };
       const cards =
           keyboardShortcuts.$$('#container').querySelectorAll('.shortcut-card');
@@ -94,34 +103,34 @@ cr.define('extension_shortcut_tests', function() {
       assertEquals(2, commands.length);
     });
 
-    test(TestNames.IsValidKeyCode, function() {
-      expectTrue(extensions.isValidKeyCode('A'.charCodeAt(0)));
-      expectTrue(extensions.isValidKeyCode('F'.charCodeAt(0)));
-      expectTrue(extensions.isValidKeyCode('Z'.charCodeAt(0)));
-      expectTrue(extensions.isValidKeyCode('4'.charCodeAt(0)));
-      expectTrue(extensions.isValidKeyCode(extensions.Key.PageUp));
-      expectTrue(extensions.isValidKeyCode(extensions.Key.MediaPlayPause));
-      expectTrue(extensions.isValidKeyCode(extensions.Key.Down));
-      expectFalse(extensions.isValidKeyCode(16));   // Shift
-      expectFalse(extensions.isValidKeyCode(17));   // Ctrl
-      expectFalse(extensions.isValidKeyCode(18));   // Alt
-      expectFalse(extensions.isValidKeyCode(113));  // F2
-      expectFalse(extensions.isValidKeyCode(144));  // Num Lock
-      expectFalse(extensions.isValidKeyCode(43));   // +
-      expectFalse(extensions.isValidKeyCode(27));   // Escape
+    test(extension_shortcut_tests.TestNames.IsValidKeyCode, function() {
+      expectTrue(isValidKeyCode('A'.charCodeAt(0)));
+      expectTrue(isValidKeyCode('F'.charCodeAt(0)));
+      expectTrue(isValidKeyCode('Z'.charCodeAt(0)));
+      expectTrue(isValidKeyCode('4'.charCodeAt(0)));
+      expectTrue(isValidKeyCode(Key.PageUp));
+      expectTrue(isValidKeyCode(Key.MediaPlayPause));
+      expectTrue(isValidKeyCode(Key.Down));
+      expectFalse(isValidKeyCode(16));   // Shift
+      expectFalse(isValidKeyCode(17));   // Ctrl
+      expectFalse(isValidKeyCode(18));   // Alt
+      expectFalse(isValidKeyCode(113));  // F2
+      expectFalse(isValidKeyCode(144));  // Num Lock
+      expectFalse(isValidKeyCode(43));   // +
+      expectFalse(isValidKeyCode(27));   // Escape
     });
 
-    test(TestNames.KeyStrokeToString, function() {
+    test(extension_shortcut_tests.TestNames.KeyStrokeToString, function() {
       // Creating an event with the KeyboardEvent ctor doesn't work. Fake it.
       const e = {keyCode: 'A'.charCodeAt(0)};
-      expectEquals('A', extensions.keystrokeToString(e));
+      expectEquals('A', keystrokeToString(e));
       e.ctrlKey = true;
-      expectEquals('Ctrl+A', extensions.keystrokeToString(e));
+      expectEquals('Ctrl+A', keystrokeToString(e));
       e.shiftKey = true;
-      expectEquals('Ctrl+Shift+A', extensions.keystrokeToString(e));
+      expectEquals('Ctrl+Shift+A', keystrokeToString(e));
     });
 
-    test(TestNames.ScopeChange, function() {
+    test(extension_shortcut_tests.TestNames.ScopeChange, function() {
       const selectElement = keyboardShortcuts.$$('select');
       selectElement.value = 'GLOBAL';
       selectElement.dispatchEvent(new CustomEvent('change'));
@@ -134,9 +143,3 @@ cr.define('extension_shortcut_tests', function() {
           });
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

@@ -17,6 +17,12 @@ struct App {
   Readiness readiness;
   string? name;
   string? short_name;
+
+  // The publisher-specific ID for this app, e.g. for Android apps, this field
+  // contains the Android package name. May be empty if AppId() should be
+  // considered as the canonical publisher ID.
+  string? publisher_id;
+
   string? description;
   string? version;
   array<string> additional_search_terms;

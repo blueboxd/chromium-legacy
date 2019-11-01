@@ -15,23 +15,23 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="12dp"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="15dp"
         android:layout_marginEnd="16dp"
         android:textAppearance="@style/TextAppearance.BlackBody" />
 
-    <LinearLayout
+    <org.chromium.chrome.browser.ui.widget.WrappingLayout
         android:id="@+id/chip_container"
         android:layout_below="@id/explanation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingStart="10dp">
+        android:paddingStart="15dp"
+        app:horizontalSpacing="10dp">
 
         <org.chromium.ui.widget.ChipView
             android:id="@+id/names_filter"
             android:gravity="center"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             style="@style/SuggestionChip" />
 
@@ -39,7 +39,6 @@
             android:id="@+id/email_filter"
             android:gravity="center"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             style="@style/SuggestionChip" />
 
@@ -47,11 +46,9 @@
             android:id="@+id/tel_filter"
             android:gravity="center"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             style="@style/SuggestionChip" />
-
-    </LinearLayout>
+    </org.chromium.chrome.browser.ui.widget.WrappingLayout>
 
     <LinearLayout
         android:id="@+id/content"

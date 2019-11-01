@@ -1117,6 +1117,14 @@ void CompositedLayerMapping::UpdateInternalHierarchy() {
 
   // Now constructing the subtree for the overflow controls.
   bottom_layer = graphics_layer_.get();
+  if (is_main_frame_layout_view_layer_ &&
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    bottom_layer = GetLayoutObject()
+                       .GetFrame()
+                       ->GetPage()
+                       ->GetVisualViewport()
+                       .RootGraphicsLayer();
+  }
   update_bottom_layer(overflow_controls_host_layer_.get());
   if (layer_for_horizontal_scrollbar_) {
     overflow_controls_host_layer_->AddChild(

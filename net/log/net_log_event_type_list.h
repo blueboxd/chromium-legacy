@@ -48,7 +48,7 @@ EVENT_TYPE(REQUEST_ALIVE)
 //
 //   {
 //     "host": <Hostname associated with the request>,
-//     "address_family": <The address family to restrict results to>,
+//     "dns_query_type": <The type of the DNS query>,
 //     "allow_cached_response": <Whether it is ok to return a result from
 //                               the host cache>,
 //     "is_speculative": <Whether this request was started by the DNS

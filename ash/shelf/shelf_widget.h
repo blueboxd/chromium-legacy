@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
@@ -37,7 +38,8 @@ class StatusAreaWidget;
 class ASH_EXPORT ShelfWidget : public views::Widget,
                                public ShelfLayoutManagerObserver,
                                public ShelfObserver,
-                               public SessionObserver {
+                               public SessionObserver,
+                               public AccessibilityObserver {
  public:
   explicit ShelfWidget(Shelf* shelf);
   ~ShelfWidget() override;
@@ -127,6 +129,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                        gfx::Rect* hit_test_rect_mouse,
                        gfx::Rect* hit_test_rect_touch);
 
+  void ForceToShowHotseat();
+
+  bool is_hotseat_forced_to_show() const { return is_hotseat_forced_to_show_; }
+
   // Internal implementation detail. Do not expose outside of tests.
   ShelfView* shelf_view_for_testing() const {
     return hotseat_widget()->GetShelfView();
@@ -139,6 +145,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
  private:
   class DelegateView;
   friend class DelegateView;
+
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
 
   // Hides shelf widget if IsVisible() returns true.
   void HideIfShown();
@@ -170,6 +179,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   LoginShelfView* login_shelf_view_;
 
   ScopedSessionObserver scoped_session_observer_;
+
+  bool is_hotseat_forced_to_show_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfWidget);
 };

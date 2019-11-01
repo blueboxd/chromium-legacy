@@ -137,7 +137,7 @@ class GCM_EXPORT ConnectionFactoryImpl
   // ---- network:: components for establishing connections. ----
   // Socket factory for creating new GCM connections.
   GetProxyResolvingFactoryCallback get_socket_factory_callback_;
-  network::mojom::ProxyResolvingSocketFactoryPtr socket_factory_;
+  mojo::Remote<network::mojom::ProxyResolvingSocketFactory> socket_factory_;
   // The handle to the socket for the current connection, if one exists.
   mojo::Remote<network::mojom::ProxyResolvingSocket> socket_;
   // Peer address of |socket_|.

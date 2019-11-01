@@ -358,7 +358,7 @@ void VideoRendererImpl::OnVideoDecoderStreamInitialized(bool success) {
 void VideoRendererImpl::FinishInitialization(PipelineStatus status) {
   DCHECK(init_cb_);
   TRACE_EVENT_ASYNC_END1("media", "VideoRendererImpl::Initialize", this,
-                         "status", MediaLog::PipelineStatusToString(status));
+                         "status", PipelineStatusToString(status));
   std::move(init_cb_).Run(status);
 }
 

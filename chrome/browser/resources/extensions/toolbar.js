@@ -2,9 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import './pack_dialog.js';
+
+import {getInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {listenOnce} from 'chrome://resources/js/util.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
   /** @interface */
-  class ToolbarDelegate {
+  export class ToolbarDelegate {
     /**
      * Toggles whether or not the profile is in developer mode.
      * @param {boolean} inDevMode
@@ -24,11 +38,13 @@ cr.define('extensions', function() {
     updateAllExtensions() {}
   }
 
-  const Toolbar = Polymer({
+  Polymer({
     is: 'extensions-toolbar',
 
+    _template: html`{__html_template__}`,
+
     properties: {
-      /** @type {extensions.ToolbarDelegate} */
+      /** @type {ToolbarDelegate} */
       delegate: Object,
 
       inDevMode: {
@@ -168,7 +184,7 @@ cr.define('extensions', function() {
 
       this.isUpdating_ = true;
 
-      const toastManager = cr.toastManager.getInstance();
+      const toastManager = getInstance();
       // Keep the toast open indefinitely.
       toastManager.duration = 0;
       toastManager.show(this.i18n('toolbarUpdatingToast'), false);
@@ -185,9 +201,3 @@ cr.define('extensions', function() {
           });
     },
   });
-
-  return {
-    Toolbar: Toolbar,
-    ToolbarDelegate: ToolbarDelegate,
-  };
-});

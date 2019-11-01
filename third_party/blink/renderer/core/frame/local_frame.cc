@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/editing/surrounding_text.h"
+#include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -1469,6 +1470,11 @@ void LocalFrame::UpdateTaskTime(base::TimeDelta time) {
 
 void LocalFrame::UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) {
   Client()->DidChangeActiveSchedulerTrackedFeatures(features_mask);
+}
+
+const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {
+  return GetDocument() ? GetDocument()->GetWindowAgent().cluster_id()
+                       : base::UnguessableToken::Null();
 }
 
 const mojo::Remote<mojom::blink::ReportingServiceProxy>&

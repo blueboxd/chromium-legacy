@@ -70,7 +70,6 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float search_context_opacity,
                      float search_text_layer_min_height,
                      float search_term_opacity,
-                     int search_term_bounds_adjust,
                      float search_term_caption_spacing,
                      float search_caption_animation_percentage,
                      bool search_caption_visible,

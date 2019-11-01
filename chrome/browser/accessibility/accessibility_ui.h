@@ -34,10 +34,14 @@ class AccessibilityUIMessageHandler : public content::WebUIMessageHandler {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
+  std::vector<std::string> event_logs_;
+
   void ToggleAccessibility(const base::ListValue* args);
   void SetGlobalFlag(const base::ListValue* args);
   void RequestWebContentsTree(const base::ListValue* args);
   void RequestNativeUITree(const base::ListValue* args);
+  void RequestAccessibilityEvents(const base::ListValue* args);
+  void Callback(const std::string&);
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityUIMessageHandler);
 };

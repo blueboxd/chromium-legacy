@@ -70,8 +70,7 @@ bool IsCacheStorageAllowed(ScriptState* script_state) {
       return false;
     if (auto* settings_client = frame->GetContentSettingsClient()) {
       // This triggers a sync IPC.
-      return settings_client->AllowCacheStorage(
-          WebSecurityOrigin(context->GetSecurityOrigin()));
+      return settings_client->AllowCacheStorage();
     }
     return true;
   }
@@ -81,7 +80,7 @@ bool IsCacheStorageAllowed(ScriptState* script_state) {
   if (!content_settings_client)
     return true;
   // This triggers a sync IPC.
-  return content_settings_client->AllowCacheStorage(WebSecurityOrigin());
+  return content_settings_client->AllowCacheStorage();
 }
 
 }  // namespace

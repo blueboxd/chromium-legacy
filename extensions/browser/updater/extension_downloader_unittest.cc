@@ -83,33 +83,38 @@ TEST_F(ExtensionDownloaderTest, TestStageChanges) {
   EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
       .WillOnce(Return(true));
   Sequence sequence;
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::QUEUED_FOR_MANIFEST))
       .Times(AnyNumber());
   EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
                             kTestExtensionId,
-                            ExtensionDownloaderDelegate::QUEUED_FOR_CRX))
+                            ExtensionDownloaderDelegate::Stage::QUEUED_FOR_CRX))
       .Times(AnyNumber());
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::PARSING_MANIFEST))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::MANIFEST_LOADED))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::DOWNLOADING_CRX))
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST))
       .InSequence(sequence);
   EXPECT_CALL(delegate,
               OnExtensionDownloadStageChanged(
-                  kTestExtensionId, ExtensionDownloaderDelegate::FINISHED))
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::PARSING_MANIFEST))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::MANIFEST_LOADED))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::DOWNLOADING_CRX))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::Stage::FINISHED))
       .InSequence(sequence);
 
   AddFetchDataToDownloader(&helper, std::move(fetch));
@@ -148,29 +153,34 @@ TEST_F(ExtensionDownloaderTest, TestStageChangesNoUpdates) {
   EXPECT_CALL(delegate, GetExtensionExistingVersion(kTestExtensionId, _))
       .WillOnce(DoAll(SetArgPointee<1>("1.1"), Return(true)));
   Sequence sequence;
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
-      .Times(AnyNumber());
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::PARSING_MANIFEST))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::MANIFEST_LOADED))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::DOWNLOADING_CRX))
-      .Times(0);
   EXPECT_CALL(delegate,
               OnExtensionDownloadStageChanged(
-                  kTestExtensionId, ExtensionDownloaderDelegate::FINISHED))
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::QUEUED_FOR_MANIFEST))
+      .Times(AnyNumber());
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::PARSING_MANIFEST))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::MANIFEST_LOADED))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::DOWNLOADING_CRX))
+      .Times(0);
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::Stage::FINISHED))
       .InSequence(sequence);
 
   AddFetchDataToDownloader(&helper, std::move(fetch));
@@ -192,25 +202,29 @@ TEST_F(ExtensionDownloaderTest, TestStageChangesBadManifest) {
 
   MockExtensionDownloaderDelegate& delegate = helper.delegate();
   Sequence sequence;
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
-      .Times(AnyNumber());
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::PARSING_MANIFEST))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::MANIFEST_LOADED))
-      .Times(0);
   EXPECT_CALL(delegate,
               OnExtensionDownloadStageChanged(
-                  kTestExtensionId, ExtensionDownloaderDelegate::FINISHED))
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::QUEUED_FOR_MANIFEST))
+      .Times(AnyNumber());
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::PARSING_MANIFEST))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::MANIFEST_LOADED))
+      .Times(0);
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::Stage::FINISHED))
       .InSequence(sequence);
 
   AddFetchDataToDownloader(&helper, std::move(fetch));
@@ -231,21 +245,24 @@ TEST_F(ExtensionDownloaderTest, TestStageChangesBadQuery) {
 
   MockExtensionDownloaderDelegate& delegate = helper.delegate();
   Sequence sequence;
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::QUEUED_FOR_MANIFEST))
-      .Times(AnyNumber());
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::DOWNLOADING_MANIFEST))
-      .InSequence(sequence);
-  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
-                            kTestExtensionId,
-                            ExtensionDownloaderDelegate::PARSING_MANIFEST))
-      .Times(0);
   EXPECT_CALL(delegate,
               OnExtensionDownloadStageChanged(
-                  kTestExtensionId, ExtensionDownloaderDelegate::FINISHED))
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::QUEUED_FOR_MANIFEST))
+      .Times(AnyNumber());
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST))
+      .InSequence(sequence);
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadStageChanged(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::Stage::PARSING_MANIFEST))
+      .Times(0);
+  EXPECT_CALL(delegate, OnExtensionDownloadStageChanged(
+                            kTestExtensionId,
+                            ExtensionDownloaderDelegate::Stage::FINISHED))
       .InSequence(sequence);
 
   AddFetchDataToDownloader(&helper, std::move(fetch));

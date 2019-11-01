@@ -40,7 +40,6 @@ const _PATH_SEP = '/';
 const _NAMES_TO_FLAGS = Object.freeze({
   hot: _FLAGS.HOT,
   generated: _FLAGS.GENERATED_SOURCE,
-  coverage: _FLAGS.COVERAGE,
   uncompressed: _FLAGS.UNCOMPRESSED,
 });
 
@@ -137,8 +136,6 @@ class TreeBuilder {
    * @param {(symbolNode: TreeNode) => boolean} options.filterTest Called to see
    * if a symbol should be included. If a symbol fails the test, it will not be
    * attached to the tree.
-   * @param {(symbolNode: TreeNode) => boolean} options.highlightTest Called to
-   * see if a symbol should be highlighted.
    * @param {boolean} options.methodCountMode Whether we're in "method count"
    * mode.
    * @param {string} options.sep Path seperator used to find parent names.
@@ -147,7 +144,6 @@ class TreeBuilder {
   constructor(options) {
     this._getPath = options.getPath;
     this._filterTest = options.filterTest;
-    this._highlightTest = options.highlightTest;
     this._methodCountMode = options.methodCountMode;
     this._sep = options.sep || _PATH_SEP;
     this._meta = options.meta;
@@ -198,13 +194,12 @@ class TreeBuilder {
       for (const [type, stat] of additionalStats) {
         let parentStat = parent.childStats[type];
         if (parentStat == null) {
-          parentStat = {size: 0, count: 0, highlight: 0};
+          parentStat = {size: 0, count: 0};
           parent.childStats[type] = parentStat;
         }
 
         parentStat.size += stat.size;
         parentStat.count += stat.count;
-        parentStat.highlight += stat.highlight;
 
         const absSize = Math.abs(parentStat.size);
         if (absSize > lastBiggestSize) {
@@ -439,14 +434,10 @@ class TreeBuilder {
           [type]: {
             size,
             count,
-            highlight: 0,
           },
         },
       });
 
-      if (this._highlightTest(symbolNode)) {
-        symbolNode.childStats[type].highlight = size;
-      }
       if (this._filterTest(symbolNode)) {
         this._attachToParent(symbolNode, fileNode);
       }
@@ -651,8 +642,7 @@ function parseOptions(options) {
   const url = params.get('load_url');
   const groupBy = params.get('group_by') || 'source_path';
   const methodCountMode = params.has('method_count');
-  const filterGeneratedFiles = params.has('generated_filter');
-  const flagToHighlight = _NAMES_TO_FLAGS[params.get('highlight')];
+  const flagToFilter = _NAMES_TO_FLAGS[params.get('flag_filter')];
 
   let minSymbolSize = Number(params.get('min_size'));
   if (Number.isNaN(minSymbolSize)) {
@@ -690,9 +680,9 @@ function parseOptions(options) {
     filters.push(s => typeFilter.has(s.type));
   }
 
-  // Only show generated files
-  if (filterGeneratedFiles) {
-    filters.push(s => hasFlag(_FLAGS.GENERATED_SOURCE, s));
+  // Only show symbols with attached flag
+  if (flagToFilter) {
+    filters.push(s => hasFlag(flagToFilter, s));
   }
 
   // Search symbol names using regex
@@ -721,15 +711,7 @@ function parseOptions(options) {
     return filters.every(fn => fn(symbolNode));
   }
 
-  /** @type {(symbolNode: TreeNode) => boolean} */
-  let highlightTest;
-  if (flagToHighlight) {
-    highlightTest = symbolNode => hasFlag(flagToHighlight, symbolNode);
-  } else {
-    highlightTest = () => false;
-  }
-
-  return {groupBy, filterTest, highlightTest, url, methodCountMode};
+  return {groupBy, filterTest, url, methodCountMode};
 }
 
 /** @type {TreeBuilder | null} */
@@ -741,14 +723,11 @@ const fetcher = new DataFetcher('data.ndjson');
  * @param {string} groupBy Sets how the tree is grouped.
  * @param {(symbolNode: TreeNode) => boolean} filterTest Filter function that
  * each symbol is tested against
- * @param {(symbolNode: TreeNode) => boolean} highlightTest Filter function that
- * each symbol's flags are tested against
  * @param {boolean} methodCountMode
  * @param {(msg: TreeProgress) => void} onProgress
  * @returns {Promise<TreeProgress>}
  */
-async function buildTree(
-    groupBy, filterTest, highlightTest, methodCountMode, onProgress) {
+async function buildTree(groupBy, filterTest, methodCountMode, onProgress) {
   /** @type {Meta | null} Object from the first line of the data file */
   let meta = null;
 
@@ -812,7 +791,6 @@ async function buildTree(
         builder = new TreeBuilder({
           getPath: getPathMap[groupBy],
           filterTest,
-          highlightTest,
           methodCountMode,
           sep: groupBy === 'component' ? '>' : _PATH_SEP,
           meta,
@@ -847,8 +825,7 @@ async function buildTree(
 const actions = {
   /** @param {{input:string|null,options:string}} param0 */
   load({input, options}) {
-    const {groupBy, filterTest, highlightTest, url, methodCountMode} =
-        parseOptions(options);
+    const {groupBy, filterTest, url, methodCountMode} = parseOptions(options);
     if (input === 'from-url://' && url) {
       // Display the data from the `load_url` query parameter
       console.info('Displaying data from', url);
@@ -859,7 +836,7 @@ const actions = {
     }
 
     return buildTree(
-        groupBy, filterTest, highlightTest, methodCountMode, progress => {
+        groupBy, filterTest, methodCountMode, progress => {
           // @ts-ignore
           self.postMessage(progress);
         });

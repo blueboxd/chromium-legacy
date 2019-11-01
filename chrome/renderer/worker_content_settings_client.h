@@ -30,8 +30,8 @@ class WorkerContentSettingsClient : public blink::WebContentSettingsClient {
   // WebContentSettingsClient overrides.
   std::unique_ptr<blink::WebContentSettingsClient> Clone() override;
   bool RequestFileSystemAccessSync() override;
-  bool AllowIndexedDB(const blink::WebSecurityOrigin&) override;
-  bool AllowCacheStorage(const blink::WebSecurityOrigin&) override;
+  bool AllowIndexedDB() override;
+  bool AllowCacheStorage() override;
   bool AllowRunningInsecureContent(bool allowed_per_settings,
                                    const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/format_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -19,8 +20,8 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
 using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::Property;
@@ -1275,9 +1276,6 @@ TEST(HostCacheTest, MergeEntries) {
   HostCache::Entry front(OK, AddressList(kEndpointFront),
                          HostCache::Entry::SOURCE_DNS);
   front.set_text_records(std::vector<std::string>{"text1"});
-  EsniContent esni_content_front;
-  esni_content_front.AddKeyForAddress(kAddressFront, "a");
-  front.set_esni_data(esni_content_front);
   const HostPortPair kHostnameFront("host", 1);
   front.set_hostnames(std::vector<HostPortPair>{kHostnameFront});
 
@@ -1288,9 +1286,6 @@ TEST(HostCacheTest, MergeEntries) {
                         HostCache::Entry::SOURCE_DNS);
   back.set_text_records(std::vector<std::string>{"text2"});
   const HostPortPair kHostnameBack("host", 2);
-  EsniContent esni_content_back;
-  esni_content_back.AddKeyForAddress(kAddressBack, "a");
-  back.set_esni_data(esni_content_back);
   back.set_hostnames(std::vector<HostPortPair>{kHostnameBack});
 
   HostCache::Entry result =
@@ -1299,21 +1294,191 @@ TEST(HostCacheTest, MergeEntries) {
   EXPECT_EQ(OK, result.error());
   EXPECT_EQ(HostCache::Entry::SOURCE_DNS, result.source());
 
-  ASSERT_TRUE(result.addresses());
-  EXPECT_THAT(result.addresses().value().endpoints(),
-              ElementsAre(kEndpointFront, kEndpointBack));
+  // Expect the IPv6 address to precede the IPv4 address.
+  EXPECT_THAT(result.addresses(),
+              Optional(Property(&AddressList::endpoints,
+                                ElementsAre(kEndpointBack, kEndpointFront))));
   EXPECT_THAT(result.text_records(), Optional(ElementsAre("text1", "text2")));
-
-  EXPECT_THAT(
-      result.esni_data(),
-      Optional(AllOf(Property(&EsniContent::keys, ElementsAre("a")),
-                     Property(&EsniContent::keys_for_addresses,
-                              UnorderedElementsAre(
-                                  Pair(kAddressBack, ElementsAre("a")),
-                                  Pair(kAddressFront, ElementsAre("a")))))));
 
   EXPECT_THAT(result.hostnames(),
               Optional(ElementsAre(kHostnameFront, kHostnameBack)));
+}
+
+IPAddress MakeIP(base::StringPiece literal) {
+  IPAddress ret;
+  CHECK(ret.AssignFromIPLiteral(literal));
+  return ret;
+}
+
+IPAddressList MakeIPList(std::vector<std::string> my_addresses) {
+  IPAddressList out(my_addresses.size());
+  std::transform(my_addresses.begin(), my_addresses.end(), out.begin(),
+                 &MakeIP);
+  return out;
+}
+
+std::vector<IPEndPoint> MakeEndpoints(std::vector<std::string> my_addresses) {
+  std::vector<IPEndPoint> out(my_addresses.size());
+  std::transform(my_addresses.begin(), my_addresses.end(), out.begin(),
+                 [](auto& s) { return IPEndPoint(MakeIP(s), 0); });
+  return out;
+}
+
+TEST(HostCacheTest, SortsAndDeduplicatesAddresses) {
+  IPAddressList front_addresses = MakeIPList({"0.0.0.1", "0.0.0.1", "0.0.0.2"});
+  IPAddressList back_addresses =
+      MakeIPList({"0.0.0.2", "0.0.0.2", "::3", "::3"});
+
+  HostCache::Entry front(
+      OK, AddressList::CreateFromIPAddressList(front_addresses, "front"),
+      HostCache::Entry::SOURCE_DNS);
+  HostCache::Entry back(
+      OK, AddressList::CreateFromIPAddressList(back_addresses, "back"),
+      HostCache::Entry::SOURCE_DNS);
+
+  HostCache::Entry result =
+      HostCache::Entry::MergeEntries(std::move(front), std::move(back));
+
+  EXPECT_EQ(OK, result.error());
+  EXPECT_EQ(HostCache::Entry::SOURCE_DNS, result.source());
+
+  EXPECT_THAT(
+      result.addresses(),
+      Optional(Property(
+          &AddressList::endpoints,
+          ElementsAreArray(MakeEndpoints({"::3", "0.0.0.1", "0.0.0.2"})))));
+}
+
+TEST(HostCacheTest, PrefersAddressesWithEsniContent) {
+  IPAddressList front_addresses = MakeIPList({"0.0.0.2", "0.0.0.4"});
+  IPAddressList back_addresses =
+      MakeIPList({"0.0.0.2", "0.0.0.2", "::3", "::3", "0.0.0.4"});
+
+  EsniContent esni_content_front, esni_content_back;
+  esni_content_front.AddKeyForAddress(MakeIP("0.0.0.4"), "key for 0.0.0.4");
+  esni_content_back.AddKeyForAddress(MakeIP("::3"), "key for ::3");
+
+  HostCache::Entry front(
+      OK, AddressList::CreateFromIPAddressList(front_addresses, "front"),
+      HostCache::Entry::SOURCE_DNS);
+  front.set_esni_data(esni_content_front);
+  HostCache::Entry back(
+      OK, AddressList::CreateFromIPAddressList(back_addresses, "back"),
+      HostCache::Entry::SOURCE_DNS);
+  back.set_esni_data(esni_content_back);
+
+  HostCache::Entry result =
+      HostCache::Entry::MergeEntries(std::move(front), std::move(back));
+
+  EXPECT_THAT(
+      result.addresses(),
+      Optional(Property(
+          &AddressList::endpoints,
+          ElementsAreArray(MakeEndpoints({"::3", "0.0.0.4", "0.0.0.2"})))));
+
+  EXPECT_THAT(result.esni_data(),
+              Optional(Property(
+                  &EsniContent::keys_for_addresses,
+                  UnorderedElementsAre(
+                      Pair(MakeIP("::3"), UnorderedElementsAre("key for ::3")),
+                      Pair(MakeIP("0.0.0.4"),
+                           UnorderedElementsAre("key for 0.0.0.4"))))));
+}
+
+TEST(HostCacheTest, MergesManyEntriesWithEsniContent) {
+  IPAddressList front_addresses, back_addresses;
+  EsniContent esni_content_front, esni_content_back;
+
+  // Add several IPv4 and IPv6 addresses to both the front and
+  // back ESNI structs and address_lists, and associate some of each
+  // with ESNI keys.
+  const std::string ipv4_prefix = "1.2.3.", ipv6_prefix = "::";
+  for (int i = 0; i < 50; ++i) {
+    IPAddress next =
+        MakeIP((i % 2 ? ipv4_prefix : ipv6_prefix) + base::NumberToString(i));
+    bool is_front = !!(i % 3);
+    if (is_front) {
+      front_addresses.push_back(next);
+    } else {
+      back_addresses.push_back(next);
+    }
+    if (i % 5) {
+      std::string key = base::NumberToString(i % 5);
+      if (is_front) {
+        esni_content_front.AddKeyForAddress(next, key);
+      } else {
+        esni_content_back.AddKeyForAddress(next, key);
+      }
+    }
+  }
+
+  HostCache::Entry front(
+      OK,
+      AddressList::CreateFromIPAddressList(front_addresses, "front_canonname"),
+      HostCache::Entry::SOURCE_DNS);
+  front.set_esni_data(esni_content_front);
+
+  HostCache::Entry back(
+      OK,
+      AddressList::CreateFromIPAddressList(back_addresses, "back_canonname"),
+      HostCache::Entry::SOURCE_DNS);
+  back.set_esni_data(esni_content_back);
+
+  HostCache::Entry result =
+      HostCache::Entry::MergeEntries(std::move(front), std::move(back));
+
+  ASSERT_TRUE(result.addresses());
+  EXPECT_EQ(result.addresses()->canonical_name(), "front_canonname");
+
+  EXPECT_EQ(result.addresses()->size(),
+            std::set<IPEndPoint>(result.addresses()->begin(),
+                                 result.addresses()->end())
+                .size())
+      << "Addresses should have been deduplicated.";
+
+  ASSERT_TRUE(result.esni_data());
+
+  auto has_keys = [&](const IPEndPoint& e) {
+    return !!result.esni_data()->keys_for_addresses().count(e.address());
+  };
+
+  // Helper for determining whether the resulting addresses are correctly
+  // ordered. Returns true if it's an error for |e2| to come before |e1| in
+  // *results.addresses().
+  auto address_must_precede = [&](const IPEndPoint& e1,
+                                  const IPEndPoint& e2) -> bool {
+    if (has_keys(e1) != has_keys(e2)) {
+      return has_keys(e1) && !has_keys(e2);
+    }
+    if (e1.address().IsIPv6() != e2.address().IsIPv6()) {
+      return e1.address().IsIPv6() && !e2.address().IsIPv6();
+    }
+
+    // If e1 and e2 were in the same input entry, and they're otherwise
+    // tied in the precedence ordering, then their order in the input entry
+    // should be preserved in the output.
+    bool e1_in_front = base::Contains(front_addresses, e1.address());
+    bool e2_in_front = base::Contains(front_addresses, e2.address());
+    bool e1_in_back = base::Contains(back_addresses, e1.address());
+    bool e2_in_back = base::Contains(back_addresses, e2.address());
+    if (e1_in_front == e2_in_front && e1_in_front != e1_in_back &&
+        e2_in_front != e2_in_back) {
+      const IPAddressList common_list =
+          e1_in_front ? front_addresses : back_addresses;
+      return std::find(common_list.begin(), common_list.end(), e1.address()) <
+             std::find(common_list.begin(), common_list.end(), e2.address());
+    }
+    return false;
+  };
+
+  for (size_t i = 0; i < result.addresses()->size() - 1; ++i) {
+    EXPECT_FALSE(address_must_precede((*result.addresses())[i + 1],
+                                      (*result.addresses())[i]));
+  }
+
+  auto esni_content_merged = esni_content_front;
+  esni_content_merged.MergeFrom(esni_content_back);
+  EXPECT_THAT(result.esni_data(), Optional(esni_content_merged));
 }
 
 TEST(HostCacheTest, MergeEntries_frontEmpty) {

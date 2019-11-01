@@ -113,6 +113,9 @@ public class PickerCategoryView extends OptimizedFrameLayout
     // Whether the contacts data returned includes telephone numbers.
     public final boolean includeTel;
 
+    // Whether the contacts data returned includes addresses.
+    public final boolean includeAddresses;
+
     /**
      * @param multiSelectionAllowed Whether the contacts picker should allow multiple items to be
      * selected.
@@ -120,7 +123,8 @@ public class PickerCategoryView extends OptimizedFrameLayout
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public PickerCategoryView(Context context, boolean multiSelectionAllowed,
             boolean shouldIncludeNames, boolean shouldIncludeEmails, boolean shouldIncludeTel,
-            String formattedOrigin, ContactsPickerToolbar.ContactsToolbarDelegate delegate) {
+            boolean shouldIncludeAddresses, String formattedOrigin,
+            ContactsPickerToolbar.ContactsToolbarDelegate delegate) {
         super(context, null);
 
         mActivity = (ChromeActivity) context;
@@ -128,6 +132,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
         includeNames = shouldIncludeNames;
         includeEmails = shouldIncludeEmails;
         includeTel = shouldIncludeTel;
+        includeAddresses = shouldIncludeAddresses;
 
         mSelectionDelegate = new SelectionDelegate<ContactDetails>();
         if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
@@ -326,8 +331,8 @@ public class PickerCategoryView extends OptimizedFrameLayout
      * @param selected The property values that are currently selected.
      * @return The list of property values to share.
      */
-    private List<String> getContactPropertyValues(
-            boolean isIncluded, boolean isEnabled, List<String> selected) {
+    private <T> List<T> getContactPropertyValues(
+            boolean isIncluded, boolean isEnabled, List<T> selected) {
         if (!isIncluded) {
             // The property wasn't requested in the API so return null.
             return null;
@@ -335,7 +340,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
 
         if (!isEnabled) {
             // The user doesn't want to share this property, so return an empty array.
-            return new ArrayList<String>();
+            return new ArrayList<T>();
         }
 
         // Share whatever was selected.
@@ -359,7 +364,10 @@ public class PickerCategoryView extends OptimizedFrameLayout
                     getContactPropertyValues(includeEmails, PickerAdapter.includesEmails(),
                             contactDetails.getEmails()),
                     getContactPropertyValues(includeTel, PickerAdapter.includesTelephones(),
-                            contactDetails.getPhoneNumbers())));
+                            contactDetails.getPhoneNumbers()),
+                    // TODO(crbug.com/1016870): Check the address chip when added.
+                    getContactPropertyValues(
+                            includeAddresses, true, contactDetails.getAddresses())));
         }
         executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts,
                 ACTION_CONTACTS_SELECTED);
@@ -383,6 +391,9 @@ public class PickerCategoryView extends OptimizedFrameLayout
             propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_EMAILS;
         }
         if (includeTel) propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_TELS;
+        if (includeAddresses) {
+            propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_ADDRESSES;
+        }
 
         mListener.onContactsPickerUserAction(
                 action, contacts, percentageShared, propertiesRequested);

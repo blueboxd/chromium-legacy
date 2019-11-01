@@ -58,8 +58,7 @@ class MultiThreadedTest : public testing::Test {
 
     for (int i = 0; i < num_threads_; ++i) {
       threads.push_back(blink::Thread::CreateThread(
-          ThreadCreationParams(WebThreadType::kTestThread)
-              .SetSupportsGC(true)));
+          ThreadCreationParams(ThreadType::kTestThread).SetSupportsGC(true)));
       waits.push_back(std::make_unique<base::WaitableEvent>());
     }
 

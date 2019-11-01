@@ -42,6 +42,10 @@ class ShelfButtonDelegate {
                              const ui::Event& event,
                              views::InkDrop* ink_drop) = 0;
 
+  // Called when the shelf button handles the accessible action with type of
+  // kScrollToMakeVisible.
+  virtual void HandleAccessibleActionScrollToMakeVisible() {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfButtonDelegate);
 };

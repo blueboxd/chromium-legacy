@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 /** @fileoverview Common utilities for extension ui tests. */
-cr.define('extension_test_util', function() {
-  /**
-   * A mock to test that clicking on an element calls a specific method.
-   * @constructor
-   */
-  function ClickMock() {}
+import {MockController, MockMethod} from '../mock_controller.m.js';
+import {isVisible} from '../test_util.m.js';
 
-  ClickMock.prototype = {
+import {TestKioskBrowserProxy} from './test_kiosk_browser_proxy.js';
+
+  /** A mock to test that clicking on an element calls a specific method. */
+  export class ClickMock {
     /**
      * Tests clicking on an element and expecting a call.
      * @param {HTMLElement} element The element to click on.
@@ -19,34 +18,31 @@ cr.define('extension_test_util', function() {
      *     expected to be called with.
      * @param {*=} opt_returnValue The value to return from the function call.
      */
-    testClickingCalls: function(
-        element, callName, opt_expectedArgs, opt_returnValue) {
+    testClickingCalls(element, callName, opt_expectedArgs, opt_returnValue) {
       const mock = new MockController();
       const mockMethod = mock.createFunctionMock(this, callName);
       mockMethod.returnValue = opt_returnValue;
       MockMethod.prototype.addExpectation.apply(mockMethod, opt_expectedArgs);
-      MockInteractions.tap(element);
+      element.click();
       mock.verifyMocks();
-    },
-  };
+    }
+  }
 
   /**
    * A mock to test receiving expected events and verify that they were called
    * with the proper detail values.
    */
-  function ListenerMock() {
-    this.listeners_ = {};
-  }
-
-  ListenerMock.prototype = {
-    /** @private {Object<{satisfied: boolean, args: !Object}>} */
-    listeners_: undefined,
+  export class ListenerMock {
+    constructor() {
+      /** @private {Object<{satisfied: boolean, args: !Object}>} */
+      this.listeners_ = {};
+    }
 
     /**
      * @param {string} eventName
      * @param {Event} e
      */
-    onEvent_: function(eventName, e) {
+    onEvent_(eventName, e) {
       assert(this.listeners_.hasOwnProperty(eventName));
       if (this.listeners_[eventName].satisfied) {
         // Event was already called and checked. We could always make this
@@ -57,7 +53,7 @@ cr.define('extension_test_util', function() {
       const expected = this.listeners_[eventName].args || {};
       expectDeepEquals(e.detail, expected);
       this.listeners_[eventName].satisfied = true;
-    },
+    }
 
     /**
      * Adds an expected event.
@@ -66,17 +62,15 @@ cr.define('extension_test_util', function() {
      * @param {Object=} opt_eventArgs If omitted, will check that the details
      *     are empty (i.e., {}).
      */
-    addListener: function(target, eventName, opt_eventArgs) {
+    addListener(target, eventName, opt_eventArgs) {
       assert(!this.listeners_.hasOwnProperty(eventName));
-      this.listeners_[eventName] = {
-        args: opt_eventArgs || {},
-        satisfied: false
-      };
+      this.listeners_[eventName] =
+          {args: opt_eventArgs || {}, satisfied: false};
       target.addEventListener(eventName, this.onEvent_.bind(this, eventName));
-    },
+    }
 
     /** Verifies the expectations set. */
-    verify: function() {
+    verify() {
       const missingEvents = [];
       for (const key in this.listeners_) {
         if (!this.listeners_[key].satisfied) {
@@ -84,67 +78,65 @@ cr.define('extension_test_util', function() {
         }
       }
       expectEquals(0, missingEvents.length, JSON.stringify(missingEvents));
-    },
-  };
+    }
+  }
 
   /**
    * A mock delegate for the item, capable of testing functionality.
-   * @constructor
-   * @extends {ClickMock}
    * @implements {extensions.ItemDelegate}
    */
-  function MockItemDelegate() {}
-
-  MockItemDelegate.prototype = {
-    __proto__: ClickMock.prototype,
-
-    /** @override */
-    deleteItem: function(id) {},
+  export class MockItemDelegate extends ClickMock {
+    constructor() {
+      super();
+    }
 
     /** @override */
-    setItemEnabled: function(id, enabled) {},
+    deleteItem(id) {}
 
     /** @override */
-    showItemDetails: function(id) {},
+    setItemEnabled(id, enabled) {}
 
     /** @override */
-    setItemAllowedIncognito: function(id, enabled) {},
+    showItemDetails(id) {}
 
     /** @override */
-    setItemAllowedOnFileUrls: function(id, enabled) {},
+    setItemAllowedIncognito(id, enabled) {}
 
     /** @override */
-    setItemHostAccess: function(id, hostAccess) {},
+    setItemAllowedOnFileUrls(id, enabled) {}
 
     /** @override */
-    setItemCollectsErrors: function(id, enabled) {},
+    setItemHostAccess(id, hostAccess) {}
 
     /** @override */
-    inspectItemView: function(id, view) {},
+    setItemCollectsErrors(id, enabled) {}
 
     /** @override */
-    reloadItem: function(id) {},
+    inspectItemView(id, view) {}
 
     /** @override */
-    repairItem: function(id) {},
+    reloadItem(id) {}
 
     /** @override */
-    showItemOptionsPage: function(id) {},
+    repairItem(id) {}
 
     /** @override */
-    showInFolder: function(id) {},
+    showItemOptionsPage(id) {}
 
     /** @override */
-    getExtensionSize: function(id) {
+    showInFolder(id) {}
+
+    /** @override */
+    getExtensionSize(id) {
       return Promise.resolve('10 MB');
-    },
-  };
+    }
+  }
 
   /**
    * @param {!HTMLElement} element
    * @return {boolean} whether or not the element passed in is visible
    */
-  function isElementVisible(element) {
+  export function isElementVisible(element) {
     const rect = element.getBoundingClientRect();
     return rect.width * rect.height > 0;  // Width and height is never negative.
   }
@@ -158,8 +150,9 @@ cr.define('extension_test_util', function() {
    *     visible.
    * @param {string=} opt_expectedText The expected textContent value.
    */
-  function testVisible(parentEl, selector, expectedVisible, opt_expectedText) {
-    const visible = test_util.isVisible(parentEl, selector);
+  export function testVisible(
+      parentEl, selector, expectedVisible, opt_expectedText) {
+    const visible = isVisible(parentEl, selector);
     expectEquals(expectedVisible, visible, selector);
     if (expectedVisible && visible && opt_expectedText) {
       const element = parentEl.$$(selector);
@@ -173,7 +166,7 @@ cr.define('extension_test_util', function() {
    *     the resulting ExtensionInfo (otherwise defaults will be used).
    * @return {chrome.developerPrivate.ExtensionInfo}
    */
-  function createExtensionInfo(opt_properties) {
+  export function createExtensionInfo(opt_properties) {
     const id = opt_properties && opt_properties.hasOwnProperty('id') ?
         opt_properties['id'] :
         'a'.repeat(32);
@@ -214,7 +207,7 @@ cr.define('extension_test_util', function() {
    * @param {string} query The CSS query
    * @return {!Array<!HTMLElement>}
    */
-  function findMatches(root, query) {
+  export function findMatches(root, query) {
     let elements = new Set();
     function doSearch(node) {
       if (node.nodeType == Node.ELEMENT_NODE) {
@@ -236,15 +229,3 @@ cr.define('extension_test_util', function() {
     doSearch(root);
     return Array.from(elements);
   }
-
-
-  return {
-    ClickMock: ClickMock,
-    ListenerMock: ListenerMock,
-    MockItemDelegate: MockItemDelegate,
-    isElementVisible: isElementVisible,
-    testVisible: testVisible,
-    createExtensionInfo: createExtensionInfo,
-    findMatches: findMatches,
-  };
-});

@@ -23,6 +23,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -186,6 +187,7 @@ public class LocationBarLayoutTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "https://crbug.com/1020381")
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testShowingVoiceSearchButtonIfUrlBarIsEmpty() throws ExecutionException {
         setUrlBarTextAndFocus("");

@@ -1871,7 +1871,8 @@ void NavigationRequest::OnRequestFailedInternal(
     const base::Optional<std::string>& error_page_content,
     bool collapse_frame) {
   DCHECK(state_ == WILL_START_NAVIGATION || state_ == WILL_START_REQUEST ||
-         state_ == RESPONSE_STARTED || state_ == CANCELING);
+         state_ == WILL_REDIRECT_REQUEST || state_ == RESPONSE_STARTED ||
+         state_ == CANCELING);
   DCHECK(!(status.error_code == net::ERR_ABORTED &&
            error_page_content.has_value()));
 
@@ -2934,7 +2935,7 @@ void NavigationRequest::OnWillStartRequestProcessed(
 
 void NavigationRequest::OnWillRedirectRequestProcessed(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(WILL_REDIRECT_REQUEST, handle_state_);
+  DCHECK_EQ(WILL_REDIRECT_REQUEST, state_);
   DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
   DCHECK(processing_navigation_throttle_);
   processing_navigation_throttle_ = false;
@@ -3033,8 +3034,7 @@ void NavigationRequest::CancelDeferredNavigationInternal(
          result.action() == NavigationThrottle::CANCEL ||
          result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
   DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
-         state_ == WILL_START_REQUEST ||
-         handle_state_ == WILL_REDIRECT_REQUEST);
+         state_ == WILL_START_REQUEST || state_ == WILL_REDIRECT_REQUEST);
 
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "CancelDeferredNavigation");
@@ -3246,7 +3246,7 @@ void NavigationRequest::UpdateStateFollowingRedirect(
   was_redirected_ = true;
   redirect_chain_.push_back(common_params_->url);
 
-  handle_state_ = WILL_REDIRECT_REQUEST;
+  state_ = WILL_REDIRECT_REQUEST;
   processing_navigation_throttle_ = true;
 
 #if defined(OS_ANDROID)
@@ -3462,14 +3462,13 @@ void NavigationRequest::SetCommitTimeoutForTesting(
 }
 
 void NavigationRequest::RemoveRequestHeader(const std::string& header_name) {
-  DCHECK(handle_state_ == WILL_REDIRECT_REQUEST);
+  DCHECK(state_ == WILL_REDIRECT_REQUEST);
   removed_request_headers_.push_back(header_name);
 }
 
 void NavigationRequest::SetRequestHeader(const std::string& header_name,
                                          const std::string& header_value) {
-  DCHECK(state_ == WILL_START_REQUEST ||
-         handle_state_ == WILL_REDIRECT_REQUEST);
+  DCHECK(state_ == WILL_START_REQUEST || state_ == WILL_REDIRECT_REQUEST);
   modified_request_headers_.SetHeader(header_name, header_value);
 }
 

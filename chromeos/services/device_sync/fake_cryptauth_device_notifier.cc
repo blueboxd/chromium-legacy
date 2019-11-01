@@ -41,8 +41,12 @@ void FakeCryptAuthDeviceNotifier::NotifyDevices(
     CryptAuthFeatureType feature_type,
     base::OnceClosure success_callback,
     base::OnceCallback<void(NetworkRequestError)> error_callback) {
-  requests_.emplace(device_ids, target_service, feature_type,
-                    std::move(success_callback), std::move(error_callback));
+  requests_.emplace_back(device_ids, target_service, feature_type,
+                         std::move(success_callback),
+                         std::move(error_callback));
+
+  if (delegate_)
+    delegate_->OnNotifyDevicesCalled();
 }
 
 FakeCryptAuthDeviceNotifierFactory::FakeCryptAuthDeviceNotifierFactory() =

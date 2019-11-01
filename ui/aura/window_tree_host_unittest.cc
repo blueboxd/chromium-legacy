@@ -42,6 +42,55 @@ TEST_F(WindowTreeHostTest, DPIWindowSize) {
   EXPECT_EQ(gfx::Rect(0, 1, 534, 401), root_window()->bounds());
 }
 
+TEST_F(WindowTreeHostTest,
+       ShouldHaveExactRootWindowBoundsWithDisplayRotation1xScale) {
+  test_screen()->SetDeviceScaleFactor(1.f);
+
+  host()->SetBoundsInPixels(gfx::Rect(0, 0, 400, 300));
+  test_screen()->SetDisplayRotation(display::Display::ROTATE_0);
+  EXPECT_EQ(host()->GetBoundsInPixels(), gfx::Rect(0, 0, 400, 300));
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().rotation(),
+            display::Display::ROTATE_0);
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel(),
+            gfx::Size(400, 300));
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+            gfx::Rect(0, 0, 400, 300));
+  EXPECT_EQ(gfx::Size(400, 300), host()->window()->bounds().size());
+
+  host()->SetBoundsInPixels(gfx::Rect(0, 0, 400, 300));
+  test_screen()->SetDisplayRotation(display::Display::ROTATE_90);
+  EXPECT_EQ(host()->GetBoundsInPixels(), gfx::Rect(0, 0, 400, 300));
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().rotation(),
+            display::Display::ROTATE_90);
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel(),
+            gfx::Size(300, 400));
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+            gfx::Rect(0, 0, 300, 400));
+  EXPECT_EQ(gfx::Size(300, 400), host()->window()->bounds().size());
+
+  host()->SetBoundsInPixels(gfx::Rect(0, 0, 400, 300));
+  test_screen()->SetDisplayRotation(display::Display::ROTATE_180);
+  EXPECT_EQ(host()->GetBoundsInPixels(), gfx::Rect(0, 0, 400, 300));
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().rotation(),
+            display::Display::ROTATE_180);
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel(),
+            gfx::Size(400, 300));
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+            gfx::Rect(0, 0, 400, 300));
+  EXPECT_EQ(gfx::Size(400, 300), host()->window()->bounds().size());
+
+  host()->SetBoundsInPixels(gfx::Rect(0, 0, 400, 300));
+  test_screen()->SetDisplayRotation(display::Display::ROTATE_270);
+  EXPECT_EQ(host()->GetBoundsInPixels(), gfx::Rect(0, 0, 400, 300));
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().rotation(),
+            display::Display::ROTATE_270);
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel(),
+            gfx::Size(300, 400));
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+            gfx::Rect(0, 0, 300, 400));
+  EXPECT_EQ(gfx::Size(300, 400), host()->window()->bounds().size());
+}
+
 #if defined(OS_CHROMEOS)
 TEST_F(WindowTreeHostTest, HoldPointerMovesOnChildResizing) {
   aura::WindowEventDispatcher* dispatcher = host()->dispatcher();

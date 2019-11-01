@@ -79,6 +79,23 @@ TEST_F(ShaderDiskCacheTest, ClearsCache) {
   EXPECT_EQ(0, cache->Size());
 }
 
+TEST_F(ShaderDiskCacheTest, ClearByPathTriggersCallback) {
+  InitCache();
+  factory()->Get(kDefaultClientId)->Cache(kCacheKey, kCacheValue);
+  net::TestCompletionCallback test_callback;
+  factory()->ClearByPath(cache_path(), base::Time(), base::Time::Max(),
+      base::BindLambdaForTesting([&]() { test_callback.callback().Run(1); } ));
+  ASSERT_TRUE(test_callback.WaitForResult());
+}
+
+// Important for clearing in-memory profiles.
+TEST_F(ShaderDiskCacheTest, ClearByPathWithEmptyPathTriggersCallback) {
+  net::TestCompletionCallback test_callback;
+  factory()->ClearByPath(base::FilePath(), base::Time(), base::Time::Max(),
+      base::BindLambdaForTesting([&]() { test_callback.callback().Run(1); } ));
+  ASSERT_TRUE(test_callback.WaitForResult());
+}
+
 // For https://crbug.com/663589.
 TEST_F(ShaderDiskCacheTest, SafeToDeleteCacheMidEntryOpen) {
   InitCache();

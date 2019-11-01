@@ -11,8 +11,11 @@ const base::FilePath::CharType kUnindexedHintsFileName[] =
 
 const char kRulesetFormatVersionString[] = "1.0.0";
 
-const char kOptimizationGuideServiceDefaultURL[] =
+const char kOptimizationGuideServiceGetHintsDefaultURL[] =
     "https://optimizationguide-pa.googleapis.com/v1:GetHints";
+
+const char kOptimizationGuideServiceGetModelsDefaultURL[] =
+    "https://optimizationguide-pa.googleapis.com/v1:GetModels";
 
 const char kLoadedHintLocalHistogramString[] =
     "OptimizationGuide.LoadedHint.Result";

@@ -2,15 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/js/action_link.js';
+import 'chrome://resources/cr_elements/action_link_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import './host_permissions_toggle_list.js';
+import './runtime_host_permissions.js';
+import './shared_style.js';
+import './shared_vars.js';
+import './strings.m.js';
+import './toggle_row.js';
 
-  const DetailView = Polymer({
+import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ItemDelegate} from './item.js';
+import {ItemBehavior} from './item_behavior.js';
+import {computeInspectableViewLabel, getItemSource, getItemSourceString, isControlled, isEnabled, userCanChangeEnablement} from './item_util.js';
+import {navigation, Page} from './navigation_helper.js';
+
+  Polymer({
     is: 'extensions-detail-view',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [
       CrContainerShadowBehavior,
-      extensions.ItemBehavior,
+      ItemBehavior,
     ],
 
     properties: {
@@ -23,7 +54,7 @@ cr.define('extensions', function() {
       /** @private */
       size_: String,
 
-      /** @type {!extensions.ItemDelegate} */
+      /** @type {!ItemDelegate} */
       delegate: Object,
 
       /** Whether the user has enabled the UI's developer mode. */
@@ -64,8 +95,7 @@ cr.define('extensions', function() {
           this.$.extensionsActivityLogLink :
           this.$.closeButton;
 
-      Polymer.RenderStatus.afterNextRender(
-          this, () => cr.ui.focusWithoutInk(elementToFocus));
+      afterNextRender(this, () => focusWithoutInk(elementToFocus));
     },
 
     /** @private */
@@ -80,8 +110,8 @@ cr.define('extensions', function() {
 
     /** @private */
     onActivityLogTap_: function() {
-      extensions.navigation.navigateTo(
-          {page: extensions.Page.ACTIVITY_LOG, extensionId: this.data.id});
+      navigation.navigateTo(
+          {page: Page.ACTIVITY_LOG, extensionId: this.data.id});
     },
 
     /**
@@ -96,7 +126,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onCloseButtonTap_: function() {
-      extensions.navigation.navigateTo({page: extensions.Page.LIST});
+      navigation.navigateTo({page: Page.LIST});
     },
 
     /**
@@ -104,7 +134,7 @@ cr.define('extensions', function() {
      * @private
      */
     isControlled_: function() {
-      return extensions.isControlled(this.data);
+      return isControlled(this.data);
     },
 
     /**
@@ -112,7 +142,7 @@ cr.define('extensions', function() {
      * @private
      */
     isEnabled_: function() {
-      return extensions.isEnabled(this.data.state);
+      return isEnabled(this.data.state);
     },
 
     /**
@@ -120,7 +150,7 @@ cr.define('extensions', function() {
      * @private
      */
     isEnableToggleEnabled_: function() {
-      return extensions.userCanChangeEnablement(this.data);
+      return userCanChangeEnablement(this.data);
     },
 
     /**
@@ -169,7 +199,7 @@ cr.define('extensions', function() {
      */
     computeEnabledText_: function(state, onText, offText) {
       // TODO(devlin): Get the full spectrum of these strings from bettes.
-      return extensions.isEnabled(state) ? onText : offText;
+      return isEnabled(state) ? onText : offText;
     },
 
     /**
@@ -178,7 +208,7 @@ cr.define('extensions', function() {
      * @private
      */
     computeInspectLabel_: function(view) {
-      return extensions.computeInspectableViewLabel(view);
+      return computeInspectableViewLabel(view);
     },
 
     /**
@@ -290,7 +320,7 @@ cr.define('extensions', function() {
      */
     computeSourceString_: function() {
       return this.data.locationText ||
-          extensions.getItemSourceString(extensions.getItemSource(this.data));
+          getItemSourceString(getItemSource(this.data));
     },
 
     /**
@@ -355,6 +385,3 @@ cr.define('extensions', function() {
           !this.data.permissions.runtimeHostPermissions.hasAllHosts;
     },
   });
-
-  return {DetailView: DetailView};
-});

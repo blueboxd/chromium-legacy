@@ -123,7 +123,7 @@ void AboutUIHTMLSource::StartDataRequest(
       idr = IDR_ABOUT_UI_CREDITS_JS;
     ui::ResourceBundle& resource_instance =
         ui::ResourceBundle::GetSharedInstance();
-    response = resource_instance.DecompressDataResource(idr);
+    response = resource_instance.LoadDataResourceString(idr);
   } else if (source_name_ == kChromeUIHistogramHost) {
     // Note: On other platforms, this is implemented in //content. If there is
     // ever a need for embedders other than //ios/chrome to use

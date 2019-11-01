@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import '../shared_style.js';
+import '../shared_vars.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
   /**
    * @typedef {{
@@ -17,7 +22,7 @@ cr.define('extensions', function() {
    *   expanded: boolean
    * }}
    */
-  let StreamItem;
+  export let StreamItem;
 
   /**
    * A struct used to describe each argument for an activity (each item in
@@ -28,7 +33,7 @@ cr.define('extensions', function() {
    *   index: number
    * }}
    */
-  let StreamArgItem;
+  export let StreamArgItem;
 
   /**
    * Placeholder for arg_url that can occur in |StreamItem.args|. Sometimes we
@@ -37,7 +42,7 @@ cr.define('extensions', function() {
    * don't need to convert.
    * @type {string}
    */
-  const ARG_URL_PLACEHOLDER = '<arg_url>';
+  export const ARG_URL_PLACEHOLDER = '<arg_url>';
 
   /**
    * Regex pattern for |ARG_URL_PLACEHOLDER| for String.replace. A regex of the
@@ -47,18 +52,20 @@ cr.define('extensions', function() {
    */
   const ARG_URL_PLACEHOLDER_REGEX = /"<arg_url>"/g;
 
-  const ActivityLogStreamItem = Polymer({
+  Polymer({
     is: 'activity-log-stream-item',
+
+    _template: html`{__html_template__}`,
 
     properties: {
       /**
        * The underlying ActivityGroup that provides data for the
        * ActivityLogItem displayed.
-       * @type {!extensions.StreamItem}
+       * @type {!StreamItem}
        */
       data: Object,
 
-      /** @private {!Array<!extensions.StreamArgItem>} */
+      /** @private {!Array<!StreamArgItem>} */
       argsList_: {
         type: Array,
         computed: 'computeArgsList_(data.args)',
@@ -124,7 +131,7 @@ cr.define('extensions', function() {
 
     /**
      * @private
-     * @return {!Array<!extensions.StreamArgItem>}
+     * @return {!Array<!StreamArgItem>}
      */
     computeArgsList_: function() {
       const parsedArgs = JSON.parse(this.data.args);
@@ -152,11 +159,3 @@ cr.define('extensions', function() {
       }
     },
   });
-
-  return {
-    ActivityLogStreamItem: ActivityLogStreamItem,
-    StreamItem: StreamItem,
-    StreamArgItem: StreamArgItem,
-    ARG_URL_PLACEHOLDER: ARG_URL_PLACEHOLDER,
-  };
-});

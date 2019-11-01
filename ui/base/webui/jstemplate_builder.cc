@@ -39,7 +39,7 @@ void AppendJsonHtml(const base::DictionaryValue* json, std::string* output) {
 void AppendLoadTimeData(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
   std::string load_time_data_src =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_WEBUI_JS_LOAD_TIME_DATA);
 
   if (load_time_data_src.empty()) {
@@ -56,7 +56,7 @@ void AppendLoadTimeData(std::string* output) {
 void AppendJsTemplateSourceHtml(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
   std::string jstemplate_src =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_WEBUI_JSTEMPLATE_JS);
 
   if (jstemplate_src.empty()) {

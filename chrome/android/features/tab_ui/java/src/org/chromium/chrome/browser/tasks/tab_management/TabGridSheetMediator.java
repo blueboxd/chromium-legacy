@@ -19,9 +19,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlConstants;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.tab_ui.R;
@@ -75,7 +75,8 @@ class TabGridSheetMediator {
         mSheetObserver = new EmptyBottomSheetObserver() {
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
-                if (reason == StateChangeReason.SWIPE || reason == StateChangeReason.TAP_SCRIM) {
+                if (reason == BottomSheetController.StateChangeReason.SWIPE
+                        || reason == BottomSheetController.StateChangeReason.TAP_SCRIM) {
                     RecordUserAction.record("TabGroup.MinimizedFromGrid");
                 }
                 resetHandler.resetWithListOfTabs(null);

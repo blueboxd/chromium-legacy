@@ -664,9 +664,9 @@ class QuicNetworkTransactionTest
     if (version_.transport_version != quic::QUIC_VERSION_99) {
       return "";
     }
-    quic::HttpEncoder encoder;
     std::unique_ptr<char[]> buffer;
-    auto header_length = encoder.SerializeDataFrameHeader(body_len, &buffer);
+    auto header_length =
+        quic::HttpEncoder::SerializeDataFrameHeader(body_len, &buffer);
     return std::string(buffer.get(), header_length);
   }
 
@@ -7226,9 +7226,9 @@ class QuicNetworkTransactionWithDestinationTest
       QuicTestPacketMaker* maker) {
     std::string header = "";
     if (version_.transport_version == quic::QUIC_VERSION_99) {
-      quic::HttpEncoder encoder;
       std::unique_ptr<char[]> buffer;
-      auto header_length = encoder.SerializeDataFrameHeader(5, &buffer);
+      auto header_length =
+          quic::HttpEncoder::SerializeDataFrameHeader(5, &buffer);
       header = std::string(buffer.get(), header_length);
     }
     return maker->MakeDataPacket(packet_number, stream_id, false, true,

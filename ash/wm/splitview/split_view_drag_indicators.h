@@ -27,22 +27,13 @@ namespace ash {
 enum class IndicatorState {
   kNone,
   // Showing both left/top and right/bottom drag guidances.
-  kDragArea,
+  kDragAreaBoth,
 
   // Showing only left/top drag guidance.
   kDragAreaLeft,
 
   // Showing only right/bottom drag guidance.
   kDragAreaRight,
-
-  // Showing both left/top and right/bottom cannot drag indicators.
-  kCannotSnap,
-
-  // Showing only left/top cannot drag indicator.
-  kCannotSnapLeft,
-
-  // Showing only right/bottom cannot drag indicator.
-  kCannotSnapRight,
 
   // Showing a left/top preview area with the same bounds as left/top snapped
   // window.
@@ -69,9 +60,6 @@ enum class IndicatorType {
 class ASH_EXPORT SplitViewDragIndicators {
  public:
   static bool IsPreviewAreaState(IndicatorState indicator_state);
-  static bool IsLeftIndicatorState(IndicatorState indicator_state);
-  static bool IsRightIndicatorState(IndicatorState indicator_state);
-  static bool IsCannotSnapState(IndicatorState indicator_state);
 
   // Calculates whether the  preview area should physically be on the left or
   // top of the screen.

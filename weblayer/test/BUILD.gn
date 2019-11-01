@@ -75,7 +75,10 @@ test("weblayer_browsertests") {
 
   deps = [
     "//base",
+    "//base",
     "//base/test:test_support",
+    "//components/security_interstitials/content:security_interstitial_page",
+    "//content/public/browser",
     "//content/test:test_support",
     "//net:test_support",
     "//testing/gtest",
@@ -86,6 +89,8 @@ test("weblayer_browsertests") {
   sources = [
     "../browser/webui/webui_browsertest.cc",
     "browsertests_main.cc",
+    "interstitial_utils.cc",
+    "interstitial_utils.h",
     "ssl_browsertest.cc",
     "test_launcher_delegate_impl.cc",
     "test_launcher_delegate_impl.h",

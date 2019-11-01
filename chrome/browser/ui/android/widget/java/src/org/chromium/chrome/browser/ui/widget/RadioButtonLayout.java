@@ -36,7 +36,7 @@ public final class RadioButtonLayout extends RadioGroup {
     public RadioButtonLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         mMarginBetweenRows = context.getResources().getDimensionPixelSize(
-                R.dimen.dual_control_margin_between_items);
+                R.dimen.default_vertical_margin_between_items);
     }
 
     /**

@@ -325,6 +325,7 @@ test("components_unittests") {
       "//content/public/android:content_java",
       "//content/public/browser",
       "//net",
+      "//services/data_decoder/public/cpp/android:safe_json_java",
       "//ui/android:ui_java",
       "//ui/base",
       "//ui/gfx",

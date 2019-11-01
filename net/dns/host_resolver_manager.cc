@@ -312,19 +312,6 @@ base::Value NetLogDnsTaskFailedParams(const HostCache::Entry& results,
   return std::move(dict);
 }
 
-// Creates NetLog parameters containing the information of the request. Use
-// NetLogRequestInfoCallback if the request is specified via RequestInfo.
-base::Value NetLogRequestParams(const HostPortPair& host) {
-  base::DictionaryValue dict;
-
-  dict.SetString("host", host.ToString());
-  dict.SetInteger("address_family",
-                  static_cast<int>(ADDRESS_FAMILY_UNSPECIFIED));
-  dict.SetBoolean("allow_cached_response", true);
-  dict.SetBoolean("is_speculative", false);
-  return std::move(dict);
-}
-
 // Creates NetLog parameters for the creation of a HostResolverManager::Job.
 base::Value NetLogJobCreationParams(const NetLogSource& source,
                                     const std::string& host) {
@@ -352,26 +339,6 @@ base::Value NetLogIPv6AvailableParams(bool ipv6_available, bool cached) {
 
 // The logging routines are defined here because some requests are resolved
 // without a Request object.
-
-// Logs when a request has just been started. Overloads for whether or not the
-// request information is specified via a RequestInfo object.
-void LogStartRequest(const NetLogWithSource& source_net_log,
-                     const HostPortPair& host) {
-  source_net_log.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_REQUEST,
-                            [&] { return NetLogRequestParams(host); });
-}
-
-// Logs when a request has just completed (before its callback is run).
-void LogFinishRequest(const NetLogWithSource& source_net_log, int net_error) {
-  source_net_log.EndEventWithNetErrorCode(
-      NetLogEventType::HOST_RESOLVER_IMPL_REQUEST, net_error);
-}
-
-// Logs when a request has been cancelled.
-void LogCancelRequest(const NetLogWithSource& source_net_log) {
-  source_net_log.AddEvent(NetLogEventType::CANCELLED);
-  source_net_log.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_REQUEST);
-}
 
 //-----------------------------------------------------------------------------
 
@@ -555,6 +522,7 @@ class HostResolverManager::RequestImpl
     // Parent HostResolver must still be alive to call Start().
     DCHECK(resolver_);
 
+    LogStartRequest();
     int rv = resolver_->Resolve(this);
     DCHECK(!complete_);
     if (rv == ERR_IO_PENDING) {
@@ -563,6 +531,7 @@ class HostResolverManager::RequestImpl
     } else {
       DCHECK(!job_);
       complete_ = true;
+      LogFinishRequest(rv);
     }
     resolver_ = nullptr;
 
@@ -636,6 +605,8 @@ class HostResolverManager::RequestImpl
 
     // No results should be set.
     DCHECK(!results_);
+
+    LogCancelRequest();
   }
 
   // Cleans up Job assignment, marks request completed, and calls the completion
@@ -646,6 +617,8 @@ class HostResolverManager::RequestImpl
 
     DCHECK(!complete_);
     complete_ = true;
+
+    LogFinishRequest(error);
 
     DCHECK(callback_);
     std::move(callback_).Run(error);
@@ -682,6 +655,34 @@ class HostResolverManager::RequestImpl
   }
 
  private:
+  // Logs when a request has just been started.
+  void LogStartRequest() {
+    source_net_log_.BeginEvent(
+        NetLogEventType::HOST_RESOLVER_IMPL_REQUEST, [this] {
+          base::Value dict(base::Value::Type::DICTIONARY);
+          dict.SetStringKey("host", request_host_.ToString());
+          dict.SetIntKey("dns_query_type",
+                         static_cast<int>(parameters_.dns_query_type));
+          dict.SetBoolKey("allow_cached_response",
+                          parameters_.cache_usage !=
+                              ResolveHostParameters::CacheUsage::DISALLOWED);
+          dict.SetBoolKey("is_speculative", parameters_.is_speculative);
+          return dict;
+        });
+  }
+
+  // Logs when a request has just completed (before its callback is run).
+  void LogFinishRequest(int net_error) {
+    source_net_log_.EndEventWithNetErrorCode(
+        NetLogEventType::HOST_RESOLVER_IMPL_REQUEST, net_error);
+  }
+
+  // Logs when a request has been cancelled.
+  void LogCancelRequest() {
+    source_net_log_.AddEvent(NetLogEventType::CANCELLED);
+    source_net_log_.EndEvent(NetLogEventType::HOST_RESOLVER_IMPL_REQUEST);
+  }
+
   const NetLogWithSource source_net_log_;
 
   const HostPortPair request_host_;
@@ -1060,7 +1061,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     HostCache::Entry results(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN);
     switch (dns_query_type) {
       case DnsQueryType::UNSPECIFIED:
-        // Should create two separate transactions with specified type.
+        // Should create multiple transactions with specified types.
         NOTREACHED();
         break;
       case DnsQueryType::A:
@@ -1117,11 +1118,24 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       return;
     }
 
-    // If there are multiple addresses, and at least one is IPv6, need to sort
-    // them.  Note that IPv6 addresses are always put before IPv4 ones, so it's
-    // sufficient to just check the family of the first address.
-    if (results.addresses() && results.addresses().value().size() > 1 &&
-        results.addresses().value()[0].GetFamily() == ADDRESS_FAMILY_IPV6) {
+    // If there are multiple addresses, and at least one is IPv6, need to
+    // sort them.
+    // When there are no ESNI keys in the record, IPv6 addresses are always
+    // put before IPv4 ones, so it's sufficient to just check the family of
+    // the first address.
+    // When there are ESNI keys, there could be ESNI-equipped
+    // IPv4 addresses preceding the first IPv6 address, so it's necessary to
+    // scan the list.
+    bool at_least_one_ipv6_address =
+        results.addresses() && !results.addresses().value().empty() &&
+        (results.addresses().value()[0].GetFamily() == ADDRESS_FAMILY_IPV6 ||
+         (results.esni_data() &&
+          std::any_of(results.addresses().value().begin(),
+                      results.addresses().value().end(), [](auto& e) {
+                        return e.GetFamily() == ADDRESS_FAMILY_IPV6;
+                      })));
+
+    if (at_least_one_ipv6_address) {
       // Sort addresses if needed.  Sort could complete synchronously.
       AddressList addresses = results.addresses().value();
       client_->GetAddressSorter()->Sort(
@@ -1147,6 +1161,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       *out_results = HostCache::Entry(ERR_NAME_NOT_RESOLVED, AddressList(),
                                       HostCache::Entry::SOURCE_DNS, ttl);
     } else {
+      addresses.Deduplicate();
       *out_results = HostCache::Entry(OK, std::move(addresses),
                                       HostCache::Entry::SOURCE_DNS, ttl);
     }
@@ -1509,7 +1524,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       RequestImpl* req = requests_.head()->value();
       req->RemoveFromList();
       DCHECK_EQ(this, req->job());
-      LogCancelRequest(req->source_net_log());
       req->OnJobCancelled(this);
     }
   }
@@ -1576,8 +1590,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
   void CancelRequest(RequestImpl* request) {
     DCHECK_EQ(hostname_, request->request_host().host());
     DCHECK(!requests_.empty());
-
-    LogCancelRequest(request->source_net_log());
 
     priority_tracker_.Remove(request->priority());
     net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB_REQUEST_DETACH,
@@ -2269,7 +2281,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       req->RemoveFromList();
       DCHECK_EQ(this, req->job());
       // Update the net log and notify registered observers.
-      LogFinishRequest(req->source_net_log(), results.error());
       if (results.did_complete()) {
         // Record effective total time from creation to completion.
         resolver_->RecordTotalTime(
@@ -2651,8 +2662,6 @@ int HostResolverManager::Resolve(RequestImpl* request) {
 
   request->set_request_time(tick_clock_->NowTicks());
 
-  LogStartRequest(request->source_net_log(), request->request_host());
-
   DnsQueryType effective_query_type;
   HostResolverFlags effective_host_resolver_flags;
   DnsConfig::SecureDnsMode effective_secure_dns_mode;
@@ -2675,7 +2684,6 @@ int HostResolverManager::Resolve(RequestImpl* request) {
     }
     if (stale_info && !request->parameters().is_speculative)
       request->set_stale_info(std::move(stale_info).value());
-    LogFinishRequest(request->source_net_log(), results.error());
     RecordTotalTime(request->parameters().is_speculative, true /* from_cache */,
                     effective_secure_dns_mode, base::TimeDelta());
     return results.error();
@@ -3499,6 +3507,8 @@ void HostResolverManager::RequestImpl::Cancel() {
   job_->CancelRequest(this);
   job_ = nullptr;
   callback_.Reset();
+
+  LogCancelRequest();
 }
 
 void HostResolverManager::RequestImpl::ChangeRequestPriority(

@@ -42,7 +42,7 @@ struct LazyDirectoryListerCacher {
             l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
     value.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
     std::string str = webui::GetI18nTemplateHtml(
-        ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
             IDR_DIR_HEADER_HTML),
         &value);
 

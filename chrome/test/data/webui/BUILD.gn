@@ -41,6 +41,7 @@ js2gtest("interactive_ui_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_tabs_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toggle_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -188,6 +189,8 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toast_manager_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toolbar_search_field_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_view_manager_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/fake_chrome_event.m.js",
+    "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
     "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
@@ -283,6 +286,8 @@ group("modulize") {
 
 js_modulizer("modulize_local") {
   input_files = [
+    "fake_chrome_event.js",
+    "mock_controller.js",
     "mock_timer.js",
     "test_browser_proxy.js",
     "test_util.js",

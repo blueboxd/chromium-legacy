@@ -2978,6 +2978,12 @@
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_PAI_SERVICE" desc="Message shown in pop up overlay dialog when user clicks learn more play auto install services.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>To remove apps, go to Settings &gt; Google Play Store &gt; Manage Android preferences &gt; Apps or Application manager. Then tap the app you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
   </message>
+  <message name="IDS_ARC_OPT_IN_CONTACT_ADMIN_TITLE" desc="Title of dialog shown when user tries to launch ARC app but ARC is diabled by admin">
+    This app requires access to the Play Store
+  </message>
+  <message name="IDS_ARC_OPT_IN_CONTACT_ADMIN_CONTEXT" desc="Text of dialog shown when user tries to launch ARC app but ARC is diabled by admin">
+    To ask for access, contact the administrator of this device.
+  </message>
   <message name="IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK" desc="Text of the Link to Goolge Privacy Policy in opt-in dialog">
     Google privacy policy
   </message>

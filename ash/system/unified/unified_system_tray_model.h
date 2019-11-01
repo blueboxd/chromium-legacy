@@ -36,7 +36,7 @@ class ASH_EXPORT UnifiedSystemTrayModel {
     virtual void OnKeyboardBrightnessChanged(bool by_user) {}
   };
 
-  UnifiedSystemTrayModel();
+  explicit UnifiedSystemTrayModel(views::View* owner_view);
   ~UnifiedSystemTrayModel();
 
   void AddObserver(Observer* observer);

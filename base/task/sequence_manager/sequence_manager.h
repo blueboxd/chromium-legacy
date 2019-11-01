@@ -154,7 +154,7 @@ class BASE_EXPORT SequenceManager {
   GetTaskRunnerForCurrentTask() = 0;
 
   // Finishes the initialization for a SequenceManager created via
-  // CreateUnboundSequenceManagerWithPump(). Must not be called in any other
+  // CreateUnboundSequenceManager(). Must not be called in any other
   // circumstances. The ownership of the pump is transferred to SequenceManager.
   virtual void BindToMessagePump(std::unique_ptr<MessagePump> message_pump) = 0;
 

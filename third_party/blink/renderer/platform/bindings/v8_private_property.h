@@ -26,7 +26,6 @@ class ScriptWrappable;
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X)                 \
   X(DOMException, Error)                                \
   X(Global, Event)                                      \
-  X(IDBCursor, Request)                                 \
   X(MessageEvent, CachedData)                           \
   X(NamedConstructor, Initialized)                      \
   X(PopStateEvent, State)                               \

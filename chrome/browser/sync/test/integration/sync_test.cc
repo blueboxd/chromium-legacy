@@ -78,7 +78,6 @@
 #include "net/base/port_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -132,7 +131,6 @@ class FakePerUserTopicRegistrationManager
             /*identity_provider=*/nullptr,
             /*pref_service=*/local_state,
             /*url_loader_factory=*/nullptr,
-            base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
             /*project_id*/ kInvalidationGCMSenderId,
             /*migrate_prefs=*/false) {}
   ~FakePerUserTopicRegistrationManager() override = default;
@@ -163,7 +161,6 @@ CreatePerUserTopicRegistrationManager(
     invalidation::IdentityProvider* identity_provider,
     PrefService* local_state,
     network::mojom::URLLoaderFactory* url_loader_factory,
-    const syncer::ParseJSONCallback& parse_json,
     const std::string& project_id,
     bool migrate_prefs) {
   return std::make_unique<FakePerUserTopicRegistrationManager>(local_state);
@@ -971,9 +968,7 @@ std::unique_ptr<KeyedService> SyncTest::CreateProfileInvalidationProvider(
               base::RetainedRef(
                   content::BrowserContext::GetDefaultStoragePartition(profile)
                       ->GetURLLoaderFactoryForBrowserProcess()
-                      .get()),
-              base::BindRepeating(&data_decoder::SafeJsonParser::Parse,
-                                  nullptr)),
+                      .get())),
           instance_id_driver, profile->GetPrefs(), kInvalidationGCMSenderId);
   fcm_invalidation_service->Init();
 

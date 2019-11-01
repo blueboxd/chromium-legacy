@@ -104,12 +104,9 @@ void VideoSourceImpl::OnCreateDeviceResponse(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (result_code) {
     case mojom::DeviceAccessResultCode::SUCCESS: {
-      mojo::PendingRemote<mojom::Receiver> broadcaster_as_receiver;
-      broadcaster_binding_ = std::make_unique<mojo::Binding<mojom::Receiver>>(
-          &broadcaster_,
-          broadcaster_as_receiver.InitWithNewPipeAndPassReceiver());
+      broadcaster_receiver_.reset();
       device_->Start(device_start_settings_,
-                     std::move(broadcaster_as_receiver));
+                     broadcaster_receiver_.BindNewPipeAndPassRemote());
       device_status_ = DeviceStatus::kStarted;
       if (push_subscriptions_.empty()) {
         StopDeviceAsynchronously();

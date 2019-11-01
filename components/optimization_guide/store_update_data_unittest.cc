@@ -38,7 +38,7 @@ TEST(StoreUpdateDataTest, BuildComponentStoreUpdateData) {
   component_update->MoveHintIntoUpdateData(std::move(hint1));
   component_update->MoveHintIntoUpdateData(std::move(hint2));
   EXPECT_TRUE(component_update->component_version().has_value());
-  EXPECT_FALSE(component_update->fetch_update_time().has_value());
+  EXPECT_FALSE(component_update->update_time().has_value());
   EXPECT_EQ(v1, *component_update->component_version());
   // Verify there are 3 store entries: 1 for the metadata entry plus
   // the 2 added hint entries.
@@ -60,11 +60,61 @@ TEST(StoreUpdateDataTest, BuildFetchUpdateData) {
                                          StoredFetchedHintsFreshnessDuration());
   fetch_update->MoveHintIntoUpdateData(std::move(hint1));
   EXPECT_FALSE(fetch_update->component_version().has_value());
-  EXPECT_TRUE(fetch_update->fetch_update_time().has_value());
-  EXPECT_EQ(update_time, *fetch_update->fetch_update_time());
+  EXPECT_TRUE(fetch_update->update_time().has_value());
+  EXPECT_EQ(update_time, *fetch_update->update_time());
   // Verify there are 2 store entries: 1 for the metadata entry plus
   // the 1 added hint entries.
   EXPECT_EQ(2ul, fetch_update->TakeUpdateEntries()->size());
+}
+
+TEST(StoreUpdateDataTest, BuildPredictionModelUpdateData) {
+  // Verify creating a Prediction Model update data.
+  proto::PredictionModel prediction_model;
+
+  proto::ModelInfo* model_info = prediction_model.mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_features(
+      proto::CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+  model_info->set_optimization_target(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+
+  std::unique_ptr<StoreUpdateData> prediction_model_update =
+      StoreUpdateData::CreatePredictionModelStoreUpdateData();
+  prediction_model_update->MovePredictionModelIntoUpdateData(
+      std::move(prediction_model));
+  EXPECT_FALSE(prediction_model_update->component_version().has_value());
+  EXPECT_FALSE(prediction_model_update->update_time().has_value());
+  // Verify there is 1 store entry.
+  EXPECT_EQ(1ul, prediction_model_update->TakeUpdateEntries()->size());
+}
+
+TEST(StoreUpdateDataTest, BuildHostModelFeaturesUpdateData) {
+  // Verify creating a Prediction Model update data.
+  base::Time host_model_features_update_time = base::Time::Now();
+
+  proto::HostModelFeatures host_model_features;
+  host_model_features.set_host("foo.com");
+  proto::ModelFeature* model_feature = host_model_features.add_model_features();
+  model_feature->set_feature_name("host_feat1");
+  model_feature->set_double_value(2.0);
+
+  std::unique_ptr<StoreUpdateData> host_model_features_update =
+      StoreUpdateData::CreateHostModelFeaturesStoreUpdateData(
+          host_model_features_update_time,
+          host_model_features_update_time +
+              optimization_guide::features::
+                  StoredHostModelFeaturesFreshnessDuration());
+  host_model_features_update->MoveHostModelFeaturesIntoUpdateData(
+      std::move(host_model_features));
+  EXPECT_FALSE(host_model_features_update->component_version().has_value());
+  EXPECT_TRUE(host_model_features_update->update_time().has_value());
+  EXPECT_EQ(host_model_features_update_time,
+            *host_model_features_update->update_time());
+  // Verify there are 2 store entries, 1 for the metadata entry and 1 for the
+  // added host model features entry.
+  EXPECT_EQ(2ul, host_model_features_update->TakeUpdateEntries()->size());
 }
 
 }  // namespace

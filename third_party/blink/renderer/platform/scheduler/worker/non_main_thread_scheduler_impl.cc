@@ -22,7 +22,7 @@ NonMainThreadSchedulerImpl::~NonMainThreadSchedulerImpl() = default;
 
 // static
 std::unique_ptr<NonMainThreadSchedulerImpl> NonMainThreadSchedulerImpl::Create(
-    WebThreadType thread_type,
+    ThreadType thread_type,
     base::sequence_manager::SequenceManager* sequence_manager,
     WorkerSchedulerProxy* proxy) {
   return std::make_unique<WorkerThreadScheduler>(thread_type, sequence_manager,

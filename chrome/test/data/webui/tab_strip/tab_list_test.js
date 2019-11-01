@@ -458,26 +458,37 @@ suite('TabList', () => {
     assertEquals(testTabsApiProxy.getCallCount('setThumbnailTracked'), 1);
   });
 
-  test.only(
-      'tracks and untracks thumbnails based on pinned state', async () => {
-        await tabList.animationPromises;
-        testTabsApiProxy.reset();
+  test('tracks and untracks thumbnails based on pinned state', async () => {
+    await tabList.animationPromises;
+    testTabsApiProxy.reset();
 
-        // Pinning the third tab should untrack thumbnails for the tab
-        pinTabAt(tabs[2], 0);
-        let [tabId, thumbnailTracked] =
-            await testTabsApiProxy.whenCalled('setThumbnailTracked');
-        assertEquals(tabId, tabs[2].id);
-        assertEquals(thumbnailTracked, false);
-        testTabsApiProxy.reset();
+    // Update width such that at all tabs can fit and do not fire the
+    // IntersectionObserver based on intersection alone.
+    tabList.style.setProperty(
+        '--tabstrip-tab-width', `${window.innerWidth / tabs.length}px`);
 
-        // Unpinning the tab should re-track the thumbnails
-        unpinTabAt(tabs[2], 0);
-        [tabId, thumbnailTracked] =
-            await testTabsApiProxy.whenCalled('setThumbnailTracked');
-        assertEquals(tabId, tabs[2].id);
-        assertEquals(thumbnailTracked, true);
-      });
+    // Pinning the third tab should untrack thumbnails for the tab
+    pinTabAt(tabs[2], 0);
+    let [tabId, thumbnailTracked] =
+        await testTabsApiProxy.whenCalled('setThumbnailTracked');
+    assertEquals(tabId, tabs[2].id);
+    assertEquals(thumbnailTracked, false);
+    testTabsApiProxy.reset();
+
+    // Unpinning the tab should re-track the thumbnails
+    unpinTabAt(tabs[2], 0);
+    [tabId, thumbnailTracked] =
+        await testTabsApiProxy.whenCalled('setThumbnailTracked');
+
+    // TODO(johntlee): Remove debug logs if tests are no longer flaky.
+    console.log(`Window width is ${window.innerWidth}px`);
+    for (const tabElement of getUnpinnedTabs()) {
+      console.log(`Tab ${tabElement.tab.id} is at ${tabElement.offsetLeft}`);
+    }
+
+    assertEquals(tabId, tabs[2].id);
+    assertEquals(thumbnailTracked, true);
+  });
 
   test('should update thumbnail track status on visibilitychange', async () => {
     await tabList.animationPromises;

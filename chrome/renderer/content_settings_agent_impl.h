@@ -82,8 +82,8 @@ class ContentSettingsAgentImpl
       base::OnceCallback<void(bool)> callback) override;
   bool AllowImage(bool enabled_per_settings,
                   const blink::WebURL& image_url) override;
-  bool AllowIndexedDB(const blink::WebSecurityOrigin& origin) override;
-  bool AllowCacheStorage(const blink::WebSecurityOrigin& origin) override;
+  bool AllowIndexedDB() override;
+  bool AllowCacheStorage() override;
   bool AllowScript(bool enabled_per_settings) override;
   bool AllowScriptFromSource(bool enabled_per_settings,
                              const blink::WebURL& script_url) override;

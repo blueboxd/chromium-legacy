@@ -67,6 +67,12 @@ class AppUpdate {
   const std::string& ShortName() const;
   bool ShortNameChanged() const;
 
+  // The publisher-specific ID for this app, e.g. for Android apps, this field
+  // contains the Android package name. May be empty if AppId() should be
+  // considered as the canonical publisher ID.
+  const std::string& PublisherId() const;
+  bool PublisherIdChanged() const;
+
   const std::string& Description() const;
   bool DescriptionChanged() const;
 

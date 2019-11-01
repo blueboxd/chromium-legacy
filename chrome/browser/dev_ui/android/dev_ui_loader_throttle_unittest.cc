@@ -294,10 +294,10 @@ TEST_F(DevUiLoaderThrottleTest, InstallFailure) {
     EXPECT_TRUE(throttle->called_cancel);
     EXPECT_FALSE(mock_provider_.GetIsInstalled());
     EXPECT_FALSE(mock_provider_.GetIsLoaded());
+    EXPECT_EQ(content::NavigationThrottle::CANCEL,
+              throttle->cancel_result.action());
     EXPECT_EQ(net::ERR_CONNECTION_FAILED,
               throttle->cancel_result.net_error_code());
-    EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST,
-              throttle->cancel_result.action());
     EXPECT_TRUE(throttle->cancel_result.error_page_content().has_value());
     std::string page_content =
         throttle->cancel_result.error_page_content().value();

@@ -80,15 +80,44 @@ base::string16 GetLastUpdatedTimeInDays(base::Time last_updated_timestamp) {
       time_in_days);
 }
 
+bool ShouldShowOrigin(const SharingDialogData& data,
+                      content::WebContents* web_contents) {
+  return data.initiating_origin &&
+         !data.initiating_origin->IsSameOriginWith(
+             web_contents->GetMainFrame()->GetLastCommittedOrigin());
+}
+
+base::string16 PrepareHelpTextWithoutOrigin(const SharingDialogData& data,
+                                            const base::string16& link,
+                                            size_t* link_offset) {
+  DCHECK_NE(0, data.help_text_id);
+  return l10n_util::GetStringFUTF16(data.help_text_id, link, link_offset);
+}
+
+base::string16 PrepareHelpTextWithOrigin(const SharingDialogData& data,
+                                         const base::string16& link,
+                                         size_t* link_offset) {
+  DCHECK_NE(0, data.help_text_origin_id);
+  base::string16 origin = url_formatter::FormatOriginForSecurityDisplay(
+      *data.initiating_origin,
+      url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  std::vector<size_t> offsets;
+  base::string16 text = l10n_util::GetStringFUTF16(data.help_text_origin_id,
+                                                   {origin, link}, &offsets);
+  *link_offset = offsets[1];
+  return text;
+}
+
 std::unique_ptr<views::StyledLabel> CreateHelpText(
     const SharingDialogData& data,
-    views::StyledLabelListener* listener) {
-  DCHECK_NE(0, data.help_text_id);
+    views::StyledLabelListener* listener,
+    bool show_origin) {
   DCHECK_NE(0, data.help_link_text_id);
   const base::string16 link = l10n_util::GetStringUTF16(data.help_link_text_id);
   size_t offset;
   const base::string16 text =
-      l10n_util::GetStringFUTF16(data.help_text_id, link, &offset);
+      show_origin ? PrepareHelpTextWithOrigin(data, link, &offset)
+                  : PrepareHelpTextWithoutOrigin(data, link, &offset);
   auto label = std::make_unique<views::StyledLabel>(text, listener);
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
@@ -146,26 +175,16 @@ int SharingDialogView::GetDialogButtons() const {
 }
 
 std::unique_ptr<views::View> SharingDialogView::CreateFootnoteView() {
-  constexpr int kLabelSpacing = 8;
-
-  bool show_help_text =
-      GetDialogType() == SharingDialogType::kDialogWithoutDevicesWithApp;
-  bool show_origin =
-      data_.initiating_origin &&
-      !data_.initiating_origin->IsSameOriginWith(
-          web_contents()->GetMainFrame()->GetLastCommittedOrigin());
-  if (!show_help_text && !show_origin)
-    return nullptr;
-
-  auto footnote_view = std::make_unique<views::View>();
-  footnote_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(), kLabelSpacing));
-  if (show_help_text)
-    footnote_view->AddChildView(CreateHelpText(data_, this));
-  if (show_origin)
-    footnote_view->AddChildView(CreateOriginView(data_));
-
-  return footnote_view;
+  bool show_origin = ShouldShowOrigin(data_, web_contents());
+  switch (GetDialogType()) {
+    case SharingDialogType::kDialogWithoutDevicesWithApp:
+      return CreateHelpText(data_, this, show_origin);
+    case SharingDialogType::kDialogWithDevicesMaybeApps:
+      return show_origin ? CreateOriginView(data_) : nullptr;
+    case SharingDialogType::kErrorDialog:
+    case SharingDialogType::kEducationalDialog:
+      return nullptr;
+  }
 }
 
 void SharingDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
@@ -315,7 +334,8 @@ void SharingDialogView::InitListView() {
 }
 
 void SharingDialogView::InitEmptyView() {
-  AddChildView(CreateHelpText(data_, this));
+  bool show_origin = ShouldShowOrigin(data_, web_contents());
+  AddChildView(CreateHelpText(data_, this, show_origin));
 }
 
 void SharingDialogView::InitErrorView() {

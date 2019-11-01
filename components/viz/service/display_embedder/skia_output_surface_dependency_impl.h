@@ -55,6 +55,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
 
+  base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
+
  private:
   GpuServiceImpl* const gpu_service_impl_;
   const gpu::SurfaceHandle surface_handle_;

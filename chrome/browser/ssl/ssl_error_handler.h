@@ -168,15 +168,12 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   bool IsTimerRunningForTesting() const;
 
  protected:
-  SSLErrorHandler(
-      std::unique_ptr<Delegate> delegate,
-      content::WebContents* web_contents,
-      Profile* profile,
-      int cert_error,
-      const net::SSLInfo& ssl_info,
-      const GURL& request_url,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback);
+  SSLErrorHandler(std::unique_ptr<Delegate> delegate,
+                  content::WebContents* web_contents,
+                  Profile* profile,
+                  int cert_error,
+                  const net::SSLInfo& ssl_info,
+                  const GURL& request_url);
 
   // Called when an SSL cert error is encountered. Triggers a captive portal
   // check and fires a one shot timer to wait for a "captive portal detected"
@@ -229,8 +226,6 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   const int cert_error_;
   const net::SSLInfo ssl_info_;
   const GURL request_url_;
-  base::Callback<void(content::CertificateRequestResultType)>
-      decision_callback_;
 
   content::NotificationRegistrar registrar_;
   base::OneShotTimer timer_;

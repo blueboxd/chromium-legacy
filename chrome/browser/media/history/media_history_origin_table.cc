@@ -33,14 +33,10 @@ sql::InitStatus MediaHistoryOriginTable::CreateTableIfNonExistent() {
   return sql::INIT_OK;
 }
 
-void MediaHistoryOriginTable::CreateOriginId(const std::string& origin) {
+bool MediaHistoryOriginTable::CreateOriginId(const std::string& origin) {
+  DCHECK_LT(0, DB()->transaction_nesting());
   if (!CanAccessDatabase())
-    return;
-
-  if (!DB()->BeginTransaction()) {
-    LOG(ERROR) << "Failed to begin the transaction to create an origin ID.";
-    return;
-  }
+    return false;
 
   // Insert the origin into the table if it does not exist.
   sql::Statement statement(
@@ -50,12 +46,11 @@ void MediaHistoryOriginTable::CreateOriginId(const std::string& origin) {
                                "VALUES (?)"));
   statement.BindString(0, origin);
   if (!statement.Run()) {
-    DB()->RollbackTransaction();
     LOG(ERROR) << "Failed to create the origin ID.";
-    return;
+    return false;
   }
 
-  DB()->CommitTransaction();
+  return true;
 }
 
 }  // namespace media_history

@@ -217,7 +217,7 @@ void IntranetRedirectDetector::OnConnectionChanged(
     Restart();
 }
 
-void IntranetRedirectDetector::OnSystemDnsConfigChanged() {
+void IntranetRedirectDetector::OnDnsConfigChanged() {
   Restart();
 }
 

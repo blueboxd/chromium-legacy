@@ -16,7 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,7 +112,7 @@ class DigitalAssetLinksHandlerTest : public ::testing::Test {
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   content::TestBrowserThread io_thread_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 

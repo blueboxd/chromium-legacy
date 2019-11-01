@@ -91,6 +91,11 @@ bool PrintManager::OnMessageReceived(
   return handled;
 }
 
+void PrintManager::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  print_render_frames_.erase(render_frame_host);
+}
+
 void PrintManager::OnDidGetPrintedPagesCount(int cookie,
                                              int number_pages) {
   DCHECK_GT(cookie, 0);
@@ -114,15 +119,19 @@ void PrintManager::OnPrintingFailed(int cookie) {
 
 const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>&
 PrintManager::GetPrintRenderFrame(content::RenderFrameHost* rfh) {
-  // When print preview is closed, the remote is disconnected from the receiver.
-  // Reset a disconnected remote before using it again.
-  if (print_render_frame_.is_bound() && !print_render_frame_.is_connected())
-    print_render_frame_.reset();
+  auto it = print_render_frames_.find(rfh);
+  if (it == print_render_frames_.end()) {
+    mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> remote;
+    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote);
+    it = print_render_frames_.insert({rfh, std::move(remote)}).first;
+  } else if (it->second.is_bound() && !it->second.is_connected()) {
+    // When print preview is closed, the remote is disconnected from the
+    // receiver. Reset and bind the remote before using it again.
+    it->second.reset();
+    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&it->second);
+  }
 
-  if (!print_render_frame_.is_bound())
-    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame_);
-
-  return print_render_frame_;
+  return it->second;
 }
 
 void PrintManager::PrintingRenderFrameDeleted() {

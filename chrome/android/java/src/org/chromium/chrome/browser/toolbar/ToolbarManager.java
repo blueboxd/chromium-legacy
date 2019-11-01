@@ -91,6 +91,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
+import org.chromium.chrome.browser.toolbar.bottom.BottomTabSwitcherActionMenuCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
@@ -775,7 +776,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mBottomControlsCoordinator = new BottomControlsCoordinator(mActivity.getFullscreenManager(),
                 mActivity.findViewById(R.id.bottom_controls_stub),
                 mActivity.getActivityTabProvider(), homeButtonListener, searchAcceleratorListener,
-                shareButtonListener, mAppThemeColorProvider);
+                shareButtonListener,
+                BottomTabSwitcherActionMenuCoordinator.createOnLongClickListener(
+                        id -> mActivity.onOptionsItemSelected(id, null)),
+                mAppThemeColorProvider);
 
         mIsBottomToolbarVisible = FeatureUtilities.isBottomToolbarEnabled()
                 && (!FeatureUtilities.isAdaptiveToolbarEnabled()
@@ -1267,6 +1271,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             if (mAppMenuButtonHelper != null) {
                 mAppMenuButtonHelper.setMenuShowsFromBottom(mIsBottomToolbarVisible);
             }
+            mIdentityDiscController.updateButtonState();
         }
     }
 

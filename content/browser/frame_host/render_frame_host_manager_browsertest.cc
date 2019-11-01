@@ -3667,6 +3667,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, CtrlClickSubframeLink) {
 // See https://crbug.com/577449.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        UnloadPushStateOnCrossProcessNavigation) {
+  shell()
+      ->web_contents()
+      ->GetController()
+      .GetBackForwardCache()
+      .DisableForTesting(content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
+
   StartEmbeddedServer();
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());

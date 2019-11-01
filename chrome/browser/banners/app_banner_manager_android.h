@@ -12,11 +12,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/android/webapps/add_to_homescreen_installer.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
+
+struct AddToHomescreenParams;
 
 namespace banners {
 
@@ -127,6 +130,10 @@ class AppBannerManagerAndroid
 
   // Hides the ambient badge if it is showing.
   void HideAmbientBadge();
+
+  // Called for recording metrics.
+  void RecordEventForAppBanner(AddToHomescreenInstaller::Event event,
+                               const AddToHomescreenParams& a2hs_params);
 
   std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate_;
 

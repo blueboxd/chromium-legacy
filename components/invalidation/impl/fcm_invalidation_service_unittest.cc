@@ -33,7 +33,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -178,10 +178,9 @@ class FCMInvalidationServiceTestDelegate {
         identity_provider_.get(),
         base::BindRepeating(&syncer::FCMNetworkHandler::Create,
                             gcm_driver_.get(), mock_instance_id_driver_.get()),
-        base::BindRepeating(
-            &syncer::PerUserTopicRegistrationManager::Create,
-            identity_provider_.get(), &pref_service_, &url_loader_factory_,
-            base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr)),
+        base::BindRepeating(&syncer::PerUserTopicRegistrationManager::Create,
+                            identity_provider_.get(), &pref_service_,
+                            &url_loader_factory_),
         mock_instance_id_driver_.get(), &pref_service_);
   }
 
@@ -208,7 +207,7 @@ class FCMInvalidationServiceTestDelegate {
   }
 
   base::test::TaskEnvironment task_environment_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<MockInstanceIDDriver> mock_instance_id_driver_;
   std::unique_ptr<MockInstanceID> mock_instance_id_;

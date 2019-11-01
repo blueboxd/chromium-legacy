@@ -14,8 +14,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
+#include "components/previews/core/previews_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -30,6 +33,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {optimization_guide::features::kOptimizationHints,
+         optimization_guide::features::kOptimizationHintsFetching,
          optimization_guide::features::kOptimizationGuideKeyedService,
          optimization_guide::features::kOptimizationTargetPrediction},
         {});
@@ -48,6 +52,15 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     EXPECT_TRUE(https_server_->ShutdownAndWaitUntilComplete());
     InProcessBrowserTest::TearDownOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitch(
+        data_reduction_proxy::switches::kEnableDataReductionProxy);
+    // Add switch to avoid having to see the infobar in the test.
+    cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
+    cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
+                           "whatever.com,somehost.com");
   }
 
   void RegisterWithKeyedService() {

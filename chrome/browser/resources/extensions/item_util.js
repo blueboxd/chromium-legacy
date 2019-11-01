@@ -2,24 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Closure compiler won't let this be declared inside cr.define().
-/** @enum {string} */
-const SourceType = {
-  WEBSTORE: 'webstore',
-  POLICY: 'policy',
-  SIDELOADED: 'sideloaded',
-  UNPACKED: 'unpacked',
-  UNKNOWN: 'unknown',
-};
+import './strings.m.js';
 
-cr.define('extensions', function() {
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
+
+  // Closure compiler won't let this be declared inside cr.define().
+  /** @enum {string} */
+  export const SourceType = {
+    WEBSTORE: 'webstore',
+    POLICY: 'policy',
+    SIDELOADED: 'sideloaded',
+    UNPACKED: 'unpacked',
+    UNKNOWN: 'unknown',
+  };
+
   /**
    * Returns true if the extension is enabled, including terminated
    * extensions.
    * @param {!chrome.developerPrivate.ExtensionState} state
    * @return {boolean}
    */
-  function isEnabled(state) {
+  export function isEnabled(state) {
     switch (state) {
       case chrome.developerPrivate.ExtensionState.ENABLED:
       case chrome.developerPrivate.ExtensionState.TERMINATED:
@@ -31,21 +36,21 @@ cr.define('extensions', function() {
     assertNotReached();
   }
 
-  /**
-   * @param {!chrome.developerPrivate.ExtensionInfo} extensionInfo
-   * @return {boolean} Whether the extension is controlled.
-   */
-  function isControlled(extensionInfo) {
+    /**
+     * @param {!chrome.developerPrivate.ExtensionInfo} extensionInfo
+     * @return {boolean} Whether the extension is controlled.
+     */
+  export function isControlled(extensionInfo) {
     return !!extensionInfo.controlledInfo;
   }
 
-  /**
-   * Returns true if the user can change whether or not the extension is
-   * enabled.
-   * @param {!chrome.developerPrivate.ExtensionInfo} item
-   * @return {boolean}
-   */
-  function userCanChangeEnablement(item) {
+    /**
+     * Returns true if the user can change whether or not the extension is
+     * enabled.
+     * @param {!chrome.developerPrivate.ExtensionInfo} item
+     * @return {boolean}
+     */
+  export function userCanChangeEnablement(item) {
     // User doesn't have permission.
     if (!item.userMayModify) {
       return false;
@@ -69,11 +74,11 @@ cr.define('extensions', function() {
     return true;
   }
 
-  /**
-   * @param {!chrome.developerPrivate.ExtensionInfo} item
-   * @return {SourceType}
-   */
-  function getItemSource(item) {
+    /**
+     * @param {!chrome.developerPrivate.ExtensionInfo} item
+     * @return {SourceType}
+     */
+  export function getItemSource(item) {
     if (item.controlledInfo &&
         item.controlledInfo.type ==
             chrome.developerPrivate.ControllerType.POLICY) {
@@ -94,11 +99,11 @@ cr.define('extensions', function() {
     assertNotReached(item.location);
   }
 
-  /**
-   * @param {SourceType} source
-   * @return {string}
-   */
-  function getItemSourceString(source) {
+    /**
+     * @param {SourceType} source
+     * @return {string}
+     */
+  export function getItemSourceString(source) {
     switch (source) {
       case SourceType.POLICY:
         return loadTimeData.getString('itemSourcePolicy');
@@ -116,12 +121,12 @@ cr.define('extensions', function() {
     assertNotReached();
   }
 
-  /**
-   * Computes the human-facing label for the given inspectable view.
-   * @param {!chrome.developerPrivate.ExtensionView} view
-   * @return {string}
-   */
-  function computeInspectableViewLabel(view) {
+    /**
+     * Computes the human-facing label for the given inspectable view.
+     * @param {!chrome.developerPrivate.ExtensionView} view
+     * @return {string}
+     */
+  export function computeInspectableViewLabel(view) {
     // Trim the "chrome-extension://<id>/".
     const url = new URL(view.url);
     let label = view.url;
@@ -144,13 +149,3 @@ cr.define('extensions', function() {
 
     return label;
   }
-
-  return {
-    isControlled: isControlled,
-    isEnabled: isEnabled,
-    userCanChangeEnablement: userCanChangeEnablement,
-    getItemSource: getItemSource,
-    getItemSourceString: getItemSourceString,
-    computeInspectableViewLabel: computeInspectableViewLabel
-  };
-});

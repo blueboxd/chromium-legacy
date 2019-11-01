@@ -72,8 +72,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     const GURL& login_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
-    int cert_error,
-    const base::Callback<void(content::CertificateRequestResultType)>& callback)
+    int cert_error)
     : SSLBlockingPageBase(
           web_contents,
           cert_error,
@@ -90,8 +89,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
               request_url,
               CreateCaptivePortalMetricsHelper(web_contents, request_url))),
       login_url_(login_url),
-      ssl_info_(ssl_info),
-      callback_(callback) {
+      ssl_info_(ssl_info) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
       captive_portal::CaptivePortalMetrics::SHOW_ALL);
 }
@@ -270,20 +268,4 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
 
 void CaptivePortalBlockingPage::OverrideEntry(content::NavigationEntry* entry) {
   entry->GetSSL() = content::SSLStatus(ssl_info_);
-}
-
-void CaptivePortalBlockingPage::OnProceed() {
-  NOTREACHED()
-      << "Cannot proceed through the error on a captive portal interstitial.";
-}
-
-void CaptivePortalBlockingPage::OnDontProceed() {
-  OnInterstitialClosing();
-
-  // Need to explicity deny the certificate via the callback, otherwise memory
-  // is leaked.
-  if (!callback_.is_null()) {
-    callback_.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
-    callback_.Reset();
-  }
 }

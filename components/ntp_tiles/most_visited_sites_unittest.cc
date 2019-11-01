@@ -35,7 +35,7 @@
 #include "components/ntp_tiles/section_type.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -396,11 +396,10 @@ class PopularSitesFactoryForTest {
   }
 
   std::unique_ptr<PopularSites> New() {
-    return std::make_unique<PopularSitesImpl>(
-        prefs_,
-        /*template_url_service=*/nullptr,
-        /*variations_service=*/nullptr, test_shared_loader_factory_,
-        base::Bind(&data_decoder::SafeJsonParser::Parse, nullptr));
+    return std::make_unique<PopularSitesImpl>(prefs_,
+                                              /*template_url_service=*/nullptr,
+                                              /*variations_service=*/nullptr,
+                                              test_shared_loader_factory_);
   }
 
  private:
@@ -573,7 +572,7 @@ class MostVisitedSitesTest
   TopSitesCallbackList top_sites_callbacks_;
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   PopularSitesFactoryForTest popular_sites_factory_;
   scoped_refptr<StrictMock<MockTopSites>> mock_top_sites_;

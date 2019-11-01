@@ -35,7 +35,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
                                DedicatedWorkerObjectProxy& worker_object_proxy)
       : DedicatedWorkerThread(parent_execution_context, worker_object_proxy) {
     worker_backing_thread_ = std::make_unique<WorkerBackingThread>(
-        ThreadCreationParams(WebThreadType::kTestThread));
+        ThreadCreationParams(ThreadType::kTestThread));
   }
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(

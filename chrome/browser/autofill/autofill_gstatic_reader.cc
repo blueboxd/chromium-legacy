@@ -53,11 +53,13 @@ AutofillGstaticReader* AutofillGstaticReader::GetInstance() {
 
 std::vector<std::string>
 AutofillGstaticReader::GetTokenizationMerchantWhitelist() const {
+  DCHECK(setup_called_);  // Ensure data has been loaded.
   return tokenization_merchant_whitelist_;
 }
 
 std::vector<std::string>
 AutofillGstaticReader::GetTokenizationBinRangesWhitelist() const {
+  DCHECK(setup_called_);  // Ensure data has been loaded.
   return tokenization_bin_range_whitelist_;
 }
 

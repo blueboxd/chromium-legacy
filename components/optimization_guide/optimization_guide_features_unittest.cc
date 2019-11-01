@@ -20,21 +20,21 @@ namespace optimization_guide {
 namespace {
 
 TEST(OptimizationGuideFeaturesTest,
-     TestGetOptimizationGuideServiceURLHTTPSOnly) {
+     TestGetOptimizationGuideServiceGetHintsURLHTTPSOnly) {
   base::test::ScopedFeatureList scoped_feature_list;
 
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kOptimizationHintsFetching,
       {{"optimization_guide_service_url", "http://NotAnHTTPSServer.com"}});
 
-  EXPECT_EQ(features::GetOptimizationGuideServiceURL().spec(),
-            kOptimizationGuideServiceDefaultURL);
-  EXPECT_TRUE(
-      features::GetOptimizationGuideServiceURL().SchemeIs(url::kHttpsScheme));
+  EXPECT_EQ(features::GetOptimizationGuideServiceGetHintsURL().spec(),
+            kOptimizationGuideServiceGetHintsDefaultURL);
+  EXPECT_TRUE(features::GetOptimizationGuideServiceGetHintsURL().SchemeIs(
+      url::kHttpsScheme));
 }
 
 TEST(OptimizationGuideFeaturesTest,
-     TestGetOptimizationGuideServiceURLViaFinch) {
+     TestGetOptimizationGuideServiceGetHintsURLViaFinch) {
   base::test::ScopedFeatureList scoped_feature_list;
 
   std::string optimization_guide_service_url = "https://finchserver.com/";
@@ -42,7 +42,7 @@ TEST(OptimizationGuideFeaturesTest,
       features::kOptimizationHintsFetching,
       {{"optimization_guide_service_url", optimization_guide_service_url}});
 
-  EXPECT_EQ(features::GetOptimizationGuideServiceURL().spec(),
+  EXPECT_EQ(features::GetOptimizationGuideServiceGetHintsURL().spec(),
             optimization_guide_service_url);
 }
 

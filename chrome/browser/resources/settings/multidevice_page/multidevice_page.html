@@ -27,17 +27,11 @@
       cr-policy-indicator {
         padding: 0 var(--cr-controlled-by-spacing);
       }
-
-      .link-wrapper {
-        align-items: center;
-        display: flex;
-        flex-grow: 1;
-      }
     </style>
     <settings-animated-pages id="pages" section="multidevice"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <div id="multidevice-item" class="settings-box two-line">
+        <div id="multidevice-item" class="settings-box two-line no-padding">
           <div class="link-wrapper" actionable
                actionable$="[[doesClickOpenSubpage_(pageContentData)]]"
                on-click="handleItemClick_">
@@ -70,6 +64,7 @@
             <cr-policy-indicator indicator-type="userPolicy">
             </cr-policy-indicator>
             <settings-multidevice-feature-toggle
+                class="margin-matches-padding"
                 feature="[[MultiDeviceFeature.BETTER_TOGETHER_SUITE]]"
                 page-content-data="[[pageContentData]]">
             </settings-multidevice-feature-toggle>
@@ -82,7 +77,8 @@
           <template is="dom-if"
               if="[[shouldShowButton_(pageContentData)]]"
               restamp>
-            <cr-button on-click="handleButtonClick_">
+            <cr-button class="margin-matches-padding"
+                on-click="handleButtonClick_">
               [[getButtonText_(pageContentData)]]
             </cr-button>
           </template>
@@ -90,6 +86,7 @@
               if="[[shouldShowToggle_(pageContentData)]]"
               restamp>
             <settings-multidevice-feature-toggle
+                class="margin-matches-padding"
                 feature="[[MultiDeviceFeature.BETTER_TOGETHER_SUITE]]"
                 page-content-data="[[pageContentData]]">
             </settings-multidevice-feature-toggle>

@@ -211,7 +211,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
   }
 }
 
-+ (void)saveLocalCreditCard {
++ (NSString*)saveLocalCreditCard {
   autofill::PersonalDataManager* personalDataManager =
       [self personalDataManager];
   autofill::CreditCard card = autofill::test::GetCreditCard();
@@ -225,6 +225,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
       base::TimeDelta::FromSeconds(
           base::test::ios::kWaitForFileOperationTimeout));
   personalDataManager->NotifyPersonalDataObserver();
+  return base::SysUTF16ToNSString(card.NetworkAndLastFourDigits());
 }
 
 + (void)saveMaskedCreditCard {

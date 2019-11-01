@@ -49,12 +49,12 @@ constexpr StaticOobeScreenId AssistantOptInFlowScreenView::kScreenId;
 
 AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
     JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container), client_binding_(this) {
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_user_acted_method_path("login.AssistantOptInFlowScreen.userActed");
 }
 
 AssistantOptInFlowScreenHandler::~AssistantOptInFlowScreenHandler() {
-  if (client_binding_)
+  if (client_receiver_.is_bound())
     StopSpeakerIdEnrollment();
   if (ash::AssistantState::Get())
     ash::AssistantState::Get()->RemoveObserver(this);
@@ -312,8 +312,8 @@ void AssistantOptInFlowScreenHandler::SendGetSettingsRequest() {
 
 void AssistantOptInFlowScreenHandler::StopSpeakerIdEnrollment() {
   settings_manager_->StopSpeakerIdEnrollment(base::DoNothing());
-  // Close the binding so it can be used again if enrollment is retried.
-  client_binding_.Close();
+  // Reset the receiver so it can be used again if enrollment is retried.
+  client_receiver_.reset();
 }
 
 void AssistantOptInFlowScreenHandler::ReloadContent(const base::Value& dict) {
@@ -524,10 +524,9 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
       prefs->SetBoolean(assistant::prefs::kAssistantHotwordEnabled, true);
     }
 
-    assistant::mojom::SpeakerIdEnrollmentClientPtr client_ptr;
-    client_binding_.Bind(mojo::MakeRequest(&client_ptr));
     settings_manager_->StartSpeakerIdEnrollment(
-        flow_type_ == ash::FlowType::kSpeakerIdRetrain, std::move(client_ptr));
+        flow_type_ == ash::FlowType::kSpeakerIdRetrain,
+        client_receiver_.BindNewPipeAndPassRemote());
   }
 }
 

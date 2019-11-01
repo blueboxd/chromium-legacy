@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "chrome/browser/themes/theme_service.h"
 
+class Profile;
+
 // A subclass of ThemeService that manages the CustomThemeSupplier which
 // provides the native Linux theme.
 class ThemeServiceAuraLinux : public ThemeService {
@@ -22,6 +24,8 @@ class ThemeServiceAuraLinux : public ThemeService {
   bool UsingDefaultTheme() const override;
   bool UsingSystemTheme() const override;
   void FixInconsistentPreferencesIfNeeded() override;
+
+  static bool ShouldUseSystemThemeForProfile(const Profile* profile);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThemeServiceAuraLinux);

@@ -3,10 +3,15 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for activity-log-history. */
+
+import {ActivityLogPageState} from 'chrome://extensions/extensions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {TestService} from './test_service.js';
+import {testVisible} from './test_util.js';
+
 suite('ExtensionsActivityLogHistoryTest', function() {
   /**
-   * Backing extension id, same id as the one in
-   * extension_test_util.createExtensionInfo
+   * Backing extension id, same id as the one in createExtensionInfo
    * @type {string}
    */
   const EXTENSION_ID = 'a'.repeat(32);
@@ -123,18 +128,17 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
   /**
    * Extension activityLogHistory created before each test.
-   * @type {extensions.ActivityLogHistory}
+   * @type {ActivityLogHistory}
    */
   let activityLogHistory;
   let proxyDelegate;
-  let testVisible;
+  let boundTestVisible;
 
   function setupActivityLogHistory() {
     PolymerTest.clearBody();
 
-    activityLogHistory = new extensions.ActivityLogHistory();
-    testVisible =
-        extension_test_util.testVisible.bind(null, activityLogHistory);
+    activityLogHistory = document.createElement('activity-log-history');
+    boundTestVisible = testVisible.bind(null, activityLogHistory);
 
     activityLogHistory.extensionId = EXTENSION_ID;
     activityLogHistory.delegate = proxyDelegate;
@@ -145,7 +149,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
   // Initialize an extension activity log before each test.
   setup(function() {
-    proxyDelegate = new extensions.TestService();
+    proxyDelegate = new TestService();
   });
 
   teardown(function() {
@@ -168,12 +172,12 @@ suite('ExtensionsActivityLogHistoryTest', function() {
     proxyDelegate.testActivities = testActivities;
     await setupActivityLogHistory();
 
-    Polymer.dom.flush();
+    flush();
 
-    testVisible('#no-activities', false);
-    testVisible('#loading-activities', false);
-    testVisible('#activity-list', true);
-    testVisible('.activity-table-headings', true);
+    boundTestVisible('#no-activities', false);
+    boundTestVisible('#loading-activities', false);
+    boundTestVisible('#activity-list', true);
+    boundTestVisible('.activity-table-headings', true);
 
     const activityLogItems = getHistoryItems();
     expectEquals(activityLogItems.length, 3);
@@ -208,7 +212,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
     await proxyDelegate.whenCalled('getFilteredExtensionActivityLog');
 
-    Polymer.dom.flush();
+    flush();
     const activityLogItems = getHistoryItems();
     // Since we searched for an API call, we expect only one match as
     // activity log entries are grouped by their API call.
@@ -223,11 +227,11 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
     await proxyDelegate.whenCalled('getFilteredExtensionActivityLog');
 
-    Polymer.dom.flush();
+    flush();
 
-    testVisible('#no-activities', true);
-    testVisible('#loading-activities', false);
-    testVisible('#activity-list', false);
+    boundTestVisible('#no-activities', true);
+    boundTestVisible('#loading-activities', false);
+    boundTestVisible('#activity-list', false);
     expectEquals(0, getHistoryItems().length);
 
     proxyDelegate.resetResolver('getExtensionActivityLog');
@@ -238,7 +242,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
     await proxyDelegate.whenCalled('getExtensionActivityLog');
 
-    Polymer.dom.flush();
+    flush();
     expectEquals(3, getHistoryItems().length);
   });
 
@@ -246,7 +250,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
     proxyDelegate.testActivities = testContentScriptActivities;
     await setupActivityLogHistory();
 
-    Polymer.dom.flush();
+    flush();
     const activityLogItems = getHistoryItems();
 
     // One activity should be shown for each content script name.
@@ -264,7 +268,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
         proxyDelegate.testActivities = testWebRequestActivities;
         await setupActivityLogHistory();
 
-        Polymer.dom.flush();
+        flush();
         const activityLogItems = getHistoryItems();
 
         // First activity should be split into two groups as it has two actions
@@ -292,7 +296,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
     proxyDelegate.testActivities = testActivities;
     await setupActivityLogHistory();
 
-    Polymer.dom.flush();
+    flush();
 
     const expandableItems =
         Array.from(getHistoryItems())
@@ -306,14 +310,14 @@ suite('ExtensionsActivityLogHistoryTest', function() {
     activityLogHistory.$$('#more-actions').click();
     activityLogHistory.$$('#expand-all-button').click();
 
-    Polymer.dom.flush();
+    flush();
     expectEquals(2, getExpandedItems().length);
 
     // Collapse all items.
     activityLogHistory.$$('#more-actions').click();
     activityLogHistory.$$('#collapse-all-button').click();
 
-    Polymer.dom.flush();
+    flush();
     expectEquals(0, getExpandedItems().length);
   });
 
@@ -331,7 +335,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
     proxyDelegate.testActivities = testExportActivities;
     await setupActivityLogHistory();
-    Polymer.dom.flush();
+    flush();
 
     activityLogHistory.$$('#more-actions').click();
     activityLogHistory.$$('#export-button').click();
@@ -349,7 +353,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
         proxyDelegate.testActivities = testActivities;
         await setupActivityLogHistory();
 
-        Polymer.dom.flush();
+        flush();
         const activityLogItems = getHistoryItems();
 
         expectEquals(activityLogItems.length, 3);
@@ -361,7 +365,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
         await proxyDelegate.whenCalled('deleteActivitiesById');
         await proxyDelegate.whenCalled('getExtensionActivityLog');
 
-        Polymer.dom.flush();
+        flush();
         expectEquals(2, getHistoryItems().length);
       });
 
@@ -372,11 +376,11 @@ suite('ExtensionsActivityLogHistoryTest', function() {
         proxyDelegate.testActivities = {activities: []};
         await setupActivityLogHistory();
 
-        Polymer.dom.flush();
+        flush();
 
-        testVisible('#no-activities', true);
-        testVisible('#loading-activities', false);
-        testVisible('#activity-list', false);
+        boundTestVisible('#no-activities', true);
+        boundTestVisible('#loading-activities', false);
+        boundTestVisible('#activity-list', false);
         expectEquals(0, getHistoryItems().length);
       });
 
@@ -386,13 +390,13 @@ suite('ExtensionsActivityLogHistoryTest', function() {
     await setupActivityLogHistory();
 
     // Pretend the activity log is still loading.
-    activityLogHistory.pageState_ = extensions.ActivityLogPageState.LOADING;
+    activityLogHistory.pageState_ = ActivityLogPageState.LOADING;
 
-    Polymer.dom.flush();
+    flush();
 
-    testVisible('#no-activities', false);
-    testVisible('#loading-activities', true);
-    testVisible('#activity-list', false);
+    boundTestVisible('#no-activities', false);
+    boundTestVisible('#loading-activities', true);
+    boundTestVisible('#activity-list', false);
   });
 
   test(
@@ -401,16 +405,16 @@ suite('ExtensionsActivityLogHistoryTest', function() {
         proxyDelegate.testActivities = testActivities;
         await setupActivityLogHistory();
 
-        Polymer.dom.flush();
+        flush();
 
         expectEquals(3, getHistoryItems().length);
         activityLogHistory.$$('.clear-activities-button').click();
 
         await proxyDelegate.whenCalled('deleteActivitiesFromExtension');
 
-        Polymer.dom.flush();
-        testVisible('#no-activities', true);
-        testVisible('.activity-table-headings', false);
+        flush();
+        boundTestVisible('#no-activities', true);
+        boundTestVisible('.activity-table-headings', false);
         expectEquals(0, getHistoryItems().length);
       });
 });

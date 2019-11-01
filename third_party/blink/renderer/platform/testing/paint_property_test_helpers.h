@@ -217,6 +217,15 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateScrollTranslation(
   return TransformPaintPropertyNode::Create(parent, std::move(state));
 }
 
+inline scoped_refptr<TransformPaintPropertyNode>
+CreateCompositedScrollTranslation(const TransformPaintPropertyNode& parent,
+                                  float offset_x,
+                                  float offset_y,
+                                  const ScrollPaintPropertyNode& scroll) {
+  return CreateScrollTranslation(parent, offset_x, offset_y, scroll,
+                                 CompositingReason::kOverflowScrolling);
+}
+
 inline PropertyTreeState DefaultPaintChunkProperties() {
   return PropertyTreeState::Root();
 }

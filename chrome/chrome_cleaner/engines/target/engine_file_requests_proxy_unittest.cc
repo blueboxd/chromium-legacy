@@ -250,7 +250,7 @@ MULTIPROCESS_TEST_MAIN(FindFirstFileNoHangs) {
       SandboxErrorCode::NULL_FIND_HANDLE,
       proxy->FindFirstFile(child_process->valid_utf8_path(), &data, nullptr));
 
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
   FindFileHandle handle;
   EXPECT_EQ(SandboxErrorCode::INTERNAL_ERROR,
             proxy->FindFirstFile(base::FilePath(L"Name"), &data, &handle));
@@ -262,7 +262,7 @@ MULTIPROCESS_TEST_MAIN(FindNextFileNoHangs) {
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
     return 1;
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   scoped_refptr<EngineFileRequestsProxy> proxy(
       child_process->GetFileRequestsProxy());
@@ -279,7 +279,7 @@ MULTIPROCESS_TEST_MAIN(FindCloseNoHangs) {
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
     return 1;
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   scoped_refptr<EngineFileRequestsProxy> proxy(
       child_process->GetFileRequestsProxy());
@@ -346,7 +346,7 @@ MULTIPROCESS_TEST_MAIN(OpenReadOnlyFileNoHangs) {
       proxy->OpenReadOnlyFile(base::FilePath(too_long), FILE_ATTRIBUTE_NORMAL)
           .IsValid());
 
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   EXPECT_FALSE(proxy->OpenReadOnlyFile(base::FilePath(), FILE_ATTRIBUTE_NORMAL)
                    .IsValid());

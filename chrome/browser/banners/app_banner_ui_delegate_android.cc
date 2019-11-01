@@ -9,15 +9,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/AppBannerUiDelegateAndroid_jni.h"
-#include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/android/webapk/webapk_install_service.h"
-#include "chrome/browser/android/webapk/webapk_metrics.h"
+#include "chrome/browser/android/webapps/add_to_homescreen_installer.h"
 #include "chrome/browser/banners/app_banner_manager.h"
-#include "chrome/browser/banners/app_banner_metrics.h"
-#include "chrome/browser/banners/app_banner_settings_helper.h"
-#include "chrome/browser/browser_process.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -28,28 +23,13 @@ namespace banners {
 // static
 std::unique_ptr<AppBannerUiDelegateAndroid> AppBannerUiDelegateAndroid::Create(
     base::WeakPtr<AppBannerManager> weak_manager,
-    std::unique_ptr<ShortcutInfo> shortcut_info,
-    const SkBitmap& primary_icon,
-    const SkBitmap& badge_icon,
-    WebappInstallSource install_source,
-    bool is_webapk,
-    bool has_primary_maskable_icon) {
+    std::unique_ptr<AddToHomescreenParams> params,
+    base::RepeatingCallback<void(AddToHomescreenInstaller::Event,
+                                 const AddToHomescreenParams&)>
+        event_callback) {
   return std::unique_ptr<AppBannerUiDelegateAndroid>(
-      new AppBannerUiDelegateAndroid(weak_manager, std::move(shortcut_info),
-                                     primary_icon, badge_icon, install_source,
-                                     is_webapk, has_primary_maskable_icon));
-}
-
-// static
-std::unique_ptr<AppBannerUiDelegateAndroid> AppBannerUiDelegateAndroid::Create(
-    base::WeakPtr<AppBannerManager> weak_manager,
-    const base::string16& app_title,
-    const base::android::ScopedJavaLocalRef<jobject>& native_app_data,
-    const SkBitmap& icon,
-    const std::string& native_app_package_name) {
-  return std::unique_ptr<AppBannerUiDelegateAndroid>(
-      new AppBannerUiDelegateAndroid(weak_manager, app_title, native_app_data,
-                                     icon, native_app_package_name));
+      new AppBannerUiDelegateAndroid(weak_manager, std::move(params),
+                                     event_callback));
 }
 
 AppBannerUiDelegateAndroid::~AppBannerUiDelegateAndroid() {
@@ -58,65 +38,14 @@ AppBannerUiDelegateAndroid::~AppBannerUiDelegateAndroid() {
   java_delegate_.Reset();
 }
 
-const base::string16& AppBannerUiDelegateAndroid::GetAppTitle() const {
-  return app_title_;
-}
-
-base::android::ScopedJavaLocalRef<jobject>
-AppBannerUiDelegateAndroid::GetJavaObject() {
-  return base::android::ScopedJavaLocalRef<jobject>(java_delegate_);
-}
-
-const base::android::ScopedJavaLocalRef<jobject>
-AppBannerUiDelegateAndroid::GetNativeAppData() const {
-  return base::android::ScopedJavaLocalRef<jobject>(native_app_data_);
-}
-
-const SkBitmap& AppBannerUiDelegateAndroid::GetPrimaryIcon() const {
-  return primary_icon_;
-}
-
-AppBannerUiDelegateAndroid::AppType AppBannerUiDelegateAndroid::GetType()
-    const {
-  return type_;
-}
-
-const GURL& AppBannerUiDelegateAndroid::GetWebAppUrl() const {
-  return shortcut_info_->url;
-}
-
 void AppBannerUiDelegateAndroid::AddToHomescreen(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  TrackDismissEvent(DISMISS_EVENT_DISMISSED);
-
   if (!weak_manager_.get())
     return;
 
-  InstallApp(weak_manager_->web_contents());
-}
-
-bool AppBannerUiDelegateAndroid::InstallApp(
-    content::WebContents* web_contents) {
-  if (!web_contents) {
-    TrackDismissEvent(DISMISS_EVENT_ERROR);
-    return true;
-  }
-
-  bool should_close_banner = true;
-  switch (GetType()) {
-    case AppType::NATIVE:
-      should_close_banner = InstallOrOpenNativeApp();
-      break;
-    case AppType::WEBAPK:
-      InstallWebApk(web_contents);
-      break;
-    case AppType::LEGACY_WEBAPP:
-      InstallLegacyWebApp(web_contents);
-      break;
-  }
-  SendBannerAccepted();
-  return should_close_banner;
+  AddToHomescreenInstaller::Install(weak_manager_->web_contents(), *params_,
+                                    event_callback_);
 }
 
 void AppBannerUiDelegateAndroid::OnUiCancelled(
@@ -126,29 +55,7 @@ void AppBannerUiDelegateAndroid::OnUiCancelled(
 }
 
 void AppBannerUiDelegateAndroid::OnUiCancelled() {
-  TrackDismissEvent(DISMISS_EVENT_DISMISSED);
-
-  if (!weak_manager_.get())
-    return;
-
-  weak_manager_->SendBannerDismissed();
-  content::WebContents* web_contents = weak_manager_->web_contents();
-
-  if (IsForNativeApp()) {
-    DCHECK(!package_name_.empty());
-    TrackUserResponse(USER_RESPONSE_NATIVE_APP_DISMISSED);
-    AppBannerSettingsHelper::RecordBannerDismissEvent(
-        web_contents, package_name_, AppBannerSettingsHelper::NATIVE);
-  } else {
-    DCHECK(GetType() == AppType::WEBAPK || GetType() == AppType::LEGACY_WEBAPP);
-
-    if (GetType() == AppType::WEBAPK)
-      webapk::TrackInstallEvent(
-          webapk::ADD_TO_HOMESCREEN_DIALOG_DISMISSED_BEFORE_INSTALLATION);
-    TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
-    AppBannerSettingsHelper::RecordBannerDismissEvent(
-        web_contents, shortcut_info_->url.spec(), AppBannerSettingsHelper::WEB);
-  }
+  event_callback_.Run(AddToHomescreenInstaller::Event::UI_DISMISSED, *params_);
 }
 
 bool AppBannerUiDelegateAndroid::ShowDialog() {
@@ -156,39 +63,47 @@ bool AppBannerUiDelegateAndroid::ShowDialog() {
     return false;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> java_app_title =
-      base::android::ConvertUTF16ToJavaString(env, app_title_);
-
-  DCHECK(!primary_icon_.drawsNothing());
+  DCHECK(!params_->primary_icon.drawsNothing());
   base::android::ScopedJavaLocalRef<jobject> java_bitmap =
-      gfx::ConvertToJavaBitmap(&primary_icon_);
+      gfx::ConvertToJavaBitmap(&(params_->primary_icon));
 
-  if (IsForNativeApp()) {
-    return Java_AppBannerUiDelegateAndroid_showNativeAppDialog(
-        env, java_delegate_, java_app_title, java_bitmap, native_app_data_);
+  if (params_->app_type == AddToHomescreenParams::AppType::NATIVE) {
+    bool was_shown = Java_AppBannerUiDelegateAndroid_showNativeAppDialog(
+        env, java_delegate_, java_bitmap, params_->native_app_data);
+    if (was_shown)
+      event_callback_.Run(AddToHomescreenInstaller::Event::UI_SHOWN, *params_);
+    return was_shown;
   }
 
+  base::android::ScopedJavaLocalRef<jstring> java_app_title =
+      base::android::ConvertUTF16ToJavaString(env,
+                                              params_->shortcut_info->name);
   // Trim down the app URL to the origin. Banners only show on secure origins,
   // so elide the scheme.
   base::android::ScopedJavaLocalRef<jstring> java_app_url =
       base::android::ConvertUTF16ToJavaString(
           env, url_formatter::FormatUrlForSecurityDisplay(
-                   shortcut_info_->url,
+                   params_->shortcut_info->url,
                    url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 
-  return Java_AppBannerUiDelegateAndroid_showWebAppDialog(
+  bool was_shown = Java_AppBannerUiDelegateAndroid_showWebAppDialog(
       env, java_delegate_, java_app_title, java_bitmap, java_app_url,
-      has_primary_maskable_icon_);
+      params_->has_maskable_primary_icon);
+  if (was_shown)
+    event_callback_.Run(AddToHomescreenInstaller::Event::UI_SHOWN, *params_);
+  return was_shown;
 }
 
 bool AppBannerUiDelegateAndroid::ShowNativeAppDetails() {
-  if (native_app_data_.is_null())
+  if (params_->native_app_data.is_null())
     return false;
 
   Java_AppBannerUiDelegateAndroid_showAppDetails(
-      base::android::AttachCurrentThread(), java_delegate_, native_app_data_);
+      base::android::AttachCurrentThread(), java_delegate_,
+      params_->native_app_data);
 
-  TrackDismissEvent(DISMISS_EVENT_BANNER_CLICK);
+  event_callback_.Run(AddToHomescreenInstaller::Event::NATIVE_DETAILS_SHOWN,
+                      *params_);
   return true;
 }
 
@@ -200,42 +115,12 @@ bool AppBannerUiDelegateAndroid::ShowNativeAppDetails(
 
 AppBannerUiDelegateAndroid::AppBannerUiDelegateAndroid(
     base::WeakPtr<AppBannerManager> weak_manager,
-    std::unique_ptr<ShortcutInfo> shortcut_info,
-    const SkBitmap& primary_icon,
-    const SkBitmap& badge_icon,
-    WebappInstallSource install_source,
-    bool is_webapk,
-    bool has_primary_maskable_icon)
+    std::unique_ptr<AddToHomescreenParams> params,
+    base::RepeatingCallback<void(AddToHomescreenInstaller::Event,
+                                 const AddToHomescreenParams&)> event_callback)
     : weak_manager_(weak_manager),
-      app_title_(shortcut_info->name),
-      shortcut_info_(std::move(shortcut_info)),
-      primary_icon_(primary_icon),
-      badge_icon_(badge_icon),
-      has_primary_maskable_icon_(has_primary_maskable_icon),
-      type_(is_webapk ? AppType::WEBAPK : AppType::LEGACY_WEBAPP),
-      install_source_(install_source) {
-  if (is_webapk)
-    shortcut_info_->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER_WEBAPK);
-  else
-    shortcut_info_->UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
-
-  CreateJavaDelegate();
-}
-
-AppBannerUiDelegateAndroid::AppBannerUiDelegateAndroid(
-    base::WeakPtr<AppBannerManager> weak_manager,
-    const base::string16& app_title,
-    const base::android::ScopedJavaLocalRef<jobject>& native_app_data,
-    const SkBitmap& icon,
-    const std::string& native_app_package_name)
-    : weak_manager_(weak_manager),
-      app_title_(app_title),
-      native_app_data_(native_app_data),
-      primary_icon_(icon),
-      package_name_(native_app_package_name),
-      type_(AppType::NATIVE) {
-  DCHECK(!native_app_data_.is_null());
-  DCHECK(!package_name_.empty());
+      params_(std::move(params)),
+      event_callback_(event_callback) {
   CreateJavaDelegate();
 }
 
@@ -245,62 +130,6 @@ void AppBannerUiDelegateAndroid::CreateJavaDelegate() {
   java_delegate_.Reset(Java_AppBannerUiDelegateAndroid_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
       tab->GetJavaObject()));
-}
-
-bool AppBannerUiDelegateAndroid::InstallOrOpenNativeApp() {
-  DCHECK(IsForNativeApp());
-  TrackUserResponse(USER_RESPONSE_NATIVE_APP_ACCEPTED);
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  bool was_opened = Java_AppBannerUiDelegateAndroid_installOrOpenNativeApp(
-      env, java_delegate_, native_app_data_);
-
-  if (was_opened)
-    TrackDismissEvent(DISMISS_EVENT_APP_OPEN);
-  else
-    TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_TRIGGERED);
-
-  return was_opened;
-}
-
-void AppBannerUiDelegateAndroid::InstallWebApk(
-    content::WebContents* web_contents) {
-  TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
-  AppBannerSettingsHelper::RecordBannerInstallEvent(
-      web_contents, shortcut_info_->url.spec(), AppBannerSettingsHelper::WEB);
-
-  WebApkInstallService::Get(web_contents->GetBrowserContext())
-      ->InstallAsync(web_contents, *shortcut_info_, primary_icon_,
-                     has_primary_maskable_icon_, badge_icon_, install_source_);
-}
-
-void AppBannerUiDelegateAndroid::InstallLegacyWebApp(
-    content::WebContents* web_contents) {
-  DCHECK_EQ(AppType::LEGACY_WEBAPP, GetType());
-
-  TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
-
-  AppBannerSettingsHelper::RecordBannerInstallEvent(
-      web_contents, shortcut_info_->url.spec(), AppBannerSettingsHelper::WEB);
-
-  ShortcutHelper::AddToLauncherWithSkBitmap(
-      web_contents, *shortcut_info_, primary_icon_, has_primary_maskable_icon_);
-}
-
-void AppBannerUiDelegateAndroid::SendBannerAccepted() {
-  if (!weak_manager_)
-    return;
-
-  weak_manager_->SendBannerAccepted();
-
-  // Send the appinstalled event and perform install time logging. Note that
-  // this is only done for webapps as native apps just intent to the Play store.
-  // Also this event is fired *before* the installation actually takes place
-  // (which can be a significant amount of time later, especially if using
-  // WebAPKs).
-  // TODO(mgiuca): Fire the event *after* the installation is completed.
-  if (!IsForNativeApp())
-    weak_manager_->OnInstall(shortcut_info_->display);
 }
 
 }  // namespace banners

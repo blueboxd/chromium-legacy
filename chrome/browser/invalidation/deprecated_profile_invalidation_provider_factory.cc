@@ -72,7 +72,7 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
   network_context->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
-// A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
+// A thread-safe wrapper to request a ProxyResolvingSocketFactory.
 void RequestProxyResolvingSocketFactory(
     Profile* profile,
     base::WeakPtr<TiclInvalidationService> service,

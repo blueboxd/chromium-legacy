@@ -8,4 +8,6 @@ interface IProfile {
   void destroy() = 0;
 
   void clearBrowsingData(in int[] dataTypes, in IObjectWrapper completionCallback) = 1;
+
+  String getPath() = 2;
 }

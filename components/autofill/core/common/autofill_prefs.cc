@@ -219,15 +219,6 @@ bool IsAutocompleteEnabled(const PrefService* prefs) {
   return IsProfileAutofillEnabled(prefs);
 }
 
-bool IsAutofillEnabled(const PrefService* prefs) {
-  return IsProfileAutofillEnabled(prefs) || IsCreditCardAutofillEnabled(prefs);
-}
-
-void SetAutofillEnabled(PrefService* prefs, bool enabled) {
-  SetProfileAutofillEnabled(prefs, enabled);
-  SetCreditCardAutofillEnabled(prefs, enabled);
-}
-
 bool IsCreditCardFIDOAuthEnabled(PrefService* prefs) {
   return prefs->GetBoolean(kAutofillCreditCardFidoAuthEnabled);
 }

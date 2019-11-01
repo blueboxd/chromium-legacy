@@ -23,9 +23,10 @@ import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.Co
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.ConfirmObserver;
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.DismissObserver;
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.ErrorAndCloseObserver;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -261,11 +262,11 @@ import org.chromium.ui.modelutil.PropertyModel;
     @Override
     public void onSheetStateChanged(@SheetState int newState) {
         switch (newState) {
-            case SheetState.HIDDEN:
+            case BottomSheetController.SheetState.HIDDEN:
                 mHider.run();
                 mDismissObserver.onDismissed();
                 break;
-            case SheetState.FULL:
+            case BottomSheetController.SheetState.FULL:
                 mModel.set(MicrotransactionProperties.PAYMENT_APP_NAME_ALPHA, 1f);
                 break;
         }

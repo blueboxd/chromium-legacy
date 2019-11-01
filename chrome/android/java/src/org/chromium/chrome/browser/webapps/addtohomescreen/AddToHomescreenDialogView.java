@@ -25,7 +25,6 @@ import android.widget.TextView;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenProperties.AppType;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -159,7 +158,7 @@ public class AddToHomescreenDialogView
 
         mShortcutTitleInput.setVisibility(type == AppType.SHORTCUT ? View.VISIBLE : View.GONE);
         mAppLayout.setVisibility(type != AppType.SHORTCUT ? View.VISIBLE : View.GONE);
-        mAppOriginView.setVisibility(type == AppType.WEB_APK ? View.VISIBLE : View.GONE);
+        mAppOriginView.setVisibility(type == AppType.WEBAPK ? View.VISIBLE : View.GONE);
         mAppRatingBar.setVisibility(type == AppType.NATIVE ? View.VISIBLE : View.GONE);
         mPlayLogoView.setVisibility(type == AppType.NATIVE ? View.VISIBLE : View.GONE);
     }

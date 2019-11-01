@@ -12,6 +12,7 @@ import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//third_party/liblouis/liblouis_library.gni")
 
 closure_library_dir =
     "//third_party/chromevox/third_party/closure-library/closure/goog"
@@ -230,8 +231,7 @@ group("chromevox") {
     ":chromevox_manifest",
     ":chromevox_options_script",
     ":chromevox_strings",
-    "//third_party/chromevox:chromevox_third_party_resources",
-    "//third_party/liblouis",
+    ":chromevoxclassic_liblouis",
   ]
 }
 
@@ -247,6 +247,7 @@ run_jsbundler("chromevox_copied_files") {
   dest_dir = chromevox_out_dir
   sources = [
     "chromevox/background/background.html",
+    "chromevox/background/chrome_shared2.css",
     "chromevox/background/earcons/alert_modal.ogg",
     "chromevox/background/earcons/alert_nonmodal.ogg",
     "chromevox/background/earcons/button.ogg",
@@ -307,8 +308,13 @@ run_jsbundler("chromevox_copied_files") {
     "chromevox/background/mathmaps/symbols/math_symbols.json",
     "chromevox/background/mathmaps/symbols/math_whitespace.json",
     "chromevox/background/mathmaps/symbols/other_stars.json",
+    "chromevox/background/options.css",
     "chromevox/background/options.html",
+    "chromevox/background/options_widgets.css",
     "chromevox/injected/api.js",
+    "chromevox/injected/api_util.js",
+    "chromevox/injected/mathjax.js",
+    "chromevox/injected/mathjax_external_util.js",
     "cvox2/background/background.html",
     "cvox2/background/earcons/control.wav",
     "cvox2/background/earcons/selection.wav",
@@ -334,6 +340,10 @@ run_jsbundler("chromevox_copied_files") {
     rebase_path(".", root_build_dir) + ":",
     rebase_path(closure_library_dir, root_build_dir) + ":closure",
   ]
+}
+
+liblouis_library("chromevoxclassic_liblouis") {
+  dest_dir = chromevox_out_dir + "/braille"
 }
 
 # TODO(crbug/978200): refactor this into another file like generate_manifest.gni
@@ -594,7 +604,6 @@ js2gtest("chromevox_unitjs_tests") {
     "common/editable_text_area_shadow_test.unitjs",
     "common/editable_text_test.unitjs",
     "common/find_util_test.unitjs",
-    "common/key_sequence_test.unitjs",
     "common/math_semantic_tree_test.unitjs",
     "common/page_selection_test.unitjs",
     "common/selection_util_test.unitjs",

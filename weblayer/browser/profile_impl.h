@@ -30,13 +30,13 @@ class ProfileImpl : public Profile {
 
   // Profile implementation:
   void ClearBrowsingData(std::vector<BrowsingDataType> data_types,
-      base::OnceCallback<void()> callback) override;
+                         base::OnceCallback<void()> callback) override;
 
 #if defined(OS_ANDROID)
-  ProfileImpl(JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& path);
+  ProfileImpl(JNIEnv* env, const base::android::JavaParamRef<jstring>& path);
 
-  void ClearBrowsingData(JNIEnv* env,
+  void ClearBrowsingData(
+      JNIEnv* env,
       const base::android::JavaParamRef<jintArray>& j_data_types,
       const base::android::JavaRef<jobject>& j_callback);
 #endif

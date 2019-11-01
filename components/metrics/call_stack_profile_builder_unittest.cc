@@ -463,7 +463,7 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder_RepeatItem) {
   TestModule module;
   base::Frame frame = {0x10, &module};
 
-  metadata_recorder.Set(100, 10);
+  metadata_recorder.Set(100, base::nullopt, 10);
   {
     auto get_items = metadata_recorder.CreateMetadataProvider();
     profile_builder->RecordMetadata(get_items.get());
@@ -505,13 +505,13 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder_ModifiedItem) {
   TestModule module;
   base::Frame frame = {0x10, &module};
 
-  metadata_recorder.Set(100, 10);
+  metadata_recorder.Set(100, base::nullopt, 10);
   {
     auto get_items = metadata_recorder.CreateMetadataProvider();
     profile_builder->RecordMetadata(get_items.get());
   }
   profile_builder->OnSampleCompleted({frame});
-  metadata_recorder.Set(100, 11);
+  metadata_recorder.Set(100, base::nullopt, 11);
   {
     auto get_items = metadata_recorder.CreateMetadataProvider();
     profile_builder->RecordMetadata(get_items.get());
@@ -551,15 +551,15 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder_NewItem) {
   TestModule module;
   base::Frame frame = {0x10, &module};
 
-  metadata_recorder.Set(100, 10);
+  metadata_recorder.Set(100, base::nullopt, 10);
   {
     auto get_items = metadata_recorder.CreateMetadataProvider();
     profile_builder->RecordMetadata(get_items.get());
   }
   profile_builder->OnSampleCompleted({frame});
 
-  metadata_recorder.Set(100, 11);
-  metadata_recorder.Set(200, 20);
+  metadata_recorder.Set(100, base::nullopt, 11);
+  metadata_recorder.Set(200, base::nullopt, 20);
   {
     auto get_items = metadata_recorder.CreateMetadataProvider();
     profile_builder->RecordMetadata(get_items.get());
@@ -603,13 +603,13 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder_RemovedItem) {
   TestModule module;
   base::Frame frame = {0x10, &module};
 
-  metadata_recorder.Set(100, 10);
+  metadata_recorder.Set(100, base::nullopt, 10);
   {
     auto get_items = metadata_recorder.CreateMetadataProvider();
     profile_builder->RecordMetadata(get_items.get());
   }
   profile_builder->OnSampleCompleted({frame});
-  metadata_recorder.Remove(100);
+  metadata_recorder.Remove(100, base::nullopt);
   {
     auto get_items = metadata_recorder.CreateMetadataProvider();
     profile_builder->RecordMetadata(get_items.get());

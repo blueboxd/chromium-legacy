@@ -33,9 +33,13 @@ bool AreCastComponentParamsValid(
 fuchsia::web::CreateContextParams BuildCreateContextParamsForIsolatedRunners(
     const fuchsia::web::CreateContextParams& create_context_params) {
   fuchsia::web::CreateContextParams output;
-  if (create_context_params.has_features()) {
-    output.set_features(create_context_params.features());
-  }
+
+  // Isolated contexts receive only a limited set of features.
+  output.set_features(
+      fuchsia::web::ContextFeatureFlags::AUDIO |
+      fuchsia::web::ContextFeatureFlags::VULKAN |
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER);
+
   if (create_context_params.has_user_agent_product()) {
     output.set_user_agent_product(create_context_params.user_agent_product());
   }

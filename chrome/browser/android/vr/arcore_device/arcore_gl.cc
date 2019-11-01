@@ -880,7 +880,7 @@ mojom::XRInputSourceStatePtr ArCoreGl::GetInputSourceState() {
   DVLOG(3) << __func__ << ": viewer_from_pointer=\n"
            << viewer_from_pointer.ToString();
 
-  state->description->pointer_offset = viewer_from_pointer;
+  state->description->input_from_pointer = viewer_from_pointer;
 
   return state;
 }

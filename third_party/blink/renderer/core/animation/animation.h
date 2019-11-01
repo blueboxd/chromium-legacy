@@ -329,6 +329,12 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
                            NotificationType notification_type);
   void QueueFinishedEvent();
 
+  // Plays an animation. When auto_rewind is enabled, the current time can be
+  // adjusted to accommodate reversal of an animation or snapping to an
+  // endpoint.
+  enum class AutoRewind { kDisabled, kEnabled };
+  void PlayInternal(AutoRewind auto_rewind, ExceptionState& exception_state);
+
   void ResetPendingTasks();
   double TimelineTime() const;
   DocumentTimeline& TickingTimeline();

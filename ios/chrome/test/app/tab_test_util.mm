@@ -196,6 +196,10 @@ BOOL SimulateTabsBackgrounding() {
   return YES;
 }
 
+void SaveSessionImmediately() {
+  [GetCurrentTabModel() saveSessionImmediately:YES];
+}
+
 void EvictOtherTabModelTabs() {
   id<BrowserInterfaceProvider> provider = GetMainController().interfaceProvider;
   ios::ChromeBrowserState* otherBrowserState =

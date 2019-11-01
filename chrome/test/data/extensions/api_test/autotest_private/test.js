@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+function newAcceletator(keyCode, shift, control, alt, search) {
+  var accelerator = new Object();
+  accelerator.keyCode = keyCode;
+  accelerator.shift = shift ? true : false;
+  accelerator.control = control ? true : false;
+  accelerator.alt = alt ? true : false;
+  accelerator.search = search ? true : false;
+  accelerator.pressed = true;
+  return accelerator;
+};
+
 var defaultTests = [
   // logout/restart/shutdown don't do anything as we don't want to kill the
   // browser with these tests.
@@ -299,6 +310,107 @@ var defaultTests = [
           chrome.test.succeed();
         });
   },
+  // This test verifies that api to wait for launcher state transition
+  // to the 'Closed' state before creating launcher works.
+  function waitForLauncherStateNoChangeBeforeLauncherCreation() {
+    chrome.autotestPrivate.waitForLauncherState(
+        'Closed',
+        function() {
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
+  // This test verifies that api to wait for launcher state transition
+  // works as expected
+  function waitForLauncherStatePeeking() {
+    var togglePeeking = newAcceletator('search', /*shift=*/false);
+
+    function closeLauncher() {
+      togglePeeking.pressed = true;
+      chrome.autotestPrivate.activateAccelerator(
+          togglePeeking,
+          function(success) {
+            chrome.test.assertFalse(success);
+            togglePeeking.pressed = false;
+            chrome.autotestPrivate.activateAccelerator(
+                togglePeeking,
+                function(success) {
+                  chrome.test.assertTrue(success);
+                  chrome.autotestPrivate.waitForLauncherState(
+                      'Closed',
+                      function() {
+                        chrome.test.assertNoLastError();
+                        chrome.test.succeed();
+                      });
+                });
+          });
+    }
+
+    chrome.autotestPrivate.activateAccelerator(
+        togglePeeking,
+        function(success) {
+          chrome.test.assertFalse(success);
+          togglePeeking.pressed = false;
+          chrome.autotestPrivate.activateAccelerator(
+              togglePeeking,
+              function(success) {
+                chrome.test.assertTrue(success);
+                chrome.autotestPrivate.waitForLauncherState(
+                    'Peeking',
+                    closeLauncher);
+              });
+        });
+  },
+  // This test verifies that api to wait for launcher state transition
+  // works as expected
+  function waitForLauncherStateFullscreen() {
+    var toggleFullscreen = newAcceletator('search', /*shift=*/true);
+    function closeLauncher() {
+      toggleFullscreen.pressed = true;
+      chrome.autotestPrivate.activateAccelerator(
+          toggleFullscreen,
+          function(success) {
+            chrome.test.assertFalse(success);
+            toggleFullscreen.pressed = false;
+            chrome.autotestPrivate.activateAccelerator(
+                toggleFullscreen,
+                function(success) {
+                  chrome.test.assertTrue(success);
+                  chrome.autotestPrivate.waitForLauncherState(
+                      'Closed',
+                      function() {
+                        chrome.test.assertNoLastError();
+                        chrome.test.succeed();
+                      });
+                });
+          });
+    }
+
+    chrome.autotestPrivate.activateAccelerator(
+        toggleFullscreen,
+        function(success) {
+          chrome.test.assertFalse(success);
+          toggleFullscreen.pressed = false;
+          chrome.autotestPrivate.activateAccelerator(
+              toggleFullscreen,
+              function(success) {
+                chrome.test.assertTrue(success);
+                chrome.autotestPrivate.waitForLauncherState(
+                    'FullscreenAllApps',
+                    closeLauncher);
+              });
+        });
+  },
+  // This test verifies that api to wait for launcher state transition
+  // to the same 'Closed' state when launcher is in closed state works.
+  function waitForLauncherStateNoChangeAfterLauncherCreation() {
+    chrome.autotestPrivate.waitForLauncherState(
+        'Closed',
+        function() {
+          chrome.test.assertNoLastError();
+          chrome.test.succeed();
+        });
+  },
   // Check if tablet mode is enabled.
   function isTabletModeEnabled() {
     chrome.autotestPrivate.isTabletModeEnabled(
@@ -407,7 +519,8 @@ var defaultTests = [
       // SHELF_ALIGNMENT_BOTTOM_LOCKED not supported by shelf_prefs.
       var alignments = [chrome.autotestPrivate.ShelfAlignmentType.LEFT,
         chrome.autotestPrivate.ShelfAlignmentType.BOTTOM,
-        chrome.autotestPrivate.ShelfAlignmentType.RIGHT]
+        chrome.autotestPrivate.ShelfAlignmentType.RIGHT,
+        chrome.autotestPrivate.ShelfAlignmentType.BOTTOM,]
       var l = alignments.length;
       for (var i = 0; i < l; i++) {
         var alignment = alignments[i];
@@ -502,6 +615,7 @@ var defaultTests = [
   function getWindowInfoAndSetState() {
     chrome.autotestPrivate.getAppWindowList(function(list) {
       var found = false;
+      chrome.test.assertEq(1, list.length);
       for (i = 0; i < list.length; i++) {
         var window = list[i];
         if (window.name != 'BrowserFrame') {
@@ -512,6 +626,7 @@ var defaultTests = [
         chrome.test.assertEq('BrowserFrame', window.name);
         chrome.test.assertTrue(window.title.includes('New Tab') > 0);
         chrome.test.assertEq('Browser', window.windowType);
+        chrome.test.assertEq(window.stateType, 'Normal');
         chrome.test.assertTrue(window.isVisible);
         chrome.test.assertTrue(window.targetVisibility);
         chrome.test.assertFalse(window.isAnimating);
@@ -522,6 +637,7 @@ var defaultTests = [
 
         var change = new Object();
         change.eventType = 'WMEventMaximize';
+        console.log('maximizing');
         chrome.autotestPrivate.setAppWindowState(
             window.id,
             change,
@@ -534,6 +650,32 @@ var defaultTests = [
       chrome.test.assertTrue(found);
     });
   },
+
+  // This test verifies that api to activate accelrator works as expected.
+  function acceleratorTest() {
+    // Ash level accelerator.
+    var newBrowser = newAcceletator('n', /*shift=*/false, /*control=*/true);
+    chrome.autotestPrivate.activateAccelerator(
+        newBrowser,
+        function() {
+          chrome.autotestPrivate.getAppWindowList(function(list) {
+            chrome.test.assertEq(2, list.length);
+            var closeWindow = newAcceletator(
+                'w', /*shift=*/false, /*control=*/true);
+            chrome.autotestPrivate.activateAccelerator(
+                closeWindow,
+                function(success) {
+                  chrome.test.assertTrue(success);
+                  chrome.autotestPrivate.getAppWindowList(function(list) {
+                    chrome.test.assertEq(1, list.length);
+                    chrome.test.assertNoLastError();
+                    chrome.test.succeed();
+                  });
+                });
+          });
+        });
+  },
+
   // KEEP |lockScreen()| TESTS AT THE BOTTOM OF THE defaultTests AS IT WILL
   // CHANGE THE SESSION STATE TO LOCKED STATE.
   function lockScreen() {

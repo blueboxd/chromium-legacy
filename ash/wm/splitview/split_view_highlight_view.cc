@@ -176,7 +176,8 @@ void SplitViewHighlightView::SetColor(SkColor color) {
 
 void SplitViewHighlightView::OnIndicatorTypeChanged(
     IndicatorState indicator_state,
-    IndicatorState previous_indicator_state) {
+    IndicatorState previous_indicator_state,
+    bool can_dragged_window_be_snapped) {
   if (indicator_state == IndicatorState::kNone) {
     if (!SplitViewDragIndicators::IsPreviewAreaState(
             previous_indicator_state)) {
@@ -219,12 +220,12 @@ void SplitViewHighlightView::OnIndicatorTypeChanged(
   }
 
   // Having ruled out kNone and the "preview area" states, we know that
-  // |indicator_state| is either a "drag area" state or a "cannot snap" state.
-  // If there is an indicator on only one side, and if this, in the sense of the
-  // C++ keyword this, is the indicator on the opposite side, then bail out.
-  if (is_right_or_bottom_
-          ? SplitViewDragIndicators::IsLeftIndicatorState(indicator_state)
-          : SplitViewDragIndicators::IsRightIndicatorState(indicator_state)) {
+  // |indicator_state| is a "drag area" state. If there is an indicator on only
+  // one side, and if this, in the sense of the C++ keyword this, is the
+  // indicator on the opposite side, then bail out.
+  if (indicator_state == (is_right_or_bottom_
+                              ? IndicatorState::kDragAreaLeft
+                              : IndicatorState::kDragAreaRight)) {
     return;
   }
 
@@ -246,9 +247,7 @@ void SplitViewHighlightView::OnIndicatorTypeChanged(
     return;
   }
 
-  SetColor(SplitViewDragIndicators::IsCannotSnapState(indicator_state)
-               ? SK_ColorBLACK
-               : SK_ColorWHITE);
+  SetColor(can_dragged_window_be_snapped ? SK_ColorWHITE : SK_ColorBLACK);
   DoSplitviewOpacityAnimation(
       layer(), in_split_view_mode ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT
                                   : SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN);

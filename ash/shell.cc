@@ -1132,6 +1132,9 @@ void Shell::Init(
           message_center::MessageCenter::Get());
   screen_orientation_controller_ =
       std::make_unique<ScreenOrientationController>();
+
+  cros_display_config_ = std::make_unique<CrosDisplayConfig>();
+
   screen_layout_observer_.reset(new ScreenLayoutObserver());
   sms_observer_.reset(new SmsObserver());
   snap_controller_ = std::make_unique<SnapControllerImpl>();
@@ -1171,8 +1174,6 @@ void Shell::InitializeDisplayManager() {
           display_manager_.get(), window_tree_host_manager_.get());
   display_configuration_observer_ =
       std::make_unique<DisplayConfigurationObserver>();
-
-  cros_display_config_ = std::make_unique<CrosDisplayConfig>();
 
   persistent_window_controller_ =
       std::make_unique<PersistentWindowController>();

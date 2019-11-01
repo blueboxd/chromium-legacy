@@ -385,6 +385,10 @@
 // Returns a matcher for the credit card settings collection view.
 + (id<GREYMatcher>)settingsCreditCardMatcher;
 
+// Returns a matcher for the delete button at the bottom of settings collection
+// views.
++ (id<GREYMatcher>)settingsBottomToolbarDeleteButton;
+
 // Returns a matcher for an autofill suggestion view.
 + (id<GREYMatcher>)autofillSuggestionViewMatcher;
 

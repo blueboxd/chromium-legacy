@@ -28,12 +28,7 @@ void DnsConfigChangeManager::RequestNotifications(
 
 void DnsConfigChangeManager::OnDNSChanged() {
   for (const auto& client : clients_)
-    client->OnSystemDnsConfigChanged();
-}
-
-void DnsConfigChangeManager::OnInitialDNSConfigRead() {
-  // Service API makes no distinction between initial read and change.
-  OnDNSChanged();
+    client->OnDnsConfigChanged();
 }
 
 }  // namespace network

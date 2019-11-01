@@ -57,7 +57,7 @@ const base::Feature kNotificationScrollBar{"NotificationScrollBar",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOverviewCrossFadeWallpaperBlur{
-    "OverviewCrossFadeWallpaperBlur", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OverviewCrossFadeWallpaperBlur", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPipRoundedCorners{"PipRoundedCorners",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -104,7 +104,7 @@ const base::Feature kSwipingFromLeftEdgeToGoBack{
     "SwipingFromLeftEdgeToGoBack", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDragFromShelfToHomeOrOverview{
-    "DragFromShelfToHomeOrOverview", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DragFromShelfToHomeOrOverview", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kHomerviewGesture{"HomerviewGesture",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

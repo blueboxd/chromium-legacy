@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_focus_cycler.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/system/status_area_widget.h"
@@ -753,6 +754,12 @@ void ScrollableShelfView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
+void ScrollableShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  GetViewAccessibility().OverrideNextFocus(GetShelf()->GetStatusAreaWidget());
+  GetViewAccessibility().OverridePreviousFocus(
+      GetShelf()->shelf_widget()->navigation_widget());
+}
+
 const char* ScrollableShelfView::GetClassName() const {
   return "ScrollableShelfView";
 }
@@ -776,6 +783,14 @@ void ScrollableShelfView::ButtonPressed(views::Button* sender,
   }
 
   shelf_view_->ButtonPressed(sender, event, ink_drop);
+}
+
+void ScrollableShelfView::HandleAccessibleActionScrollToMakeVisible() {
+  // Only in tablet mode with hotseat enabled, may scrollable shelf be hidden.
+  if (!IsInTabletMode() || !chromeos::switches::ShouldShowShelfHotseat())
+    return;
+
+  GetShelf()->shelf_widget()->ForceToShowHotseat();
 }
 
 void ScrollableShelfView::ShowContextMenuForViewImpl(

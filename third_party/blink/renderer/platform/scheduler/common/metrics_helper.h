@@ -11,8 +11,8 @@
 #include "components/scheduling_metrics/task_duration_metric_reporter.h"
 #include "components/scheduling_metrics/thread_metrics.h"
 #include "components/scheduling_metrics/total_duration_metric_reporter.h"
-#include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_type.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace base {
@@ -39,7 +39,7 @@ class PLATFORM_EXPORT MetricsHelper {
   DISALLOW_NEW();
 
  public:
-  MetricsHelper(WebThreadType thread_type, bool has_cpu_timing_for_each_task);
+  MetricsHelper(ThreadType thread_type, bool has_cpu_timing_for_each_task);
   ~MetricsHelper();
 
  protected:
@@ -55,22 +55,22 @@ class PLATFORM_EXPORT MetricsHelper {
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
  protected:
-  const WebThreadType thread_type_;
+  const ThreadType thread_type_;
 
  private:
   scheduling_metrics::ThreadMetrics thread_metrics_;
 
-  scheduling_metrics::TaskDurationMetricReporter<WebThreadType>
+  scheduling_metrics::TaskDurationMetricReporter<ThreadType>
       thread_task_duration_reporter_;
-  scheduling_metrics::TaskDurationMetricReporter<WebThreadType>
+  scheduling_metrics::TaskDurationMetricReporter<ThreadType>
       thread_task_cpu_duration_reporter_;
-  scheduling_metrics::TaskDurationMetricReporter<WebThreadType>
+  scheduling_metrics::TaskDurationMetricReporter<ThreadType>
       foreground_thread_task_duration_reporter_;
-  scheduling_metrics::TaskDurationMetricReporter<WebThreadType>
+  scheduling_metrics::TaskDurationMetricReporter<ThreadType>
       foreground_thread_task_cpu_duration_reporter_;
-  scheduling_metrics::TaskDurationMetricReporter<WebThreadType>
+  scheduling_metrics::TaskDurationMetricReporter<ThreadType>
       background_thread_task_duration_reporter_;
-  scheduling_metrics::TaskDurationMetricReporter<WebThreadType>
+  scheduling_metrics::TaskDurationMetricReporter<ThreadType>
       background_thread_task_cpu_duration_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsHelper);

@@ -18,7 +18,6 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "net/url_request/url_request.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -130,11 +129,6 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_CONTENT_DELETE";
   }
   return "_UNKNOWN";
-}
-
-void RecordURLMetricOnUI(const std::string& metric_name, const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetContentClient()->browser()->RecordURLMetric(metric_name, url);
 }
 
 }  // namespace
@@ -250,10 +244,6 @@ ServiceWorkerMetrics::Site ServiceWorkerMetrics::SiteFromURL(const GURL& url) {
   return ServiceWorkerMetrics::Site::OTHER;
 }
 
-bool ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(Site site) {
-  return site == ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
-}
-
 void ServiceWorkerMetrics::CountInitDiskCacheResult(bool result) {
   UMA_HISTOGRAM_BOOLEAN("ServiceWorker.DiskCache.InitResult", result);
 }
@@ -313,12 +303,6 @@ void ServiceWorkerMetrics::CountControlledPageLoad(Site site,
   if (is_main_frame_load) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.MainFramePageLoad", site);
   }
-  if (ShouldExcludeSiteFromHistogram(site))
-    return;
-
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&RecordURLMetricOnUI,
-                                "ServiceWorker.ControlledPageUrl", url));
 }
 
 void ServiceWorkerMetrics::RecordStartInstalledWorkerStatus(

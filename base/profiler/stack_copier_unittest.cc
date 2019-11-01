@@ -37,7 +37,7 @@ TEST(StackCopierTest, RewritePointerIfInOriginalStack_InStack) {
   EXPECT_EQ(reinterpret_cast<uintptr_t>(&stack_copy[2]),
             CopyFunctions::RewritePointerIfInOriginalStack(
                 reinterpret_cast<uint8_t*>(&original_stack[0]),
-                &original_stack[0] + base::size(original_stack),
+                &original_stack[0] + size(original_stack),
                 reinterpret_cast<uint8_t*>(&stack_copy[0]),
                 reinterpret_cast<uintptr_t>(&original_stack[2])));
 }

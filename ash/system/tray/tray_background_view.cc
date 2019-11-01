@@ -15,6 +15,7 @@
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
@@ -285,7 +286,8 @@ void TrayBackgroundView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
   ShelfWidget* shelf_widget = shelf->shelf_widget();
-  GetViewAccessibility().OverridePreviousFocus(shelf_widget);
+  GetViewAccessibility().OverridePreviousFocus(shelf_widget->hotseat_widget());
+  GetViewAccessibility().OverrideNextFocus(shelf_widget->navigation_widget());
 }
 
 void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {

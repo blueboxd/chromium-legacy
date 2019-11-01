@@ -81,7 +81,7 @@ class AlternatingThreadTester {
     ActiveThread() = kMainThreadActive;
 
     std::unique_ptr<Thread> worker_thread = Platform::Current()->CreateThread(
-        ThreadCreationParams(WebThreadType::kTestThread)
+        ThreadCreationParams(ThreadType::kTestThread)
             .SetThreadNameForTest("Test Worker Thread"));
     PostCrossThreadTask(
         *worker_thread->GetTaskRunner(), FROM_HERE,

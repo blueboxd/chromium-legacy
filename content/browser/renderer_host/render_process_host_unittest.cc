@@ -369,6 +369,11 @@ TEST_F(RenderProcessHostUnitTest, DoNotReuseOtherSiteServiceWorkerProcess) {
 // Tests that RenderProcessHost will not consider reusing a process that has
 // committed an error page.
 TEST_F(RenderProcessHostUnitTest, DoNotReuseError) {
+  // This test depends on a network error occurring on back navigation.
+  // This cannot happen if the page is restored from the back-forward
+  // cache, because no network requests would be made.
+  contents()->GetController().GetBackForwardCache().DisableForTesting(
+      BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const GURL kUrl1("http://foo.com");
   const GURL kUrl2("http://bar.com");
 

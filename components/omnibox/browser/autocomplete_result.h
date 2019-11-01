@@ -113,6 +113,14 @@ class AutocompleteResult {
   // duplicates and promote it to the top.
   static void DiscourageTopMatchFromBeingSearchEntity(ACMatches* matches);
 
+  // Just a helper function to encapsulate the logic of deciding how many
+  // matches to keep, with respect to configured maximums, URL limits,
+  // and relevancies.
+  static size_t CalculateNumMatches(
+      bool input_from_omnibox_focus,
+      const ACMatches& matches,
+      const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
+
   const GURL& alternate_nav_url() const { return alternate_nav_url_; }
 
   // Clears the matches for this result set.

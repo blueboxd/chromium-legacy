@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 516 tests; 473 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 516 tests; 475 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Test driver for asyncInitCertificate
@@ -25,7 +25,7 @@ PASS RTCPeerConnection interface: existence and properties of interface prototyp
 PASS RTCPeerConnection interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCPeerConnection interface: operation createOffer(RTCOfferOptions)
 PASS RTCPeerConnection interface: operation createAnswer(RTCAnswerOptions)
-FAIL RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescriptionInit) assert_equals: property has wrong .length expected 0 but got 1
+PASS RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescriptionInit)
 PASS RTCPeerConnection interface: attribute localDescription
 PASS RTCPeerConnection interface: attribute currentLocalDescription
 PASS RTCPeerConnection interface: attribute pendingLocalDescription
@@ -52,7 +52,7 @@ PASS RTCPeerConnection interface: attribute oniceconnectionstatechange
 PASS RTCPeerConnection interface: attribute onicegatheringstatechange
 PASS RTCPeerConnection interface: attribute onconnectionstatechange
 PASS RTCPeerConnection interface: operation createOffer(RTCSessionDescriptionCallback, RTCPeerConnectionErrorCallback, RTCOfferOptions)
-FAIL RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescriptionInit, VoidFunction, RTCPeerConnectionErrorCallback) assert_equals: property has wrong .length expected 0 but got 1
+PASS RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescriptionInit, VoidFunction, RTCPeerConnectionErrorCallback)
 PASS RTCPeerConnection interface: operation createAnswer(RTCSessionDescriptionCallback, RTCPeerConnectionErrorCallback)
 FAIL RTCPeerConnection interface: operation setRemoteDescription(RTCSessionDescriptionInit, VoidFunction, RTCPeerConnectionErrorCallback) assert_equals: property has wrong .length expected 0 but got 1
 FAIL RTCPeerConnection interface: operation addIceCandidate(RTCIceCandidateInit, VoidFunction, RTCPeerConnectionErrorCallback) assert_equals: property has wrong .length expected 0 but got 1

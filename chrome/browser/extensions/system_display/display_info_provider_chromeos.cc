@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include <cmath>
 
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
@@ -80,6 +79,48 @@ gfx::Insets GetInsets(const system_display::Insets& insets) {
   return gfx::Insets(insets.top, insets.left, insets.bottom, insets.right);
 }
 
+bool IsValidRotation(int rotation) {
+  return rotation == -1 || rotation == 0 || rotation == 90 || rotation == 180 ||
+         rotation == 270;
+}
+
+ash::mojom::DisplayRotationOptions GetMojomDisplayRotationOptions(
+    int rotation_value) {
+  DCHECK(IsValidRotation(rotation_value));
+
+  switch (rotation_value) {
+    case -1:
+      return ash::mojom::DisplayRotationOptions::kAutoRotate;
+    case 0:
+      return ash::mojom::DisplayRotationOptions::kZeroDegrees;
+    case 90:
+      return ash::mojom::DisplayRotationOptions::k90Degrees;
+    case 180:
+      return ash::mojom::DisplayRotationOptions::k180Degrees;
+    case 270:
+      return ash::mojom::DisplayRotationOptions::k270Degrees;
+    default:
+      NOTREACHED();
+      return ash::mojom::DisplayRotationOptions::kZeroDegrees;
+  }
+}
+
+int GetRotationFromMojomDisplayRotationInfo(
+    ash::mojom::DisplayRotationOptions rotation_options) {
+  switch (rotation_options) {
+    case ash::mojom::DisplayRotationOptions::kAutoRotate:
+      return -1;
+    case ash::mojom::DisplayRotationOptions::kZeroDegrees:
+      return 0;
+    case ash::mojom::DisplayRotationOptions::k90Degrees:
+      return 90;
+    case ash::mojom::DisplayRotationOptions::k180Degrees:
+      return 180;
+    case ash::mojom::DisplayRotationOptions::k270Degrees:
+      return 270;
+  }
+}
+
 // Validates the DisplayProperties input. Does not perform any tests with
 // DisplayManager dependencies. Returns an error string on failure or nullopt
 // on success.
@@ -119,7 +160,7 @@ base::Optional<std::string> ValidateDisplayPropertiesInput(
   }
 
   // Verify the rotation value is valid.
-  if (info.rotation && !display::Display::IsValidRotation(*info.rotation))
+  if (info.rotation && !IsValidRotation(*info.rotation))
     return "Invalid rotation.";
 
   return base::nullopt;
@@ -153,10 +194,12 @@ system_display::DisplayUnitInfo GetDisplayUnitInfoFromMojo(
   info.is_primary = mojo_info.is_primary;
   info.is_internal = mojo_info.is_internal;
   info.is_enabled = mojo_info.is_enabled;
-  info.is_tablet_mode = std::make_unique<bool>(mojo_info.is_tablet_mode);
+  info.is_in_tablet_physical_state =
+      std::make_unique<bool>(mojo_info.is_in_tablet_physical_state);
   info.dpi_x = mojo_info.dpi_x;
   info.dpi_y = mojo_info.dpi_y;
-  info.rotation = display::Display::RotationToDegrees(mojo_info.rotation);
+  info.rotation =
+      GetRotationFromMojomDisplayRotationInfo(mojo_info.rotation_options);
   const gfx::Rect& bounds = mojo_info.bounds;
   info.bounds.left = bounds.x();
   info.bounds.top = bounds.y();
@@ -337,7 +380,7 @@ void DisplayInfoProviderChromeOS::SetDisplayProperties(
     config_properties->overscan = GetInsets(*properties.overscan);
   if (properties.rotation) {
     config_properties->rotation = ash::mojom::DisplayRotation::New(
-        display::Display::DegreesToRotation(*properties.rotation));
+        GetMojomDisplayRotationOptions(*properties.rotation));
   }
   if (properties.bounds_origin_x || properties.bounds_origin_y) {
     gfx::Point bounds_origin;
@@ -605,24 +648,19 @@ void DisplayInfoProviderChromeOS::SetMirrorMode(
 void DisplayInfoProviderChromeOS::StartObserving() {
   DisplayInfoProvider::StartObserving();
 
-  ash::TabletMode* client = ash::TabletMode::Get();
-  if (client)
-    client->AddObserver(this);
+  mojo::PendingAssociatedRemote<ash::mojom::CrosDisplayConfigObserver> observer;
+  cros_display_config_observer_receiver_.Bind(
+      observer.InitWithNewEndpointAndPassReceiver());
+  cros_display_config_->AddObserver(std::move(observer));
 }
 
 void DisplayInfoProviderChromeOS::StopObserving() {
   DisplayInfoProvider::StopObserving();
 
-  ash::TabletMode* client = ash::TabletMode::Get();
-  if (client)
-    client->RemoveObserver(this);
+  cros_display_config_observer_receiver_.reset();
 }
 
-void DisplayInfoProviderChromeOS::OnTabletModeStarted() {
-  DispatchOnDisplayChangedEvent();
-}
-
-void DisplayInfoProviderChromeOS::OnTabletModeEnded() {
+void DisplayInfoProviderChromeOS::OnDisplayConfigChanged() {
   DispatchOnDisplayChangedEvent();
 }
 

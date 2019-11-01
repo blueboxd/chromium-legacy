@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import androidx.annotation.IntDef;
+
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -18,10 +20,9 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 
@@ -32,6 +33,49 @@ import java.util.PriorityQueue;
  * content was actually shown (see full doc on method).
  */
 public class BottomSheetController implements Destroyable {
+    /** The different states that the bottom sheet can have. */
+    @IntDef({SheetState.NONE, SheetState.HIDDEN, SheetState.PEEK, SheetState.HALF, SheetState.FULL,
+            SheetState.SCROLLING})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SheetState {
+        /**
+         * NONE is for internal use only and indicates the sheet is not currently
+         * transitioning between states.
+         */
+        int NONE = -1;
+        // Values are used for indexing mStateRatios, should start from 0
+        // and can't have gaps. Additionally order is important for these,
+        // they go from smallest to largest.
+        int HIDDEN = 0;
+        int PEEK = 1;
+        int HALF = 2;
+        int FULL = 3;
+
+        int SCROLLING = 4;
+    }
+
+    /**
+     * The different reasons that the sheet's state can change.
+     *
+     * Needs to stay in sync with BottomSheet.StateChangeReason in enums.xml. These values are
+     * persisted to logs. Entries should not be renumbered and numeric values should never be
+     * reused.
+     */
+    @IntDef({StateChangeReason.NONE, StateChangeReason.SWIPE, StateChangeReason.BACK_PRESS,
+            StateChangeReason.TAP_SCRIM, StateChangeReason.NAVIGATION,
+            StateChangeReason.COMPOSITED_UI, StateChangeReason.VR, StateChangeReason.MAX_VALUE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface StateChangeReason {
+        int NONE = 0;
+        int SWIPE = 1;
+        int BACK_PRESS = 2;
+        int TAP_SCRIM = 3;
+        int NAVIGATION = 4;
+        int COMPOSITED_UI = 5;
+        int VR = 6;
+        int MAX_VALUE = VR;
+    }
+
     /** The initial capacity for the priority queue handling pending content show requests. */
     private static final int INITIAL_QUEUE_CAPACITY = 1;
 
@@ -212,7 +256,7 @@ public class BottomSheetController implements Destroyable {
      */
     private void suppressSheet(@StateChangeReason int reason) {
         mIsSuppressed = true;
-        mBottomSheet.setSheetState(BottomSheet.SheetState.HIDDEN, false, reason);
+        mBottomSheet.setSheetState(SheetState.HIDDEN, false, reason);
     }
 
     /**
@@ -290,12 +334,12 @@ public class BottomSheetController implements Destroyable {
         if (mIsProcessingHideRequest) return;
 
         // Handle showing the next content if it exists.
-        if (mBottomSheet.getSheetState() == BottomSheet.SheetState.HIDDEN) {
+        if (mBottomSheet.getSheetState() == SheetState.HIDDEN) {
             // If the sheet is already hidden, simply show the next content.
             showNextContent(animate);
         } else {
             mIsProcessingHideRequest = true;
-            mBottomSheet.setSheetState(BottomSheet.SheetState.HIDDEN, animate);
+            mBottomSheet.setSheetState(SheetState.HIDDEN, animate);
         }
     }
 
@@ -304,7 +348,7 @@ public class BottomSheetController implements Destroyable {
      */
     public void expandSheet() {
         if (mBottomSheet.getCurrentSheetContent() == null) return;
-        mBottomSheet.setSheetState(BottomSheet.SheetState.HALF, true);
+        mBottomSheet.setSheetState(SheetState.HALF, true);
         if (mOverlayPanelManager.getActivePanel() != null) {
             // TODO(mdjones): This should only apply to contextual search, but contextual search is
             //                the only implementation. Fix this to only apply to contextual search.

@@ -54,7 +54,6 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
       invalidation::IdentityProvider* identity_provider,
       PrefService* local_state,
       network::mojom::URLLoaderFactory* url_loader_factory,
-      const ParseJSONCallback& parse_json,
       const std::string& project_id,
       bool migrate_prefs);
 
@@ -65,7 +64,6 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
       invalidation::IdentityProvider* identity_provider,
       PrefService* local_state,
       network::mojom::URLLoaderFactory* url_loader_factory,
-      const syncer::ParseJSONCallback& parse_json,
       const std::string& project_id,
       bool migrate_prefs);
 
@@ -147,8 +145,6 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   base::OneShotTimer request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
 
-  // The callback for Parsing JSON.
-  ParseJSONCallback const parse_json_;
   network::mojom::URLLoaderFactory* const url_loader_factory_;
 
   const std::string project_id_;

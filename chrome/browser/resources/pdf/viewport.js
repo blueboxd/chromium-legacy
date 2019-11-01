@@ -200,11 +200,19 @@ export class Viewport {
     this.userInitiatedCallback_ = userInitiatedCallback;
   }
 
+  rotateClockwise() {
+    this.rotateBySteps_(1);
+  }
+
+  rotateCounterclockwise() {
+    this.rotateBySteps_(3);
+  }
+
   /**
    * @param {number} n The number of clockwise 90-degree rotations to increment
    *     by.
    */
-  rotateClockwise(n) {
+  rotateBySteps_(n) {
     this.rotations_ = (this.rotations_ + n) % 4;
   }
 

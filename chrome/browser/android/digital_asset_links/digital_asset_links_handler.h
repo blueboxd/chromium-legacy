@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -67,12 +68,11 @@ class DigitalAssetLinksHandler : public content::WebContentsObserver {
                          const std::string& relationship,
                          std::unique_ptr<std::string> response_body);
 
-  // Callbacks for the SafeJsonParser.
-  void OnJSONParseSucceeded(const std::string& package,
-                            const std::string& fingerprint,
-                            const std::string& relationship,
-                            base::Value result);
-  void OnJSONParseFailed(const std::string& error_message);
+  // Callback for the DataDecoder.
+  void OnJSONParseResult(const std::string& package,
+                         const std::string& fingerprint,
+                         const std::string& relationship,
+                         data_decoder::DataDecoder::ValueOrError result);
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 

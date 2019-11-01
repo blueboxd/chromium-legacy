@@ -30,7 +30,6 @@
 <translation id="1113869188872983271">&amp;पुन: क्रमित करना वापस लाएं</translation>
 <translation id="1125573121925420732">जब वेबसाइटें अपनी सुरक्षा अपडेट कर रही होती हैं, तब चेतावनियां आम हो सकती हैं. इसमें जल्द ही सुधार होगा.</translation>
 <translation id="1126551341858583091">स्थानीय जगह का आकार <ph name="CRASH_SIZE" /> है.</translation>
-<translation id="1127259989763091435">पुष्टि करें और Google खाते में कार्ड की जानकारी सेव करें?</translation>
 <translation id="112840717907525620">नीति कैश मेमोरी ठीक है</translation>
 <translation id="1131264053432022307">आपकी कॉपी की हुई इमेज</translation>
 <translation id="1150979032973867961">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके कंप्यूटर के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
@@ -157,7 +156,6 @@
 <translation id="1656489000284462475">पिकअप</translation>
 <translation id="1662550410081243962">भुगतान के तरीके सेव करें और जानकारी भरें</translation>
 <translation id="1663943134801823270">कार्ड और पते Chrome से मिलते हैं. आप उन्हें <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में प्रबंधित कर सकते हैं.</translation>
-<translation id="1669987054044193553">पुष्टि करें और सेव करें</translation>
 <translation id="1671391448414634642">अब से <ph name="SOURCE_LANGUAGE" /> भाषा के पेज का अनुवाद <ph name="TARGET_LANGUAGE" /> भाषा में किया जाएगा.</translation>
 <translation id="1676269943528358898">आपकी जानकारी की सुरक्षा करने के लिए <ph name="SITE" /> आम तौर पर, सुरक्षित करने के तरीके (एन्क्रिप्शन) का उपयोग करती है. जब Google Chrome ने इस बार <ph name="SITE" /> से कनेक्ट करने की कोशिश की तो, वेबसाइट ने असामान्य और गलत क्रेडेंशियल वापस भेजे. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दावा करने की कोशिश कर रहा हो या किसी वाई-फ़ाई 'साइन इन स्क्रीन' की वजह से कनेक्शन में खराबी आ गई हो. आपकी जानकारी अभी भी सुरक्षित है क्योंकि किसी भी डेटा को एक्सचेंज करने से पहले ही Google Chrome ने कनेक्शन को रोक दिया था.</translation>
 <translation id="168841957122794586">सर्वर प्रमाणपत्र में कमज़ोर क्रिप्टोग्राफ़िक कुंजी है.</translation>
@@ -187,7 +185,6 @@
 <translation id="1800473098294731951">बी9</translation>
 <translation id="1803264062614276815">कार्ड के मालिक का नाम</translation>
 <translation id="1821930232296380041">अमान्य अनुरोध या अनुरोध पैरामीटर</translation>
-<translation id="1822370876374026111">अगली बार तेज़ी से भुगतान करने के लिए, अपने कार्ड और बिलिंग के पते को अपने Google खाते और इस डिवाइस में जोड़ें.</translation>
 <translation id="1822540298136254167">आप किन वेबसाइटों पर जाते हैं और उन पर कितना समय देते हैं</translation>
 <translation id="1826516787628120939">जाँच की जा रही है</translation>
 <translation id="1834321415901700177">इस साइट में हानिकारक प्रोग्राम हैं</translation>
@@ -223,7 +220,6 @@
 <translation id="2003709556000175978">अपना पासवर्ड अभी रीसेट करें</translation>
 <translation id="2003775180883135320">सबसे ऊपर क्वाड पंच</translation>
 <translation id="2025186561304664664">प्रॉक्‍सी अपने-आप कॉन्‍फ़‍िगर पर सेट है.</translation>
-<translation id="202813660234680402">नहीं, न जोड़ें</translation>
 <translation id="2030481566774242610">क्या आप मतलब <ph name="LINK" /> से है?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रॉक्सी और फायरवॉल की जाँच करें<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> भाषा के पेजों का अनुवाद नहीं किया जाएगा.</translation>
@@ -599,6 +595,7 @@
 <translation id="3884278016824448484">विरोधाभासी डिवाइस पहचानकर्ता</translation>
 <translation id="3885155851504623709">पैरिश</translation>
 <translation id="3890664840433101773">ईमेल जोड़ें</translation>
+<translation id="3897092660631435901">मेन्यू</translation>
 <translation id="3901925938762663762">इस कार्ड की समय सीमा खत्म हो गई है</translation>
 <translation id="3906600011954732550">बी5-एक्स्ट्रा</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
@@ -649,7 +646,6 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> और आइटम}one{<ph name="ITEM_COUNT" /> और आइटम}other{<ph name="ITEM_COUNT" /> और आइटम}}</translation>
 <translation id="4176463684765177261">अक्षम किए गए</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4193750898749511769">अगली बार तेज़ी से भुगतान करने के लिए, अपने कार्ड और बिलिंग के पते को अपने Google खाते में जोड़ें.</translation>
 <translation id="4196861286325780578">&amp;ले जाना फिर से करें</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />फायरवॉल और एंटीवायरस कॉन्फ़िगरेशन की जाँच करें<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (एन्वेलप)</translation>
@@ -769,7 +765,6 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> खोज सुझाव</translation>
 <translation id="4742407542027196863">पासवर्ड प्रबंधित करें…</translation>
 <translation id="4744603770635761495">निष्पादित किए जाने वाले पाथ</translation>
-<translation id="47454865135383664">Google खाते में कार्ड जोड़ें?</translation>
 <translation id="4750917950439032686">आपकी जानकारी (जैसे- पासवर्ड या क्रेडिट कार्ड नंबर वगैरह) जब इस साइट पर भेजी जाती है, तब वह निजी होती है.</translation>
 <translation id="4756388243121344051">&amp;इतिहास</translation>
 <translation id="4758311279753947758">संपर्क जानकारी जोड़ें</translation>
@@ -1010,7 +1005,6 @@
 <translation id="5932224571077948991">साइट में तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाई देते हैं</translation>
 <translation id="5939847200023027600">PDF कंपोज़िटर सेवा</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> को खोला जा रहा है…</translation>
-<translation id="5947933617628957894">हां, जोड़ें</translation>
 <translation id="5951495562196540101">उपभोक्ता खाते (पैकेज किया गया लाइसेंस मौजूद है) के साथ नामांकन नहीं कर सकते.</translation>
 <translation id="5967592137238574583">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="5967867314010545767">इतिहास से निकालें</translation>
@@ -1103,7 +1097,6 @@
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> का समाप्ति तारीख और CVC डालें</translation>
 <translation id="6415778972515849510">क्रोमियम से आप अपने Google खाते की सुरक्षा कर सकते हैं और अपना पासवर्ड बदल सकते हैं.</translation>
 <translation id="6427730057873428458">गेट फ़ोल्ड</translation>
-<translation id="6431585503458005759">सेव न करें</translation>
 <translation id="6433490469411711332">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ने कनेक्ट करने से मना कर दिया है.</translation>
 <translation id="6434309073475700221">खारिज करें</translation>
@@ -1119,7 +1112,6 @@
 <translation id="6489534406876378309">क्रैश अपलोड करना प्रारंभ करें</translation>
 <translation id="6499038740797743453">क्या पासवर्ड रीसेट करना चाहते हैं?</translation>
 <translation id="6507833130742554667">क्रेडिट और डेबिट कार्ड स्वीकार किए जाते हैं.</translation>
-<translation id="650855688985305916">हां, सेव करें</translation>
 <translation id="6508722015517270189">Chrome को फिर से शुरू करें</translation>
 <translation id="6517596291481585650">चेतावनी: इस नीति को सूची के तौर पर नीति के बताए अनुसार नहीं मिलाया जा सकता, क्योंकि यह सूची नहीं है.</translation>
 <translation id="6518133107902771759">पुष्टि करें</translation>
@@ -1257,7 +1249,6 @@
 <translation id="7298195798382681320">सुझाए गए</translation>
 <translation id="7300012071106347854">कोबाल्ट नीला</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
-<translation id="7303701124147721189">अगली बार तेज़ी से भुगतान करने के लिए, अपने कार्ड और बिलिंग के पते को अपने Google खाते में सेव करें.</translation>
 <translation id="7304030187361489308">ज़्यादा</translation>
 <translation id="7309308571273880165">खराबी की रिपोर्ट <ph name="CRASH_TIME" /> बजे दर्ज की गई (उपयोगकर्ता ने अपलोड करने का अनुरोध किया, अभी तक अपलोड नहीं किया गया)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />सुरक्षित ब्राउज़िंग<ph name="END_LINK" /> की चेतावनियां</translation>
@@ -1483,7 +1474,6 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">अगर आप अपनी सुरक्षा संबंधी जोखिमों को समझते हैं तो, खतरनाक प्रोग्राम हटाए जाने से पहले आप <ph name="BEGIN_LINK" />इस साइट पर विज़िट<ph name="END_LINK" /> कर सकते हैं.</translation>
 <translation id="8349305172487531364">बुकमार्क बार</translation>
-<translation id="836241887727198552">Google खाते में कार्ड सेव करें?</translation>
 <translation id="8363502534493474904">हवाई जहाज़ मोड बंद करें</translation>
 <translation id="8364627913115013041">सेट नहीं है.</translation>
 <translation id="8368476060205742148">Google Play सेवाएं</translation>
@@ -1501,7 +1491,6 @@
 <translation id="8428213095426709021">सेटिंग</translation>
 <translation id="8433057134996913067">इससे आप ज़्यादातर वेबसाइट से प्रस्थान कर जाएंगे.</translation>
 <translation id="8437238597147034694">&amp;ले जाना वापस लाएं</translation>
-<translation id="8440508849222143646">अगली बार तेज़ी से भुगतान करने के लिए, अपने कार्ड और बिलिंग के पते को अपने Google खाते में सेव करें.</translation>
 <translation id="8461694314515752532">सिंक किए गए डेटा को अपने खुद के सिंक लंबे पासवर्ड से सुरक्षित करें</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}one{# क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
 <translation id="8473863474539038330">पते वगैरह</translation>
@@ -1526,7 +1515,6 @@
 <translation id="861775596732816396">आकार 4</translation>
 <translation id="8622948367223941507">लीगल-एक्स्ट्रा</translation>
 <translation id="8625384913736129811">इस कार्ड को इस डिवाइस में सेव करें</translation>
-<translation id="8626112503828625890">Google खाते में बिलिंग की जानकारी सेव करें?</translation>
 <translation id="8647750283161643317">सभी को डिफ़ॉल्ट पर रीसेट करें</translation>
 <translation id="8663226718884576429">ऑर्डर की खास बातें, <ph name="TOTAL_LABEL" />, ज़्यादा जानकारी</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, उत्तर, <ph name="ANSWER" /></translation>

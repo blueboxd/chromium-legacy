@@ -112,11 +112,11 @@ void FindBarHost::SetFindTextAndSelectedRange(
   find_bar_view()->SetFindTextAndSelectedRange(find_text, selected_range);
 }
 
-base::string16 FindBarHost::GetFindText() {
+base::string16 FindBarHost::GetFindText() const {
   return find_bar_view()->GetFindText();
 }
 
-gfx::Range FindBarHost::GetSelectedRange() {
+gfx::Range FindBarHost::GetSelectedRange() const {
   return find_bar_view()->GetSelectedRange();
 }
 
@@ -143,7 +143,7 @@ void FindBarHost::AudibleAlert() {
 #endif
 }
 
-bool FindBarHost::IsFindBarVisible() {
+bool FindBarHost::IsFindBarVisible() const {
   return DropdownBarHost::IsVisible();
 }
 
@@ -156,7 +156,7 @@ void FindBarHost::RestoreSavedFocus() {
   }
 }
 
-bool FindBarHost::HasGlobalFindPasteboard() {
+bool FindBarHost::HasGlobalFindPasteboard() const {
 #if defined(OS_MACOSX)
   return true;
 #else
@@ -167,7 +167,7 @@ bool FindBarHost::HasGlobalFindPasteboard() {
 void FindBarHost::UpdateFindBarForChangedWebContents() {
 }
 
-FindBarTesting* FindBarHost::GetFindBarTesting() {
+const FindBarTesting* FindBarHost::GetFindBarTesting() const {
   return this;
 }
 
@@ -203,7 +203,7 @@ bool FindBarHost::CanHandleAccelerators() const {
 // FindBarTesting implementation:
 
 bool FindBarHost::GetFindBarWindowInfo(gfx::Point* position,
-                                      bool* fully_visible) {
+                                       bool* fully_visible) const {
   if (!find_bar_controller_ ||
 #if defined(OS_WIN) && !defined(USE_AURA)
       !::IsWindow(host()->GetNativeView())) {
@@ -228,19 +228,19 @@ bool FindBarHost::GetFindBarWindowInfo(gfx::Point* position,
   return true;
 }
 
-base::string16 FindBarHost::GetFindSelectedText() {
+base::string16 FindBarHost::GetFindSelectedText() const {
   return find_bar_view()->GetFindSelectedText();
 }
 
-base::string16 FindBarHost::GetMatchCountText() {
+base::string16 FindBarHost::GetMatchCountText() const {
   return find_bar_view()->GetMatchCountText();
 }
 
-int FindBarHost::GetWidth() {
-  return view()->width();
+int FindBarHost::GetContentsWidth() const {
+  return view()->GetContentsBounds().width();
 }
 
-size_t FindBarHost::GetAudibleAlertCount() {
+size_t FindBarHost::GetAudibleAlertCount() const {
   return audible_alerts_;
 }
 
@@ -258,17 +258,17 @@ gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   gfx::Size prefsize = view()->GetPreferredSize();
 
   // Limit width to the available area.
-  if (widget_bounds.width() < prefsize.width())
-    prefsize.set_width(widget_bounds.width());
+  gfx::Insets insets = view()->GetInsets();
+  prefsize.set_width(
+      std::min(prefsize.width(), widget_bounds.width() + insets.width()));
 
-  // Don't show the find bar if |widget_bounds| is not tall enough.
-  if (widget_bounds.height() < prefsize.height())
+  // Don't show the find bar if |widget_bounds| is not tall enough to fit.
+  if (widget_bounds.height() < prefsize.height() - insets.height())
     return gfx::Rect();
 
   // Place the view in the top right corner of the widget boundaries (top left
   // for RTL languages). Adjust for the view insets to ensure the border lines
   // up with the location bar.
-  gfx::Insets insets = view()->border()->GetInsets();
   int x = widget_bounds.x() - insets.left();
   if (!base::i18n::IsRTL())
     x += widget_bounds.width() - prefsize.width() + insets.width();

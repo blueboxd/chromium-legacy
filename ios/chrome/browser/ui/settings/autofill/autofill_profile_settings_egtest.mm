@@ -58,7 +58,7 @@ struct UserTypedCountryExpectedResultPair {
 
 const UserTypedCountryExpectedResultPair kCountryTests[] = {
     {@"Brasil", @"Brazil"},
-    {@"China", @"China"},
+    {@"China", @"China mainland"},
     {@"DEUTSCHLAND", @"Germany"},
     {@"GREAT BRITAIN", @"United Kingdom"},
     {@"IN", @"India"},
@@ -166,11 +166,6 @@ id<GREYMatcher> NavigationBarEditButton() {
 // Test that editing country names is followed by validating the value and
 // replacing it with a canonical one.
 - (void)testAutofillProfileEditing {
-  // TODO (crbug.com/946891) Re-enable once fixed on iOS12.2
-  if (base::ios::IsRunningOnOrLater(12, 2, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 12,2.");
-  }
-
   [AutofillAppInterface saveExampleProfile];
   [self openEditProfile:kProfileLabel];
 

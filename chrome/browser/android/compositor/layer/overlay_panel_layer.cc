@@ -73,7 +73,6 @@ void OverlayPanelLayer::SetProperties(
     float bar_height,
     float bar_offset_y,
     float bar_text_opacity,
-    int bar_text_bounds_adjust,
     bool bar_border_visible,
     float bar_border_height,
     bool bar_shadow_visible,
@@ -188,13 +187,7 @@ void OverlayPanelLayer::SetProperties(
     float bar_padding_top = content_top_y + content_height / 2 -
                             bar_text_resource->size().height() / 2;
     bar_text_->SetUIResourceId(bar_text_resource->ui_resource()->id());
-
-    // TODO(donnd): Find a cleaner way!  See https://crbug.com/1012835.
-    // Adjust bounds to account for the open tab icon.
-    gfx::Size text_size = bar_text_resource->size();
-    text_size.set_width(text_size.width() + bar_text_bounds_adjust);
-
-    bar_text_->SetBounds(text_size);
+    bar_text_->SetBounds(bar_text_resource->size());
     bar_text_->SetPosition(gfx::PointF(0.f, bar_padding_top));
     bar_text_->SetOpacity(bar_text_opacity);
   }

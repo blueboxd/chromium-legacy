@@ -171,7 +171,7 @@ jumbo_source_set("internal") {
     "//net",
     "//services/identity/public/cpp:cpp_types",
     "//services/network/public/cpp",
-    "//third_party/libxml",
+    "//third_party/libxml:xml_writer",
     "//third_party/re2",
     "//url",
   ]
@@ -421,7 +421,7 @@ source_set("unit_tests") {
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/libxml",
+    "//third_party/libxml:xml_reader",
   ]
 }
 

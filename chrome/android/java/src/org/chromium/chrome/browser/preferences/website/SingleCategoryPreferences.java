@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.preferences.ExpandablePreferenceGroup;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridgeJni;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -517,7 +518,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
             prefServiceBridge.setContentSetting(mCategory.getContentSettingsType(), setting);
             getInfoForOrigins();
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
-            prefServiceBridge.setBlockThirdPartyCookiesEnabled(((boolean) newValue));
+            prefServiceBridge.setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, ((boolean) newValue));
         } else if (NOTIFICATIONS_VIBRATE_TOGGLE_KEY.equals(preference.getKey())) {
             prefServiceBridge.setNotificationsVibrateEnabled((boolean) newValue);
         }
@@ -986,11 +987,12 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                 (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         THIRD_PARTY_COOKIES_TOGGLE_KEY);
         thirdPartyCookiesPref.setChecked(
-                PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled());
+                PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES));
         thirdPartyCookiesPref.setEnabled(
                 PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.COOKIES));
-        thirdPartyCookiesPref.setManagedPreferenceDelegate(
-                preference -> PrefServiceBridge.getInstance().isBlockThirdPartyCookiesManaged());
+        thirdPartyCookiesPref.setManagedPreferenceDelegate(preference
+                -> PrefServiceBridge.getInstance().isManagedPreference(
+                        Pref.BLOCK_THIRD_PARTY_COOKIES));
     }
 
     private void updateNotificationsVibrateCheckBox() {

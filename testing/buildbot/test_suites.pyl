@@ -4337,10 +4337,6 @@
         },
         'args': [
           '--disable-features=NetworkServiceInProcess',
-          # The testFeaturesSetExistingFlags test will fail if *any* feature is
-          # explicitly enabled or disabled via a command-line argument. Disable
-          # this one test as we are doing this (above).
-          '--gtest_filter=-org.chromium.chrome.browser.FeaturesAnnotationsTest#testFeaturesSetExistingFlags',
         ],
         'test': 'chrome_public_test_apk',
       },
@@ -4600,7 +4596,6 @@
           '--build-revision=${got_revision}',
           '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter',
           '--browser-ui-tests-verify-pixels',
-          '--test-launcher-jobs=1',
           '--enable-pixel-output-in-tests',
         ],
         'experiment_percentage': 100,

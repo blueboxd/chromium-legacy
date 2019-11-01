@@ -25,7 +25,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -86,7 +85,7 @@ public class ClearBrowsingDataTabsFragment extends Fragment {
         TabLayout tabLayout = view.findViewById(R.id.clear_browsing_data_tabs);
         tabLayout.setupWithViewPager(viewPager);
         int tabIndex = adjustIndexForDirectionality(
-                PrefServiceBridge.getInstance().getLastSelectedClearBrowsingDataTab());
+                BrowsingDataBridge.getInstance().getLastSelectedClearBrowsingDataTab());
         TabLayout.Tab tab = tabLayout.getTabAt(tabIndex);
         if (tab != null) {
             tab.select();
@@ -160,7 +159,7 @@ public class ClearBrowsingDataTabsFragment extends Fragment {
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
             int tabIndex = adjustIndexForDirectionality(tab.getPosition());
-            PrefServiceBridge.getInstance().setLastSelectedClearBrowsingDataTab(tabIndex);
+            BrowsingDataBridge.getInstance().setLastSelectedClearBrowsingDataTab(tabIndex);
             if (tabIndex == ClearBrowsingDataTab.BASIC) {
                 RecordUserAction.record("ClearBrowsingData_SwitchTo_BasicTab");
             } else {

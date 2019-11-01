@@ -34,6 +34,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -220,7 +221,7 @@ base::Value DefaultPopularSites() {
   }
   std::unique_ptr<base::ListValue> sites =
       base::ListValue::From(base::JSONReader::ReadDeprecated(
-          ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
               IDR_DEFAULT_POPULAR_SITES_JSON)));
   DCHECK(sites);
   for (base::Value& site : *sites) {
@@ -264,13 +265,11 @@ PopularSitesImpl::PopularSitesImpl(
     PrefService* prefs,
     const TemplateURLService* template_url_service,
     VariationsService* variations_service,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const ParseJSONCallback& parse_json)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : prefs_(prefs),
       template_url_service_(template_url_service),
       variations_(variations_service),
       url_loader_factory_(std::move(url_loader_factory)),
-      parse_json_(parse_json),
       is_fallback_(false),
       sections_(
           ParseSites(*prefs->GetList(prefs::kPopularSitesJsonPref),
@@ -466,16 +465,21 @@ void PopularSitesImpl::OnSimpleLoaderComplete(
     return;
   }
 
-  parse_json_.Run(*response_body,
-                  base::BindOnce(&PopularSitesImpl::OnJsonParsed,
-                                 weak_ptr_factory_.GetWeakPtr()),
-                  base::BindOnce(&PopularSitesImpl::OnJsonParseFailed,
-                                 weak_ptr_factory_.GetWeakPtr()));
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *response_body, base::BindOnce(&PopularSitesImpl::OnJsonParsed,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PopularSitesImpl::OnJsonParsed(base::Value json) {
-  std::unique_ptr<base::ListValue> list =
-      base::ListValue::From(base::Value::ToUniquePtrValue(std::move(json)));
+void PopularSitesImpl::OnJsonParsed(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    DLOG(WARNING) << "JSON parsing failed: " << *result.error;
+    OnDownloadFailed();
+    return;
+  }
+
+  std::unique_ptr<base::ListValue> list = base::ListValue::From(
+      base::Value::ToUniquePtrValue(std::move(*result.value)));
   if (!list) {
     DLOG(WARNING) << "JSON is not a list";
     OnDownloadFailed();
@@ -489,11 +493,6 @@ void PopularSitesImpl::OnJsonParsed(base::Value json) {
 
   sections_ = ParseSites(*list, version_in_pending_url_);
   callback_.Run(true);
-}
-
-void PopularSitesImpl::OnJsonParseFailed(const std::string& error_message) {
-  DLOG(WARNING) << "JSON parsing failed: " << error_message;
-  OnDownloadFailed();
 }
 
 void PopularSitesImpl::OnDownloadFailed() {

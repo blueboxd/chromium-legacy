@@ -23,6 +23,7 @@
 #include "weblayer/browser/content_browser_client_impl.h"
 #include "weblayer/common/content_client_impl.h"
 #include "weblayer/common/weblayer_paths.h"
+#include "weblayer/renderer/content_renderer_client_impl.h"
 #include "weblayer/utility/content_utility_client_impl.h"
 
 #if defined(OS_ANDROID)
@@ -244,6 +245,12 @@ content::ContentBrowserClient*
 ContentMainDelegateImpl::CreateContentBrowserClient() {
   browser_client_ = std::make_unique<ContentBrowserClientImpl>(&params_);
   return browser_client_.get();
+}
+
+content::ContentRendererClient*
+ContentMainDelegateImpl::CreateContentRendererClient() {
+  renderer_client_ = std::make_unique<ContentRendererClientImpl>();
+  return renderer_client_.get();
 }
 
 content::ContentUtilityClient*

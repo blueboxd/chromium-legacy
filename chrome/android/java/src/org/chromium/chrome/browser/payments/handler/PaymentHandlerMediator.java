@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.payments.handler;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.payments.SslValidityChecker;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -54,7 +55,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     public void onSheetStateChanged(@SheetState int newState) {
         if (hideSheetIfWebContentsNotExist()) return;
         switch (newState) {
-            case SheetState.HIDDEN:
+            case BottomSheetController.SheetState.HIDDEN:
                 ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContents.get());
                 mHider.run();
                 break;

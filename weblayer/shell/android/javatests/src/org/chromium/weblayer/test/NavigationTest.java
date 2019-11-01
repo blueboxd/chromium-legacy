@@ -230,9 +230,7 @@ public class NavigationTest {
             navigationController.goForward();
         });
 
-        runOnUiThreadBlocking(() -> {
-            assertFalse(navigationController.canGoForward());
-        });
+        runOnUiThreadBlocking(() -> { assertFalse(navigationController.canGoForward()); });
     }
 
     @Test

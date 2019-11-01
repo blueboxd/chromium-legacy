@@ -191,11 +191,7 @@ void TestPersonalDataManager::LoadCreditCards() {
 }
 
 bool TestPersonalDataManager::IsAutofillEnabled() const {
-  // Return the value of autofill_enabled_ if it has been set, otherwise fall
-  // back to the normal behavior of checking the pref_service.
-  if (autofill_enabled_.has_value())
-    return autofill_enabled_.value();
-  return PersonalDataManager::IsAutofillEnabled();
+  return IsAutofillProfileEnabled() || IsAutofillCreditCardEnabled();
 }
 
 bool TestPersonalDataManager::IsAutofillProfileEnabled() const {

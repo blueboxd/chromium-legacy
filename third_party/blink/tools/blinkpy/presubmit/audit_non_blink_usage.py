@@ -251,7 +251,6 @@ _CONFIG = [
 
             # cc::Layers.
             'cc::Layer',
-            'cc::LayerClient',
             'cc::PictureLayer',
             'cc::SurfaceLayer',
 

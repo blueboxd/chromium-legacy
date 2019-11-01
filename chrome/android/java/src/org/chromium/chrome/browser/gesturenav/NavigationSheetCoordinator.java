@@ -18,11 +18,10 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.gesturenav.NavigationSheetMediator.ItemProperties;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.NavigationHistory;
@@ -245,7 +244,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     @Override
     public boolean isHidden() {
         if (mBottomSheetController.get() == null) return true;
-        return getTargetOrCurrentState() == SheetState.HIDDEN;
+        return getTargetOrCurrentState() == BottomSheetController.SheetState.HIDDEN;
     }
 
     /**
@@ -253,22 +252,23 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
      */
     private boolean isPeeked() {
         if (mBottomSheetController.get() == null) return false;
-        return getTargetOrCurrentState() == SheetState.PEEK;
+        return getTargetOrCurrentState() == BottomSheetController.SheetState.PEEK;
     }
 
     private @SheetState int getTargetOrCurrentState() {
         BottomSheet sheet = mBottomSheetController.get().getBottomSheet();
-        if (sheet == null) return SheetState.NONE;
+        if (sheet == null) return BottomSheetController.SheetState.NONE;
         @SheetState
         int state = sheet.getTargetSheetState();
-        return state != SheetState.NONE ? state : sheet.getSheetState();
+        return state != BottomSheetController.SheetState.NONE ? state : sheet.getSheetState();
     }
 
     @Override
     public boolean isExpanded() {
         if (mBottomSheetController.get() == null) return false;
         int state = getTargetOrCurrentState();
-        return state == SheetState.HALF || state == SheetState.FULL;
+        return state == BottomSheetController.SheetState.HALF
+                || state == BottomSheetController.SheetState.FULL;
     }
 
     // BottomSheetContent
@@ -308,7 +308,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         // looks awkward.
         return !mBottomSheetController.get().getBottomSheet().isSheetOpen()
                 ? getSizePx(mParentView.getContext(), R.dimen.navigation_sheet_peek_height)
-                : BottomSheet.HeightMode.DISABLED;
+                : BottomSheetContent.HeightMode.DISABLED;
     }
 
     @Override

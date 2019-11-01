@@ -180,6 +180,14 @@ void WebViewFrameWidget::SetAnimationHost(cc::AnimationHost* host) {
   web_view_->SetAnimationHost(host);
 }
 
+void WebViewFrameWidget::SetRootGraphicsLayer(GraphicsLayer* layer) {
+  web_view_->SetRootGraphicsLayer(layer);
+}
+
+GraphicsLayer* WebViewFrameWidget::RootGraphicsLayer() const {
+  return web_view_->RootGraphicsLayer();
+}
+
 void WebViewFrameWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   web_view_->SetRootLayer(layer);
 }

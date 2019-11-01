@@ -19,7 +19,6 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -158,23 +157,30 @@ void DigitalAssetLinksHandler::OnURLLoadComplete(
     return;
   }
 
-  data_decoder::SafeJsonParser::Parse(
-      /* connector=*/nullptr,  // Connector is unused on Android.
+  data_decoder::DataDecoder::ParseJsonIsolated(
       *response_body,
-      base::BindOnce(&DigitalAssetLinksHandler::OnJSONParseSucceeded,
+      base::BindOnce(&DigitalAssetLinksHandler::OnJSONParseResult,
                      weak_ptr_factory_.GetWeakPtr(), package, fingerprint,
-                     relationship),
-      base::BindOnce(&DigitalAssetLinksHandler::OnJSONParseFailed,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     relationship));
 
   url_loader_.reset(nullptr);
 }
 
-void DigitalAssetLinksHandler::OnJSONParseSucceeded(
+void DigitalAssetLinksHandler::OnJSONParseResult(
     const std::string& package,
     const std::string& fingerprint,
     const std::string& relationship,
-    base::Value statement_list) {
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    AddMessageToConsole(
+        web_contents(),
+        "Digital Asset Links response parsing failed with message: " +
+            *result.error);
+    std::move(callback_).Run(RelationshipCheckResult::FAILURE);
+    return;
+  }
+
+  auto& statement_list = *result.value;
   if (!statement_list.is_list()) {
     std::move(callback_).Run(RelationshipCheckResult::FAILURE);
     AddMessageToConsole(web_contents(), "Statement List is not a list.");
@@ -212,15 +218,6 @@ void DigitalAssetLinksHandler::OnJSONParseSucceeded(
   for (const auto& failure_reason : failures)
     AddMessageToConsole(web_contents(), failure_reason);
 
-  std::move(callback_).Run(RelationshipCheckResult::FAILURE);
-}
-
-void DigitalAssetLinksHandler::OnJSONParseFailed(
-    const std::string& error_message) {
-  AddMessageToConsole(
-      web_contents(),
-      "Digital Asset Links response parsing failed with message: " +
-          error_message);
   std::move(callback_).Run(RelationshipCheckResult::FAILURE);
 }
 

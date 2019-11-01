@@ -2762,6 +2762,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxExperimentalKeywordModeName,
      flag_descriptions::kOmniboxExperimentalKeywordModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kExperimentalKeywordMode)},
+    {"omnibox-loose-max-limit-on-dedicated-rows",
+     flag_descriptions::kOmniboxLooseMaxLimitOnDedicatedRowsName,
+     flag_descriptions::kOmniboxLooseMaxLimitOnDedicatedRowsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxLooseMaxLimitOnDedicatedRows)},
     {"omnibox-reverse-answers", flag_descriptions::kOmniboxReverseAnswersName,
      flag_descriptions::kOmniboxReverseAnswersDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxReverseAnswers)},
@@ -4161,7 +4166,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillDoNotMigrateUnsupportedLocalCards)},
     {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
-     flag_descriptions::kUnsafeWebGPUDescription, kOsMac,
+     flag_descriptions::kUnsafeWebGPUDescription, kOsMac | kOsWin,
      SINGLE_VALUE_TYPE(switches::kEnableUnsafeWebGPU)},
 
 #if defined(OS_ANDROID)
@@ -4410,6 +4415,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"temporary-unexpire-flags-m76", flag_descriptions::kUnexpireFlagsM76Name,
      flag_descriptions::kUnexpireFlagsM76Description, kOsAll,
      FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM76)},
+    {"temporary-unexpire-flags-m78", flag_descriptions::kUnexpireFlagsM78Name,
+     flag_descriptions::kUnexpireFlagsM78Description, kOsAll,
+     FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM78)},
 
 #if defined(OS_CHROMEOS)
     {"lock-screen-media-controls",

@@ -173,7 +173,7 @@ std::string getCurrentAbi() {
 void SetImageData(webapk::Image* image, const SkBitmap& icon) {
   std::vector<unsigned char> png_bytes;
   gfx::PNGCodec::EncodeBGRASkBitmap(icon, false, &png_bytes);
-  image->set_image_data(&png_bytes.front(), png_bytes.size());
+  image->set_image_data(png_bytes.data(), png_bytes.size());
 }
 
 // Populates webapk::WebApk and returns it.

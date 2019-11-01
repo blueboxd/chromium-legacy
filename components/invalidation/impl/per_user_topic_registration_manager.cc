@@ -204,13 +204,11 @@ PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
     invalidation::IdentityProvider* identity_provider,
     PrefService* local_state,
     network::mojom::URLLoaderFactory* url_loader_factory,
-    const ParseJSONCallback& parse_json,
     const std::string& project_id,
     bool migrate_prefs)
     : local_state_(local_state),
       identity_provider_(identity_provider),
       request_access_token_backoff_(&kBackoffPolicy),
-      parse_json_(parse_json),
       url_loader_factory_(url_loader_factory),
       project_id_(project_id),
       migrate_prefs_(migrate_prefs) {}
@@ -223,12 +221,11 @@ PerUserTopicRegistrationManager::Create(
     invalidation::IdentityProvider* identity_provider,
     PrefService* local_state,
     network::mojom::URLLoaderFactory* url_loader_factory,
-    const ParseJSONCallback& parse_json,
     const std::string& project_id,
     bool migrate_prefs) {
   return std::make_unique<PerUserTopicRegistrationManager>(
-      identity_provider, local_state, url_loader_factory, parse_json,
-      project_id, migrate_prefs);
+      identity_provider, local_state, url_loader_factory, project_id,
+      migrate_prefs);
 }
 
 void PerUserTopicRegistrationManager::Init() {
@@ -339,7 +336,7 @@ void PerUserTopicRegistrationManager::StartRegistrationRequest(
       base::BindOnce(&PerUserTopicRegistrationManager::RegistrationEntry::
                          RegistrationFinished,
                      base::Unretained(it->second.get())),
-      parse_json_, url_loader_factory_);
+      url_loader_factory_);
 }
 
 void PerUserTopicRegistrationManager::ActOnSuccesfullRegistration(

@@ -368,6 +368,8 @@ public abstract class ChromeFeatureList {
             "ServiceManagerForBackgroundPrefetch";
     public static final String SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY =
             "SplitCacheByNetworkIsolationKey";
+    public static final String UPDATE_NOTIFICATION_SCHEDULING_INTEGRATION =
+            "UpdateNotificationSchedulingIntegration";
 
     @NativeMethods
     interface Natives {

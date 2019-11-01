@@ -26,6 +26,7 @@ import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.AnchoredPopupWindow;
+import org.chromium.ui.widget.RectProvider;
 import org.chromium.ui.widget.ViewRectProvider;
 
 import java.lang.annotation.Retention;
@@ -33,7 +34,7 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * The main coordinator for the Tab Switcher Action Menu, responsible for creating the popup menu
- * (popup window) in general and building a list of menu items
+ * (popup window) in general and building a list of menu items.
  */
 public class TabSwitcherActionMenuCoordinator {
     @Retention(RetentionPolicy.SOURCE)
@@ -41,6 +42,16 @@ public class TabSwitcherActionMenuCoordinator {
     public @interface ListItemType {
         int DIVIDER = 0;
         int MENU_ITEM = 1;
+    }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({MenuItemType.DIVIDER, MenuItemType.CLOSE_TAB, MenuItemType.NEW_TAB,
+            MenuItemType.NEW_INCOGNITO_TAB})
+    public @interface MenuItemType {
+        int DIVIDER = 0;
+        int CLOSE_TAB = 1;
+        int NEW_TAB = 2;
+        int NEW_INCOGNITO_TAB = 3;
     }
 
     private ListView mListView;
@@ -52,9 +63,14 @@ public class TabSwitcherActionMenuCoordinator {
      * @return a long click listener of the long press action of tab switcher button
      */
     public static OnLongClickListener createOnLongClickListener(Callback<Integer> onItemClicked) {
+        return createOnLongClickListener(new TabSwitcherActionMenuCoordinator(), onItemClicked);
+    }
+
+    // internal helper function to create a long click listener
+    protected static OnLongClickListener createOnLongClickListener(
+            TabSwitcherActionMenuCoordinator menu, Callback<Integer> onItemClicked) {
         return (view) -> {
             Context context = view.getContext();
-            TabSwitcherActionMenuCoordinator menu = new TabSwitcherActionMenuCoordinator();
             menu.displayMenu(context, view, menu.buildMenuItems(context), (id) -> {
                 recordUserActions(id);
                 onItemClicked.onResult(id);
@@ -127,21 +143,15 @@ public class TabSwitcherActionMenuCoordinator {
             mPopup.dismiss();
         });
 
-        ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
-        rectProvider.setIncludePadding(true);
-
-        int toolbarHeight = anchorView.getHeight();
-        int iconHeight = context.getResources().getDimensionPixelSize(R.dimen.toolbar_icon_height);
-        int paddingBottom = (toolbarHeight - iconHeight) / 2;
-        rectProvider.setInsetPx(0, 0, 0, paddingBottom);
+        int popupWidth =
+                context.getResources().getDimensionPixelSize(R.dimen.tab_switcher_menu_width);
         mPopup = new AnchoredPopupWindow(context, anchorView,
                 ApiCompatibilityUtils.getDrawable(
                         context.getResources(), R.drawable.popup_bg_tinted),
-                mContentView, rectProvider);
+                mContentView, getRectProvider(anchorView));
         mPopup.setFocusable(true);
         mPopup.setAnimationStyle(R.style.OverflowMenuAnim);
 
-        int popupWidth = context.getResources().getDimensionPixelSize(R.dimen.menu_width);
         mPopup.setMaxWidth(popupWidth);
         mPopup.setHorizontalOverlapAnchor(true);
         mPopup.show();
@@ -155,21 +165,52 @@ public class TabSwitcherActionMenuCoordinator {
     @VisibleForTesting
     public ModelList buildMenuItems(Context context) {
         ModelList itemList = new ModelList();
-        itemList.add(new ListItem(ListItemType.MENU_ITEM,
-                buildPropertyModel(
-                        context, R.string.close_tab, R.id.close_tab, R.drawable.btn_close)));
-        itemList.add(new ListItem(ListItemType.DIVIDER,
-                new PropertyModel.Builder(TabSwitcherActionMenuItemProperties.ALL_KEYS).build()));
-        itemList.add(new ListItem(ListItemType.MENU_ITEM,
-                buildPropertyModel(context, R.string.menu_new_tab, R.id.new_tab_menu_id,
-                        R.drawable.new_tab_icon)));
-        itemList.add(new ListItem(ListItemType.MENU_ITEM,
-                buildPropertyModel(context, R.string.menu_new_incognito_tab,
-                        R.id.new_incognito_tab_menu_id, R.drawable.incognito_simple)));
+        itemList.add(buildListItemByMenuItemType(context, MenuItemType.CLOSE_TAB));
+        itemList.add(buildListItemByMenuItemType(context, MenuItemType.DIVIDER));
+        itemList.add(buildListItemByMenuItemType(context, MenuItemType.NEW_TAB));
+        itemList.add(buildListItemByMenuItemType(context, MenuItemType.NEW_INCOGNITO_TAB));
         return itemList;
     }
 
-    private PropertyModel buildPropertyModel(
+    /**
+     * Define how popup menu is positioned.
+     * @param anchorView The view which the popup menu anchors.
+     * @return Rect provider describing how to position the popup menu.
+     */
+    protected RectProvider getRectProvider(View anchorView) {
+        ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
+        rectProvider.setIncludePadding(true);
+
+        int toolbarHeight = anchorView.getHeight();
+        int iconHeight =
+                anchorView.getResources().getDimensionPixelSize(R.dimen.toolbar_icon_height);
+        int paddingBottom = (toolbarHeight - iconHeight) / 2;
+        rectProvider.setInsetPx(0, 0, 0, paddingBottom);
+        return rectProvider;
+    }
+
+    // internal helper function to build a list item given a menu item type
+    protected ListItem buildListItemByMenuItemType(Context context, @MenuItemType int type) {
+        switch (type) {
+            case MenuItemType.CLOSE_TAB:
+                return new ListItem(ListItemType.MENU_ITEM,
+                        buildPropertyModel(
+                                context, R.string.close_tab, R.id.close_tab, R.drawable.btn_close));
+            case MenuItemType.NEW_TAB:
+                return new ListItem(ListItemType.MENU_ITEM,
+                        buildPropertyModel(context, R.string.menu_new_tab, R.id.new_tab_menu_id,
+                                R.drawable.new_tab_icon));
+            case MenuItemType.NEW_INCOGNITO_TAB:
+                return new ListItem(ListItemType.MENU_ITEM,
+                        buildPropertyModel(context, R.string.menu_new_incognito_tab,
+                                R.id.new_incognito_tab_menu_id, R.drawable.incognito_simple));
+            case MenuItemType.DIVIDER:
+            default:
+                return new ListItem(ListItemType.DIVIDER, new PropertyModel());
+        }
+    }
+
+    protected PropertyModel buildPropertyModel(
             Context context, @StringRes int titleId, @IdRes int menuId, @DrawableRes int iconId) {
         return new PropertyModel.Builder(TabSwitcherActionMenuItemProperties.ALL_KEYS)
                 .with(TabSwitcherActionMenuItemProperties.TITLE, context.getString(titleId))

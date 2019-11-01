@@ -164,10 +164,10 @@ public class NavigateTest {
     }
 
     @Test
-    @DisabledTest(message = "crbug.com/516018")
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Navigation"})
+    @RetryOnFailure
     public void testNavigateMany() throws Exception {
         final String[] urls = mTestServer.getURLs("/chrome/test/data/android/navigate/one.html",
                 "/chrome/test/data/android/navigate/two.html",

@@ -14,6 +14,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.ViewAssertion;
@@ -59,7 +62,10 @@ public class TabUiTestHelper {
     static void enterTabSwitcher(ChromeTabbedActivity cta) {
         OverviewModeBehaviorWatcher showWatcher = createOverviewShowWatcher(cta);
         assertFalse(cta.getLayoutManager().overviewVisible());
-        onView(withId(R.id.tab_switcher_button)).perform(click());
+        // TODO(crbug.com/1019727) Figure out a better way to wait until isCompletelyDisplayed() is
+        // true in espresso.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { cta.findViewById(R.id.tab_switcher_button).performClick(); });
         showWatcher.waitForBehavior();
     }
 
@@ -135,6 +141,30 @@ public class TabUiTestHelper {
      */
     static OverviewModeBehaviorWatcher createOverviewHideWatcher(ChromeTabbedActivity cta) {
         return new OverviewModeBehaviorWatcher(cta.getLayoutManager(), false, true);
+    }
+
+    /**
+     * Rotate device to the target orientation. Do nothing if the screen is already in that
+     * orientation.
+     * @param cta             The current running activity.
+     * @param orientation     The target orientation we want the screen to rotate to.
+     */
+    static void rotateDeviceToOrientation(ChromeTabbedActivity cta, int orientation) {
+        if (cta.getResources().getConfiguration().orientation == orientation) return;
+        assertTrue(orientation == Configuration.ORIENTATION_LANDSCAPE
+                || orientation == Configuration.ORIENTATION_PORTRAIT);
+        cta.setRequestedOrientation(orientation == Configuration.ORIENTATION_LANDSCAPE
+                        ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                        : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        CriteriaHelper.pollUiThread(
+                () -> orientation == cta.getResources().getConfiguration().orientation);
+    }
+
+    /**
+     * @return whether current running API is lower or equal to KitKat.
+     */
+    static boolean isKitKatAndBelow() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
     }
 
     /**

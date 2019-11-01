@@ -43,7 +43,7 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
     return;
   }
   std::string extract_features_js =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_EXTRACT_PAGE_FEATURES_JS);
   RunIsolatedJavaScript(
       main_frame, extract_features_js,

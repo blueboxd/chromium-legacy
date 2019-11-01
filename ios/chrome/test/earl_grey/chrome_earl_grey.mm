@@ -154,6 +154,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
+- (void)removeBrowsingCache {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface removeBrowsingCache]);
+}
+
 #pragma mark - Navigation Utilities (EG2)
 
 - (void)goBack {
@@ -205,6 +210,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 - (void)simulateTabsBackgrounding {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface simulateTabsBackgrounding]);
+}
+
+- (void)saveSessionImmediately {
+  [ChromeEarlGreyAppInterface saveSessionImmediately];
+
+  // Saving is always performed on a separate thread, so spin the run loop a
+  // bit to ensure save.
+  base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSeconds(1));
 }
 
 - (void)setCurrentTabsToBeColdStartTabs {
@@ -320,6 +333,24 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 - (NSString*)nextTabID {
   return [ChromeEarlGreyAppInterface nextTabID];
+}
+
+- (void)showTabSwitcher {
+  id<GREYMatcher> matcher = chrome_test_util::TabGridOpenButton();
+  // Perform a tap with a timeout. Occasionally EG doesn't sync up properly to
+  // the animations of tab switcher, so it is necessary to poll here.
+  GREYCondition* tapTabSwitcher =
+      [GREYCondition conditionWithName:@"Tap tab switcher button"
+                                 block:^BOOL {
+                                   NSError* error;
+                                   [[EarlGrey selectElementWithMatcher:matcher]
+                                       performAction:grey_tap()
+                                               error:&error];
+                                   return error == nil;
+                                 }];
+  // Wait until 2 seconds for the tap.
+  BOOL hasClicked = [tapTabSwitcher waitWithTimeout:2];
+  EG_TEST_HELPER_ASSERT_TRUE(hasClicked, @"Tab switcher could not be clicked.");
 }
 
 #pragma mark - Cookie Utilities (EG2)
@@ -480,8 +511,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (void)triggerRestoreViaTabGridRemoveAllUndo {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGrey showTabSwitcher];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
       performAction:grey_tap()];
   [[EarlGrey

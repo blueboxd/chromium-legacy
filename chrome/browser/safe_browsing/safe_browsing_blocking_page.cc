@@ -16,7 +16,7 @@
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/safe_browsing/safe_browsing_controller_client.h"
+#include "chrome/browser/safe_browsing/chrome_controller_client.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -277,31 +277,6 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
   }
 }
 
-void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
-  if (page_cmd == "\"pageLoadComplete\"") {
-    // content::WaitForRenderFrameReady sends this message when the page
-    // load completes. Ignore it.
-    return;
-  }
-
-  int command = 0;
-  bool retval = base::StringToInt(page_cmd, &command);
-  DCHECK(retval) << page_cmd;
-
-  auto interstitial_command =
-      static_cast<security_interstitials::SecurityInterstitialCommand>(command);
-  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials) &&
-      interstitial_command ==
-          security_interstitials::SecurityInterstitialCommand::CMD_PROCEED) {
-    // With committed interstitials, OnProceed() doesn't get called, so handle
-    // adding to the allow list here.
-    set_proceeded(true);
-    ui_manager()->OnBlockingPageDone(unsafe_resources(), true /* proceed */,
-                                     web_contents(), main_frame_url());
-  }
-  BaseBlockingPage::CommandReceived(page_cmd);
-}
-
 // static
 std::unique_ptr<SecurityInterstitialControllerClient>
 SafeBrowsingBlockingPage::CreateControllerClient(
@@ -317,7 +292,7 @@ SafeBrowsingBlockingPage::CreateControllerClient(
                                             unsafe_resources[0].url,
                                             GetReportingInfo(unsafe_resources));
 
-  return std::make_unique<SafeBrowsingControllerClient>(
+  return std::make_unique<ChromeControllerClient>(
       web_contents, std::move(metrics_helper), profile->GetPrefs(),
       ui_manager->app_locale(), ui_manager->default_safe_page());
 }

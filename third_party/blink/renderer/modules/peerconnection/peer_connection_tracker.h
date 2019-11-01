@@ -55,6 +55,7 @@ class MODULES_EXPORT PeerConnectionTracker
 
   enum Action {
     ACTION_SET_LOCAL_DESCRIPTION,
+    ACTION_SET_LOCAL_DESCRIPTION_IMPLICIT,
     ACTION_SET_REMOTE_DESCRIPTION,
     ACTION_CREATE_OFFER,
     ACTION_CREATE_ANSWER
@@ -112,6 +113,8 @@ class MODULES_EXPORT PeerConnectionTracker
                                           const std::string& sdp,
                                           const std::string& type,
                                           Source source);
+  virtual void TrackSetSessionDescriptionImplicit(
+      RTCPeerConnectionHandler* pc_handler);
 
   // Sends an update when setConfiguration is called.
   virtual void TrackSetConfiguration(

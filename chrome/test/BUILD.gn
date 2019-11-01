@@ -3540,7 +3540,6 @@ test("unit_tests") {
     "//third_party/leveldatabase",
     "//third_party/libaddressinput",
     "//third_party/libphonenumber",
-    "//third_party/libxml",
     "//third_party/metrics_proto",
     "//third_party/webrtc/modules/desktop_capture",
     "//third_party/webrtc_overrides",

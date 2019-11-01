@@ -108,8 +108,9 @@ public class PrivacyPreferences
 
         Preference doNotTrackPref = findPreference(PREF_DO_NOT_TRACK);
         if (doNotTrackPref != null) {
-            doNotTrackPref.setSummary(
-                    prefServiceBridge.isDoNotTrackEnabled() ? R.string.text_on : R.string.text_off);
+            doNotTrackPref.setSummary(prefServiceBridge.getBoolean(Pref.ENABLE_DO_NOT_TRACK)
+                            ? R.string.text_on
+                            : R.string.text_off);
         }
 
         Preference usageStatsPref = findPreference(PREF_USAGE_STATS);

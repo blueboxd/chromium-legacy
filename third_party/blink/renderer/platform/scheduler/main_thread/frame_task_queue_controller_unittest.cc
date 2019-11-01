@@ -90,12 +90,13 @@ class FrameTaskQueueControllerTest : public testing::Test,
   }
 
   scoped_refptr<MainThreadTaskQueue> ThrottleableTaskQueue() const {
-    return frame_task_queue_controller_->GetTaskQueue(QueueTraits()
-      .SetCanBeThrottled(true)
-      .SetCanBeFrozen(true)
-      .SetCanBeDeferred(true)
-      .SetCanBePaused(true)
-      .SetCanRunWhenVirtualTimePaused(true));
+    return frame_task_queue_controller_->GetTaskQueue(
+        QueueTraits()
+            .SetCanBeThrottled(true)
+            .SetCanBeFrozen(true)
+            .SetCanBeDeferred(true)
+            .SetCanBePaused(true)
+            .SetCanRunWhenVirtualTimePaused(false));
   }
 
   scoped_refptr<MainThreadTaskQueue> GetTaskQueue(
@@ -140,32 +141,31 @@ TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
 
   // Create the 4 default task queues used by FrameSchedulerImpl.
   task_queue = GetTaskQueue(QueueTraits()
-                                       .SetCanBeThrottled(true)
-                                       .SetCanBeDeferred(true)
-                                       .SetCanBeFrozen(true)
-                                       .SetCanBePaused(true)
-                                       .SetCanRunWhenVirtualTimePaused(true));
+                                .SetCanBeThrottled(true)
+                                .SetCanBeDeferred(true)
+                                .SetCanBeFrozen(true)
+                                .SetCanBePaused(true)
+                                .SetCanRunWhenVirtualTimePaused(false));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
   task_queue = GetTaskQueue(QueueTraits()
-                                        .SetCanBeDeferred(true)
-                                        .SetCanBePaused(true)
-                                        .SetCanRunWhenVirtualTimePaused(true));
+                                .SetCanBeDeferred(true)
+                                .SetCanBePaused(true)
+                                .SetCanRunWhenVirtualTimePaused(false));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = GetTaskQueue(QueueTraits()
-                                        .SetCanBePaused(true)
-                                        .SetCanRunWhenVirtualTimePaused(true));
+  task_queue = GetTaskQueue(
+      QueueTraits().SetCanBePaused(true).SetCanRunWhenVirtualTimePaused(false));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = GetTaskQueue(QueueTraits()
-                                        .SetCanRunWhenVirtualTimePaused(true));
+  task_queue =
+      GetTaskQueue(QueueTraits().SetCanRunWhenVirtualTimePaused(false));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());

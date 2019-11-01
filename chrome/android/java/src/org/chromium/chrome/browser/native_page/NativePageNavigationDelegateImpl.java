@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.ui.widget.Toast;
@@ -90,7 +90,8 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
         // all tabs opened in the background.
         // TODO(twellington): Replace this with an animation.
         if (mActivity.getBottomSheet() != null
-                && mActivity.getBottomSheet().getSheetState() == SheetState.FULL
+                && mActivity.getBottomSheet().getSheetState()
+                        == BottomSheetController.SheetState.FULL
                 && DeviceClassManager.enableAnimations()) {
             Toast.makeText(mActivity, R.string.open_in_new_tab_toast, Toast.LENGTH_SHORT).show();
         }

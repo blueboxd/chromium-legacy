@@ -1687,21 +1687,6 @@
             ]
         }
     ],
-    "ContextualSearchSimplifiedServer": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "ContextualSearchSimplifiedServer",
-                    "enable_features": [
-                        "ContextualSearchSimplifiedServer"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContextualSearchTranslation": [
         {
             "platforms": [
@@ -2021,6 +2006,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DistinctModuleDatabaseSequence"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DnsOverHttps": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_crbug1006105",
+                    "enable_features": [
+                        "DnsOverHttps"
                     ]
                 }
             ]
@@ -3108,6 +3111,29 @@
             ]
         }
     ],
+    "InterestFeedContentSuggestionsFeedUI": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledLargerImagesAndSnippets",
+                    "params": {
+                        "feed_ui_enabled": "true",
+                        "init_feed_after_startup": "false",
+                        "snippets_enabled": "true",
+                        "spinner_delay": "500",
+                        "spinner_minimum_show_time": "0",
+                        "storage_miss_threshold": "100"
+                    },
+                    "enable_features": [
+                        "InterestFeedContentSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "InvalidationsGCMUpstream": [
         {
             "platforms": [
@@ -3607,27 +3633,27 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_Logistic_Precision_30",
+                    "name": "Enabled_Logistic_Precision_15_M79_20191029",
                     "params": {
                         "area_rank_scale": "0",
-                        "clickable_space_scale": "-31000",
-                        "contains_image_scale": "670000",
+                        "clickable_space_scale": "1040",
+                        "contains_image_scale": "787000",
                         "iframe_link_total_scale": "0",
-                        "image_link_total_scale": "401000",
-                        "increment_link_total_scale": "5210000",
+                        "image_link_total_scale": "-11600",
+                        "increment_link_total_scale": "36100",
                         "is_in_iframe_scale": "0",
-                        "is_same_host_scale": "-1470000",
-                        "is_url_incremented_scale": "21900000",
-                        "link_total_scale": "-1170000",
-                        "median_link_location_scale": "-892",
+                        "is_same_host_scale": "918000",
+                        "is_url_incremented_scale": "4790000",
+                        "link_total_scale": "-19700",
+                        "median_link_location_scale": "-3",
                         "normalize_scores": "false",
                         "prefetch_after_preconnect": "true",
-                        "prefetch_url_score_threshold": "16502564",
-                        "ratio_area_scale": "204000",
-                        "ratio_distance_root_top_scale": "381",
-                        "same_origin_link_total_scale": "723000",
-                        "viewport_height_scale": "-741",
-                        "viewport_width_scale": "565"
+                        "prefetch_url_score_threshold": "2250000",
+                        "ratio_area_scale": "13000",
+                        "ratio_distance_root_top_scale": "-15",
+                        "same_origin_link_total_scale": "3110",
+                        "viewport_height_scale": "-50",
+                        "viewport_width_scale": "76"
                     },
                     "enable_features": [
                         "NavigationPredictor"
@@ -4610,21 +4636,6 @@
             ]
         }
     ],
-    "PlatformFontSkiaOnWindows": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PlatformFontSkiaOnWindows"
-                    ]
-                }
-            ]
-        }
-    ],
     "PolicyAtomicGroup": [
         {
             "platforms": [
@@ -5280,6 +5291,21 @@
             ]
         }
     ],
+    "SafeBrowsingPasswordProtectionOnFocusPingAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingSendOnFocusPing"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingRealTimeUrlLookupFetchAllowlist": [
         {
             "platforms": [
@@ -5393,6 +5419,57 @@
                     },
                     "enable_features": [
                         "SafeBrowsingUseLocalBlacklistsV2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SameSiteByDefaultCookies_AndroidAw": [
+        {
+            "platforms": [
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "LaxByDefaultAndNoneRequiresSecure",
+                    "enable_features": [
+                        "CookiesWithoutSameSiteMustBeSecure",
+                        "SameSiteByDefaultCookies"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SameSiteByDefaultCookies_Linux": [
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "LaxByDefaultAndNoneRequiresSecure",
+                    "enable_features": [
+                        "CookiesWithoutSameSiteMustBeSecure",
+                        "SameSiteByDefaultCookies"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SameSiteByDefaultCookies_WinMacCros": [
+        {
+            "platforms": [
+                "chromeos",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "LaxByDefaultAndNoneRequiresSecure",
+                    "enable_features": [
+                        "CookiesWithoutSameSiteMustBeSecure",
+                        "SameSiteByDefaultCookies"
                     ]
                 }
             ]

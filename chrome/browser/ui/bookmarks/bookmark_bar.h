@@ -13,7 +13,7 @@ class BookmarkBar {
     // The bookmark bar is not visible.
     HIDDEN,
 
-    // The bookmark bar is visible and not detached.
+    // The bookmark bar is visible.
     SHOW
   };
 

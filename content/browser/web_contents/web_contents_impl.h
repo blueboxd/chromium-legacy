@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -135,6 +136,9 @@ class WebContentsAndroid;
 class PepperPlaybackObserver;
 #endif
 
+using AccessibilityEventCallback =
+    base::RepeatingCallback<void(const std::string&)>;
+
 // Factory function for the implementations that content knows about. Takes
 // ownership of |delegate|.
 WebContentsView* CreateWebContentsView(
@@ -226,8 +230,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                         uint64_t upload_position,
                         uint64_t upload_size);
 
-  // Set the visibility to |visibility| and notifies observers.
-  void SetVisibility(Visibility visibility);
+  // Updates the visibility and notifies observers. Note that this is
+  // distinct from UpdateWebContentsVisibility which may also update the
+  // visibility of renderer-side objects.
+  void SetVisibilityAndNotifyObservers(Visibility visibility);
 
   // Notify observers that the web contents has been focused.
   void NotifyWebContentsFocused(RenderWidgetHost* render_widget_host);
@@ -562,6 +568,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       bool internal,
       std::vector<content::AccessibilityTreeFormatter::PropertyFilter>
           property_filters) override;
+  void RecordAccessibilityEvents(AccessibilityEventCallback callback,
+                                 bool start) override;
   RenderFrameHost* GetGuestByInstanceID(
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;
@@ -633,6 +641,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    int context_id) override;
   void AudioContextPlaybackStopped(RenderFrameHost* host,
                                    int context_id) override;
+  void MediaWatchTimeChanged(
+      const content::MediaPlayerWatchTime& watch_time) override;
   RenderFrameHostImpl* GetMainFrameForInnerDelegate(
       FrameTreeNode* frame_tree_node) override;
   bool IsFrameLowPriority(const RenderFrameHost* render_frame_host) override;
@@ -1516,6 +1526,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |current_fullscreen_frame_| and notify observers whenever it changes.
   void FullscreenFrameSetUpdated();
 
+  // Sets the visibility to |new_visibility| and propagates this to the
+  // renderer side, taking into account the current capture state. This
+  // can be called with the current visibility to effect capturing
+  // changes.
+  void UpdateVisibilityAndNotifyPageAndView(Visibility new_visibility);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1781,6 +1797,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The accessibility mode for all frames. This is queried when each frame
   // is created, and broadcast to all frames when it changes.
   ui::AXMode accessibility_mode_;
+
+  std::unique_ptr<content::AccessibilityEventRecorder> event_recorder_;
 
   // Monitors power levels for audio streams associated with this WebContents.
   AudioStreamMonitor audio_stream_monitor_;

@@ -12,6 +12,7 @@ import androidx.annotation.IntDef;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 
 import java.lang.annotation.Retention;
@@ -124,7 +125,8 @@ class AssistantPeekHeightCoordinator {
     }
 
     private void maybeShowOnlyCarousels() {
-        mDelegate.setShowOnlyCarousels(mBottomSheet.getSheetState() == BottomSheet.SheetState.PEEK
+        mDelegate.setShowOnlyCarousels(
+                mBottomSheet.getSheetState() == BottomSheetController.SheetState.PEEK
                 && mPeekMode == PeekMode.HANDLE_HEADER_CAROUSELS);
     }
 
@@ -144,8 +146,9 @@ class AssistantPeekHeightCoordinator {
      * Delegate#onPeekHeightChanged() will be called.
      */
     void setPeekMode(@PeekMode int peekMode) {
-        if (peekMode == PeekMode.UNDEFINED)
+        if (peekMode == PeekMode.UNDEFINED) {
             throw new IllegalArgumentException("Setting UNDEFINED peek mode is not allowed.");
+        }
         if (peekMode == mPeekMode) return;
 
         mPeekMode = peekMode;

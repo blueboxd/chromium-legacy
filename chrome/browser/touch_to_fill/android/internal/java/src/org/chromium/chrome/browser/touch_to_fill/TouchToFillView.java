@@ -14,7 +14,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
  * credentials. It is a View in this Model-View-Controller component and doesn't inherit but holds
  * Android Views.
  */
-class TouchToFillView implements BottomSheet.BottomSheetContent {
+class TouchToFillView implements BottomSheetContent {
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
     private final RecyclerView mSheetItemListView;
@@ -33,7 +33,7 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
 
     private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
         @Override
-        public void onSheetClosed(@BottomSheet.StateChangeReason int reason) {
+        public void onSheetClosed(@BottomSheetController.StateChangeReason int reason) {
             super.onSheetClosed(reason);
             assert mDismissHandler != null;
             mDismissHandler.onResult(reason);
@@ -43,9 +43,9 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
         @Override
         public void onSheetStateChanged(int newState) {
             super.onSheetStateChanged(newState);
-            if (newState != BottomSheet.SheetState.HIDDEN) return;
+            if (newState != BottomSheetController.SheetState.HIDDEN) return;
             // This is a fail-safe for cases where onSheetClosed isn't triggered.
-            mDismissHandler.onResult(BottomSheet.StateChangeReason.NONE);
+            mDismissHandler.onResult(BottomSheetController.StateChangeReason.NONE);
             mBottomSheetController.getBottomSheet().removeObserver(mBottomSheetObserver);
         }
     };
@@ -123,7 +123,7 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
 
     @Override
     public int getPriority() {
-        return BottomSheet.ContentPriority.HIGH;
+        return BottomSheetContent.ContentPriority.HIGH;
     }
 
     @Override
@@ -138,7 +138,7 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
 
     @Override
     public int getPeekHeight() {
-        return BottomSheet.HeightMode.DISABLED;
+        return BottomSheetContent.HeightMode.DISABLED;
     }
 
     @Override

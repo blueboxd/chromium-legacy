@@ -24,7 +24,7 @@ class UnifiedSystemInfoViewTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    model_ = std::make_unique<UnifiedSystemTrayModel>();
+    model_ = std::make_unique<UnifiedSystemTrayModel>(nullptr);
     controller_ = std::make_unique<UnifiedSystemTrayController>(model_.get());
     info_view_ = std::make_unique<UnifiedSystemInfoView>(controller_.get());
 
@@ -84,7 +84,7 @@ using UnifiedSystemInfoViewNoSessionTest = NoSessionAshTestBase;
 
 TEST_F(UnifiedSystemInfoViewNoSessionTest, SupervisedVisible) {
   std::unique_ptr<UnifiedSystemTrayModel> model_ =
-      std::make_unique<UnifiedSystemTrayModel>();
+      std::make_unique<UnifiedSystemTrayModel>(nullptr);
   std::unique_ptr<UnifiedSystemTrayController> controller_ =
       std::make_unique<UnifiedSystemTrayController>(model_.get());
 

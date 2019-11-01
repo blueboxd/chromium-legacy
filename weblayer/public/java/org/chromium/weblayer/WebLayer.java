@@ -18,10 +18,12 @@ import android.webkit.WebViewDelegate;
 import android.webkit.WebViewFactory;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.BrowserFragmentArgs;
 import org.chromium.weblayer_private.aidl.IBrowserFragment;
+import org.chromium.weblayer_private.aidl.IProfile;
 import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
 import org.chromium.weblayer_private.aidl.IWebLayer;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
@@ -42,7 +44,6 @@ public final class WebLayer {
     private static ListenableFuture<WebLayer> sFuture;
 
     private final IWebLayer mImpl;
-    private final ProfileManager mProfileManager = new ProfileManager();
 
     /**
      * Loads the WebLayer implementation and returns the IWebLayer. This does *not* trigger the
@@ -177,27 +178,31 @@ public final class WebLayer {
         }
     }
 
-    @Override
-    protected void finalize() {
-        // TODO(sky): figure out right assertion here if mImpl is non-null.
-    }
-
-    public void destroy() {
-        ThreadCheck.ensureOnUiThread();
-        // TODO: implement me.
-        mProfileManager.destroy();
-    }
-
     private WebLayer(IWebLayer iWebLayer) {
         mImpl = iWebLayer;
     }
 
+    /**
+     * Get or create the profile for profilePath.
+     */
     @NonNull
-    public static Fragment createBrowserFragment(String profilePath) {
+    public Profile getProfile(@Nullable String profilePath) {
+        ThreadCheck.ensureOnUiThread();
+        IProfile iprofile;
+        try {
+            iprofile = mImpl.getProfile(sanitizeProfilePath(profilePath));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+        return Profile.of(iprofile);
+    }
+
+    @NonNull
+    public static Fragment createBrowserFragment(@Nullable String profilePath) {
         ThreadCheck.ensureOnUiThread();
         // TODO: use a profile id instead of the path to the actual file.
         Bundle args = new Bundle();
-        args.putString(BrowserFragmentArgs.PROFILE_PATH, profilePath == null ? "" : profilePath);
+        args.putString(BrowserFragmentArgs.PROFILE_PATH, sanitizeProfilePath(profilePath));
         BrowserFragment fragment = new BrowserFragment();
         fragment.setArguments(args);
         return fragment;
@@ -209,15 +214,11 @@ public final class WebLayer {
     /* package */ IBrowserFragment connectFragment(
             IRemoteFragmentClient remoteFragmentClient, Bundle fragmentArgs) {
         try {
-            return mImpl.createBrowserFragmentImpl(remoteFragmentClient,
-                    ObjectWrapper.wrap(fragmentArgs));
+            return mImpl.createBrowserFragmentImpl(
+                    remoteFragmentClient, ObjectWrapper.wrap(fragmentArgs));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
-    }
-
-    /* package */ ProfileManager getProfileManager() {
-        return mProfileManager;
     }
 
     /**
@@ -234,6 +235,13 @@ public final class WebLayer {
         } catch (NameNotFoundException e) {
             throw new AndroidRuntimeException(e);
         }
+    }
+
+    private static String sanitizeProfilePath(String profilePath) {
+        if ("".equals(profilePath)) {
+            throw new AndroidRuntimeException("Profile path cannot be empty");
+        }
+        return profilePath == null ? "" : profilePath;
     }
 
     private static String getImplPackageName(Context localContext)

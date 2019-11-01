@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"

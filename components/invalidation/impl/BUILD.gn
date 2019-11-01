@@ -80,6 +80,7 @@ static_library("impl") {
     "//google_apis",
     "//jingle:notifier",
     "//net:net",
+    "//services/data_decoder/public/cpp",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
 

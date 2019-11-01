@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
@@ -28,13 +29,14 @@ import java.util.Collections;
  * Light, and Dark.
  */
 public class RadioButtonGroupThemePreference
-        extends Preference implements RadioButtonWithDescription.OnCheckedChangeListener {
+        extends Preference implements RadioGroup.OnCheckedChangeListener {
     private @ThemeSetting int mSetting;
     private ArrayList<RadioButtonWithDescription> mButtons;
     private boolean mDarkenWebsitesEnabled;
     private CheckBox mCheckBox;
     private LinearLayout mLayoutContainer;
     private LinearLayout mCheckboxContainer;
+    private RadioGroup mRadioGroup;
 
     public RadioButtonGroupThemePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -61,6 +63,9 @@ public class RadioButtonGroupThemePreference
         mCheckBox = (CheckBox) holder.findViewById(R.id.darken_websites);
         mLayoutContainer = (LinearLayout) holder.itemView;
 
+        mRadioGroup = (RadioGroup) holder.findViewById(R.id.radio_button_layout);
+        mRadioGroup.setOnCheckedChangeListener(this);
+
         mCheckboxContainer.setOnClickListener(x -> {
             mCheckBox.setChecked(!mCheckBox.isChecked());
             callChangeListener(mSetting);
@@ -80,11 +85,6 @@ public class RadioButtonGroupThemePreference
                 ThemeSetting.LIGHT, (RadioButtonWithDescription) holder.findViewById(R.id.light));
         mButtons.set(
                 ThemeSetting.DARK, (RadioButtonWithDescription) holder.findViewById(R.id.dark));
-
-        for (int i = 0; i < ThemeSetting.NUM_ENTRIES; i++) {
-            mButtons.get(i).setRadioButtonGroup(mButtons);
-            mButtons.get(i).setOnCheckedChangeListener(this);
-        }
 
         mButtons.get(mSetting).setChecked(true);
         positionCheckbox();
@@ -107,7 +107,7 @@ public class RadioButtonGroupThemePreference
     }
 
     @Override
-    public void onCheckedChanged() {
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
         for (int i = 0; i < ThemeSetting.NUM_ENTRIES; i++) {
             if (mButtons.get(i).isChecked()) {
                 mSetting = i;

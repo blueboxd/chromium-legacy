@@ -207,34 +207,25 @@ if ('serviceWorker' in navigator) {
       <button type="button" class="text-button" id="type-none">Select none</button>
     </fieldset>
 
-    <fieldset id="highlight-container">
-      <legend class="subhead">Highlight symbols</legend>
+    <fieldset id="flag-container">
+      <legend class="subhead">Filter symbols</legend>
       <div class="radio-wrapper">
-        <input type="radio" id="clearhighlight" name="highlight" value="clear" checked>
-        <label class="radio-label" for="clearhighlight">None</label>
+        <input type="radio" id="clearflag" name="flag_filter" value="clear" checked>
+        <label class="radio-label" for="clearflag">All</label>
       </div>
       <div class="radio-wrapper">
-        <input type="radio" id="hothighlight" name="highlight" value="hot">
-        <label class="radio-label" for="hothighlight">Hot code</label>
+        <input type="radio" id="hotflag" name="flag_filter" value="hot">
+        <label class="radio-label" for="hotflag">Hot code</label>
       </div>
       <div class="radio-wrapper">
-        <input type="radio" id="generatedhighlight" name="highlight" value="generated">
-        <label class="radio-label" for="generatedhighlight">Generated files</label>
+        <input type="radio" id="generatedflag" name="flag_filter" value="generated">
+        <label class="radio-label" for="generatedflag">Generated files</label>
       </div>
       <div class="radio-wrapper">
-        <input type="radio" id="coveragehightlight" name="highlight" value="coverage">
-        <label class="radio-label" for="coveragehightlight">Code coverage (not implemented)</label>
-      </div>
-      <div class="radio-wrapper">
-        <input type="radio" id="uncompressedhighlight" name="highlight" value="uncompressed">
-        <label class="radio-label" for="uncompressedhighlight">Uncompressed .pak files</label>
+        <input type="radio" id="uncompressedflag" name="flag_filter" value="uncompressed">
+        <label class="radio-label" for="uncompressedflag">Uncompressed .pak files</label>
       </div>
     </fieldset>
-
-    <p class="checkbox-wrapper">
-      <input type="checkbox" id="generatedfilter" name="generated_filter" value="on">
-      <label class="checkbox-label" for="generatedfilter">Show only generated files</label>
-    </p>
   </form>
   <div class="symbols">
     <!-- Icons for symbols are stored here and cloned. -->

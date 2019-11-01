@@ -144,6 +144,7 @@ class MODULES_EXPORT RTCPeerConnection final
                              V8RTCPeerConnectionErrorCallback*,
                              const Dictionary&);
 
+  ScriptPromise setLocalDescription(ScriptState*);
   ScriptPromise setLocalDescription(ScriptState*,
                                     const RTCSessionDescriptionInit*);
   ScriptPromise setLocalDescription(

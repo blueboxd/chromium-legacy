@@ -60,14 +60,12 @@ bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
       chrome::mojom::ContentSettingsManager::StorageType::FILE_SYSTEM);
 }
 
-bool WorkerContentSettingsClient::AllowIndexedDB(
-    const blink::WebSecurityOrigin&) {
+bool WorkerContentSettingsClient::AllowIndexedDB() {
   return AllowStorageAccess(
       chrome::mojom::ContentSettingsManager::StorageType::INDEXED_DB);
 }
 
-bool WorkerContentSettingsClient::AllowCacheStorage(
-    const blink::WebSecurityOrigin&) {
+bool WorkerContentSettingsClient::AllowCacheStorage() {
   return AllowStorageAccess(
       chrome::mojom::ContentSettingsManager::StorageType::CACHE);
 }

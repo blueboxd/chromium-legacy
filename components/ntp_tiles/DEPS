@@ -17,7 +17,7 @@ include_rules = [
   "+components/variations",
   "+jni",
   "+net",
-  "+services/data_decoder/public/cpp/testing_json_parser.h",
+  "+services/data_decoder/public",
   "+services/network/public/cpp",
   "+services/network/test",
   "+ui/gfx",

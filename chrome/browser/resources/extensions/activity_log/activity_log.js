@@ -2,6 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import './activity_log_stream.js';
+import '../strings.m.js';
+import '../shared_style.js';
+import '../shared_vars.js';
+
+import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ItemBehavior} from '../item_behavior.js';
+import {navigation, Page} from '../navigation_helper.js';
+
+import {ActivityLogDelegate} from './activity_log_history.js';
+
 /**
  * Subpages/views for the activity log. HISTORY shows extension activities
  * fetched from the activity log database with some fields such as args
@@ -15,9 +37,6 @@ const ActivityLogSubpage = {
   STREAM: 1
 };
 
-cr.define('extensions', function() {
-  'use strict';
-
   /**
    * A struct used as a placeholder for chrome.developerPrivate.ExtensionInfo
    * for this component if the extensionId from the URL does not correspond to
@@ -27,26 +46,28 @@ cr.define('extensions', function() {
    *   isPlaceholder: boolean,
    * }}
    */
-  let ActivityLogExtensionPlaceholder;
+  export let ActivityLogExtensionPlaceholder;
 
-  const ActivityLog = Polymer({
+  Polymer({
     is: 'extensions-activity-log',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [
       CrContainerShadowBehavior,
       I18nBehavior,
-      extensions.ItemBehavior,
+      ItemBehavior,
     ],
 
     properties: {
       /**
        * The underlying ExtensionInfo for the details being displayed.
        * @type {!chrome.developerPrivate.ExtensionInfo|
-       *        !extensions.ActivityLogExtensionPlaceholder}
+       *        !ActivityLogExtensionPlaceholder}
        */
       extensionInfo: Object,
 
-      /** @type {!extensions.ActivityLogDelegate} */
+      /** @type {!ActivityLogDelegate} */
       delegate: Object,
 
       /** @private {!ActivityLogSubpage} */
@@ -78,8 +99,7 @@ cr.define('extensions', function() {
      */
     onViewEnterStart_: function() {
       this.selectedSubpage_ = ActivityLogSubpage.HISTORY;
-      Polymer.RenderStatus.afterNextRender(
-          this, () => cr.ui.focusWithoutInk(this.$.closeButton));
+      afterNextRender(this, () => focusWithoutInk(this.$.closeButton));
     },
 
     /**
@@ -147,18 +167,10 @@ cr.define('extensions', function() {
     /** @private */
     onCloseButtonTap_: function() {
       if (this.extensionInfo.isPlaceholder) {
-        extensions.navigation.navigateTo({page: extensions.Page.LIST});
+        navigation.navigateTo({page: Page.LIST});
       } else {
-        extensions.navigation.navigateTo({
-          page: extensions.Page.DETAILS,
-          extensionId: this.extensionInfo.id
-        });
+        navigation.navigateTo(
+            {page: Page.DETAILS, extensionId: this.extensionInfo.id});
       }
     },
   });
-
-  return {
-    ActivityLog: ActivityLog,
-    ActivityLogExtensionPlaceholder: ActivityLogExtensionPlaceholder,
-  };
-});

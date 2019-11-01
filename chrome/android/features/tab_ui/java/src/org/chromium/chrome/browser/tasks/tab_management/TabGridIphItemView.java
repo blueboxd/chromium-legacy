@@ -30,6 +30,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.widget.ChromeImageView;
@@ -254,5 +255,10 @@ public class TabGridIphItemView extends FrameLayout {
      */
     public void destroy() {
         mContext.unregisterComponentCallbacks(mComponentCallbacks);
+    }
+
+    @VisibleForTesting
+    PopupWindow getIphWindowForTesting() {
+        return mIphWindow;
     }
 }

@@ -146,6 +146,11 @@ bool UnifiedHeapController::IsTracingDone() {
 
 bool UnifiedHeapController::IsRootForNonTracingGC(
     const v8::TracedReference<v8::Value>& handle) {
+  if (!IsTracingDone()) {
+    // We have a non-tracing GC while unified GC is in progress. Treat all
+    // objects as roots to avoid stale pointers in the marking worklists.
+    return true;
+  }
   const uint16_t class_id = handle.WrapperClassId();
   // Stand-alone reference or kCustomWrappableId. Keep as root as
   // we don't know better.

@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.LocationSettings;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -186,7 +187,8 @@ public class SiteSettingsPreferencesTest {
             websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
             Assert.assertEquals(
                     "Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
-                    PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled(), enabled);
+                    PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES),
+                    enabled);
         });
     }
 

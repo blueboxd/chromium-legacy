@@ -59,13 +59,11 @@ class ASH_EXPORT CrosDisplayConfig : public mojom::CrosDisplayConfigController {
   }
 
  private:
-  class DisplayObserver;
-  void NotifyObserversDisplayConfigChanged();
+  class ObserverImpl;
   OverscanCalibrator* GetOverscanCalibrator(const std::string& id);
 
-  std::unique_ptr<DisplayObserver> display_observer_;
+  std::unique_ptr<ObserverImpl> observer_impl_;
   mojo::ReceiverSet<mojom::CrosDisplayConfigController> receivers_;
-  mojo::AssociatedRemoteSet<mojom::CrosDisplayConfigObserver> observers_;
   std::map<std::string, std::unique_ptr<OverscanCalibrator>>
       overscan_calibrators_;
   std::unique_ptr<TouchCalibratorController> touch_calibrator_;

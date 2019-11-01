@@ -1160,7 +1160,8 @@ class ExtensionUpdaterTest : public testing::Test {
       EXPECT_CALL(
           delegate,
           OnExtensionDownloadFailed(
-              "1111", ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED, _, _))
+              "1111", ExtensionDownloaderDelegate::Error::MANIFEST_FETCH_FAILED,
+              _, _))
           .WillOnce(InvokeWithoutArgs(&delegate,
                                       &MockExtensionDownloaderDelegate::Quit));
       delegate.Wait();
@@ -1178,7 +1179,8 @@ class ExtensionUpdaterTest : public testing::Test {
       EXPECT_CALL(
           delegate,
           OnExtensionDownloadFailed(
-              "2222", ExtensionDownloaderDelegate::MANIFEST_INVALID, _, _))
+              "2222", ExtensionDownloaderDelegate::Error::MANIFEST_INVALID, _,
+              _))
           .WillOnce(InvokeWithoutArgs(&delegate,
                                       &MockExtensionDownloaderDelegate::Quit));
       delegate.Wait();
@@ -1208,7 +1210,8 @@ class ExtensionUpdaterTest : public testing::Test {
       EXPECT_CALL(
           delegate,
           OnExtensionDownloadFailed(
-              "3333", ExtensionDownloaderDelegate::NO_UPDATE_AVAILABLE, _, _))
+              "3333", ExtensionDownloaderDelegate::Error::NO_UPDATE_AVAILABLE,
+              _, _))
           .WillOnce(InvokeWithoutArgs(&delegate,
                                       &MockExtensionDownloaderDelegate::Quit));
       delegate.Wait();
@@ -1268,8 +1271,11 @@ class ExtensionUpdaterTest : public testing::Test {
     RunUntilIdle();
 
     // ExtensionDownloader should retry kMaxRetries times and then fail.
-    EXPECT_CALL(delegate, OnExtensionDownloadFailed(
-        "1111", ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED, _, _));
+    EXPECT_CALL(
+        delegate,
+        OnExtensionDownloadFailed(
+            "1111", ExtensionDownloaderDelegate::Error::MANIFEST_FETCH_FAILED,
+            _, _));
     helper.test_url_loader_factory().SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
           EXPECT_TRUE(request.load_flags == kExpectedLoadFlags);
@@ -1298,8 +1304,11 @@ class ExtensionUpdaterTest : public testing::Test {
     helper.downloader().StartUpdateCheck(std::move(fetch));
     RunUntilIdle();
 
-    EXPECT_CALL(delegate, OnExtensionDownloadFailed(
-        "1111", ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED, _, _));
+    EXPECT_CALL(
+        delegate,
+        OnExtensionDownloadFailed(
+            "1111", ExtensionDownloaderDelegate::Error::MANIFEST_FETCH_FAILED,
+            _, _));
 
     // The first fetch will fail, and require retrying.
     {

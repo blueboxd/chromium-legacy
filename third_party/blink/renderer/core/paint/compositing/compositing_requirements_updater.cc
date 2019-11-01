@@ -297,7 +297,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
 
   if (layer->GetScrollableArea() &&
       layer->GetScrollableArea()->NeedsCompositedScrolling())
-    direct_reasons |= CompositingReason::kOverflowScrollingTouch;
+    direct_reasons |= CompositingReason::kOverflowScrolling;
 
   bool can_be_composited = compositor->CanBeComposited(layer);
   if (can_be_composited)

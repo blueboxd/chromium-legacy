@@ -212,42 +212,42 @@
   },
   {
     "prefix": "dark-mode-grayscale-images",
-    "bases": ["paint/dark-mode/grayscale-images"],
+    "bases": [],
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=0,darkModeImageStyle=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode-image-filter-all",
-    "bases": ["paint/dark-mode/image-filter-all"],
+    "bases": [],
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=0,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode-image-filter-none",
-    "bases": ["paint/dark-mode/image-filter-none"],
+    "bases": [],
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode-native-theme-off",
-    "bases": ["paint/dark-mode/native-theme-off"],
+    "bases": [],
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode-native-theme-on",
-    "bases": ["paint/dark-mode/native-theme-on"],
+    "bases": [],
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode-page-policy-all",
-    "bases": ["paint/dark-mode/page-policy-all"],
+    "bases": [],
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModePagePolicy=0,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode-page-policy-background",
-    "bases": ["paint/dark-mode/page-policy-background"],
+    "bases": [],
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModePagePolicy=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
     "prefix": "dark-mode-svg-invert-all",
-    "bases": ["paint/dark-mode/svg-invert-all"],
+    "bases": [],
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=0,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
@@ -509,12 +509,12 @@
   },
   {
     "prefix": "controls-refresh",
-    "bases": ["fast/forms/controls-new-ui"],
+    "bases": [],
     "args": ["--enable-features=FormControlsRefresh"]
   },
   {
-    "prefix": "controls-refresh-high-contrast",
-    "bases": ["fast/forms/controls-new-ui/color-scheme-validation"],
+    "prefix": "controls-refresh-hc",
+    "bases": ["virtual/controls-refresh/color-scheme"],
     "args": ["--enable-features=FormControlsRefresh",
              "--force-high-contrast",
              "--enable-blink-features=ForcedColors"]

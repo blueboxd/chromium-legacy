@@ -76,6 +76,7 @@ message ChromeUserMetricsExtension {
   repeated UserActionEventProto user_action_event = 4;
   repeated OmniboxEventProto omnibox_event = 5;
   repeated HistogramEventProto histogram_event = 6;
+
   repeated TranslateEventProto translate_event = 15;
   repeated PrinterEventProto printer_event = 16;
   repeated ChromeOSAppListLaunchEventProto chrome_os_app_list_launch_event = 20;

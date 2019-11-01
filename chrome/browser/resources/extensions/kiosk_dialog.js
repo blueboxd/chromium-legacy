@@ -2,12 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
-  const KioskDialog = Polymer({
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ItemBehavior} from './item_behavior.js';
+import {KioskApp, KioskAppSettings, KioskBrowserProxy, KioskBrowserProxyImpl} from './kiosk_browser_proxy.js';
+
+
+  Polymer({
     is: 'extensions-kiosk-dialog',
-    behaviors: [WebUIListenerBehavior, extensions.ItemBehavior],
+
+    _template: html`{__html_template__}`,
+
+    behaviors: [WebUIListenerBehavior, ItemBehavior],
+
     properties: {
       /** @private {?string} */
       addAppInput_: {
@@ -31,12 +48,12 @@ cr.define('extensions', function() {
       errorAppId_: String,
     },
 
-    /** @private {?extensions.KioskBrowserProxy} */
+    /** @private {?KioskBrowserProxy} */
     kioskBrowserProxy_: null,
 
     /** @override */
     ready: function() {
-      this.kioskBrowserProxy_ = extensions.KioskBrowserProxyImpl.getInstance();
+      this.kioskBrowserProxy_ = KioskBrowserProxyImpl.getInstance();
     },
 
     /** @override */
@@ -177,8 +194,3 @@ cr.define('extensions', function() {
       e.stopPropagation();
     },
   });
-
-  return {
-    KioskDialog: KioskDialog,
-  };
-});

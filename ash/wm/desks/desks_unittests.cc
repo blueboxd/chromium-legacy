@@ -2106,7 +2106,7 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   // Validate that before dropping, the SplitView indicators and the drop target
   // widget are created.
   EXPECT_TRUE(overview_grid->drop_target_widget());
-  EXPECT_EQ(IndicatorState::kDragArea,
+  EXPECT_EQ(IndicatorState::kDragAreaBoth,
             overview_session->split_view_drag_indicators()
                 ->current_indicator_state());
   // Now drop the window, and validate the indicators and the drop target were

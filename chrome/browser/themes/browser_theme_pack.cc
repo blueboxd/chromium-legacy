@@ -1017,7 +1017,7 @@ void BrowserThemePack::AdjustThemePack() {
   CropImages(&images_);
 
   // Set toolbar related elements' colors (e.g. status bubble, info bar,
-  // download shelf, detached bookmark bar) to toolbar color.
+  // download shelf) to toolbar color.
   SetToolbarRelatedColors();
 
   // Create toolbar image, and generate toolbar color from image where relevant.

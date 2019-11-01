@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import {DragWrapperDelegate} from 'chrome://resources/js/cr/ui/drag_wrapper.m.js';
 
-  /** @implements cr.ui.DragWrapperDelegate */
-  class DragAndDropHandler {
+import {Service} from './service.js';
+
+
+  /** @implements DragWrapperDelegate */
+  export class DragAndDropHandler {
     /**
      * @param {boolean} dragEnabled
      * @param {!EventTarget} target
@@ -36,7 +38,7 @@ cr.define('extensions', function() {
 
     /** @override */
     doDragEnter() {
-      extensions.Service.getInstance().notifyDragInstallInProgress();
+      Service.getInstance().notifyDragInstallInProgress();
       this.eventTarget_.dispatchEvent(
           new CustomEvent('extension-drag-started'));
     }
@@ -83,7 +85,7 @@ cr.define('extensions', function() {
      * @private
      */
     handleFileDrop_() {
-      extensions.Service.getInstance().installDroppedFile();
+      Service.getInstance().installDroppedFile();
     }
 
     /**
@@ -91,11 +93,10 @@ cr.define('extensions', function() {
      * @private
      */
     handleDirectoryDrop_() {
-      extensions.Service.getInstance().loadUnpackedFromDrag().catch(
-          loadError => {
-            this.eventTarget_.dispatchEvent(new CustomEvent(
-                'drag-and-drop-load-error', {detail: loadError}));
-          });
+      Service.getInstance().loadUnpackedFromDrag().catch(loadError => {
+        this.eventTarget_.dispatchEvent(new CustomEvent(
+            'drag-and-drop-load-error', {detail: loadError}));
+      });
     }
 
     /** @private */
@@ -103,8 +104,3 @@ cr.define('extensions', function() {
       this.eventTarget_.dispatchEvent(new CustomEvent('extension-drag-ended'));
     }
   }
-
-  return {
-    DragAndDropHandler: DragAndDropHandler,
-  };
-});

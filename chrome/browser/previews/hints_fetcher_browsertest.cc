@@ -213,7 +213,7 @@ class HintsFetcherDisabledBrowserTest
     // Set up OptimizationGuideServiceURL, this does not enable HintsFetching,
     // only provides the URL.
     cmd->AppendSwitchASCII(
-        optimization_guide::switches::kOptimizationGuideServiceURL,
+        optimization_guide::switches::kOptimizationGuideServiceGetHintsURL,
         hints_server_->base_url().spec());
     cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
                            "example1.com, example2.com");
@@ -1279,7 +1279,7 @@ class HintsFetcherChangeDefaultBlacklistSizeBrowserTest
     // Set up OptimizationGuideServiceURL, this does not enable HintsFetching,
     // only provides the URL.
     cmd->AppendSwitchASCII(
-        optimization_guide::switches::kOptimizationGuideServiceURL,
+        optimization_guide::switches::kOptimizationGuideServiceGetHintsURL,
         hints_server_->base_url().spec());
 
     cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);

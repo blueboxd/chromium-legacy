@@ -140,14 +140,17 @@ void OptimizationGuideKeyedService::Initialize(
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   top_host_provider_ = GetTopHostProviderIfUserPermitted(browser_context_);
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess();
   hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
       optimization_guide_service, profile, profile_path, profile->GetPrefs(),
-      database_provider, top_host_provider_.get(),
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess());
-  if (optimization_guide::features::IsOptimizationTargetPredictionEnabled()) {
+      database_provider, top_host_provider_.get(), url_loader_factory);
+  if (optimization_guide::features::IsOptimizationTargetPredictionEnabled() &&
+      optimization_guide::features::IsHintsFetchingEnabled()) {
     prediction_manager_ =
-        std::make_unique<optimization_guide::PredictionManager>();
+        std::make_unique<optimization_guide::PredictionManager>(
+            top_host_provider_.get(), url_loader_factory);
   }
 }
 

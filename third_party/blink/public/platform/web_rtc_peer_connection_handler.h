@@ -98,6 +98,7 @@ class WebRTCPeerConnectionHandler {
                             const WebMediaConstraints&) = 0;
   virtual void CreateAnswer(const WebRTCSessionDescriptionRequest&,
                             const WebRTCAnswerOptions&) = 0;
+  virtual void SetLocalDescription(const WebRTCVoidRequest&) = 0;
   virtual void SetLocalDescription(const WebRTCVoidRequest&,
                                    const WebRTCSessionDescription&) = 0;
   virtual void SetRemoteDescription(const WebRTCVoidRequest&,

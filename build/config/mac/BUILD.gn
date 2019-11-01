@@ -40,15 +40,6 @@ config("compiler") {
 
   ldflags = common_mac_flags
 
-  # Create a new read-only segment for protected memory. The default segments
-  # (__TEXT and __DATA) are mapped read-execute and read-write by default.
-  ldflags += [
-    "-segprot",
-    "PROTECTED_MEMORY",
-    "rw",
-    "r",
-  ]
-
   if (save_unstripped_output) {
     ldflags += [ "-Wcrl,unstripped," + rebase_path(root_out_dir) ]
   }

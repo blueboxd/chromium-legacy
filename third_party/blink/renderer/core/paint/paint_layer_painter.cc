@@ -260,8 +260,14 @@ void PaintLayerPainter::AdjustForPaintProperties(
         // Convert old_cull_rect into the layer's transform space.
         old_cull_rect->MoveBy(RoundedIntPoint(first_fragment.PaintOffset()));
       }
+
+      // Don't clip to the view scrolling container when printing because we
+      // need to print the whole document.
+      bool clip_to_scroll_container =
+          !(context.Printing() &&
+            (paint_flags & kPaintLayerPaintingOverflowContents));
       cull_rect.ApplyTransforms(*source_transform, destination_transform,
-                                old_cull_rect);
+                                old_cull_rect, clip_to_scroll_container);
       // Convert cull_rect from the layer's transform space to the layer's local
       // space.
       cull_rect.MoveBy(-RoundedIntPoint(first_fragment.PaintOffset()));

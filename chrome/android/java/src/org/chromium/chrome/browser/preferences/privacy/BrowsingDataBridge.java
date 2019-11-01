@@ -182,6 +182,72 @@ public final class BrowsingDataBridge {
         return Profile.getLastUsedProfile().getOriginalProfile();
     }
 
+    /**
+     * Checks the state of deletion preference for a certain browsing data type.
+     * @param dataType The requested browsing data type (from the shared enum
+     *      {@link org.chromium.chrome.browser.browsing_data.BrowsingDataType}).
+     * @param clearBrowsingDataTab Indicates if this is a checkbox on the default, basic or advanced
+     *      tab to apply the right preference.
+     * @return The state of the corresponding deletion preference.
+     */
+    public boolean getBrowsingDataDeletionPreference(int dataType, int clearBrowsingDataTab) {
+        return BrowsingDataBridgeJni.get().getBrowsingDataDeletionPreference(
+                BrowsingDataBridge.this, dataType, clearBrowsingDataTab);
+    }
+
+    /**
+     * Sets the state of deletion preference for a certain browsing data type.
+     * @param dataType The requested browsing data type (from the shared enum
+     *      {@link org.chromium.chrome.browser.browsing_data.BrowsingDataType}).
+     * @param clearBrowsingDataTab Indicates if this is a checkbox on the default, basic or advanced
+     *      tab to apply the right preference.
+     * @param value The state to be set.
+     */
+    public void setBrowsingDataDeletionPreference(
+            int dataType, int clearBrowsingDataTab, boolean value) {
+        BrowsingDataBridgeJni.get().setBrowsingDataDeletionPreference(
+                BrowsingDataBridge.this, dataType, clearBrowsingDataTab, value);
+    }
+
+    /**
+     * Gets the time period for which browsing data will be deleted.
+     * @param clearBrowsingDataTab Indicates if this is a timeperiod on the default, basic or
+     *      advanced tab to apply the right preference.
+     * @return The currently selected browsing data deletion time period.
+     */
+    public @TimePeriod int getBrowsingDataDeletionTimePeriod(int clearBrowsingDataTab) {
+        return BrowsingDataBridgeJni.get().getBrowsingDataDeletionTimePeriod(
+                BrowsingDataBridge.this, clearBrowsingDataTab);
+    }
+
+    /**
+     * Sets the time period for which browsing data will be deleted.
+     * @param clearBrowsingDataTab Indicates if this is a timeperiod on the default, basic or
+     *      advanced tab to apply the right preference.
+     * @param timePeriod The selected browsing data deletion time period.
+     */
+    public void setBrowsingDataDeletionTimePeriod(
+            int clearBrowsingDataTab, @TimePeriod int timePeriod) {
+        BrowsingDataBridgeJni.get().setBrowsingDataDeletionTimePeriod(
+                BrowsingDataBridge.this, clearBrowsingDataTab, timePeriod);
+    }
+
+    /**
+     * @return The index of the tab last visited by the user in the CBD dialog.
+     *         Index 0 is for the basic tab, 1 is the advanced tab.
+     */
+    public int getLastSelectedClearBrowsingDataTab() {
+        return BrowsingDataBridgeJni.get().getLastClearBrowsingDataTab(BrowsingDataBridge.this);
+    }
+
+    /**
+     * Set the index of the tab last visited by the user.
+     * @param tabIndex The last visited tab index, 0 for basic, 1 for advanced.
+     */
+    public void setLastSelectedClearBrowsingDataTab(int tabIndex) {
+        BrowsingDataBridgeJni.get().setLastClearBrowsingDataTab(BrowsingDataBridge.this, tabIndex);
+    }
+
     @NativeMethods
     interface Natives {
         void clearBrowsingData(BrowsingDataBridge caller, Profile profile, int[] dataTypes,
@@ -192,5 +258,14 @@ public final class BrowsingDataBridge {
         void fetchImportantSites(Profile profile, ImportantSitesCallback callback);
         int getMaxImportantSites();
         void markOriginAsImportantForTesting(Profile profile, String origin);
+        boolean getBrowsingDataDeletionPreference(
+                BrowsingDataBridge caller, int dataType, int clearBrowsingDataTab);
+        void setBrowsingDataDeletionPreference(
+                BrowsingDataBridge caller, int dataType, int clearBrowsingDataTab, boolean value);
+        int getBrowsingDataDeletionTimePeriod(BrowsingDataBridge caller, int clearBrowsingDataTab);
+        void setBrowsingDataDeletionTimePeriod(
+                BrowsingDataBridge caller, int clearBrowsingDataTab, int timePeriod);
+        int getLastClearBrowsingDataTab(BrowsingDataBridge caller);
+        void setLastClearBrowsingDataTab(BrowsingDataBridge caller, int lastTab);
     }
 }

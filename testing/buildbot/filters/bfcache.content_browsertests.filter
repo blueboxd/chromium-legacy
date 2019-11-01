@@ -20,8 +20,6 @@
 # Test expects the RenderFrameHost to be deleted after a navigation. It is now
 # stored into the BackForwardCache instead. It isn't deleted.
 -RenderFrameHostManagerTest.CleanupOnCrossProcessNavigation
--SitePerProcessBrowserTest.PendingDeletionCheckCompletedOnSubtree
--SitePerProcessBrowserTest.SlowUnloadHandlerInIframe
 -WebContentsBindingSetBrowserTest.CloseOnFrameDeletion
 
 # Wait for the old process to exit. It won't, because it is still used by a
@@ -32,7 +30,6 @@
 -RenderFrameHostManagerTest.NavigateWithUnassignedSiteInstance
 -RenderFrameHostManagerTest.RestoreFileAccessForHistoryNavigation
 -RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
--RenderFrameHostManagerTest.UnloadPushStateOnCrossProcessNavigation
 -RenderProcessHostTest.KeepAliveRendererProcess
 -SitePerProcessBrowserTest.SubframePendingAndBackToSameSiteInstance
 -SitePerProcessBrowserTest.SwapOutACKArrivesPriorToProcessShutdownRequest

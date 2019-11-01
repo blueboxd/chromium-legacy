@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
@@ -190,6 +191,19 @@ void BrowserControllerImpl::ExecuteScript(
 }
 
 #endif
+
+content::WebContents* BrowserControllerImpl::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  if (params.disposition != WindowOpenDisposition::CURRENT_TAB) {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  source->GetController().LoadURLWithParams(
+      content::NavigationController::LoadURLParams(params));
+  return source;
+}
 
 void BrowserControllerImpl::DidNavigateMainFramePostCommit(
     content::WebContents* web_contents) {

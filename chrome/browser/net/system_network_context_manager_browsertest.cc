@@ -69,7 +69,11 @@ void RunStubResolverConfigTests(bool async_dns_feature_enabled) {
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
                         &dns_over_https_servers);
   EXPECT_EQ(async_dns_feature_enabled, insecure_stub_resolver_enabled);
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
+  if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
+    EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_mode);
+  } else {
+    EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_mode);
+  }
   EXPECT_FALSE(dns_over_https_servers.has_value());
 
   std::string good_post_template = "https://foo.test/";

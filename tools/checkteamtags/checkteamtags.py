@@ -147,8 +147,8 @@ def validate_mappings(options, args):
   warnings = ''
   for component, teams in affected_component_to_teams.iteritems():
     if len(teams) > 1:
-      warnings += '\nComponent %s will map to %s' % (
-          component, ', '.join(teams))
+      warnings += ('\nThe set of all OWNERS files with COMPONENT: %s list '
+                   "multiple TEAM's: %s") % (component, ', '.join(teams))
   if warnings:
     warnings = ('Are you sure these are correct? After landing this patch:%s'
                 % warnings)

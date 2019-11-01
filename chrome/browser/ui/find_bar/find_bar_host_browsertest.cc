@@ -90,7 +90,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
  protected:
   bool GetFindBarWindowInfoForBrowser(
       Browser* browser, gfx::Point* position, bool* fully_visible) {
-    FindBarTesting* find_bar =
+    const FindBarTesting* find_bar =
         browser->GetFindBarController()->find_bar()->GetFindBarTesting();
     return find_bar->GetFindBarWindowInfo(position, fully_visible);
   }
@@ -109,7 +109,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
   base::string16 GetFindBarMatchCountTextForBrowser(Browser* browser) {
-    FindBarTesting* find_bar =
+    const FindBarTesting* find_bar =
         browser->GetFindBarController()->find_bar()->GetFindBarTesting();
     return find_bar->GetMatchCountText();
   }
@@ -119,13 +119,13 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
   int GetFindBarWidthForBrowser(Browser* browser) {
-    FindBarTesting* find_bar =
+    const FindBarTesting* find_bar =
         browser->GetFindBarController()->find_bar()->GetFindBarTesting();
-    return find_bar->GetWidth();
+    return find_bar->GetContentsWidth();
   }
 
   size_t GetFindBarAudibleAlertsForBrowser(Browser* browser) {
-    FindBarTesting* find_bar =
+    const FindBarTesting* find_bar =
         browser->GetFindBarController()->find_bar()->GetFindBarTesting();
     return find_bar->GetAudibleAlertCount();
   }

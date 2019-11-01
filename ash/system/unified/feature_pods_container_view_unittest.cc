@@ -28,7 +28,7 @@ class FeaturePodsContainerViewTest : public NoSessionAshTestBase,
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    model_ = std::make_unique<UnifiedSystemTrayModel>();
+    model_ = std::make_unique<UnifiedSystemTrayModel>(nullptr);
     controller_ = std::make_unique<UnifiedSystemTrayController>(model_.get());
     container_ = std::make_unique<FeaturePodsContainerView>(
         controller_.get(), true /* initially_expanded */);

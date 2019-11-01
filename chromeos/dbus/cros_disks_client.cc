@@ -40,7 +40,6 @@ constexpr char kReadOnlyOption[] = "ro";
 constexpr char kReadWriteOption[] = "rw";
 constexpr char kRemountOption[] = "remount";
 constexpr char kMountLabelOption[] = "mountlabel";
-constexpr char kLazyUnmountOption[] = "lazy";
 
 // Checks if retrieved media type is in boundaries of DeviceMediaType.
 bool IsValidMediaType(uint32_t type) {
@@ -178,7 +177,6 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   void Unmount(const std::string& device_path,
-               UnmountOptions options,
                UnmountCallback callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kUnmount);
@@ -186,9 +184,6 @@ class CrosDisksClientImpl : public CrosDisksClient {
     writer.AppendString(device_path);
 
     std::vector<std::string> unmount_options;
-    if (options == UNMOUNT_OPTIONS_LAZY)
-      unmount_options.push_back(kLazyUnmountOption);
-
     writer.AppendArrayOfStrings(unmount_options);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::BindOnce(&CrosDisksClientImpl::OnUnmount,

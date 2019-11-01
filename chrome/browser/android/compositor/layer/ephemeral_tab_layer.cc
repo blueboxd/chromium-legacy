@@ -106,13 +106,12 @@ void EphemeralTabLayer::SetProperties(
   float bar_bottom = bar_top + bar_height;
 
   float title_opacity = 0.f;
-  int no_text_bounds_adjust = 0;
   OverlayPanelLayer::SetProperties(
       dp_to_px, content_layer, bar_height, panel_x, panel_y, panel_width,
       panel_height, bar_background_color, bar_margin_side, bar_margin_top,
-      bar_height, 0.0f, title_opacity, no_text_bounds_adjust,
-      bar_border_visible, bar_border_height, bar_shadow_visible, icon_color,
-      drag_handlebar_color, 1.0f /* icon opacity */, separator_line_color);
+      bar_height, 0.0f, title_opacity, bar_border_visible, bar_border_height,
+      bar_shadow_visible, icon_color, drag_handlebar_color,
+      1.0f /* icon opacity */, separator_line_color);
 
   // Content setup, to center in space below drag handle (when present).
   int content_top = bar_top;

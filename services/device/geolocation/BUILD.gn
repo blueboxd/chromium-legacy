@@ -124,8 +124,8 @@ source_set("geolocation") {
 
   if (is_win) {
     sources += [
-      "location_provider_winrt.cc",
-      "location_provider_winrt.h",
+      "win/location_provider_winrt.cc",
+      "win/location_provider_winrt.h",
     ]
 
     deps += [ "//services/device/public/cpp:device_features" ]

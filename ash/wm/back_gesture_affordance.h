@@ -25,10 +25,9 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
   ~BackGestureAffordance() override;
 
   // Sets the x-axis and y-axis drag progress. 0 means no progress and 1 means
-  // full progress. Drag will be completed with full x-axis progress. For x-axis
-  // progress, values more than 1 are also allowed for achieving burst ripple.
-  // Y-axis progress is used to control the y-axis movement distance of the
-  // affordance.
+  // full progress. For x-axis progress, values more than 1 are also allowed for
+  // resistance animation. Y-axis progress is used to control the y-axis
+  // movement distance of the affordance.
   void SetDragProgress(int x_drag_amount, int y_drag_amount);
 
   // Aborts the affordance and animates it back.
@@ -36,6 +35,10 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
 
   // Completes the affordance and fading it out.
   void Complete();
+
+  // Return true if the affordance is activated, which means the drag can be
+  // completed to trigger go back.
+  bool IsActivated() const;
 
   gfx::Rect affordance_widget_bounds_for_testing() {
     return affordance_widget_->GetWindowBoundsInScreen();
@@ -48,6 +51,11 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
   void SchedulePaint();
   void SetAbortProgress(float progress);
   void SetCompleteProgress(float progress);
+
+  // Helper function that returns the affordance progress according to the
+  // current values of different progress values (drag progress and abort
+  // progress). 1 means the affordance is at the activated state.
+  float GetAffordanceProgress() const;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

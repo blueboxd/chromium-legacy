@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
 #include "base/win/wmi.h"
+#include "build/branding_buildflags.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
@@ -36,7 +37,7 @@ constexpr wchar_t kRegMdmEscrowServiceServerUrl[] = L"mdm_ess_url";
 constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
 constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";
 constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     L"Chrome-GCPW-";
 #else
     L"Chromium-GCPW-";
@@ -63,7 +64,7 @@ EnrolledStatus g_enrolled_status = EnrolledStatus::kDontForce;
 bool g_use_test_serial_number = false;
 base::string16 g_test_serial_number = L"";
 
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 enum class EscrowServiceStatus {
   kDisabled,
   kEnabled,
@@ -362,7 +363,7 @@ GURL MdmEscrowServiceUrl() {
 }
 
 bool MdmPasswordRecoveryEnabled() {
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (g_escrow_service_enabled == EscrowServiceStatus::kDisabled)
     return false;
 #endif
@@ -445,17 +446,18 @@ GoogleSerialNumberForTesting::~GoogleSerialNumberForTesting() {
 
 // GoogleSerialNumberForTesting //////////////////////////////////////////
 
-#if !defined(GOOGLE_CHROME_BUILD)
 GoogleMdmEscrowServiceEnablerForTesting::
-    GoogleMdmEscrowServiceEnablerForTesting(bool enable) {
-  g_escrow_service_enabled =
-      enable ? EscrowServiceStatus::kEnabled : EscrowServiceStatus::kDisabled;
+    GoogleMdmEscrowServiceEnablerForTesting() {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  g_escrow_service_enabled = EscrowServiceStatus::kEnabled;
+#endif
 }
 
 GoogleMdmEscrowServiceEnablerForTesting::
     ~GoogleMdmEscrowServiceEnablerForTesting() {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   g_escrow_service_enabled = EscrowServiceStatus::kDisabled;
-}
 #endif
+}
 
 }  // namespace credential_provider

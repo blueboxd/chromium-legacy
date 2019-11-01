@@ -45,10 +45,6 @@ namespace {
 // window from the top of the screen in tablet mode.
 constexpr int kDragStartTopEdgeInset = 8;
 
-// How many dips are reserved for gesture events to start swiping to previous
-// page from the left edge of the screen in tablet mode.
-constexpr int kStartGoingBackLeftEdgeInset = 16;
-
 // Returns whether |window| can be moved via a two finger drag given
 // the hittest results of the two fingers.
 bool CanStartTwoFingerMove(aura::Window* window,
@@ -122,14 +118,6 @@ bool CanStartGoingBack(aura::Window* target) {
     return false;
   }
 
-  // Do not enable back gesture while overview mode is active but splitview is
-  // not active.
-  if (shell->overview_controller()->InOverviewSession() &&
-      !SplitViewController::Get(Shell::GetPrimaryRootWindow())
-           ->InSplitViewMode()) {
-    return false;
-  }
-
   // Do not enable back gesture if home screen is visible but not in
   // |kFullscreenSearch| state.
   if (shell->home_screen_controller()->IsHomeScreenVisible() &&
@@ -167,7 +155,8 @@ bool StartedAwayFromLeftArea(ui::GestureEvent* event) {
           .work_area();
 
   gfx::Rect hit_bounds_in_screen(work_area_bounds);
-  hit_bounds_in_screen.set_width(kStartGoingBackLeftEdgeInset);
+  hit_bounds_in_screen.set_width(
+      ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset);
   return hit_bounds_in_screen.Contains(location_in_screen);
 }
 
@@ -932,8 +921,7 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
       if (!going_back_started_)
         break;
       DCHECK(back_gesture_affordance_);
-      if ((event->type() == ui::ET_GESTURE_SCROLL_END &&
-           x_drag_amount_ >= kSwipingDistanceForGoingBack) ||
+      if (back_gesture_affordance_->IsActivated() ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
         aura::Window* root_window =

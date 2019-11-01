@@ -123,14 +123,12 @@ class DiskMountManagerImpl : public DiskMountManager,
 
   // DiskMountManager override.
   void UnmountPath(const std::string& mount_path,
-                   UnmountOptions options,
                    UnmountPathCallback callback) override {
     UnmountChildMounts(mount_path);
     cros_disks_client_->Unmount(
-        mount_path, options,
-        base::BindOnce(&DiskMountManagerImpl::OnUnmountPath,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       mount_path));
+        mount_path, base::BindOnce(&DiskMountManagerImpl::OnUnmountPath,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(callback), mount_path));
   }
 
   void RemountAllRemovableDrives(MountAccessMode mode) override {
@@ -179,7 +177,7 @@ class DiskMountManagerImpl : public DiskMountManager,
       return;
     }
 
-    UnmountPath(disk->second->mount_path(), UNMOUNT_OPTIONS_NONE,
+    UnmountPath(disk->second->mount_path(),
                 base::BindOnce(&DiskMountManagerImpl::OnUnmountPathForFormat,
                                weak_ptr_factory_.GetWeakPtr(), device_path,
                                filesystem, label));
@@ -208,7 +206,7 @@ class DiskMountManagerImpl : public DiskMountManager,
       return;
     }
 
-    UnmountPath(iter->second->mount_path(), UNMOUNT_OPTIONS_NONE,
+    UnmountPath(iter->second->mount_path(),
                 base::BindOnce(&DiskMountManagerImpl::OnUnmountPathForRename,
                                weak_ptr_factory_.GetWeakPtr(), device_path,
                                volume_name));
@@ -254,7 +252,7 @@ class DiskMountManagerImpl : public DiskMountManager,
 
     for (size_t i = 0; i < devices_to_unmount.size(); ++i) {
       cros_disks_client_->Unmount(
-          devices_to_unmount[i], UNMOUNT_OPTIONS_NONE,
+          devices_to_unmount[i],
           base::BindOnce(&DiskMountManagerImpl::OnUnmountDeviceRecursively,
                          weak_ptr_factory_.GetWeakPtr(), raw_cb_data,
                          devices_to_unmount[i], done_callback));
@@ -394,9 +392,7 @@ class DiskMountManagerImpl : public DiskMountManager,
       if (base::StartsWith(it->second.source_path, mount_path,
                            base::CompareCase::SENSITIVE)) {
         // TODO(tbarzic): Handle the case where this fails.
-        UnmountPath(it->second.mount_path,
-                    UNMOUNT_OPTIONS_NONE,
-                    UnmountPathCallback());
+        UnmountPath(it->second.mount_path, UnmountPathCallback());
       }
     }
   }

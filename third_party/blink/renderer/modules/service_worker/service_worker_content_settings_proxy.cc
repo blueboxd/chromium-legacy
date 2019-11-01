@@ -20,8 +20,7 @@ bool ServiceWorkerContentSettingsProxy::RequestFileSystemAccessSync() {
   return false;
 }
 
-bool ServiceWorkerContentSettingsProxy::AllowIndexedDB(
-    const blink::WebSecurityOrigin&) {
+bool ServiceWorkerContentSettingsProxy::AllowIndexedDB() {
   bool result = false;
   GetService()->AllowIndexedDB(&result);
   return result;

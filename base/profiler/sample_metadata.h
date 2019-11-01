@@ -5,6 +5,7 @@
 #ifndef BASE_PROFILER_SAMPLE_METADATA_H_
 #define BASE_PROFILER_SAMPLE_METADATA_H_
 
+#include "base/optional.h"
 #include "base/profiler/metadata_recorder.h"
 #include "base/strings/string_piece.h"
 
@@ -52,7 +53,18 @@ namespace base {
 
 class BASE_EXPORT ScopedSampleMetadata {
  public:
-  ScopedSampleMetadata(base::StringPiece name, int64_t value);
+  // Set the metadata value associated with |name|.
+  ScopedSampleMetadata(StringPiece name, int64_t value);
+
+  // Set the metadata value associated with the pair (|name|, |key|). This
+  // constructor allows the metadata to be associated with an additional
+  // user-defined key. One might supply a key based on the frame id, for
+  // example, to distinguish execution in service of scrolling between different
+  // frames. Prefer the previous constructor if no user-defined metadata is
+  // required. Note: values specified for a name and key are stored separately
+  // from values specified with only a name.
+  ScopedSampleMetadata(StringPiece name, int64_t key, int64_t value);
+
   ScopedSampleMetadata(const ScopedSampleMetadata&) = delete;
   ~ScopedSampleMetadata();
 
@@ -60,23 +72,44 @@ class BASE_EXPORT ScopedSampleMetadata {
 
  private:
   const uint64_t name_hash_;
+  Optional<int64_t> key_;
 };
 
-// Sets a name hash/value pair in the process global stack sampling profiler
-// metadata, overwriting any previous value set for that name hash.
-BASE_EXPORT void SetSampleMetadata(base::StringPiece name, int64_t value);
+// Set the metadata value associated with |name| in the process-global stack
+// sampling profiler metadata, overwriting any previous value set for that
+// |name|.
+BASE_EXPORT void SetSampleMetadata(StringPiece name, int64_t value);
 
-// Removes the metadata item with the specified name hash from the process
-// global stack sampling profiler metadata.
+// Set the metadata value associated with the pair (|name|, |key|) in the
+// process-global stack sampling profiler metadata, overwriting any previous
+// value set for that (|name|, |key|) pair. This constructor allows the metadata
+// to be associated with an additional user-defined key. One might supply a key
+// based on the frame id, for example, to distinguish execution in service of
+// scrolling between different frames. Prefer the previous function if no
+// user-defined metadata is required. Note: values specified for a name and key
+// are stored separately from values specified with only a name.
+BASE_EXPORT void SetSampleMetadata(StringPiece name,
+                                   int64_t key,
+                                   int64_t value);
+
+// Removes the metadata item with the specified name from the process-global
+// stack sampling profiler metadata.
 //
 // If such an item doesn't exist, this has no effect.
-BASE_EXPORT void RemoveSampleMetadata(base::StringPiece name);
+BASE_EXPORT void RemoveSampleMetadata(StringPiece name);
+
+// Removes the metadata item with the specified (|name|, |key|) pair from the
+// process-global stack sampling profiler metadata. This function does not alter
+// values set with the name |name| but no key.
+//
+// If such an item doesn't exist, this has no effect.
+BASE_EXPORT void RemoveSampleMetadata(StringPiece name, int64_t key);
 
 // Returns the process-global metadata recorder instance used for tracking
 // sampling profiler metadata.
 //
 // This function should not be called by non-profiler related code.
-BASE_EXPORT base::MetadataRecorder* GetSampleMetadataRecorder();
+BASE_EXPORT MetadataRecorder* GetSampleMetadataRecorder();
 
 }  // namespace base
 

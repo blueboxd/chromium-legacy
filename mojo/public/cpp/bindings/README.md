@@ -113,7 +113,7 @@ interface Logger {
 };
 ```
 
-Running this through the bindings generator will produce a `logging.mojom.h`
+Running this through the bindings generator will produce a `logger.mojom.h`
 with the following definitions (modulo unimportant details):
 
 ``` cpp

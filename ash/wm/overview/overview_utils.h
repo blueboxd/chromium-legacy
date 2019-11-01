@@ -43,8 +43,10 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
 // |animation_type|. Used by several classes which need to be destroyed on
 // exiting overview, but have some widgets which need to continue animating.
 // |widget| is destroyed after finishing animation.
+// If |slide| is true, the |widget| will slide closer to the top of the screen.
 void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
-                                      OverviewAnimationType animation_type);
+                                      OverviewAnimationType animation_type,
+                                      bool slide);
 
 // Takes ownership of |widget|, closes and destroys it without any animations.
 void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget);

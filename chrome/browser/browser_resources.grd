@@ -609,7 +609,8 @@
         <include name="IDR_ARC_GRAPHICS_TRACING_HTML" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing.html" compress="gzip" type="BINDATA"/>
         <include name="IDR_ARC_GRAPHICS_TRACING_JS" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing.js" compress="gzip" type="BINDATA" />
         <include name="IDR_ARC_GRAPHICS_TRACING_UI_JS" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing_ui.js" compress="gzip" type="BINDATA" />
-        <include name="IDR_ARC_GRAPHICS_TRACING_CSS" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing.css" compress="gzip" type="BINDATA" />
+        <include name="IDR_ARC_TRACING_UI_JS" file="resources\chromeos\arc_graphics_tracing\arc_tracing_ui.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_ARC_TRACING_CSS" file="resources\chromeos\arc_graphics_tracing\arc_tracing.css" compress="gzip" type="BINDATA" />
       </if>
       <if expr="chromeos">
         <include name="IDR_MACHINE_LEARNING_INTERNALS_GRAPH_EXECUTOR_MOJO_JS" file="${root_gen_dir}\chromeos\services\machine_learning\public\mojom\graph_executor.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />

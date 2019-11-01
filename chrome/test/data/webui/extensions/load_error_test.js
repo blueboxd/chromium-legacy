@@ -3,18 +3,24 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for extension-load-error. */
-cr.define('extension_load_error_tests', function() {
+
+import 'chrome://extensions/extensions.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {TestService} from './test_service.js';
+import {isElementVisible} from './test_util.js';
+
+  window.extension_load_error_tests = {};
+  extension_load_error_tests.suiteName = 'ExtensionLoadErrorTests';
   /** @enum {string} */
-  const TestNames = {
+  extension_load_error_tests.TestNames = {
     RetryError: 'RetryError',
     RetrySuccess: 'RetrySuccess',
     CodeSection: 'Code Section',
   };
 
-  const suiteName = 'ExtensionLoadErrorTests';
-
-  suite(suiteName, function() {
-    /** @type {extensions.LoadError} */
+  suite(extension_load_error_tests.suiteName, function() {
+    /** @type {ExtensionsLoadErrorElement} */
     let loadError;
 
     /** @type {MockDelegate} */
@@ -30,43 +36,43 @@ cr.define('extension_load_error_tests', function() {
 
     setup(function() {
       PolymerTest.clearBody();
-      mockDelegate = new extensions.TestService();
-      loadError = new extensions.LoadError();
+      mockDelegate = new TestService();
+      loadError = document.createElement('extensions-load-error');
       loadError.delegate = mockDelegate;
       loadError.loadError = stubLoadError;
       document.body.appendChild(loadError);
     });
 
-    test(assert(TestNames.RetryError), function() {
+    test(assert(extension_load_error_tests.TestNames.RetryError), function() {
       const dialogElement = loadError.$$('cr-dialog').getNative();
-      expectFalse(extension_test_util.isElementVisible(dialogElement));
+      expectFalse(isElementVisible(dialogElement));
       loadError.show();
-      expectTrue(extension_test_util.isElementVisible(dialogElement));
+      expectTrue(isElementVisible(dialogElement));
 
       mockDelegate.setRetryLoadUnpackedError(stubLoadError);
-      MockInteractions.tap(loadError.$$('.action-button'));
+      loadError.$$('.action-button').click();
       return mockDelegate.whenCalled('retryLoadUnpacked').then(arg => {
         expectEquals(fakeGuid, arg);
-        expectTrue(extension_test_util.isElementVisible(dialogElement));
-        MockInteractions.tap(loadError.$$('.cancel-button'));
-        expectFalse(extension_test_util.isElementVisible(dialogElement));
+        expectTrue(isElementVisible(dialogElement));
+        loadError.$$('.cancel-button').click();
+        expectFalse(isElementVisible(dialogElement));
       });
     });
 
-    test(assert(TestNames.RetrySuccess), function() {
+    test(assert(extension_load_error_tests.TestNames.RetrySuccess), function() {
       const dialogElement = loadError.$$('cr-dialog').getNative();
-      expectFalse(extension_test_util.isElementVisible(dialogElement));
+      expectFalse(isElementVisible(dialogElement));
       loadError.show();
-      expectTrue(extension_test_util.isElementVisible(dialogElement));
+      expectTrue(isElementVisible(dialogElement));
 
-      MockInteractions.tap(loadError.$$('.action-button'));
+      loadError.$$('.action-button').click();
       return mockDelegate.whenCalled('retryLoadUnpacked').then(arg => {
         expectEquals(fakeGuid, arg);
-        expectFalse(extension_test_util.isElementVisible(dialogElement));
+        expectFalse(isElementVisible(dialogElement));
       });
     });
 
-    test(assert(TestNames.CodeSection), function() {
+    test(assert(extension_load_error_tests.TestNames.CodeSection), function() {
       expectTrue(loadError.$.code.$$('#scroll-container').hidden);
       const loadErrorWithSource = {
         error: 'Some error',
@@ -82,9 +88,3 @@ cr.define('extension_load_error_tests', function() {
       expectFalse(loadError.$.code.$$('#scroll-container').hidden);
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

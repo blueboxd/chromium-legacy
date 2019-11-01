@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
@@ -144,13 +145,12 @@ class ProtoDBPerfTest : public testing::Test {
   }
 
   void TearDown() override {
-    base::RunLoop().RunUntilIdle();
-    main_loop_.reset();
     ShutdownDBs();
   }
 
   void ShutdownDBs() {
     dbs_.clear();
+    base::RunLoop().RunUntilIdle();
     PruneBlockCache();
     uint64_t mem;
     GetApproximateMemoryUsage(&mem);
@@ -167,12 +167,17 @@ class ProtoDBPerfTest : public testing::Test {
     return task_runner_;
   }
 
-  void InitDB(const std::string& name, const ScopedTempDir& temp_dir) {
-    InitDB(name, temp_dir.GetPath());
-  }
-
-  void InitDB(const std::string& name, const base::FilePath& path) {
-    auto db = std::make_unique<TestDatabase>(task_runner_, path);
+  // Initializes a DB named |name| in a dedicated directory. The same directory
+  // will be used for all instances created for the same |name| for the lifetime
+  // of the test.
+  void InitDB(const std::string& name) {
+    if (!base::Contains(temp_dirs_, name)) {
+      auto temp_dir = std::make_unique<ScopedTempDir>();
+      EXPECT_TRUE(temp_dir->CreateUniqueTempDir());
+      temp_dirs_[name] = std::move(temp_dir);
+    }
+    auto db = std::make_unique<TestDatabase>(task_runner_,
+                                             temp_dirs_[name]->GetPath());
     EXPECT_TRUE(db->is_initialized());
     dbs_[name] = std::move(db);
   }
@@ -254,8 +259,7 @@ class ProtoDBPerfTest : public testing::Test {
     KeyEntryVectorMap entries =
         GenerateTestEntries(prefixes, params.num_entries, params.data_size);
 
-    std::vector<std::unique_ptr<ScopedTempDir>> temp_dirs;
-    InitDBs(params.single_db, prefixes, &temp_dirs);
+    InitDBs(params.single_db, prefixes);
 
     int remaining = params.num_entries;
     PerfStats stats;
@@ -298,8 +302,7 @@ class ProtoDBPerfTest : public testing::Test {
       prefixes.emplace_back(base::StringPrintf("test%03d_", i));
     }
 
-    std::vector<std::unique_ptr<ScopedTempDir>> temp_dirs;
-    InitDBs(single_db, prefixes, &temp_dirs);
+    InitDBs(single_db, prefixes);
 
     PerfStats stats;
     for (int i = 0; i < static_cast<int>(test_params.size()); i++) {
@@ -336,18 +339,14 @@ class ProtoDBPerfTest : public testing::Test {
                                           std::string test_modifier,
                                           unsigned int* num_entries_loaded,
                                           bool fill_read_cache = true) {
-    ScopedTempDir temp_dir;
-    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
     std::vector<std::string> prefixes = GenerateDBNames(num_dbs);
-    PrefillDatabase(kSingleDBName, prefixes, num_entries, data_size, temp_dir);
+    PrefillDatabase(kSingleDBName, prefixes, num_entries, data_size);
     uint64_t memory_use_before;
     GetApproximateMemoryUsage(&memory_use_before);
 
     ShutdownDBs();
 
-    ASSERT_TRUE(temp_dir.IsValid());
-    InitDB(kSingleDBName, temp_dir.GetPath());
+    InitDB(kSingleDBName);
     TestDatabase* db;
     GetDatabase(kSingleDBName, &db);
 
@@ -394,12 +393,9 @@ class ProtoDBPerfTest : public testing::Test {
                                          unsigned int* num_entries_loaded,
                                          bool fill_read_cache = true) {
     std::vector<std::string> prefixes = GenerateDBNames(num_dbs);
-    ScopedTempDir temp_dirs[num_dbs];
     for (unsigned int i = 0; i < num_dbs; i++) {
-      ASSERT_TRUE(temp_dirs[i].CreateUniqueTempDir());
       std::vector<std::string> single_prefix = {prefixes[i]};
-      PrefillDatabase(prefixes[i], single_prefix, num_entries, data_size,
-                      temp_dirs[i]);
+      PrefillDatabase(prefixes[i], single_prefix, num_entries, data_size);
     }
     uint64_t memory_use_before;
     GetApproximateMemoryUsage(&memory_use_before);
@@ -411,8 +407,7 @@ class ProtoDBPerfTest : public testing::Test {
     for (unsigned int i = 0; i < num_dbs; i++) {
       if (dbs_to_load.size() > 0 && dbs_to_load.find(i) == dbs_to_load.end())
         continue;
-      InitDB(prefixes[i], temp_dirs[i].GetPath());
-      ASSERT_TRUE(temp_dirs[i].IsValid());
+      InitDB(prefixes[i]);
       TestDatabase* db;
       GetDatabase(prefixes[i], &db);
 
@@ -442,21 +437,12 @@ class ProtoDBPerfTest : public testing::Test {
     ShutdownDBs();
   }
 
-  void InitDBs(bool single_db,
-               const std::vector<std::string>& prefixes,
-               std::vector<std::unique_ptr<ScopedTempDir>>* temp_dirs) {
-    temp_dirs->clear();
+  void InitDBs(bool single_db, const std::vector<std::string>& prefixes) {
     if (single_db) {
-      auto temp_dir = std::make_unique<ScopedTempDir>();
-      ASSERT_TRUE(temp_dir->CreateUniqueTempDir());
-      InitDB(kSingleDBName, *(temp_dir.get()));
-      temp_dirs->push_back(std::move(temp_dir));
+      InitDB(kSingleDBName);
     } else {
       for (auto& prefix : prefixes) {
-        auto temp_dir = std::make_unique<ScopedTempDir>();
-        ASSERT_TRUE(temp_dir->CreateUniqueTempDir());
-        InitDB(prefix, *(temp_dir.get()));
-        temp_dirs->push_back(std::move(temp_dir));
+        InitDB(prefix);
       }
     }
   }
@@ -464,9 +450,8 @@ class ProtoDBPerfTest : public testing::Test {
   PerfStats PrefillDatabase(const std::string& name,
                             std::vector<std::string>& prefixes,
                             int num_entries,
-                            int data_size,
-                            const ScopedTempDir& temp_dir) {
-    InitDB(name, temp_dir);
+                            int data_size) {
+    InitDB(name);
 
     auto entries = GenerateTestEntries(prefixes, num_entries, data_size);
     PerfStats stats;
@@ -574,6 +559,7 @@ class ProtoDBPerfTest : public testing::Test {
     return reporter;
   }
 
+  std::map<std::string, std::unique_ptr<ScopedTempDir>> temp_dirs_;
   std::map<std::string, std::unique_ptr<TestDatabase>> dbs_;
   std::unique_ptr<MessageLoop> main_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

@@ -81,6 +81,14 @@ void EmptyChromeClient::OpenTextDataListChooser(HTMLInputElement&) {}
 void EmptyChromeClient::OpenFileChooser(LocalFrame*,
                                         scoped_refptr<FileChooser>) {}
 
+void EmptyChromeClient::AttachRootGraphicsLayer(GraphicsLayer* layer,
+                                                LocalFrame* local_root) {
+  Page* page = local_root ? local_root->GetPage() : nullptr;
+  if (!page)
+    return;
+  page->GetVisualViewport().AttachLayerTree(layer);
+}
+
 void EmptyChromeClient::AttachRootLayer(scoped_refptr<cc::Layer>, LocalFrame*) {
 }
 

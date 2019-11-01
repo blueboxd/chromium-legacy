@@ -14,6 +14,7 @@
 
 namespace ui {
 class Accelerator;
+class AcceleratorHistory;
 }
 
 namespace ash {
@@ -181,6 +182,12 @@ class ASH_PUBLIC_EXPORT AcceleratorController {
   // Called by Chrome when a menu item accelerator has been triggered. Returns
   // true if the menu should close.
   virtual bool OnMenuAccelerator(const ui::Accelerator& accelerator) = 0;
+
+  // Returns true if the |accelerator| is registered.
+  virtual bool IsRegistered(const ui::Accelerator& accelerator) const = 0;
+
+  // Returns the accelerator histotry.
+  virtual ui::AcceleratorHistory* GetAcceleratorHistory() = 0;
 
  protected:
   AcceleratorController();

@@ -60,6 +60,9 @@ class NET_EXPORT AddressList {
   // inclusion in a NetLog.
   base::Value NetLogParams() const;
 
+  // Deduplicates the stored addresses while otherwise preserving their order.
+  void Deduplicate();
+
   using iterator = std::vector<IPEndPoint>::iterator;
   using const_iterator = std::vector<IPEndPoint>::const_iterator;
 

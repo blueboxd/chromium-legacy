@@ -2,8 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
+import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import './detail_view.js';
+import './drop_overlay.js';
+import './error_page.js';
+import './install_warnings_dialog.js';
+import './item_list.js';
+import './item_util.js';
+import './keyboard_shortcuts.js';
+import './load_error.js';
+import './options_dialog.js';
+import './sidebar.js';
+import './toolbar.js';
+// <if expr="chromeos">
+import './kiosk_dialog.js';
+// </if>
+
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ActivityLogExtensionPlaceholder} from './activity_log/activity_log.js';
+// <if expr="chromeos">
+import {KioskBrowserProxyImpl} from './kiosk_browser_proxy.js';
+// </if>
+import {Dialog, navigation, Page, PageState} from './navigation_helper.js';
+import {Service} from './service.js';
 
   /**
    * Compares two extensions to determine which should come first in the list.
@@ -32,8 +62,10 @@ cr.define('extensions', function() {
         compare(a.id, b.id);
   };
 
-  const Manager = Polymer({
+  Polymer({
     is: 'extensions-manager',
+
+    _template: html`{__html_template__}`,
 
     properties: {
       canLoadUnpacked: {
@@ -41,11 +73,11 @@ cr.define('extensions', function() {
         value: false,
       },
 
-      /** @type {!extensions.Service} */
+      /** @type {!Service} */
       delegate: {
         type: Object,
         value: function() {
-          return extensions.Service.getInstance();
+          return Service.getInstance();
         },
       },
 
@@ -101,7 +133,7 @@ cr.define('extensions', function() {
        * The item that provides some information about the current extension
        * for the activity log view subpage. See also errorPageItem_.
        * @private {!chrome.developerPrivate.ExtensionInfo|undefined|
-       *           !extensions.ActivityLogExtensionPlaceholder}
+       *           !ActivityLogExtensionPlaceholder}
        */
       activityLogItem_: Object,
 
@@ -167,12 +199,12 @@ cr.define('extensions', function() {
     /**
      * The current page being shown. Default to null, and initPage_ will figure
      * out the initial page based on url.
-     * @private {?extensions.PageState}
+     * @private {?PageState}
      */
     currentPage_: null,
 
     /**
-     * The ID of the listener on |extensions.navigation|. Stored so that the
+     * The ID of the listener on |navigation|. Stored so that the
      * listener can be removed when this element is detached (happens in tests).
      * @private {?number}
      */
@@ -180,7 +212,7 @@ cr.define('extensions', function() {
 
     /** @override */
     ready: function() {
-      const service = extensions.Service.getInstance();
+      const service = Service.getInstance();
 
       const onProfileStateChanged = profileInfo => {
         this.isSupervised_ = profileInfo.isSupervised;
@@ -202,7 +234,7 @@ cr.define('extensions', function() {
       });
 
       // <if expr="chromeos">
-      extensions.KioskBrowserProxyImpl.getInstance()
+      KioskBrowserProxyImpl.getInstance()
           .initializeKioskAppSettings()
           .then(params => {
             this.kioskEnabled_ = params.kioskEnabled;
@@ -215,14 +247,15 @@ cr.define('extensions', function() {
       document.documentElement.classList.remove('loading');
       document.fonts.load('bold 12px Roboto');
 
-      this.navigationListener_ = extensions.navigation.addListener(newPage => {
+      this.navigationListener_ = navigation.addListener(newPage => {
         this.changePage_(newPage);
       });
     },
 
     /** @override */
     detached: function() {
-      assert(extensions.navigation.removeListener(this.navigationListener_));
+      assert(navigation.removeListener(
+          /** @type {number} */ (this.navigationListener_)));
       this.navigationListener_ = null;
     },
 
@@ -233,7 +266,7 @@ cr.define('extensions', function() {
      */
     initPage_: function() {
       this.didInitPage_ = true;
-      this.changePage_(extensions.navigation.getCurrentPage());
+      this.changePage_(navigation.getCurrentPage());
     },
 
     /**
@@ -290,8 +323,8 @@ cr.define('extensions', function() {
      * @private
      */
     onFilterChanged_: function(event) {
-      if (this.currentPage_.page !== extensions.Page.LIST) {
-        extensions.navigation.navigateTo({page: extensions.Page.LIST});
+      if (this.currentPage_.page !== Page.LIST) {
+        navigation.navigateTo({page: Page.LIST});
       }
       this.filter = event.detail;
     },
@@ -320,8 +353,7 @@ cr.define('extensions', function() {
         case ExtensionType.SHARED_MODULE:
           return 'extensions_';
         case ExtensionType.THEME:
-          assertNotReached(
-              'Don\'t send themes to the chrome://extensions page');
+          assertNotReached('Don\'t send themes to the chrome://extensions page');
           break;
       }
       assertNotReached();
@@ -402,15 +434,15 @@ cr.define('extensions', function() {
       // that the DOM will have stale data, but there's no point in causing the
       // extra work.
       if (this.detailViewItem_ && this.detailViewItem_.id == item.id &&
-          this.currentPage_.page == extensions.Page.DETAILS) {
+          this.currentPage_.page == Page.DETAILS) {
         this.detailViewItem_ = item;
       } else if (
           this.errorPageItem_ && this.errorPageItem_.id == item.id &&
-          this.currentPage_.page == extensions.Page.ERRORS) {
+          this.currentPage_.page == Page.ERRORS) {
         this.errorPageItem_ = item;
       } else if (
           this.activityLogItem_ && this.activityLogItem_.id == item.id &&
-          this.currentPage_.page == extensions.Page.ACTIVITY_LOG) {
+          this.currentPage_.page == Page.ACTIVITY_LOG) {
         this.activityLogItem_ = item;
       }
     },
@@ -432,12 +464,12 @@ cr.define('extensions', function() {
       // We should never try and remove a non-existent item.
       assert(index >= 0);
       this.splice(listId, index, 1);
-      if ((this.currentPage_.page == extensions.Page.ACTIVITY_LOG ||
-           this.currentPage_.page == extensions.Page.DETAILS ||
-           this.currentPage_.page == extensions.Page.ERRORS) &&
+      if ((this.currentPage_.page == Page.ACTIVITY_LOG ||
+           this.currentPage_.page == Page.DETAILS ||
+           this.currentPage_.page == Page.ERRORS) &&
           this.currentPage_.extensionId == itemId) {
         // Leave the details page (the 'list' page is a fine choice).
-        extensions.navigation.replaceWith({page: extensions.Page.LIST});
+        navigation.replaceWith({page: Page.LIST});
       }
     },
 
@@ -456,7 +488,7 @@ cr.define('extensions', function() {
 
     /**
      * Changes the active page selection.
-     * @param {extensions.PageState} newPage
+     * @param {PageState} newPage
      * @private
      */
     changePage_: function(newPage) {
@@ -478,31 +510,29 @@ cr.define('extensions', function() {
           // extension ID is not valid. This enables the use case of seeing an
           // extension's install-time activities by navigating to an extension's
           // activity log page, then installing the extension.
-          if (this.showActivityLog && toPage == extensions.Page.ACTIVITY_LOG) {
+          if (this.showActivityLog && toPage == Page.ACTIVITY_LOG) {
             activityLogPlaceholder = {
               id: newPage.extensionId,
               isPlaceholder: true,
             };
           } else {
             // Attempting to view an invalid (removed?) app or extension ID.
-            extensions.navigation.replaceWith({page: extensions.Page.LIST});
+            navigation.replaceWith({page: Page.LIST});
             return;
           }
         }
       }
 
-      if (toPage == extensions.Page.DETAILS) {
+      if (toPage == Page.DETAILS) {
         this.detailViewItem_ = assert(data);
-      } else if (toPage == extensions.Page.ERRORS) {
+      } else if (toPage == Page.ERRORS) {
         this.errorPageItem_ = assert(data);
-      } else if (toPage == extensions.Page.ACTIVITY_LOG) {
+      } else if (toPage == Page.ACTIVITY_LOG) {
         if (!this.showActivityLog) {
           // Redirect back to the details page if we try to view the
           // activity log of an extension but the flag is not set.
-          extensions.navigation.replaceWith({
-            page: extensions.Page.DETAILS,
-            extensionId: newPage.extensionId
-          });
+          navigation.replaceWith(
+              {page: Page.DETAILS, extensionId: newPage.extensionId});
           return;
         }
 
@@ -515,7 +545,7 @@ cr.define('extensions', function() {
       }
 
       if (newPage.subpage) {
-        assert(newPage.subpage == extensions.Dialog.OPTIONS);
+        assert(newPage.subpage == Dialog.OPTIONS);
         assert(newPage.extensionId);
         this.showOptionsDialog_ = true;
         this.async(() => {
@@ -523,7 +553,7 @@ cr.define('extensions', function() {
         });
       }
 
-      document.title = toPage == extensions.Page.DETAILS ?
+      document.title = toPage == Page.DETAILS ?
           `${loadTimeData.getString('title')} - ${this.detailViewItem_.name}` :
           loadTimeData.getString('title');
       this.currentPage_ = newPage;
@@ -628,6 +658,3 @@ cr.define('extensions', function() {
     },
     // </if>
   });
-
-  return {Manager: Manager};
-});

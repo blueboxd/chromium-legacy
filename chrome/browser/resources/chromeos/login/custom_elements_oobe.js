@@ -32,6 +32,7 @@
 // <include src="oobe_change_picture.js">
 // <include src="oobe_dialog.js">
 // <include src="oobe_eula.js">
+// <include src="oobe_terms_of_service.js">
 // <include src="oobe_hid_detection.js">
 // <include src="oobe_reset.js">
 // <include src="oobe_reset_confirmation_overlay.js">

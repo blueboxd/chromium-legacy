@@ -169,20 +169,8 @@ class NetworkChangeNotifier::SystemDnsConfigObserver
   virtual ~SystemDnsConfigObserver() = default;
 
   void OnSystemDnsConfigChanged(base::Optional<DnsConfig> config) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-    if (initial_config_received_) {
-      NotifyObserversOfDNSChange();
-    } else {
-      initial_config_received_ = true;
-      NotifyObserversOfInitialDNSConfigRead();
-    }
+    NotifyObserversOfDNSChange();
   }
-
- private:
-  bool initial_config_received_ = false;
-
-  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 void NetworkChangeNotifier::ClearGlobalPointer() {
@@ -658,12 +646,6 @@ void NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
 }
 
 // static
-void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests() {
-  if (g_network_change_notifier)
-    g_network_change_notifier->NotifyObserversOfInitialDNSConfigReadImpl();
-}
-
-// static
 void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeForTests(
     double max_bandwidth_mbps,
     ConnectionType type) {
@@ -812,14 +794,6 @@ void NetworkChangeNotifier::NotifyObserversOfDNSChange() {
 }
 
 // static
-void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigRead() {
-  if (g_network_change_notifier &&
-      !NetworkChangeNotifier::test_notifications_only_) {
-    g_network_change_notifier->NotifyObserversOfInitialDNSConfigReadImpl();
-  }
-}
-
-// static
 void NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
     NetworkChangeType type,
     NetworkHandle network) {
@@ -859,11 +833,6 @@ void NetworkChangeNotifier::NotifyObserversOfNetworkChangeImpl(
 
 void NetworkChangeNotifier::NotifyObserversOfDNSChangeImpl() {
   resolver_state_observer_list_->Notify(FROM_HERE, &DNSObserver::OnDNSChanged);
-}
-
-void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadImpl() {
-  resolver_state_observer_list_->Notify(FROM_HERE,
-                                        &DNSObserver::OnInitialDNSConfigRead);
 }
 
 void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeImpl(
@@ -906,9 +875,6 @@ NetworkChangeNotifier::DisableForTest::DisableForTest()
 NetworkChangeNotifier::DisableForTest::~DisableForTest() {
   DCHECK(!g_network_change_notifier);
   g_network_change_notifier = network_change_notifier_;
-}
-
-void NetworkChangeNotifier::DNSObserver::OnInitialDNSConfigRead() {
 }
 
 }  // namespace net

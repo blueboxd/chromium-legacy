@@ -126,7 +126,7 @@ MULTIPROCESS_TEST_MAIN(GetFileAttributesNoHangs) {
   if (!child_process)
     return 1;
 
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   scoped_refptr<EngineRequestsProxy> proxy(
       child_process->GetEngineRequestsProxy());
@@ -187,7 +187,7 @@ MULTIPROCESS_TEST_MAIN(GetKnownFolderPathNoHangs) {
   if (!child_process)
     return 1;
 
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   scoped_refptr<EngineRequestsProxy> proxy(
       child_process->GetEngineRequestsProxy());
@@ -229,7 +229,7 @@ MULTIPROCESS_TEST_MAIN(GetProcessesNoHangs) {
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
     return 1;
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   scoped_refptr<EngineRequestsProxy> proxy(
       child_process->GetEngineRequestsProxy());
@@ -314,7 +314,7 @@ MULTIPROCESS_TEST_MAIN(GetTasksNoHangs) {
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
     return 1;
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   scoped_refptr<EngineRequestsProxy> proxy(
       child_process->GetEngineRequestsProxy());
@@ -356,7 +356,7 @@ MULTIPROCESS_TEST_MAIN(GetProcessImagePathNoHangs) {
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
     return 1;
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   scoped_refptr<EngineRequestsProxy> proxy(
       child_process->GetEngineRequestsProxy());
@@ -398,7 +398,7 @@ MULTIPROCESS_TEST_MAIN(GetLoadedModulesNoHangs) {
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
     return 1;
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   scoped_refptr<EngineRequestsProxy> proxy(
       child_process->GetEngineRequestsProxy());
@@ -437,7 +437,7 @@ MULTIPROCESS_TEST_MAIN(GetProcessCommandLineNoHangs) {
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
     return 1;
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   scoped_refptr<EngineRequestsProxy> proxy(
       child_process->GetEngineRequestsProxy());
@@ -481,7 +481,7 @@ MULTIPROCESS_TEST_MAIN(GetUserInfoFromSIDNoHangs) {
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
     return 1;
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   scoped_refptr<EngineRequestsProxy> proxy(
       child_process->GetEngineRequestsProxy());
@@ -556,7 +556,7 @@ MULTIPROCESS_TEST_MAIN(OpenReadOnlyRegistryNoHangs) {
       SandboxErrorCode::NULL_ROOT_KEY,
       proxy->OpenReadOnlyRegistry(nullptr, base::string16(), 0, &reg_handle));
 
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   EXPECT_EQ(
       SandboxErrorCode::INTERNAL_ERROR,
@@ -684,7 +684,7 @@ MULTIPROCESS_TEST_MAIN(NtOpenReadOnlyRegistryNoHangs) {
             proxy->NtOpenReadOnlyRegistry(
                 nullptr, String16EmbeddedNulls(too_long), 0, &reg_handle));
 
-  child_process->UnbindRequestsPtrs();
+  child_process->UnbindRequestsRemotes();
 
   EXPECT_EQ(SandboxErrorCode::INTERNAL_ERROR,
             proxy->NtOpenReadOnlyRegistry(nullptr, String16EmbeddedNulls(), 0,

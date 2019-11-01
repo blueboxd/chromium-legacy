@@ -106,6 +106,10 @@ android_resources("icon_resources") {
 android_resources("devui_resources") {
   resource_dirs = [ "java/res_devui" ]
   custom_package = "org.chromium.android_webview.devui"
+
+  if (webview_devui_show_icon) {
+    android_manifest = "java/DeveloperUiLauncherManifest.xml"
+  }
 }
 
 jinja_template("system_webview_manifest") {

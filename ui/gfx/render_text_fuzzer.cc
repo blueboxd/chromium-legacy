@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/i18n/icu_util.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
@@ -28,6 +29,7 @@ struct Environment {
                           base::test::TaskEnvironment::MainThreadType::UI)) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
 
+    CHECK(base::i18n::InitializeICU());
     gfx::FontList::SetDefaultFontDescription(kFontDescription);
   }
 

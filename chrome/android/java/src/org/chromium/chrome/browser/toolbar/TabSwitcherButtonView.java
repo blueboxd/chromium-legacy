@@ -54,6 +54,15 @@ public class TabSwitcherButtonView extends ImageView {
     }
 
     @Override
+    public void setOnLongClickListener(OnLongClickListener listener) {
+        if (mWrapper != null) {
+            mWrapper.setOnLongClickListener(listener);
+            setClickable(false);
+        }
+        super.setOnLongClickListener(listener);
+    }
+
+    @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 

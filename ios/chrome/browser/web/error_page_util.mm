@@ -59,7 +59,7 @@ NSString* GetErrorPage(const GURL& url,
       ui::ResourceBundle::GetSharedInstance().GetMaxScaleFactor();
 
   std::string extracted_string =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResourceScaled(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceStringForScale(
           IDR_NET_ERROR_HTML, scale_factor);
   base::StringPiece template_html(extracted_string.data(),
                                   extracted_string.size());

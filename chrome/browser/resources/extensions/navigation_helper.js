@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+
 
   /**
    * The different pages that can be shown at a time.
    * Note: This must remain in sync with the page ids in manager.html!
    * @enum {string}
    */
-  const Page = {
+  export const Page = {
     LIST: 'items-list',
     DETAILS: 'details-view',
     ACTIVITY_LOG: 'activity-log',
@@ -19,20 +19,20 @@ cr.define('extensions', function() {
   };
 
   /** @enum {string} */
-  const Dialog = {
+  export const Dialog = {
     OPTIONS: 'options',
   };
 
   /**
-   * @typedef {{page: extensions.Page,
+   * @typedef {{page: Page,
    *            extensionId: (string|undefined),
-   *            subpage: (!extensions.Dialog|undefined)}}
+   *            subpage: (!Dialog|undefined)}}
    */
-  let PageState;
+  export let PageState;
 
   /**
-   * @param {!extensions.PageState} a
-   * @param {!extensions.PageState} b
+   * @param {!PageState} a
+   * @param {!PageState} b
    * @return {boolean} Whether a and b are equal.
    */
   function isPageStateEqual(a, b) {
@@ -52,17 +52,17 @@ cr.define('extensions', function() {
    * needs to support different urls for different subpages (like the details
    * page), we use this object to manage the history and url conversions.
    */
-  class NavigationHelper {
+  export class NavigationHelper {
     constructor() {
       this.processRoute_();
 
       /** @private {number} */
       this.nextListenerId_ = 1;
 
-      /** @private {!Map<number, function(!extensions.PageState)>} */
+      /** @private {!Map<number, function(!PageState)>} */
       this.listeners_ = new Map();
 
-      /** @private {!extensions.PageState} */
+      /** @private {!PageState} */
       this.previousPage_;
 
       window.addEventListener('popstate', () => {
@@ -92,7 +92,7 @@ cr.define('extensions', function() {
     }
 
     /**
-     * @return {!extensions.PageState} The page that should be displayed for the
+     * @return {!PageState} The page that should be displayed for the
      *     current URL.
      */
     getCurrentPage() {
@@ -123,7 +123,7 @@ cr.define('extensions', function() {
 
     /**
      * Function to add subscribers.
-     * @param {!function(!extensions.PageState)} listener
+     * @param {!function(!PageState)} listener
      * @return {number} A numerical ID to be used for removing the listener.
      */
     addListener(listener) {
@@ -153,7 +153,7 @@ cr.define('extensions', function() {
     }
 
     /**
-     * @param {!extensions.PageState} newPage the page to navigate to.
+     * @param {!PageState} newPage the page to navigate to.
      */
     navigateTo(newPage) {
       const currentPage = this.getCurrentPage();
@@ -166,7 +166,7 @@ cr.define('extensions', function() {
     }
 
     /**
-     * @param {!extensions.PageState} newPage the page to replace the current
+     * @param {!PageState} newPage the page to replace the current
      *     page with.
      */
     replaceWith(newPage) {
@@ -181,7 +181,7 @@ cr.define('extensions', function() {
 
     /**
      * Called when a page changes, and pushes state to history to reflect it.
-     * @param {!extensions.PageState} entry
+     * @param {!PageState} entry
      * @param {boolean} replaceState
      */
     updateHistory(entry, replaceState) {
@@ -226,14 +226,4 @@ cr.define('extensions', function() {
     }
   }
 
-  const navigation = new NavigationHelper();
-
-  return {
-    Dialog: Dialog,
-    // Constructor exposed for testing purposes.
-    NavigationHelper: NavigationHelper,
-    navigation: navigation,
-    Page: Page,
-    PageState: PageState,
-  };
-});
+  export const navigation = new NavigationHelper();

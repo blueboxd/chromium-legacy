@@ -32,6 +32,10 @@ class CardExpirationDateFixFlowController {
   virtual base::string16 GetTitleText() const = 0;
   virtual base::string16 GetSaveButtonLabel() const = 0;
   virtual base::string16 GetCardLabel() const = 0;
+  virtual base::string16 GetCancelButtonLabel() const = 0;
+  virtual base::string16 GetInputLabel() const = 0;
+  virtual base::string16 GetDateSeparator() const = 0;
+  virtual base::string16 GetInvalidDateError() const = 0;
 };
 
 }  // namespace autofill

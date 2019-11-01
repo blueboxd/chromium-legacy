@@ -3289,7 +3289,7 @@ TEST_P(MainThreadSchedulerImplTest, VirtualTimeWithOneQueueWithoutVirtualTime) {
     task_queues.push_back(scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFrameThrottleable)
-            .SetCanRunWhenVirtualTimePaused(i != 42)));
+            .SetCanRunWhenVirtualTimePaused(i == 42)));
   }
 
   // This should install a fence on all queues with virtual time.

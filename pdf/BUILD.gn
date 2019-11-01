@@ -20,6 +20,8 @@ if (enable_pdf) {
   pdf_engine = 0  # 0 PDFium
 
   config("pdf_common_config") {
+    configs = [ "//build/config/compiler:noshadowing" ]
+
     if (pdf_engine == 0) {
       include_dirs = [ "//third_party/pdfium" ]
     }
@@ -154,6 +156,8 @@ if (enable_pdf) {
       "test/test_utils.cc",
       "test/test_utils.h",
     ]
+
+    configs += [ "//build/config/compiler:noshadowing" ]
 
     deps = [
       ":pdf",

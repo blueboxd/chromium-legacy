@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS, isMac} from 'chrome://resources/js/cr.m.js';
+
 
   /** @enum {number} */
-  const Key = {
+  export const Key = {
     Comma: 188,
     Del: 46,
     Down: 40,
@@ -64,7 +65,7 @@ cr.define('extensions', function() {
     return e.ctrlKey || e.altKey ||
         // Meta key is only relevant on Mac and CrOS, where we treat Command
         // and Search (respectively) as modifiers.
-        (cr.isMac && e.metaKey) || (cr.isChromeOS && e.metaKey) ||
+        (isMac && e.metaKey) || (isChromeOS && e.metaKey) ||
         (countShiftAsModifier && e.shiftKey);
   }
 
@@ -73,7 +74,7 @@ cr.define('extensions', function() {
    * @param {number} keyCode
    * @return {boolean} Whether the key is valid.
    */
-  function isValidKeyCode(keyCode) {
+  export function isValidKeyCode(keyCode) {
     if (keyCode == Key.Escape) {
       return false;
     }
@@ -92,13 +93,13 @@ cr.define('extensions', function() {
    * @param {!KeyboardEvent} e
    * @return {string} The keystroke as a string.
    */
-  function keystrokeToString(e) {
+  export function keystrokeToString(e) {
     const output = [];
     // TODO(devlin): Should this be i18n'd?
-    if (cr.isMac && e.metaKey) {
+    if (isMac && e.metaKey) {
       output.push('Command');
     }
-    if (cr.isChromeOS && e.metaKey) {
+    if (isChromeOS && e.metaKey) {
       output.push('Search');
     }
     if (e.ctrlKey) {
@@ -184,7 +185,7 @@ cr.define('extensions', function() {
    * @param {!KeyboardEvent} e The keyboard event to consider.
    * @return {boolean} True if the event is valid.
    */
-  function hasValidModifiers(e) {
+  export function hasValidModifiers(e) {
     switch (getModifierPolicy(e.keyCode)) {
       case ModifierPolicy.REQUIRED:
         return hasModifier(e, false);
@@ -193,11 +194,3 @@ cr.define('extensions', function() {
     }
     assertNotReached();
   }
-
-  return {
-    isValidKeyCode: isValidKeyCode,
-    keystrokeToString: keystrokeToString,
-    hasValidModifiers: hasValidModifiers,
-    Key: Key,
-  };
-});

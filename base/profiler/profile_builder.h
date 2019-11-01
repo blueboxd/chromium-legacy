@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/base_export.h"
+#include "base/optional.h"
 #include "base/profiler/frame.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/time/time.h"
@@ -26,9 +27,17 @@ class BASE_EXPORT ProfileBuilder {
   // up modules from addresses.
   virtual ModuleCache* GetModuleCache() = 0;
 
-  struct MetadataItem {
-    // The hash of the metadata name, as produced by base::HashMetricName().
+  struct BASE_EXPORT MetadataItem {
+    MetadataItem(uint64_t name_hash, Optional<int64_t> key, int64_t value);
+    MetadataItem();
+
+    MetadataItem(const MetadataItem& other);
+    MetadataItem& operator=(const MetadataItem& other);
+
+    // The hash of the metadata name, as produced by HashMetricName().
     uint64_t name_hash;
+    // The key if specified when setting the item.
+    Optional<int64_t> key;
     // The value of the metadata item.
     int64_t value;
   };

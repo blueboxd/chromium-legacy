@@ -154,7 +154,8 @@ bool NetworkServiceAsyncSocket::Connect(const net::HostPortPair& address) {
 
   state_ = STATE_CONNECTING;
 
-  get_socket_factory_callback_.Run(mojo::MakeRequest(&socket_factory_));
+  get_socket_factory_callback_.Run(
+      socket_factory_.BindNewPipeAndPassReceiver());
 
   mojo::PendingRemote<network::mojom::SocketObserver> socket_observer;
   auto socket_observer_receiver =
@@ -454,7 +455,7 @@ void NetworkServiceAsyncSocket::DoClose() {
   socket_.reset();
   tls_socket_.reset();
   socket_observer_receiver_.reset();
-  socket_factory_ = nullptr;
+  socket_factory_.reset();
 
   if (state_ != STATE_CLOSED) {
     state_ = STATE_CLOSED;

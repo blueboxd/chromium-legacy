@@ -37,7 +37,8 @@
 + (void)clearCreditCardStore;
 
 // Saves a local credit card that doesn't require CVC to be used.
-+ (void)saveLocalCreditCard;
+// Returns the |card.NetworkAndLastFourDigits| of the card used in the UIs.
++ (NSString*)saveLocalCreditCard;
 
 // Saves a masked credit card that requires CVC to be used.
 + (void)saveMaskedCreditCard;

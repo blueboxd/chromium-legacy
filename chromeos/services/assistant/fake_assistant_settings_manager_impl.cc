@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 namespace assistant {
@@ -33,8 +34,10 @@ void FakeAssistantSettingsManagerImpl::UpdateSettings(
 
 void FakeAssistantSettingsManagerImpl::StartSpeakerIdEnrollment(
     bool skip_cloud_enrollment,
-    mojom::SpeakerIdEnrollmentClientPtr client) {
-  client->OnSpeakerIdEnrollmentDone();
+    mojo::PendingRemote<mojom::SpeakerIdEnrollmentClient> client) {
+  mojo::Remote<mojom::SpeakerIdEnrollmentClient> client_remote(
+      std::move(client));
+  client_remote->OnSpeakerIdEnrollmentDone();
 }
 
 void FakeAssistantSettingsManagerImpl::StopSpeakerIdEnrollment(

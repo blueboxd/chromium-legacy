@@ -267,13 +267,8 @@ static bool NeedsScrollNode(const LayoutObject& object,
   if (!object.HasOverflowClip())
     return false;
 
-  // TODO(pdr): CAP has invalidation issues (crbug.com/732611) as well as
-  // subpixel issues (crbug.com/693741) which prevent us from compositing the
-  // root scroller.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (direct_compositing_reasons & CompositingReason::kRootScroller)
-      return true;
-  }
+  if (direct_compositing_reasons & CompositingReason::kRootScroller)
+    return true;
 
   return ToLayoutBox(object).GetScrollableArea()->ScrollsOverflow();
 }
@@ -1936,21 +1931,14 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           context_.current.should_flatten_inherited_transform;
       state.direct_compositing_reasons =
           full_context_.direct_compositing_reasons &
-          (CompositingReason::kRootScroller |
-           CompositingReasonsForTransformProperty());
+          CompositingReason::kDirectReasonsForScrollTranslationProperty;
       state.rendering_context_id = context_.current.rendering_context_id;
       state.scroll = properties_->Scroll();
       auto effective_change_type = properties_->UpdateScrollTranslation(
           *context_.current.transform, std::move(state));
-      bool known_to_be_composited =
-          RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-              ? properties_->ScrollTranslation()->HasDirectCompositingReasons()
-              : box.GetScrollableArea()->NeedsCompositedScrolling();
-      // TODO(crbug.com/953322): We need to fix this to work with CAP as well.
-      if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-          effective_change_type ==
+      if (effective_change_type ==
               PaintPropertyChangeType::kChangedOnlySimpleValues &&
-          known_to_be_composited) {
+          properties_->ScrollTranslation()->HasDirectCompositingReasons()) {
         if (auto* paint_artifact_compositor =
                 object_.GetFrameView()->GetPaintArtifactCompositor()) {
           bool updated =

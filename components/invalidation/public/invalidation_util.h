@@ -55,11 +55,6 @@ enum class HandlerOwnerType {
 class Invalidation;
 class InvalidationHandler;
 
-using ParseJSONCallback = base::RepeatingCallback<void(
-    const std::string& unsafe_json,
-    base::OnceCallback<void(base::Value)> success_callback,
-    base::OnceCallback<void(const std::string&)> error_callback)>;
-
 struct INVALIDATION_EXPORT ObjectIdLessThan {
   bool operator()(const invalidation::ObjectId& lhs,
                   const invalidation::ObjectId& rhs) const;

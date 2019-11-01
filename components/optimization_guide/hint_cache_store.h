@@ -82,7 +82,9 @@ class HintCacheStore {
     kMetadata = 1,
     kComponentHint = 2,
     kFetchedHint = 3,
-    kMaxValue = kFetchedHint
+    kPredictionModel = 4,
+    kHostModelFeatures = 5,
+    kMaxValue = kHostModelFeatures,
   };
 
   HintCacheStore(leveldb_proto::ProtoDatabaseProvider* database_provider,
@@ -181,6 +183,7 @@ class HintCacheStore {
     kSchema = 1,
     kComponent = 2,
     kFetched = 3,
+    kHostModelFeatures = 4,
   };
 
   // Current schema version of the hint cache store. When this is changed,
@@ -203,6 +206,12 @@ class HintCacheStore {
 
   // Returns prefix of the key of every fetched hint entry: "3_".
   static EntryKeyPrefix GetFetchedHintEntryKeyPrefix();
+
+  // Returns prefix of the key of every prediction model entry: "4_".
+  static EntryKeyPrefix GetPredictionModelEntryKeyPrefix();
+
+  // Returns prefix of the key of every host model features entry: "5_".
+  static EntryKeyPrefix GetHostModelFeaturesEntryKeyPrefix();
 
   // Updates the status of the store to the specified value, validates the
   // transition, and destroys the database in the case where the status

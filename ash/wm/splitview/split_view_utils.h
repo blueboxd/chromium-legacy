@@ -115,8 +115,7 @@ ASH_EXPORT SplitViewController::SnapPosition GetSnapPosition(
 
 // Returns the desried indicator state based on the desired |snap_position|.
 ASH_EXPORT IndicatorState
-GetIndicatorState(aura::Window* window,
-                  SplitViewController::SnapPosition snap_position);
+GetIndicatorState(SplitViewController::SnapPosition snap_position);
 
 }  // namespace ash
 

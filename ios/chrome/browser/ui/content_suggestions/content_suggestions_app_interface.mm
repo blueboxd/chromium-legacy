@@ -11,9 +11,15 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/notification_promo.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
@@ -26,6 +32,7 @@
 #error "This file requires ARC support."
 #endif
 
+using content_suggestions::searchFieldWidth;
 using ntp_snippets::AdditionalSuggestionsHelper;
 using ntp_snippets::Category;
 using ntp_snippets::CategoryStatus;
@@ -123,6 +130,74 @@ ContentSuggestion CreateSuggestion(Category category,
                                          GURL("http://chromium.org/" + index)));
   [self provider] -> FireSuggestionsChanged([self category],
                                             std::move(suggestions));
+}
+
++ (NSString*)defaultSearchEngine {
+  // Get the default Search Engine.
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  TemplateURLService* service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
+  return base::SysUTF16ToNSString(
+      service->GetDefaultSearchProvider()->short_name());
+}
+
++ (void)resetSearchEngineTo:(NSString*)defaultSearchEngine {
+  base::string16 defaultSearchEngineString =
+      base::SysNSStringToUTF16(defaultSearchEngine);
+  // Set the search engine back to the default in case the test fails before
+  // cleaning it up.
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  TemplateURLService* service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
+  std::vector<TemplateURL*> urls = service->GetTemplateURLs();
+
+  for (auto iter = urls.begin(); iter != urls.end(); ++iter) {
+    if (defaultSearchEngineString == (*iter)->short_name()) {
+      service->SetUserSelectedDefaultSearchProvider(*iter);
+    }
+  }
+}
+
++ (void)setWhatsNewPromoToMoveToDock {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  [defaults setInteger:experimental_flags::WHATS_NEW_MOVE_TO_DOCK_TIP
+                forKey:@"WhatsNewPromoStatus"];
+  PrefService* local_state = GetApplicationContext()->GetLocalState();
+  ios::NotificationPromo::MigrateUserPrefs(local_state);
+}
+
++ (void)resetWhatsNewPromo {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  [defaults setInteger:experimental_flags::WHATS_NEW_DEFAULT
+                forKey:@"WhatsNewPromoStatus"];
+  PrefService* local_state = GetApplicationContext()->GetLocalState();
+  ios::NotificationPromo::MigrateUserPrefs(local_state);
+}
+
++ (CGFloat)searchFieldWidthForCollectionWidth:(CGFloat)collectionWidth {
+  return content_suggestions::searchFieldWidth(collectionWidth);
+}
+
++ (UICollectionView*)collectionView {
+  return ntp_home::CollectionView();
+}
+
++ (UIView*)fakeOmnibox {
+  return ntp_home::FakeOmnibox();
+}
+
++ (void)swizzleSearchButtonLogging {
+  [[ContentSuggestionsTestSingleton sharedInstance]
+      swizzleLocationBarCoordinatorSearchButton];
+}
+
++ (BOOL)resetSearchButtonLogging {
+  ContentSuggestionsTestSingleton* singleton =
+      [ContentSuggestionsTestSingleton sharedInstance];
+  [singleton resetSwizzle];
+  return singleton.locationBarCoordinatorSearchButtonMethodCalled;
 }
 
 #pragma mark - Helper

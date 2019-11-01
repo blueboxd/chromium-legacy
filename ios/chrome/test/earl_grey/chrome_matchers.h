@@ -380,6 +380,10 @@ id<GREYMatcher> SettingsProfileMatcher();
 // Returns a matcher for the credit card settings collection view.
 id<GREYMatcher> SettingsCreditCardMatcher();
 
+// Returns a matcher for the delete button at the bottom of settings collection
+// views.
+id<GREYMatcher> SettingsBottomToolbarDeleteButton();
+
 // Returns a matcher for an autofill suggestion view.
 id<GREYMatcher> AutofillSuggestionViewMatcher();
 

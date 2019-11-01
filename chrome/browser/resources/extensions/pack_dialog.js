@@ -2,11 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import './pack_dialog_alert.js';
+import './strings.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
   /** @interface */
-  class PackDialogDelegate {
+  export class PackDialogDelegate {
     /**
      * Opens a file browser for the user to select the root directory.
      * @return {Promise<string>} A promise that is resolved with the path the
@@ -32,10 +39,13 @@ cr.define('extensions', function() {
     packExtension(rootPath, keyPath, flag, callback) {}
   }
 
-  const PackDialog = Polymer({
+  Polymer({
     is: 'extensions-pack-dialog',
+
+    _template: html`{__html_template__}`,
+
     properties: {
-      /** @type {extensions.PackDialogDelegate} */
+      /** @type {PackDialogDelegate} */
       delegate: Object,
 
       /** @private */
@@ -122,6 +132,3 @@ cr.define('extensions', function() {
       this.lastResponse_ = null;
     },
   });
-
-  return {PackDialog: PackDialog, PackDialogDelegate: PackDialogDelegate};
-});

@@ -479,7 +479,7 @@ void OptimizationGuideHintsManager::FetchTopHostsHints() {
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
         url_loader_factory_,
-        optimization_guide::features::GetOptimizationGuideServiceURL(),
+        optimization_guide::features::GetOptimizationGuideServiceGetHintsURL(),
         pref_service_);
   }
   hints_fetcher_->FetchOptimizationGuideServiceHints(
@@ -655,7 +655,7 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
         url_loader_factory_,
-        optimization_guide::features::GetOptimizationGuideServiceURL(),
+        optimization_guide::features::GetOptimizationGuideServiceGetHintsURL(),
         pref_service_);
   }
 
@@ -933,7 +933,8 @@ void OptimizationGuideHintsManager::OnNavigationStartOrRedirect(
     if (!hints_fetcher_) {
       hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
           url_loader_factory_,
-          optimization_guide::features::GetOptimizationGuideServiceURL(),
+          optimization_guide::features::
+              GetOptimizationGuideServiceGetHintsURL(),
           pref_service_);
     }
     hints_fetcher_->FetchOptimizationGuideServiceHints(

@@ -34,7 +34,6 @@
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/drive/drive_pref_names.h"
-#include "components/drive/file_change.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "extensions/common/extension.h"
@@ -375,20 +374,19 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
 
   // We will call fileManagerPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.
-  EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_, _, _))
-      .Times(0);
+  EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_, _)).Times(0);
   EXPECT_CALL(
       *disk_mount_manager_mock_,
       UnmountPath(chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
                       .AppendASCII("mount_path1")
                       .AsUTF8Unsafe(),
-                  chromeos::UNMOUNT_OPTIONS_NONE, _))
+                  _))
       .Times(1);
   EXPECT_CALL(*disk_mount_manager_mock_,
               UnmountPath(chromeos::CrosDisksClient::GetArchiveMountPoint()
                               .AppendASCII("archive_mount_path")
                               .AsUTF8Unsafe(),
-                          chromeos::UNMOUNT_OPTIONS_LAZY, _))
+                          _))
       .Times(1);
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/mount_test"))

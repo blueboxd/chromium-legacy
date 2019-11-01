@@ -206,14 +206,14 @@ std::string GetWebUiCssTextDefaults() {
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
   return GetWebUiCssTextDefaults(
-      resource_bundle.DecompressDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS));
+      resource_bundle.LoadDataResourceString(IDR_WEBUI_CSS_TEXT_DEFAULTS));
 }
 
 std::string GetWebUiCssTextDefaultsMd() {
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
   return GetWebUiCssTextDefaults(
-      resource_bundle.DecompressDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS_MD));
+      resource_bundle.LoadDataResourceString(IDR_WEBUI_CSS_TEXT_DEFAULTS_MD));
 }
 
 void AppendWebUiCssTextDefaults(std::string* html) {

@@ -96,6 +96,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
 
   const views::Label* artist_label_for_testing() const { return artist_label_; }
 
+  views::Button* GetHeaderRowForTesting() const;
+
  private:
   friend class MediaNotificationViewTest;
 

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -26,6 +27,21 @@
 
 namespace chromeos {
 namespace settings {
+
+namespace {
+
+// These values are used for metrics and should not change.
+enum class CrostiniSettingsEvent {
+  kEnableAdbSideloading = 0,
+  kDisableAdbSideloading = 1,
+  kMaxValue = kDisableAdbSideloading,
+};
+
+void LogEvent(CrostiniSettingsEvent action) {
+  base::UmaHistogramEnumeration("Crostini.SettingsEvent", action);
+}
+
+}  // namespace
 
 CrostiniHandler::CrostiniHandler(Profile* profile) : profile_(profile) {}
 
@@ -300,6 +316,8 @@ void CrostiniHandler::HandleEnableArcAdbRequest(const base::ListValue* args) {
   if (!CheckEligibilityToChangeArcAdbSideloading())
     return;
 
+  LogEvent(CrostiniSettingsEvent::kEnableAdbSideloading);
+
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kEnableAdbSideloadingRequested, true);
   prefs->CommitPendingWrite();
@@ -311,6 +329,8 @@ void CrostiniHandler::HandleDisableArcAdbRequest(const base::ListValue* args) {
   CHECK_EQ(0U, args->GetSize());
   if (!CheckEligibilityToChangeArcAdbSideloading())
     return;
+
+  LogEvent(CrostiniSettingsEvent::kDisableAdbSideloading);
 
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);

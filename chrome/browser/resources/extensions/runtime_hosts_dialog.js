@@ -2,8 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import './strings.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ItemDelegate} from './item.js';
 
   // A RegExp to roughly match acceptable patterns entered by the user.
   // exec'ing() this RegExp will match the following groups:
@@ -28,7 +37,7 @@ cr.define('extensions', function() {
       '(\\/\\*|\\/)?' +
       '$');
 
-  function getPatternFromSite(site) {
+  export function getPatternFromSite(site) {
     const res = patternRegExp.exec(site);
     assert(res);
     const scheme = res[1] || '*://';
@@ -38,11 +47,13 @@ cr.define('extensions', function() {
     return scheme + host + port + path;
   }
 
-  const RuntimeHostsDialog = Polymer({
+  Polymer({
     is: 'extensions-runtime-hosts-dialog',
 
+    _template: html`{__html_template__}`,
+
     properties: {
-      /** @type {!extensions.ItemDelegate} */
+      /** @type {!ItemDelegate} */
       delegate: Object,
 
       /** @type {string} */
@@ -216,9 +227,3 @@ cr.define('extensions', function() {
               });
     },
   });
-
-  return {
-    RuntimeHostsDialog: RuntimeHostsDialog,
-    getPatternFromSite: getPatternFromSite
-  };
-});

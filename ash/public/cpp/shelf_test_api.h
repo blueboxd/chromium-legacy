@@ -9,6 +9,10 @@
 
 #include "ash/ash_export.h"
 
+namespace views {
+class View;
+}
+
 namespace ash {
 
 // All methods operate on the shelf on the primary display.
@@ -25,6 +29,8 @@ class ASH_EXPORT ShelfTestApi {
   // Returns true if the shelf alignment is BOTTOM_LOCKED, which is not exposed
   // via prefs.
   virtual bool IsAlignmentBottomLocked() = 0;
+
+  virtual views::View* GetHomeButton() = 0;
 };
 
 }  // namespace ash

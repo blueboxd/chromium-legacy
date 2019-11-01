@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "ui/gfx/vsync_provider.h"
@@ -169,6 +170,29 @@ void PassThroughImageTransportSurface::SetVSyncEnabled(bool enabled) {
   GLSurfaceAdapter::SetVSyncEnabled(enabled);
 }
 
+void PassThroughImageTransportSurface::TrackMultiSurfaceSwap() {
+  // This code is a simple way of enforcing that we only vsync if one surface
+  // is swapping per frame. This provides single window cases a stable refresh
+  // while allowing multi-window cases to not slow down due to multiple syncs
+  // on a single thread. A better way to fix this problem would be to have
+  // each surface present on its own thread.
+  if (g_current_swap_generation_ == swap_generation_) {
+    // No other surface has swapped since we swapped last time.
+    if (g_num_swaps_in_current_swap_generation_ > 1)
+      g_last_multi_window_swap_generation_ = g_current_swap_generation_;
+    g_num_swaps_in_current_swap_generation_ = 0;
+    g_current_swap_generation_++;
+  }
+
+  swap_generation_ = g_current_swap_generation_;
+  g_num_swaps_in_current_swap_generation_++;
+
+  multiple_surfaces_swapped_ =
+      (g_num_swaps_in_current_swap_generation_ > 1) ||
+      (g_current_swap_generation_ - g_last_multi_window_swap_generation_ <
+       kMultiWindowSwapEnableVSyncDelay);
+}
+
 void PassThroughImageTransportSurface::UpdateVSyncEnabled() {
   if (is_gpu_vsync_disabled_) {
     SetVSyncEnabled(false);
@@ -177,33 +201,14 @@ void PassThroughImageTransportSurface::UpdateVSyncEnabled() {
 
   bool should_override_vsync = false;
   if (is_multi_window_swap_vsync_override_enabled_) {
-    // This code is a simple way of enforcing that we only vsync if one surface
-    // is swapping per frame. This provides single window cases a stable refresh
-    // while allowing multi-window cases to not slow down due to multiple syncs
-    // on a single thread. A better way to fix this problem would be to have
-    // each surface present on its own thread.
-
-    if (g_current_swap_generation_ == swap_generation_) {
-      // No other surface has swapped since we swapped last time.
-      if (g_num_swaps_in_current_swap_generation_ > 1)
-        g_last_multi_window_swap_generation_ = g_current_swap_generation_;
-      g_num_swaps_in_current_swap_generation_ = 0;
-      g_current_swap_generation_++;
-    }
-
-    swap_generation_ = g_current_swap_generation_;
-    g_num_swaps_in_current_swap_generation_++;
-
-    should_override_vsync =
-        (g_num_swaps_in_current_swap_generation_ > 1) ||
-        (g_current_swap_generation_ - g_last_multi_window_swap_generation_ <
-         kMultiWindowSwapEnableVSyncDelay);
+    should_override_vsync = multiple_surfaces_swapped_;
   }
   SetVSyncEnabled(!should_override_vsync);
 }
 
 void PassThroughImageTransportSurface::StartSwapBuffers(
     gfx::SwapResponse* response) {
+  TrackMultiSurfaceSwap();
   UpdateVSyncEnabled();
 
 #if DCHECK_IS_ON()
@@ -231,6 +236,28 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
 #endif
 
   if (delegate_) {
+    auto blocked_time_since_last_swap =
+        delegate_->GetGpuBlockedTimeSinceLastSwap();
+
+    if (!multiple_surfaces_swapped_) {
+      static constexpr base::TimeDelta kTimingMetricsHistogramMin =
+          base::TimeDelta::FromMicroseconds(5);
+      static constexpr base::TimeDelta kTimingMetricsHistogramMax =
+          base::TimeDelta::FromMilliseconds(500);
+      static constexpr uint32_t kTimingMetricsHistogramBuckets = 50;
+
+      base::TimeDelta delta =
+          response.timings.swap_end - response.timings.swap_start;
+      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+          "GPU.SwapTimeUs", delta, kTimingMetricsHistogramMin,
+          kTimingMetricsHistogramMax, kTimingMetricsHistogramBuckets);
+
+      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+          "GPU.GpuBlockedBetweenSwapsUs", blocked_time_since_last_swap,
+          kTimingMetricsHistogramMin, kTimingMetricsHistogramMax,
+          kTimingMetricsHistogramBuckets);
+    }
+
     SwapBuffersCompleteParams params;
     params.swap_response = std::move(response);
     delegate_->DidSwapBuffersComplete(std::move(params));

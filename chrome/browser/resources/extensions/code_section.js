@@ -2,8 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import './strings.m.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 
   /**
    * @param {number} totalCount
@@ -18,8 +25,10 @@ cr.define('extensions', function() {
     return Math.min(max, totalCount);
   }
 
-  const CodeSection = Polymer({
+  Polymer({
     is: 'extensions-code-section',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [I18nBehavior],
 
@@ -192,6 +201,3 @@ cr.define('extensions', function() {
       return this.isActive && !this.highlighted_;
     },
   });
-
-  return {CodeSection: CodeSection};
-});

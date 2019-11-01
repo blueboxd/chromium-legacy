@@ -16,10 +16,8 @@ Bug(none) virtual/mouseevent_fractional/fast/events/touch/ [ Skip ]
 Bug(none) virtual/scroll_customization/fast/events/touch/ [ Skip ]
 Bug(none) virtual/threaded/printing/ [ Skip ]
 Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
-
-# Filenames are too long on Windows.
-Bug(1014132) virtual/controls-refresh-high-contrast/ [ Skip ]
-Bug(1014132) virtual/controls-refresh/ [ Skip ]
+Bug(none) virtual/controls-refresh/ [ Skip ]
+Bug(none) virtual/controls-refresh-hc/ [ Skip ]
 
 # Fail before CompositeAfterPaint but pass with it.
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
@@ -124,6 +122,7 @@ Bug(none) http/tests/devtools/layers/layers-3d-view-after-update.js [ Failure ]
 Bug(none) http/tests/input/discard-events-to-unstable-iframe.html [ Failure ]
 Bug(none) http/tests/misc/destroy-middle-click-locked-target-crash.html [ Timeout ]
 Bug(none) http/tests/misc/synthetic-gesture-initiated-in-cross-origin-frame.html [ Failure ]
+Bug(none) paint/invalidation/window-resize/window-resize-child-background-image-fixed-centered.html [ Pass Failure ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
@@ -134,13 +133,12 @@ Bug(none) transforms/3d/general/background-visibility-layers.html [ Failure ]
 Bug(none) virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-22.html [ Crash ]
 Bug(none) virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
 Bug(none) virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
-Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Failure ]
-Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/scrollbar-mousedown-move-mouseup.html [ Failure ]
+Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/keyboard-scroll-page-scale.html [ Failure Pass ]
+Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-scroll.html [ Failure Pass ]
+Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-smooth-js-scroll.html [ Crash Pass ]
 
 # Loading an image in a subframe.
 crbug.com/959936 http/tests/images/image-decode-in-frame.html [ Failure ]
-
-crbug.com/959941 virtual/threaded-prefer-compositing/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Failure ]
 
 crbug.com/907601 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
 
@@ -148,8 +146,6 @@ crbug.com/907601 virtual/threaded-prefer-compositing/fast/scrolling/events/scrol
 crbug.com/937573 virtual/threaded-no-composited-antialiasing/animations/invisible-composited-animations-prevent-scroll.html [ Failure ]
 
 # Scrolling with the mouse wheel does not work.
-crbug.com/979352 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
-crbug.com/979352 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
 crbug.com/979352 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
 
 # Less invalidations or different invalidations without pixel failures.
@@ -218,6 +214,11 @@ Bug(none) paint/invalidation/scroll/scroll-with-transformed-parent-layer.html [ 
 Bug(none) external/wpt/css/css-position/hypothetical-box-scroll-parent.html [ Failure ]
 Bug(none) external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
 Bug(none) external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
+
+# Subpixel differences that look benign, but we can't rebaseline ref tests.
+Bug(none) fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
+Bug(none) fast/multicol/mixed-positioning-stacking-order.html [ Failure ]
+Bug(none) fullscreen/rendering/backdrop-object.html [ Failure ]
 
 # Text failures due to layerization differences
 Bug(none) compositing/overflow/ancestor-with-clip-path.html [ Failure ]
@@ -378,7 +379,7 @@ crbug.com/923429 css3/filters/backdrop-filter-plus-mask-large.html [ Failure ]
 crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-plus-mask.html [ Failure ]
 crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-plus-mask-large.html [ Failure ]
 
-crbug.com/940033 virtual/threaded-prefer-compositing/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
+crbug.com/940033 virtual/threaded-prefer-compositing/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Pass Failure ]
 
 crbug.com/979389 ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
 
@@ -422,23 +423,9 @@ crbug.com/980290 scrollingcoordinator/non-fast-scrollable-visibility-change.html
 crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-frame-no-scroll-manual.tentative.html [ Failure ]
 crbug.com/966981 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Timeout ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scroll-behavior/overscroll-behavior.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Failure ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-position-fixed-scrolled-document.html [ Failure ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-position-fixed-scroller-scrolled-document.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-position-fixed-scroller.html [ Failure ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-root-scroller.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/reset-scroll-in-onscroll.html [ Timeout ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/scroll-non-composited-scroller.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/scroll-then-composite.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-document.html [ Timeout ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Timeout ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-window.html [ Timeout ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-to-document.html [ Timeout ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Timeout ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-to-window.html [ Timeout ]
-
-# Added to land BGPT-fixes
-crbug.com/979002 virtual/threaded-prefer-compositing/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]
 
 # We need the inner viewport scroll layer.
 crbug.com/1015625 inspector-protocol/emulation/device-emulation-restore.js [ Crash ]

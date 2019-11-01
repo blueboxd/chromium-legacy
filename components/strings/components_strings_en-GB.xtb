@@ -30,7 +30,6 @@
 <translation id="1113869188872983271">&amp;Undo reorder</translation>
 <translation id="1125573121925420732">Warnings may be common while websites update their security. This should improve soon.</translation>
 <translation id="1126551341858583091">The size on the local storage is <ph name="CRASH_SIZE" />.</translation>
-<translation id="1127259989763091435">Confirm &amp; save card to Google Account?</translation>
 <translation id="112840717907525620">Policy cache OK</translation>
 <translation id="1131264053432022307">Image that you copied</translation>
 <translation id="1150979032973867961">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -158,7 +157,6 @@
 <translation id="1656489000284462475">Pick up</translation>
 <translation id="1662550410081243962">Save and fill payment methods</translation>
 <translation id="1663943134801823270">Cards and addresses are from Chrome. You can manage them in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
-<translation id="1669987054044193553">Confirm &amp; save</translation>
 <translation id="1671391448414634642">Pages in <ph name="SOURCE_LANGUAGE" /> will be translated to <ph name="TARGET_LANGUAGE" /> from now on.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> normally uses encryption to protect your information. When Google Chrome tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Google Chrome stopped the connection before any data was exchanged.</translation>
 <translation id="168841957122794586">The server certificate contains a weak cryptographic key.</translation>
@@ -188,7 +186,6 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Cardholder Name</translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
-<translation id="1822370876374026111">To pay faster next time, add your card and billing address to your Google account and to this device.</translation>
 <translation id="1822540298136254167">Websites that you visit and time spent on them</translation>
 <translation id="1826516787628120939">Checking</translation>
 <translation id="1834321415901700177">This site contains harmful programs</translation>
@@ -224,7 +221,6 @@
 <translation id="2003709556000175978">Reset your password now</translation>
 <translation id="2003775180883135320">Quad punch top</translation>
 <translation id="2025186561304664664">Proxy is set to auto-configured.</translation>
-<translation id="202813660234680402">No, don't add</translation>
 <translation id="2030481566774242610">Did you mean <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Checking the proxy and the firewall<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936">Pages in <ph name="LANGUAGE" /> will not be translated.</translation>
@@ -591,6 +587,7 @@
 <translation id="3884278016824448484">Conflicting device identifier</translation>
 <translation id="3885155851504623709">Parish</translation>
 <translation id="3890664840433101773">Add email</translation>
+<translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">The card is expired</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
@@ -644,7 +641,6 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> more item}other{<ph name="ITEM_COUNT" /> more items}}</translation>
 <translation id="4176463684765177261">Disabled</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
-<translation id="4193750898749511769">To pay faster next time, add your card and billing address to your Google account.</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Checking firewall and antivirus configurations<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -763,7 +759,6 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> search suggestion</translation>
 <translation id="4742407542027196863">Manage passwords…</translation>
 <translation id="4744603770635761495">Executable Path</translation>
-<translation id="47454865135383664">Add card to Google Account?</translation>
 <translation id="4750917950439032686">Your information (for example, passwords or credit card numbers) is private when it is sent to this site.</translation>
 <translation id="4756388243121344051">&amp;History</translation>
 <translation id="4758311279753947758">Add contact info</translation>
@@ -1007,7 +1002,6 @@
 <translation id="5932224571077948991">Site shows intrusive or misleading ads</translation>
 <translation id="5939847200023027600">PDF Compositor Service</translation>
 <translation id="5946937721014915347">Opening <ph name="SITE_NAME" />…</translation>
-<translation id="5947933617628957894">Yes, add</translation>
 <translation id="5951495562196540101">Can't enrol with consumer account (packaged licence available).</translation>
 <translation id="5967592137238574583">Edit Contact Info</translation>
 <translation id="5967867314010545767">Remove from history</translation>
@@ -1101,7 +1095,6 @@
 <translation id="6410264514553301377">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium can help you protect your Google account and change your password.</translation>
 <translation id="6427730057873428458">Gate fold</translation>
-<translation id="6431585503458005759">Don't store</translation>
 <translation id="6433490469411711332">Edit contact info</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> refused to connect.</translation>
 <translation id="6434309073475700221">Discard</translation>
@@ -1117,7 +1110,6 @@
 <translation id="6489534406876378309">Start uploading crashes</translation>
 <translation id="6499038740797743453">Reset password?</translation>
 <translation id="6507833130742554667">Credit and debit cards are accepted.</translation>
-<translation id="650855688985305916">Yes, store</translation>
 <translation id="6508722015517270189">Restart Chrome</translation>
 <translation id="6517596291481585650">Warning: This policy was not merged as a list as specified by policy because it is not a list.</translation>
 <translation id="6518133107902771759">Verify</translation>
@@ -1255,7 +1247,6 @@ Additional details:
 <translation id="7298195798382681320">Recommended</translation>
 <translation id="7300012071106347854">Cobalt blue</translation>
 <translation id="7302712225291570345">'<ph name="TEXT" />'</translation>
-<translation id="7303701124147721189">To pay faster next time, store your card and billing address in your Google account and on this device.</translation>
 <translation id="7304030187361489308">High</translation>
 <translation id="7309308571273880165">Crash report captured on <ph name="CRASH_TIME" /> (upload requested by user, not yet uploaded)</translation>
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" /> warnings</translation>
@@ -1482,7 +1473,6 @@ Additional details:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">If you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this site<ph name="END_LINK" /> before the harmful programs have been removed.</translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
-<translation id="836241887727198552">Store card in Google Account?</translation>
 <translation id="8363502534493474904">Turning off aeroplane mode</translation>
 <translation id="8364627913115013041">Not set.</translation>
 <translation id="8368476060205742148">Google Play services</translation>
@@ -1500,7 +1490,6 @@ Additional details:
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433057134996913067">This will sign you out of most websites.</translation>
 <translation id="8437238597147034694">&amp;Undo move</translation>
-<translation id="8440508849222143646">To pay faster next time, store your card and billing address in your Google account.</translation>
 <translation id="8461694314515752532">Encrypt synced data with your own sync passphrase</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 credit card}other{# credit cards}}</translation>
 <translation id="8473863474539038330">Addresses and more</translation>
@@ -1524,7 +1513,6 @@ Additional details:
 <translation id="861775596732816396">Size 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Save This Card to This Device</translation>
-<translation id="8626112503828625890">Store billing details in Google Account?</translation>
 <translation id="8647750283161643317">Reset all to default</translation>
 <translation id="8663226718884576429">Order Summary, <ph name="TOTAL_LABEL" />, More Details</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, answer, <ph name="ANSWER" /></translation>

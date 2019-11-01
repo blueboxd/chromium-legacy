@@ -31,7 +31,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/scrollbar_size.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
@@ -204,46 +203,6 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
        infobar_container_size.width(), contents_size.width()});
 
   return gfx::Size(min_width, min_height);
-}
-
-gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
-  // This function returns the area the Find Bar can be laid out within. When
-  // the location bar/OmniBox is visible, the bounding box is the area extending
-  // from the bottom edge of the location bar/OmniBox to the bottom of the
-  // "user-perceived content area" of the browser window. The width matches the
-  // width of the location bar/OmniBox. If the location bar/OmniBox is not
-  // visible, the returned area is the full "user-perceived content area",
-  // excluding any vertical scrollbar.
-  // The "user-perceived content area" excludes the detached bookmark bar (in
-  // the New Tab case) and any infobars since they are not _visually_ connected
-  // to the Toolbar.
-  gfx::Rect bounding_box;
-  if (!immersive_mode_controller_->IsEnabled() ||
-      immersive_mode_controller_->IsRevealed()) {
-    bounding_box =
-        browser_view_->toolbar_button_provider()->GetFindBarBoundingBox(
-            contents_container_->height());
-  }
-  if (!bounding_box.IsEmpty())
-    return bounding_box;
-
-  // Otherwise, use the contents container minus any infobars and detached
-  // bookmark bar from the top and a scrollbar width from the appropriate edge.
-  bounding_box = contents_container_->ConvertRectToWidget(
-      contents_container_->GetLocalBounds());
-  // Under ChromeOS, the top_container_ may include the title bar for hosted
-  // apps. Just make sure something of consequence is visible before it's height
-  // is used.
-  const int top_container_height = (browser_view_->tabstrip()->GetVisible() ||
-                                    browser_view_->toolbar()->GetVisible() ||
-                                    browser_view_->IsBookmarkBarVisible())
-                                       ? top_container_->height()
-                                       : 0;
-  if (base::i18n::IsRTL())
-    bounding_box.Inset(gfx::scrollbar_size(), top_container_height, 0, 0);
-  else
-    bounding_box.Inset(0, top_container_height, gfx::scrollbar_size(), 0);
-  return bounding_box;
 }
 
 gfx::NativeView BrowserViewLayout::GetHostView() {

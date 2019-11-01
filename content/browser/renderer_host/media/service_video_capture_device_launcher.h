@@ -8,6 +8,7 @@
 #include "content/browser/renderer_host/media/ref_counted_video_source_provider.h"
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/public/browser/video_capture_device_launcher.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
@@ -47,7 +48,8 @@ class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
 
   void OnCreatePushSubscriptionCallback(
       video_capture::mojom::VideoSourcePtr source,
-      video_capture::mojom::PushVideoStreamSubscriptionPtr subscription,
+      mojo::Remote<video_capture::mojom::PushVideoStreamSubscription>
+          subscription,
       base::OnceClosure connection_lost_cb,
       video_capture::mojom::CreatePushSubscriptionResultCode result_code,
       const media::VideoCaptureParams& params);

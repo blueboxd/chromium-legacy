@@ -69,7 +69,10 @@ void ImeService::SimpleDownloadFinished(SimpleDownloadCallback callback,
   if (file.empty()) {
     callback(SIMPLE_DOWNLOAD_ERROR_FAILED, "");
   } else {
-    callback(SIMPLE_DOWNLOAD_ERROR_OK, file.MaybeAsASCII().c_str());
+    // Convert downloaded file path to an whitelisted path.
+    base::FilePath target(kUserInputMethodsDirPath);
+    target = target.Append(kLanguageDataDirName).Append(file.BaseName());
+    callback(SIMPLE_DOWNLOAD_ERROR_OK, target.MaybeAsASCII().c_str());
   }
 }
 
@@ -101,11 +104,16 @@ int ImeService::SimpleDownloadToFile(const char* url,
     callback(SIMPLE_DOWNLOAD_ERROR_ABORTED, "");
     LOG(ERROR) << "Failed to download due to missing binding.";
   } else {
+    // Target path MUST be relative for security concerns.
+    // Compose a relative download path beased on the request.
+    base::FilePath initial_path(file_path);
+    base::FilePath relative_path(kInputMethodsDirName);
+    relative_path = relative_path.Append(kLanguageDataDirName)
+                        .Append(initial_path.BaseName());
+
     GURL download_url(url);
-    // |file_path| must be relative.
-    base::FilePath relative_file_path(file_path);
     platform_access_->DownloadImeFileTo(
-        download_url, relative_file_path,
+        download_url, relative_path,
         base::BindOnce(&ImeService::SimpleDownloadFinished,
                        base::Unretained(this), std::move(callback)));
   }

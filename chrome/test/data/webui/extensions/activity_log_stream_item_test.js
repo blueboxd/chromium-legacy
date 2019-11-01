@@ -3,17 +3,23 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for activity-log-stream-item. */
+
+import {ARG_URL_PLACEHOLDER} from 'chrome://extensions/extensions.js';
+
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {testVisible} from './test_util.js';
+
 suite('ExtensionsActivityLogStreamItemTest', function() {
   /**
    * Extension activityLogStreamItem created before each test.
-   * @type {extensions.ActivityLogStreamItem}
+   * @type {ActivityLogStreamItem}
    */
   let activityLogStreamItem;
-  let testVisible;
+  let boundTestVisible;
 
   /**
    * StreamItem data for the activityLogStreamItem
-   * @type {extensions.StreamItem}
+   * @type {StreamItem}
    */
   let testStreamItem;
 
@@ -30,10 +36,9 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
       expanded: false
     };
 
-    activityLogStreamItem = new extensions.ActivityLogStreamItem();
+    activityLogStreamItem = document.createElement('activity-log-stream-item');
     activityLogStreamItem.data = testStreamItem;
-    testVisible =
-        extension_test_util.testVisible.bind(null, activityLogStreamItem);
+    boundTestVisible = testVisible.bind(null, activityLogStreamItem);
 
     document.body.appendChild(activityLogStreamItem);
   });
@@ -41,13 +46,13 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
   test(
       'item not expandable if it has no page URL, args or web request info',
       function() {
-        Polymer.dom.flush();
+        flush();
 
-        testVisible('cr-expand-button', true);
+        boundTestVisible('cr-expand-button', true);
 
         // Since |cr-expand-button| is always visible, we test that the
         // |cr-icon-button| within is not visible.
-        testVisible('cr-icon-button', false);
+        boundTestVisible('cr-icon-button', false);
       });
 
   test(
@@ -67,19 +72,19 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
 
         activityLogStreamItem.set('data', testStreamItem);
 
-        Polymer.dom.flush();
-        testVisible('cr-expand-button', true);
+        flush();
+        boundTestVisible('cr-expand-button', true);
         activityLogStreamItem.$$('cr-expand-button').click();
 
-        Polymer.dom.flush();
-        testVisible('#page-url-link', true);
-        testVisible('#args-list', true);
-        testVisible('#web-request-section', true);
+        flush();
+        boundTestVisible('#page-url-link', true);
+        boundTestVisible('#args-list', true);
+        boundTestVisible('#web-request-section', true);
       });
 
   test('placeholder arg values are replaced by the argUrl', function() {
     const argUrl = 'arg.url';
-    const placeholder = extensions.ARG_URL_PLACEHOLDER;
+    const placeholder = ARG_URL_PLACEHOLDER;
     // The <arg_url> placeholder except the '<' is escaped into a unicode
     // string to simulate the serializer on the C++ side.
     const escapedPlaceholder = '\\u003Carg_url>';
@@ -101,12 +106,12 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
 
     activityLogStreamItem.set('data', testStreamItem);
 
-    Polymer.dom.flush();
-    testVisible('cr-expand-button', true);
+    flush();
+    boundTestVisible('cr-expand-button', true);
     activityLogStreamItem.$$('cr-expand-button').click();
 
-    Polymer.dom.flush();
-    testVisible('#args-list', true);
+    flush();
+    boundTestVisible('#args-list', true);
 
     const argsDisplayed =
         activityLogStreamItem.shadowRoot.querySelectorAll('.arg');

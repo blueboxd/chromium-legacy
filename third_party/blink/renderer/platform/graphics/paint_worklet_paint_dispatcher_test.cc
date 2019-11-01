@@ -10,8 +10,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_type.h"
 
 using ::testing::_;
 using ::testing::NiceMock;
@@ -22,8 +22,7 @@ namespace {
 // We need a thread (or multiple threads) for the (mock) worklets to run on.
 std::unique_ptr<Thread> CreateTestThread(const char* name) {
   return Platform::Current()->CreateThread(
-      ThreadCreationParams(WebThreadType::kTestThread)
-          .SetThreadNameForTest(name));
+      ThreadCreationParams(ThreadType::kTestThread).SetThreadNameForTest(name));
 }
 
 class PaintWorkletPaintDispatcherAsyncTest : public ::testing::Test {

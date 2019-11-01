@@ -208,7 +208,7 @@ VideoTrackRecorder::Encoder::Encoder(
     return;
 
   encoding_thread_ = Thread::CreateThread(
-      ThreadCreationParams(WebThreadType::kVideoEncoderThread));
+      ThreadCreationParams(ThreadType::kVideoEncoderThread));
 
   encoding_task_runner_ = encoding_thread_->GetTaskRunner();
 }

@@ -23,24 +23,21 @@ NavigationState::~NavigationState() {
 std::unique_ptr<NavigationState> NavigationState::CreateBrowserInitiated(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
-    base::TimeTicks time_commit_requested,
     mojom::FrameNavigationControl::CommitNavigationCallback callback,
     mojom::NavigationClient::CommitNavigationCallback
         per_navigation_mojo_interface_callback,
     std::unique_ptr<NavigationClient> navigation_client,
     bool was_initiated_in_this_frame) {
   return base::WrapUnique(new NavigationState(
-      std::move(common_params), std::move(commit_params), time_commit_requested,
-      false, std::move(callback),
-      std::move(per_navigation_mojo_interface_callback),
+      std::move(common_params), std::move(commit_params), false,
+      std::move(callback), std::move(per_navigation_mojo_interface_callback),
       std::move(navigation_client), was_initiated_in_this_frame));
 }
 
 // static
 std::unique_ptr<NavigationState> NavigationState::CreateContentInitiated() {
   return base::WrapUnique(new NavigationState(
-      CreateCommonNavigationParams(), CreateCommitNavigationParams(),
-      base::TimeTicks(), true,
+      CreateCommonNavigationParams(), CreateCommitNavigationParams(), true,
       content::mojom::FrameNavigationControl::CommitNavigationCallback(),
       content::mojom::NavigationClient::CommitNavigationCallback(), nullptr,
       true));
@@ -79,7 +76,6 @@ void NavigationState::RunPerNavigationInterfaceCommitNavigationCallback(
 NavigationState::NavigationState(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
-    base::TimeTicks time_commit_requested,
     bool is_content_initiated,
     mojom::FrameNavigationControl::CommitNavigationCallback callback,
     mojom::NavigationClient::CommitNavigationCallback
@@ -91,7 +87,6 @@ NavigationState::NavigationState(
       is_content_initiated_(is_content_initiated),
       common_params_(std::move(common_params)),
       commit_params_(std::move(commit_params)),
-      time_commit_requested_(time_commit_requested),
       navigation_client_(std::move(navigation_client)),
       commit_callback_(std::move(callback)),
       per_navigation_mojo_interface_commit_callback_(

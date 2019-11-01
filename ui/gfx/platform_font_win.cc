@@ -43,10 +43,6 @@
 
 namespace {
 
-// Enable the use of PlatformFontSkia instead of PlatformFontWin.
-const base::Feature kPlatformFontSkiaOnWindows{
-    "PlatformFontSkiaOnWindows", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Sets style properties on |font_info| based on |font_style|.
 void SetLogFontStyle(int font_style, LOGFONT* font_info) {
   font_info->lfUnderline = (font_style & gfx::Font::UNDERLINE) != 0;
@@ -238,6 +234,10 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
 }  // namespace
 
 namespace gfx {
+
+// Enable the use of PlatformFontSkia instead of PlatformFontWin.
+const base::Feature kPlatformFontSkiaOnWindows{
+    "PlatformFontSkiaOnWindows", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // static
 PlatformFontWin::HFontRef* PlatformFontWin::base_font_ref_;

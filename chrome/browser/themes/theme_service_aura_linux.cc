@@ -86,7 +86,7 @@ ThemeServiceAuraLinux::ThemeServiceAuraLinux() = default;
 ThemeServiceAuraLinux::~ThemeServiceAuraLinux() = default;
 
 bool ThemeServiceAuraLinux::ShouldInitWithSystemTheme() const {
-  return profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
+  return ShouldUseSystemThemeForProfile(profile());
 }
 
 void ThemeServiceAuraLinux::UseSystemTheme() {
@@ -116,4 +116,11 @@ void ThemeServiceAuraLinux::FixInconsistentPreferencesIfNeeded() {
       prefs->GetBoolean(prefs::kUsesSystemTheme)) {
     prefs->SetBoolean(prefs::kUsesSystemTheme, false);
   }
+}
+
+// static
+bool ThemeServiceAuraLinux::ShouldUseSystemThemeForProfile(
+    const Profile* profile) {
+  return !profile || (!profile->IsSupervised() &&
+                      profile->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme));
 }

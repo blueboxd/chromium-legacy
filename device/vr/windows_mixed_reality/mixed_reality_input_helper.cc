@@ -317,13 +317,13 @@ mojom::XRInputSourceStatePtr MixedRealityInputHelper::ParseWindowsSourceState(
 
   // Grip position should *only* be specified if the controller is tracked.
   if (is_tracked)
-    input_state->grip = origin_from_grip;
+    input_state->mojo_from_input = origin_from_grip;
 
   mojom::XRInputSourceDescriptionPtr description =
       mojom::XRInputSourceDescription::New();
 
   input_state->emulated_position = emulated_position;
-  description->pointer_offset = grip_from_pointer;
+  description->input_from_pointer = grip_from_pointer;
 
   if (is_voice) {
     description->target_ray_mode = mojom::XRTargetRayMode::GAZING;

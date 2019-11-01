@@ -5,11 +5,26 @@
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_filter.h"
 
 #include "base/strings/string16.h"
+#include "build/branding_buildflags.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 
 namespace credential_provider {
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const CLSID CLSID_CGaiaCredentialProviderFilter = {
+    0xaec62ffe,
+    0x6617,
+    0x4685,
+    {0xa0, 0x80, 0xb1, 0x1a, 0x84, 0x8a, 0x06, 0x07}};
+#else
+const CLSID CLSID_CGaiaCredentialProviderFilter = {
+    0xfd768777,
+    0x340e,
+    0x4426,
+    {0x9b, 0x07, 0x8f, 0xdf, 0x48, 0x9f, 0x1f, 0xf9}};
+#endif
 
 CGaiaCredentialProviderFilter::CGaiaCredentialProviderFilter() = default;
 

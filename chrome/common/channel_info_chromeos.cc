@@ -13,7 +13,7 @@ namespace {
 
 version_info::Channel g_chromeos_channel = version_info::Channel::UNKNOWN;
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Sets the |g_chromeos_channel|.
 void SetChannel(const std::string& channel) {
   if (channel == "stable-channel")

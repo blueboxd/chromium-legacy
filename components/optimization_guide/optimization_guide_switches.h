@@ -21,7 +21,8 @@ namespace switches {
 extern const char kHintsProtoOverride[];
 extern const char kFetchHintsOverride[];
 extern const char kFetchHintsOverrideTimer[];
-extern const char kOptimizationGuideServiceURL[];
+extern const char kOptimizationGuideServiceGetHintsURL[];
+extern const char kOptimizationGuideServiceGetModelsURL[];
 extern const char kOptimizationGuideServiceAPIKey[];
 extern const char kPurgeHintCacheStore[];
 extern const char kDisableFetchingHintsAtNavigationStartForTesting[];

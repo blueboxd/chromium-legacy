@@ -7,6 +7,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
+#include "ash/home_screen/window_transform_to_home_screen_animation.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -43,102 +44,6 @@ constexpr float kMinimumWindowScaleDuringDragging = 0.2f;
 // window dragging.
 constexpr base::TimeDelta kShowOverviewTimeWhenDragSuspend =
     base::TimeDelta::FromMilliseconds(40);
-
-// The time to do window transform to scale up to its original position or
-// scale down to homescreen animation.
-constexpr base::TimeDelta kWindowScaleUpOrDownTime =
-    base::TimeDelta::FromMilliseconds(350);
-
-// The delay to do window opacity fade out when scaling down the dragged window.
-constexpr base::TimeDelta kWindowFadeOutDelay =
-    base::TimeDelta::FromMilliseconds(100);
-
-// The window scale down factor if we head to home screen after drag ends.
-constexpr float kWindowScaleDownFactor = 0.001f;
-
-// The class the does the dragged window scale down animation to home screen
-// after drag ends. The window will be minimized after animation complete.
-class WindowTransformToHomeScreenAnimation
-    : public ui::ImplicitAnimationObserver,
-      public aura::WindowObserver {
- public:
-  WindowTransformToHomeScreenAnimation(
-      aura::Window* window,
-      base::Optional<BackdropWindowMode> original_backdrop_mode)
-      : window_(window), original_backdrop_mode_(original_backdrop_mode) {
-    window_->AddObserver(this);
-
-    ui::ScopedLayerAnimationSettings settings(window_->layer()->GetAnimator());
-    settings.SetTransitionDuration(kWindowScaleUpOrDownTime);
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    settings.AddObserver(this);
-    window_->layer()->GetAnimator()->SchedulePauseForProperties(
-        kWindowFadeOutDelay, ui::LayerAnimationElement::OPACITY);
-    window_->layer()->SetTransform(GetWindowTransformToHomeScreen());
-    window_->layer()->SetOpacity(0.f);
-  }
-
-  ~WindowTransformToHomeScreenAnimation() override {
-    if (window_)
-      window_->RemoveObserver(this);
-  }
-
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override {
-    // Minimize the dragged window after transform animation is completed.
-    ScopedAnimationDisabler disable(window_);
-    window_->Hide();
-    WindowState::Get(window_)->Minimize();
-
-    // Reset its transform to identity transform and its original backdrop mode.
-    window_->layer()->SetTransform(gfx::Transform());
-    window_->layer()->SetOpacity(1.f);
-    if (original_backdrop_mode_.has_value())
-      window_->SetProperty(kBackdropWindowMode, *original_backdrop_mode_);
-
-    delete this;
-  }
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override {
-    window_ = nullptr;
-    delete this;
-  }
-
- private:
-  // Returns the transform that should be applied to the dragged window if we
-  // should head to homescreen after dragging.
-  gfx::Transform GetWindowTransformToHomeScreen() {
-    gfx::Transform transform;
-    HomeScreenDelegate* home_screen_delegate =
-        Shell::Get()->home_screen_controller()->delegate();
-    DCHECK(home_screen_delegate);
-    const gfx::Rect app_list_item_bounds =
-        home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
-            window_);
-    if (!app_list_item_bounds.IsEmpty()) {
-      const gfx::Rect window_bounds = window_->GetBoundsInScreen();
-      transform.Translate(app_list_item_bounds.x(), app_list_item_bounds.y());
-      transform.Scale(
-          float(app_list_item_bounds.width()) / float(window_bounds.width()),
-          float(app_list_item_bounds.height()) / float(window_bounds.height()));
-    } else {
-      const gfx::Rect work_area =
-          screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-              window_);
-      transform.Translate(work_area.width() / 2, work_area.height() / 2);
-      transform.Scale(kWindowScaleDownFactor, kWindowScaleDownFactor);
-    }
-    return transform;
-  }
-
-  aura::Window* window_;
-  base::Optional<BackdropWindowMode> original_backdrop_mode_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowTransformToHomeScreenAnimation);
-};
 
 }  // namespace
 
@@ -519,13 +424,11 @@ IndicatorState DragWindowFromShelfController::GetIndicatorState(
     return IndicatorState::kNone;
 
   IndicatorState indicator_state =
-      ::ash::GetIndicatorState(window_, GetSnapPosition(location_in_screen));
+      ::ash::GetIndicatorState(GetSnapPosition(location_in_screen));
   // Do not show drag-to-snap or cannot-snap drag indicator so that the drag is
   // is less distracting.
-  if (indicator_state == IndicatorState::kDragArea ||
-      indicator_state == IndicatorState::kCannotSnap) {
+  if (indicator_state == IndicatorState::kDragAreaBoth)
     indicator_state = IndicatorState::kNone;
-  }
 
   return indicator_state;
 }

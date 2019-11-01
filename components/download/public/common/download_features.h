@@ -28,10 +28,6 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kParallelDownloading;
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kRefreshExpirationDate;
 #endif
 
-// Whether concurrent downloads to the same target path should be allowed.
-COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
-    kPreventDownloadsWithSamePath;
-
 // Whether in-progress download manager will be used to initialize download
 // service.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature

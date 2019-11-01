@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.embedder_support.view.ContentView;
@@ -65,7 +64,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         mBottomSheetController.getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetStateChanged(int newState) {
-                if (newState == BottomSheet.SheetState.HIDDEN) destroyContent();
+                if (newState == BottomSheetController.SheetState.HIDDEN) destroyContent();
             }
         });
     }
@@ -133,7 +132,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
 
     private void onToolbarClick() {
         if (mBottomSheetController.getBottomSheet().getSheetState()
-                == BottomSheet.SheetState.PEEK) {
+                == BottomSheetController.SheetState.PEEK) {
             mBottomSheetController.expandSheet();
         }
     }

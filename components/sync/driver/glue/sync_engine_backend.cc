@@ -507,7 +507,11 @@ void SyncEngineBackend::DoShutdown(ShutdownReason reason) {
   if (nigori_handler_proxy_) {
     sync_encryption_handler_->RemoveObserver(nigori_handler_proxy_.get());
   }
-  if (nigori_controller_) {
+  // Having no |sync_manager_| means that initialization was failed and NIGORI
+  // wasn't connected and started.
+  // TODO(crbug.com/922900): this logic seems fragile, maybe initialization and
+  // connecting of NIGORI needs refactoring.
+  if (nigori_controller_ && sync_manager_) {
     sync_manager_->GetModelTypeConnector()->DisconnectNonBlockingType(NIGORI);
     nigori_controller_->Stop(reason, base::DoNothing());
   }

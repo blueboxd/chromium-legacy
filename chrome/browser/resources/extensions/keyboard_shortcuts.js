@@ -2,17 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('extensions', function() {
-  'use strict';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import './shortcut_input.js';
+
+import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ItemBehavior} from './item_behavior.js';
+import {KeyboardShortcutDelegate} from './keyboard_shortcut_delegate.js';
 
   // The UI to display and manage keyboard shortcuts set for extension commands.
-  const KeyboardShortcuts = Polymer({
+  Polymer({
     is: 'extensions-keyboard-shortcuts',
 
-    behaviors: [CrContainerShadowBehavior, extensions.ItemBehavior],
+    _template: html`{__html_template__}`,
+
+    behaviors: [CrContainerShadowBehavior, ItemBehavior],
 
     properties: {
-      /** @type {!extensions.KeyboardShortcutDelegate} */
+      /** @type {!KeyboardShortcutDelegate} */
       delegate: Object,
 
       /** @type {Array<!chrome.developerPrivate.ExtensionInfo>} */
@@ -95,8 +106,3 @@ cr.define('extensions', function() {
           (event.target.value));
     },
   });
-
-  return {
-    KeyboardShortcuts: KeyboardShortcuts,
-  };
-});

@@ -7,6 +7,8 @@ module ash.mojom;
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/display/mojom/display.mojom";
 
+// This API is used for communication between Settings WebUI and Ash C++ code.
+
 // All points, bounds, and insets are in display pixels unless otherwise
 // sepcified.
 
@@ -67,6 +69,26 @@ enum DisplayConfigOperation {
 enum DisplayConfigSource {
   kUser = 0,
   kPolicy
+};
+
+// Describes the options the DisplayConfigProperties.rotation and
+// DisplayUnitInfo.rotation_options can be set to.
+enum DisplayRotationOptions {
+  // In physical tablet state, enables auto-rotation and clears the user
+  // rotation lock. Otherwise, it behaves the same as kZeroDegrees.
+  kAutoRotate,
+  // In physical tablet state, Sets the user rotation lock to 0 degrees.
+  // Otherwise, it sets the display rotation to 0.
+  kZeroDegrees,
+  // In physical tablet state, Sets the user rotation lock to 90 degrees.
+  // Otherwise, it sets the display rotation 90.
+  k90Degrees,
+  // In physical tablet state, Sets the user rotation lock to 180 degrees.
+  // Otherwise, it sets the display rotation 180.
+  k180Degrees,
+  // In physical tablet state, Sets the user rotation lock to 270 degrees.
+  // Otherwise, it sets the display rotation 270.
+  k270Degrees,
 };
 
 // Defines a pair of display + touch points used for touch calibration.
@@ -134,7 +156,7 @@ struct Edid {
 
 // Struct wrapper so that the property can be optional.
 struct DisplayRotation {
-  display.mojom.Rotation rotation;
+  DisplayRotationOptions rotation;
 };
 
 // Defines the properties for a display mode, i.e. a valid size and scale.
@@ -168,8 +190,8 @@ struct DisplayUnitInfo {
   bool is_internal;
   // True if this display is enabled.
   bool is_enabled;
-  // True when the display is in tablet mode.
-  bool is_tablet_mode;
+  // True when the device is in tablet physical state.
+  bool is_in_tablet_physical_state;
   // True if this display has a touch input device associated with it.
   bool has_touch_support;
   // True if this display has an accelerometer associated with it.
@@ -178,8 +200,8 @@ struct DisplayUnitInfo {
   double dpi_x;
   // The number of pixels per inch along the y-axis.
   double dpi_y;
-  // The display's clockwise rotation.
-  display.mojom.Rotation rotation;
+  // The display rotation options.
+  DisplayRotationOptions rotation_options;
   // The display's logical bounds.
   gfx.mojom.Rect bounds;
   // The display's ovserscan insets within its screen's bounds.
@@ -207,7 +229,9 @@ struct DisplayConfigProperties {
   // Note: overscan values may not be negative or larger than a half of the
   // screen's size. Overscan cannot be changed on the internal monitor.
   gfx.mojom.Insets? overscan;
-  // If provided updates the display's rotation.
+  // If provided updates the display's rotation, or if the device is in a
+  // physical tablet state, it can be used to set or clear the user rotation
+  // lock, enabling or disabling auto-rotation.
   DisplayRotation? rotation;
   // If provided, updates the display's logical bounds origin. Note: when
   // updating the display origin, some constraints will be applied. so the final

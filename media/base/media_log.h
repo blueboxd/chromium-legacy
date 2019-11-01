@@ -60,11 +60,6 @@ class MEDIA_EXPORT MediaLog {
   static MediaLogEvent::Type MediaLogLevelToEventType(MediaLogLevel level);
   static std::string EventTypeToString(MediaLogEvent::Type type);
 
-  // Returns a string version of the status, unique to each PipelineStatus, and
-  // not including any ':'. This makes it suitable for usage in
-  // MediaError.message as the UA-specific-error-code.
-  static std::string PipelineStatusToString(PipelineStatus status);
-
   static std::string BufferingStateToString(
       BufferingState state,
       BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN);

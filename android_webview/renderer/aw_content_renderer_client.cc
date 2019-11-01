@@ -250,7 +250,7 @@ void AwContentRendererClient::PrepareErrorPage(
   else
     replacements.push_back("");
   *error_html = base::ReplaceStringPlaceholders(
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_AW_LOAD_ERROR_HTML),
       replacements, nullptr);
 }

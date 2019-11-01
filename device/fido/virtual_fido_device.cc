@@ -211,6 +211,15 @@ VirtualFidoDevice::GenerateAttestationCertificate(
 void VirtualFidoDevice::StoreNewKey(
     base::span<const uint8_t> key_handle,
     VirtualFidoDevice::RegistrationData registration_data) {
+  // Skip storing the registration if this is a dummy request. This prevents
+  // dummy credentials to be returned by the GetCredentials method of the
+  // virtual authenticator API.
+  if (registration_data.application_parameter == device::kBogusAppParam ||
+      registration_data.application_parameter ==
+          fido_parsing_utils::CreateSHA256Hash(kDummyRpID)) {
+    return;
+  }
+
   // Store the registration. Because the key handle is the hashed public key we
   // just generated, no way this should already be registered.
   bool did_insert = false;

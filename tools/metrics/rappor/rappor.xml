@@ -641,14 +641,6 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="ServiceWorker.ControlledPageUrl" type="ETLD_PLUS_ONE">
-  <owner>horo@chromium.org</owner>
-  <summary>
-    The domain and registry of the URL of the page which is controlled by a
-    ServiceWorker. Recorded when the page is loaded.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="Settings.FirstStartupPage" type="ETLD_PLUS_ONE">
   <owner>holte@chromium.org</owner>
   <summary>

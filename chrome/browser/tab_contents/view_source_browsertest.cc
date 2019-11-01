@@ -15,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -563,6 +564,13 @@ IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
   content::WebContents* view_source_contents =
       view_source_contents_observer.GetWebContents();
   EXPECT_TRUE(WaitForLoadStop(view_source_contents));
+  // This test expects us to re-load a page after a back navigation (and reuse
+  // the network isolation key while doing so), which won't happen when the
+  // page is restored from the back forward cache. We are disabling caching for
+  // |view_source_contents| to make sure it will not be put into the back
+  // forward cache.
+  view_source_contents->GetController().GetBackForwardCache().DisableForTesting(
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // 4. Navigate the view-source page to a c.com/title1.html
   ui_test_utils::NavigateToURL(

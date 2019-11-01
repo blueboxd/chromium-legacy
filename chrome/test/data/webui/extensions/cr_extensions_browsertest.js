@@ -8,6 +8,7 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
+GEN('#include "services/network/public/cpp/features.h"');
 
 /**
  * Basic test fixture for the MD chrome://extensions page. Installs no
@@ -16,22 +17,14 @@ GEN('#include "chrome/browser/ui/webui/extensions/' +
 const CrExtensionsBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/';
+    return 'chrome://extensions';
   }
 
   /** @override */
   get extraLibraries() {
     return [
-      ...super.extraLibraries,
-      '//ui/webui/resources/js/assert.js',
-      'test_util.js',
-      '../mock_controller.js',
-      '../../../../../ui/webui/resources/js/promise_resolver.js',
-      '../../../../../ui/webui/resources/js/webui_resource_test.js',
-      '../fake_chrome_event.js',
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'test_service.js',
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
     ];
   }
 
@@ -43,6 +36,11 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
   // The name of the mocha suite. Should be overriden by subclasses.
   get suiteName() {
     return null;
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 
   /** @param {string} testName The name of the test to run. */
@@ -70,14 +68,7 @@ const CrExtensionsBrowserTestWithInstalledExtension =
 var CrExtensionsSidebarTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/sidebar.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'sidebar_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/sidebar_test.js';
   }
 
   /** @override */
@@ -100,10 +91,8 @@ TEST_F('CrExtensionsSidebarTest', 'SetSelected', function() {
 // eslint-disable-next-line no-var
 var CrExtensionsToolbarTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'toolbar_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/toolbar_test.js';
   }
 
   /** @override */
@@ -141,15 +130,9 @@ GEN('#endif');
 
 // eslint-disable-next-line no-var
 var CrExtensionsItemsTest = class extends CrExtensionsBrowserTest {
-  get browsePreload() {
-    return 'chrome://extensions/item.html';
-  }
-
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'item_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/item_test.js';
   }
 
   /** @override */
@@ -203,13 +186,7 @@ TEST_F('CrExtensionsItemsTest', 'HtmlInName', function() {
 var CrExtensionsActivityLogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/activity_log/activity_log.html';
-  }
-
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'activity_log_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/activity_log_test.js';
   }
 };
 
@@ -224,13 +201,7 @@ TEST_F('CrExtensionsActivityLogTest', 'All', () => {
 var CrExtensionsActivityLogHistoryTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/activity_log/activity_log_history.html';
-  }
-
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'activity_log_history_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/activity_log_history_test.js';
   }
 };
 
@@ -239,20 +210,14 @@ TEST_F('CrExtensionsActivityLogHistoryTest', 'All', () => {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
-// Extension Activity Log Item Tests
+// Extension Activity Log History Item Tests
 
 // eslint-disable-next-line no-var
 var CrExtensionsActivityLogHistoryItemTest =
     class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/activity_log/activity_log_history_item.html';
-  }
-
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'activity_log_history_item_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/activity_log_history_item_test.js';
   }
 };
 
@@ -267,13 +232,7 @@ TEST_F('CrExtensionsActivityLogHistoryItemTest', 'All', () => {
 var CrExtensionsActivityLogStreamTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/activity_log/activity_log_stream.html';
-  }
-
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'activity_log_stream_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/activity_log_stream_test.js';
   }
 };
 
@@ -289,13 +248,7 @@ var CrExtensionsActivityLogStreamItemTest =
     class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/activity_log/activity_log_stream_item.html';
-  }
-
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'activity_log_stream_item_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/activity_log_stream_item_test.js';
   }
 };
 
@@ -310,14 +263,7 @@ TEST_F('CrExtensionsActivityLogStreamItemTest', 'All', () => {
 var CrExtensionsDetailViewTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/detail_view.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'detail_view_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/detail_view_test.js';
   }
 
   /** @override */
@@ -353,14 +299,7 @@ TEST_F('CrExtensionsDetailViewTest', 'Warnings', function() {
 var CrExtensionsItemListTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/item_list.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'item_list_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/item_list_test.js';
   }
 
   /** @override */
@@ -391,10 +330,8 @@ TEST_F('CrExtensionsItemListTest', 'LoadTimeData', function() {
 // eslint-disable-next-line no-var
 var CrExtensionsLoadErrorTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'load_error_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/load_error_test.js';
   }
 
   /** @override */
@@ -422,66 +359,58 @@ TEST_F('CrExtensionsLoadErrorTest', 'CodeSection', function() {
 var CrExtensionsManagerUnitTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/manager.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'test_kiosk_browser_proxy.js',
-      'manager_unit_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/manager_unit_test.js';
   }
 
   /** @override */
   get suiteName() {
-    return extension_manager_tests.suiteName;
+    return extension_manager_unit_tests.suiteName;
   }
 };
 
 TEST_F('CrExtensionsManagerUnitTest', 'ItemOrder', function() {
-  this.runMochaTest(extension_manager_tests.TestNames.ItemOrder);
+  this.runMochaTest(extension_manager_unit_tests.TestNames.ItemOrder);
 });
 
 TEST_F('CrExtensionsManagerUnitTest', 'SetItemData', function() {
-  this.runMochaTest(extension_manager_tests.TestNames.SetItemData);
+  this.runMochaTest(extension_manager_unit_tests.TestNames.SetItemData);
 });
 
 TEST_F('CrExtensionsManagerUnitTest', 'UpdateItemData', function() {
-  this.runMochaTest(extension_manager_tests.TestNames.UpdateItemData);
+  this.runMochaTest(extension_manager_unit_tests.TestNames.UpdateItemData);
 });
 
 TEST_F('CrExtensionsManagerUnitTest', 'ProfileSettings', function() {
-  this.runMochaTest(extension_manager_tests.TestNames.ProfileSettings);
+  this.runMochaTest(extension_manager_unit_tests.TestNames.ProfileSettings);
 });
 
 TEST_F('CrExtensionsManagerUnitTest', 'Uninstall', function() {
-  this.runMochaTest(extension_manager_tests.TestNames.Uninstall);
+  this.runMochaTest(extension_manager_unit_tests.TestNames.Uninstall);
 });
 
 // Flaky since r621915: https://crbug.com/922490
 TEST_F(
     'CrExtensionsManagerUnitTest', 'DISABLED_UninstallFromDetails', function() {
-      this.runMochaTest(extension_manager_tests.TestNames.UninstallFromDetails);
+      this.runMochaTest(
+          extension_manager_unit_tests.TestNames.UninstallFromDetails);
     });
 
 TEST_F('CrExtensionsManagerUnitTest', 'ToggleIncognito', function() {
-  this.runMochaTest(extension_manager_tests.TestNames.ToggleIncognitoMode);
+  this.runMochaTest(extension_manager_unit_tests.TestNames.ToggleIncognitoMode);
 });
 
 TEST_F('CrExtensionsManagerUnitTest', 'EnableAndDisable', function() {
-  this.runMochaTest(extension_manager_tests.TestNames.EnableAndDisable);
+  this.runMochaTest(extension_manager_unit_tests.TestNames.EnableAndDisable);
 });
-
-GEN('#if defined(OS_CHROMEOS)');
-TEST_F('CrExtensionsManagerUnitTest', 'KioskMode', function() {
-  this.runMochaTest(extension_manager_tests.TestNames.KioskMode);
-});
-GEN('#endif');
 
 // eslint-disable-next-line no-var
 var CrExtensionsManagerUnitTestWithActivityLogFlag =
     class extends CrExtensionsManagerUnitTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/manager_unit_test_with_activity_log_flag.js';
+  }
+
   /** @override */
   get commandLineSwitches() {
     return [{
@@ -494,18 +423,30 @@ TEST_F(
     'CrExtensionsManagerUnitTestWithActivityLogFlag', 'UpdateFromActivityLog',
     function() {
       this.runMochaTest(
-          extension_manager_tests.TestNames.UpdateFromActivityLog);
+          extension_manager_unit_tests.TestNames.UpdateFromActivityLog);
     });
+
+GEN('#if defined(OS_CHROMEOS)');
+// eslint-disable-next-line no-var
+var CrExtensionsKioskModeManagerUnitTest =
+    class extends CrExtensionsManagerUnitTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/kiosk_mode_manager_unit_test.js';
+  }
+};
+
+TEST_F('CrExtensionsKioskModeManagerUnitTest', 'KioskMode', function() {
+  this.runMochaTest(extension_manager_unit_tests.TestNames.KioskMode);
+});
+GEN('#endif');
 
 // eslint-disable-next-line no-var
 var CrExtensionsManagerTestWithMultipleExtensionTypesInstalled =
     class extends CrExtensionsBrowserTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'manager_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/manager_test.js';
   }
 
   /** @override */
@@ -551,15 +492,7 @@ var CrExtensionsManagerTestWithIdQueryParam =
     class extends CrExtensionsBrowserTestWithInstalledExtension {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/?id=ldnnhddmnhbkjipkidpdiheffobcpfmf';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'manager_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/manager_test_with_id_query_param.js';
   }
 
   /** @override */
@@ -585,6 +518,11 @@ TEST_F(
 CrExtensionsManagerTestWithActivityLogFlag =
     class extends CrExtensionsManagerTestWithIdQueryParam {
   /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/manager_test_with_activity_log_flag.js';
+  }
+
+  /** @override */
   get commandLineSwitches() {
     return [{
       switchName: 'enable-extension-activity-logging',
@@ -606,14 +544,7 @@ TEST_F(
 var CrExtensionsShortcutTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/keyboard_shortcuts.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'keyboard_shortcuts_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/keyboard_shortcuts_test.js';
   }
 
   /** @override */
@@ -642,14 +573,7 @@ TEST_F('CrExtensionsShortcutTest', 'ScopeChange', function() {
 var CrExtensionsShortcutInputTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/keyboard_shortcuts.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'shortcut_input_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/shortcut_input_test.js';
   }
 
   /** @override */
@@ -668,11 +592,8 @@ TEST_F('CrExtensionsShortcutInputTest', 'Basic', function() {
 // eslint-disable-next-line no-var
 var CrExtensionsPackDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'pack_dialog_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/pack_dialog_test.js';
   }
 
   /** @override */
@@ -722,11 +643,8 @@ var CrExtensionsOptionsDialogTest = class extends CrExtensionsBrowserTest {
   }
 
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'options_dialog_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/options_dialog_test.js';
   }
 
   /** @override */
@@ -746,14 +664,7 @@ TEST_F('CrExtensionsOptionsDialogTest', 'Layout', function() {
 var CrExtensionsErrorPageTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/error_page.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'error_page_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/error_page_test.js';
   }
 
   /** @override */
@@ -780,10 +691,8 @@ TEST_F('CrExtensionsErrorPageTest', 'ErrorSelection', function() {
 // eslint-disable-next-line no-var
 var CrExtensionsCodeSectionTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'code_section_test.js',
-    ]);
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/code_section_test.js';
   }
 
   /** @override */
@@ -807,14 +716,7 @@ TEST_F('CrExtensionsCodeSectionTest', 'LongSource', function() {
 var CrExtensionsNavigationHelperTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/navigation_helper.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'navigation_helper_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/navigation_helper_test.js';
   }
 
   /** @override */
@@ -847,16 +749,8 @@ TEST_F('CrExtensionsNavigationHelperTest', 'SupportedRoutes', function() {
 // eslint-disable-next-line no-var
 var CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'error_console_test.js',
-    ]);
-  }
-
-  /** @override */
   get browsePreload() {
-    return 'chrome://extensions/?errors=oehidglfoeondlkoeloailjdmmghacge';
+    return 'chrome://extensions/test_loader.html?module=extensions/error_console_test.js';
   }
 
   /** @override */
@@ -883,14 +777,7 @@ TEST_F('CrExtensionsErrorConsoleTest', 'TestUpDownErrors', () => {
 var CrExtensionsToggleRowTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/toggle_row.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'toggle_row_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/toggle_row_test.js';
   }
 };
 
@@ -907,16 +794,9 @@ GEN('#if defined(OS_CHROMEOS)');
 var CrExtensionsKioskModeTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/kiosk_dialog.html';
+    return 'chrome://extensions/test_loader.html?module=extensions/kiosk_mode_test.js';
   }
 
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'test_kiosk_browser_proxy.js',
-      'kiosk_mode_test.js',
-    ]);
-  }
   /** @override */
   get suiteName() {
     return extension_kiosk_mode_tests.suiteName;
@@ -956,13 +836,7 @@ GEN('#endif');
 var CrExtensionsRuntimeHostsDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/runtime_hosts_dialog.html';
-  }
-
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'runtime_hosts_dialog_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/runtime_hosts_dialog_test.js';
   }
 };
 
@@ -978,13 +852,7 @@ var CrExtensionsRuntimeHostPermissionsTest =
     class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/runtime_host_permissions.html';
-  }
-
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'runtime_host_permissions_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/runtime_host_permissions_test.js';
   }
 };
 
@@ -1000,13 +868,7 @@ var CrExtensionsHostPermissionsToggleListTest =
     class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/host_permissions_toggle_list.html';
-  }
-
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'host_permissions_toggle_list_test.js',
-    ]);
+    return 'chrome://extensions/test_loader.html?module=extensions/host_permissions_toggle_list_test.js';
   }
 };
 

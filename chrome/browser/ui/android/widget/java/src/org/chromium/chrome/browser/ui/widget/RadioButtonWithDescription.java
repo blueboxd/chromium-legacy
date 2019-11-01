@@ -27,12 +27,18 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
     /**
      * Interface to listen to radio button changes.
      */
-    public interface OnCheckedChangeListener { abstract void onCheckedChanged(); }
+    interface ButtonCheckedStateChangedListener {
+        /**
+         * Invoked when a {@link RadioButtonWithDescription} is selected.
+         * @param checkedRadioButton The radio button that was selected.
+         */
+        void onButtonCheckedStateChanged(RadioButtonWithDescription checkedRadioButton);
+    }
 
     private RadioButton mRadioButton;
     private TextView mTitle;
     private TextView mDescription;
-    private OnCheckedChangeListener mOnCheckedChangeListener;
+    private ButtonCheckedStateChangedListener mButtonCheckedStateChangedListener;
 
     private List<RadioButtonWithDescription> mGroup;
 
@@ -100,8 +106,8 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
 
         setChecked(true);
 
-        if (mOnCheckedChangeListener != null) {
-            mOnCheckedChangeListener.onCheckedChanged();
+        if (mButtonCheckedStateChangedListener != null) {
+            mButtonCheckedStateChangedListener.onButtonCheckedStateChanged(this);
         }
     }
 
@@ -110,6 +116,13 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
      */
     public void setTitleText(CharSequence text) {
         mTitle.setText(text);
+    }
+
+    /**
+     * @return The text shown in the title section.
+     */
+    public CharSequence getTitleText() {
+        return mTitle.getText();
     }
 
     /**
@@ -125,6 +138,13 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
             ((LayoutParams) mTitle.getLayoutParams()).removeRule(RelativeLayout.CENTER_VERTICAL);
             mDescription.setVisibility(View.VISIBLE);
         }
+    }
+
+    /**
+     * @return The text shown in the description section.
+     */
+    public CharSequence getDescriptionText() {
+        return mDescription.getText();
     }
 
     /**
@@ -145,8 +165,8 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
         if (checked) requestFocus();
     }
 
-    public void setOnCheckedChangeListener(OnCheckedChangeListener listener) {
-        mOnCheckedChangeListener = listener;
+    public void setOnCheckedChangeListener(ButtonCheckedStateChangedListener listener) {
+        mButtonCheckedStateChangedListener = listener;
     }
 
     /**

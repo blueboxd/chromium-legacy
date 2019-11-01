@@ -118,7 +118,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
           can_be_paused(false),
           can_be_frozen(false),
           can_run_in_background(true),
-          can_run_when_virtual_time_paused(false) {}
+          can_run_when_virtual_time_paused(true) {}
 
     // Separate enum class for handling prioritisation decisions in task queues.
     enum class PrioritisationType {
@@ -345,7 +345,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     return queue_traits_.can_run_in_background;
   }
 
-  bool ShouldUseVirtualTime() const {
+  bool CanRunWhenVirtualTimePaused() const {
     return queue_traits_.can_run_when_virtual_time_paused;
   }
 

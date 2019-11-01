@@ -12,11 +12,12 @@
 #include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/engines/broker/cleaner_sandbox_interface.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
-#include "chrome/chrome_cleaner/mojom/cleaner_engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
+#include "chrome/chrome_cleaner/mojom/cleaner_engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/os/file_remover_api.h"
 #include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace chrome_cleaner {
 
@@ -33,7 +34,8 @@ class CleanerEngineRequestsImpl : public mojom::CleanerEngineRequests {
       std::unique_ptr<chrome_cleaner::FileRemoverAPI> file_remover);
   ~CleanerEngineRequestsImpl() override;
 
-  void Bind(mojom::CleanerEngineRequestsAssociatedPtrInfo* ptr_info);
+  void Bind(
+      mojo::PendingAssociatedRemote<mojom::CleanerEngineRequests>* remote);
 
   // mojom::CleanerEngineRequests
   void SandboxDeleteFile(const base::FilePath& file_name,
@@ -74,7 +76,7 @@ class CleanerEngineRequestsImpl : public mojom::CleanerEngineRequests {
   bool TerminateProcess(uint32_t process_id);
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner_;
-  mojo::AssociatedBinding<mojom::CleanerEngineRequests> binding_;
+  mojo::AssociatedReceiver<mojom::CleanerEngineRequests> receiver_{this};
   InterfaceMetadataObserver* metadata_observer_ = nullptr;
   std::unique_ptr<chrome_cleaner::FileRemoverAPI> file_remover_;
 };

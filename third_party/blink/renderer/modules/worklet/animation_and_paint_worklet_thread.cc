@@ -105,7 +105,7 @@ AnimationAndPaintWorkletThread::CreateWorkerGlobalScope(
 void AnimationAndPaintWorkletThread::EnsureSharedBackingThread() {
   DCHECK(IsMainThread());
   WorkletThreadHolder<AnimationAndPaintWorkletThread>::EnsureInstance(
-      ThreadCreationParams(WebThreadType::kAnimationAndPaintWorkletThread));
+      ThreadCreationParams(ThreadType::kAnimationAndPaintWorkletThread));
 }
 
 void AnimationAndPaintWorkletThread::ClearSharedBackingThread() {

@@ -27,6 +27,7 @@ import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.ui.base.ResourceBundle;
 import org.chromium.weblayer_private.aidl.IBrowserFragment;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
+import org.chromium.weblayer_private.aidl.IProfile;
 import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
 import org.chromium.weblayer_private.aidl.IWebLayer;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
@@ -131,11 +132,16 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public IBrowserFragment createBrowserFragmentImpl(IRemoteFragmentClient fragmentClient,
-            IObjectWrapper fragmentArgs) {
+    public IBrowserFragment createBrowserFragmentImpl(
+            IRemoteFragmentClient fragmentClient, IObjectWrapper fragmentArgs) {
         Bundle unwrappedArgs = ObjectWrapper.unwrap(fragmentArgs, Bundle.class);
-        BrowserFragmentImpl fragment = new BrowserFragmentImpl(mProfileManager, fragmentClient,
-                unwrappedArgs);
+        BrowserFragmentImpl fragment =
+                new BrowserFragmentImpl(mProfileManager, fragmentClient, unwrappedArgs);
         return fragment.asIBrowserFragment();
+    }
+
+    @Override
+    public IProfile getProfile(String profilePath) {
+        return mProfileManager.getProfile(profilePath);
     }
 }

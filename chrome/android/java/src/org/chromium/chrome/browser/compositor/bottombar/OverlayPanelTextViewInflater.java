@@ -21,13 +21,13 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
  * Details in this issue: crbug.com/651389.
  */
 public abstract class OverlayPanelTextViewInflater
-        extends OverlayPanelAdjustingTextView implements OnLayoutChangeListener {
+        extends OverlayPanelRepaddingTextView implements OnLayoutChangeListener {
     private static final float SHORTNESS_FACTOR = 0.5f;
 
     private boolean mDidAdjustViewDirection;
 
     /**
-     * Constructs an instance similar to an {@link OverlayPanelAdjustingTextView} that can adjust
+     * Constructs an instance similar to an {@link OverlayPanelRepaddingTextView} that can adjust
      * the RTL/LTR ordering of text fragments whose initial values are considered short relative to
      * the width of the view.
      * @param panel             The panel.
@@ -47,7 +47,7 @@ public abstract class OverlayPanelTextViewInflater
     }
 
     /**
-     * Constructs an instance similar to an {@link OverlayPanelAdjustingTextView} that can adjust
+     * Constructs an instance similar to an {@link OverlayPanelRepaddingTextView} that can adjust
      * the RTL/LTR ordering of text fragments whose initial values are considered short relative to
      * the width of the view.
      * @param panel             The panel.

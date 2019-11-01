@@ -257,10 +257,6 @@ void ContextProviderImpl::Create(
                                      switches::kGrContextTypeVulkan);
   }
 
-  if (enable_protected_graphics) {
-    launch_command.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
-  }
-
   if (enable_widevine) {
     launch_command.AppendSwitch(switches::kEnableWidevine);
   }

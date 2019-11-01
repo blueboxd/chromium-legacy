@@ -6,7 +6,7 @@
  * Create a mock function that records function calls and validates against
  * expectations.
  */
-class MockMethod {
+/* #export */ class MockMethod {
   constructor() {
     var fn = function() {
       var args = Array.prototype.slice.call(arguments);
@@ -117,7 +117,7 @@ class MockMethod {
  * Controller for mocking methods. Tracks calls to mocked methods and verifies
  * that call signatures match expectations.
  */
-class MockController {
+/* #export */ class MockController {
   constructor() {
     /**
      * Original functions implementations, which are restored when |reset| is

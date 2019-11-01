@@ -70,7 +70,7 @@ std::string IOSSecurityInterstitialPage::GetHtmlContents() const {
       GetApplicationContext()->GetApplicationLocale(), &load_time_data);
   AdjustFontSize(load_time_data);
   std::string html =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_SECURITY_INTERSTITIAL_HTML);
   webui::AppendWebUiCssTextDefaults(&html);
   return webui::GetI18nTemplateHtml(html, &load_time_data);

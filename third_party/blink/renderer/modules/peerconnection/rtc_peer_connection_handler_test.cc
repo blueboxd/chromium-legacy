@@ -158,6 +158,8 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                     const std::string& sdp,
                     const std::string& type,
                     Source source));
+  MOCK_METHOD1(TrackSetSessionDescriptionImplicit,
+               void(RTCPeerConnectionHandler* pc_handler));
   MOCK_METHOD2(
       TrackSetConfiguration,
       void(RTCPeerConnectionHandler* pc_handler,

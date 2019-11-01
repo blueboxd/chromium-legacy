@@ -166,6 +166,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   const char* GetClassName() const override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // ShelfButtonDelegate:
   void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
@@ -173,6 +174,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   void ButtonPressed(views::Button* sender,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;
+  void HandleAccessibleActionScrollToMakeVisible() override;
 
   // ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,

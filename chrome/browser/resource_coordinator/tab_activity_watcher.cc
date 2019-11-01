@@ -568,15 +568,22 @@ void TabActivityWatcher::LogAndMaybeSortLifecycleUnitWithTabRanker(
     // TabManagerDelegateTest::KillMultipleProcesses.
     if (!lifecycle_unit_external) {
       tab_features[lifecycle_unit->GetID()] = base::nullopt;
-    } else {
-      WebContentsData* web_contents_data = WebContentsData::FromWebContents(
-          lifecycle_unit_external->GetWebContents());
-      DCHECK(web_contents_data);
-      const base::Optional<TabFeatures> tab =
-          web_contents_data->GetTabFeatures();
-      tab_features[lifecycle_unit->GetID()] = tab;
-      web_contents_data->LogCurrentTabFeatures(tab);
+      continue;
     }
+    WebContentsData* web_contents_data = WebContentsData::FromWebContents(
+        lifecycle_unit_external->GetWebContents());
+
+    // The web_contents_data can be nullptr in some cases.
+    // TODO(crbug.com/1019482): move the creation of WebContentsData to
+    // TabHelpers::AttachTabHelpers.
+    if (!web_contents_data) {
+      tab_features[lifecycle_unit->GetID()] = base::nullopt;
+      continue;
+    }
+
+    const base::Optional<TabFeatures> tab = web_contents_data->GetTabFeatures();
+    tab_features[lifecycle_unit->GetID()] = tab;
+    web_contents_data->LogCurrentTabFeatures(tab);
   }
 
   // Directly return if TabRanker is not enabled.

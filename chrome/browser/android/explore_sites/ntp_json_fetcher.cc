@@ -20,7 +20,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
@@ -97,22 +96,24 @@ void NTPJsonFetcher::OnSimpleLoaderComplete(
   }
 
   // The parser will call us back via one of the callbacks.
-  data_decoder::SafeJsonParser::Parse(
-      content::GetSystemConnector(), *response_body,
-      base::BindOnce(&NTPJsonFetcher::OnJsonParseSuccess,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&NTPJsonFetcher::OnJsonParseError,
-                     weak_factory_.GetWeakPtr()));
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *response_body,
+      base::BindOnce(&NTPJsonFetcher::OnJsonParse, weak_factory_.GetWeakPtr()));
 }
 
-void NTPJsonFetcher::OnJsonParseSuccess(base::Value parsed_json) {
-  if (!parsed_json.is_dict()) {
+void NTPJsonFetcher::OnJsonParse(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    OnJsonParseError(*result.error);
+    return;
+  }
+
+  if (!result.value->is_dict()) {
     OnJsonParseError("Parsed JSON is not a dictionary.");
     return;
   }
 
-  auto catalog = NTPCatalog::create(parsed_json);
-  std::move(callback_).Run(std::move(catalog));
+  std::move(callback_).Run(NTPCatalog::create(*result.value));
 }
 
 void NTPJsonFetcher::OnJsonParseError(const std::string& error) {

@@ -288,6 +288,18 @@ bool IsDangerTypeBlocked(download::DownloadDangerType danger_type) {
               download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK);
 }
 
+void OnCheckExistingDownloadPathDone(
+    std::unique_ptr<DownloadTargetInfo> target_info,
+    const content::DownloadTargetCallback& callback,
+    bool file_exists) {
+  if (file_exists)
+    target_info->result = download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
+
+  callback.Run(target_info->target_path, target_info->target_disposition,
+               target_info->danger_type, target_info->intermediate_path,
+               target_info->result);
+}
+
 }  // namespace
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
@@ -1246,19 +1258,13 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
     target_info->danger_type = download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
   }
 
-  if (base::FeatureList::IsEnabled(
-          download::features::kPreventDownloadsWithSamePath)) {
-    // A separate reservation with the same target path may exist.
-    // If so, cancel the current reservation.
-    if (DownloadPathReservationTracker::CheckDownloadPathForExistingDownload(
-            target_info->target_path, item)) {
-      target_info->result = download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
-    }
-  }
-
-  callback.Run(target_info->target_path, target_info->target_disposition,
-               target_info->danger_type, target_info->intermediate_path,
-               target_info->result);
+  base::FilePath target_path = target_info->target_path;
+  // A separate reservation with the same target path may exist.
+  // If so, cancel the current reservation.
+  DownloadPathReservationTracker::CheckDownloadPathForExistingDownload(
+      target_path, item,
+      base::BindOnce(&OnCheckExistingDownloadPathDone, std::move(target_info),
+                     callback));
 }
 
 bool ChromeDownloadManagerDelegate::IsOpenInBrowserPreferreredForFile(

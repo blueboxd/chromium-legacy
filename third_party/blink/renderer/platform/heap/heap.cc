@@ -548,9 +548,9 @@ void ThreadHeap::FlushV8References() {
   if (!thread_state_->IsUnifiedGCMarkingInProgress())
     return;
 
-  DCHECK(v8_references_worklist_->IsGlobalEmpty() ||
-         base::FeatureList::IsEnabled(
-             blink::features::kBlinkHeapConcurrentMarking));
+  DCHECK(base::FeatureList::IsEnabled(
+             blink::features::kBlinkHeapConcurrentMarking) ||
+         v8_references_worklist_->IsGlobalEmpty());
 
   V8ReferencesWorklist::View v8_references(v8_references_worklist_.get(),
                                            WorklistTaskId::MutatorThread);

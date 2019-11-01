@@ -20,9 +20,11 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class TabGridIphItemMediator implements TabSwitcherMediator.IphProvider {
     private PropertyModel mModel;
+    private Profile mProfile;
 
-    TabGridIphItemMediator(PropertyModel model) {
+    TabGridIphItemMediator(PropertyModel model, Profile profile) {
         mModel = model;
+        mProfile = profile;
         setupOnClickListeners();
         setupScrimViewObserver();
     }
@@ -63,16 +65,14 @@ class TabGridIphItemMediator implements TabSwitcherMediator.IphProvider {
     }
 
     private void dismissIPHFeature() {
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(
-                Profile.getLastUsedProfile().getOriginalProfile());
+        final Tracker tracker = TrackerFactory.getTrackerForProfile(mProfile);
         tracker.shouldTriggerHelpUI(FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE);
         tracker.dismissed(FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE);
     }
 
     @Override
     public void maybeShowIPH(boolean isIncognito) {
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(
-                Profile.getLastUsedProfile().getOriginalProfile());
+        final Tracker tracker = TrackerFactory.getTrackerForProfile(mProfile);
         boolean isVisible =
                 tracker.wouldTriggerHelpUI(FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE);
 

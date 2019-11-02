@@ -322,7 +322,7 @@ public class NFCTest {
         assertNull(jsonMojoNdefMessage.data[0].lang);
         assertEquals(TEST_JSON, new String(jsonMojoNdefMessage.data[0].data));
 
-        // Test Unknown record conversion.
+        // Test unknown record conversion.
         android.nfc.NdefMessage unknownNdefMessage = new android.nfc.NdefMessage(
                 new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_UNKNOWN, null,
                         ApiCompatibilityUtils.getBytesUtf8(DUMMY_RECORD_ID),
@@ -331,8 +331,7 @@ public class NFCTest {
         assertNull(unknownMojoNdefMessage.url);
         assertEquals(1, unknownMojoNdefMessage.data.length);
         assertEquals(
-                NdefMessageUtils.RECORD_TYPE_OPAQUE, unknownMojoNdefMessage.data[0].recordType);
-        assertEquals(OCTET_STREAM_MIME, unknownMojoNdefMessage.data[0].mediaType);
+                NdefMessageUtils.RECORD_TYPE_UNKNOWN, unknownMojoNdefMessage.data[0].recordType);
         assertEquals(DUMMY_RECORD_ID, unknownMojoNdefMessage.data[0].id);
         assertNull(unknownMojoNdefMessage.data[0].encoding);
         assertNull(unknownMojoNdefMessage.data[0].lang);
@@ -500,6 +499,20 @@ public class NFCTest {
         assertEquals(TEST_JSON, new String(jsonNdefMessage.getRecords()[0].getPayload()));
         assertEquals(
                 android.nfc.NdefRecord.TNF_EXTERNAL_TYPE, jsonNdefMessage.getRecords()[1].getTnf());
+
+        // Test unknown record conversion.
+        NdefRecord unknownMojoNdefRecord = new NdefRecord();
+        unknownMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_UNKNOWN;
+        unknownMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
+        NdefMessage unknownMojoNdefMessage = createMojoNdefMessage(TEST_URL, unknownMojoNdefRecord);
+        android.nfc.NdefMessage unknownNdefMessage =
+                NdefMessageUtils.toNdefMessage(unknownMojoNdefMessage);
+        assertEquals(2, unknownNdefMessage.getRecords().length);
+        assertEquals(
+                android.nfc.NdefRecord.TNF_UNKNOWN, unknownNdefMessage.getRecords()[0].getTnf());
+        assertEquals(TEST_TEXT, new String(unknownNdefMessage.getRecords()[0].getPayload()));
+        assertEquals(android.nfc.NdefRecord.TNF_EXTERNAL_TYPE,
+                unknownNdefMessage.getRecords()[1].getTnf());
 
         // Test external record conversion.
         NdefRecord extMojoNdefRecord = new NdefRecord();

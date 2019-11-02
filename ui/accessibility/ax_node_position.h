@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -21,9 +22,6 @@ namespace ui {
 // knowledge of the AXPosition AXNodeType (which is unknown by AXPosition).
 class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
  public:
-  AXNodePosition();
-  ~AXNodePosition() override;
-
   static AXPositionInstance CreatePosition(AXTreeID tree_id,
                                            const AXNode& node,
                                            int offset,
@@ -31,20 +29,23 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
 
   static void SetTree(AXTree* tree) { tree_ = tree; }
 
+  AXNodePosition();
+  ~AXNodePosition() override;
+  AXNodePosition(const AXNodePosition& other);
+
   AXPositionInstance Clone() const override;
 
-  int MaxTextOffset() const override;
+  base::string16 GetText() const override;
   bool IsInLineBreak() const override;
   bool IsInTextObject() const override;
   bool IsInWhiteSpace() const override;
-  base::string16 GetText() const override;
+  int MaxTextOffset() const override;
 
   bool IsIgnoredPosition() const override;
   AXPositionInstance AsUnignoredTextPosition(
       AdjustmentBehavior adjustment_behavior) const override;
 
  protected:
-  AXNodePosition(const AXNodePosition& other) = default;
   void AnchorChild(int child_index,
                    AXTreeID* tree_id,
                    AXNode::AXID* child_id) const override;
@@ -63,11 +64,9 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
   AXNode::AXID GetPreviousOnLineID(AXNode::AXID node_id) const override;
 
  private:
-  static AXTree* tree_;
-
   // Returns the parent node of the provided child. Returns the parent
   // node's tree id and node id through the provided output parameters,
-  // parent_tree_id and parent_id.
+  // |parent_tree_id| and |parent_id|.
   static AXNode* GetParent(AXNode* child,
                            AXTreeID child_tree_id,
                            AXTreeID* parent_tree_id,
@@ -75,6 +74,8 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
 
   AXPositionInstance CreateUnignoredPositionFromLeafTextPosition(
       AdjustmentBehavior adjustment_behavior) const;
+
+  static AXTree* tree_;
 };
 
 }  // namespace ui

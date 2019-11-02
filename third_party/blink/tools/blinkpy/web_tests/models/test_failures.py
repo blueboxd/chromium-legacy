@@ -102,81 +102,17 @@ FILENAME_SUFFIX_OVERLAY = "-overlay"
 _ext_to_file_type = {
     '.txt': 'text', '.png': 'image', '.wav': 'audio'}
 
-def is_reftest_failure(failure_list):
-    input_failure_types = {type(f) for f in failure_list}
-    reftest_failure_types = {
-        FailureReftestMismatch,
-        FailureReftestMismatchDidNotOccur,
-        FailureReftestNoImageGenerated,
-        FailureReftestNoReferenceImageGenerated
-    }
-    return bool(input_failure_types & reftest_failure_types)
-
 
 def has_failure_type(failure_type, failure_list):
     return any(isinstance(failure, failure_type) for failure in failure_list)
 
 
-# FIXME: This is backwards.  Each TestFailure subclass should know what
-# test_expectation type it corresponds too.  Then this method just
-# collects them all from the failure list and returns the worst one.
-
-
-def determine_result_type(failure_list):
-    """Takes a set of test_failures and returns which result type best fits
-    the list of failures. "Best fits" means we use the worst type of failure.
-
-    Returns:
-      one of the test_expectations result types - PASS, FAIL, CRASH, etc.
-    """
-    if not failure_list or len(failure_list) == 0:
-        return test_expectations.PASS
-
-    if has_failure_type(PassWithStderr, failure_list):
-        assert len(failure_list) == 1
-        return test_expectations.PASS
-    if has_failure_type(FailureCrash, failure_list):
-        return test_expectations.CRASH
-    elif has_failure_type(FailureLeak, failure_list):
-        return test_expectations.LEAK
-    elif has_failure_type(FailureTimeout, failure_list):
-        return test_expectations.TIMEOUT
-    elif has_failure_type(FailureEarlyExit, failure_list):
-        return test_expectations.SKIP
-    elif (has_failure_type(FailureMissingResult, failure_list) or
-          has_failure_type(FailureMissingImage, failure_list) or
-          has_failure_type(FailureMissingImageHash, failure_list) or
-          has_failure_type(FailureMissingAudio, failure_list)):
-        return test_expectations.MISSING
-    else:
-        is_text_failure = (has_failure_type(FailureTextMismatch, failure_list) or
-                           has_failure_type(FailureTestHarnessAssertion, failure_list) or
-                           has_failure_type(FailureTextNotGenerated, failure_list))
-        is_image_failure = (has_failure_type(FailureImageHashMismatch, failure_list) or
-                            has_failure_type(FailureImageHashNotGenerated, failure_list) or
-                            is_reftest_failure(failure_list))
-        is_audio_failure = (has_failure_type(FailureAudioMismatch, failure_list) or
-                            has_failure_type(FailureAudioNotGenerated, failure_list))
-        if is_text_failure and is_image_failure:
-            return test_expectations.IMAGE_PLUS_TEXT
-        elif is_text_failure:
-            return test_expectations.TEXT
-        elif is_image_failure:
-            return test_expectations.IMAGE
-        elif is_audio_failure:
-            return test_expectations.AUDIO
-        else:
-            failure_types = [type(failure) for failure in failure_list]
-            raise ValueError('unclassifiable set of failures: '
-                             + str(failure_types))
-
-
-class TestFailure(object):
-
+class AbstractTestResultType(object):
     port = None
     test_name = None
     filesystem = None
     result_directory = None
+    result = test_expectations.PASS
 
     def __init__(self, actual_driver_output, expected_driver_output):
         self.actual_driver_output = actual_driver_output
@@ -213,7 +149,7 @@ class TestFailure(object):
 
     @staticmethod
     def loads(s):
-        """Creates a TestFailure object from the specified string."""
+        """Creates a AbstractTestResultType object from the specified string."""
         return cPickle.loads(s)
 
     def message(self):
@@ -230,7 +166,7 @@ class TestFailure(object):
         return hash(self.__class__.__name__)
 
     def dumps(self):
-        """Returns the string/JSON representation of a TestFailure."""
+        """Returns the string/JSON representation of a AbstractTestResultType."""
         return cPickle.dumps(self)
 
     def driver_needs_restart(self):
@@ -244,7 +180,7 @@ class TestFailure(object):
         raise NotImplementedError
 
 
-class PassWithStderr(TestFailure):
+class PassWithStderr(AbstractTestResultType):
 
     def __init__(self, driver_output):
         # TODO (rmhasan): Should we write out the reference driver standard
@@ -255,7 +191,12 @@ class PassWithStderr(TestFailure):
         return 'test passed but has standard error output'
 
 
-class FailureTimeout(TestFailure):
+class TestFailure(AbstractTestResultType):
+    result = test_expectations.FAIL
+
+
+class FailureTimeout(AbstractTestResultType):
+    result = test_expectations.TIMEOUT
 
     def __init__(self, actual_driver_output, is_reftest=False):
         super(FailureTimeout, self).__init__(
@@ -272,7 +213,8 @@ class FailureTimeout(TestFailure):
         return True
 
 
-class FailureCrash(TestFailure):
+class FailureCrash(AbstractTestResultType):
+    result = test_expectations.CRASH
 
     def __init__(self, actual_driver_output, is_reftest=False,
                  process_name='content_shell', pid=None, has_log=False):
@@ -609,7 +551,9 @@ class FailureAudioNotGenerated(FailureAudio):
         return 'audio result not generated'
 
 
-class FailureEarlyExit(TestFailure):
+class FailureEarlyExit(AbstractTestResultType):
+    result = test_expectations.SKIP
+
     def __init__(self, actual_driver_output=None, expected_driver_output=None):
         super(FailureEarlyExit, self).__init__(
             actual_driver_output, expected_driver_output)

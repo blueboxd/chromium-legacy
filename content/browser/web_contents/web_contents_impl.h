@@ -358,6 +358,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsCurrentlyAudible() override;
   bool IsConnectedToBluetoothDevice() override;
   bool IsConnectedToSerialPort() override;
+  bool IsConnectedToHidDevice() override;
   bool HasNativeFileSystemHandles() override;
   bool HasNativeFileSystemDirectoryHandles() override;
   std::vector<base::FilePath> GetNativeFileSystemDirectoryHandles() override;
@@ -996,6 +997,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // ports.
   void IncrementSerialActiveFrameCount();
   void DecrementSerialActiveFrameCount();
+
+  // Modify the counter of frames in this WebContents actively using HID
+  // devices.
+  void IncrementHidActiveFrameCount();
+  void DecrementHidActiveFrameCount();
 
   // Modify the counter of native file system handles for this WebContents.
   void IncrementNativeFileSystemHandleCount();
@@ -1811,6 +1817,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   size_t bluetooth_connected_device_count_ = 0;
   size_t serial_active_frame_count_ = 0;
+  size_t hid_active_frame_count_ = 0;
 
   size_t native_file_system_handle_count_ = 0;
   std::map<base::FilePath, size_t> native_file_system_directory_handles_;

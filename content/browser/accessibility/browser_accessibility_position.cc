@@ -10,12 +10,18 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 
 namespace content {
 
-BrowserAccessibilityPosition::BrowserAccessibilityPosition() {}
+BrowserAccessibilityPosition::BrowserAccessibilityPosition() = default;
 
-BrowserAccessibilityPosition::~BrowserAccessibilityPosition() {}
+BrowserAccessibilityPosition::~BrowserAccessibilityPosition() = default;
+
+BrowserAccessibilityPosition::BrowserAccessibilityPosition(
+    const BrowserAccessibilityPosition& other)
+    : ui::AXPosition<BrowserAccessibilityPosition, BrowserAccessibility>(
+          other) {}
 
 BrowserAccessibilityPosition::AXPositionInstance
 BrowserAccessibilityPosition::Clone() const {
@@ -24,9 +30,31 @@ BrowserAccessibilityPosition::Clone() const {
 
 base::string16 BrowserAccessibilityPosition::GetText() const {
   if (IsNullPosition())
-    return base::string16();
+    return {};
   DCHECK(GetAnchor());
   return GetAnchor()->GetText();
+}
+
+bool BrowserAccessibilityPosition::IsInLineBreak() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsLineBreakObject();
+}
+
+bool BrowserAccessibilityPosition::IsInTextObject() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsTextOnlyObject();
+}
+
+bool BrowserAccessibilityPosition::IsInWhiteSpace() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsLineBreakObject() ||
+         base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
 }
 
 void BrowserAccessibilityPosition::AnchorChild(
@@ -110,10 +138,10 @@ BrowserAccessibility* BrowserAccessibilityPosition::GetNodeInTree(
   return manager->GetFromID(node_id);
 }
 
-// On some platforms, most objects are represented in the text of their parents
-// with a special (embedded object) character and not with their actual text
-// contents.
 bool BrowserAccessibilityPosition::IsEmbeddedObjectInParent() const {
+  // On some platforms, most objects are represented in the text of their
+  // parents with a special (embedded object) character and not with their
+  // actual text contents.
 #if defined(OS_WIN) || BUILDFLAG(USE_ATK)
   // Not all objects in the internal accessibility tree are exposed to platform
   // APIs.
@@ -122,28 +150,6 @@ bool BrowserAccessibilityPosition::IsEmbeddedObjectInParent() const {
 #else
   return false;
 #endif
-}
-
-bool BrowserAccessibilityPosition::IsInLineBreak() const {
-  if (IsNullPosition())
-    return false;
-  DCHECK(GetAnchor());
-  return GetAnchor()->IsLineBreakObject();
-}
-
-bool BrowserAccessibilityPosition::IsInTextObject() const {
-  if (IsNullPosition())
-    return false;
-  DCHECK(GetAnchor());
-  return GetAnchor()->IsTextOnlyObject();
-}
-
-bool BrowserAccessibilityPosition::IsInWhiteSpace() const {
-  if (IsNullPosition())
-    return false;
-  DCHECK(GetAnchor());
-  return GetAnchor()->IsLineBreakObject() ||
-         base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
 }
 
 bool BrowserAccessibilityPosition::IsInLineBreakingObject() const {

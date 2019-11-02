@@ -97,6 +97,13 @@ class BrowserThemePackTest : public ::testing::Test {
 
   const BrowserThemePack& theme_pack() const { return *theme_pack_; }
 
+  base::FilePath GetTemporaryPakFile(base::FilePath::StringPieceType name) {
+    if (dir_.IsValid() || dir_.CreateUniqueTempDir())
+      return dir_.GetPath().Append(name);
+    ADD_FAILURE() << "Couldn't create temp dir";
+    return base::FilePath();
+  }
+
  private:
   using ScopedSetSupportedScaleFactors =
       std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>;
@@ -114,6 +121,7 @@ class BrowserThemePackTest : public ::testing::Test {
 
   ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
 
+  base::ScopedTempDir dir_;
   content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<BrowserThemePack> theme_pack_;
 };
@@ -729,9 +737,8 @@ TEST_F(BrowserThemePackTest, TestNonExistantImages) {
 // the extension data, but for now, exists so valgrind can test some of the
 // tricky memory stuff that BrowserThemePack does.
 TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
-  base::ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath file = dir.GetPath().AppendASCII("data.pak");
+  base::FilePath file = GetTemporaryPakFile(FILE_PATH_LITERAL("data.pak"));
+  ASSERT_FALSE(file.empty());
 
   // Part 1: Build the pack from an extension.
   {
@@ -754,9 +761,9 @@ TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
 }
 
 TEST_F(BrowserThemePackTest, HiDpiThemeTest) {
-  base::ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath file = dir.GetPath().AppendASCII("theme_data.pak");
+  base::FilePath file =
+      GetTemporaryPakFile(FILE_PATH_LITERAL("theme_data.pak"));
+  ASSERT_FALSE(file.empty());
 
   // Part 1: Build the pack from an extension.
   {

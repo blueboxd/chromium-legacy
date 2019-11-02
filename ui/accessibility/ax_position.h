@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/containers/stack.h"
+#include "base/i18n/break_iterator.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -27,6 +28,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/ax_tree_id.h"
+#include "ui/gfx/utf16_indexing.h"
 
 namespace ui {
 
@@ -120,7 +122,7 @@ class AXPosition {
   using BoundaryConditionPredicate =
       base::RepeatingCallback<bool(const AXPositionInstance&)>;
 
-  // When converting an unignored position, determines how to adjust the new
+  // When converting to an unignored position, determines how to adjust the new
   // position in order to make it valid.
   enum class AdjustmentBehavior { kMoveLeft, kMoveRight };
 
@@ -158,6 +160,13 @@ class AXPosition {
   }
 
   virtual ~AXPosition() = default;
+
+  // Implemented based on the copy and swap idiom.
+  AXPosition& operator=(const AXPosition& other) {
+    AXPositionInstance clone = other.Clone();
+    swap(*clone);
+    return *this;
+  }
 
   virtual AXPositionInstance Clone() const = 0;
 
@@ -294,6 +303,33 @@ class AXPosition {
 
   bool IsLeafTextPosition() const {
     return IsTextPosition() && !AnchorChildCount();
+  }
+
+  // Returns true if this is a valid position, e.g. the child_index_ or
+  // text_offset_ is within a valid range.
+  bool IsValid() const {
+    switch (kind_) {
+      case AXPositionKind::NULL_POSITION:
+        return tree_id_ == AXTreeIDUnknown() &&
+               anchor_id_ == AXNode::kInvalidAXID &&
+               child_index_ == INVALID_INDEX &&
+               text_offset_ == INVALID_OFFSET &&
+               affinity_ == ax::mojom::TextAffinity::kDownstream;
+      case AXPositionKind::TREE_POSITION:
+        return GetAnchor() &&
+               (child_index_ == BEFORE_TEXT ||
+                (child_index_ >= 0 && child_index_ <= AnchorChildCount()));
+      case AXPositionKind::TEXT_POSITION:
+        if (!GetAnchor())
+          return false;
+
+        // For performance reasons we skip any validation of the text offset
+        // that involves retrieving the anchor's text, if the offset is set to
+        // 0, because 0 is frequently used and always valid regardless of the
+        // actual text.
+        return text_offset_ == 0 ||
+               (text_offset_ > 0 && text_offset_ <= MaxTextOffset());
+    }
   }
 
   // TODO(nektar): Update logic of AtStartOfAnchor() for text_offset_ == 0 and
@@ -777,6 +813,21 @@ class AXPosition {
       AXPositionInstance child = copy->CreateChildPositionAt(child_index);
       DCHECK(child);
       int child_length = child->MaxTextOffsetInParent();
+      // If the text offset falls on the boundary between two adjacent children,
+      // we look at the affinity to decide whether to place the tree position on
+      // the first child vs. the second child. Upstream affinity would always
+      // choose the first child, whilst downstream affinity the second. This
+      // also has implications when converting the resulting tree position back
+      // to a text position. In that case, maintaining an upstream affinity
+      // would place the text position at the end of the first child, whilst
+      // maintaining a downstream affinity will place the text position at the
+      // beginning of the second child.
+      //
+      // This is vital for text positions on soft line breaks, as well as text
+      // positions before and after character, to work properly.
+      //
+      // See also `CreateLeafTextPositionBeforeCharacter` and
+      // `CreateLeafTextPositionAfterCharacter`.
       if (copy->text_offset_ >= current_offset &&
           (copy->text_offset_ < (current_offset + child_length) ||
            (copy->affinity_ == ax::mojom::TextAffinity::kUpstream &&
@@ -805,7 +856,12 @@ class AXPosition {
       // If the current text offset is valid, we don't touch it to potentially
       // allow converting from a text position to a tree position and back
       // without losing information.
-      if (copy->text_offset_ < 0 ||
+      //
+      // We test for INVALID_OFFSET first, due to the possible performance
+      // implications of calling MaxTextOffset().
+      DCHECK_GE(copy->text_offset_, INVALID_OFFSET)
+          << "Unrecognized text offset.";
+      if (copy->text_offset_ == INVALID_OFFSET ||
           (copy->text_offset_ > 0 &&
            copy->text_offset_ >= copy->MaxTextOffset())) {
         copy->text_offset_ = 0;
@@ -1373,31 +1429,113 @@ class AXPosition {
   // this is necessary because we don't want to return any position that might
   // be located in the shadow DOM or in a position anchored at a node that is
   // not visible to a specific platform's APIs.
-  AXPositionInstance AsPositionBeforeCharacter() const {
-    AXPositionInstance text_position = AsTextPosition();
-    if (!text_position->AtEndOfAnchor() && !text_position->IsIgnored())
-      return text_position;
+  //
+  // Also, |text_offset| is adjusted to point to a valid character offset, i.e.
+  // it cannot be pointing to a low surrogate pair or to the middle of a
+  // grapheme cluster.
+  AXPositionInstance AsLeafTextPositionBeforeCharacter() const {
+    if (IsNullPosition())
+      return Clone();
 
-    AXPositionInstance tree_position = CreateNextLeafTreePosition();
-    while (!tree_position->MaxTextOffset() || tree_position->IsIgnored())
-      tree_position = tree_position->CreateNextLeafTreePosition();
-    return tree_position->AsTextPosition();
+    AXPositionInstance text_position = AsTextPosition();
+    // In case the input affinity is upstream, reset it to downstream.
+    //
+    // This is to ensure that when we find the equivalent leaf text position, it
+    // will be at the start of anchor if the original position is anchored to a
+    // node higher up in the tree and pointing to a text offset that falls on
+    // the boundary between two leaf nodes. In other words, the returned
+    // position will always be "before character".
+    text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
+    text_position = text_position->AsLeafTextPosition();
+    DCHECK(!text_position->IsNullPosition())
+        << "Adjusting to a leaf position should never turn a non-null position "
+           "into a null one.";
+
+    if (!text_position->IsIgnored() && !text_position->AtEndOfAnchor()) {
+      std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator =
+          text_position->GetGraphemeIterator();
+      DCHECK_GE(text_position->text_offset_, 0);
+      DCHECK_LE(text_position->text_offset_,
+                int{text_position->name_.length()});
+      while (
+          !text_position->AtStartOfAnchor() &&
+          (!gfx::IsValidCodePointIndex(text_position->name_,
+                                       size_t{text_position->text_offset_}) ||
+           (grapheme_iterator && !grapheme_iterator->IsGraphemeBoundary(
+                                     size_t{text_position->text_offset_})))) {
+        --text_position->text_offset_;
+      }
+      return text_position;
+    }
+
+    text_position = text_position->CreateNextLeafTextPosition();
+    while (!text_position->IsNullPosition() &&
+           (text_position->IsIgnored() || !text_position->MaxTextOffset())) {
+      text_position = text_position->CreateNextLeafTextPosition();
+    }
+    return text_position;
   }
 
   // Returns a text position located right after the previous character (from
   // this position) in the tree's text representation.
-  // See `AsPositionBeforeCharacter`, as this is its "reversed" version.
-  AXPositionInstance AsPositionAfterCharacter() const {
-    AXPositionInstance text_position = AsTextPosition();
-    if (!text_position->AtStartOfAnchor() && !text_position->IsIgnored())
-      return text_position;
+  //
+  // See `AsLeafTextPositionBeforeCharacter`, as this is its "reversed" version.
+  AXPositionInstance AsLeafTextPositionAfterCharacter() const {
+    if (IsNullPosition())
+      return Clone();
 
-    AXPositionInstance tree_position = CreatePreviousLeafTreePosition();
-    while (!tree_position->MaxTextOffset() || tree_position->IsIgnored())
-      tree_position = tree_position->CreatePreviousLeafTreePosition();
-    return tree_position->CreatePositionAtEndOfAnchor()->AsTextPosition();
+    AXPositionInstance text_position = AsTextPosition();
+    // Temporarily set the affinity to upstream.
+    //
+    // This is to ensure that when we find the equivalent leaf text position, it
+    // will be at the end of anchor if the original position is anchored to a
+    // node higher up in the tree and pointing to a text offset that falls on
+    // the boundary between two leaf nodes. In other words, the returned
+    // position will always be "after character".
+    text_position->affinity_ = ax::mojom::TextAffinity::kUpstream;
+    text_position = text_position->AsLeafTextPosition();
+    DCHECK(!text_position->IsNullPosition())
+        << "Adjusting to a leaf position should never turn a non-null position "
+           "into a null one.";
+
+    if (!text_position->IsIgnored() && !text_position->AtStartOfAnchor()) {
+      std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator =
+          text_position->GetGraphemeIterator();
+      DCHECK_GE(text_position->text_offset_, 0);
+      DCHECK_LE(text_position->text_offset_,
+                int{text_position->name_.length()});
+      while (
+          !text_position->AtEndOfAnchor() &&
+          (!gfx::IsValidCodePointIndex(text_position->name_,
+                                       size_t{text_position->text_offset_}) ||
+           (grapheme_iterator && !grapheme_iterator->IsGraphemeBoundary(
+                                     size_t{text_position->text_offset_})))) {
+        ++text_position->text_offset_;
+      }
+
+      // Reset the affinity to downstream, because an upstream affinity doesn't
+      // make sense on a leaf anchor.
+      text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
+      return text_position;
+    }
+
+    text_position = text_position->CreatePreviousLeafTextPosition();
+    while (!text_position->IsNullPosition() &&
+           (text_position->IsIgnored() || !text_position->MaxTextOffset())) {
+      text_position = text_position->CreatePreviousLeafTextPosition();
+    }
+    return text_position->CreatePositionAtEndOfAnchor();
   }
 
+  // Creates a position pointing to before the next character, which is defined
+  // as the start of the next grapheme cluster. Also, ensures that the created
+  // position will not point to a low surrogate pair.
+  //
+  // A grapheme cluster is what an end-user would consider a character and it
+  // could include a letter with additional diacritics. It could be more than
+  // one Unicode code unit in length.
+  //
+  // See also http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
   AXPositionInstance CreateNextCharacterPosition(
       AXBoundaryBehavior boundary_behavior) const {
     DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary)
@@ -1408,7 +1546,7 @@ class AXPosition {
     }
 
     const bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsPositionBeforeCharacter();
+    AXPositionInstance text_position = AsLeafTextPositionBeforeCharacter();
 
     // There is no next character position.
     if (text_position->IsNullPosition()) {
@@ -1417,10 +1555,31 @@ class AXPosition {
       return text_position;
     }
 
-    ++text_position->text_offset_;
+    DCHECK_LT(text_position->text_offset_, text_position->MaxTextOffset());
+    std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator =
+        text_position->GetGraphemeIterator();
+    do {
+      ++text_position->text_offset_;
+    } while (!text_position->AtEndOfAnchor() && grapheme_iterator &&
+             !grapheme_iterator->IsGraphemeBoundary(
+                 size_t{text_position->text_offset_}));
+    DCHECK_GT(text_position->text_offset_, 0);
     DCHECK_LE(text_position->text_offset_, text_position->MaxTextOffset());
-    // Even if the position's affinity was upstream, moving to the next
-    // character should inevitably reset it to downstream.
+
+    // If the character boundary is in the same subtree, return a position
+    // rooted at this position's anchor. This is necessary because we don't want
+    // to return a position that might be in the shadow DOM when this position
+    // is not.
+    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
+    if (GetAnchor() == common_anchor) {
+      text_position = text_position->CreateAncestorPosition(common_anchor);
+    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
+      NOTREACHED() << "Original text position was not at end of anchor.";
+    }
+
+    // Even if the resulting position is right on a soft line break, affinity is
+    // defaulted to downstream so that this method will always produce the same
+    // result regardless of the direction of motion or the input affinity.
     text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
 
     if (was_tree_position)
@@ -1428,6 +1587,12 @@ class AXPosition {
     return text_position;
   }
 
+  // Creates a position pointing to before the previous character, which is
+  // defined as the start of the previous grapheme cluster. Also, ensures that
+  // the created position will not point to a low surrogate pair.
+  //
+  // See the comment above `CreateNextCharacterPosition` for the definition of a
+  // grapheme cluster.
   AXPositionInstance CreatePreviousCharacterPosition(
       AXBoundaryBehavior boundary_behavior) const {
     DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary)
@@ -1438,7 +1603,7 @@ class AXPosition {
     }
 
     const bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsPositionAfterCharacter();
+    AXPositionInstance text_position = AsLeafTextPositionAfterCharacter();
 
     // There is no previous character position.
     if (text_position->IsNullPosition()) {
@@ -1447,10 +1612,31 @@ class AXPosition {
       return text_position;
     }
 
-    --text_position->text_offset_;
+    DCHECK_GT(text_position->text_offset_, 0);
+    std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator =
+        text_position->GetGraphemeIterator();
+    do {
+      --text_position->text_offset_;
+    } while (!text_position->AtStartOfAnchor() && grapheme_iterator &&
+             !grapheme_iterator->IsGraphemeBoundary(
+                 size_t{text_position->text_offset_}));
     DCHECK_GE(text_position->text_offset_, 0);
-    // Even if the moved position is at the beginning of the line, the
-    // affinity is defaulted to downstream for simplicity.
+    DCHECK_LT(text_position->text_offset_, text_position->MaxTextOffset());
+
+    // The character boundary should be in the same subtree. Return a position
+    // rooted at this position's anchor. This is necessary because we don't want
+    // to return a position that might be in the shadow DOM when this position
+    // is not.
+    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
+    if (GetAnchor() == common_anchor) {
+      text_position = text_position->CreateAncestorPosition(common_anchor);
+    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
+      NOTREACHED() << "Original text position was not at start of anchor.";
+    }
+
+    // Even if the resulting position is right on a soft line break, affinity is
+    // defaulted to downstream so that this method will always produce the same
+    // result regardless of the direction of motion or the input affinity.
     text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
 
     if (was_tree_position)
@@ -2345,15 +2531,25 @@ class AXPosition {
                                other_tree_position_ancestor->child_index());
   }
 
-  // Returns the length of the text that is present inside the anchor node,
-  // including any text found in descendant text nodes.
-  virtual int MaxTextOffset() const {
-    if (IsNullPosition())
-      return INVALID_OFFSET;
-    return static_cast<int>(GetText().length());
+  void swap(AXPosition& other) {
+    std::swap(kind_, other.kind_);
+    std::swap(tree_id_, other.tree_id_);
+    std::swap(anchor_id_, other.anchor_id_);
+    std::swap(child_index_, other.child_index_);
+    std::swap(text_offset_, other.text_offset_);
+    std::swap(affinity_, other.affinity_);
+    // We explicitly don't swap any cached members.
+    name_ = base::string16();
+    other.name_ = base::string16();
   }
 
   // Abstract methods.
+
+  // Returns the text that is present inside the anchor node, including any text
+  // found in descendant text nodes, based on the platform's text
+  // representation. Some platforms use an embedded object character that
+  // replaces the text coming from each child node.
+  virtual base::string16 GetText() const = 0;
 
   // Determines if the anchor containing this position is a <br> or a text
   // object whose parent's anchor is an enclosing <br>.
@@ -2367,46 +2563,37 @@ class AXPosition {
   // positions inside line breaks are also considered "in whitespace".
   virtual bool IsInWhiteSpace() const = 0;
 
-  // Returns the text that is present inside the anchor node, where the
-  // representation of text found in descendant nodes depends on the platform.
-  // For example some platforms may include descendant text while while other
-  // platforms may use a special character to represent descendant text.
-  virtual base::string16 GetText() const = 0;
+  // Returns the length of the text that is present inside the anchor node,
+  // including any text found in descendant text nodes. This is based on the
+  // platform's text representation. Some platforms use an embedded object
+  // character that replaces the text coming from each child node.
+  //
+  // Similar to "text_offset_", the length of the text is in Unicode code units,
+  // not in grapheme clusters.
+  virtual int MaxTextOffset() const {
+    if (IsNullPosition())
+      return INVALID_OFFSET;
+    return int{GetText().length()};
+  }
 
  protected:
-  AXPosition() = default;
-  AXPosition(const AXPosition& other) = default;
-  virtual AXPosition& operator=(const AXPosition& other) = default;
+  AXPosition()
+      : kind_(AXPositionKind::NULL_POSITION),
+        tree_id_(AXTreeIDUnknown()),
+        anchor_id_(AXNode::kInvalidAXID),
+        child_index_(INVALID_INDEX),
+        text_offset_(INVALID_OFFSET),
+        affinity_(ax::mojom::TextAffinity::kDownstream) {}
 
-  virtual void Initialize(AXPositionKind kind,
-                          AXTreeID tree_id,
-                          int32_t anchor_id,
-                          int child_index,
-                          int text_offset,
-                          ax::mojom::TextAffinity affinity) {
-    kind_ = kind;
-    tree_id_ = tree_id;
-    anchor_id_ = anchor_id;
-    child_index_ = child_index;
-    text_offset_ = text_offset;
-    affinity_ = affinity;
-
-    if (!GetAnchor() || kind_ == AXPositionKind::NULL_POSITION ||
-        (kind_ == AXPositionKind::TREE_POSITION &&
-         (child_index_ != BEFORE_TEXT &&
-          (child_index_ < 0 || child_index_ > AnchorChildCount()))) ||
-        (kind_ == AXPositionKind::TEXT_POSITION &&
-         (text_offset_ < 0 ||
-          (text_offset > 0 && text_offset_ > MaxTextOffset())))) {
-      // Reset to the null position.
-      kind_ = AXPositionKind::NULL_POSITION;
-      tree_id_ = AXTreeIDUnknown();
-      anchor_id_ = AXNode::kInvalidAXID;
-      child_index_ = INVALID_INDEX;
-      text_offset_ = INVALID_OFFSET;
-      affinity_ = ax::mojom::TextAffinity::kDownstream;
-    }
-  }
+  // We explicitly don't copy any cached members.
+  AXPosition(const AXPosition& other)
+      : kind_(other.kind_),
+        tree_id_(other.tree_id_),
+        anchor_id_(other.anchor_id_),
+        child_index_(other.child_index_),
+        text_offset_(other.text_offset_),
+        affinity_(other.affinity_),
+        name_() {}
 
   // Returns the character offset inside our anchor's parent at which our text
   // starts.
@@ -2429,6 +2616,49 @@ class AXPosition {
       offset_in_parent += child->MaxTextOffsetInParent();
     }
     return offset_in_parent;
+  }
+
+  // In the case of a text position, lazily initializes or returns the existing
+  // grapheme iterator for the position's text. The grapheme iterator breaks at
+  // every grapheme cluster boundary.
+  //
+  // We only allow creating this iterator on leaf nodes. We currently don't need
+  // to move by grapheme boundaries on non-leaf nodes and computing plus caching
+  // the inner text for all nodes is costly.
+  std::unique_ptr<base::i18n::BreakIterator> GetGraphemeIterator() const {
+    if (!IsTextPosition() || AnchorChildCount())
+      return {};
+
+    name_ = GetText();
+    auto grapheme_iterator = std::make_unique<base::i18n::BreakIterator>(
+        name_, base::i18n::BreakIterator::BREAK_CHARACTER);
+    if (!grapheme_iterator->Init())
+      return {};
+    return grapheme_iterator;
+  }
+
+  void Initialize(AXPositionKind kind,
+                  AXTreeID tree_id,
+                  int32_t anchor_id,
+                  int child_index,
+                  int text_offset,
+                  ax::mojom::TextAffinity affinity) {
+    kind_ = kind;
+    tree_id_ = tree_id;
+    anchor_id_ = anchor_id;
+    child_index_ = child_index;
+    text_offset_ = text_offset;
+    affinity_ = affinity;
+
+    if (!IsValid()) {
+      // Reset to the null position.
+      kind_ = AXPositionKind::NULL_POSITION;
+      tree_id_ = AXTreeIDUnknown();
+      anchor_id_ = AXNode::kInvalidAXID;
+      child_index_ = INVALID_INDEX;
+      text_offset_ = INVALID_OFFSET;
+      affinity_ = ax::mojom::TextAffinity::kDownstream;
+    }
   }
 
   // Abstract methods.
@@ -2858,11 +3088,21 @@ class AXPosition {
   // For text positions, |child_index_| is initially set to |-1| and only
   // computed on demand. The same with tree positions and |text_offset_|.
   int child_index_;
+  // "text_offset_" represents the number of Unicode code units before this
+  // position. It doesn't count grapheme clusters.
   int text_offset_;
 
   // TODO(nektar): Get rid of affinity and make Blink handle affinity
   // internally since inline text objects don't span lines.
   ax::mojom::TextAffinity affinity_;
+
+  //
+  // Cached members that should be lazily created on first use.
+  //
+
+  // In the case of a leaf position, the name of its anchor used for
+  // initializing a grapheme break iterator.
+  mutable base::string16 name_;
 };
 
 template <class AXPositionType, class AXNodeType>
@@ -2912,6 +3152,12 @@ bool operator>=(const AXPosition<AXPositionType, AXNodeType>& first,
                 const AXPosition<AXPositionType, AXNodeType>& second) {
   const base::Optional<int> compare_to_optional = first.CompareTo(second);
   return compare_to_optional.has_value() && compare_to_optional.value() >= 0;
+}
+
+template <class AXPositionType, class AXNodeType>
+void swap(AXPosition<AXPositionType, AXNodeType>& first,
+          AXPosition<AXPositionType, AXNodeType>& second) {
+  first.swap(second);
 }
 
 template <class AXPositionType, class AXNodeType>

@@ -38,6 +38,27 @@ class WebTestResult(object):
         self._test_name = test_name
         self._result_dict = result_dict
 
+    def suffixes_for_test_result(self):
+        suffixes = set()
+        # add extensions for mismatch failures
+        if self.has_mismatch_with_baseline():
+            if 'expected_text' in self._result_dict['artifacts']:
+                suffixes.add('txt')
+            if 'expected_image' in self._result_dict['artifacts']:
+                suffixes.add('png')
+            if 'expected_audio' in self._result_dict['artifacts']:
+                suffixes.add('wav')
+
+        # add extensions for missing baseline file types
+        if self.is_missing_baseline():
+            if 'actual_text' in self._result_dict['artifacts']:
+                suffixes.add('txt')
+            if 'actual_image' in self._result_dict['artifacts']:
+                suffixes.add('png')
+            if 'actual_audio' in self._result_dict['artifacts']:
+                suffixes.add('wav')
+        return suffixes
+
     def result_dict(self):
         return self._result_dict
 
@@ -71,11 +92,19 @@ class WebTestResult(object):
     def last_retry_result(self):
         return self.actual_results().split()[-1]
 
-    def has_mismatch_result(self):
-        return self.last_retry_result() in ('TEXT', 'IMAGE', 'IMAGE+TEXT', 'AUDIO')
+    def has_mismatch_with_baseline(self):
+        """returns true when a test failed because there was a mismatch
+        between a tests actual output and baseline"""
+        actual_results = self.actual_results().split(' ')
+        artifact_names = self._result_dict.get('artifacts', {}).keys()
+        return ('FAIL' in actual_results and
+                any(artifact_name.startswith('expected')
+                    for artifact_name in artifact_names) and
+                'reference_file_mismatch' not in artifact_names and
+                'reference_file_match' not in artifact_names)
 
     def is_missing_baseline(self):
-        return self.last_retry_result() == 'MISSING'
+        return self.is_missing_image() or self.is_missing_text() or self.is_missing_audio()
 
 
 # FIXME: This should be unified with ResultsSummary or other NRWT web tests code

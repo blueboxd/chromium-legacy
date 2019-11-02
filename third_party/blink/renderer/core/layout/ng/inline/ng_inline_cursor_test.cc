@@ -66,6 +66,13 @@ INSTANTIATE_TEST_SUITE_P(NGInlineCursorTest,
                          NGInlineCursorTest,
                          testing::Bool());
 
+TEST_P(NGInlineCursorTest, GetLayoutBlockFlowWithScopedCursor) {
+  NGInlineCursor line = SetupCursor("<div id=root>line1<br>line2</div>");
+  ASSERT_TRUE(line.IsLineBox()) << line;
+  NGInlineCursor cursor = line.CursorForDescendants();
+  EXPECT_EQ(line.GetLayoutBlockFlow(), cursor.GetLayoutBlockFlow());
+}
+
 TEST_P(NGInlineCursorTest, ContainingLine) {
   // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
   InsertStyleElement("a, b { background: gray; }");

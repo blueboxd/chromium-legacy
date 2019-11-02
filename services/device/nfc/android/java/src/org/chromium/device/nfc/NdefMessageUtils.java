@@ -37,6 +37,7 @@ public final class NdefMessageUtils {
     public static final String RECORD_TYPE_ABSOLUTE_URL = "absolute-url";
     public static final String RECORD_TYPE_JSON = "json";
     public static final String RECORD_TYPE_OPAQUE = "opaque";
+    public static final String RECORD_TYPE_UNKNOWN = "unknown";
     public static final String RECORD_TYPE_SMART_POSTER = "smart-poster";
 
     private static class PairOfDomainAndType {
@@ -122,6 +123,9 @@ public final class NdefMessageUtils {
             case RECORD_TYPE_JSON:
             case RECORD_TYPE_OPAQUE:
                 return android.nfc.NdefRecord.createMime(record.mediaType, record.data);
+            case RECORD_TYPE_UNKNOWN:
+                return new android.nfc.NdefRecord(
+                        android.nfc.NdefRecord.TNF_UNKNOWN, null, null, record.data);
             case RECORD_TYPE_EMPTY:
                 return new android.nfc.NdefRecord(
                         android.nfc.NdefRecord.TNF_EMPTY, null, null, null);
@@ -158,7 +162,7 @@ public final class NdefMessageUtils {
                 record = createWellKnownRecord(ndefRecord);
                 break;
             case android.nfc.NdefRecord.TNF_UNKNOWN:
-                record = createUnKnownRecord(ndefRecord.getPayload());
+                record = createUnknownRecord(ndefRecord.getPayload());
                 break;
             case android.nfc.NdefRecord.TNF_EXTERNAL_TYPE:
                 record = createExternalTypeRecord(
@@ -269,10 +273,9 @@ public final class NdefMessageUtils {
     /**
      * Constructs unknown known type NdefRecord
      */
-    private static NdefRecord createUnKnownRecord(byte[] payload) {
+    private static NdefRecord createUnknownRecord(byte[] payload) {
         NdefRecord nfcRecord = new NdefRecord();
-        nfcRecord.recordType = RECORD_TYPE_OPAQUE;
-        nfcRecord.mediaType = OCTET_STREAM_MIME;
+        nfcRecord.recordType = RECORD_TYPE_UNKNOWN;
         nfcRecord.data = payload;
         return nfcRecord;
     }

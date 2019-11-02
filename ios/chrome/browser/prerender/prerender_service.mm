@@ -62,6 +62,19 @@ bool PrerenderService::MaybeLoadPrerenderedURL(
     return false;
   }
 
+  // Due to some security workarounds inside ios/web, sometimes a restored
+  // webState may mark new navigations as renderer initiated instead of browser
+  // initiated. As a result 'visible url' of preloaded web state will be
+  // 'last committed  url', and not 'url typed by the user'. As these
+  // navigations are uncommitted, and make the omnibox (or NTP) look strange,
+  // simply drop them.  See crbug.com/1020497 for the strange UI, and
+  // crbug.com/1010765 for the triggering security fixes.
+  if (web_state_list->GetActiveWebState()->GetVisibleURL() ==
+      new_web_state->GetVisibleURL()) {
+    CancelPrerender();
+    return false;
+  }
+
   DCHECK_NE(WebStateList::kInvalidIndex, web_state_list->active_index());
 
   web::NavigationManager* active_navigation_manager =

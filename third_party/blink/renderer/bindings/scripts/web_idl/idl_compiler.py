@@ -13,9 +13,9 @@ from .database import Database
 from .database import DatabaseBody
 from .dictionary import Dictionary
 from .enumeration import Enumeration
-from .ir_map import IRMap
 from .idl_type import IdlTypeFactory
 from .interface import Interface
+from .ir_map import IRMap
 from .make_copy import make_copy
 from .namespace import Namespace
 from .operation import OperationGroup

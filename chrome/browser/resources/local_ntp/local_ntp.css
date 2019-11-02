@@ -295,11 +295,11 @@ html[dir=rtl] :-webkit-any(.clock-icon, .search-icon) {
 }
 
 #realbox-matches a:-webkit-any(:hover, .selected) {
-  background-color: rgb(var(--GG100-rgb));
+  background-color: rgb(232, 232, 233);
 }
 
 #realbox-matches a:focus-within {
-  background-color: rgb(var(--GG200-rgb));
+  background-color: rgb(219, 219, 220);
 }
 
 #realbox-matches .match {

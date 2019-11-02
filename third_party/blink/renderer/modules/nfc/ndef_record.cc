@@ -33,6 +33,30 @@ WTF::Vector<uint8_t> GetUTF8DataFromString(const String& string) {
   return data;
 }
 
+bool IsBufferSource(const ScriptValue& data) {
+  return !data.IsEmpty() && (data.V8Value()->IsArrayBuffer() ||
+                             data.V8Value()->IsArrayBufferView());
+}
+
+WTF::Vector<uint8_t> GetBytesOfBufferSource(const ScriptValue& buffer_source) {
+  DCHECK(IsBufferSource(buffer_source));
+  WTF::Vector<uint8_t> bytes;
+  if (buffer_source.V8Value()->IsArrayBuffer()) {
+    DOMArrayBuffer* array_buffer =
+        V8ArrayBuffer::ToImpl(buffer_source.V8Value().As<v8::Object>());
+    bytes.Append(static_cast<uint8_t*>(array_buffer->Data()),
+                 array_buffer->ByteLength());
+  } else if (buffer_source.V8Value()->IsArrayBufferView()) {
+    DOMArrayBufferView* array_buffer_view =
+        V8ArrayBufferView::ToImpl(buffer_source.V8Value().As<v8::Object>());
+    bytes.Append(static_cast<uint8_t*>(array_buffer_view->BaseAddress()),
+                 array_buffer_view->byteLength());
+  } else {
+    NOTREACHED();
+  }
+  return bytes;
+}
+
 // https://w3c.github.io/web-nfc/#the-ndefrecordtype-string
 // Derives a formatted custom type for the external type record from |input|.
 // Returns a null string for an invalid |input|.
@@ -104,10 +128,10 @@ static NDEFRecord* CreateTextRecord(const ExecutionContext* execution_context,
   // ExtractMIMETypeFromMediaType() ignores parameters of the MIME type.
   String mime_type = ExtractMIMETypeFromMediaType(AtomicString(media_type));
 
-  // TODO(https://crbug.com/520391): Step 2-5, parse a MIME type on |media_type|
-  // to get 'lang' and 'charset' parameters. Now we ignore them and the embedder
-  // always uses "lang=en-US;charset=UTF-8" when pushing the record to a NFC
-  // tag.
+  // TODO(https://crbug.com/520391): Step 2-5, parse a MIME type on
+  // |media_type| to get 'lang' and 'charset' parameters. Now we ignore them
+  // and the embedder always uses "lang=en-US;charset=UTF-8" when pushing the
+  // record to a NFC tag.
   if (mime_type.IsEmpty()) {
     mime_type = "text/plain";
   } else if (!mime_type.StartsWithIgnoringASCIICase("text/")) {
@@ -250,6 +274,19 @@ static NDEFRecord* CreateOpaqueRecord(const String& media_type,
                                           std::move(bytes));
 }
 
+static NDEFRecord* CreateUnknownRecord(const String& media_type,
+                                       const ScriptValue& data,
+                                       ExceptionState& exception_state) {
+  if (!IsBufferSource(data)) {
+    exception_state.ThrowTypeError(
+        "The data for 'unknown' NDEFRecord must be a BufferSource.");
+    return nullptr;
+  }
+
+  return MakeGarbageCollected<NDEFRecord>("unknown", media_type,
+                                          GetBytesOfBufferSource(data));
+}
+
 static NDEFRecord* CreateExternalRecord(const String& custom_type,
                                         const ScriptValue& data,
                                         ExceptionState& exception_state) {
@@ -310,6 +347,9 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
     return CreateJsonRecord(init->mediaType(), init->data(), exception_state);
   } else if (record_type == "opaque") {
     return CreateOpaqueRecord(init->mediaType(), init->data(), exception_state);
+  } else if (record_type == "unknown") {
+    return CreateUnknownRecord(init->mediaType(), init->data(),
+                               exception_state);
   } else if (record_type == "smart-poster") {
     // TODO(https://crbug.com/520391): Support creating smart-poster records.
     exception_state.ThrowTypeError("smart-poster type is not supported yet");
@@ -320,8 +360,8 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
       return CreateExternalRecord(formated_type, init->data(), exception_state);
   }
 
-    exception_state.ThrowTypeError("Unknown NDEFRecord type.");
-    return nullptr;
+  exception_state.ThrowTypeError("Invalid NDEFRecord type.");
+  return nullptr;
 }
 
 NDEFRecord::NDEFRecord(const String& record_type,
@@ -350,11 +390,10 @@ NDEFRecord::NDEFRecord(const ExecutionContext* execution_context,
       lang_(getDocumentLanguage(execution_context)),
       payload_data_(GetUTF8DataFromString(text)) {}
 
-NDEFRecord::NDEFRecord(DOMArrayBuffer* array_buffer)
-    : record_type_("opaque"), media_type_("application/octet-stream") {
-  payload_data_.Append(static_cast<uint8_t*>(array_buffer->Data()),
-                       array_buffer->ByteLength());
-}
+NDEFRecord::NDEFRecord(WTF::Vector<uint8_t> payload_data)
+    : record_type_("opaque"),
+      media_type_("application/octet-stream"),
+      payload_data_(std::move(payload_data)) {}
 
 NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
     : record_type_(record.record_type),
@@ -407,6 +446,7 @@ DOMArrayBuffer* NDEFRecord::arrayBuffer() const {
     return nullptr;
   }
   DCHECK(record_type_ == "json" || record_type_ == "opaque" ||
+         record_type_ == "unknown" ||
          !ValidateCustomRecordType(record_type_).IsNull());
 
   return DOMArrayBuffer::Create(payload_data_.data(), payload_data_.size());
@@ -419,6 +459,7 @@ ScriptValue NDEFRecord::json(ScriptState* script_state,
     return ScriptValue::CreateNull(script_state->GetIsolate());
   }
   DCHECK(record_type_ == "json" || record_type_ == "opaque" ||
+         record_type_ == "unknown" ||
          !ValidateCustomRecordType(record_type_).IsNull());
 
   ScriptState::Scope scope(script_state);

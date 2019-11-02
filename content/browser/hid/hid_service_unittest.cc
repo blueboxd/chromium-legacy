@@ -177,6 +177,8 @@ TEST_F(HidServiceTest, OpenAndCloseHidConnection) {
   connection_client()->Bind(
       hid_connection_client.InitWithNewPipeAndPassReceiver());
 
+  EXPECT_FALSE(contents()->IsConnectedToHidDevice());
+
   base::RunLoop run_loop;
   mojo::PendingRemote<device::mojom::HidConnection> connection;
   service->Connect(
@@ -190,7 +192,16 @@ TEST_F(HidServiceTest, OpenAndCloseHidConnection) {
   run_loop.Run();
   EXPECT_TRUE(connection);
 
+  EXPECT_TRUE(contents()->IsConnectedToHidDevice());
+
+  // Destroying |connection| will also disconnect the watcher.
   connection.reset();
+
+  // Allow the watcher's disconnect handler to run. This will update the
+  // WebContents active frame count.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(contents()->IsConnectedToHidDevice());
 }
 
 }  // namespace content

@@ -28,7 +28,7 @@
 
 import cPickle
 
-from blinkpy.web_tests.models import test_failures
+from blinkpy.web_tests.models import test_failures, test_expectations
 
 from blinkpy.common import path_finder
 
@@ -75,8 +75,19 @@ class TestResult(object):
             failure.has_repaint_overlay for failure in self.failures)
         self.crash_site = crash_site
         self.retry_attempt = retry_attempt
-        # FIXME: Setting this in the constructor makes this class hard to mutate.
-        self.type = test_failures.determine_result_type(failures)
+
+        results = set([f.result for f in self.failures] or [test_expectations.PASS])
+        assert len(results) <= 2, (
+            'single_test_runner.py incorrectly reported results %s for test %s' %
+            (', '.join(results), test_name))
+        if len(results) == 2:
+            assert test_expectations.TIMEOUT in results and test_expectations.FAIL in results, (
+                'The only combination of 2 results allowable is TIMEOUT and FAIL. '
+                'Test %s reported the following results %s' % (test_name, ', '.join(results)))
+            self.type = test_expectations.TIMEOUT
+        else:
+            # FIXME: Setting this in the constructor makes this class hard to mutate.
+            self.type = results.pop()
 
         # These are set by the worker, not by the driver, so they are not passed to the constructor.
         self.worker_name = ''

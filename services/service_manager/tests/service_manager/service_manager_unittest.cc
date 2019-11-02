@@ -169,9 +169,9 @@ class ServiceManagerTest : public testing::Test,
   Connector* connector() { return test_service_.connector(); }
 
   void AddListenerAndWaitForApplications() {
-    mojom::ServiceManagerPtr service_manager;
-    connector()->BindInterface(service_manager::mojom::kServiceName,
-                               &service_manager);
+    mojo::Remote<mojom::ServiceManager> service_manager;
+    connector()->Connect(service_manager::mojom::kServiceName,
+                         service_manager.BindNewPipeAndPassReceiver());
 
     mojo::PendingRemote<mojom::ServiceManagerListener> listener;
     binding_.Bind(listener.InitWithNewPipeAndPassReceiver());

@@ -91,6 +91,7 @@
 #include "content/public/common/web_preferences.h"
 #include "media/mojo/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/android/network_library.h"
 #include "net/http/http_util.h"
 #include "net/net_buildflags.h"
@@ -242,8 +243,9 @@ void AllowEmptyOriginIdCB(base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(false);
 }
 
-void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
-                           ::media::mojom::MediaDrmStorageRequest request) {
+void CreateMediaDrmStorage(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<::media::mojom::MediaDrmStorage> receiver) {
   DCHECK(render_frame_host);
 
   if (render_frame_host->GetLastCommittedOrigin().opaque()) {
@@ -266,7 +268,7 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
   // away.
   new cdm::MediaDrmStorageImpl(
       render_frame_host, pref_service, base::BindRepeating(&CreateOriginId),
-      base::BindRepeating(&AllowEmptyOriginIdCB), std::move(request));
+      base::BindRepeating(&AllowEmptyOriginIdCB), std::move(receiver));
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 

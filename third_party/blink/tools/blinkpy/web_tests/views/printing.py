@@ -121,14 +121,7 @@ class Printer(object):
 
     def _print_expected_results_of_type(self, run_results, result_type, result_type_str, tests_with_result_type_callback):
         tests = tests_with_result_type_callback(result_type)
-        now = run_results.tests_by_timeline[test_expectations.NOW]
-        wontfix = run_results.tests_by_timeline[test_expectations.WONTFIX]
-
-        # We use a fancy format string in order to print the data out in a
-        # nicely-aligned table.
-        fmtstr = ('Expect: %%5d %%-8s (%%%dd now, %%%dd wontfix)'
-                  % (self._num_digits(now), self._num_digits(wontfix)))
-        self._print_debug(fmtstr % (len(tests), result_type_str, len(tests & now), len(tests & wontfix)))
+        self._print_debug('Expect: %5d %-8s' % (len(tests), result_type_str))
 
     def _num_digits(self, num):
         ndigits = 1

@@ -62,15 +62,35 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         web_test_results = WebTestResults({
             'tests': {
                 'one': {
-                    'crash.html': {'expected': 'PASS', 'actual': 'CRASH', 'is_unexpected': True},
-                    'expected-fail.html': {'expected': 'FAIL', 'actual': 'IMAGE+TEXT'},
-                    'flaky-fail.html': {'expected': 'PASS', 'actual': 'PASS TEXT', 'is_unexpected': True},
-                    'missing.html': {'expected': 'PASS', 'actual': 'MISSING', 'is_unexpected': True},
-                    'slow-fail.html': {'expected': 'SLOW', 'actual': 'TEXT', 'is_unexpected': True},
-                    'text-fail.html': {'expected': 'PASS', 'actual': 'TEXT', 'is_unexpected': True},
+                    'crash.html': {
+                        'expected': 'PASS', 'actual': 'CRASH', 'is_unexpected': True,
+                        'artifacts': {'crash_log': ['crash.log']}},
+                    'expected-fail.html': {
+                        'expected': 'FAIL', 'actual': 'FAIL',
+                        'artifacts': {'expected_text': ['expected-fail-expected.txt'],
+                                      'actual_text': ['expected-fail-actual.txt']}},
+                    'flaky-fail.html': {
+                        'expected': 'PASS', 'actual': 'PASS FAIL', 'is_unexpected': True,
+                        'artifacts': {'expected_audio': ['flaky-fail-expected.wav'],
+                                      'actual_audio': ['flaky-fail-actual.wav']}},
+                    'missing.html': {
+                        'expected': 'PASS', 'actual': 'FAIL', 'is_unexpected': True,
+                        'artifacts': {'actual_image': ['missing-actual.png']}, 'is_missing_image': True},
+                    'slow-fail.html': {
+                        'expected': 'SLOW', 'actual': 'FAIL', 'is_unexpected': True,
+                        'artifacts': {'actual_text': ['slow-fail-actual.txt'],
+                                      'expected_text': ['slow-fail-expected.txt']}},
+                    'text-fail.html': {
+                        'expected': 'PASS', 'actual': 'FAIL', 'is_unexpected': True,
+                        'artifacts': {'actual_text': ['text-fail-actual.txt'],
+                                      'expected_text': ['text-fail-expected.txt']}},
                     'unexpected-pass.html': {'expected': 'FAIL', 'actual': 'PASS', 'is_unexpected': True},
                 },
-                'two': {'image-fail.html': {'expected': 'PASS', 'actual': 'IMAGE', 'is_unexpected': True}},
+                'two': {
+                    'image-fail.html': {
+                        'expected': 'PASS', 'actual': 'FAIL', 'is_unexpected': True,
+                        'artifacts': {'actual_image': ['image-fail-actual.png'],
+                                      'expected_image': ['image-fail-expected.png']}}},
             },
         })
 
@@ -370,13 +390,13 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 [[
                     'python', 'echo', 'copy-existing-baselines-internal',
                     '--test', 'one/flaky-fail.html',
-                    '--suffixes', 'txt',
+                    '--suffixes', 'wav',
                     '--port-name', 'test-win-win7',
                 ]],
                 [[
                     'python', 'echo', 'rebaseline-test-internal',
                     '--test', 'one/flaky-fail.html',
-                    '--suffixes', 'txt',
+                    '--suffixes', 'wav',
                     '--port-name', 'test-win-win7',
                     '--builder', 'MOCK Try Win',
                     '--build-number', '5000',
@@ -385,7 +405,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 [[
                     'python', 'echo', 'optimize-baselines',
                     '--no-manifest-update',
-                    '--suffixes', 'txt',
+                    '--suffixes', 'wav',
                     'one/flaky-fail.html',
                 ]]
             ])

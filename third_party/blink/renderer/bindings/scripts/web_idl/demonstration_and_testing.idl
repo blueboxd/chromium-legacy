@@ -2,13 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+// This file is used only during the development of the new bindings generator
+// (especially until we'll have a good test suite) and pretty much temporary.
+// The IDL definitions in this file are used for half testing purpose and for
+// half demonstration purpose of the new bindings generator.
+
 [
   Exposed=Window
 ] interface TestInterfaceConstructor {
   constructor();
   constructor(DOMString arg1);
   [Custom] constructor(Node node);
-  [RuntimeEnabled=Hoge] constructor(long num);
+  [RuntimeEnabled=TestFeature1] constructor(long num);
 };
 
 namespace TestNamespace {

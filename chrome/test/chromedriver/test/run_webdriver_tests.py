@@ -347,7 +347,7 @@ if __name__ == '__main__':
         status = test_expectations.TestExpectations.expectation_from_string(
             test_result.test_status)
         is_unexpected = not expectations.matches_an_expected_result(
-            test_result.test_name, status, False)
+            test_result.test_name, status)
       else:
         expected_result = 'PASS'
         is_unexpected = (test_result.test_status != expected_result)

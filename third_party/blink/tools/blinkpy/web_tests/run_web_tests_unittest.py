@@ -766,7 +766,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             results['tests']['failures']['unexpected']['text-image-checksum.html'],
             {
                 'expected': 'PASS',
-                'actual': 'IMAGE+TEXT',
+                'actual': 'FAIL',
                 'is_unexpected': True,
                 'is_regression': True,
                 'text_mismatch': 'general text mismatch',
@@ -776,7 +776,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             results['tests']['failures']['unexpected']['missing_text.html'],
             {
                 'expected': 'PASS',
-                'actual': 'MISSING',
+                'actual': 'FAIL',
                 'is_unexpected': True,
                 'is_regression': True,
                 'is_missing_text': True,
@@ -793,7 +793,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         details, _, _ = logging_run(['--num-retries=3', 'failures/unexpected/text_then_crash.html'], tests_included=True)
         self.assertEqual(details.exit_code, 1)
         self.assertEqual(details.summarized_failing_results['tests']['failures']['unexpected']['text_then_crash.html']['actual'],
-                         'TEXT CRASH CRASH CRASH')
+                         'FAIL CRASH CRASH CRASH')
 
         # If we get a test that fails two different ways -- but the second one is expected --
         # we should treat it as a flaky result and report the initial unexpected failure type
@@ -801,7 +801,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         details, _, _ = logging_run(['--num-retries=3', 'failures/expected/crash_then_text.html'], tests_included=True)
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(details.summarized_failing_results['tests']['failures']['expected']['crash_then_text.html']['actual'],
-                         'CRASH TEXT')
+                         'CRASH FAIL')
 
     def test_watch(self):
         host = MockHost()
@@ -1284,7 +1284,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_result = run_details.initial_results.all_results[0]
         self.assertEqual(test_result.test_name, test_name)
         self.assertEqual(len(test_result.failures), 1)
-        self.assertEqual(test_failures.determine_result_type(test_result.failures), test_expectations.TEXT)
+        self.assertEqual(test_result.type, test_expectations.FAIL)
 
     def test_reftest_mismatching_pixel_matching_text(self):
         test_name = 'failures/unexpected/reftest-with-matching-text.html'
@@ -1295,7 +1295,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_result = run_details.initial_results.all_results[0]
         self.assertEqual(test_result.test_name, test_name)
         self.assertEqual(len(test_result.failures), 1)
-        self.assertEqual(test_failures.determine_result_type(test_result.failures), test_expectations.IMAGE)
+        self.assertEqual(test_result.type, test_expectations.FAIL)
 
     def test_reftest_mismatching_both_text_and_pixel(self):
         test_name = 'failures/unexpected/reftest.html'
@@ -1307,7 +1307,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         test_result = run_details.initial_results.all_results[0]
         self.assertEqual(test_result.test_name, test_name)
         self.assertEqual(len(test_result.failures), 2)
-        self.assertEqual(test_failures.determine_result_type(test_result.failures), test_expectations.IMAGE_PLUS_TEXT)
+        self.assertEqual(test_result.type, test_expectations.FAIL)
 
     def test_extra_baselines(self):
         host = MockHost()

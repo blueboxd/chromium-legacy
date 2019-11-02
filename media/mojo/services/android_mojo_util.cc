@@ -24,12 +24,11 @@ std::unique_ptr<ProvisionFetcher> CreateProvisionFetcher(
 std::unique_ptr<MediaDrmStorage> CreateMediaDrmStorage(
     service_manager::mojom::InterfaceProvider* host_interfaces) {
   DCHECK(host_interfaces);
-  mojo::PendingRemote<mojom::MediaDrmStorage> media_drm_storage_remote;
-  service_manager::GetInterface(
-      host_interfaces,
-      media_drm_storage_remote.InitWithNewPipeAndPassReceiver());
-  return std::make_unique<MojoMediaDrmStorage>(
-      std::move(media_drm_storage_remote));
+  mojo::PendingRemote<mojom::MediaDrmStorage> media_drm_storage;
+  host_interfaces->GetInterface(
+      mojom::MediaDrmStorage::Name_,
+      media_drm_storage.InitWithNewPipeAndPassReceiver().PassPipe());
+  return std::make_unique<MojoMediaDrmStorage>(std::move(media_drm_storage));
 }
 
 }  // namespace android_mojo_util

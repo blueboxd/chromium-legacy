@@ -191,8 +191,7 @@ class WebTestRunner(object):
                 test_run_results.unexpected_crashes, test_run_results.unexpected_timeouts))
 
     def _update_summary_with_result(self, test_run_results, result):
-        expected = self._expectations.matches_an_expected_result(
-            result.test_name, result.type, self._options.enable_sanitizer)
+        expected = self._expectations.matches_an_expected_result(result.test_name, result.type)
         expectation_string = self._expectations.get_expectations_string(result.test_name)
         actual_string = self._expectations.expectation_to_string(result.type)
 

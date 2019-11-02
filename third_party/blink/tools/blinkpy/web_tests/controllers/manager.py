@@ -440,9 +440,9 @@ class Manager(object):
         test_to_crash_failure = {}
 
         # reset static variables for Failure type classes
-        test_failures.TestFailure.port = self._port
-        test_failures.TestFailure.result_directory = self._results_directory
-        test_failures.TestFailure.filesystem = self._filesystem
+        test_failures.AbstractTestResultType.port = self._port
+        test_failures.AbstractTestResultType.result_directory = self._results_directory
+        test_failures.AbstractTestResultType.filesystem = self._filesystem
 
         for test, result in run_results.unexpected_results_by_name.iteritems():
             if result.type != test_expectations.CRASH:
@@ -457,7 +457,7 @@ class Manager(object):
         sample_files = self._port.look_for_new_samples(
             crashed_processes, start_time) or {}
         for test, sample_file in sample_files.iteritems():
-            test_failures.TestFailure.test_name = test
+            test_failures.AbstractTestResultType.test_name = test
             test_result = run_results.unexpected_results_by_name[test]
             artifact_relative_path = self._port.output_filename(
                 test, test_failures.FILENAME_SUFFIX_SAMPLE, '.txt')
@@ -473,7 +473,7 @@ class Manager(object):
         new_crash_logs = self._port.look_for_new_crash_logs(
             crashed_processes, start_time) or {}
         for test, (crash_log, crash_site) in new_crash_logs.iteritems():
-            test_failures.TestFailure.test_name = test
+            test_failures.AbstractTestResultType.test_name = test
             failure.crash_log = crash_log
             failure.has_log = self._port.output_contains_sanitizer_messages(
                 failure.crash_log)

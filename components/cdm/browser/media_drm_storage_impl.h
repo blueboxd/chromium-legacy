@@ -19,7 +19,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "media/mojo/mojom/media_drm_storage.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -86,11 +86,12 @@ class MediaDrmStorageImpl final
   // |allow_empty_origin_id_cb| is used to determine if an empty origin ID is
   // allowed or not. It is called if |get_origin_id_cb| is unable to return an
   // origin ID.
-  MediaDrmStorageImpl(content::RenderFrameHost* render_frame_host,
-                      PrefService* pref_service,
-                      GetOriginIdCB get_origin_id_cb,
-                      AllowEmptyOriginIdCB allow_empty_origin_id_cb,
-                      media::mojom::MediaDrmStorageRequest request);
+  MediaDrmStorageImpl(
+      content::RenderFrameHost* render_frame_host,
+      PrefService* pref_service,
+      GetOriginIdCB get_origin_id_cb,
+      AllowEmptyOriginIdCB allow_empty_origin_id_cb,
+      mojo::PendingReceiver<media::mojom::MediaDrmStorage> receiver);
 
   // media::mojom::MediaDrmStorage implementation.
   void Initialize(InitializeCallback callback) final;

@@ -327,7 +327,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         unexpected_results = web_test_results.didnt_run_as_expected_results()
         tests = sorted(
             r.test_name() for r in unexpected_results
-            if r.is_missing_baseline() or r.has_mismatch_result())
+            if r.is_missing_baseline() or r.has_mismatch_with_baseline())
 
         new_failures = self._fetch_tests_with_new_failures(build)
         if new_failures is None:

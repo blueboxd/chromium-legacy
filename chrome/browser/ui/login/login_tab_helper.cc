@@ -79,6 +79,11 @@ void LoginTabHelper::DidFinishNavigation(
   DCHECK(
       base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials));
 
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
   // See TODO(https://crbug.com/943610) in DidStartNavigation().
   if (delegate_ && !navigation_handle->IsErrorPage()) {
     delegate_.reset();

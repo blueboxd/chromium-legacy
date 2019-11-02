@@ -18,12 +18,11 @@
 
 namespace media {
 
-// A MediaDrmStorage that proxies to a
-// mojo::PendingRemote<mojom::MediaDrmStorage>.
+// A MediaDrmStorage that proxies to a Remote<mojom::MediaDrmStorage>.
 class MEDIA_MOJO_EXPORT MojoMediaDrmStorage : public MediaDrmStorage {
  public:
   explicit MojoMediaDrmStorage(
-      mojo::PendingRemote<mojom::MediaDrmStorage> media_drm_storage_remote);
+      mojo::PendingRemote<mojom::MediaDrmStorage> media_drm_storage);
   ~MojoMediaDrmStorage() final;
 
   // MediaDrmStorage implementation:
@@ -43,7 +42,7 @@ class MEDIA_MOJO_EXPORT MojoMediaDrmStorage : public MediaDrmStorage {
       LoadPersistentSessionCB load_persistent_session_cb,
       mojom::SessionDataPtr session_data);
 
-  mojo::Remote<mojom::MediaDrmStorage> media_drm_storage_remote_;
+  mojo::Remote<mojom::MediaDrmStorage> media_drm_storage_;
   base::WeakPtrFactory<MojoMediaDrmStorage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoMediaDrmStorage);

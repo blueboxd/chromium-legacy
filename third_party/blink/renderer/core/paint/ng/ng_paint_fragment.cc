@@ -212,23 +212,6 @@ const LayoutObject* ListMarkerFromMarkerOrMarkerContent(
   return nullptr;
 }
 
-// TODO(yosin): Move to "ng_selection_painter.cc"
-PhysicalRect ComputeLocalRect(const NGInlineCursor& cursor,
-                              unsigned start_offset,
-                              unsigned end_offset) {
-  DCHECK_LE(start_offset, end_offset);
-  if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment()) {
-    return To<NGPhysicalTextFragment>(paint_fragment->PhysicalFragment())
-        .LocalRect(start_offset, end_offset);
-  }
-  if (const NGFragmentItem* item = cursor.CurrentItem()) {
-    return item->LocalRect(cursor.Items().Text(item->UsesFirstLineStyle()),
-                           start_offset, end_offset);
-  }
-  NOTREACHED();
-  return PhysicalRect();
-}
-
 }  // namespace
 
 NGPaintFragment::NGPaintFragment(
@@ -977,7 +960,7 @@ PhysicalRect ComputeLocalSelectionRectForText(
     const NGInlineCursor& cursor,
     const LayoutSelectionStatus& selection_status) {
   const PhysicalRect selection_rect =
-      ComputeLocalRect(cursor, selection_status.start, selection_status.end);
+      cursor.CurrentLocalRect(selection_status.start, selection_status.end);
   LogicalRect logical_rect = ComputeLogicalRectFor(selection_rect, cursor);
   // Let LocalRect for line break have a space width to paint line break
   // when it is only character in a line or only selected in a line.

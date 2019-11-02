@@ -7,41 +7,22 @@
 #include "base/strings/string_util.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 
 namespace ui {
 
 AXTree* AXNodePosition::tree_ = nullptr;
 
-AXNodePosition::AXNodePosition() {}
+AXNodePosition::AXNodePosition() = default;
 
-AXNodePosition::~AXNodePosition() {}
+AXNodePosition::~AXNodePosition() = default;
+
+AXNodePosition::AXNodePosition(const AXNodePosition& other)
+    : AXPosition<AXNodePosition, AXNode>(other) {}
 
 AXNodePosition::AXPositionInstance AXNodePosition::Clone() const {
   return AXPositionInstance(new AXNodePosition(*this));
-}
-
-base::string16 AXNodePosition::GetText() const {
-  if (IsNullPosition())
-    return base::string16();
-
-  const AXNode* anchor = GetAnchor();
-  DCHECK(anchor);
-  base::string16 value = GetAnchor()->data().GetString16Attribute(
-      ax::mojom::StringAttribute::kValue);
-  if (!value.empty())
-    return value;
-
-  if (anchor->IsText()) {
-    return anchor->data().GetString16Attribute(
-        ax::mojom::StringAttribute::kName);
-  }
-
-  base::string16 text;
-  for (int i = 0; i < AnchorChildCount(); ++i)
-    text += CreateChildPositionAt(i)->GetText();
-
-  return text;
 }
 
 // static
@@ -111,30 +92,6 @@ AXNodePosition::AXPositionInstance AXNodePosition::AsUnignoredTextPosition(
   }
 
   return unignored_position;
-}
-
-int AXNodePosition::MaxTextOffset() const {
-  if (IsNullPosition())
-    return INVALID_OFFSET;
-
-  const AXNode* anchor = GetAnchor();
-  DCHECK(anchor);
-  const std::string& value =
-      anchor->data().GetStringAttribute(ax::mojom::StringAttribute::kValue);
-  if (!value.empty())
-    return value.length();
-
-  if (anchor->IsText()) {
-    return anchor->data()
-        .GetStringAttribute(ax::mojom::StringAttribute::kName)
-        .length();
-  }
-
-  int max_text_offset = 0;
-  for (int i = 0; i < AnchorChildCount(); ++i)
-    max_text_offset += CreateChildPositionAt(i)->MaxTextOffset();
-
-  return max_text_offset;
 }
 
 void AXNodePosition::AnchorChild(int child_index,
@@ -242,6 +199,29 @@ AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id,
   return nullptr;
 }
 
+base::string16 AXNodePosition::GetText() const {
+  if (IsNullPosition())
+    return {};
+
+  const AXNode* anchor = GetAnchor();
+  DCHECK(anchor);
+  base::string16 value = GetAnchor()->data().GetString16Attribute(
+      ax::mojom::StringAttribute::kValue);
+  if (!value.empty())
+    return value;
+
+  if (anchor->IsText()) {
+    return anchor->data().GetString16Attribute(
+        ax::mojom::StringAttribute::kName);
+  }
+
+  base::string16 text;
+  for (int i = 0; i < AnchorChildCount(); ++i)
+    text += CreateChildPositionAt(i)->GetText();
+
+  return text;
+}
+
 bool AXNodePosition::IsInLineBreak() const {
   if (IsNullPosition())
     return false;
@@ -262,6 +242,30 @@ bool AXNodePosition::IsInWhiteSpace() const {
   DCHECK(GetAnchor());
   return GetAnchor()->IsLineBreak() ||
          base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
+}
+
+int AXNodePosition::MaxTextOffset() const {
+  if (IsNullPosition())
+    return INVALID_OFFSET;
+
+  const AXNode* anchor = GetAnchor();
+  DCHECK(anchor);
+  base::string16 value = GetAnchor()->data().GetString16Attribute(
+      ax::mojom::StringAttribute::kValue);
+  if (!value.empty())
+    return value.length();
+
+  if (anchor->IsText()) {
+    return anchor->data()
+        .GetString16Attribute(ax::mojom::StringAttribute::kName)
+        .length();
+  }
+
+  int text_length = 0;
+  for (int i = 0; i < AnchorChildCount(); ++i)
+    text_length += CreateChildPositionAt(i)->MaxTextOffset();
+
+  return text_length;
 }
 
 bool AXNodePosition::IsInLineBreakingObject() const {

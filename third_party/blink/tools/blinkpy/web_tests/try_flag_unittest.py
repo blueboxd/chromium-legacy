@@ -74,12 +74,12 @@ class TryFlagTest(unittest.TestCase):
                 'something': {
                     'fail-everywhere.html': {
                         'expected': 'FAIL',
-                        'actual': 'IMAGE+TEXT',
+                        'actual': 'FAIL',
                         'is_unexpected': True
                     },
                     'fail-win-and-linux.html': {
                         'expected': 'FAIL',
-                        'actual': 'IMAGE+TEXT',
+                        'actual': 'FAIL',
                         'is_unexpected': True
                     }
                 }
@@ -90,12 +90,12 @@ class TryFlagTest(unittest.TestCase):
                 'something': {
                     'fail-everywhere.html': {
                         'expected': 'FAIL',
-                        'actual': 'IMAGE+TEXT',
+                        'actual': 'FAIL',
                         'is_unexpected': True
                     },
                     'fail-win-and-linux.html': {
                         'expected': 'FAIL',
-                        'actual': 'IMAGE+TEXT',
+                        'actual': 'FAIL',
                         'is_unexpected': True
                     }
                 }
@@ -105,13 +105,13 @@ class TryFlagTest(unittest.TestCase):
             'tests': {
                 'something': {
                     'pass-unexpectedly-mac.html': {
-                        'expected': 'IMAGE+TEXT',
+                        'expected': 'FAIL',
                         'actual': 'PASS',
                         'is_unexpected': True
                     },
                     'fail-everywhere.html': {
                         'expected': 'FAIL',
-                        'actual': 'IMAGE+TEXT',
+                        'actual': 'FAIL',
                         'is_unexpected': True
                     }
                 }

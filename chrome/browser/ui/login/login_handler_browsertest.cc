@@ -53,6 +53,13 @@ using content::Referrer;
 
 namespace {
 
+// This helper function sets |notification_fired| to true if called. It's used
+// as an observer callback for notifications that are not expected to fire.
+bool FailIfNotificationFires(bool* notification_fired) {
+  *notification_fired = true;
+  return true;
+}
+
 void TestProxyAuth(Browser* browser, const GURL& test_page) {
   bool https = test_page.SchemeIs(url::kHttpsScheme);
 
@@ -1921,6 +1928,44 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, PromptWithNoVisibleEntry) {
   content::TitleWatcher auth_supplied_title_watcher(opened_contents,
                                                     expected_title);
   EXPECT_EQ(expected_title, auth_supplied_title_watcher.WaitAndGetTitle());
+}
+
+// Tests that when HTTP Auth committed interstitials are enabled, a prompt
+// triggered by a subframe can be cancelled.
+IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest, PromptFromSubframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::NavigationController* controller = &contents->GetController();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // Via JavaScript, create an iframe that delivers an auth prompt.
+  GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
+  content::TestNavigationObserver subframe_observer(contents);
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  ASSERT_NE(
+      false,
+      content::EvalJs(
+          contents, "var i = document.createElement('iframe'); i.src = '" +
+                        test_page.spec() + "'; document.body.appendChild(i);"));
+  auth_needed_waiter.Wait();
+  ASSERT_EQ(1u, observer.handlers().size());
+
+  // Cancel the prompt and check that another prompt is not shown.
+  bool notification_fired = false;
+  content::WindowedNotificationObserver no_auth_needed_observer(
+      chrome::NOTIFICATION_AUTH_NEEDED,
+      base::BindRepeating(&FailIfNotificationFires, &notification_fired));
+  WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+  LoginHandler* handler = observer.handlers().front();
+  handler->CancelAuth();
+  auth_cancelled_waiter.Wait();
+  subframe_observer.Wait();
+  EXPECT_FALSE(notification_fired);
 }
 
 // Tests that FTP auth challenges appear over a blank committed interstitial.

@@ -94,12 +94,24 @@ class BaseTestCase(unittest.TestCase):
                     'userscripts': {
                         'first-test.html': {
                             'expected': 'PASS',
-                            'actual': 'IMAGE+TEXT',
+                            'actual': 'FAIL',
                             'is_unexpected': True,
+                            'artifacts': {
+                                'actual_image': ['first-test-actual.png'],
+                                'expected_image': ['first-test-expected.png'],
+                                'actual_text': ['first-test-actual.txt'],
+                                'expected_text': ['first-test-expected.txt']
+                            }
                         },
                         'second-test.html': {
                             'expected': 'FAIL',
-                            'actual': 'IMAGE+TEXT',
+                            'actual': 'FAIL',
+                            'artifacts': {
+                                'actual_image': ['second-test-actual.png'],
+                                'expected_image': ['second-test-expected.png'],
+                                'actual_audio': ['second-test-actual.wav'],
+                                'expected_audio': ['second-test-expected.wav']
+                            }
                         }
                     }
                 }
@@ -672,7 +684,7 @@ class TestRebaselineExecute(BaseTestCase):
                         'python', 'echo', 'copy-existing-baselines-internal',
                         '--verbose',
                         '--test', 'userscripts/second-test.html',
-                        '--suffixes', 'txt,png',
+                        '--suffixes', 'wav,png',
                         '--port-name', 'test-win-win7',
                     ]
                 ],
@@ -690,7 +702,7 @@ class TestRebaselineExecute(BaseTestCase):
                         'python', 'echo', 'rebaseline-test-internal',
                         '--verbose',
                         '--test', 'userscripts/second-test.html',
-                        '--suffixes', 'txt,png',
+                        '--suffixes', 'wav,png',
                         '--port-name', 'test-win-win7',
                         '--builder', 'MOCK Win7',
                         '--step-name', 'webkit_layout_tests (with patch)',

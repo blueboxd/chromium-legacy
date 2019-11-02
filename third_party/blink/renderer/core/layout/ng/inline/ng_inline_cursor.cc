@@ -107,7 +107,13 @@ bool NGInlineCursor::operator==(const NGInlineCursor& other) const {
 const LayoutBlockFlow* NGInlineCursor::GetLayoutBlockFlow() const {
   if (IsPaintFragmentCursor()) {
     // |root_paint_fragment_| is either |LayoutBlockFlow| or |LayoutInline|.
-    const LayoutObject* layout_object = root_paint_fragment_->GetLayoutObject();
+    const NGPhysicalFragment& physical_fragment =
+        root_paint_fragment_->PhysicalFragment();
+    const LayoutObject* layout_object =
+        physical_fragment.IsLineBox()
+            ? To<NGPhysicalLineBoxFragment>(physical_fragment)
+                  .ContainerLayoutObject()
+            : physical_fragment.GetLayoutObject();
     if (const LayoutBlockFlow* block_flow =
             DynamicTo<LayoutBlockFlow>(layout_object))
       return block_flow;

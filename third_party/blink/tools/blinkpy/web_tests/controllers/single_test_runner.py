@@ -65,10 +65,10 @@ class SingleTestRunner(object):
         self._reference_files = test_input.reference_files
         self._retry_attempt = test_input.retry_attempt
 
-        test_failures.TestFailure.port = port
-        test_failures.TestFailure.test_name = test_input.test_name
-        test_failures.TestFailure.result_directory = results_directory
-        test_failures.TestFailure.filesystem = self._filesystem
+        test_failures.AbstractTestResultType.port = port
+        test_failures.AbstractTestResultType.test_name = test_input.test_name
+        test_failures.AbstractTestResultType.result_directory = results_directory
+        test_failures.AbstractTestResultType.filesystem = self._filesystem
         TestResult.repeat_tests = (
             self._options.watch or self._options.repeat_each > 1 or self._options.iterations > 1)
         TestResult.results_directory = self._results_directory

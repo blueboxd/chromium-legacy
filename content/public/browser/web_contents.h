@@ -508,6 +508,10 @@ class WebContents : public PageNavigator,
   // port.
   virtual bool IsConnectedToSerialPort() = 0;
 
+  // Indicates whether any frame in the WebContents is connected to a HID
+  // device.
+  virtual bool IsConnectedToHidDevice() = 0;
+
   // Indicates whether any frame in the WebContents has native file system
   // handles.
   virtual bool HasNativeFileSystemHandles() = 0;

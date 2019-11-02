@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/hid_chooser.h"
 #include "content/public/browser/hid_delegate.h"
@@ -20,9 +21,16 @@ namespace content {
 
 HidService::HidService(RenderFrameHost* render_frame_host,
                        mojo::PendingReceiver<blink::mojom::HidService> receiver)
-    : FrameServiceBase(render_frame_host, std::move(receiver)) {}
+    : FrameServiceBase(render_frame_host, std::move(receiver)) {
+  watchers_.set_disconnect_handler(base::BindRepeating(
+      &HidService::OnWatcherConnectionError, base::Unretained(this)));
+}
 
-HidService::~HidService() = default;
+HidService::~HidService() {
+  // The remaining watchers will be closed from this end.
+  if (!watchers_.empty())
+    DecrementActiveFrameCount();
+}
 
 // static
 void HidService::Create(
@@ -76,17 +84,33 @@ void HidService::Connect(
     const std::string& device_guid,
     mojo::PendingRemote<device::mojom::HidConnectionClient> client,
     ConnectCallback callback) {
+  if (watchers_.empty()) {
+    auto* web_contents_impl = static_cast<WebContentsImpl*>(
+        WebContents::FromRenderFrameHost(render_frame_host()));
+    web_contents_impl->IncrementHidActiveFrameCount();
+  }
+
+  mojo::PendingRemote<device::mojom::HidConnectionWatcher> watcher;
+  watchers_.Add(this, watcher.InitWithNewPipeAndPassReceiver());
   GetContentClient()
       ->browser()
       ->GetHidDelegate()
       ->GetHidManager(web_contents())
       ->Connect(
-          device_guid, std::move(client),
-          // TODO(mattreynolds): Bind |this| as a HidConnectionWatcher and
-          // track the number of active watchers.
-          /*watcher=*/mojo::NullRemote(),
+          device_guid, std::move(client), std::move(watcher),
           base::BindOnce(&HidService::FinishConnect, weak_factory_.GetWeakPtr(),
                          std::move(callback)));
+}
+
+void HidService::OnWatcherConnectionError() {
+  if (watchers_.empty())
+    DecrementActiveFrameCount();
+}
+
+void HidService::DecrementActiveFrameCount() {
+  auto* web_contents_impl = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(render_frame_host()));
+  web_contents_impl->DecrementHidActiveFrameCount();
 }
 
 void HidService::FinishGetDevices(

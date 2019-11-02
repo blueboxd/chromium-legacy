@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .runtime_enabled_features import RuntimeEnabledFeatures
+
 
 class _GlobalNameAndFeature(object):
     def __init__(self, global_name, feature=None):
@@ -29,12 +31,18 @@ class Exposure(object):
                 other.global_names_and_features)
             self._runtime_enabled_features = tuple(
                 other.runtime_enabled_features)
+            self._context_independent_runtime_enabled_features = tuple(
+                other.context_independent_runtime_enabled_features)
+            self._context_dependent_runtime_enabled_features = tuple(
+                other.context_dependent_runtime_enabled_features)
             self._context_enabled_features = tuple(
                 other.context_enabled_features)
             self._only_in_secure_contexts = other.only_in_secure_contexts
         else:
             self._global_names_and_features = tuple()
             self._runtime_enabled_features = tuple()
+            self._context_independent_runtime_enabled_features = tuple()
+            self._context_dependent_runtime_enabled_features = tuple()
             self._context_enabled_features = tuple()
             self._only_in_secure_contexts = None
 
@@ -53,6 +61,16 @@ class Exposure(object):
         only when one of these features is enabled.
         """
         return self._runtime_enabled_features
+
+    @property
+    def context_independent_runtime_enabled_features(self):
+        """Returns runtime enabled features that are context-independent."""
+        return self._context_independent_runtime_enabled_features
+
+    @property
+    def context_dependent_runtime_enabled_features(self):
+        """Returns runtime enabled features that are context-dependent."""
+        return self._context_dependent_runtime_enabled_features
 
     @property
     def context_enabled_features(self):
@@ -83,6 +101,8 @@ class ExposureMutable(Exposure):
 
         self._global_names_and_features = []
         self._runtime_enabled_features = []
+        self._context_independent_runtime_enabled_features = []
+        self._context_dependent_runtime_enabled_features = []
         self._context_enabled_features = []
         self._only_in_secure_contexts = None
 
@@ -98,6 +118,10 @@ class ExposureMutable(Exposure):
 
     def add_runtime_enabled_feature(self, name):
         assert isinstance(name, str)
+        if RuntimeEnabledFeatures.is_context_dependent(name):
+            self._context_dependent_runtime_enabled_features.append(name)
+        else:
+            self._context_independent_runtime_enabled_features.append(name)
         self._runtime_enabled_features.append(name)
 
     def add_context_enabled_feature(self, name):

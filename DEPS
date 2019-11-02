@@ -176,7 +176,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b3cc49dff20c3be47be382add33fa521ea6fd561',
+  'v8_revision': '53ede12e867e12ed12a5d257cf69bd2c6abe9ab9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -1579,7 +1579,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e05bb7d9638ba3bda675dde13ca917589b5f4582',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9a18bfc9603853d6b3b0f5f3103cbf2e9f5e3b0b',
     'condition': 'checkout_src_internal',
   },
 

@@ -88,7 +88,7 @@ collect_idl_files("web_idl_in_core") {
   inputs += [ "${bindings_scripts_dir}/web_idl/migration_adapter.idl" ]
 
   # Additional IDL files to test and demonstrate the new IDL compiler.
-  inputs += [ "${bindings_scripts_dir}/web_idl/idl_compiler_test.idl" ]
+  inputs += [ "${bindings_scripts_dir}/web_idl/demonstration_and_testing.idl" ]
 
   component = "core"
   output = "${bindings_output_dir}/web_idl_in_core.pickle"
@@ -111,7 +111,13 @@ action_with_pydeps("web_idl_database") {
 
   input_data_files = get_target_outputs(":web_idl_in_core") +
                      get_target_outputs(":web_idl_in_modules")
-  inputs = input_data_files
+  runtime_enabled_features_file = "../platform/runtime_enabled_features.json5"
+  runtime_enabled_features_test_file =
+      "${bindings_scripts_dir}/web_idl/runtime_enabled_features.json5"
+  inputs = input_data_files + [
+             runtime_enabled_features_file,
+             runtime_enabled_features_test_file,
+           ]
   output_data_file = "${bindings_output_dir}/web_idl_database.pickle"
   outputs = [
     output_data_file,
@@ -120,6 +126,10 @@ action_with_pydeps("web_idl_database") {
   args = [
            "--output",
            rebase_path(output_data_file, root_build_dir),
+           "--runtime_enabled_features",
+           rebase_path(runtime_enabled_features_file, root_build_dir),
+           "--runtime_enabled_features",
+           rebase_path(runtime_enabled_features_test_file, root_build_dir),
            "--",
          ] + rebase_path(input_data_files, root_build_dir)
 

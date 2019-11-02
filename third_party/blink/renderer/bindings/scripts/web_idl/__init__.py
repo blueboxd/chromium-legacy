@@ -19,6 +19,8 @@ def _setup_sys_path():
                      'scripts'),
         # //third_party/ply
         os.path.join(root_dir, 'third_party'),
+        # //third_party/pyjson5/src/json5
+        os.path.join(root_dir, 'third_party', 'pyjson5', 'src'),
         # //tools/idl_parser
         os.path.join(root_dir, 'tools'),
     ] + sys.path
@@ -31,6 +33,16 @@ from .ast_group import AstGroup
 from .composition_parts import Component
 from .database import Database
 from .database_builder import build_database
+from .runtime_enabled_features import RuntimeEnabledFeatures
+
+
+def init(runtime_enabled_features_paths):
+    """
+    Args:
+        runtime_enabled_features_paths: Paths to the definition files of
+            runtime-enabled features ("runtime_enabled_features.json5").
+    """
+    RuntimeEnabledFeatures.init(filepaths=runtime_enabled_features_paths)
 
 
 __all__ = [

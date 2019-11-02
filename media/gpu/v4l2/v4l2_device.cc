@@ -374,7 +374,7 @@ bool V4L2BufferRefBase::CheckNumFDsForFormat(const size_t num_fds) const {
     return false;
   }
 
-  const auto& planes = v4l2_buffer_.m.planes;
+  const auto* planes = v4l2_buffer_.m.planes;
   for (size_t i = v4l2_buffer_.length - 1; i >= num_fds; --i) {
     // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
     // Otherwise, if offset == 0, return error as it is likely pointing to

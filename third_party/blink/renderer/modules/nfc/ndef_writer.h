@@ -17,9 +17,9 @@ class NDEFPushOptions;
 class ExceptionState;
 class ExecutionContext;
 class ScriptPromise;
-class StringOrArrayBufferOrNDEFMessageInit;
+class StringOrArrayBufferOrArrayBufferViewOrNDEFMessageInit;
 
-using NDEFMessageSource = StringOrArrayBufferOrNDEFMessageInit;
+using NDEFMessageSource = StringOrArrayBufferOrArrayBufferViewOrNDEFMessageInit;
 
 class NDEFWriter : public ScriptWrappable, public ContextClient {
   DEFINE_WRAPPERTYPEINFO();

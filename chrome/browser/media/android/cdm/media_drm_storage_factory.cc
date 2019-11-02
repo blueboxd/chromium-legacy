@@ -118,8 +118,9 @@ void AllowEmptyOriginId(content::RenderFrameHost* render_frame_host,
 
 }  // namespace
 
-void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
-                           media::mojom::MediaDrmStorageRequest request) {
+void CreateMediaDrmStorage(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<media::mojom::MediaDrmStorage> receiver) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(render_frame_host);
@@ -155,5 +156,5 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
   new cdm::MediaDrmStorageImpl(
       render_frame_host, pref_service, get_origin_id_cb,
       base::BindRepeating(&AllowEmptyOriginId, render_frame_host),
-      std::move(request));
+      std::move(receiver));
 }

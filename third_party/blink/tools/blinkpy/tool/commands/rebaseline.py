@@ -483,7 +483,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         test_result = self._result_for_test(test, build)
         if not test_result:
             return set()
-        return TestExpectations.suffixes_for_test_result(test_result)
+        return test_result.suffixes_for_test_result()
 
     def _test_passed_unexpectedly(self, test, build, port_name):
         """Determines if a test passed unexpectedly in a build.

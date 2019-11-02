@@ -2155,108 +2155,113 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
-       TestITextRangeProviderMoveEndpointByCharacter) {
-  Init(BuildTextDocument({"some text", "more text", "even more text"}));
+       TestITextRangeProviderMoveEndpointByCharacterMultilingual) {
+  // The English string has three characters, each 8 bits in length.
+  const std::string english = "hey";
+
+  // The Hindi string has two characters, the first one 32 bits and the second
+  // 64 bits in length. It is formatted in UTF16.
+  const std::string hindi =
+      base::UTF16ToUTF8(L"\x0939\x093F\x0928\x094D\x0926\x0940");
+
+  // The Thai string has three characters, the first one 48, the second 32 and
+  // the last one 16 bits in length. It is formatted in UTF16.
+  const std::string thai =
+      base::UTF16ToUTF8(L"\x0E23\x0E39\x0E49\x0E2A\x0E36\x0E01");
+
+  Init(BuildTextDocument({english, hindi, thai}));
   AXNodePosition::SetTree(tree_.get());
 
   ComPtr<ITextRangeProvider> text_range_provider;
   GetTextRangeProviderFromTextNode(text_range_provider,
                                    GetRootNode()->children()[0]);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some text");
 
   // Verify MoveEndpointByUnit with zero count has no effect
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some text");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"hey");
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
       /*count*/ 0,
-      /*expected_text*/ L"some text",
+      /*expected_text*/ L"hey",
       /*expected_count*/ 0);
 
-  // Test start and end node single-unit moves within a single node
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
       /*count*/ 1,
-      /*expected_text*/ L"ome text",
+      /*expected_text*/ L"ey",
       /*expected_count*/ 1);
+
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
       /*count*/ -1,
-      /*expected_text*/ L"ome tex",
+      /*expected_text*/ L"e",
       /*expected_count*/ -1);
 
-  // Test start and end node multi-unit moves within a single node
+  // Move end into the adjacent node.
+  //
+  // The first character of the second node is 32 bits in length.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ 2,
+      /*expected_text*/ L"ey\x0939\x093F",
+      /*expected_count*/ 2);
+
+  // The second character of the second node is 64 bits in length.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ 1,
+      /*expected_text*/ L"ey\x939\x93F\x928\x94D\x926\x940",
+      /*expected_count*/ 1);
+
+  // Move start into the adjacent node as well.
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
       /*count*/ 2,
-      /*expected_text*/ L"e tex",
+      /*expected_text*/ L"\x939\x93F\x928\x94D\x926\x940",
       /*expected_count*/ 2);
+
+  // Move end into the last node.
+  //
+  // The first character of the last node is 48 bits in length.
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
-      /*count*/ -3,
-      /*expected_text*/ L"e ",
-      /*expected_count*/ -3);
+      /*count*/ 1,
+      /*expected_text*/ L"\x939\x93F\x928\x94D\x926\x940\xE23\xE39\xE49",
+      /*expected_count*/ 1);
 
-  // Move end to before start - ensure count is truncated
+  // Move end back into the second node and then into the last node again.
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
-      /*count*/ -10,
-      /*expected_text*/ L"",
-      /*expected_count*/ -5);
+      /*count*/ -2,
+      /*expected_text*/ L"\x939\x93F",
+      /*expected_count*/ -2);
 
-  // Move end back out - ensure both start and end were moved
-  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
-      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
-      /*count*/ 4,
-      /*expected_text*/ L"some",
-      /*expected_count*/ 4);
-
-  // Move start past end, ensure a degenerate range is created
-  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
-      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
-      /*count*/ 7,
-      /*expected_text*/ L"",
-      /*expected_count*/ 7);
-
-  // Move start back to its prior position and verify that end was also moved
-  // as part of moving start past end
-  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
-      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
-      /*count*/ -7,
-      /*expected_text*/ L"some te",
-      /*expected_count*/ -7);
-
-  // Move end into the adjacent node
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
       /*count*/ 3,
-      /*expected_text*/ L"some textm",
+      /*expected_text*/
+      L"\x939\x93F\x928\x94D\x926\x940\xE23\xE39\xE49\xE2A\xE36",
       /*expected_count*/ 3);
 
-  // Move end to the end of the document, ensure truncated count
+  // The last character of the last node is only 16 bits in length.
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
-      /*count*/ 30,
-      /*expected_text*/ L"some textmore texteven more text",
-      /*expected_count*/ 22);
+      /*count*/ 1,
+      /*expected_text*/
+      L"\x939\x93F\x928\x94D\x926\x940\xE23\xE39\xE49\xE2A\xE36\xE01",
+      /*expected_count*/ 1);
 
-  // Move start beyond end, ensure truncated count and degenerate range
+  // Move start into the last node.
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
-      /*count*/ 40,
-      /*expected_text*/ L"",
-      /*expected_count*/ 32);
+      /*count*/ 3,
+      /*expected_text*/ L"\x0E2A\x0E36\x0E01",
+      /*expected_count*/ 3);
 
-  // Move end before start, ensure both positions are moved
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
-      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
-      /*count*/ -10,
-      /*expected_text*/ L"",
-      /*expected_count*/ -10);
-  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
-      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
-      /*count*/ 5,
-      /*expected_text*/ L" more",
-      /*expected_count*/ 5);
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ -1,
+      /*expected_text*/ L"\x0E23\x0E39\x0E49\x0E2A\x0E36\x0E01",
+      /*expected_count*/ -1);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

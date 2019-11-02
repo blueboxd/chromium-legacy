@@ -654,8 +654,8 @@ MediaDrmStorageImpl::MediaDrmStorageImpl(
     PrefService* pref_service,
     GetOriginIdCB get_origin_id_cb,
     AllowEmptyOriginIdCB allow_empty_origin_id_cb,
-    media::mojom::MediaDrmStorageRequest request)
-    : FrameServiceBase(render_frame_host, std::move(request)),
+    mojo::PendingReceiver<media::mojom::MediaDrmStorage> receiver)
+    : FrameServiceBase(render_frame_host, std::move(receiver)),
       pref_service_(pref_service),
       get_origin_id_cb_(get_origin_id_cb),
       allow_empty_origin_id_cb_(allow_empty_origin_id_cb) {

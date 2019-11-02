@@ -16,8 +16,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "media/mojo/services/mojo_media_drm_storage.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -93,11 +92,12 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
       MediaDrmStorageImpl::GetOriginIdCB get_origin_id_cb,
       MediaDrmStorageImpl::AllowEmptyOriginIdCB allow_empty_cb =
           base::BindRepeating(&AllowEmptyOriginId)) {
-    mojo::PendingRemote<media::mojom::MediaDrmStorage> media_drm_storage_remote;
-    auto receiver = media_drm_storage_remote.InitWithNewPipeAndPassReceiver();
+    mojo::PendingRemote<media::mojom::MediaDrmStorage>
+        pending_media_drm_storage;
+    auto receiver = pending_media_drm_storage.InitWithNewPipeAndPassReceiver();
 
     auto media_drm_storage = std::make_unique<media::MojoMediaDrmStorage>(
-        std::move(media_drm_storage_remote));
+        std::move(pending_media_drm_storage));
 
     // The created object will be destroyed on connection error.
     new MediaDrmStorageImpl(rfh, pref_service_.get(),

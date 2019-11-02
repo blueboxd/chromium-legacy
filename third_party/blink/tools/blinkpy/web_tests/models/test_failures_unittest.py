@@ -30,8 +30,7 @@ import unittest
 from blinkpy.web_tests.port.driver import DriverOutput
 
 from blinkpy.web_tests.models.test_failures import (
-    ALL_FAILURE_CLASSES, determine_result_type,
-    FailureCrash, FailureTimeout, TestFailure
+    ALL_FAILURE_CLASSES, FailureCrash, FailureTimeout, TestFailure
 )
 
 
@@ -51,16 +50,6 @@ class TestFailuresTest(unittest.TestCase):
 
         # Also test that != is implemented.
         self.assertFalse(failure_obj != new_failure_obj)
-
-    def test_unknown_failure_type(self):
-        class UnknownFailure(TestFailure):
-
-            def message(self):
-                return ''
-
-        failure_obj = UnknownFailure(self._actual_output, self._expected_output)
-        with self.assertRaises(ValueError):
-            determine_result_type([failure_obj])
 
     def test_message_is_virtual(self):
         failure_obj = TestFailure(self._actual_output, self._expected_output)

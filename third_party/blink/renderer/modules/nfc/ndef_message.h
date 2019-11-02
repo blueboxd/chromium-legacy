@@ -17,9 +17,9 @@ class ExceptionState;
 class ExecutionContext;
 class NDEFMessageInit;
 class NDEFRecord;
-class StringOrArrayBufferOrNDEFMessageInit;
+class StringOrArrayBufferOrArrayBufferViewOrNDEFMessageInit;
 
-using NDEFMessageSource = StringOrArrayBufferOrNDEFMessageInit;
+using NDEFMessageSource = StringOrArrayBufferOrArrayBufferViewOrNDEFMessageInit;
 
 class MODULES_EXPORT NDEFMessage final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -26,17 +27,16 @@ class CONTENT_EXPORT BrowserAccessibilityPosition
  public:
   BrowserAccessibilityPosition();
   ~BrowserAccessibilityPosition() override;
+  BrowserAccessibilityPosition(const BrowserAccessibilityPosition& other);
 
   AXPositionInstance Clone() const override;
 
+  base::string16 GetText() const override;
   bool IsInLineBreak() const override;
   bool IsInTextObject() const override;
   bool IsInWhiteSpace() const override;
-  base::string16 GetText() const override;
 
  protected:
-  BrowserAccessibilityPosition(const BrowserAccessibilityPosition& other) =
-      default;
   void AnchorChild(int child_index,
                    AXTreeID* tree_id,
                    ui::AXNode::AXID* child_id) const override;

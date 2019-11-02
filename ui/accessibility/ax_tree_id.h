@@ -43,6 +43,8 @@ class AX_EXPORT AXTreeID {
   // automation API.
   static AXTreeID FromString(const std::string& string);
 
+  AXTreeID& operator=(const AXTreeID& other);
+
   std::string ToString() const;
 
   ax::mojom::AXTreeIDType type() const { return type_; }
@@ -61,9 +63,10 @@ class AX_EXPORT AXTreeID {
 
   friend struct mojo::UnionTraits<ax::mojom::AXTreeIDDataView, ui::AXTreeID>;
   friend class base::NoDestructor<AXTreeID>;
+  friend void swap(AXTreeID& first, AXTreeID& second);
 
   ax::mojom::AXTreeIDType type_;
-  base::Optional<base::UnguessableToken> token_;
+  base::Optional<base::UnguessableToken> token_ = base::nullopt;
 };
 
 // For use in std::unordered_map.

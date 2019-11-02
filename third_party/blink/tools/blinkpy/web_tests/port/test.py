@@ -330,7 +330,7 @@ Bug(test) failures/expected/exception.html [ Crash ]
 Bug(test) failures/expected/image.html [ Failure ]
 Bug(test) failures/expected/image_checksum.html [ Failure ]
 Bug(test) failures/expected/keyboard.html [ Crash ]
-Bug(test) failures/expected/leak.html [ Leak ]
+Bug(test) failures/expected/leak.html [ Failure ]
 Bug(test) failures/expected/mismatch.html [ Failure ]
 Bug(test) failures/expected/newlines_leading.html [ Failure ]
 Bug(test) failures/expected/newlines_trailing.html [ Failure ]
@@ -348,9 +348,9 @@ Bug(test) virtual/skipped/failures/expected [ Skip ]
 
     if not filesystem.exists(WEB_TEST_DIR + '/NeverFixTests'):
         filesystem.write_text_file(WEB_TEST_DIR + '/NeverFixTests', """
-Bug(test) failures/expected/keyboard.html [ WontFix ]
-Bug(test) failures/expected/exception.html [ WontFix ]
-Bug(test) failures/expected/device_failure.html [ WontFix ]
+Bug(test) failures/expected/keyboard.html [ Skip ]
+Bug(test) failures/expected/exception.html [ Skip ]
+Bug(test) failures/expected/device_failure.html [ Skip ]
 """)
 
     # FIXME: This test was only being ignored because of missing a leading '/'.

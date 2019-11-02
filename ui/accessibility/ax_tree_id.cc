@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/ax_tree_id.h"
 
+#include <algorithm>
 #include <iostream>
 
 #include "base/logging.h"
@@ -45,6 +46,8 @@ AXTreeID AXTreeID::CreateNewAXTreeID() {
   return AXTreeID(ax::mojom::AXTreeIDType::kToken);
 }
 
+AXTreeID& AXTreeID::operator=(const AXTreeID& other) = default;
+
 std::string AXTreeID::ToString() const {
   switch (type_) {
     case ax::mojom::AXTreeIDType::kUnknown:
@@ -55,6 +58,11 @@ std::string AXTreeID::ToString() const {
 
   NOTREACHED();
   return std::string();
+}
+
+void swap(AXTreeID& first, AXTreeID& second) {
+  std::swap(first.type_, second.type_);
+  std::swap(first.token_, second.token_);
 }
 
 bool AXTreeID::operator==(const AXTreeID& rhs) const {

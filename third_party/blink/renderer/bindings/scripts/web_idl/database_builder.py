@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .ir_map import IRMap
 from .idl_compiler import IdlCompiler
 from .idl_type import IdlTypeFactory
 from .ir_builder import load_and_register_idl_definitions
+from .ir_map import IRMap
 from .reference import RefByIdFactory
 
 
@@ -20,17 +20,22 @@ def build_database(filepaths, report_error):
             error message of type str and return value is not used.  It's okay
             to terminate the program in this callback.
     """
+    assert isinstance(filepaths, (list, tuple))
+    assert all(isinstance(filepath, str) for filepath in filepaths)
+    assert callable(report_error)
 
     ir_map = IRMap()
     ref_to_idl_type_factory = RefByIdFactory()
     ref_to_idl_def_factory = RefByIdFactory()
     idl_type_factory = IdlTypeFactory()
+
     load_and_register_idl_definitions(
         filepaths=filepaths,
         register_ir=ir_map.register,
         create_ref_to_idl_def=ref_to_idl_def_factory.create,
         create_ref_to_idl_type=ref_to_idl_type_factory.create,
         idl_type_factory=idl_type_factory)
+
     compiler = IdlCompiler(
         ir_map=ir_map,
         ref_to_idl_def_factory=ref_to_idl_def_factory,

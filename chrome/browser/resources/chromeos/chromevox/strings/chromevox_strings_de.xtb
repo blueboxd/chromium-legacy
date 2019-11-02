@@ -153,6 +153,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2063539687800151747">Motto</translation>
 <translation id="207477615537953741">Semantische Interpretation aus</translation>
 <translation id="2086961585857038472">Nächstes Wort</translation>
+<translation id="2087981446621639008">Beschreibungslistendetail</translation>
 <translation id="2089387485033699258">de</translation>
 <translation id="2091933974477985526">Vorheriger bearbeitbarer Textbereich</translation>
 <translation id="2100350898815792233">Alle Satzzeichen</translation>
@@ -192,6 +193,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2416512023405990736">Ein nicht angeklicktes Kästchen</translation>
 <translation id="2417569100218200841">Inhaltsinfo</translation>
 <translation id="2417948780551741035">Endnoten</translation>
+<translation id="2419852971200420169">Beschreibungsliste</translation>
 <translation id="2421113964388408478">Löschen</translation>
 <translation id="2422937916923936891">Kästchen für Menüpunkt</translation>
 <translation id="2428534162001909979">Befehlsmenüs</translation>
@@ -370,6 +372,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3497063866483065785">{COUNT,plural, =1{Fragezeichen}other{# Fragezeichen}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{Caret-Zeichen}other{# Caret-Zeichen}}</translation>
 <translation id="352577523970648069">Ein bearbeitbares Textfeld</translation>
+<translation id="3538907380453898475">Beschreibungsliste</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> ausschneiden.</translation>
 <translation id="3549680091535286226">Tippen Sie mit zwei Fingern, um die Sprachausgabe vorübergehend zu beenden</translation>
 <translation id="3568702578574425662">Das Kästchen "<ph name="NAME" />" ist nicht angeklickt.</translation>
@@ -778,6 +781,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6378394210114975876">Distel</translation>
 <translation id="6385591741672306837">Spalte</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">Alle Ereignisfilter deaktivieren</translation>
 <translation id="6411426777058107714">Kein vorheriges Optionsfeld</translation>
 <translation id="6414968628640960377">Vorheriges anderes Element</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -913,6 +917,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="7332592614823088566">Zeile <ph name="ROWINDEX" /> von <ph name="ROWTOTAL" />, Spalte <ph name="COLINDEX" /> von <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">enthält ein Pop-up-Fenster</translation>
 <translation id="7356165926712028380">Zu 8-Punkt-Braille wechseln</translation>
+<translation id="7356610683936413584">Beschreibungslistendetail</translation>
 <translation id="7362871137496673139">Keine vorherige Überschrift der Ebene 2</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{Und-Zeichen}other{# Und-Zeichen}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1091,6 +1096,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8096975275316362544">Cremige Minze</translation>
 <translation id="8098587210054821856">Schiefergrau</translation>
 <translation id="8110647606445335195">Keine ARIA-Markierungen</translation>
+<translation id="8121539003537428024">Alle Ereignisfilter aktivieren</translation>
 <translation id="812886159861361726">Download von "<ph name="FILE_NAME" />" angehalten</translation>
 <translation id="8138880386467279117">Berühren</translation>
 <translation id="8153880621934657047">Nicht in der Tabelle</translation>

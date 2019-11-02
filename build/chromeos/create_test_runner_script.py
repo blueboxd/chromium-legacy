@@ -3,7 +3,6 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Creates a script that runs a CrOS VM test by delegating to
 build/chromeos/test_runner.py.
 """
@@ -11,7 +10,6 @@ build/chromeos/test_runner.py.
 import argparse
 import os
 import sys
-
 
 SCRIPT_TEMPLATE = """\
 #!/usr/bin/env python
@@ -90,7 +88,8 @@ def main(args):
       vm_test_args.append('--deploy-chrome')
 
   vm_test_args += [
-      '--board', args.board,
+      '--board',
+      args.board,
       '-v',
   ]
   if args.use_vm:
@@ -100,17 +99,18 @@ def main(args):
       ('--cros-cache', RelativizePathToScript(args.cros_cache)),
   ]
   if args.runtime_deps_path:
-    vm_test_path_args.append(
-        ('--runtime-deps-path', RelativizePathToScript(args.runtime_deps_path)))
+    vm_test_path_args.append(('--runtime-deps-path',
+                              RelativizePathToScript(args.runtime_deps_path)))
   if args.output_directory:
-    vm_test_path_args.append(
-        ('--path-to-outdir', RelativizePathToScript(args.output_directory)))
+    vm_test_path_args.append(('--path-to-outdir',
+                              RelativizePathToScript(args.output_directory)))
 
   with open(args.script_output_path, 'w') as script:
-    script.write(SCRIPT_TEMPLATE.format(
-        vm_test_script=run_test_path,
-        vm_test_args=str(vm_test_args),
-        vm_test_path_args=str(vm_test_path_args)))
+    script.write(
+        SCRIPT_TEMPLATE.format(
+            vm_test_script=run_test_path,
+            vm_test_args=str(vm_test_args),
+            vm_test_path_args=str(vm_test_path_args)))
 
   os.chmod(args.script_output_path, 0750)
 

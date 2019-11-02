@@ -5,11 +5,9 @@ include_rules = [
   "+components/version_info/channel.h",
   "+device/bluetooth",  # For BluetoothPermission
   "+grit/extensions_strings.h",
-  "+libxml",
   "+net",
   "+services/device/public",
   "+services/network/public/mojom/cors_origin_pattern.mojom-forward.h",
   "+services/network/public/mojom/cors_origin_pattern.mojom.h",
-  "+third_party/libxml",
   "+third_party/re2",
 ]

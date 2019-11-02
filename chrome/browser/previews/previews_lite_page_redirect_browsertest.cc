@@ -234,6 +234,10 @@ class BasePreviewsLitePageRedirectServerBrowserTest
         https_server_->GetURL(kOriginHost, "/image_decoding/droids.jpg");
     ASSERT_TRUE(https_media_url_.SchemeIs(url::kHttpsScheme));
 
+    https_subframe_url_ =
+        https_server_->GetURL(kOriginHost, "/previews/iframe_blank.html");
+    ASSERT_TRUE(https_subframe_url_.SchemeIs(url::kHttpsScheme));
+
     // Set up http server with resource monitor and redirect handler.
     http_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTP);
@@ -251,9 +255,9 @@ class BasePreviewsLitePageRedirectServerBrowserTest
         http_server_->GetURL(kOriginHost, "/previews/lite_page_test.html");
     ASSERT_TRUE(base_http_lite_page_url_.SchemeIs(url::kHttpScheme));
 
-    subframe_url_ =
+    http_subframe_url_ =
         http_server_->GetURL(kOriginHost, "/previews/iframe_blank.html");
-    ASSERT_TRUE(subframe_url_.SchemeIs(url::kHttpScheme));
+    ASSERT_TRUE(http_subframe_url_.SchemeIs(url::kHttpScheme));
 
     http_to_https_redirect_url_ =
         http_server_->GetURL(kOriginHost, "/previews/to_https_redirect.html");
@@ -625,7 +629,8 @@ class BasePreviewsLitePageRedirectServerBrowserTest
     return https_redirect_loop_url_;
   }
   const GURL& client_redirect_url() const { return client_redirect_url_; }
-  const GURL& subframe_url() const { return subframe_url_; }
+  const GURL& http_subframe_url() const { return http_subframe_url_; }
+  const GURL& https_subframe_url() const { return https_subframe_url_; }
 
   int origin_probe_count() const { return origin_probe_count_; }
   void set_origin_probe_success(bool success) {
@@ -931,7 +936,8 @@ class BasePreviewsLitePageRedirectServerBrowserTest
   GURL https_redirect_loop_url_;
   GURL https_to_https_redirect_url_;
   GURL client_redirect_url_;
-  GURL subframe_url_;
+  GURL http_subframe_url_;
+  GURL https_subframe_url_;
   GURL previews_server_url_;
   GURL slow_http_url_;
   bool origin_probe_success_ = true;
@@ -1142,21 +1148,17 @@ IN_PROC_BROWSER_TEST_P(
   }
 
   {
-    // Verify a subframe navigation does not trigger a preview.
-    const base::string16 kSubframeTitle = base::ASCIIToUTF16("Subframe");
-    base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), subframe_url());
+    // Verify a subframe navigation does not trigger a preview on an ineligible
+    // page.
+    ui_test_utils::NavigateToURL(browser(), http_subframe_url());
+    VerifyPreviewNotLoaded();
+  }
 
-    // Navigate in the subframe and wait for it to finish. The waiting is
-    // accomplished by |ExecuteScriptAndExtractString| which waits for
-    // |window.domAutomationController.send| in the HTML page.
-    std::string result;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        GetWebContents()->GetMainFrame(),
-        "window.open(\"" + HttpsLitePageURL(kSuccess).spec() +
-            "\", \"subframe\")",
-        &result));
-    EXPECT_EQ(kSubframeTitle, base::ASCIIToUTF16(result));
+  {
+    // Verify a subframe navigation does not trigger a preview on a preview
+    // page..
+    ui_test_utils::NavigateToURL(browser(), https_subframe_url());
+    VerifyPreviewLoaded();
   }
 
   {

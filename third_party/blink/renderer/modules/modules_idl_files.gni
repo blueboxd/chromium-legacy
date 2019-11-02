@@ -406,6 +406,7 @@ modules_idl_files =
           "webgl/ext_texture_filter_anisotropic.idl",
           "webgl/khr_parallel_shader_compile.idl",
           "webgl/oes_element_index_uint.idl",
+          "webgl/oes_fbo_render_mipmap.idl",
           "webgl/oes_standard_derivatives.idl",
           "webgl/oes_texture_float.idl",
           "webgl/oes_texture_float_linear.idl",

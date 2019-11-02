@@ -234,11 +234,11 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state,
   return new_response;
 }
 
-mojom::blink::FetchAPIResponsePtr
-FetchResponseData::PopulateFetchAPIResponse() {
+mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
+    const KURL& request_url) {
   if (internal_response_) {
     mojom::blink::FetchAPIResponsePtr response =
-        internal_response_->PopulateFetchAPIResponse();
+        internal_response_->PopulateFetchAPIResponse(request_url);
     response->response_type = type_;
     response->response_source = response_source_;
     response->cors_exposed_header_names =
@@ -268,15 +268,18 @@ FetchResponseData::PopulateFetchAPIResponse() {
     if (HeaderList()->Get("content-security-policy",
                           content_security_policy_header)) {
       network::ContentSecurityPolicy policy;
-      if (policy.Parse(StringUTF8Adaptor(content_security_policy_header)
+      if (policy.Parse(request_url,
+                       StringUTF8Adaptor(content_security_policy_header)
                            .AsStringPiece())) {
+        // Convert network::mojom::ContentSecurityPolicy to
+        // network::mojom::blink::ContentSecurityPolicy.
+        auto blink_frame_ancestors =
+            network::mojom::blink::CSPSourceList::New();
+        WTF::Vector<KURL> report_endpoints;
+
         const network::mojom::CSPSourceListPtr& frame_ancestors_directive =
             policy.content_security_policy_ptr()->frame_ancestors;
         if (frame_ancestors_directive) {
-          // Convert network::mojom::ContentSecurityPolicy to
-          // network::mojom::blink::ContentSecurityPolicy.
-          auto blink_frame_ancestors =
-              network::mojom::blink::CSPSourceList::New();
           for (auto& csp_source : frame_ancestors_directive->sources) {
             blink_frame_ancestors->sources.push_back(
                 network::mojom::blink::CSPSource::New(
@@ -286,10 +289,18 @@ FetchResponseData::PopulateFetchAPIResponse() {
                     csp_source->is_host_wildcard, csp_source->is_port_wildcard,
                     csp_source->allow_self));
           }
-          response->content_security_policy =
-              network::mojom::blink::ContentSecurityPolicy::New(
-                  std::move(blink_frame_ancestors));
         }
+
+        for (auto& endpoints :
+             policy.content_security_policy_ptr()->report_endpoints) {
+          report_endpoints.push_back(endpoints);
+        }
+
+        response->content_security_policy =
+            network::mojom::blink::ContentSecurityPolicy::New(
+                std::move(blink_frame_ancestors),
+                policy.content_security_policy_ptr()->use_reporting_api,
+                std::move(report_endpoints));
       }
     }
   }

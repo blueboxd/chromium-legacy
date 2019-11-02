@@ -14,12 +14,6 @@
 #include "content/browser/media/system_media_controls_notifier.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/idle/idle.h"
-#include "ui/base/mpris/buildflags/buildflags.h"
-
-#if BUILDFLAG(USE_MPRIS)
-#include "content/browser/media/mpris_notifier.h"
-#include "ui/base/mpris/mpris_service.h"  // nogncheck
-#endif
 
 #if defined(OS_MACOSX)
 #include "content/browser/media/now_playing_info_center_notifier.h"
@@ -179,13 +173,6 @@ void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
         std::make_unique<SystemMediaControlsNotifier>(connector_,
                                                       system_media_controls);
   }
-
-#if BUILDFLAG(USE_MPRIS)
-  mpris::MprisService::GetInstance()->StartService();
-
-  mpris_notifier_ = std::make_unique<MprisNotifier>(connector_);
-  mpris_notifier_->Initialize();
-#endif
 
 #if defined(OS_MACOSX)
   // On Mac OS, we need to initialize the idle monitor in order to check if the

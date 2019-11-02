@@ -6,22 +6,28 @@
 
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/http/http_response_headers.h"
+#include "url/gurl.h"
 #include "url/url_canon.h"
 #include "url/url_util.h"
 
 namespace network {
 
+using DirectivesMap = base::flat_map<base::StringPiece, base::StringPiece>;
+
 namespace {
 
 // Parses a "Content-Security-Policy" header.
-// Only extracts the frame-ancestors directive.
-base::Optional<base::StringPiece> ParseHeaderValue(base::StringPiece header) {
+// Returns a map to the directives found.
+DirectivesMap ParseHeaderValue(base::StringPiece header) {
+  DirectivesMap result;
+
   // For each token returned by strictly splitting serialized on the
   // U+003B SEMICOLON character (;):
   // 1. Strip leading and trailing ASCII whitespace from token.
@@ -33,27 +39,26 @@ base::Optional<base::StringPiece> ParseHeaderValue(base::StringPiece header) {
     // 4. Set directive name to be the result of running ASCII lowercase
     // on directive name.
     size_t pos = directive.find_first_of(base::kWhitespaceASCII);
-    if (pos == std::string::npos)
-      continue;
     base::StringPiece name = directive.substr(0, pos);
 
     // 5. If policy's directive set contains a directive whose name is
     // directive name, continue.
-    // We don't need to handle this case, since we early return as soon as we
-    // find the 'frame-ancestors' directive.
+    if (result.find(name) != result.end())
+      continue;
 
     // 6. Let directive value be the result of splitting token on ASCII
     // whitespace.
-    base::StringPiece value = directive.substr(pos + 1);
+    base::StringPiece value;
+    if (pos != std::string::npos)
+      value = directive.substr(pos + 1);
 
     // 7. Let directive be a new directive whose name is directive name,
     // and value is directive value.
     // 8. Append directive to policy's directive set.
-    if (base::EqualsCaseInsensitiveASCII(name, "frame-ancestors"))
-      return value;
+    result.insert({name, value});
   }
 
-  return base::nullopt;
+  return result;
 }
 
 // https://www.w3.org/TR/CSP3/#grammardef-scheme-part
@@ -231,6 +236,9 @@ base::Optional<mojom::CSPSourceListPtr> ParseFrameAncestorsDirective(
 
   std::vector<mojom::CSPSourcePtr> sources;
 
+  if (frame_ancestors_value.empty())
+    return base::nullopt;
+
   if (base::EqualsCaseInsensitiveASCII(value, "'none'"))
     return mojom::CSPSourceList::New(std::move(sources));
 
@@ -243,6 +251,24 @@ base::Optional<mojom::CSPSourceListPtr> ParseFrameAncestorsDirective(
   }
 
   return mojom::CSPSourceList::New(std::move(sources));
+}
+
+// Parses a reporting directive.
+// https://w3c.github.io/webappsec-csp/#directives-reporting
+// TODO(lfg): The report-to should be treated as a single token according to the
+// spec, but this implementation accepts multiple endpoints
+// https://crbug.com/916265.
+base::Optional<std::vector<GURL>> ParseReportDirective(
+    const GURL& request_url,
+    base::StringPiece value) {
+  std::vector<GURL> report_endpoints;
+  for (const auto& uri : base::SplitStringPiece(
+           value, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    report_endpoints.push_back(request_url.Resolve(uri));
+    if (!report_endpoints.back().is_valid())
+      return base::nullopt;
+  }
+  return report_endpoints;
 }
 
 }  // namespace
@@ -272,30 +298,22 @@ ContentSecurityPolicy::operator mojom::ContentSecurityPolicyPtr() const {
   return content_security_policy_ptr_.Clone();
 }
 
-bool ContentSecurityPolicy::Parse(const net::HttpResponseHeaders& headers) {
+bool ContentSecurityPolicy::Parse(const GURL& base_url,
+                                  const net::HttpResponseHeaders& headers) {
   size_t iter = 0;
   std::string header_value;
-  bool success = true;
   while (headers.EnumerateHeader(&iter, "content-security-policy",
                                  &header_value)) {
-    if (!ParseFrameAncestors(header_value))
-      success = false;
+    if (!Parse(base_url, header_value))
+      return false;
   }
-  return success;
+  return true;
 }
 
-bool ContentSecurityPolicy::Parse(base::StringPiece header_value) {
-  return ParseFrameAncestors(header_value);
-}
-
-bool ContentSecurityPolicy::ParseFrameAncestors(
-    base::StringPiece header_value) {
-  // A frame-ancestors directive has already been parsed. Skip further
-  // frame-ancestors directives per
-  // https://www.w3.org/TR/CSP3/#parse-serialized-policy.
-  if (content_security_policy_ptr_ &&
-      content_security_policy_ptr_->frame_ancestors) {
-    return true;
+bool ContentSecurityPolicy::Parse(const GURL& base_url,
+                                  base::StringPiece header_value) {
+  if (!content_security_policy_ptr_) {
+    content_security_policy_ptr_ = mojom::ContentSecurityPolicy::New();
   }
 
   // RFC7230, section 3.2.2 specifies that headers appearing multiple times can
@@ -304,20 +322,74 @@ bool ContentSecurityPolicy::ParseFrameAncestors(
   for (const auto& header :
        base::SplitStringPiece(header_value, ",", base::TRIM_WHITESPACE,
                               base::SPLIT_WANT_NONEMPTY)) {
-    // Parse the CSP directives.
-    // https://www.w3.org/TR/CSP3/#parse-serialized-policy
-    if (auto frame_ancestors_value = ParseHeaderValue(header)) {
-      // TODO(lfg): Emit a warning to the user when parsing an invalid
-      // expression.
-      if (auto parsed_frame_ancestors =
-              ParseFrameAncestorsDirective(*frame_ancestors_value)) {
-        content_security_policy_ptr_ = mojom::ContentSecurityPolicy::New();
-        content_security_policy_ptr_->frame_ancestors =
-            std::move(*parsed_frame_ancestors);
-        return true;
+    DirectivesMap directives = ParseHeaderValue(header);
+
+    auto frame_ancestors = directives.find("frame-ancestors");
+    if (frame_ancestors != directives.end()) {
+      if (!ParseFrameAncestors(frame_ancestors->second)) {
+        content_security_policy_ptr_.reset();
+        return false;
+      }
+    }
+
+    auto report_endpoints = directives.find("report-to");
+    if (report_endpoints != directives.end()) {
+      if (!content_security_policy_ptr_->use_reporting_api) {
+        content_security_policy_ptr_->use_reporting_api = true;
+        content_security_policy_ptr_->report_endpoints.clear();
+      }
+    } else {
+      report_endpoints = directives.find("report-uri");
+    }
+
+    if (report_endpoints != directives.end()) {
+      if (!ParseReportEndpoint(base_url, report_endpoints->second)) {
+        content_security_policy_ptr_.reset();
+        return false;
       }
     }
   }
+
+  return true;
+}
+
+bool ContentSecurityPolicy::ParseFrameAncestors(
+    base::StringPiece frame_ancestors_value) {
+  // A frame-ancestors directive has already been parsed. Skip further
+  // frame-ancestors directives per
+  // https://www.w3.org/TR/CSP3/#parse-serialized-policy.
+  if (content_security_policy_ptr_->frame_ancestors)
+    return true;
+
+  if (auto parsed_frame_ancestors =
+          ParseFrameAncestorsDirective(frame_ancestors_value)) {
+    content_security_policy_ptr_->frame_ancestors =
+        std::move(*parsed_frame_ancestors);
+    return true;
+  }
+
+  // TODO(lfg): Emit a warning to the user when parsing an invalid
+  // expression.
+  return false;
+}
+
+bool ContentSecurityPolicy::ParseReportEndpoint(
+    const GURL& base_url,
+    base::StringPiece header_value) {
+  // A report-uri directive has already been parsed. Skip further directives per
+  // https://www.w3.org/TR/CSP3/#parse-serialized-policy.
+  if (!content_security_policy_ptr_->report_endpoints.empty())
+    return true;
+
+  if (auto parsed_report_directive =
+          ParseReportDirective(base_url, header_value)) {
+    content_security_policy_ptr_->report_endpoints =
+        std::move(*parsed_report_directive);
+    return true;
+  }
+
+  // TODO(lfg): Emit a warning to the user when parsing an invalid
+  // expression.
   return false;
 }
 

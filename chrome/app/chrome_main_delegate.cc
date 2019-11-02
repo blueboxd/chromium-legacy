@@ -114,6 +114,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/hugepage_text/hugepage_text.h"
 #include "chromeos/memory/kstaled.h"
+#include "chromeos/memory/memory.h"
 #include "chromeos/memory/swap_configuration.h"
 #endif
 
@@ -604,6 +605,10 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
 #if defined(OS_CHROMEOS)
     chromeos::ConfigureSwap();
     chromeos::InitializeKstaled();
+
+    // If we're in an experimental group that locks the browser text we will do
+    // that now.
+    chromeos::LockMainProgramText();
 #endif
   }
 }

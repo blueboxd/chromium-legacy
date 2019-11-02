@@ -1875,6 +1875,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-tab-groups-continuation",
+    "owners": [ "memex-team@google.com" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "enable-tab-groups-ui-improvements",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 82

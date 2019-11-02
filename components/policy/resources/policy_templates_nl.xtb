@@ -654,11 +654,6 @@
           Als deze instelling is uitgeschakeld, is bestandsoverdracht niet toegestaan. Als deze instelling is ingeschakeld of niet is ingesteld, is bestandsoverdracht toegestaan.</translation>
 <translation id="2057317273526988987">Toegang verlenen aan een lijst met URL's</translation>
 <translation id="2061810934846663491">De vereiste domeinnamen configureren voor hosts voor externe toegang</translation>
-<translation id="2063663607822994541">Hiermee configureer je de hoeveelheid geheugen die één instantie van <ph name="PRODUCT_NAME" /> kan gebruiken voordat tabbladen worden verwijderd om geheugen te besparen (dit houdt in dat het geheugen dat voor het tabblad wordt gebruikt, wordt vrijgemaakt en dat het tabblad opnieuw moet worden geladen als de gebruiker naar dit tabblad schakelt).
-
-      Als het beleid is ingesteld, worden tabbladen in de browser verwijderd om geheugen te besparen wanneer de limiet wordt bereikt. Er is geen garantie dat de browser altijd onder de limiet wordt uitgevoerd. Elke waarde lager dan 2048 wordt afgerond naar 2048.
-
-      Als dit beleid niet is ingesteld, begint de browser pas met het besparen van geheugen nadat is gedetecteerd dat er nog maar een kleine hoeveelheid fysiek geheugen op de machine beschikbaar is.</translation>
 <translation id="206623763829450685">Hiermee wordt gespecificeerd welke HTTP-verificatieschema's door <ph name="PRODUCT_NAME" /> worden ondersteund.
 
           Mogelijke waarden zijn 'basic', 'digest', 'ntlm' en 'negotiate'. Scheid meerdere waarden van elkaar met komma's.
@@ -950,7 +945,6 @@
       Een URL-patroon wordt ingedeeld overeenkomstig https://www.chromium.org/administrators/url-blacklist-filter-format. Aangezien de certificaten geldig zijn voor een bepaalde hostnaam (los van het schema, de poort of het pad), wordt alleen rekening gehouden met het hostnaamgedeelte van de URL. Hosts met jokertekens worden niet ondersteund.
 
       Als dit beleid niet is ingesteld, worden alle certificaten die bekend moeten worden gemaakt via Certificaattransparantie, niet vertrouwd als ze niet bekend zijn gemaakt overeenkomstig het beleid voor Certificaattransparantie.</translation>
-<translation id="2486911595447603756">Hiermee wordt de modus voor DNS-over-HTTPS bepaald.</translation>
 <translation id="2488010520405124654">Prompt voor netwerkconfiguratie inschakelen als je offline bent.
 
       Als dit beleid niet is ingesteld of is ingesteld op 'True' en een lokaal account op het apparaat is geconfigureerd om automatisch en zonder vertraging in te loggen en het apparaat geen toegang heeft tot internet, geeft <ph name="PRODUCT_OS_NAME" /> een prompt weer voor netwerkconfiguratie.
@@ -2317,7 +2311,7 @@
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is de functie voor monogeluid in eerste instantie uitgeschakeld, maar kan de gebruiker deze op elk gewenst moment inschakelen.</translation>
-<translation id="4759650396863318477">Hiermee kun je de periode in milliseconden instellen waarin gebruikers een melding ontvangen dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart of dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een in behandeling zijnde update toe te passen.
+<translation id="4759650396863318477">Hiermee kun je de periode in milliseconden instellen waarin gebruikers een melding ontvangen dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart of dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een in behandeling zijnde update uit te voeren.
 
       Gedurende deze periode krijgt de gebruiker regelmatig de melding dat er een update moet worden uitgevoerd. In het geval van <ph name="PRODUCT_OS_NAME" />-apparaten wordt een melding over opnieuw opstarten weergegeven in het systeemvak, in overeenstemming met het <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-beleid. In het geval van <ph name="PRODUCT_NAME" />-browsers wordt het app-menu gewijzigd om aan te geven dat er opnieuw moet worden opgestart zodra een derde van de meldingsperiode is verstreken. Deze melding krijgt een andere kleur zodra twee derde van de meldingsperiode is verstreken en dit gebeurt nogmaals als de volledige periode is verstreken. Hetzelfde schema wordt gehanteerd voor aanvullende meldingen die door het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid zijn ingeschakeld.
 
@@ -3747,13 +3741,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Alle drie beleidsregels (VirtualMachinesAllowed, CrostiniAllowed en DeviceUnaffiliatedCrostiniAllowed) moeten voor Crostini zijn ingesteld op 'True' om Crostini te kunnen uitvoeren.
       Wanneer dit beleid wordt gewijzigd in 'False', is het beleid van toepassing op nieuwe Crostini-containers die worden gestart. Containers die al worden uitgevoerd, worden niet uitgeschakeld.</translation>
 <translation id="7234280155140786597">Namen van de verboden hosts voor systeemeigen berichten (of * voor alle)</translation>
-<translation id="7236775576470542603">Het standaardtype van vergrootglas instellen dat op het inlogscherm is ingeschakeld.
-
-          Als dit beleid is ingesteld, bepaalt het het type vergrootglas dat is ingeschakeld wanneer het inlogscherm wordt weergegeven. Als je het beleid op 'Geen' instelt, wordt het vergrootglas uitgeschakeld.
-
-          Als je dit beleid instelt, kunnen gebruikers dit tijdelijk negeren door het vergrootglas in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld wanneer het inlogscherm opnieuw wordt weergegeven of de gebruiker gedurende een minuut niet actief is op het inlogscherm.
-
-          Als je dit beleid niet instelt, is het vergrootglas uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen het vergrootglas op elk moment in- of uitschakelen en de status op het inlogscherm is van toepassing op alle gebruikers.</translation>
 <translation id="7249828445670652637">CA-certificaten van <ph name="PRODUCT_OS_NAME" /> voor ARC-apps inschakelen</translation>
 <translation id="7251652588006515288">Dit beleid bepaalt of gebruikers clientcertificaten kunnen importeren en verwijderen via Certificaatbeheer.
 
@@ -4871,7 +4858,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
       De URL-patronen hebben dezelfde indeling als het beleid 'URLBlacklist', dat wordt beschreven op https://www.chromium.org/administrators/url-blacklist-filter-format.
       </translation>
-<translation id="9159126470527871268">Hiermee laat je gebruikers weten dat <ph name="PRODUCT_NAME" /> of <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden opgestart om een beschikbare update toe te passen.
+<translation id="9159126470527871268">Hiermee laat je gebruikers weten dat <ph name="PRODUCT_NAME" /> of <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden opgestart om een beschikbare update uit te voeren.
 
       Met deze beleidsinstelling worden meldingen ingeschakeld waarmee de gebruiker wordt gevraagd of aangeraden om de browser of het apparaat opnieuw op te starten. Als dit beleid niet is ingesteld, laat <ph name="PRODUCT_NAME" /> de gebruiker via kleine wijzigingen in het menu weten dat opnieuw moet worden opgestart. Voor <ph name="PRODUCT_OS_NAME" /> wordt deze melding weergegeven in het systeemvak. Als dit beleid is ingesteld op Aanbevolen, wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat opnieuw opstarten wordt aanbevolen. De gebruiker kan deze waarschuwing negeren om de actie uit te stellen. Als dit is ingesteld op Vereist, wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat de browser automatisch opnieuw wordt opgestart zodra de meldingsperiode is verstreken. De standaardperiode is zeven dagen voor <ph name="PRODUCT_NAME" /> en vier dagen voor <ph name="PRODUCT_OS_NAME" /> en kan worden aangepast via de beleidsinstelling <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 

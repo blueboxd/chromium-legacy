@@ -26,6 +26,7 @@
 <translation id="1031362278801463162">Завантаження попереднього перегляду</translation>
 <translation id="103279545524624934">Щоб запускати додатки Android, звільніть місце на диску.</translation>
 <translation id="1033780634303702874">Отримувати доступ до серійних пристроїв</translation>
+<translation id="1034942643314881546">Увімкнення ADB, щоб створювати ілюстрації додатків</translation>
 <translation id="1036348656032585052">Вимкнути</translation>
 <translation id="1036511912703768636">Отримувтаи доступ до цих пристроїв USB</translation>
 <translation id="1036982837258183574">Натисніть |<ph name="ACCELERATOR" />|, щоб вийти з повноекранного режиму</translation>
@@ -45,7 +46,7 @@
 <translation id="1056775291175587022">Немає мереж</translation>
 <translation id="1056898198331236512">Застереження</translation>
 <translation id="1058262162121953039">PUK-код</translation>
-<translation id="1061745542578250838"><ph name="FILE_NAME" /> містить конфіденційний контент. Його заблоковано.</translation>
+<translation id="1061745542578250838">Файл <ph name="FILE_NAME" /> було заблоковано, оскільки він містить конфіденційний контент.</translation>
 <translation id="1061904396131502319">Невдовзі час зробити перерву</translation>
 <translation id="1067048845568873861">Створено</translation>
 <translation id="1067291318998134776">Linux (бета-версія)</translation>
@@ -284,6 +285,7 @@
 <translation id="1415708812149920388">Відмовлено в перегляді буфера обміну</translation>
 <translation id="1415990189994829608">Розширення <ph name="EXTENSION_NAME" /> (ідентифікатор "<ph name="EXTENSION_ID" />") не можна використовувати в сеансі цього типу.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="1418954524306642206">Переглянути й вибрати файл PPD принтера</translation>
 <translation id="1420834118113404499">Медіа-ліцензії</translation>
 <translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" />, щоб підключити</translation>
 <translation id="1422159345171879700">Завантажити небезпечні сценарії</translation>
@@ -555,6 +557,7 @@
 <translation id="1782196717298160133">Пошук вашого телефона</translation>
 <translation id="1784707308176068866">Запускати у фоновому режимі, коли про це просить партнерський рідний додаток</translation>
 <translation id="1784849162047402014">На диску пристрою мало вільного місця</translation>
+<translation id="1787350673646245458">Зображення користувача</translation>
 <translation id="1790194216133135334">Надіслати посилання на пристрій "<ph name="DEVICE_NAME" />"</translation>
 <translation id="1790976235243700817">Скасувати доступ</translation>
 <translation id="1792619191750875668">Розширений дисплей</translation>
@@ -685,6 +688,7 @@
 <translation id="1976150099241323601">Увійти в пристрій безпеки</translation>
 <translation id="1976323404609382849">Файли cookie з багатьох сайтів блоковано.</translation>
 <translation id="1977965994116744507">Щоб розблокувати свій пристрій <ph name="DEVICE_TYPE" />, розташуйте телефон ближче.</translation>
+<translation id="1978006917103730774">Майбутні оновлення програмного забезпечення й системи безпеки встановлюватимуться автоматично.</translation>
 <translation id="1979280758666859181">Ви переходите на старішу версію <ph name="PRODUCT_NAME" />. Щоб зміни набули чинності, версія на вашому пристрої та версія, яку ви встановлюєте, мають збігатися.</translation>
 <translation id="197989455406964291">KDC не підтримує тип шифрування</translation>
 <translation id="1981544341227357861">Вийміть та знову вставте ключ безпеки, а потім торкніться його.</translation>
@@ -815,6 +819,7 @@
 <translation id="2173801458090845390">Додати ідентифікатор заявки на цей пристрій</translation>
 <translation id="2175042898143291048">Завжди виконувати цю дію</translation>
 <translation id="2175607476662778685">Панель швидкого запуску</translation>
+<translation id="217576141146192373">Не вдається додати принтер. Перевірте його налаштування й повторіть спробу.</translation>
 <translation id="2177950615300672361">Анонімна вкладка: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">Плагін <ph name="PEPPER_PLUGIN_NAME" /> із сайту <ph name="PEPPER_PLUGIN_DOMAIN" /> хоче отримати доступ до вашого комп’ютера</translation>
 <translation id="2178614541317717477">Дискредитація ЦС</translation>
@@ -927,6 +932,7 @@
 <translation id="2326931316514688470">&amp;Перезавантажити додаток</translation>
 <translation id="2327492829706409234">Увімкнути програму</translation>
 <translation id="2329597144923131178">Увійдіть, щоб мати доступ до закладок, історії, паролів та інших налаштувань на всіх своїх пристроях.</translation>
+<translation id="2330129964253841015">Попереджати, якщо паролі зламано</translation>
 <translation id="2332131598580221120">Переглянути в магазині</translation>
 <translation id="2332192922827071008">Відкрити налаштування</translation>
 <translation id="2332742915001411729">Відновити масштаб за умовчанням</translation>
@@ -975,6 +981,7 @@
 <translation id="2395616325548404795">Ваш пристрій <ph name="DEVICE_TYPE" /> зареєстровано для корпоративного керування, однак ми не отримали інформацію про його об’єкти та місцезнаходження. Введіть ці дані вручну на Консолі адміністратора.</translation>
 <translation id="2396783860772170191">Введіть 4-значний PIN-код (0000–9999)</translation>
 <translation id="2399939490305346086">Дані для входу для ключа безпеки</translation>
+<translation id="2407481962792080328">Ця функція вмикається, коли ви входите в обліковий запис Google</translation>
 <translation id="2408955596600435184">Введіть PIN-код</translation>
 <translation id="241082044617551207">Невідомий плагін</translation>
 <translation id="2412593942846481727">Доступне оновлення</translation>
@@ -1306,7 +1313,7 @@
 <translation id="2861301611394761800">Оновлення системи завершено. Перезапустіть систему.</translation>
 <translation id="2861941300086904918">Менеджер безпеки Native Client</translation>
 <translation id="2864601841139725659">Налаштуйте зображення профілю</translation>
-<translation id="2865919525181940183">Знімки екрана зараз відкритих програм</translation>
+<translation id="2865919525181940183">Знімок екрана з відкритими програмами</translation>
 <translation id="2867768963760577682">Відкрити як закріплену вкладку</translation>
 <translation id="2868746137289129307">Це розширення застаріле; його вимкнено політикою підприємства. Якщо буде доступна нова версія, розширення ввімкнеться автоматично.</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -1391,7 +1398,6 @@
 <translation id="2989786307324390836">DER-кодування у двійковій формі, єдиний сертифікат</translation>
 <translation id="2992931425024192067">Показувати весь вміст сповіщень</translation>
 <translation id="2993517869960930405">Про додаток</translation>
-<translation id="299483336428448530">Установили батьки.</translation>
 <translation id="2996286169319737844">Дані зашифровано за допомогою парольної фрази для синхронізації. Це не стосується способів оплати й адрес із Google Pay.</translation>
 <translation id="2996722619877761919">Перевертати за довгим краєм</translation>
 <translation id="3003144360685731741">Рекомендовані мережі</translation>
@@ -1417,6 +1423,7 @@
 <translation id="3016641847947582299">Компонент оновлено</translation>
 <translation id="3016780570757425217">Бачити ваше місцезнаходження</translation>
 <translation id="3017079585324758401">Фон</translation>
+<translation id="3019285239893817657">Кнопка підсторінки</translation>
 <translation id="3020183492814296499">Ярлики</translation>
 <translation id="3020990233660977256">Серійний номер: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Метелик</translation>
@@ -1432,6 +1439,7 @@
 <translation id="3038612606416062604">Додати принтер вручну</translation>
 <translation id="3038675903128704560">Заборонити сайтам запускати плагіни на комп’ютері</translation>
 <translation id="3039491566278747710">Не вдалося встановити на пристрій політику щодо використання в режимі офлайн.</translation>
+<translation id="3043581297103810752">Джерело: <ph name="ORIGIN" /></translation>
 <translation id="3045447014237878114">Цей сайт автоматично завантажив декілька файлів</translation>
 <translation id="3046910703532196514">Веб-сторінка, повністю</translation>
 <translation id="304747341537320566">Системи синтезу мовлення</translation>
@@ -1813,6 +1821,7 @@
 <translation id="3629631988386925734">Щоб увімкнути Smart Lock, введіть пароль. Наступного разу ви зможете розблокувати пристрій <ph name="DEVICE_TYPE" /> за допомогою свого телефона. Smart Lock можна вимкнути в налаштуваннях.</translation>
 <translation id="3630132874740063857">Ваш номер телефону</translation>
 <translation id="3630995161997703415">Додайте цей сайт на полицю, щоб завжди мати його під рукою</translation>
+<translation id="3635353578505343390">Надсилати відгук у Google</translation>
 <translation id="3636096452488277381">Вітаємо, <ph name="USER_GIVEN_NAME" />!</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% – залишилося <ph name="TIME" /></translation>
 <translation id="3637561406135221044">Перевірка файлів на наявність конфіденційних даних…</translation>
@@ -1893,6 +1902,7 @@
 <translation id="3732530910372558017">PIN-код має містити не більше 63 символів</translation>
 <translation id="3733127536501031542">SSL-сервер із підвищенням</translation>
 <translation id="3735740477244556633">Параметри сортування</translation>
+<translation id="3736016243818847857">Продовжити?</translation>
 <translation id="3737274407993947948">Не вдалося встановити Linux…</translation>
 <translation id="3737536731758327622">Тут відображатимуться ваші завантаження</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2003,7 +2013,7 @@
 <translation id="3873315167136380065">Щоб увімкнути цю функцію, видаліть парольну фразу синхронізації, <ph name="BEGIN_LINK" />скинувши синхронізацію<ph name="END_LINK" />.</translation>
 <translation id="3873423927483480833">Показати PIN-коди</translation>
 <translation id="3873915545594852654">Виникла проблема з ARC++.</translation>
-<translation id="387924939625099872">Щоб вимкнути ADB, перезавантажте пристрій <ph name="DEVICE_TYPE" />. Параметри пристрою буде скинуто до заводських налаштувань, а всі облікові записи користувачів і локальні дані видалено.</translation>
+<translation id="387924939625099872">Щоб вимкнути ADB, перезавантажте пристрій <ph name="DEVICE_TYPE" />. На пристрої буде відновлено заводські налаштування, а всі облікові записи користувачів і локальні дані буде видалено.</translation>
 <translation id="3879748587602334249">Диспетчер завантажень</translation>
 <translation id="3886446263141354045">Запит на доступ до цього сайту надіслано користувачу <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Створення нотаток за допомогою додатка <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2402,6 +2412,7 @@
 <translation id="4501530680793980440">Підтвердити видалення</translation>
 <translation id="4502423230170890588">Видалити з цього пристрою</translation>
 <translation id="4504940961672722399">Запустіть розширення, натиснувши цей значок або комбінацію клавіш <ph name="EXTENSION_SHORTCUT" />.</translation>
+<translation id="4506379069541445709">Якщо продовжити, буде ввімкнено ADB для створення й тестування додатків для Android. Зауважте, що ADB дозволяє встановлювати додатки для тестування, які ми не перевірили.</translation>
 <translation id="4508051413094283164">Відкривати все у вікні в режимі анонімного перегляду</translation>
 <translation id="4508265954913339219">Помилка активації</translation>
 <translation id="4508765956121923607">Переглянути д&amp;жерело</translation>
@@ -2961,6 +2972,7 @@
 <translation id="5363109466694494651">Виконати Powerwash і повернутися до попередньої версії</translation>
 <translation id="5365881113273618889">Вибрана папка містить файли з конфіденційною інформацією. Надати додатку <ph name="APP_NAME" /> постійний дозвіл на редагування цієї папки?</translation>
 <translation id="5367091008316207019">Читання файлу...</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Ваш телефон заблоковано. Щоб увійти, розблокуйте його.</translation>
 <translation id="5368779022775404937">Увійти на сторінці <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Увімкнути прискорення миші</translation>
@@ -3177,6 +3189,7 @@
 <translation id="5646558797914161501">Бізнесмен</translation>
 <translation id="5648166631817621825">Останні 7 днів</translation>
 <translation id="5649053991847567735">Автоматичні завантаження</translation>
+<translation id="5656845498778518563">Надсилати відгук у Google</translation>
 <translation id="5657667036353380798">Для зовнішнього розширення потрібна версія Chrome <ph name="MINIMUM_CHROME_VERSION" /> або новіша.</translation>
 <translation id="5658415415603568799">З міркувань безпеки Smart Lock запропонує ввести пароль через 20 годин.</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
@@ -3306,6 +3319,7 @@
 <translation id="5851868085455377790">Видавець</translation>
 <translation id="5852112051279473187">На жаль, під час реєстрації цього пристрою сталася значна помилка. Повторіть спробу або зв’яжіться з представником служби підтримки.</translation>
 <translation id="5852137567692933493">Перезапустити й виконати Powerwash</translation>
+<translation id="5852360662347412211">Відкрийте налаштування Linux і повторіть спробу</translation>
 <translation id="5854912040170951372">Піца</translation>
 <translation id="5855643921295613558">0,6 секунди</translation>
 <translation id="5856721540245522153">Увімкнути функції налагодження</translation>
@@ -3374,6 +3388,7 @@
 <translation id="5941153596444580863">Додати користувача…</translation>
 <translation id="5941343993301164315">Увійдіть у <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Зменшити</translation>
+<translation id="5942964813783878922">Після оновлення пристрій <ph name="DEVICE_TYPE" /> перезавантажиться. Майбутні оновлення програмного забезпечення й системи безпеки встановлюватимуться автоматично.</translation>
 <translation id="5944869793365969636">Сканувати QR-код</translation>
 <translation id="5945188205370098537">Надсилати дані про використання й діагностику. Допоможіть покращити роботу Android, автоматично надсилаючи в Google дані про діагностику та використання пристрою і додатків. Ця інформація допоможе покращити стабільність системи, додатків тощо. Деякі зведені дані також корисні для додатків і партнерів Google, як-от розробників Android. Якщо ввімкнено додаткову Історію додатків і веб-пошуку, ці дані зберігаються в обліковому записі Google. <ph name="BEGIN_LINK1" />Докладніше<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Ідентифікатор звіту: <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
@@ -3518,7 +3533,7 @@
 <translation id="6141988275892716286">Підтвердити завантаження</translation>
 <translation id="6143186082490678276">Довідка</translation>
 <translation id="6144938890088808325">Допоможіть нам покращити Chromebook</translation>
-<translation id="614611931938947795">Розмір файлу завеликий для сканування в хмарі. Його заборонено відкривати.</translation>
+<translation id="614611931938947795">Файл завеликий для сканування в хмарі. Його заборонено відкривати.</translation>
 <translation id="6147020289383635445">Помилка версії для друку.</translation>
 <translation id="6148576794665275391">Відкрити зараз</translation>
 <translation id="6149015141270619212">Не вдається під'єднати пристрій до Інтернету</translation>
@@ -3661,7 +3676,6 @@
 <translation id="63566973648609420">Ваші зашифровані дані можуть переглядати лише користувачі, які знають вашу парольну фразу. Парольна фраза не надсилається й не зберігається в Google. Якщо ви забули її або хочете змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Вітаємо у світі <ph name="SHORT_PRODUCT_NAME" />. Це не звичайний комп’ютер.</translation>
 <translation id="6358884629796491903">Дракон</translation>
-<translation id="6360079014182882594">Цей сайт не використовує файли cookie, через які можна відстежувати ваші дії в Інтернеті</translation>
 <translation id="6361850914223837199">Деталі помилки:</translation>
 <translation id="6362853299801475928">&amp;Повідомити про проблему...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3776,6 +3790,7 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Пристрій під'єднано до такої мережі: <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Надіслати</translation>
+<translation id="6528189551082329571">Завжди відкривати посилання цього типу у зв'язаному додатку</translation>
 <translation id="6528513914570774834">Надіти іншим користувачам цього пристрою доступ до цієї мережі</translation>
 <translation id="652948702951888897">Історія Chrome</translation>
 <translation id="6530186581263215931">Ці налаштування застосовує адміністратор</translation>
@@ -5021,6 +5036,7 @@
 <translation id="8319414634934645341">Використання розширеного ключа</translation>
 <translation id="8320459152843401447">екран</translation>
 <translation id="8322814362483282060">Доступ цієї сторінки до вашого мікрофона заблоковано.</translation>
+<translation id="8323167517179506834">Введіть URL-адресу</translation>
 <translation id="8326478304147373412">PKCS #7, ланцюжок сертифікатів</translation>
 <translation id="8327039559959785305">Помилка підключення файлів Linux. Повторіть спробу.</translation>
 <translation id="8335587457941836791">Відкріпити з полиці</translation>
@@ -5097,6 +5113,7 @@
 <translation id="8449008133205184768">Вставити та застосувати стиль</translation>
 <translation id="8449036207308062757">Керувати пам’яттю</translation>
 <translation id="8452135315243592079">Немає SIM-карти</translation>
+<translation id="8455026683977728932">Не вдалось увімкнути ілюстрацію ADB</translation>
 <translation id="845702320058262034">Не вдається під’єднатися. Переконайтеся, що на телефоні ввімкнено Bluetooth.</translation>
 <translation id="8457451314607652708">Імпортувати закладки</translation>
 <translation id="8460336040822756677">Якщо вимкнути функцію Smart Lock для пристрою <ph name="DEVICE_TYPE" />, ви не зможете розблоковувати пристрої Chrome за допомогою телефона. Потрібно буде вводити пароль.</translation>
@@ -5137,6 +5154,7 @@
 <translation id="8509646642152301857">Помилка завантаження словника перевірки орфографії.</translation>
 <translation id="8512476990829870887">Закінчити процес</translation>
 <translation id="851263357009351303">Завжди дозволяти хосту <ph name="HOST" /> показувати зображення</translation>
+<translation id="8513108775083588393">Автообертання</translation>
 <translation id="8514746246728959655">Спробуйте інший ключ безпеки</translation>
 <translation id="8521475323816527629">Швидкий доступ до додатків</translation>
 <translation id="8523493869875972733">Залишити зміни</translation>
@@ -5385,7 +5403,7 @@
 <translation id="8850251000316748990">Показати більше…</translation>
 <translation id="885246833287407341">Аргументи функції API</translation>
 <translation id="8853586775156634952">Картку буде збережено лише на цьому пристрої</translation>
-<translation id="8855501062415172277"><ph name="FILE_NAME" /> містить конфіденційний контент.</translation>
+<translation id="8855501062415172277">Файл <ph name="FILE_NAME" /> містить конфіденційний контент.</translation>
 <translation id="885701979325669005">Обсяг пам’яті</translation>
 <translation id="8859057652521303089">Виберіть мову:</translation>
 <translation id="8859174528519900719">Додатковий фрейм: <ph name="SUBFRAME_SITE" /></translation>
@@ -5573,6 +5591,7 @@
 <translation id="9116799625073598554">Додаток для створення нотаток</translation>
 <translation id="9117030152748022724">Керування додатками</translation>
 <translation id="9121814364785106365">Відкрити як закріплену вкладку</translation>
+<translation id="9122074588095746047">Не вдалось увімкнути ADB</translation>
 <translation id="9124003689441359348">Тут відображатимуться збережені паролі</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (залишилося: <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">Не вдалося завершити встановлення</translation>

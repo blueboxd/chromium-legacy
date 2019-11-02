@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">Επιγραφή</translation>
 <translation id="207477615537953741">Σημασιολογική ερμηνεία ανενεργή</translation>
 <translation id="2086961585857038472">Επόμενη λέξη</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">el</translation>
 <translation id="2091933974477985526">Προηγούμενη περιοχή κειμένου με δυνατότητα επεξεργασίας</translation>
 <translation id="2100350898815792233">Όλα τα σημεία στίξης</translation>
@@ -193,6 +194,7 @@
 <translation id="2416512023405990736">Ένα αποεπιλεγμένο πλαίσιο ελέγχου</translation>
 <translation id="2417569100218200841">Πληροφορίες περιεχομένου</translation>
 <translation id="2417948780551741035">Σημειώσεις τέλους</translation>
+<translation id="2419852971200420169">Λίστα περιγραφής</translation>
 <translation id="2421113964388408478">Διαγραφή</translation>
 <translation id="2422937916923936891">Πλαίσιο ελέγχου στοιχείου μενού</translation>
 <translation id="2428534162001909979">Μενού εντολών</translation>
@@ -371,6 +373,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{λατινικό ερωτηματικό}other{# λατινικά ερωτηματικά}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{σύμβολο προσθήκης}other{# σύμβολα προσθήκης}}</translation>
 <translation id="352577523970648069">Ένα πεδίο κειμένου με δυνατότητα επεξεργασίας</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">αποκοπή <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Πατήστε με δύο δάκτυλα για να διακόψετε προσωρινά την ομιλία</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, το πλαίσιο ελέγχου δεν είναι επιλεγμένο</translation>
@@ -779,6 +782,7 @@
 <translation id="6378394210114975876">Γαϊδουράγκαθο</translation>
 <translation id="6385591741672306837">στήλη</translation>
 <translation id="6387719785439924554">εκτός</translation>
+<translation id="6393014464788431702">Απενεργοποίηση όλων των φίλτρων συμβάντων.</translation>
 <translation id="6411426777058107714">Δεν υπάρχει προηγούμενο κουμπί επιλογής.</translation>
 <translation id="6414968628640960377">Προηγούμενο διαφορετικό στοιχείο.</translation>
 <translation id="6417265370957905582">Βοηθός Google</translation>
@@ -915,6 +919,7 @@
 <translation id="7332592614823088566">Σειρά <ph name="ROWINDEX" /> από <ph name="ROWTOTAL" />, στήλη <ph name="COLINDEX" /> από <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">με αναδυόμενο</translation>
 <translation id="7356165926712028380">Αλλαγή σε οκτάστιγμο μπράιγ</translation>
+<translation id="7356610683936413584">Λεπτομέρεια λίστας περιγραφής</translation>
 <translation id="7362871137496673139">Δεν υπάρχει προηγούμενη επικεφαλίδα επιπέδου 2.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{συμπλεκτικό σύμβολο}other{# συμπλεκτικά σύμβολα}}</translation>
 <translation id="737396357417333429">στοιχείο με δυνατότητα κλικ</translation>
@@ -1093,6 +1098,7 @@
 <translation id="8096975275316362544">Κρεμ μέντας</translation>
 <translation id="8098587210054821856">Γκρι του σχιστόλιθου</translation>
 <translation id="8110647606445335195">Δεν υπάρχουν ορόσημα ARIA.</translation>
+<translation id="8121539003537428024">Ενεργοποίηση όλων των συμβάντων φίλτρων</translation>
 <translation id="812886159861361726">Η λήψη του αρχείου <ph name="FILE_NAME" /> σταμάτησε</translation>
 <translation id="8138880386467279117">Άγγιγμα</translation>
 <translation id="8153880621934657047">Όχι μέσα στον πίνακα.</translation>

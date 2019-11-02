@@ -13,10 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
-
-namespace base {
-class Value;
-}
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace network {
 class SimpleURLLoader;
@@ -45,8 +42,7 @@ class OneGoogleBarLoaderImpl : public OneGoogleBarLoader {
   void LoadDone(const network::SimpleURLLoader* simple_loader,
                 std::unique_ptr<std::string> response_body);
 
-  void JsonParsed(base::Value value);
-  void JsonParseFailed(const std::string& message);
+  void JsonParsed(data_decoder::DataDecoder::ValueOrError result);
 
   void Respond(Status status, const base::Optional<OneGoogleBarData>& data);
 

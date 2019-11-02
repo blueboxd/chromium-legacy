@@ -61,7 +61,7 @@ void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
   if (GetReadPermissionStatus() != PermissionStatus::GRANTED) {
     std::move(callback).Run(native_file_system_error::FromStatus(
                                 NativeFileSystemStatus::kPermissionDenied),
-                            nullptr);
+                            base::File::Info(), nullptr);
     return;
   }
 
@@ -144,7 +144,7 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
 
   if (result != base::File::FILE_OK) {
     std::move(callback).Run(native_file_system_error::FromFileError(result),
-                            nullptr);
+                            base::File::Info(), nullptr);
     return;
   }
 
@@ -169,7 +169,7 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
       blob_remote.InitWithNewPipeAndPassReceiver();
 
   std::move(callback).Run(
-      native_file_system_error::Ok(),
+      native_file_system_error::Ok(), info,
       blink::mojom::SerializedBlob::New(uuid, content_type, info.size,
                                         std::move(blob_remote)));
 

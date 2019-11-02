@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace browser_switcher {
 
@@ -128,23 +126,22 @@ void ParseIeFileVersionTwo(const base::Value& xml, ParsedXml* result) {
 }
 
 void RawXmlParsed(base::OnceCallback<void(ParsedXml)> callback,
-                  std::unique_ptr<base::Value> xml,
-                  const base::Optional<std::string>& error) {
-  if (error) {
+                  data_decoder::DataDecoder::ValueOrError xml) {
+  if (!xml.value) {
     // Copies the string, but it should only be around 20 characters.
-    std::move(callback).Run(ParsedXml({}, *error));
+    std::move(callback).Run(ParsedXml({}, *xml.error));
     return;
   }
-  DCHECK(xml);
   DCHECK(data_decoder::IsXmlElementOfType(
-      *xml, data_decoder::mojom::XmlParser::kElementType));
+      *xml.value, data_decoder::mojom::XmlParser::kElementType));
   ParsedXml result;
-  if (data_decoder::IsXmlElementNamed(*xml, kSchema1RulesElement)) {
+  if (data_decoder::IsXmlElementNamed(*xml.value, kSchema1RulesElement)) {
     // Enterprise Mode schema v.1 has <rules> element at its top level.
-    ParseIeFileVersionOne(*xml, &result);
-  } else if (data_decoder::IsXmlElementNamed(*xml, kSchema2SiteListElement)) {
+    ParseIeFileVersionOne(*xml.value, &result);
+  } else if (data_decoder::IsXmlElementNamed(*xml.value,
+                                             kSchema2SiteListElement)) {
     // Enterprise Mode schema v.2 has <site-list> element at its top level.
-    ParseIeFileVersionTwo(*xml, &result);
+    ParseIeFileVersionTwo(*xml.value, &result);
   } else {
     result.error = kInvalidRootElement;
   }
@@ -162,8 +159,8 @@ ParsedXml::~ParsedXml() = default;
 
 void ParseIeemXml(const std::string& xml,
                   base::OnceCallback<void(ParsedXml)> callback) {
-  data_decoder::ParseXml(content::GetSystemConnector(), xml,
-                         base::BindOnce(&RawXmlParsed, std::move(callback)));
+  data_decoder::DataDecoder::ParseXmlIsolated(
+      xml, base::BindOnce(&RawXmlParsed, std::move(callback)));
 }
 
 }  // namespace browser_switcher

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.support.v4.widget.TextViewCompat;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -136,5 +137,14 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mTitleTextView.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
         TextViewCompat.setTextAppearance(
                 mTitleTextView, org.chromium.chrome.R.style.TextAppearance_BlackHeadline);
+    }
+
+    /**
+     * Hide the UI widgets related to tab group continuation features.
+     */
+    void hideTabGroupsContinuationWidgets() {
+        mTitleTextView.setFocusable(false);
+        mTitleTextView.setBackgroundColor(Color.TRANSPARENT);
+        mMainContent.removeView(mMenuButton);
     }
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/modules/peerconnection/two_keys_adapter_map.h"
+#include "third_party/blink/renderer/platform/peerconnection/two_keys_adapter_map.h"
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"

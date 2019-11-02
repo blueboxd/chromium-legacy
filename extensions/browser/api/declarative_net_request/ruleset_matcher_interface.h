@@ -44,7 +44,7 @@ class RulesetMatcherInterface {
       const RequestParams& params) const = 0;
 
   // Returns the bitmask of headers to remove from the request. The bitmask
-  // corresponds to RemoveHeadersMask type. |ignored_mask| denotes the mask of
+  // corresponds to flat::RemoveHeaderType. |ignored_mask| denotes the mask of
   // headers to be skipped for evaluation and is excluded in the return value.
   virtual uint8_t GetRemoveHeadersMask(
       const RequestParams& params,

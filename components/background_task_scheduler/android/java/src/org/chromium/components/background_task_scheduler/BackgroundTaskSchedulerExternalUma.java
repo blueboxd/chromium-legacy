@@ -4,12 +4,27 @@
 
 package org.chromium.components.background_task_scheduler;
 
+import org.chromium.base.VisibleForTesting;
+
 /**
  * Helper class to allow external code (typically Chrome-specific BackgroundTaskScheduler code) to
  * report UMA.
  */
-public final class BackgroundTaskSchedulerExternalUma {
-    private BackgroundTaskSchedulerExternalUma() {}
+public class BackgroundTaskSchedulerExternalUma {
+    @VisibleForTesting
+    BackgroundTaskSchedulerExternalUma() {}
+
+    private static class LazyHolder {
+        static final BackgroundTaskSchedulerExternalUma INSTANCE =
+                new BackgroundTaskSchedulerExternalUma();
+    }
+
+    /**
+     * @return the BackgroundTaskSchedulerExternalUma singleton
+     */
+    public static BackgroundTaskSchedulerExternalUma getInstance() {
+        return LazyHolder.INSTANCE;
+    }
 
     /**
      * Reports metrics for when a NativeBackgroundTask loads the native library.
@@ -17,7 +32,7 @@ public final class BackgroundTaskSchedulerExternalUma {
      * @param serviceManagerOnlyMode Whether the task will start native in Service Manager Only Mode
      *                              (Reduced Mode) instead of Full Browser Mode.
      */
-    public static void reportTaskStartedNative(int taskId, boolean serviceManagerOnlyMode) {
+    public void reportTaskStartedNative(int taskId, boolean serviceManagerOnlyMode) {
         BackgroundTaskSchedulerUma.getInstance().reportTaskStartedNative(
                 taskId, serviceManagerOnlyMode);
     }
@@ -29,7 +44,7 @@ public final class BackgroundTaskSchedulerExternalUma {
      * @param serviceManagerOnlyMode Whether the task will run in Service Manager Only Mode (Reduced
      *                               Mode) instead of Full Browser Mode.
      */
-    public static void reportNativeTaskStarted(int taskId, boolean serviceManagerOnlyMode) {
+    public void reportNativeTaskStarted(int taskId, boolean serviceManagerOnlyMode) {
         BackgroundTaskSchedulerUma.getInstance().reportNativeTaskStarted(
                 taskId, serviceManagerOnlyMode);
     }
@@ -42,7 +57,7 @@ public final class BackgroundTaskSchedulerExternalUma {
      * @param serviceManagerOnlyMode Whether the task will run in Service Manager Only Mode (Reduced
      *                               Mode) instead of Full Browser Mode.
      */
-    public static void reportNativeTaskFinished(int taskId, boolean serviceManagerOnlyMode) {
+    public void reportNativeTaskFinished(int taskId, boolean serviceManagerOnlyMode) {
         BackgroundTaskSchedulerUma.getInstance().reportNativeTaskFinished(
                 taskId, serviceManagerOnlyMode);
     }
@@ -53,7 +68,7 @@ public final class BackgroundTaskSchedulerExternalUma {
      * See {@link org.chromium.content.browser.ServicificationStartupUma} for more details.
      * @param startupMode Chrome's startup mode.
      */
-    public static void reportStartupMode(int startupMode) {
+    public void reportStartupMode(int startupMode) {
         BackgroundTaskSchedulerUma.getInstance().reportStartupMode(startupMode);
     }
 

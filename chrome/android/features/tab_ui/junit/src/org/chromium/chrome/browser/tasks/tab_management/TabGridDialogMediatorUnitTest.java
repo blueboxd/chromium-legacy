@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -43,6 +44,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -69,6 +72,7 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.DisableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
 public class TabGridDialogMediatorUnitTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -137,6 +141,7 @@ public class TabGridDialogMediatorUnitTest {
 
         MockitoAnnotations.initMocks(this);
 
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
         mTab1 = prepareTab(TAB1_ID, TAB1_TITLE);
         mTab2 = prepareTab(TAB2_ID, TAB2_TITLE);
         List<Tab> tabs1 = new ArrayList<>(Arrays.asList(mTab1));
@@ -184,6 +189,9 @@ public class TabGridDialogMediatorUnitTest {
         doReturn(mEditable).when(mTitleTextView).getText();
         doReturn(CUSTOMIZED_DIALOG_TITLE).when(mEditable).toString();
 
+        if (!FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+            mTabSelectionEditorController = null;
+        }
         mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
         mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler,
@@ -208,11 +216,38 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
-    public void setupDialogSelectionEditor() {
-        // The dialog selection editor for ungrouping should be setup.
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void setupTabGroupsContinuation_flagEnabled() {
+        assertThat(FeatureUtilities.isTabGroupsAndroidContinuationEnabled(), equalTo(true));
+        // Setup editable title.
+        assertThat(mMediator.getKeyboardVisibilityListenerForTesting(),
+                instanceOf(KeyboardVisibilityDelegate.KeyboardVisibilityListener.class));
+        assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER),
+                instanceOf(TextWatcher.class));
+        assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER),
+                instanceOf(View.OnFocusChangeListener.class));
+        assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER),
+                instanceOf(View.OnTouchListener.class));
+
+        // Setup selection editor for ungrouping.
+        assertThat(mModel.get(TabGridPanelProperties.MENU_CLICK_LISTENER),
+                instanceOf(View.OnClickListener.class));
         verify(mTabSelectionEditorController)
                 .configureToolbar(eq(REMOVE_BUTTON_STRING),
                         any(TabSelectionEditorActionProvider.class), eq(1), eq(null));
+    }
+
+    @Test
+    public void setupTabGroupsContinuation_flagDisabled() {
+        assertThat(FeatureUtilities.isTabGroupsAndroidContinuationEnabled(), equalTo(false));
+
+        assertThat(mMediator.getKeyboardVisibilityListenerForTesting(), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER), equalTo(null));
+
+        assertThat(mModel.get(TabGridPanelProperties.MENU_CLICK_LISTENER), equalTo(null));
+        assertNull(mTabSelectionEditorController);
     }
 
     @Test
@@ -258,6 +293,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void onTitleTextChange_WithoutFocus() {
         TextWatcher textWatcher = mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER);
         // Mock tab1 is the current tab for the dialog.
@@ -275,6 +311,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void onTitleTextChange_WithFocus() {
         TextWatcher textWatcher = mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER);
         // Mock tab1 is the current tab for the dialog.
@@ -294,6 +331,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void onTitleTextFocusChange() {
         View.OnFocusChangeListener listener =
                 mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER);
@@ -305,6 +343,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void onKeyBoardVisibilityChanged_ChangeCursorVisibility() {
         KeyboardVisibilityDelegate.KeyboardVisibilityListener listener =
                 mMediator.getKeyboardVisibilityListenerForTesting();
@@ -321,6 +360,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void onKeyBoardVisibilityChanged_StoreGroupTitle() {
         KeyboardVisibilityDelegate.KeyboardVisibilityListener keyboardVisibilityListener =
                 mMediator.getKeyboardVisibilityListenerForTesting();
@@ -349,6 +389,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void onKeyBoardVisibilityChanged_NoFocus_NotStoreGroupTitle() {
         KeyboardVisibilityDelegate.KeyboardVisibilityListener keyboardVisibilityListener =
                 mMediator.getKeyboardVisibilityListenerForTesting();
@@ -372,6 +413,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void onTitleTextTouchEvent() {
         View.OnTouchListener listener =
                 mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER);
@@ -643,6 +685,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void hideDialog_StoreModifiedGroupTitle() {
         mMediator.setCurrentTabIdForTest(TAB1_ID);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
@@ -668,6 +711,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void hideDialog_ModifiedGroupTitleEmpty() {
         mMediator.setCurrentTabIdForTest(TAB1_ID);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
@@ -694,6 +738,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void hideDialog_NoModifiedGroupTitle() {
         mMediator.setCurrentTabIdForTest(TAB1_ID);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
@@ -710,6 +755,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void hideDialog_ClosingLastTab_SkipStoreGroupTitle() {
         mMediator.setCurrentTabIdForTest(TAB1_ID);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
@@ -735,6 +781,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void hideDialog_SingleTab_SkipStoreGroupTitle() {
         mMediator.setCurrentTabIdForTest(TAB1_ID);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
@@ -757,6 +804,14 @@ public class TabGridDialogMediatorUnitTest {
         verify(mTabGroupTitleEditor, never()).storeTabGroupTitle(anyInt(), anyString());
         verify(mTabGroupTitleEditor, never()).updateTabGroupTitle(any(Tab.class), anyString());
         assertThat(mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(TAB1_TITLE));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void hideDialog_withTabGroupContinuation() {
+        mMediator.hideDialog(false);
+
+        verify(mTabSelectionEditorController).hide();
     }
 
     @Test

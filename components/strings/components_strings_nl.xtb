@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Dit type pas wordt niet ondersteund</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Probeer contact op te nemen met de systeembeheerder.</translation>
+<translation id="1739107442478692187">Er was een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan nu je opgeslagen wachtwoorden te controleren en je wachtwoord op <ph name="ORIGIN" /> te wijzigen.</translation>
 <translation id="1740951997222943430">Geef een geldige vervalmaand op</translation>
 <translation id="1743520634839655729">Sla je pas, naam en factuuradres op in je Google-account en op dit apparaat zodat je de volgende keer sneller kunt betalen.</translation>
 <translation id="1743570585616704562">Niet herkend</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Domeinen komen niet overeen</translation>
 <translation id="2096368010154057602">Departement</translation>
 <translation id="2099652385553570808">Drie nietjes links</translation>
+<translation id="2100280972184758440">Je wachtwoord is niet meer veilig</translation>
 <translation id="2102134110707549001">Sterk wachtwoord voorstellen…</translation>
 <translation id="2108755909498034140">Je computer opnieuw opstarten</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Genegeerd omdat het werd overschreven door <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Verleend aan: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Perforatie rechtsonder</translation>
+<translation id="2124528555835617522">Er was een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan je opgeslagen wachtwoorden nu te controleren.</translation>
 <translation id="2129079103035905234">Bewegingssensoren</translation>
 <translation id="213826338245044447">Mobiele bladwijzers</translation>
 <translation id="214556005048008348">Betaling annuleren</translation>
@@ -467,17 +470,13 @@
 <translation id="3282497668470633863">Naam op pas toevoegen</translation>
 <translation id="3287510313208355388">Downloaden wanneer online</translation>
 <translation id="3293642807462928945">Meer informatie over het beleid <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Er was een gegevenslek op een site of in een app die je gebruikt. Chrome raadt je aan om je wachtwoord op <ph name="ORIGIN" /> nu te wijzigen.</translation>
 <translation id="3303855915957856445">Geen zoekresultaten gevonden</translation>
 <translation id="3320021301628644560">Factuuradres toevoegen</translation>
 <translation id="3324983252691184275">Karmozijnrood</translation>
 <translation id="3338095232262050444">Beveiligd</translation>
 <translation id="3355823806454867987">Proxyinstellingen wijzigen...</translation>
-<translation id="3361596688432910856">De volgende gegevens worden <ph name="BEGIN_EMPHASIS" />niet opgeslagen<ph name="END_EMPHASIS" /> in Chrome:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Je browsegeschiedenis
-          <ph name="LIST_ITEM" />Cookies en sitegegevens
-          <ph name="LIST_ITEM" />Informatie die is opgegeven in formulieren
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">Blad voor betalingshandler</translation>
 <translation id="3362968246557010467">Dit beleid is automatisch gekopieerd uit het beëindigde beleid: <ph name="OLD_POLICY" />. Gebruik dit beleid in plaats van het oude.</translation>
 <translation id="3366477098757335611">Passen bekijken</translation>
 <translation id="3369192424181595722">Klokfout</translation>
@@ -590,6 +589,7 @@
 <translation id="3949601375789751990">Je browsegeschiedenis wordt hier weergegeven</translation>
 <translation id="3949870428812919180">Geen opgeslagen betaalmethoden</translation>
 <translation id="3950820424414687140">Inloggen</translation>
+<translation id="3961148744525529027">Blad voor betalingshandler is half geopend</translation>
 <translation id="3962859241508114581">Vorig nummer</translation>
 <translation id="3963837677003247395">Handmatig doorgaan?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Geen}=1{Van één site }other{Van # sites }}</translation>
@@ -1039,7 +1039,6 @@
 <translation id="6151417162996330722">Het servercertificaat heeft een te lange geldigheidsperiode.</translation>
 <translation id="6157877588268064908">Selecteer een adres om verzendmethoden en vereisten te bekijken</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
-<translation id="6169916984152623906">Je kunt nu privé browsen, zodat andere mensen die dit apparaat gebruiken, jouw activiteit niet kunnen zien. Downloads en bladwijzers worden echter wel opgeslagen.</translation>
 <translation id="6177128806592000436">Je verbinding met deze site is niet beveiligd</translation>
 <translation id="6203231073485539293">Controleer je internetverbinding</translation>
 <translation id="6218753634732582820">Adres verwijderen uit Chromium?</translation>
@@ -1321,6 +1320,7 @@ Aanvullende informatie:
 <translation id="7637571805876720304">Creditcard verwijderen uit Chromium?</translation>
 <translation id="7638605456503525968">Seriële poorten</translation>
 <translation id="7639968568612851608">Donkergrijs</translation>
+<translation id="7653957176542370971">Blad voor betalingshandler is gesloten</translation>
 <translation id="765676359832457558">Geavanceerde instellingen verbergen...</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7662298039739062396">Instelling beheerd door een extensie</translation>
@@ -1450,6 +1450,7 @@ Aanvullende informatie:
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8262952874573525464">Inbinden met nietjes onder</translation>
 <translation id="8267698848189296333">Inloggen als <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Blad voor betalingshandler is geopend</translation>
 <translation id="8281084378435768645">Grote foto</translation>
 <translation id="8286036467436129157">Inloggen</translation>
 <translation id="8288807391153049143">Certificaat weergeven</translation>
@@ -1510,6 +1511,7 @@ Aanvullende informatie:
 <translation id="8680536109547170164"><ph name="QUERY" />, antwoord, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Beschikbaar</translation>
+<translation id="869891660844655955">Vervaldatum</translation>
 <translation id="8703575177326907206">Je verbinding met <ph name="DOMAIN" /> is niet gecodeerd.</translation>
 <translation id="8718314106902482036">Betaling niet voltooid</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, zoeksuggestie</translation>

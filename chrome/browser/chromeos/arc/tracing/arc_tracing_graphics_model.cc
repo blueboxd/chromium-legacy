@@ -90,6 +90,7 @@ constexpr char kArcVsyncTimestampQuery[] = "android:ARC_VSYNC|*";
 constexpr char kBarrierFlushMatcher[] = "gpu:CommandBufferStub::OnAsyncFlush";
 
 constexpr char kExoSurfaceAttachMatcher[] = "exo:Surface::Attach";
+constexpr char kExoSurfaceCommitMatcher[] = "exo:Surface::Commit";
 constexpr char kExoBufferProduceResourceMatcher[] =
     "exo:Buffer::ProduceTransferableResource";
 constexpr char kExoBufferReleaseContentsMatcher[] =
@@ -154,6 +155,9 @@ class BufferGraphicsEventMapper {
     rules_.emplace_back(MappingRule(
         std::make_unique<ArcTracingEventMatcher>(kExoSurfaceAttachMatcher),
         BufferEventType::kExoSurfaceAttach, BufferEventType::kNone));
+    rules_.emplace_back(MappingRule(
+        std::make_unique<ArcTracingEventMatcher>(kExoSurfaceCommitMatcher),
+        BufferEventType::kNone, BufferEventType::kExoSurfaceCommit));
     rules_.emplace_back(MappingRule(std::make_unique<ArcTracingEventMatcher>(
                                         kExoBufferProduceResourceMatcher),
                                     BufferEventType::kExoProduceResource,
@@ -971,6 +975,8 @@ BufferToEvents GetChromeEvents(
   const ArcTracingEventMatcher barrier_flush_matcher(kBarrierFlushMatcher);
   std::string attach_surface_query;
   const ArcTracingEventMatcher attach_surface_matcher(kExoSurfaceAttachMatcher);
+  std::string commit_surface_query;
+  const ArcTracingEventMatcher commit_surface_matcher(kExoSurfaceCommitMatcher);
   std::string produce_resource_query;
   const ArcTracingEventMatcher produce_resource_matcher(
       kExoBufferProduceResourceMatcher);
@@ -982,6 +988,8 @@ BufferToEvents GetChromeEvents(
                        &barrier_flush_query);
     DetermineHierarchy(&route, top_level_event, attach_surface_matcher,
                        &attach_surface_query);
+    DetermineHierarchy(&route, top_level_event, commit_surface_matcher,
+                       &commit_surface_query);
     DetermineHierarchy(&route, top_level_event, produce_resource_matcher,
                        &produce_resource_query);
     DetermineHierarchy(&route, top_level_event, release_contents_matcher,
@@ -992,6 +1000,9 @@ BufferToEvents GetChromeEvents(
   // Only exo:Surface::Attach has app id argument.
   ProcessChromeEvents(common_model, attach_surface_query,
                       &per_buffer_chrome_events, buffer_id_to_task_id);
+  ProcessChromeEvents(common_model, commit_surface_query,
+                      &per_buffer_chrome_events,
+                      nullptr /* buffer_id_to_task_id */);
   ProcessChromeEvents(common_model, release_contents_query,
                       &per_buffer_chrome_events,
                       nullptr /* buffer_id_to_task_id */);
@@ -1446,7 +1457,7 @@ bool LoadEvents(const base::Value* value,
     if (!IsInRange(type, BufferEventType::kBufferQueueDequeueStart,
                    BufferEventType::kBufferFillJank) &&
         !IsInRange(type, BufferEventType::kExoSurfaceAttach,
-                   BufferEventType::kExoJank) &&
+                   BufferEventType::kExoSurfaceCommit) &&
         !IsInRange(type, BufferEventType::kChromeBarrierOrder,
                    BufferEventType::kChromeBarrierFlush) &&
         !IsInRange(type, BufferEventType::kSurfaceFlingerVsyncHandler,

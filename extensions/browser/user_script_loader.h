@@ -45,7 +45,8 @@ class UserScriptLoader : public content::RenderProcessHostCreationObserver {
                               base::ReadOnlySharedMemoryRegion shared_memory)>;
   class Observer {
    public:
-    virtual void OnScriptsLoaded(UserScriptLoader* loader) = 0;
+    virtual void OnScriptsLoaded(UserScriptLoader* loader,
+                                 content::BrowserContext* browser_context) = 0;
     virtual void OnUserScriptLoaderDestroyed(UserScriptLoader* loader) = 0;
   };
 

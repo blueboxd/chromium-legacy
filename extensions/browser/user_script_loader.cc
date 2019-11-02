@@ -413,7 +413,7 @@ void UserScriptLoader::OnScriptsLoaded(
       content::Source<BrowserContext>(browser_context_),
       content::Details<base::ReadOnlySharedMemoryRegion>(&shared_memory_));
   for (auto& observer : observers_)
-    observer.OnScriptsLoaded(this);
+    observer.OnScriptsLoaded(this, browser_context_);
 }
 
 void UserScriptLoader::SendUpdate(

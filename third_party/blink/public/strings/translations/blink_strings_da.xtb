@@ -106,6 +106,7 @@
 <translation id="4661075872484491155">træ</translation>
 <translation id="4664250907885839816">Den del, der kommer efter "<ph name="ATSIGN" />", må ikke indeholde symbolet "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">bilag</translation>
+<translation id="4698212723196775569">kode</translation>
 <translation id="4718048029184481307">Afspiller i integreret billede</translation>
 <translation id="4742539557769756338">forside</translation>
 <translation id="4748357248530471599">skift fra skærmhak til fuld skærm</translation>
@@ -191,6 +192,7 @@
 <translation id="7118469954320184356">Der er ingen beskrivelse.</translation>
 <translation id="7139483182332611405">forord</translation>
 <translation id="7214187073215825913">oplysninger om indholdet</translation>
+<translation id="7238347055216017155">fremhævning</translation>
 <translation id="7263440858009898357">Vælg et punkt på listen.</translation>
 <translation id="727747134524199931">kolonneoverskrift</translation>
 <translation id="7320576522385648310">gemmer i buffer</translation>
@@ -217,6 +219,7 @@
 <translation id="7888071071722539607">Mailadressen skal indeholde et "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" mangler et "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">splitter</translation>
 <translation id="795667975304826397">Der er ikke valgt nogen fil</translation>
+<translation id="8034303206267677282">stærk</translation>
 <translation id="8053789581856978548">tekstfelt til søgning</translation>
 <translation id="8057695513531652401">meddelelse</translation>
 <translation id="8105797009065549151">reference i noter</translation>

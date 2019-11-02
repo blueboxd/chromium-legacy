@@ -399,7 +399,7 @@ void ThemeService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   // events that are already processing.
   if (UsingDefaultTheme()) {
     scoped_refptr<CustomThemeSupplier> supplier;
-    if (observed_theme && observed_theme->UsesHighContrastColors()) {
+    if (ShouldUseIncreasedContrastThemeSupplier(observed_theme)) {
       supplier = base::MakeRefCounted<IncreasedContrastThemeSupplier>(
           observed_theme->ShouldUseDarkColors());
     }
@@ -431,7 +431,7 @@ void ThemeService::UseDefaultTheme() {
     base::RecordAction(base::UserMetricsAction("Themes_Reset"));
 
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-  if (native_theme && native_theme->UsesHighContrastColors()) {
+  if (ShouldUseIncreasedContrastThemeSupplier(native_theme)) {
     SetCustomDefaultTheme(new IncreasedContrastThemeSupplier(
         native_theme->ShouldUseDarkColors()));
     // Early return here because SetCustomDefaultTheme does ClearAllThemeData
@@ -600,6 +600,11 @@ void ThemeService::SetCustomDefaultTheme(
 
 bool ThemeService::ShouldInitWithSystemTheme() const {
   return false;
+}
+
+bool ThemeService::ShouldUseIncreasedContrastThemeSupplier(
+    ui::NativeTheme* native_theme) const {
+  return native_theme && native_theme->UsesHighContrastColors();
 }
 
 SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {

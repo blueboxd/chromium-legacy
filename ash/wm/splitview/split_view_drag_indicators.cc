@@ -167,20 +167,17 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
     // On transition to a state with a preview area, any label that is showing
     // shall fade out. The following call to DoSplitviewOpacityAnimation() will
     // do nothing if this, in the sense of the C++ keyword this, already has
-    // zero opacity (for example, on transition from kDragAreaLeft to
-    // kPreviewAreaLeft, if this is the label on the right).
+    // zero opacity (for example, on transition from kDragAreaRight to
+    // kPreviewAreaRight, if this is the label on the left).
     if (IsPreviewAreaState(indicator_state)) {
       DoSplitviewOpacityAnimation(layer(), SPLITVIEW_ANIMATION_TEXT_FADE_OUT);
       return;
     }
 
-    // Having ruled out kNone and the "preview area" states, we know that
-    // |indicator_state| is a "drag area" state. If there is an indicator on
-    // only one side, and if this, in the sense of the C++ keyword this, is the
-    // label on the opposite side, then bail out.
-    if (indicator_state == (is_right_or_bottom_
-                                ? IndicatorState::kDragAreaLeft
-                                : IndicatorState::kDragAreaRight)) {
+    // No need for the left or top label to do anything if |indicator_state| is
+    // |IndicatorState::kDragAreaRight|.
+    if (indicator_state == IndicatorState::kDragAreaRight &&
+        !is_right_or_bottom_) {
       return;
     }
 
@@ -468,11 +465,8 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
 
     // Calculate the bounds of the views which contain the guidance text and
     // icon. Rotate the two views in landscape mode.
-    const int size_width =
-        indicator_state_ == IndicatorState::kDragAreaLeft
-            ? left_rotated_view_->GetPreferredSize().width()
-            : right_rotated_view_->GetPreferredSize().width();
-    gfx::Size size(size_width, kSplitviewLabelPreferredHeightDp);
+    const gfx::Size size(right_rotated_view_->GetPreferredSize().width(),
+                         kSplitviewLabelPreferredHeightDp);
     if (!landscape)
       highlight_size.SetSize(highlight_size.height(), highlight_size.width());
     gfx::Rect left_rotated_bounds(

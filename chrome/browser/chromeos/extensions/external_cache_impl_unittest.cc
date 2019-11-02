@@ -140,7 +140,6 @@ TEST_F(ExternalCacheImplTest, Basic) {
       cache_dir, url_loader_factory(),
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
       this, true, false);
-  external_cache.use_null_connector_for_test();
 
   std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   prefs->Set(kTestExtensionId1, CreateEntryWithUpdateUrl(true));
@@ -263,7 +262,6 @@ TEST_F(ExternalCacheImplTest, PreserveInstalled) {
       cache_dir, url_loader_factory(),
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
       this, true, false);
-  external_cache.use_null_connector_for_test();
 
   std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   prefs->Set(kTestExtensionId1, CreateEntryWithUpdateUrl(true));

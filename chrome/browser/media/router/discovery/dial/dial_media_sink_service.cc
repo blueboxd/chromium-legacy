@@ -12,8 +12,6 @@
 #include "chrome/common/media_router/media_source.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace media_router {
 
@@ -45,14 +43,12 @@ void DialMediaSinkService::Start(
 std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
 DialMediaSinkService::CreateImpl(
     const OnSinksDiscoveredCallback& sink_discovery_cb) {
-  service_manager::Connector* connector = content::GetSystemConnector();
-
   // Note: The SequencedTaskRunner needs to be IO thread because DialRegistry
   // runs on IO thread.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
   return std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
-      new DialMediaSinkServiceImpl(connector, sink_discovery_cb, task_runner),
+      new DialMediaSinkServiceImpl(sink_discovery_cb, task_runner),
       base::OnTaskRunnerDeleter(task_runner));
 }
 

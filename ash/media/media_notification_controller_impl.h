@@ -12,7 +12,7 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "components/media_message_center/media_notification_controller.h"
-#include "components/media_message_center/media_notification_item.h"
+#include "components/media_message_center/media_session_notification_item.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -60,7 +60,8 @@ class ASH_EXPORT MediaNotificationControllerImpl
   std::unique_ptr<MediaNotificationContainerImpl> CreateMediaNotification(
       const message_center::Notification& notification);
 
-  media_message_center::MediaNotificationItem* GetItem(const std::string& id) {
+  media_message_center::MediaSessionNotificationItem* GetItem(
+      const std::string& id) {
     auto it = notifications_.find(id);
     DCHECK(it != notifications_.end());
     return &it->second;
@@ -79,9 +80,10 @@ class ASH_EXPORT MediaNotificationControllerImpl
   mojo::Receiver<media_session::mojom::AudioFocusObserver>
       audio_focus_observer_receiver_{this};
 
-  // Stores a |media_message_center::MediaNotificationItem| for each media
-  // session keyed by its |request_id| in string format.
-  std::map<const std::string, media_message_center::MediaNotificationItem>
+  // Stores a |media_message_center::MediaSessionNotificationItem| for each
+  // media session keyed by its |request_id| in string format.
+  std::map<const std::string,
+           media_message_center::MediaSessionNotificationItem>
       notifications_;
 
   // Tick clock used for testing.

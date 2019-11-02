@@ -153,6 +153,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="2063539687800151747">Nápis</translation>
 <translation id="207477615537953741">Sémantika je vypnuta</translation>
 <translation id="2086961585857038472">Další slovo</translation>
+<translation id="2087981446621639008">podr seznpopisů</translation>
 <translation id="2089387485033699258">cs</translation>
 <translation id="2091933974477985526">Předchozí upravitelná textová oblast</translation>
 <translation id="2100350898815792233">Veškerá interpunkce</translation>
@@ -192,6 +193,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="2416512023405990736">Nezaškrtnuté zaškrtávací políčko</translation>
 <translation id="2417569100218200841">Informace o obsahu</translation>
 <translation id="2417948780551741035">Koncové poznámky</translation>
+<translation id="2419852971200420169">Seznam popisů</translation>
 <translation id="2421113964388408478">Smazání</translation>
 <translation id="2422937916923936891">Položka nabídky – zaškrtávací políčko</translation>
 <translation id="2428534162001909979">Příkazové nabídky</translation>
@@ -370,6 +372,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="3497063866483065785">{COUNT,plural, =1{otazník}few{# otazníky}many{# question marks}other{# otazníků}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{stříška}few{# stříšky}many{# carets}other{# stříšek}}</translation>
 <translation id="352577523970648069">Upravitelné textové pole</translation>
+<translation id="3538907380453898475">seznpopisů</translation>
 <translation id="3549141990712742152">vyjmout <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Klepnutím dvěma prsty hlasovou odezvu dočasně zastavíte</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, zaškrtávací políčko není zaškrtnuto</translation>
@@ -778,6 +781,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="6378394210114975876">Bodláková</translation>
 <translation id="6385591741672306837">sloupec</translation>
 <translation id="6387719785439924554">stranou</translation>
+<translation id="6393014464788431702">Vypnout všechny filtry událostí</translation>
 <translation id="6411426777058107714">Žádný předchozí přepínač.</translation>
 <translation id="6414968628640960377">Předchozí jiný prvek.</translation>
 <translation id="6417265370957905582">Asistent Google</translation>
@@ -913,6 +917,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="7332592614823088566">Řádek <ph name="ROWINDEX" /> z <ph name="ROWTOTAL" />, sloupec <ph name="COLINDEX" /> z <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">má vyskak. okno</translation>
 <translation id="7356165926712028380">Přepnout na osmibodové Braillovo písmo</translation>
+<translation id="7356610683936413584">Podrobnosti v seznamu popisů</translation>
 <translation id="7362871137496673139">Žádný předchozí nadpis 2. úrovně.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ampersand}few{# ampersandy}many{# ampersands}other{# ampersandů}}</translation>
 <translation id="737396357417333429">klikatelné</translation>
@@ -1091,6 +1096,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8096975275316362544">Mentolová</translation>
 <translation id="8098587210054821856">Břidlicová šedá</translation>
 <translation id="8110647606445335195">Žádné orientační body ARIA.</translation>
+<translation id="8121539003537428024">Zapnout všechny filtry událostí</translation>
 <translation id="812886159861361726">Bylo zastaveno stahování souboru <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Dotykové</translation>
 <translation id="8153880621934657047">Mimo tabulku.</translation>

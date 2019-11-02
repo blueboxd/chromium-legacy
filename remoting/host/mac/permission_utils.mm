@@ -111,6 +111,12 @@ void ShowScreenRecordingPermissionDialog() {
 namespace remoting {
 namespace mac {
 
+bool CanInjectInput() {
+  if (!base::mac::IsAtLeastOS10_14())
+    return true;
+  return AXIsProcessTrusted();
+}
+
 // Heuristic to check screen capture permission. See http://crbug.com/993692
 // Copied from
 // chrome/browser/media/webrtc/system_media_capture_permissions_mac.mm
@@ -142,10 +148,7 @@ bool CanRecordScreen() {
 // affected version and the permission has not already been approved.
 void PromptUserForAccessibilityPermissionIfNeeded(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (!base::mac::IsAtLeastOS10_14())
-    return;
-
-  if (AXIsProcessTrusted())
+  if (CanInjectInput())
     return;
 
   LOG(WARNING) << "AXIsProcessTrusted returned false, requesting "
@@ -161,9 +164,6 @@ void PromptUserForAccessibilityPermissionIfNeeded(
 // been approved.
 void PromptUserForScreenRecordingPermissionIfNeeded(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (!base::mac::IsAtLeastOS10_15())
-    return;
-
   if (CanRecordScreen())
     return;
 

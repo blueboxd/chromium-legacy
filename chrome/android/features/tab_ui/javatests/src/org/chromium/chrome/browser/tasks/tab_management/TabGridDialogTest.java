@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -97,6 +98,69 @@ public class TabGridDialogTest {
         verifyTabSwitcherCardCount(cta, 2);
 
         // Create a tab group.
+        mergeAllTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        // Open dialog from tab switcher and verify dialog is showing correct content.
+        openDialogFromTabSwitcherAndVerify(cta, 2);
+
+        // Press back and dialog should be hidden.
+        Espresso.pressBack();
+        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Enter first tab page.
+        assertTrue(cta.getLayoutManager().overviewVisible());
+        clickFirstTabFromTabSwitcher(cta);
+        clickFirstTabFromDialog(cta);
+        // Open dialog from tab strip and verify dialog is showing correct content.
+        openDialogFromStripAndVerify(cta, 2);
+
+        // Press back and dialog should be hidden.
+        Espresso.pressBack();
+        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+    }
+
+    @Test
+    @MediumTest
+    public void testDisableTabGroupsContinuation() throws InterruptedException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog and verify dialog is showing correct content.
+        openDialogFromTabSwitcherAndVerify(cta, 2);
+
+        // Verify TabGroupsContinuation related functionality is not exposed.
+        verifyTabGroupsContinuation(cta, false);
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void testEnableTabGroupsContinuation() throws InterruptedException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog and verify dialog is showing correct content.
+        openDialogFromTabSwitcherAndVerify(cta, 2);
+
+        // Verify TabGroupsContinuation related functionality is exposed.
+        verifyTabGroupsContinuation(cta, true);
+    }
+
+    private void mergeAllTabsToAGroup(ChromeTabbedActivity cta) {
         List<Tab> tabGroup = new ArrayList<>();
         TabModel tabModel = cta.getTabModelSelector().getModel(false);
         for (int i = 0; i < tabModel.getCount(); i++) {
@@ -109,31 +173,18 @@ public class TabGridDialogTest {
                                              .getTabModelFilterProvider()
                                              .getCurrentTabModelFilter();
         assertEquals(1, filter.getCount());
-        verifyTabSwitcherCardCount(cta, 1);
+    }
 
-        // Open dialog and verify dialog is showing correct content.
+    private void openDialogFromTabSwitcherAndVerify(ChromeTabbedActivity cta, int tabCount) {
         clickFirstTabFromTabSwitcher(cta);
         CriteriaHelper.pollInstrumentationThread(() -> isDialogShowing(cta));
-        verifyShowingDialog(cta, 2);
+        verifyShowingDialog(cta, tabCount);
+    }
 
-        // Press back and dialog should be hidden.
-        Espresso.pressBack();
-        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
-
-        verifyTabSwitcherCardCount(cta, 1);
-
-        // Enter first tab page, open dialog from strip and verify dialog is showing correct
-        // content.
-        assertTrue(cta.getLayoutManager().overviewVisible());
-        clickFirstTabFromTabSwitcher(cta);
-        clickFirstTabFromDialog(cta);
+    private void openDialogFromStripAndVerify(ChromeTabbedActivity cta, int tabCount) {
         showDialogFromStrip(cta);
         CriteriaHelper.pollInstrumentationThread(() -> isDialogShowing(cta));
-        verifyShowingDialog(cta, 2);
-
-        // Press back and dialog should be hidden.
-        Espresso.pressBack();
-        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+        verifyShowingDialog(cta, tabCount);
     }
 
     private void verifyShowingDialog(ChromeTabbedActivity cta, int tabCount) {
@@ -180,5 +231,27 @@ public class TabGridDialogTest {
     private void showDialogFromStrip(ChromeTabbedActivity cta) {
         assertFalse(cta.getLayoutManager().overviewVisible());
         onView(withId(R.id.toolbar_left_button)).perform(click());
+    }
+
+    private void verifyTabGroupsContinuation(ChromeTabbedActivity cta, boolean isEnabled) {
+        assertEquals(isEnabled, FeatureUtilities.isTabGroupsAndroidContinuationEnabled());
+
+        // Verify whether the menu button exists.
+        onView(withId(R.id.toolbar_menu_button))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .check(isEnabled ? matches(isDisplayed()) : doesNotExist());
+
+        // Try to grab focus of the title text field by clicking on it.
+        onView(allOf(withParent(withId(R.id.main_content)), withId(R.id.title)))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(click());
+        onView(allOf(withParent(withId(R.id.main_content)), withId(R.id.title)))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .check((v, noMatchException) -> {
+                    if (noMatchException != null) throw noMatchException;
+
+                    // Verify if we can grab focus on the editText or not.
+                    assertEquals(isEnabled, v.isFocused());
+                });
     }
 }

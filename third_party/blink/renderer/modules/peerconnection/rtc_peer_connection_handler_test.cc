@@ -155,8 +155,8 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                     const blink::WebMediaConstraints& constraints));
   MOCK_METHOD4(TrackSetSessionDescription,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const std::string& sdp,
-                    const std::string& type,
+                    const String& sdp,
+                    const String& type,
                     Source source));
   MOCK_METHOD1(TrackSetSessionDescriptionImplicit,
                void(RTCPeerConnectionHandler* pc_handler));
@@ -206,8 +206,8 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
   MOCK_METHOD4(TrackSessionDescriptionCallback,
                void(RTCPeerConnectionHandler* pc_handler,
                     Action action,
-                    const std::string& type,
-                    const std::string& value));
+                    const String& type,
+                    const String& value));
   MOCK_METHOD1(TrackOnRenegotiationNeeded,
                void(RTCPeerConnectionHandler* pc_handler));
   MOCK_METHOD2(TrackCreateDTMFSender,
@@ -648,10 +648,10 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
   // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
   // before |mock_peer_connection| is called.
   testing::InSequence sequence;
-  EXPECT_CALL(
-      *mock_tracker_.get(),
-      TrackSetSessionDescription(pc_handler_.get(), kDummySdp, kDummySdpType,
-                                 PeerConnectionTracker::SOURCE_LOCAL));
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackSetSessionDescription(pc_handler_.get(), String(kDummySdp),
+                                         String(kDummySdpType),
+                                         PeerConnectionTracker::SOURCE_LOCAL));
   EXPECT_CALL(*mock_peer_connection_, SetLocalDescription(_, _));
 
   pc_handler_->SetLocalDescription(request, description);
@@ -678,15 +678,15 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescriptionParseError) {
   testing::InSequence sequence;
   // Expect two "Track" calls, one for the start of the attempt and one for the
   // failure.
-  EXPECT_CALL(
-      *mock_tracker_.get(),
-      TrackSetSessionDescription(pc_handler_.get(), kDummySdp, kDummySdpType,
-                                 PeerConnectionTracker::SOURCE_LOCAL));
-  EXPECT_CALL(
-      *mock_tracker_.get(),
-      TrackSessionDescriptionCallback(
-          pc_handler_.get(),
-          PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION, "OnFailure", _));
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackSetSessionDescription(pc_handler_.get(), String(kDummySdp),
+                                         String(kDummySdpType),
+                                         PeerConnectionTracker::SOURCE_LOCAL));
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackSessionDescriptionCallback(
+                  pc_handler_.get(),
+                  PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION,
+                  String("OnFailure"), _));
 
   // Used to simulate a parse failure.
   mock_dependency_factory_->SetFailToCreateSessionDescription(true);
@@ -704,10 +704,10 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
   // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
   // before |mock_peer_connection| is called.
   testing::InSequence sequence;
-  EXPECT_CALL(
-      *mock_tracker_.get(),
-      TrackSetSessionDescription(pc_handler_.get(), kDummySdp, kDummySdpType,
-                                 PeerConnectionTracker::SOURCE_REMOTE));
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackSetSessionDescription(pc_handler_.get(), String(kDummySdp),
+                                         String(kDummySdpType),
+                                         PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_CALL(*mock_peer_connection_, SetRemoteDescriptionForMock(_, _));
 
   pc_handler_->SetRemoteDescription(request, description);
@@ -734,15 +734,15 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescriptionParseError) {
   testing::InSequence sequence;
   // Expect two "Track" calls, one for the start of the attempt and one for the
   // failure.
-  EXPECT_CALL(
-      *mock_tracker_.get(),
-      TrackSetSessionDescription(pc_handler_.get(), kDummySdp, kDummySdpType,
-                                 PeerConnectionTracker::SOURCE_REMOTE));
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackSetSessionDescription(pc_handler_.get(), String(kDummySdp),
+                                         String(kDummySdpType),
+                                         PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_CALL(*mock_tracker_.get(),
               TrackSessionDescriptionCallback(
                   pc_handler_.get(),
                   PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION,
-                  "OnFailure", _));
+                  String("OnFailure"), _));
 
   // Used to simulate a parse failure.
   mock_dependency_factory_->SetFailToCreateSessionDescription(true);

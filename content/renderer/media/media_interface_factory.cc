@@ -171,8 +171,9 @@ MediaInterfaceFactory::GetMediaInterfaceFactory() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!media_interface_factory_) {
-    remote_interfaces_->GetInterface(&media_interface_factory_);
-    media_interface_factory_.set_connection_error_handler(base::BindOnce(
+    remote_interfaces_->GetInterface(
+        media_interface_factory_.BindNewPipeAndPassReceiver());
+    media_interface_factory_.set_disconnect_handler(base::BindOnce(
         &MediaInterfaceFactory::OnConnectionError, base::Unretained(this)));
   }
 

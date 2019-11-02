@@ -106,6 +106,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816"><ph name="ATSIGN" />-osan jälkeen tulevassa osassa ei pitäisi olla merkkiä <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="4668956016107839909">liite</translation>
+<translation id="4698212723196775569">koodi</translation>
 <translation id="4718048029184481307">Toistetaan kuva kuvassa ‑tilassa</translation>
 <translation id="4742539557769756338">kansi</translation>
 <translation id="4748357248530471599">näyttölovi osana koko näytön tilaa päälle/pois</translation>
@@ -191,6 +192,7 @@
 <translation id="7118469954320184356">Ei kuvausta saatavilla</translation>
 <translation id="7139483182332611405">johdanto</translation>
 <translation id="7214187073215825913">sisältötiedot</translation>
+<translation id="7238347055216017155">korostus</translation>
 <translation id="7263440858009898357">Valitse kohde luettelosta.</translation>
 <translation id="727747134524199931">sarakkeen otsikko</translation>
 <translation id="7320576522385648310">puskuroidaan</translation>
@@ -217,6 +219,7 @@
 <translation id="7888071071722539607">Sähköpostiosoitteeseen kuuluu <ph name="ATSIGN" />-osa. Osoitteesta <ph name="INVALIDADDRESS" /> puuttuu <ph name="ATSIGN" />.</translation>
 <translation id="7891486169920085145">jakaja</translation>
 <translation id="795667975304826397">Ei valittua tiedostoa</translation>
+<translation id="8034303206267677282">vahva</translation>
 <translation id="8053789581856978548">hakutekstikenttä</translation>
 <translation id="8057695513531652401">ilmoitus</translation>
 <translation id="8105797009065549151">muistiinpanoviittaus</translation>

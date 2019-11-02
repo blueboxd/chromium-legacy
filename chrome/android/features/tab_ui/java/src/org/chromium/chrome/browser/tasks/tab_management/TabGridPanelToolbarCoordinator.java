@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -41,6 +42,9 @@ class TabGridPanelToolbarCoordinator implements Destroyable {
         mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(context).inflate(
                 R.layout.bottom_tab_grid_toolbar, contentView, false);
         mToolbarView.setupToolbarLayout(dialog != null);
+        if (!FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+            mToolbarView.hideTabGroupsContinuationWidgets();
+        }
         mModelChangeProcessor = PropertyModelChangeProcessor.create(toolbarPropertyModel,
                 new TabGridPanelViewBinder.ViewHolder(mToolbarView, contentView, dialog),
                 TabGridPanelViewBinder::bind);

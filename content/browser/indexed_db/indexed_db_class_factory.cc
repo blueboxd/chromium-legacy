@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
@@ -16,7 +17,6 @@
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
-#include "content/browser/indexed_db/scopes/leveldb_scope.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 

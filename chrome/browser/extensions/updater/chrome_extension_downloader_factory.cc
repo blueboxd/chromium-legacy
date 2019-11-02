@@ -17,7 +17,6 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/common/verifier_formats.h"
@@ -31,12 +30,11 @@ std::unique_ptr<ExtensionDownloader>
 ChromeExtensionDownloaderFactory::CreateForURLLoaderFactory(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     ExtensionDownloaderDelegate* delegate,
-    service_manager::Connector* connector,
     crx_file::VerifierFormat required_verifier_format,
     const base::FilePath& profile_path) {
-  std::unique_ptr<ExtensionDownloader> downloader(new ExtensionDownloader(
-      delegate, std::move(url_loader_factory), connector,
-      required_verifier_format, profile_path));
+  std::unique_ptr<ExtensionDownloader> downloader(
+      new ExtensionDownloader(delegate, std::move(url_loader_factory),
+                              required_verifier_format, profile_path));
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   std::string brand;
   google_brand::GetBrand(&brand);
@@ -62,8 +60,7 @@ ChromeExtensionDownloaderFactory::CreateForProfile(
   std::unique_ptr<ExtensionDownloader> downloader = CreateForURLLoaderFactory(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
-      delegate, content::GetSystemConnector(),
-      extensions::GetPolicyVerifierFormat(), profile->GetPath());
+      delegate, extensions::GetPolicyVerifierFormat(), profile->GetPath());
 
   // NOTE: It is not obvious why it is OK to pass raw pointers to the token
   // service and identity manager here. The logic is as follows:

@@ -5,6 +5,7 @@
 #include "ash/media/media_notification_container_impl.h"
 
 #include "components/media_message_center/media_notification_view.h"
+#include "components/media_message_center/media_session_notification_item.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
@@ -28,7 +29,7 @@ constexpr int kControlButtonsContainerSideLength =
 
 MediaNotificationContainerImpl::MediaNotificationContainerImpl(
     const message_center::Notification& notification,
-    base::WeakPtr<media_message_center::MediaNotificationItem> item)
+    base::WeakPtr<media_message_center::MediaSessionNotificationItem> item)
     : message_center::MessageView(notification) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 

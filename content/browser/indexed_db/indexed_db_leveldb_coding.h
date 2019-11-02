@@ -18,7 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "content/browser/indexed_db/scopes/scope_lock_range.h"
+#include "components/services/storage/indexed_db/scopes/scope_lock_range.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
@@ -50,7 +50,6 @@ CONTENT_EXPORT void EncodeBool(bool value, std::string* into);
 // number. The Decoder must know how to calculate the size of the encoded int,
 // typically by having this reside at the end of the value or key.
 CONTENT_EXPORT void EncodeInt(int64_t value, std::string* into);
-CONTENT_EXPORT void EncodeVarInt(int64_t value, std::string* into);
 CONTENT_EXPORT void EncodeString(const base::string16& value,
                                  std::string* into);
 CONTENT_EXPORT void EncodeStringWithLength(const base::string16& value,
@@ -70,8 +69,6 @@ CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeBool(base::StringPiece* slice,
                                                   bool* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeInt(base::StringPiece* slice,
                                                  int64_t* value);
-CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeVarInt(base::StringPiece* slice,
-                                                    int64_t* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeString(base::StringPiece* slice,
                                                     base::string16* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeStringWithLength(

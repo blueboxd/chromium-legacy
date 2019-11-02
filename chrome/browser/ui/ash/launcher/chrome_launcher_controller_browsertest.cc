@@ -2256,7 +2256,7 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 
   // Press the search + right. Expects that the browser icon receives the
-  // accessibility focus and the hotseat is shown.
+  // accessibility focus and the hotseat is shown in kExtended state.
   event_generator.PressKey(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
   const int browser_index =
       ash::ShelfModel::Get()->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
@@ -2264,6 +2264,12 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
       base::UTF16ToASCII(ash::ShelfModel::Get()->items()[browser_index].title),
       speech_monitor.GetNextUtterance());
   EXPECT_EQ(ash::HotseatState::kExtended,
+            controller->shelf()->shelf_layout_manager()->hotseat_state());
+
+  // Click on the home button. Expects that the hotseat is shown in kShown state
+  event_generator.MoveMouseTo(home_button->GetBoundsInScreen().CenterPoint());
+  event_generator.ClickLeftButton();
+  EXPECT_EQ(ash::HotseatState::kShown,
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 }
 

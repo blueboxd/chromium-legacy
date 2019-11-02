@@ -114,7 +114,8 @@ class SAChildNode {
    */
   get next() {
     if (!this.next_) {
-      throw new Error(
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.NEXT_UNDEFINED,
           'Next node must be set on all SAChildNodes before navigating');
     }
     return this.next_;
@@ -126,7 +127,8 @@ class SAChildNode {
    */
   get previous() {
     if (!this.previous_) {
-      throw new Error(
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.PREVIOUS_UNDEFINED,
           'Previous node must be set on all SAChildNodes before navigating');
     }
     return this.previous_;
@@ -200,7 +202,10 @@ class SARootNode {
 
     let result = true;
     for (let i = 0; i < this.children_.length; i++) {
-      if (!this.children_[i]) throw new Error('Child cannot be null.');
+      if (!this.children_[i]) {
+        throw SwitchAccess.error(
+            SAConstants.ErrorType.NULL_CHILD, 'Child cannot be null.');
+      }
       result = result && this.children_[i].equals(other.children_[i]);
     }
 
@@ -217,7 +222,9 @@ class SARootNode {
     if (this.children_.length > 0) {
       return this.children_[0];
     } else {
-      throw new Error('Root nodes must contain children.');
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.NO_CHILDREN,
+          'Root nodes must contain children.');
     }
   }
 
@@ -226,7 +233,9 @@ class SARootNode {
     if (this.children_.length > 0) {
       return this.children_[this.children_.length - 1];
     } else {
-      throw new Error('Root nodes must contain children.');
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.NO_CHILDREN,
+          'Root nodes must contain children.');
     }
   }
 
@@ -287,7 +296,9 @@ class SARootNode {
    */
   static connectChildren(children) {
     if (children.length < 1) {
-      throw new Error('Root node must have at least 1 interesting child.');
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.NO_CHILDREN,
+          'Root node must have at least 1 interesting child.');
     }
 
     let previous = children[children.length - 1];

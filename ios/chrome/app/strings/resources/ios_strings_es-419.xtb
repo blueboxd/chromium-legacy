@@ -202,7 +202,6 @@
 <translation id="3783017676699494206">Guardar imagen</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="385051799172605136">Atrás</translation>
-<translation id="3886946236301294521">Te avisa si una contraseña que usas formó parte de un incumplimiento de datos.</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3915450441834151894">Información del sitio</translation>
 <translation id="3922310737605261887">Buscar el texto copiado</translation>
@@ -301,7 +300,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
-<translation id="5365716706805792666">Google puede determinar si tus contraseñas formaron parte de un incumplimiento de datos. Se activará esta opción cuando accedas con tu Cuenta de Google.</translation>
 <translation id="5388358297987318779">Abrir imagen</translation>
 <translation id="5407969256130905701">Descartar cambios</translation>
 <translation id="5409365236829784218">No se instalaron aplicaciones que puedan abrir este archivo.</translation>
@@ -333,7 +331,6 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5854790677617711513">Hace más de 30 días</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5857770089550859117">Se requiere la frase de contraseña para comenzar la sincronización.</translation>
-<translation id="5859444426865731878">Google puede determinar si tus contraseñas formaron parte de un incumplimiento de datos.</translation>
 <translation id="5860033963881614850">No</translation>
 <translation id="5869029295770560994">Entendido</translation>
 <translation id="5871497086027727873">1 artículo movido</translation>
@@ -483,7 +480,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7859704718976024901">Historial de navegación</translation>
 <translation id="7887198238286927132">Para proteger tu privacidad, Chrome no completará este campo de forma automática.</translation>
 <translation id="7918293828610777738">Tu lista de lectura está disponible sin conexión. Para agregar una página a la lista, presiona <ph name="SHARE_OPENING_ICON" /> y, luego, <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Revisar la seguridad de las contraseñas</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportar contraseñas…</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>

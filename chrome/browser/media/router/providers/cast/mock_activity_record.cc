@@ -8,7 +8,7 @@ namespace media_router {
 
 MockActivityRecord::MockActivityRecord(const MediaRoute& route,
                                        const std::string& app_id)
-    : ActivityRecord(route, app_id, nullptr, nullptr, nullptr) {}
+    : ActivityRecord(route, app_id, nullptr, nullptr) {}
 
 MockActivityRecord::~MockActivityRecord() = default;
 

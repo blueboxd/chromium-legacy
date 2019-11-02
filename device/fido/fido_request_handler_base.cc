@@ -96,7 +96,7 @@ void FidoRequestHandlerBase::InitDiscoveries(
   // |notify_observer_callback_| is invoked once for each discovery once it is
   // ready, and additionally:
   //
-  // 1) [If BLE or caBLE are enabled] if Bluetooth adapter is present.
+  // 1) [If BLE or caBLE are enabled] once BLE adapters have been enumerated
   // 2) When |observer_| is set, so that OnTransportAvailabilityEnumerated is
   // never called before it is set.
   notify_observer_callback_ = base::BarrierClosure(

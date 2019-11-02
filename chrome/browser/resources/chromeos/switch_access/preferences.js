@@ -99,7 +99,7 @@ class SwitchAccessPreferences {
   }
 
   /**
-   * Get the boolean value for the given name. Will throw a type error if the
+   * Get the boolean value for the given name. Will throw an error if the
    * value associated with |name| is not a boolean, or is undefined.
    *
    * @param  {SAConstants.Preference} name
@@ -107,10 +107,13 @@ class SwitchAccessPreferences {
    */
   getBooleanPreference(name) {
     const pref = this.preferences_.get(name);
-    if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN)
+    if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN) {
       return /** @type {boolean} */ (pref.value);
-    else
-      throw new TypeError('No value of boolean type named \'' + name + '\'');
+    } else {
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.PREFERENCE_TYPE,
+          'No value of boolean type named \'' + name + '\'');
+    }
   }
 
   /**
@@ -122,10 +125,13 @@ class SwitchAccessPreferences {
    */
   getStringPreference(name) {
     const pref = this.preferences_.get(name);
-    if (pref && pref.type === chrome.settingsPrivate.PrefType.STRING)
+    if (pref && pref.type === chrome.settingsPrivate.PrefType.STRING) {
       return /** @type {string} */ (pref.value);
-    else
-      throw new TypeError('No value of string type named \'' + name + '\'');
+    } else {
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.PREFERENCE_TYPE,
+          'No value of string type named \'' + name + '\'');
+    }
   }
 
   /**
@@ -137,8 +143,11 @@ class SwitchAccessPreferences {
    */
   getNumberPreference(name) {
     const value = this.getNumberPreferenceIfDefined(name);
-    if (!value)
-      throw new TypeError('No value of number type named \'' + name + '\'');
+    if (!value) {
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.PREFERENCE_TYPE,
+          'No value of number type named \'' + name + '\'');
+    }
     return value;
   }
 

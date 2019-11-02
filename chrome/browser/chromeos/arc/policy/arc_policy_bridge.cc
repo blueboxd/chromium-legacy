@@ -36,7 +36,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "crypto/sha2.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 namespace arc {
 

@@ -110,6 +110,10 @@ IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, SpaceConstrained) {
   // Cause the zoom page action icon to be visible.
   chrome::Zoom(app_browser_, content::PAGE_ZOOM_IN);
 
+  // The layout should be invalidated, but since we don't have the benefit of
+  // the compositor to immediately kick a layout off, we have to do it manually.
+  web_app_frame_toolbar_->Layout();
+
   // The page action icons should now take up width.
   EXPECT_GT(page_action_icon_container->width(), 0);
   EXPECT_EQ(menu_button->width(), original_menu_button_width);

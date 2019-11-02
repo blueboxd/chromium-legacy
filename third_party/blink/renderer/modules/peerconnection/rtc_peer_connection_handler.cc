@@ -26,8 +26,6 @@
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
-#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink.h"
-#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink_proxy_util.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
@@ -49,6 +47,9 @@
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
 #include "third_party/webrtc/pc/media_session.h"
@@ -245,9 +246,10 @@ class CreateSessionDescriptionRequest
         desc->ToString(&value);
         value = "type: " + desc->type() + ", sdp: " + value;
       }
-      tracker_->TrackSessionDescriptionCallback(handler_.get(), action_,
-                                                "OnSuccess", value);
-      tracker_->TrackSessionId(handler_.get(), desc->session_id());
+      tracker_->TrackSessionDescriptionCallback(
+          handler_.get(), action_, "OnSuccess", String::FromUTF8(value));
+      tracker_->TrackSessionId(handler_.get(),
+                               String::FromUTF8(desc->session_id()));
     }
     webkit_request_.RequestSucceeded(CreateWebKitSessionDescription(desc));
     webkit_request_.Reset();
@@ -265,8 +267,9 @@ class CreateSessionDescriptionRequest
     }
 
     if (handler_ && tracker_) {
-      tracker_->TrackSessionDescriptionCallback(handler_.get(), action_,
-                                                "OnFailure", error.message());
+      tracker_->TrackSessionDescriptionCallback(
+          handler_.get(), action_, "OnFailure",
+          String::FromUTF8(error.message()));
     }
     // TODO(hta): Convert CreateSessionDescriptionRequest.OnFailure
     webkit_request_.RequestFailed(error);
@@ -667,8 +670,9 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
       WebRtcSetDescriptionObserver::States states) override {
     if (!error.ok()) {
       if (tracker_ && handler_) {
-        tracker_->TrackSessionDescriptionCallback(handler_.get(), action_,
-                                                  "OnFailure", error.message());
+        tracker_->TrackSessionDescriptionCallback(
+            handler_.get(), action_, "OnFailure",
+            String::FromUTF8(error.message()));
       }
       web_request_.RequestFailed(error);
       web_request_.Reset();
@@ -698,7 +702,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
       handler_->OnSignalingChange(signaling_state);
 
       if (tracker_ && handler_) {
-        std::string value = "";
+        StringBuilder value;
         if (action_ ==
             PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION_IMPLICIT) {
           webrtc::SessionDescriptionInterface* created_session_description =
@@ -726,14 +730,15 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
           if (created_session_description) {
             std::string sdp;
             created_session_description->ToString(&sdp);
-            value = "type: " +
-                    std::string(webrtc::SdpTypeToString(
-                        created_session_description->GetType())) +
-                    ", sdp: " + sdp;
+            value.Append("type: ");
+            value.Append(webrtc::SdpTypeToString(
+                created_session_description->GetType()));
+            value.Append(", sdp: ");
+            value.Append(sdp.c_str());
           }
         }
-        tracker_->TrackSessionDescriptionCallback(handler_.get(), action_,
-                                                  "OnSuccess", value);
+        tracker_->TrackSessionDescriptionCallback(
+            handler_.get(), action_, "OnSuccess", value.ToString());
       }
     }
     if (action_ == PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION) {
@@ -1289,8 +1294,8 @@ void RTCPeerConnectionHandler::SetLocalDescription(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setLocalDescription");
 
-  std::string sdp = description.Sdp().Utf8();
-  std::string type = description.GetType().Utf8();
+  String sdp = String(description.Sdp());
+  String type = String(description.GetType());
 
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackSetSessionDescription(
@@ -1311,7 +1316,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
     if (peer_connection_tracker_) {
       peer_connection_tracker_->TrackSessionDescriptionCallback(
           this, PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION,
-          "OnFailure", reason_str);
+          "OnFailure", String::FromUTF8(reason_str));
     }
     // Warning: this line triggers the error callback to be executed, causing
     // arbitrary JavaScript to be executed synchronously. As a result, it is
@@ -1365,8 +1370,9 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
     const blink::WebRTCSessionDescription& description) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setRemoteDescription");
-  std::string sdp = description.Sdp().Utf8();
-  std::string type = description.GetType().Utf8();
+
+  String sdp = String(description.Sdp());
+  String type = String(description.GetType());
 
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackSetSessionDescription(
@@ -1387,7 +1393,7 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
     if (peer_connection_tracker_) {
       peer_connection_tracker_->TrackSessionDescriptionCallback(
           this, PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION,
-          "OnFailure", reason_str);
+          "OnFailure", String::FromUTF8(reason_str));
     }
     // Warning: this line triggers the error callback to be executed, causing
     // arbitrary JavaScript to be executed synchronously. As a result, it is
@@ -2035,7 +2041,8 @@ void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(
     const std::string& output) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (peer_connection_tracker_) {
-    peer_connection_tracker_->TrackRtcEventLogWrite(this, output);
+    peer_connection_tracker_->TrackRtcEventLogWrite(this,
+                                                    String::FromUTF8(output));
   }
 }
 
@@ -2433,11 +2440,12 @@ void RTCPeerConnectionHandler::OnInterestingUsage(int usage_pattern) {
 
 webrtc::SessionDescriptionInterface*
 RTCPeerConnectionHandler::CreateNativeSessionDescription(
-    const std::string& sdp,
-    const std::string& type,
+    const String& sdp,
+    const String& type,
     webrtc::SdpParseError* error) {
   webrtc::SessionDescriptionInterface* native_desc =
-      dependency_factory_->CreateSessionDescription(type, sdp, error);
+      dependency_factory_->CreateSessionDescription(type.Utf8(), sdp.Utf8(),
+                                                    error);
 
   LOG_IF(ERROR, !native_desc) << "Failed to create native session description."
                               << " Type: " << type << " SDP: " << sdp;

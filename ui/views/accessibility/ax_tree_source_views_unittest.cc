@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_tree_data.h"
@@ -28,16 +27,16 @@ class TestAXTreeSourceViews : public AXTreeSourceViews {
  public:
   TestAXTreeSourceViews(AXAuraObjWrapper* root, AXAuraObjCache* cache)
       : AXTreeSourceViews(root, ui::AXTreeID::CreateNewAXTreeID(), cache) {}
-
+  TestAXTreeSourceViews(const TestAXTreeSourceViews&) = delete;
+  TestAXTreeSourceViews& operator=(const TestAXTreeSourceViews&) = delete;
   ~TestAXTreeSourceViews() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestAXTreeSourceViews);
 };
 
 class AXTreeSourceViewsTest : public ViewsTestBase {
  public:
   AXTreeSourceViewsTest() = default;
+  AXTreeSourceViewsTest(const AXTreeSourceViewsTest&) = delete;
+  AXTreeSourceViewsTest& operator=(const AXTreeSourceViewsTest&) = delete;
   ~AXTreeSourceViewsTest() override = default;
 
   // testing::Test:
@@ -73,9 +72,6 @@ class AXTreeSourceViewsTest : public ViewsTestBase {
   Label* label1_ = nullptr;         // Owned by views hierarchy.
   Label* label2_ = nullptr;         // Owned by views hierarchy.
   Textfield* textfield_ = nullptr;  // Owned by views hierarchy.
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AXTreeSourceViewsTest);
 };
 
 TEST_F(AXTreeSourceViewsTest, Basics) {

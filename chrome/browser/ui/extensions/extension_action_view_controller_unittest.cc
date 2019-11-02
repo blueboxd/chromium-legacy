@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
@@ -260,10 +261,9 @@ void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
   const GURL kUrl("https://www.google.com/");
 
   // Make sure UserScriptListener doesn't hold up the navigation.
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
-      content::Source<Profile>(browser()->profile()),
-      content::NotificationService::NoDetails());
+  extensions::ExtensionsBrowserClient::Get()
+      ->GetUserScriptListener()
+      ->TriggerUserScriptsReadyForTesting(browser()->profile());
 
   AddTab(browser(), kUrl);
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
-<translation id="1001649754854402482">Yeni <ph name="CORS" /> uygulamasındaki azaltmaların <ph name="CORS" /> tarafından kontrol edilmesini sağlayarak Uzantıların uyumlu davranışı sürdürmesine ve <ph name="PRODUCT_NAME" /> ürününün belirtilen üstbilgileri <ph name="CORS" /> kontrolleri olmadan göndermesine olanak tanıyın.
+<translation id="1001649754854402482">Yeni <ph name="CORS" /> uygulamasındaki azaltmaların <ph name="CORS" /> tarafından kontrol edilmesini sağlayarak Uzantıların uyumlu davranışı sürdürmesine ve belirtilen üstbilgilerin <ph name="PRODUCT_NAME" /> tarafından <ph name="CORS" /> kontrolleri olmadan gönderilmesine olanak tanıyın.
 
       Bu liste boş değere ayarlanırsa <ph name="PRODUCT_NAME" />, Uzantıları uyumlu şekillerde çalıştırmayı dener ve <ph name="WEB_REQUEST_API_MANUAL" /> içinde açıklanan <ph name="PRODUCT_NAME" /> 79 için <ph name="API" /> değişikliklerini uygulamaz.
 
@@ -77,11 +77,11 @@
 
           AC gücüyle çalışırken, ekran kapatılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
-          Bu politika sıfırdan büyük bir değere ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> tarafından ekran kapatılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
+          Bu politika sıfırdan büyük bir değere ayarlanırsa <ph name="PRODUCT_OS_NAME" /> tarafından ekran kapatılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
 
-          Bu politika sıfıra ayarlanırsa, kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı kapatmaz.
+          Bu politika sıfıra ayarlanırsa kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı kapatmaz.
 
-          Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
+          Bu politika ayarlanmadan bırakılırsa varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinin altında veya o gecikmeye eşit olacak şekilde ayarlanır.</translation>
 <translation id="1079801999187584280">Geliştirici Araçları'nın kullanımına izin verme</translation>
@@ -229,9 +229,9 @@
 
           Bu politika ayarlandığında, kullanıcı boşta kalma gecikmesiyle belirtilen süre (ayrı olarak yapılandırılabilir) boyunca boşta kaldığında, <ph name="PRODUCT_OS_NAME" /> tarafından uygulanacak işlemi belirtir.
 
-          Bu politika ayarlanmadan bırakılırsa, varsayılan işlem olarak askıya alma uygulanır.
+          Bu politika ayarlanmadan bırakılırsa varsayılan işlem olarak askıya alma uygulanır.
 
-          Uygulanacak işlem askıya alma ise, <ph name="PRODUCT_OS_NAME" />, askıya almadan önce ekranı kilitleyecek veya kilitlemeyecek şekilde ayrı olarak yapılandırılabilir.</translation>
+          Uygulanacak işlem askıya alma ise <ph name="PRODUCT_OS_NAME" />, askıya almadan önce ekranı kilitleyecek veya kilitlemeyecek şekilde ayrı olarak yapılandırılabilir.</translation>
 <translation id="1359553908012294236">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, misafir modunda giriş yapılmasına izin verir. Misafir modunda girişler, tüm pencerelerin gizli modda açıldığı <ph name="PRODUCT_NAME" /> profilleridir.
 
       Bu politika yanlış seçeneğine ayarlanırsa, <ph name="PRODUCT_NAME" /> misafir profillerinin başlatılmasına izin vermez.</translation>
@@ -243,7 +243,7 @@
 <translation id="1376119291123231789">Gelişmiş pil şarj modunu etkinleştir</translation>
 <translation id="1377134027840513298">Bu politikanın artık kullanılmadığını ve <ph name="PRODUCT_OS_NAME" /> sürüm 82'de kaldırılacağını unutmayın. Lütfen bunun yerine <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> politikasını kullanın.
 
-          Bu politika daha özel <ph name="IDLE_ACTION_AC_POLICY_NAME" /> ve <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> politikaları için yedek değer sağlar. Bu politika ayarlanırsa, ilgili daha özel politika ayarlanmadığında bunun değeri kullanılır.
+          Bu politika daha özel <ph name="IDLE_ACTION_AC_POLICY_NAME" /> ve <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> politikaları için yedek değer sağlar. Bu politika ayarlanırsa ilgili daha özel politika ayarlanmadığında bunun değeri kullanılır.
 
           Bu politika ayarlanmadığında, daha özel politikaların çalışma biçimi aynı kalır.</translation>
 <translation id="1383493480903114193">Bu politika, ağ iletişimi kodunu tarayıcı işleminde çalışmaya zorlar.
@@ -599,11 +599,11 @@
 
           Pil gücüyle çalışırken, ekran kapatılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
-          Bu politika sıfırdan büyük bir değere ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> tarafından ekran kapatılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
+          Bu politika sıfırdan büyük bir değere ayarlanırsa <ph name="PRODUCT_OS_NAME" /> tarafından ekran kapatılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
 
-          Bu politika sıfıra ayarlanırsa, kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı kapatmaz.
+          Bu politika sıfıra ayarlanırsa kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı kapatmaz.
 
-          Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
+          Bu politika ayarlanmadan bırakılırsa varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinin altında veya o gecikmeye eşit olacak şekilde ayarlanır.</translation>
 <translation id="1962273523772270623">Google hizmetlerinden WebRTC olay günlüklerinin toplanmasına izin ver</translation>
@@ -647,11 +647,6 @@
           Bu ayar devre dışı bırakılırsa dosya aktarımına izin verilmez. Bu ayar etkinleştirilirse veya ayarlanmazsa dosya aktarımına izin verilir.</translation>
 <translation id="2057317273526988987">URL listesine erişimi engelle</translation>
 <translation id="2061810934846663491">Uzaktan erişim ana makineleri için gereken alan adlarını yapılandır</translation>
-<translation id="2063663607822994541">Bellekten tasarruf etmek için sekmelerin silinmeye başlamasından önce (sekme tarafından kullanılan bellek serbest kalır ve sekmeye geçiş yapıldığında sekmenin yeniden yüklenmesi gerekir) tek bir <ph name="PRODUCT_NAME" /> örneğinin kullanabileceği bellek miktarını yapılandırır.
-
-      Politika ayarlanırsa tarayıcı, sınır geçildikten sonra bellekten tasarruf etmek için sekmeleri silmeye başlar. Bununla birlikte, tarayıcının her zaman sınırın altında çalışacağına dair herhangi bir garanti yoktur. 2048'in altındaki değerler 2048'e yuvarlanır.
-
-      Bu politika ayarlanmazsa tarayıcı yalnızca makinesindeki fiziksel bellek miktarının düştüğünü algıladığında bellekten tasarruf etmeye çalışır.</translation>
 <translation id="206623763829450685"><ph name="PRODUCT_NAME" /> tarafından desteklenen HTTP kimlik doğrulaması şemalarını belirtir.
 
           Olası değerler "basic", "digest", "ntlm" ve "negotiate"dir. Birden çok değeri virgülle ayırın.
@@ -859,11 +854,11 @@
 
           AC güçle çalışırken, ekran kilitlenmeden önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
-          Bu politika sıfırdan büyük bir değere ayarlanırsa <ph name="PRODUCT_OS_NAME" /> tarafından ekran kilitlenmeden önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
+          Bu politika sıfırdan büyük bir değere ayarlanırsa belirlenmiş olan değer, <ph name="PRODUCT_OS_NAME" /> tarafından ekran kilitlenmeden önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
 
-          Bu politika sıfıra ayarlanırsa, kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı kilitlemez.
+          Bu politika sıfıra ayarlanırsa kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı kilitlemez.
 
-          Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
+          Bu politika ayarlanmadan bırakılırsa varsayılan süre kullanılır.
 
           Boşta kaldığında ekranı kilitlemenin önerilen yolu, askıya alındığında ekran kilidini etkinleştirmek ve boşta kalma gecikmesi ile ilgili süre dolduğunda <ph name="PRODUCT_OS_NAME" /> tarafından askıya alma işlemi yapılacak şekilde ayarlamaktır. Bu politika ancak ekran kilitleme işleminin askıya alma işleminden epey önce olması istendiğinde veya boşta kalma durumunda askıya alma işleminin hiç yapılmaması istendiğinde kullanılmalıdır.
 
@@ -943,7 +938,6 @@
       URL kalıbı, https://www.chromium.org/administrators/url-blacklist-filter-format adresindeki yönergelere göre biçimlendirilir. Bununla birlikte, sertifikalar şema, bağlantı noktası veya yoldan bağımsız olarak belirli bir ana makine adı için geçerli olduğundan, yalnızca URL'nin ana makine kısmı dikkate alınır. Joker karakter ana makine adları desteklenmez.
 
       Bu politika ayarlanmazsa Sertifika Şeffaflığı aracılığıyla açıklanması gereken tüm sertifikalar, Sertifika Şeffaflığı politikasına uygun şekilde açıklanmadıklarında güvenilmez olarak işlenir.</translation>
-<translation id="2486911595447603756">DNS-over-HTTPS modunu denetler.</translation>
 <translation id="2488010520405124654">Çevrimdışı iken ağ yapılandırma istemini etkinleştir.
 
       Bu politika ayarlanmazsa veya Doğru seçeneğine ayarlanırsa ve sıfır gecikmeli otomatik oturum açma için bir cihaz yerel hesabı yapılandırılırsa, cihazın İnternet erişimi olmaması durumunda <ph name="PRODUCT_OS_NAME" /> bir ağ yapılandırması istemi görüntüler.
@@ -1600,11 +1594,11 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 
           Pil gücüyle çalışırken, ekran kilitlenmeden önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
-          Bu politika sıfırdan büyük bir değere ayarlanırsa <ph name="PRODUCT_OS_NAME" /> tarafından ekran kilitlenmeden önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
+          Bu politika sıfırdan büyük bir değere ayarlanırsa belirlenmiş olan değer, <ph name="PRODUCT_OS_NAME" /> tarafından ekran kilitlenmeden önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
 
-          Bu politika sıfıra ayarlanırsa, kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı kilitlemez.
+          Bu politika sıfıra ayarlanırsa kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı kilitlemez.
 
-          Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
+          Bu politika ayarlanmadan bırakılırsa varsayılan süre kullanılır.
 
           Boşta kaldığında ekranı kilitlemenin önerilen yolu, askıya alındığında ekran kilidini etkinleştirmek ve boşta kalma gecikmesi ile ilgili süre dolduğunda <ph name="PRODUCT_OS_NAME" /> tarafından askıya alma işlemi yapılacak şekilde ayarlamaktır. Bu politika ancak ekran kilitleme işleminin askıya alma işleminden epey önce olması istendiğinde veya boşta kalma durumunda askıya alma işleminin hiç yapılmaması istendiğinde kullanılmalıdır.
 
@@ -2236,11 +2230,11 @@ politikayı geçersiz kılamaz.
 <translation id="4591366717022345234">Kullanıcılara Hızlı Düzeltme Derlemesi sağlayın.</translation>
 <translation id="4592246263545654202">Kullanıcının <ph name="PRODUCT_NAME" /> içinde Gizli modda sayfa açıp açamayacağını belirtir.
 
-      "Etkin" değeri seçilirse veya politika ayarlanmadan bırakılırsa, sayfalar Gizli modda açılabilir.
+      "Etkin" değeri seçilirse veya politika ayarlanmadan bırakılırsa sayfalar Gizli modda açılabilir.
 
-      "Devre Dışı" değeri seçilirse, sayfalar Gizli modda açılamaz.
+      "Devre Dışı" değeri seçilirse sayfalar Gizli modda açılamaz.
 
-      "Zorlama" seçeneği belirlenirse, sayfalar YALNIZCA Gizli modda açılabilir. "Zorlama" seçeneğinin yalnızca Android-on-Chrome'da çalıştığını unutmayın</translation>
+      "Zorlama" seçeneği belirlenirse sayfalar YALNIZCA Gizli modda açılabilir. "Zorlama" seçeneğinin yalnızca Android-on-Chrome'da çalıştığını unutmayın</translation>
 <translation id="4600786265870346112">Büyük imleci etkinleştir</translation>
 <translation id="4604931264910482931">Yerel mesajlaşma kara listesini yapılandır</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> cihazında meta etiket kontrolünü atla</translation>
@@ -2604,11 +2598,11 @@ politikayı geçersiz kılamaz.
 
           Pil gücüyle çalışırken, ekran karartılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
-          Bu politika sıfırdan büyük bir değere ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> tarafından ekran karartılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
+          Bu politika sıfırdan büyük bir değere ayarlanırsa <ph name="PRODUCT_OS_NAME" /> tarafından ekran karartılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
 
-          Bu politika sıfıra ayarlanırsa, kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı karartmaz.
+          Bu politika sıfıra ayarlanırsa kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı karartmaz.
 
-          Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
+          Bu politika ayarlanmadan bırakılırsa varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir. Değerler ekran kapanma gecikmesinden (ayarlanmışsa) ve boşta kalma gecikmesinden küçük veya ona eşit olacak şekilde bir aralığa sıkıştırılır.</translation>
 <translation id="527237119693897329">Hangi yerel mesajlaşma ana makinelerinin yüklenmemesi gerektiğini belirtmenize olanak sağlar.
@@ -3747,11 +3741,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Crostini'nin çalıştırılmasına izin verilmesi için üç politikanın da (VirtualMachinesAllowed, CrostiniAllowed ve DeviceUnaffiliatedCrostiniAllowed) true (doğru) değerine ayarlanması gerekir.
       Bu politika false (yanlış) olarak değiştirildiğinde, ayar yeni Crostini kapsayıcıların başlatılmasında geçerli olur, ancak halihazırda çalıştırılmakta olan kapsayıcıları kapatmaz.</translation>
 <translation id="7234280155140786597">Yasak yerel mesajlaşma ana makinelerinin adları (veya hepsi için *)</translation>
-<translation id="7236775576470542603">Giriş ekranında etkinleştirilen ekran büyütecinin varsayılan türünü ayarla.
-
-          Bu politika ayarlanırsa, giriş ekranı gösterildiğinde etkinleştirilen ekran büyütecinin türünü denetler. Politika "Yok" olarak ayarlanırsa, ekran büyüteci devre dışı bırakılır.
-          Bu politikayı ayarlarsanız, kullanıcılar ekran büyütecini etkinleştirip veya devre dışı bırakıp geçici olarak politikayı geçersiz kılabilir. Ancak, kullanıcının seçimi kalıcı değildir ve giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika boşta kalırsa varsayılan değer geri yüklenir.
-          Bu politika ayarlanmadan bırakılırsa, giriş ekranı ilk kez gösterildiğinde ekran büyüteci devre dışı olur. Kullanıcılar ekran büyütecini her zaman etkinleştirebilir veya devre dışı bırakabilir ve giriş ekranındaki ekran büyütecinin durumu kullanıcılar arasında kalıcıdır.</translation>
 <translation id="7249828445670652637">ARC uygulamalarına ilişkin <ph name="PRODUCT_OS_NAME" /> CA sertifikalarını etkinleştir</translation>
 <translation id="7251652588006515288">Bu politika, kullanıcıların Sertifika Yöneticisi'ni kullanarak istemci sertifikaları içe aktarmalarının ve kaldırmalarının mümkün olup olmadığını kontrol eder.
 
@@ -4512,11 +4501,11 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
           AC güçle çalışırken, ekran karartılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
-          Bu politika sıfırdan büyük bir değere ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> tarafından ekran karartılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
+          Bu politika sıfırdan büyük bir değere ayarlanırsa <ph name="PRODUCT_OS_NAME" /> tarafından ekran karartılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
 
-          Bu politika sıfıra ayarlanırsa, kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı karartmaz.
+          Bu politika sıfıra ayarlanırsa kullanıcı boşta kaldığında <ph name="PRODUCT_OS_NAME" /> ekranı karartmaz.
 
-          Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
+          Bu politika ayarlanmadan bırakılırsa varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir. Değerler ekran kapanma gecikmesinden (ayarlanmışsa) ve boşta kalma gecikmesinden küçük veya ona eşit olacak şekilde bir aralığa sıkıştırılır.</translation>
 <translation id="8625234016727663537">Giriş ekranında sağlanan tedarikçi ve ürün kimliklerine sahip USB cihazlarına otomatik olarak erişmesine izin verilecek sitelerin sıralandığı bir URL listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de URL'leri içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik, bir istisna dışında (aynı anda tedarikçi kimliği de belirtilmeden bir ürün kimliği belirtilemez) özel bir durum olarak değerlendirilir. Aksi halde politika geçerli olmaz ve yok sayılır.
@@ -4676,7 +4665,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
           Bu politika ayarlandığında, <ph name="PRODUCT_OS_NAME" /> tarafından boşta kalma işleminin (ayrı olarak yapılandırılabilir) uygulanmasından önce kullanıcının boşta kalması gereken süreyi belirtir.
 
-          Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
+          Bu politika ayarlanmadan bırakılırsa varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir.</translation>
 <translation id="8929997566627164343">Bu politikanın artık kullanılmadığını ve <ph name="PRODUCT_OS_NAME" /> sürüm 82'de kaldırılacağını unutmayın. Lütfen bunun yerine <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> politikasını kullanın.
@@ -4685,7 +4674,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
           Bu politika ayarlandığında, <ph name="PRODUCT_OS_NAME" /> tarafından boşta kalma işleminin (ayrı olarak yapılandırılabilir) uygulanmasından önce kullanıcının boşta kalması gereken süreyi belirtir.
 
-          Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
+          Bu politika ayarlanmadan bırakılırsa varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir.</translation>
 <translation id="8934944553121392674">Kullanıcıların <ph name="DEVICE_PRINTERS_POLICY" /> politikasındaki hangi yazıcıları kullanabileceğini kontrol eder.

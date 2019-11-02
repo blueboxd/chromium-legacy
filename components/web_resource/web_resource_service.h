@@ -16,13 +16,13 @@
 #include "base/memory/weak_ptr.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "url/gurl.h"
 
 class PrefService;
 
 namespace base {
 class DictionaryValue;
-class Value;
 }
 
 namespace network {
@@ -36,12 +36,6 @@ namespace web_resource {
 // refreshes it.
 class WebResourceService : public ResourceRequestAllowedNotifier::Observer {
  public:
-  // Callbacks for JSON parsing.
-  using SuccessCallback = base::OnceCallback<void(base::Value)>;
-  using ErrorCallback = base::OnceCallback<void(const std::string&)>;
-  using ParseJSONCallback = base::RepeatingCallback<
-      void(const std::string&, SuccessCallback, ErrorCallback)>;
-
   // Creates a new WebResourceService.
   // If |application_locale| is not empty, it will be appended as a locale
   // parameter to the resource URL.
@@ -54,7 +48,6 @@ class WebResourceService : public ResourceRequestAllowedNotifier::Observer {
       int cache_update_delay_ms,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const char* disable_network_switch,
-      const ParseJSONCallback& parse_json_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       ResourceRequestAllowedNotifier::NetworkConnectionTrackerGetter
           network_connection_tracker_getter);
@@ -92,9 +85,8 @@ class WebResourceService : public ResourceRequestAllowedNotifier::Observer {
   // Set |in_fetch_| to false, clean up temp directories (in the future).
   void EndFetch();
 
-  // Callbacks from the JSON parser.
-  void OnUnpackFinished(base::Value value);
-  void OnUnpackError(const std::string& error_message);
+  // Callback from the JSON parser.
+  void OnJsonParsed(data_decoder::DataDecoder::ValueOrError result);
 
   // Implements ResourceRequestAllowedNotifier::Observer.
   void OnResourceRequestsAllowed() override;
@@ -137,9 +129,6 @@ class WebResourceService : public ResourceRequestAllowedNotifier::Observer {
 
   // The URL loader factory for the resource load.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-
-  // Callback used to parse JSON.
-  ParseJSONCallback parse_json_callback_;
 
   // Network traffic annotation for initialization of URLFetcher.
   const net::NetworkTrafficAnnotationTag traffic_annotation_;

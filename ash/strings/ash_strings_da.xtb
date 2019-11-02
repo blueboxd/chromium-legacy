@@ -120,7 +120,7 @@
 <translation id="2532589005999780174">Tilstanden Høj kontrast</translation>
 <translation id="2542089167727451762">Tryk på dit profilbillede</translation>
 <translation id="255671100581129685">Google Assistent er ikke tilgængelig i en offentlig session.</translation>
-<translation id="256712445991462162">det fastgjorte lupvindue</translation>
+<translation id="256712445991462162">den fastgjorte lup</translation>
 <translation id="2575685495496069081">Samlet login fra flere konti er deaktiveret</translation>
 <translation id="2582112259361606227">Genstart for at opdatere</translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
@@ -300,6 +300,7 @@
 <translation id="5302048478445481009">Sprog</translation>
 <translation id="5313326810920013265">Indstillinger for Bluetooth</translation>
 <translation id="5331975486040154427">USB-C-enhed (porten bagpå i venstre side)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">For mange forsøg</translation>
 <translation id="5397578532367286026">Denne brugers forbrug og historik kan ses af administratoren (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
 <translation id="5430931332414098647">Øjeblikkelig netdeling</translation>
@@ -322,6 +323,7 @@
 <translation id="5682642926269496722">Google Assistent er ikke tilgængelig for den aktuelle brugerkonto.</translation>
 <translation id="5691772641933328258">Fingeraftrykket kunne ikke genkendes</translation>
 <translation id="5710450975648804523">Forstyr ikke er aktiveret</translation>
+<translation id="573413375004481890">Denne enhed kunne ikke understøtte alle dine skærme, så tilslutningen af en af dem blev fjernet</translation>
 <translation id="574392208103952083">Mellem</translation>
 <translation id="5744083938413354016">Tryk og træk</translation>
 <translation id="5750765938512549687">Bluetooth er slået fra</translation>

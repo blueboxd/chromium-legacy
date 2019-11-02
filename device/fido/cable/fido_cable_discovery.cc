@@ -447,13 +447,6 @@ void FidoCableDiscovery::StartAdvertisement() {
             base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegisterError,
                            weak_factory_.GetWeakPtr())));
   }
-
-  if (!advertisements_pending) {
-    // If no V1 extensions were provided then this discovery is ready
-    // immediately. Otherwise |NotifyDiscoveryStarted| will be called once
-    // all the advertising requests have been resolved.
-    NotifyDiscoveryStarted(true);
-  }
 }
 
 void FidoCableDiscovery::StopAdvertisements(base::OnceClosure callback) {
@@ -489,14 +482,10 @@ void FidoCableDiscovery::OnAdvertisementRegisterError(
 void FidoCableDiscovery::RecordAdvertisementResult(bool is_success) {
   // If at least one advertisement succeeds, then notify discovery start.
   if (is_success) {
-    if (!advertisement_success_counter_++)
-      NotifyDiscoveryStarted(true);
-    return;
+    advertisement_success_counter_++;
+  } else {
+    advertisement_failure_counter_++;
   }
-
-  // No advertisements succeeded, no point in continuing with Cable discovery.
-  if (++advertisement_failure_counter_ == discovery_data_.size())
-    NotifyDiscoveryStarted(false);
 }
 
 void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,

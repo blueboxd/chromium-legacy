@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 
 import java.util.HashSet;
@@ -267,13 +265,6 @@ public class ChromePreferenceManager {
 
     /** Key for deferred recording of list of uninstalled WebAPK packages. */
     public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
-
-    /**
-     * Whether or not the tab group UI improvement is enabled.
-     * Default value is false.
-     */
-    public static final String TAB_GROUPS_UI_IMPROVEMENTS_ANDROID_ENABLED_KEY =
-            "tab_group_ui_improvements_android_enabled";
 
     /**
      * Key for whether it allows to start in service manager only mode.
@@ -585,31 +576,6 @@ public class ChromePreferenceManager {
     @Deprecated
     public boolean readBoolean(String key, boolean defaultValue) {
         return mManager.readBoolean(key, defaultValue);
-    }
-
-    /**
-     * Writes the given string to the named shared preference.
-     *
-     * @param key The name of the preference to modify.
-     * @param value The new value for the preference.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void writeString(String key, String value) {
-        mManager.writeString(key, value);
-    }
-
-    /**
-     * Reads the given String value from the named shared preference.
-     *
-     * @param key The name of the preference to return.
-     * @param defaultValue The default value to return if there's no value stored.
-     * @return The value of the preference if stored; defaultValue otherwise.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public String readString(String key, @Nullable String defaultValue) {
-        return mManager.readString(key, defaultValue);
     }
 
     /**

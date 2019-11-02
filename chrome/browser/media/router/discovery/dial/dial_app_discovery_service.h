@@ -22,8 +22,6 @@
 
 namespace media_router {
 
-class DataDecoder;
-
 // Represents DIAL app status on receiver device.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -64,7 +62,7 @@ class DialAppDiscoveryService {
                               const std::string& app_name,
                               DialAppInfoResult result)>;
 
-  explicit DialAppDiscoveryService(DataDecoder* data_decoder);
+  DialAppDiscoveryService();
 
   virtual ~DialAppDiscoveryService();
 

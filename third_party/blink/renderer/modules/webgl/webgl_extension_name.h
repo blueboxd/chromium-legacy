@@ -22,6 +22,7 @@ enum WebGLExtensionName {
   kKHRParallelShaderCompileName,
   kEXTTextureFilterAnisotropicName,
   kOESElementIndexUintName,
+  kOESFboRenderMipmapName,
   kOESStandardDerivativesName,
   kOESTextureFloatLinearName,
   kOESTextureFloatName,

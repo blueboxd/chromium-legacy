@@ -18,7 +18,6 @@
 #include "base/test/mock_callback.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "chrome/browser/media/router/providers/cast/mock_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/test_util.h"
@@ -31,10 +30,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/data_decoder/data_decoder_service.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -115,7 +111,6 @@ class CastActivityManagerTest : public testing::Test,
     manager_ = std::make_unique<CastActivityManager>(
         &media_sink_service_, session_tracker_.get(), &message_handler_,
         router_remote_.get(),
-        std::make_unique<DataDecoder>(connector_factory_.GetDefaultConnector()),
         "theHashToken");
 
     RunUntilIdle();
@@ -305,8 +300,7 @@ class CastActivityManagerTest : public testing::Test,
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
-  service_manager::TestConnectorFactory connector_factory_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   MockMojoMediaRouter mock_router_;
   mojo::Remote<mojom::MediaRouter> router_remote_;
   std::unique_ptr<mojo::Receiver<mojom::MediaRouter>> router_receiver_;

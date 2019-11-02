@@ -10,7 +10,7 @@
 
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
-#include "services/data_decoder/public/cpp/test_data_decoder_service.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -87,7 +87,7 @@ class ExtensionDownloaderTestHelper {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
-  data_decoder::TestDataDecoderService test_data_decoder_service_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   MockExtensionDownloaderDelegate delegate_;
   ExtensionDownloader downloader_;
 

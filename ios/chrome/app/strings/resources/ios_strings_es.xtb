@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Menú más</translation>
 <translation id="2316709634732130529">Utilizar la contraseña sugerida</translation>
 <translation id="2320166752086256636">Ocultar teclado</translation>
+<translation id="2330129964253841015">Avisar si las contraseñas están en riesgo</translation>
 <translation id="2339560363438331454">Servicios de Google y sincronización</translation>
 <translation id="2351097562818989364">Se han restablecido tus ajustes de traducción.</translation>
 <translation id="2359043044084662842">Traducir</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Guardar imagen</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="385051799172605136">Atrás</translation>
-<translation id="3886946236301294521">Te avisa si alguna de tus contraseñas se ha visto afectada por una quiebra de seguridad de datos.</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3915450441834151894">Información del sitio web</translation>
 <translation id="3922310737605261887">Buscar el texto copiado</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Páginas que has leído</translation>
 <translation id="4630540211544979320">Traducir páginas</translation>
 <translation id="4636930964841734540">Información</translation>
+<translation id="4659126640776004816">Esta función se activará cuando inicies sesión en tu cuenta de Google.</translation>
 <translation id="4659667755519643272">Acceder a la función de cambio de pestaña</translation>
 <translation id="4666531726415300315">Has iniciado sesión como <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
-<translation id="5365716706805792666">Google puede comprobar si tus contraseñas se han visto afectadas por una quiebra de seguridad de datos. Esta función se activará cuando inicies sesión con tu cuenta de Google.</translation>
 <translation id="5388358297987318779">Abrir imagen</translation>
 <translation id="5407969256130905701">Descartar cambios</translation>
 <translation id="5409365236829784218">Ninguna aplicación instalada puede abrir este archivo.</translation>
@@ -333,7 +333,6 @@ Handoff también debe estar habilitado en la sección General de Configuración,
 <translation id="5854790677617711513">Más de 30 días</translation>
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5857770089550859117">Se requiere una frase de contraseña para iniciar la sincronización.</translation>
-<translation id="5859444426865731878">Google puede comprobar si tus contraseñas se han visto afectadas por una quiebra de seguridad de datos.</translation>
 <translation id="5860033963881614850">No</translation>
 <translation id="5869029295770560994">Entendido</translation>
 <translation id="5871497086027727873">1 elemento eliminado</translation>
@@ -483,7 +482,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7859704718976024901">Historial de navegación</translation>
 <translation id="7887198238286927132">Para proteger tu privacidad, Chrome no autocompletará este campo.</translation>
 <translation id="7918293828610777738">Tu lista de lectura está disponible sin conexión. Para añadir una página a la lista, toca <ph name="SHARE_OPENING_ICON" /> y, a continuación, <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Comprobar la seguridad de la contraseña</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportar contraseñas...</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>

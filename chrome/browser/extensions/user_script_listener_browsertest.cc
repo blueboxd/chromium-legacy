@@ -7,10 +7,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "extensions/browser/notification_types.h"
 
 namespace extensions {
 
@@ -39,10 +37,9 @@ IN_PROC_BROWSER_TEST_F(UserScriptListenerTest,
   ASSERT_TRUE(start_observer.navigation_handle());
   EXPECT_TRUE(start_observer.navigation_handle()->IsDeferredForTesting());
 
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
-      content::Source<Profile>(&profile),
-      content::NotificationService::NoDetails());
+  ExtensionsBrowserClient::Get()
+      ->GetUserScriptListener()
+      ->TriggerUserScriptsReadyForTesting(&profile);
 
   nav_observer.Wait();
 }

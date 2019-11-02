@@ -12,6 +12,8 @@
 #include "build/build_config.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
+#include "content/browser/field_trial_recorder.h"
+#include "content/common/field_trial_recorder.mojom.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/system_connector.h"
@@ -82,6 +84,12 @@ void BrowserChildProcessHostImpl::BindHostReceiver(
     return;
   }
 #endif
+
+  if (auto r = receiver.As<mojom::FieldTrialRecorder>()) {
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&FieldTrialRecorder::Create, std::move(r)));
+    return;
+  }
 
   if (auto r = receiver.As<
                discardable_memory::mojom::DiscardableSharedMemoryManager>()) {

@@ -90,6 +90,7 @@ class SimpleFeature : public Feature {
     COMPONENT_LOCATION,
     EXTERNAL_COMPONENT_LOCATION,
     POLICY_LOCATION,
+    UNPACKED_LOCATION,
   };
 
   // Setters used by generated code to create the feature.

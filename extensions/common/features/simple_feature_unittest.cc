@@ -549,6 +549,8 @@ TEST_F(SimpleFeatureTest, Location) {
                                   Manifest::COMPONENT));
   EXPECT_TRUE(
       LocationIsAvailable(SimpleFeature::POLICY_LOCATION, Manifest::COMPONENT));
+  EXPECT_TRUE(LocationIsAvailable(SimpleFeature::UNPACKED_LOCATION,
+                                  Manifest::COMPONENT));
 
   // Only component extensions can access the "component" location.
   EXPECT_FALSE(LocationIsAvailable(SimpleFeature::COMPONENT_LOCATION,
@@ -584,6 +586,15 @@ TEST_F(SimpleFeatureTest, Location) {
   // location.
   EXPECT_TRUE(LocationIsAvailable(SimpleFeature::EXTERNAL_COMPONENT_LOCATION,
                                   Manifest::EXTERNAL_COMPONENT));
+
+  // Only unpacked and command line extensions can access the "unpacked"
+  // location.
+  EXPECT_TRUE(LocationIsAvailable(SimpleFeature::UNPACKED_LOCATION,
+                                  Manifest::UNPACKED));
+  EXPECT_TRUE(LocationIsAvailable(SimpleFeature::UNPACKED_LOCATION,
+                                  Manifest::COMMAND_LINE));
+  EXPECT_FALSE(LocationIsAvailable(SimpleFeature::UNPACKED_LOCATION,
+                                   Manifest::INTERNAL));
 }
 
 TEST_F(SimpleFeatureTest, Platform) {

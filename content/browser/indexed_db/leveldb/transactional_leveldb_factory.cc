@@ -4,11 +4,11 @@
 
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 
+#include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
-#include "content/browser/indexed_db/scopes/leveldb_scope.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 
 namespace content {
 

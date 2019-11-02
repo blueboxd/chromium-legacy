@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACCOUNT_ICON_CONTAINER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACCOUNT_ICON_CONTAINER_VIEW_H_
 
-#include "base/macros.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
@@ -20,6 +19,10 @@ class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
                                         public PageActionIconView::Delegate {
  public:
   explicit ToolbarAccountIconContainerView(Browser* browser);
+  ToolbarAccountIconContainerView(const ToolbarAccountIconContainerView&) =
+      delete;
+  ToolbarAccountIconContainerView& operator=(
+      const ToolbarAccountIconContainerView&) = delete;
   ~ToolbarAccountIconContainerView() override;
 
   // ToolbarIconContainerView:
@@ -53,8 +56,6 @@ class ToolbarAccountIconContainerView : public ToolbarIconContainerView,
   AvatarToolbarButton* const avatar_ = nullptr;
 
   Browser* const browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarAccountIconContainerView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACCOUNT_ICON_CONTAINER_VIEW_H_

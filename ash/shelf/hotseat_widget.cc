@@ -186,6 +186,14 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
   delegate_view_->Init(scrollable_shelf_view(), GetLayer());
 }
 
+void HotseatWidget::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void HotseatWidget::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void HotseatWidget::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
@@ -229,6 +237,15 @@ ShelfView* HotseatWidget::GetShelfView() {
 const ShelfView* HotseatWidget::GetShelfView() const {
   return const_cast<const ShelfView*>(
       const_cast<HotseatWidget*>(this)->GetShelfView());
+}
+
+void HotseatWidget::SetState(HotseatState state) {
+  if (state_ == state)
+    return;
+
+  state_ = state;
+  for (auto& observer : observers_)
+    observer.OnHotseatStateChanged();
 }
 
 bool HotseatWidget::IsShowingOverflowBubble() const {

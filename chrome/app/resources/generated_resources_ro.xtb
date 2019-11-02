@@ -1391,7 +1391,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="2989786307324390836">Certificat unic, sub formă de fișier binar cu codificarea DER</translation>
 <translation id="2992931425024192067">Afișează integral conținutul notificărilor</translation>
 <translation id="2993517869960930405">Informații despre aplicație</translation>
-<translation id="299483336428448530">Instalată de părinte.</translation>
 <translation id="2996286169319737844">Datele sunt criptate cu expresia ta de acces pentru sincronizare. Acest lucru nu este valabil pentru metodele de plată și adresele din Google Pay.</translation>
 <translation id="2996722619877761919">Răstoarnă pe lungime</translation>
 <translation id="3003144360685731741">Rețele preferate</translation>
@@ -2003,7 +2002,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3873315167136380065">Ca să activezi această opțiune, <ph name="BEGIN_LINK" />resetează sincronizarea<ph name="END_LINK" /> pentru a elimina expresia de acces pentru sincronizare</translation>
 <translation id="3873423927483480833">Afișează codurile PIN</translation>
 <translation id="3873915545594852654">A apărut o eroare la ARC++.</translation>
-<translation id="387924939625099872">Pentru a dezactiva ADB, repornește <ph name="DEVICE_TYPE" />. Acesta va reveni la setările din fabrică și toate conturile de utilizator și datele locale vor fi eliminate.</translation>
+<translation id="387924939625099872">Pentru a dezactiva ADB, repornește dispozitivul <ph name="DEVICE_TYPE" />. Acesta va reveni la setările din fabrică și toate conturile de utilizator și datele locale vor fi eliminate.</translation>
 <translation id="3879748587602334249">Manager de descărcări</translation>
 <translation id="3886446263141354045">Solicitarea de a accesa acest site a fost trimisă către <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Scriere de notițe cu <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -3318,7 +3317,7 @@ Asigură-te că site-ul este de încredere înainte să intri în RV.</translati
 <translation id="5860494867054883682">Se actualizează dispozitivul la canalul <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Afișează pe raft instrumentele pentru creion</translation>
 <translation id="5863445608433396414">Activează funcțiile de remediere a erorilor</translation>
-<translation id="5863471434640009253">Pentru a activa Android Debug Bridge, mai întâi repornește <ph name="DEVICE_TYPE" />. Dezactivarea ADB necesită revenirea la setările din fabrică.</translation>
+<translation id="5863471434640009253">Pentru a activa Android Debug Bridge, mai întâi repornește dispozitivul <ph name="DEVICE_TYPE" />. Dezactivarea ADB necesită revenirea la setările din fabrică.</translation>
 <translation id="5864471791310927901">Căutarea DHCP nu a reușit</translation>
 <translation id="586567932979200359">Rulează <ph name="PRODUCT_NAME" /> din imaginea sa de pe disc. Instalarea sa pe computer îți permite să îl rulezi fără imaginea de pe disc și asigură actualizarea acestuia.</translation>
 <translation id="5865733239029070421">Trimite automat statistici de utilizare și rapoarte de blocare la Google</translation>
@@ -3661,7 +3660,6 @@ Asigură-te că site-ul este de încredere înainte să intri în RV.</translati
 <translation id="63566973648609420">Numai un utilizator care are expresia de acces poate citi datele criptate. Expresia de acces nu este trimisă sau stocată la Google. Dacă uiți expresia de acces sau dorești să modifici această setare, va fi necesar să <ph name="BEGIN_LINK" />resetezi sincronizarea<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Bun venit în familia <ph name="SHORT_PRODUCT_NAME" />. Acesta nu este un computer obișnuit.</translation>
 <translation id="6358884629796491903">Dragon</translation>
-<translation id="6360079014182882594">Site-ul nu acceptă cookie-urile care pot fi folosite pentru a te urmări pe web</translation>
 <translation id="6361850914223837199">Detaliile erorii:</translation>
 <translation id="6362853299801475928">&amp;Raportează o problemă...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -5021,6 +5019,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8319414634934645341">Utilizare de cheie extinsă</translation>
 <translation id="8320459152843401447">Tot ecranul</translation>
 <translation id="8322814362483282060">Accesul acestei pagini la microfonul dvs. a fost blocat.</translation>
+<translation id="8323167517179506834">Introduceți adresa URL</translation>
 <translation id="8326478304147373412">PKCS #7, lanț de certificate</translation>
 <translation id="8327039559959785305">Eroare la instalarea fișierelor Linux. Încearcă din nou.</translation>
 <translation id="8335587457941836791">Anulați fixarea din raft</translation>
@@ -5137,6 +5136,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8509646642152301857">Descărcarea dicționarului de verificare ortografică nu a reușit.</translation>
 <translation id="8512476990829870887">Opriți procesul</translation>
 <translation id="851263357009351303">Permite întotdeauna afișarea de imagini de la <ph name="HOST" /></translation>
+<translation id="8513108775083588393">Rotire automată</translation>
 <translation id="8514746246728959655">Încearcă altă cheie de securitate</translation>
 <translation id="8521475323816527629">Accesează rapid aplicațiile</translation>
 <translation id="8523493869875972733">Păstrează modificările</translation>

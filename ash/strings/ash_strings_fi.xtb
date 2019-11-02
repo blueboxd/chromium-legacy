@@ -300,6 +300,7 @@
 <translation id="5302048478445481009">Kieli</translation>
 <translation id="5313326810920013265">Bluetooth-asetukset</translation>
 <translation id="5331975486040154427">C-tyypin USB-laite (vasemman sivun taaimmainen portti)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Liian monta yritystä</translation>
 <translation id="5397578532367286026">Hallinnoija (<ph name="MANAGER_EMAIL" />) voi tarkkailla tämän käyttäjän käyttö- ja historiatietoja osoitteessa chrome.com.</translation>
 <translation id="5430931332414098647">Yhteyden pikajakaminen</translation>
@@ -322,6 +323,7 @@
 <translation id="5682642926269496722">Google Assistantia ei voi käyttää nykyisellä käyttäjätilillä.</translation>
 <translation id="5691772641933328258">Sormenjälkeä ei tunnistettu</translation>
 <translation id="5710450975648804523">Älä häiritse ‑tila on käytössä</translation>
+<translation id="573413375004481890">Tämä laite ei voinut tukea kaikkia näyttöjäsi, joten yhden yhteys on katkaistu</translation>
 <translation id="574392208103952083">Keskikoko</translation>
 <translation id="5744083938413354016">Napauttamalla vetäminen</translation>
 <translation id="5750765938512549687">Bluetooth ei ole käytössä</translation>

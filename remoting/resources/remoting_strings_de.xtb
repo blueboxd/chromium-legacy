@@ -229,7 +229,7 @@ Falls neben "<ph name="SERVICE_SCRIPT_NAME" />" schon ein Haken gesetzt ist, ent
 <translation id="6304318647555713317">Client</translation>
 <translation id="6381670701864002291">Sonstige</translation>
 <translation id="6398765197997659313">Vollbildmodus beenden</translation>
-<translation id="6411861157501911556">Sie müssen eine Berechtigung für die Bedienungshilfen erteilen, um <ph name="PRODUCT_NAME" /> zu verwenden. Erst dann kann die Eingabe vom Remote-Computer auf diesem Mac eingefügt werden.
+<translation id="6411861157501911556">Sie müssen eine Berechtigung für die Bedienungshilfen erteilen, um <ph name="PRODUCT_NAME" /> zu verwenden. Erst dann kann dieser Mac über Eingaben vom Remote-Computer gesteuert werden.
 
 Klicken Sie zum Erteilen dieser Berechtigung auf "<ph name="BUTTON_NAME" />" unten, um die Einstellungen für die "Bedienungshilfen" zu öffnen. Klicken Sie dann das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" an.
 

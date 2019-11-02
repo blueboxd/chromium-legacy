@@ -153,6 +153,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="2063539687800151747">Epígrafe</translation>
 <translation id="207477615537953741">Interpretação semântica desativada</translation>
 <translation id="2086961585857038472">Próxima palavra</translation>
+<translation id="2087981446621639008">dtl lstdscr</translation>
 <translation id="2089387485033699258">pt-BR</translation>
 <translation id="2091933974477985526">Área de texto editável anterior</translation>
 <translation id="2100350898815792233">Todos os indicadores de pontuação</translation>
@@ -193,6 +194,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="2416512023405990736">Uma caixa de seleção desmarcada</translation>
 <translation id="2417569100218200841">Informações sobre o conteúdo</translation>
 <translation id="2417948780551741035">Notas finais</translation>
+<translation id="2419852971200420169">Lista de descrição</translation>
 <translation id="2421113964388408478">Exclusão</translation>
 <translation id="2422937916923936891">Caixa de seleção de item de menu</translation>
 <translation id="2428534162001909979">Menus de comando</translation>
@@ -371,6 +373,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="3497063866483065785">{COUNT,plural, =1{ponto de interrogação}one{# pontos de interrogação}other{# pontos de interrogação}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{acento circunflexo}one{# acentos circunflexos}other{# acentos circunflexos}}</translation>
 <translation id="352577523970648069">Um campo de texto editável</translation>
+<translation id="3538907380453898475">lstdscr</translation>
 <translation id="3549141990712742152">Cortar <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Toque com dois dedos para interromper temporariamente a fala</translation>
 <translation id="3568702578574425662">Caixa de seleção <ph name="NAME" /> não marcada</translation>
@@ -779,6 +782,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="6378394210114975876">Cardo</translation>
 <translation id="6385591741672306837">col</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">Desativar todos os filtros de evento</translation>
 <translation id="6411426777058107714">Nenhum botão de opção anterior.</translation>
 <translation id="6414968628640960377">Elemento diferente anterior.</translation>
 <translation id="6417265370957905582">Google Assistente</translation>
@@ -914,6 +918,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="7332592614823088566">Linha <ph name="ROWINDEX" /> de <ph name="ROWTOTAL" />, Coluna <ph name="COLINDEX" /> de <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">possui pop-up</translation>
 <translation id="7356165926712028380">Alternar para braille de oito pontos</translation>
+<translation id="7356610683936413584">Detalhe da lista de descrição</translation>
 <translation id="7362871137496673139">Nenhum cabeçalho anterior de nível 2.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{sinal de "E" comercial}one{# indicadores de "E" comercial}other{# indicadores de "E" comercial}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="8096975275316362544">Menta</translation>
 <translation id="8098587210054821856">Cinza-ardósia</translation>
 <translation id="8110647606445335195">Nenhum ponto de referência ARIA.</translation>
+<translation id="8121539003537428024">Ativar todos os filtros de evento</translation>
 <translation id="812886159861361726">Download de <ph name="FILE_NAME" /> interrompido</translation>
 <translation id="8138880386467279117">Tocar</translation>
 <translation id="8153880621934657047">Não está dentro da tabela.</translation>

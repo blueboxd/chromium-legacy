@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/frame_service_base.h"
 #include "media/mojo/mojom/cast_application_media_info_manager.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
 class RenderFrameHost;
@@ -29,7 +30,8 @@ class ApplicationMediaInfoManager
  public:
   ApplicationMediaInfoManager(
       content::RenderFrameHost* render_frame_host,
-      ::media::mojom::CastApplicationMediaInfoManagerRequest request,
+      mojo::PendingReceiver<::media::mojom::CastApplicationMediaInfoManager>
+          receiver,
       std::string application_session_id,
       bool mixer_audio_enabled);
   ~ApplicationMediaInfoManager() override;
@@ -55,7 +57,8 @@ void CreateApplicationMediaInfoManager(
     content::RenderFrameHost* render_frame_host,
     std::string application_session_id,
     bool mixer_audio_enabled,
-    ::media::mojom::CastApplicationMediaInfoManagerRequest request);
+    mojo::PendingReceiver<::media::mojom::CastApplicationMediaInfoManager>
+        receiver);
 
 }  // namespace media
 }  // namespace chromecast

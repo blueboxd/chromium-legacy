@@ -4,25 +4,63 @@
 
 #include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
 
+#include <string>
+
+#include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace media_router {
+
+namespace {
+
+void ParseJsonFromDecoderThread(
+    const std::string& json,
+    data_decoder::DataDecoder::ValueParseCallback callback) {
+  GetDataDecoder().ParseJson(json, std::move(callback));
+}
+
+void ForwardParseResultToTaskRunner(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    data_decoder::DataDecoder::ValueParseCallback callback,
+    data_decoder::DataDecoder::ValueOrError result) {
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(callback), std::move(result)));
+}
+
+// The CastMessageHandler calls this from the IO thread, but the Media router's
+// DataDecoder client instance lives on the UI thread.
+void ParseJsonFromIoThread(
+    const std::string& json,
+    data_decoder::DataDecoder::ValueParseCallback callback) {
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&ParseJsonFromDecoderThread, json,
+                     base::BindOnce(&ForwardParseResultToTaskRunner,
+                                    base::SequencedTaskRunnerHandle::Get(),
+                                    std::move(callback))));
+}
+
+}  // namespace
 
 cast_channel::CastMessageHandler* GetCastMessageHandler() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   static cast_channel::CastMessageHandler* instance =
       new cast_channel::CastMessageHandler(
           cast_channel::CastSocketService::GetInstance(),
-          content::GetSystemConnector()->Clone(), kDataDecoderServiceBatchId,
-          GetUserAgent(), version_info::GetVersionNumber(),
+          base::BindRepeating(&ParseJsonFromIoThread), GetUserAgent(),
+          version_info::GetVersionNumber(),
           g_browser_process->GetApplicationLocale());
   return instance;
 }

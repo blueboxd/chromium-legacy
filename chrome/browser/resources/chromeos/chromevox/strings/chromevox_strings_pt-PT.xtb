@@ -153,6 +153,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="2063539687800151747">Epígrafe</translation>
 <translation id="207477615537953741">Semântica desativada</translation>
 <translation id="2086961585857038472">Palavra seguinte</translation>
+<translation id="2087981446621639008">dtl lstdscrções</translation>
 <translation id="2089387485033699258">pt-PT</translation>
 <translation id="2091933974477985526">Área de texto editável anterior</translation>
 <translation id="2100350898815792233">Pontuação total</translation>
@@ -193,6 +194,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="2416512023405990736">Uma caixa de verificação desselecionada</translation>
 <translation id="2417569100218200841">Informações do conteúdo</translation>
 <translation id="2417948780551741035">Notas finais</translation>
+<translation id="2419852971200420169">Lista de descrições</translation>
 <translation id="2421113964388408478">Eliminação</translation>
 <translation id="2422937916923936891">Caixa de verificação do item de menu</translation>
 <translation id="2428534162001909979">Menus de comandos</translation>
@@ -371,6 +373,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3497063866483065785">{COUNT,plural, =1{ponto de interrogação}other{# pontos de interrogação}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{acento circunflexo}other{# acentos circunflexos}}</translation>
 <translation id="352577523970648069">Um campo de texto editável</translation>
+<translation id="3538907380453898475">lstdscrções</translation>
 <translation id="3549141990712742152">corte <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Toque com 2 dedos para parar temporariamente a voz.</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, caixa de verificação não marcada</translation>
@@ -779,6 +782,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="6378394210114975876">Cardo</translation>
 <translation id="6385591741672306837">coluna</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">Desative todos os filtros de eventos</translation>
 <translation id="6411426777058107714">Não existe nenhum botão de opção anterior.</translation>
 <translation id="6414968628640960377">Elemento diferente anterior.</translation>
 <translation id="6417265370957905582">Assistente Google</translation>
@@ -914,6 +918,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="7332592614823088566">Linha <ph name="ROWINDEX" /> de <ph name="ROWTOTAL" />, coluna <ph name="COLINDEX" /> de <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">inclui pop-up</translation>
 <translation id="7356165926712028380">Mudar para braille de 8 pontos</translation>
+<translation id="7356610683936413584">Detalhe da lista de descrições</translation>
 <translation id="7362871137496673139">Não existe nenhum título de nível 2 anterior.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{e comercial}other{# e comerciais}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8096975275316362544">Verde-menta claro</translation>
 <translation id="8098587210054821856">Cinzento-ardósia</translation>
 <translation id="8110647606445335195">Não existe nenhum ponto de referência ARIA.</translation>
+<translation id="8121539003537428024">Ative todos os filtros de eventos</translation>
 <translation id="812886159861361726">A transferência do ficheiro <ph name="FILE_NAME" /> foi interrompida</translation>
 <translation id="8138880386467279117">Tocar</translation>
 <translation id="8153880621934657047">Não está dentro da tabela.</translation>

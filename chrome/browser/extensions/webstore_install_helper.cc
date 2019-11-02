@@ -11,7 +11,6 @@
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 using content::BrowserThread;
 

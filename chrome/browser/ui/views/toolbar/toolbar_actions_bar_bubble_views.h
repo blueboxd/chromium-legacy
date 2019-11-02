@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
@@ -27,6 +26,9 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
       views::View* anchor_view,
       bool anchored_to_action,
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate);
+  ToolbarActionsBarBubbleViews(const ToolbarActionsBarBubbleViews&) = delete;
+  ToolbarActionsBarBubbleViews& operator=(const ToolbarActionsBarBubbleViews&) =
+      delete;
   ~ToolbarActionsBarBubbleViews() override;
 
   void Show();
@@ -59,8 +61,6 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   views::Label* item_list_ = nullptr;
   views::ImageButton* learn_more_button_ = nullptr;
   const bool anchored_to_action_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarBubbleViews);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTIONS_BAR_BUBBLE_VIEWS_H_

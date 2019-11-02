@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressOb
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconUtils;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
@@ -205,14 +206,29 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
      * Observes the ephemeral tab web contents and loads the associated favicon.
      */
     private class EphemeralTabPanelContentDelegate extends OverlayContentDelegate {
+        /** Whether the currently loaded page is an error (interstitial) page. */
+        private boolean mIsOnErrorPage;
+
         private String mCurrentUrl;
 
         @Override
         public void onMainFrameLoadStarted(String url, boolean isExternalUrl) {
             if (TextUtils.equals(mCurrentUrl, url)) return;
 
+            if (mIsOnErrorPage && NewTabPage.isNTPUrl(url)) {
+                mBottomSheetController.hideContent(mSheetContent, /* animate= */ true);
+                mCurrentUrl = null;
+                return;
+            }
+
             mCurrentUrl = url;
             mFaviconLoader.loadFavicon(url, (drawable) -> onFaviconAvailable(drawable));
+        }
+
+        @Override
+        public void onMainFrameNavigation(
+                String url, boolean isExternalUrl, boolean isFailure, boolean isError) {
+            mIsOnErrorPage = isError;
         }
 
         @Override
@@ -222,6 +238,12 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                     mPanelContent.getWebContents());
             mSheetContent.setSecurityIcon(getSecurityIconResource(securityLevel));
             mSheetContent.updateURL(mPanelContent.getWebContents().getVisibleUrl());
+        }
+
+        @Override
+        public void onOpenNewTabRequested(String url) {
+            // We never open a separate tab when navigating in a preview tab.
+            getContent().getWebContents().getNavigationController().loadUrl(new LoadUrlParams(url));
         }
     }
 

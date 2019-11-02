@@ -13,8 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "components/cast_channel/cast_socket_service.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace cast_channel {
 
@@ -59,16 +57,13 @@ InternalMessage::InternalMessage(CastMessageType type,
       message(std::move(message)) {}
 InternalMessage::~InternalMessage() = default;
 
-CastMessageHandler::CastMessageHandler(
-    CastSocketService* socket_service,
-    std::unique_ptr<service_manager::Connector> connector,
-    const base::Token& data_decoder_batch_id,
-    const std::string& user_agent,
-    const std::string& browser_version,
-    const std::string& locale)
+CastMessageHandler::CastMessageHandler(CastSocketService* socket_service,
+                                       ParseJsonCallback parse_json,
+                                       const std::string& user_agent,
+                                       const std::string& browser_version,
+                                       const std::string& locale)
     : sender_id_(base::StringPrintf("sender-%d", base::RandInt(0, 1000000))),
-      connector_(std::move(connector)),
-      data_decoder_batch_id_(data_decoder_batch_id),
+      parse_json_(std::move(parse_json)),
       user_agent_(user_agent),
       browser_version_(browser_version),
       locale_(locale),
@@ -315,13 +310,12 @@ void CastMessageHandler::OnMessage(const CastSocket& socket,
   if (IsCastInternalNamespace(message.namespace_())) {
     if (message.payload_type() ==
         cast_channel::CastMessage_PayloadType_STRING) {
-      data_decoder::SafeJsonParser::ParseBatch(
-          connector_.get(), message.payload_utf8(),
+      parse_json_.Run(
+          message.payload_utf8(),
           base::BindOnce(&CastMessageHandler::HandleCastInternalMessage,
                          weak_ptr_factory_.GetWeakPtr(), socket.id(),
                          message.source_id(), message.destination_id(),
-                         message.namespace_()),
-          base::BindOnce(&ReportParseError), data_decoder_batch_id_);
+                         message.namespace_()));
     } else {
       DLOG(ERROR) << "Dropping internal message with binary payload: "
                   << message.namespace_();
@@ -344,7 +338,13 @@ void CastMessageHandler::HandleCastInternalMessage(
     const std::string& source_id,
     const std::string& destination_id,
     const std::string& namespace_,
-    base::Value payload) {
+    data_decoder::DataDecoder::ValueOrError parse_result) {
+  if (!parse_result.value) {
+    ReportParseError(*parse_result.error);
+    return;
+  }
+
+  base::Value& payload = *parse_result.value;
   if (!payload.is_dict()) {
     ReportParseError("Parsed message not a dictionary");
     return;

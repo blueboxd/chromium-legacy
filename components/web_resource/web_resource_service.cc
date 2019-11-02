@@ -39,7 +39,6 @@ WebResourceService::WebResourceService(
     int cache_update_delay_ms,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const char* disable_network_switch,
-    const ParseJSONCallback& parse_json_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     ResourceRequestAllowedNotifier::NetworkConnectionTrackerGetter
         network_connection_tracker_getter)
@@ -56,7 +55,6 @@ WebResourceService::WebResourceService(
       start_fetch_delay_ms_(start_fetch_delay_ms),
       cache_update_delay_ms_(cache_update_delay_ms),
       url_loader_factory_(url_loader_factory),
-      parse_json_callback_(parse_json_callback),
       traffic_annotation_(traffic_annotation) {
   resource_request_allowed_notifier_->Init(this, false /* leaky */);
   DCHECK(prefs);
@@ -80,19 +78,17 @@ void WebResourceService::OnSimpleLoaderComplete(
     // (on Android in particular) we short-cut the full parsing in the case of
     // trivially "empty" JSONs.
     if (response_body->empty() || *response_body == "{}") {
-      OnUnpackFinished(base::Value(base::Value::Type::DICTIONARY));
+      OnJsonParsed(data_decoder::DataDecoder::ValueOrError::Value(
+          base::Value(base::Value::Type::DICTIONARY)));
     } else {
-      parse_json_callback_.Run(
-          *response_body,
-          base::BindOnce(&WebResourceService::OnUnpackFinished,
-                         weak_ptr_factory_.GetWeakPtr()),
-          base::BindOnce(&WebResourceService::OnUnpackError,
-                         weak_ptr_factory_.GetWeakPtr()));
+      data_decoder::DataDecoder::ParseJsonIsolated(
+          *response_body, base::BindOnce(&WebResourceService::OnJsonParsed,
+                                         weak_ptr_factory_.GetWeakPtr()));
     }
   } else {
     // Don't parse data if attempt to download was unsuccessful.
     // Stop loading new web resource data, and silently exit.
-    // We do not call parse_json_callback_, so we need to call EndFetch()
+    // We do not end up invoking OnJsonParsed(), so we need to call EndFetch()
     // ourselves.
     EndFetch();
   }
@@ -168,19 +164,22 @@ void WebResourceService::EndFetch() {
   in_fetch_ = false;
 }
 
-void WebResourceService::OnUnpackFinished(base::Value value) {
+void WebResourceService::OnJsonParsed(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    LOG(ERROR) << *result.error;
+    EndFetch();
+    return;
+  }
+
   const base::DictionaryValue* dict = nullptr;
-  if (!value.GetAsDictionary(&dict)) {
-    OnUnpackError(kUnexpectedJSONFormatError);
+  if (!result.value->GetAsDictionary(&dict)) {
+    LOG(ERROR) << kUnexpectedJSONFormatError;
+    EndFetch();
     return;
   }
   Unpack(*dict);
 
-  EndFetch();
-}
-
-void WebResourceService::OnUnpackError(const std::string& error_message) {
-  LOG(ERROR) << error_message;
   EndFetch();
 }
 

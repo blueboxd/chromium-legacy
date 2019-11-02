@@ -29,10 +29,9 @@ namespace {
 class TestButton : public Button {
  public:
   TestButton() : Button(nullptr) {}
+  TestButton(const TestButton&) = delete;
+  TestButton& operator=(const TestButton&) = delete;
   ~TestButton() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestButton);
 };
 
 }  // namespace
@@ -40,6 +39,10 @@ class TestButton : public Button {
 class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
  public:
   ViewAXPlatformNodeDelegateTest() = default;
+  ViewAXPlatformNodeDelegateTest(const ViewAXPlatformNodeDelegateTest&) =
+      delete;
+  ViewAXPlatformNodeDelegateTest& operator=(
+      const ViewAXPlatformNodeDelegateTest&) = delete;
   ~ViewAXPlatformNodeDelegateTest() override = default;
 
   void SetUp() override {
@@ -149,9 +152,6 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
   Widget* widget_ = nullptr;
   Button* button_ = nullptr;
   Label* label_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegateTest);
 };
 
 TEST_F(ViewAXPlatformNodeDelegateTest, RoleShouldMatch) {
@@ -403,7 +403,8 @@ class TestAXEventObserver : public AXEventObserver {
   explicit TestAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
     AXEventManager::Get()->AddObserver(this);
   }
-
+  TestAXEventObserver(const TestAXEventObserver&) = delete;
+  TestAXEventObserver& operator=(const TestAXEventObserver&) = delete;
   ~TestAXEventObserver() override {
     AXEventManager::Get()->RemoveObserver(this);
   }
@@ -417,8 +418,6 @@ class TestAXEventObserver : public AXEventObserver {
 
  private:
   AXAuraObjCache* cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
 using ViewAccessibilityTest = ViewsTestBase;

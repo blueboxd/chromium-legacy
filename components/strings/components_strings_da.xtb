@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Denne korttype understøttes ikke</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Prøv at kontakte systemadministratoren.</translation>
+<translation id="1739107442478692187">Der opstod et brud på datasikkerheden på et website eller i en app, du bruger. Chrome anbefaler, at du tjekker dine gemte adgangskoder og ændrer din adgangskode til <ph name="ORIGIN" /> med det samme.</translation>
 <translation id="1740951997222943430">Angiv en gyldig udløbsmåned</translation>
 <translation id="1743520634839655729">Gem dit kort, dit navn og din faktureringsadresse på din Google-konto og denne enhed for at betale hurtigere næste gang.</translation>
 <translation id="1743570585616704562">Ikke genkendt</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Uoverensstemmelse mellem domæner</translation>
 <translation id="2096368010154057602">Afdeling</translation>
 <translation id="2099652385553570808">Trehæftning i venstre side</translation>
+<translation id="2100280972184758440">Din adgangskode blev kompromitteret</translation>
 <translation id="2102134110707549001">Foreslå stærk adgangskode…</translation>
 <translation id="2108755909498034140">Genstart computeren</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Ignoreret, da den blev tilsidesat af <ph name="POLICY_NAME" /> .</translation>
 <translation id="2119505898009119320">Udstedt til: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Hul nederst til højre</translation>
+<translation id="2124528555835617522">Der opstod et brud på datasikkerheden på et website eller i en app, du bruger. Chrome anbefaler, at du tjekker dine gemte adgangskoder med det samme.</translation>
 <translation id="2129079103035905234">Bevægelsessensorer</translation>
 <translation id="213826338245044447">Bogmærker på mobil</translation>
 <translation id="214556005048008348">Annuller betaling</translation>
@@ -480,17 +483,13 @@
 <translation id="3282497668470633863">Tilføj navn på kort</translation>
 <translation id="3287510313208355388">Download, når du er online</translation>
 <translation id="3293642807462928945">Få flere oplysninger om politikken <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Der opstod et brud på datasikkerheden på et website eller i en app, du bruger. Chrome anbefaler, at du ændrer din adgangskode på <ph name="ORIGIN" /> med det samme.</translation>
 <translation id="3303855915957856445">Der blev ikke fundet nogen søgeresultater</translation>
 <translation id="3320021301628644560">Tilføj faktureringsadresse</translation>
 <translation id="3324983252691184275">Højrød</translation>
 <translation id="3338095232262050444">Sikker</translation>
 <translation id="3355823806454867987">Skift indstillinger for proxy...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />gemmer ikke<ph name="END_EMPHASIS" /> følgende oplysninger:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Din browserhistorik
-          <ph name="LIST_ITEM" />Cookies og websitedata
-          <ph name="LIST_ITEM" />Oplysninger, du angiver i formularer
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">Regneark for betalingshandler</translation>
 <translation id="3362968246557010467">Denne politik blev automatisk kopieret fra den udfasede politik <ph name="OLD_POLICY" />. Du bør bruge denne politik i stedet.</translation>
 <translation id="3366477098757335611">Se kort</translation>
 <translation id="3369192424181595722">Urfejl</translation>
@@ -610,6 +609,7 @@
 <translation id="3949601375789751990">Din browserhistorik vises her</translation>
 <translation id="3949870428812919180">Der er ingen gemte betalingsmetoder</translation>
 <translation id="3950820424414687140">Log ind</translation>
+<translation id="3961148744525529027">Regnearket for betalingshandler er åbnet halvt</translation>
 <translation id="3962859241508114581">Forrige nummer</translation>
 <translation id="3963837677003247395">Vil du fortsætte manuelt?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ingen}=1{1 website }one{# website }other{# websites }}</translation>
@@ -1061,7 +1061,6 @@
 <translation id="6151417162996330722">Servercertifikatet har en gyldighedsperiode, der er for lang.</translation>
 <translation id="6157877588268064908">Vælg en adresse for at se forsendelsesmetoder og -krav</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
-<translation id="6169916984152623906">Nu kan du gå på nettet privat, og andre brugere på denne enhed kan ikke se din aktivitet. Downloads og bogmærker gemmes dog stadig.</translation>
 <translation id="6177128806592000436">Din forbindelse til dette website er ikke sikker.</translation>
 <translation id="6203231073485539293">Kontrollér din internetforbindelse</translation>
 <translation id="6218753634732582820">Vil du fjerne adressen fra Chromium?</translation>
@@ -1343,6 +1342,7 @@ Yderligere oplysninger:
 <translation id="7637571805876720304">Vil du fjerne kreditkortet fra Chromium?</translation>
 <translation id="7638605456503525968">Serieporte</translation>
 <translation id="7639968568612851608">Mørkegrå</translation>
+<translation id="7653957176542370971">Regnearket for betalingshandler er lukket</translation>
 <translation id="765676359832457558">Skjul avancerede indstillinger...</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7662298039739062396">Indstillingen styres af en udvidelse</translation>
@@ -1472,6 +1472,7 @@ Yderligere oplysninger:
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8262952874573525464">Kanthæftning nederst</translation>
 <translation id="8267698848189296333">Logger ind som <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Regnearket for betalinghandler er åbnet</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Log ind</translation>
 <translation id="8288807391153049143">Vis certifikat</translation>
@@ -1533,6 +1534,7 @@ Yderligere oplysninger:
 <translation id="8680536109547170164"><ph name="QUERY" />, svar, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Tilgængelig</translation>
+<translation id="869891660844655955">Udløbsdato</translation>
 <translation id="8703575177326907206">Din forbindelse til <ph name="DOMAIN" /> er ikke krypteret.</translation>
 <translation id="8718314106902482036">Betalingen blev ikke fuldført</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, søgeforslag</translation>

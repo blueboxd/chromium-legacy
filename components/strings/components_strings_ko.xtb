@@ -278,7 +278,7 @@
 <translation id="2292556288342944218">인터넷 액세스가 차단됨</translation>
 <translation id="2297722699537546652">B5(봉투)</translation>
 <translation id="2310021320168182093">Chou2(봉투)</translation>
-<translation id="2315864634253056100">이 사이트의 이름이 <ph name="LOOKALIKE_DOMAIN" />과(와) 유사해 보입니다. 일부 공격자는 웹 주소를 알아채기 어렵게 변경하여 다른 사이트를 모방합니다.</translation>
+<translation id="2315864634253056100">이 사이트의 이름이 <ph name="LOOKALIKE_DOMAIN" />과(와) 유사해 보입니다. 어떤 공격자는 웹 주소를 알아채기 어렵게 변경하는 방법으로 다른 사이트를 모방합니다.</translation>
 <translation id="2316887270356262533">1MB 미만의 저장용량을 확보합니다. 일부 사이트는 다음 방문 시 로드 속도가 느려질 수 있습니다.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" />에 사용자 이름과 비밀번호를 입력해야 합니다.</translation>
 <translation id="2317583587496011522">직불카드를 사용할 수 있습니다.</translation>
@@ -483,12 +483,6 @@
 <translation id="3324983252691184275">진홍색</translation>
 <translation id="3338095232262050444">보안 연결</translation>
 <translation id="3355823806454867987">프록시 설정 변경...</translation>
-<translation id="3361596688432910856">Chrome에 다음 정보가 <ph name="BEGIN_EMPHASIS" />저장되지 않습니다<ph name="END_EMPHASIS" />.
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />방문 기록
-          <ph name="LIST_ITEM" />쿠키 및 사이트 데이터
-          <ph name="LIST_ITEM" />양식에 입력한 정보
-        <ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">이 정책은 지원 중단된 <ph name="OLD_POLICY" /> 정책에서 자동으로 복사되었습니다. 이 정책을 대신 사용해야 합니다.</translation>
 <translation id="3366477098757335611">카드 보기</translation>
 <translation id="3369192424181595722">시계 오류</translation>
@@ -677,7 +671,7 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />네트워크 진단 프로그램을 실행<ph name="END_LINK" />해 보세요.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" /><ph name="SITE" />(으)로 이동<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">유효</translation>
-<translation id="4248776159690739358">Chrome 기업 보안 위협 대응에서 보고한 보안 이벤트에 관한 데이터를 관리자와 공유합니다. 여기에는 방문한 페이지 URL, 파일 이름 또는 메타데이터 및 기기와 Chrome 로그인에 사용한 사용자 이름이 포함될 수 있습니다.</translation>
+<translation id="4248776159690739358">Chrome 기업 보안 위협 대응에서 보고한 보안 이슈에 관한 데이터를 관리자와 공유합니다. 여기에는 방문한 페이지 URL, 파일 이름 또는 메타데이터 및 기기와 Chrome 로그인에 사용한 사용자 이름이 포함될 수 있습니다.</translation>
 <translation id="4250431568374086873">이 사이트의 보안 연결(HTTPS)은 완벽하지 않습니다.</translation>
 <translation id="4250680216510889253">아니요</translation>
 <translation id="425582637250725228">변경사항이 저장되지 않을 수 있습니다.</translation>
@@ -1059,7 +1053,6 @@
 <translation id="6151417162996330722">서버 인증서의 유효 기간이 너무 깁니다.</translation>
 <translation id="6157877588268064908">배송 방법과 요구사항을 확인하려면 주소를 선택하세요.</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
-<translation id="6169916984152623906">이제 비공개로 인터넷을 사용할 수 있으며, 이 기기를 사용하는 다른 사용자가 내 활동을 볼 수 없습니다. 하지만 다운로드한 항목과 북마크는 저장됩니다.</translation>
 <translation id="6177128806592000436">이 사이트는 보안 연결(HTTPS)이 사용되지 않았습니다.</translation>
 <translation id="6203231073485539293">인터넷 연결을 확인하세요.</translation>
 <translation id="6218753634732582820">Chromium에서 주소를 삭제하시겠습니까?</translation>
@@ -1529,6 +1522,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, 답변, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">사용 가능</translation>
+<translation id="869891660844655955">유효기간</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" />로의 연결은 암호화되지 않습니다.</translation>
 <translation id="8718314106902482036">결제가 완료되지 않음</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, 추천 검색어</translation>

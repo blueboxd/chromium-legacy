@@ -4,10 +4,12 @@
 
 #include "content/browser/android/dialog_overlay_impl.h"
 
+#include "base/task/post_task.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/android/content_jni_headers/DialogOverlayImpl_jni.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
@@ -134,7 +136,7 @@ void DialogOverlayImpl::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UnregisterCallbacksIfNeeded();
   // We delete soon since this might be part of an onDismissed callback.
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+  base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
 }
 
 void DialogOverlayImpl::GetCompositorOffset(

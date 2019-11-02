@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">نقل‌قول آغازین</translation>
 <translation id="207477615537953741">تفسیر معنایی خاموش است</translation>
 <translation id="2086961585857038472">کلمه بعدی</translation>
+<translation id="2087981446621639008">جزئیات فهرست شرح</translation>
 <translation id="2089387485033699258">fa</translation>
 <translation id="2091933974477985526">قسمت نوشتاری قابل ویرایش قبلی</translation>
 <translation id="2100350898815792233">همه علائم سجاوندی</translation>
@@ -193,6 +194,7 @@
 <translation id="2416512023405990736">کادر تأیید لغو انتخاب‌شده</translation>
 <translation id="2417569100218200841">اطلاعات محتوا</translation>
 <translation id="2417948780551741035">ته‌نویس</translation>
+<translation id="2419852971200420169">فهرست شرح</translation>
 <translation id="2421113964388408478">حذف</translation>
 <translation id="2422937916923936891">کادر بررسی مورد منو</translation>
 <translation id="2428534162001909979">منوهای فرمان</translation>
@@ -371,6 +373,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{علامت سؤال}one{# علامت سؤال}other{# علامت سؤال}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{علامت هشتک}one{# علامت هشتک}other{# علامت هشتک}}</translation>
 <translation id="352577523970648069">فیلد نوشتاری قابل ویرایش</translation>
+<translation id="3538907380453898475">فهرست شرح</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> را ببرید.</translation>
 <translation id="3549680091535286226">برای توقف موقتی گفتار، با دو انگشت ضربه بزنید</translation>
 <translation id="3568702578574425662"><ph name="NAME" />، کادر انتخاب انتخاب نشده است</translation>
@@ -779,6 +782,7 @@
 <translation id="6378394210114975876">بادمجانی روشن</translation>
 <translation id="6385591741672306837">ستون</translation>
 <translation id="6387719785439924554">جدا</translation>
+<translation id="6393014464788431702">غیرفعال کردن همه فیلترهای رویداد</translation>
 <translation id="6411426777058107714">دکمه رادیویی قبلی وجود ندارد.</translation>
 <translation id="6414968628640960377">عنصر متفاوت قبلی.</translation>
 <translation id="6417265370957905582">‏دستیار Google</translation>
@@ -914,6 +918,7 @@
 <translation id="7332592614823088566">ردیف <ph name="ROWINDEX" /> از <ph name="ROWTOTAL" />، ستون<ph name="COLINDEX" /> از <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">پنجره بازشو دارد</translation>
 <translation id="7356165926712028380">تغییر به بریل ۸ نقطه‌ای</translation>
+<translation id="7356610683936413584">جزئیات فهرست شرح</translation>
 <translation id="7362871137496673139">عنوان سطح ۲ قبلی وجود ندارد.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{امپرسند}one{# امپرسند}other{# امپرسند}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@
 <translation id="8096975275316362544">کرم نعنایی</translation>
 <translation id="8098587210054821856">سربی</translation>
 <translation id="8110647606445335195">‏علامت مشخصه ARIA موجود نیست.</translation>
+<translation id="8121539003537428024">فعال کردن همه فیلترهای رویداد</translation>
 <translation id="812886159861361726">بارگیری <ph name="FILE_NAME" /> متوقف شد</translation>
 <translation id="8138880386467279117">لمس</translation>
 <translation id="8153880621934657047">خارج از جدول</translation>

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/string_piece.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scope_deletion_mode.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
@@ -17,7 +18,6 @@
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
-#include "content/browser/indexed_db/scopes/leveldb_scope_deletion_mode.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 
 using base::StringPiece;

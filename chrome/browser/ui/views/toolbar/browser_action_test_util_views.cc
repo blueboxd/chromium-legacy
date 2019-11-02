@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
@@ -39,6 +38,9 @@ class BrowserActionTestUtilViews::TestToolbarActionsBarHelper
     container_parent_.Layout();
     container_parent_.AddChildView(browser_actions_container_);
   }
+  TestToolbarActionsBarHelper(const TestToolbarActionsBarHelper&) = delete;
+  TestToolbarActionsBarHelper& operator=(const TestToolbarActionsBarHelper&) =
+      delete;
   ~TestToolbarActionsBarHelper() override = default;
 
   BrowserActionsContainer* browser_actions_container() {
@@ -64,8 +66,6 @@ class BrowserActionTestUtilViews::TestToolbarActionsBarHelper
   // The parent of the BrowserActionsContainer, which directly owns the
   // container as part of the views hierarchy.
   views::ResizeAwareParentView container_parent_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestToolbarActionsBarHelper);
 };
 
 BrowserActionTestUtilViews::~BrowserActionTestUtilViews() = default;

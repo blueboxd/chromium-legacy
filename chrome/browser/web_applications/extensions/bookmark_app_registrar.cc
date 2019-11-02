@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
+#include "chrome/common/extensions/manifest_handlers/app_display_mode_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "extensions/browser/extension_prefs.h"
@@ -150,6 +151,15 @@ base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
   return base::nullopt;
 }
 
+blink::mojom::DisplayMode BookmarkAppRegistrar::GetAppDisplayMode(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  if (!extension)
+    return blink::mojom::DisplayMode::kUndefined;
+
+  return AppDisplayModeInfo::GetDisplayMode(extension);
+}
+
 blink::mojom::DisplayMode BookmarkAppRegistrar::GetAppUserDisplayMode(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetExtension(app_id);
@@ -167,13 +177,6 @@ blink::mojom::DisplayMode BookmarkAppRegistrar::GetAppUserDisplayMode(
       NOTREACHED();
       return blink::mojom::DisplayMode::kUndefined;
   }
-}
-
-blink::mojom::DisplayMode BookmarkAppRegistrar::GetAppEffectiveDisplayMode(
-    const web_app::AppId& app_id) const {
-  // TODO(crbug.com/1014346): Consider app's requested display mode. Support
-  // minimal-ui.
-  return GetAppUserDisplayMode(app_id);
 }
 
 std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {

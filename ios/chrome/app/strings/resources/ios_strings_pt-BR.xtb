@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Menu "Mais"</translation>
 <translation id="2316709634732130529">Usar senha sugerida</translation>
 <translation id="2320166752086256636">Ocultar teclado</translation>
+<translation id="2330129964253841015">Avisar sobre senhas comprometidas</translation>
 <translation id="2339560363438331454">Serviços do Google e de sincronização</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
 <translation id="2359043044084662842">Traduzir</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Salvar imagem</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="385051799172605136">Voltar</translation>
-<translation id="3886946236301294521">Avisa se uma senha que você usa foi afetada por uma violação de dados.</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Informações do site</translation>
 <translation id="3922310737605261887">Pesquisar texto copiado</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Páginas lidas</translation>
 <translation id="4630540211544979320">Traduzir páginas</translation>
 <translation id="4636930964841734540">Informações</translation>
+<translation id="4659126640776004816">Quando você faz login na sua Conta do Google, este recurso é ativado.</translation>
 <translation id="4659667755519643272">Entrar no alternador de guias</translation>
 <translation id="4666531726415300315">Conectado como <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5327248766486351172">Nome</translation>
-<translation id="5365716706805792666">O Google pode verificar se suas senhas foram afetadas por uma violação de dados. O recurso será ativado quando você fizer login com sua Conta Google.</translation>
 <translation id="5388358297987318779">Abrir imagem</translation>
 <translation id="5407969256130905701">Descartar alterações</translation>
 <translation id="5409365236829784218">Nenhum aplicativo instalado pode abrir este arquivo.</translation>
@@ -333,7 +333,6 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5854790677617711513">Com mais de 30 dias</translation>
 <translation id="5857090052475505287">Nova pasta</translation>
 <translation id="5857770089550859117">É necessário ter uma senha longa para iniciar a sincronização.</translation>
-<translation id="5859444426865731878">O Google pode verificar se suas senhas foram afetadas por uma violação de dados.</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5869029295770560994">Ok, entendi</translation>
 <translation id="5871497086027727873">1 item movido</translation>
@@ -483,7 +482,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7859704718976024901">Histórico de navegação</translation>
 <translation id="7887198238286927132">Para proteger sua privacidade, o Chrome não preencherá esse campo automaticamente.</translation>
 <translation id="7918293828610777738">Sua lista de leitura está disponível off-line. Para adicionar uma página à lista, toque em <ph name="SHARE_OPENING_ICON" /> e depois em <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Verificar segurança da senha</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportar senhas…</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>

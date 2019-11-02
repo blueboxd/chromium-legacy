@@ -214,7 +214,9 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
         model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, 1);
 
         // Include site favicon if we are presenting URL and have favicon available.
-        if (mLargeIconBridge != null && suggestion.getUrl() != null) {
+        // TODO(gangwu): Create a saparate processor for clipboard suggestions.
+        if (mLargeIconBridge != null && suggestion.getUrl() != null
+                && suggestion.getType() != OmniboxSuggestionType.CLIPBOARD_TEXT) {
             mLargeIconBridge.getLargeIconForUrl(suggestion.getUrl(), mDesiredFaviconWidthPx,
                     (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
                             int iconType) -> {

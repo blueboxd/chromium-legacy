@@ -152,6 +152,7 @@
 <translation id="2063539687800151747">Epigrafu</translation>
 <translation id="207477615537953741">Ufasiri wa semantiki umezimwa</translation>
 <translation id="2086961585857038472">Neno Linalofuata</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">sw</translation>
 <translation id="2091933974477985526">Eneo lililotangulia la maandishi linaloweza kubadilishwa</translation>
 <translation id="2100350898815792233">Vituo vyote vya maandishi</translation>
@@ -192,6 +193,7 @@
 <translation id="2416512023405990736">Kisanduku cha kuteua ambacho hakijateuliwa</translation>
 <translation id="2417569100218200841">Maelezo ya maudhui</translation>
 <translation id="2417948780551741035">Maelezo ya mwisho wa kitabu</translation>
+<translation id="2419852971200420169">Orodha ya ufafanuzi</translation>
 <translation id="2421113964388408478">Ufutaji</translation>
 <translation id="2422937916923936891">Kisanduku cha kuteua cha kipengee cha menyu</translation>
 <translation id="2428534162001909979">Menyu za Amri</translation>
@@ -370,6 +372,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{alama ya kuuliza}other{alama # za kuuliza}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{kareti}other{alama # za kareti}}</translation>
 <translation id="352577523970648069">Sehemu ya maandishi yanayoweza kubadilishwa</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">kata <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Gusa kwa vidole 2 ili usimamishe matamshi kwa muda mfupi</translation>
 <translation id="3568702578574425662">Kisanduku cha kuteua <ph name="NAME" /> hakijateuliwa</translation>
@@ -778,6 +781,7 @@
 <translation id="6378394210114975876">Zambarau Hafifu</translation>
 <translation id="6385591741672306837">safu wima</translation>
 <translation id="6387719785439924554">kando</translation>
+<translation id="6393014464788431702">Zima vichujio vyote vya matukio</translation>
 <translation id="6411426777058107714">Hakuna kitufe kilichotangulia.</translation>
 <translation id="6414968628640960377">Kipengee tofauti kilichotangulia.</translation>
 <translation id="6417265370957905582">Mratibu wa Google</translation>
@@ -913,6 +917,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="7332592614823088566">Safu mlalo <ph name="ROWINDEX" /> kati ya <ph name="ROWTOTAL" />, Safu wima <ph name="COLINDEX" /> kati ya <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">ina dirisha ibukizi</translation>
 <translation id="7356165926712028380">Badilisha hadi Breli ya vitone 8</translation>
+<translation id="7356610683936413584">Maelezo ya orodha ya ufafanuzi</translation>
 <translation id="7362871137496673139">Hakuna kichwa cha ngazi ya 2 kilichotangulia.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{alama ya na}other{alama # za na}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1091,6 +1096,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="8096975275316362544">Kahawia ya Kijani</translation>
 <translation id="8098587210054821856">Kijivu Iliyokolea</translation>
 <translation id="8110647606445335195">Hakuna vivutio vya ARIA.</translation>
+<translation id="8121539003537428024">Washa vichujio vyote vya matukio</translation>
 <translation id="812886159861361726">Imeacha kupakua <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Skrini za kugusa</translation>
 <translation id="8153880621934657047">Haimo ndani ya jedwali.</translation>

@@ -201,7 +201,9 @@ class RootNodeWrapper extends SARootNode {
     const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
 
     if (interestingChildren.length < 1) {
-      throw new Error('Root node must have at least 1 interesting child.');
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.NO_CHILDREN,
+          'Root node must have at least 1 interesting child.');
     }
     let children = interestingChildren.map(childConstructor);
 
@@ -221,7 +223,9 @@ class RootNodeWrapper extends SARootNode {
     const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
 
     if (interestingChildren.length < 1) {
-      throw new Error('Desktop node must have at least 1 interesting child.');
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.MALFORMED_DESKTOP,
+          'Desktop node must have at least 1 interesting child.');
     }
 
     const childConstructor = (autoNode) => new NodeWrapper(autoNode, root);

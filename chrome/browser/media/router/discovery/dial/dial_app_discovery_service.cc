@@ -36,8 +36,8 @@ DialAppInfoResult::DialAppInfoResult(DialAppInfoResult&& other) = default;
 
 DialAppInfoResult::~DialAppInfoResult() = default;
 
-DialAppDiscoveryService::DialAppDiscoveryService(DataDecoder* data_decoder)
-    : parser_(std::make_unique<SafeDialAppInfoParser>(data_decoder)) {}
+DialAppDiscoveryService::DialAppDiscoveryService()
+    : parser_(std::make_unique<SafeDialAppInfoParser>()) {}
 
 DialAppDiscoveryService::~DialAppDiscoveryService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

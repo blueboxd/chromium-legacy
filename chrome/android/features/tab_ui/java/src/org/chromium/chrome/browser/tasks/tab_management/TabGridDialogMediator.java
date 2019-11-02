@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -106,7 +107,8 @@ public class TabGridDialogMediator {
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
             TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
             AnimationParamsProvider animationParamsProvider,
-            TabSelectionEditorCoordinator.TabSelectionEditorController tabSelectionEditorController,
+            @Nullable TabSelectionEditorCoordinator
+                    .TabSelectionEditorController tabSelectionEditorController,
             TabGroupTitleEditor tabGroupTitleEditor, String componentName) {
         mContext = context;
         mModel = model;
@@ -199,11 +201,14 @@ public class TabGridDialogMediator {
         // Setup toolbar button click listeners.
         setupToolbarClickHandlers();
 
-        // Setup dialog selection editor.
-        setupDialogSelectionEditor();
+        if (FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+            // Setup toolbar edit text.
+            setupToolbarEditText();
 
-        // Setup toolbar edit text.
-        setupToolbarEditText();
+            // Setup dialog selection editor.
+            setupDialogSelectionEditor();
+            mModel.set(TabGridPanelProperties.MENU_CLICK_LISTENER, getMenuButtonClickListener());
+        }
 
         // Setup ScrimView observer.
         setupScrimViewObserver();
@@ -218,7 +223,9 @@ public class TabGridDialogMediator {
                         mAnimationParamsProvider.getAnimationParamsForTab(mCurrentTabId));
             }
         }
-        mTabSelectionEditorController.hide();
+        if (mTabSelectionEditorController != null) {
+            mTabSelectionEditorController.hide();
+        }
         saveCurrentGroupModifiedTitle();
         mDialogController.resetWithListOfTabs(null);
     }
@@ -306,10 +313,10 @@ public class TabGridDialogMediator {
         mModel.set(
                 TabGridPanelProperties.COLLAPSE_CLICK_LISTENER, getCollapseButtonClickListener());
         mModel.set(TabGridPanelProperties.ADD_CLICK_LISTENER, getAddButtonClickListener());
-        mModel.set(TabGridPanelProperties.MENU_CLICK_LISTENER, getMenuButtonClickListener());
     }
 
     private void setupDialogSelectionEditor() {
+        assert mTabSelectionEditorController != null;
         TabSelectionEditorActionProvider actionProvider = new TabSelectionEditorActionProvider(
                 mTabModelSelector, mTabSelectionEditorController,
                 TabSelectionEditorActionProvider.TabSelectionEditorAction.UNGROUP);
@@ -403,6 +410,7 @@ public class TabGridDialogMediator {
     }
 
     private View.OnClickListener getMenuButtonClickListener() {
+        assert mTabSelectionEditorController != null;
         Callback<Integer> callback = result -> {
             if (result == R.id.ungroup_tab) {
                 List<Tab> tabs = getRelatedTabs(mCurrentTabId);

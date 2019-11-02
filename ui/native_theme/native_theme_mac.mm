@@ -179,7 +179,7 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
 SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
                                        ColorScheme color_scheme) const {
   if (color_scheme == ColorScheme::kDefault)
-    color_scheme = GetSystemColorScheme();
+    color_scheme = GetDefaultSystemColorScheme();
 
   // Empirically, currentAppearance is incorrect when switching
   // appearances. It's unclear exactly why right now, so work

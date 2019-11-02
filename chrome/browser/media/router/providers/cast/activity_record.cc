@@ -14,13 +14,11 @@ ActivityRecord::ActivityRecord(
     const MediaRoute& route,
     const std::string& app_id,
     cast_channel::CastMessageHandler* message_handler,
-    CastSessionTracker* session_tracker,
-    DataDecoder* data_decoder)
+    CastSessionTracker* session_tracker)
     : route_(route),
       app_id_(app_id),
       message_handler_(message_handler),
-      session_tracker_(session_tracker),
-      data_decoder_(data_decoder) {}
+      session_tracker_(session_tracker) {}
 
 ActivityRecord::~ActivityRecord() = default;
 

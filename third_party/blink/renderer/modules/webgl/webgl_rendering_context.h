@@ -45,6 +45,7 @@ class EXTsRGB;
 class EXTTextureFilterAnisotropic;
 class KHRParallelShaderCompile;
 class OESElementIndexUint;
+class OESFboRenderMipmap;
 class OESStandardDerivatives;
 class OESTextureFloat;
 class OESTextureFloatLinear;
@@ -109,6 +110,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<EXTsRGB> exts_rgb_;
   Member<KHRParallelShaderCompile> khr_parallel_shader_compile_;
   Member<OESElementIndexUint> oes_element_index_uint_;
+  Member<OESFboRenderMipmap> oes_fbo_render_mipmap_;
   Member<OESStandardDerivatives> oes_standard_derivatives_;
   Member<OESTextureFloat> oes_texture_float_;
   Member<OESTextureFloatLinear> oes_texture_float_linear_;

@@ -394,24 +394,13 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
   indicator->SetIndicatorState(IndicatorState::kPreviewAreaRight, gfx::Point());
   check_helper(indicator.get(), to_int(IndicatorType::kRightHighlight));
 
-  const int left_with_text =
-      to_int(IndicatorType::kLeftHighlight) | to_int(IndicatorType::kLeftText);
   const int right_with_text = to_int(IndicatorType::kRightHighlight) |
                               to_int(IndicatorType::kRightText);
-  // Verify that only one highlight shows up for each one-sided dragging state,
-  // if the previous state is |IndicatorState::kNone|.
-  indicator->SetIndicatorState(IndicatorState::kNone, gfx::Point());
-  indicator->SetIndicatorState(IndicatorState::kDragAreaLeft, gfx::Point());
-  check_helper(indicator.get(), left_with_text);
+  // Verify that only the right or bottom highlight is shown in state
+  // |IndicatorState::kDragAreaRight|.
   indicator->SetIndicatorState(IndicatorState::kNone, gfx::Point());
   indicator->SetIndicatorState(IndicatorState::kDragAreaRight, gfx::Point());
   check_helper(indicator.get(), right_with_text);
-
-  // Verify that only one highlight shows up for each one-sided dragging state,
-  // if the previous state is of a preview on the same side.
-  indicator->SetIndicatorState(IndicatorState::kPreviewAreaLeft, gfx::Point());
-  indicator->SetIndicatorState(IndicatorState::kDragAreaLeft, gfx::Point());
-  check_helper(indicator.get(), left_with_text);
   indicator->SetIndicatorState(IndicatorState::kPreviewAreaRight, gfx::Point());
   indicator->SetIndicatorState(IndicatorState::kDragAreaRight, gfx::Point());
   check_helper(indicator.get(), right_with_text);

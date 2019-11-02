@@ -85,7 +85,7 @@ cast_source_set("graphics") {
     sources += [
       "cast_window_manager_default.cc",
       "cast_window_manager_default.h",
-      "rounded_window_corners.h",
+      "rounded_window_corners_default.cc",
     ]
   }
 

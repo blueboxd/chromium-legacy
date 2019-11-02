@@ -139,4 +139,8 @@ interface RemoteFrame {
   // new origin.
   SetReplicatedOrigin(url.mojom.Origin origin,
     bool is_potentially_trustworthy_unique_origin);
+
+  // Sent to dispatch a load event in the frame's owner element.
+  // (eg. the iframe, portal, or object element).
+  DispatchLoadEventForFrameOwner();
 };

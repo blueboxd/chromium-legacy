@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -288,6 +287,10 @@ base::Optional<int> ForwardingDelegate::GetMaxBrowserActionsWidth() const {
 class BrowserActionsContainerBrowserTest : public BrowserActionsBarBrowserTest {
  public:
   BrowserActionsContainerBrowserTest() = default;
+  BrowserActionsContainerBrowserTest(
+      const BrowserActionsContainerBrowserTest&) = delete;
+  BrowserActionsContainerBrowserTest& operator=(
+      const BrowserActionsContainerBrowserTest&) = delete;
   ~BrowserActionsContainerBrowserTest() override = default;
 
   ForwardingDelegate* test_delegate() { return test_delegate_.get(); }
@@ -306,8 +309,6 @@ class BrowserActionsContainerBrowserTest : public BrowserActionsBarBrowserTest {
   BrowserActionsContainer* GetContainer();
 
   std::unique_ptr<ForwardingDelegate> test_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainerBrowserTest);
 };
 
 views::ResizeArea* BrowserActionsContainerBrowserTest::GetResizeArea() {
@@ -461,7 +462,11 @@ class BrowserActionsContainerOverflowTest
   BrowserActionsContainerOverflowTest() : main_bar_(nullptr),
                                           overflow_bar_(nullptr) {
   }
-  ~BrowserActionsContainerOverflowTest() override {}
+  BrowserActionsContainerOverflowTest(
+      const BrowserActionsContainerOverflowTest&) = delete;
+  BrowserActionsContainerOverflowTest& operator=(
+      const BrowserActionsContainerOverflowTest&) = delete;
+  ~BrowserActionsContainerOverflowTest() override = default;
 
  protected:
   // Returns true if the order of the ToolbarActionViews in |main_bar_|
@@ -493,8 +498,6 @@ class BrowserActionsContainerOverflowTest
   // have to open the app menu.
   // Owned by the |overflow_parent_|.
   BrowserActionsContainer* overflow_bar_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainerOverflowTest);
 };
 
 void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {

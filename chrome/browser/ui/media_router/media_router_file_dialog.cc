@@ -123,17 +123,18 @@ void MediaRouterFileDialog::FileSystemDelegate::OpenFileDialog(
 // End of FileSystemDelegate default implementations
 
 MediaRouterFileDialog::MediaRouterFileDialog(
-    MediaRouterFileDialogDelegate* delegate)
-    : MediaRouterFileDialog(delegate, std::make_unique<FileSystemDelegate>()) {}
+    base::WeakPtr<MediaRouterFileDialogDelegate> delegate)
+    : MediaRouterFileDialog(std::move(delegate),
+                            std::make_unique<FileSystemDelegate>()) {}
 
 // Used for tests
 MediaRouterFileDialog::MediaRouterFileDialog(
-    MediaRouterFileDialogDelegate* delegate,
+    base::WeakPtr<MediaRouterFileDialogDelegate> delegate,
     std::unique_ptr<FileSystemDelegate> file_system_delegate)
     : task_runner_(base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
                                            base::TaskPriority::USER_VISIBLE})),
       file_system_delegate_(std::move(file_system_delegate)),
-      delegate_(delegate) {}
+      delegate_(std::move(delegate)) {}
 
 MediaRouterFileDialog::~MediaRouterFileDialog() = default;
 
@@ -224,15 +225,17 @@ void MediaRouterFileDialog::OnValidationResults(
     MediaRouterFileDialog::ValidationResult validation_result) {
   if (validation_result == MediaRouterFileDialog::FILE_OK) {
     selected_file_ = file_info;
-    delegate_->FileDialogFileSelected(file_info);
-  } else {
+    if (delegate_)
+      delegate_->FileDialogFileSelected(file_info);
+  } else if (delegate_) {
     delegate_->FileDialogSelectionFailed(
         CreateIssue(file_info, validation_result));
   }
 }
 
 void MediaRouterFileDialog::FileSelectionCanceled(void* params) {
-  delegate_->FileDialogSelectionCanceled();
+  if (delegate_)
+    delegate_->FileDialogSelectionCanceled();
 }
 
 IssueInfo MediaRouterFileDialog::CreateIssue(

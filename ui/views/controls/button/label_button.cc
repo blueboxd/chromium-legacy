@@ -427,18 +427,8 @@ void LabelButton::ResetColorsFromNativeTheme() {
       theme->GetSystemColor(ui::NativeTheme::kColorId_LabelDisabledColor),
   };
 
-  // Use hardcoded colors for inverted color scheme support.
-  if (color_utils::IsInvertedColorScheme()) {
-    colors[STATE_NORMAL] = colors[STATE_HOVERED] = colors[STATE_PRESSED] =
-        SK_ColorWHITE;
-    label_->SetBackgroundColor(SK_ColorBLACK);
-    label_->SetBackground(CreateSolidBackground(SK_ColorBLACK));
-    label_->SetAutoColorReadabilityEnabled(true);
-    label_->SetShadows(gfx::ShadowValues());
-  } else {
-    label_->SetBackground(nullptr);
-    label_->SetAutoColorReadabilityEnabled(false);
-  }
+  label_->SetBackground(nullptr);
+  label_->SetAutoColorReadabilityEnabled(false);
 
   for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state) {
     if (!explicitly_set_colors_[state]) {

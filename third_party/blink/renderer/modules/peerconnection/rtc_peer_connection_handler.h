@@ -260,8 +260,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   };
 
   webrtc::SessionDescriptionInterface* CreateNativeSessionDescription(
-      const std::string& sdp,
-      const std::string& type,
+      const String& sdp,
+      const String& type,
       webrtc::SdpParseError* error);
 
   blink::WebRTCSessionDescription GetWebRTCSessionDescriptionOnSignalingThread(

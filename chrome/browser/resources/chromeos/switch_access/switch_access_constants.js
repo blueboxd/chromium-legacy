@@ -171,3 +171,30 @@ SAConstants.MenuAction = {
   // Set the beginning of a text selection.
   SELECT_START: 'selectStart'
 };
+
+/**
+ * The types of error or unexpected state that can be encountered by Switch
+ * Access.
+ * These values are persisted to logs and should not be renumbered or re-used.
+ * See tools/metrics/histograms/enums.xml.
+ * @enum {number}
+ * @const
+ */
+SAConstants.ErrorType = {
+  UNKNOWN: 0,
+  PREFERENCE_TYPE: 1,
+  UNTRANSLATED_STRING: 2,
+  INVALID_COLOR: 3,
+  NEXT_UNDEFINED: 4,
+  PREVIOUS_UNDEFINED: 5,
+  NULL_CHILD: 6,
+  NO_CHILDREN: 7,
+  MALFORMED_DESKTOP: 8,
+};
+
+/**
+ * The number of values available in the enum SAConstants.ErrorType.
+ * @type {number}
+ * @const
+ */
+SAConstants.ErrorTypeCountForUMA = Object.keys(SAConstants.ErrorType).length;

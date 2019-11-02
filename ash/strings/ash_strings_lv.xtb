@@ -300,6 +300,7 @@
 <translation id="5302048478445481009">Valoda</translation>
 <translation id="5313326810920013265">Bluetooth iestatījumi</translation>
 <translation id="5331975486040154427">USB-C ierīce (pieslēgvieta kreisajā pusē aizmugurē)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> — <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Pārāk daudz mēģinājumu</translation>
 <translation id="5397578532367286026">Šī lietotāja datu lietojumu un vēsturi var pārvaldīt pārzinis (<ph name="MANAGER_EMAIL" />) vietnē chrome.com.</translation>
 <translation id="5430931332414098647">Tūlītēja piesaiste</translation>
@@ -322,6 +323,7 @@
 <translation id="5682642926269496722">Google asistents nav pieejams pašlaik izmantotajam lietotāja kontam.</translation>
 <translation id="5691772641933328258">Pirksta nospiedums netika atpazīts</translation>
 <translation id="5710450975648804523">Režīms “Netraucēt” ir ieslēgts</translation>
+<translation id="573413375004481890">Šajā ierīcē nevarēja atbalstīt visus jūsu displejus, tādējādi tika pārtraukts savienojums ar vienu no tiem.</translation>
 <translation id="574392208103952083">Vidējs</translation>
 <translation id="5744083938413354016">Vilkšana pieskaroties</translation>
 <translation id="5750765938512549687">Bluetooth ir izslēgts</translation>

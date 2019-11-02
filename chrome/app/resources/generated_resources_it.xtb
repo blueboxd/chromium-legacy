@@ -26,6 +26,7 @@
 <translation id="1031362278801463162">Caricamento anteprima in corso</translation>
 <translation id="103279545524624934">Libera spazio sul disco per avviare le app Android.</translation>
 <translation id="1033780634303702874">Accesso ai dispositivi seriali</translation>
+<translation id="1034942643314881546">Attivazione di ADB per creare l'illustrazione delle app</translation>
 <translation id="1036348656032585052">Disattiva</translation>
 <translation id="1036511912703768636">Accedi a tutti questi dispositivi USB</translation>
 <translation id="1036982837258183574">Premi |<ph name="ACCELERATOR" />| per uscire dalla modalità a schermo intero</translation>
@@ -45,7 +46,7 @@
 <translation id="1056775291175587022">Nessuna rete</translation>
 <translation id="1056898198331236512">Avviso</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1061745542578250838">Il file <ph name="FILE_NAME" /> ha contenuti sensibili, quindi è stato bloccato.</translation>
+<translation id="1061745542578250838">Il file <ph name="FILE_NAME" /> include contenuti sensibili, quindi è stato bloccato.</translation>
 <translation id="1061904396131502319">È quasi ora di fare una pausa</translation>
 <translation id="1067048845568873861">Data creazione</translation>
 <translation id="1067291318998134776">Linux (beta)</translation>
@@ -284,6 +285,7 @@
 <translation id="1415708812149920388">Accesso alla lettura degli appunti negato</translation>
 <translation id="1415990189994829608">L'estensione <ph name="EXTENSION_NAME" /> (ID estensione "<ph name="EXTENSION_ID" />") non è consentita in questo tipo di sessione.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="1418954524306642206">Sfoglia per specificare il file PPD della stampante</translation>
 <translation id="1420834118113404499">Licenze multimediali</translation>
 <translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" /> per consentire l'accoppiamento</translation>
 <translation id="1422159345171879700">Carica script non sicuri</translation>
@@ -555,6 +557,7 @@
 <translation id="1782196717298160133">Ricerca del tuo telefono</translation>
 <translation id="1784707308176068866">Esegui in background quando richiesto da un'applicazione nativa interoperativa</translation>
 <translation id="1784849162047402014">Spazio insufficiente sul disco del dispositivo</translation>
+<translation id="1787350673646245458">Immagine dell'utente</translation>
 <translation id="1790194216133135334">Invia link a <ph name="DEVICE_NAME" /></translation>
 <translation id="1790976235243700817">Rimuovi accesso</translation>
 <translation id="1792619191750875668">Display esteso</translation>
@@ -685,6 +688,7 @@
 <translation id="1976150099241323601">Accedi a dispositivo di sicurezza</translation>
 <translation id="1976323404609382849">Sono stati bloccati cookie provenienti da più siti.</translation>
 <translation id="1977965994116744507">Avvicina il telefono per sbloccare il tuo dispositivo <ph name="DEVICE_TYPE" />.</translation>
+<translation id="1978006917103730774">I futuri aggiornamenti software e della sicurezza verranno installati automaticamente.</translation>
 <translation id="1979280758666859181">Stai per passare a un canale con una versione precedente di <ph name="PRODUCT_NAME" />. Il cambio di canale verrà applicato quando la versione del canale corrisponderà alla versione attualmente installata sul dispositivo.</translation>
 <translation id="197989455406964291">KDC non supporta il tipo di crittografia</translation>
 <translation id="1981544341227357861">Rimuovi il token di sicurezza dal dispositivo, quindi inseriscilo nuovamente e toccalo.</translation>
@@ -815,6 +819,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2173801458090845390">Aggiungi ID richiesta a questo dispositivo</translation>
 <translation id="2175042898143291048">Traduci sempre</translation>
 <translation id="2175607476662778685">Barra Avvio veloce</translation>
+<translation id="217576141146192373">Impossibile aggiungere la stampante. Controlla la configurazione della stampante e riprova.</translation>
 <translation id="2177950615300672361">Scheda di navigazione in incognito: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> su <ph name="PEPPER_PLUGIN_DOMAIN" /> vuole accedere al computer</translation>
 <translation id="2178614541317717477">Compromesso CA</translation>
@@ -927,6 +932,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2326931316514688470">&amp;Ricarica app</translation>
 <translation id="2327492829706409234">Attiva applicazione</translation>
 <translation id="2329597144923131178">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
+<translation id="2330129964253841015">Ricevi un avviso in caso di compromissione delle password</translation>
 <translation id="2332131598580221120">Visualizza nello store</translation>
 <translation id="2332192922827071008">Apri Preferenze</translation>
 <translation id="2332742915001411729">Ripristina impostazioni predefinite</translation>
@@ -975,6 +981,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2395616325548404795">Il dispositivo <ph name="DEVICE_TYPE" /> è stato registrato correttamente per la gestione aziendale, ma l'invio delle relative informazioni su asset e posizione non è riuscito. Inserisci manualmente queste informazioni nella Console di amministrazione del dispositivo.</translation>
 <translation id="2396783860772170191">Inserisci il PIN di 4 cifre (0000-9999)</translation>
 <translation id="2399939490305346086">Dati di accesso del token di sicurezza</translation>
+<translation id="2407481962792080328">Questa funzionalità viene attivata quando accedi al tuo Account Google</translation>
 <translation id="2408955596600435184">Inserisci il codice PIN</translation>
 <translation id="241082044617551207">Plug-in sconosciuto</translation>
 <translation id="2412593942846481727">Aggiornamento disponibile</translation>
@@ -1089,7 +1096,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> non è riuscito a collegarsi a <ph name="NETWORK_ID" />. Seleziona un'altra rete o riprova.</translation>
 <translation id="2553440850688409052">Nascondi questo plug-in</translation>
 <translation id="2554553592469060349">Il file selezionato è troppo grande (dimensioni massime: 3 mb).</translation>
-<translation id="2557378327156922632">Questo file ha contenuti sensibili.</translation>
+<translation id="2557378327156922632">Questo file include contenuti sensibili.</translation>
 <translation id="255747371423522804">Aggiungi al gruppo esistente</translation>
 <translation id="2558896001721082624">Mostra sempre le opzioni di accessibilità nel menu di sistema</translation>
 <translation id="2562743677925229011">Non connesso a <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1390,7 +1397,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2989786307324390836">Binario codificato DER, singolo certificato</translation>
 <translation id="2992931425024192067">Mostra tutti i contenuti delle notifiche</translation>
 <translation id="2993517869960930405">Informazioni sull'app</translation>
-<translation id="299483336428448530">Installata da un genitore.</translation>
 <translation id="2996286169319737844">I dati vengono criptati con la tua passphrase di sincronizzazione. Non sono inclusi i metodi di pagamento e gli indirizzi di Google Pay.</translation>
 <translation id="2996722619877761919">Lato lungo</translation>
 <translation id="3003144360685731741">Reti preferite</translation>
@@ -1416,6 +1422,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3016641847947582299">Componente aggiornato</translation>
 <translation id="3016780570757425217">Conoscere la tua posizione</translation>
 <translation id="3017079585324758401">Sfondo</translation>
+<translation id="3019285239893817657">Pulsante pagina secondaria</translation>
 <translation id="3020183492814296499">Scorciatoie</translation>
 <translation id="3020990233660977256">Numero di serie: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Farfalla</translation>
@@ -1431,6 +1438,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3038612606416062604">Aggiungi manualmente una stampante</translation>
 <translation id="3038675903128704560">Non consentire ai siti di utilizzare un plug-in per accedere al tuo computer</translation>
 <translation id="3039491566278747710">Impossibile installare le norme offline sul dispositivo.</translation>
+<translation id="3043581297103810752">Da <ph name="ORIGIN" /></translation>
 <translation id="3045447014237878114">Questo sito ha scaricato automaticamente più file</translation>
 <translation id="3046910703532196514">Pagina web, completa</translation>
 <translation id="304747341537320566">Motori di riconoscimento vocale</translation>
@@ -1812,6 +1820,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3629631988386925734">Inserisci la password per attivare Smart Lock. La prossima volta potrai usare il telefono per sbloccare il dispositivo <ph name="DEVICE_TYPE" />. Puoi disattivare Smart Lock nelle Impostazioni.</translation>
 <translation id="3630132874740063857">Il tuo telefono</translation>
 <translation id="3630995161997703415">Aggiungi questo sito alla shelf per usarlo in qualsiasi momento</translation>
+<translation id="3635353578505343390">Invia feedback a Google</translation>
 <translation id="3636096452488277381">Salve <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> rimanenti</translation>
 <translation id="3637561406135221044">Scansione dei file alla ricerca di dati sensibili…</translation>
@@ -1892,6 +1901,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3732530910372558017">Il PIN deve contenere massimo 63 caratteri</translation>
 <translation id="3733127536501031542">Server SSL con step-up</translation>
 <translation id="3735740477244556633">Ordina per</translation>
+<translation id="3736016243818847857">Vuoi continuare?</translation>
 <translation id="3737274407993947948">Errore durante l'installazione di Linux...</translation>
 <translation id="3737536731758327622">I tuoi download vengono visualizzati qui</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2002,7 +2012,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3873315167136380065">Per attivare questa funzione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /> per rimuovere la passphrase di sincronizzazione</translation>
 <translation id="3873423927483480833">Mostra i codici PIN</translation>
 <translation id="3873915545594852654">Si è verificato un problema con ARC++.</translation>
-<translation id="387924939625099872">Per disattivare ADB, riavvia il dispositivo <ph name="DEVICE_TYPE" />. Verranno ripristinate le impostazioni di fabbrica e verranno cancellati tutti gli account utente e i dati locali.</translation>
+<translation id="387924939625099872">Per disattivare ADB, riavvia il tuo <ph name="DEVICE_TYPE" />. Il dispositivo verrà ripristinato alle impostazioni di fabbrica e tutti gli account utente e i dati che contiene verranno cancellati.</translation>
 <translation id="3879748587602334249">Gestione dei download</translation>
 <translation id="3886446263141354045">La tua richiesta di accesso al sito è stata inviata a <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Creazione di appunti con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2059,7 +2069,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importati da IE</translation>
 <translation id="3950820424414687140">Accedi</translation>
-<translation id="3952230510293296226">Questo file è stato bloccato perché ha contenuti sensibili.</translation>
+<translation id="3952230510293296226">Questo file è stato bloccato perché include contenuti sensibili.</translation>
 <translation id="3953834000574892725">Account personali</translation>
 <translation id="3954354850384043518">In corso</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> hertz)</translation>
@@ -2401,6 +2411,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4501530680793980440">Conferma rimozione</translation>
 <translation id="4502423230170890588">Rimuovi da questo dispositivo</translation>
 <translation id="4504940961672722399">Utilizza questa estensione facendo clic su questa icona o premendo <ph name="EXTENSION_SHORTCUT" />.</translation>
+<translation id="4506379069541445709">Se continui, verrà attivato ADB per creare e testare app Android. Tieni presente che ADB consente l'installazione di app di prova che non sono state verificate da Google.</translation>
 <translation id="4508051413094283164">Apri tutto nella finestra di navigazione in incognito</translation>
 <translation id="4508265954913339219">Attivazione non riuscita</translation>
 <translation id="4508765956121923607">Visualizza s&amp;orgente</translation>
@@ -2960,6 +2971,7 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="5363109466694494651">Esegui Powerwash e ripristina</translation>
 <translation id="5365881113273618889">La cartella che hai selezionato contiene file sensibili. Vuoi concedere a "<ph name="APP_NAME" />" accesso di scrittura permanente a questa cartella?</translation>
 <translation id="5367091008316207019">Lettura del file in corso...</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" />: <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Il telefono è stato bloccato. Sbloccalo per accedere.</translation>
 <translation id="5368779022775404937">Accedi a <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Attiva l'accelerazione del mouse</translation>
@@ -3176,6 +3188,7 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="5646558797914161501">Uomo d'affari</translation>
 <translation id="5648166631817621825">Ultima settimana</translation>
 <translation id="5649053991847567735">Download automatici</translation>
+<translation id="5656845498778518563">Invia feedback a Google</translation>
 <translation id="5657667036353380798">Per poter installare l'estensione esterna occorre la versione di Chrome <ph name="MINIMUM_CHROME_VERSION" /> o successiva.</translation>
 <translation id="5658415415603568799">Per maggiore sicurezza, Smart Lock ti chiederà di inserire la password dopo 20 ore.</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -3305,6 +3318,7 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="5851868085455377790">Autorità emittente</translation>
 <translation id="5852112051279473187">Spiacenti. Si è verificato un grave problema durante la registrazione di questo dispositivo. Riprova o contatta un rappresentante dell'assistenza.</translation>
 <translation id="5852137567692933493">Riavvia ed esegui Powerwash</translation>
+<translation id="5852360662347412211">Vai alle impostazioni di Linux e riprova</translation>
 <translation id="5854912040170951372">Fetta</translation>
 <translation id="5855643921295613558">0,6 secondi</translation>
 <translation id="5856721540245522153">Attiva funzioni di debug</translation>
@@ -3317,7 +3331,7 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="5860494867054883682">Aggiornamento del dispositivo al canale <ph name="CHANNEL_NAME" /> in corso (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Mostra strumenti stilo nello shelf</translation>
 <translation id="5863445608433396414">Attiva funzioni di debug</translation>
-<translation id="5863471434640009253">Per attivare Android Debug Bridge, devi innanzitutto riavviare il dispositivo <ph name="DEVICE_TYPE" />. Per disattivare ADB è necessario ripristinare le impostazioni di fabbrica.</translation>
+<translation id="5863471434640009253">Per attivare Android Debug Bridge, devi innanzitutto riavviare il tuo <ph name="DEVICE_TYPE" />. Per disattivare ADB è necessario ripristinare le impostazioni di fabbrica.</translation>
 <translation id="5864471791310927901">Ricerca DHCP non riuscita</translation>
 <translation id="586567932979200359">Stai eseguendo <ph name="PRODUCT_NAME" /> dall'immagine disco. L'installazione sul computer permette di eseguirlo senza immagine disco e ne garantisce l'aggiornamento.</translation>
 <translation id="5865733239029070421">Invia automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali</translation>
@@ -3373,6 +3387,7 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="5941153596444580863">Aggiungi persona...</translation>
 <translation id="5941343993301164315">Accedi a <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Riduci a icona</translation>
+<translation id="5942964813783878922">Il dispositivo <ph name="DEVICE_TYPE" /> si riavvierà dopo questo aggiornamento. I futuri aggiornamenti software e della sicurezza verranno installati automaticamente.</translation>
 <translation id="5944869793365969636">Scansiona codice QR</translation>
 <translation id="5945188205370098537">Invia dati diagnostici e sull'utilizzo. Contribuisci a migliorare la tua esperienza Android tramite l'invio automatico a Google di dati diagnostici e sull'utilizzo delle app e del dispositivo. Tali dati contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Se hai attivato l'impostazione Attività web e app aggiuntiva, queste informazioni potrebbero essere salvate nel tuo Account Google. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID rapporto <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
@@ -3660,7 +3675,6 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="63566973648609420">Soltanto chi conosce la tua passphrase può leggere i tuoi dati criptati. La passphrase non viene inviata a Google né memorizzata. Se dimentichi la passphrase o vuoi modificare questa impostazione, dovrai <ph name="BEGIN_LINK" />reimpostare la sincronizzazione<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Benvenuto nella famiglia di <ph name="SHORT_PRODUCT_NAME" />. Questo non è un computer come gli altri.</translation>
 <translation id="6358884629796491903">Drago</translation>
-<translation id="6360079014182882594">Questo sito non ha cookie che possono essere usati per monitorare la tua attività sul Web</translation>
 <translation id="6361850914223837199">Dettagli errore:</translation>
 <translation id="6362853299801475928">Segnala un p&amp;roblema...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3775,6 +3789,7 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">È attiva la connessione a una rete <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Condividi</translation>
+<translation id="6528189551082329571">Apri sempre questo tipo di link nell'app associata</translation>
 <translation id="6528513914570774834">Consenti ad altri utenti del dispositivo di usare questa rete</translation>
 <translation id="652948702951888897">Cronologia di Chrome</translation>
 <translation id="6530186581263215931">Queste impostazioni sono applicate dall'amministratore</translation>
@@ -5019,6 +5034,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8319414634934645341">Utilizzo chiave esteso</translation>
 <translation id="8320459152843401447">Il tuo intero schermo</translation>
 <translation id="8322814362483282060">A questa pagina è stato impedito l'accesso al microfono.</translation>
+<translation id="8323167517179506834">Digita un URL</translation>
 <translation id="8326478304147373412">PKCS #7, catena di certificati</translation>
 <translation id="8327039559959785305">Errore durante il montaggio di file Linux. Riprova.</translation>
 <translation id="8335587457941836791">Stacca dallo shelf</translation>
@@ -5095,6 +5111,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8449008133205184768">Incolla e mantieni lo stile</translation>
 <translation id="8449036207308062757">Gestisci spazio di archiviazione</translation>
 <translation id="8452135315243592079">Scheda SIM mancante</translation>
+<translation id="8455026683977728932">Impossibile attivare l'illustrazione ADB</translation>
 <translation id="845702320058262034">Impossibile stabilire una connessione. Assicurati che il Bluetooth del telefono sia attivo.</translation>
 <translation id="8457451314607652708">Importa Preferiti</translation>
 <translation id="8460336040822756677">Se disattivi Smart Lock per <ph name="DEVICE_TYPE" />, non puoi sbloccare i tuoi dispositivi Chrome utilizzando il telefono. Dovrai digitare la password.</translation>
@@ -5135,6 +5152,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8509646642152301857">Download del dizionario per il controllo ortografico non riuscito.</translation>
 <translation id="8512476990829870887">Termina processo</translation>
 <translation id="851263357009351303">Consenti sempre la visualizzazione di immagini in <ph name="HOST" /></translation>
+<translation id="8513108775083588393">Rotazione automatica</translation>
 <translation id="8514746246728959655">Prova a usare un altro token di sicurezza</translation>
 <translation id="8521475323816527629">Accedi velocemente alle tue app</translation>
 <translation id="8523493869875972733">Mantieni le modifiche</translation>
@@ -5383,7 +5401,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8850251000316748990">Visualizza altre...</translation>
 <translation id="885246833287407341">Argomenti funzione API</translation>
 <translation id="8853586775156634952">Questa carta verrà salvata solo su questo dispositivo</translation>
-<translation id="8855501062415172277">Il file <ph name="FILE_NAME" /> ha contenuti sensibili.</translation>
+<translation id="8855501062415172277">Il file <ph name="FILE_NAME" /> include contenuti sensibili.</translation>
 <translation id="885701979325669005">Dati memorizzati dai siti</translation>
 <translation id="8859057652521303089">Seleziona la tua lingua:</translation>
 <translation id="8859174528519900719">Frame secondario: <ph name="SUBFRAME_SITE" /></translation>
@@ -5571,6 +5589,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9116799625073598554">App per creare note</translation>
 <translation id="9117030152748022724">Gestisci le tue applicazioni</translation>
 <translation id="9121814364785106365">Apri in una scheda bloccata</translation>
+<translation id="9122074588095746047">Impossibile attivare ADB</translation>
 <translation id="9124003689441359348">Le password salvate verranno visualizzate qui</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rimanenti)</translation>
 <translation id="9128317794749765148">Impossibile completare la configurazione</translation>

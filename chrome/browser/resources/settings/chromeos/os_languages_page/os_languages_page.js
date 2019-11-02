@@ -57,16 +57,10 @@ Polymer({
     /** @private */
     showAddLanguagesDialog_: Boolean,
 
-    /** @private {!Map<string, string>} */
-    focusConfig_: {
+    /** @type {!Map<string, (string|Function)>} */
+    focusConfig: {
       type: Object,
-      value: function() {
-        const map = new Map();
-        if (settings.routes.INPUT_METHODS) {
-          map.set(settings.routes.INPUT_METHODS.path, '#manageInputMethods');
-        }
-        return map;
-      },
+      observer: 'focusConfigChanged_',
     },
 
     /** @private */
@@ -80,6 +74,20 @@ Polymer({
 
   /** @private {boolean} */
   isChangeInProgress_: false,
+
+  /**
+   * @param {!Map<string, (string|Function)>} newConfig
+   * @param {?Map<string, (string|Function)>} oldConfig
+   * @private
+   */
+  focusConfigChanged_: function(newConfig, oldConfig) {
+    // focusConfig is set only once on the parent, so this observer should only
+    // fire once.
+    assert(!oldConfig);
+    this.focusConfig.set(
+        settings.routes.INPUT_METHODS.path,
+        () => cr.ui.focusWithoutInk(this.$.manageInputMethods));
+  },
 
   /**
    * Stamps and opens the Add Languages dialog, registering a listener to

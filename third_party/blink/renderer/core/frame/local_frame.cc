@@ -368,6 +368,7 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
 
   supplements_.clear();
   frame_scheduler_.reset();
+  receiver_.reset();
   WeakIdentifierMap<LocalFrame>::NotifyObjectDestroyed(this);
 }
 

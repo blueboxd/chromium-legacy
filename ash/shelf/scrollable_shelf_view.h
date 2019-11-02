@@ -174,7 +174,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   void ButtonPressed(views::Button* sender,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;
-  void HandleAccessibleActionScrollToMakeVisible() override;
+  void HandleAccessibleActionScrollToMakeVisible(ShelfButton* button) override;
 
   // ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,

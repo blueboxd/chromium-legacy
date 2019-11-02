@@ -1871,14 +1871,9 @@ bool LayoutTable::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
 }
 
 // LayoutNGTableCellInterface API
-LayoutNGTableCellInterface* LayoutTable::CellInterfacePreceding(
-    const LayoutNGTableCellInterface& cell) const {
-  return CellPreceding(*cell.ToLayoutTableCell());
-}
-
-LayoutNGTableCellInterface* LayoutTable::CellInterfaceAbove(
-    const LayoutNGTableCellInterface& cell) const {
-  return CellAbove(*cell.ToLayoutTableCell());
+bool LayoutTable::IsFirstCell(const LayoutNGTableCellInterface& cell) const {
+  const LayoutTableCell& layout_cell = *cell.ToLayoutTableCell();
+  return !(CellPreceding(layout_cell) || CellAbove(layout_cell));
 }
 
 }  // namespace blink

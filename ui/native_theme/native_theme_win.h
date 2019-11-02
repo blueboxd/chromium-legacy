@@ -64,14 +64,16 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
              const gfx::Rect& rect,
              const ExtraParams& extra,
              ColorScheme color_scheme) const override;
-  SkColor GetSystemColor(ColorId color_id,
-                         ColorScheme color_scheme) const override;
+  SkColor GetSystemColor(
+      ColorId color_id,
+      ColorScheme color_scheme = ColorScheme::kDefault) const override;
   bool SupportsNinePatch(Part part) const override;
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
   gfx::Rect GetNinePatchAperture(Part part) const override;
   bool ShouldUseDarkColors() const override;
   bool SystemDarkModeSupported() const override;
   PreferredColorScheme CalculatePreferredColorScheme() const override;
+  ColorScheme GetDefaultSystemColorScheme() const override;
 
  protected:
   friend class NativeTheme;
@@ -192,6 +194,10 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   void RegisterThemeRegkeyObserver();
   void UpdateDarkModeStatus();
+
+  // Returns the platform provided high contrast color for the given
+  // |color_id|.
+  SkColor GetPlatformHighContrastColor(ColorId color_id) const;
 
   // Dark Mode registry key.
   base::win::RegKey hkcu_themes_regkey_;

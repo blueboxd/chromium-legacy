@@ -40,6 +40,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -223,6 +224,7 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_loader_factory_;
 
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
 
   user_manager::ScopedUserManager scoped_user_manager_;

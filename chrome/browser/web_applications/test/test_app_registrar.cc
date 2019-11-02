@@ -130,13 +130,13 @@ base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {
   return base::make_optional(result->second.install_url);
 }
 
-blink::mojom::DisplayMode TestAppRegistrar::GetAppUserDisplayMode(
+blink::mojom::DisplayMode TestAppRegistrar::GetAppDisplayMode(
     const AppId& app_id) const {
   NOTIMPLEMENTED();
   return blink::mojom::DisplayMode::kBrowser;
 }
 
-blink::mojom::DisplayMode TestAppRegistrar::GetAppEffectiveDisplayMode(
+blink::mojom::DisplayMode TestAppRegistrar::GetAppUserDisplayMode(
     const AppId& app_id) const {
   NOTIMPLEMENTED();
   return blink::mojom::DisplayMode::kBrowser;

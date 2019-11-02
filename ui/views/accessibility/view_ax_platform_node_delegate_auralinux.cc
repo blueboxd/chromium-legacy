@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -37,6 +36,9 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
                              public WidgetObserver,
                              public aura::WindowObserver {
  public:
+  AuraLinuxApplication(const AuraLinuxApplication&) = delete;
+  AuraLinuxApplication& operator=(const AuraLinuxApplication&) = delete;
+
   // Get the single instance of this class.
   static AuraLinuxApplication* GetInstance() {
     return base::Singleton<AuraLinuxApplication>::get();
@@ -127,8 +129,6 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
   ui::AXNodeData data_;
   ui::AXUniqueId unique_id_;
   std::vector<Widget*> widgets_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuraLinuxApplication);
 };
 
 }  // namespace

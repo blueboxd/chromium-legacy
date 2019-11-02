@@ -72,6 +72,11 @@ views::View* FindFirstOrLastFocusableChild(views::View* root,
       &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 
+bool IsInTabletMode() {
+  return Shell::Get()->tablet_mode_controller() &&
+         Shell::Get()->tablet_mode_controller()->InTabletMode();
+}
+
 }  // namespace
 
 // The contents view of the Shelf. In an active session, this is used to
@@ -231,9 +236,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   const Shelf* shelf = shelf_widget_->shelf();
   const ShelfBackgroundType background_type =
       shelf_widget_->GetBackgroundType();
-  const bool tablet_mode =
-      Shell::Get()->tablet_mode_controller() &&
-      Shell::Get()->tablet_mode_controller()->InTabletMode();
+  const bool tablet_mode = IsInTabletMode();
   const bool in_app = ShelfConfig::Get()->is_in_app();
 
   bool show_opaque_background =
@@ -278,8 +281,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
 }
 
 void ShelfWidget::DelegateView::UpdateDragHandle() {
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode() ||
-      !ShelfConfig::Get()->is_in_app() ||
+  if (!IsInTabletMode() || !ShelfConfig::Get()->is_in_app() ||
       !chromeos::switches::ShouldShowShelfHotseat()) {
     drag_handle_->SetVisible(false);
     return;
@@ -483,6 +485,11 @@ void ShelfWidget::OnShelfAlignmentChanged() {
 void ShelfWidget::OnTabletModeChanged() {
   delegate_view_->UpdateOpaqueBackground();
   hotseat_widget()->OnTabletModeChanged();
+
+  // Resets |is_hotseat_forced_to_show| when leaving the tablet mode.
+  if (!IsInTabletMode())
+    is_hotseat_forced_to_show_ = false;
+
   shelf_layout_manager()->UpdateVisibilityState();
 }
 

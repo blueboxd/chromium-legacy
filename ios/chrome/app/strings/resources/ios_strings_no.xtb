@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Mer-menyen</translation>
 <translation id="2316709634732130529">Bruk foreslått passord</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
+<translation id="2330129964253841015">Advar deg hvis passord utsettes for sikkerhetsbrudd</translation>
 <translation id="2339560363438331454">Synk. og Google-tjenester</translation>
 <translation id="2351097562818989364">Oversettelsesinnstillingene dine er tilbakestilt.</translation>
 <translation id="2359043044084662842">Oversett</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Lagre bildet</translation>
 <translation id="3789841737615482174">Installer</translation>
 <translation id="385051799172605136">Tilbake</translation>
-<translation id="3886946236301294521">Advarer deg hvis et passord du bruker, har vært en del av et databrudd.</translation>
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3915450441834151894">Opplysninger om nettstedet</translation>
 <translation id="3922310737605261887">Søk etter teksten du kopierte</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Sider du har lest</translation>
 <translation id="4630540211544979320">Oversett sider</translation>
 <translation id="4636930964841734540">Info</translation>
+<translation id="4659126640776004816">Når du logger på Google-kontoen, blir denne funksjonen slått på.</translation>
 <translation id="4659667755519643272">Åpne fanevelgeren</translation>
 <translation id="4666531726415300315">Logget på som <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="5327248766486351172">Navn</translation>
-<translation id="5365716706805792666">Google kan sjekke om passordene dine har vært en del av et databrudd. Dette blir slått på når du logger på med Google-kontoen din.</translation>
 <translation id="5388358297987318779">Åpne bildet</translation>
 <translation id="5407969256130905701">Forkast endringer</translation>
 <translation id="5409365236829784218">Ingen av de installerte appene kan åpne denne filen.</translation>
@@ -333,7 +333,6 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5854790677617711513">Eldre enn 30 dager</translation>
 <translation id="5857090052475505287">Ny mappe</translation>
 <translation id="5857770089550859117">Det kreves en passordfrase for å starte synkroniseringen.</translation>
-<translation id="5859444426865731878">Google kan sjekke om passordene dine har vært en del av et databrudd.</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5869029295770560994">Greit</translation>
 <translation id="5871497086027727873">1 element er flyttet</translation>
@@ -483,7 +482,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7859704718976024901">Nettleserlogg</translation>
 <translation id="7887198238286927132">For å beskytte personvernet ditt fyller ikke Chrome automatisk ut dette feltet.</translation>
 <translation id="7918293828610777738">Leselisten din er tilgjengelig uten nett. Du kan legge til sider i leselisten ved å trykke på <ph name="SHARE_OPENING_ICON" /> og deretter <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Sjekk passordsikkerheten</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksportér passord</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>

@@ -39,7 +39,7 @@ cr.define('accessibility', function() {
 
   function getIdFromData(data) {
     if (data.type == 'page') {
-      return data.processId + '.' + data.routeId;
+      return data.processId + '.' + data.routingId;
     } else if (data.type == 'browser') {
       return 'browser.' + data.sessionId;
     } else {
@@ -59,7 +59,7 @@ cr.define('accessibility', function() {
     const shouldRequestTree = !!tree && tree.style.display != 'none';
     chrome.send('toggleAccessibility', [{
                   'processId': data.processId,
-                  'routeId': data.routeId,
+                  'routingId': data.routingId,
                   'modeId': mode,
                   'shouldRequestTree': shouldRequestTree
                 }]);
@@ -93,7 +93,7 @@ cr.define('accessibility', function() {
       chrome.send(
           'requestWebContentsTree', [{
             'processId': data.processId,
-            'routeId': data.routeId,
+            'routingId': data.routingId,
             'requestType': requestType,
             'filters': {'allow': allow, 'allowEmpty': allowEmpty, 'deny': deny}
           }]);
@@ -115,7 +115,7 @@ cr.define('accessibility', function() {
       // TODO Show all start recording elements.
     }
     chrome.send('requestAccessibilityEvents', [
-      {'processId': data.processId, 'routeId': data.routeId, 'start': start}
+      {'processId': data.processId, 'routingId': data.routingId, 'start': start}
     ]);
   }
 
@@ -177,7 +177,7 @@ cr.define('accessibility', function() {
     formatRow(row, data);
 
     row.processId = data.processId;
-    row.routeId = data.routeId;
+    row.routingId = data.routingId;
 
     const pages = $('pages');
     pages.appendChild(row);

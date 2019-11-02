@@ -164,6 +164,7 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
             l10n_util::GetStringUTF16(label_string_id),
             ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
             views::style::STYLE_SECONDARY);
+        label->SetMultiLine(true);
         label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         const int horizontal_spacing =
             ChromeLayoutProvider::Get()->GetDistanceMetric(

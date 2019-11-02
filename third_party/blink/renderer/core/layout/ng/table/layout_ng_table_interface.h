@@ -44,10 +44,7 @@ class LayoutNGTableInterface {
   virtual LayoutNGTableSectionInterface* SectionBelowInterface(
       const LayoutNGTableSectionInterface*,
       SkipEmptySectionsValue) const = 0;
-  virtual LayoutNGTableCellInterface* CellInterfacePreceding(
-      const LayoutNGTableCellInterface&) const = 0;
-  virtual LayoutNGTableCellInterface* CellInterfaceAbove(
-      const LayoutNGTableCellInterface&) const = 0;
+  virtual bool IsFirstCell(const LayoutNGTableCellInterface&) const = 0;
 };
 
 template <>

@@ -153,6 +153,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2063539687800151747">Motto</translation>
 <translation id="207477615537953741">Semantik fra</translation>
 <translation id="2086961585857038472">Næste ord</translation>
+<translation id="2087981446621639008">oplsng i bskrvlst</translation>
 <translation id="2089387485033699258">da</translation>
 <translation id="2091933974477985526">Forrige tekstområde, som kan redigeres</translation>
 <translation id="2100350898815792233">Al tegnsætning</translation>
@@ -193,6 +194,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2416512023405990736">Et afkrydsningsfelt uden markering</translation>
 <translation id="2417569100218200841">Indholdsoplysninger</translation>
 <translation id="2417948780551741035">Slutnoter</translation>
+<translation id="2419852971200420169">Beskrivelsesliste</translation>
 <translation id="2421113964388408478">Sletning</translation>
 <translation id="2422937916923936891">Afkrydsningsfelt til menupunkt</translation>
 <translation id="2428534162001909979">Kommandomenuer</translation>
@@ -371,6 +373,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3497063866483065785">{COUNT,plural, =1{spørgsmålstegn}one{# spørgsmålstegn}other{# spørgsmålstegn}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{cirkumfleks}one{ # cirkumflekser}other{# cirkumflekser}}</translation>
 <translation id="352577523970648069">Et justerbart tekstfelt</translation>
+<translation id="3538907380453898475">bskrvlst</translation>
 <translation id="3549141990712742152">klip <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Tryk med to fingre for midlertidigt at stoppe tale</translation>
 <translation id="3568702578574425662">Afkrydsningsfeltet <ph name="NAME" /> er ikke markeret</translation>
@@ -779,6 +782,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6378394210114975876">Lilla tidselblomst</translation>
 <translation id="6385591741672306837">kol</translation>
 <translation id="6387719785439924554">tilsi</translation>
+<translation id="6393014464788431702">Deaktiver alle hændelsesfiltre</translation>
 <translation id="6411426777058107714">Ingen tidligere alternativknapper.</translation>
 <translation id="6414968628640960377">Forrige anderledes element.</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -914,6 +918,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="7332592614823088566">Række <ph name="ROWINDEX" /> af <ph name="ROWTOTAL" />, kolonne <ph name="COLINDEX" /> af <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">har pop op-vindue</translation>
 <translation id="7356165926712028380">Skift til 8-punkts braillealfabet</translation>
+<translation id="7356610683936413584">Oplysning i beskrivelsesliste</translation>
 <translation id="7362871137496673139">Ingen tidligere niveau 2-overskrifter.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{og-tegn}one{# og-tegn}other{# og-tegn}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8096975275316362544">Mintgrøn</translation>
 <translation id="8098587210054821856">Skifergrå</translation>
 <translation id="8110647606445335195">Ingen ARIA-orienteringspunkter.</translation>
+<translation id="8121539003537428024">Aktivér alle hændelsesfiltre</translation>
 <translation id="812886159861361726">Download af <ph name="FILE_NAME" /> er stoppet</translation>
 <translation id="8138880386467279117">Berøring</translation>
 <translation id="8153880621934657047">Ikke i tabel.</translation>

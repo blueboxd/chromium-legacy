@@ -58,6 +58,7 @@ class ServiceProcessTracker {
         FROM_HERE,
         base::BindOnce(&ServiceProcessTracker::NotifyTerminatedOnUIThread,
                        base::Unretained(this), iter->second));
+    processes_.erase(iter);
   }
 
   void NotifyCrashed(ServiceProcessId id) {
@@ -69,6 +70,7 @@ class ServiceProcessTracker {
         FROM_HERE,
         base::BindOnce(&ServiceProcessTracker::NotifyCrashedOnUIThread,
                        base::Unretained(this), iter->second));
+    processes_.erase(iter);
   }
 
   void AddObserver(ServiceProcessHost::Observer* observer) {
@@ -147,16 +149,22 @@ class UtilityProcessClient : public UtilityProcessHost::Client {
 
   void OnProcessTerminatedNormally() override {
     GetServiceProcessTracker().NotifyTerminated(
-        process_info_.service_process_id);
+        process_info_->service_process_id);
   }
 
   void OnProcessCrashed() override {
-    GetServiceProcessTracker().NotifyCrashed(process_info_.service_process_id);
+    // TODO(https://crbug.com/1016027): It is unclear how we can observe
+    // |OnProcessCrashed()| without observing |OnProcessLaunched()| first, but
+    // it can happen on Android. Ignore the notification in this case.
+    if (!process_info_)
+      return;
+
+    GetServiceProcessTracker().NotifyCrashed(process_info_->service_process_id);
   }
 
  private:
   const std::string service_interface_name_;
-  ServiceProcessInfo process_info_;
+  base::Optional<ServiceProcessInfo> process_info_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessClient);
 };

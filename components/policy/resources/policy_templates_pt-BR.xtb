@@ -71,7 +71,7 @@
 <translation id="1062407476771304334">Substituir</translation>
 <translation id="1078643757670228170">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Especifica o período sem entradas do usuário após o qual a tela é desligada quando o dispositivo funciona com energia CA.
+          Especifica quanto tempo sem entrada do usuário a tela espera antes de desligar quando o dispositivo está funcionando com energia CA.
 
           Quando esta política é definida como um valor maior que zero, ela especifica o período que o usuário precisa permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> desligue a tela.
 
@@ -590,7 +590,7 @@ Cada item da lista da política é uma string que contém um código de extensã
       Se essa configuração estiver ativada ou não tiver um valor definido, o usuário poderá controlar o recurso Preenchimento automático para endereços na IU.</translation>
 <translation id="1959613237819575097">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Especifica o período sem entradas do usuário após o qual a tela é desligada quando o dispositivo funciona com energia da bateria.
+          Especifica quanto tempo sem entrada do usuário a tela espera antes de desligar quando o dispositivo está funcionando com energia da bateria.
 
           Quando esta política é definida como um valor maior que zero, ela especifica o período que o usuário precisa permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> desligue a tela.
 
@@ -640,11 +640,6 @@ Se esta configuração for deixada sem definição, os usuários poderão optar 
           Se essa configuração for desativada, a transferência de arquivos não será permitida. Se essa configuração for ativada ou não for definida, a transferência de arquivos será permitida.</translation>
 <translation id="2057317273526988987">Permitir acesso a uma lista de URLs</translation>
 <translation id="2061810934846663491">Configurar os nomes de domínio obrigatórios para hosts de acesso remoto</translation>
-<translation id="2063663607822994541">Configurar a quantidade de memória que uma única instância do <ph name="PRODUCT_NAME" /> pode usar antes que as abas comecem a ser descartadas (isto é, a memória usada por uma aba será liberada, e a aba terá que ser recarregada ao ser aberta novamente) para economizar memória.
-
-      Se a política for definida, o navegador começará a descartar abas para economizar memória quando o limite for excedido. Entretanto, não há garantia de que o navegador seja sempre executado dentro dos limites. Qualquer valor abaixo de 2.048 será arredondado para esse número.
-
-      Se esta política não for definida, o navegador só começará a economizar memória quando detectar que a quantidade de memória física da máquina está baixa.</translation>
 <translation id="206623763829450685">Especifica quais esquemas de autenticação HTTP são compatíveis com <ph name="PRODUCT_NAME" />.
 
           Os valores possíveis são "básico", "resumo", "ntlm" e "negociar". Separe valores múltiplos com vírgulas.
@@ -852,7 +847,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
           Quando esta política não é definida, um período padrão é usado.
 
-          A maneira recomendada de bloquear a tela depois de um período de inatividade é ativar o bloqueio de tela quando o dispositivo estiver suspenso e suspender o <ph name="PRODUCT_OS_NAME" /> depois do intervalo de inatividade. Esta política só deve ser usada quando o bloqueio de tela ocorre muito antes da suspensão ou quando a suspensão devida à inatividade não é desejada.
+          A maneira recomendada de bloquear a tela depois de um período de inatividade é ativar o bloqueio de tela quando o dispositivo estiver suspenso e suspender o <ph name="PRODUCT_OS_NAME" /> depois do intervalo de inatividade. Esta política só deve ser usada quando o bloqueio de tela ocorrer muito antes da suspensão ou quando a suspensão devida à inatividade não for desejada.
 
           O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores que o intervalo de inatividade.</translation>
 <translation id="2433412232489478893">Esta política controla se o recurso de Compartilhamento de arquivos de rede do <ph name="PRODUCT_NAME" /> é permitido para um usuário.
@@ -930,7 +925,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Um padrão de URL é formatado de acordo com https://www.chromium.org/administrators/url-blacklist-filter-format. No entanto, como os certificados são válidos para um nome de host específico independente do esquema, porta ou caminho, apenas a parte do nome do host do URL é considerada. Hosts curingas não são compatíveis.
 
       Se esta política não for definida, qualquer certificado que deva ser divulgado por meio da Transparência dos certificados será tratado como não confiável, se não for divulgado de acordo com a política de Transparência dos certificados.</translation>
-<translation id="2486911595447603756">Controla o modo de DNS sobre HTTPS.</translation>
 <translation id="2488010520405124654">Ativar o prompt de configuração de rede quando estiver off-line.
 
       Se esta política não for definida ou for definida como Verdadeira, uma conta local de dispositivo for configurada para login automático com atraso zero e o dispositivo não tiver acesso à Internet, o <ph name="PRODUCT_OS_NAME" /> mostrará um prompt de configuração de rede.
@@ -1564,7 +1558,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
 <translation id="3602332793276340697">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
 
-          Especifica o período sem entradas do usuário após o qual a tela é bloqueada quando o dispositivo funciona com energia da bateria.
+          Especifica quanto tempo sem entrada do usuário a tela espera antes de entrar em modo de bloqueio quando o dispositivo está funcionando com energia da bateria.
 
           Quando esta política é definida como um valor maior que zero, ela especifica quanto tempo o usuário precisa ficar inativo para que o <ph name="PRODUCT_OS_NAME" /> bloqueie a tela.
 
@@ -1572,7 +1566,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
           Quando esta política não é definida, um período padrão é usado.
 
-          A maneira recomendada de bloquear a tela depois de um período de inatividade é ativar o bloqueio de tela quando o dispositivo estiver suspenso e suspender o <ph name="PRODUCT_OS_NAME" /> depois do intervalo de inatividade. Esta política só deve ser usada quando o bloqueio de tela ocorre muito antes da suspensão ou quando a suspensão devida à inatividade não é desejada.
+          A maneira recomendada de bloquear a tela depois de um período de inatividade é ativar o bloqueio de tela quando o dispositivo estiver suspenso e suspender o <ph name="PRODUCT_OS_NAME" /> depois do intervalo de inatividade. Esta política só deve ser usada quando o bloqueio de tela ocorrer muito antes da suspensão ou quando a suspensão devida à inatividade não for desejada.
 
           O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores que o intervalo de inatividade.</translation>
 <translation id="3624515566460517364">Verifica violações da regra de proteção de dados confidenciais em uploads e downloads</translation>
@@ -3651,13 +3645,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Todas as três políticas, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed precisam ser verdadeiras quando se aplicarem ao Crostini para que ele possa ser executado.
       Quando esta política é alterada para falsa, ela se aplica à criação de novos contêineres do Crostini, mas não encerra contêineres que já estão em execução.</translation>
 <translation id="7234280155140786597">Nomes dos hosts de mensagens nativas proibidos (ou "*" para todos)</translation>
-<translation id="7236775576470542603">Definir o tipo de padrão de lupa ativada na tela de login.
-
-          Se esta política for definida, controlará o tipo de lupa que é ativada quando a tela de login é exibida. Defini-la como "Nenhuma" desativa a lupa.
-
-          Se você definir esta política, os usuários poderão substituí-la temporariamente ativando ou desativando a lupa. No entanto, a escolha do usuário não é permanente e o padrão será restaurado sempre que a tela de login for exibida novamente ou quando o usuário permanecer inativo na tela de login por um minuto.
-
-          Se esta política não for definida, a lupa será desativada quando a tela de login for exibida pela primeira vez. Os usuários podem ativar ou desativar a lupa a qualquer momento e seu status na tela de login continuará entre os usuários.</translation>
 <translation id="7249828445670652637">Ativar certificados de CA (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> para apps ARC</translation>
 <translation id="7251652588006515288">Esta política controla se o usuário pode importar e remover certificados do cliente por meio do Gerenciador de certificados.
 

@@ -464,6 +464,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if scroll events should be ignored.
   bool ShouldIgnoreScrollEvents();
 
+  // Returns true if the Embedded Assistant UI is currently being shown.
+  bool IsShowingEmbeddedAssistantUI() const;
+
   // Returns preferred y of fullscreen widget bounds in parent window for the
   // specified state.
   int GetPreferredWidgetYForState(ash::AppListViewState state) const;

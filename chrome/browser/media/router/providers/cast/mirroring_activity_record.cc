@@ -46,16 +46,11 @@ MirroringActivityRecord::MirroringActivityRecord(
     const std::string& app_id,
     cast_channel::CastMessageHandler* message_handler,
     CastSessionTracker* session_tracker,
-    DataDecoder* data_decoder,
     int target_tab_id,
     const CastSinkExtraData& cast_data,
     mojom::MediaRouter* media_router,
     OnStopCallback callback)
-    : ActivityRecord(route,
-                     app_id,
-                     message_handler,
-                     session_tracker,
-                     data_decoder),
+    : ActivityRecord(route, app_id, message_handler, session_tracker),
       channel_id_(cast_data.cast_channel_id),
       // TODO(jrw): MirroringType::kOffscreenTab should be a possible value here
       // once the Presentation API 1UA mode is supported.
@@ -119,10 +114,19 @@ void MirroringActivityRecord::Send(mirroring::mojom::CastMessagePtr message) {
   DCHECK(message);
   DVLOG(2) << "Relaying message to receiver: " << message->json_format_data;
 
-  data_decoder_->ParseJson(
+  GetDataDecoder().ParseJson(
       message->json_format_data,
       base::BindRepeating(
-          [](base::WeakPtr<MirroringActivityRecord> self, base::Value value) {
+          [](const std::string& route_id,
+             base::WeakPtr<MirroringActivityRecord> self,
+             data_decoder::DataDecoder::ValueOrError result) {
+            if (!result.value) {
+              // TODO(crbug.com/905002): Record UMA metric for parse result.
+              DLOG(ERROR) << "Failed to parse Cast client message for "
+                          << route_id << ": " << *result.error;
+              return;
+            }
+
             if (!self)
               return;
 
@@ -133,20 +137,14 @@ void MirroringActivityRecord::Send(mirroring::mojom::CastMessagePtr message) {
             // CastActivityRecord::SendAppMessageToReceiver?
             cast_channel::CastMessage cast_message =
                 cast_channel::CreateCastMessage(
-                    mirroring::mojom::kWebRtcNamespace, std::move(value),
+                    mirroring::mojom::kWebRtcNamespace,
+                    std::move(*result.value),
                     self->message_handler_->sender_id(),
                     session->transport_id());
             self->message_handler_->SendCastMessage(self->channel_id_,
                                                     cast_message);
           },
-          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(
-          [](const std::string& route_id, const std::string& error) {
-            // TODO(crbug.com/905002): Record UMA metric for parse result.
-            DLOG(ERROR) << "Failed to parse Cast client message for "
-                        << route_id << ": " << error;
-          },
-          route().media_route_id()));
+          route().media_route_id(), weak_ptr_factory_.GetWeakPtr()));
 }
 
 Result MirroringActivityRecord::SendAppMessageToReceiver(

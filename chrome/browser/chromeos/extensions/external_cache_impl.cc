@@ -24,7 +24,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/common/extension.h"
@@ -250,12 +249,6 @@ bool ExternalCacheImpl::GetExtensionExistingVersion(const std::string& id,
   return false;
 }
 
-service_manager::Connector* ExternalCacheImpl::GetConnector() {
-  if (use_null_connector_)
-    return nullptr;
-  return content::GetSystemConnector();
-}
-
 void ExternalCacheImpl::UpdateExtensionLoader() {
   VLOG(1) << "Notify ExternalCacheImpl delegate about cache update";
   if (delegate_)
@@ -269,8 +262,7 @@ void ExternalCacheImpl::CheckCache() {
   // If url_loader_factory_ is missing we can't download anything.
   if (url_loader_factory_) {
     downloader_ = ChromeExtensionDownloaderFactory::CreateForURLLoaderFactory(
-        url_loader_factory_, this, GetConnector(),
-        extensions::GetExternalVerifierFormat());
+        url_loader_factory_, this, extensions::GetExternalVerifierFormat());
   }
 
   cached_extensions_->Clear();

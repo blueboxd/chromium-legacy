@@ -12,7 +12,6 @@
 #include <set>
 #include <vector>
 
-#include "base/macros.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/views/views_export.h"
@@ -35,6 +34,8 @@ class Widget;
 class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
  public:
   AXAuraObjCache();
+  AXAuraObjCache(const AXAuraObjCache&) = delete;
+  AXAuraObjCache& operator=(const AXAuraObjCache&) = delete;
   ~AXAuraObjCache() override;
 
   class Delegate {
@@ -135,8 +136,6 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   std::set<aura::Window*> root_windows_;
 
   views::Widget* focused_widget_for_testing_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(AXAuraObjCache);
 };
 
 }  // namespace views

@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PrefServiceBridgeJni;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.website.Website.StoredDataClearedCallback;
@@ -586,7 +585,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                 ? ContentSettingValues.BLOCK
                 : ContentSettingValues.ALLOW;
 
-        PrefServiceBridgeJni.get().setContentSettingForPattern(PrefServiceBridge.getInstance(),
+        PrefServiceBridge.getInstance().setContentSettingForPattern(
                 mCategory.getContentSettingsType(), hostname, setting);
         Toast.makeText(getActivity(),
                 String.format(getActivity().getString(

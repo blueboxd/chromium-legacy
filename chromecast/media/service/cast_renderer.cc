@@ -130,10 +130,10 @@ void CastRenderer::OnSubscribeToVideoGeometryChange(
   // CastApplicationMediaInfoManager.
 
   if (host_interfaces_) {
-    service_manager::GetInterface<
-        ::media::mojom::CastApplicationMediaInfoManager>(
-        host_interfaces_,
-        application_media_info_manager_remote_.BindNewPipeAndPassReceiver());
+    host_interfaces_->GetInterface(
+        ::media::mojom::CastApplicationMediaInfoManager::Name_,
+        application_media_info_manager_remote_.BindNewPipeAndPassReceiver()
+            .PassPipe());
   }
 
   if (application_media_info_manager_remote_) {

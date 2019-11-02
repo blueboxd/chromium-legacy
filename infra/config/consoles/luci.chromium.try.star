@@ -35,7 +35,6 @@ luci.list_view(
         'try/chromeos-arm-generic-dbg',
         'try/chromeos-arm-generic-rel',
         'try/chromeos-kevin-compile-rel',
-        'try/chromeos-kevin-experimental-rel',
         'try/chromeos-kevin-rel',
         'try/chromium_presubmit',
         'try/closure_compilation',

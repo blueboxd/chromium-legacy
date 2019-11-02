@@ -1391,7 +1391,6 @@
 <translation id="2989786307324390836">DER エンコード バイナリ形式の単一の証明書</translation>
 <translation id="2992931425024192067">すべての通知内容を表示する</translation>
 <translation id="2993517869960930405">アプリ情報</translation>
-<translation id="299483336428448530">保護者によりインストールされています。</translation>
 <translation id="2996286169319737844">データを同期パスフレーズで暗号化します。なお、Google Pay のお支払い方法と住所はこれには含まれません。</translation>
 <translation id="2996722619877761919">長辺とじ</translation>
 <translation id="3003144360685731741">優先ネットワーク</translation>
@@ -3661,7 +3660,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="63566973648609420">パスフレーズを知っているユーザーだけが暗号化データを読み取ることができます。パスフレーズが Google に送信されたり Google で保存されたりすることはありません。パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />する必要があります。</translation>
 <translation id="6357619544108132570"><ph name="SHORT_PRODUCT_NAME" /> ファミリーへようこそ。これは新しいタイプのパソコンです。</translation>
 <translation id="6358884629796491903">ドラゴン</translation>
-<translation id="6360079014182882594">このサイトに Cookie はありません。Cookie はウェブでのユーザーのトラッキングに使用されます</translation>
 <translation id="6361850914223837199">エラーの詳細:</translation>
 <translation id="6362853299801475928">問題の報告(&amp;R)...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -5021,6 +5019,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8319414634934645341">拡張キーの用途</translation>
 <translation id="8320459152843401447">あなたの全画面</translation>
 <translation id="8322814362483282060">このページはマイクへのアクセスを禁止されています。</translation>
+<translation id="8323167517179506834">URL を入力してください</translation>
 <translation id="8326478304147373412">PKCS #7、証明書チェーン</translation>
 <translation id="8327039559959785305">[Linux ファイル] のマウント中にエラーが発生しました。もう一度お試しください。</translation>
 <translation id="8335587457941836791">シェルフの固定解除</translation>
@@ -5137,6 +5136,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8509646642152301857">スペルチェック辞書をダウンロードできませんでした。</translation>
 <translation id="8512476990829870887">プロセスを終了</translation>
 <translation id="851263357009351303"><ph name="HOST" /> の画像を常に表示する</translation>
+<translation id="8513108775083588393">自動回転</translation>
 <translation id="8514746246728959655">別のセキュリティ キーを試す</translation>
 <translation id="8521475323816527629">アプリにすばやく移動</translation>
 <translation id="8523493869875972733">変更を保持</translation>

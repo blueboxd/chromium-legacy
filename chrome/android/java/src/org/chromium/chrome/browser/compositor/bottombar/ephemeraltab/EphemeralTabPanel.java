@@ -157,9 +157,6 @@ public class EphemeralTabPanel extends OverlayPanel {
         @Override
         public void onMainFrameNavigation(
                 String url, boolean isExternalUrl, boolean isFailure, boolean isError) {
-            // Force WebContents to be visible. URLs that are supposed to create a separate tab but
-            // ended up on the preview tab needs this.
-            getWebContents().onShow();
             updateCaption();
             mIsOnErrorPage = isError;
         }
@@ -176,8 +173,8 @@ public class EphemeralTabPanel extends OverlayPanel {
 
         @Override
         public void onOpenNewTabRequested(String url) {
-            // We never open a new tab when navigating in an overlay.
-            loadUrlInPanel(url);
+            // We never open a separate tab when navigating in an overlay.
+            getWebContents().getNavigationController().loadUrl(new LoadUrlParams(url));
             requestPanelShow(StateChangeReason.CLICK);
         }
     }

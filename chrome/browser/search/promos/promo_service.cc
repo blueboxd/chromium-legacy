@@ -17,11 +17,9 @@
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
@@ -178,33 +176,32 @@ void PromoService::OnLoadDone(std::unique_ptr<std::string> response_body) {
     response = response.substr(strlen(kXSSIResponsePreamble));
   }
 
-  data_decoder::SafeJsonParser::Parse(
-      content::GetSystemConnector(), response,
-      base::BindOnce(&PromoService::OnJsonParsed,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&PromoService::OnJsonParseFailed,
-                     weak_ptr_factory_.GetWeakPtr()));
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      response, base::BindOnce(&PromoService::OnJsonParsed,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PromoService::OnJsonParsed(base::Value value) {
-  base::Optional<PromoData> result;
-  PromoService::Status status;
-
-  if (JsonToPromoData(value, &result)) {
-    bool is_blocked = IsBlockedAfterClearingExpired(result->promo_id);
-    if (is_blocked)
-      result = PromoData();
-    status = is_blocked ? Status::OK_BUT_BLOCKED : Status::OK_WITH_PROMO;
-  } else {
-    status = result ? Status::OK_WITHOUT_PROMO : Status::FATAL_ERROR;
+void PromoService::OnJsonParsed(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    DVLOG(1) << "Parsing JSON failed: " << *result.error;
+    PromoDataLoaded(Status::FATAL_ERROR, base::nullopt);
+    return;
   }
 
-  PromoDataLoaded(status, result);
-}
+  base::Optional<PromoData> data;
+  PromoService::Status status;
 
-void PromoService::OnJsonParseFailed(const std::string& message) {
-  DVLOG(1) << "Parsing JSON failed: " << message;
-  PromoDataLoaded(Status::FATAL_ERROR, base::nullopt);
+  if (JsonToPromoData(*result.value, &data)) {
+    bool is_blocked = IsBlockedAfterClearingExpired(data->promo_id);
+    if (is_blocked)
+      data = PromoData();
+    status = is_blocked ? Status::OK_BUT_BLOCKED : Status::OK_WITH_PROMO;
+  } else {
+    status = data ? Status::OK_WITHOUT_PROMO : Status::FATAL_ERROR;
+  }
+
+  PromoDataLoaded(status, data);
 }
 
 void PromoService::Shutdown() {

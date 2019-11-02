@@ -13,6 +13,9 @@ class BrowserActionsContainer;
 
 class BrowserActionTestUtilViews : public BrowserActionTestUtil {
  public:
+  BrowserActionTestUtilViews(const BrowserActionTestUtilViews&) = delete;
+  BrowserActionTestUtilViews& operator=(const BrowserActionTestUtilViews&) =
+      delete;
   ~BrowserActionTestUtilViews() override;
 
   // BrowserActionTestUtil:
@@ -55,8 +58,6 @@ class BrowserActionTestUtilViews : public BrowserActionTestUtil {
 
   // The associated BrowserActionsContainer. Not owned.
   BrowserActionsContainer* const browser_actions_container_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserActionTestUtilViews);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTION_TEST_UTIL_VIEWS_H_

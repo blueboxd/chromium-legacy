@@ -194,6 +194,7 @@ FEATURE_GRAMMAR = (
           'component': 'SimpleFeature::COMPONENT_LOCATION',
           'external_component': 'SimpleFeature::EXTERNAL_COMPONENT_LOCATION',
           'policy': 'SimpleFeature::POLICY_LOCATION',
+          'unpacked': 'SimpleFeature::UNPACKED_LOCATION',
         }
       }
     },

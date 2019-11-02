@@ -13,4 +13,8 @@ void RenderMediaEventHandler::SendQueuedMediaEvents(
   RenderThread::Get()->Send(new ViewHostMsg_MediaLogEvents(events_to_send));
 }
 
+// This media log doesn't care, since the RenderThread outlives us for
+// chrome://media-internals.
+void RenderMediaEventHandler::OnWebMediaPlayerDestroyed() {}
+
 }  // namespace content

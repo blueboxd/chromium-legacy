@@ -148,6 +148,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'EXT_texture_filter_anisotropic',
         'KHR_parallel_shader_compile',
         'OES_element_index_uint',
+        'OES_fbo_render_mipmap',
         'OES_standard_derivatives',
         'OES_texture_float',
         'OES_texture_float_linear',

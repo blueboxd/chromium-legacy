@@ -157,10 +157,11 @@ class ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag
       public testing::WithParamInterface<bool> {
  public:
   ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag() = default;
+  ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag(
+      const ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag&) = delete;
+  ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag& operator=(
+      const ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag&) = delete;
   ~ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag);
 };
 
 INSTANTIATE_TEST_SUITE_P(,

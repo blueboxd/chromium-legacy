@@ -133,10 +133,29 @@ TEST_F(AssistantPageViewTest, ShouldFocusTextDialogWhenOpeningWithHotkey) {
   EXPECT_HAS_FOCUS(input_text_field());
 }
 
-TEST_F(AssistantPageViewTest, ShouldFocusTextDialogAfterSendingQuery) {
+TEST_F(AssistantPageViewTest, ShouldNotLoseTextfieldFocusWhenSendingTextQuery) {
   ShowAssistantUi();
 
   SendQueryThroughTextField("The query");
+
+  EXPECT_HAS_FOCUS(input_text_field());
+}
+
+TEST_F(AssistantPageViewTest,
+       ShouldNotLoseTextfieldFocusWhenDisplayingResponse) {
+  ShowAssistantUi();
+
+  MockAssistantInteractionWithResponse("The response");
+
+  EXPECT_HAS_FOCUS(input_text_field());
+}
+
+TEST_F(AssistantPageViewTest, ShouldNotLoseTextfieldFocusWhenResizing) {
+  ShowAssistantUi();
+
+  MockAssistantInteractionWithResponse(
+      "This\ntext\nis\nbig\nenough\nto\ncause\nthe\nassistant\nscreen\nto\n"
+      "resize.");
 
   EXPECT_HAS_FOCUS(input_text_field());
 }

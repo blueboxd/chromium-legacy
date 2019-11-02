@@ -377,6 +377,15 @@ def execute_telemetry_benchmark(
 
   print_duration('executing benchmark %s' % command_generator.benchmark, start)
 
+  # Telemetry sets exit code to -1 to indicate that no stories were run. This
+  # becomes 255 on linux because linux doesn't support -1 so it does modulo:
+  # -1 % 256 == 255.
+  # TODO(crbug.com/1019139): Make 111 be the exit code that means
+  # "no stories were run.".
+  if return_code in (111, -1, 255):
+    print ('Exit code %s indicates that no stories were run, so we are marking '
+           'this as a success.' % return_code)
+    return 0
   if return_code:
     return return_code
   return 0

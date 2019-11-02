@@ -110,8 +110,8 @@ class MODULES_EXPORT PeerConnectionTracker
 
   // Sends an update when setLocalDescription or setRemoteDescription is called.
   virtual void TrackSetSessionDescription(RTCPeerConnectionHandler* pc_handler,
-                                          const std::string& sdp,
-                                          const std::string& type,
+                                          const String& sdp,
+                                          const String& type,
                                           Source source);
   virtual void TrackSetSessionDescriptionImplicit(
       RTCPeerConnectionHandler* pc_handler);
@@ -203,12 +203,12 @@ class MODULES_EXPORT PeerConnectionTracker
   virtual void TrackSessionDescriptionCallback(
       RTCPeerConnectionHandler* pc_handler,
       Action action,
-      const std::string& type,
-      const std::string& value);
+      const String& type,
+      const String& value);
 
   // Sends an update when the session description's ID is set.
   virtual void TrackSessionId(RTCPeerConnectionHandler* pc_handler,
-                              const std::string& session_id);
+                              const String& session_id);
 
   // Sends an update when onRenegotiationNeeded is called.
   virtual void TrackOnRenegotiationNeeded(RTCPeerConnectionHandler* pc_handler);
@@ -219,7 +219,7 @@ class MODULES_EXPORT PeerConnectionTracker
 
   // Sends a new fragment on an RtcEventLog.
   virtual void TrackRtcEventLogWrite(RTCPeerConnectionHandler* pc_handler,
-                                     const std::string& output);
+                                     const String& output);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, OnSuspend);

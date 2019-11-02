@@ -117,6 +117,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kDefault,
     kLight,
     kDark,
+    kPlatformHighContrast,  // When the platform is providing HC colors (eg.
+                            // Win)
   };
 
   // Each structure below holds extra information needed when painting a given
@@ -462,11 +464,11 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Returns the system's caption style.
   virtual base::Optional<CaptionStyle> GetSystemCaptionStyle() const;
 
-  ColorScheme GetSystemColorScheme() const;
+  virtual ColorScheme GetDefaultSystemColorScheme() const;
 
   virtual const std::map<SystemThemeColor, SkColor>& GetSystemColors() const;
 
-  base::Optional<SkColor> GetSystemColorFromMap(
+  base::Optional<SkColor> GetSystemThemeColor(
       SystemThemeColor theme_color) const;
 
   bool HasDifferentSystemColors(

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H_
 
-#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -33,6 +32,8 @@ class ReloadButton : public ToolbarButton,
   static const char kViewClassName[];
 
   explicit ReloadButton(CommandUpdater* command_updater);
+  ReloadButton(const ReloadButton&) = delete;
+  ReloadButton& operator=(const ReloadButton&) = delete;
   ~ReloadButton() override;
 
   // Ask for a specified button state.  If |force| is true this will be applied
@@ -107,8 +108,6 @@ class ReloadButton : public ToolbarButton,
   // Increments when we would tell the browser to "reload", so
   // test code can tell whether we did so (as there may be no |browser_|).
   int testing_reload_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ReloadButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_RELOAD_BUTTON_H_

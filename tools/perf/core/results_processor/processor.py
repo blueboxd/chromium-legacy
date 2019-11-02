@@ -127,13 +127,13 @@ def GenerateExitCode(test_results):
 
   Returns:
     1 if there were failed tests.
-    -1 if all tests were skipped.
+    111 if all tests were skipped. (See crbug.com/1019139#c8 for details).
     0 otherwise.
   """
   if any(r['status'] == 'FAIL' for r in test_results):
     return 1
   if all(r['status'] == 'SKIP' for r in test_results):
-    return -1
+    return 111
   return 0
 
 

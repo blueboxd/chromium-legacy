@@ -300,6 +300,7 @@
 <translation id="5302048478445481009">Мова</translation>
 <translation id="5313326810920013265">Налаштування Bluetooth</translation>
 <translation id="5331975486040154427">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Забагато спроб</translation>
 <translation id="5397578532367286026">Менеджер (<ph name="MANAGER_EMAIL" />) може переглядати дії й історію цього користувача на chrome.com.</translation>
 <translation id="5430931332414098647">Миттєва точка доступу</translation>
@@ -322,6 +323,7 @@
 <translation id="5682642926269496722">Google Асистент недоступний для поточного облікового запису користувача.</translation>
 <translation id="5691772641933328258">Відбиток не розпізнано</translation>
 <translation id="5710450975648804523">Режим "Не турбувати" ввімкнено</translation>
+<translation id="573413375004481890">Цей пристрій не може підтримувати всі екрани, тому один із них відключено</translation>
 <translation id="574392208103952083">Середній</translation>
 <translation id="5744083938413354016">Перетягування дотиком</translation>
 <translation id="5750765938512549687">Bluetooth вимкнено</translation>

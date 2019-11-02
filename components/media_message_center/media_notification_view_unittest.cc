@@ -18,7 +18,7 @@
 #include "components/media_message_center/media_notification_constants.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_controller.h"
-#include "components/media_message_center/media_notification_item.h"
+#include "components/media_message_center/media_session_notification_item.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -126,8 +126,8 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
 
     request_id_ = base::UnguessableToken::Create();
 
-    // Create a new MediaNotificationView whenever the MediaNotificationItem
-    // says to show the notification.
+    // Create a new MediaNotificationView whenever the
+    // MediaSessionNotificationItem says to show the notification.
     EXPECT_CALL(controller_, ShowNotification(request_id_.ToString()))
         .WillRepeatedly(
             InvokeWithoutArgs(this, &MediaNotificationViewTest::CreateView));
@@ -150,7 +150,7 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
       media_session::mojom::MediaSessionInfoPtr session_info) {
     session_info->is_controllable = true;
     mojo::Remote<media_session::mojom::MediaController> controller;
-    item_ = std::make_unique<MediaNotificationItem>(
+    item_ = std::make_unique<MediaSessionNotificationItem>(
         &controller_, request_id_.ToString(), std::string(),
         std::move(controller), std::move(session_info));
 
@@ -240,7 +240,7 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
     return GetButtonForAction(action)->GetVisible();
   }
 
-  MediaNotificationItem* GetItem() const { return item_.get(); }
+  MediaSessionNotificationItem* GetItem() const { return item_.get(); }
 
   const gfx::ImageSkia& GetArtworkImage() const {
     return view()->GetMediaNotificationBackground()->artwork_;
@@ -279,7 +279,7 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
 
   void ExpectHistogramActionRecorded(MediaSessionAction action) {
     histogram_tester_.ExpectUniqueSample(
-        MediaNotificationItem::kUserActionHistogramName,
+        MediaSessionNotificationItem::kUserActionHistogramName,
         static_cast<base::HistogramBase::Sample>(action), 1);
   }
 
@@ -334,7 +334,7 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
   std::unique_ptr<TestMediaController> media_controller_;
   MockMediaNotificationContainer container_;
   MockMediaNotificationController controller_;
-  std::unique_ptr<MediaNotificationItem> item_;
+  std::unique_ptr<MediaSessionNotificationItem> item_;
   std::unique_ptr<views::Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationViewTest);
@@ -698,11 +698,12 @@ TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenCollapsed) {
   testing::Mock::VerifyAndClearExpectations(&container());
   EXPECT_TRUE(IsActionButtonVisible(MediaSessionAction::kPreviousTrack));
 
-  EXPECT_CALL(container(), OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
-                               {MediaSessionAction::kPlay,
-                                MediaSessionAction::kPreviousTrack,
-                                MediaSessionAction::kNextTrack,
-                                MediaSessionAction::kSeekBackward})));
+  EXPECT_CALL(
+      container(),
+      OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
+          {MediaSessionAction::kPlay, MediaSessionAction::kPreviousTrack,
+           MediaSessionAction::kNextTrack,
+           MediaSessionAction::kSeekBackward})));
   DisableAction(MediaSessionAction::kSeekForward);
   testing::Mock::VerifyAndClearExpectations(&container());
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kSeekForward));

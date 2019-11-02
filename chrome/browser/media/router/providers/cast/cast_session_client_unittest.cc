@@ -28,8 +28,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,12 +90,10 @@ class CastSessionClientImplTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
-  service_manager::TestConnectorFactory connector_factory_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   cast_channel::MockCastSocketService socket_service_{
       base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})};
   cast_channel::MockCastMessageHandler message_handler_{&socket_service_};
-  DataDecoder decoder_{connector_factory_.GetDefaultConnector()};
   url::Origin origin_;
   MediaRoute route_;
   MockActivityRecord activity_{route_, "theAppId"};
@@ -105,7 +102,6 @@ class CastSessionClientImplTest : public testing::Test {
                                               origin_,
                                               kTabId,
                                               AutoJoinPolicy::kPageScoped,
-                                              &decoder_,
                                               &activity_);
   std::unique_ptr<MockPresentationConnection> mock_connection_ =
       std::make_unique<MockPresentationConnection>(client_->Init());

@@ -21,8 +21,6 @@ namespace web_app {
 
 class WebAppBrowserTest : public WebAppControllerBrowserTest {};
 
-using WebAppOnlyBrowserTest = WebAppBrowserTest;
-
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CreatedForInstalledPwaForPwa) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->app_url = GURL(kExampleURL);
@@ -60,8 +58,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ThemeColor) {
   }
 }
 
-// TODO(crbug.com/1014346): Support hosted apps, use WebAppBrowserTest.
-IN_PROC_BROWSER_TEST_P(WebAppOnlyBrowserTest, HasMinimalUiButtons) {
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
   int index = 0;
   auto has_buttons = [this, &index](blink::mojom::DisplayMode display_mode,
                                     bool open_as_window) -> bool {
@@ -94,11 +91,7 @@ INSTANTIATE_TEST_SUITE_P(
     WebAppBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp));
-
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    WebAppOnlyBrowserTest,
-    ::testing::Values(ControllerType::kUnifiedControllerWithWebApp));
+                      ControllerType::kUnifiedControllerWithWebApp),
+    ControllerTypeParamToString);
 
 }  // namespace web_app

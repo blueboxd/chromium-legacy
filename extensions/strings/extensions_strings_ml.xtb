@@ -13,7 +13,7 @@
 <translation id="2350172092385603347">പ്രാദേശികവൽക്കരണം ഉപയോഗിച്ചു, പക്ഷെ മാനിഫെസ്‌റ്റിൽ സ്ഥിര-ഭാഷ വ്യക്തമാക്കിയിട്ടില്ല.</translation>
 <translation id="2576842806987913196">ഇതേ പേരിൽ ഇതിനകം ഒരു CRX ഫയൽ നിലവിലുണ്ട്.</translation>
 <translation id="2785530881066938471">ഉള്ളടക്ക സ്ക്രി‌പ്റ്റിന് '<ph name="RELATIVE_PATH" />' ഫയൽ ലോഡുചെയ്യാനായില്ല. അത് UTF-8 എൻകോഡുചെയ്‌‌തതല്ല.</translation>
-<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (വിപുലീകരണ ഐഡി "<ph name="EXTENSION_ID" />") അഡ്‌മിനിസ്‌ട്രേറ്റർ ബ്ലോക്ക് ചെയ്‌തു. <ph name="ADMIN_INFO" /></translation>
+<translation id="2903070246402204397"><ph name="EXTENSION_NAME" /> (വിപുലീകരണ ഐഡി "<ph name="EXTENSION_ID" />") അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്‌തു. <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">പാക്കേജ് ഇൻസ്‌റ്റാൾ ചെയ്യാനായില്ല: '<ph name="ERROR_CODE" />'</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID" /> വെൻഡറിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID" /> (സീരിയൽ നമ്പർ <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="3144135466825225871">crx ഫയലിന് പകരം ചേർക്കുന്നത് പരാജയപ്പെട്ടു. ഈ ഫയൽ ഉപയോഗത്തിലാണോ എന്ന് പരിശോധിക്കുക.</translation>

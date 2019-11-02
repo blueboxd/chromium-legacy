@@ -15,6 +15,9 @@ class ReloadButtonTest : public ChromeRenderViewHostTestHarness {
  public:
   ReloadButtonTest();
 
+  ReloadButtonTest(const ReloadButtonTest&) = delete;
+  ReloadButtonTest& operator=(const ReloadButtonTest&) = delete;
+
   void CheckState(bool enabled,
                   ReloadButton::Mode intended_mode,
                   ReloadButton::Mode visible_mode,
@@ -33,8 +36,6 @@ class ReloadButtonTest : public ChromeRenderViewHostTestHarness {
  private:
   ChromeTestViewsDelegate views_delegate_;
   ReloadButton reload_;
-
-  DISALLOW_COPY_AND_ASSIGN(ReloadButtonTest);
 };
 
 ReloadButtonTest::ReloadButtonTest() : reload_(nullptr) {

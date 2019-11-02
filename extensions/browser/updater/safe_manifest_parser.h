@@ -14,10 +14,6 @@
 #include "base/optional.h"
 #include "url/gurl.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace extensions {
 
 struct UpdateManifestResult {
@@ -96,8 +92,7 @@ struct UpdateManifestResults {
 using ParseUpdateManifestCallback =
     base::OnceCallback<void(std::unique_ptr<UpdateManifestResults> results,
                             const base::Optional<std::string>& error)>;
-void ParseUpdateManifest(service_manager::Connector* connector,
-                         const std::string& xml,
+void ParseUpdateManifest(const std::string& xml,
                          ParseUpdateManifestCallback callback);
 
 }  // namespace extensions

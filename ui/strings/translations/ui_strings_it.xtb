@@ -52,7 +52,7 @@
 <translation id="2289052229480071835">Tocca i touch target sul tuo schermo.</translation>
 <translation id="2295140143284145483">Sondaggio</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
-<translation id="2353636109065292463">Controllo della connessione a Internet</translation>
+<translation id="2353636109065292463">Controllare la connessione a Internet</translation>
 <translation id="2388990488038464401">Vuoi chiamare questo numero dal telefono?</translation>
 <translation id="24452542372838207">Espandi la notifica</translation>
 <translation id="2445449901874883781">Usa densità alta</translation>
@@ -201,7 +201,7 @@
 <translation id="8090736967111090568">Numero da <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ora fa}other{# ore fa}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sec rimanente}other{# sec rimanenti}}</translation>
-<translation id="8134065097954893699">Ricaricamento di questa pagina</translation>
+<translation id="8134065097954893699">Ricaricare questa pagina</translation>
 <translation id="8144660977431427332">Le tue ricerche sono basate sulla tecnologia dell'Assistente Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, completamento automatico</translation>
 <translation id="815598010540052116">Scorri verso il basso</translation>

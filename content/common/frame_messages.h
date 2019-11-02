@@ -735,10 +735,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode, ui::AXMode)
 IPC_MESSAGE_ROUTED1(FrameMsg_ForwardResourceTimingToParent,
                     content::ResourceTimingInfo)
 
-// Sent to a proxy to dispatch a load event in the iframe element containing
-// this frame.
-IPC_MESSAGE_ROUTED0(FrameMsg_DispatchLoad)
-
 // Sent to a subframe to control whether to collapse its the frame owner element
 // in the embedder document, that is, to remove it from the layout as if it did
 // not exist.

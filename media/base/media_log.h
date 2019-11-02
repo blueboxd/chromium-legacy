@@ -79,6 +79,10 @@ class MEDIA_EXPORT MediaLog {
   // do something.
   void AddEvent(std::unique_ptr<MediaLogEvent> event);
 
+  // Notify the media log that the player is destroyed. Some implementations
+  // will want to change event handling based on this.
+  void OnWebMediaPlayerDestroyed();
+
   // Returns a string usable as the contents of a MediaError.message.
   // This method returns an incomplete message if it is called before the
   // pertinent events for the error have been added to the log.
@@ -143,6 +147,7 @@ class MEDIA_EXPORT MediaLog {
   //
   // Please see the documentation for the corresponding public methods.
   virtual void AddEventLocked(std::unique_ptr<MediaLogEvent> event);
+  virtual void OnWebMediaPlayerDestroyedLocked();
   virtual std::string GetErrorMessageLocked();
 
   // Notify all child logs that they should stop working.  This should be called

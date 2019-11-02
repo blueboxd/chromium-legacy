@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">منوی بیشتر</translation>
 <translation id="2316709634732130529">استفاده از گذرواژه پیشنهادی</translation>
 <translation id="2320166752086256636">پنهان کردن صفحه‌کلید</translation>
+<translation id="2330129964253841015">اگر گذرواژه‌هایتان درمعرض خطر باشد، هشدار دریافت کنید</translation>
 <translation id="2339560363438331454">‏همگام‌سازی و سرویس‌های Google</translation>
 <translation id="2351097562818989364">تنظیمات ترجمه شما بازنشانی شده است.</translation>
 <translation id="2359043044084662842">مترجم</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">ذخیره تصویر</translation>
 <translation id="3789841737615482174">نصب</translation>
 <translation id="385051799172605136">بازگشت</translation>
-<translation id="3886946236301294521">اگر گذرواژه مورداستفاده بخشی از نقض داده باشد، هشدار می‌دهد.</translation>
 <translation id="3897092660631435901">منو</translation>
 <translation id="3915450441834151894">اطلاعات سایت</translation>
 <translation id="3922310737605261887">جستجوی نوشتار کپی‌شده</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">صفحه‌هایی که خوانده‌اید</translation>
 <translation id="4630540211544979320">ترجمه صفحات</translation>
 <translation id="4636930964841734540">اطلاعات</translation>
+<translation id="4659126640776004816">‏وقتی به «حساب Google» خود وارد می‌شوید، این ویژگی روشن می‌شود.</translation>
 <translation id="4659667755519643272">به تعویض‌کننده برگه وارد شود</translation>
 <translation id="4666531726415300315">ورود به سیستم به‌عنوان <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5327248766486351172">نام</translation>
-<translation id="5365716706805792666">‏Google می‌تواند بررسی کند آیا گذرواژه‌هایتان بخشی از نقض داده‌ها بوده است یا نه. اگر با حساب Google به سیستم وارد شوید، این ویژگی روشن می‌شود.</translation>
 <translation id="5388358297987318779">بازکردن تصویر</translation>
 <translation id="5407969256130905701">صرف‌نظر کردن از تغییرات</translation>
 <translation id="5409365236829784218">برنامه‌ای که بتواند این فایل را باز کند در سیستم نصب نشده است.</translation>
@@ -333,7 +333,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5854790677617711513">قدیمی‌تر از ۳۰ روز</translation>
 <translation id="5857090052475505287">پوشهٔ جدید</translation>
 <translation id="5857770089550859117">برای شروع همگام‌سازی به عبارت عبور نیاز است.</translation>
-<translation id="5859444426865731878">‏Google می‌تواند بررسی کند آیا گذرواژه‌هایتان بخشی از نقض داده بوده‌اند یا نه.</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="5869029295770560994">بله متوجه شدم</translation>
 <translation id="5871497086027727873">۱ مورد منتقل شد</translation>
@@ -483,7 +482,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7859704718976024901">سابقه مرور</translation>
 <translation id="7887198238286927132">‏برای محافظت از حریم‌خصوصی‌تان، Chrome از ویژگی تکمیل خودکار برای این فیلد استفاده نخواهد کرد.</translation>
 <translation id="7918293828610777738">فهرست مطالعه‌تان درحالت آفلاین دردسترس است. برای اضافه کردن صفحه به فهرست مطالعه، روی <ph name="SHARE_OPENING_ICON" /> و بعد <ph name="READ_LATER_TEXT" /> ضربه بزنید.</translation>
-<translation id="7930681627240672853">بررسی امنیت گذرواژه</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">صادر کردن گذرواژه‌ها…</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>

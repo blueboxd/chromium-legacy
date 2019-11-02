@@ -66,14 +66,29 @@ ColorSpace::ColorSpace(const SkColorSpace& sk_color_space)
                  TransferID::INVALID,
                  MatrixID::RGB,
                  RangeID::FULL) {
+  // Special case the HDR transfer functions since they're not numerical
+  auto transfer_eq = [](skcms_TransferFunction x, skcms_TransferFunction y) {
+    return x.g == y.g && x.a == y.a && x.b == y.b && x.c == y.c && x.d == y.d &&
+           x.e == y.e && x.f == y.f;
+  };
+
   skcms_TransferFunction fn;
-  skcms_Matrix3x3 to_XYZD50;
-  if (!sk_color_space.isNumericalTransferFn(&fn) ||
-      !sk_color_space.toXYZD50(&to_XYZD50)) {
+  if (sk_color_space.isNumericalTransferFn(&fn)) {
+    SetCustomTransferFunction(fn);
+  } else if (transfer_eq(fn, SkNamedTransferFn::kHLG)) {
+    transfer_ = TransferID::ARIB_STD_B67;
+  } else if (transfer_eq(fn, SkNamedTransferFn::kPQ)) {
+    transfer_ = TransferID::SMPTEST2084;
+  } else {
     // Construct an invalid result: Unable to extract necessary parameters
     return;
   }
-  SetCustomTransferFunction(fn);
+
+  skcms_Matrix3x3 to_XYZD50;
+  if (!sk_color_space.toXYZD50(&to_XYZD50)) {
+    // Construct an invalid result: Unable to extract necessary parameters
+    return;
+  }
   SetCustomPrimaries(to_XYZD50);
 }
 
@@ -459,6 +474,12 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
     case TransferID::LINEAR:
     case TransferID::LINEAR_HDR:
       transfer_fn = SkNamedTransferFn::kLinear;
+      break;
+    case TransferID::ARIB_STD_B67:
+      transfer_fn = SkNamedTransferFn::kHLG;
+      break;
+    case TransferID::SMPTEST2084:
+      transfer_fn = SkNamedTransferFn::kPQ;
       break;
     default:
       if (!GetTransferFunction(&transfer_fn)) {
@@ -937,6 +958,10 @@ bool ColorSpace::ToSkYUVColorSpace(SkYUVColorSpace* out) const {
     case MatrixID::SMPTE170M:
     case MatrixID::SMPTE240M:
       *out = kRec601_SkYUVColorSpace;
+      return true;
+
+    case MatrixID::BT2020_NCL:
+      *out = kBT2020_SkYUVColorSpace;
       return true;
 
     default:

@@ -108,6 +108,7 @@ extern const base::Feature kSpecialUserDecision;
 extern const base::Feature kSwapPixelFormatToFixConvertFromTranslucent;
 extern const base::Feature kTabEngagementReportingAndroid;
 extern const base::Feature kTabGroupsAndroid;
+extern const base::Feature kTabGroupsContinuationAndroid;
 extern const base::Feature kTabGroupsUiImprovementsAndroid;
 extern const base::Feature kTabGridLayoutAndroid;
 extern const base::Feature kTabReparenting;

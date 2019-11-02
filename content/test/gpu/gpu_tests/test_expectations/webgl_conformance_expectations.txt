@@ -47,6 +47,7 @@ crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [
 crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure ]
 [ win amd d3d9 ] WebglExtension_WEBGL_depth_texture [ Failure ]
 [ win d3d9 ] WebglExtension_WEBGL_draw_buffers [ Failure ]
+[ win d3d9 ] WebglExtension_OES_fbo_render_mipmap [ Failure ]
 
 # Android general
 [ android ] WebglExtension_EXT_frag_depth [ Failure ]

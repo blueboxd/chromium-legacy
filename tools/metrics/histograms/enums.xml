@@ -36915,6 +36915,7 @@ from previous Chrome versions.
   <int value="-322827131" label="tab-management-experiment-type-basil"/>
   <int value="-320820051" label="enable-zero-copy"/>
   <int value="-319002650" label="ArcUsbStorageUI:enabled"/>
+  <int value="-317195508" label="TabGroupsContinuationAndroid:disabled"/>
   <int value="-315604713" label="WebUSB:enabled"/>
   <int value="-314910380" label="disable-distance-field-text"/>
   <int value="-314605926" label="protect-sync-credential-on-reauth:enabled"/>
@@ -37411,6 +37412,7 @@ from previous Chrome versions.
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
   <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>
   <int value="350616049" label="IntentPicker:disabled"/>
+  <int value="350635266" label="TabGroupsContinuationAndroid:enabled"/>
   <int value="351005753" label="enable-experimental-accessibility-autoclick"/>
   <int value="352191859" label="disabled-new-style-notification"/>
   <int value="352937987" label="OverflowIconsForMediaControls:disabled"/>

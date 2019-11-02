@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
+#include "components/media_message_center/media_session_notification_item.h"
 #include "content/public/browser/media_session.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -46,7 +47,7 @@ bool IsWebContentsFocused(content::WebContents* web_contents) {
 MediaToolbarButtonController::Session::Session(
     MediaToolbarButtonController* owner,
     const std::string& id,
-    std::unique_ptr<media_message_center::MediaNotificationItem> item,
+    std::unique_ptr<media_message_center::MediaSessionNotificationItem> item,
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       owner_(owner),
@@ -164,7 +165,8 @@ void MediaToolbarButtonController::OnFocusGained(
         std::piecewise_construct, std::forward_as_tuple(id),
         std::forward_as_tuple(
             this, id,
-            std::make_unique<media_message_center::MediaNotificationItem>(
+            std::make_unique<
+                media_message_center::MediaSessionNotificationItem>(
                 this, id, session->source_name.value_or(std::string()),
                 std::move(controller), std::move(session->session_info)),
             content::MediaSession::GetWebContentsFromRequestId(

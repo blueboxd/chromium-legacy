@@ -77,7 +77,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3065168410429928842">Pestaña de Chrome</translation>
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="3089968997497233615">Hay una nueva versión más segura de Google Chrome disponible.</translation>
-<translation id="3138848678222082288">Las próximas versiones de Chrome se instalarán automáticamente. Cuando se complete esta descarga, Chrome se reiniciará y el proceso se habrá completado.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3340978935015468852">configuración</translation>
@@ -183,7 +182,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="677276454032249905">¿Quieres salir de Chrome de todas formas?</translation>
 <translation id="683440813066116847">Regla entrante para que Google Chrome Canary permita tráfico mDNS.</translation>
 <translation id="6885412569789873916">Aplicaciones de Chrome Beta</translation>
-<translation id="6906909733186691861">Las próximas versiones de Chrome se instalarán automáticamente.</translation>
 <translation id="6943584222992551122">Los datos de navegación de este usuario se eliminarán del dispositivo. Para recuperar los datos, inicia sesión en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Regla entrante para que Google Chrome Beta permita tráfico mDNS.</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> requiere que leas y aceptes las siguientes Condiciones de Servicio antes de utilizar este dispositivo. Estas condiciones no amplían, modifican ni limitan los términos de Google Chrome OS.</translation>

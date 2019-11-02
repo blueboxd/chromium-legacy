@@ -4,6 +4,8 @@
 
 module network.mojom;
 
+import "url/mojom/url.mojom";
+
 struct CSPSource {
   string scheme;
   string host;
@@ -19,5 +21,13 @@ struct CSPSourceList {
 };
 
 struct ContentSecurityPolicy {
+  // List of sources specified in the frame-ancestors directive.
   CSPSourceList? frame_ancestors;
+
+  // Whether this CSP policy uses the new reporting API.
+  // https://w3c.github.io/reporting/
+  bool use_reporting_api = false;
+
+  // Set of reporting endpoints to which violation reports are sent.
+  array<url.mojom.Url> report_endpoints;
 };

@@ -19,11 +19,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_status_code.h"
-#include "services/data_decoder/data_decoder_service.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,10 +32,9 @@ namespace media_router {
 
 class TestDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
  public:
-  explicit TestDialMediaSinkServiceImpl(service_manager::Connector* connector)
-      : DialMediaSinkServiceImpl(connector,
-                                 base::DoNothing(),
-                                 /* task_runner */ nullptr) {}
+  TestDialMediaSinkServiceImpl()
+      : DialMediaSinkServiceImpl(base::DoNothing(),
+                                 /*task_runner=*/nullptr) {}
 
   ~TestDialMediaSinkServiceImpl() override = default;
 
@@ -90,10 +85,7 @@ class TestDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
 
 class DialMediaRouteProviderTest : public ::testing::Test {
  public:
-  DialMediaRouteProviderTest()
-      : data_decoder_service_(connector_factory_.RegisterInstance(
-            data_decoder::mojom::kServiceName)),
-        mock_sink_service_(connector_factory_.GetDefaultConnector()) {}
+  DialMediaRouteProviderTest() = default;
 
   void SetUp() override {
     mojo::PendingRemote<mojom::MediaRouter> router_remote;
@@ -103,8 +95,8 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     EXPECT_CALL(mock_router_, OnSinkAvailabilityUpdated(_, _));
     provider_ = std::make_unique<DialMediaRouteProvider>(
         provider_remote_.BindNewPipeAndPassReceiver(), std::move(router_remote),
-        &mock_sink_service_, connector_factory_.GetDefaultConnector(),
-        "hash-token", base::SequencedTaskRunnerHandle::Get());
+        &mock_sink_service_, "hash-token",
+        base::SequencedTaskRunnerHandle::Get());
 
     auto activity_manager =
         std::make_unique<TestDialActivityManager>(&loader_factory_);
@@ -380,16 +372,13 @@ class DialMediaRouteProviderTest : public ::testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  service_manager::TestConnectorFactory connector_factory_;
-  data_decoder::DataDecoderService data_decoder_service_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   network::TestURLLoaderFactory loader_factory_;
 
   mojo::Remote<mojom::MediaRouteProvider> provider_remote_;
   MockMojoMediaRouter mock_router_;
   std::unique_ptr<mojo::Receiver<mojom::MediaRouter>> router_receiver_;
-
-  data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
 
   TestDialMediaSinkServiceImpl mock_sink_service_;
   TestDialActivityManager* activity_manager_ = nullptr;

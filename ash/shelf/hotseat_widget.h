@@ -7,6 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/shelf_types.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -19,11 +22,18 @@ class ShelfView;
 class ASH_EXPORT HotseatWidget : public views::Widget,
                                  public ShelfConfig::Observer {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnHotseatStateChanged() = 0;
+  };
   HotseatWidget();
   ~HotseatWidget() override;
 
   // Initializes the widget, sets its contents view and basic properties.
   void Initialize(aura::Window* container, Shelf* shelf);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -58,6 +68,9 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
   ShelfView* GetShelfView();
   const ShelfView* GetShelfView() const;
 
+  void SetState(HotseatState state);
+  HotseatState state() const { return state_; }
+
   ScrollableShelfView* scrollable_shelf_view() {
     return scrollable_shelf_view_;
   }
@@ -81,6 +94,10 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
   // The contents view of this widget. Contains |shelf_view_| and the background
   // of the hotseat.
   DelegateView* delegate_view_ = nullptr;
+
+  HotseatState state_ = HotseatState::kShown;
+
+  base::ObserverList<Observer> observers_;
 
   // Whether the widget is currently extended because the user has manually
   // dragged it. This will be reset with any visible shelf configuration change.

@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/view_observer.h"
 
@@ -20,6 +19,8 @@ class AXViewObjWrapper : public AXAuraObjWrapper, public ViewObserver {
  public:
   // |aura_obj_cache| must outlive this object.
   AXViewObjWrapper(AXAuraObjCache* aura_obj_cache, View* view);
+  AXViewObjWrapper(const AXViewObjWrapper&) = delete;
+  AXViewObjWrapper& operator=(const AXViewObjWrapper&) = delete;
   ~AXViewObjWrapper() override;
 
   View* view() { return view_; }
@@ -37,8 +38,6 @@ class AXViewObjWrapper : public AXAuraObjWrapper, public ViewObserver {
 
  private:
   View* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXViewObjWrapper);
 };
 
 }  // namespace views

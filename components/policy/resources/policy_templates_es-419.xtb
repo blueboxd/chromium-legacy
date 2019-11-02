@@ -645,11 +645,6 @@
           Si se inhabilita esta configuración, no se permitirá la transferencia de archivos. Si se habilita o no se establece esta configuración, se permitirá la transferencia de archivos.</translation>
 <translation id="2057317273526988987">Permitir el acceso a una lista de URL</translation>
 <translation id="2061810934846663491">Configurar los nombres de dominio obligatorios para hosts de acceso remoto</translation>
-<translation id="2063663607822994541">Configura la cantidad de memoria que puede usar una única instancia de <ph name="PRODUCT_NAME" /> antes de que se empiecen a descartar las pestañas (es decir, se liberará la memoria que utiliza la pestaña y se deberá volver a cargar cuando se seleccione) para ahorrar memoria.
-
-      Si estableces la política, el navegador comenzará a descartar pestañas para ahorrar memoria cuando se supere el límite. Sin embargo, no hay garantía de que el navegador se ejecute siempre por debajo del límite. Se redondeará a 2048 cualquier valor por debajo de 2048.
-
-      Si no estableces esta política, el navegador solo comenzará a ahorrar memoria cuando detecte que queda poca cantidad de memoria física disponible en la máquina.</translation>
 <translation id="206623763829450685">Especifica qué esquemas de autenticación de HTTP son compatibles con <ph name="PRODUCT_NAME" />.
 
           Los valores posibles son "basic", "digest", "ntlm" y "negotiate". Cuando haya más de un valor, sepáralos con comas.
@@ -929,7 +924,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       El formato del patrón de URL se especifica en https://www.chromium.org/administrators/url-blacklist-filter-format. Sin embargo, dado que los certificados son válidos para un nombre de host específico, más allá del esquema, puerto o ruta, solo se tiene en cuenta la porción de la URL con el nombre de host. Los hosts con comodines no son compatibles.
 
       Si esta política no se establece, todos los certificados que deben divulgarse mediante el Certificado de transparencia (y que no cumplen con este requisito) se considerarán no confiables.</translation>
-<translation id="2486911595447603756">Controla el modo de DNS sobre HTTPS</translation>
 <translation id="2488010520405124654">Habilita el mensaje de configuración de red si no hay conexión.
 
       Si se establece esta política en True o no se establece, se configuró una cuenta local de dispositivo para el acceso automático sin tiempo de espera y el dispositivo no tiene conexión a Internet, <ph name="PRODUCT_OS_NAME" /> mostrará un mensaje de configuración de red.
@@ -3669,13 +3663,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas.
       Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.</translation>
 <translation id="7234280155140786597">Nombres de los hosts de mensajería nativa prohibidos (o * para todos)</translation>
-<translation id="7236775576470542603">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.
-
-          Si se establece esta política, controla el tipo de lupa habilitado cuando se muestra la pantalla de acceso. Si la política se establece como "ninguna", se inhabilitará la lupa.
-
-          Si estableces esta política, los usuarios podrán anularla de forma temporal habilitando o inhabilitando la lupa. Sin embargo, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de acceso o el usuario permanezca ausente en la pantalla de acceso durante un minuto.
-
-          Si no se establece esta política, la lupa se inhabilitará la primera vez que se muestre la pantalla de acceso. Los usuarios pueden habilitar o inhabilitar la lupa en cualquier momento, y su estado en la pantalla de acceso permanece entre usuarios.</translation>
 <translation id="7249828445670652637">Habilitar certificados de CA de <ph name="PRODUCT_OS_NAME" /> para apps de ARC</translation>
 <translation id="7251652588006515288">Esta política controla si el usuario puede importar y quitar certificados de cliente a través del Administrador de certificados.
 

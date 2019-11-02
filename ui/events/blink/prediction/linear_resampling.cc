@@ -4,6 +4,8 @@
 
 #include "ui/events/blink/prediction/linear_resampling.h"
 
+#include <algorithm>
+
 #include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace ui {

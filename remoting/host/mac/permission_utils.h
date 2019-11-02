@@ -14,6 +14,18 @@ class SingleThreadTaskRunner;
 namespace remoting {
 namespace mac {
 
+// Return true if the current process has been granted permission to inject
+// input. This will add an entry to the System Preference's Accessibility
+// pane (if it doesn't exist already) and it may pop up a system dialog
+// informing the user that this app is requesting permission.
+bool CanInjectInput();
+
+// Return true if the current process has been granted permission to record
+// the screen. This will add an entry to the System Preference's Screen
+// Recording pane (if it doesn't exist already) and it may pop up a system
+// dialog informing the user that this app is requesting permission.
+bool CanRecordScreen();
+
 // Prompts the user to add the current application to the set of trusted
 // Accessibility and Screen Recording applications.  The Accessibility
 // permission is required for input injection (10.14 and later) and Screen

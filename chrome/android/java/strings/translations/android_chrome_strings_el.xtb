@@ -183,6 +183,7 @@
 <translation id="2321958826496381788">Σύρετε το ρυθμιστικό έως ότου να διαβάσετε αυτό το μήνυμα άνετα. Το κείμενο θα πρέπει να είναι τουλάχιστον τόσο μεγάλο αφού πατήσετε δύο φορές σε μια παράγραφο.</translation>
 <translation id="2323763861024343754">Αποθηκ. χώρος ιστοσελίδας</translation>
 <translation id="2328985652426384049">Δεν είναι δυνατή η σύνδεση</translation>
+<translation id="2330129964253841015">Να ενημερώνεστε σε περίπτωση παραβίασης των κωδικών πρόσβασής σας</translation>
 <translation id="2349710944427398404">Σύνολο δεδομένων που χρησιμοποιούνται από το Chrome, συμπεριλαμβανομένων των λογαριασμών, των σελιδοδεικτών και των αποθηκευμένων ρυθμίσεων</translation>
 <translation id="2353636109065292463">Έλεγχος της σύνδεσής σας στο διαδίκτυο</translation>
 <translation id="2359808026110333948">Συνέχεια</translation>
@@ -190,6 +191,7 @@
 <translation id="2387895666653383613">Κλιμάκωση κειμένου</translation>
 <translation id="2394602618534698961">Εδώ εμφανίζονται τα αρχεία που κατεβάζετε</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2407481962792080328">Αυτή η λειτουργία ενεργοποιείται όταν συνδέεστε στον Λογαριασμό σας Google.</translation>
 <translation id="2410754283952462441">Επιλέξτε λογαριασμό</translation>
 <translation id="2414886740292270097">Σκούρο</translation>
 <translation id="2416359993254398973">Το Chrome χρειάζεται άδεια, για να αποκτήσει πρόσβαση στην κάμερα για αυτόν τον ιστότοπο.</translation>
@@ -198,6 +200,7 @@
 <translation id="2434158240863470628">Η λήψη ολοκληρώθηκε <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Πρόσβαση τοποθεσίας</translation>
 <translation id="2450083983707403292">Θέλετε να ξεκινήσετε ξανά τη λήψη του αρχείου <ph name="FILE_NAME" />;</translation>
+<translation id="246532703174860178">Κοινοποίηση</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="2490684707762498678">Διαχειριζόμενες από την εφαρμογή <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Βοηθός Google στο Chrome</translation>
@@ -678,7 +681,6 @@
 <translation id="6036057147555329831">Επιπλέον ICU</translation>
 <translation id="6039379616847168523">Μετάβαση στην επόμενη καρτέλα</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
-<translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="604996488070107836">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω άγνωστου σφάλματος.</translation>
 <translation id="605721222689873409">ΕΕ</translation>
 <translation id="6064125863973209585">Ολοκληρωμένες λήψεις</translation>

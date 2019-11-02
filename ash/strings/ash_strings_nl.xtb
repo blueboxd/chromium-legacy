@@ -300,6 +300,7 @@
 <translation id="5302048478445481009">Taal</translation>
 <translation id="5313326810920013265">Bluetooth-instellingen</translation>
 <translation id="5331975486040154427">USB-C-apparaat (poort links aan de achterkant)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Te veel pogingen</translation>
 <translation id="5397578532367286026">Het gebruik en de geschiedenis van deze gebruiker kunnen worden bekeken door de beheerder (<ph name="MANAGER_EMAIL" />) op chrome.com.</translation>
 <translation id="5430931332414098647">Instant-tethering</translation>
@@ -322,6 +323,7 @@
 <translation id="5682642926269496722">De Google Assistent is niet beschikbaar voor het huidige gebruikersaccount.</translation>
 <translation id="5691772641933328258">Vingerafdruk niet herkend</translation>
 <translation id="5710450975648804523">'Niet storen' is ingeschakeld</translation>
+<translation id="573413375004481890">Dit apparaat kan niet al je schermen ondersteunen, dus één scherm is ontkoppeld</translation>
 <translation id="574392208103952083">Gemiddeld</translation>
 <translation id="5744083938413354016">Tikken en slepen</translation>
 <translation id="5750765938512549687">Bluetooth is uitgeschakeld</translation>

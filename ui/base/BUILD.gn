@@ -10,9 +10,9 @@ import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/util/branding.gni")
+import("//components/system_media_controls/linux/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
-import("//ui/base/mpris/buildflags/buildflags.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -362,11 +362,7 @@ jumbo_component("base") {
       "accelerators/media_keys_listener_win.cc",
     ]
   } else if (use_mpris) {
-    sources += [
-      "accelerators/media_keys_listener_linux.cc",
-      "accelerators/mpris_media_keys_listener.cc",
-      "accelerators/mpris_media_keys_listener.h",
-    ]
+    sources += [ "accelerators/media_keys_listener_linux.cc" ]
   } else {
     sources += [ "accelerators/media_keys_listener_stub.cc" ]
   }
@@ -467,13 +463,6 @@ jumbo_component("base") {
   }
 
   deps += [ "//components/system_media_controls" ]
-
-  if (use_mpris) {
-    deps += [
-      "//dbus",
-      "//ui/base/mpris",
-    ]
-  }
 
   if (use_x11 && use_aura) {
     sources += [
@@ -1131,14 +1120,6 @@ test("ui_base_unittests") {
     sources += [
       "dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
       "x/selection_requestor_unittest.cc",
-    ]
-  }
-
-  if (use_mpris) {
-    sources += [ "accelerators/mpris_media_keys_listener_unittest.cc" ]
-    deps += [
-      "//ui/base/mpris:test_support",
-      "//ui/base/mpris:unit_tests",
     ]
   }
 

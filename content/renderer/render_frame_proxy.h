@@ -241,7 +241,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       blink::ParsedFeaturePolicy parsed_feature_policy);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
-  void OnDispatchLoad();
   void OnSetNeedsOcclusionTracking(bool);
   void OnCollapse(bool collapsed);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);

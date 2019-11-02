@@ -579,7 +579,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitTabBeforeNode(
   const LayoutNGTableCellInterface* rc =
       ToInterface<LayoutNGTableCellInterface>(r);
   const LayoutNGTableInterface* t = rc->TableInterface();
-  return t && (t->CellInterfacePreceding(*rc) || t->CellInterfaceAbove(*rc));
+  return t && !t->IsFirstCell(*rc);
 }
 
 template <typename Strategy>

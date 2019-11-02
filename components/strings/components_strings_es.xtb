@@ -172,6 +172,7 @@
 <translation id="173080396488393970">No se admite este tipo de tarjeta</translation>
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Intenta ponerte en contacto con el administrador del sistema.</translation>
+<translation id="1739107442478692187">Se ha producido una quiebra de seguridad de datos en un sitio web o una aplicación que utilizas. Chrome te recomienda que revises las contraseñas guardadas y que cambies ahora la de <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Introduce un mes de vencimiento válido</translation>
 <translation id="1743520634839655729">Para pagar más rápido la próxima vez, guarda tu tarjeta, tu nombre y tu dirección de facturación en tu cuenta de Google y en este dispositivo.</translation>
 <translation id="1743570585616704562">No se ha reconocido</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">El dominio no coincide</translation>
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="2099652385553570808">Grapado triple en la parte izquierda</translation>
+<translation id="2100280972184758440">Tu contraseña está en riesgo</translation>
 <translation id="2102134110707549001">Sugerir contraseña segura…</translation>
 <translation id="2108755909498034140">Reinicia el ordenador</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Se ha ignorado la política porque la anula <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Enviado a: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Perforado en la parte inferior derecha</translation>
+<translation id="2124528555835617522">Se ha producido una quiebra de seguridad de datos en un sitio web o una aplicación que utilizas. Chrome te recomienda que revises ahora tus contraseñas guardadas.</translation>
 <translation id="2129079103035905234">Sensores de movimiento</translation>
 <translation id="213826338245044447">Marcadores del móvil</translation>
 <translation id="214556005048008348">Cancelar pago</translation>
@@ -480,17 +483,13 @@
 <translation id="3282497668470633863">Añadir un nombre de la tarjeta</translation>
 <translation id="3287510313208355388">Descargar cuando haya conexión</translation>
 <translation id="3293642807462928945">Más información sobre la política <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Se ha producido una quiebra de seguridad de datos en un sitio web o una aplicación que utilizas. Chrome te recomienda que cambies ahora tu contraseña de <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">No se han encontrado resultados de búsqueda</translation>
 <translation id="3320021301628644560">Añadir dirección de facturación</translation>
 <translation id="3324983252691184275">Carmesí</translation>
 <translation id="3338095232262050444">Es seguro</translation>
 <translation id="3355823806454867987">Cambiar la configuración de proxy...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />no guardará<ph name="END_EMPHASIS" /> la siguiente información:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Tu historial de navegación
-          <ph name="LIST_ITEM" />Las cookies y los datos de sitios web
-          <ph name="LIST_ITEM" />La información introducida en formularios
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">Hoja de controlador de pagos</translation>
 <translation id="3362968246557010467">Esta política se ha copiado automáticamente de la política obsoleta <ph name="OLD_POLICY" />. Deberías usar esta política en su lugar.</translation>
 <translation id="3366477098757335611">Ver tarjetas</translation>
 <translation id="3369192424181595722">Error del reloj</translation>
@@ -610,6 +609,7 @@
 <translation id="3949601375789751990">Tu historial de navegación aparece aquí</translation>
 <translation id="3949870428812919180">No hay ningún método de pago guardado</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
+<translation id="3961148744525529027">La hoja de controlador de pagos está abierta en media pantalla</translation>
 <translation id="3962859241508114581">Pista anterior</translation>
 <translation id="3963837677003247395">¿Quieres continuar de forma manual?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ninguno}=1{De 1 sitio web }other{De # sitios web }}</translation>
@@ -1061,7 +1061,6 @@
 <translation id="6151417162996330722">El certificado del servidor tiene un periodo de validez demasiado largo.</translation>
 <translation id="6157877588268064908">Selecciona una dirección para ver los métodos de envío y los requisitos</translation>
 <translation id="6165508094623778733">Más información</translation>
-<translation id="6169916984152623906">Ahora puedes navegar de forma privada; las otras personas que usen este dispositivo no verán tu actividad. No obstante, se guardarán las descargas y los marcadores.</translation>
 <translation id="6177128806592000436">La conexión con este sitio web no es segura</translation>
 <translation id="6203231073485539293">Comprueba tu conexión a Internet</translation>
 <translation id="6218753634732582820">¿Quitar dirección de Chromium?</translation>
@@ -1343,6 +1342,7 @@ Más información:
 <translation id="7637571805876720304">¿Quitar tarjeta de crédito de Chromium?</translation>
 <translation id="7638605456503525968">Puertos serie</translation>
 <translation id="7639968568612851608">Gris oscuro</translation>
+<translation id="7653957176542370971">La hoja de controlador de pagos está cerrada</translation>
 <translation id="765676359832457558">Ocultar configuración avanzada...</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7662298039739062396">Opción controlada por una extensión</translation>
@@ -1472,6 +1472,7 @@ Más información:
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8262952874573525464">Grapado en el borde inferior</translation>
 <translation id="8267698848189296333">Iniciando sesión como <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">La hoja de controlador de pagos está abierta</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Iniciar sesión</translation>
 <translation id="8288807391153049143">Mostrar certificado</translation>
@@ -1532,6 +1533,7 @@ Más información:
 <translation id="8680536109547170164"><ph name="QUERY" />, respuesta: <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Disponible</translation>
+<translation id="869891660844655955">Fecha de caducidad</translation>
 <translation id="8703575177326907206">Tu conexión a <ph name="DOMAIN" /> no está cifrada.</translation>
 <translation id="8718314106902482036">El pago no se ha completado</translation>
 <translation id="8719263113926255150">Sugerencia de búsqueda: <ph name="ENTITY" />, <ph name="DESCRIPTION" /></translation>

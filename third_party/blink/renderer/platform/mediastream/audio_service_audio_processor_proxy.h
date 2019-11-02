@@ -16,8 +16,8 @@
 #include "base/timer/timer.h"
 #include "media/base/audio_processing.h"
 #include "media/webrtc/audio_processor_controls.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/rtc_base/task_queue.h"
@@ -32,7 +32,7 @@ class AecDumpAgentImpl;
 // of 10 ms data chunk.
 // TODO(https://crbug.com/879296): Add tests. Possibly the timer update rate
 // calculation code should be encapsulated in a class.
-class BLINK_PLATFORM_EXPORT AudioServiceAudioProcessorProxy
+class PLATFORM_EXPORT AudioServiceAudioProcessorProxy
     : public webrtc::AudioProcessorInterface,
       public AecDumpAgentImpl::Delegate {
  public:

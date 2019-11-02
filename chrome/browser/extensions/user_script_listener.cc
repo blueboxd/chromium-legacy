@@ -16,6 +16,8 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/resource_type.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/shared_user_script_master.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/url_pattern.h"
@@ -86,10 +88,6 @@ UserScriptListener::UserScriptListener() {
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::NotificationService::AllSources());
-
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
-                 content::NotificationService::AllSources());
 }
 
 std::unique_ptr<NavigationThrottle>
@@ -107,6 +105,11 @@ void UserScriptListener::SetUserScriptsNotReadyForTesting(
     content::BrowserContext* context) {
   AppendNewURLPatterns(context, {URLPattern(URLPattern::SCHEME_ALL,
                                             URLPattern::kAllUrlsPattern)});
+}
+
+void UserScriptListener::TriggerUserScriptsReadyForTesting(
+    content::BrowserContext* context) {
+  UserScriptsReady(context);
 }
 
 UserScriptListener::~UserScriptListener() {}
@@ -197,15 +200,19 @@ void UserScriptListener::Observe(int type,
                                  const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_ADDED: {
-      auto* registry =
-          ExtensionRegistry::Get(content::Source<Profile>(source).ptr());
+      Profile* profile = content::Source<Profile>(source).ptr();
+      auto* registry = ExtensionRegistry::Get(profile);
       DCHECK(!extension_registry_observer_.IsObserving(registry));
       extension_registry_observer_.Add(registry);
-      break;
-    }
-    case extensions::NOTIFICATION_USER_SCRIPTS_UPDATED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      UserScriptsReady(profile);
+
+      SharedUserScriptMaster* user_script_master =
+          ExtensionSystem::Get(profile)->shared_user_script_master();
+      // Note: |user_script_master| can be null in some tests.
+      if (user_script_master) {
+        UserScriptLoader* loader = user_script_master->script_loader();
+        DCHECK(!user_script_loader_observer_.IsObserving(loader));
+        user_script_loader_observer_.Add(loader);
+      }
       break;
     }
     default:
@@ -247,6 +254,16 @@ void UserScriptListener::OnExtensionUnloaded(
 
 void UserScriptListener::OnShutdown(ExtensionRegistry* registry) {
   extension_registry_observer_.Remove(registry);
+}
+
+void UserScriptListener::OnScriptsLoaded(
+    UserScriptLoader* loader,
+    content::BrowserContext* browser_context) {
+  UserScriptsReady(browser_context);
+}
+
+void UserScriptListener::OnUserScriptLoaderDestroyed(UserScriptLoader* loader) {
+  user_script_loader_observer_.Remove(loader);
 }
 
 }  // namespace extensions

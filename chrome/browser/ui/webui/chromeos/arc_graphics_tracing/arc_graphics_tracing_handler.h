@@ -114,8 +114,8 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   // Collects system stat runtime.
   std::unique_ptr<arc::ArcSystemStatCollector> system_stat_colletor_;
 
-  // Information about tasks, title and icon.
-  base::DictionaryValue tasks_info_;
+  // Information about active task, title and icon.
+  base::DictionaryValue task_information_;
 
   base::WeakPtrFactory<ArcGraphicsTracingHandler> weak_ptr_factory_{this};
 

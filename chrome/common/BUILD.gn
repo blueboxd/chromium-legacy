@@ -323,6 +323,8 @@ static_library("common") {
       "extensions/extension_metrics.h",
       "extensions/image_writer/image_writer_util_mac.cc",
       "extensions/image_writer/image_writer_util_mac.h",
+      "extensions/manifest_handlers/app_display_mode_info.cc",
+      "extensions/manifest_handlers/app_display_mode_info.h",
       "extensions/manifest_handlers/app_icon_color_info.cc",
       "extensions/manifest_handlers/app_icon_color_info.h",
       "extensions/manifest_handlers/app_launch_info.cc",

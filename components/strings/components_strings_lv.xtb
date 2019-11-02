@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Šis kartes veids netiek atbalstīts</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Sazinieties ar sistēmas administratoru.</translation>
+<translation id="1739107442478692187">Jūsu izmantotajā vietnē vai lietotnē ir notikusi datu noplūde. Pārlūkā Chrome tiek ieteikts pārbaudīt saglabātās paroles un tūlīt nomainīt vietnē <ph name="ORIGIN" /> izmantoto paroli.</translation>
 <translation id="1740951997222943430">Ievadiet derīgu mēnesi</translation>
 <translation id="1743520634839655729">Lai nākamreiz veiktu maksājumu ātrāk, saglabājiet kartes datus, vārdu un norēķinu adresi savā Google kontā un šajā ierīcē.</translation>
 <translation id="1743570585616704562">Nav atpazīts</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Domēni nesaskan</translation>
 <translation id="2096368010154057602">Departaments</translation>
 <translation id="2099652385553570808">Trīskāršs skavojums kreisajā pusē</translation>
+<translation id="2100280972184758440">Jūsu parole ir apdraudēta</translation>
 <translation id="2102134110707549001">Ieteikt drošu paroli…</translation>
 <translation id="2108755909498034140">Restartējiet datoru</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Ignorēta, jo to atcēla politika <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Izsniegts: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Caurums apakšējā labajā malā</translation>
+<translation id="2124528555835617522">Jūsu izmantotajā vietnē vai lietotnē ir notikusi datu noplūde. Pārlūkā Chrome tiek ieteikts pēc iespējas ātrāk pārbaudīt saglabātās paroles.</translation>
 <translation id="2129079103035905234">Kustību sensori</translation>
 <translation id="213826338245044447">Mobilās grāmatzīmes</translation>
 <translation id="214556005048008348">Atcelt maksājumu</translation>
@@ -478,17 +481,13 @@
 <translation id="3282497668470633863">Pievienot vārdu un uzvārdu uz kartes</translation>
 <translation id="3287510313208355388">Lejupielādēt, kad pieejama tiešsaiste</translation>
 <translation id="3293642807462928945">Uzzināt vairāk par politiku <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Jūsu izmantotajā vietnē vai lietotnē ir notikusi datu noplūde. Pārlūkā Chrome tiek ieteikts pēc iespējas ātrāk nomainīt vietnē <ph name="ORIGIN" /> izmantoto paroli.</translation>
 <translation id="3303855915957856445">Netika atrasts neviens meklēšanas rezultāts.</translation>
 <translation id="3320021301628644560">Norēķinu adreses pievienošana</translation>
 <translation id="3324983252691184275">Tumši sarkana</translation>
 <translation id="3338095232262050444">Droši</translation>
 <translation id="3355823806454867987">Mainīt starpniekservera iestatījumus...</translation>
-<translation id="3361596688432910856">Pārlūkā Chrome <ph name="BEGIN_EMPHASIS" />netiks saglabāta<ph name="END_EMPHASIS" /> šāda informācija:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />jūsu pārlūkošanas vēsture;
-          <ph name="LIST_ITEM" />sīkfaili un vietņu dati;
-          <ph name="LIST_ITEM" />veidlapās ievadītā informācija.
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">Maksājumu apstrādātāja lapa</translation>
 <translation id="3362968246557010467">Šī politika tika automātiski kopēta no novecojušās <ph name="OLD_POLICY" /> politikas. Jums vajadzētu izmantot šo politiku.</translation>
 <translation id="3366477098757335611">Skatīt kartes</translation>
 <translation id="3369192424181595722">Pulksteņa kļūda</translation>
@@ -607,6 +606,7 @@
 <translation id="3949601375789751990">Šeit ir redzama jūsu pārlūkošanas vēsture.</translation>
 <translation id="3949870428812919180">Nav saglabātu maksājuma veidu</translation>
 <translation id="3950820424414687140">Pierakstīties</translation>
+<translation id="3961148744525529027">Maksājumu apstrādātāja lapa ir līdz pusei atvērta</translation>
 <translation id="3962859241508114581">Iepriekšējais ieraksts</translation>
 <translation id="3963837677003247395">Vai turpināt manuāli?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Nav}=1{No 1 vietnes }zero{No # vietnēm }one{No # vietnes }other{No # vietnēm }}</translation>
@@ -1058,7 +1058,6 @@
 <translation id="6151417162996330722">Šī servera sertifikāta derīguma periods ir pārāk ilgs.</translation>
 <translation id="6157877588268064908">Lai skatītu nosūtīšanas veidus un prasības, atlasiet adresi.</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
-<translation id="6169916984152623906">Tagad varat privāti pārlūkot saturu, un citas personas, kas izmanto šo ierīci, nevarēs redzēt jūsu darbības. Tomēr lejupielādes un grāmatzīmes tiks saglabātas.</translation>
 <translation id="6177128806592000436">Savienojums ar šo vietni nav drošs.</translation>
 <translation id="6203231073485539293">Interneta savienojuma pārbaude</translation>
 <translation id="6218753634732582820">Vai noņemt adresi no pārlūka Chromium?</translation>
@@ -1340,6 +1339,7 @@ Papildu informācija:
 <translation id="7637571805876720304">Vai noņemt kredītkarti no pārlūka Chromium?</translation>
 <translation id="7638605456503525968">Seriālie porti</translation>
 <translation id="7639968568612851608">Tumši pelēka</translation>
+<translation id="7653957176542370971">Maksājumu apstrādātāja lapa ir aizvērta</translation>
 <translation id="765676359832457558">Slēpt papildu iestatījumus...</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7662298039739062396">Iestatījumu kontrolē paplašinājums</translation>
@@ -1469,6 +1469,7 @@ Papildu informācija:
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8262952874573525464">Malu sašuvums apakšdaļā</translation>
 <translation id="8267698848189296333">Notiek pierakstīšanās lietotāja <ph name="USERNAME" /> kontā</translation>
+<translation id="8277900682056760511">Maksājumu apstrādātāja lapa ir atvērta</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Pierakstīties</translation>
 <translation id="8288807391153049143">Rādīt sertifikātu</translation>
@@ -1530,6 +1531,7 @@ Papildu informācija:
 <translation id="8680536109547170164"><ph name="QUERY" />, atbilde, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Pieejams</translation>
+<translation id="869891660844655955">Derīguma termiņš</translation>
 <translation id="8703575177326907206">Jūsu savienojums ar <ph name="DOMAIN" /> nav kodēts.</translation>
 <translation id="8718314106902482036">Maksājums nav pabeigts</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, meklēšanas ieteikums</translation>

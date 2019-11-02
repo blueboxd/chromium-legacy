@@ -12,12 +12,14 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/browser/cast_download_manager_delegate.h"
 #include "chromecast/browser/cast_permission_manager.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "components/keyed_service/core/simple_key_map.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/resource_context.h"
@@ -58,8 +60,8 @@ CastBrowserContext::~CastBrowserContext() {
   SimpleKeyMap::GetInstance()->Dissociate(this);
   BrowserContext::NotifyWillBeDestroyed(this);
   ShutdownStoragePartitions();
-  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                     resource_context_.release());
+  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                   resource_context_.release());
 }
 
 void CastBrowserContext::InitWhileIOAllowed() {

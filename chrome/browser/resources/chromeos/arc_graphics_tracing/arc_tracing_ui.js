@@ -62,6 +62,8 @@ var eventAttributes = {
   204: {color: unusedColor, name: 'released'},
   // kExoJank
   205: {color: '#ff0000', name: 'surface attach jank', width: 1.0, radius: 4.0},
+  // kExoCommit
+  206: {color: '#3d5afe', name: 'buffer committed'},
 
   // kChromeBarrierOrder.
   300: {color: '#ff9933', name: 'barrier order'},

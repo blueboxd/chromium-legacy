@@ -27,10 +27,10 @@
 #include "net/base/completion_once_callback.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -153,7 +153,7 @@ class WebRequestProxyingURLLoaderFactory
     // |OnHeadersReceived()| and request completion or restart. Pointers to
     // these fields are stored in a |BlockedRequest| (created and owned by
     // ExtensionWebRequestEventRouter) through much of the request's lifetime.
-    network::ResourceResponseHead current_response_;
+    network::mojom::URLResponseHeadPtr current_response_;
     scoped_refptr<net::HttpResponseHeaders> override_headers_;
     GURL redirect_url_;
 

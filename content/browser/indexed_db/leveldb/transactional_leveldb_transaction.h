@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
-#include "content/browser/indexed_db/scopes/leveldb_scope_deletion_mode.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scope_deletion_mode.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 

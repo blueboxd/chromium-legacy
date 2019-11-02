@@ -143,14 +143,24 @@ void LayoutNGListItem::UpdateMarker() {
   }
 
   // Create a marker box if it does not exist yet.
+  Node* list_item = GetNode();
+  const ComputedStyle* cached_marker_style =
+      list_item->IsPseudoElement()
+          ? nullptr
+          : ToElement(list_item)->CachedStyleForPseudoElement(kPseudoIdMarker);
   scoped_refptr<ComputedStyle> marker_style;
+  if (cached_marker_style) {
+    marker_style = ComputedStyle::Clone(*cached_marker_style);
+  } else {
+    marker_style = ComputedStyle::Create();
+    marker_style->InheritFrom(style);
+  }
   if (IsInside()) {
     if (marker_ && !marker_->IsLayoutInline())
       DestroyMarker();
     if (!marker_)
       marker_ = LayoutNGInsideListMarker::CreateAnonymous(&GetDocument());
-    marker_style = ComputedStyle::CreateAnonymousStyleWithDisplay(
-        style, EDisplay::kInline);
+    marker_style->SetDisplay(EDisplay::kInline);
     auto margins =
         LayoutListMarker::InlineMarginsForInside(style, IsMarkerImage());
     marker_style->SetMarginStart(Length::Fixed(margins.first));
@@ -165,8 +175,7 @@ void LayoutNGListItem::UpdateMarker() {
       DestroyMarker();
     if (!marker_)
       marker_ = LayoutNGListMarker::CreateAnonymous(&GetDocument());
-    marker_style = ComputedStyle::CreateAnonymousStyleWithDisplay(
-        style, EDisplay::kInlineBlock);
+    marker_style->SetDisplay(EDisplay::kInlineBlock);
     // Do not break inside the marker, and honor the trailing spaces.
     marker_style->SetWhiteSpace(EWhiteSpace::kPre);
     // Compute margins for 'outside' during layout, because it requires the

@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Ta vrsta kartice ni podprta</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Poskusite se obrniti na skrbnika sistema.</translation>
+<translation id="1739107442478692187">Na spletnem mestu ali v aplikaciji, ki ga oziroma jo uporabljate, je prišlo do podatkovne kršitve. Chrome priporoča, da preverite shranjena gesla in spremenite geslo za spletno mesto <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Vnesite veljaven mesec poteka veljavnosti</translation>
 <translation id="1743520634839655729">Če želite naslednjič hitreje plačati, shranite kartico, ime in naslov za izstavitev računa v Google Računu in v tej napravi.</translation>
 <translation id="1743570585616704562">Ni prepoznano</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Neujemanje domen</translation>
 <translation id="2096368010154057602">Področje</translation>
 <translation id="2099652385553570808">Trojno spenjanje na levi</translation>
+<translation id="2100280972184758440">Geslo je ogroženo</translation>
 <translation id="2102134110707549001">Predlagaj zapleteno geslo …</translation>
 <translation id="2108755909498034140">Znova zaženite računalnik</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Prezrto, ker je to preglasil pravilnik <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Izdano za: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Luknjanje spodaj desno</translation>
+<translation id="2124528555835617522">Na spletnem mestu ali v aplikaciji, ki ga oziroma jo uporabljate, je prišlo do podatkovne kršitve. Chrome priporoča, da takoj preverite shranjena gesla.</translation>
 <translation id="2129079103035905234">Tipala gibanja</translation>
 <translation id="213826338245044447">Mobilni zaznamki</translation>
 <translation id="214556005048008348">Prekliči plačilo</translation>
@@ -480,17 +483,13 @@
 <translation id="3282497668470633863">Dodajanje imena na kartico</translation>
 <translation id="3287510313208355388">Prenesi, ko je povezava</translation>
 <translation id="3293642807462928945">Preberite več o pravilniku <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Na spletnem mestu ali v aplikaciji, ki ga oziroma jo uporabljate, je prišlo do podatkovne kršitve. Chrome priporoča, da takoj spremenite geslo za spletno mesto <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Ni rezultatov iskanja</translation>
 <translation id="3320021301628644560">Dodajanje naslova za izstavitev računa</translation>
 <translation id="3324983252691184275">Škrlatna</translation>
 <translation id="3338095232262050444">Varno</translation>
 <translation id="3355823806454867987">Spremeni nastavitve proxyja ...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />ne shrani<ph name="END_EMPHASIS" /> teh podatkov:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />zgodovine brskanja,
-          <ph name="LIST_ITEM" />piškotkov in podatkov spletnih mest,
-          <ph name="LIST_ITEM" />podatkov, vnesenih v obrazce.
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">List rutine za obravnavo plačil</translation>
 <translation id="3362968246557010467">Ta pravilnik je bil samodejno kopiran iz zastarelega pravilnika <ph name="OLD_POLICY" />. Uporabite ta pravilnik.</translation>
 <translation id="3366477098757335611">Ogled kartic</translation>
 <translation id="3369192424181595722">Napaka ure</translation>
@@ -610,6 +609,7 @@
 <translation id="3949601375789751990">Tu je prikazana zgodovina brskanja</translation>
 <translation id="3949870428812919180">Ni shranjenih plačilnih sredstev</translation>
 <translation id="3950820424414687140">Prijava</translation>
+<translation id="3961148744525529027">List rutine za obravnavo plačil je napol odprt</translation>
 <translation id="3962859241508114581">Prejšnja skladba</translation>
 <translation id="3963837677003247395">Želite nadaljevati ročno?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Brez}=1{1 spletno mesto }one{# spletno mesto }two{# spletni mesti }few{# spletna mesta }other{# spletnih mest }}</translation>
@@ -679,7 +679,7 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Poskušajte zagnati orodje za omrežno diagnostiko<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Nadaljuj na <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Veljavno</translation>
-<translation id="4248776159690739358">Skrbniku posredujte podatke o varnostnih dogodkih, ki jih je označila Chromova funkcija zaščite pred grožnjami za podjetja. To morda vključuje URL-je strani, ki jih obiščete, imena ali metapodatke datotek in uporabniško ime, s katerim se prijavite v napravo in Chrome.</translation>
+<translation id="4248776159690739358">Skrbniku posredujte podatke o varnostnih dogodkih, ki jih je označila Chromova zaščita pred nevarnostmi za podjetja. To morda vključuje URL-je strani, ki jih obiščete, imena ali metapodatke datotek in uporabniško ime, s katerim se prijavite v napravo in Chrome.</translation>
 <translation id="4250431568374086873">Povezava s tem mestom ni povsem varna.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="425582637250725228">Spremembe, ki ste jih naredili, morda niso shranjene.</translation>
@@ -1061,7 +1061,6 @@
 <translation id="6151417162996330722">Potrdilo strežnika ima predolgo obdobje veljavnosti.</translation>
 <translation id="6157877588268064908">Če si želite ogledati načine pošiljanja in zahteve, izberite naslov</translation>
 <translation id="6165508094623778733">Več o tem</translation>
-<translation id="6169916984152623906">Zdaj je mogoče brskati zasebno in drugi, ki uporabljajo to napravo, ne bodo videli vaše dejavnosti. Prenosi in zaznamki bodo vseeno shranjeni.</translation>
 <translation id="6177128806592000436">Povezava s tem spletnim mestom ni varna</translation>
 <translation id="6203231073485539293">Preverite internetno povezavo</translation>
 <translation id="6218753634732582820">Želite naslov odstraniti iz Chromiuma?</translation>
@@ -1343,6 +1342,7 @@ Dodatne podrobnosti:
 <translation id="7637571805876720304">Želite kreditno kartico odstraniti iz Chromiuma?</translation>
 <translation id="7638605456503525968">Serijska vrata</translation>
 <translation id="7639968568612851608">Temno siva</translation>
+<translation id="7653957176542370971">List rutine za obravnavo plačil je zaprt</translation>
 <translation id="765676359832457558">Skrij dodatne nastavitve ...</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7662298039739062396">Nastavitev nadzira razširitev</translation>
@@ -1472,6 +1472,7 @@ Dodatne podrobnosti:
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8262952874573525464">Robni šiv spodaj</translation>
 <translation id="8267698848189296333">Prijava kot: <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">List rutine za obravnavo plačil je odprt</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Prijava</translation>
 <translation id="8288807391153049143">Prikaz potrdila</translation>
@@ -1532,6 +1533,7 @@ Dodatne podrobnosti:
 <translation id="8680536109547170164"><ph name="QUERY" />, odgovor, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Na voljo</translation>
+<translation id="869891660844655955">Datum izteka</translation>
 <translation id="8703575177326907206">Vaša povezava z <ph name="DOMAIN" /> ni kodirana.</translation>
 <translation id="8718314106902482036">Plačilo ni končano</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, predlog iskanja</translation>

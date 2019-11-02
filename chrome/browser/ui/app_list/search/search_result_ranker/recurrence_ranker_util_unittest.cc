@@ -9,7 +9,6 @@
 
 #include "base/strings/string_util.h"
 #include "base/test/task_environment.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

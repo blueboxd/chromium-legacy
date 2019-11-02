@@ -55,7 +55,7 @@ class TestDeviceDescriptionService : public DeviceDescriptionService {
   TestDeviceDescriptionService(
       const DeviceDescriptionParseSuccessCallback& success_cb,
       const DeviceDescriptionParseErrorCallback& error_cb)
-      : DeviceDescriptionService(nullptr, success_cb, error_cb) {}
+      : DeviceDescriptionService(success_cb, error_cb) {}
 
   MOCK_METHOD2(ParseDeviceDescription,
                void(const DialDeviceData&, const DialDeviceDescriptionData&));

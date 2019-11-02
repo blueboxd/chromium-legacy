@@ -278,7 +278,7 @@
 <translation id="2292556288342944218">您被禁止访问互联网</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
-<translation id="2315864634253056100">此网站的域名看起来和 <ph name="LOOKALIKE_DOMAIN" /> 很相似。攻击者有时会对网址做些令人难以发现的更改来仿冒网站。</translation>
+<translation id="2315864634253056100">此网站的域名看起来和 <ph name="LOOKALIKE_DOMAIN" /> 很相似。攻击者有时会对网址做些令人难以察觉的更改来仿冒网站。</translation>
 <translation id="2316887270356262533">释放了不到 1 MB。当您下次访问时，某些网站的加载速度可能会更慢。</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> 要求提供用户名和密码。</translation>
 <translation id="2317583587496011522">接受借记卡。</translation>
@@ -473,12 +473,6 @@
 <translation id="3324983252691184275">深红色</translation>
 <translation id="3338095232262050444">安全</translation>
 <translation id="3355823806454867987">更改代理服务器设置...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />不会保存<ph name="END_EMPHASIS" />以下信息：
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />您的浏览记录
-          <ph name="LIST_ITEM" />Cookie 和网站数据
-          <ph name="LIST_ITEM" />在表单中填写的信息
-        <ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">此政策的值是系统从已弃用的 <ph name="OLD_POLICY" /> 政策中自动复制而来的。您应改用此政策。</translation>
 <translation id="3366477098757335611">查看您的卡</translation>
 <translation id="3369192424181595722">时钟错误</translation>
@@ -1040,7 +1034,6 @@
 <translation id="6151417162996330722">该服务器证书的有效期过长。</translation>
 <translation id="6157877588268064908">要查看送货方式和要求，请选择相应地址</translation>
 <translation id="6165508094623778733">了解详情</translation>
-<translation id="6169916984152623906">现在，您便可进行私密浏览了。共用此设备的其他用户将不会看到您的活动，但您下载的内容和添加的书签仍会保存在设备上。</translation>
 <translation id="6177128806592000436">您与此网站之间建立的连接不安全</translation>
 <translation id="6203231073485539293">请检查您的互联网连接是否正常</translation>
 <translation id="6218753634732582820">要从 Chromium 中移除地址吗？</translation>
@@ -1512,6 +1505,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />，答案，<ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">可用</translation>
+<translation id="869891660844655955">截止日期</translation>
 <translation id="8703575177326907206">您与 <ph name="DOMAIN" /> 的连接未加密。</translation>
 <translation id="8718314106902482036">未能完成付款</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />，<ph name="DESCRIPTION" />，搜索建议</translation>

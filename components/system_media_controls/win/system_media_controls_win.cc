@@ -120,6 +120,9 @@ bool SystemMediaControlsWin::Initialize() {
 void SystemMediaControlsWin::AddObserver(
     SystemMediaControlsObserver* observer) {
   observers_.AddObserver(observer);
+
+  if (initialized_)
+    observer->OnServiceReady();
 }
 
 void SystemMediaControlsWin::RemoveObserver(

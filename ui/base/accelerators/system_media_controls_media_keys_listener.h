@@ -38,11 +38,13 @@ class UI_BASE_EXPORT SystemMediaControlsMediaKeysListener
   void SetIsMediaPlaying(bool is_playing) override;
 
   // system_media_controls::SystemMediaControlsObserver implementation.
+  void OnServiceReady() override {}
   void OnNext() override;
   void OnPrevious() override;
-  void OnPause() override;
-  void OnStop() override;
   void OnPlay() override;
+  void OnPause() override;
+  void OnPlayPause() override;
+  void OnStop() override;
 
   void SetSystemMediaControlsForTesting(
       system_media_controls::SystemMediaControls* service) {

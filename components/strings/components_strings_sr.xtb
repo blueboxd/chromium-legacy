@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Овај тип картице није подржан</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Покушајте да контактирате администратора система.</translation>
+<translation id="1739107442478692187">Дошло је до упада у податке на сајту или у апликацији коју користите. Chrome препоручује да проверите сачуване лозинке и да одмах промените лозинку на <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Унесите важећи месец истека</translation>
 <translation id="1743520634839655729">Да бисте следећи пут платили брже, сачувајте картицу, име и адресу за обрачун на Google налогу и овом уређају.</translation>
 <translation id="1743570585616704562">Није препознат</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Домени се не подударају</translation>
 <translation id="2096368010154057602">Одсек</translation>
 <translation id="2099652385553570808">Троструко спајање на левој страни</translation>
+<translation id="2100280972184758440">Ваша лозинка је угрожена</translation>
 <translation id="2102134110707549001">Предложи јаку лозинку…</translation>
 <translation id="2108755909498034140">Поново покрените рачунар</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Занемарују се јер су замењене смерницама <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Издато за: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Бушење у доњем десном углу</translation>
+<translation id="2124528555835617522">Дошло је до упада у податке на сајту или у апликацији коју користите. Chrome препоручује да одмах проверите сачуване лозинке.</translation>
 <translation id="2129079103035905234">Сензори за покрет</translation>
 <translation id="213826338245044447">Мобилни обележивачи</translation>
 <translation id="214556005048008348">Откажи плаћање</translation>
@@ -480,17 +483,13 @@
 <translation id="3282497668470633863">Додајте име на картици</translation>
 <translation id="3287510313208355388">Преузми када сам онлајн</translation>
 <translation id="3293642807462928945">Сазнајте више о смерницама <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Дошло је до упада у податке на сајту или у апликацији коју користите. Chrome препоручује да одмах промените лозинку на <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Нису пронађени резултати претраге</translation>
 <translation id="3320021301628644560">Додајте адресу за обрачун</translation>
 <translation id="3324983252691184275">Јаркоцрвена</translation>
 <translation id="3338095232262050444">Безбедан</translation>
 <translation id="3355823806454867987">Промени подешавања проксија...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />не чува<ph name="END_EMPHASIS" /> следеће информације:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />историју прегледања
-          <ph name="LIST_ITEM" />колачиће и податке о сајтовима
-          <ph name="LIST_ITEM" />информације које уносите у обрасцима
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">Страница обрађивача плаћања</translation>
 <translation id="3362968246557010467">Ове смернице се аутоматски копирају из застарелих смерница <ph name="OLD_POLICY" />. Уместо њих треба да користите ове смернице.</translation>
 <translation id="3366477098757335611">Прикажи картице</translation>
 <translation id="3369192424181595722">Грешка на сату</translation>
@@ -610,6 +609,7 @@
 <translation id="3949601375789751990">Историја прегледања ће се појавити овде</translation>
 <translation id="3949870428812919180">Нема сачуваних начина плаћања</translation>
 <translation id="3950820424414687140">Пријави ме</translation>
+<translation id="3961148744525529027">Страница обрађивача плаћања је полуотворена</translation>
 <translation id="3962859241508114581">Претходна песма</translation>
 <translation id="3963837677003247395">Желите ли да наставите ручно?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{None}=1{Са 1 сајта }one{Са # сајта }few{Са # сајта }other{Са # сајтова }}</translation>
@@ -1060,7 +1060,6 @@
 <translation id="6151417162996330722">Сертификат сервера има предугачак период важења.</translation>
 <translation id="6157877588268064908">Да бисте видели начине и захтеве за слање, изаберите адресу</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
-<translation id="6169916984152623906">Сада можете да прегледате приватно и други људи који користе овај уређај неће видети ваше активности. Међутим, преузимања и обележивачи ће бити сачувани.</translation>
 <translation id="6177128806592000436">Веза са овим сајтом није безбедна</translation>
 <translation id="6203231073485539293">Проверите интернет везу</translation>
 <translation id="6218753634732582820">Желите ли да уклоните адресу из Chromium-а?</translation>
@@ -1342,6 +1341,7 @@
 <translation id="7637571805876720304">Желите ли да уклоните кредитну картицу из Chromium-а?</translation>
 <translation id="7638605456503525968">Серијски портови</translation>
 <translation id="7639968568612851608">Тамносива</translation>
+<translation id="7653957176542370971">Страница обрађивача плаћања је затворена</translation>
 <translation id="765676359832457558">Сакриј напредна подешавања...</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7662298039739062396">Подешавање контролише додатак</translation>
@@ -1471,6 +1471,7 @@
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8262952874573525464">Спајање ивица шавом на дну</translation>
 <translation id="8267698848189296333">Пријављујете се као <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Страница обрађивача плаћања је отворена</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Пријави ме</translation>
 <translation id="8288807391153049143">Прикажи сертификат</translation>
@@ -1532,6 +1533,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, одговор, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Доступно</translation>
+<translation id="869891660844655955">Датум истека</translation>
 <translation id="8703575177326907206">Ваша веза са доменом <ph name="DOMAIN" /> није шифрована.</translation>
 <translation id="8718314106902482036">Плаћање није довршено</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, предлог за претрагу</translation>

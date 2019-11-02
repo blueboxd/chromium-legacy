@@ -146,6 +146,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool amd_framebuffer_multisample_advanced = false;
     bool ext_float_blend = false;
     bool chromium_completion_query = false;
+    bool oes_fbo_render_mipmap = false;
   };
 
   FeatureInfo();
@@ -208,6 +209,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   void EnableEXTColorBufferFloat();
   void EnableEXTColorBufferHalfFloat();
   void EnableEXTTextureFilterAnisotropic();
+  void EnableOESFboRenderMipmap();
   void EnableOESTextureFloatLinear();
   void EnableOESTextureHalfFloatLinear();
 

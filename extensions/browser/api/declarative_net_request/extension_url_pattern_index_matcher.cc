@@ -265,17 +265,17 @@ RequestAction GetRemoveHeadersActionForMask(const ExtensionId& extension_id,
       case dnr_api::REMOVE_HEADER_TYPE_NONE:
         break;
       case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
-        if (mask & kRemoveHeadersMask_Cookie)
+        if (mask & flat::RemoveHeaderType_cookie)
           action.request_headers_to_remove.push_back(
               net::HttpRequestHeaders::kCookie);
         break;
       case dnr_api::REMOVE_HEADER_TYPE_REFERER:
-        if (mask & kRemoveHeadersMask_Referer)
+        if (mask & flat::RemoveHeaderType_referer)
           action.request_headers_to_remove.push_back(
               net::HttpRequestHeaders::kReferer);
         break;
       case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
-        if (mask & kRemoveHeadersMask_SetCookie)
+        if (mask & flat::RemoveHeaderType_set_cookie)
           action.response_headers_to_remove.push_back(kSetCookieResponseHeader);
         break;
     }
@@ -358,8 +358,9 @@ uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
     std::vector<RequestAction>* remove_headers_actions) const {
   uint8_t mask = 0;
 
-  static_assert(kRemoveHeadersMask_Max <= std::numeric_limits<uint8_t>::max(),
-                "RemoveHeadersMask can't fit in a uint8_t");
+  static_assert(
+      flat::RemoveHeaderType_ANY <= std::numeric_limits<uint8_t>::max(),
+      "flat::RemoveHeaderType can't fit in a uint8_t");
 
   // Iterate over each RemoveHeaderType value.
   uint8_t bit = 0;
@@ -387,15 +388,15 @@ uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
       case dnr_api::REMOVE_HEADER_TYPE_NONE:
         break;
       case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
-        bit = kRemoveHeadersMask_Cookie;
+        bit = flat::RemoveHeaderType_cookie;
         handle_remove_header_bit(bit, flat::ActionIndex_remove_cookie_header);
         break;
       case dnr_api::REMOVE_HEADER_TYPE_REFERER:
-        bit = kRemoveHeadersMask_Referer;
+        bit = flat::RemoveHeaderType_referer;
         handle_remove_header_bit(bit, flat::ActionIndex_remove_referer_header);
         break;
       case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
-        bit = kRemoveHeadersMask_SetCookie;
+        bit = flat::RemoveHeaderType_set_cookie;
         handle_remove_header_bit(bit,
                                  flat::ActionIndex_remove_set_cookie_header);
         break;

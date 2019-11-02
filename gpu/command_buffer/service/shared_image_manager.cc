@@ -294,7 +294,7 @@ void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
 
   // Unique name in the process.
   std::string dump_name =
-      base::StringPrintf("gpu/shared-images/client_0x%" PRIX32 "/mailbox_%s",
+      base::StringPrintf("gpu/shared_images/client_0x%" PRIX32 "/mailbox_%s",
                          client_id, mailbox.ToDebugString().c_str());
 
   base::trace_event::MemoryAllocatorDump* dump =

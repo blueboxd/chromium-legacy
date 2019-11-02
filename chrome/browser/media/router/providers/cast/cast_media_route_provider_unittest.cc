@@ -18,10 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/data_decoder/data_decoder_service.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,9 +38,7 @@ static constexpr base::TimeDelta kRouteTimeout =
 class CastMediaRouteProviderTest : public testing::Test {
  public:
   CastMediaRouteProviderTest()
-      : data_decoder_service_(connector_factory_.RegisterInstance(
-            data_decoder::mojom::kServiceName)),
-        socket_service_(
+      : socket_service_(
             base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})),
         message_handler_(&socket_service_) {}
   ~CastMediaRouteProviderTest() override = default;
@@ -62,8 +57,7 @@ class CastMediaRouteProviderTest : public testing::Test {
     provider_ = std::make_unique<CastMediaRouteProvider>(
         provider_remote_.BindNewPipeAndPassReceiver(), std::move(router_remote),
         &media_sink_service_, &app_discovery_service_, &message_handler_,
-        connector_factory_.GetDefaultConnector(), "hash-token",
-        base::SequencedTaskRunnerHandle::Get());
+        "hash-token", base::SequencedTaskRunnerHandle::Get());
 
     base::RunLoop().RunUntilIdle();
   }
@@ -106,8 +100,7 @@ class CastMediaRouteProviderTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  service_manager::TestConnectorFactory connector_factory_;
-  data_decoder::DataDecoderService data_decoder_service_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   mojo::Remote<mojom::MediaRouteProvider> provider_remote_;
   MockMojoMediaRouter mock_router_;

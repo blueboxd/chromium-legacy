@@ -84,7 +84,8 @@ const automation_helper = (function() {
       console.log(logDataArr.join(""));
     } finally {
       // Remove our temporary console iframe
-      frame.remove();
+      if(document.body.contains(frame))
+        document.body.removeChild(frame);
     }
     return isReady;
   };

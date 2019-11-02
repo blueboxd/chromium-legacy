@@ -9,11 +9,11 @@
 
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "base/values.h"
 #include "chrome/browser/search/promos/promo_data.h"
 #include "chrome/browser/search/promos/promo_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 class GURL;
 class PrefService;
@@ -80,8 +80,7 @@ class PromoService : public KeyedService {
 
  private:
   void OnLoadDone(std::unique_ptr<std::string> response_body);
-  void OnJsonParsed(base::Value value);
-  void OnJsonParseFailed(const std::string& message);
+  void OnJsonParsed(data_decoder::DataDecoder::ValueOrError result);
 
   void NotifyObservers();
 

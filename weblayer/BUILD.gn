@@ -79,6 +79,7 @@ jumbo_static_library("weblayer_lib") {
     "public/navigation.h",
     "public/navigation_controller.h",
     "public/navigation_observer.h",
+    "public/new_browser_delegate.h",
     "public/profile.h",
     "renderer/content_renderer_client_impl.cc",
     "renderer/content_renderer_client_impl.h",

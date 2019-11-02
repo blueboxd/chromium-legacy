@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "ui/aura/env_observer.h"
 #include "ui/views/views_export.h"
 
@@ -25,6 +24,8 @@ class VIEWS_EXPORT AccessibilityAlertWindow : public aura::EnvObserver {
  public:
   // |parent| is the window where a child alert window will be added.
   AccessibilityAlertWindow(aura::Window* parent, views::AXAuraObjCache* cache);
+  AccessibilityAlertWindow(const AccessibilityAlertWindow&) = delete;
+  AccessibilityAlertWindow& operator=(const AccessibilityAlertWindow&) = delete;
   ~AccessibilityAlertWindow() override;
 
   // Triggers an alert with the text |alert_string| to be sent to an
@@ -41,8 +42,6 @@ class VIEWS_EXPORT AccessibilityAlertWindow : public aura::EnvObserver {
 
   // The accessibility cache associated with |alert_window_|.
   views::AXAuraObjCache* cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityAlertWindow);
 };
 
 }  // namespace views

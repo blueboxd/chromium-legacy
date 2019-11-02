@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Més opcions del menú</translation>
 <translation id="2316709634732130529">Utilitza la contrasenya suggerida</translation>
 <translation id="2320166752086256636">Amaga el teclat</translation>
+<translation id="2330129964253841015">T'avisa si les contrasenyes es posen en perill</translation>
 <translation id="2339560363438331454">Sincron. i serveis de Google</translation>
 <translation id="2351097562818989364">S'ha restablert la configuració del Traductor.</translation>
 <translation id="2359043044084662842">Tradueix</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Desa la imatge</translation>
 <translation id="3789841737615482174">Instal·la</translation>
 <translation id="385051799172605136">Enrere</translation>
-<translation id="3886946236301294521">T'avisa si una contrasenya que utilitzes s'ha vist afectada per una violació de les dades.</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3915450441834151894">Informació del lloc web</translation>
 <translation id="3922310737605261887">Cerca el text copiat</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Pàgines que has llegit</translation>
 <translation id="4630540211544979320">Tradueix pàgines</translation>
 <translation id="4636930964841734540">Informació</translation>
+<translation id="4659126640776004816">En iniciar la sessió al Compte de Google, aquesta funció està sempre activada.</translation>
 <translation id="4659667755519643272">Entra al selector de pestanyes</translation>
 <translation id="4666531726415300315">Heu iniciat la sessió com a <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5327248766486351172">Nom</translation>
-<translation id="5365716706805792666">Google pot comprovar si les teves contrasenyes s'han vist afectades per una violació de les dades. Aquesta opció s'activarà quan iniciïs la sessió amb el Compte de Google.</translation>
 <translation id="5388358297987318779">Obre una imatge</translation>
 <translation id="5407969256130905701">Descarta els canvis</translation>
 <translation id="5409365236829784218">Cap aplicació instal·lada no pot obrir el fitxer.</translation>
@@ -333,7 +333,6 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5854790677617711513">Anterior a 30 dies</translation>
 <translation id="5857090052475505287">Carpeta nova</translation>
 <translation id="5857770089550859117">Cal una frase de contrasenya per iniciar la sincronització.</translation>
-<translation id="5859444426865731878">Google pot comprovar si les teves contrasenyes s'han vist afectades per una violació de les dades.</translation>
 <translation id="5860033963881614850">Desactivat</translation>
 <translation id="5869029295770560994">D'acord</translation>
 <translation id="5871497086027727873">1 element desplaçat</translation>
@@ -483,7 +482,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7859704718976024901">Historial de navegació</translation>
 <translation id="7887198238286927132">Amb la finalitat de protegir la teva privadesa, Chrome no emplenarà aquest camp automàticament.</translation>
 <translation id="7918293828610777738">La llista de lectura està disponible sense connexió. Per afegir-hi una pàgina, toca <ph name="SHARE_OPENING_ICON" /> i després <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Comprova la seguretat de la contrasenya</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exporta les contrasenyes</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>

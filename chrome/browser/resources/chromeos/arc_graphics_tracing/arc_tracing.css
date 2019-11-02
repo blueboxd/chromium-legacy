@@ -105,6 +105,12 @@
   margin-top: 10px;
 }
 
+.arc-tracing-app-icon {
+  height: 24px;
+  vertical-align: text-bottom;
+  width: 24px;
+}
+
 .hidden.arc-events-band-title::before {
   content: '\002B';
 }

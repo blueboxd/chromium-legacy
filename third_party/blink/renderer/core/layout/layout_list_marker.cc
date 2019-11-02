@@ -536,10 +536,20 @@ LayoutRect LayoutListMarker::RelativeSymbolMarkerRect(
 }
 
 void LayoutListMarker::ListItemStyleDidChange() {
-  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Create();
-  // The marker always inherits from the list item, regardless of where it might
-  // end up (e.g., in some deeply nested line box). See CSS3 spec.
-  new_style->InheritFrom(list_item_->StyleRef());
+  Node* list_item = list_item_->GetNode();
+  const ComputedStyle* cached_marker_style =
+      list_item->IsPseudoElement()
+          ? nullptr
+          : ToElement(list_item)->CachedStyleForPseudoElement(kPseudoIdMarker);
+  scoped_refptr<ComputedStyle> new_style;
+  if (cached_marker_style) {
+    new_style = ComputedStyle::Clone(*cached_marker_style);
+  } else {
+    // The marker always inherits from the list item, regardless of where it
+    // might end up (e.g., in some deeply nested line box). See CSS3 spec.
+    new_style = ComputedStyle::Create();
+    new_style->InheritFrom(list_item_->StyleRef());
+  }
   if (Style()) {
     // Reuse the current margins. Otherwise resetting the margins to initial
     // values would trigger unnecessary layout.

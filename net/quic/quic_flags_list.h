@@ -378,3 +378,6 @@ QUIC_FLAG(bool,
 
 // If true, re-calculate pacing rate when cwnd gets bootstrapped.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_pacing_rate, false)
+
+// The maximum congestion window in packets.
+QUIC_FLAG(int32_t, FLAGS_quic_max_congestion_window, 2000)

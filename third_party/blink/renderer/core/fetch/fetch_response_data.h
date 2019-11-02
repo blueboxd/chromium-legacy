@@ -112,7 +112,8 @@ class CORE_EXPORT FetchResponseData final
   void ReplaceBodyStreamBuffer(BodyStreamBuffer*);
 
   // Does not contain the blob response body.
-  mojom::blink::FetchAPIResponsePtr PopulateFetchAPIResponse();
+  mojom::blink::FetchAPIResponsePtr PopulateFetchAPIResponse(
+      const KURL& request_url);
 
   void Trace(blink::Visitor*);
 

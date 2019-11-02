@@ -9,7 +9,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "third_party/libxml/chromium/libxml_utils.h"
+#include "third_party/libxml/chromium/xml_reader.h"
 
 namespace data_decoder {
 

@@ -410,9 +410,18 @@ class BLINK_EXPORT WebLocalFrameClient {
   // exception is if the Window object is reused; in that case, the old
   // DocumentInterfaceBroker handle will be reused, and the endpoint won't be
   // bound to any requests.
-  virtual void DidCommitProvisionalLoad(const WebHistoryItem&,
-                                        WebHistoryCommitType,
-                                        mojo::ScopedMessagePipeHandle) {}
+  // When a load commits and a new Document is created, WebLocalFrameClient
+  // creates a new BrowserInterfaceBroker endpoint to ensure that interface
+  // receivers in the newly committed Document are associated with the correct
+  // origin (even if the origin of the old and the new Document are the same).
+  // The one exception is if the Window object is reused; in that case, blink
+  // passes |should_reset_browser_interface_broker| = false, and the old
+  // BrowserInterfaceBroker connection will be reused.
+  virtual void DidCommitProvisionalLoad(
+      const WebHistoryItem&,
+      WebHistoryCommitType,
+      mojo::ScopedMessagePipeHandle,
+      bool should_reset_browser_interface_broker) {}
 
   // The frame's document has just been initialized.
   virtual void DidCreateNewDocument() {}

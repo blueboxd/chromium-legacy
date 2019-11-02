@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -208,12 +207,11 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
 
 class ToolbarViewTest : public InProcessBrowserTest {
  public:
-  ToolbarViewTest() {}
+  ToolbarViewTest() = default;
+  ToolbarViewTest(const ToolbarViewTest&) = delete;
+  ToolbarViewTest& operator=(const ToolbarViewTest&) = delete;
 
   void RunToolbarCycleFocusTest(Browser* browser);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ToolbarViewTest);
 };
 
 void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
@@ -320,7 +318,11 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, BackButtonUpdate) {
 
 class ToolbarViewWithExtensionsToolbarMenuTest : public ToolbarViewTest {
  public:
-  ToolbarViewWithExtensionsToolbarMenuTest() {}
+  ToolbarViewWithExtensionsToolbarMenuTest() = default;
+  ToolbarViewWithExtensionsToolbarMenuTest(
+      const ToolbarViewWithExtensionsToolbarMenuTest&) = delete;
+  ToolbarViewWithExtensionsToolbarMenuTest& operator=(
+      const ToolbarViewWithExtensionsToolbarMenuTest&) = delete;
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
@@ -329,8 +331,6 @@ class ToolbarViewWithExtensionsToolbarMenuTest : public ToolbarViewTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarViewWithExtensionsToolbarMenuTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ToolbarViewWithExtensionsToolbarMenuTest,

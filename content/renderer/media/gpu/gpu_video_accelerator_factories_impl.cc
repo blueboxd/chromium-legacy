@@ -63,7 +63,8 @@ GpuVideoAcceleratorFactoriesImpl::Create(
     bool enable_video_gpu_memory_buffers,
     bool enable_media_stream_gpu_memory_buffers,
     bool enable_video_accelerator,
-    media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
+    mojo::PendingRemote<media::mojom::InterfaceFactory>
+        interface_factory_remote,
     media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info) {
   RecordContextProviderPhaseUmaEnum(
       ContextProviderPhase::CONTEXT_PROVIDER_ACQUIRED);
@@ -71,7 +72,7 @@ GpuVideoAcceleratorFactoriesImpl::Create(
       std::move(gpu_channel_host), main_thread_task_runner, task_runner,
       context_provider, enable_video_gpu_memory_buffers,
       enable_media_stream_gpu_memory_buffers, enable_video_accelerator,
-      std::move(interface_factory_info), std::move(vea_provider_info)));
+      std::move(interface_factory_remote), std::move(vea_provider_info)));
 }
 
 GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
@@ -82,7 +83,8 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
     bool enable_video_gpu_memory_buffers,
     bool enable_media_stream_gpu_memory_buffers,
     bool enable_video_accelerator,
-    media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
+    mojo::PendingRemote<media::mojom::InterfaceFactory>
+        interface_factory_remote,
     media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info)
     : main_thread_task_runner_(main_thread_task_runner),
       task_runner_(task_runner),
@@ -101,19 +103,21 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner,
-                     base::Unretained(this), std::move(interface_factory_info),
+                     base::Unretained(this),
+                     std::move(interface_factory_remote),
                      std::move(vea_provider_info)));
 }
 
 GpuVideoAcceleratorFactoriesImpl::~GpuVideoAcceleratorFactoriesImpl() {}
 
 void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
-    media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
+    mojo::PendingRemote<media::mojom::InterfaceFactory>
+        interface_factory_remote,
     media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(context_provider_);
 
-  interface_factory_.Bind(std::move(interface_factory_info));
+  interface_factory_.Bind(std::move(interface_factory_remote));
   vea_provider_.Bind(std::move(vea_provider_info));
 
   if (context_provider_->BindToCurrentThread() !=
@@ -257,8 +261,9 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
   if (CheckContextLost())
     return nullptr;
 
-  media::mojom::VideoEncodeAcceleratorPtr vea;
-  vea_provider_->CreateVideoEncodeAccelerator(mojo::MakeRequest(&vea));
+  mojo::PendingRemote<media::mojom::VideoEncodeAccelerator> vea;
+  vea_provider_->CreateVideoEncodeAccelerator(
+      vea.InitWithNewPipeAndPassReceiver());
 
   if (!vea)
     return nullptr;

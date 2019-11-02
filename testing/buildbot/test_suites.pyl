@@ -94,6 +94,7 @@
         },
       },
       'mojo_test_apk': {},
+      'weblayer_instrumentation_test_apk': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
@@ -2382,7 +2383,7 @@
       'webkit_unit_tests': {
         'test': 'blink_unittests',
         'android_swarming': {
-          'shards': 2,
+          'shards': 4,
         },
       },
       'wtf_unittests': {},
@@ -4596,6 +4597,11 @@
           '--build-revision=${got_revision}',
           '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter',
           '--browser-ui-tests-verify-pixels',
+          # Do not allow retry or it will break the bulk approval process.
+          # When retry with fail-pass pattern, the passing test will overwrite the previously
+          # seen flaky version on the trace. We can triage the image using the printed link,
+          # but it will not show on the Skia Gold search page.
+          '--test-launcher-retry-limit=0',
           '--enable-pixel-output-in-tests',
         ],
         'experiment_percentage': 100,
@@ -5592,6 +5598,7 @@
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
       'gpu_common_gtests',
+      'gpu_dawn_integration_gtests',
       'gpu_gles2_conform_gtests',
       'gpu_swiftshader_gtests',
     ],
@@ -5617,6 +5624,7 @@
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
       'gpu_common_gtests',
+      'gpu_dawn_integration_gtests',
       'gpu_desktop_specific_gtests',
       'gpu_gles2_conform_gtests',
       'gpu_swiftshader_gtests',
@@ -5626,6 +5634,7 @@
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_common_gtests',
+      'gpu_dawn_integration_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
       'gpu_gles2_conform_gtests',
@@ -5644,6 +5653,7 @@
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_common_gtests',
+      'gpu_dawn_integration_gtests',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
@@ -5689,7 +5699,7 @@
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
       'gpu_common_gtests',
-      'gpu_dawn_gtests',
+      'gpu_dawn_integration_gtests',
       'gpu_default_and_optional_win_specific_gtests',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
@@ -5728,6 +5738,7 @@
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
       'gpu_common_gtests',
+      'gpu_dawn_integration_gtests',
       'gpu_default_and_optional_win_specific_gtests',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',

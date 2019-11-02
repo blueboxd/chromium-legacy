@@ -5,12 +5,11 @@
 #ifndef UI_GFX_MAC_COCOA_SCROLLBAR_PAINTER_H_
 #define UI_GFX_MAC_COCOA_SCROLLBAR_PAINTER_H_
 
-#include "ui/gfx/geometry/rect.h"
+#include "cc/paint/paint_canvas.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
-
-class Canvas;
 
 class GFX_EXPORT CocoaScrollbarPainter {
  public:
@@ -40,13 +39,17 @@ class GFX_EXPORT CocoaScrollbarPainter {
 
   // Paint the thumb. The |thumb_bounds| changes over time when the thumb
   // engorges during hover.
-  static void PaintThumb(gfx::Canvas* canvas,
-                         const gfx::Rect& thumb_bounds,
+  static void PaintThumb(cc::PaintCanvas* canvas,
+                         const SkIRect& thumb_bounds,
                          const Params& params);
-  // Paint the track. |bounds| is the bounds for the track.
-  static void PaintTrack(gfx::Canvas* canvas,
-                         const gfx::Rect& track_bounds,
+  // Paint the track. |track_bounds| is the bounds for the track.
+  static void PaintTrack(cc::PaintCanvas* canvas,
+                         const SkIRect& track_bounds,
                          const Params& params);
+  // Paint the corner. |corner_bounds| is the bounds for the corner.
+  static void PaintCorner(cc::PaintCanvas* canvas,
+                          const SkIRect& corner_bounds,
+                          const Params& params);
 };
 
 }  // namespace gfx

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_EXTENSION_TOOLBAR_MENU_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_EXTENSION_TOOLBAR_MENU_VIEW_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -32,6 +31,8 @@ class ExtensionToolbarMenuView : public AppMenuButtonObserver,
                                  public ToolbarActionsBarObserver {
  public:
   ExtensionToolbarMenuView(Browser* browser, views::MenuItemView* menu_item);
+  ExtensionToolbarMenuView(const ExtensionToolbarMenuView&) = delete;
+  ExtensionToolbarMenuView& operator=(const ExtensionToolbarMenuView&) = delete;
   ~ExtensionToolbarMenuView() override;
 
   BrowserActionsContainer* container_for_testing() {
@@ -86,8 +87,6 @@ class ExtensionToolbarMenuView : public AppMenuButtonObserver,
       app_menu_button_observer_{this};
 
   base::WeakPtrFactory<ExtensionToolbarMenuView> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionToolbarMenuView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_EXTENSION_TOOLBAR_MENU_VIEW_H_

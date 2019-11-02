@@ -46,6 +46,8 @@ component("chromeos") {
     "hugepage_text/hugepage_text.h",
     "memory/kstaled.cc",
     "memory/kstaled.h",
+    "memory/memory.cc",
+    "memory/memory.h",
     "memory/swap_configuration.cc",
     "memory/swap_configuration.h",
     "policy/weekly_time/time_utils.cc",
@@ -243,8 +245,14 @@ if (is_cros_chrome_sdk) {
   # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
     # To disable a specific test, add it the following list and cite a bug.
-    # TODO(crbug.com/1000351): Enable crostini.SanityArtifact.
-    tast_disabled_tests = [ "crostini.SanityArtifact" ]
+    tast_disabled_tests = [
+      # crbug.com/1000351
+      "crostini.SanityArtifact",
+
+      # crbug.com/1006681
+      "crostini.GPUEnabledDownload",
+      "crostini.SanityDownload",
+    ]
   }
 
   tast_test("chrome_all_tast_tests_informational") {

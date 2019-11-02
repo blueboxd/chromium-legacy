@@ -153,6 +153,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2063539687800151747">Epigraph</translation>
 <translation id="207477615537953741">Semantics off</translation>
 <translation id="2086961585857038472">Next Word</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">en</translation>
 <translation id="2091933974477985526">Previous editable text area</translation>
 <translation id="2100350898815792233">All punctuation</translation>
@@ -193,6 +194,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2416512023405990736">An unticked tick box</translation>
 <translation id="2417569100218200841">Content info</translation>
 <translation id="2417948780551741035">Endnotes</translation>
+<translation id="2419852971200420169">Description list</translation>
 <translation id="2421113964388408478">Deletion</translation>
 <translation id="2422937916923936891">Menu item tick box</translation>
 <translation id="2428534162001909979">Command Menus</translation>
@@ -371,6 +373,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3497063866483065785">{COUNT,plural, =1{question mark}other{# question marks}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{caret}other{# carets}}</translation>
 <translation id="352577523970648069">An editable text field</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">cut <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Tap with 2 fingers to temporarily stop speech</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, tick box not ticked</translation>
@@ -779,6 +782,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6378394210114975876">Thistle</translation>
 <translation id="6385591741672306837">col</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">Disable all event filters</translation>
 <translation id="6411426777058107714">No previous radio button.</translation>
 <translation id="6414968628640960377">Previous different element.</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -914,6 +918,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7332592614823088566">Row <ph name="ROWINDEX" /> of <ph name="ROWTOTAL" />, Column <ph name="COLINDEX" /> of <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">has pop-up</translation>
 <translation id="7356165926712028380">Switch to 8 dot braille</translation>
+<translation id="7356610683936413584">Description list detail</translation>
 <translation id="7362871137496673139">No previous level 2 heading.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ampersand}other{# ampersands}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8096975275316362544">Mint Cream</translation>
 <translation id="8098587210054821856">Slate Grey</translation>
 <translation id="8110647606445335195">No ARIA landmarks.</translation>
+<translation id="8121539003537428024">Enable all event filters</translation>
 <translation id="812886159861361726">Download stopped <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Tap</translation>
 <translation id="8153880621934657047">Not inside table.</translation>

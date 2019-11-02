@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 
 namespace extensions {
@@ -132,37 +133,32 @@ bool ParseSingleAppTag(const base::Value& app_element,
 }
 
 void ParseXmlDone(ParseUpdateManifestCallback callback,
-                  std::unique_ptr<base::Value> root,
-                  const base::Optional<std::string>& error) {
+                  data_decoder::DataDecoder::ValueOrError result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (error) {
-    ReportError(std::move(callback), "Failed to parse XML: " + *error);
+  if (!result.value) {
+    ReportError(std::move(callback), "Failed to parse XML: " + *result.error);
     return;
   }
 
   auto results = std::make_unique<UpdateManifestResults>();
-  if (!root) {
-    ReportError(std::move(callback), "Empty XML");
-    return;
-  }
+  base::Value& root = *result.value;
 
   // Look for the required namespace declaration.
   std::string gupdate_ns;
-  if (!GetXmlElementNamespacePrefix(*root, kExpectedGupdateXmlns,
-                                    &gupdate_ns)) {
+  if (!GetXmlElementNamespacePrefix(root, kExpectedGupdateXmlns, &gupdate_ns)) {
     ReportError(std::move(callback),
                 "Missing or incorrect xmlns on gupdate tag");
     return;
   }
 
-  if (!IsXmlElementNamed(*root, GetXmlQualifiedName(gupdate_ns, "gupdate"))) {
+  if (!IsXmlElementNamed(root, GetXmlQualifiedName(gupdate_ns, "gupdate"))) {
     ReportError(std::move(callback), "Missing gupdate tag");
     return;
   }
 
   // Check for the gupdate "protocol" attribute.
-  if (GetXmlElementAttribute(*root, "protocol") != kExpectedGupdateProtocol) {
+  if (GetXmlElementAttribute(root, "protocol") != kExpectedGupdateProtocol) {
     ReportError(std::move(callback),
                 std::string("Missing/incorrect protocol on gupdate tag "
                             "(expected '") +
@@ -172,7 +168,7 @@ void ParseXmlDone(ParseUpdateManifestCallback callback,
 
   // Parse the first <daystart> if it's present.
   const base::Value* daystart = GetXmlElementChildWithTag(
-      *root, GetXmlQualifiedName(gupdate_ns, "daystart"));
+      root, GetXmlQualifiedName(gupdate_ns, "daystart"));
   if (daystart) {
     std::string elapsed_seconds =
         GetXmlElementAttribute(*daystart, "elapsed_seconds");
@@ -185,7 +181,7 @@ void ParseXmlDone(ParseUpdateManifestCallback callback,
   // Parse each of the <app> tags.
   std::vector<const base::Value*> apps;
   data_decoder::GetAllXmlElementChildrenWithTag(
-      *root, GetXmlQualifiedName(gupdate_ns, "app"), &apps);
+      root, GetXmlQualifiedName(gupdate_ns, "app"), &apps);
   std::string error_msg;
   int prodversionmin_count = 0;
   for (const auto* app : apps) {
@@ -231,13 +227,12 @@ UpdateManifestResults::GroupByID() const {
   return groups;
 }
 
-void ParseUpdateManifest(service_manager::Connector* connector,
-                         const std::string& xml,
+void ParseUpdateManifest(const std::string& xml,
                          ParseUpdateManifestCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(callback);
-  data_decoder::ParseXml(connector, xml,
-                         base::BindOnce(&ParseXmlDone, std::move(callback)));
+  data_decoder::DataDecoder::ParseXmlIsolated(
+      xml, base::BindOnce(&ParseXmlDone, std::move(callback)));
 }
 
 }  // namespace extensions

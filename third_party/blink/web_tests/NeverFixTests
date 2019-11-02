@@ -1328,11 +1328,6 @@ crbug.com/254753 external/wpt/css/css-images/css-image-fallbacks-and-annotations
 crbug.com/254753 external/wpt/css/css-images/css-image-fallbacks-and-annotations004.html [ WontFix ]
 crbug.com/254753 external/wpt/css/css-images/css-image-fallbacks-and-annotations005.html [ WontFix ]
 
-# ::marker has not been implemented
-crbug.com/457718 external/wpt/css/css-pseudo/marker-and-other-pseudo-elements.html [ WontFix ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-color.html [ WontFix ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-font-properties.html [ WontFix ]
-
 # 'writing-mode: sideways-lr' and 'sideways-rl' are not implemented.
 # Note other tests for these properties are skipped in W3CImportExpectations.
 crbug.com/680331 external/wpt/css/css-writing-modes/slr-alongside-vlr-floats.html [ WontFix ]

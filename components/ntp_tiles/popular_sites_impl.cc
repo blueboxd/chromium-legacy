@@ -77,8 +77,7 @@ std::string GetDefaultSearchEngineCountryCode(
   DCHECK(template_url_service);
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(
-          ntp_tiles::switches::kEnableNTPSearchEngineCountryDetection))
+  if (!cmd_line->HasSwitch(switches::kEnableNTPSearchEngineCountryDetection))
     return std::string();
 
   const TemplateURL* default_provider =
@@ -177,13 +176,11 @@ std::map<SectionType, PopularSites::SitesVector> ParseVersion6OrAbove(
     // Non-personalized site exploration tiles are no longer supported, so
     // ignore all other section types.
     SectionType section_type = static_cast<SectionType>(section);
-    if (section_type != SectionType::PERSONALIZED) {
+    if (section_type != SectionType::PERSONALIZED)
       continue;
-    }
     const base::ListValue* sites_list;
-    if (!item->GetList("sites", &sites_list)) {
+    if (!item->GetList("sites", &sites_list))
       continue;
-    }
     sections[section_type] = ParseSiteList(*sites_list);
   }
   return sections;
@@ -192,22 +189,21 @@ std::map<SectionType, PopularSites::SitesVector> ParseVersion6OrAbove(
 std::map<SectionType, PopularSites::SitesVector> ParseSites(
     const base::ListValue& list,
     int version) {
-  if (version >= kSitesExplorationStartVersion) {
+  if (version >= kSitesExplorationStartVersion)
     return ParseVersion6OrAbove(list);
-  }
   return ParseVersion5(list);
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && \
     (defined(OS_ANDROID) || defined(OS_IOS))
-void SetDefaultResourceForSite(int index,
+void SetDefaultResourceForSite(size_t index,
                                int resource_id,
-                               base::ListValue* sites) {
-  base::DictionaryValue* site;
-  if (!sites->GetDictionary(index, &site)) {
+                               base::Value* sites) {
+  base::Value::ListStorage& list = sites->GetList();
+  if (index >= list.size() || !list[index].is_dict())
     return;
-  }
-  site->SetInteger("default_icon_resource", resource_id);
+
+  list[index].SetIntKey("default_icon_resource", resource_id);
 }
 #endif
 
@@ -216,29 +212,26 @@ base::Value DefaultPopularSites() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   return base::Value(base::Value::Type::LIST);
 #else
-  if (!base::FeatureList::IsEnabled(kPopularSitesBakedInContentFeature)) {
+  if (!base::FeatureList::IsEnabled(kPopularSitesBakedInContentFeature))
     return base::Value(base::Value::Type::LIST);
-  }
-  std::unique_ptr<base::ListValue> sites =
-      base::ListValue::From(base::JSONReader::ReadDeprecated(
-          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-              IDR_DEFAULT_POPULAR_SITES_JSON)));
-  DCHECK(sites);
-  for (base::Value& site : *sites) {
-    base::DictionaryValue& dict = static_cast<base::DictionaryValue&>(site);
-    dict.SetBoolean("baked_in", true);
-  }
+
+  base::Optional<base::Value> sites = base::JSONReader::Read(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+          IDR_DEFAULT_POPULAR_SITES_JSON));
+  for (base::Value& site : sites.value().GetList())
+    site.SetBoolKey("baked_in", true);
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  int index = 0;
+  size_t index = 0;
   for (int icon_resource :
        {IDR_DEFAULT_POPULAR_SITES_ICON0, IDR_DEFAULT_POPULAR_SITES_ICON1,
         IDR_DEFAULT_POPULAR_SITES_ICON2, IDR_DEFAULT_POPULAR_SITES_ICON3,
         IDR_DEFAULT_POPULAR_SITES_ICON4, IDR_DEFAULT_POPULAR_SITES_ICON5,
         IDR_DEFAULT_POPULAR_SITES_ICON6, IDR_DEFAULT_POPULAR_SITES_ICON7}) {
-    SetDefaultResourceForSite(index++, icon_resource, sites.get());
+    SetDefaultResourceForSite(index++, icon_resource, &sites.value());
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return base::Value::FromUniquePtrValue(std::move(sites));
+  return std::move(sites.value());
 #endif  // OS_ANDROID || OS_IOS
 }
 
@@ -330,7 +323,7 @@ GURL PopularSitesImpl::GetURLToFetch() {
   }
 
   const GURL override_url =
-      GURL(prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL));
+      GURL(prefs_->GetString(prefs::kPopularSitesOverrideURL));
   return override_url.is_valid()
              ? override_url
              : GetPopularSitesURL(directory, country, version);
@@ -338,7 +331,7 @@ GURL PopularSitesImpl::GetURLToFetch() {
 
 std::string PopularSitesImpl::GetDirectoryToFetch() {
   std::string directory =
-      prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideDirectory);
+      prefs_->GetString(prefs::kPopularSitesOverrideDirectory);
 
   if (directory.empty())
     directory = GetVariationDirectory();
@@ -358,7 +351,7 @@ std::string PopularSitesImpl::GetDirectoryToFetch() {
 // - A default fallback.
 std::string PopularSitesImpl::GetCountryToFetch() {
   std::string country_code =
-      prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideCountry);
+      prefs_->GetString(prefs::kPopularSitesOverrideCountry);
 
   if (country_code.empty())
     country_code = GetVariationCountry();
@@ -385,8 +378,7 @@ std::string PopularSitesImpl::GetCountryToFetch() {
 // - The version from the field trial config (variation parameter).
 // - A default fallback.
 std::string PopularSitesImpl::GetVersionToFetch() {
-  std::string version =
-      prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideVersion);
+  std::string version = prefs_->GetString(prefs::kPopularSitesOverrideVersion);
 
   if (version.empty())
     version = GetVariationVersion();
@@ -404,13 +396,13 @@ const base::ListValue* PopularSitesImpl::GetCachedJson() {
 // static
 void PopularSitesImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideURL,
+  user_prefs->RegisterStringPref(prefs::kPopularSitesOverrideURL,
                                  std::string());
-  user_prefs->RegisterStringPref(
-      ntp_tiles::prefs::kPopularSitesOverrideDirectory, std::string());
-  user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideCountry,
+  user_prefs->RegisterStringPref(prefs::kPopularSitesOverrideDirectory,
                                  std::string());
-  user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideVersion,
+  user_prefs->RegisterStringPref(prefs::kPopularSitesOverrideCountry,
+                                 std::string());
+  user_prefs->RegisterStringPref(prefs::kPopularSitesOverrideVersion,
                                  std::string());
 
   user_prefs->RegisterInt64Pref(prefs::kPopularSitesLastDownloadPref, 0);

@@ -72,7 +72,9 @@ def SmokeTestGenerator(benchmark_class, num_pages=1):
       options.output_formats = ['histograms']
       options.max_values_per_test_case = MAX_VALUES_PER_TEST_CASE
       return_code = benchmark_class().Run(options)
-      if return_code == -1:
+      # TODO(crbug.com/1019139): Make 111 be the exit code that means
+      # "no stories were run.".
+      if return_code in (-1, 111):
         self.skipTest('The benchmark was not run.')
       self.assertEqual(
           return_code, 0,

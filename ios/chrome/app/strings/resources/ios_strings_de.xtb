@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Menü "Mehr"</translation>
 <translation id="2316709634732130529">Vorgeschlagenes Passwort verwenden</translation>
 <translation id="2320166752086256636">Tastatur ausblenden</translation>
+<translation id="2330129964253841015">Warnen, wenn Passwörter nicht mehr sicher sind</translation>
 <translation id="2339560363438331454">Synchronisierung und Google-Dienste</translation>
 <translation id="2351097562818989364">Übersetzungseinstellungen zurückgesetzt</translation>
 <translation id="2359043044084662842">Übersetzen</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Bild speichern</translation>
 <translation id="3789841737615482174">Installieren</translation>
 <translation id="385051799172605136">Zurück</translation>
-<translation id="3886946236301294521">Warnt Sie, wenn eines Ihrer Passwörter von einer Datenpanne betroffen ist.</translation>
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3915450441834151894">Websiteinformationen</translation>
 <translation id="3922310737605261887">Nach kopiertem Text suchen</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Seiten, die Sie gelesen haben</translation>
 <translation id="4630540211544979320">Seiten übersetzen</translation>
 <translation id="4636930964841734540">Info</translation>
+<translation id="4659126640776004816">Wenn Sie sich in Ihrem Google-Konto anmelden, ist diese Funktion eingeschaltet.</translation>
 <translation id="4659667755519643272">Tab-Wechsler starten</translation>
 <translation id="4666531726415300315">Angemeldet als <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
-<translation id="5365716706805792666">Google kann prüfen, ob Ihre Passwörter von einer Datenpanne betroffen sind. Diese Funktion wird aktiviert, wenn Sie sich mit Ihrem Google-Konto anmelden.</translation>
 <translation id="5388358297987318779">Bild öffnen</translation>
 <translation id="5407969256130905701">Änderungen verwerfen</translation>
 <translation id="5409365236829784218">Es sind keine Apps inst., die diese Datei öffnen können.</translation>
@@ -333,7 +333,6 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="5854790677617711513">Älter als 30 Tage</translation>
 <translation id="5857090052475505287">Neuer Ordner</translation>
 <translation id="5857770089550859117">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten.</translation>
-<translation id="5859444426865731878">Google kann prüfen, ob Ihre Passwörter von einer Datenpanne betroffen sind.</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5869029295770560994">Ok</translation>
 <translation id="5871497086027727873">1 Lesezeichen verschoben</translation>
@@ -483,7 +482,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7859704718976024901">Browserverlauf</translation>
 <translation id="7887198238286927132">Um Ihre Daten zu schützen, füllt Chrome dieses Feld nicht automatisch aus.</translation>
 <translation id="7918293828610777738">Ihre Leseliste ist offline verfügbar. Sie können eine Seite Ihrer Leseliste hinzufügen, indem Sie auf <ph name="SHARE_OPENING_ICON" /> &gt; <ph name="READ_LATER_TEXT" /> tippen.</translation>
-<translation id="7930681627240672853">Passwortsicherheit überprüfen</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Passwörter exportieren…</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>

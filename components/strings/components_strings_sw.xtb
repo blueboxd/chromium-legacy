@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Aina hii ya kadi haitumiki</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Kuwasiliana na msimamizi wa mfumo.</translation>
+<translation id="1739107442478692187">Tukio la ufichuzi haramu wa data limefanyika kwenye tovuti au programu unayotumia. Chrome inapendekeza ukague manenosiri uliyohifadhi na ubadilishe nenosiri lako kwenye <ph name="ORIGIN" /> sasa.</translation>
 <translation id="1740951997222943430">Andika mwezi sahihi wa kuisha kwa muda wa matumizi</translation>
 <translation id="1743520634839655729">Ili ulipe kwa haraka wakati ujao, hifadhi anwani ya kutuma bili, jina na maelezo ya kadi yako kwenye Akaunti yako ya Google na kwenye kifaa hiki.</translation>
 <translation id="1743570585616704562">Haikutambua alama ya kidole</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Kitolingana kwa kikoa</translation>
 <translation id="2096368010154057602">Idara</translation>
 <translation id="2099652385553570808">Bana kushoto mara tatu</translation>
+<translation id="2100280972184758440">Nenosiri lako limeathiriwa</translation>
 <translation id="2102134110707549001">Pendekeza Nenosiri Thabiti…</translation>
 <translation id="2108755909498034140">Zima na uwashe kompyuta yako</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Imepuuzwa kwa sababu ilifutwa na <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Umetolewa kwa: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Toboa chini kulia</translation>
+<translation id="2124528555835617522">Tukio la ufichuzi haramu wa data limefanyika kwenye tovuti au programu unayotumia. Chrome inapendekeza ukague manenosiri uliyohifadhi sasa.</translation>
 <translation id="2129079103035905234">Vitambuzi vya Mwendo</translation>
 <translation id="213826338245044447">Alamisho kwenye Simu</translation>
 <translation id="214556005048008348">Ghairi malipo</translation>
@@ -476,17 +479,13 @@
 <translation id="3282497668470633863">Ongeza jina kwenye kadi</translation>
 <translation id="3287510313208355388">Pakua ukiwa mtandaoni</translation>
 <translation id="3293642807462928945">Pata maelezo zaidi kuhusu sera ya <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Tukio la ufichuzi haramu wa data limefanyika kwenye tovuti au programu unayotumia. Chrome inapendekeza ubadilishe nenosiri lako kwenye <ph name="ORIGIN" /> sasa.</translation>
 <translation id="3303855915957856445">Hakuna matokeo ya utafutaji yaliyopatikana</translation>
 <translation id="3320021301628644560">Ongeza anwani ya kutuma bili</translation>
 <translation id="3324983252691184275">Nyekundu Iliyoiva</translation>
 <translation id="3338095232262050444">Salama</translation>
 <translation id="3355823806454867987">Badilisha mipangilio ya seva mbadala...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />haitahifadhi<ph name="END_EMPHASIS" /> maelezo yafuatayo:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Historia yako ya kuvinjari
-          <ph name="LIST_ITEM" />Data ya vidakuzi na tovuti
-          <ph name="LIST_ITEM" />Maelezo unayojaza katika fomu
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">Laha la kidhibiti cha malipo</translation>
 <translation id="3362968246557010467">Sera hii ilinakiliwa kiotomatiki kutoka sera iliyoacha kuendesha huduma ya <ph name="OLD_POLICY" />. Unapaswa kutumia sera hii badala yake.</translation>
 <translation id="3366477098757335611">Angalia kadi</translation>
 <translation id="3369192424181595722">Hitilafu ya saa</translation>
@@ -605,6 +604,7 @@
 <translation id="3949601375789751990">Historia yako ya kuvinjari itaonekana hapa</translation>
 <translation id="3949870428812919180">Hakuna njia za kulipa ulizohifadhi</translation>
 <translation id="3950820424414687140">Ingia</translation>
+<translation id="3961148744525529027">Laha la kidhibiti cha malipo limefunguliwa nusu</translation>
 <translation id="3962859241508114581">Wimbo Uliotangulia</translation>
 <translation id="3963837677003247395">Ungependa kuendelea kujaza mwenyewe?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Hamna}=1{Kutoka kwenye tovuti 1 }other{Kutoka kwenye tovuti # }}</translation>
@@ -1055,7 +1055,6 @@
 <translation id="6151417162996330722">Cheti cha seva kina muda sahihi ambao ni mrefu sana.</translation>
 <translation id="6157877588268064908">Chagua anwani ili uone mbinu za kusafirisha na mahitaji</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
-<translation id="6169916984152623906">Sasa unaweza kuvinjari kwa faragha na watu wengine wanaotumia kifaa hiki hawataona shughuli zako. Hata hivyo, vipakuliwa na alamisho zitahifadhiwa.</translation>
 <translation id="6177128806592000436">Muunganisho wako kwenye tovuti hii si salama</translation>
 <translation id="6203231073485539293">Angalia muunganisho wako wa Intaneti</translation>
 <translation id="6218753634732582820">Je, ungependa kuondoa anwani kwenye Chromium?</translation>
@@ -1335,6 +1334,7 @@
 <translation id="7637571805876720304">Je, ungependa kuondoa kadi ya mikopo kwenye Chromium?</translation>
 <translation id="7638605456503525968">Milango ya kuingiza</translation>
 <translation id="7639968568612851608">Kijivu Iliyokolea</translation>
+<translation id="7653957176542370971">Laha la kidhibiti cha malipo limefungwa</translation>
 <translation id="765676359832457558">Ficha mipangilio ya kina...</translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7662298039739062396">Mipangilio inadhibitiwa na kiendelezi</translation>
@@ -1464,6 +1464,7 @@
 <translation id="8261506727792406068">Futa</translation>
 <translation id="8262952874573525464">Shona ncha ya chini</translation>
 <translation id="8267698848189296333">Ingia katika akaunti ukitumia <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Laha la kidhibiti cha malipo limefunguliwa</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Ingia</translation>
 <translation id="8288807391153049143">Onyesha cheti</translation>
@@ -1523,6 +1524,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, jibu, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Inapatikana</translation>
+<translation id="869891660844655955">Muda wake unakwisha tarehe</translation>
 <translation id="8703575177326907206">Muunganisho wako kwa <ph name="DOMAIN" /> haujasimbwa.</translation>
 <translation id="8718314106902482036">Malipo hayajakamilishwa</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" /> , <ph name="DESCRIPTION" /> , pendekezo la utafutaji</translation>

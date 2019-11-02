@@ -11,6 +11,9 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
+#include "components/services/storage/indexed_db/scopes/scopes_lock_manager.h"
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
@@ -21,9 +24,6 @@
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
-#include "content/browser/indexed_db/scopes/leveldb_scope.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
-#include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 
 using base::ASCIIToUTF16;

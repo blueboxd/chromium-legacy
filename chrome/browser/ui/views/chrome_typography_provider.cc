@@ -79,18 +79,27 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
   // Diverging from these risks using a color that doesn't match user
   // expectations.
 
-  const bool inverted_scheme = color_utils::IsInvertedColorScheme();
-
   ui::NativeTheme::ColorId color_id =
-      (context == views::style::CONTEXT_BUTTON ||
-       context == views::style::CONTEXT_BUTTON_MD)
-          ? ui::NativeTheme::kColorId_ButtonEnabledColor
-          : ui::NativeTheme::kColorId_TextfieldDefaultColor;
+      ui::NativeTheme::kColorId_LabelEnabledColor;
+
+  switch (context) {
+    case views::style::CONTEXT_BUTTON:
+    case views::style::CONTEXT_BUTTON_MD:
+      color_id = ui::NativeTheme::kColorId_ButtonEnabledColor;
+      break;
+    case views::style::CONTEXT_TEXTFIELD:
+      color_id = ui::NativeTheme::kColorId_TextfieldDefaultColor;
+      break;
+    case views::style::CONTEXT_MENU:
+    case views::style::CONTEXT_TOUCH_MENU:
+      color_id = ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
+      break;
+  }
+
   switch (style) {
     case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
-      // This is just white in Harmony and, even in inverted themes, prominent
-      // buttons have a dark background, so white will maximize contrast.
-      return SK_ColorWHITE;
+      color_id = ui::NativeTheme::kColorId_TextOnProminentButtonColor;
+      break;
     case views::style::STYLE_DISABLED:
       color_id = ui::NativeTheme::kColorId_LabelDisabledColor;
       break;
@@ -98,10 +107,13 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
       color_id = ui::NativeTheme::kColorId_LinkEnabled;
       break;
     case STYLE_RED:
-      return inverted_scheme ? gfx::kGoogleRed300 : gfx::kGoogleRed600;
+      color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;
+      break;
     case STYLE_GREEN:
-      return inverted_scheme ? gfx::kGoogleGreen300 : gfx::kGoogleGreen600;
+      color_id = ui::NativeTheme::kColorId_AlertSeverityLow;
+      break;
   }
+
   return theme.GetSystemColor(color_id);
 }
 

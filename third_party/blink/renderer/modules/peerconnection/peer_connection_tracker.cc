@@ -822,15 +822,14 @@ void PeerConnectionTracker::TrackCreateAnswer(
 
 void PeerConnectionTracker::TrackSetSessionDescription(
     RTCPeerConnectionHandler* pc_handler,
-    const std::string& sdp,
-    const std::string& type,
+    const String& sdp,
+    const String& type,
     Source source) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
-  String value =
-      "type: " + String::FromUTF8(type) + ", sdp: " + String::FromUTF8(sdp);
+  String value = "type: " + type + ", sdp: " + sdp;
   SendPeerConnectionUpdate(
       id,
       source == SOURCE_LOCAL ? "setLocalDescription" : "setRemoteDescription",
@@ -1036,8 +1035,8 @@ void PeerConnectionTracker::TrackIceGatheringStateChange(
 void PeerConnectionTracker::TrackSessionDescriptionCallback(
     RTCPeerConnectionHandler* pc_handler,
     Action action,
-    const std::string& callback_type,
-    const std::string& value) {
+    const String& callback_type,
+    const String& value) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
@@ -1063,27 +1062,25 @@ void PeerConnectionTracker::TrackSessionDescriptionCallback(
       NOTREACHED();
       break;
   }
-  update_type = update_type + String::FromUTF8(callback_type);
+  update_type = update_type + callback_type;
 
-  SendPeerConnectionUpdate(id, update_type, String::FromUTF8(value));
+  SendPeerConnectionUpdate(id, update_type, value);
 }
 
 void PeerConnectionTracker::TrackSessionId(RTCPeerConnectionHandler* pc_handler,
-                                           const std::string& session_id) {
+                                           const String& session_id) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   DCHECK(pc_handler);
-  DCHECK(!session_id.empty());
+  DCHECK(!session_id.IsEmpty());
   const int local_id = GetLocalIDForHandler(pc_handler);
   if (local_id == -1) {
     return;
   }
 
-  String wtf_session_id = String::FromUTF8(session_id);
-  if (wtf_session_id.IsNull())
-    wtf_session_id = String("");
-
-  peer_connection_tracker_host_->OnPeerConnectionSessionIdSet(local_id,
-                                                              wtf_session_id);
+  String non_null_session_id =
+      session_id.IsNull() ? WTF::g_empty_string : session_id;
+  peer_connection_tracker_host_->OnPeerConnectionSessionIdSet(
+      local_id, non_null_session_id);
 }
 
 void PeerConnectionTracker::TrackOnRenegotiationNeeded(
@@ -1108,17 +1105,14 @@ void PeerConnectionTracker::TrackGetUserMedia(
 
 void PeerConnectionTracker::TrackRtcEventLogWrite(
     RTCPeerConnectionHandler* pc_handler,
-    const std::string& output) {
+    const String& output) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
 
-  String wtf_output = String::FromUTF8(output);
-  if (wtf_output.IsNull())
-    wtf_output = String("");
-
-  peer_connection_tracker_host_->WebRtcEventLogWrite(id, wtf_output);
+  String non_null_output = output.IsNull() ? WTF::g_empty_string : output;
+  peer_connection_tracker_host_->WebRtcEventLogWrite(id, non_null_output);
 }
 
 int PeerConnectionTracker::GetNextLocalID() {

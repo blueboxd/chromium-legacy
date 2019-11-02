@@ -743,7 +743,7 @@ std::unique_ptr<views::InkDropMask> ShelfAppButton::CreateInkDropMask() const {
 bool ShelfAppButton::HandleAccessibleAction(
     const ui::AXActionData& action_data) {
   if (action_data.action == ax::mojom::Action::kScrollToMakeVisible)
-    shelf_button_delegate()->HandleAccessibleActionScrollToMakeVisible();
+    shelf_button_delegate()->HandleAccessibleActionScrollToMakeVisible(this);
 
   return views::View::HandleAccessibleAction(action_data);
 }

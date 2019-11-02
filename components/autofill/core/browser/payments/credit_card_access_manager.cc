@@ -231,7 +231,8 @@ void CreditCardAccessManager::OnDidGetUnmaskDetails(
       AutofillTickClock::NowTicks() - preflight_call_timestamp_);
 
   unmask_details_request_in_progress_ = false;
-  unmask_details_.offer_fido_opt_in = unmask_details.offer_fido_opt_in;
+  unmask_details_.offer_fido_opt_in = unmask_details.offer_fido_opt_in &&
+                                      !payments_client_->is_off_the_record();
   unmask_details_.unmask_auth_method = unmask_details.unmask_auth_method;
   unmask_details_.fido_request_options =
       std::move(unmask_details.fido_request_options);

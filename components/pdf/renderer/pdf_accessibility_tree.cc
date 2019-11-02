@@ -206,6 +206,30 @@ bool IsObjectInTextRun(const std::vector<T>& objects,
           objects[object_index].text_run_index <= text_run_index);
 }
 
+bool IsTextRenderModeFill(const PP_TextRenderingMode& mode) {
+  switch (mode) {
+    case PP_TEXTRENDERINGMODE_FILL:
+    case PP_TEXTRENDERINGMODE_FILLSTROKE:
+    case PP_TEXTRENDERINGMODE_FILLCLIP:
+    case PP_TEXTRENDERINGMODE_FILLSTROKECLIP:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsTextRenderModeStroke(const PP_TextRenderingMode& mode) {
+  switch (mode) {
+    case PP_TEXTRENDERINGMODE_STROKE:
+    case PP_TEXTRENDERINGMODE_FILLSTROKE:
+    case PP_TEXTRENDERINGMODE_STROKECLIP:
+    case PP_TEXTRENDERINGMODE_FILLSTROKECLIP:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 PdfAccessibilityTree::PdfAccessibilityTree(content::RendererPpapiHost* host,
@@ -699,6 +723,24 @@ ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
                                            chars_utf8);
   inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
                                         text_run.direction);
+  inline_text_box_node->AddStringAttribute(
+      ax::mojom::StringAttribute::kFontFamily, text_run.style.font_name);
+  inline_text_box_node->AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
+                                          text_run.style.font_size);
+  inline_text_box_node->AddFloatAttribute(
+      ax::mojom::FloatAttribute::kFontWeight, text_run.style.font_weight);
+  if (text_run.style.is_italic)
+    inline_text_box_node->AddTextStyle(ax::mojom::TextStyle::kItalic);
+  if (text_run.style.is_bold)
+    inline_text_box_node->AddTextStyle(ax::mojom::TextStyle::kBold);
+  if (IsTextRenderModeFill(text_run.style.render_mode)) {
+    inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kColor,
+                                          text_run.style.fill_color);
+  } else if (IsTextRenderModeStroke(text_run.style.render_mode)) {
+    inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kColor,
+                                          text_run.style.stroke_color);
+  }
+
   inline_text_box_node->relative_bounds.bounds =
       ToGfxRectF(text_run.bounds) + page_bounds.OffsetFromOrigin();
   std::vector<int32_t> char_offsets =

@@ -559,7 +559,9 @@ bool Surface::HasPendingAcquireFence() const {
 }
 
 void Surface::Commit() {
-  TRACE_EVENT0("exo", "Surface::Commit");
+  TRACE_EVENT1("exo", "Surface::Commit", "buffer_id",
+               pending_buffer_.buffer() ? pending_buffer_.buffer()->gfx_buffer()
+                                        : nullptr);
 
   for (auto& observer : observers_)
     observer.OnCommit(this);

@@ -300,6 +300,7 @@
 <translation id="5302048478445481009">Sprache</translation>
 <translation id="5313326810920013265">Bluetooth-Einstellungen</translation>
 <translation id="5331975486040154427">USB-C-Gerät (Port hinten links)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Zu viele Versuche</translation>
 <translation id="5397578532367286026">Die Nutzung und der Verlauf des Nutzers sind für den Manager (<ph name="MANAGER_EMAIL" />) unter chrome.com einsehbar.</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
@@ -322,6 +323,7 @@
 <translation id="5682642926269496722">Google Assistant steht für das aktuelle Nutzerkonto nicht zur Verfügung.</translation>
 <translation id="5691772641933328258">Fingerabdruck nicht erkannt</translation>
 <translation id="5710450975648804523">"Bitte nicht stören" ist aktiviert</translation>
+<translation id="573413375004481890">Dieses Gerät kann nicht alle Ihre Displays unterstützen. Daher wurde die Verbindung zu einem Display getrennt.</translation>
 <translation id="574392208103952083">Mittel</translation>
 <translation id="5744083938413354016">Antippen und Ziehen</translation>
 <translation id="5750765938512549687">Bluetooth ist deaktiviert</translation>

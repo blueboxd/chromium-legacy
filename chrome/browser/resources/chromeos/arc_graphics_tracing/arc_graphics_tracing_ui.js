@@ -33,6 +33,38 @@ function initializeGraphicsUi() {
   };
 }
 
+function setModelHeader(model) {
+  $('arc-graphics-tracing-icon').src = '';
+  $('arc-graphics-tracing-title').textContent = '';
+
+  if (!model.information) {
+    return;
+  }
+
+  if (model.information.icon) {
+    $('arc-graphics-tracing-icon').src =
+        'data:image/png;base64,' + model.information.icon;
+  }
+  if (model.information.title) {
+    var title = model.information.title;
+    if (model.information.timestamp) {
+      title += ' ';
+      title += new Date(model.information.timestamp).toLocaleString();
+    }
+    if (model.information.duration) {
+      title += ' ';
+      title += (model.information.duration * 0.000001).toFixed(2);
+      title += 's';
+    }
+    if (model.information.platform) {
+      title += ' on ';
+      title += model.information.platform;
+    }
+    title += '.';
+    $('arc-graphics-tracing-title').textContent = title;
+  }
+}
+
 /**
  * Creates visual representation of graphic buffers event model.
  *
@@ -42,6 +74,8 @@ function setGraphicBuffersModel(model) {
   // Clear previous content.
   $('arc-event-bands').textContent = '';
   activeModel = model;
+
+  setModelHeader(model);
 
   // Microseconds per pixel. 100% zoom corresponds to 100 mcs per pixel.
   var resolution = zooms[zoomLevel];

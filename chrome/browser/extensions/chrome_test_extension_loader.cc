@@ -48,7 +48,8 @@ class ContentScriptLoadWaiter : public UserScriptLoader::Observer {
 
  private:
   // UserScriptLoader::Observer:
-  void OnScriptsLoaded(UserScriptLoader* loader) override {
+  void OnScriptsLoaded(UserScriptLoader* loader,
+                       content::BrowserContext* browser_context) override {
     if (loader_->HasLoadedScripts(host_id_)) {
       // Quit when idle in order to allow other observers to run.
       run_loop_.QuitWhenIdle();

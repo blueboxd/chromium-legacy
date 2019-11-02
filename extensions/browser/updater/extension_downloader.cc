@@ -211,13 +211,11 @@ ExtensionDownloader::ExtraParams::ExtraParams() : is_corrupt_reinstall(false) {}
 ExtensionDownloader::ExtensionDownloader(
     ExtensionDownloaderDelegate* delegate,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    service_manager::Connector* connector,
     const crx_file::VerifierFormat crx_format_requirement,
     const base::FilePath& profile_path)
     : delegate_(delegate),
       url_loader_factory_(std::move(url_loader_factory)),
       profile_path_for_url_loader_factory_(profile_path),
-      connector_(connector),
       manifests_queue_(
           &kDefaultBackoffPolicy,
           base::BindRepeating(&ExtensionDownloader::CreateManifestLoader,
@@ -635,7 +633,7 @@ void ExtensionDownloader::OnManifestLoadComplete(
     auto callback = base::BindOnce(&ExtensionDownloader::HandleManifestResults,
                                    weak_ptr_factory_.GetWeakPtr(),
                                    manifests_queue_.reset_active_request());
-    ParseUpdateManifest(connector_, *response_body, std::move(callback));
+    ParseUpdateManifest(*response_body, std::move(callback));
   } else {
     VLOG(1) << "Failed to fetch manifest '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;

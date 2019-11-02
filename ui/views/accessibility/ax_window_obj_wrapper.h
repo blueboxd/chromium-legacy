@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/aura/window_observer.h"
@@ -26,6 +25,8 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
  public:
   // |aura_obj_cache| and |window| must outlive this object.
   AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache, aura::Window* window);
+  AXWindowObjWrapper(const AXWindowObjWrapper&) = delete;
+  AXWindowObjWrapper& operator=(const AXWindowObjWrapper&) = delete;
   ~AXWindowObjWrapper() override;
 
   // AXAuraObjWrapper overrides.
@@ -60,8 +61,6 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   bool is_root_window_;
 
   const ui::AXUniqueId unique_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXWindowObjWrapper);
 };
 
 }  // namespace views

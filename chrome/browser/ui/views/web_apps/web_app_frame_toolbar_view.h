@@ -151,7 +151,6 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   // views::AccessiblePaneView:
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  void ChildVisibilityChanged(views::View* child) override;
 
  private:
   friend class WebAppNonClientFrameViewAshTest;

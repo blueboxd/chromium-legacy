@@ -513,7 +513,7 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
 #if defined(OS_WIN)
   static constexpr int kExplodedMinYear = 1601;
   static constexpr int kExplodedMaxYear = 30827;
-#elif defined(OS_IOS)
+#elif defined(OS_IOS) && !__LP64__
   static constexpr int kExplodedMinYear = std::numeric_limits<int>::min();
   static constexpr int kExplodedMaxYear = std::numeric_limits<int>::max();
 #elif defined(OS_MACOSX)

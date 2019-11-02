@@ -270,7 +270,7 @@
 <translation id="2257315177824333709">מצטערים, אי אפשר לשמור את הכרטיס שלך עכשיו</translation>
 <translation id="2262243747453050782">‏שגיאת HTTP</translation>
 <translation id="2263079731045660823">‏עדכון המילוי האוטומטי של פרטי כרטיס אשראי בהגדרות Chrome</translation>
-<translation id="2267047181501709434">מאמת את הזהות שלך...</translation>
+<translation id="2267047181501709434">מתבצע אימות של הזהות שלך...</translation>
 <translation id="2270484714375784793">מספר טלפון</translation>
 <translation id="2277103315734023688">הרצה קדימה</translation>
 <translation id="2283340219607151381">שמירה ומילוי של כתובות</translation>
@@ -483,12 +483,6 @@
 <translation id="3324983252691184275">ארגמן</translation>
 <translation id="3338095232262050444">מאובטח</translation>
 <translation id="3355823806454867987">‏שנה הגדרות שרת Proxy...</translation>
-<translation id="3361596688432910856">‏Chrome <ph name="BEGIN_EMPHASIS" />לא ישמור<ph name="END_EMPHASIS" /> את המידע הבא:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />היסטוריית הגלישה שלך
-          <ph name="LIST_ITEM" />קובצי Cookie ונתוני אתרים
-          <ph name="LIST_ITEM" />מידע שהוזן בטפסים
-        <ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">המדיניות הזו הועתקה באופן אוטומטי ממדיניות <ph name="OLD_POLICY" /> שהוצאה משימוש. צריך להשתמש במדיניות הזו במקומה.</translation>
 <translation id="3366477098757335611">הצגת כרטיסים</translation>
 <translation id="3369192424181595722">שגיאת שעון</translation>
@@ -677,7 +671,7 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />נסה להפעיל את אבחון הרשת<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />המשך אל <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">תקף</translation>
-<translation id="4248776159690739358">‏שיתוף של נתונים עם מנהל המערכת לגבי פעולות שמשפיעות על אבטחת החשבון ושסומנו על-ידי הכלי של Chrome להגנה על ארגונים מפני איומים. נתונים אלה עשויים לכלול כתובות URL של דפים שבהם ביקרת, שמות קבצים או מטא-נתונים, ושם המשתמש שלך לכניסה אל המכשיר ואל Chrome.</translation>
+<translation id="4248776159690739358">‏שיתוף של נתונים עם מנהל המערכת לגבי פעולות שמשפיעות על אבטחת החשבון ושסומנו על-ידי הכלי של Chrome להגנה על ארגונים מפני איומים. נתונים אלה עשויים לכלול כתובות URL של דפים שבהם ביקרת, שמות קבצים או מטא-נתונים, ואת שם המשתמש שלך לכניסה אל המכשיר ואל Chrome.</translation>
 <translation id="4250431568374086873">החיבור שלך לאתר הזה לא מאובטח בצורה מלאה</translation>
 <translation id="4250680216510889253">לא</translation>
 <translation id="425582637250725228">ייתכן שהשינויים שביצעת לא יישמרו.</translation>
@@ -1064,7 +1058,6 @@ Del</translation>
 <translation id="6151417162996330722">תקופת התוקף של אישור השרת ארוכה מדי.</translation>
 <translation id="6157877588268064908">עליך לבחור כתובת כדי לראות שיטות משלוח ודרישות</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
-<translation id="6169916984152623906">עכשיו באפשרותך לגלוש באופן פרטי, ואנשים אחרים שמשתמשים במכשיר הזה לא יראו את הפעילות שלך. עם זאת, עדיין תתבצע שמירה של הורדות וסימניות.</translation>
 <translation id="6177128806592000436">החיבור שלך לאתר הזה לא מאובטח</translation>
 <translation id="6203231073485539293">בדוק את חיבור האינטרנט</translation>
 <translation id="6218753634732582820">‏האם להסיר מ-Chromium את הכתובת?</translation>
@@ -1536,6 +1529,7 @@ Del</translation>
 <translation id="8680536109547170164"><ph name="QUERY" /> , תשובה, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">פנוי</translation>
+<translation id="869891660844655955">תאריך תפוגה</translation>
 <translation id="8703575177326907206">ההתחברות שלך אל <ph name="DOMAIN" /> אינה מוצפנת.</translation>
 <translation id="8718314106902482036">התשלום לא הושלם</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, הצעת חיפוש</translation>

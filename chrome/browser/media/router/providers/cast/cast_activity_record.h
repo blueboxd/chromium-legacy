@@ -31,7 +31,6 @@ class CastSession;
 class CastSessionClient;
 class CastSessionClientFactoryForTest;
 class CastSessionTracker;
-class DataDecoder;
 class MediaSinkServiceBase;
 class MediaRoute;
 
@@ -50,7 +49,6 @@ class CastActivityRecord : public ActivityRecord {
                      MediaSinkServiceBase* media_sink_service,
                      cast_channel::CastMessageHandler* message_handler,
                      CastSessionTracker* session_tracker,
-                     DataDecoder* data_decoder,
                      CastActivityManagerBase* owner);
   ~CastActivityRecord() override;
 

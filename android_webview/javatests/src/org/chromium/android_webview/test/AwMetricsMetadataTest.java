@@ -208,4 +208,18 @@ public class AwMetricsMetadataTest {
         Assert.assertTrue("Should have some hardware.gpu.gl_renderer",
                 systemProfile.getHardware().getGpu().hasGlRenderer());
     }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_privacySensitiveData() throws Throwable {
+        // We assert we do *not* log data which is deemed to be privacy sensitive. It's OK to
+        // reverse these test conditions, but only if we log these fields in a manner which is
+        // approved to preserve user privacy.
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+        Assert.assertFalse(
+                "Should not log hardware.bluetooth", systemProfile.getHardware().hasBluetooth());
+        Assert.assertFalse("Should not log hardware.usb", systemProfile.getHardware().hasUsb());
+    }
 }

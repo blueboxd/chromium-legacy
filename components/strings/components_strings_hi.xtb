@@ -480,12 +480,6 @@
 <translation id="3324983252691184275">गहरा लाल</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
 <translation id="3355823806454867987">प्रॉक्सी सेटिंग बदलें...</translation>
-<translation id="3361596688432910856">Chrome नीचे दी गई जानकारी को <ph name="BEGIN_EMPHASIS" />सेव नहीं करेगा<ph name="END_EMPHASIS" />:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />आपका ब्राउज़िंग इतिहास
-          <ph name="LIST_ITEM" />कुकी और साइट डेटा
-          <ph name="LIST_ITEM" />फ़ॉर्म में डाली गई जानकारी
-        <ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">इस नीति को हटाई गई <ph name="OLD_POLICY" /> नीति से अपने आप कॉपी किया गया था. आपको इसके बजाय, इस नीति का इस्तेमाल करना चाहिए.</translation>
 <translation id="3366477098757335611">कार्ड देखें</translation>
 <translation id="3369192424181595722">घड़ी गड़बड़ी</translation>
@@ -1050,7 +1044,6 @@
 <translation id="6151417162996330722">सर्वर प्रमाणपत्र की मान्‍यता अवधि बहुत लंबी है.</translation>
 <translation id="6157877588268064908">शिपिंग के तरीके और ज़रूरतें देखने केे लिए, कोई पता चुनें</translation>
 <translation id="6165508094623778733">ज़्यादा जानें</translation>
-<translation id="6169916984152623906">अब आप निजी रूप से ब्राउज़ कर सकते हैं और इस डिवाइस का उपयोग करने वाले दूसरे लोगों को आपकी गतिविधि दिखाई नहीं देगी. लेकिन डाउनलोड और बुकमार्क सेव होंगे.</translation>
 <translation id="6177128806592000436">इस साइट से आपका कनेक्‍शन सुरक्षित नहीं है</translation>
 <translation id="6203231073485539293">अपना इंटरनेट कनेक्शन जांचे</translation>
 <translation id="6218753634732582820">क्रोमियम से पता निकालें?</translation>
@@ -1520,6 +1513,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, उत्तर, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">पीआरसी-16के</translation>
 <translation id="8688672835843460752">उपलब्ध</translation>
+<translation id="869891660844655955">समय समाप्ति तारीख</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> से आपके कनेक्शन को सुरक्षित नहीं किया गया है.</translation>
 <translation id="8718314106902482036">भुगतान पूरा नहीं हुआ</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, खोज सुझाव</translation>

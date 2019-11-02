@@ -99,13 +99,7 @@ void* SystemAllocPagesInternal(void* hint,
   int access_flag = GetAccessFlags(accessibility);
   int map_flags = MAP_ANONYMOUS | MAP_PRIVATE;
 
-  // TODO(https://crbug.com/927411): Remove OS_FUCHSIA once Fuchsia uses a
-  // native page allocator, rather than relying on POSIX compatibility.
-#if defined(OS_FUCHSIA)
-  if (page_tag == PageTag::kV8) {
-    map_flags |= MAP_JIT;
-  }
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   // On macOS 10.14 and higher, executables that are code signed with the
   // "runtime" option cannot execute writable memory by default. They can opt
   // into this capability by specifying the "com.apple.security.cs.allow-jit"

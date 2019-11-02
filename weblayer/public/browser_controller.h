@@ -25,8 +25,9 @@ namespace weblayer {
 class BrowserObserver;
 class DownloadDelegate;
 class FullscreenDelegate;
-class Profile;
 class NavigationController;
+class NewBrowserDelegate;
+class Profile;
 
 // Represents a browser window that is navigable.
 class BrowserController {
@@ -45,6 +46,10 @@ class BrowserController {
   // Sets the FullscreenDelegate. Setting a non-null value implicitly enables
   // fullscreen.
   virtual void SetFullscreenDelegate(FullscreenDelegate* delegate) = 0;
+
+  // Sets the NewBrowserDelegate. Setting a null value implicitly disables
+  // popups.
+  virtual void SetNewBrowserDelegate(NewBrowserDelegate* delegate) = 0;
 
   virtual void AddObserver(BrowserObserver* observer) = 0;
 

@@ -25,7 +25,7 @@ struct PPAPI_SHARED_EXPORT PdfAccessibilityTextStyleInfo {
 
   std::string font_name;
   int font_weight;
-  int render_mode;
+  PP_TextRenderingMode render_mode;
   double font_size;
   // Colors are ARGB.
   uint32_t fill_color;

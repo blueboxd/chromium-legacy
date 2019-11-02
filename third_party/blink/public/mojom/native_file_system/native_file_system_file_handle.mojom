@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/file_info.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom";
@@ -22,7 +23,7 @@ interface NativeFileSystemFileHandle {
   RequestPermission(bool writable) => (NativeFileSystemError result, PermissionStatus status);
 
   // Returns a blob representing the current state of this file.
-  AsBlob() => (NativeFileSystemError result, SerializedBlob? blob);
+  AsBlob() => (NativeFileSystemError result, mojo_base.mojom.FileInfo info, SerializedBlob? blob);
 
   // Returns a FileWriter object. The FileWriter provides write operations on a file.
   CreateFileWriter(bool keep_existing_data) => (

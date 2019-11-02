@@ -31,7 +31,6 @@ class Origin;
 namespace media_router {
 
 class CastSessionTracker;
-class DataDecoder;
 
 class ActivityRecord {
  public:
@@ -41,8 +40,7 @@ class ActivityRecord {
   ActivityRecord(const MediaRoute& route,
                  const std::string& app_id,
                  cast_channel::CastMessageHandler* message_handler,
-                 CastSessionTracker* session_tracker,
-                 DataDecoder* data_decoder);
+                 CastSessionTracker* session_tracker);
   ActivityRecord(const ActivityRecord&) = delete;
   ActivityRecord& operator=(const ActivityRecord&) = delete;
   virtual ~ActivityRecord();
@@ -163,7 +161,6 @@ class ActivityRecord {
   cast_channel::CastMessageHandler* const message_handler_;
 
   CastSessionTracker* const session_tracker_;
-  DataDecoder* const data_decoder_;
 
   // Set by CastActivityManager after the session is launched successfully.
   base::Optional<std::string> session_id_;

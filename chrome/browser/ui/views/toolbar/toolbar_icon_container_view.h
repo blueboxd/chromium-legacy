@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ICON_CONTAINER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ICON_CONTAINER_VIEW_H_
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -24,6 +23,8 @@ class ToolbarIconContainerView : public views::View,
   };
 
   explicit ToolbarIconContainerView(bool uses_highlight);
+  ToolbarIconContainerView(const ToolbarIconContainerView&) = delete;
+  ToolbarIconContainerView& operator=(const ToolbarIconContainerView&) = delete;
   ~ToolbarIconContainerView() override;
 
   // Update all the icons it contains. Override by subclass.
@@ -92,8 +93,6 @@ class ToolbarIconContainerView : public views::View,
   gfx::SlideAnimation highlight_animation_{this};
 
   base::ObserverList<Observer> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarIconContainerView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ICON_CONTAINER_VIEW_H_

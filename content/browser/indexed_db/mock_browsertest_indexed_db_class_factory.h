@@ -11,12 +11,12 @@
 #include <memory>
 #include <set>
 
+#include "components/services/storage/indexed_db/scopes/scopes_lock_manager.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
-#include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
 namespace content {

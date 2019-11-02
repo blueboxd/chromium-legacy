@@ -9,7 +9,7 @@
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1067922213147265141">Другие сервисы Google</translation>
 <translation id="1068672505746868501">Не переводить страницы на этом языке: <ph name="SOURCE_LANGUAGE" /></translation>
-<translation id="107147699690128016">Если вы измените расширение имени файла, он может открыться в другом приложении и нанести вред устройству.</translation>
+<translation id="107147699690128016">Если вы сделаете это, файл может открыться в другом приложении и нанести вред устройству.</translation>
 <translation id="1100066534610197918">Открыть в новой вкладке группы</translation>
 <translation id="1105960400813249514">Демонстрация экрана</translation>
 <translation id="1111673857033749125">Здесь появятся закладки, сохраненные на других устройствах.</translation>
@@ -674,11 +674,10 @@
 <translation id="5962718611393537961">Нажмите, чтобы свернуть</translation>
 <translation id="6000066717592683814">Использовать Google</translation>
 <translation id="6005538289190791541">Предложенный пароль</translation>
-<translation id="6019358956729171834">Загрузить ещё…</translation>
+<translation id="6019358956729171834">Загрузить ещё</translation>
 <translation id="6036057147555329831">Дополнительный модуль ICU</translation>
 <translation id="6039379616847168523">Перейти к следующей вкладке</translation>
 <translation id="6040143037577758943">Закрыть</translation>
-<translation id="6042308850641462728">Ещё</translation>
 <translation id="604996488070107836">Не удалось скачать файл <ph name="FILE_NAME" /> из-за неизвестной ошибки.</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6064125863973209585">Завершенные скачивания</translation>

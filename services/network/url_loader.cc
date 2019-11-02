@@ -1001,7 +1001,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
           network::features::kOutOfBlinkFrameAncestors)) {
     // Parse the Content-Security-Policy headers.
     ContentSecurityPolicy policy;
-    if (policy.Parse(*url_request_->response_headers()))
+    if (policy.Parse(url_request_->url(), *url_request_->response_headers()))
       response_->head.content_security_policy = std::move(policy);
   }
 

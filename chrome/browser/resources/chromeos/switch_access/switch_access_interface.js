@@ -67,7 +67,7 @@ class SwitchAccessInterface {
   setPreference(name, value) {}
 
   /**
-   * Get the boolean value for the given name. Will throw a type error if the
+   * Get the boolean value for the given name. Will throw an error if the
    * value associated with |name| is not a boolean, or undefined.
    *
    * @param  {SAConstants.Preference} name
@@ -76,7 +76,7 @@ class SwitchAccessInterface {
   getBooleanPreference(name) {}
 
   /**
-   * Get the string value for the given name. Will throw a type error if the
+   * Get the string value for the given name. Will throw an error if the
    * value associated with |name| is not a string, or is undefined.
    *
    * @param {SAConstants.Preference} name
@@ -85,7 +85,7 @@ class SwitchAccessInterface {
   getStringPreference(name) {}
 
   /**
-   * Get the number value for the given name. Will throw a type error if the
+   * Get the number value for the given name. Will throw an error if the
    * value associated with |name| is not a number, or undefined.
    *
    * @param  {SAConstants.Preference} name

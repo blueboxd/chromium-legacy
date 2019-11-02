@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -39,6 +38,8 @@ class VIEWS_EXPORT ViewAccessibility {
 
   static std::unique_ptr<ViewAccessibility> Create(View* view);
 
+  ViewAccessibility(const ViewAccessibility&) = delete;
+  ViewAccessibility& operator=(const ViewAccessibility&) = delete;
   virtual ~ViewAccessibility();
 
   // Modifies |node_data| to reflect the current accessible state of the
@@ -170,8 +171,6 @@ class VIEWS_EXPORT ViewAccessibility {
 
   Widget* next_focus_ = nullptr;
   Widget* previous_focus_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewAccessibility);
 };
 
 }  // namespace views

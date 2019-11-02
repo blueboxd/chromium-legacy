@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Μενού "Περισσότερα"</translation>
 <translation id="2316709634732130529">Χρ. προτ. κωδ. πρόσ.</translation>
 <translation id="2320166752086256636">Απόκρυψη πληκτρολογίου</translation>
+<translation id="2330129964253841015">Να ενημερώνεστε σε περίπτωση παραβίασης των κωδικών πρόσβασής σας</translation>
 <translation id="2339560363438331454">Συγχρ. και Υπηρ. Google</translation>
 <translation id="2351097562818989364">Έγινε επαναφορά ρυθμίσεων μετάφρασης.</translation>
 <translation id="2359043044084662842">Μετάφραση</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Αποθήκευση εικόνας</translation>
 <translation id="3789841737615482174">Εγκατάσταση</translation>
 <translation id="385051799172605136">Πίσω</translation>
-<translation id="3886946236301294521">Σας προειδοποιεί σε περίπτωση που ο κωδικός πρόσβασης που χρησιμοποιείτε ήταν μέρος μιας παραβίασης δεδομένων.</translation>
 <translation id="3897092660631435901">Μενού</translation>
 <translation id="3915450441834151894">Πληροφορίες ιστοτόπου</translation>
 <translation id="3922310737605261887">Αναζήτηση για αντιγραμμένο κείμενο</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Σελίδες που έχετε διαβάσει</translation>
 <translation id="4630540211544979320">Μετάφραση σελίδων</translation>
 <translation id="4636930964841734540">Πληροφορίες</translation>
+<translation id="4659126640776004816">Αυτή η λειτουργία ενεργοποιείται όταν συνδέεστε στον Λογαριασμό σας Google.</translation>
 <translation id="4659667755519643272">Εισαγωγή στην εναλλαγή καρτελών</translation>
 <translation id="4666531726415300315">Σύνδεση ως <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@
 <translation id="5300589172476337783">Εμφάνιση</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>
 <translation id="5327248766486351172">Όνομα</translation>
-<translation id="5365716706805792666">Το Google μπορεί να ελέγχει εάν οι κωδικοί πρόσβασής σας ήταν μέρος της παραβίασης δεδομένων. Αυτή η λειτουργία θα ενεργοποιείται όταν συνδέεστε με τον Λογαριασμό σας Google.</translation>
 <translation id="5388358297987318779">Άνοιγμα εικόνας</translation>
 <translation id="5407969256130905701">Απόρριψη αλλαγών</translation>
 <translation id="5409365236829784218">Δεν υπάρχουν εγκατεστ. εφαρμογές για το άνοιγμα του αρχείου</translation>
@@ -333,7 +333,6 @@
 <translation id="5854790677617711513">Παλαιότερο από 30 ημέρες</translation>
 <translation id="5857090052475505287">Νέος φάκελος</translation>
 <translation id="5857770089550859117">Απαιτείται φράση πρόσβασης για έναρξη του συγχρονισμού.</translation>
-<translation id="5859444426865731878">Το Google μπορεί να ελέγχει εάν οι κωδικοί πρόσβασής σας ήταν μέρος της παραβίασης δεδομένων.</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="5869029295770560994">OK, το κατάλαβα!</translation>
 <translation id="5871497086027727873">Μετακινήθηκε 1 στοιχείο</translation>
@@ -484,7 +483,6 @@
 <translation id="7859704718976024901">Ιστορικό περιήγησης</translation>
 <translation id="7887198238286927132">Προκειμένου να προστατεύσει το απόρρητό σας, το Chrome δεν θα συμπληρώνει αυτόματα αυτό το πεδίο.</translation>
 <translation id="7918293828610777738">Η λίστα ανάγνωσης είναι διαθέσιμη εκτός σύνδεσης. Για να προσθέσετε μια σελίδα στη λίστα ανάγνωσης, πατήστε το εικονίδιο <ph name="SHARE_OPENING_ICON" /> και μετά πατήστε το στοιχείο <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Ελέγξτε την ασφάλεια του κωδικού πρόσβασης</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Εξαγωγή κωδικών πρόσβασης…</translation>
 <translation id="7947953824732555851">Αποδοχή και σύνδεση</translation>

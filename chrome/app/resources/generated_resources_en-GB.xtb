@@ -26,6 +26,7 @@
 <translation id="1031362278801463162">Loading preview</translation>
 <translation id="103279545524624934">Free up disk space to launch Android apps.</translation>
 <translation id="1033780634303702874">Access your serial devices</translation>
+<translation id="1034942643314881546">Enabling ADB to create apps illustration</translation>
 <translation id="1036348656032585052">Turn off</translation>
 <translation id="1036511912703768636">Access any of these USB devices</translation>
 <translation id="1036982837258183574">Press |<ph name="ACCELERATOR" />| to exit full screen</translation>
@@ -284,6 +285,7 @@
 <translation id="1415708812149920388">Clipboard read access denied</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (extension ID "<ph name="EXTENSION_ID" />") is not allowed in this type of session.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="1418954524306642206">Browse to specify your printer PPD</translation>
 <translation id="1420834118113404499">Media licences</translation>
 <translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" /> to allow pairing</translation>
 <translation id="1422159345171879700">Load Unsafe Scripts</translation>
@@ -555,6 +557,7 @@
 <translation id="1782196717298160133">Finding your phone</translation>
 <translation id="1784707308176068866">Run in the background when requested by a cooperating native application</translation>
 <translation id="1784849162047402014">Device is low on disk space</translation>
+<translation id="1787350673646245458">User image</translation>
 <translation id="1790194216133135334">Send link to <ph name="DEVICE_NAME" /></translation>
 <translation id="1790976235243700817">Remove access</translation>
 <translation id="1792619191750875668">Extended display</translation>
@@ -685,6 +688,7 @@
 <translation id="1976150099241323601">Sign in to Security Device</translation>
 <translation id="1976323404609382849">Cookies from multiple sites blocked.</translation>
 <translation id="1977965994116744507">Bring your phone closer to unlock your <ph name="DEVICE_TYPE" />.</translation>
+<translation id="1978006917103730774">Future software and security updates will install automatically.</translation>
 <translation id="1979280758666859181">You are changing to a channel with an older version of <ph name="PRODUCT_NAME" />. The channel change will be applied when the channel version matches the version currently installed on your device.</translation>
 <translation id="197989455406964291">KDC does not support encryption type</translation>
 <translation id="1981544341227357861">Remove your security key from your device, then reinsert and touch it.</translation>
@@ -815,6 +819,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2173801458090845390">Add requisition ID to this device</translation>
 <translation id="2175042898143291048">Always do this</translation>
 <translation id="2175607476662778685">Quick launch bar</translation>
+<translation id="217576141146192373">Unable to add printer. Please check your printer's configuration and try again.</translation>
 <translation id="2177950615300672361">Incognito Tab: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> on <ph name="PEPPER_PLUGIN_DOMAIN" /> wants to access your computer</translation>
 <translation id="2178614541317717477">CA Compromise</translation>
@@ -927,6 +932,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2326931316514688470">&amp;Reload app</translation>
 <translation id="2327492829706409234">Enable app</translation>
 <translation id="2329597144923131178">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
+<translation id="2330129964253841015">Warn you if passwords are compromised</translation>
 <translation id="2332131598580221120">View in store</translation>
 <translation id="2332192922827071008">Open preferences</translation>
 <translation id="2332742915001411729">Reset to default</translation>
@@ -975,6 +981,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2395616325548404795">Your <ph name="DEVICE_TYPE" /> has successfully been enrolled for enterprise management, but failed to send its asset and location information. Please manually enter this information from your Admin console for this device.</translation>
 <translation id="2396783860772170191">Enter 4-digit pin (0000-9999)</translation>
 <translation id="2399939490305346086">Security key sign-in data</translation>
+<translation id="2407481962792080328">When you sign in to your Google account, this feature is turned on</translation>
 <translation id="2408955596600435184">Enter your PIN</translation>
 <translation id="241082044617551207">Unknown plug-in</translation>
 <translation id="2412593942846481727">Update available</translation>
@@ -1391,7 +1398,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2989786307324390836">DER-encoded binary, single certificate</translation>
 <translation id="2992931425024192067">Show all notification content</translation>
 <translation id="2993517869960930405">App Info</translation>
-<translation id="299483336428448530">Installed by your parent.</translation>
 <translation id="2996286169319737844">Data is encrypted with your sync passphrase. This doesn't include payment methods and addresses from Google Pay.</translation>
 <translation id="2996722619877761919">Flip on long edge</translation>
 <translation id="3003144360685731741">Preferred networks</translation>
@@ -1417,6 +1423,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3016641847947582299">Component updated</translation>
 <translation id="3016780570757425217">Know your location</translation>
 <translation id="3017079585324758401">Background</translation>
+<translation id="3019285239893817657">Subpage button</translation>
 <translation id="3020183492814296499">Shortcuts</translation>
 <translation id="3020990233660977256">Serial Number: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Butterfly</translation>
@@ -1432,6 +1439,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3038612606416062604">Add a printer manually</translation>
 <translation id="3038675903128704560">Do not allow any site to use a plug-in to access your computer</translation>
 <translation id="3039491566278747710">Failed to install offline policy on the device.</translation>
+<translation id="3043581297103810752">From <ph name="ORIGIN" /></translation>
 <translation id="3045447014237878114">This site downloaded multiple files automatically</translation>
 <translation id="3046910703532196514">Web Page, Complete</translation>
 <translation id="304747341537320566">Speech Engines</translation>
@@ -1813,6 +1821,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3629631988386925734">Enter your password to enable Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE" />. You can turn off Smart Lock in Settings.</translation>
 <translation id="3630132874740063857">Your phone</translation>
 <translation id="3630995161997703415">Add this site to your shelf to use it at any time</translation>
+<translation id="3635353578505343390">Send feedback to Google</translation>
 <translation id="3636096452488277381">Hi, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> left</translation>
 <translation id="3637561406135221044">Scanning files for sensitive data...</translation>
@@ -1893,6 +1902,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3732530910372558017">PIN must be at most 63 characters</translation>
 <translation id="3733127536501031542">SSL Server with Step-up</translation>
 <translation id="3735740477244556633">Sort by</translation>
+<translation id="3736016243818847857">Do you want to proceed?</translation>
 <translation id="3737274407993947948">Error installing Linux...</translation>
 <translation id="3737536731758327622">Your downloads appear here</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2402,6 +2412,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4501530680793980440">Confirm Removal</translation>
 <translation id="4502423230170890588">Remove from this device</translation>
 <translation id="4504940961672722399">Use this extension by clicking on this icon or by pressing <ph name="EXTENSION_SHORTCUT" />.</translation>
+<translation id="4506379069541445709">Continuing will enable ADB for creating and testing Android apps. Note that ADB allows installation of test apps that haven't been verified by Google.</translation>
 <translation id="4508051413094283164">Open all in incognito window</translation>
 <translation id="4508265954913339219">Activation failed</translation>
 <translation id="4508765956121923607">View S&amp;ource</translation>
@@ -2961,6 +2972,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5363109466694494651">Powerwash and Revert</translation>
 <translation id="5365881113273618889">The folder that you selected contains sensitive files. Are you sure that you want to grant '<ph name="APP_NAME" />' permanent write access to this folder?</translation>
 <translation id="5367091008316207019">Reading file..</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Your phone is locked. Unlock it to enter.</translation>
 <translation id="5368779022775404937">Sign in to <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Enable mouse acceleration</translation>
@@ -3177,6 +3189,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5646558797914161501">Businessman</translation>
 <translation id="5648166631817621825">Last 7 days</translation>
 <translation id="5649053991847567735">Automatic downloads</translation>
+<translation id="5656845498778518563">Send Feedback to Google</translation>
 <translation id="5657667036353380798">The external extension requires chrome version <ph name="MINIMUM_CHROME_VERSION" /> or greater to be installed.</translation>
 <translation id="5658415415603568799">For added security, Smart Lock will ask you to enter your password after 20 hours.</translation>
 <translation id="5659593005791499971">Email</translation>
@@ -3306,6 +3319,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5851868085455377790">Issuer</translation>
 <translation id="5852112051279473187">Oops!  Something went really wrong while enrolling this device.  Please try again or contact your support representative.</translation>
 <translation id="5852137567692933493">Restart and Powerwash</translation>
+<translation id="5852360662347412211">Go to Linux settings and try again</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0.6 seconds</translation>
 <translation id="5856721540245522153">Enable debugging features</translation>
@@ -3374,6 +3388,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5941153596444580863">Add person</translation>
 <translation id="5941343993301164315">Please sign in to <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimise</translation>
+<translation id="5942964813783878922">Your <ph name="DEVICE_TYPE" /> will restart after this update. Future software and security updates will install automatically.</translation>
 <translation id="5944869793365969636">Scan QR code</translation>
 <translation id="5945188205370098537">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Report ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
@@ -3661,7 +3676,6 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="63566973648609420">Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you'll need to <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Welcome to the <ph name="SHORT_PRODUCT_NAME" /> family. This is no ordinary computer.</translation>
 <translation id="6358884629796491903">Dragon</translation>
-<translation id="6360079014182882594">This site is free of cookies that can be used to track you across the web</translation>
 <translation id="6361850914223837199">Error details:</translation>
 <translation id="6362853299801475928">&amp;Report an issue...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3776,6 +3790,7 @@ Make sure that you trust this site before entering VR.</translation>
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">You're connected to a <ph name="NETWORK_TYPE" /> network.</translation>
 <translation id="6527303717912515753">Share</translation>
+<translation id="6528189551082329571">Always open links of this type in the associated app</translation>
 <translation id="6528513914570774834">Allow other users of this device to use this network</translation>
 <translation id="652948702951888897">Chrome history</translation>
 <translation id="6530186581263215931">These settings are enforced by your administrator</translation>
@@ -5021,6 +5036,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8319414634934645341">Extended Key Usage</translation>
 <translation id="8320459152843401447">Your Entire Screen</translation>
 <translation id="8322814362483282060">This page has been blocked from accessing your microphone.</translation>
+<translation id="8323167517179506834">Type URL</translation>
 <translation id="8326478304147373412">PKCS #7, certificate chain</translation>
 <translation id="8327039559959785305">Error mounting Linux files. Please try again.</translation>
 <translation id="8335587457941836791">Unpin from shelf</translation>
@@ -5097,6 +5113,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8449008133205184768">Paste and Match Style</translation>
 <translation id="8449036207308062757">Manage storage</translation>
 <translation id="8452135315243592079">Missing SIM card</translation>
+<translation id="8455026683977728932">Failed to enable ADB illustration</translation>
 <translation id="845702320058262034">Can’t connect. Make sure that your phone’s Bluetooth is turned on.</translation>
 <translation id="8457451314607652708">Import bookmarks</translation>
 <translation id="8460336040822756677">If you turn off Smart Lock for <ph name="DEVICE_TYPE" />, you won’t be able to unlock your Chrome devices using your phone. You'll need to type your password.</translation>
@@ -5137,6 +5154,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8509646642152301857">Spell check dictionary download failed.</translation>
 <translation id="8512476990829870887">End Process</translation>
 <translation id="851263357009351303">Always allow <ph name="HOST" /> to show images</translation>
+<translation id="8513108775083588393">Auto-rotate</translation>
 <translation id="8514746246728959655">Try a different security key</translation>
 <translation id="8521475323816527629">Get to your apps fast</translation>
 <translation id="8523493869875972733">Keep Changes</translation>
@@ -5573,6 +5591,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9116799625073598554">Note-taking app</translation>
 <translation id="9117030152748022724">Manage your apps</translation>
 <translation id="9121814364785106365">Open as pinned tab</translation>
+<translation id="9122074588095746047">Couldn't enable ADB</translation>
 <translation id="9124003689441359348">Saved passwords will appear here</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rem.)</translation>
 <translation id="9128317794749765148">Setup couldn't complete</translation>

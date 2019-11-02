@@ -311,9 +311,6 @@ class DownloadItemView : public views::InkDropHostView,
   // The focus ring for this Button.
   std::unique_ptr<views::FocusRing> focus_ring_;
 
-  // Elements of our particular download
-  base::string16 status_text_;
-
   // The font list used to print the file name and warning text.
   gfx::FontList font_list_;
 

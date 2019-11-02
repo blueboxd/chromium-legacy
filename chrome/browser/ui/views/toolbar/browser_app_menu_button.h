@@ -8,7 +8,6 @@
 #include <memory>
 #include <set>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -28,6 +27,8 @@ class BrowserAppMenuButton : public AppMenuButton,
                              public ui::MaterialDesignControllerObserver {
  public:
   explicit BrowserAppMenuButton(ToolbarView* toolbar_view);
+  BrowserAppMenuButton(const BrowserAppMenuButton&) = delete;
+  BrowserAppMenuButton& operator=(const BrowserAppMenuButton&) = delete;
   ~BrowserAppMenuButton() override;
 
   void SetTypeAndSeverity(
@@ -98,8 +99,6 @@ class BrowserAppMenuButton : public AppMenuButton,
 
   // Used to spawn weak pointers for delayed tasks to open the overflow menu.
   base::WeakPtrFactory<BrowserAppMenuButton> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserAppMenuButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_APP_MENU_BUTTON_H_

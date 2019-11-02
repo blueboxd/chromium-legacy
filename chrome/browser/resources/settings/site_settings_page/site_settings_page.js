@@ -98,36 +98,34 @@ Polymer({
     // elements residing in this element's Shadow DOM.
     const R = settings.routes;
     const pairs = [
-      [R.SITE_SETTINGS_COOKIES, 'cookies'],
-      [R.SITE_SETTINGS_LOCATION, 'location'],
-      [R.SITE_SETTINGS_CAMERA, 'camera'],
-      [R.SITE_SETTINGS_MICROPHONE, 'microphone'],
-      [R.SITE_SETTINGS_NOTIFICATIONS, 'notifications'],
-      [R.SITE_SETTINGS_JAVASCRIPT, 'javascript'],
-      [R.SITE_SETTINGS_SOUND, 'sound'],
-      [R.SITE_SETTINGS_FLASH, 'flash'],
-      [R.SITE_SETTINGS_IMAGES, 'images'],
-      [R.SITE_SETTINGS_POPUPS, 'popups'],
-      [R.SITE_SETTINGS_BACKGROUND_SYNC, 'background-sync'],
-      [R.SITE_SETTINGS_AUTOMATIC_DOWNLOADS, 'automatic-downloads'],
-      [R.SITE_SETTINGS_UNSANDBOXED_PLUGINS, 'unsandboxed-plugins'],
-      [R.SITE_SETTINGS_HANDLERS, 'protocol-handlers'],
-      [R.SITE_SETTINGS_MIDI_DEVICES, 'midi-devices'],
       [R.SITE_SETTINGS_ADS, 'ads'],
-      [R.SITE_SETTINGS_ZOOM_LEVELS, 'zoom-levels'],
-      [R.SITE_SETTINGS_USB_DEVICES, 'usb-devices'],
-      [R.SITE_SETTINGS_PDF_DOCUMENTS, 'pdf-documents'],
-      [R.SITE_SETTINGS_PROTECTED_CONTENT, 'protected-content'],
+      [R.SITE_SETTINGS_ALL, 'all-sites'],
+      [R.SITE_SETTINGS_AUTOMATIC_DOWNLOADS, 'automatic-downloads'],
+      [R.SITE_SETTINGS_BACKGROUND_SYNC, 'background-sync'],
+      [R.SITE_SETTINGS_CAMERA, 'camera'],
       [R.SITE_SETTINGS_CLIPBOARD, 'clipboard'],
+      [R.SITE_SETTINGS_COOKIES, 'cookies'],
+      [R.SITE_SETTINGS_FLASH, 'flash'],
+      [R.SITE_SETTINGS_HANDLERS, 'protocol-handlers'],
+      [R.SITE_SETTINGS_IMAGES, 'images'],
+      [R.SITE_SETTINGS_JAVASCRIPT, 'javascript'],
+      [R.SITE_SETTINGS_LOCATION, 'location'],
+      [R.SITE_SETTINGS_MICROPHONE, 'microphone'],
+      [R.SITE_SETTINGS_MIDI_DEVICES, 'midi-devices'],
+      [R.SITE_SETTINGS_NOTIFICATIONS, 'notifications'],
+      [R.SITE_SETTINGS_PDF_DOCUMENTS, 'pdf-documents'],
+      [R.SITE_SETTINGS_POPUPS, 'popups'],
+      [R.SITE_SETTINGS_PROTECTED_CONTENT, 'protected-content'],
       [R.SITE_SETTINGS_SENSORS, 'sensors'],
+      [R.SITE_SETTINGS_SERIAL_PORTS, 'serial-ports'],
+      [R.SITE_SETTINGS_SOUND, 'sound'],
+      [R.SITE_SETTINGS_UNSANDBOXED_PLUGINS, 'unsandboxed-plugins'],
+      [R.SITE_SETTINGS_USB_DEVICES, 'usb-devices'],
+      [R.SITE_SETTINGS_ZOOM_LEVELS, 'zoom-levels'],
     ];
 
     if (this.enablePaymentHandlerContentSetting_) {
       pairs.push([R.SITE_SETTINGS_PAYMENT_HANDLER, 'paymentHandler']);
-    }
-
-    if (this.enableExperimentalWebPlatformFeatures_) {
-      pairs.push([R.SITE_SETTINGS_SERIAL_PORTS, 'serial-ports']);
     }
 
     if (this.enableExperimentalWebPlatformFeatures_) {

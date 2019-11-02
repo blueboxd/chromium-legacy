@@ -259,7 +259,7 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
   // The request to example.com should now have its headers removed.
   example_params.allow_rule_cache.clear();
   uint8_t expected_mask =
-      kRemoveHeadersMask_Referer | kRemoveHeadersMask_SetCookie;
+      flat::RemoveHeaderType_referer | flat::RemoveHeaderType_set_cookie;
   EXPECT_EQ(expected_mask, composite_matcher->GetRemoveHeadersMask(
                                example_params, 0u, &remove_header_actions));
   ASSERT_EQ(1u, remove_header_actions.size());
@@ -335,9 +335,9 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
   google_params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
   google_params.is_third_party = false;
 
-  const uint8_t expected_mask = kRemoveHeadersMask_Referer |
-                                kRemoveHeadersMask_Cookie |
-                                kRemoveHeadersMask_SetCookie;
+  const uint8_t expected_mask = flat::RemoveHeaderType_referer |
+                                flat::RemoveHeaderType_cookie |
+                                flat::RemoveHeaderType_set_cookie;
 
   std::vector<RequestAction> actions;
   EXPECT_EQ(expected_mask, composite_matcher->GetRemoveHeadersMask(

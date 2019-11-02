@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">More menu</translation>
 <translation id="2316709634732130529">Uporabi predlagano geslo</translation>
 <translation id="2320166752086256636">Skrij tipkovnico</translation>
+<translation id="2330129964253841015">Posvari, če so gesla ogrožena</translation>
 <translation id="2339560363438331454">Sinhr. in Googlove storitve</translation>
 <translation id="2351097562818989364">Nastavitve za prevajanje so ponastavljene.</translation>
 <translation id="2359043044084662842">Prevedi</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Shrani sliko</translation>
 <translation id="3789841737615482174">Namesti</translation>
 <translation id="385051799172605136">Nazaj</translation>
-<translation id="3886946236301294521">Opozori vas, če je bilo geslo, ki ga uporabljate, del podatkovne kršitve.</translation>
 <translation id="3897092660631435901">Meni</translation>
 <translation id="3915450441834151894">Podatki o spletnem mestu</translation>
 <translation id="3922310737605261887">Iskanje besedila, ki ste ga kopirali</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Prebrane strani</translation>
 <translation id="4630540211544979320">Prevajanje strani</translation>
 <translation id="4636930964841734540">Informacije</translation>
+<translation id="4659126640776004816">Ko se prijavite v račun Google, se ta funkcija vklopi.</translation>
 <translation id="4659667755519643272">Enter Tab Switcher</translation>
 <translation id="4666531726415300315">Prijavljeni ste kot <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5327248766486351172">Ime</translation>
-<translation id="5365716706805792666">Google lahko preveri, ali so bila vaša gesla del podatkovne kršitve. To je vklopljeno, ko se prijavite z računom Google.</translation>
 <translation id="5388358297987318779">Odpri sliko</translation>
 <translation id="5407969256130905701">Zavrzi spremembe</translation>
 <translation id="5409365236829784218">Nameščena ni nobena apl. za odpiranje te datoteke.</translation>
@@ -333,7 +333,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5854790677617711513">Starejše od 30 dni</translation>
 <translation id="5857090052475505287">Nova mapa</translation>
 <translation id="5857770089550859117">Passphrase required to start sync.</translation>
-<translation id="5859444426865731878">Google lahko preveri, ali so bila vaša gesla del podatkovne kršitve.</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5869029295770560994">V redu, razumem</translation>
 <translation id="5871497086027727873">1 element premaknjen</translation>
@@ -483,7 +482,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7859704718976024901">Zgodovina brskanja</translation>
 <translation id="7887198238286927132">Chrome zaradi varovanja vaše zasebnosti ne bo samodejno izpolnil tega polja.</translation>
 <translation id="7918293828610777738">Bralni seznam je na voljo brez povezave. Če želite dodati stran na bralni seznam, se dotaknite <ph name="SHARE_OPENING_ICON" />, nato pa <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Preverjanje varnosti gesla</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Izvozi gesla ...</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>

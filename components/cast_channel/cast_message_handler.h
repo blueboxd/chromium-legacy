@@ -19,10 +19,7 @@
 #include "base/values.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
-
-namespace service_manager {
-class Connector;
-}
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace cast_channel {
 
@@ -135,12 +132,13 @@ class CastMessageHandler : public CastSocket::Observer {
                                    const InternalMessage& message) {}
   };
 
-  // |connector|: Connector to be used for data_decoder service. The connector
-  // must not be bound to any thread.
-  // |data_decoder_batch_id|: Batch ID used for data_decoder service.
+  // |parse_json|: A callback which can be used to parse a string of potentially
+  // unsafe JSON data.
+  using ParseJsonCallback = base::RepeatingCallback<void(
+      const std::string& string,
+      data_decoder::DataDecoder::ValueParseCallback callback)>;
   CastMessageHandler(CastSocketService* socket_service,
-                     std::unique_ptr<service_manager::Connector> connector,
-                     const base::Token& data_decoder_batch_id,
+                     ParseJsonCallback parse_json,
                      const std::string& user_agent,
                      const std::string& browser_version,
                      const std::string& locale);
@@ -298,11 +296,12 @@ class CastMessageHandler : public CastSocket::Observer {
   // Callback for CastTransport::SendMessage.
   void OnMessageSent(int result);
 
-  void HandleCastInternalMessage(int channel_id,
-                                 const std::string& source_id,
-                                 const std::string& destination_id,
-                                 const std::string& namespace_,
-                                 base::Value payload);
+  void HandleCastInternalMessage(
+      int channel_id,
+      const std::string& source_id,
+      const std::string& destination_id,
+      const std::string& namespace_,
+      data_decoder::DataDecoder::ValueOrError parse_result);
 
   // Set of pending requests keyed by socket ID.
   base::flat_map<int, std::unique_ptr<PendingRequests>> pending_requests_;
@@ -312,8 +311,7 @@ class CastMessageHandler : public CastSocket::Observer {
   const std::string sender_id_;
 
   // Used for parsing JSON payload from receivers.
-  std::unique_ptr<service_manager::Connector> connector_;
-  const base::Token data_decoder_batch_id_;
+  ParseJsonCallback parse_json_;
 
   // User agent and browser version strings included in virtual connection
   // messages.

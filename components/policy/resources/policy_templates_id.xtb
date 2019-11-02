@@ -632,11 +632,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
           Jika setelan ini dinonaktifkan, transfer file tidak akan diizinkan. Jika setelan ini diaktifkan atau tidak disetel, transfer file akan diizinkan.</translation>
 <translation id="2057317273526988987">Izinkan akses ke daftar URL</translation>
 <translation id="2061810934846663491">Mengonfigurasi nama domain wajib untuk host akses jarak jauh</translation>
-<translation id="2063663607822994541">Mengonfigurasi jumlah memori yang dapat digunakan oleh satu instance <ph name="PRODUCT_NAME" /> sebelum tab mulai dihapus (artinya, memori yang digunakan oleh tab akan dibebaskan dan tab harus dimuat ulang saat dialihkan) untuk menghemat memori.
-
-      Jika kebijakan ini ditetapkan, browser akan mulai menghapus tab untuk menghemat memori setelah melampaui batas. Namun, tidak ada jaminan bahwa browser selalu berjalan di bawah batas. Setiap nilai yang kurang dari 2048 akan dibulatkan ke 2048.
-
-      Jika kebijakan ini tidak ditetapkan, browser hanya akan mulai mencoba menghemat memori setelah mendeteksi bahwa perangkatnya memiliki jumlah memori fisik yang rendah.</translation>
 <translation id="206623763829450685">Menentukan skema autentikasi HTTP yang didukung oleh <ph name="PRODUCT_NAME" />.
 
           Nilai yang mungkin adalah 'basic', 'digest', 'ntlm', dan 'negotiate'. Pisahkan beberapa nilai dengan koma.
@@ -799,11 +794,11 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2345547870894930157">Aktifkan DNS-over-HTTPS tanpa fallback yang tidak aman</translation>
 <translation id="237494535617297575">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="2386362615870139244">Izinkan penguncian layar saat bangun</translation>
-<translation id="2398554235599593694"> Kebijakan ini mengontrol apakah kotak centang "Selalu buka" ditampilkan atau tidak pada perintah konfirmasi peluncuran protokol eksternal.
+<translation id="2398554235599593694"> Kebijakan ini mengontrol apakah kotak centang "Always open" ditampilkan atau tidak pada perintah konfirmasi peluncuran protokol eksternal.
 
-      Jika kebijakan ini ditetapkan ke True, saat konfirmasi protokol eksternal ditampilkan, pengguna dapat memilih untuk "Selalu buka" protokol tanpa perintah konfirmasi di waktu mendatang.
+      Jika kebijakan ini ditetapkan ke True, saat konfirmasi protokol eksternal ditampilkan, pengguna dapat memilih untuk "Always open" protokol tanpa perintah konfirmasi di waktu mendatang.
 
-      Jika kebijakan ini ditetapkan ke False atau tidak ditetapkan, kotak centang "Selalu buka" tidak akan ditampilkan dan pengguna akan diminta untuk mengonfirmasi setiap kali protokol eksternal dipanggil.</translation>
+      Jika kebijakan ini ditetapkan ke False atau tidak ditetapkan, kotak centang "Always open" tidak akan ditampilkan dan pengguna akan diminta untuk mengonfirmasi setiap kali protokol eksternal dipanggil.</translation>
 <translation id="2411817661175306360">Peringatan perlindungan sandi nonaktif</translation>
 <translation id="2411919772666155530">Mencekal pemberitahuan di situs ini</translation>
 <translation id="2418507228189425036">Menonaktifkan penyimpanan histori browser di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
@@ -920,7 +915,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Pola URL diformat menurut https://www.chromium.org/administrators/url-blacklist-filter-format. Namun, karena sertifikat valid untuk hostname tertentu yang bukan bagian dari skema, port, atau jalur, hanya bagian hostname URL yang dipertimbangkan. Host karakter pengganti tidak didukung.
 
       Jika kebijakan ini tidak disetel, sertifikat yang harus diungkapkan melalui Transparansi Sertifikat akan dianggap tidak tepercaya jika tidak diungkapkan menurut kebijakan Transaparansi Sertifikat.</translation>
-<translation id="2486911595447603756">Mengontrol mode DNS-over-HTTPS.</translation>
 <translation id="2488010520405124654">Aktifkan permintaan konfigurasi jaringan saat offline.
 
       Jika kebijakan ini tidak disetel atau disetel ke True dan akun lokal perangkat dikonfigurasikan untuk masuk otomatis tanpa penundaan dan perangkat tidak memiliki akses ke internet, <ph name="PRODUCT_OS_NAME" /> akan memunculkan permintaan konfigurasi jaringan.
@@ -2190,11 +2184,11 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4591366717022345234">Sediakan Quick Fix Build untuk pengguna</translation>
 <translation id="4592246263545654202">Menentukan apakah pengguna dapat membuka halaman dalam Mode samaran di <ph name="PRODUCT_NAME" /> atau tidak.
 
-      Jika 'Aktifkan' dipilih atau kebijakan tidak ditetapkan, halaman dapat dibuka dalam Mode samaran.
+      Jika 'Enabled' dipilih atau kebijakan tidak ditetapkan, halaman dapat dibuka dalam Mode samaran.
 
-      Jika 'Nonaktifkan' dipilih, halaman tidak dapat dibuka dalam Mode samaran.
+      Jika 'Disabled' dipilih, halaman tidak dapat dibuka dalam Mode samaran.
 
-      Jika 'Paksa' dipilih, halaman dapat dibuka HANYA dalam Mode samaran. Perhatikan bahwa 'Paksa' tidak berfungsi pada Android di Chrome</translation>
+      Jika 'Forced' dipilih, halaman dapat dibuka HANYA dalam Mode samaran. Perhatikan bahwa 'Paksa' tidak berfungsi pada Android di Chrome</translation>
 <translation id="4600786265870346112">Aktifkan kursor besar</translation>
 <translation id="4604931264910482931">Konfigurasikan daftar hitam perpesanan asli</translation>
 <translation id="4617338332148204752">Lewati pemeriksaan tag meta pada <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -3097,7 +3091,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6195802366906945965">Menentukan apakah pemverifikasi sertifikat bawaan akan digunakan untuk memverifikasi sertifikat server</translation>
 <translation id="6197453924249895891">Memberikan akses ke kunci perusahaan ke ekstensi.
 
-      Kunci hanya ditujukan untuk pemakaian dalam perusahaan jika dibuat menggunakan API chrome.enterprise.platformKeys pada akun yang dikelola. Kunci yang diimpor atau dibuat dengan cara lain tidak boleh digunakan untuk perusahaan.
+      Kunci hanya ditujukan untuk pemakaian dalam perusahaan jika dibuat menggunakan API chrome.enterprise.platformKeys pada akun terkelola. Kunci yang diimpor atau dibuat dengan cara lain tidak boleh digunakan untuk perusahaan.
 
       Akses ke kunci yang ditujukan untuk pemakaian dalam perusahaan hanya dikontrol oleh kebijakan ini. Pengguna tidak dapat memberikan maupun menarik akses ke kunci perusahaan ke atau dari ekstensi.
 
@@ -3649,13 +3643,6 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
       Ketiga kebijakan ini, VirtualMachinesAllowed, CrostiniAllowed, dan DeviceUnaffiliatedCrostiniAllowed harus ditetapkan ke true jika ketiganya berlaku agar Crostini diizinkan berjalan.
       Jika diubah ke false, kebijakan ini berlaku untuk memulai container Crostini baru, namun tidak mematikan container yang sedang berjalan.</translation>
 <translation id="7234280155140786597">Nama hosting perpesanan asli yang dilarang (atau * untuk semua)</translation>
-<translation id="7236775576470542603">Menyetel jenis lup default yang diaktifkan di layar masuk.
-
-          Jika kebijakan ini disetel, kebijakan ini mengontrol jenis lup yang diaktifkan saat layar masuk ditampilkan. Menyetel kebijakan ini ke "None" menonaktifkan lup.
-
-          Jika Anda menyetel kebijakan ini, pengguna dapat menimpanya untuk sementara dengan mengaktifkan atau menonaktifkan lup. Namun, pilihan pengguna tidak bersifat permanen dan setelan default akan dipulihkan kapan pun layar masuk ditampilkan lagi atau pengguna tetap menganggur di layar masuk selama satu menit.
-
-          Jika kebijakan ini tidak disetel, lup dinonaktifkan saat layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan lup kapan saja dan statusnya di layar masuk bersifat permanen antar pengguna.</translation>
 <translation id="7249828445670652637">Mengaktifkan sertifikat CA <ph name="PRODUCT_OS_NAME" /> untuk aplikasi ARC</translation>
 <translation id="7251652588006515288">Kebijakan ini mengontrol apakah pengguna dapat mengimpor dan menghapus sertifikat klien melalui Pengelola Sertifikat.
 
@@ -4473,7 +4460,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8759829385824155666">Jenis enkripsi Kerberos yang diizinkan</translation>
 <translation id="8764119899999036911">Menentukan apakah Kerberos SPN yang dihasilkan didasarkan pada nama DNS kanonik atau nama asli yang dimasukkan. Jika Anda mengaktifkan setelan ini, pencarian CNAME akan dilewati dan nama server akan digunakan seperti saat dimasukkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, nama kanonik server akan ditentukan melalui pencarian CNAME.</translation>
 <translation id="8764477907716150749">Kebijakan ini untuk penggunaan internal oleh <ph name="PRODUCT_NAME" /> sendiri.</translation>
-<translation id="8777369558049831576">Menampilkan kotak centang "Selalu buka" pada dialog protokol eksternal.</translation>
+<translation id="8777369558049831576">Menampilkan kotak centang "Always open" pada dialog protokol eksternal.</translation>
 <translation id="877773134585155834">Membuat daftar ID aplikasi yang ditampilkan <ph name="PRODUCT_OS_NAME" /> sebagai aplikasi yang dipasangi pin di kotak peluncur.
 
       Aplikasi Chrome ditetapkan berdasarkan ID, misalnya "pjkljhegncpnkpknbcohdijeoejaedia", Aplikasi Android berdasarkan nama paketnya, misalnya "com.google.android.gm", dan Aplikasi Web ditetapkan berdasarkan URL yang digunakan dalam WebAppInstallForceList, misalnya "https://google.com/maps".

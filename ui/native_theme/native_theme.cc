@@ -84,7 +84,7 @@ NativeTheme::GetSystemColors() const {
   return system_colors_;
 }
 
-base::Optional<SkColor> NativeTheme::GetSystemColorFromMap(
+base::Optional<SkColor> NativeTheme::GetSystemThemeColor(
     SystemThemeColor theme_color) const {
   auto color = system_colors_.find(theme_color);
   if (color != system_colors_.end())
@@ -122,7 +122,7 @@ bool NativeTheme::UpdateSystemColorInfo(
     set_preferred_color_scheme(preferred_color_scheme);
   }
   for (const auto& color : colors) {
-    if (color.second != GetSystemColorFromMap(color.first)) {
+    if (color.second != GetSystemThemeColor(color.first)) {
       did_system_color_info_change = true;
       system_colors_[color.first] = color.second;
     }
@@ -168,7 +168,7 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     theme_to_update_->NotifyObservers();
 }
 
-NativeTheme::ColorScheme NativeTheme::GetSystemColorScheme() const {
+NativeTheme::ColorScheme NativeTheme::GetDefaultSystemColorScheme() const {
   return ShouldUseDarkColors() ? ColorScheme::kDark : ColorScheme::kLight;
 }
 

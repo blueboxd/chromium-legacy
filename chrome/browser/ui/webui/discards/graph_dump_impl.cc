@@ -207,8 +207,8 @@ void DiscardsGraphDumpImpl::OnTakenFromGraph(
 
   // The favicon helper must be deleted on the UI thread.
   if (favicon_request_helper_) {
-    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
-                                       std::move(favicon_request_helper_));
+    base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
+                     std::move(favicon_request_helper_));
   }
 
   graph_ = nullptr;

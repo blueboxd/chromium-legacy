@@ -24,6 +24,7 @@
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_controller_delegate.h"
 #include "content/public/browser/tts_platform.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -108,8 +109,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   static void StripSSMLHelper(
       const std::string& utterance,
       base::OnceCallback<void(const std::string&)> on_ssml_parsed,
-      std::unique_ptr<base::Value> value,
-      const base::Optional<std::string>& error_message);
+      data_decoder::DataDecoder::ValueOrError result);
   static void PopulateParsedText(std::string* parsed_text,
                                  const base::Value* element);
 

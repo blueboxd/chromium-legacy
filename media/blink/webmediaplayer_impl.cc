@@ -457,8 +457,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
     video_layer_->StopUsingProvider();
 
   simple_watch_timer_.Stop();
-  media_log_->AddEvent(
-      media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
+  media_log_->OnWebMediaPlayerDestroyed();
 
   if (data_source_)
     data_source_->Stop();

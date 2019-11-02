@@ -106,6 +106,7 @@
 <translation id="4661075872484491155">дерево</translation>
 <translation id="4664250907885839816">Частина після знака "<ph name="ATSIGN" />" не може містити символ "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">додаток</translation>
+<translation id="4698212723196775569">код</translation>
 <translation id="4718048029184481307">Відтворюється в режимі "Картинка в картинці"</translation>
 <translation id="4742539557769756338">обкладинка</translation>
 <translation id="4748357248530471599">перемкнути виріз у повноекранному режимі</translation>
@@ -191,6 +192,7 @@
 <translation id="7118469954320184356">Немає опису.</translation>
 <translation id="7139483182332611405">передмова</translation>
 <translation id="7214187073215825913">інформація про контент</translation>
+<translation id="7238347055216017155">виділення</translation>
 <translation id="7263440858009898357">Виберіть елемент зі списку.</translation>
 <translation id="727747134524199931">заголовок стовпця</translation>
 <translation id="7320576522385648310">буферизація</translation>
@@ -217,6 +219,7 @@
 <translation id="7888071071722539607">Електронна адреса має містити знак "<ph name="ATSIGN" />". В електронній адресі "<ph name="INVALIDADDRESS" />" знака "<ph name="ATSIGN" />" немає.</translation>
 <translation id="7891486169920085145">розділювач</translation>
 <translation id="795667975304826397">Файл не вибрано</translation>
+<translation id="8034303206267677282">важливо</translation>
 <translation id="8053789581856978548">текстове поле пошуку</translation>
 <translation id="8057695513531652401">примітка</translation>
 <translation id="8105797009065549151">посилання на примітку</translation>

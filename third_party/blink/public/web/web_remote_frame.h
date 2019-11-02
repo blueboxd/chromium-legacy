@@ -130,8 +130,6 @@ class WebRemoteFrame : public WebFrame {
   // Reports resource timing info for a navigation in this frame.
   virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) = 0;
 
-  virtual void DispatchLoadEventForFrameOwner() = 0;
-
   virtual void SetNeedsOcclusionTracking(bool) = 0;
 
   virtual void DidStartLoading() = 0;

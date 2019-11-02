@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "pdf/pdf.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace printing {
 
@@ -73,6 +74,48 @@ base::MappedReadOnlyRegion GetBadDataRegion() {
   return pdf_region;
 }
 
+std::vector<gfx::SizeF> GetPdfPageSizes(base::span<const uint8_t> pdf_data) {
+  int num_pages;
+  if (!chrome_pdf::GetPDFDocInfo(pdf_data, &num_pages, nullptr) ||
+      num_pages <= 0) {
+    return {};
+  }
+
+  std::vector<gfx::SizeF> sizes;
+  for (int i = 0; i < num_pages; ++i) {
+    double width;
+    double height;
+    if (!chrome_pdf::GetPDFPageSizeByIndex(pdf_data, i, &width, &height))
+      return {};
+
+    sizes.push_back({width, height});
+  }
+
+  return sizes;
+}
+
+void VerifyPdf(base::span<const uint8_t> pdf_data,
+               const std::vector<gfx::SizeF>& expected_sizes) {
+  std::vector<gfx::SizeF> page_sizes = GetPdfPageSizes(pdf_data);
+  ASSERT_EQ(expected_sizes.size(), page_sizes.size());
+  for (size_t i = 0; i < expected_sizes.size(); ++i)
+    EXPECT_EQ(expected_sizes[i], page_sizes[i]);
+}
+
+std::vector<gfx::SizeF> GetExpectedPdfSizes(base::StringPiece pdf_name) {
+  if (pdf_name == "pdf_converter_basic.pdf") {
+    static const std::vector<gfx::SizeF> kSizes = {
+        {612.0f, 792.0f},
+        {612.0f, 792.0f},
+        {612.0f, 792.0f},
+    };
+    return kSizes;
+  }
+
+  NOTREACHED();
+  return {};
+}
+
 }  // namespace
 
 class PdfNupConverterClientBrowserTest : public InProcessBrowserTest {
@@ -94,8 +137,8 @@ class PdfNupConverterClientBrowserTest : public InProcessBrowserTest {
       base::RunLoop run_loop;
       converter->DoNupPdfDocumentConvert(
           /*document_cookie=*/8, pages_per_sheet,
-          /*page_size=*/gfx::Size(2550, 3300),
-          /*printable_area=*/gfx::Rect(2550, 3300), std::move(pdf_region),
+          /*page_size=*/gfx::Size(612, 792),
+          /*printable_area=*/gfx::Rect(612, 792), std::move(pdf_region),
           base::BindOnce(&ResultCallbackImpl, &status, &nup_pdf_region, &called,
                          run_loop.QuitClosure()));
       run_loop.Run();
@@ -115,14 +158,9 @@ IN_PROC_BROWSER_TEST_F(PdfNupConverterClientBrowserTest,
       GetPdfRegion("pdf_converter_basic.pdf");
   ASSERT_TRUE(pdf_region.IsValid());
 
-  // Make sure pdf_converter_basic.pdf has 3 pages.
-  int num_pages;
-  double max_width_in_points;
-  ASSERT_TRUE(
-      chrome_pdf::GetPDFDocInfo(pdf_region.mapping.GetMemoryAsSpan<uint8_t>(),
-                                &num_pages, &max_width_in_points));
-  EXPECT_EQ(3, num_pages);
-  EXPECT_DOUBLE_EQ(612.0, max_width_in_points);
+  // Make sure pdf_converter_basic.pdf is as expected.
+  VerifyPdf(pdf_region.mapping.GetMemoryAsSpan<uint8_t>(),
+            GetExpectedPdfSizes("pdf_converter_basic.pdf"));
 
   base::ReadOnlySharedMemoryRegion nup_pdf_region;
   base::Optional<mojom::PdfNupConverter::Status> status = Convert(
@@ -134,11 +172,11 @@ IN_PROC_BROWSER_TEST_F(PdfNupConverterClientBrowserTest,
   ASSERT_TRUE(nup_pdf_mapping.IsValid());
 
   // For 2-up, a 3 page portrait document fits on 2 landscape-oriented pages.
-  ASSERT_TRUE(
-      chrome_pdf::GetPDFDocInfo(nup_pdf_mapping.GetMemoryAsSpan<uint8_t>(),
-                                &num_pages, &max_width_in_points));
-  EXPECT_EQ(2, num_pages);
-  EXPECT_DOUBLE_EQ(3300.0, max_width_in_points);
+  const std::vector<gfx::SizeF> kExpectedSizes = {
+      {792.0f, 612.0f},
+      {792.0f, 612.0f},
+  };
+  VerifyPdf(nup_pdf_mapping.GetMemoryAsSpan<uint8_t>(), kExpectedSizes);
 }
 
 IN_PROC_BROWSER_TEST_F(PdfNupConverterClientBrowserTest,
@@ -147,14 +185,9 @@ IN_PROC_BROWSER_TEST_F(PdfNupConverterClientBrowserTest,
       GetPdfRegion("pdf_converter_basic.pdf");
   ASSERT_TRUE(pdf_region.IsValid());
 
-  // Make sure pdf_converter_basic.pdf has 3 pages.
-  int num_pages;
-  double max_width_in_points;
-  ASSERT_TRUE(
-      chrome_pdf::GetPDFDocInfo(pdf_region.mapping.GetMemoryAsSpan<uint8_t>(),
-                                &num_pages, &max_width_in_points));
-  EXPECT_EQ(3, num_pages);
-  EXPECT_DOUBLE_EQ(612.0, max_width_in_points);
+  // Make sure pdf_converter_basic.pdf is as expected.
+  VerifyPdf(pdf_region.mapping.GetMemoryAsSpan<uint8_t>(),
+            GetExpectedPdfSizes("pdf_converter_basic.pdf"));
 
   base::ReadOnlySharedMemoryRegion nup_pdf_region;
   base::Optional<mojom::PdfNupConverter::Status> status = Convert(
@@ -165,12 +198,11 @@ IN_PROC_BROWSER_TEST_F(PdfNupConverterClientBrowserTest,
   base::ReadOnlySharedMemoryMapping nup_pdf_mapping = nup_pdf_region.Map();
   ASSERT_TRUE(nup_pdf_mapping.IsValid());
 
-  // For 4-up, a 3 page portrait document fits on 1 landscape-oriented page.
-  ASSERT_TRUE(
-      chrome_pdf::GetPDFDocInfo(nup_pdf_mapping.GetMemoryAsSpan<uint8_t>(),
-                                &num_pages, &max_width_in_points));
-  EXPECT_EQ(1, num_pages);
-  EXPECT_DOUBLE_EQ(2550.0, max_width_in_points);
+  // For 4-up, a 3 page portrait document fits on 1 portrait-oriented page.
+  const std::vector<gfx::SizeF> kExpectedSizes = {
+      {612.0f, 792.0f},
+  };
+  VerifyPdf(nup_pdf_mapping.GetMemoryAsSpan<uint8_t>(), kExpectedSizes);
 }
 
 IN_PROC_BROWSER_TEST_F(PdfNupConverterClientBrowserTest,

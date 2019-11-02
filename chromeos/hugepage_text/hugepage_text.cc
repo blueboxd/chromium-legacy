@@ -56,6 +56,9 @@ namespace chromeos {
 #define MADV_HUGEPAGE 14
 #endif
 
+const base::Feature kCrOSHugepageRemapAndLockZygote{
+    "CrOSHugepageRemapAndLockInZygote", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const int kHpageShift = 21;
 const int kHpageSize = (1 << kHpageShift);
 const int kHpageMask = (~(kHpageSize - 1));
@@ -296,7 +299,9 @@ static int FilterElfHeader(struct dl_phdr_info* info, size_t size, void* data) {
 // the hugepages. Any errors will cause the failing piece of this to be rolled
 // back, so nothing world-ending can come from this function (hopefully ;) ).
 void InitHugepagesAndMlockSelf(void) {
-  dl_iterate_phdr(FilterElfHeader, 0);
+  if (base::FeatureList::IsEnabled(chromeos::kCrOSHugepageRemapAndLockZygote)) {
+    dl_iterate_phdr(FilterElfHeader, 0);
+  }
 }
 
 }  // namespace chromeos

@@ -11,7 +11,7 @@
 #include "ui/message_center/views/message_view.h"
 
 namespace media_message_center {
-class MediaNotificationItem;
+class MediaSessionNotificationItem;
 class MediaNotificationView;
 }  // namespace media_message_center
 
@@ -27,7 +27,7 @@ class ASH_EXPORT MediaNotificationContainerImpl
  public:
   explicit MediaNotificationContainerImpl(
       const message_center::Notification& notification,
-      base::WeakPtr<media_message_center::MediaNotificationItem> item);
+      base::WeakPtr<media_message_center::MediaSessionNotificationItem> item);
   ~MediaNotificationContainerImpl() override;
 
   // message_center::MessageView:

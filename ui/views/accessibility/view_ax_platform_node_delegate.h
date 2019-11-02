@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -36,6 +35,9 @@ class View;
 class ViewAXPlatformNodeDelegate : public ViewAccessibility,
                                    public ui::AXPlatformNodeDelegateBase {
  public:
+  ViewAXPlatformNodeDelegate(const ViewAXPlatformNodeDelegate&) = delete;
+  ViewAXPlatformNodeDelegate& operator=(const ViewAXPlatformNodeDelegate&) =
+      delete;
   ~ViewAXPlatformNodeDelegate() override;
 
   // ViewAccessibility:
@@ -101,8 +103,6 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
 
   // Levels of menu are currently open, e.g. 0: none, 1: top, 2: submenu ...
   static int32_t menu_depth_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegate);
 };
 
 }  // namespace views

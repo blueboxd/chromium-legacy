@@ -28,10 +28,9 @@ namespace {
 class TestButton : public Button {
  public:
   TestButton() : Button(nullptr) {}
+  TestButton(const TestButton&) = delete;
+  TestButton& operator=(const TestButton&) = delete;
   ~TestButton() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestButton);
 };
 
 }  // namespace
@@ -39,6 +38,8 @@ class TestButton : public Button {
 class AXVirtualViewTest : public ViewsTestBase {
  public:
   AXVirtualViewTest() = default;
+  AXVirtualViewTest(const AXVirtualViewTest&) = delete;
+  AXVirtualViewTest& operator=(const AXVirtualViewTest&) = delete;
   ~AXVirtualViewTest() override = default;
 
   void SetUp() override {
@@ -75,9 +76,6 @@ class AXVirtualViewTest : public ViewsTestBase {
   Button* button_;
   // Weak, |button_| owns this.
   AXVirtualView* virtual_label_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AXVirtualViewTest);
 };
 
 TEST_F(AXVirtualViewTest, AccessibilityRoleAndName) {

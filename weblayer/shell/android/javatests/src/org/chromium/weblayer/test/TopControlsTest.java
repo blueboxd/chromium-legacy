@@ -64,7 +64,7 @@ public class TopControlsTest {
         });
 
         mActivityTestRule.navigateAndWait(
-                mBrowserController, UrlUtils.encodeHtmlDataUri("<html></html>"));
+                mBrowserController, UrlUtils.encodeHtmlDataUri("<html></html>"), true);
 
         // Calling setSupportsEmbedding() makes sure onTopControlsChanged() will get called, which
         // should not crash.

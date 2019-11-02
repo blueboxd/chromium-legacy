@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Lagi menu</translation>
 <translation id="2316709634732130529">Gunakan Kata Laluan yang Dicadangkan</translation>
 <translation id="2320166752086256636">Sembunyikan papan kekunci</translation>
+<translation id="2330129964253841015">Beri amaran kepada anda jika kata laluan terjejas</translation>
 <translation id="2339560363438331454">Segerak dan Perkhidmatan Google</translation>
 <translation id="2351097562818989364">Tetapan terjemahan anda telah ditetapkan semula.</translation>
 <translation id="2359043044084662842">Terjemah</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Simpan Imej</translation>
 <translation id="3789841737615482174">Pasang</translation>
 <translation id="385051799172605136">Kembali</translation>
-<translation id="3886946236301294521">Memberi anda amaran jika kata laluan yang anda gunakan adalah sebahagian daripada pelanggaran data.</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Maklumat Tapak</translation>
 <translation id="3922310737605261887">Cari Teks yang Disalin</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Halaman yang Anda Baca</translation>
 <translation id="4630540211544979320">Terjemah Halaman</translation>
 <translation id="4636930964841734540">Maklumat</translation>
+<translation id="4659126640776004816">Apabila anda log masuk ke Akaun Google anda, ciri ini akan dihidupkan.</translation>
 <translation id="4659667755519643272">Masuk ke Penukar Tab</translation>
 <translation id="4666531726415300315">Dilog masuk sebagai <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5300589172476337783">Paparkan</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5327248766486351172">Nama</translation>
-<translation id="5365716706805792666">Google boleh menyemak sama ada kata laluan anda terlibat dalam pelanggaran data. Semakan ini akan dihidupkan apabila anda log masuk dengan Akaun Google anda.</translation>
 <translation id="5388358297987318779">Buka Imej</translation>
 <translation id="5407969256130905701">Buang Perubahan</translation>
 <translation id="5409365236829784218">Tiada aplikasi dipasang yang boleh membuka fail ini.</translation>
@@ -333,7 +333,6 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5854790677617711513">Lebih lama daripada 30 hari</translation>
 <translation id="5857090052475505287">Folder Baharu</translation>
 <translation id="5857770089550859117">Ungkapan laluan diperlukan untuk memulakan penyegerakan.</translation>
-<translation id="5859444426865731878">Google boleh menyemak sama ada kata laluan anda terlibat dalam pelanggaran data.</translation>
 <translation id="5860033963881614850">Dimatikan</translation>
 <translation id="5869029295770560994">OK, Faham</translation>
 <translation id="5871497086027727873">1 item dialihkan</translation>
@@ -483,7 +482,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7859704718976024901">Sejarah Penyemakan Imbas</translation>
 <translation id="7887198238286927132">Untuk melindungi privasi anda, Chrome tidak akan mengisi medan ini secara automatik.</translation>
 <translation id="7918293828610777738">Senarai bacaan anda tersedia di luar talian. Untuk menambahkan halaman pada senarai bacaan anda, ketik  <ph name="SHARE_OPENING_ICON" /> kemudian <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Semak keselamatan kata laluan</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksport Kata Laluan...</translation>
 <translation id="7947953824732555851">Terima dan log masuk</translation>

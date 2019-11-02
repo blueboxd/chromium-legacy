@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/field_trial.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
@@ -228,6 +229,10 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   void Log(const std::string& message, LogCallback callback) override {
     LOG(ERROR) << message;
     std::move(callback).Run();
+  }
+
+  void ActivateFieldTrial(const std::string& field_trial_name) override {
+    base::FieldTrialList::FindFullName(field_trial_name);
   }
 
   void BindReceiver(

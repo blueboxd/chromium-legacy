@@ -50,9 +50,12 @@ namespace chromeos {
 
 namespace {
 
+constexpr char kKeyInformation[] = "information";
 constexpr char kKeyIcon[] = "icon";
 constexpr char kKeyTitle[] = "title";
-constexpr char kKeyTasks[] = "tasks";
+constexpr char kKeyPlatform[] = "platform";
+constexpr char kKeyTimestamp[] = "timestamp";
+constexpr char kKeyDuration[] = "duration";
 
 constexpr char kLastTracingModelName[] = "last_tracing_model.json";
 
@@ -173,7 +176,7 @@ void UpdateThreads(arc::ArcSystemModel::ThreadMap* threads) {
 
 std::pair<base::Value, std::string> BuildGraphicsModel(
     const std::string& data,
-    base::DictionaryValue tasks_info,
+    base::DictionaryValue task_information,
     std::unique_ptr<arc::ArcSystemStatCollector> system_stat_collector,
     const base::TimeTicks& time_min,
     const base::TimeTicks& time_max,
@@ -204,7 +207,10 @@ std::pair<base::Value, std::string> BuildGraphicsModel(
   UpdateThreads(&graphics_model.system_model().thread_map());
 
   std::unique_ptr<base::DictionaryValue> model = graphics_model.Serialize();
-  model->SetKey(kKeyTasks, std::move(tasks_info));
+  task_information.SetKey(
+      kKeyDuration,
+      base::Value(static_cast<double>(graphics_model.duration())));
+  model->SetKey(kKeyInformation, std::move(task_information));
 
   std::string json_content;
   base::JSONWriter::WriteWithOptions(
@@ -296,8 +302,6 @@ void ArcGraphicsTracingHandler::OnWindowActivated(ActivationReason reason,
       std::make_unique<arc::ArcGraphicsJankDetector>(base::BindRepeating(
           &ArcGraphicsTracingHandler::OnJankDetected, base::Unretained(this)));
 
-  UpdateActiveArcWindowInfo();
-
   exo::Surface* const surface = exo::GetShellMainSurface(arc_active_window_);
   DCHECK(surface);
   surface->AddSurfaceObserver(this);
@@ -351,9 +355,9 @@ void ArcGraphicsTracingHandler::OnCommit(exo::Surface* surface) {
 
 void ArcGraphicsTracingHandler::UpdateActiveArcWindowInfo() {
   DCHECK(arc_active_window_);
-  base::DictionaryValue task_information;
-  task_information.SetKey(kKeyTitle,
-                          base::Value(arc_active_window_->GetTitle()));
+
+  task_information_.SetKey(kKeyTitle,
+                           base::Value(arc_active_window_->GetTitle()));
 
   const gfx::ImageSkia* app_icon =
       arc_active_window_->GetProperty(aura::client::kAppIconKey);
@@ -366,15 +370,17 @@ void ArcGraphicsTracingHandler::UpdateActiveArcWindowInfo() {
           reinterpret_cast<const char*>(&png_data[0]), png_data.size());
       std::string icon_content;
       base::Base64Encode(png_data_as_string, &icon_content);
-      task_information.SetKey(kKeyIcon, base::Value(icon_content));
+      task_information_.SetKey(kKeyIcon, base::Value(icon_content));
     }
   }
-
-  tasks_info_.SetKey(base::StringPrintf("%d", active_task_id_),
-                     std::move(task_information));
 }
 
 void ArcGraphicsTracingHandler::DiscardActiveArcWindow() {
+  if (tracing_active_) {
+    StopTracing();
+    Activate();
+  }
+
   if (!arc_active_window_)
     return;
 
@@ -452,7 +458,11 @@ void ArcGraphicsTracingHandler::SetStatus(const std::string& status) {
 }
 
 void ArcGraphicsTracingHandler::OnTracingStarted() {
-  tasks_info_.Clear();
+  task_information_.Clear();
+  task_information_.SetKey(kKeyPlatform, base::Value(base::GetLinuxDistro()));
+  task_information_.SetKey(kKeyTimestamp,
+                           base::Value(base::Time::Now().ToJsTime()));
+
   UpdateActiveArcWindowInfo();
 
   tracing_time_min_ = TRACE_TIME_TICKS_NOW();
@@ -466,8 +476,9 @@ void ArcGraphicsTracingHandler::OnTracingStopped(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BuildGraphicsModel, std::move(string_data),
-                     std::move(tasks_info_), std::move(system_stat_colletor_),
-                     tracing_time_min_, tracing_time_max_,
+                     std::move(task_information_),
+                     std::move(system_stat_colletor_), tracing_time_min_,
+                     tracing_time_max_,
                      GetLastTracingModelPath(Profile::FromWebUI(web_ui()))),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,
                      weak_ptr_factory_.GetWeakPtr()));

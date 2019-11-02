@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -177,14 +176,15 @@ class ToolbarActionViewInteractiveUITest
     : public extensions::ExtensionBrowserTest {
  protected:
   ToolbarActionViewInteractiveUITest();
+  ToolbarActionViewInteractiveUITest(
+      const ToolbarActionViewInteractiveUITest&) = delete;
+  ToolbarActionViewInteractiveUITest& operator=(
+      const ToolbarActionViewInteractiveUITest&) = delete;
   ~ToolbarActionViewInteractiveUITest() override;
 
   // extensions::ExtensionBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void TearDownOnMainThread() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewInteractiveUITest);
 };
 
 ToolbarActionViewInteractiveUITest::ToolbarActionViewInteractiveUITest() {}

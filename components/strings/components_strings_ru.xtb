@@ -270,7 +270,7 @@
 <translation id="2257315177824333709">Сейчас невозможно сохранить карту.</translation>
 <translation id="2262243747453050782">Ошибка HTTP</translation>
 <translation id="2263079731045660823">Обновить данные автозаполнения для кредитной карты в настройках Chrome</translation>
-<translation id="2267047181501709434">Проверка личных данных…</translation>
+<translation id="2267047181501709434">Проверка данных…</translation>
 <translation id="2270484714375784793">Номер телефона</translation>
 <translation id="2277103315734023688">Перемотать вперед</translation>
 <translation id="2283340219607151381">Сохранять и автоматически подставлять адреса</translation>
@@ -474,12 +474,6 @@
 <translation id="3324983252691184275">Малиновый</translation>
 <translation id="3338095232262050444">Защищено</translation>
 <translation id="3355823806454867987">Изменить настройки прокси-сервера...</translation>
-<translation id="3361596688432910856">В Chrome <ph name="BEGIN_EMPHASIS" />не будет сохраняться<ph name="END_EMPHASIS" /> следующая информация:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />история просмотров;
-          <ph name="LIST_ITEM" />файлы cookie и данные сайтов;
-          <ph name="LIST_ITEM" />сведения, которые вы указываете в формах.
-        <ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">Это значение было автоматически скопировано из устаревшего правила <ph name="OLD_POLICY" />. Воспользуйтесь этим правилом.</translation>
 <translation id="3366477098757335611">Список карт</translation>
 <translation id="3369192424181595722">Ошибка часов</translation>
@@ -1044,7 +1038,6 @@
 <translation id="6151417162996330722">Слишком долгий срок действия сертификата, предоставленного сервером.</translation>
 <translation id="6157877588268064908">Выберите адрес, чтобы посмотреть способы и условия доставки.</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
-<translation id="6169916984152623906">Ваши действия в режиме инкогнито будут недоступны другим пользователям этого устройства. Однако закладки и скачанные файлы сохранятся.</translation>
 <translation id="6177128806592000436">Подключение к сайту не защищено</translation>
 <translation id="6203231073485539293">Проверьте подключение к Интернету</translation>
 <translation id="6218753634732582820">Удалить адрес из Chromium?</translation>
@@ -1515,6 +1508,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, ответ, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Свободно</translation>
+<translation id="869891660844655955">Срок действия</translation>
 <translation id="8703575177326907206">Соединение с <ph name="DOMAIN" /> не зашифровано.</translation>
 <translation id="8718314106902482036">Не удалось обработать платеж</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, подсказка</translation>

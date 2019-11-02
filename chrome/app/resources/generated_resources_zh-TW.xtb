@@ -1390,7 +1390,6 @@
 <translation id="2989786307324390836">DER 編碼 Binary，單一憑證</translation>
 <translation id="2992931425024192067">顯示所有通知內容</translation>
 <translation id="2993517869960930405">應用程式資訊</translation>
-<translation id="299483336428448530">由您的家長安裝。</translation>
 <translation id="2996286169319737844">系統已採用你的同步通關密語針對資料進行加密處理。加密的資料不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="2996722619877761919">長邊翻頁</translation>
 <translation id="3003144360685731741">慣用網路</translation>
@@ -3659,7 +3658,6 @@
 <translation id="63566973648609420">只有知道通關密語的使用者可以讀取你的加密資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果你忘記自己的通關密語，或是想變更這項設定，則必須<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" />。</translation>
 <translation id="6357619544108132570">歡迎使用 <ph name="SHORT_PRODUCT_NAME" /> 系列機種，體驗不同凡響的新世代電腦。</translation>
 <translation id="6358884629796491903">龍</translation>
-<translation id="6360079014182882594">這個網站沒有任何 Cookie 可用於追蹤你的網路活動</translation>
 <translation id="6361850914223837199">錯誤詳細資料：</translation>
 <translation id="6362853299801475928">回報問題(&amp;R)...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -5018,6 +5016,7 @@
 <translation id="8319414634934645341">擴充金鑰使用方法</translation>
 <translation id="8320459152843401447">您的整個畫面</translation>
 <translation id="8322814362483282060">系統已封鎖這個網頁存取你的麥克風。</translation>
+<translation id="8323167517179506834">輸入網址</translation>
 <translation id="8326478304147373412">PKCS #7，憑證鏈結</translation>
 <translation id="8327039559959785305">掛接 Linux 檔案時發生錯誤，請再試一次。</translation>
 <translation id="8335587457941836791">從檔案櫃中取消固定</translation>
@@ -5134,6 +5133,7 @@
 <translation id="8509646642152301857">拼字檢查字典下載失敗。</translation>
 <translation id="8512476990829870887">結束處理程序</translation>
 <translation id="851263357009351303">永遠允許 <ph name="HOST" /> 顯示圖片</translation>
+<translation id="8513108775083588393">自動旋轉</translation>
 <translation id="8514746246728959655">請改用其他安全金鑰</translation>
 <translation id="8521475323816527629">快速存取應用程式</translation>
 <translation id="8523493869875972733">保留變更</translation>

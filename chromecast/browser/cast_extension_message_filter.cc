@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
@@ -68,7 +69,7 @@ void CastExtensionMessageFilter::OnDestruct() const {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     delete this;
   } else {
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
   }
 }
 

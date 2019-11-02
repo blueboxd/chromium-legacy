@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Lisäasetusvalikko</translation>
 <translation id="2316709634732130529">Käytä salasanaehdotusta</translation>
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
+<translation id="2330129964253841015">Varoita, jos salasanoja vaarantuu</translation>
 <translation id="2339560363438331454">Synkronointi ja Google-palvelut</translation>
 <translation id="2351097562818989364">Käännösasetukset on nollattu.</translation>
 <translation id="2359043044084662842">Käännä</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Tallenna kuva</translation>
 <translation id="3789841737615482174">Asenna</translation>
 <translation id="385051799172605136">Edellinen</translation>
-<translation id="3886946236301294521">Varoittaa sinua, jos käyttämäsi salasana oli osallisena tietosuojaloukkauksessa</translation>
 <translation id="3897092660631435901">Valikko</translation>
 <translation id="3915450441834151894">Tietoja sivustosta</translation>
 <translation id="3922310737605261887">Hae kopioitua tekstiä</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Lukemasi sivut</translation>
 <translation id="4630540211544979320">Käännä sivuja</translation>
 <translation id="4636930964841734540">Tietoja</translation>
+<translation id="4659126640776004816">Tämä ominaisuus otetaan käyttöön, kun kirjaudut Google-tilillesi.</translation>
 <translation id="4659667755519643272">Avaa välilehtien vaihtaja</translation>
 <translation id="4666531726415300315">Olet kirjautunut sisään tilillä <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5327248766486351172">Nimi</translation>
-<translation id="5365716706805792666">Google voi tarkistaa, olivatko salasanasi osallisina tietosuojaloukkauksessa. Tämä otetaan käyttöön kirjautuessasi sisään Google-tilillä.</translation>
 <translation id="5388358297987318779">Avaa kuva</translation>
 <translation id="5407969256130905701">Hylkää muutokset</translation>
 <translation id="5409365236829784218">Et ole asentanut sovellusta, jolla tämän tiedoston voi avata.</translation>
@@ -333,7 +333,6 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="5854790677617711513">Yli 30 päivää vanhat</translation>
 <translation id="5857090052475505287">Uusi kansio</translation>
 <translation id="5857770089550859117">Synkronointi edellyttää tunnuslausetta.</translation>
-<translation id="5859444426865731878">Google voi tarkistaa, olivatko salasanasi osallisina tietosuojaloukkauksessa.</translation>
 <translation id="5860033963881614850">Pois käytöstä</translation>
 <translation id="5869029295770560994">Selvä</translation>
 <translation id="5871497086027727873">1 kohde siirretty</translation>
@@ -483,7 +482,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7859704718976024901">Selaushistoria</translation>
 <translation id="7887198238286927132">Tietojesi suojaamiseksi Chrome ei täytä tätä kenttää automaattisesti.</translation>
 <translation id="7918293828610777738">Lukulistasi on käytettävissä offline-tilassa. Lisää sivu lukulistalle valitsemalla <ph name="SHARE_OPENING_ICON" /> ja sitten <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Salasanojen turvallisuuden tarkistaminen</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Vie salasanat…</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>

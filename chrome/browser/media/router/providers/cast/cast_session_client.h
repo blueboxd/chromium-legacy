@@ -19,13 +19,13 @@
 #include "components/cast_channel/cast_message_handler.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "url/origin.h"
 
 namespace media_router {
 
 class ActivityRecord;
-class DataDecoder;
 
 // Represents a Cast SDK client connection to a Cast session. This class
 // contains PresentationConnection Mojo pipes to send and receive messages
@@ -117,7 +117,6 @@ class CastSessionClientImpl : public CastSessionClient,
                         const url::Origin& origin,
                         int tab_id,
                         AutoJoinPolicy auto_join_policy,
-                        DataDecoder* data_decoder,
                         ActivityRecord* activity);
   ~CastSessionClientImpl() override;
 
@@ -149,7 +148,8 @@ class CastSessionClientImpl : public CastSessionClient,
       blink::mojom::PresentationConnectionCloseReason reason) override;
 
  private:
-  void HandleParsedClientMessage(base::Value message);
+  void HandleParsedClientMessage(
+      data_decoder::DataDecoder::ValueOrError result);
   void HandleV2ProtocolMessage(const CastInternalMessage& cast_message);
 
   // Resets the PresentationConnection Mojo message pipes.
@@ -161,7 +161,6 @@ class CastSessionClientImpl : public CastSessionClient,
 
   const AutoJoinPolicy auto_join_policy_;
 
-  DataDecoder* const data_decoder_;
   ActivityRecord* const activity_;
 
   // The maximum number of pending media requests, used to prevent memory leaks.

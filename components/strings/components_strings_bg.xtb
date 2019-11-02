@@ -483,12 +483,6 @@
 <translation id="3324983252691184275">пурпурно</translation>
 <translation id="3338095232262050444">Има защита</translation>
 <translation id="3355823806454867987">Промяна на настройките на прокси сървъра...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />няма да съхранява<ph name="END_EMPHASIS" /> следната информация:
-<ph name="BEGIN_LIST" />
-<ph name="LIST_ITEM" />историята на сърфирането ви;
-<ph name="LIST_ITEM" />„бисквитките“ и данните за сайтове;
-<ph name="LIST_ITEM" />въведените във формуляри данни.
-<ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">Това правило е копирано автоматично от оттегленото <ph name="OLD_POLICY" />. Препоръчваме ви да използвате него.</translation>
 <translation id="3366477098757335611">Преглед на картите</translation>
 <translation id="3369192424181595722">Грешка в часовника</translation>
@@ -1059,7 +1053,6 @@
 <translation id="6151417162996330722">Сертификатът на сървъра има твърде дълъг период на валидност.</translation>
 <translation id="6157877588268064908">За да видите начините на доставка и изискванията, изберете адрес</translation>
 <translation id="6165508094623778733">Научете повече</translation>
-<translation id="6169916984152623906">Вече можете да сърфирате частно. Така другите хора, които използват това устройство, няма да виждат активността ви. Изтеглянията и отметките обаче ще се запазват.</translation>
 <translation id="6177128806592000436">Връзката ви с този сайт не е защитена</translation>
 <translation id="6203231073485539293">Проверете връзката си с интернет</translation>
 <translation id="6218753634732582820">Адресът да се премахне ли от Chromium?</translation>
@@ -1530,6 +1523,7 @@
 <translation id="8680536109547170164">„<ph name="QUERY" />“, отговор: „<ph name="ANSWER" />“</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Свободно място</translation>
+<translation id="869891660844655955">Дата на валидност</translation>
 <translation id="8703575177326907206">Връзката ви с <ph name="DOMAIN" /> не е шифрована.</translation>
 <translation id="8718314106902482036">Плащането не е завършено</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, предложение за търсене</translation>

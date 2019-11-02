@@ -4545,7 +4545,8 @@ void RenderFrameImpl::DidStartProvisionalLoad(
 void RenderFrameImpl::DidCommitProvisionalLoad(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type,
-    mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle) {
+    mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle,
+    bool should_reset_browser_interface_broker) {
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_,
                "url", GetLoadingUrl().possibly_invalid_spec());
@@ -4586,9 +4587,8 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver;
 
-  // blink passes a valid DocumentInterfaceBroker handle when the new pipe needs
-  // to be bound.
-  if (document_interface_broker_blink_handle.is_valid()) {
+  // blink passes true when the new pipe needs to be bound.
+  if (should_reset_browser_interface_broker) {
     // If we're navigating to a new document, bind |remote_interfaces_| to a new
     // message pipe. The request end of the new InterfaceProvider interface will
     // be sent over as part of DidCommitProvisionalLoad. After the RFHI receives
@@ -4672,7 +4672,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
 
   DidCommitNavigationInternal(
       item, commit_type, false /* was_within_same_document */, transition,
-      document_interface_broker_blink_handle.is_valid()
+      should_reset_browser_interface_broker
           ? mojom::DidCommitProvisionalLoadInterfaceParams::New(
                 std::move(remote_interface_provider_request),
                 std::move(document_interface_broker_receiver),

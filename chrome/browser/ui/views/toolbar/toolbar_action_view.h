@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -58,6 +57,8 @@ class ToolbarActionView : public views::MenuButton,
 
   ToolbarActionView(ToolbarActionViewController* view_controller,
                     Delegate* delegate);
+  ToolbarActionView(const ToolbarActionView&) = delete;
+  ToolbarActionView& operator=(const ToolbarActionView&) = delete;
   ~ToolbarActionView() override;
 
   // views::MenuButton:
@@ -143,8 +144,6 @@ class ToolbarActionView : public views::MenuButton,
   std::unique_ptr<ExtensionContextMenuController> context_menu_controller_;
 
   base::WeakPtrFactory<ToolbarActionView> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTION_VIEW_H_

@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
+#include "components/services/storage/indexed_db/scopes/varint_coding.h"
 
 // See leveldb_coding_scheme.md for detailed documentation of the coding
 // scheme implemented here.
@@ -120,22 +121,6 @@ void EncodeInt(int64_t value, std::string* into) {
     unsigned char c = n;
     into->push_back(c);
     n >>= 8;
-  } while (n);
-}
-
-void EncodeVarInt(int64_t value, std::string* into) {
-#ifndef NDEBUG
-  // Exercised by unit tests in debug only.
-  DCHECK_GE(value, 0);
-#endif
-  uint64_t n = static_cast<uint64_t>(value);
-
-  do {
-    unsigned char c = n & 0x7f;
-    n >>= 7;
-    if (n)
-      c |= 0x80;
-    into->push_back(c);
   } while (n);
 }
 
@@ -289,26 +274,6 @@ bool DecodeInt(StringPiece* slice, int64_t* value) {
     ret |= static_cast<int64_t>(c) << shift;
     shift += 8;
   }
-  *value = ret;
-  slice->remove_prefix(it - slice->begin());
-  return true;
-}
-
-bool DecodeVarInt(StringPiece* slice, int64_t* value) {
-  if (slice->empty())
-    return false;
-
-  StringPiece::const_iterator it = slice->begin();
-  int shift = 0;
-  int64_t ret = 0;
-  do {
-    if (it == slice->end())
-      return false;
-
-    unsigned char c = *it;
-    ret |= static_cast<int64_t>(c & 0x7f) << shift;
-    shift += 7;
-  } while (*it++ & 0x80);
   *value = ret;
   slice->remove_prefix(it - slice->begin());
   return true;

@@ -15,7 +15,7 @@
     "@polymer/iron-icon": "3.0.1",
     "@polymer/iron-iconset-svg": "3.0.1",
     "@polymer/iron-input": "3.0.1",
-    "@polymer/iron-list": "3.0.2",
+    "@polymer/iron-list": "3.1.0",
     "@polymer/iron-location": "3.0.1",
     "@polymer/iron-media-query": "3.0.1",
     "@polymer/iron-meta": "3.0.1",

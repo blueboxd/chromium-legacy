@@ -10,9 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace media_router {
 
@@ -51,11 +49,9 @@ SinkAppStatus GetSinkAppStatusFromResponse(const DialAppInfoResult& result) {
 }  // namespace
 
 DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
-    service_manager::Connector* connector,
     const OnSinksDiscoveredCallback& on_sinks_discovered_cb,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : MediaSinkServiceBase(on_sinks_discovered_cb),
-      data_decoder_(std::make_unique<DataDecoder>(connector)),
       task_runner_(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -75,15 +71,13 @@ void DialMediaSinkServiceImpl::Start() {
     return;
 
   description_service_ = std::make_unique<DeviceDescriptionService>(
-      data_decoder_.get(),
       base::BindRepeating(
           &DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable,
           base::Unretained(this)),
       base::BindRepeating(&DialMediaSinkServiceImpl::OnDeviceDescriptionError,
                           base::Unretained(this)));
 
-  app_discovery_service_ =
-      std::make_unique<DialAppDiscoveryService>(data_decoder_.get());
+  app_discovery_service_ = std::make_unique<DialAppDiscoveryService>();
 
   StartTimer();
 

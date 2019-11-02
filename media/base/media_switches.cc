@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
-#include "ui/base/mpris/buildflags/buildflags.h"
+#include "components/system_media_controls/linux/buildflags/buildflags.h"
 
 namespace switches {
 

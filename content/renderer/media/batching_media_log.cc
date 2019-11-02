@@ -65,6 +65,10 @@ BatchingMediaLog::~BatchingMediaLog() {
     SendQueuedMediaEvents();
 }
 
+void BatchingMediaLog::OnWebMediaPlayerDestroyedLocked() {
+  event_handler_->OnWebMediaPlayerDestroyed();
+}
+
 void BatchingMediaLog::AddEventLocked(
     std::unique_ptr<media::MediaLogEvent> event) {
   Log(event.get());

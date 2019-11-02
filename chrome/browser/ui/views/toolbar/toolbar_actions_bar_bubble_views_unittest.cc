@@ -34,7 +34,11 @@ const int kIconSize = 16;
 class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
  protected:
   ToolbarActionsBarBubbleViewsTest() {}
-  ~ToolbarActionsBarBubbleViewsTest() override {}
+  ToolbarActionsBarBubbleViewsTest(const ToolbarActionsBarBubbleViewsTest&) =
+      delete;
+  ToolbarActionsBarBubbleViewsTest& operator=(
+      const ToolbarActionsBarBubbleViewsTest&) = delete;
+  ~ToolbarActionsBarBubbleViewsTest() override = default;
 
   void TearDown() override {
     anchor_widget_.reset();
@@ -102,8 +106,6 @@ class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
   std::unique_ptr<views::Widget> anchor_widget_;
   views::Widget* bubble_widget_ = nullptr;
   ToolbarActionsBarBubbleViews* bubble_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarBubbleViewsTest);
 };
 
 TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutActionButton) {

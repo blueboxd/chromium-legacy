@@ -22,6 +22,10 @@ class CheckActiveWebContentsMenuModel : public ui::MenuModel {
       : tab_strip_model_(tab_strip_model) {
     DCHECK(tab_strip_model_);
   }
+  CheckActiveWebContentsMenuModel(const CheckActiveWebContentsMenuModel&) =
+      delete;
+  CheckActiveWebContentsMenuModel& operator=(
+      const CheckActiveWebContentsMenuModel&) = delete;
   ~CheckActiveWebContentsMenuModel() override = default;
 
   // ui::MenuModel:
@@ -55,8 +59,6 @@ class CheckActiveWebContentsMenuModel : public ui::MenuModel {
 
  private:
   TabStripModel* const tab_strip_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(CheckActiveWebContentsMenuModel);
 };
 
 class TestParentView : public views::View {
@@ -68,14 +70,14 @@ class TestParentView : public views::View {
     widget_ = std::make_unique<views::Widget>();
     widget_->Init(std::move(params));
   }
+  TestParentView(const TestParentView&) = delete;
+  TestParentView& operator=(const TestParentView&) = delete;
   ~TestParentView() override = default;
 
   const views::Widget* GetWidget() const override { return widget_.get(); }
 
  private:
   std::unique_ptr<views::Widget> widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestParentView);
 };
 
 }  // namespace
@@ -83,9 +85,8 @@ class TestParentView : public views::View {
 class ToolbarButtonViewsTest : public ChromeViewsTestBase {
  public:
   ToolbarButtonViewsTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ToolbarButtonViewsTest);
+  ToolbarButtonViewsTest(const ToolbarButtonViewsTest&) = delete;
+  ToolbarButtonViewsTest& operator=(const ToolbarButtonViewsTest&) = delete;
 };
 
 TEST_F(ToolbarButtonViewsTest, MenuDoesNotShowWhenTabStripIsEmpty) {

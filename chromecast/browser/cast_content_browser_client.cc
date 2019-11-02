@@ -179,8 +179,8 @@ CastContentBrowserClient::~CastContentBrowserClient() {
   DCHECK(!media_resource_tracker_)
       << "ResetMediaResourceTracker was not called";
   cast_network_contexts_.reset();
-  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                     url_request_context_factory_.release());
+  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                   url_request_context_factory_.release());
 }
 
 std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(

@@ -265,6 +265,13 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
+  // TODO(tluk) Remove deprecation warning after a few releases. Deprecation
+  // warning issued version 79.
+  if (command_line->HasSwitch("single_process")) {
+    fprintf(stderr, "use --single-process-tests instead of --single_process");
+    exit(1);
+  }
+
   if (command_line->HasSwitch(switches::kHelpFlag)) {
     PrintUsage();
     return 0;

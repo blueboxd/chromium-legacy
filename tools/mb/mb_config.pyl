@@ -763,7 +763,6 @@
       'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-arm-generic-rel': 'cros_chrome_sdk_dchecks_always_on',
       'chromeos-kevin-compile-rel': 'cros_chrome_sdk_headless_ozone',
-      'chromeos-kevin-experimental-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot_code_coverage',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',

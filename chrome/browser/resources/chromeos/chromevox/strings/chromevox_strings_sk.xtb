@@ -153,6 +153,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Sémantika je vypnutá</translation>
 <translation id="2086961585857038472">Ďalšie slovo</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">sk</translation>
 <translation id="2091933974477985526">Predchádzajúca upraviteľná textová oblasť</translation>
 <translation id="2100350898815792233">Úplná interpunkcia</translation>
@@ -192,6 +193,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2416512023405990736">Nezačiarknuté políčko</translation>
 <translation id="2417569100218200841">Informácie o obsahu</translation>
 <translation id="2417948780551741035">Vysvetlivky</translation>
+<translation id="2419852971200420169">Zoznam popisov</translation>
 <translation id="2421113964388408478">Odstránenie</translation>
 <translation id="2422937916923936891">Začiarkavacie políčko položky ponuky</translation>
 <translation id="2428534162001909979">Ponuky s príkazmi</translation>
@@ -370,6 +372,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="3497063866483065785">{COUNT,plural, =1{otáznik}few{# otázniky}many{# question marks}other{# otáznikov}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{vsuvka}few{# vsuvky}many{# carets}other{# vsuviek}}</translation>
 <translation id="352577523970648069">Upraviteľné textové pole</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">vystrihnúť <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Reč dočasne zastavíte klepnutím dvoma prstami</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, začiarkavacie políčko nie je začiarknuté</translation>
@@ -778,6 +781,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="6378394210114975876">Bodliaková</translation>
 <translation id="6385591741672306837">stĺpec</translation>
 <translation id="6387719785439924554">odsadený text</translation>
+<translation id="6393014464788431702">Zakázať všetky filtre udalostí</translation>
 <translation id="6411426777058107714">Žiadny predchádzajúci prepínač</translation>
 <translation id="6414968628640960377">Predchádzajúci odlišný prvok</translation>
 <translation id="6417265370957905582">Asistent Google</translation>
@@ -913,6 +917,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="7332592614823088566">riadok <ph name="ROWINDEX" /> z <ph name="ROWTOTAL" />, stĺpec <ph name="COLINDEX" /> z <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">má kontextové okno</translation>
 <translation id="7356165926712028380">Prepnúť na osembodové Braillovo písmo</translation>
+<translation id="7356610683936413584">Údaj zoznamu popisov</translation>
 <translation id="7362871137496673139">Žiadny predchádzajúci nadpis 2. úrovne</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ampersand}few{# ampersandy}many{# ampersands}other{# ampersandov}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1091,6 +1096,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8096975275316362544">Mätovokrémová</translation>
 <translation id="8098587210054821856">Bridlicovosivá</translation>
 <translation id="8110647606445335195">Žiadne orientačné body ARIA</translation>
+<translation id="8121539003537428024">Povoliť všetky filtre udalostí</translation>
 <translation id="812886159861361726">Sťahovanie súboru <ph name="FILE_NAME" /> bolo zastavené</translation>
 <translation id="8138880386467279117">Klepnúť</translation>
 <translation id="8153880621934657047">Mimo tabuľky</translation>

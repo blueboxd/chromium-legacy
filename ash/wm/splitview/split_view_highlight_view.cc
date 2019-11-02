@@ -219,15 +219,10 @@ void SplitViewHighlightView::OnIndicatorTypeChanged(
     return;
   }
 
-  // Having ruled out kNone and the "preview area" states, we know that
-  // |indicator_state| is a "drag area" state. If there is an indicator on only
-  // one side, and if this, in the sense of the C++ keyword this, is the
-  // indicator on the opposite side, then bail out.
-  if (indicator_state == (is_right_or_bottom_
-                              ? IndicatorState::kDragAreaLeft
-                              : IndicatorState::kDragAreaRight)) {
+  // No need for the left or top indicator to do anything if |indicator_state|
+  // is |IndicatorState::kDragAreaRight|.
+  if (indicator_state == IndicatorState::kDragAreaRight && !is_right_or_bottom_)
     return;
-  }
 
   const bool in_split_view_mode =
       SplitViewController::Get(GetWidget()->GetNativeWindow())

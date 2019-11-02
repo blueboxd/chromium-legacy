@@ -25,7 +25,7 @@ class WebContents;
 }  // namespace content
 
 namespace media_message_center {
-class MediaNotificationItem;
+class MediaSessionNotificationItem;
 }  // namespace media_message_center
 
 namespace media_router {
@@ -90,7 +90,8 @@ class MediaToolbarButtonController
    public:
     Session(MediaToolbarButtonController* owner,
             const std::string& id,
-            std::unique_ptr<media_message_center::MediaNotificationItem> item,
+            std::unique_ptr<media_message_center::MediaSessionNotificationItem>
+                item,
             content::WebContents* web_contents);
     Session(const Session&) = delete;
     Session& operator=(const Session&) = delete;
@@ -99,12 +100,14 @@ class MediaToolbarButtonController
     // content::WebContentsObserver implementation.
     void WebContentsDestroyed() override;
 
-    media_message_center::MediaNotificationItem* item() { return item_.get(); }
+    media_message_center::MediaSessionNotificationItem* item() {
+      return item_.get();
+    }
 
    private:
     MediaToolbarButtonController* owner_;
     const std::string id_;
-    std::unique_ptr<media_message_center::MediaNotificationItem> item_;
+    std::unique_ptr<media_message_center::MediaSessionNotificationItem> item_;
   };
 
   class MediaRoutesObserver : public media_router::MediaRoutesObserver {

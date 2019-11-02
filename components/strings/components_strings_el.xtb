@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Αυτός ο τύπος κάρτας δεν υποστηρίζεται</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Προσπαθήστε να επικοινωνήσετε με το διαχειριστή συστήματος.</translation>
+<translation id="1739107442478692187">Προέκυψε μια παραβίαση δεδομένων σε έναν ιστότοπο ή μια εφαρμογή που χρησιμοποιείτε. Το Chrome συνιστά να ελέγξετε τους αποθηκευμένους κωδικούς πρόσβασής σας και να αλλάξετε άμεσα τον κωδικό πρόσβασης που χρησιμοποιείτε στο <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Εισαγάγετε έναν έγκυρο μήνα λήξης</translation>
 <translation id="1743520634839655729">Για πιο γρήγορες πληρωμές στο μέλλον, αποθηκεύστε τα στοιχεία της κάρτας σας, το όνομα και τη διεύθυνση χρέωσης στον Λογαριασμό σας Google και σε αυτήν τη συσκευή.</translation>
 <translation id="1743570585616704562">Δεν αναγνωρίστηκε</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Αναντιστοιχία τομέα</translation>
 <translation id="2096368010154057602">Διαμέρισμα</translation>
 <translation id="2099652385553570808">Τριπλή συρραφή αριστερά</translation>
+<translation id="2100280972184758440">Παραβιάστηκε ο κωδικός πρόσβασής σας</translation>
 <translation id="2102134110707549001">Πρόταση για ισχυρό κωδικό πρόσβασης…</translation>
 <translation id="2108755909498034140">Επανεκκινήστε τον υπολογιστή σας</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Αγνοήθηκε επειδή αντικαταστάθηκε από την πολιτική <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Εκδόθηκε σε: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Τρύπημα κάτω δεξιά</translation>
+<translation id="2124528555835617522">Προέκυψε μια παραβίαση δεδομένων σε έναν ιστότοπο ή μια εφαρμογή που χρησιμοποιείτε. To Chrome συνιστά να ελέγξετε άμεσα τους αποθηκευμένους κωδικούς πρόσβασής σας.</translation>
 <translation id="2129079103035905234">Αισθητήρες κίνησης</translation>
 <translation id="213826338245044447">Σελιδοδείκτες κινητής συσκευής</translation>
 <translation id="214556005048008348">Ακύρωση πληρωμής</translation>
@@ -480,17 +483,13 @@
 <translation id="3282497668470633863">Προσθήκη ονόματος στην κάρτα</translation>
 <translation id="3287510313208355388">Να γίνει λήψη όταν πραγματοποιηθεί σύνδεση</translation>
 <translation id="3293642807462928945">Μάθετε περισσότερα σχετικά με την πολιτική <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Προέκυψε μια παραβίαση δεδομένων σε έναν ιστότοπο ή μια εφαρμογή που χρησιμοποιείτε. Το Chrome συνιστά να αλλάξετε άμεσα τον κωδικό πρόσβασής σας στο <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Δεν βρέθηκαν αποτελέσματα αναζήτησης</translation>
 <translation id="3320021301628644560">Προσθήκη διεύθυνσης χρέωσης</translation>
 <translation id="3324983252691184275">Βαθύ κόκκινο</translation>
 <translation id="3338095232262050444">Ασφαλές</translation>
 <translation id="3355823806454867987">Αλλαγή ρυθμίσεων διακομιστή μεσολάβησης...</translation>
-<translation id="3361596688432910856">Το Chrome <ph name="BEGIN_EMPHASIS" />δεν θα αποθηκεύει<ph name="END_EMPHASIS" /> τις παρακάτω πληροφορίες:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Το ιστορικό περιήγησής σας
-          <ph name="LIST_ITEM" />Cookie και δεδομένα ιστοτόπου
-          <ph name="LIST_ITEM" />Πληροφορίες που εισάγετε σε φόρμες
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">Φύλλο δείκτη χειρισμού πληρωμών</translation>
 <translation id="3362968246557010467">Αυτή η πολιτική αντιγράφηκε αυτόματα από την πολιτική <ph name="OLD_POLICY" /> που έχει καταργηθεί. Θα πρέπει να χρησιμοποιήσετε εναλλακτικά αυτήν την πολιτική.</translation>
 <translation id="3366477098757335611">Προβολή καρτών</translation>
 <translation id="3369192424181595722">Σφάλμα ρολογιού</translation>
@@ -610,6 +609,7 @@
 <translation id="3949601375789751990">Το ιστορικό περιήγησής σας εμφανίζεται εδώ</translation>
 <translation id="3949870428812919180">Δεν υπάρχουν αποθηκευμένοι τρόποι πληρωμής</translation>
 <translation id="3950820424414687140">Σύνδεση</translation>
+<translation id="3961148744525529027">Το φύλλο του δείκτη χειρισμού πληρωμής έχει ανοίξει κατά το ήμισυ.</translation>
 <translation id="3962859241508114581">Προηγούμενο κομμάτι</translation>
 <translation id="3963837677003247395">Συνέχεια με μη αυτόματο τρόπο;</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Κανένα}=1{Από 1 ιστότοπο }other{Από # ιστοτόπους }}</translation>
@@ -1062,7 +1062,6 @@
 <translation id="6151417162996330722">Το πιστοποιητικό του διακομιστή έχει πολύ μεγάλη περίοδο εγκυρότητας.</translation>
 <translation id="6157877588268064908">Για να δείτε τρόπους και απαιτήσεις αποστολής, επιλέξτε μια διεύθυνση</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
-<translation id="6169916984152623906">Στο εξής μπορείτε να περιηγηθείτε ιδιωτικά και η δραστηριότητά σας δεν θα είναι ορατή στα άλλα άτομα που χρησιμοποιούν αυτήν τη συσκευή. Ωστόσο, οι λήψεις και οι σελιδοδείκτες θα αποθηκεύονται</translation>
 <translation id="6177128806592000436">Η σύνδεσή σας σε αυτόν τον ιστότοπο δεν είναι ασφαλής</translation>
 <translation id="6203231073485539293">Ελέγξτε τη σύνδεσή σας στο Internet</translation>
 <translation id="6218753634732582820">Να καταργηθεί η διεύθυνση από το Chromium;</translation>
@@ -1344,6 +1343,7 @@
 <translation id="7637571805876720304">Να καταργηθεί η πιστωτική κάρτα από το Chromium;</translation>
 <translation id="7638605456503525968">Σειριακές θύρες</translation>
 <translation id="7639968568612851608">Σκούρο γκρι</translation>
+<translation id="7653957176542370971">Το φύλλο του δείκτη χειρισμού πληρωμής είναι κλειστό.</translation>
 <translation id="765676359832457558">Απόκρυψη σύνθετων ρυθμίσεων…</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="7662298039739062396">Η ρύθμιση ελέγχεται από μια επέκταση</translation>
@@ -1473,6 +1473,7 @@
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8262952874573525464">Ραφή στο κάτω άκρο</translation>
 <translation id="8267698848189296333">Σύνδεση ως <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Το φύλλο δείκτη διαχειριστή πληρωμών είναι ανοικτό.</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Σύνδεση</translation>
 <translation id="8288807391153049143">Εμφάνιση πιστοποιητικού</translation>
@@ -1534,6 +1535,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, απάντηση, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Διαθέσιμο</translation>
+<translation id="869891660844655955">Ημερομηνία λήξης</translation>
 <translation id="8703575177326907206">Η σύνδεσή σας με τον τομέα <ph name="DOMAIN" /> δεν είναι κρυπτογραφημένη.</translation>
 <translation id="8718314106902482036">Η πληρωμή δεν ολοκληρώθηκε</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, πρόταση αναζήτησης</translation>

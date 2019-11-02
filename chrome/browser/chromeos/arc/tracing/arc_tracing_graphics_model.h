@@ -58,6 +58,7 @@ class ArcTracingGraphicsModel {
     kExoPendingQuery,         // 203
     kExoReleased,             // 204
     kExoJank,                 // 205
+    kExoSurfaceCommit,        // 206
 
     // Chrome events
     kChromeBarrierOrder = 300,  // 300

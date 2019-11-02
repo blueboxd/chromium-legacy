@@ -183,6 +183,7 @@
 <translation id="2321958826496381788">Faites glisser le curseur pour lire le texte aisément. Sa taille doit être similaire à celle-ci lorsque vous appuyez deux fois sur un paragraphe.</translation>
 <translation id="2323763861024343754">Données de site stockées</translation>
 <translation id="2328985652426384049">Impossible de se connecter</translation>
+<translation id="2330129964253841015">M'avertir quand des mots de passe ont été piratés</translation>
 <translation id="2349710944427398404">Espace de stockage utilisé pour l'ensemble des données Chrome, y compris les comptes, favoris et paramètres enregistrés</translation>
 <translation id="2353636109065292463">Vérifier votre connexion Internet</translation>
 <translation id="2359808026110333948">Continuer</translation>
@@ -190,6 +191,7 @@
 <translation id="2387895666653383613">Mise à l'échelle du texte</translation>
 <translation id="2394602618534698961">Les fichiers que vous téléchargez sont affichés ici</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> Mo</translation>
+<translation id="2407481962792080328">Lorsque vous vous connectez à votre compte Google, cette fonctionnalité est activée</translation>
 <translation id="2410754283952462441">Sélectionner un compte</translation>
 <translation id="2414886740292270097">Sombre</translation>
 <translation id="2416359993254398973">Chrome a besoin de votre autorisation pour accéder à votre appareil photo pour ce site.</translation>
@@ -198,6 +200,7 @@
 <translation id="2434158240863470628">Téléchargement terminé <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Accès à la position</translation>
 <translation id="2450083983707403292">Souhaitez-vous relancer le téléchargement du fichier <ph name="FILE_NAME" /> ?</translation>
+<translation id="246532703174860178">Partager</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2490684707762498678">Géré par <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Assistant Google dans Chrome</translation>
@@ -678,7 +681,6 @@ N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="6036057147555329831">ICU supplémentaire</translation>
 <translation id="6039379616847168523">Accéder à l'onglet suivant</translation>
 <translation id="6040143037577758943">Fermer</translation>
-<translation id="6042308850641462728">Plus</translation>
 <translation id="604996488070107836">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison d'une erreur inconnue.</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6064125863973209585">Téléchargements terminés</translation>

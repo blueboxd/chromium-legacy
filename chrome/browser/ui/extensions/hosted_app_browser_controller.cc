@@ -17,8 +17,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -35,6 +37,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -108,6 +111,17 @@ bool HostedAppBrowserController::CreatedForInstalledPwa() const {
 
 bool HostedAppBrowserController::IsHostedApp() const {
   return true;
+}
+
+bool HostedAppBrowserController::HasMinimalUiButtons() const {
+  const Extension* extension = GetExtension();
+  if (!extension || !extension->from_bookmark())
+    return false;
+
+  return web_app::WebAppProvider::Get(browser()->profile())
+             ->registrar()
+             .GetAppEffectiveDisplayMode(extension_id_) ==
+         blink::mojom::DisplayMode::kMinimalUi;
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {

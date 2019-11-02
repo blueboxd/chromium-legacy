@@ -323,11 +323,11 @@ jumbo_source_set("base") {
   ]
   deps = [
     "//base/allocator:buildflags",
+    "//components/system_media_controls/linux/buildflags",
     "//gpu/command_buffer/common",
     "//gpu/ipc/common:common",
     "//third_party/libyuv",
     "//third_party/widevine/cdm:headers",
-    "//ui/base/mpris/buildflags",
     "//ui/display:display",
     "//ui/events:events_base",
     "//url:url",

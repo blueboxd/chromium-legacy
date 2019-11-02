@@ -116,18 +116,22 @@ void SystemMediaControlsMediaKeysListener::OnPrevious() {
   MaybeSendKeyCode(VKEY_MEDIA_PREV_TRACK);
 }
 
+void SystemMediaControlsMediaKeysListener::OnPlay() {
+  if (!is_media_playing_)
+    MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
+}
+
 void SystemMediaControlsMediaKeysListener::OnPause() {
   if (is_media_playing_)
     MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
 }
 
-void SystemMediaControlsMediaKeysListener::OnStop() {
-  MaybeSendKeyCode(VKEY_MEDIA_STOP);
+void SystemMediaControlsMediaKeysListener::OnPlayPause() {
+  MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
 }
 
-void SystemMediaControlsMediaKeysListener::OnPlay() {
-  if (!is_media_playing_)
-    MaybeSendKeyCode(VKEY_MEDIA_PLAY_PAUSE);
+void SystemMediaControlsMediaKeysListener::OnStop() {
+  MaybeSendKeyCode(VKEY_MEDIA_STOP);
 }
 
 void SystemMediaControlsMediaKeysListener::MaybeSendKeyCode(

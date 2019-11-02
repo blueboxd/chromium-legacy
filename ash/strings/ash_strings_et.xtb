@@ -301,6 +301,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5302048478445481009">Keel</translation>
 <translation id="5313326810920013265">Bluetoothi seaded</translation>
 <translation id="5331975486040154427">C-tüüpi USB-seade (tagumine vasakpoolne port)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Liiga palju katseid</translation>
 <translation id="5397578532367286026">Haldur (<ph name="MANAGER_EMAIL" />) saab kasutaja kasutusandmeid ja ajalugu vaadata aadressil chrome.com.</translation>
 <translation id="5430931332414098647">Automaatne jagamine</translation>
@@ -323,6 +324,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5682642926269496722">Google'i assistent pole praeguse kasutajakonto jaoks saadaval.</translation>
 <translation id="5691772641933328258">Sõrmejälge ei tuntud ära</translation>
 <translation id="5710450975648804523">Režiim Mitte segada on sees</translation>
+<translation id="573413375004481890">See seade ei saanud kõiki teie ekraane toetada, seetõttu ühe ühendus katkestati</translation>
 <translation id="574392208103952083">Keskmine</translation>
 <translation id="5744083938413354016">Puudutusega lohistamine</translation>
 <translation id="5750765938512549687">Bluetooth on välja lülitatud</translation>

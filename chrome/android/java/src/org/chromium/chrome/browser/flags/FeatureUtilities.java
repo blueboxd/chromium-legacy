@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -401,7 +402,7 @@ public class FeatureUtilities {
         boolean available = ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE)
                 || (BuildInfo.isAtLeastQ()
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_FOR_Q));
-        ChromePreferenceManager.getInstance().writeBoolean(NIGHT_MODE_AVAILABLE_KEY, available);
+        SharedPreferencesManager.getInstance().writeBoolean(NIGHT_MODE_AVAILABLE_KEY, available);
     }
 
     /**
@@ -436,7 +437,7 @@ public class FeatureUtilities {
         boolean lightModeAsDefault = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.ANDROID_NIGHT_MODE, lightModeDefaultParam, false);
 
-        ChromePreferenceManager.getInstance().writeBoolean(
+        SharedPreferencesManager.getInstance().writeBoolean(
                 NIGHT_MODE_DEFAULT_TO_LIGHT, lightModeAsDefault);
     }
 
@@ -514,7 +515,7 @@ public class FeatureUtilities {
     }
 
     private static void cacheGridTabSwitcherEnabled() {
-        ChromePreferenceManager.getInstance().writeBoolean(GRID_TAB_SWITCHER_ENABLED_KEY,
+        SharedPreferencesManager.getInstance().writeBoolean(GRID_TAB_SWITCHER_ENABLED_KEY,
                 !DeviceClassManager.enableAccessibilityLayout()
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
                         && TabManagementModuleProvider.getDelegate() != null);
@@ -541,7 +542,7 @@ public class FeatureUtilities {
     }
 
     private static void cacheTabGroupsAndroidEnabled() {
-        ChromePreferenceManager.getInstance().writeBoolean(TAB_GROUPS_ANDROID_ENABLED_KEY,
+        SharedPreferencesManager.getInstance().writeBoolean(TAB_GROUPS_ANDROID_ENABLED_KEY,
                 !DeviceClassManager.enableAccessibilityLayout()
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
                         && TabManagementModuleProvider.getDelegate() != null && isHighEndPhone());
@@ -588,6 +589,14 @@ public class FeatureUtilities {
     }
 
     /**
+     * @return Whether the tab group continuation feature is enabled and available for use.
+     */
+    public static boolean isTabGroupsAndroidContinuationEnabled() {
+        return isTabGroupsAndroidEnabled()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
+    }
+
+    /**
      * @return Whether this device is running Android Go. This is assumed when we're running Android
      * O or later and we're on a low-end device.
      */
@@ -617,7 +626,7 @@ public class FeatureUtilities {
      * can be made available immediately on next start up.
      */
     private static void cacheNetworkServiceWarmUpEnabled() {
-        ChromePreferenceManager.getInstance().writeBoolean(NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
+        SharedPreferencesManager.getInstance().writeBoolean(NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
                 FeatureUtilitiesJni.get().isNetworkServiceWarmUpEnabled());
     }
 
@@ -644,7 +653,7 @@ public class FeatureUtilities {
      * {@link Activity#convertFromTranslucent()}.
      */
     public static boolean isSwapPixelFormatToFixConvertFromTranslucentEnabled() {
-        return ChromePreferenceManager.getInstance().readBoolean(
+        return SharedPreferencesManager.getInstance().readBoolean(
                 SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT, true);
     }
 
@@ -688,7 +697,7 @@ public class FeatureUtilities {
             getReachedCodeProfilerTrialGroup();
         }
 
-        ChromePreferenceManager.getInstance().writeString(
+        SharedPreferencesManager.getInstance().writeString(
                 ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY,
                 FieldTrialList.findFullName(ChromeFeatureList.REACHED_CODE_PROFILER));
     }
@@ -699,7 +708,7 @@ public class FeatureUtilities {
     @CalledByNative
     public static String getReachedCodeProfilerTrialGroup() {
         if (sReachedCodeProfilerTrialGroup == null) {
-            sReachedCodeProfilerTrialGroup = ChromePreferenceManager.getInstance().readString(
+            sReachedCodeProfilerTrialGroup = SharedPreferencesManager.getInstance().readString(
                     ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY, "");
         }
 
@@ -707,14 +716,14 @@ public class FeatureUtilities {
     }
 
     private static void cacheFlag(String preferenceName, String featureName) {
-        ChromePreferenceManager.getInstance().writeBoolean(
+        SharedPreferencesManager.getInstance().writeBoolean(
                 preferenceName, ChromeFeatureList.isEnabled(featureName));
     }
 
     private static boolean isFlagEnabled(String preferenceName, boolean defaultValue) {
         Boolean flag = sFlags.get(preferenceName);
         if (flag == null) {
-            flag = ChromePreferenceManager.getInstance().readBoolean(preferenceName, defaultValue);
+            flag = SharedPreferencesManager.getInstance().readBoolean(preferenceName, defaultValue);
             sFlags.put(preferenceName, flag);
         }
         return flag;

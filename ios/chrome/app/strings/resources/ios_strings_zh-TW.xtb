@@ -202,7 +202,6 @@
 <translation id="3783017676699494206">儲存圖片</translation>
 <translation id="3789841737615482174">安裝</translation>
 <translation id="385051799172605136">返回</translation>
-<translation id="3886946236301294521">如果你使用的密碼曾外洩，系統會顯示警告訊息。</translation>
 <translation id="3897092660631435901">選單</translation>
 <translation id="3915450441834151894">網站資訊</translation>
 <translation id="3922310737605261887">搜尋複製的文字</translation>
@@ -301,7 +300,6 @@
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5327248766486351172">名稱</translation>
-<translation id="5365716706805792666">Google 可以檢查你的密碼資料是否外洩。系統會在你使用 Google 帳戶登入時開啟這項功能。</translation>
 <translation id="5388358297987318779">開啟圖片</translation>
 <translation id="5407969256130905701">捨棄變更</translation>
 <translation id="5409365236829784218">未安裝可開啟這個檔案的應用程式。</translation>
@@ -333,7 +331,6 @@
 <translation id="5854790677617711513">超過 30 天前</translation>
 <translation id="5857090052475505287">新資料夾</translation>
 <translation id="5857770089550859117">必須輸入通關密語，才能開始進行同步處理。</translation>
-<translation id="5859444426865731878">Google 可以檢查你的密碼資料是否外洩。</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5869029295770560994">好，我知道了</translation>
 <translation id="5871497086027727873">已移動 1 個項目</translation>
@@ -483,7 +480,6 @@
 <translation id="7859704718976024901">瀏覽記錄</translation>
 <translation id="7887198238286927132">為保護個人隱私，Chrome 不會自動填入這個欄位。</translation>
 <translation id="7918293828610777738">閱讀清單可供離線存取。如要將網頁加入閱讀清單，請依序輕觸 <ph name="SHARE_OPENING_ICON" /> &gt; [<ph name="READ_LATER_TEXT" />]。</translation>
-<translation id="7930681627240672853">檢查密碼安全性</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">匯出密碼...</translation>
 <translation id="7947953824732555851">接受並登入</translation>

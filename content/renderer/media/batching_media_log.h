@@ -35,6 +35,7 @@ class CONTENT_EXPORT BatchingMediaLog : public media::MediaLog {
    public:
     virtual ~EventHandler() = default;
     virtual void SendQueuedMediaEvents(std::vector<media::MediaLogEvent>) = 0;
+    virtual void OnWebMediaPlayerDestroyed() = 0;
   };
 
   BatchingMediaLog(const GURL& security_origin,
@@ -48,6 +49,7 @@ class CONTENT_EXPORT BatchingMediaLog : public media::MediaLog {
  protected:
   // MediaLog implementation.
   void AddEventLocked(std::unique_ptr<media::MediaLogEvent> event) override;
+  void OnWebMediaPlayerDestroyedLocked() override;
   std::string GetErrorMessageLocked() override;
 
  private:

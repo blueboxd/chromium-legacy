@@ -48,10 +48,6 @@ class URLLoaderFactory;
 struct ResourceRequest;
 }  // namespace network
 
-namespace service_manager {
-class Connector;
-}
-
 namespace extensions {
 
 struct UpdateDetails {
@@ -82,7 +78,6 @@ class ExtensionDownloader {
   ExtensionDownloader(
       ExtensionDownloaderDelegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      service_manager::Connector* connector,
       crx_file::VerifierFormat crx_format_requirement,
       const base::FilePath& profile_path = base::FilePath());
   ~ExtensionDownloader();
@@ -369,9 +364,6 @@ class ExtensionDownloader {
 
   // The profile path used to load file:// URLs. It can be invalid.
   base::FilePath profile_path_for_url_loader_factory_;
-
-  // The connector to the ServiceManager.
-  service_manager::Connector* connector_;
 
   // Collects UMA samples that are reported when ReportStats() is called.
   URLStats url_stats_;

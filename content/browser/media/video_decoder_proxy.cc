@@ -23,11 +23,12 @@ VideoDecoderProxy::~VideoDecoderProxy() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-void VideoDecoderProxy::Add(media::mojom::InterfaceFactoryRequest request) {
+void VideoDecoderProxy::Add(
+    mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void VideoDecoderProxy::CreateAudioDecoder(

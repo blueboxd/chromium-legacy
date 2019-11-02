@@ -202,7 +202,6 @@
 <translation id="3783017676699494206">I-save ang Larawan</translation>
 <translation id="3789841737615482174">Mag-install</translation>
 <translation id="385051799172605136">Bumalik</translation>
-<translation id="3886946236301294521">Nagbibigay sa iyo ng babala kung ang isang password na ginagamit mo ay bahagi ng isang paglabag sa data.</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Impormasyon ng Site</translation>
 <translation id="3922310737605261887">Maghanap para sa Kinopyang Text</translation>
@@ -301,7 +300,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5300589172476337783">Ipakita</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5327248766486351172">Pangalan</translation>
-<translation id="5365716706805792666">Matitingnan ng Google kung bahagi ng paglabag sa data ang iyong mga password. Io-on ito kapag nag-sign in ka gamit ang iyong Gogle Account.</translation>
 <translation id="5388358297987318779">Buksan ang Larawan</translation>
 <translation id="5407969256130905701">I-discard ang Mga Pagbabago</translation>
 <translation id="5409365236829784218">Walang naka-install na app na makakapagbukas ng file na ito.</translation>
@@ -333,7 +331,6 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="5854790677617711513">Mas matagal sa 30 araw</translation>
 <translation id="5857090052475505287">Bagong Folder</translation>
 <translation id="5857770089550859117">Kinakailangan ang passphrase upang masimulan ang pag-sync.</translation>
-<translation id="5859444426865731878">Matitingnan ng Google kung bahagi ng paglabag sa data ang iyong mga password.</translation>
 <translation id="5860033963881614850">Naka-off</translation>
 <translation id="5869029295770560994">OK, Nakuha Ko</translation>
 <translation id="5871497086027727873">1 item ang inilipat</translation>
@@ -483,7 +480,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7859704718976024901">History ng Pag-browse</translation>
 <translation id="7887198238286927132">Para protektahan ang iyong privacy, hindi io-autofill ng Chrome ang field na ito.</translation>
 <translation id="7918293828610777738">Available ang iyong listahan ng babasahin offline. Para magdagdag ng page sa iyong listahan ng babasahin, i-tap ang <ph name="SHARE_OPENING_ICON" /> pagkatapos ay i-tap ang <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Suriin ang kaligtasan ng password</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">I-export Password...</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>

@@ -63,8 +63,7 @@ static const char kPagesField[] = "pages";
 static const char kPidField[] = "pid";
 static const char kProcessIdField[] = "processId";
 static const char kRequestTypeField[] = "requestType";
-// TODO rename to routingId to match the name elsewhere.
-static const char kRouteIdField[] = "routeId";
+static const char kRoutingIdField[] = "routingId";
 static const char kSessionIdField[] = "sessionId";
 static const char kShouldRequestTreeField[] = "shouldRequestTree";
 static const char kStartField[] = "start";
@@ -97,13 +96,13 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(
     const std::string& name,
     const GURL& favicon_url,
     int process_id,
-    int route_id,
+    int routing_id,
     ui::AXMode accessibility_mode,
     base::ProcessHandle handle = base::kNullProcessHandle) {
   std::unique_ptr<base::DictionaryValue> target_data(
       new base::DictionaryValue());
   target_data->SetInteger(kProcessIdField, process_id);
-  target_data->SetInteger(kRouteIdField, route_id);
+  target_data->SetInteger(kRoutingIdField, routing_id);
   target_data->SetString(kUrlField, url.spec());
   target_data->SetString(kNameField, net::EscapeForHTML(name));
   target_data->SetInteger(kPidField, base::GetProcId(handle));
@@ -388,13 +387,13 @@ void AccessibilityUIMessageHandler::ToggleAccessibility(
   CHECK(args->GetDictionary(0, &data));
 
   int process_id = *data->FindIntPath(kProcessIdField);
-  int route_id = *data->FindIntPath(kRouteIdField);
+  int routing_id = *data->FindIntPath(kRoutingIdField);
   int mode = *data->FindIntPath(kModeIdField);
   bool should_request_tree = *data->FindBoolPath(kShouldRequestTreeField);
 
   AllowJavascript();
   content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(process_id, route_id);
+      content::RenderViewHost::FromID(process_id, routing_id);
   if (!rvh)
     return;
   content::WebContents* web_contents =
@@ -424,7 +423,7 @@ void AccessibilityUIMessageHandler::ToggleAccessibility(
   if (should_request_tree) {
     base::DictionaryValue request_data;
     request_data.SetIntPath(kProcessIdField, process_id);
-    request_data.SetIntPath(kRouteIdField, route_id);
+    request_data.SetIntPath(kRoutingIdField, routing_id);
     request_data.SetStringPath(kRequestTypeField, kShowOrRefreshTree);
     base::ListValue request_args;
     request_args.Append(std::move(request_data));
@@ -504,7 +503,7 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   CHECK(args->GetDictionary(0, &data));
 
   int process_id = *data->FindIntPath(kProcessIdField);
-  int route_id = *data->FindIntPath(kRouteIdField);
+  int routing_id = *data->FindIntPath(kRoutingIdField);
 
   const std::string* request_type_p = data->FindStringPath(kRequestTypeField);
   CHECK(IsValidJSValue(request_type_p));
@@ -524,11 +523,11 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
 
   AllowJavascript();
   content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(process_id, route_id);
+      content::RenderViewHost::FromID(process_id, routing_id);
   if (!rvh) {
     std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
     result->SetInteger(kProcessIdField, process_id);
-    result->SetInteger(kRouteIdField, route_id);
+    result->SetInteger(kRoutingIdField, routing_id);
     result->SetString(kErrorField, "Renderer no longer exists.");
     CallJavascriptFunction(request_type, *(result.get()));
     return;
@@ -631,13 +630,13 @@ void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
   CHECK(args->GetDictionary(0, &data));
 
   int process_id = *data->FindIntPath(kProcessIdField);
-  int route_id = *data->FindIntPath(kRouteIdField);
+  int routing_id = *data->FindIntPath(kRoutingIdField);
   bool start = *data->FindBoolPath(kStartField);
 
   AllowJavascript();
 
   content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(process_id, route_id);
+      content::RenderViewHost::FromID(process_id, routing_id);
   if (!rvh) {
     return;
   }

@@ -153,6 +153,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="2063539687800151747">Epígrafe</translation>
 <translation id="207477615537953741">Semántica desactivada</translation>
 <translation id="2086961585857038472">Palabra siguiente</translation>
+<translation id="2087981446621639008">dtll d lst d dscpcn</translation>
 <translation id="2089387485033699258">es</translation>
 <translation id="2091933974477985526">Área de texto editable anterior</translation>
 <translation id="2100350898815792233">Todos los signos de puntuación</translation>
@@ -193,6 +194,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="2416512023405990736">Una casilla de verificación desmarcada</translation>
 <translation id="2417569100218200841">Información del contenido</translation>
 <translation id="2417948780551741035">Notas finales</translation>
+<translation id="2419852971200420169">Lista de descripción</translation>
 <translation id="2421113964388408478">Eliminación</translation>
 <translation id="2422937916923936891">Casilla de verificación de elemento de menú</translation>
 <translation id="2428534162001909979">Menús de comandos</translation>
@@ -371,6 +373,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3497063866483065785">{COUNT,plural, =1{signo de interrogación}other{# signos de interrogación}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{símbolo de intercalación}other{# símbolos de intercalación}}</translation>
 <translation id="352577523970648069">Un campo de texto editable</translation>
+<translation id="3538907380453898475">lst d dscrpcn</translation>
 <translation id="3549141990712742152">cortar <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Toca con 2 dedos para detener la voz temporalmente</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, casilla de verificación no seleccionada</translation>
@@ -779,6 +782,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="6378394210114975876">Cardo</translation>
 <translation id="6385591741672306837">col</translation>
 <translation id="6387719785439924554">etiqueta de contenido tangencial</translation>
+<translation id="6393014464788431702">Inhabilitar todos los filtros de eventos</translation>
 <translation id="6411426777058107714">No hay ningún botón de opción anterior.</translation>
 <translation id="6414968628640960377">Elemento anterior distinto</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
@@ -914,6 +918,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="7332592614823088566">Fila <ph name="ROWINDEX" /> de <ph name="ROWTOTAL" />, columna <ph name="COLINDEX" /> de <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">tiene un componente emergente</translation>
 <translation id="7356165926712028380">Cambiar a braille de ocho puntos</translation>
+<translation id="7356610683936413584">Detalle de lista de descripción</translation>
 <translation id="7362871137496673139">No hay ningún título de nivel 2 anterior.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{et}other{# símbolos et}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="8096975275316362544">Menta</translation>
 <translation id="8098587210054821856">Gris pizarra</translation>
 <translation id="8110647606445335195">No hay puntos de referencia de ARIA.</translation>
+<translation id="8121539003537428024">Habilitar todos los filtros de eventos</translation>
 <translation id="812886159861361726">Se ha parado la descarga de <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Táctil</translation>
 <translation id="8153880621934657047">No está dentro de la tabla.</translation>

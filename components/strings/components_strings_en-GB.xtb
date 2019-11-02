@@ -172,6 +172,7 @@
 <translation id="173080396488393970">This type of card isn’t supported</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Try contacting the system admin.</translation>
+<translation id="1739107442478692187">A data breach occurred on a site or app that you use. Chrome recommends checking your saved passwords and changing your password on <ph name="ORIGIN" /> now.</translation>
 <translation id="1740951997222943430">Enter a valid expiry month</translation>
 <translation id="1743520634839655729">To pay faster next time, save your card, name and billing address to your Google Account and to this device.</translation>
 <translation id="1743570585616704562">Not recognised</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Domain mismatch</translation>
 <translation id="2096368010154057602">Department</translation>
 <translation id="2099652385553570808">Triple staple left</translation>
+<translation id="2100280972184758440">Your password was compromised</translation>
 <translation id="2102134110707549001">Suggest strong password…</translation>
 <translation id="2108755909498034140">Restart your computer</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Ignored because it was overridden by <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Issued to: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Punch bottom right</translation>
+<translation id="2124528555835617522">A data breach occurred on a site or app that you use. Chrome recommends checking your saved passwords now.</translation>
 <translation id="2129079103035905234">Motion Sensors</translation>
 <translation id="213826338245044447">Mobile Bookmarks</translation>
 <translation id="214556005048008348">Cancel payment</translation>
@@ -472,17 +475,13 @@
 <translation id="3282497668470633863">Add name on card</translation>
 <translation id="3287510313208355388">Download when online</translation>
 <translation id="3293642807462928945">Learn more about <ph name="POLICY_NAME" /> policy</translation>
+<translation id="3295439534709115864">A data breach occurred on a site or app that you use. Chrome recommends changing your password on <ph name="ORIGIN" /> now.</translation>
 <translation id="3303855915957856445">No search results found</translation>
 <translation id="3320021301628644560">Add billing address</translation>
 <translation id="3324983252691184275">Crimson</translation>
 <translation id="3338095232262050444">Secure</translation>
 <translation id="3355823806454867987">Change proxy settings...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />won’t save<ph name="END_EMPHASIS" /> the following information:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Your browsing history
-          <ph name="LIST_ITEM" />Cookies and site data
-          <ph name="LIST_ITEM" />Information entered in forms
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">Payment handler sheet</translation>
 <translation id="3362968246557010467">This policy was automatically copied from the deprecated <ph name="OLD_POLICY" /> policy. You should use this policy instead.</translation>
 <translation id="3366477098757335611">View cards</translation>
 <translation id="3369192424181595722">Clock error</translation>
@@ -597,6 +596,7 @@
 <translation id="3949601375789751990">Your browsing history appears here</translation>
 <translation id="3949870428812919180">No saved payment methods</translation>
 <translation id="3950820424414687140">Sign in</translation>
+<translation id="3961148744525529027">Payment handler sheet is half-opened</translation>
 <translation id="3962859241508114581">Previous track</translation>
 <translation id="3963837677003247395">Continue manually?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{None}=1{From 1 site }other{From # sites }}</translation>
@@ -1047,7 +1047,6 @@
 <translation id="6151417162996330722">The server certificate has a validity period that is too long.</translation>
 <translation id="6157877588268064908">To see delivery methods and requirements, select an address</translation>
 <translation id="6165508094623778733">Learn more</translation>
-<translation id="6169916984152623906">Now you can browse privately, and other people who use this device won’t see your activity. However, downloads and bookmarks will be saved.</translation>
 <translation id="6177128806592000436">Your connection to this site is not secure</translation>
 <translation id="6203231073485539293">Check your Internet connection</translation>
 <translation id="6218753634732582820">Remove address from Chromium?</translation>
@@ -1329,6 +1328,7 @@ Additional details:
 <translation id="7637571805876720304">Remove credit card from Chromium?</translation>
 <translation id="7638605456503525968">Serial ports</translation>
 <translation id="7639968568612851608">Dark grey</translation>
+<translation id="7653957176542370971">Payment handler sheet is closed</translation>
 <translation id="765676359832457558">Hide advanced settings ...</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7662298039739062396">Setting controlled by an extension</translation>
@@ -1458,6 +1458,7 @@ Additional details:
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8262952874573525464">Edge stitch bottom</translation>
 <translation id="8267698848189296333">Signing in as <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Payment handler sheet is opened</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Sign In</translation>
 <translation id="8288807391153049143">Show certificate</translation>
@@ -1518,6 +1519,7 @@ Additional details:
 <translation id="8680536109547170164"><ph name="QUERY" />, answer, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Available</translation>
+<translation id="869891660844655955">Expiry date</translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN" /> is not encrypted.</translation>
 <translation id="8718314106902482036">Payment not completed</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, search suggestion</translation>

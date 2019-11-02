@@ -5,7 +5,6 @@
 #ifndef UI_VIEWS_ACCESSIBILITY_AX_TREE_SOURCE_VIEWS_H_
 #define UI_VIEWS_ACCESSIBILITY_AX_TREE_SOURCE_VIEWS_H_
 
-#include "base/macros.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_source.h"
 #include "ui/views/views_export.h"
@@ -33,6 +32,8 @@ class VIEWS_EXPORT AXTreeSourceViews
   AXTreeSourceViews(AXAuraObjWrapper* root,
                     const ui::AXTreeID& tree_id,
                     AXAuraObjCache* cache);
+  AXTreeSourceViews(const AXTreeSourceViews&) = delete;
+  AXTreeSourceViews& operator=(const AXTreeSourceViews&) = delete;
   ~AXTreeSourceViews() override;
 
   // Invokes an action on an Aura object.
@@ -64,8 +65,6 @@ class VIEWS_EXPORT AXTreeSourceViews
   const ui::AXTreeID tree_id_;
 
   views::AXAuraObjCache* cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXTreeSourceViews);
 };
 
 }  // namespace views

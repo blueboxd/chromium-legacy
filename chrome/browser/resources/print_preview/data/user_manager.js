@@ -78,6 +78,7 @@ Polymer({
 
     if (!userAccounts) {
       assert(this.cloudPrintDisabled);
+      this.activeUser = '';
       return;
     }
 

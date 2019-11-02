@@ -65,7 +65,6 @@ ExtensionDownloaderTestHelper::ExtensionDownloaderTestHelper()
       delegate_(),
       downloader_(&delegate_,
                   test_shared_url_loader_factory_,
-                  test_data_decoder_service_.connector(),
                   GetTestVerifierFormat()) {}
 
 ExtensionDownloaderTestHelper::~ExtensionDownloaderTestHelper() = default;
@@ -84,8 +83,7 @@ void ExtensionDownloaderTestHelper::ClearURLLoaderFactoryResponses() {
 std::unique_ptr<ExtensionDownloader>
 ExtensionDownloaderTestHelper::CreateDownloader() {
   return std::make_unique<ExtensionDownloader>(
-      &delegate_, test_shared_url_loader_factory_,
-      test_data_decoder_service_.connector(), GetTestVerifierFormat());
+      &delegate_, test_shared_url_loader_factory_, GetTestVerifierFormat());
 }
 
 }  // namespace extensions

@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -248,65 +249,6 @@ TEST(IndexedDBLevelDBCodingTest, DecodeInt) {
     StringPiece slice;
     int64_t value;
     EXPECT_FALSE(DecodeInt(&slice, &value));
-  }
-}
-
-static std::string WrappedEncodeVarInt(int64_t value) {
-  std::string buffer;
-  EncodeVarInt(value, &buffer);
-  return buffer;
-}
-
-TEST(IndexedDBLevelDBCodingTest, EncodeVarInt) {
-  EXPECT_EQ(1u, WrappedEncodeVarInt(0).size());
-  EXPECT_EQ(1u, WrappedEncodeVarInt(1).size());
-  EXPECT_EQ(2u, WrappedEncodeVarInt(255).size());
-  EXPECT_EQ(2u, WrappedEncodeVarInt(256).size());
-  EXPECT_EQ(5u, WrappedEncodeVarInt(0xffffffff).size());
-  EXPECT_EQ(8u, WrappedEncodeVarInt(0xfffffffffffffLL).size());
-  EXPECT_EQ(9u, WrappedEncodeVarInt(0x7fffffffffffffffLL).size());
-#ifdef NDEBUG
-  EXPECT_EQ(10u, WrappedEncodeVarInt(-100).size());
-#endif
-}
-
-TEST(IndexedDBLevelDBCodingTest, DecodeVarInt) {
-  std::vector<int64_t> test_cases = {
-      0,
-      1,
-      255,
-      256,
-      65535,
-      655536,
-      7711192431755665792ll,
-      0x7fffffffffffffffll,
-#ifdef NDEBUG
-      -3,
-#endif
-  };
-
-  for (size_t i = 0; i < test_cases.size(); ++i) {
-    int64_t n = test_cases[i];
-    std::string v = WrappedEncodeVarInt(n);
-    ASSERT_GT(v.size(), 0u);
-    StringPiece slice(v);
-    int64_t res;
-    EXPECT_TRUE(DecodeVarInt(&slice, &res));
-    EXPECT_EQ(n, res);
-    EXPECT_TRUE(slice.empty());
-
-    slice = StringPiece(&*v.begin(), v.size() - 1);
-    EXPECT_FALSE(DecodeVarInt(&slice, &res));
-
-    slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
-    EXPECT_FALSE(DecodeVarInt(&slice, &res));
-
-    // Verify decoding at an offset, to detect unaligned memory access.
-    v.insert(v.begin(), 1u, static_cast<char>(0));
-    slice = StringPiece(&*v.begin() + 1, v.size() - 1);
-    EXPECT_TRUE(DecodeVarInt(&slice, &res));
-    EXPECT_EQ(n, res);
-    EXPECT_TRUE(slice.empty());
   }
 }
 
@@ -983,7 +925,8 @@ TEST(IndexedDBLevelDBCodingTest, EncodeVarIntVSEncodeByteTest) {
     unsigned char n = test_cases[i];
 
     std::string a = WrappedEncodeByte(n);
-    std::string b = WrappedEncodeVarInt(static_cast<int64_t>(n));
+    std::string b;
+    EncodeVarInt(static_cast<int64_t>(n), &b);
 
     EXPECT_EQ(a.size(), b.size());
     EXPECT_EQ(*a.begin(), *b.begin());

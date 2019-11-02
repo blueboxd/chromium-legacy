@@ -138,6 +138,7 @@ const char kEXTShaderTextureLodExtension[] = "GL_EXT_shader_texture_lod";
 const char kWEBGLMultiDrawExtension[] = "GL_WEBGL_multi_draw";
 const char kWEBGLMultiDrawInstancedExtension[] =
     "GL_WEBGL_multi_draw_instanced";
+const char kOESFboRenderMipmapExtension[] = "GL_OES_fbo_render_mipmap";
 
 template <typename MANAGER_TYPE, typename OBJECT_TYPE>
 GLuint GetClientId(const MANAGER_TYPE* manager, const OBJECT_TYPE* object) {
@@ -275,6 +276,10 @@ static bool StringIsValidForGLES(const std::string& str) {
          std::find_if_not(str.begin(), str.end(), CharacterIsValidForGLES) ==
              str.end();
 }
+
+DisallowedFeatures::DisallowedFeatures() = default;
+DisallowedFeatures::~DisallowedFeatures() = default;
+DisallowedFeatures::DisallowedFeatures(const DisallowedFeatures&) = default;
 
 // This class prevents any GL errors that occur when it is in scope from
 // being reported to the client.
@@ -2687,6 +2692,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // contexts may be broken.  These flags override the shared state to preserve
   // WebGL semantics.
   bool derivatives_explicitly_enabled_;
+  bool fbo_render_mipmap_explicitly_enabled_;
   bool frag_depth_explicitly_enabled_;
   bool draw_buffers_explicitly_enabled_;
   bool shader_texture_lod_explicitly_enabled_;
@@ -3454,6 +3460,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       supports_commit_overlay_planes_(false),
       supports_async_swap_(false),
       derivatives_explicitly_enabled_(false),
+      fbo_render_mipmap_explicitly_enabled_(false),
       frag_depth_explicitly_enabled_(false),
       draw_buffers_explicitly_enabled_(false),
       shader_texture_lod_explicitly_enabled_(false),
@@ -8551,7 +8558,9 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
     service_id = texture_ref->service_id();
   }
 
-  if ((level > 0 && !feature_info_->IsWebGL2OrES3Context()) ||
+  if ((level > 0 && !feature_info_->IsWebGL2OrES3Context() &&
+       !(fbo_render_mipmap_explicitly_enabled_ &&
+         feature_info_->feature_flags().oes_fbo_render_mipmap)) ||
       !texture_manager()->ValidForTarget(textarget, level, 0, 0, 1)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,
@@ -13890,6 +13899,8 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32_t immediate_data_size,
       if (feature_info_->IsWebGLContext()) {
         if (!derivatives_explicitly_enabled_)
           extension_set.erase(kOESDerivativeExtension);
+        if (!fbo_render_mipmap_explicitly_enabled_)
+          extension_set.erase(kOESFboRenderMipmapExtension);
         if (!frag_depth_explicitly_enabled_)
           extension_set.erase(kEXTFragDepthExtension);
         if (!draw_buffers_explicitly_enabled_)
@@ -16785,6 +16796,7 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   feature_str = feature_str + " ";
 
   bool desire_standard_derivatives = false;
+  bool desire_fbo_render_mipmap = false;
   bool desire_frag_depth = false;
   bool desire_draw_buffers = false;
   bool desire_shader_texture_lod = false;
@@ -16793,6 +16805,8 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   if (feature_info_->context_type() == CONTEXT_TYPE_WEBGL1) {
     desire_standard_derivatives =
         feature_str.find("GL_OES_standard_derivatives ") != std::string::npos;
+    desire_fbo_render_mipmap =
+        feature_str.find("GL_OES_fbo_render_mipmap ") != std::string::npos;
     desire_frag_depth =
         feature_str.find("GL_EXT_frag_depth ") != std::string::npos;
     desire_draw_buffers =
@@ -16807,12 +16821,14 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
         feature_str.find("GL_WEBGL_multi_draw_instanced ") != std::string::npos;
   }
   if (desire_standard_derivatives != derivatives_explicitly_enabled_ ||
+      desire_fbo_render_mipmap != fbo_render_mipmap_explicitly_enabled_ ||
       desire_frag_depth != frag_depth_explicitly_enabled_ ||
       desire_draw_buffers != draw_buffers_explicitly_enabled_ ||
       desire_shader_texture_lod != shader_texture_lod_explicitly_enabled_ ||
       desire_multi_draw != multi_draw_explicitly_enabled_ ||
       desire_multi_draw_instanced != multi_draw_instanced_explicitly_enabled_) {
     derivatives_explicitly_enabled_ |= desire_standard_derivatives;
+    fbo_render_mipmap_explicitly_enabled_ |= desire_fbo_render_mipmap;
     frag_depth_explicitly_enabled_ |= desire_frag_depth;
     draw_buffers_explicitly_enabled_ |= desire_draw_buffers;
     shader_texture_lod_explicitly_enabled_ |= desire_shader_texture_lod;
@@ -16849,6 +16865,9 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   }
   if (feature_str.find("GL_EXT_float_blend ") != std::string::npos) {
     feature_info_->EnableEXTFloatBlend();
+  }
+  if (feature_str.find("GL_OES_fbo_render_mipmap ") != std::string::npos) {
+    feature_info_->EnableOESFboRenderMipmap();
   }
 
   UpdateCapabilities();

@@ -650,41 +650,38 @@ jboolean CookieManager::AllowFileSchemeCookies(
 void CookieManager::SetAcceptFileSchemeCookies(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
                                                jboolean accept) {
-  base::AutoLock lock(accept_file_scheme_cookies_lock_);
-  bool success;
   ExecCookieTaskSync(
       base::BindOnce(&CookieManager::AllowFileSchemeCookiesAsyncHelper,
-                     base::Unretained(this), accept, &success));
-  // Should only update |accept_file_scheme_cookies_| if
-  // AllowFileSchemeCookiesAsyncHelper says this is OK.
-  if (!success)
-    return;
-  accept_file_scheme_cookies_ = accept;
+                     base::Unretained(this), accept));
 }
 
 void CookieManager::AllowFileSchemeCookiesAsyncHelper(
     bool accept,
-    bool* result,
     base::OnceClosure complete) {
   DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
   if (GetMojoCookieManager()) {
     GetMojoCookieManager()->AllowFileSchemeCookies(
         accept,
         base::BindOnce(&CookieManager::AllowFileSchemeCookiesCompleted,
-                       base::Unretained(this), std::move(complete), result));
+                       base::Unretained(this), std::move(complete), accept));
   } else {
     // If we have neither a Network Service CookieManager nor have created the
     // CookieStore, we may modify |accept_file_scheme_cookies_|.
-    bool can_change_cookieable_schemes = !cookie_store_created_;
-    *result = can_change_cookieable_schemes;
-    std::move(complete).Run();
+    bool can_change_schemes = !cookie_store_created_;
+    AllowFileSchemeCookiesCompleted(std::move(complete), accept,
+                                    can_change_schemes);
   }
 }
 
 void CookieManager::AllowFileSchemeCookiesCompleted(base::OnceClosure complete,
-                                                    bool* result,
-                                                    bool value) {
-  *result = value;
+                                                    bool accept,
+                                                    bool can_change_schemes) {
+  // Should only update |accept_file_scheme_cookies_| if
+  // AllowFileSchemeCookiesAsyncHelper said this is OK.
+  if (can_change_schemes) {
+    base::AutoLock lock(accept_file_scheme_cookies_lock_);
+    accept_file_scheme_cookies_ = accept;
+  }
   std::move(complete).Run();
 }
 

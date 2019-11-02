@@ -102,7 +102,8 @@ void CocoaScrollBarThumb::OnPaint(gfx::Canvas* canvas) {
   auto params = cocoa_scroll_bar_->GetPainterParams();
   // Set the hover state based only on the thumb.
   params.hovered = IsStateHovered() || IsStatePressed();
-  CocoaScrollbarPainter::PaintThumb(canvas, GetLocalBounds(), params);
+  CocoaScrollbarPainter::PaintThumb(
+      canvas->sk_canvas(), gfx::RectToSkIRect(GetLocalBounds()), params);
 }
 
 bool CocoaScrollBarThumb::OnMousePressed(const ui::MouseEvent& event) {
@@ -209,7 +210,8 @@ void CocoaScrollBar::OnPaint(gfx::Canvas* canvas) {
   // Transparency of the track is handled by the View opacity, so always draw
   // using the non-overlay path.
   params.overlay = false;
-  CocoaScrollbarPainter::PaintTrack(canvas, GetLocalBounds(), params);
+  CocoaScrollbarPainter::PaintTrack(
+      canvas->sk_canvas(), gfx::RectToSkIRect(GetLocalBounds()), params);
 }
 
 bool CocoaScrollBar::OnMousePressed(const ui::MouseEvent& event) {

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -58,6 +57,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   static AXVirtualView* GetFromId(int32_t id);
 
   AXVirtualView();
+  AXVirtualView(const AXVirtualView&) = delete;
+  AXVirtualView& operator=(const AXVirtualView&) = delete;
   ~AXVirtualView() override;
 
   //
@@ -190,7 +191,6 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   std::unique_ptr<AXVirtualViewWrapper> wrapper_;
 
   friend class ViewAccessibility;
-  DISALLOW_COPY_AND_ASSIGN(AXVirtualView);
 };
 
 }  // namespace views

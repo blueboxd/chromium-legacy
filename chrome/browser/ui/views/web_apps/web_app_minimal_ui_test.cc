@@ -52,11 +52,12 @@ IN_PROC_BROWSER_TEST_P(WebAppMinimalUITest, MinimalUi) {
   EXPECT_TRUE(!!provider->GetReloadButton());
 }
 
-// TODO(crbug.com/1014346): Support hosted apps.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     WebAppMinimalUITest,
-    ::testing::Values(ControllerType::kUnifiedControllerWithWebApp),
+    ::testing::Values(ControllerType::kHostedAppController,
+                      ControllerType::kUnifiedControllerWithBookmarkApp,
+                      ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 
 }  // namespace web_app

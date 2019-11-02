@@ -45,7 +45,7 @@
 <translation id="1056775291175587022">Нет сетей</translation>
 <translation id="1056898198331236512">Внимание</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1061745542578250838">Файл <ph name="FILE_NAME" /> заблокирован, так как содержит деликатный контент.</translation>
+<translation id="1061745542578250838">Файл "<ph name="FILE_NAME" />" заблокирован, так как содержит конфиденциальную информацию.</translation>
 <translation id="1061904396131502319">Скоро перерыв</translation>
 <translation id="1067048845568873861">Создано</translation>
 <translation id="1067291318998134776">Linux (бета)</translation>
@@ -1088,7 +1088,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> не удалось подключиться к <ph name="NETWORK_ID" />. Выберите другую сеть или повторите попытку.</translation>
 <translation id="2553440850688409052">Скрыть подключаемый модуль</translation>
 <translation id="2554553592469060349">Выбранный файл слишком большой (максимальный размер: 3 МБ).</translation>
-<translation id="2557378327156922632">Файл содержит деликатный контент.</translation>
+<translation id="2557378327156922632">Файл содержит конфиденциальную информацию.</translation>
 <translation id="255747371423522804">Добавить в существующую группу</translation>
 <translation id="2558896001721082624">Показывать специальные возможности в системном меню</translation>
 <translation id="2562743677925229011">Не выполнен вход в <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1129,7 +1129,7 @@
 <translation id="26224892172169984">Запретить обработку протоколов на всех сайтах</translation>
 <translation id="2624142942574147739">Этот сайт может использовать ваши камеру и микрофон</translation>
 <translation id="2626799779920242286">Повторите попытку позже.</translation>
-<translation id="2629227353894235473">Разрабатывайте приложения для Android</translation>
+<translation id="2629227353894235473">Разработка приложений для Android</translation>
 <translation id="2630681426381349926">Подключение к сети Wi-Fi</translation>
 <translation id="2631120081682787498">Закрыть эту вкладку?</translation>
 <translation id="2631498379019108537">Показывать параметры ввода на панели запуска</translation>
@@ -1304,7 +1304,7 @@
 <translation id="2861301611394761800">Обновление системы завершено. Перезапустите компьютер.</translation>
 <translation id="2861941300086904918">Менеджер безопасности – Native Client</translation>
 <translation id="2864601841139725659">Выберите фото профиля</translation>
-<translation id="2865919525181940183">Скриншот с открытыми на экране программами</translation>
+<translation id="2865919525181940183">Скриншот с открытыми программами на экране</translation>
 <translation id="2867768963760577682">Открыть в закрепленной вкладке</translation>
 <translation id="2868746137289129307">Это устаревшее расширение отключено в соответствии с корпоративной политикой. Когда появится новая версия, оно может включиться автоматически.</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -1389,7 +1389,6 @@
 <translation id="2989786307324390836">Двоичный единый сертификат с расшифровкой DER</translation>
 <translation id="2992931425024192067">Показывать уведомления полностью</translation>
 <translation id="2993517869960930405">О приложении</translation>
-<translation id="299483336428448530">Установлено родителями</translation>
 <translation id="2996286169319737844">Данные зашифрованы с помощью кодовой фразы. Шифрование не применяется к способам оплаты и адресам из Google Pay.</translation>
 <translation id="2996722619877761919">Переплет по длинному краю</translation>
 <translation id="3003144360685731741">Предпочитаемые сети</translation>
@@ -2058,7 +2057,7 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Импортированные из IE</translation>
 <translation id="3950820424414687140">Вход</translation>
-<translation id="3952230510293296226">Файл заблокирован, так как содержит деликатный контент.</translation>
+<translation id="3952230510293296226">Файл заблокирован, так как содержит конфиденциальную информацию.</translation>
 <translation id="3953834000574892725">Мои аккаунты</translation>
 <translation id="3954354850384043518">Скачивание…</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> × <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Гц)</translation>
@@ -3316,7 +3315,7 @@
 <translation id="5860494867054883682">Переключение на другой канал (<ph name="CHANNEL_NAME" />) (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="5862109781435984885">Показывать инструменты стилуса на панели запуска</translation>
 <translation id="5863445608433396414">Включить функции отладки</translation>
-<translation id="5863471434640009253">Чтобы активировать инструмент Android Debug Bridge (ADB), перезапустите <ph name="DEVICE_TYPE" />. Для отключения ADB потребуется сбросить настройки устройства до заводских.</translation>
+<translation id="5863471434640009253">Чтобы запустить инструмент Android Debug Bridge (ADB), перезагрузите <ph name="DEVICE_TYPE" />. Для отключения ADB потребуется сбросить настройки устройства до заводских.</translation>
 <translation id="5864471791310927901">Поиск DHCP завершен со сбоем</translation>
 <translation id="586567932979200359">Вы запускаете <ph name="PRODUCT_NAME" /> с образа на диске. Установка его на компьютере позволит запускать браузер без использования образа и обеспечит его регулярное обновление.</translation>
 <translation id="5865733239029070421">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>
@@ -3516,7 +3515,7 @@
 <translation id="6141988275892716286">Подтвердите скачивание</translation>
 <translation id="6143186082490678276">Справка</translation>
 <translation id="6144938890088808325">Помогите нам улучшить Chromebook</translation>
-<translation id="614611931938947795">Файл слишком большой для облачной проверки, поэтому его открытие заблокировано.</translation>
+<translation id="614611931938947795">Файл слишком большой для облачного сканирования, поэтому его открытие заблокировано.</translation>
 <translation id="6147020289383635445">Произошла ошибка предварительного просмотра печати.</translation>
 <translation id="6148576794665275391">Открыть</translation>
 <translation id="6149015141270619212">Не удается подключиться к Интернету</translation>
@@ -3659,7 +3658,6 @@
 <translation id="63566973648609420">Ваши зашифрованные данные может прочитать только тот, кто знает кодовую фразу. Она не пересылается и не хранится в Google. Если вы забудете фразу или решите изменить эту настройку, вам придется <ph name="BEGIN_LINK" />сбросить параметры синхронизации<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Поздравляем с приобретением продукта семейства <ph name="SHORT_PRODUCT_NAME" />! Это больше, чем просто компьютер.</translation>
 <translation id="6358884629796491903">Дракон</translation>
-<translation id="6360079014182882594">На этом сайте нет файлов cookie, которые можно использовать для отслеживания ваших действий в Интернете.</translation>
 <translation id="6361850914223837199">Сведения об ошибке:</translation>
 <translation id="6362853299801475928">&amp;Сообщить о проблеме...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -5018,6 +5016,7 @@
 <translation id="8319414634934645341">Расширенное использование ключа</translation>
 <translation id="8320459152843401447">Весь экран</translation>
 <translation id="8322814362483282060">Доступ к вашему микрофону для этой страницы заблокирован.</translation>
+<translation id="8323167517179506834">Введите URL</translation>
 <translation id="8326478304147373412">PKCS #7, цепочка сертификатов</translation>
 <translation id="8327039559959785305">Не удалось подключить файлы Linux. Повторите попытку.</translation>
 <translation id="8335587457941836791">Открепить от панели запуска</translation>
@@ -5134,6 +5133,7 @@
 <translation id="8509646642152301857">Не удалось скачать словарь проверки правописания</translation>
 <translation id="8512476990829870887">Завершить процесс</translation>
 <translation id="851263357009351303">Всегда показывать изображения с сайта <ph name="HOST" /></translation>
+<translation id="8513108775083588393">Автоповорот</translation>
 <translation id="8514746246728959655">Попробуйте применить другой электронный ключ</translation>
 <translation id="8521475323816527629">Быстрый переход к приложениям</translation>
 <translation id="8523493869875972733">Закрыть</translation>
@@ -5382,7 +5382,7 @@
 <translation id="8850251000316748990">Ещё...</translation>
 <translation id="885246833287407341">Аргументы функций API</translation>
 <translation id="8853586775156634952">Карта будет сохранена только на этом устройстве.</translation>
-<translation id="8855501062415172277">Файл <ph name="FILE_NAME" /> содержит деликатный контент.</translation>
+<translation id="8855501062415172277">Файл "<ph name="FILE_NAME" />" содержит конфиденциальную информацию.</translation>
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="8859057652521303089">Выберите язык:</translation>
 <translation id="8859174528519900719">Субфрейм: <ph name="SUBFRAME_SITE" /></translation>

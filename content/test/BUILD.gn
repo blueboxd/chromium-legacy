@@ -18,7 +18,6 @@ import("//ppapi/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
-import("//ui/base/mpris/buildflags/buildflags.gni")
 import("//v8/gni/v8.gni")
 
 if (is_android) {
@@ -233,8 +232,6 @@ jumbo_static_library("test_support") {
     "../public/test/web_contents_tester.h",
     "appcache_test_helper.cc",
     "appcache_test_helper.h",
-    "barrier_builder.cc",
-    "barrier_builder.h",
     "content_browser_sanity_checker.cc",
     "content_browser_sanity_checker.h",
     "content_test_suite.cc",
@@ -943,6 +940,7 @@ test("content_browsertests") {
     "../browser/navigation_mhtml_browsertest.cc",
     "../browser/net/accept_header_browsertest.cc",
     "../browser/net/net_command_line_flags_browsertest.cc",
+    "../browser/net/network_field_trial_browsertest.cc",
     "../browser/net_info_browsertest.cc",
     "../browser/network_service_browsertest.cc",
     "../browser/network_service_restart_browsertest.cc",
@@ -1628,14 +1626,6 @@ test("content_unittests") {
     "../browser/indexed_db/mock_mojo_indexed_db_callbacks.h",
     "../browser/indexed_db/mock_mojo_indexed_db_database_callbacks.cc",
     "../browser/indexed_db/mock_mojo_indexed_db_database_callbacks.h",
-    "../browser/indexed_db/scopes/disjoint_range_lock_manager_unittest.cc",
-    "../browser/indexed_db/scopes/leveldb_scope_unittest.cc",
-    "../browser/indexed_db/scopes/leveldb_scopes_coding_unittest.cc",
-    "../browser/indexed_db/scopes/leveldb_scopes_tasks_unittest.cc",
-    "../browser/indexed_db/scopes/leveldb_scopes_test_utils.cc",
-    "../browser/indexed_db/scopes/leveldb_scopes_test_utils.h",
-    "../browser/indexed_db/scopes/leveldb_scopes_unittest.cc",
-    "../browser/indexed_db/scopes/scopes_lock_manager_unittest.cc",
     "../browser/loader/merkle_integrity_source_stream_unittest.cc",
     "../browser/loader/navigation_url_loader_impl_unittest.cc",
     "../browser/loader/navigation_url_loader_unittest.cc",
@@ -1980,7 +1970,6 @@ test("content_unittests") {
     "//content/browser/devtools:inspector_protocol_bindings_test",
     "//content/browser/devtools:inspector_protocol_encoding_test",
     "//content/browser/dom_storage:local_storage_proto",
-    "//content/browser/indexed_db/scopes:scopes_metadata_proto",
     "//content/browser/notifications:notification_proto",
     "//content/browser/service_worker:service_worker_proto",
     "//content/browser/speech/proto",
@@ -2300,11 +2289,6 @@ test("content_unittests") {
 
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
-  }
-
-  if (use_mpris) {
-    sources += [ "../browser/media/mpris_notifier_unittest.cc" ]
-    deps += [ "//ui/base/mpris:test_support" ]
   }
 }
 

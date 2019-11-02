@@ -20,6 +20,8 @@ class AXVirtualView;
 class AXVirtualViewWrapper : public AXAuraObjWrapper {
  public:
   AXVirtualViewWrapper(AXVirtualView* virtual_view, AXAuraObjCache* cache);
+  AXVirtualViewWrapper(const AXVirtualViewWrapper&) = delete;
+  AXVirtualViewWrapper& operator=(const AXVirtualViewWrapper&) = delete;
   ~AXVirtualViewWrapper() override;
 
   // AXAuraObjWrapper:
@@ -33,8 +35,6 @@ class AXVirtualViewWrapper : public AXAuraObjWrapper {
  private:
   // Weak.
   AXVirtualView* virtual_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXVirtualViewWrapper);
 };
 
 }  // namespace views

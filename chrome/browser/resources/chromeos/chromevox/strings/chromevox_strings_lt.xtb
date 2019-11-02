@@ -153,6 +153,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="2063539687800151747">Epigrafas</translation>
 <translation id="207477615537953741">Semantinis interpretavimas išjungtas</translation>
 <translation id="2086961585857038472">Kitas žodis</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">lt</translation>
 <translation id="2091933974477985526">Ankstesnė teksto sritis, kurią galima redaguoti</translation>
 <translation id="2100350898815792233">Su visais skyrybos ženklais</translation>
@@ -193,6 +194,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="2416512023405990736">Nepažymėtas žymimasis laukelis</translation>
 <translation id="2417569100218200841">Turinio informacija</translation>
 <translation id="2417948780551741035">Išnašos</translation>
+<translation id="2419852971200420169">Aprašų sąrašas</translation>
 <translation id="2421113964388408478">Trynimas</translation>
 <translation id="2422937916923936891">Meniu elemento žymimasis laukelis</translation>
 <translation id="2428534162001909979">Komandų meniu</translation>
@@ -371,6 +373,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="3497063866483065785">{COUNT,plural, =1{klaustukas}one{# klaustukas}few{# klaustukai}many{# question marks}other{# klaustukų}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{stogelio ženklas}one{# stogelio ženklas}few{# stogelio ženklai}many{# carets}other{# stogelio ženklų}}</translation>
 <translation id="352577523970648069">Redaguotinas teksto laukas</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">iškirpti „<ph name="TEXT" />“.</translation>
 <translation id="3549680091535286226">Jei norite laikinai sustabdyti kalbą, palieskite dviem pirštais</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, žymimasis laukelis nepažymėtas</translation>
@@ -779,6 +782,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="6378394210114975876">Rausvai violetinė spalva</translation>
 <translation id="6385591741672306837">stulp.</translation>
 <translation id="6387719785439924554">šalia</translation>
+<translation id="6393014464788431702">Išjungti visus įvykių filtrus</translation>
 <translation id="6411426777058107714">Nėra ankstesnės akutės.</translation>
 <translation id="6414968628640960377">Ankstesnis kitoks elementas.</translation>
 <translation id="6417265370957905582">„Google“ padėjėjas</translation>
@@ -914,6 +918,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="7332592614823088566">Eilutė: <ph name="ROWINDEX" /> iš <ph name="ROWTOTAL" />. Stulpelis: <ph name="COLINDEX" /> iš <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">yra iššokantysis elementas</translation>
 <translation id="7356165926712028380">Perjungti į 8 taškų Brailio rašmenis</translation>
+<translation id="7356610683936413584">Išsami aprašų sąrašo informacija</translation>
 <translation id="7362871137496673139">Nėra ankstesnės 2 lygio antraštės.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ampersendas}one{# ampersendas}few{# ampersendai}many{# ampersands}other{# ampersendų}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8096975275316362544">Šviesi mėtų spalva</translation>
 <translation id="8098587210054821856">Pilka spalva su melsvu atspalviu</translation>
 <translation id="8110647606445335195">Nėra ARIA orientyrų.</translation>
+<translation id="8121539003537428024">Įgalinti visus įvykių filtrus</translation>
 <translation id="812886159861361726">„<ph name="FILE_NAME" />“ atsisiuntimas sustabdytas</translation>
 <translation id="8138880386467279117">Jutiklinis</translation>
 <translation id="8153880621934657047">Ne lentelės viduje.</translation>

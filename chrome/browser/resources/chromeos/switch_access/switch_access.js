@@ -206,7 +206,7 @@ class SwitchAccess {
   }
 
   /**
-   * Get the boolean value for the given name. Will throw a type error if the
+   * Get the boolean value for the given name. Will throw an error if the
    * value associated with |name| is not a boolean, or undefined.
    *
    * @override
@@ -218,7 +218,7 @@ class SwitchAccess {
   }
 
   /**
-   * Get the string value for the given name. Will throw a type error if the
+   * Get the string value for the given name. Will throw an error if the
    * value associated with |name| is not a string, or is undefined.
    *
    * @override
@@ -230,7 +230,7 @@ class SwitchAccess {
   }
 
   /**
-   * Get the number value for the given name. Will throw a type error if the
+   * Get the number value for the given name. Will throw an error if the
    * value associated with |name| is not a number, or undefined.
    *
    * @override
@@ -299,6 +299,19 @@ class SwitchAccess {
             {visit: (node) => node.htmlAttributes.id === SAConstants.BACK_ID})
             .next()
             .node;
+  }
+
+  /*
+   * Creates and records the specified error.
+   * @param {SAConstants.ErrorType} errorType
+   * @param {string} errorString
+   * @return {!Error}
+   */
+  static error(errorType, errorString) {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'Accessibility.CrosSwitchAccess.Error', errorType,
+        SAConstants.ErrorTypeCountForUMA);
+    return new Error(errorString);
   }
 
   /**

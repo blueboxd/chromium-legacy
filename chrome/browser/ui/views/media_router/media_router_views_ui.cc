@@ -403,7 +403,8 @@ void MediaRouterViewsUI::RemoveIssue(const Issue::Id& issue_id) {
 
 void MediaRouterViewsUI::OpenFileDialog() {
   if (!media_router_file_dialog_) {
-    media_router_file_dialog_ = std::make_unique<MediaRouterFileDialog>(this);
+    media_router_file_dialog_ =
+        std::make_unique<MediaRouterFileDialog>(weak_factory_.GetWeakPtr());
   }
 
   media_router_file_dialog_->OpenFileDialog(GetBrowser());

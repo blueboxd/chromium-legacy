@@ -106,6 +106,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Część po znaku „<ph name="ATSIGN" />” nie może zawierać symbolu „<ph name="INVALIDCHARACTER" />”.</translation>
 <translation id="4668956016107839909">dodatek</translation>
+<translation id="4698212723196775569">kod</translation>
 <translation id="4718048029184481307">Odtwarzam w trybie obrazu w obrazie</translation>
 <translation id="4742539557769756338">okładka</translation>
 <translation id="4748357248530471599">przełącz z wycięcia w ekranie na tryb pełnoekranowy</translation>
@@ -191,6 +192,7 @@
 <translation id="7118469954320184356">Brak opisu.</translation>
 <translation id="7139483182332611405">wstęp</translation>
 <translation id="7214187073215825913">informacje o treści</translation>
+<translation id="7238347055216017155">wyróżnienie</translation>
 <translation id="7263440858009898357">Wybierz element z listy.</translation>
 <translation id="727747134524199931">nagłówek kolumny</translation>
 <translation id="7320576522385648310">buforowanie</translation>
@@ -217,6 +219,7 @@
 <translation id="7888071071722539607">Uwzględnij znak „<ph name="ATSIGN" />” w adresie e-mail. W adresie „<ph name="INVALIDADDRESS" />” brakuje znaku „<ph name="ATSIGN" />”.</translation>
 <translation id="7891486169920085145">podział</translation>
 <translation id="795667975304826397">Nie wybrano pliku</translation>
+<translation id="8034303206267677282">ważne</translation>
 <translation id="8053789581856978548">pole tekstowe wyszukiwania</translation>
 <translation id="8057695513531652401">uwaga</translation>
 <translation id="8105797009065549151">odsyłacz</translation>

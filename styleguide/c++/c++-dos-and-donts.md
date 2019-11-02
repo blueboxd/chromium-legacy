@@ -37,6 +37,23 @@ void foo() {
 }
 ```
 
+## Explicitly declare class copyability/movability
+
+The
+[Google Style Guide](http://google.github.io/styleguide/cppguide.html#Copyable_Movable_Types)
+says classes can omit copy/move declarations or deletions "only if they are
+obvious".  Because "obvious" is subjective and even the examples in the style
+guide take some thought to figure out, being explicit is clear, simple, and
+avoids any risk of accidental copying.
+
+Declare or delete these operations in the public section, between other
+constructors and the destructor; `DISALLOW_COPY_AND_ASSIGN` is deprecated.  For
+a non-copyable/movable type, delete the copy operations (the move operations
+will be implicitly deleted); otherwise, declare either copy operations, move
+operations, or both (a non-declared pair will be implicitly deleted).  Always
+declare or delete both construction and assignment, not just one (which can
+introduce subtle bugs).
+
 ## Variable initialization
 
 There are myriad ways to initialize variables in C++11.  Prefer the following

@@ -4,7 +4,6 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//pdf/features.gni")
 import("//testing/test.gni")
 import("//third_party/pdfium/pdfium.gni")
@@ -27,7 +26,7 @@ if (enable_pdf) {
     }
   }
 
-  jumbo_static_library("pdf") {
+  static_library("pdf") {
     configs += [ ":pdf_common_config" ]
     deps = [
       ":features",

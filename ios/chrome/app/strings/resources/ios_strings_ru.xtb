@@ -202,7 +202,6 @@
 <translation id="3783017676699494206">Сохранить изображение</translation>
 <translation id="3789841737615482174">Установить</translation>
 <translation id="385051799172605136">Назад</translation>
-<translation id="3886946236301294521">Предупреждает, если пароль скомпрометирован в результате утечки данных.</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3915450441834151894">Информация о сайте</translation>
 <translation id="3922310737605261887">Поиск по скопированному тексту</translation>
@@ -301,7 +300,6 @@
 <translation id="5300589172476337783">Показать</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5327248766486351172">Название</translation>
-<translation id="5365716706805792666">Google может проверять, были ли ваши пароли раскрыты в результате утечки данных. Эта функция будет включена, когда вы войдете в аккаунт Google.</translation>
 <translation id="5388358297987318779">Открыть изображение</translation>
 <translation id="5407969256130905701">Сбросить изменения</translation>
 <translation id="5409365236829784218">Нет приложений, поддерживающих файлы этого типа.</translation>
@@ -333,7 +331,6 @@
 <translation id="5854790677617711513">Сохраненные более 30 дней назад</translation>
 <translation id="5857090052475505287">Новая папка</translation>
 <translation id="5857770089550859117">Чтобы начать синхронизацию, введите кодовую фразу.</translation>
-<translation id="5859444426865731878">Google может проверять, были ли ваши пароли раскрыты в результате утечки данных.</translation>
 <translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="5869029295770560994">ОК</translation>
 <translation id="5871497086027727873">Перемещено закладок: 1</translation>
@@ -483,7 +480,6 @@
 <translation id="7859704718976024901">История просмотра веб-страниц</translation>
 <translation id="7887198238286927132">Чтобы обеспечить конфиденциальность ваших данных, Chrome не использует автозаполнение для этого поля.</translation>
 <translation id="7918293828610777738">Список для чтения доступен без подключения к Интернету. Чтобы добавить в него страницу, нажмите <ph name="SHARE_OPENING_ICON" />, а затем –<ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Проверка безопасности паролей</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Экспорт паролей...</translation>
 <translation id="7947953824732555851">Принять и войти</translation>

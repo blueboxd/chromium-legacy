@@ -460,7 +460,7 @@
 തിരയലുകൾ, പ്രവൃത്തി എന്നിവ പോലെ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> എന്നതിലെ മറ്റ് Google സേവനങ്ങളിൽ നിന്നുള്ള മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രവും നിങ്ങളുടെ Google അക്കൗണ്ടിൽ ഉണ്ടായേക്കാം.</translation>
 <translation id="4532845899244822526">ഫോൾഡർ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="4538018662093857852">ലൈറ്റ് മോഡ് ഓണാക്കുക</translation>
-<translation id="4550003330909367850">ഇവിടെ ‌നിങ്ങളുടെ ‌പാസ്‌വേഡ് കാണാനും പകർത്താനും, ഈ ഉപകരണത്തിൽ സ്‌ക്രീൻ ലോക്ക് ‌സജ്ജമാക്കുക.</translation>
+<translation id="4550003330909367850">ഇവിടെ ‌നിങ്ങളുടെ ‌പാസ്‌വേഡ് കാണാനും പകർത്താനും കഴിയും, ഈ ഉപകരണത്തിൽ സ്‌ക്രീൻ ലോക്ക് ‌സജ്ജമാക്കുക.</translation>
 <translation id="4558311620361989323">വെബ്‌പേജ് കുറുക്കുവഴികൾ</translation>
 <translation id="4561979708150884304">കണക്ഷൻ ഇല്ല</translation>
 <translation id="4565377596337484307">പാസ്‌വേഡ് മറയ്ക്കുക</translation>
@@ -678,7 +678,6 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="6036057147555329831">അധിക ICU</translation>
 <translation id="6039379616847168523">അടുത്ത ടാബിലേക്ക് പോകുക</translation>
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
-<translation id="6042308850641462728">കൂടുതൽ</translation>
 <translation id="604996488070107836">ഒരു അജ്ഞാതമായ പിശക് കാരണം <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6064125863973209585">പൂർത്തിയാക്കിയ ഡൗൺലോഡുകൾ</translation>

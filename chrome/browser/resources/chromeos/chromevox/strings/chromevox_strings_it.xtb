@@ -153,6 +153,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2063539687800151747">Epigrafe</translation>
 <translation id="207477615537953741">Semantica disattivata</translation>
 <translation id="2086961585857038472">Parola successiva</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">it</translation>
 <translation id="2091933974477985526">Area di testo modificabile precedente</translation>
 <translation id="2100350898815792233">Tutta la punteggiatura</translation>
@@ -192,6 +193,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2416512023405990736">Una casella di controllo deselezionata</translation>
 <translation id="2417569100218200841">Informazioni sui contenuti</translation>
 <translation id="2417948780551741035">Note finali</translation>
+<translation id="2419852971200420169">Elenco di descrizioni</translation>
 <translation id="2421113964388408478">Eliminazione</translation>
 <translation id="2422937916923936891">Casella di controllo voce di menu</translation>
 <translation id="2428534162001909979">Menu dei comandi</translation>
@@ -370,6 +372,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3497063866483065785">{COUNT,plural, =1{punto interrogativo}other{# punti interrogativi}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{accento circonflesso}other{# accenti circonflessi}}</translation>
 <translation id="352577523970648069">Un campo di testo modificabile</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">taglia <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Tocca con due dita per interrompere temporaneamente i comandi vocali</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, casella di controllo non selezionata</translation>
@@ -778,6 +781,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="6378394210114975876">Cardo</translation>
 <translation id="6385591741672306837">col</translation>
 <translation id="6387719785439924554">di lato</translation>
+<translation id="6393014464788431702">Disattiva tutti i filtri degli eventi</translation>
 <translation id="6411426777058107714">Nessun pulsante di opzione precedente.</translation>
 <translation id="6414968628640960377">Elemento diverso precedente.</translation>
 <translation id="6417265370957905582">Assistente Google</translation>
@@ -913,6 +917,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="7332592614823088566">Riga <ph name="ROWINDEX" /> di <ph name="ROWTOTAL" />, colonna <ph name="COLINDEX" /> di <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">con popup</translation>
 <translation id="7356165926712028380">Passa a braille a otto punti</translation>
+<translation id="7356610683936413584">Dettaglio dell'elenco di descrizioni</translation>
 <translation id="7362871137496673139">Nessuna intestazione livello 2 precedente.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{e commerciale}other{# simboli di e commerciale}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1091,6 +1096,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8096975275316362544">Crema alla menta</translation>
 <translation id="8098587210054821856">Grigio ardesia</translation>
 <translation id="8110647606445335195">Nessun landmark ARIA.</translation>
+<translation id="8121539003537428024">Attiva tutti i filtri degli eventi</translation>
 <translation id="812886159861361726">Download di <ph name="FILE_NAME" /> interrotto</translation>
 <translation id="8138880386467279117">Touch</translation>
 <translation id="8153880621934657047">Non sei all'interno della tabella.</translation>

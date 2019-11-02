@@ -183,7 +183,7 @@ class ExtractComponentsTest(unittest.TestCase):
       with mock.patch('sys.stdout', saved_output):
         extract_components.main(['%prog', '-v', 'src'])
       output = saved_output.getvalue()
-      self.assertIn('./OWNERS has no COMPONENT tag', output)
+      self.assertIn('OWNERS has no COMPONENT tag', output)
 
   def testCoverage(self):
     with mock.patch('extract_components.scrape_owners', return_value={
@@ -253,4 +253,4 @@ class ExtractComponentsTest(unittest.TestCase):
       self.assertIn('OWNERS files that have missing team and component '
                     'by depth:', output)
       self.assertIn('at depth 0', output)
-      self.assertIn('[\'./OWNERS\']', output)
+      self.assertIn('[\'OWNERS\']', output)

@@ -38,9 +38,9 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
-  blink::mojom::DisplayMode GetAppUserDisplayMode(
+  blink::mojom::DisplayMode GetAppDisplayMode(
       const web_app::AppId& app_id) const override;
-  blink::mojom::DisplayMode GetAppEffectiveDisplayMode(
+  blink::mojom::DisplayMode GetAppUserDisplayMode(
       const web_app::AppId& app_id) const override;
   std::vector<web_app::AppId> GetAppIds() const override;
 

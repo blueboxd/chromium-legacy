@@ -17,7 +17,7 @@
 
 namespace content {
 
-// Helper class to get media::mojom::InterfaceFactoryPtr.
+// Helper class to get mojo::PendingRemote<media::mojom::InterfaceFactory>.
 // Get() lazily connects to the media service specified by |service_name_|.
 class MediaInterfaceFactoryHolder {
  public:

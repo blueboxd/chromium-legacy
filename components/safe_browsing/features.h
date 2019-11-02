@@ -72,6 +72,7 @@ extern const base::Feature kRealTimeUrlLookupEnabled;
 
 // Controls whether the high confidence allowlist for real time URL lookup be
 // fetched.
+// Note: it is not applicable on Android.
 extern const base::Feature kRealTimeUrlLookupFetchAllowlist;
 
 // Controls whether to send sample pings of allowlist domains on

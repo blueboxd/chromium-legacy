@@ -76,13 +76,16 @@ ScriptPromise NativeFileSystemFileHandle::getFile(ScriptState* script_state) {
 
   mojo_ptr_->AsBlob(WTF::Bind(
       [](ScriptPromiseResolver* resolver, const String& name,
-         NativeFileSystemErrorPtr result,
+         NativeFileSystemErrorPtr result, const base::File::Info& info,
          const scoped_refptr<BlobDataHandle>& blob) {
         if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
           native_file_system_error::Reject(resolver, *result);
           return;
         }
-        resolver->Resolve(File::Create(name, InvalidFileTime(), blob));
+        double last_modified = info.last_modified.is_null()
+                                   ? InvalidFileTime()
+                                   : info.last_modified.ToJsTime();
+        resolver->Resolve(File::Create(name, last_modified, blob));
       },
       WrapPersistent(resolver), name()));
 

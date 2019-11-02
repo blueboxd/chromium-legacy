@@ -26,6 +26,7 @@
 <translation id="1031362278801463162">Chargement de l'aperçu...</translation>
 <translation id="103279545524624934">Libérez de l'espace disque pour lancer des applications Android.</translation>
 <translation id="1033780634303702874">Accéder à vos appareils reliés via le port série</translation>
+<translation id="1034942643314881546">Activation d'ADB pour créer des illustrations d'application</translation>
 <translation id="1036348656032585052">Désactiver</translation>
 <translation id="1036511912703768636">Accéder à n'importe lequel de ces appareils USB</translation>
 <translation id="1036982837258183574">Appuyez sur |<ph name="ACCELERATOR" />| pour quitter le mode plein écran.</translation>
@@ -284,6 +285,7 @@
 <translation id="1415708812149920388">Accès en lecture au presse-papiers refusé</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (ID d'extension "<ph name="EXTENSION_ID" />") n'est pas autorisé à se joindre à ce type de session.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="1418954524306642206">Sélectionner le fichier PPD correspondant à votre imprimante</translation>
 <translation id="1420834118113404499">Licences multimédias</translation>
 <translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" /> pour autoriser l'association</translation>
 <translation id="1422159345171879700">Charger les scripts à risque</translation>
@@ -555,6 +557,7 @@
 <translation id="1782196717298160133">Rechercher votre téléphone</translation>
 <translation id="1784707308176068866">Exécuter en arrière-plan à la demande d'une application partenaire native</translation>
 <translation id="1784849162047402014">Peu d'espace disque disponible sur l'appareil</translation>
+<translation id="1787350673646245458">Image de l'utilisateur</translation>
 <translation id="1790194216133135334">Envoyer le lien sur <ph name="DEVICE_NAME" /></translation>
 <translation id="1790976235243700817">Supprimer l'accès</translation>
 <translation id="1792619191750875668">Affichage étendu</translation>
@@ -685,6 +688,7 @@
 <translation id="1976150099241323601">Se connecter au dispositif de sécurité</translation>
 <translation id="1976323404609382849">Les cookies de plusieurs sites ont été bloqués.</translation>
 <translation id="1977965994116744507">Rapprochez votre téléphone pour déverrouiller votre <ph name="DEVICE_TYPE" />.</translation>
+<translation id="1978006917103730774">Les prochaines mises à jour logicielles et de sécurité seront installées automatiquement.</translation>
 <translation id="1979280758666859181">Vous souhaitez installer une ancienne version de <ph name="PRODUCT_NAME" />. Ce changement sera appliqué dès que cette version correspondra à celle qui est installée sur votre appareil.</translation>
 <translation id="197989455406964291">KDC n'est pas compatible avec ce type de chiffrement</translation>
 <translation id="1981544341227357861">Retirez votre clé de sécurité de votre appareil, réinsérez-la, puis appuyez dessus.</translation>
@@ -815,6 +819,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2173801458090845390">Ajoutez un ID de réquisition sur cet appareil</translation>
 <translation id="2175042898143291048">Toujours procéder ainsi</translation>
 <translation id="2175607476662778685">Barre de lancement rapide</translation>
+<translation id="217576141146192373">Impossible d'ajouter une imprimante. Vérifiez la configuration de votre imprimante et réessayez.</translation>
 <translation id="2177950615300672361">Onglet de navigation privée : <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">Le plug-in <ph name="PEPPER_PLUGIN_NAME" /> provenant du domaine <ph name="PEPPER_PLUGIN_DOMAIN" /> demande l'accès à votre ordinateur</translation>
 <translation id="2178614541317717477">Autorité de certification compromise</translation>
@@ -927,6 +932,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2326931316514688470">&amp;Actualiser l'application</translation>
 <translation id="2327492829706409234">Activer l'application</translation>
 <translation id="2329597144923131178">Connectez-vous pour synchroniser favoris, historique, mots de passe et autres sur vos appareils. </translation>
+<translation id="2330129964253841015">M'avertir quand des mots de passe ont été piratés</translation>
 <translation id="2332131598580221120">Afficher dans la boutique</translation>
 <translation id="2332192922827071008">Ouvrir les préférences</translation>
 <translation id="2332742915001411729">Rétablir le thème par défaut</translation>
@@ -975,6 +981,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2395616325548404795">Votre <ph name="DEVICE_TYPE" /> a bien été enregistré pour bénéficier de la gestion d'entreprise, mais l'envoi d'informations concernant ses éléments et sa position a échoué. Veuillez saisir ces informations manuellement depuis la console d'administration de cet appareil.</translation>
 <translation id="2396783860772170191">Saisissez un code à quatre chiffres (entre 0000 et 9999)</translation>
 <translation id="2399939490305346086">Données de connexion sur la clé de sécurité</translation>
+<translation id="2407481962792080328">Lorsque vous vous connectez à votre compte Google, cette fonctionnalité est activée</translation>
 <translation id="2408955596600435184">Saisissez votre code.</translation>
 <translation id="241082044617551207">Plug-in inconnu</translation>
 <translation id="2412593942846481727">Mise à jour disponible</translation>
@@ -1391,7 +1398,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2989786307324390836">Certificat unique binaire codé DER</translation>
 <translation id="2992931425024192067">Afficher tout le contenu des notifications</translation>
 <translation id="2993517869960930405">Informations relatives à l'application</translation>
-<translation id="299483336428448530">Installée par vos parents</translation>
 <translation id="2996286169319737844">Les données ont été chiffrées avec votre phrase secrète de synchronisation. Ceci ne s'applique pas aux modes de paiement et adresses Google Pay.</translation>
 <translation id="2996722619877761919">Retourner sur les bords longs</translation>
 <translation id="3003144360685731741">Réseaux préférés</translation>
@@ -1417,6 +1423,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3016641847947582299">Composant mis à jour</translation>
 <translation id="3016780570757425217">Connaître votre position</translation>
 <translation id="3017079585324758401">Arrière-plan</translation>
+<translation id="3019285239893817657">Bouton pour accéder à la sous-page</translation>
 <translation id="3020183492814296499">Raccourcis</translation>
 <translation id="3020990233660977256">Numéro de série : <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Papillon</translation>
@@ -1432,6 +1439,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3038612606416062604">Ajouter une imprimante manuellement</translation>
 <translation id="3038675903128704560">N'autoriser aucun site à utiliser un plug-in pour accéder à mon ordinateur</translation>
 <translation id="3039491566278747710">Échec de l'installation de la règle hors connexion sur l'appareil.</translation>
+<translation id="3043581297103810752">De <ph name="ORIGIN" /></translation>
 <translation id="3045447014237878114">Plusieurs fichiers ont été téléchargés automatiquement via ce site</translation>
 <translation id="3046910703532196514">Page Web, complète</translation>
 <translation id="304747341537320566">Moteurs de synthèse vocale</translation>
@@ -1813,6 +1821,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3629631988386925734">Saisissez votre mot de passe pour activer Smart Lock. La prochaine fois, votre téléphone déverrouillera votre <ph name="DEVICE_TYPE" />. Vous pouvez désactiver Smart Lock dans les paramètres.</translation>
 <translation id="3630132874740063857">Votre téléphone</translation>
 <translation id="3630995161997703415">Ajoutez ce site à votre étagère pour l'utiliser à tout moment</translation>
+<translation id="3635353578505343390">Envoyer des commentaires à Google</translation>
 <translation id="3636096452488277381">Bonjour <ph name="USER_GIVEN_NAME" /></translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" /> % – <ph name="TIME" /> restantes</translation>
 <translation id="3637561406135221044">Recherche de données sensibles dans les fichiers…</translation>
@@ -1893,6 +1902,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3732530910372558017">Le code doit comporter 63 caractères au maximum</translation>
 <translation id="3733127536501031542">Serveur SSL avec fonction d'optimisation</translation>
 <translation id="3735740477244556633">Trier par</translation>
+<translation id="3736016243818847857">Voulez-vous continuer ?</translation>
 <translation id="3737274407993947948">Erreur lors de l'installation de Linux…</translation>
 <translation id="3737536731758327622">Vos téléchargements s'affichent ici</translation>
 <translation id="3738924763801731196"><ph name="OID" /> :</translation>
@@ -2402,6 +2412,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4501530680793980440">Confirmer la suppression</translation>
 <translation id="4502423230170890588">Supprimer de cet appareil</translation>
 <translation id="4504940961672722399">Utilisez cette extension en cliquant sur cette icône ou en appuyant sur <ph name="EXTENSION_SHORTCUT" /></translation>
+<translation id="4506379069541445709">Si vous continuez, ADB pourra créer et tester des applications Android. Notez qu'ADB autorise l'installation d'applications de test non vérifiées par Google.</translation>
 <translation id="4508051413094283164">Tout ouvrir dans une fenêtre de navigation privée</translation>
 <translation id="4508265954913339219">Échec de l'activation</translation>
 <translation id="4508765956121923607">Afficher la s&amp;ource</translation>
@@ -2961,6 +2972,7 @@ N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="5363109466694494651">Powerwash et rétablir</translation>
 <translation id="5365881113273618889">Le dossier que vous avez sélectionné contient des fichiers sensibles. Voulez-vous vraiment accorder à "<ph name="APP_NAME" />" un accès en écriture permanent à ce dossier ?</translation>
 <translation id="5367091008316207019">Lecture du fichier en cours…</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Votre téléphone est verrouillé. Déverrouillez-le pour y accéder.</translation>
 <translation id="5368779022775404937">Se connecter à <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Activer l'accélération du curseur</translation>
@@ -3178,6 +3190,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5646558797914161501">Homme d'affaires</translation>
 <translation id="5648166631817621825">7 derniers jours</translation>
 <translation id="5649053991847567735">Téléchargements automatiques</translation>
+<translation id="5656845498778518563">Envoyer des commentaires à Google</translation>
 <translation id="5657667036353380798">L'extension externe nécessite que la version <ph name="MINIMUM_CHROME_VERSION" /> ou une version ultérieure de Chrome soit installée.</translation>
 <translation id="5658415415603568799">Pour plus de sécurité, Smart Lock vous invitera à saisir votre mot de passe 20 heures après.</translation>
 <translation id="5659593005791499971">E-mail</translation>
@@ -3307,6 +3320,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5851868085455377790">Émetteur</translation>
 <translation id="5852112051279473187">Petit problème ! Une erreur est survenue lors de l'inscription de cet appareil. Veuillez réessayer ou contacter votre représentant de l'assistance technique.</translation>
 <translation id="5852137567692933493">Redémarrer et lancer Powerwash</translation>
+<translation id="5852360662347412211">Accédez aux paramètres Linux et réessayez</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0,6 seconde</translation>
 <translation id="5856721540245522153">Activer les fonctionnalités de débogage</translation>
@@ -3375,6 +3389,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5941153596444580863">Ajouter un profil utilisateur…</translation>
 <translation id="5941343993301164315">Veuillez vous connecter à <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Réduire</translation>
+<translation id="5942964813783878922">Votre <ph name="DEVICE_TYPE" /> redémarrera après cette mise à jour. Les prochaines mises à jour logicielles et de sécurité seront installées automatiquement.</translation>
 <translation id="5944869793365969636">Scanner le code QR</translation>
 <translation id="5945188205370098537">Envoyer des données d'utilisation et de diagnostic. Contribuez à l'amélioration de votre expérience sur Android en envoyant automatiquement à Google des données relatives aux diagnostics et à l'utilisation de l'appareil et des applications. Ce processus permettra d'améliorer, entre autres, la stabilité du système et des applications. Certaines données globales seront également utiles aux développeurs des applications Google et à nos partenaires, tels que les développeurs Android. Si vous activez le paramètre relatif à l'activité supplémentaire sur le Web et les applications, ces données peuvent être enregistrées dans votre compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Identifiant de rapport <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
@@ -3662,7 +3677,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="63566973648609420">Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète ne nous est pas envoyée et nous ne la stockons pas. Si vous l'oubliez ou si vous voulez modifier ce paramètre, vous devrez <ph name="BEGIN_LINK" />réinitialiser la synchronisation<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Bienvenue dans la famille <ph name="SHORT_PRODUCT_NAME" />. Cet ordinateur n'est pas comme les autres.</translation>
 <translation id="6358884629796491903">Dragon</translation>
-<translation id="6360079014182882594">Ce site est exempt de cookies pouvant servir à suivre votre activité sur le Web</translation>
 <translation id="6361850914223837199">Informations sur l'erreur :</translation>
 <translation id="6362853299801475928">Signale&amp;r un problème...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3777,6 +3791,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">Vous êtes connecté à un réseau <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Partager</translation>
+<translation id="6528189551082329571">Toujours ouvrir les liens de ce type dans l'application associée</translation>
 <translation id="6528513914570774834">Autoriser les autres utilisateurs de cet appareil à employer ce réseau</translation>
 <translation id="652948702951888897">Historique Chrome</translation>
 <translation id="6530186581263215931">Ces paramètres sont appliqués par votre administrateur</translation>
@@ -5022,6 +5037,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8319414634934645341">Utilisation étendue de la clé</translation>
 <translation id="8320459152843401447">L'intégralité de votre écran</translation>
 <translation id="8322814362483282060">L'accès à votre micro est bloqué pour cette page</translation>
+<translation id="8323167517179506834">Saisir une URL</translation>
 <translation id="8326478304147373412">PKCS #7, chaîne de certificats</translation>
 <translation id="8327039559959785305">Erreur lors de l'installation des fichiers Linux. Veuillez réessayer.</translation>
 <translation id="8335587457941836791">Retirer de l'étagère</translation>
@@ -5098,6 +5114,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8449008133205184768">Coller en adaptant le style</translation>
 <translation id="8449036207308062757">Gérer l'espace de stockage</translation>
 <translation id="8452135315243592079">Carte SIM manquante</translation>
+<translation id="8455026683977728932">Échec de l'activation de l'illustration ADB</translation>
 <translation id="845702320058262034">Connexion impossible. Assurez-vous que le Bluetooth est activé sur votre téléphone.</translation>
 <translation id="8457451314607652708">Importer les favoris</translation>
 <translation id="8460336040822756677">Si vous désactivez Smart Lock pour <ph name="DEVICE_TYPE" />, vous ne pourrez pas déverrouiller vos appareils Chrome avec votre téléphone. Vous devrez saisir votre mot de passe.</translation>
@@ -5138,6 +5155,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8509646642152301857">Échec du téléchargement du dictionnaire du correcteur orthographique.</translation>
 <translation id="8512476990829870887">Arrêter le processus</translation>
 <translation id="851263357009351303">Toujours autoriser <ph name="HOST" /> à afficher les images</translation>
+<translation id="8513108775083588393">Rotation automatique</translation>
 <translation id="8514746246728959655">Essayer une autre clé de sécurité</translation>
 <translation id="8521475323816527629">Accédez rapidement à vos applications</translation>
 <translation id="8523493869875972733">Conserver les modifications</translation>
@@ -5574,6 +5592,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9116799625073598554">Application de prise de notes</translation>
 <translation id="9117030152748022724">Gérer vos applications</translation>
 <translation id="9121814364785106365">Ouvrir dans un onglet épinglé</translation>
+<translation id="9122074588095746047">Impossible d'activer ADB</translation>
 <translation id="9124003689441359348">Les mots de passe enregistrés s'afficheront ici</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> restante(s))</translation>
 <translation id="9128317794749765148">Impossible de terminer la configuration</translation>

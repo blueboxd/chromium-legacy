@@ -78,9 +78,9 @@ class AppRegistrar {
       const AppId& app_id) const = 0;
   virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
   virtual base::Optional<GURL> GetAppScope(const AppId& app_id) const = 0;
-  virtual blink::mojom::DisplayMode GetAppUserDisplayMode(
+  virtual blink::mojom::DisplayMode GetAppDisplayMode(
       const AppId& app_id) const = 0;
-  virtual blink::mojom::DisplayMode GetAppEffectiveDisplayMode(
+  virtual blink::mojom::DisplayMode GetAppUserDisplayMode(
       const AppId& app_id) const = 0;
 
   virtual std::vector<AppId> GetAppIds() const = 0;
@@ -100,6 +100,9 @@ class AppRegistrar {
   // Returns whether the app is pending successful navigation in order to
   // complete installation via the PendingAppManager.
   bool IsPlaceholderApp(const AppId& app_id) const;
+
+  blink::mojom::DisplayMode GetAppEffectiveDisplayMode(
+      const AppId& app_id) const;
 
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(AppRegistrarObserver* observer);

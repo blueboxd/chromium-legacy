@@ -11,7 +11,7 @@
 <translation id="2831078752570172210">החשבון שלך ננעל. יש לפנות למנהל המערכת.</translation>
 <translation id="2844349213149998955">לא ניתן להיכנס למכשיר הזה באמצעות חשבון אישי. יש להיכנס באמצעות חשבון לצורכי עבודה.</translation>
 <translation id="3306357053520292004">משתמש במחשב הזה כבר נוסף באמצעות חשבון זה. יש להיכנס באמצעות חשבון אחר.</translation>
-<translation id="3926852373333893095">‏רק משתמשי GSuite Enterprise מורשים להתחבר.</translation>
+<translation id="3926852373333893095">‏רק משתמשי G Suite Enterprise מורשים להתחבר.</translation>
 <translation id="4057329986137569701">אירעה שגיאה פנימית.</translation>
 <translation id="4267670563222825190">לא ניתן היה למצוא בדומיין אף משתמש עם החשבון הזה. עליך לפנות למנהל המערכת.</translation>
 <translation id="4300229033992784001">‏הסיסמה לחשבון שלך השתנתה. יש להזין את הסיסמה הנוכחית של Windows כדי לסנכרן את חשבון Windows עם החשבון שלך לצורכי עבודה.</translation>
@@ -33,5 +33,5 @@
 <translation id="8973975512230260387">‏התוקף של הסשן שלך פג. יש להיכנס באמצעות חשבון Google לצורכי עבודה.</translation>
 <translation id="9055998212250844221">‏חשבון המשתמש נוצר על ידי ספק פרטי הכניסה של Google ל-Windows</translation>
 <translation id="9135619837062629367">לא ניתן להיכנס באמצעות חשבון זה. יש לנסות חשבון אחר.</translation>
-<translation id="998002716857524853">‏כניסה באמצעות חשבון GSuite לצורכי עבודה.</translation>
+<translation id="998002716857524853">‏כניסה באמצעות חשבון G Suite לצורכי עבודה.</translation>
 </translationbundle>

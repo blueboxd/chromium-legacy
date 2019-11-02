@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_MOCK_LEVEL_DB_H_
 #define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_LEVELDB_MOCK_LEVEL_DB_H_
 
-#include "base/component_export.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 

@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -32,7 +33,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     private final PropertyModel mToolbarPropertyModel;
     private final TabGridPanelToolbarCoordinator mToolbarCoordinator;
     private final TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
-    private TabGridDialogParent mParentLayout;
+    private final TabGridDialogParent mParentLayout;
 
     TabGridDialogCoordinator(Context context, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, TabCreatorManager tabCreatorManager,
@@ -47,13 +48,19 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
 
         mParentLayout = new TabGridDialogParent(context, containerView);
 
-        mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                context, containerView, tabModelSelector, tabContentManager, mParentLayout);
+        TabSelectionEditorCoordinator.TabSelectionEditorController controller = null;
+        if (FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+            mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
+                    context, containerView, tabModelSelector, tabContentManager, mParentLayout);
+
+            controller = mTabSelectionEditorCoordinator.getController();
+        } else {
+            mTabSelectionEditorCoordinator = null;
+        }
 
         mMediator = new TabGridDialogMediator(context, this, mToolbarPropertyModel,
                 tabModelSelector, tabCreatorManager, resetHandler, animationParamsProvider,
-                mTabSelectionEditorCoordinator.getController(), tabGroupTitleEditor,
-                mComponentName);
+                controller, tabGroupTitleEditor, mComponentName);
 
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
@@ -73,7 +80,9 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
         mMediator.destroy();
         mToolbarCoordinator.destroy();
         mParentLayout.destroy();
-        mTabSelectionEditorCoordinator.destroy();
+        if (mTabSelectionEditorCoordinator != null) {
+            mTabSelectionEditorCoordinator.destroy();
+        }
         if (mToolbarCoordinator != null) {
             mToolbarCoordinator.destroy();
         }

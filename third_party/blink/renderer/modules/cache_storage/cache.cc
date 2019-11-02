@@ -348,7 +348,7 @@ class Cache::BlobHandleCallbackForPut final
                            Response* response)
       : index_(index), barrier_callback_(barrier_callback) {
     fetch_api_request_ = request->CreateFetchAPIRequest();
-    fetch_api_response_ = response->PopulateFetchAPIResponse();
+    fetch_api_response_ = response->PopulateFetchAPIResponse(request->url());
   }
   ~BlobHandleCallbackForPut() override = default;
 
@@ -400,7 +400,7 @@ class Cache::CodeCacheHandleCallbackForPut final
         mime_type_(response->InternalMIMEType()),
         trace_id_(trace_id) {
     fetch_api_request_ = request->CreateFetchAPIRequest();
-    fetch_api_response_ = response->PopulateFetchAPIResponse();
+    fetch_api_response_ = response->PopulateFetchAPIResponse(request->url());
     url_ = fetch_api_request_->url;
   }
   ~CodeCacheHandleCallbackForPut() override = default;
@@ -995,7 +995,8 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
         mojom::blink::BatchOperation::New();
     batch_operation->operation_type = mojom::blink::OperationType::kPut;
     batch_operation->request = requests[i]->CreateFetchAPIRequest();
-    batch_operation->response = responses[i]->PopulateFetchAPIResponse();
+    batch_operation->response =
+        responses[i]->PopulateFetchAPIResponse(requests[i]->url());
     barrier_callback->OnSuccess(i, std::move(batch_operation));
   }
 

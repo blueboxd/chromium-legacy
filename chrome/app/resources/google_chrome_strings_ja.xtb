@@ -73,7 +73,6 @@
 <translation id="3065168410429928842">Chrome タブ</translation>
 <translation id="3080151273017101988">Google Chrome を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
-<translation id="3138848678222082288">Chrome の今後のバージョンは自動的にインストールされます。このダウンロードが完了すると Chrome が再起動し、すぐにお使いいただけます。</translation>
 <translation id="3149510190863420837">Chrome アプリ</translation>
 <translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3340978935015468852">設定</translation>
@@ -175,7 +174,6 @@
 <translation id="677276454032249905">今すぐ Chrome を終了しますか？</translation>
 <translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
 <translation id="6885412569789873916">Chrome ベータ版アプリ</translation>
-<translation id="6906909733186691861">Chrome の今後のバージョンは自動的にインストールされます。</translation>
 <translation id="6943584222992551122">この操作を行うと、このユーザーの閲覧データがこのデバイスから削除されます。データを復元するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
 <translation id="6967962315388095737">mDNS トラフィックを許可する Google Chrome ベータ版のインバウンド ルールです。</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Google Chrome OS 利用規約を拡張、変更、制限するものではありません。</translation>

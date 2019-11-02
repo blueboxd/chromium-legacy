@@ -52,6 +52,17 @@ constexpr base::TimeDelta kAnimationTransformInDuration =
     base::TimeDelta::FromMilliseconds(333);
 constexpr int kAnimationTranslationDip = 30;
 
+// Textfield used for inputting text based Assistant queries.
+class AssistantTextfield : public views::Textfield {
+ public:
+  AssistantTextfield() : views::Textfield() {
+    SetID(AssistantViewID::kTextQueryField);
+  }
+
+  // views::Textfield overrides:
+  const char* GetClassName() const override { return "AssistantTextfield"; }
+};
+
 }  // namespace
 
 // AssistantDialogPlate --------------------------------------------------------
@@ -312,8 +323,7 @@ void AssistantDialogPlate::InitKeyboardLayoutContainer() {
       ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2);
 
   // Textfield.
-  textfield_ = new views::Textfield();
-  textfield_->SetID(AssistantViewID::kTextQueryField);
+  textfield_ = new AssistantTextfield();
   textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
   textfield_->SetBorder(views::NullBorder());
   textfield_->set_controller(this);

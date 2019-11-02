@@ -547,8 +547,9 @@ void Session::CreateVideoEncodeAccelerator(
       gpu_->CreateVideoEncodeAcceleratorProvider(
           mojo::MakeRequest(&vea_provider_));
     }
-    media::mojom::VideoEncodeAcceleratorPtr vea;
-    vea_provider_->CreateVideoEncodeAccelerator(mojo::MakeRequest(&vea));
+    mojo::PendingRemote<media::mojom::VideoEncodeAccelerator> vea;
+    vea_provider_->CreateVideoEncodeAccelerator(
+        vea.InitWithNewPipeAndPassReceiver());
     // std::make_unique doesn't work to create a unique pointer of the subclass.
     mojo_vea.reset(new media::MojoVideoEncodeAccelerator(std::move(vea),
                                                          supported_profiles_));

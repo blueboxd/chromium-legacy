@@ -153,6 +153,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2063539687800151747">Epigrafi</translation>
 <translation id="207477615537953741">Semanttinen on pois käytöstä</translation>
 <translation id="2086961585857038472">Seuraava sana</translation>
+<translation id="2087981446621639008">kuvluett tied</translation>
 <translation id="2089387485033699258">fi</translation>
 <translation id="2091933974477985526">Edellinen muokattava tekstialue</translation>
 <translation id="2100350898815792233">Kaikki välimerkit</translation>
@@ -193,6 +194,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2416512023405990736">Valitsematon valintaruutu</translation>
 <translation id="2417569100218200841">Sisällön tiedot</translation>
 <translation id="2417948780551741035">Loppuhuomautukset</translation>
+<translation id="2419852971200420169">Kuvausluettelo</translation>
 <translation id="2421113964388408478">Poisto</translation>
 <translation id="2422937916923936891">Valikkokohteen valintaruutu</translation>
 <translation id="2428534162001909979">Komentovalikot</translation>
@@ -371,6 +373,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="3497063866483065785">{COUNT,plural, =1{kysymysmerkki}other{# kysymysmerkkiä}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{poisjääntimerkki}other{# poisjääntimerkkiä}}</translation>
 <translation id="352577523970648069">Muokattava tekstikenttä</translation>
+<translation id="3538907380453898475">kuvluett</translation>
 <translation id="3549141990712742152">leikkaa <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Pysäytä puhe napauttamalla kahdella sormella</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, valintaruutua ei ole valittu</translation>
@@ -779,6 +782,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="6378394210114975876">Ohdakkeenkukka</translation>
 <translation id="6385591741672306837">sarake</translation>
 <translation id="6387719785439924554">sivuun</translation>
+<translation id="6393014464788431702">Poista kaikki tapahtumasuodattimet käytöstä</translation>
 <translation id="6411426777058107714">Ei edellisiä valintanappeja.</translation>
 <translation id="6414968628640960377">Edellinen erilainen elementti.</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -914,6 +918,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="7332592614823088566">Rivi <ph name="ROWINDEX" />/<ph name="ROWTOTAL" />, sarake <ph name="COLINDEX" />/<ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">sisältää ponnahdusikkunan</translation>
 <translation id="7356165926712028380">Vaihda 8 pisteen pistekirjoitukseen</translation>
+<translation id="7356610683936413584">Kuvausluettelon tiedot</translation>
 <translation id="7362871137496673139">Ei edellisiä tason 2 otsikoita.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{et-merkki}other{# et-merkkiä}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="8096975275316362544">Vaalea minttu</translation>
 <translation id="8098587210054821856">Liuskekivenharmaa</translation>
 <translation id="8110647606445335195">Ei ARIA-maamerkkejä.</translation>
+<translation id="8121539003537428024">Ota käyttöön kaikki tapahtumasuodattimet</translation>
 <translation id="812886159861361726">Tiedoston <ph name="FILE_NAME" /> lataus loppui</translation>
 <translation id="8138880386467279117">Kosketus</translation>
 <translation id="8153880621934657047">Et ole taulukossa.</translation>

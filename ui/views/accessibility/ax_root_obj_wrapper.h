@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
@@ -22,6 +21,8 @@ class VIEWS_EXPORT AXRootObjWrapper : public views::AXAuraObjWrapper,
  public:
   AXRootObjWrapper(views::AXAuraObjCache::Delegate* delegate,
                    views::AXAuraObjCache* cache);
+  AXRootObjWrapper(const AXRootObjWrapper&) = delete;
+  AXRootObjWrapper& operator=(const AXRootObjWrapper&) = delete;
   ~AXRootObjWrapper() override;
 
   // Convenience method to check for existence of a child.
@@ -43,8 +44,6 @@ class VIEWS_EXPORT AXRootObjWrapper : public views::AXAuraObjWrapper,
   ui::AXUniqueId unique_id_;
 
   views::AXAuraObjCache::Delegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXRootObjWrapper);
 };
 
 #endif  // UI_VIEWS_ACCESSIBILITY_AX_ROOT_OBJ_WRAPPER_H_

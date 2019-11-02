@@ -17,12 +17,9 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 
 namespace content {
@@ -506,11 +503,9 @@ void TtsControllerImpl::StripSSML(
   }
 
   // Parse using safe, out-of-process Xml Parser.
-  service_manager::Connector* connector = GetSystemConnector();
-  DCHECK(connector);
-  data_decoder::ParseXml(connector, utterance,
-                         base::BindOnce(&TtsControllerImpl::StripSSMLHelper,
-                                        utterance, std::move(on_ssml_parsed)));
+  data_decoder::DataDecoder::ParseXmlIsolated(
+      utterance, base::BindOnce(&TtsControllerImpl::StripSSMLHelper, utterance,
+                                std::move(on_ssml_parsed)));
 }
 
 // Called when ParseXml finishes.
@@ -518,17 +513,16 @@ void TtsControllerImpl::StripSSML(
 void TtsControllerImpl::StripSSMLHelper(
     const std::string& utterance,
     base::OnceCallback<void(const std::string&)> on_ssml_parsed,
-    std::unique_ptr<base::Value> value,
-    const base::Optional<std::string>& error_message) {
+    data_decoder::DataDecoder::ValueOrError result) {
   // Error checks.
   // If invalid xml, return original utterance text.
-  if (!value || error_message) {
+  if (!result.value) {
     std::move(on_ssml_parsed).Run(utterance);
     return;
   }
 
   std::string root_tag_name;
-  data_decoder::GetXmlElementTagName(*value, &root_tag_name);
+  data_decoder::GetXmlElementTagName(*result.value, &root_tag_name);
   // Root element must be <speak>.
   if (root_tag_name.compare("speak") != 0) {
     std::move(on_ssml_parsed).Run(utterance);
@@ -537,7 +531,7 @@ void TtsControllerImpl::StripSSMLHelper(
 
   std::string parsed_text = "";
   // Change from unique_ptr to base::Value* so recursion will work.
-  PopulateParsedText(&parsed_text, &(*value));
+  PopulateParsedText(&parsed_text, &(*result.value));
 
   // Run with parsed_text.
   std::move(on_ssml_parsed).Run(parsed_text);

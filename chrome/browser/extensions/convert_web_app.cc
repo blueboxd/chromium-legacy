@@ -39,6 +39,8 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "net/base/url_util.h"
+#include "third_party/blink/public/common/manifest/manifest_util.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
@@ -209,7 +211,9 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
                                                 web_app.scope, web_app.title));
   }
 
-  // TODO(crbug.com/1014346): Record display_mode.
+  DCHECK_NE(blink::mojom::DisplayMode::kUndefined, web_app.display_mode);
+  root->SetString(keys::kAppDisplayMode,
+                  blink::DisplayModeToString(web_app.display_mode));
 
   if (web_app.file_handler) {
     root->SetDictionary(keys::kFileHandlers, CreateFileHandlersForBookmarkApp(

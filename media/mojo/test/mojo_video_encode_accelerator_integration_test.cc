@@ -17,7 +17,8 @@
 #include "media/mojo/services/mojo_video_encode_accelerator_service.h"
 #include "media/video/fake_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,22 +64,22 @@ class MojoVideoEncodeAcceleratorIntegrationTest : public ::testing::Test {
   MojoVideoEncodeAcceleratorIntegrationTest() = default;
 
   void SetUp() override {
-    mojom::VideoEncodeAcceleratorPtr mojo_vea;
-    mojo_vea_binding_ = mojo::MakeStrongBinding(
+    mojo::PendingRemote<mojom::VideoEncodeAccelerator> mojo_vea;
+    mojo_vea_receiver_ = mojo::MakeSelfOwnedReceiver(
         std::make_unique<MojoVideoEncodeAcceleratorService>(
             base::Bind(&CreateAndInitializeFakeVEA), gpu::GpuPreferences()),
-        mojo::MakeRequest(&mojo_vea));
+        mojo_vea.InitWithNewPipeAndPassReceiver());
 
     mojo_vea_.reset(new MojoVideoEncodeAccelerator(
         std::move(mojo_vea), gpu::VideoEncodeAcceleratorSupportedProfiles()));
   }
 
   void TearDown() override {
-    // The destruction of a mojo::StrongBinding closes the bound message pipe
-    // but does not destroy the implementation object(s): this needs to happen
-    // manually by Close()ing it.
-    if (mojo_vea_binding_)
-      mojo_vea_binding_->Close();
+    // The destruction of a mojo::SelfOwnedReceiver closes the bound message
+    // pipe but does not destroy the implementation object(s): this needs to
+    // happen manually by Close()ing it.
+    if (mojo_vea_receiver_)
+      mojo_vea_receiver_->Close();
   }
 
   VideoEncodeAccelerator* mojo_vea() { return mojo_vea_.get(); }
@@ -86,7 +87,7 @@ class MojoVideoEncodeAcceleratorIntegrationTest : public ::testing::Test {
   FakeVideoEncodeAccelerator* fake_vea() const {
     const auto* mojo_vea_service =
         static_cast<MojoVideoEncodeAcceleratorService*>(
-            mojo_vea_binding_->impl());
+            mojo_vea_receiver_->impl());
     return static_cast<FakeVideoEncodeAccelerator*>(
         mojo_vea_service->encoder_.get());
   }
@@ -111,7 +112,7 @@ class MojoVideoEncodeAcceleratorIntegrationTest : public ::testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
 
   // This member holds on to the implementation of the "service" side.
-  mojo::StrongBindingPtr<mojom::VideoEncodeAccelerator> mojo_vea_binding_;
+  mojo::SelfOwnedReceiverRef<mojom::VideoEncodeAccelerator> mojo_vea_receiver_;
 
   // The class under test, as a generic media::VideoEncodeAccelerator.
   std::unique_ptr<VideoEncodeAccelerator> mojo_vea_;
@@ -356,7 +357,7 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
   Initialize(mock_vea_client.get());
 
   {
-    TearDown();  // Alias for |mojo_vea_binding_| Close().
+    TearDown();  // Alias for |mojo_vea_receiver_| Close().
     base::RunLoop().RunUntilIdle();
   }
   {

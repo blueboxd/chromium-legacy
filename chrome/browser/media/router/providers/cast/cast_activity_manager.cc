@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/optional.h"
-#include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "chrome/browser/media/router/providers/cast/mirroring_activity_record.h"
@@ -28,13 +27,11 @@ CastActivityManager::CastActivityManager(
     CastSessionTracker* session_tracker,
     cast_channel::CastMessageHandler* message_handler,
     mojom::MediaRouter* media_router,
-    std::unique_ptr<DataDecoder> data_decoder,
     const std::string& hash_token)
     : media_sink_service_(media_sink_service),
       session_tracker_(session_tracker),
       message_handler_(message_handler),
       media_router_(media_router),
-      data_decoder_(std::move(data_decoder)),
       hash_token_(hash_token) {
   DCHECK(media_sink_service_);
   DCHECK(message_handler_);
@@ -429,7 +426,7 @@ ActivityRecord* CastActivityManager::AddCastActivityRecord(
   } else {
     activity.reset(new CastActivityRecord(route, app_id, media_sink_service_,
                                           message_handler_, session_tracker_,
-                                          data_decoder_.get(), this));
+                                          this));
   }
   auto* activity_ptr = activity.get();
   activities_.emplace(route.media_route_id(), std::move(activity));
@@ -442,8 +439,8 @@ ActivityRecord* CastActivityManager::AddMirroringActivityRecord(
     int tab_id,
     const CastSinkExtraData& cast_data) {
   auto activity = std::make_unique<MirroringActivityRecord>(
-      route, app_id, message_handler_, session_tracker_, data_decoder_.get(),
-      tab_id, cast_data, media_router_,
+      route, app_id, message_handler_, session_tracker_, tab_id, cast_data,
+      media_router_,
       // We could theoretically use base::Unretained() below instead of
       // GetWeakPtr(), the that seems like an unnecessary optimization here.
       // --jrw

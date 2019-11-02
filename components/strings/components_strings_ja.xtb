@@ -475,12 +475,6 @@
 <translation id="3324983252691184275">クリムゾン</translation>
 <translation id="3338095232262050444">保護された通信</translation>
 <translation id="3355823806454867987">プロキシ設定の変更...</translation>
-<translation id="3361596688432910856">Chrome には、<ph name="BEGIN_EMPHASIS" />次の情報は<ph name="END_EMPHASIS" />保存されません。
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />閲覧履歴
-          <ph name="LIST_ITEM" />Cookie とサイトデータ
-          <ph name="LIST_ITEM" />フォームに入力した情報
-        <ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">このポリシーは、サポートが終了した <ph name="OLD_POLICY" /> ポリシーから自動的にコピーされました。今後はこのポリシーを使用してください。</translation>
 <translation id="3366477098757335611">カードを表示</translation>
 <translation id="3369192424181595722">時計のエラー</translation>
@@ -1045,7 +1039,6 @@
 <translation id="6151417162996330722">サーバー証明書の有効期限が長すぎます。</translation>
 <translation id="6157877588268064908">配送方法と要件を確認するには、住所を選択してください</translation>
 <translation id="6165508094623778733">詳細</translation>
-<translation id="6169916984152623906">現在、シークレット モードで閲覧しています。あなたのアクティビティは、このデバイスを利用する他のユーザーには表示されません。ただし、ダウンロードしたファイルとブックマークは通常どおり保存されます。</translation>
 <translation id="6177128806592000436">このサイトへの接続は保護されていません</translation>
 <translation id="6203231073485539293">インターネット接続を確認してください</translation>
 <translation id="6218753634732582820">Chromium からアドレスを削除してもよろしいですか？</translation>
@@ -1517,6 +1510,7 @@
 <translation id="8680536109547170164">「<ph name="QUERY" />」に対する答え: 「<ph name="ANSWER" />」</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">使用可能</translation>
+<translation id="869891660844655955">有効期限</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> への接続は暗号化されていません。</translation>
 <translation id="8718314106902482036">支払い処理を完了できませんでした</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />、<ph name="DESCRIPTION" />、検索候補</translation>

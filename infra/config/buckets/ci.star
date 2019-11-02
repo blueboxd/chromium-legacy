@@ -654,7 +654,7 @@ def clang_ios_builder(*, name, **kwargs):
       caches = [XCODE_IOS_11_CACHE],
       cores = None,
       executable = luci.recipe(name = 'ios/unified_builder_tester'),
-      os = os.MAC_ANY,
+      os = os.MAC_10_14,
       ssd = True,
   )
 

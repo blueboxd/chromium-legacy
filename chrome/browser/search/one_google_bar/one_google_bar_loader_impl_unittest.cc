@@ -16,10 +16,9 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -96,12 +95,11 @@ class OneGoogleBarLoaderImplTest : public testing::Test {
   }
 
  private:
-  // variations::AppendVariationHeaders and SafeJsonParser require a
-  // threads and a ServiceManagerConnection to be set.
+  // variations::AppendVariationHeaders requires browser threads.
   content::BrowserTaskEnvironment task_environment_;
-  content::TestServiceManagerContext service_manager_context_;
 
-  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  // Supports JSON decoding in the loader implementation.
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;

@@ -69,9 +69,10 @@ class FocusRingManager {
    */
   setColor(color) {
     if (this.colorPattern_.test(color) !== true) {
-      const errorString = 'Problem setting focus ring color: color is not' +
-          'a valid CSS color string.';
-      throw new Error(errorString);
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.INVALID_COLOR,
+          'Problem setting focus ring color: color is not' +
+              'a valid CSS color string.');
     }
     this.rings_.forEach((ring) => ring.color = color);
   }

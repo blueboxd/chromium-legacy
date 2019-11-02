@@ -329,11 +329,6 @@ void WebRemoteFrameImpl::ForwardResourceTimingToParent(
       ->AddResourceTiming(info, owner_element->localName());
 }
 
-void WebRemoteFrameImpl::DispatchLoadEventForFrameOwner() {
-  DCHECK(GetFrame()->Owner()->IsLocal());
-  GetFrame()->Owner()->DispatchLoad();
-}
-
 void WebRemoteFrameImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
   GetFrame()->View()->SetNeedsOcclusionTracking(needs_tracking);
 }

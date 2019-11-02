@@ -22,6 +22,7 @@ class TestEventHandler : public BatchingMediaLog::EventHandler {
   explicit TestEventHandler(BatchingMediaLogTest* test_cls)
       : test_cls_(test_cls) {}
   void SendQueuedMediaEvents(std::vector<media::MediaLogEvent> events) override;
+  void OnWebMediaPlayerDestroyed() override;
 
  private:
   BatchingMediaLogTest* test_cls_;
@@ -78,6 +79,8 @@ void TestEventHandler::SendQueuedMediaEvents(
     std::vector<media::MediaLogEvent> events) {
   test_cls_->AddEventsForTesting(events);
 }
+
+void TestEventHandler::OnWebMediaPlayerDestroyed() {}
 
 TEST_F(BatchingMediaLogTest, ThrottleSendingEvents) {
   AddEvent(media::MediaLogEvent::LOAD);

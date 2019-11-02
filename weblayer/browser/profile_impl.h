@@ -6,6 +6,7 @@
 #define WEBLAYER_BROWSER_PROFILE_IMPL_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "weblayer/public/profile.h"
@@ -47,6 +48,8 @@ class ProfileImpl : public Profile {
 
   base::FilePath path_;
   std::unique_ptr<BrowserContextImpl> browser_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };
 
 }  // namespace weblayer

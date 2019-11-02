@@ -9,6 +9,9 @@
 
 namespace gfx {
 
+using Params = CocoaScrollbarPainter::Params;
+using Orientation = CocoaScrollbarPainter::Orientation;
+
 namespace {
 
 // The width of the scroller track border.
@@ -19,8 +22,13 @@ constexpr int kTrackBorderWidth = 1;
 constexpr int kThumbInset = 3;
 constexpr int kThumbInsetOverlay = 2;
 
+// The minimum sizes for the thumb. We will not inset the thumb if it will
+// be smaller than this size.
+constexpr int kThumbMinGirth = 8;
+constexpr int kThumbMinLength = 18;
+
 // Scrollbar thumb colors.
-constexpr SkColor kThumbColorDefault = SkColorSetARGB(0x38, 0, 0, 0);
+constexpr SkColor kThumbColorDefault = SkColorSetARGB(0x3A, 0, 0, 0);
 constexpr SkColor kThumbColorHover = SkColorSetARGB(0x80, 0, 0, 0);
 constexpr SkColor kThumbColorDarkMode = SkColorSetRGB(0x6B, 0x6B, 0x6B);
 constexpr SkColor kThumbColorDarkModeHover = SkColorSetRGB(0x93, 0x93, 0x93);
@@ -31,8 +39,8 @@ constexpr SkColor kThumbColorOverlayDarkMode =
 // Non-overlay scroller track colors are not transparent. On Safari, they are,
 // but on all other macOS applications they are not.
 constexpr SkColor kTrackGradientColors[] = {
-    SkColorSetRGB(0xF9, 0xF9, 0xF9),
-    SkColorSetRGB(0xF9, 0xF9, 0xF9),
+    SkColorSetRGB(0xFA, 0xFA, 0xFA),
+    SkColorSetRGB(0xFA, 0xFA, 0xFA),
 };
 constexpr SkColor kTrackInnerBorderColor = SkColorSetRGB(0xE8, 0xE8, 0xE8);
 constexpr SkColor kTrackOuterBorderColor = SkColorSetRGB(0xED, 0xED, 0xED);
@@ -71,95 +79,215 @@ constexpr SkColor kTrackInnerBorderColorOverlayDarkMode =
 constexpr SkColor kTrackOuterBorderColorOverlayDarkMode =
     SkColorSetARGB(0x28, 0xD8, 0xD8, 0xD8);
 
-}  // namespace
+void ConstrainInsets(int old_width, int min_width, int* left, int* right) {
+  int requested_total_inset = *left + *right;
+  if (requested_total_inset == 0)
+    return;
+  int max_total_inset = old_width - min_width;
+  if (requested_total_inset < max_total_inset)
+    return;
+  if (max_total_inset < 0) {
+    *left = *right = 0;
+    return;
+  }
+  // Prefer to preserve the the left (or top) side's inset.
+  *left = std::min(max_total_inset, *left);
+  *right = max_total_inset - *left;
+}
 
-// static
-void CocoaScrollbarPainter::PaintTrack(gfx::Canvas* canvas,
-                                       const gfx::Rect& track_rect,
-                                       const Params& params) {
-  // Set the colors based on overlay and dark mode.
-  SkColor inner_border_color = kTrackInnerBorderColor;
-  SkColor outer_border_color = kTrackOuterBorderColor;
-  const SkColor* gradient_colors = kTrackGradientColors;
-  size_t gradient_stops = base::size(kTrackGradientColors);
+gfx::Rect ConstrainedInset(const gfx::Rect& rect,
+                           int min_width,
+                           int min_height,
+                           int inset_left,
+                           int inset_top,
+                           int inset_right,
+                           int inset_bottom) {
+  ConstrainInsets(rect.width(), min_width, &inset_left, &inset_right);
+  ConstrainInsets(rect.height(), min_height, &inset_top, &inset_bottom);
+  gfx::Rect inset_rect = rect;
+  inset_rect.Inset(inset_left, inset_top, inset_right, inset_bottom);
+  return inset_rect;
+}
+
+void PaintTrackGradient(gfx::Canvas* canvas,
+                        const gfx::Rect& rect,
+                        const Params& params,
+                        bool is_corner) {
+  // Select colors.
+  const SkColor* gradient_colors = nullptr;
+  size_t gradient_stops = 0;
   if (params.overlay) {
     if (params.dark_mode) {
-      inner_border_color = kTrackInnerBorderColorOverlayDarkMode;
-      outer_border_color = kTrackOuterBorderColorOverlayDarkMode;
       gradient_colors = kTrackGradientColorsOverlayDarkMode;
       gradient_stops = base::size(kTrackGradientColorsOverlayDarkMode);
     } else {
-      inner_border_color = kTrackInnerBorderColorOverlay;
-      outer_border_color = kTrackOuterBorderColorOverlay;
       gradient_colors = kTrackGradientColorsOverlay;
       gradient_stops = base::size(kTrackGradientColorsOverlay);
     }
   } else {
     if (params.dark_mode) {
-      inner_border_color = kTrackInnerBorderColorDarkMode;
-      outer_border_color = kTrackOuterBorderColorDarkMode;
       gradient_colors = kTrackGradientColorsDarkMode;
       gradient_stops = base::size(kTrackGradientColorsDarkMode);
-    }
-  }
-
-  // Paint the scrollbar track background.
-  {
-    const SkPoint gradient_bounds[] = {
-        gfx::PointToSkPoint(track_rect.origin()),
-        gfx::PointToSkPoint(params.orientation == Orientation::kHorizontal
-                                ? track_rect.bottom_left()
-                                : track_rect.top_right()),
-    };
-    cc::PaintFlags gradient;
-    gradient.setShader(cc::PaintShader::MakeLinearGradient(
-        gradient_bounds, gradient_colors, nullptr, gradient_stops,
-        SkTileMode::kClamp));
-    canvas->DrawRect(track_rect, gradient);
-  }
-
-  // Draw the inner border: top if horizontal, left if vertical.
-  {
-    cc::PaintFlags flags;
-    flags.setColor(inner_border_color);
-    gfx::Rect inner_border(track_rect);
-    if (params.orientation == Orientation::kHorizontal)
-      inner_border.set_height(kTrackBorderWidth);
-    else
-      inner_border.set_width(kTrackBorderWidth);
-    canvas->DrawRect(inner_border, flags);
-  }
-
-  // Draw the outer border: bottom if horizontal, right if veritcal.
-  {
-    cc::PaintFlags flags;
-    flags.setColor(outer_border_color);
-    gfx::Rect outer_border(track_rect);
-    if (params.orientation == Orientation::kHorizontal) {
-      outer_border.set_height(kTrackBorderWidth);
-      outer_border.set_y(track_rect.bottom() - kTrackBorderWidth);
     } else {
-      outer_border.set_width(kTrackBorderWidth);
-      outer_border.set_x(track_rect.right() - kTrackBorderWidth);
+      gradient_colors = kTrackGradientColors;
+      gradient_stops = base::size(kTrackGradientColors);
     }
+  }
+
+  // Set the gradient direction.
+  const SkPoint gradient_bounds_vertical[] = {
+      gfx::PointToSkPoint(rect.origin()),
+      gfx::PointToSkPoint(rect.bottom_left()),
+  };
+  const SkPoint gradient_bounds_horizontal[] = {
+      gfx::PointToSkPoint(rect.origin()),
+      gfx::PointToSkPoint(rect.top_right()),
+  };
+  const SkPoint gradient_bounds_corner_right[] = {
+      gfx::PointToSkPoint(rect.origin()),
+      gfx::PointToSkPoint(rect.bottom_right()),
+  };
+  const SkPoint gradient_bounds_corner_left[] = {
+      gfx::PointToSkPoint(rect.top_right()),
+      gfx::PointToSkPoint(rect.bottom_left()),
+  };
+  const SkPoint* gradient_bounds = nullptr;
+  if (is_corner) {
+    if (params.orientation == Orientation::kVerticalOnRight)
+      gradient_bounds = gradient_bounds_corner_right;
+    else
+      gradient_bounds = gradient_bounds_corner_left;
+  } else {
+    if (params.orientation == Orientation::kHorizontal)
+      gradient_bounds = gradient_bounds_horizontal;
+    else
+      gradient_bounds = gradient_bounds_vertical;
+  }
+
+  // And draw.
+  cc::PaintFlags gradient;
+  gradient.setShader(cc::PaintShader::MakeLinearGradient(
+      gradient_bounds, gradient_colors, nullptr, gradient_stops,
+      SkTileMode::kClamp));
+  canvas->DrawRect(rect, gradient);
+}
+
+void PaintTrackInnerBorder(gfx::Canvas* canvas,
+                           const gfx::Rect& rect,
+                           const Params& params,
+                           bool is_corner) {
+  // Select the color.
+  SkColor inner_border_color = 0;
+  if (params.overlay) {
+    if (params.dark_mode)
+      inner_border_color = kTrackInnerBorderColorOverlayDarkMode;
+    else
+      inner_border_color = kTrackInnerBorderColorOverlay;
+  } else {
+    if (params.dark_mode)
+      inner_border_color = kTrackInnerBorderColorDarkMode;
+    else
+      inner_border_color = kTrackInnerBorderColor;
+  }
+
+  // Compute the rect for the border.
+  gfx::Rect inner_border(rect);
+  if (params.orientation == Orientation::kVerticalOnLeft)
+    inner_border.set_x(rect.right() - kTrackBorderWidth);
+  if (is_corner || params.orientation == Orientation::kHorizontal)
+    inner_border.set_height(kTrackBorderWidth);
+  if (is_corner || params.orientation != Orientation::kHorizontal)
+    inner_border.set_width(kTrackBorderWidth);
+
+  // And draw.
+  cc::PaintFlags flags;
+  flags.setColor(inner_border_color);
+  canvas->DrawRect(inner_border, flags);
+}
+
+void PaintTrackOuterBorder(gfx::Canvas* canvas,
+                           const gfx::Rect& rect,
+                           const Params& params,
+                           bool is_corner) {
+  // Select the color.
+  SkColor outer_border_color = 0;
+  if (params.overlay) {
+    if (params.dark_mode)
+      outer_border_color = kTrackOuterBorderColorOverlayDarkMode;
+    else
+      outer_border_color = kTrackOuterBorderColorOverlay;
+  } else {
+    if (params.dark_mode)
+      outer_border_color = kTrackOuterBorderColorDarkMode;
+    else
+      outer_border_color = kTrackOuterBorderColor;
+  }
+  cc::PaintFlags flags;
+  flags.setColor(outer_border_color);
+
+  // Draw the horizontal outer border.
+  if (is_corner || params.orientation == Orientation::kHorizontal) {
+    gfx::Rect outer_border(rect);
+    outer_border.set_height(kTrackBorderWidth);
+    outer_border.set_y(rect.bottom() - kTrackBorderWidth);
+    canvas->DrawRect(outer_border, flags);
+  }
+
+  // Draw the vertial outer border.
+  if (is_corner || params.orientation != Orientation::kHorizontal) {
+    gfx::Rect outer_border(rect);
+    outer_border.set_width(kTrackBorderWidth);
+    if (params.orientation == Orientation::kVerticalOnRight)
+      outer_border.set_x(rect.right() - kTrackBorderWidth);
     canvas->DrawRect(outer_border, flags);
   }
 }
 
+}  // namespace
+
 // static
-void CocoaScrollbarPainter::PaintThumb(gfx::Canvas* canvas,
-                                       const gfx::Rect& thumb_bounds,
+void CocoaScrollbarPainter::PaintTrack(cc::PaintCanvas* cc_canvas,
+                                       const SkIRect& sk_track_rect,
                                        const Params& params) {
-  gfx::Rect bounds(thumb_bounds);
+  gfx::Canvas canvas(cc_canvas, 1.f);
+  const gfx::Rect track_rect(SkIRectToRect(sk_track_rect));
+  constexpr bool is_corner = false;
+  PaintTrackGradient(&canvas, track_rect, params, is_corner);
+  PaintTrackInnerBorder(&canvas, track_rect, params, is_corner);
+  PaintTrackOuterBorder(&canvas, track_rect, params, is_corner);
+}
+
+// static
+void CocoaScrollbarPainter::PaintCorner(cc::PaintCanvas* cc_canvas,
+                                        const SkIRect& sk_corner_rect,
+                                        const Params& params) {
+  // Overlay scrollbars don't have a corner.
+  if (params.overlay)
+    return;
+  gfx::Canvas canvas(cc_canvas, 1.f);
+  const gfx::Rect corner_rect(SkIRectToRect(sk_corner_rect));
+  constexpr bool is_corner = true;
+  PaintTrackGradient(&canvas, corner_rect, params, is_corner);
+  PaintTrackInnerBorder(&canvas, corner_rect, params, is_corner);
+  PaintTrackOuterBorder(&canvas, corner_rect, params, is_corner);
+}
+
+// static
+void CocoaScrollbarPainter::PaintThumb(cc::PaintCanvas* cc_canvas,
+                                       const SkIRect& sk_bounds,
+                                       const Params& params) {
+  gfx::Canvas canvas(cc_canvas, 1.f);
+  gfx::Rect bounds(SkIRectToRect(sk_bounds));
   SkColor thumb_color = 0;
+  int thumb_inset = 0;
   if (params.overlay) {
-    bounds.Inset(kThumbInsetOverlay, kThumbInsetOverlay);
+    thumb_inset = kThumbInsetOverlay;
     if (params.dark_mode)
       thumb_color = kThumbColorOverlayDarkMode;
     else
       thumb_color = kThumbColorOverlay;
   } else {
-    bounds.Inset(kThumbInset, kThumbInset);
+    thumb_inset = kThumbInset;
     if (params.dark_mode) {
       if (params.hovered)
         thumb_color = kThumbColorDarkModeHover;
@@ -173,24 +301,39 @@ void CocoaScrollbarPainter::PaintThumb(gfx::Canvas* canvas,
     }
   }
 
+  // Shrink the thumb evenly in length and girth to fit within the track. Do not
+  // shrink beyond the minimum size.
+  if (params.orientation == Orientation::kHorizontal) {
+    bounds =
+        ConstrainedInset(bounds, kThumbMinLength, kThumbMinGirth, thumb_inset,
+                         thumb_inset, thumb_inset, thumb_inset);
+  } else {
+    bounds =
+        ConstrainedInset(bounds, kThumbMinGirth, kThumbMinLength, thumb_inset,
+                         thumb_inset, thumb_inset, thumb_inset);
+  }
+
+  // Shrink the thumb in girth to not touch the border. Note that this can
+  // shrink below the minimum girth.
   switch (params.orientation) {
     case Orientation::kHorizontal:
       bounds.Inset(0, kTrackBorderWidth, 0, 0);
       break;
     case Orientation::kVerticalOnLeft:
-      bounds.Inset(0, 0, kTrackBorderWidth, 0);
+      bounds.Inset(kTrackBorderWidth, 0, 0, 0);
       break;
     case Orientation::kVerticalOnRight:
       bounds.Inset(kTrackBorderWidth, 0, 0, 0);
       break;
   }
 
+  // Draw.
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setColor(thumb_color);
   const SkScalar radius = std::min(bounds.width(), bounds.height());
-  canvas->DrawRoundRect(bounds, radius, flags);
+  canvas.DrawRoundRect(bounds, radius, flags);
 }
 
 }  // namespace gfx

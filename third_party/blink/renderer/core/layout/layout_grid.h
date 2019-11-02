@@ -179,6 +179,9 @@ class LayoutGrid final : public LayoutBlock {
   GridTrackSizingDirection AutoPlacementMajorAxisDirection() const;
   GridTrackSizingDirection AutoPlacementMinorAxisDirection() const;
 
+  base::Optional<LayoutUnit> OverrideIntrinsicContentLogicalSize(
+      GridTrackSizingDirection) const;
+
   void ComputeTrackSizesForIndefiniteSize(GridTrackSizingAlgorithm&,
                                           GridTrackSizingDirection) const;
   void ComputeTrackSizesForDefiniteSize(GridTrackSizingDirection,

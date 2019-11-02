@@ -153,6 +153,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="2063539687800151747">Epigrāfs</translation>
 <translation id="207477615537953741">Semantiskā interpretācija izslēgta</translation>
 <translation id="2086961585857038472">Nākamais vārds</translation>
+<translation id="2087981446621639008">detal. apraksts</translation>
 <translation id="2089387485033699258">lv</translation>
 <translation id="2091933974477985526">Iepriekšējais rediģējamais teksta apgabals</translation>
 <translation id="2100350898815792233">Visas pieturzīmes</translation>
@@ -193,6 +194,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="2416512023405990736">Neatzīmēta izvēles rūtiņa</translation>
 <translation id="2417569100218200841">Satura informācija</translation>
 <translation id="2417948780551741035">Beigu vēres</translation>
+<translation id="2419852971200420169">Aprakstu saraksts</translation>
 <translation id="2421113964388408478">Dzēšana</translation>
 <translation id="2422937916923936891">Izvēlnes vienuma izvēles rūtiņa</translation>
 <translation id="2428534162001909979">Komandu izvēlnes</translation>
@@ -371,6 +373,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="3497063866483065785">{COUNT,plural, =1{jautājuma zīme}zero{# jautājuma zīmju}one{# jautājuma zīme}other{# jautājuma zīmes}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{jumtiņš}zero{# jumtiņu}one{# jumtiņš}other{# jumtiņi}}</translation>
 <translation id="352577523970648069">Rediģējams teksta lauks</translation>
+<translation id="3538907380453898475">apraksti</translation>
 <translation id="3549141990712742152">izgriezt tekstu “<ph name="TEXT" />”.</translation>
 <translation id="3549680091535286226">Pieskarieties ar diviem pirkstiem, lai īslaicīgi apturētu runas izvadi</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, izvēles rūtiņa nav atzīmēta</translation>
@@ -779,6 +782,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="6378394210114975876">Dzelkšņa pupursarkana</translation>
 <translation id="6385591741672306837">sleja</translation>
 <translation id="6387719785439924554">malā novietots saturs</translation>
+<translation id="6393014464788431702">Atspējot visus notikumu filtrus</translation>
 <translation id="6411426777058107714">Iepriekš nav nevienas radiopogas.</translation>
 <translation id="6414968628640960377">Iepriekšējais atšķirīgais elements.</translation>
 <translation id="6417265370957905582">Google asistents</translation>
@@ -914,6 +918,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="7332592614823088566"><ph name="ROWINDEX" />. rinda no <ph name="ROWTOTAL" />, <ph name="COLINDEX" />. sleja no <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">ietver uznirstošu elementu</translation>
 <translation id="7356165926712028380">Pāriet uz 8 punktu Braila rakstu</translation>
+<translation id="7356610683936413584">Detalizēta informācija par aprakstu sarakstu</translation>
 <translation id="7362871137496673139">Iepriekš nav neviena 2. līmeņa virsraksta.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ampersands}zero{# ampersandu}one{# ampersands}other{# ampersandi}}</translation>
 <translation id="737396357417333429">noklikšķināms elements</translation>
@@ -1092,6 +1097,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="8096975275316362544">Piparmētru krēma</translation>
 <translation id="8098587210054821856">Zilganpelēka</translation>
 <translation id="8110647606445335195">Nav ARIA orientieru.</translation>
+<translation id="8121539003537428024">Iespējot visus notikumu filtrus</translation>
 <translation id="812886159861361726">Faila “<ph name="FILE_NAME" />” lejupielāde apturēta</translation>
 <translation id="8138880386467279117">Pieskāriens</translation>
 <translation id="8153880621934657047">Nav tabulas iekšpusē.</translation>

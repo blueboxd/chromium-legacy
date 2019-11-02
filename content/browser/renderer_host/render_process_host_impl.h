@@ -59,6 +59,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "net/base/network_isolation_key.h"
@@ -675,7 +676,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::CodeCacheHost> receiver);
   void CreateRendererHost(
       mojo::PendingAssociatedReceiver<mojom::RendererHost> receiver);
-  void BindVideoDecoderService(media::mojom::InterfaceFactoryRequest request);
+  void BindVideoDecoderService(
+      mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
   void BindWebDatabaseHostImpl(
       mojo::PendingReceiver<blink::mojom::WebDatabaseHost> receiver);
 
@@ -949,7 +951,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Keeps track of the BindingIds  returned by storage_partition_impl_->Bind()
   // calls so we can Unbind() them on cleanup.
-  std::set<mojo::BindingId> storage_partition_binding_ids_;
+  std::set<mojo::ReceiverId> storage_partition_binding_ids_;
 
   // The observers watching our lifetime.
   base::ObserverList<RenderProcessHostObserver>::Unchecked observers_;
@@ -1060,7 +1062,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       instance_weak_factory_;
 
   FrameSinkProviderImpl frame_sink_provider_;
-  std::unique_ptr<mojo::Binding<viz::mojom::CompositingModeReporter>>
+  std::unique_ptr<mojo::Receiver<viz::mojom::CompositingModeReporter>>
       compositing_mode_reporter_;
 
   bool cleanup_corb_exception_for_plugin_upon_destruction_ = false;

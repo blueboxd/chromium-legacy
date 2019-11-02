@@ -348,7 +348,8 @@ inline void EventDispatcher::DispatchEventPostProcess(
   // preventing default handling, the detail of which handlers are called is an
   // internal implementation detail and not part of the DOM.
   if (event_->defaultPrevented()) {
-    node_->DidPreventDefault(*event_);
+    if (activation_target)
+      activation_target->DidPreventDefault(*event_);
   } else if (!event_->DefaultHandled() && is_trusted_or_click) {
     // Non-bubbling events call only one default event handler, the one for the
     // target.

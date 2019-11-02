@@ -214,7 +214,7 @@ blink::WebRect WebThemeEngineDefault::NinePatchAperture(Part part) const {
 
 base::Optional<SkColor> WebThemeEngineDefault::GetSystemColor(
     blink::WebThemeEngine::SystemThemeColor system_theme_color) const {
-  return ui::NativeTheme::GetInstanceForWeb()->GetSystemColorFromMap(
+  return ui::NativeTheme::GetInstanceForWeb()->GetSystemThemeColor(
       NativeSystemThemeColor(system_theme_color));
 }
 

@@ -261,14 +261,18 @@ class Panel {
     const elements = document.querySelectorAll('.i18n');
     for (const element of elements) {
       const messageId = element.getAttribute('msgid');
-      if (!messageId)
-        throw new Error('Element has no msgid attribute: ' + element);
+      if (!messageId) {
+        throw SwitchAccess.error(
+            SAConstants.ErrorType.UNTRANSLATED_STRING,
+            'Element has no msgid attribute: ' + element);
+      }
       const translatedMessage =
           chrome.i18n.getMessage('switch_access_' + messageId);
-      if (element.tagName == 'INPUT')
+      if (element.tagName == 'INPUT') {
         element.setAttribute('placeholder', translatedMessage);
-      else
+      } else {
         element.textContent = translatedMessage;
+      }
       element.classList.add('i18n-processed');
     }
   }

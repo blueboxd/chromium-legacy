@@ -29,6 +29,7 @@
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
+      'android-code-coverage-native', # crbug/1018434
     ],
   },
   'angle_end2end_tests': {
@@ -379,7 +380,15 @@
       'Win10 Tests x64 (dbg)',
     ],
   },
+  'components_browsertests': {
+    'remove_from': [
+      'android-code-coverage-native', # crbug/1018434
+    ],
+  },
   'components_unittests': {
+    'remove_from': [
+      'android-code-coverage-native', # crbug/1018431
+    ],
     'modifications': {
       'android-pie-arm64-rel': {
         'experiment_percentage': 100, # https://crbug.com/1010211
@@ -480,6 +489,8 @@
     'remove_from': [
       # chromium.memory
       'android-asan',  # https://crbug.com/964562
+      # chromium.fyi
+      'android-code-coverage-native', # crbug/1018434
     ],
     'modifications': {
       'android-pie-arm64-rel': {
@@ -1667,6 +1678,9 @@
     ],
   },
   'unit_tests': {
+    'remove_from': [
+      'android-code-coverage-native', # crbug/1018434
+    ],
     'modifications': {
       # chromium.clang
       'ToTLinuxASan': {
@@ -1749,6 +1763,8 @@
       # chromium.android.fyi
       'android-marshmallow-x86-fyi-rel',
       'android-pie-x86-fyi-rel',
+      # chromium.fyi
+      'android-code-coverage-native', # crbug/1018434
     ],
   },
   'vr_common_unittests': {
@@ -1756,6 +1772,8 @@
       # chromium.android.fyi
       'android-marshmallow-x86-fyi-rel',
       'android-pie-x86-fyi-rel',
+      # chromium.fyi
+      'android-code-coverage-native', # crbug/1018431
     ],
   },
   'vr_pixeltests': {
@@ -1765,6 +1783,7 @@
       'android-pie-x86-fyi-rel',
       # chromium.fyi
       'VR Linux',
+      'android-code-coverage-native', # crbug/1018431
     ],
   },
   'wayland_client_perftests': {

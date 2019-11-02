@@ -79,37 +79,6 @@ Polymer({
       return;
     }
 
-    const subpagePaths = [];
-    if (settings.routes.SITE_SETTINGS_COOKIES) {
-      subpagePaths.push(settings.routes.SITE_SETTINGS_COOKIES.path);
-    }
-
-    if (settings.routes.SITE_SETTINGS_SITE_DATA) {
-      subpagePaths.push(settings.routes.SITE_SETTINGS_SITE_DATA.path);
-    }
-
-    if (settings.routes.SITE_SETTINGS_ALL) {
-      subpagePaths.push(settings.routes.SITE_SETTINGS_ALL.path);
-    }
-
-    // <if expr="chromeos">
-    if (settings.routes.INTERNET_NETWORKS) {
-      subpagePaths.push(settings.routes.INTERNET_NETWORKS.path);
-    }
-    // </if>
-
-    // Only handle iron-select events from div elements and the
-    // given whitelist of settings-subpage instances.
-    const whitelist = ['settings-subpage#site-settings', 'div[route-path]'];
-    whitelist.push.apply(
-        whitelist,
-        subpagePaths.map(path => `settings-subpage[route-path="${path}"]`));
-    const query = whitelist.join(', ');
-
-    if (!e.detail.item.matches(query)) {
-      return;
-    }
-
     // Ensure focus-config was correctly specified as a Polymer property.
     assert(this.focusConfig instanceof Map);
 

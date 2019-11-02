@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">قائمة "المزيد"</translation>
 <translation id="2316709634732130529">استخدام كلمة المرور المقترحة</translation>
 <translation id="2320166752086256636">إخفاء لوحة المفاتيح</translation>
+<translation id="2330129964253841015">التحذير إذا كانت كلمات المرور مخترقة</translation>
 <translation id="2339560363438331454">‏خدمات Google والمزامنة</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
 <translation id="2359043044084662842">الترجمة</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">حفظ الصورة</translation>
 <translation id="3789841737615482174">تثبيت</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
-<translation id="3886946236301294521">يُرسَل إليك تحذير في حال كانت كلمة المرور التي تستخدمها قد تم استخدامها مسبقًا في عملية اختراق للبيانات.</translation>
 <translation id="3897092660631435901">قائمة</translation>
 <translation id="3915450441834151894">معلومات موقع الويب</translation>
 <translation id="3922310737605261887">البحث عن النص الذي نسخته</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">الصفحات التي قرأتها</translation>
 <translation id="4630540211544979320">ترجمة الصفحات</translation>
 <translation id="4636930964841734540">معلومات</translation>
+<translation id="4659126640776004816">‏عند تسجيل الدخول إلى حسابك على Google، يتم تفعيل هذه الميزة.</translation>
 <translation id="4659667755519643272">دخول أداة تغيير علامات التبويب</translation>
 <translation id="4666531726415300315">تم تسجيل الدخول كحساب <ph name="EMAIL" />
 
@@ -301,7 +302,6 @@
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5327248766486351172">الاسم</translation>
-<translation id="5365716706805792666">‏بإمكان Google التحقُّق مما إذا تم استخدام كلمات المرور في عملية اختراق البيانات. سيتم تفعيل هذه الميزة عند تسجيل الدخول باستخدام حسابك على Google.</translation>
 <translation id="5388358297987318779">فتح الصورة</translation>
 <translation id="5407969256130905701">تجاهل التغييرات</translation>
 <translation id="5409365236829784218">لا تتوفر تطبيقات مثبتة يمكن من خلالها فتح هذا الملف.</translation>
@@ -333,7 +333,6 @@
 <translation id="5854790677617711513">مرّ عليها أكثر من 30 يومًا</translation>
 <translation id="5857090052475505287">مجلد جديد</translation>
 <translation id="5857770089550859117">عبارة المرور مطلوبة لبدء المزامنة.</translation>
-<translation id="5859444426865731878">‏بإمكان Google التحقق مما إذا تم استخدام كلمات المرور في عملية اختراق للبيانات.</translation>
 <translation id="5860033963881614850">غير مفعّل</translation>
 <translation id="5869029295770560994">حسنًا</translation>
 <translation id="5871497086027727873">تم نقل عنصر واحد</translation>
@@ -483,7 +482,6 @@
 <translation id="7859704718976024901">سجلّ التصفّح</translation>
 <translation id="7887198238286927132">‏لحماية خصوصيتك، لن يجري Chrome الملء التلقائي لهذا الحقل.</translation>
 <translation id="7918293828610777738">قائمة القراءة متاحة بلا اتصال بالإنترنت. لإضافة صفحة إلى قائمة القراءة، انقر على  <ph name="SHARE_OPENING_ICON" />  ثم <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">التحقق من أمان كلمة المرور</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">جارٍ تصدير كلمات المرور...</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>

@@ -26,6 +26,7 @@ class WebContents;
 namespace weblayer {
 class FullscreenDelegate;
 class NavigationControllerImpl;
+class NewBrowserDelegate;
 class ProfileImpl;
 
 #if defined(OS_ANDROID)
@@ -41,7 +42,9 @@ class BrowserControllerImpl : public BrowserController,
   BrowserControllerImpl(ProfileImpl* profile,
                         const base::android::JavaParamRef<jobject>& java_impl);
 #endif
-  explicit BrowserControllerImpl(ProfileImpl* profile);
+  explicit BrowserControllerImpl(
+      ProfileImpl* profile,
+      std::unique_ptr<content::WebContents> = nullptr);
   ~BrowserControllerImpl() override;
 
   // Returns the BrowserControllerImpl from the specified WebContents, or null
@@ -50,6 +53,10 @@ class BrowserControllerImpl : public BrowserController,
       content::WebContents* web_contents);
 
   content::WebContents* web_contents() const { return web_contents_.get(); }
+
+  bool has_new_browser_delegate() const {
+    return new_browser_delegate_ != nullptr;
+  }
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
@@ -71,6 +78,7 @@ class BrowserControllerImpl : public BrowserController,
   // BrowserController:
   void SetDownloadDelegate(DownloadDelegate* delegate) override;
   void SetFullscreenDelegate(FullscreenDelegate* delegate) override;
+  void SetNewBrowserDelegate(NewBrowserDelegate* delegate) override;
   void AddObserver(BrowserObserver* observer) override;
   void RemoveObserver(BrowserObserver* observer) override;
   NavigationController* GetNavigationController() override;
@@ -107,6 +115,12 @@ class BrowserControllerImpl : public BrowserController,
       const content::WebContents* web_contents) override;
   blink::mojom::DisplayMode GetDisplayMode(
       const content::WebContents* web_contents) override;
+  void AddNewContents(content::WebContents* source,
+                      std::unique_ptr<content::WebContents> new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_rect,
+                      bool user_gesture,
+                      bool* was_blocked) override;
 
   // content::WebContentsObserver:
   void DidFinishNavigation(
@@ -117,6 +131,7 @@ class BrowserControllerImpl : public BrowserController,
 
   DownloadDelegate* download_delegate_ = nullptr;
   FullscreenDelegate* fullscreen_delegate_ = nullptr;
+  NewBrowserDelegate* new_browser_delegate_ = nullptr;
   ProfileImpl* profile_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<NavigationControllerImpl> navigation_controller_;

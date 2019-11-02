@@ -42,6 +42,7 @@ class HostedAppBrowserController : public web_app::AppBrowserController {
   // web_app::AppBrowserController:
   base::Optional<std::string> GetAppId() const override;
   bool CreatedForInstalledPwa() const override;
+  bool HasMinimalUiButtons() const override;
   gfx::ImageSkia GetWindowAppIcon() const override;
   gfx::ImageSkia GetWindowIcon() const override;
   base::Optional<SkColor> GetThemeColor() const override;

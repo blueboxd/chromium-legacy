@@ -31,13 +31,11 @@ source_set("cpp") {
   public = [
     "data_decoder.h",
     "json_sanitizer.h",
-    "safe_json_parser.h",
   ]
 
   sources = [
     "data_decoder.cc",
     "json_sanitizer.cc",
-    "safe_json_parser.cc",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -50,11 +48,7 @@ source_set("cpp") {
   ]
 
   if (is_android) {
-    sources += [
-      "json_sanitizer_android.cc",
-      "safe_json_parser_android.cc",
-      "safe_json_parser_android.h",
-    ]
+    sources += [ "json_sanitizer_android.cc" ]
 
     deps = [
       "//services/data_decoder/public/cpp/android:safe_json_jni_headers",
@@ -79,8 +73,6 @@ source_set("cpp") {
     sources += [
       "decode_image.cc",
       "safe_bundled_exchanges_parser.cc",
-      "safe_json_parser_impl.cc",
-      "safe_json_parser_impl.h",
       "safe_xml_parser.cc",
     ]
   }
@@ -93,15 +85,12 @@ source_set("test_support") {
   sources = [
     "test_support/in_process_data_decoder.cc",
     "test_support/in_process_data_decoder.h",
-    "testing_json_parser.cc",
-    "testing_json_parser.h",
   ]
 
-  deps = [
+  public_deps = [
     ":cpp",
     "//base",
     "//services/data_decoder:lib",
-    "//services/service_manager/public/cpp/test:test_support",
   ]
 
   if (!is_ios) {
@@ -110,7 +99,9 @@ source_set("test_support") {
       "test_data_decoder_service.h",
     ]
 
-    deps += [ "//services/service_manager/public/cpp/test:test_support" ]
+    deps = [
+      "//services/service_manager/public/cpp/test:test_support",
+    ]
   }
 }
 

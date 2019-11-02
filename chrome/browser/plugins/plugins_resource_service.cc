@@ -16,7 +16,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/system_connector.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -87,8 +86,6 @@ PluginsResourceService::PluginsResourceService(PrefService* local_state)
           g_browser_process->system_network_context_manager()
               ->GetSharedURLLoaderFactory(),
           switches::kDisableBackgroundNetworking,
-          base::BindRepeating(&data_decoder::SafeJsonParser::Parse,
-                              content::GetSystemConnector()),
           kPluginResourceServiceTrafficAnnotation,
           base::BindOnce(&content::GetNetworkConnectionTracker)) {}
 

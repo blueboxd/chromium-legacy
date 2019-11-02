@@ -17,7 +17,8 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   ContentSecurityPolicy policy;
-  policy.Parse(std::string(reinterpret_cast<const char*>(data), size));
+  policy.Parse(GURL("https://example.com/"),
+               std::string(reinterpret_cast<const char*>(data), size));
 
   return 0;
 }

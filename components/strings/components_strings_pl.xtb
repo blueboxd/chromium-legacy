@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Ten typ karty nie jest obsługiwany</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Skontaktuj się z administratorem systemu.</translation>
+<translation id="1739107442478692187">W używanej przez Ciebie witrynie lub aplikacji doszło do naruszenia bezpieczeństwa danych. Chrome zaleca natychmiastowe sprawdzenie zapisanych haseł i zmianę hasła na <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Wpisz miesiąc w prawidłowym formacie</translation>
 <translation id="1743520634839655729">Aby następnym razem zapłacić szybciej, zapisz kartę oraz imię, nazwisko i adres rozliczeniowy na swoim koncie Google i na tym urządzeniu.</translation>
 <translation id="1743570585616704562">Nie rozpoznano</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Niewłaściwa domena</translation>
 <translation id="2096368010154057602">Departament</translation>
 <translation id="2099652385553570808">Trzy zszywki po lewej</translation>
+<translation id="2100280972184758440">Ktoś poznał Twoje hasło</translation>
 <translation id="2102134110707549001">Zaproponuj silne hasło…</translation>
 <translation id="2108755909498034140">Uruchom ponownie komputer</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Ignorowana, ponieważ jest zastąpiona przez <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Wystawiony dla: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Otwór w prawym dolnym rogu</translation>
+<translation id="2124528555835617522">W używanej przez Ciebie witrynie lub aplikacji doszło do naruszenia bezpieczeństwa danych. Chrome zaleca niezwłoczne sprawdzenie zapisanych haseł.</translation>
 <translation id="2129079103035905234">Czujniki ruchu</translation>
 <translation id="213826338245044447">Zakładki na komórce</translation>
 <translation id="214556005048008348">Anuluj płatność</translation>
@@ -480,17 +483,13 @@
 <translation id="3282497668470633863">Dodaj imię i nazwisko na karcie</translation>
 <translation id="3287510313208355388">Pobierz, gdy będę online</translation>
 <translation id="3293642807462928945">Więcej informacji o zasadzie <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">W używanej przez Ciebie witrynie lub aplikacji doszło do naruszenia bezpieczeństwa danych. Chrome zaleca niezwłoczną zmianę hasła na stronie <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Brak wyników wyszukiwania</translation>
 <translation id="3320021301628644560">Dodaj adres rozliczeniowy</translation>
 <translation id="3324983252691184275">Karmazynowy</translation>
 <translation id="3338095232262050444">Bezpieczna</translation>
 <translation id="3355823806454867987">Zmień ustawienia serwera proxy...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />nie będzie zapisywać<ph name="END_EMPHASIS" />:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Twojej historii przeglądania;
-          <ph name="LIST_ITEM" />plików cookie i danych ze stron internetowych;
-          <ph name="LIST_ITEM" />informacji, które wpisujesz w formularzach.
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">Arkusz modułu do obsługi płatności</translation>
 <translation id="3362968246557010467">Ta zasada została automatycznie skopiowana z wycofanej zasady <ph name="OLD_POLICY" />. Zalecamy używanie nowej zasady.</translation>
 <translation id="3366477098757335611">Wyświetl karty</translation>
 <translation id="3369192424181595722">Błąd zegara</translation>
@@ -610,6 +609,7 @@
 <translation id="3949601375789751990">Tutaj wyświetla się Twoja historia przeglądania</translation>
 <translation id="3949870428812919180">Brak zapisanych form płatności</translation>
 <translation id="3950820424414687140">Zaloguj się</translation>
+<translation id="3961148744525529027">Arkusz modułu do obsługi płatności jest w połowie otwarty</translation>
 <translation id="3962859241508114581">Poprzedni utwór</translation>
 <translation id="3963837677003247395">Czy chcesz kontynuować samodzielnie?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Brak}=1{Z 1 witryny }few{Z # witryn }many{Z # witryn }other{Z # witryny }}</translation>
@@ -1061,7 +1061,6 @@
 <translation id="6151417162996330722">Certyfikat serwera ma za długi okres ważności.</translation>
 <translation id="6157877588268064908">Aby zobaczyć metody wysyłki oraz wymagania, wybierz adres</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
-<translation id="6169916984152623906">Teraz możesz korzystać z internetu w trybie prywatnym. Inne osoby używające tego urządzenia nie zobaczą Twojej aktywności. Pamiętaj tylko, że zakładki i pobrane pliki są zapisywane.</translation>
 <translation id="6177128806592000436">Twoje połączenie z tą witryną nie jest bezpieczne</translation>
 <translation id="6203231073485539293">Sprawdź połączenie z internetem</translation>
 <translation id="6218753634732582820">Usunąć ten adres z Chromium?</translation>
@@ -1343,6 +1342,7 @@ Dodatkowe informacje:
 <translation id="7637571805876720304">Usunąć tę kartę kredytową z Chromium?</translation>
 <translation id="7638605456503525968">Porty szeregowe</translation>
 <translation id="7639968568612851608">Ciemnoszary</translation>
+<translation id="7653957176542370971">Arkusz modułu do obsługi płatności jest zamknięty</translation>
 <translation id="765676359832457558">Ukryj ustawienia zaawansowane...</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7662298039739062396">Ustawienie kontrolowane przez rozszerzenie</translation>
@@ -1472,6 +1472,7 @@ Dodatkowe informacje:
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8262952874573525464">Zszywanie wzdłuż dolnej krawędzi</translation>
 <translation id="8267698848189296333">Logujesz się jako <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Arkusz modułu do obsługi płatności jest otwarty</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Zaloguj się</translation>
 <translation id="8288807391153049143">Pokaż certyfikat</translation>
@@ -1532,6 +1533,7 @@ Dodatkowe informacje:
 <translation id="8680536109547170164"><ph name="QUERY" />, odpowiedź, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Dostępne</translation>
+<translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="8703575177326907206">Połączenie z witryną <ph name="DOMAIN" /> nie jest szyfrowane.</translation>
 <translation id="8718314106902482036">Płatność nie została zrealizowana</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, sugestia wyszukiwania</translation>

@@ -508,7 +508,8 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
     auto& put_operation = expected_put_operations.back();
     put_operation->operation_type = mojom::blink::OperationType::kPut;
     put_operation->request = request->CreateFetchAPIRequest();
-    put_operation->response = response->PopulateFetchAPIResponse();
+    put_operation->response =
+        response->PopulateFetchAPIResponse(request->url());
   }
   test_cache()->SetExpectedBatchOperations(&expected_put_operations);
 
@@ -742,7 +743,8 @@ TEST_F(CacheStorageTest, Add) {
 
     put_operation->operation_type = mojom::blink::OperationType::kPut;
     put_operation->request = request->CreateFetchAPIRequest();
-    put_operation->response = response->PopulateFetchAPIResponse();
+    put_operation->response =
+        response->PopulateFetchAPIResponse(request->url());
     expected_put_operations[0] = std::move(put_operation);
   }
   test_cache()->SetExpectedBatchOperations(&expected_put_operations);

@@ -253,8 +253,8 @@ Accepted values are lists of strings from `extension`, `hosted_app`,
 The `location` property specifies the required install location of the
 extension.
 
-Accepted values are a single string from `component`, `external_component`, and
-`policy`.
+Accepted values are a single string from `component`, `external_component`,
+`policy`, and `unpacked`.
 
 ### internal
 

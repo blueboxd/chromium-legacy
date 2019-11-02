@@ -322,6 +322,9 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     if (CachedHasDefiniteLogicalHeight()) {
       ComputeTrackSizesForDefiniteSize(
           kForRows, AvailableLogicalHeight(kExcludeMarginBorderPadding));
+    } else if (HasOverrideIntrinsicContentLogicalHeight()) {
+      ComputeTrackSizesForDefiniteSize(kForRows,
+                                       OverrideIntrinsicContentLogicalHeight());
     } else {
       ComputeTrackSizesForIndefiniteSize(track_sizing_algorithm_, kForRows);
     }
@@ -504,6 +507,12 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
   min_logical_width = scrollbar_width;
   max_logical_width = scrollbar_width;
 
+  if (HasOverrideIntrinsicContentLogicalWidth()) {
+    min_logical_width += OverrideIntrinsicContentLogicalWidth();
+    max_logical_width = min_logical_width;
+    return;
+  }
+
   std::unique_ptr<Grid> grid = Grid::Create(this);
   GridTrackSizingAlgorithm algorithm(this, *grid);
   PlaceItemsOnGrid(algorithm, base::nullopt);
@@ -521,7 +530,6 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
     }
   }
 
-  // TODO(crbug.com/953915): Handle display-locked grid sizing.
   ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns);
 
   size_t number_of_tracks = algorithm.Tracks(kForColumns).size();
@@ -542,6 +550,15 @@ void LayoutGrid::ComputeTrackSizesForIndefiniteSize(
 #if DCHECK_IS_ON()
   DCHECK(algo.TracksAreWiderThanMinTrackBreadth());
 #endif
+}
+
+base::Optional<LayoutUnit> LayoutGrid::OverrideIntrinsicContentLogicalSize(
+    GridTrackSizingDirection direction) const {
+  if (direction == kForColumns && HasOverrideIntrinsicContentLogicalWidth())
+    return OverrideIntrinsicContentLogicalWidth();
+  if (direction == kForRows && HasOverrideIntrinsicContentLogicalHeight())
+    return OverrideIntrinsicContentLogicalHeight();
+  return base::nullopt;
 }
 
 LayoutUnit LayoutGrid::OverrideContainingBlockContentSizeForChild(
@@ -565,6 +582,9 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
     base::Optional<LayoutUnit> available_size) const {
   DCHECK(!available_size || available_size.value() != -1);
   bool is_row_axis = direction == kForColumns;
+  // TODO(vmpstr): If we have available_size or min-size specified (as
+  // determined below), then should still repeat tracks to fill the available
+  // space.
   if (ShouldApplySizeContainment() &&
       ((is_row_axis &&
         StyleRef().GridAutoRepeatColumnsType() == AutoRepeatType::kAutoFit) ||
@@ -600,10 +620,15 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
               : AdjustContentBoxLogicalHeightForBoxSizing(max_size_value);
     }
 
+    base::Optional<LayoutUnit> intrinsic_size_override =
+        OverrideIntrinsicContentLogicalSize(direction);
+
     const Length& min_size = is_row_axis ? StyleRef().LogicalMinWidth()
                                          : StyleRef().LogicalMinHeight();
-    if (!available_max_size && !min_size.IsSpecified())
+    if (!available_max_size && !min_size.IsSpecified() &&
+        !intrinsic_size_override) {
       return auto_repeat_track_list_length;
+    }
 
     LayoutUnit available_min_size = LayoutUnit();
     if (min_size.IsSpecified()) {
@@ -619,11 +644,32 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
           is_row_axis
               ? AdjustContentBoxLogicalWidthForBoxSizing(min_size_value)
               : AdjustContentBoxLogicalHeightForBoxSizing(min_size_value);
-      if (!max_size.IsSpecified())
-        needs_to_fulfill_minimum_size = true;
     }
 
-    available_size = std::max(available_min_size, available_max_size);
+    // We can treat the intrinsic-size similar to min-size when filling the
+    // remainder of space. That is, we should fill the intrinsic size fully.
+    // TODO(vmpstr): What happens in cases where max_size is specified but is
+    // smaller than min_size? The grid container would be sized to min_size but
+    // needs_to_fulfill_minimum_size below would be false.
+    if (!max_size.IsSpecified() &&
+        (min_size.IsSpecified() || intrinsic_size_override)) {
+      needs_to_fulfill_minimum_size = true;
+    }
+
+    // Now we need to determine the available size.
+    // We start with the maximum of all of the values. Then, we need to see if
+    // max-size is breached. If it is, then we can shrink the size back up to
+    // the max of min-size and max-size. This is because we can ignore
+    // intrinsic-size in this situation since the min- and max- sizes take
+    // priority.
+    auto available_intrinsic_size =
+        intrinsic_size_override.value_or(LayoutUnit());
+    available_size =
+        std::max(std::max(available_min_size, available_intrinsic_size),
+                 available_max_size);
+    if (max_size.IsSpecified() && available_max_size < available_size) {
+      available_size = std::max(available_min_size, available_max_size);
+    }
   }
 
   LayoutUnit auto_repeat_tracks_size;
@@ -684,8 +730,10 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
 
   // Provided the grid container does not have a definite size or max-size in
   // the relevant axis, if the min size is definite then the number of
-  // repetitions is the largest possible positive integer that fulfills that
-  // minimum requirement.
+  // repetitions is the smallest positive integer that fulfills that
+  // minimum requirement. If after determining the repetitions, we still have
+  // free space, then we need one more repetition to ensure we fill at least all
+  // of the space.
   if (needs_to_fulfill_minimum_size && free_space)
     ++repetitions;
 

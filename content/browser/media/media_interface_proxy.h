@@ -19,9 +19,9 @@
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
@@ -45,9 +45,10 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // Constructs MediaInterfaceProxy and bind |this| to the |request|. When
   // connection error happens on the client interface, |error_handler| will be
   // called, which could destroy |this|.
-  MediaInterfaceProxy(RenderFrameHost* render_frame_host,
-                      media::mojom::InterfaceFactoryRequest request,
-                      base::OnceClosure error_handler);
+  MediaInterfaceProxy(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver,
+      base::OnceClosure error_handler);
   ~MediaInterfaceProxy() final;
 
   // media::mojom::InterfaceFactory implementation.
@@ -128,8 +129,8 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // Safe to hold a raw pointer since |this| is owned by RenderFrameHostImpl.
   RenderFrameHost* const render_frame_host_;
 
-  // Binding for incoming InterfaceFactoryRequest from the the RenderFrameImpl.
-  mojo::Binding<InterfaceFactory> binding_;
+  // Receiver for incoming InterfaceFactoryRequest from the the RenderFrameImpl.
+  mojo::Receiver<InterfaceFactory> receiver_;
 
   // TODO(xhwang): Replace InterfaceProvider with a dedicated host interface.
   // See http://crbug.com/660573

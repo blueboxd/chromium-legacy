@@ -2,7 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("linux/buildflags/buildflags.gni")
+
 component("system_media_controls") {
+  friend = [ ":unit_tests" ]
+
   public = [
     "system_media_controls.h",
     "system_media_controls_observer.h",
@@ -25,9 +29,40 @@ component("system_media_controls") {
       "win/system_media_controls_win.cc",
       "win/system_media_controls_win.h",
     ]
+  } else if (use_mpris) {
+    sources = [
+      "linux/system_media_controls_linux.cc",
+      "linux/system_media_controls_linux.h",
+    ]
+    deps += [
+      "//build:branding_buildflags",
+      "//components/dbus/properties",
+      "//components/dbus/thread_linux",
+      "//dbus",
+    ]
   } else {
     sources = [
       "system_media_controls_stub.cc",
+    ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  if (use_mpris) {
+    sources = [
+      "linux/system_media_controls_linux_unittest.cc",
+    ]
+    deps = [
+      ":system_media_controls",
+      "//base",
+      "//base/test:test_support",
+      "//components/dbus/thread_linux",
+      "//dbus",
+      "//dbus:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
     ]
   }
 }

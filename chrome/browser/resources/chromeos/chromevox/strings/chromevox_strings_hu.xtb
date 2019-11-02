@@ -153,6 +153,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="2063539687800151747">Mottó</translation>
 <translation id="207477615537953741">Szemantikai értelmezés kikapcsolva</translation>
 <translation id="2086961585857038472">Következő szó</translation>
+<translation id="2087981446621639008">leirlistaadat</translation>
 <translation id="2089387485033699258">hu</translation>
 <translation id="2091933974477985526">Előző szerkeszthető szövegterület</translation>
 <translation id="2100350898815792233">Minden írásjellel</translation>
@@ -193,6 +194,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="2416512023405990736">Nem bejelölt négyzet</translation>
 <translation id="2417569100218200841">Tartalominformáció</translation>
 <translation id="2417948780551741035">Záró jegyzetek</translation>
+<translation id="2419852971200420169">Leíráslista</translation>
 <translation id="2421113964388408478">Törlés</translation>
 <translation id="2422937916923936891">Menüelem – jelölőnégyzet</translation>
 <translation id="2428534162001909979">Parancsmenük</translation>
@@ -371,6 +373,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="3497063866483065785">{COUNT,plural, =1{kérdőjel}other{# kérdőjel}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{csúcsos ékezet}other{# csúcsos ékezet}}</translation>
 <translation id="352577523970648069">Szerkeszthető szövegmező</translation>
+<translation id="3538907380453898475">leirlista</translation>
 <translation id="3549141990712742152">A következő szöveg kivágása: <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">A beszéd ideiglenes leállításához koppintson két ujjal</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, jelölőnégyzet nincs bejelölve</translation>
@@ -779,6 +782,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="6378394210114975876">Bogáncslila</translation>
 <translation id="6385591741672306837">oszlop</translation>
 <translation id="6387719785439924554">oldaltartalom</translation>
+<translation id="6393014464788431702">Az összes eseményszűrő letiltása</translation>
 <translation id="6411426777058107714">Nincs előző választógomb.</translation>
 <translation id="6414968628640960377">Előző eltérő elem.</translation>
 <translation id="6417265370957905582">Google Segéd</translation>
@@ -914,6 +918,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="7332592614823088566"><ph name="ROWINDEX" />/<ph name="ROWTOTAL" />. sor, <ph name="COLINDEX" />/<ph name="COLTOTAL" />. oszlop</translation>
 <translation id="7336596009609913925">előugróval rendelkezik</translation>
 <translation id="7356165926712028380">Váltás 8 pontos braille-táblázatra</translation>
+<translation id="7356610683936413584">Leíráslista adatai</translation>
 <translation id="7362871137496673139">Nincs előző 2-es szintű címsor.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ÉS jel}other{# ÉS jel}}</translation>
 <translation id="737396357417333429">kattintható</translation>
@@ -1092,6 +1097,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="8096975275316362544">Mentakrém</translation>
 <translation id="8098587210054821856">Palaszürke</translation>
 <translation id="8110647606445335195">Nincsenek ARIA határjelek.</translation>
+<translation id="8121539003537428024">Az összes eseményszűrő engedélyezése</translation>
 <translation id="812886159861361726">A következő letöltése leállítva: <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Érintés</translation>
 <translation id="8153880621934657047">Nem táblázatban van.</translation>

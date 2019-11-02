@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
@@ -37,6 +36,8 @@ class AppMenu : public views::MenuDelegate,
                 public base::SupportsWeakPtr<AppMenu> {
  public:
   AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items);
+  AppMenu(const AppMenu&) = delete;
+  AppMenu& operator=(const AppMenu&) = delete;
   ~AppMenu() override;
 
   void Init(ui::MenuModel* model);
@@ -192,8 +193,6 @@ class AppMenu : public views::MenuDelegate,
 
   // Records the time from when menu opens to when the user selects a menu item.
   base::ElapsedTimer menu_opened_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppMenu);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_APP_MENU_H_

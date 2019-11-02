@@ -19,6 +19,7 @@ class CONTENT_EXPORT RenderMediaEventHandler
   RenderMediaEventHandler() = default;
   ~RenderMediaEventHandler() override = default;
   void SendQueuedMediaEvents(std::vector<media::MediaLogEvent>) override;
+  void OnWebMediaPlayerDestroyed() override;
 };
 
 }  // namespace content

@@ -153,6 +153,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Semantikk av</translation>
 <translation id="2086961585857038472">Neste ord</translation>
+<translation id="2087981446621639008">dtlj for beskrliste</translation>
 <translation id="2089387485033699258">no</translation>
 <translation id="2091933974477985526">Forrige redigerbare tekstområde</translation>
 <translation id="2100350898815792233">All tegnsetting</translation>
@@ -193,6 +194,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2416512023405990736">En avmerkingsboks uten hake</translation>
 <translation id="2417569100218200841">Innholdsinformasjon</translation>
 <translation id="2417948780551741035">Sluttnoter</translation>
+<translation id="2419852971200420169">Beskrivelsesliste</translation>
 <translation id="2421113964388408478">Sletting</translation>
 <translation id="2422937916923936891">Avmerkingsrute for menyelement</translation>
 <translation id="2428534162001909979">Kommandomenyer</translation>
@@ -371,6 +373,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3497063866483065785">{COUNT,plural, =1{spørsmålstegn}other{# spørsmålstegn}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{circumflekstegn}other{# circumflekstegn}}</translation>
 <translation id="352577523970648069">Et tekstfelt som kan endres</translation>
+<translation id="3538907380453898475">beskrliste</translation>
 <translation id="3549141990712742152">klipp ut <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Trykk med to fingre for å stoppe høytlesningen midlertidig</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, avmerkingsruten er ikke avmerket</translation>
@@ -779,6 +782,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6378394210114975876">Tistelfarget</translation>
 <translation id="6385591741672306837">kol.</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">Slå av alle hendelsesfiltre</translation>
 <translation id="6411426777058107714">Det finnes ingen tidligere alternativknapper.</translation>
 <translation id="6414968628640960377">Forrige ulike element.</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -914,6 +918,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7332592614823088566">Rad <ph name="ROWINDEX" /> av <ph name="ROWTOTAL" />, kolonne <ph name="COLINDEX" /> av <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">har forgrunnsvindu</translation>
 <translation id="7356165926712028380">Bytt til 8-punkts punktskrift</translation>
+<translation id="7356610683936413584">Detalj for beskrivelsesliste</translation>
 <translation id="7362871137496673139">Det finnes ikke tidligere overskrifter på nivå 2.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{og-tegn}other{# og-tegn}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8096975275316362544">Mintkrem</translation>
 <translation id="8098587210054821856">Skifergrå</translation>
 <translation id="8110647606445335195">Det finnes ingen ARIA-landmerker.</translation>
+<translation id="8121539003537428024">Slå på alle hendelsesfiltre</translation>
 <translation id="812886159861361726">Nedlastingen av <ph name="FILE_NAME" /> er stanset</translation>
 <translation id="8138880386467279117">Berøring</translation>
 <translation id="8153880621934657047">Ikke inne i tabellen.</translation>

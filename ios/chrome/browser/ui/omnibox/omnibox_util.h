@@ -34,9 +34,11 @@ UIImage* GetLocationBarSecurityIcon(LocationBarSecurityIconType icon);
 // Converts the |security_level| to an appropriate security icon type. If
 // |should_downgrade| is true, the info icon should be downgraded to a
 // grey triangle for non-secure connections.
+// TODO(crbug.com/1020670): remove default argument for |should_downgrade|
+// after updating GetLocationBarSecurityIconTypeForSecurityState call.
 LocationBarSecurityIconType GetLocationBarSecurityIconTypeForSecurityState(
     security_state::SecurityLevel security_level,
-    bool should_downgrade);
+    bool should_downgrade = false);
 
 // Converts the |security_level| to an appropriate icon in "always template"
 // rendering mode. If |should_downgrade| is true, the info icon should be

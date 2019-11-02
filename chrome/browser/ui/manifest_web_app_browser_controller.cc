@@ -26,6 +26,10 @@ base::Optional<std::string> ManifestWebAppBrowserController::GetAppId() const {
   return base::nullopt;
 }
 
+bool ManifestWebAppBrowserController::HasMinimalUiButtons() const {
+  return false;
+}
+
 bool ManifestWebAppBrowserController::ShouldShowCustomTabBar() const {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

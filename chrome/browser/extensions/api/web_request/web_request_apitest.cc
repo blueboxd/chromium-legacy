@@ -3071,4 +3071,56 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, AppCacheRequests) {
             1);
 }
 
+// Regression test for https://crbug.com/1019614.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HSTSUpgradeAfterRedirect) {
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromDirectory(
+      test_data_dir_.AppendASCII("webrequest"));
+  net::test_server::RegisterDefaultHandlers(&https_test_server);
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(https_test_server.Start());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"({
+        "name": "Web Request HSTS Test",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"] },
+        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
+      })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
+        chrome.webRequest.onBeforeRedirect.addListener(function(details) {
+        }, {urls: ['<all_urls>']},
+        ['responseHeaders', 'extraHeaders']);
+
+        chrome.test.sendMessage('ready');
+      )");
+
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  content::StoragePartition* partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile());
+  base::RunLoop run_loop;
+  partition->GetNetworkContext()->AddHSTS(
+      "hsts.com", base::Time::Now() + base::TimeDelta::FromDays(100), true,
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  GURL final_url = https_test_server.GetURL("hsts.com", "/echo");
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr("http");
+  GURL http_url = final_url.ReplaceComponents(replace_scheme);
+  std::string redirect_path =
+      base::StringPrintf("/server-redirect?%s", http_url.spec().c_str());
+  GURL redirect_url = embedded_test_server()->GetURL("test.com", redirect_path);
+  ui_test_utils::NavigateToURL(browser(), redirect_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(final_url, web_contents->GetLastCommittedURL());
+}
+
 }  // namespace extensions

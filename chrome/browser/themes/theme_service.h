@@ -167,6 +167,11 @@ class ThemeService : public content::NotificationObserver,
   // Returns true if the ThemeService should use the system theme on startup.
   virtual bool ShouldInitWithSystemTheme() const;
 
+  // Decides if the IncreasedContrastThemeSupplier should be used according
+  // to |native_theme|.
+  virtual bool ShouldUseIncreasedContrastThemeSupplier(
+      ui::NativeTheme* native_theme) const;
+
   // Returns the color to use for |id| and |incognito| if the theme service does
   // not provide an override.
   virtual SkColor GetDefaultColor(int id, bool incognito) const;

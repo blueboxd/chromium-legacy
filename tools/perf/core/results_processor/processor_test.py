@@ -664,7 +664,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         '--output-dir', self.output_dir,
         '--intermediate-dir', self.intermediate_dir])
 
-    self.assertEqual(exit_code, -1)
+    self.assertEqual(exit_code, 111)
 
   def testExitCodeSomeSkipped(self):
     self.SerializeIntermediateResults(

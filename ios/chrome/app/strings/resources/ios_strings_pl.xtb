@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Menu Więcej</translation>
 <translation id="2316709634732130529">Użyj proponowanego hasła</translation>
 <translation id="2320166752086256636">Ukryj klawiaturę</translation>
+<translation id="2330129964253841015">Ostrzegaj, jeśli hasła dostały się w niepowołane ręce</translation>
 <translation id="2339560363438331454">Synchronizacja i usługi Google</translation>
 <translation id="2351097562818989364">Ustawienia tłumaczenia zostały zresetowane.</translation>
 <translation id="2359043044084662842">Tłumacz</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Zapisz obraz</translation>
 <translation id="3789841737615482174">Zainstaluj</translation>
 <translation id="385051799172605136">Wstecz</translation>
-<translation id="3886946236301294521">Ostrzeżemy Cię, jeśli Twoje hasło zostało ujawnione w wyniku naruszenia bezpieczeństwa danych.</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Informacje o witrynie</translation>
 <translation id="3922310737605261887">Wyszukaj skopiowany tekst</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Przeczytane strony</translation>
 <translation id="4630540211544979320">Tłumacz strony</translation>
 <translation id="4636930964841734540">Informacje</translation>
+<translation id="4659126640776004816">Ta funkcja zostanie włączona, gdy zalogujesz się na swoje konto Google.</translation>
 <translation id="4659667755519643272">Otwórz przełącznik kart</translation>
 <translation id="4666531726415300315">Jesteś zalogowany jako <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5327248766486351172">Nazwa</translation>
-<translation id="5365716706805792666">Google może sprawdzić, czy bezpieczeństwo Twoich haseł zostało naruszone. Ta funkcja zostanie włączona, gdy zalogujesz się na swoje konto Google.</translation>
 <translation id="5388358297987318779">Otwórz obraz</translation>
 <translation id="5407969256130905701">Odrzuć zmiany</translation>
 <translation id="5409365236829784218">Nie masz aplikacji, w których można otworzyć ten plik.</translation>
@@ -333,7 +333,6 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="5854790677617711513">Sprzed ponad 30 dni</translation>
 <translation id="5857090052475505287">Nowy folder</translation>
 <translation id="5857770089550859117">Wpisz hasło, by rozpocząć synchronizację.</translation>
-<translation id="5859444426865731878">Google może sprawdzić, czy bezpieczeństwo Twoich haseł zostało naruszone.</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
 <translation id="5869029295770560994">Rozumiem</translation>
 <translation id="5871497086027727873">Przeniosłeś 1 element</translation>
@@ -483,7 +482,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7859704718976024901">Historia przeglądania</translation>
 <translation id="7887198238286927132">Aby chronić Twoją prywatność, Chrome nie będzie automatycznie wypełniać tego pola.</translation>
 <translation id="7918293828610777738">Twoja lista Do przeczytania jest dostępna offline. Aby dodać do niej stronę, kliknij <ph name="SHARE_OPENING_ICON" />, a następnie <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Sprawdź bezpieczeństwo haseł</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksportuj hasła…</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>

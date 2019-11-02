@@ -29,9 +29,6 @@ enum class IndicatorState {
   // Showing both left/top and right/bottom drag guidances.
   kDragAreaBoth,
 
-  // Showing only left/top drag guidance.
-  kDragAreaLeft,
-
   // Showing only right/bottom drag guidance.
   kDragAreaRight,
 

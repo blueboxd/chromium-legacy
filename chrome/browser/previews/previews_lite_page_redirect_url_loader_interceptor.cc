@@ -59,10 +59,23 @@ bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
   if (!(resource_request.previews_state & content::LITE_PAGE_REDIRECT_ON))
     return false;
 
-  DCHECK_EQ(resource_request.resource_type,
-            static_cast<int>(content::ResourceType::kMainFrame));
-  DCHECK(resource_request.url.SchemeIsHTTPOrHTTPS());
-  DCHECK_EQ(resource_request.method, "GET");
+  // THese should not be possible but there's some evidence it may be happening
+  // in production and can't be repro'd.
+  if (resource_request.resource_type !=
+      static_cast<int>(content::ResourceType::kMainFrame)) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (!resource_request.url.SchemeIsHTTPOrHTTPS()) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (resource_request.method != "GET") {
+    NOTREACHED();
+    return false;
+  }
 
   return true;
 }

@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Izbornik Više</translation>
 <translation id="2316709634732130529">Upotrijebite predloženu zaporku</translation>
 <translation id="2320166752086256636">Sakrij tipkovnicu</translation>
+<translation id="2330129964253841015">Upozori ako su zaporke ugrožene</translation>
 <translation id="2339560363438331454">Sinkronizacija i Googleove usluge</translation>
 <translation id="2351097562818989364">Vaše su postavke prevođenja vraćene na zadano.</translation>
 <translation id="2359043044084662842">Prevedi</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Spremi sliku</translation>
 <translation id="3789841737615482174">Instaliraj</translation>
 <translation id="385051799172605136">Natrag</translation>
-<translation id="3886946236301294521">Upozorava ako je zaporka koju upotrebljavate ugrožena zbog povrede podataka.</translation>
 <translation id="3897092660631435901">Izbornik</translation>
 <translation id="3915450441834151894">Informacije o web-lokaciji</translation>
 <translation id="3922310737605261887">Pretraživanje teksta koji ste kopirali</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Stranice koje ste pročitali</translation>
 <translation id="4630540211544979320">Prijevod stranica</translation>
 <translation id="4636930964841734540">Informacije</translation>
+<translation id="4659126640776004816">Kad se prijavite na Google račun, ova je značajka uključena.</translation>
 <translation id="4659667755519643272">Otvori prekidač za prebacivanje između kartica</translation>
 <translation id="4666531726415300315">Prijavljeni ste kao <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5327248766486351172">Naziv</translation>
-<translation id="5365716706805792666">Google može provjeriti jesu li vaše zaporke ugrožene zbog povrede podataka. Ta će se mogućnost uključiti kada se prijavite na svoj Google račun.</translation>
 <translation id="5388358297987318779">Otvori sliku</translation>
 <translation id="5407969256130905701">Odbaci promjene</translation>
 <translation id="5409365236829784218">Nema instalirane aplikacije za otvaranje ove datoteke.</translation>
@@ -333,7 +333,6 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="5854790677617711513">Starije od 30 dana</translation>
 <translation id="5857090052475505287">Nova mapa</translation>
 <translation id="5857770089550859117">Za pokretanje sinkronizacije potrebna je zaporka.</translation>
-<translation id="5859444426865731878">Google može provjeriti jesu li vaše zaporke ugrožene zbog povrede podataka.</translation>
 <translation id="5860033963881614850">Isključeno</translation>
 <translation id="5869029295770560994">U redu, shvaćam</translation>
 <translation id="5871497086027727873">Premještena je 1 stavka</translation>
@@ -483,7 +482,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7859704718976024901">Povijest pregledavanja</translation>
 <translation id="7887198238286927132">Da bi zaštitio vašu privatnost, Chrome neće automatski popuniti ovo polje.</translation>
 <translation id="7918293828610777738">Vaš popis za čitanje dostupan je offline. Da biste dodali stranicu na popis za čitanje, dodirnite <ph name="SHARE_OPENING_ICON" />, a zatim <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Provjerite sigurnost zaporke</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Izvoz zaporki...</translation>
 <translation id="7947953824732555851">Prihv. i prijavi se</translation>

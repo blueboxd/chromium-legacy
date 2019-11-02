@@ -730,8 +730,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidCommitProvisionalLoad(
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type,
-      mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle)
-      override;
+      mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle,
+      bool should_reset_browser_interface_broker) override;
   void DidCreateNewDocument() override;
   void DidClearWindowObject() override;
   void DidCreateDocumentElement() override;

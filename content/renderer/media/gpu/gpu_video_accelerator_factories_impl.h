@@ -66,7 +66,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       bool enable_video_gpu_memory_buffers,
       bool enable_media_stream_gpu_memory_buffers,
       bool enable_video_accelerator,
-      media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
+      mojo::PendingRemote<media::mojom::InterfaceFactory>
+          interface_factory_remote,
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
 
   // media::GpuVideoAcceleratorFactories implementation.
@@ -135,11 +136,13 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       bool enable_gpu_memory_buffer_video_frames_for_video,
       bool enable_gpu_memory_buffer_video_frames_for_media_stream,
       bool enable_video_accelerator,
-      media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
+      mojo::PendingRemote<media::mojom::InterfaceFactory>
+          interface_factory_remote,
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
 
   void BindOnTaskRunner(
-      media::mojom::InterfaceFactoryPtrInfo interface_factory_info,
+      mojo::PendingRemote<media::mojom::InterfaceFactory>
+          interface_factory_remote,
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
 
   // viz::ContextLostObserver implementation.
@@ -175,7 +178,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
 
-  media::mojom::InterfaceFactoryPtr interface_factory_;
+  mojo::Remote<media::mojom::InterfaceFactory> interface_factory_;
   media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider_;
 
   // SupportedDecoderConfigs state.

@@ -82,18 +82,6 @@ enum class DynamicRuleUpdateAction {
   kRemove,
 };
 
-// Bitmask corresponding to RemoveHeaderType defined in the API.
-enum RemoveHeadersMask : uint8_t {
-  kRemoveHeadersMask_Cookie = (1u << 0),
-  kRemoveHeadersMask_Referer = (1u << 1),
-  kRemoveHeadersMask_SetCookie = (1u << 2),
-
-  // Should be equal to the last value.
-  kRemoveHeadersMask_Last = kRemoveHeadersMask_SetCookie,
-  // Equals the maximum bitmask value.
-  kRemoveHeadersMask_Max = (kRemoveHeadersMask_Last << 1) - 1,
-};
-
 // Schemes which can be used as part of url transforms.
 extern const char* const kAllowedTransformSchemes[4];
 

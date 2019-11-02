@@ -42,6 +42,13 @@ class MockDelegate
                void(const ui::SelectedFileInfo& file_info));
   MOCK_METHOD1(FileDialogSelectionFailed, void(const IssueInfo& issue));
   MOCK_METHOD0(FileDialogSelectionCanceled, void());
+
+  base::WeakPtr<MockDelegate> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<MockDelegate> weak_factory_{this};
 };
 
 class MockFileSystemDelegate
@@ -76,8 +83,8 @@ class MediaRouterFileDialogTest : public Test {
     auto temp_mock = std::make_unique<MockFileSystemDelegate>();
     mock_file_system_delegate = temp_mock.get();
 
-    dialog_ = std::make_unique<MediaRouterFileDialog>(mock_delegate_.get(),
-                                                      std::move(temp_mock));
+    dialog_ = std::make_unique<MediaRouterFileDialog>(
+        mock_delegate_->GetWeakPtr(), std::move(temp_mock));
     dialog_as_listener_ = dialog_.get();
 
     // Setup default file checks to all pass

@@ -5,7 +5,6 @@
 #ifndef UI_VIEWS_ACCESSIBILITY_VIEW_AX_PLATFORM_NODE_DELEGATE_AURALINUX_H_
 #define UI_VIEWS_ACCESSIBILITY_VIEW_AX_PLATFORM_NODE_DELEGATE_AURALINUX_H_
 
-#include "base/macros.h"
 #include "ui/views/accessibility/view_ax_platform_node_delegate.h"
 #include "ui/views/view_observer.h"
 
@@ -17,6 +16,10 @@ class ViewAXPlatformNodeDelegateAuraLinux : public ViewAXPlatformNodeDelegate,
                                             public views::ViewObserver {
  public:
   explicit ViewAXPlatformNodeDelegateAuraLinux(View* view);
+  ViewAXPlatformNodeDelegateAuraLinux(
+      const ViewAXPlatformNodeDelegateAuraLinux&) = delete;
+  ViewAXPlatformNodeDelegateAuraLinux& operator=(
+      const ViewAXPlatformNodeDelegateAuraLinux&) = delete;
   ~ViewAXPlatformNodeDelegateAuraLinux() override;
 
   // |ViewAXPlatformNodeDelegate| overrides:
@@ -26,8 +29,6 @@ class ViewAXPlatformNodeDelegateAuraLinux : public ViewAXPlatformNodeDelegate,
   void OnViewHierarchyChanged(
       views::View* observed_view,
       const views::ViewHierarchyChangedDetails& details) override;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegateAuraLinux);
 };
 
 }  // namespace views

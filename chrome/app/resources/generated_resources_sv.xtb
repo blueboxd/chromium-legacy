@@ -1182,7 +1182,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2690024944919328218">Visa språkalternativ</translation>
 <translation id="2691385045260836588">Modell</translation>
 <translation id="2693176596243495071">Hoppsan! Ett okänt fel har uppstått. Försök igen senare eller kontakta administratören om felet kvarstår.</translation>
-<translation id="2693982916035708855">Sökningen är klar. Inga problem upptäcktes</translation>
+<translation id="2693982916035708855">Sökningen är klar. Inga problem upptäcktes.</translation>
 <translation id="2695749433451188613">Protokoll för internetutskrift (HTTPS)</translation>
 <translation id="2699911226086014512">Pinkodsåtgärden misslyckades med felkod <ph name="RETRIES" />.</translation>
 <translation id="2701737434167469065">Logga in, <ph name="EMAIL" /></translation>
@@ -1391,7 +1391,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2989786307324390836">DER-kodat binärt enstaka certifikat</translation>
 <translation id="2992931425024192067">Visa allt aviseringsinnehåll</translation>
 <translation id="2993517869960930405">Appinformation</translation>
-<translation id="299483336428448530">Har installerats av en förälder.</translation>
 <translation id="2996286169319737844">Data krypteras med din lösenfras för synkronisering. Betalningsuppgifter och adresser från Google Pay omfattas inte.</translation>
 <translation id="2996722619877761919">Vänd längs långsidan</translation>
 <translation id="3003144360685731741">Prioriterade nätverk</translation>
@@ -3661,7 +3660,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="63566973648609420">Endast personer som har ditt lösenord kan läsa dina krypterade uppgifter. Lösenordet skickas inte till och sparas inte av Google. Om du glömmer lösenordet måste du <ph name="BEGIN_LINK" />återställa synkroniseringen<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Välkommen till <ph name="SHORT_PRODUCT_NAME" />-familjen. Det här är inte vilken dator som helst.</translation>
 <translation id="6358884629796491903">Drake</translation>
-<translation id="6360079014182882594">Den här webbplatsen innehåller inga cookies som kan spåra dig på webben</translation>
 <translation id="6361850914223837199">Information om felet:</translation>
 <translation id="6362853299801475928">&amp;Rapportera ett problem...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -5021,6 +5019,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8319414634934645341">Utökad nyckelanvändning</translation>
 <translation id="8320459152843401447">Hela skärmen</translation>
 <translation id="8322814362483282060">Den här sidan har blockerats och kan inte komma åt mikrofonen.</translation>
+<translation id="8323167517179506834">Skriv en webbadress</translation>
 <translation id="8326478304147373412">PKCS #7, certifikatkedja</translation>
 <translation id="8327039559959785305">Ett fel uppstod när Linux-filer skulle monteras. Försök igen.</translation>
 <translation id="8335587457941836791">Ta bort från hyllan</translation>
@@ -5137,6 +5136,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8509646642152301857">Det gick inte att ladda ned ordlistan för stavningskontrollen.</translation>
 <translation id="8512476990829870887">Avsluta process</translation>
 <translation id="851263357009351303">Tillåt alltid att <ph name="HOST" /> visar bilder</translation>
+<translation id="8513108775083588393">Rotera automatiskt</translation>
 <translation id="8514746246728959655">Testa med en annan säkerhetsnyckel</translation>
 <translation id="8521475323816527629">Öppna appar snabbt</translation>
 <translation id="8523493869875972733">Behåll ändringarna</translation>

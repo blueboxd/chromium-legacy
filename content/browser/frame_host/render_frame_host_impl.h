@@ -1643,7 +1643,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver);
 
   void BindMediaInterfaceFactoryRequest(
-      media::mojom::InterfaceFactoryRequest request);
+      mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
 
   void CreateWebSocketConnector(
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);

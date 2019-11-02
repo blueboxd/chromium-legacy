@@ -300,6 +300,7 @@
 <translation id="5302048478445481009">Jazyk</translation>
 <translation id="5313326810920013265">Nastavení Bluetooth</translation>
 <translation id="5331975486040154427">Zařízení USB Type-C (levý zadní port)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Příliš mnoho pokusů</translation>
 <translation id="5397578532367286026">Údaje o využití a historii tohoto uživatele si správce (<ph name="MANAGER_EMAIL" />) může prohlédnout na webu chrome.com.</translation>
 <translation id="5430931332414098647">Dynamický tethering</translation>
@@ -322,6 +323,7 @@
 <translation id="5682642926269496722">Asistent Google pro aktuální uživatelský účet není k dispozici.</translation>
 <translation id="5691772641933328258">Otisk prstu nebyl rozpoznán</translation>
 <translation id="5710450975648804523">Režim Nerušit je zapnutý</translation>
+<translation id="573413375004481890">Toto zařízení nemohlo podporovat všechny vaše obrazovky, jedna proto byla odpojena</translation>
 <translation id="574392208103952083">Střední</translation>
 <translation id="5744083938413354016">Přetažení klepnutím</translation>
 <translation id="5750765938512549687">Rozhraní Bluetooth je vypnuté</translation>

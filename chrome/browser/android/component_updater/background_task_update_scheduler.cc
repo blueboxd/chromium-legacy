@@ -48,6 +48,7 @@ void BackgroundTaskUpdateScheduler::Schedule(
 void BackgroundTaskUpdateScheduler::Stop() {
   Java_UpdateScheduler_cancelTask(base::android::AttachCurrentThread(),
                                   j_update_scheduler_);
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void BackgroundTaskUpdateScheduler::OnStartTask(
@@ -58,7 +59,7 @@ void BackgroundTaskUpdateScheduler::OnStartTask(
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&BackgroundTaskUpdateScheduler::OnStartTaskDelayed,
-                     base::Unretained(this)),
+                     weak_ptr_factory_.GetWeakPtr()),
       kOnStartTaskDelay);
 }
 

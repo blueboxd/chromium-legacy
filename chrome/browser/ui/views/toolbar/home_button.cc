@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 
-#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,6 +29,9 @@ namespace {
 class HomePageUndoBubble : public views::BubbleDialogDelegateView,
                            public views::StyledLabelListener {
  public:
+  HomePageUndoBubble(const HomePageUndoBubble&) = delete;
+  HomePageUndoBubble& operator=(const HomePageUndoBubble&) = delete;
+
   static void ShowBubble(Browser* browser,
                          bool undo_value_is_ntp,
                          const GURL& undo_url,
@@ -56,8 +58,6 @@ class HomePageUndoBubble : public views::BubbleDialogDelegateView,
   Browser* browser_;
   bool undo_value_is_ntp_;
   GURL undo_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(HomePageUndoBubble);
 };
 
 // static

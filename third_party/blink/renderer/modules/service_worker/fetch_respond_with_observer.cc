@@ -305,7 +305,7 @@ void FetchRespondWithObserver::OnResponseFulfilled(
   }
 
   mojom::blink::FetchAPIResponsePtr fetch_api_response =
-      response->PopulateFetchAPIResponse();
+      response->PopulateFetchAPIResponse(request_url_);
   ServiceWorkerGlobalScope* service_worker_global_scope =
       To<ServiceWorkerGlobalScope>(GetExecutionContext());
 

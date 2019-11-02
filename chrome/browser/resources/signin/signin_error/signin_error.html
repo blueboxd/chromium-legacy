@@ -13,8 +13,10 @@
     <link rel="import" href="chrome://resources/html/util.html">
     <custom-style>
       <style include="signin-dialog-shared">
-        html {
-          background: var(--md-background-color);
+        @media (prefers-color-scheme: dark) {
+          html {
+            background: var(--md-background-color);
+          }
         }
 
         .details {

@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -115,6 +114,8 @@ class FullscreenButton : public ImageButton {
  public:
   explicit FullscreenButton(views::ButtonListener* listener)
       : ImageButton(listener) { }
+  FullscreenButton(const FullscreenButton&) = delete;
+  FullscreenButton& operator=(const FullscreenButton&) = delete;
 
   // Overridden from ImageButton.
   gfx::Size CalculatePreferredSize() const override {
@@ -130,9 +131,6 @@ class FullscreenButton : public ImageButton {
     ImageButton::GetAccessibleNodeData(node_data);
     node_data->role = ax::mojom::Role::kMenuItem;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FullscreenButton);
 };
 
 // Combination border/background for the buttons contained in the menu. The
@@ -152,6 +150,8 @@ class InMenuButtonBackground : public views::Background {
   };
 
   explicit InMenuButtonBackground(ButtonType type) : type_(type) {}
+  InMenuButtonBackground(const InMenuButtonBackground&) = delete;
+  InMenuButtonBackground& operator=(const InMenuButtonBackground&) = delete;
 
   // Overridden from views::Background.
   void Paint(gfx::Canvas* canvas, View* view) const override {
@@ -221,8 +221,6 @@ class InMenuButtonBackground : public views::Background {
   }
 
   const ButtonType type_;
-
-  DISALLOW_COPY_AND_ASSIGN(InMenuButtonBackground);
 };
 
 base::string16 GetAccessibleNameForAppMenuItem(ButtonMenuItemModel* model,
@@ -250,6 +248,9 @@ class InMenuButton : public LabelButton {
  public:
   InMenuButton(views::ButtonListener* listener, const base::string16& text)
       : LabelButton(listener, text) {}
+  InMenuButton(const InMenuButton&) = delete;
+  InMenuButton& operator=(const InMenuButton&) = delete;
+
   ~InMenuButton() override {}
 
   void Init(InMenuButtonBackground::ButtonType type) {
@@ -291,9 +292,6 @@ class InMenuButton : public LabelButton {
               ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor));
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InMenuButton);
 };
 
 // AppMenuView is a view that can contain label buttons.
@@ -301,6 +299,8 @@ class AppMenuView : public views::View, public views::ButtonListener {
  public:
   AppMenuView(AppMenu* menu, ButtonMenuItemModel* menu_model)
       : menu_(menu->AsWeakPtr()), menu_model_(menu_model) {}
+  AppMenuView(const AppMenuView&) = delete;
+  AppMenuView& operator=(const AppMenuView&) = delete;
 
   ~AppMenuView() override = default;
 
@@ -357,8 +357,6 @@ class AppMenuView : public views::View, public views::ButtonListener {
 
   // The menu model containing the increment/decrement/reset items.
   ButtonMenuItemModel* menu_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppMenuView);
 };
 
 }  // namespace
@@ -381,6 +379,8 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
     CreateAndConfigureButton(IDS_PASTE, InMenuButtonBackground::LEADING_BORDER,
                              paste_index);
   }
+  CutCopyPasteView(const CutCopyPasteView&) = delete;
+  CutCopyPasteView& operator=(const CutCopyPasteView&) = delete;
 
   // Overridden from View.
   gfx::Size CalculatePreferredSize() const override {
@@ -412,8 +412,6 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
       width = std::max(width, child->GetPreferredSize().width());
     return width;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(CutCopyPasteView);
 };
 
 // ZoomView --------------------------------------------------------------------
@@ -488,8 +486,9 @@ class AppMenu::ZoomView : public AppMenuView {
     OnThemeChanged();
     UpdateZoomControls();
   }
-
-  ~ZoomView() override {}
+  ZoomView(const ZoomView&) = delete;
+  ZoomView& operator=(const ZoomView&) = delete;
+  ~ZoomView() override = default;
 
   // Overridden from View.
   gfx::Size CalculatePreferredSize() const override {
@@ -659,8 +658,6 @@ class AppMenu::ZoomView : public AppMenuView {
   // Flag tracking whether calls to ZoomLabelMaxWidth() need to re-calculate
   // the label width, because the cached value may no longer be correct.
   mutable bool zoom_label_max_width_valid_;
-
-  DISALLOW_COPY_AND_ASSIGN(ZoomView);
 };
 
 // RecentTabsMenuModelDelegate  ------------------------------------------------
@@ -675,7 +672,9 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
       : app_menu_(app_menu), model_(model), menu_item_(menu_item) {
     model_->SetMenuModelDelegate(this);
   }
-
+  RecentTabsMenuModelDelegate(const RecentTabsMenuModelDelegate&) = delete;
+  RecentTabsMenuModelDelegate& operator=(const RecentTabsMenuModelDelegate&) =
+      delete;
   ~RecentTabsMenuModelDelegate() override {
     model_->SetMenuModelDelegate(nullptr);
   }
@@ -725,8 +724,6 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   AppMenu* app_menu_;
   ui::MenuModel* model_;
   views::MenuItemView* menu_item_;
-
-  DISALLOW_COPY_AND_ASSIGN(RecentTabsMenuModelDelegate);
 };
 
 // AppMenu ------------------------------------------------------------------

@@ -409,7 +409,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnDidSetFramePolicyHeaders)
     IPC_MESSAGE_HANDLER(FrameMsg_ForwardResourceTimingToParent,
                         OnForwardResourceTimingToParent)
-    IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameMsg_SetNeedsOcclusionTracking,
                         OnSetNeedsOcclusionTracking)
     IPC_MESSAGE_HANDLER(FrameMsg_Collapse, OnCollapse)
@@ -502,10 +501,6 @@ void RenderFrameProxy::OnForwardResourceTimingToParent(
     const ResourceTimingInfo& info) {
   web_frame_->ForwardResourceTimingToParent(
       ResourceTimingInfoToWebResourceTimingInfo(info));
-}
-
-void RenderFrameProxy::OnDispatchLoad() {
-  web_frame_->DispatchLoadEventForFrameOwner();
 }
 
 void RenderFrameProxy::OnSetNeedsOcclusionTracking(bool needs_tracking) {

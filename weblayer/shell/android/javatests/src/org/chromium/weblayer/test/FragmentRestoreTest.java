@@ -11,6 +11,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.BrowserController;
+import org.chromium.weblayer.shell.InstrumentationActivity;
 
 @RunWith(BaseJUnit4ClassRunner.class)
 public class FragmentRestoreTest {
@@ -21,14 +24,19 @@ public class FragmentRestoreTest {
     @Test
     @SmallTest
     public void successfullyLoadsUrlAfterRotation() {
-        mActivityTestRule.launchShellWithUrl("about:blank");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+        BrowserController controller = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> activity.getBrowserController());
 
         String url = "data:text,foo";
-        mActivityTestRule.navigateAndWait(url);
+        mActivityTestRule.navigateAndWait(controller, url, false);
 
         mActivityTestRule.recreateActivity();
 
+        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
+        controller = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> newActivity.getBrowserController());
         url = "data:text,bar";
-        mActivityTestRule.navigateAndWait(url);
+        mActivityTestRule.navigateAndWait(controller, url, false);
     }
 }

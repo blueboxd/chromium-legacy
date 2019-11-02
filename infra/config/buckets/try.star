@@ -576,16 +576,6 @@ chromiumos_builder(
     ),
 )
 
-# Identical to chromeos-kevin-rel, but runs experimentally on a fraction of
-# all CLs. Separate from chromeos-kevin-rel due to different triggering
-# policies.
-chromiumos_builder(
-    name = 'chromeos-kevin-experimental-rel',
-    tryjob = tryjob(
-        experiment_percentage = 5,
-    ),
-)
-
 chromiumos_builder(
     name = 'chromeos-kevin-rel',
     tryjob = tryjob(
@@ -1245,13 +1235,13 @@ linux_builder(
 
 linux_builder(
     name = 'linux-clang-tidy-dbg',
-    executable = luci.recipe(name = 'tricium_analyze'),
+    executable = luci.recipe(name = 'tricium_clang_tidy_wrapper'),
     goma_jobs = goma.jobs.J150,
 )
 
 linux_builder(
     name = 'linux-clang-tidy-rel',
-    executable = luci.recipe(name = 'tricium_analyze'),
+    executable = luci.recipe(name = 'tricium_clang_tidy_wrapper'),
     goma_jobs = goma.jobs.J150,
 )
 

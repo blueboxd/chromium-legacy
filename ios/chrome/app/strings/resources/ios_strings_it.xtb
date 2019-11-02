@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Menu Altro</translation>
 <translation id="2316709634732130529">Utilizza la password suggerita</translation>
 <translation id="2320166752086256636">Nascondi tastiera</translation>
+<translation id="2330129964253841015">Ricevi un avviso in caso di compromissione delle password</translation>
 <translation id="2339560363438331454">Sincronizzazione e servizi Google</translation>
 <translation id="2351097562818989364">Le impostazioni di traduzione sono state reimpostate.</translation>
 <translation id="2359043044084662842">Traduci</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Salva immagine</translation>
 <translation id="3789841737615482174">Installa</translation>
 <translation id="385051799172605136">Indietro</translation>
-<translation id="3886946236301294521">Ricevi un avviso se una tua password è stata oggetto di una violazione dei dati.</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Informazioni sito</translation>
 <translation id="3922310737605261887">Cerca il testo copiato</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Pagine che hai letto</translation>
 <translation id="4630540211544979320">Traduci pagine</translation>
 <translation id="4636930964841734540">Info</translation>
+<translation id="4659126640776004816">Questa funzionalità viene attivata quando accedi al tuo Account Google.</translation>
 <translation id="4659667755519643272">Apri selettore di schede</translation>
 <translation id="4666531726415300315">Accesso eseguito come <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="5327248766486351172">Nome</translation>
-<translation id="5365716706805792666">Google può controllare se le tue password sono state oggetto di una violazione dei dati. Questa impostazione viene attivata se accedi con il tuo Account Google.</translation>
 <translation id="5388358297987318779">Apri immagine</translation>
 <translation id="5407969256130905701">Annulla modifiche</translation>
 <translation id="5409365236829784218">Non ci sono applicazioni installate in grado di aprire questo file.</translation>
@@ -333,7 +333,6 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="5854790677617711513">Oltre 30 giorni fa</translation>
 <translation id="5857090052475505287">Nuova cartella</translation>
 <translation id="5857770089550859117">Per avviare la sincronizzazione è obbligatoria la passphrase.</translation>
-<translation id="5859444426865731878">Google può controllare se le tue password sono state oggetto di una violazione dei dati.</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 elemento spostato</translation>
@@ -483,7 +482,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7859704718976024901">Cronologia di navigazione</translation>
 <translation id="7887198238286927132">Per tutelare la tua privacy, Chrome non compilerà automaticamente questo campo.</translation>
 <translation id="7918293828610777738">Il tuo elenco di lettura è disponibile offline. Per aggiungere una pagina all'elenco di lettura, tocca <ph name="SHARE_OPENING_ICON" />, quindi <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Controlla la sicurezza delle password</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Esporta password...</translation>
 <translation id="7947953824732555851">Accetta e accedi</translation>

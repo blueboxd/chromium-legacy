@@ -13,6 +13,7 @@
 #include "components/web_resource/resource_request_allowed_notifier.h"
 #include "components/web_resource/web_resource_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -71,7 +72,6 @@ class TestWebResourceService : public WebResourceService {
       int cache_update_delay_ms,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const char* disable_network_switch,
-      const ParseJSONCallback& parse_json_callback,
       network::NetworkConnectionTracker* network_connection_tracker)
       : WebResourceService(prefs,
                            web_resource_server,
@@ -81,7 +81,6 @@ class TestWebResourceService : public WebResourceService {
                            cache_update_delay_ms,
                            url_loader_factory,
                            disable_network_switch,
-                           parse_json_callback,
                            TRAFFIC_ANNOTATION_FOR_TESTS,
                            base::BindOnce(
                                [](network::NetworkConnectionTracker* tracker) {
@@ -103,7 +102,6 @@ class WebResourceServiceTest : public testing::Test {
     test_web_resource_service_.reset(new TestWebResourceService(
         local_state_.get(), GURL(kTestUrl), "", kCacheUpdatePath.c_str(), 100,
         5000, test_shared_loader_factory_, nullptr,
-        base::BindRepeating(web_resource::WebResourceServiceTest::Parse),
         network::TestNetworkConnectionTracker::GetInstance()));
     error_message_ = "";
     TestResourceRequestAllowedNotifier* notifier =
@@ -128,15 +126,6 @@ class WebResourceServiceTest : public testing::Test {
     return test_web_resource_service_->ScheduleFetch(delay_ms);
   }
 
-  static void Parse(const std::string& unsafe_json,
-                    WebResourceService::SuccessCallback success_callback,
-                    WebResourceService::ErrorCallback error_callback) {
-    if (!error_message_.empty())
-      std::move(error_callback).Run(error_message_);
-    else
-      std::move(success_callback).Run(base::Value());
-  }
-
   WebResourceService* web_resource_service() {
     return test_web_resource_service_.get();
   }
@@ -145,6 +134,7 @@ class WebResourceServiceTest : public testing::Test {
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<TestingPrefServiceSimple> local_state_;

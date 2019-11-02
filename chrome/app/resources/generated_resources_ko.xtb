@@ -1306,7 +1306,7 @@
 <translation id="2861301611394761800">시스템 업데이트가 완료되었습니다. 시스템을 다시 시작하세요.</translation>
 <translation id="2861941300086904918">네이티브 클라이언트 보안 관리자</translation>
 <translation id="2864601841139725659">프로필 사진 설정</translation>
-<translation id="2865919525181940183">현재 화면에 표시된 프로그램 스크린샷</translation>
+<translation id="2865919525181940183">현재 화면에 표시된 프로그램의 스크린샷</translation>
 <translation id="2867768963760577682">고정 탭으로 열기</translation>
 <translation id="2868746137289129307">이 확장 프로그램은 오래된 것이며 기업 정책에 의해 중지되었습니다. 새로운 버전이 있는 경우 자동으로 사용 설정될 수 있습니다.</translation>
 <translation id="2870560284913253234">사이트</translation>
@@ -1391,7 +1391,6 @@
 <translation id="2989786307324390836">DER-인코딩 바이너리, 단일 인증서</translation>
 <translation id="2992931425024192067">모든 알림 내용 표시</translation>
 <translation id="2993517869960930405">앱 정보</translation>
-<translation id="299483336428448530">부모님이 설치함</translation>
 <translation id="2996286169319737844">동기화 암호로 데이터가 암호화됩니다. Google Pay의 결제 수단 및 주소는 암호화되지 않습니다.</translation>
 <translation id="2996722619877761919">옆으로 넘김</translation>
 <translation id="3003144360685731741">기본 설정된 네트워크</translation>
@@ -3316,7 +3315,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5860494867054883682">기기를 <ph name="CHANNEL_NAME" /> 채널로 업데이트 중(<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">실행기에 스타일러스 도구 표시</translation>
 <translation id="5863445608433396414">디버깅 기능 사용</translation>
-<translation id="5863471434640009253">Android 디버그 브리지를 사용 설정하려면 <ph name="DEVICE_TYPE" />을(를) 다시 시작하세요. ADB를 사용 중지하려면 초기화가 필요합니다.</translation>
+<translation id="5863471434640009253">Android 디버그 브리지를 사용 설정하려면 <ph name="DEVICE_TYPE" />을(를) 다시 시작하세요. ADB를 사용 중지하려면 초기화해야 합니다.</translation>
 <translation id="5864471791310927901">DHCP 조회 실패</translation>
 <translation id="586567932979200359">디스크 이미지에서 <ph name="PRODUCT_NAME" />을(를) 실행 중입니다. 컴퓨터에 설치하면 디스크 이미지가 없어도 실행이 가능하며 최신 상태로 유지됩니다.</translation>
 <translation id="5865733239029070421">사용 통계 및 비정상 종료 보고서를 Google로 자동 전송</translation>
@@ -3659,7 +3658,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="63566973648609420">암호를 아는 사람만 암호화된 데이터를 읽을 수 있습니다. 암호는 Google로 전송되거나 Google에 저장되지 않습니다. 암호가 기억나지 않거나 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />해야 합니다.</translation>
 <translation id="6357619544108132570"><ph name="SHORT_PRODUCT_NAME" /> 가족이 되신 것을 환영합니다. 뛰어난 기능을 경험해 보세요.</translation>
 <translation id="6358884629796491903">용</translation>
-<translation id="6360079014182882594">이 사이트에는 웹 전반에서 사용자 추적에 사용될 수 있는 쿠키가 없습니다.</translation>
 <translation id="6361850914223837199">오류 세부정보:</translation>
 <translation id="6362853299801475928">문제 신고하기(&amp;R)...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -5019,6 +5017,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8319414634934645341">확장된 키 사용</translation>
 <translation id="8320459152843401447">내 전체 화면</translation>
 <translation id="8322814362483282060">마이크 액세스가 차단된 페이지입니다.</translation>
+<translation id="8323167517179506834">URL 입력</translation>
 <translation id="8326478304147373412">PKCS #7, 인증서 체인</translation>
 <translation id="8327039559959785305">Linux 파일을 마운트하는 중에 오류가 발생했습니다. 다시 시도해 보세요.</translation>
 <translation id="8335587457941836791">임시보관함에서 고정 해제</translation>
@@ -5135,6 +5134,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8509646642152301857">맞춤법 검사 사전을 다운로드하지 못했습니다.</translation>
 <translation id="8512476990829870887">프로세스 종료</translation>
 <translation id="851263357009351303"><ph name="HOST" />에서 이미지 표시 항상 허용</translation>
+<translation id="8513108775083588393">자동 회전</translation>
 <translation id="8514746246728959655">다른 보안 키를 사용해 보세요</translation>
 <translation id="8521475323816527629">앱으로 빠르게 이동</translation>
 <translation id="8523493869875972733">변경사항 유지</translation>

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -51,7 +50,8 @@ class ToolbarButton : public views::LabelButton,
                 std::unique_ptr<ui::MenuModel> model,
                 TabStripModel* tab_strip_model,
                 bool trigger_menu_on_long_press = true);
-
+  ToolbarButton(const ToolbarButton&) = delete;
+  ToolbarButton& operator=(const ToolbarButton&) = delete;
   ~ToolbarButton() override;
 
   // Set up basic mouseover border behavior.
@@ -143,7 +143,8 @@ class ToolbarButton : public views::LabelButton,
   class HighlightColorAnimation : gfx::AnimationDelegate {
    public:
     explicit HighlightColorAnimation(ToolbarButton* parent);
-
+    HighlightColorAnimation(const HighlightColorAnimation&) = delete;
+    HighlightColorAnimation& operator=(const HighlightColorAnimation&) = delete;
     ~HighlightColorAnimation() override;
 
     // Starts a fade-in animation using the provided |highlight color| or using
@@ -185,8 +186,6 @@ class ToolbarButton : public views::LabelButton,
     // background) when it becomes non-empty and hiding it when it becomes empty
     // again.
     gfx::SlideAnimation highlight_color_animation_;
-
-    DISALLOW_COPY_AND_ASSIGN(HighlightColorAnimation);
   };
 
   // Clears the current highlight, i.e. it sets the label to an empty string and
@@ -244,8 +243,6 @@ class ToolbarButton : public views::LabelButton,
 
   // A factory for tasks that show the dropdown context menu for the button.
   base::WeakPtrFactory<ToolbarButton> show_menu_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_BUTTON_H_

@@ -24,6 +24,9 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
+#include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
@@ -43,8 +46,6 @@
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
-#include "content/browser/indexed_db/scopes/leveldb_scope.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -1399,8 +1400,8 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     DCHECK(!succeeded || bytes_written >= 0);
     waiting_for_callback_ = false;
     if (delegate_.get())  // Only present for Blob, not File.
-      content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                         delegate_.release());
+      base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                       delegate_.release());
     if (aborted_) {
       self_ref_ = nullptr;
       return;

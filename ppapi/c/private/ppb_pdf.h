@@ -67,6 +67,20 @@ struct PP_PrivateAccessibilityPageInfo {
   uint32_t image_count;
 };
 
+// See PDF Reference 1.7, page 402, table 5.3.
+typedef enum {
+  PP_TEXTRENDERINGMODE_UNKNOWN = -1,
+  PP_TEXTRENDERINGMODE_FILL = 0,
+  PP_TEXTRENDERINGMODE_STROKE = 1,
+  PP_TEXTRENDERINGMODE_FILLSTROKE = 2,
+  PP_TEXTRENDERINGMODE_INVISIBLE = 3,
+  PP_TEXTRENDERINGMODE_FILLCLIP = 4,
+  PP_TEXTRENDERINGMODE_STROKECLIP = 5,
+  PP_TEXTRENDERINGMODE_FILLSTROKECLIP = 6,
+  PP_TEXTRENDERINGMODE_CLIP = 7,
+  PP_TEXTRENDERINGMODE_LAST = PP_TEXTRENDERINGMODE_CLIP
+} PP_TextRenderingMode;
+
 // This holds the text style information provided by the PDF and will be used
 // in accessibility to provide the text style information. Needs to stay in
 // sync with C++ version. (PrivateAccessibilityTextStyleInfo and
@@ -75,7 +89,7 @@ struct PP_PrivateAccessibilityTextStyleInfo {
   const char* font_name;
   uint32_t font_name_length;
   int font_weight;
-  int render_mode;
+  PP_TextRenderingMode render_mode;
   double font_size;
   // Colors are ARGB.
   uint32_t fill_color;

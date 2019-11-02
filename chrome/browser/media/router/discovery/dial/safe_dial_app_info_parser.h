@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_app_info.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace media_router {
 
@@ -35,7 +36,7 @@ class SafeDialAppInfoParser {
     kInvalidState = 5
   };
 
-  explicit SafeDialAppInfoParser(DataDecoder* data_decoder);
+  SafeDialAppInfoParser();
   virtual ~SafeDialAppInfoParser();
 
   // Callback function invoked when done parsing DIAL app info XML.
@@ -58,11 +59,7 @@ class SafeDialAppInfoParser {
 
  private:
   void OnXmlParsingDone(ParseCallback callback,
-                        std::unique_ptr<base::Value> value,
-                        const base::Optional<std::string>& error);
-
-  // Used for parsing XML. Not owned by |this|.
-  DataDecoder* const data_decoder_;
+                        data_decoder::DataDecoder::ValueOrError result);
 
   base::WeakPtrFactory<SafeDialAppInfoParser> weak_factory_{this};
 

@@ -785,12 +785,34 @@ void ScrollableShelfView::ButtonPressed(views::Button* sender,
   shelf_view_->ButtonPressed(sender, event, ink_drop);
 }
 
-void ScrollableShelfView::HandleAccessibleActionScrollToMakeVisible() {
-  // Only in tablet mode with hotseat enabled, may scrollable shelf be hidden.
-  if (!IsInTabletMode() || !chromeos::switches::ShouldShowShelfHotseat())
-    return;
+void ScrollableShelfView::HandleAccessibleActionScrollToMakeVisible(
+    ShelfButton* button) {
+  if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat()) {
+    // Only in tablet mode with hotseat enabled, may scrollable shelf be hidden.
+    GetShelf()->shelf_widget()->ForceToShowHotseat();
+  }
 
-  GetShelf()->shelf_widget()->ForceToShowHotseat();
+  const int index = shelf_view_->view_model()->GetIndexOfView(button);
+  DCHECK_NE(-1, index);
+
+  const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
+
+  // Translates the shelf view if |button| is hidden under the current layout.
+  if (index == 0) {
+    if (is_horizontal_alignment)
+      ScrollToXOffset(0, /*animating=*/true);
+    else
+      ScrollToYOffset(0, /*animating=*/true);
+  } else if (index == shelf_view_->last_visible_index()) {
+    if (is_horizontal_alignment)
+      ScrollToXOffset(CalculateScrollUpperBound(), /*animating=*/true);
+    else
+      ScrollToYOffset(CalculateScrollUpperBound(), /*animating=*/true);
+  } else if (index < first_tappable_app_index_) {
+    ScrollToNewPage(/*forward=*/false);
+  } else if (index > last_tappable_app_index_) {
+    ScrollToNewPage(/*forward=*/true);
+  }
 }
 
 void ScrollableShelfView::ShowContextMenuForViewImpl(

@@ -40,11 +40,9 @@ CastSessionClientImpl::CastSessionClientImpl(const std::string& client_id,
                                              const url::Origin& origin,
                                              int tab_id,
                                              AutoJoinPolicy auto_join_policy,
-                                             DataDecoder* data_decoder,
                                              ActivityRecord* activity)
     : CastSessionClient(client_id, origin, tab_id),
       auto_join_policy_(auto_join_policy),
-      data_decoder_(data_decoder),
       activity_(activity) {}
 
 CastSessionClientImpl::~CastSessionClientImpl() = default;
@@ -104,12 +102,10 @@ void CastSessionClientImpl::OnMessage(
   if (!message->is_message())
     return;
 
-  data_decoder_->ParseJson(
+  GetDataDecoder().ParseJson(
       message->get_message(),
       base::BindRepeating(&CastSessionClientImpl::HandleParsedClientMessage,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ReportClientMessageParseError,
-                          activity_->route().media_route_id()));
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CastSessionClientImpl::DidClose(PresentationConnectionCloseReason reason) {
@@ -136,9 +132,16 @@ void CastSessionClientImpl::SendErrorToClient(int sequence_number,
       CreateErrorMessage(client_id(), std::move(error), sequence_number));
 }
 
-void CastSessionClientImpl::HandleParsedClientMessage(base::Value message) {
+void CastSessionClientImpl::HandleParsedClientMessage(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    ReportClientMessageParseError(activity_->route().media_route_id(),
+                                  *result.error);
+    return;
+  }
+
   std::unique_ptr<CastInternalMessage> cast_message =
-      CastInternalMessage::From(std::move(message));
+      CastInternalMessage::From(std::move(*result.value));
   if (!cast_message) {
     ReportClientMessageParseError(activity_->route().media_route_id(),
                                   "Not a Cast message");

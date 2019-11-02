@@ -30,16 +30,16 @@ public class OverlayContentDelegate {
             String url, boolean isExternalUrl, boolean isFailure, boolean isError) {}
 
     /**
-     * Called when the URL is requested to be opened in a new tab.
-     * @param url The URL associated with this request.
-     */
-    public void onOpenNewTabRequested(String url) {}
-
-    /**
      * Called when a page title gets updated.
      * @param title Title string
      */
     public void onTitleUpdated(String title) {}
+
+    /*
+     * Called when the URL is requested to be opened in a new, separate tab.
+     * @param url The URL associated with this request.
+     */
+    public void onOpenNewTabRequested(String url) {}
 
     /**
      * Called when content started loading in the panel.

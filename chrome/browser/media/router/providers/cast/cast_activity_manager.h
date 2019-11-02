@@ -35,7 +35,6 @@ class ActivityRecord;
 class CastActivityRecord;
 class CastActivityRecordFactoryForTest;
 class CastSession;
-class DataDecoder;
 class MediaSinkServiceBase;
 
 // Base class for CastActivityManager including only functionality needed by
@@ -66,15 +65,12 @@ class CastActivityManager : public CastActivityManagerBase,
   // |message_handler|: Used for sending and receiving messages to Cast
   // receivers.
   // |media_router|: Mojo ptr to MediaRouter.
-  // |data_decoder|: Used for parsing JSON messages from Cast SDK and Cast
-  // receivers.
   // |hash_token|: Used for hashing receiver IDs in messages sent to the Cast
   // SDK.
   CastActivityManager(MediaSinkServiceBase* media_sink_service,
                       CastSessionTracker* session_tracker,
                       cast_channel::CastMessageHandler* message_handler,
                       mojom::MediaRouter* media_router,
-                      std::unique_ptr<DataDecoder> data_decoder,
                       const std::string& hash_token);
   ~CastActivityManager() override;
 
@@ -262,7 +258,6 @@ class CastActivityManager : public CastActivityManagerBase,
   cast_channel::CastMessageHandler* const message_handler_;
   mojom::MediaRouter* const media_router_;
 
-  const std::unique_ptr<DataDecoder> data_decoder_;
   const std::string hash_token_;
 
   SEQUENCE_CHECKER(sequence_checker_);

@@ -319,7 +319,7 @@ gfx::Size AnimatingLayoutManager::GetMinimumSize(const View* host) const {
   // TODO(dfried): consider cases where the minimum size might not be just the
   // minimum size of the embedded layout.
   gfx::Size minimum_size = target_layout_manager()->GetMinimumSize(host);
-  if (should_animate_bounds_ && is_animating_)
+  if (should_animate_bounds_)
     minimum_size.SetToMin(current_layout_.host_size);
   return minimum_size;
 }

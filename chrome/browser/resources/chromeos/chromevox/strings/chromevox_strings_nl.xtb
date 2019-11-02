@@ -153,6 +153,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="2063539687800151747">Epigraaf</translation>
 <translation id="207477615537953741">Semantiek uit</translation>
 <translation id="2086961585857038472">Volgend woord</translation>
+<translation id="2087981446621639008">dtl beschrlst</translation>
 <translation id="2089387485033699258">nl</translation>
 <translation id="2091933974477985526">Vorig bewerkbaar tekstgebied</translation>
 <translation id="2100350898815792233">Volledige interpunctie</translation>
@@ -192,6 +193,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="2416512023405990736">Een niet-aangevinkt selectievakje</translation>
 <translation id="2417569100218200841">Informatie over content</translation>
 <translation id="2417948780551741035">Eindnoten</translation>
+<translation id="2419852971200420169">Beschrijvingslijst</translation>
 <translation id="2421113964388408478">Verwijdering</translation>
 <translation id="2422937916923936891">Selectievakje voor menu-item</translation>
 <translation id="2428534162001909979">Opdrachtmenu's</translation>
@@ -370,6 +372,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3497063866483065785">{COUNT,plural, =1{vraagteken}other{# vraagtekens}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{caret-teken}other{# caret-tekens}}</translation>
 <translation id="352577523970648069">Een bewerkbaar tekstveld</translation>
+<translation id="3538907380453898475">beschrlst</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> knippen.</translation>
 <translation id="3549680091535286226">Tik met twee vingers om spraak tijdelijk te stoppen</translation>
 <translation id="3568702578574425662"><ph name="NAME" /> , selectievakje niet aangevinkt</translation>
@@ -778,6 +781,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6378394210114975876">Distel</translation>
 <translation id="6385591741672306837">kol</translation>
 <translation id="6387719785439924554">terzijde</translation>
+<translation id="6393014464788431702">Alle gebeurtenisfilters uitschakelen</translation>
 <translation id="6411426777058107714">Geen vorig keuzerondje.</translation>
 <translation id="6414968628640960377">Vorig ander element.</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -912,6 +916,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="7332592614823088566">Rij <ph name="ROWINDEX" /> van <ph name="ROWTOTAL" />, kolom <ph name="COLINDEX" /> van <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">heeft pop-up</translation>
 <translation id="7356165926712028380">Overschakelen naar achtpuntsbraille</translation>
+<translation id="7356610683936413584">Detail beschrijvingslijst</translation>
 <translation id="7362871137496673139">Geen vorige kop voor niveau 2.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ampersand}other{# ampersands}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1090,6 +1095,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8096975275316362544">Pastelmint</translation>
 <translation id="8098587210054821856">Leisteengrijs</translation>
 <translation id="8110647606445335195">Geen ARIA-oriëntatiepunten.</translation>
+<translation id="8121539003537428024">Alle gebeurtenisfilters inschakelen</translation>
 <translation id="812886159861361726">Download van <ph name="FILE_NAME" /> is gestopt</translation>
 <translation id="8138880386467279117">Touch</translation>
 <translation id="8153880621934657047">Niet in tabel.</translation>

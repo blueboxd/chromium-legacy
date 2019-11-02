@@ -603,6 +603,19 @@ const FeatureEntry::FeatureParam
     kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"},
         {"snippets_enabled", "true"}};
+const FeatureEntry::FeatureParam
+    kInterestFeedLargerImagesWithUndoableActionsFeatureVariationConstant[] = {
+        {"feed_ui_enabled", "true"},
+        {"undoable_actions_enabled", "true"}};
+const FeatureEntry::FeatureParam
+    kInterestFeedSnippetsWithUndoableActionsFeatureVariationConstant[] = {
+        {"snippets_enabled", "true"},
+        {"undoable_actions_enabled", "true"}};
+const FeatureEntry::FeatureParam
+    kInterestFeedLargeImagesAndSnippetsWithUndoableActionsFeatureVariationConstant
+        [] = {{"feed_ui_enabled", "true"},
+              {"snippets_enabled", "true"},
+              {"undoable_actions_enabled", "true"}};
 const FeatureEntry::FeatureVariation kInterestFeedFeatureVariations[] = {
     {"(larger images)", kInterestFeedLargerImagesFeatureVariationConstant,
      base::size(kInterestFeedLargerImagesFeatureVariationConstant), nullptr},
@@ -611,6 +624,21 @@ const FeatureEntry::FeatureVariation kInterestFeedFeatureVariations[] = {
     {"(larger images and snippets)",
      kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant,
      base::size(kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant),
+     nullptr},
+    {"(larger images w/ undoable actions)",
+     kInterestFeedLargerImagesWithUndoableActionsFeatureVariationConstant,
+     base::size(
+         kInterestFeedLargerImagesWithUndoableActionsFeatureVariationConstant),
+     nullptr},
+    {"(snippets w/ undoable actions)",
+     kInterestFeedSnippetsWithUndoableActionsFeatureVariationConstant,
+     base::size(
+         kInterestFeedSnippetsWithUndoableActionsFeatureVariationConstant),
+     nullptr},
+    {"(larger images and snippets w/ undoable actions)",
+     kInterestFeedLargeImagesAndSnippetsWithUndoableActionsFeatureVariationConstant,
+     base::size(
+         kInterestFeedLargeImagesAndSnippetsWithUndoableActionsFeatureVariationConstant),
      nullptr}};
 
 const FeatureEntry::FeatureVariation kRemoteSuggestionsFeatureVariations[] = {
@@ -3291,6 +3319,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabGroupsAndroid)},
+
+    {"enable-tab-groups-continuation",
+     flag_descriptions::kTabGroupsContinuationAndroidName,
+     flag_descriptions::kTabGroupsContinuationAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabGroupsContinuationAndroid)},
 
     {"enable-tab-groups-ui-improvements",
      flag_descriptions::kTabGroupsUiImprovementsAndroidName,

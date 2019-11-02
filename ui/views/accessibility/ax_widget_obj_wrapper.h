@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/widget/widget_observer.h"
@@ -24,6 +23,8 @@ class AXWidgetObjWrapper : public AXAuraObjWrapper,
  public:
   // |aura_obj_cache| must outlive this object.
   AXWidgetObjWrapper(AXAuraObjCache* aura_obj_cache, Widget* widget);
+  AXWidgetObjWrapper(const AXWidgetObjWrapper&) = delete;
+  AXWidgetObjWrapper& operator=(const AXWidgetObjWrapper&) = delete;
   ~AXWidgetObjWrapper() override;
 
   // AXAuraObjWrapper overrides.
@@ -45,8 +46,6 @@ class AXWidgetObjWrapper : public AXAuraObjWrapper,
   Widget* widget_;
 
   const ui::AXUniqueId unique_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXWidgetObjWrapper);
 };
 
 }  // namespace views

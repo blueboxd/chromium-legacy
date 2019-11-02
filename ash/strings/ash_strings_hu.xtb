@@ -301,6 +301,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5302048478445481009">Nyelv</translation>
 <translation id="5313326810920013265">Bluetooth-beállítások</translation>
 <translation id="5331975486040154427">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Túl sok próbálkozás</translation>
 <translation id="5397578532367286026">A felhasználó használati adatait és előzményeit a kezelő (<ph name="MANAGER_EMAIL" />) a chrome.com webhelyen tekintheti meg.</translation>
 <translation id="5430931332414098647">Azonnali internetmegosztás</translation>
@@ -323,6 +324,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5682642926269496722">A Google Segéd nem áll rendelkezésre ennél a felhasználói fióknál.</translation>
 <translation id="5691772641933328258">Ujjlenyomat felismerése sikertelen</translation>
 <translation id="5710450975648804523">Ne zavarjanak mód: bekapcsolva</translation>
+<translation id="573413375004481890">Ez az eszköz nem tudta támogatni az összes kijelzőt, ezért egyet leválasztott</translation>
 <translation id="574392208103952083">Közepes</translation>
 <translation id="5744083938413354016">Érintéssel húzás</translation>
 <translation id="5750765938512549687">Kikapcsolt Bluetooth</translation>

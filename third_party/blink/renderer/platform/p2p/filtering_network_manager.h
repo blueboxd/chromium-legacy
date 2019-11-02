@@ -9,8 +9,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/renderer/platform/p2p/network_manager_uma.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/rtc_base/network.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 #include "url/gurl.h"
@@ -32,23 +32,22 @@ namespace blink {
 // to reduce any extra call setup delay. This class is not thread safe and
 // should only be used by WebRTC's network thread. It inherits from
 // rtc::NetworkManagerBase to have the same implementation of
-// GetAnyAddressNetworks(). We can't mark the whole class BLINK_PLATFORM_EXPORT
-// as it requires all super classes to be BLINK_PLATFORM_EXPORT as well.
+// GetAnyAddressNetworks(). We can't mark the whole class PLATFORM_EXPORT
+// as it requires all super classes to be PLATFORM_EXPORT as well.
 //
-// TODO(crbug.com/787254): Move this class out of the Blink exposed API when
-// all users of it have been Onion souped. Also, move it away from url/gurl.h.
+// TODO(crbug.com/787254): Also, move it away from url/gurl.h.
 class FilteringNetworkManager : public rtc::NetworkManagerBase,
                                 public sigslot::has_slots<> {
  public:
   // This class is created by WebRTC's signaling thread but used by WebRTC's
   // worker thread |task_runner|.
-  BLINK_PLATFORM_EXPORT FilteringNetworkManager(
+  PLATFORM_EXPORT FilteringNetworkManager(
       rtc::NetworkManager* network_manager,
       const GURL& requesting_origin,
       media::MediaPermission* media_permission,
       bool allow_mdns_obfuscation);
 
-  BLINK_PLATFORM_EXPORT ~FilteringNetworkManager() override;
+  PLATFORM_EXPORT ~FilteringNetworkManager() override;
 
   // rtc::NetworkManager:
   void Initialize() override;

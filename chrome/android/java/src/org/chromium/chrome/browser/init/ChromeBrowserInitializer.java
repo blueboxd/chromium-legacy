@@ -317,8 +317,9 @@ public class ChromeBrowserInitializer {
 
         int startupMode =
                 getBrowserStartupController().getStartupMode(delegate.startServiceManagerOnly());
-        tasks.add(UiThreadTaskTraits.DEFAULT,
-                () -> { BackgroundTaskSchedulerExternalUma.reportStartupMode(startupMode); });
+        tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
+            BackgroundTaskSchedulerExternalUma.getInstance().reportStartupMode(startupMode);
+        });
 
         if (isAsync) {
             // We want to start this queue once the C++ startup tasks have run; allow the

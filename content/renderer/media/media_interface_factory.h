@@ -17,6 +17,7 @@
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "url/gurl.h"
 
 namespace service_manager {
@@ -78,7 +79,7 @@ class CONTENT_EXPORT MediaInterfaceFactory
   void OnConnectionError();
 
   service_manager::InterfaceProvider* remote_interfaces_;
-  media::mojom::InterfaceFactoryPtr media_interface_factory_;
+  mojo::Remote<media::mojom::InterfaceFactory> media_interface_factory_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<MediaInterfaceFactory> weak_this_;

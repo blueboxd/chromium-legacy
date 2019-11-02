@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Jenis kartu tidak didukung</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Coba hubungi admin sistem.</translation>
+<translation id="1739107442478692187">Pelanggaran data terjadi di situs atau aplikasi yang Anda gunakan. Chrome merekomendasikan untuk memeriksa sandi yang tersimpan dan mengubah sandi Anda di <ph name="ORIGIN" /> saat ini.</translation>
 <translation id="1740951997222943430">Masukkan bulan habis masa berlaku yang valid</translation>
 <translation id="1743520634839655729">Untuk membayar lebih cepat di pembelian berikutnya, simpan kartu, nama, dan alamat penagihan ke Akun Google Anda dan ke perangkat ini.</translation>
 <translation id="1743570585616704562">Tidak dikenali</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Ketidakcocokan domain</translation>
 <translation id="2096368010154057602">Departemen</translation>
 <translation id="2099652385553570808">Tiga jepretan di kiri</translation>
+<translation id="2100280972184758440">Sandi Anda telah disusupi</translation>
 <translation id="2102134110707549001">Sarankan Sandi yang Kuat…</translation>
 <translation id="2108755909498034140">Mulai ulang komputer</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Diabaikan karena diganti dengan <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Diterbitkan untuk: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Lubang di kanan bawah</translation>
+<translation id="2124528555835617522">Pelanggaran data terjadi di situs atau aplikasi yang Anda gunakan. Chrome merekomendasikan untuk memeriksa sandi tersimpan Anda sekarang.</translation>
 <translation id="2129079103035905234">Sensor Gerakan</translation>
 <translation id="213826338245044447">Bookmark Seluler</translation>
 <translation id="214556005048008348">Batalkan pembayaran</translation>
@@ -480,17 +483,13 @@
 <translation id="3282497668470633863">Tambahkan nama di kartu</translation>
 <translation id="3287510313208355388">Download saat online</translation>
 <translation id="3293642807462928945">Pelajari lebih lanjut tentang kebijakan <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Pelanggaran data terjadi di situs atau aplikasi yang Anda gunakan. Chrome merekomendasikan untuk mengubah sandi Anda di <ph name="ORIGIN" /> saat ini.</translation>
 <translation id="3303855915957856445">Hasil penelusuran tidak ditemukan</translation>
 <translation id="3320021301628644560">Tambahkan alamat penagihan</translation>
 <translation id="3324983252691184275">Merah Lembayung</translation>
 <translation id="3338095232262050444">Aman</translation>
 <translation id="3355823806454867987">Ubah setelan proxy...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />tidak akan menyimpan<ph name="END_EMPHASIS" /> informasi berikut:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Histori penjelajahan Anda
-          <ph name="LIST_ITEM" />Cookie dan data situs
-          <ph name="LIST_ITEM" />Informasi yang dimasukkan dalam formulir
-        <ph name="END_LIST" /></translation>
+<translation id="3360103848165129075">Lembar handler pembayaran</translation>
 <translation id="3362968246557010467">Kebijakan ini otomatis disalin dari kebijakan <ph name="OLD_POLICY" /> yang tidak digunakan lagi. Sebaiknya Anda menggunakan kebijakan ini.</translation>
 <translation id="3366477098757335611">Lihat kartu</translation>
 <translation id="3369192424181595722">Kesalahan jam</translation>
@@ -609,6 +608,7 @@
 <translation id="3949601375789751990">Histori browsing Anda muncul di sini</translation>
 <translation id="3949870428812919180">Tidak ada metode pembayaran yang disimpan</translation>
 <translation id="3950820424414687140">Login</translation>
+<translation id="3961148744525529027">Lembar handler pembayaran setengah terbuka</translation>
 <translation id="3962859241508114581">Lagu Sebelumnya</translation>
 <translation id="3963837677003247395">Lanjutkan secara manual?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Tidak ada}=1{Dari 1 situs }other{Dari # situs }}</translation>
@@ -1060,7 +1060,6 @@
 <translation id="6151417162996330722">Sertifikat server memiliki masa berlaku yang terlalu panjang.</translation>
 <translation id="6157877588268064908">Untuk melihat persyaratan dan metode pengiriman, pilih alamat</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
-<translation id="6169916984152623906">Anda kini dapat mengakses secara rahasia, dan orang lain yang menggunakan perangkat ini tidak akan melihat aktivitas Anda. Namun, hasil download dan bookmark akan disimpan.</translation>
 <translation id="6177128806592000436">Sambungan Anda ke situs ini tidak aman</translation>
 <translation id="6203231073485539293">Periksa sambungan internet Anda</translation>
 <translation id="6218753634732582820">Hapus alamat dari Chromium?</translation>
@@ -1340,6 +1339,7 @@
 <translation id="7637571805876720304">Hapus kartu kredit dari Chromium?</translation>
 <translation id="7638605456503525968">Port serial</translation>
 <translation id="7639968568612851608">Abu-Abu Tua</translation>
+<translation id="7653957176542370971">Lembar handler pembayaran tertutup</translation>
 <translation id="765676359832457558">Sembunyikan setelan lanjutan...</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7662298039739062396">Setelan yang dikontrol oleh ekstensi</translation>
@@ -1469,6 +1469,7 @@
 <translation id="8261506727792406068">Hapus</translation>
 <translation id="8262952874573525464">Jahitan tepi di bawah</translation>
 <translation id="8267698848189296333">Login sebagai <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Lembar handler pembayaran terbuka</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Login</translation>
 <translation id="8288807391153049143">Tampilkan sertifikat</translation>
@@ -1527,6 +1528,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, dengan jawaban, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Tersedia</translation>
+<translation id="869891660844655955">Masa berlaku</translation>
 <translation id="8703575177326907206">Sambungan ke <ph name="DOMAIN" /> tidak dienkripsi.</translation>
 <translation id="8718314106902482036">Pembayaran belum selesai</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, saran penelusuran</translation>

@@ -204,9 +204,9 @@ TEST_F(RulesetMatcherTest, RemoveHeaders) {
       std::vector<std::string>({"referer", "cookie", "setCookie"});
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
   EXPECT_TRUE(matcher->IsExtraHeadersMatcher());
-  uint8_t expected_mask = kRemoveHeadersMask_Referer |
-                          kRemoveHeadersMask_Cookie |
-                          kRemoveHeadersMask_SetCookie;
+  const uint8_t expected_mask = flat::RemoveHeaderType_referer |
+                                flat::RemoveHeaderType_cookie |
+                                flat::RemoveHeaderType_set_cookie;
 
   EXPECT_EQ(expected_mask,
             matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
@@ -232,7 +232,7 @@ TEST_F(RulesetMatcherTest, RemoveHeaders) {
   EXPECT_TRUE(remove_header_actions.empty());
 
   uint8_t ignored_mask =
-      kRemoveHeadersMask_Referer | kRemoveHeadersMask_SetCookie;
+      flat::RemoveHeaderType_referer | flat::RemoveHeaderType_set_cookie;
   EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, ignored_mask,
                                               &remove_header_actions));
   EXPECT_TRUE(remove_header_actions.empty());
@@ -240,7 +240,7 @@ TEST_F(RulesetMatcherTest, RemoveHeaders) {
   // The current mask is ignored while matching and is not returned as part of
   // the result.
   params.url = &example_url;
-  EXPECT_EQ(kRemoveHeadersMask_Cookie,
+  EXPECT_EQ(flat::RemoveHeaderType_cookie,
             matcher->GetRemoveHeadersMask(params, ignored_mask,
                                           &remove_header_actions));
 
@@ -289,7 +289,7 @@ TEST_F(RulesetMatcherTest, RemoveHeadersMultipleRules) {
       net::HttpRequestHeaders::kCookie);
 
   std::vector<RequestAction> remove_header_actions;
-  EXPECT_EQ(kRemoveHeadersMask_Referer | kRemoveHeadersMask_Cookie,
+  EXPECT_EQ(flat::RemoveHeaderType_cookie | flat::RemoveHeaderType_referer,
             matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
                                           &remove_header_actions));
 

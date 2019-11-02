@@ -5,6 +5,8 @@
 #include "ui/events/blink/prediction/linear_predictor.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 
+#include <algorithm>
+
 namespace ui {
 
 LinearPredictor::LinearPredictor(EquationOrder order) {

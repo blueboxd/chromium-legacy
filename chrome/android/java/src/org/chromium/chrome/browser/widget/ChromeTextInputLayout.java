@@ -8,13 +8,19 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.DrawableContainer;
+import android.os.Build;
+import android.support.design.widget.DrawableUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.AccessibilityDelegateCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorListenerAdapter;
 import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
+import android.support.v7.widget.AppCompatDrawableManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -85,6 +91,9 @@ public class ChromeTextInputLayout extends LinearLayout {
     private float mExpandedTextScale;
     private float mCollapsedLabelTranslationY;
     private float mExpandedLabelTranslationY;
+
+    // Needed for #ensureBackgroundDrawableStateWorkaround().
+    private boolean mHasReconstructedEditTextBackground;
 
     public ChromeTextInputLayout(Context context) {
         this(context, null);
@@ -165,8 +174,21 @@ public class ChromeTextInputLayout extends LinearLayout {
         mShouldDisplayError = !TextUtils.isEmpty(error);
         mErrorText.setText(error);
         mErrorText.setVisibility(mShouldDisplayError ? View.VISIBLE : View.GONE);
-        DrawableCompat.setTintList(mEditText.getBackground().mutate(),
-                mShouldDisplayError ? ColorStateList.valueOf(mErrorColor) : mDefaultLineColor);
+
+        // Fixes issues with Android L where the line's error color wouldn't be cleared after
+        // leaving the activity; and KitKat where the line wouldn't get tinted when showing an
+        // error. crbug.com/1020077.
+        ensureBackgroundDrawableStateWorkaround();
+        if (mShouldDisplayError) {
+            // Tinting doesn't really work on KitKat, so use a color filter instead.
+            mEditText.getBackground().setColorFilter(
+                    AppCompatDrawableManager.getPorterDuffColorFilter(
+                            mErrorColor, PorterDuff.Mode.SRC_IN));
+        } else {
+            DrawableCompat.clearColorFilter(mEditText.getBackground());
+            mEditText.refreshDrawableState();
+        }
+
         ViewCompat.setAccessibilityLiveRegion(
                 mErrorText, ViewCompat.ACCESSIBILITY_LIVE_REGION_POLITE);
         updateLabelState(true);
@@ -265,6 +287,7 @@ public class ChromeTextInputLayout extends LinearLayout {
             throw new IllegalArgumentException("We already have an EditText, can only have one");
         }
         mEditText = editText;
+        DrawableCompat.setTintList(mEditText.getBackground().mutate(), mDefaultLineColor);
         mExpandedTextScale = mEditText.getTextSize() / mLabel.getTextSize();
         mEditText.setOnFocusChangeListener((v, hasFocus) -> {
             notifyEditTextFocusChanged(v, hasFocus);
@@ -414,6 +437,48 @@ public class ChromeTextInputLayout extends LinearLayout {
             if (mShouldDisplayError) {
                 info.setContentInvalid(true);
                 info.setError(getError());
+            }
+        }
+    }
+
+    /**
+     * Workaround for issues with Android K and L. Borrowed from the support library:
+     * https://android.googlesource.com/platform/frameworks/support/+/refs/heads/oreo-r6-release/
+     * design/src/android/support/design/widget/TextInputLayout.java
+     */
+    private void ensureBackgroundDrawableStateWorkaround() {
+        final int sdk = Build.VERSION.SDK_INT;
+        if (sdk > Build.VERSION_CODES.LOLLIPOP_MR1) {
+            // The workaround is only required on API 22 and below.
+            return;
+        }
+
+        final Drawable bg = mEditText.getBackground();
+        if (bg == null) {
+            return;
+        }
+
+        if (!mHasReconstructedEditTextBackground) {
+            // This is gross. There is an issue in the platform which affects container Drawables
+            // where the first drawable retrieved from resources will propagate any changes
+            // (like color filter) to all instances from the cache. We'll try to workaround it...
+
+            final Drawable newBg = bg.getConstantState().newDrawable();
+
+            if (bg instanceof DrawableContainer) {
+                // If we have a Drawable container, we can try and set it's constant state via
+                // reflection from the new Drawable
+                mHasReconstructedEditTextBackground = DrawableUtils.setContainerConstantState(
+                        (DrawableContainer) bg, newBg.getConstantState());
+            }
+
+            if (!mHasReconstructedEditTextBackground) {
+                // If we reach here then we just need to set a brand new instance of the Drawable
+                // as the background. This has the unfortunate side-effect of wiping out any
+                // user set padding, but I'd hope that use of custom padding on an EditText
+                // is limited.
+                ViewCompat.setBackground(mEditText, newBg);
+                mHasReconstructedEditTextBackground = true;
             }
         }
     }

@@ -223,7 +223,8 @@ static_library("test_support") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu:icuuc",
-    "//third_party/libxml",
+    "//third_party/libxml:libxml_utils",
+    "//third_party/libxml:xml_reader",
   ]
 
   if (is_posix || is_fuchsia) {
@@ -297,7 +298,8 @@ static_library("test_support") {
     public_deps -= [ "//base:i18n" ]
     deps -= [
       "//third_party/icu:icuuc",
-      "//third_party/libxml",
+      "//third_party/libxml:libxml_utils",
+      "//third_party/libxml:xml_reader",
     ]
   }
 }

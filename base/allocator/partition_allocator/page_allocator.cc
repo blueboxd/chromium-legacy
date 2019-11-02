@@ -23,8 +23,10 @@
 
 #if defined(OS_WIN)
 #include "base/allocator/partition_allocator/page_allocator_internals_win.h"
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
 #include "base/allocator/partition_allocator/page_allocator_internals_posix.h"
+#elif defined(OS_FUCHSIA)
+#include "base/allocator/partition_allocator/page_allocator_internals_fuchsia.h"
 #else
 #error Platform not supported.
 #endif

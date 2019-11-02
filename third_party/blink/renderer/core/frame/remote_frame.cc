@@ -160,6 +160,7 @@ void RemoteFrame::DetachImpl(FrameDetachType type) {
   To<RemoteDOMWindow>(dom_window_.Get())->FrameDetached();
   if (cc_layer_)
     SetCcLayer(nullptr, false, false);
+  receiver_.reset();
 }
 
 bool RemoteFrame::DetachDocument() {
@@ -305,6 +306,11 @@ void RemoteFrame::SetReplicatedOrigin(
     if (cache)
       cache->ChildrenChanged(owner_element);
   }
+}
+
+void RemoteFrame::DispatchLoadEventForFrameOwner() {
+  DCHECK(Owner()->IsLocal());
+  Owner()->DispatchLoad();
 }
 
 bool RemoteFrame::IsIgnoredForHitTest() const {

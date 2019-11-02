@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -176,6 +177,11 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
   void TearDown() override {
     service_->Shutdown();
     ChromeRenderViewHostTestHarness::TearDown();
+
+    // Tests that run a history service that uses the mock task runner for
+    // backend processing will post tasks there during TearDown. Run them now to
+    // avoid leaks.
+    mock_time_task_runner_->RunUntilIdle();
     service_.reset();
   }
 

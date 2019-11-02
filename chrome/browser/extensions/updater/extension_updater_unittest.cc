@@ -335,7 +335,7 @@ class MockService : public TestExtensionService {
             test_shared_url_loader_factory_,
             downloader_delegate_override_ ? downloader_delegate_override_
                                           : delegate,
-            /*connector=*/nullptr, GetTestVerifierFormat());
+            GetTestVerifierFormat());
     return downloader;
   }
 

@@ -17,9 +17,8 @@
 #include "components/payments/content/utility/fingerprint_parser.h"
 #include "components/payments/core/error_logger.h"
 #include "components/payments/core/url_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "net/base/url_util.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "url/url_constants.h"
 
 namespace payments {
@@ -340,43 +339,6 @@ void ParsePreferredRelatedApplicationIdentifiers(
   }
 }
 
-// An object that allows both SafeJsonParser's callbacks (error/success) to run
-// the same callback provided to ParsePaymentMethodManifest/ParseWebAppManifest.
-// (since Callbacks are movable type, that callback has to be shared)
-template <typename Callback>
-class JsonParserCallback
-    : public base::RefCounted<JsonParserCallback<Callback>> {
- public:
-  JsonParserCallback(
-      base::OnceCallback<void(Callback,
-                              std::unique_ptr<base::Value>,
-                              const std::string&)> parser_callback,
-      Callback client_callback)
-      : parser_callback_(std::move(parser_callback)),
-        client_callback_(std::move(client_callback)) {}
-
-  void OnSuccess(base::Value value) {
-    std::move(parser_callback_)
-        .Run(std::move(client_callback_),
-             base::Value::ToUniquePtrValue(std::move(value)),
-             /*error_message=*/std::string());
-  }
-
-  void OnError(const std::string& error_message) {
-    std::move(parser_callback_)
-        .Run(std::move(client_callback_), /*value=*/nullptr, error_message);
-  }
-
- private:
-  friend class base::RefCounted<JsonParserCallback>;
-  ~JsonParserCallback() = default;
-
-  base::OnceCallback<
-      void(Callback, std::unique_ptr<base::Value>, const std::string&)>
-      parser_callback_;
-  Callback client_callback_;
-};
-
 }  // namespace
 
 PaymentManifestParser::WebAppIcon::WebAppIcon() = default;
@@ -396,19 +358,9 @@ void PaymentManifestParser::ParsePaymentMethodManifest(
   parse_payment_callback_counter_++;
   DCHECK_GE(10U, parse_payment_callback_counter_);
 
-  scoped_refptr<JsonParserCallback<PaymentMethodCallback>> json_callback =
-      new JsonParserCallback<PaymentMethodCallback>(
-          base::Bind(&PaymentManifestParser::OnPaymentMethodParse,
-                     weak_factory_.GetWeakPtr()),
-          std::move(callback));
-
-  data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      content,
-      base::BindOnce(&JsonParserCallback<PaymentMethodCallback>::OnSuccess,
-                     json_callback),
-      base::BindOnce(&JsonParserCallback<PaymentMethodCallback>::OnError,
-                     json_callback));
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      content, base::BindOnce(&PaymentManifestParser::OnPaymentMethodParse,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void PaymentManifestParser::ParseWebAppManifest(const std::string& content,
@@ -416,40 +368,18 @@ void PaymentManifestParser::ParseWebAppManifest(const std::string& content,
   parse_webapp_callback_counter_++;
   DCHECK_GE(10U, parse_webapp_callback_counter_);
 
-  scoped_refptr<JsonParserCallback<WebAppCallback>> parser_callback =
-      new JsonParserCallback<WebAppCallback>(
-          base::Bind(&PaymentManifestParser::OnWebAppParse,
-                     weak_factory_.GetWeakPtr()),
-          std::move(callback));
-
-  data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      content,
-      base::BindOnce(&JsonParserCallback<WebAppCallback>::OnSuccess,
-                     parser_callback),
-      base::BindOnce(&JsonParserCallback<WebAppCallback>::OnError,
-                     parser_callback));
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      content, base::BindOnce(&PaymentManifestParser::OnWebAppParse,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void PaymentManifestParser::ParseWebAppInstallationInfo(
     const std::string& content,
     WebAppInstallationInfoCallback callback) {
-  scoped_refptr<JsonParserCallback<WebAppInstallationInfoCallback>>
-      sw_parser_callback =
-          new JsonParserCallback<WebAppInstallationInfoCallback>(
-              base::Bind(&PaymentManifestParser::OnWebAppParseInstallationInfo,
-                         weak_factory_.GetWeakPtr()),
-              std::move(callback));
-
-  data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+  data_decoder::DataDecoder::ParseJsonIsolated(
       content,
-      base::BindOnce(
-          &JsonParserCallback<WebAppInstallationInfoCallback>::OnSuccess,
-          sw_parser_callback),
-      base::BindOnce(
-          &JsonParserCallback<WebAppInstallationInfoCallback>::OnError,
-          sw_parser_callback));
+      base::BindOnce(&PaymentManifestParser::OnWebAppParseInstallationInfo,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 // static
@@ -711,20 +641,19 @@ bool PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(
 
 void PaymentManifestParser::OnPaymentMethodParse(
     PaymentMethodCallback callback,
-    std::unique_ptr<base::Value> value,
-    const std::string& json_parser_error) {
+    data_decoder::DataDecoder::ValueOrError result) {
   parse_payment_callback_counter_--;
 
   std::vector<GURL> web_app_manifest_urls;
   std::vector<url::Origin> supported_origins;
   bool all_origins_supported = false;
 
-  if (json_parser_error.empty()) {
+  if (result.value) {
     ParsePaymentMethodManifestIntoVectors(
-        std::move(value), *log_, &web_app_manifest_urls, &supported_origins,
-        &all_origins_supported);
+        base::Value::ToUniquePtrValue(std::move(*result.value)), *log_,
+        &web_app_manifest_urls, &supported_origins, &all_origins_supported);
   } else {
-    log_->Error(json_parser_error);
+    log_->Error(*result.error);
   }
 
   // Can trigger synchronous deletion of this object, so can't access any of
@@ -735,15 +664,16 @@ void PaymentManifestParser::OnPaymentMethodParse(
 
 void PaymentManifestParser::OnWebAppParse(
     WebAppCallback callback,
-    std::unique_ptr<base::Value> value,
-    const std::string& json_parser_error) {
+    data_decoder::DataDecoder::ValueOrError result) {
   parse_webapp_callback_counter_--;
 
   std::vector<WebAppManifestSection> manifest;
-  if (json_parser_error.empty()) {
-    ParseWebAppManifestIntoVector(std::move(value), *log_, &manifest);
+  if (result.value) {
+    ParseWebAppManifestIntoVector(
+        base::Value::ToUniquePtrValue(std::move(*result.value)), *log_,
+        &manifest);
   } else {
-    log_->Error(json_parser_error);
+    log_->Error(*result.error);
   }
 
   // Can trigger synchronous deletion of this object, so can't access any of
@@ -753,21 +683,21 @@ void PaymentManifestParser::OnWebAppParse(
 
 void PaymentManifestParser::OnWebAppParseInstallationInfo(
     WebAppInstallationInfoCallback callback,
-    std::unique_ptr<base::Value> value,
-    const std::string& json_parser_error) {
+    data_decoder::DataDecoder::ValueOrError result) {
   std::unique_ptr<WebAppInstallationInfo> installation_info;
   std::unique_ptr<std::vector<WebAppIcon>> icons;
 
-  if (json_parser_error.empty()) {
+  if (result.value) {
     installation_info = std::make_unique<WebAppInstallationInfo>();
     icons = std::make_unique<std::vector<WebAppIcon>>();
     if (!ParseWebAppInstallationInfoIntoStructs(
-            std::move(value), *log_, installation_info.get(), icons.get())) {
+            base::Value::ToUniquePtrValue(std::move(*result.value)), *log_,
+            installation_info.get(), icons.get())) {
       installation_info.reset();
       icons.reset();
     }
   } else {
-    log_->Error(json_parser_error);
+    log_->Error(*result.error);
   }
 
   // Can trigger synchronous deletion of this object, so can't access any of

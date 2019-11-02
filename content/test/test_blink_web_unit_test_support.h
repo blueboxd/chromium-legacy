@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -73,7 +72,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
-  base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   bool threaded_animation_ = true;

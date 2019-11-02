@@ -41,7 +41,7 @@ static void TestCSPParser(const std::string& header,
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
   headers->AddHeader("Content-Security-Policy: frame-ancestors " + header);
   ContentSecurityPolicy policy;
-  policy.Parse(*headers);
+  policy.Parse(GURL("https://example.com/"), *headers);
 
   if (!expected_result) {
     EXPECT_FALSE(policy.content_security_policy_ptr());
@@ -69,7 +69,7 @@ static void TestCSPParser(const std::string& header,
 
 }  // namespace
 
-TEST(ContentSecurityPolicy, Parse) {
+TEST(ContentSecurityPolicy, ParseFrameAncestors) {
   TestData test_data[] = {
       // Parse scheme.
       // Empty scheme.
@@ -197,7 +197,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
         "Content-Security-Policy: frame-ancestors example.com; other_directive "
         "value; frame-ancestors example.org");
     ContentSecurityPolicy policy;
-    policy.Parse(*headers);
+    policy.Parse(GURL("https://example.com/"), *headers);
 
     auto& frame_ancestors =
         policy.content_security_policy_ptr()->frame_ancestors;
@@ -219,7 +219,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
         "Content-Security-Policy: other_directive value; frame-ancestors "
         "example.org");
     ContentSecurityPolicy policy;
-    policy.Parse(*headers);
+    policy.Parse(GURL("https://example.com/"), *headers);
 
     auto& frame_ancestors =
         policy.content_security_policy_ptr()->frame_ancestors;
@@ -241,7 +241,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     headers->AddHeader("Content-Security-Policy: frame-ancestors example.com");
     headers->AddHeader("Content-Security-Policy: frame-ancestors example.org");
     ContentSecurityPolicy policy;
-    policy.Parse(*headers);
+    policy.Parse(GURL("https://example.com/"), *headers);
 
     auto& frame_ancestors =
         policy.content_security_policy_ptr()->frame_ancestors;
@@ -263,7 +263,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
         "Content-Security-Policy: other_directive value, frame-ancestors "
         "example.org");
     ContentSecurityPolicy policy;
-    policy.Parse(*headers);
+    policy.Parse(GURL("https://example.com/"), *headers);
 
     auto& frame_ancestors =
         policy.content_security_policy_ptr()->frame_ancestors;
@@ -286,7 +286,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
         "Content-Security-Policy: frame-ancestors example.com, frame-ancestors "
         "example.org");
     ContentSecurityPolicy policy;
-    policy.Parse(*headers);
+    policy.Parse(GURL("https://example.com/"), *headers);
 
     auto& frame_ancestors =
         policy.content_security_policy_ptr()->frame_ancestors;
@@ -298,6 +298,104 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
     EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
     EXPECT_EQ(frame_ancestors->sources[0]->allow_self, false);
+  }
+
+  // Both frame-ancestors and report-to directives present.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->AddHeader(
+        "Content-Security-Policy: report-to http://example.com/report; "
+        "frame-ancestors example.com");
+    ContentSecurityPolicy policy;
+    policy.Parse(GURL("https://example.com/"), *headers);
+
+    auto& report_endpoints =
+        policy.content_security_policy_ptr()->report_endpoints;
+    EXPECT_EQ(report_endpoints.size(), 1U);
+    EXPECT_EQ(report_endpoints[0], "http://example.com/report");
+    EXPECT_TRUE(policy.content_security_policy_ptr()->use_reporting_api);
+
+    auto& frame_ancestors =
+        policy.content_security_policy_ptr()->frame_ancestors;
+    EXPECT_EQ(frame_ancestors->sources.size(), 1U);
+    EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
+    EXPECT_EQ(frame_ancestors->sources[0]->port, url::PORT_UNSPECIFIED);
+    EXPECT_EQ(frame_ancestors->sources[0]->path, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->allow_self, false);
+  }
+}
+
+TEST(ContentSecurityPolicy, ParseReportEndpoint) {
+  // report-uri directive.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->AddHeader(
+        "Content-Security-Policy: report-uri http://example.com/report");
+    ContentSecurityPolicy policy;
+    policy.Parse(GURL("https://example.com/"), *headers);
+
+    auto& report_endpoints =
+        policy.content_security_policy_ptr()->report_endpoints;
+    EXPECT_EQ(report_endpoints.size(), 1U);
+    EXPECT_EQ(report_endpoints[0], "http://example.com/report");
+    EXPECT_FALSE(policy.content_security_policy_ptr()->use_reporting_api);
+  }
+
+  // report-to directive.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->AddHeader(
+        "Content-Security-Policy: report-to http://example.com/report");
+    ContentSecurityPolicy policy;
+    policy.Parse(GURL("https://example.com/"), *headers);
+
+    auto& report_endpoints =
+        policy.content_security_policy_ptr()->report_endpoints;
+    EXPECT_EQ(report_endpoints.size(), 1U);
+    EXPECT_EQ(report_endpoints[0], "http://example.com/report");
+    EXPECT_TRUE(policy.content_security_policy_ptr()->use_reporting_api);
+  }
+
+  // Multiple directives. The report-to directive always takes priority.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->AddHeader(
+        "Content-Security-Policy: report-uri http://example.com/report1");
+    headers->AddHeader(
+        "Content-Security-Policy: report-uri http://example.com/report2");
+    headers->AddHeader(
+        "Content-Security-Policy: report-to http://example.com/report3");
+    ContentSecurityPolicy policy;
+    policy.Parse(GURL("https://example.com/"), *headers);
+
+    auto& report_endpoints =
+        policy.content_security_policy_ptr()->report_endpoints;
+    EXPECT_EQ(report_endpoints.size(), 1U);
+    EXPECT_EQ(report_endpoints[0], "http://example.com/report3");
+    EXPECT_TRUE(policy.content_security_policy_ptr()->use_reporting_api);
+  }
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->AddHeader(
+        "Content-Security-Policy: report-to http://example.com/report1");
+    headers->AddHeader(
+        "Content-Security-Policy: report-uri http://example.com/report2");
+    ContentSecurityPolicy policy;
+    policy.Parse(GURL("https://example.com/"), *headers);
+
+    auto& report_endpoints =
+        policy.content_security_policy_ptr()->report_endpoints;
+    EXPECT_EQ(report_endpoints.size(), 1U);
+    EXPECT_EQ(report_endpoints[0], "http://example.com/report1");
+    EXPECT_TRUE(policy.content_security_policy_ptr()->use_reporting_api);
   }
 }
 

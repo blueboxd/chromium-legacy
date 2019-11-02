@@ -14,7 +14,16 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 
+#if defined(OS_ANDROID)
+#include "base/metrics/field_trial_params.h"
+#include "base/system/sys_info.h"
+#endif
+
 namespace safe_browsing {
+
+#if defined(OS_ANDROID)
+const int kDefaultMemoryThresholdMb = 4096;
+#endif
 
 // static
 bool RealTimePolicyEngine::IsFetchAllowlistEnabled() {
@@ -23,7 +32,19 @@ bool RealTimePolicyEngine::IsFetchAllowlistEnabled() {
 
 // static
 bool RealTimePolicyEngine::IsUrlLookupEnabled() {
-  return base::FeatureList::IsEnabled(kRealTimeUrlLookupEnabled);
+  if (!base::FeatureList::IsEnabled(kRealTimeUrlLookupEnabled))
+    return false;
+#if defined(OS_ANDROID)
+  // On Android, performs real time URL lookup only if
+  // |kRealTimeUrlLookupEnabled| is enabled, and system memory is larger than
+  // threshold.
+  int memory_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
+      kRealTimeUrlLookupEnabled, kRealTimeUrlLookupMemoryThresholdMb,
+      kDefaultMemoryThresholdMb);
+  return base::SysInfo::AmountOfPhysicalMemoryMB() >= memory_threshold_mb;
+#else
+  return true;
+#endif
 }
 
 // static

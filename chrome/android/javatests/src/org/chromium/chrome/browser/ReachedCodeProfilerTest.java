@@ -15,6 +15,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.test.ReachedCodeProfiler;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -103,7 +104,7 @@ public final class ReachedCodeProfilerTest {
     public void testSharedPreferenceTrialGroupIsCached() {
         mActivityTestRule.startMainActivityFromLauncher();
         Assert.assertEquals(FAKE_GROUP_NAME,
-                ChromePreferenceManager.getInstance().readString(
+                SharedPreferencesManager.getInstance().readString(
                         ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY, null));
     }
 
@@ -121,12 +122,12 @@ public final class ReachedCodeProfilerTest {
     }
 
     private boolean getReachedCodeProfilerSharedPreference() {
-        return ChromePreferenceManager.getInstance().readBoolean(
+        return SharedPreferencesManager.getInstance().readBoolean(
                 REACHED_CODE_PROFILER_ENABLED_KEY, false);
     }
 
     private void setReachedCodeProfilerSharedPreference(boolean value) {
-        ChromePreferenceManager.getInstance().writeBoolean(
+        SharedPreferencesManager.getInstance().writeBoolean(
                 REACHED_CODE_PROFILER_ENABLED_KEY, value);
     }
 }

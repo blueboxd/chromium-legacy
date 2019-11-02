@@ -173,6 +173,16 @@ MediaLog::~MediaLog() {
     InvalidateLog();
 }
 
+void MediaLog::OnWebMediaPlayerDestroyed() {
+  AddEvent(CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
+  base::AutoLock auto_lock(parent_log_record_->lock);
+  // Forward to the parent log's implementation.
+  if (parent_log_record_->media_log)
+    parent_log_record_->media_log->OnWebMediaPlayerDestroyedLocked();
+}
+
+void MediaLog::OnWebMediaPlayerDestroyedLocked() {}
+
 void MediaLog::AddEvent(std::unique_ptr<MediaLogEvent> event) {
   base::AutoLock auto_lock(parent_log_record_->lock);
   // Forward to the parent log's implementation.

@@ -100,4 +100,8 @@ interface NetworkServiceTest {
   // redirection.
   [Sync]
   Log(string message) => ();
+
+  // Activates the specified field trial. Intended for use verifying that the
+  // network service informs the main process when a field trial is activated.
+  ActivateFieldTrial(string field_trial_name);
 };

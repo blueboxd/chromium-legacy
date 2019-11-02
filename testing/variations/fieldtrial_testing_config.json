@@ -1687,21 +1687,6 @@
             ]
         }
     ],
-    "ContextualSearchTranslation": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "ContextualSearchTranslationModel",
-                    "enable_features": [
-                        "ContextualSearchTranslationModel"
-                    ]
-                }
-            ]
-        }
-    ],
     "CopylessPaste": [
         {
             "platforms": [
@@ -3019,6 +3004,31 @@
                     },
                     "enable_features": [
                         "IncompatibleApplicationsWarning"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IndexedDBHighPriority": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "HighPriorityDatabaseTaskType"
+                    ]
+                },
+                {
+                    "name": "Control",
+                    "disable_features": [
+                        "HighPriorityDatabaseTaskType"
                     ]
                 }
             ]
@@ -5330,6 +5340,24 @@
                 },
                 {
                     "name": "Default"
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingSendSampledPingsForAllowlistDomain": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingSendSampledPingsForAllowlistDomain"
+                    ]
                 }
             ]
         }

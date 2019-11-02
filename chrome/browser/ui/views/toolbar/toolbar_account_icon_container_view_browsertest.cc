@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -43,6 +42,10 @@ Profile* CreateGuestProfile() {
 class ToolbarAccountIconContainerViewBrowserTest : public InProcessBrowserTest {
  public:
   ToolbarAccountIconContainerViewBrowserTest() {}
+  ToolbarAccountIconContainerViewBrowserTest(
+      const ToolbarAccountIconContainerViewBrowserTest&) = delete;
+  ToolbarAccountIconContainerViewBrowserTest& operator=(
+      const ToolbarAccountIconContainerViewBrowserTest&) = delete;
   ~ToolbarAccountIconContainerViewBrowserTest() override = default;
 
   void SetUp() override {
@@ -81,8 +84,6 @@ class ToolbarAccountIconContainerViewBrowserTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarAccountIconContainerViewBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ToolbarAccountIconContainerViewBrowserTest,

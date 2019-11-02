@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Menu Plus</translation>
 <translation id="2316709634732130529">Utiliser le mot de passe suggéré</translation>
 <translation id="2320166752086256636">Masquer le clavier</translation>
+<translation id="2330129964253841015">M'avertir quand des mots de passe ont été piratés</translation>
 <translation id="2339560363438331454">Services Google/Sync</translation>
 <translation id="2351097562818989364">Les paramètres de traduction ont été réinitialisés.</translation>
 <translation id="2359043044084662842">Traduire</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Enregistrer l'image</translation>
 <translation id="3789841737615482174">Installer</translation>
 <translation id="385051799172605136">Retour</translation>
-<translation id="3886946236301294521">Recevoir une alerte si l'un de vos mots de passe est compromis suite à une violation des données.</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Informations sur le site</translation>
 <translation id="3922310737605261887">Rechercher le texte copié</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Pages lues</translation>
 <translation id="4630540211544979320">Traduire les pages</translation>
 <translation id="4636930964841734540">Infos</translation>
+<translation id="4659126640776004816">Lorsque vous vous connectez à votre compte Google, cette fonctionnalité est activée.</translation>
 <translation id="4659667755519643272">Lancer le sélecteur d'onglets</translation>
 <translation id="4666531726415300315">Connecté en tant que <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5327248766486351172">Nom</translation>
-<translation id="5365716706805792666">Google peut vérifier si vos mots de passe sont concernés par une violation des données. Cette option sera activée lorsque vous connecterez avec votre compte Google.</translation>
 <translation id="5388358297987318779">Ouvrir l'image</translation>
 <translation id="5407969256130905701">Supprimer les modifications</translation>
 <translation id="5409365236829784218">Aucune application installée ne peut ouvrir ce fichier.</translation>
@@ -333,7 +333,6 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5854790677617711513">Datant de plus de 30 jours</translation>
 <translation id="5857090052475505287">Nouveau dossier</translation>
 <translation id="5857770089550859117">Veuillez saisir la phrase secrète pour lancer la synchronisation.</translation>
-<translation id="5859444426865731878">Google peut vérifier si vos mots de passe sont concernés par une violation des données.</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 élément déplacé.</translation>
@@ -483,7 +482,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7859704718976024901">Historique de navigation</translation>
 <translation id="7887198238286927132">Pour protéger votre vie privée, Chrome ne renseigne pas automatiquement de champ.</translation>
 <translation id="7918293828610777738">Votre liste de lecture est disponible hors connexion. Pour y ajouter une page, appuyez sur <ph name="SHARE_OPENING_ICON" />, puis sur <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Vérifier si le mot de passe est sûr</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Export mots de passe…</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>

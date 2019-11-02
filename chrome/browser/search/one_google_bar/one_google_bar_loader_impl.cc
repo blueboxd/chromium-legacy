@@ -18,12 +18,11 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/google/core/common/google_util.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/data_decoder/public/cpp/safe_json_parser.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -335,22 +334,21 @@ void OneGoogleBarLoaderImpl::LoadDone(
     response = response.substr(strlen(kResponsePreamble));
   }
 
-  data_decoder::SafeJsonParser::Parse(
-      content::GetSystemConnector(), response,
-      base::BindOnce(&OneGoogleBarLoaderImpl::JsonParsed,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&OneGoogleBarLoaderImpl::JsonParseFailed,
-                     weak_ptr_factory_.GetWeakPtr()));
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      response, base::BindOnce(&OneGoogleBarLoaderImpl::JsonParsed,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
-void OneGoogleBarLoaderImpl::JsonParsed(base::Value value) {
-  base::Optional<OneGoogleBarData> result = JsonToOGBData(value);
-  Respond(result.has_value() ? Status::OK : Status::FATAL_ERROR, result);
-}
+void OneGoogleBarLoaderImpl::JsonParsed(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    DVLOG(1) << "Parsing JSON failed: " << *result.error;
+    Respond(Status::FATAL_ERROR, base::nullopt);
+    return;
+  }
 
-void OneGoogleBarLoaderImpl::JsonParseFailed(const std::string& message) {
-  DVLOG(1) << "Parsing JSON failed: " << message;
-  Respond(Status::FATAL_ERROR, base::nullopt);
+  base::Optional<OneGoogleBarData> data = JsonToOGBData(*result.value);
+  Respond(data.has_value() ? Status::OK : Status::FATAL_ERROR, data);
 }
 
 void OneGoogleBarLoaderImpl::Respond(

@@ -5,6 +5,8 @@
 #include "ui/events/blink/prediction/least_squares_predictor.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 
+#include <algorithm>
+
 namespace ui {
 
 namespace {

@@ -456,6 +456,8 @@ bool SimpleFeature::MatchesManifestLocation(
     case SimpleFeature::POLICY_LOCATION:
       return manifest_location == Manifest::EXTERNAL_POLICY ||
              manifest_location == Manifest::EXTERNAL_POLICY_DOWNLOAD;
+    case SimpleFeature::UNPACKED_LOCATION:
+      return Manifest::IsUnpackedLocation(manifest_location);
   }
   NOTREACHED();
   return false;

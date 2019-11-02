@@ -656,11 +656,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
           Si ce paramètre est désactivé, le transfert de fichiers est interdit. Si ce paramètre est activé ou s'il n'est pas configuré, le transfert de fichiers est autorisé.</translation>
 <translation id="2057317273526988987">Autoriser l'accès à une liste d'URL</translation>
 <translation id="2061810934846663491">Configurer les noms de domaines requis pour les hôtes d'accès à distance</translation>
-<translation id="2063663607822994541">Permet de configurer la quantité de mémoire qu'une instance de <ph name="PRODUCT_NAME" /> peut utiliser avant que des onglets ne commencent à être ignorés (c'est-à-dire que la mémoire utilisée par l'onglet sera libérée, et l'onglet devra être actualisé lorsque l'utilisateur le sélectionnera) afin d'économiser de la mémoire.
-
-      Si cette règle est configurée, le navigateur commence à ignorer des onglets pour économiser de la mémoire lorsque la limite est dépassée. Il n'est cependant pas garanti que le navigateur fonctionne toujours en deçà de cette limite. Toute valeur inférieure à 2048 est arrondie à ce nombre.
-
-      Si cette règle n'est pas configurée, le navigateur ne commence à économiser de la mémoire que s'il détecte que la quantité de mémoire physique sur l'ordinateur est faible.</translation>
 <translation id="206623763829450685">Indique les modèles d'authentification HTTP compatibles avec <ph name="PRODUCT_NAME" />.
 
           Les valeurs possibles sont "basic", "digest", "ntlm" et "negotiate". Si vous spécifiez plusieurs valeurs, séparez-les par une virgule.
@@ -777,7 +772,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
 
       Cette règle a une incidence sur tous les types d'entrée vidéo, et pas uniquement sur la caméra intégrée.</translation>
 <translation id="2201555246697292490">Configurer la liste blanche de messagerie native</translation>
-<translation id="220280840901385239">Autoriser les utilisateurs à ajouter des exceptions afin de permettre l'affichage de contenu mixte</translation>
+<translation id="220280840901385239">Autoriser les utilisateurs à ajouter des exceptions afin de permettre l'affichage de contenu mixte blocable</translation>
 <translation id="2204753382813641270">Règle pour masquer automatiquement l'étagère</translation>
 <translation id="2208976000652006649">Paramètres pour l'URL de recherche utilisant POST</translation>
 <translation id="2214880135980649323">Lorsque cette règle est activée, les extensions installées dans le cadre des règles de l'entreprise sont autorisées à utiliser l'API Enterprise Hardware Platform.
@@ -872,13 +867,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est verrouillé (lorsque l'appareil fonctionne sur secteur).
 
-          Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> verrouille l'écran au terme du délai d'inactivité correspondant de l'utilisateur.
+          Si cette règle est définie sur une valeur supérieure à zéro, la valeur correspond au délai d'inactivité au terme duquel <ph name="PRODUCT_OS_NAME" /> verrouille l'écran.
 
           Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> ne verrouille pas l'écran en cas d'inactivité de l'utilisateur.
 
           Si cette règle n'est pas configurée, un délai par défaut est utilisé.
 
-          Pour verrouiller l'écran en cas d'inactivité, il est recommandé d'activer le verrouillage de l'écran si l'utilisateur n'effectue pas d'action pendant un laps de temps défini, et de configurer l'arrêt temporaire de <ph name="PRODUCT_OS_NAME" /> au terme du délai d'inactivité. Cette règle ne doit être utilisée que lorsque le verrouillage de l'écran doit intervenir bien avant l'arrêt temporaire de l'appareil ou lorsque l'utilisateur ne souhaite absolument pas que l'appareil soit arrêté temporairement en cas d'inactivité.
+          Pour verrouiller l'écran en cas d'inactivité, il est recommandé d'activer le verrouillage de l'écran lors de l'arrêt temporaire, et de configurer l'arrêt temporaire de <ph name="PRODUCT_OS_NAME" /> au terme du délai d'inactivité. Cette règle ne doit être utilisée que lorsque le verrouillage de l'écran doit intervenir bien avant l'arrêt temporaire de l'appareil ou lorsque l'utilisateur ne souhaite absolument pas que l'appareil soit arrêté temporairement en cas d'inactivité.
 
           La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure au délai d'inactivité.</translation>
 <translation id="2433412232489478893">Cette règle permet de déterminer si la fonctionnalité Partages de fichiers en réseau pour <ph name="PRODUCT_NAME" /> est autorisée pour un utilisateur.
@@ -956,7 +951,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Le format d'une URL doit être conforme aux règles stipulées à l'adresse https://www.chromium.org/administrators/url-blacklist-filter-format. Toutefois, étant donné que des certificats sont valables pour un nom d'hôte donné, indépendamment du schéma, du port ou du chemin d'accès, seule la partie du nom d'hôte de l'URL est prise en compte. Les hôtes génériques ne sont pas acceptés.
 
       Si cette politique n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
-<translation id="2486911595447603756">Contrôle le mode DNS-over-HTTPS.</translation>
 <translation id="2488010520405124654">Activez l'invite de configuration réseau lorsque l'utilisateur n'est pas connecté.
 
           Si cette règle n'est pas définie ou qu'elle est associée à la valeur "true", que le compte local d'un appareil est configuré avec une connexion automatique zéro retard et que l'appareil n'a pas accès à Internet, <ph name="PRODUCT_OS_NAME" /> affiche une invite de configuration réseau.
@@ -1612,13 +1606,13 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'écran est verrouillé (lorsque l'appareil fonctionne sur batterie).
 
-          Si cette règle est définie sur une valeur supérieure à zéro, <ph name="PRODUCT_OS_NAME" /> verrouille l'écran au terme du délai d'inactivité correspondant de l'utilisateur.
+          Si cette règle est définie sur une valeur supérieure à zéro, la valeur correspond au délai d'inactivité au terme duquel <ph name="PRODUCT_OS_NAME" /> verrouille l'écran.
 
           Si cette règle est définie sur zéro, <ph name="PRODUCT_OS_NAME" /> ne verrouille pas l'écran en cas d'inactivité de l'utilisateur.
 
           Si cette règle n'est pas configurée, un délai par défaut est utilisé.
 
-          Pour verrouiller l'écran en cas d'inactivité, il est recommandé d'activer le verrouillage de l'écran si l'utilisateur n'effectue pas d'action pendant un laps de temps défini, et de configurer l'arrêt temporaire de <ph name="PRODUCT_OS_NAME" /> au terme du délai d'inactivité. Cette règle ne doit être utilisée que lorsque le verrouillage de l'écran doit intervenir bien avant l'arrêt temporaire de l'appareil ou lorsque l'utilisateur ne souhaite absolument pas que l'appareil soit arrêté temporairement en cas d'inactivité.
+          Pour verrouiller l'écran en cas d'inactivité, il est recommandé d'activer le verrouillage de l'écran lors de l'arrêt temporaire, et de configurer l'arrêt temporaire de <ph name="PRODUCT_OS_NAME" /> au terme du délai d'inactivité. Cette règle ne doit être utilisée que lorsque le verrouillage de l'écran doit intervenir bien avant l'arrêt temporaire de l'appareil ou lorsque l'utilisateur ne souhaite absolument pas que l'appareil soit arrêté temporairement en cas d'inactivité.
 
           La valeur de la règle doit être indiquée en millisecondes. Elle doit également être inférieure au délai d'inactivité.</translation>
 <translation id="3624515566460517364">Vérifier si les importations et les téléchargements respectent les règles de protection des données sensibles</translation>
@@ -2252,7 +2246,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 
       Si l'option "Activé" est sélectionnée ou si cette règle n'est pas configurée, l'utilisateur peut ouvrir des pages en mode navigation privée.
 
-      Si l'option "Désactivé" est sélectionnée, l'utilisateur peut ouvrir des pages en mode navigation privée.
+      Si l'option "Désactivé" est sélectionnée, l'utilisateur ne peut pas ouvrir des pages en mode navigation privée.
 
       Si l'option "Forcé" est sélectionnée, l'utilisateur peut ouvrir des pages UNIQUEMENT en mode navigation privée. Sachez que l'option "Forcé" ne fonctionne pas avec un appareil Android sur Chrome.</translation>
 <translation id="4600786265870346112">Activer le grand curseur</translation>
@@ -3768,13 +3762,6 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
       Les trois règles, VirtualMachinesAllowed, CrostiniAllowed et DeviceUnaffiliatedCrostiniAllowed doivent être définies sur True lorsqu'elles s'appliquent pour que Crostini puisse être exécuté.
       Si vous modifiez cette règle en la définissant sur False, elle est appliquée aux conteneurs Crostini qui vont être lancés, mais elle n'arrête pas ceux qui le sont déjà.</translation>
 <translation id="7234280155140786597">Noms des hôtes de messagerie native non autorisés (ou "*" pour tous)</translation>
-<translation id="7236775576470542603">Définit le type de loupe par défaut activée sur l'écran de connexion.
-
-          Si vous définissez cette règle, elle contrôle le type de loupe qui est activée à l'affichage de l'écran de connexion. Définissez la règle sur "Aucun" pour désactiver la loupe.
-
-          Si vous définissez cette règle, les utilisateurs peuvent l'ignorer temporairement en activant ou en désactivant la loupe. Toutefois, cette option n'est pas définitive, et la valeur par défaut est restaurée dès que l'écran de connexion est affiché de nouveau ou que l'utilisateur reste inactif pendant une minute sur l'écran de connexion.
-
-          Si vous ne définissez pas cette règle, la loupe est désactivée au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou la désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
 <translation id="7249828445670652637">Activer les certificats CA <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
 <translation id="7251652588006515288">Cette règle contrôle la capacité de l'utilisateur à importer et supprimer des certificats client via le gestionnaire de certificats.
 

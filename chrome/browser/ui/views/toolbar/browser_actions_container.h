@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -145,6 +144,8 @@ class BrowserActionsContainer : public views::View,
                           BrowserActionsContainer* main_container,
                           Delegate* delegate,
                           bool interactive = true);
+  BrowserActionsContainer(const BrowserActionsContainer&) = delete;
+  BrowserActionsContainer& operator=(const BrowserActionsContainer&) = delete;
   ~BrowserActionsContainer() override;
 
   // Get the number of toolbar actions being displayed.
@@ -352,8 +353,6 @@ class BrowserActionsContainer : public views::View,
 
   // The extension bubble that is actively showing, if any.
   views::BubbleDialogDelegateView* active_bubble_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_ACTIONS_CONTAINER_H_

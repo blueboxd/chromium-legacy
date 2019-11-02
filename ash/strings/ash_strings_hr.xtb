@@ -300,6 +300,7 @@
 <translation id="5302048478445481009">Jezik</translation>
 <translation id="5313326810920013265">Postavke Bluetootha</translation>
 <translation id="5331975486040154427">USB-C uređaj (stražnji lijevi priključak)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Previše pokušaja</translation>
 <translation id="5397578532367286026">Upravitelj (<ph name="MANAGER_EMAIL" />) može pregledavati upotrebu i povijest tog korisnika na web-lokaciji chrome.com.</translation>
 <translation id="5430931332414098647">Automatsko modemsko povezivanje</translation>
@@ -322,6 +323,7 @@
 <translation id="5682642926269496722">Google asistent nije dostupan za trenutačni korisnički račun.</translation>
 <translation id="5691772641933328258">Otisak prsta nije prepoznat</translation>
 <translation id="5710450975648804523">Način Ne uznemiravaj uključen</translation>
+<translation id="573413375004481890">Uređaj ne podržava sve vaše zaslone, pa je s jednim prekinuta veza.</translation>
 <translation id="574392208103952083">Srednje</translation>
 <translation id="5744083938413354016">Povlačenje dodirom</translation>
 <translation id="5750765938512549687">Bluetooth je isključen</translation>

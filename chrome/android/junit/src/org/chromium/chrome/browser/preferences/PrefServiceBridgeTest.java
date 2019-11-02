@@ -44,7 +44,7 @@ public class PrefServiceBridgeTest {
         boolean expected = false;
 
         PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
-        doReturn(expected).when(mNativeMock).getBoolean(prefServiceBridge, PREF);
+        doReturn(expected).when(mNativeMock).getBoolean(PREF);
 
         assertEquals(expected, prefServiceBridge.getBoolean(PREF));
     }
@@ -56,7 +56,7 @@ public class PrefServiceBridgeTest {
         PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
         prefServiceBridge.setBoolean(PREF, value);
 
-        verify(mNativeMock).setBoolean(eq(prefServiceBridge), eq(PREF), eq(value));
+        verify(mNativeMock).setBoolean(eq(PREF), eq(value));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class PrefServiceBridgeTest {
         int expected = 26;
 
         PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
-        doReturn(expected).when(mNativeMock).getInteger(prefServiceBridge, PREF);
+        doReturn(expected).when(mNativeMock).getInteger(PREF);
 
         assertEquals(expected, prefServiceBridge.getInteger(PREF));
     }
@@ -76,7 +76,7 @@ public class PrefServiceBridgeTest {
         PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
         prefServiceBridge.setInteger(PREF, value);
 
-        verify(mNativeMock).setInteger(eq(prefServiceBridge), eq(PREF), eq(value));
+        verify(mNativeMock).setInteger(eq(PREF), eq(value));
     }
 
     @Test
@@ -84,7 +84,7 @@ public class PrefServiceBridgeTest {
         String expected = "foo";
 
         PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
-        doReturn(expected).when(mNativeMock).getString(prefServiceBridge, PREF);
+        doReturn(expected).when(mNativeMock).getString(PREF);
 
         assertEquals(expected, prefServiceBridge.getString(PREF));
     }
@@ -96,7 +96,7 @@ public class PrefServiceBridgeTest {
         PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
         prefServiceBridge.setString(PREF, value);
 
-        verify(mNativeMock).setString(eq(prefServiceBridge), eq(PREF), eq(value));
+        verify(mNativeMock).setString(eq(PREF), eq(value));
     }
 
     @Test
@@ -104,7 +104,7 @@ public class PrefServiceBridgeTest {
         boolean expected = true;
 
         PrefServiceBridge prefServiceBridge = new PrefServiceBridge();
-        doReturn(expected).when(mNativeMock).isManagedPreference(prefServiceBridge, PREF);
+        doReturn(expected).when(mNativeMock).isManagedPreference(PREF);
 
         assertEquals(expected, prefServiceBridge.isManagedPreference(PREF));
     }

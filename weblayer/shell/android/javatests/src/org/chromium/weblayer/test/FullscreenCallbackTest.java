@@ -52,21 +52,21 @@ public class FullscreenCallbackTest {
         }
 
         public void waitForFullscreen() {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            CriteriaHelper.pollUiThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return mEnterFullscreenCount == 1;
                 }
-            }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            });
         }
 
         public void waitForExitFullscreen() {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            CriteriaHelper.pollUiThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return mExitFullscreenCount == 1;
                 }
-            }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            });
         }
     }
 

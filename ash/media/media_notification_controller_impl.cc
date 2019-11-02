@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -214,7 +213,7 @@ MediaNotificationControllerImpl::GetTaskRunner() const {
 std::unique_ptr<MediaNotificationContainerImpl>
 MediaNotificationControllerImpl::CreateMediaNotification(
     const message_center::Notification& notification) {
-  base::WeakPtr<media_message_center::MediaNotificationItem> item;
+  base::WeakPtr<media_message_center::MediaSessionNotificationItem> item;
 
   auto it = notifications_.find(notification.id());
   if (it != notifications_.end())

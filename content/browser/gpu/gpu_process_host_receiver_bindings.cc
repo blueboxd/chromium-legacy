@@ -8,8 +8,6 @@
 
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "content/browser/field_trial_recorder.h"
-#include "content/common/field_trial_recorder.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -38,16 +36,6 @@ void BindAndroidOverlayProvider(
 
 void GpuProcessHost::BindHostReceiver(
     mojo::GenericPendingReceiver generic_receiver) {
-  if (auto field_trial_receiver =
-          generic_receiver.As<mojom::FieldTrialRecorder>()) {
-    mojo::PendingReceiver<mojom::FieldTrialRecorder> receiver(
-        std::move(field_trial_receiver));
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&FieldTrialRecorder::Create, std::move(receiver)));
-    return;
-  }
-
 #if defined(OS_ANDROID)
   if (auto r = generic_receiver.As<media::mojom::AndroidOverlayProvider>()) {
     base::PostTask(FROM_HERE, {BrowserThread::UI},

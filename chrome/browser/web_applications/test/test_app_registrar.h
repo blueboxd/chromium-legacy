@@ -57,9 +57,9 @@ class TestAppRegistrar : public AppRegistrar {
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
-  blink::mojom::DisplayMode GetAppUserDisplayMode(
+  blink::mojom::DisplayMode GetAppDisplayMode(
       const AppId& app_id) const override;
-  blink::mojom::DisplayMode GetAppEffectiveDisplayMode(
+  blink::mojom::DisplayMode GetAppUserDisplayMode(
       const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
 

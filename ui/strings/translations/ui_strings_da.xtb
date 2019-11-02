@@ -201,7 +201,7 @@
 <translation id="8090736967111090568">Nummer fra <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{for 1 time siden}one{for # time siden}other{for # timer siden}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek. tilbage}one{# sek. tilbage}other{# sek. tilbage}}</translation>
-<translation id="8134065097954893699">Genindlæse denne side</translation>
+<translation id="8134065097954893699">Genindlæs siden</translation>
 <translation id="8144660977431427332">Dine søgninger leveres af Google Assistent. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autofuldfør</translation>
 <translation id="815598010540052116">Scroll Down</translation>

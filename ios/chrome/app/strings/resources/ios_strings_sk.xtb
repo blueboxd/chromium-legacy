@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">Ponuka Viac</translation>
 <translation id="2316709634732130529">Použiť navrhnuté heslo</translation>
 <translation id="2320166752086256636">Skryť klávesnicu</translation>
+<translation id="2330129964253841015">Upozorniť v prípade napadnutia hesiel</translation>
 <translation id="2339560363438331454">Synchronizácia a služby Googlu</translation>
 <translation id="2351097562818989364">Nastavenia prekladov boli resetované.</translation>
 <translation id="2359043044084662842">Preložiť</translation>
@@ -202,7 +203,6 @@
 <translation id="3783017676699494206">Uložiť obrázok</translation>
 <translation id="3789841737615482174">Inštalovať</translation>
 <translation id="385051799172605136">Naspäť</translation>
-<translation id="3886946236301294521">Upozorní vás, ak heslo, ktoré používate, bolo súčasťou porušenia ochrany údajov.</translation>
 <translation id="3897092660631435901">Ponuka</translation>
 <translation id="3915450441834151894">Informácie o webe</translation>
 <translation id="3922310737605261887">Vyhľadať skopírovaný text</translation>
@@ -253,6 +253,7 @@
 <translation id="4620246317052452550">Prečítané stránky</translation>
 <translation id="4630540211544979320">Preložiť stránky</translation>
 <translation id="4636930964841734540">Informácie</translation>
+<translation id="4659126640776004816">Keď sa prihlásite do svojho účtu Google, táto funkcia je zapnutá.</translation>
 <translation id="4659667755519643272">Prejsť do Prepínača kariet</translation>
 <translation id="4666531726415300315">Prihlásený používateľ: <ph name="EMAIL" />.
 
@@ -301,7 +302,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5300589172476337783">Zobraziť</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5327248766486351172">Názov</translation>
-<translation id="5365716706805792666">Google môže skontrolovať, či vaše heslá boli súčasťou porušenia ochrany údajov. Táto funkcia bude zapnutá, keď sa prihlásite pomcou svojho účtu Google.</translation>
 <translation id="5388358297987318779">Otvoriť obrázok</translation>
 <translation id="5407969256130905701">Zahodiť zmeny</translation>
 <translation id="5409365236829784218">Nie sú nainštalované žiadne aplikácie, ktoré dokážu otvoriť tento súbor.</translation>
@@ -333,7 +333,6 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="5854790677617711513">Staršie ako 30 dní</translation>
 <translation id="5857090052475505287">Nový priečinok</translation>
 <translation id="5857770089550859117">Spustenie synchronizácie vyžaduje prístupovú frázu.</translation>
-<translation id="5859444426865731878">Google môže skontrolovať, či vaše heslá boli súčasťou porušenia ochrany údajov.</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
 <translation id="5869029295770560994">Dobre</translation>
 <translation id="5871497086027727873">1 položka bola presunutá</translation>
@@ -483,7 +482,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7859704718976024901">História prehliadania</translation>
 <translation id="7887198238286927132">Chrome automaticky nedoplní toho pole, čím ochráni vaše súkromie.</translation>
 <translation id="7918293828610777738">Váš čitateľský zoznam je k dispozícii offline. Ak doň chcete pridať stránku, klepnite na položku <ph name="SHARE_OPENING_ICON" /> a potom na možnosť <ph name="READ_LATER_TEXT" />.</translation>
-<translation id="7930681627240672853">Skontrolovať bezpečnosť hesla</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportovať heslá...</translation>
 <translation id="7947953824732555851">Prijať a prihl. sa</translation>

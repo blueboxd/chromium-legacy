@@ -44,7 +44,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1877026089748256423">Chrome is verouderd</translation>
 <translation id="1900795423379050516">Als je een instelling niet ziet op deze pagina, kijk je in de <ph name="LINK_BEGIN" />instellingen van je Chrome-browser<ph name="LINK_END" /></translation>
 <translation id="1919130412786645364">Inloggen bij Chrome toestaan</translation>
-<translation id="2063848847527508675">Chrome OS moet opnieuw worden gestart om de update toe te passen.</translation>
+<translation id="2063848847527508675">Chrome OS moet opnieuw worden gestart om de update uit te voeren.</translation>
 <translation id="2094919256425865063">Chrome toch sluiten?</translation>
 <translation id="2120620239521071941">Hiermee worden <ph name="ITEMS_COUNT" /> items verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chrome als <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Help Chrome beter te maken door de <ph name="BEGIN_LINK" />huidige instellingen<ph name="END_LINK" /> te melden</translation>
@@ -76,7 +76,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3065168410429928842">Chrome-tabblad</translation>
 <translation id="3080151273017101988">Achtergrondapps blijven uitvoeren wanneer Google Chrome is gesloten</translation>
 <translation id="3089968997497233615">Er is een nieuwere, veiligere versie van Google Chrome beschikbaar.</translation>
-<translation id="3138848678222082288">Toekomstige versies van Chrome worden automatisch geïnstalleerd. Als deze download is voltooid, start Chrome opnieuw op en kun je doorgaan.</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
 <translation id="3282568296779691940">Inloggen bij Chrome</translation>
 <translation id="3340978935015468852">instellingen</translation>
@@ -179,7 +178,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="677276454032249905">Chrome toch sluiten?</translation>
 <translation id="683440813066116847">Inkomende regel zodat Google Chrome Canary mDNS-verkeer toestaat.</translation>
 <translation id="6885412569789873916">Chrome Bèta-apps</translation>
-<translation id="6906909733186691861">Toekomstige versies van Chrome worden automatisch geïnstalleerd.</translation>
 <translation id="6943584222992551122">De browsergegevens van deze persoon worden verwijderd van dit apparaat. Als je de gegevens wilt herstellen, log je in bij Chrome als <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Inkomende regel zodat Google Chrome Bèta mDNS-verkeer toestaat.</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> vereist dat je de volgende Servicevoorwaarden leest en accepteert voordat je dit apparaat gebruikt. Met deze voorwaarden worden de Voorwaarden van Google Chrome OS niet uitgebreid, aangepast of beperkt.</translation>

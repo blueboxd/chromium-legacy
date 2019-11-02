@@ -11,6 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -200,25 +201,25 @@ class CookieManager {
                            bool* result,
                            const net::CookieList& cookies);
 
-  // |result| indicates whether or not this call was successful, indicating
-  // whether we may update |accept_file_scheme_cookies_|.
   void AllowFileSchemeCookiesAsyncHelper(bool accept,
-                                         bool* result,
                                          base::OnceClosure complete);
+  // |can_change_schemes| indicates whether or not this call was successful,
+  // indicating whether we may update |accept_file_scheme_cookies_|.
   void AllowFileSchemeCookiesCompleted(base::OnceClosure complete,
-                                       bool* result,
-                                       bool value);
+                                       bool accept,
+                                       bool can_change_schemes);
   void MigrateCookieStorePath();
 
   base::FilePath cookie_store_path_;
 
-  // This protects the following two bools, as they're used on multiple threads.
+  // This protects the following bool, as it's used on multiple threads.
   base::Lock accept_file_scheme_cookies_lock_;
   // True if cookies should be allowed for file URLs. Can only be changed prior
   // to creating the CookieStore.
-  bool accept_file_scheme_cookies_;
+  bool accept_file_scheme_cookies_ GUARDED_BY(accept_file_scheme_cookies_lock_);
   // True once the cookie store has been created. Just used to track when
-  // |accept_file_scheme_cookies_| can no longer be modified.
+  // |accept_file_scheme_cookies_| can no longer be modified. Only accessed on
+  // |cookie_store_task_runner_|.
   bool cookie_store_created_;
 
   base::Thread cookie_store_client_thread_;
@@ -236,7 +237,7 @@ class CookieManager {
   // SetMojoCookieManager()'s work is done. This is modified on different
   // threads, so accesses must be guarded by |task_queue_lock_|.
   base::Lock task_queue_lock_;
-  base::circular_deque<base::OnceClosure> tasks_;
+  base::circular_deque<base::OnceClosure> tasks_ GUARDED_BY(task_queue_lock_);
 
   // The CookieManager shared with the NetworkContext.
   mojo::Remote<network::mojom::CookieManager> mojo_cookie_manager_;

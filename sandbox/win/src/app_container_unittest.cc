@@ -120,7 +120,7 @@ class SECURITY_ATTRIBUTES_SDDL : public SECURITY_ATTRIBUTES {
 };
 
 std::wstring CreateSddlWithSid(const Sid& sid) {
-  base::string16 sddl_string;
+  std::wstring sddl_string;
   if (!sid.ToSddlString(&sddl_string))
     return L"";
   std::wstring base_sddl = L"D:(A;;GA;;;WD)(A;;GA;;;";

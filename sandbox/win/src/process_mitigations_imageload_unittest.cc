@@ -44,7 +44,7 @@ using CheckHijackResultFunction = decltype(&CheckHijackResult);
 void TestWin10ImageLoadRemote(bool is_success_test) {
   // ***Insert a manual testing share UNC path here!
   // E.g.: \\\\hostname\\sharename\\calc.exe
-  base::string16 unc = L"\"\\\\hostname\\sharename\\calc.exe\"";
+  std::wstring unc = L"\"\\\\hostname\\sharename\\calc.exe\"";
 
   sandbox::TestRunner runner;
   sandbox::TargetPolicy* policy = runner.GetPolicy();
@@ -61,7 +61,7 @@ void TestWin10ImageLoadRemote(bool is_success_test) {
               sandbox::SBOX_ALL_OK);
   }
 
-  base::string16 test = L"TestChildProcess ";
+  std::wstring test = L"TestChildProcess ";
   test += unc.c_str();
   EXPECT_EQ((is_success_test ? sandbox::SBOX_TEST_SUCCEEDED
                              : sandbox::SBOX_TEST_FAILED),
@@ -89,7 +89,7 @@ void TestWin10ImageLoadLowLabel(bool is_success_test) {
   // Test file will be cleaned up by the ScopedTempDir.
   ASSERT_TRUE(base::CopyFileW(orig_path, new_path));
 
-  base::string16 cmd_line = L"icacls \"";
+  std::wstring cmd_line = L"icacls \"";
   cmd_line += new_path.value().c_str();
   cmd_line += L"\" /setintegritylevel Low";
 
@@ -123,7 +123,7 @@ void TestWin10ImageLoadLowLabel(bool is_success_test) {
               sandbox::SBOX_ALL_OK);
   }
 
-  base::string16 test = L"TestChildProcess \"";
+  std::wstring test = L"TestChildProcess \"";
   test += new_path.value().c_str();
   test += L"\" false";
 
@@ -194,7 +194,7 @@ void TestWin10ImageLoadPreferSys32(bool baseline_test, bool expect_sys32_path) {
   // hijack was successful so the hijack_dll is NOT in system32.
   // The failure case has the mitigation enabled, so expect the hijack_dll to be
   // in system32.
-  base::string16 test = base::StringPrintf(
+  std::wstring test = base::StringPrintf(
       L"%ls %ls \"%ls\"", L"TestImageLoadHijack",
       (!expect_sys32_path) ? L"true" : L"false", shim_dll_path.value().c_str());
 
@@ -268,7 +268,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoRemotePolicySuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_LOADNOREMOTE);
 
   //---------------------------------
@@ -329,7 +329,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadNoLowLabelPolicySuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_LOADNOLOW);
 
   //---------------------------------
@@ -384,7 +384,7 @@ TEST(ProcessMitigationsTest, CheckWin10ImageLoadPreferSys32PolicySuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_LOADPREFERSYS32);
 
   //---------------------------------

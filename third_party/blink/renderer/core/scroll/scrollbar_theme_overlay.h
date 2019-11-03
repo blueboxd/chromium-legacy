@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_THEME_OVERLAY_H_
 
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
-#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 
@@ -35,15 +34,8 @@ namespace blink {
 // than Mac. Mac's overlay scrollbars are in ScrollbarThemeMac*.
 class CORE_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
  public:
-  enum HitTestBehavior { kAllowHitTest, kDisallowHitTest };
+  static ScrollbarThemeOverlay& GetInstance();
 
-  ScrollbarThemeOverlay(int thumb_thickness,
-                        int scrollbar_margin,
-                        HitTestBehavior);
-  ScrollbarThemeOverlay(int thumb_thickness,
-                        int scrollbar_margin,
-                        HitTestBehavior,
-                        Color);
   ~ScrollbarThemeOverlay() override = default;
 
   bool ShouldRepaintAllPartsOnInvalidation() const override;
@@ -71,6 +63,7 @@ class CORE_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
   int ThumbThickness() { return thumb_thickness_; }
 
   void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+  bool AllowsHitTest() const override;
   ScrollbarPart HitTest(const Scrollbar&, const IntPoint&) override;
 
   bool UsesNinePatchThumbResource() const override;
@@ -79,19 +72,20 @@ class CORE_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
 
   int MinimumThumbLength(const Scrollbar&) override;
 
-  bool IsMobileTheme() const;
+  virtual bool IsMobileTheme() const { return false; }
 
-  bool AllowsHitTest() const override;
+ protected:
+  FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeOverlayTest, PaintInvalidation);
 
-  static ScrollbarThemeOverlay& MobileTheme();
+  ScrollbarThemeOverlay(int thumb_thickness, int scrollbar_margin);
+
+  // Gets the rect to paint the thumb inside of the given thumb rect,
+  // considering scrollbar margin.
+  IntRect ThumbPaintRect(const Scrollbar&, const IntRect&) const;
 
  private:
   int thumb_thickness_;
   int scrollbar_margin_;
-  HitTestBehavior allow_hit_test_;
-  Color color_;
-  bool is_mobile_theme_;
-  const bool use_solid_color_;
 };
 
 }  // namespace blink

@@ -77,19 +77,17 @@ void ReportValidationError(ValidationContext* context,
                  << " (" << description << ")";
     }
     if (context->message()) {
-      context->message()->NotifyBadMessage(
-          base::StringPrintf("Validation failed for %s [%s (%s)]",
-                             context->description().data(),
-                             ValidationErrorToString(error), description));
+      context->message()->NotifyBadMessage(base::StringPrintf(
+          "Validation failed for %s [%s (%s)]", context->description(),
+          ValidationErrorToString(error), description));
     }
   } else {
     if (!g_suppress_logging)
       LOG(ERROR) << "Invalid message: " << ValidationErrorToString(error);
     if (context->message()) {
-      context->message()->NotifyBadMessage(
-          base::StringPrintf("Validation failed for %s [%s]",
-                             context->description().data(),
-                             ValidationErrorToString(error)));
+      context->message()->NotifyBadMessage(base::StringPrintf(
+          "Validation failed for %s [%s]", context->description(),
+          ValidationErrorToString(error)));
     }
   }
 }
@@ -102,7 +100,8 @@ void ReportValidationErrorForMessage(mojo::Message* message,
   std::string description =
       base::StringPrintf("%s.%d %s", interface_name, method_ordinal,
                          is_response ? " response" : "");
-  ValidationContext validation_context(nullptr, 0, 0, 0, message, description);
+  ValidationContext validation_context(nullptr, 0, 0, 0, message,
+                                       description.c_str());
   ReportValidationError(&validation_context, error, description.c_str());
 }
 

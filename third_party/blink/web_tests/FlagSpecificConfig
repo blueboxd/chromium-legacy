@@ -1,0 +1,35 @@
+[
+  {
+    "name": "disable-blink-features=LayoutNG",
+    "args": ["--disable-blink-features=LayoutNG"]
+  },
+  {
+    "name": "disable-site-isolation-trials",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "name": "enable-blink-features=CompositeAfterPaint",
+    "args": ["--enable-blink-features=CompositeAfterPaint"]
+  },
+  {
+    "name": "enable-blink-features=HeapUnifiedGarbageCollection",
+    "args": ["--enable-blink-features=HeapUnifiedGarbageCollection"]
+  },
+  {
+    "name": "enable-blink-features=NewSystemColors",
+    "args": ["--enable-blink-features=NewSystemColors"]
+  },
+  {
+    "name": "enable-features=NetworkService",
+    "args": ["--enable-features=NetworkService"]
+  },
+  {
+    "name": "enable-features=OverflowIconsForMediaControls",
+    "args": ["--enable-features=OverflowIconsForMediaControls"]
+  },
+  {
+    "name": "enable-gpu-rasterization",
+    "args": ["--enable-gpu-rasterization"]
+  }
+]
+

@@ -426,7 +426,7 @@ void ScrollbarThemeMac::UpdateScrollbarsWithNSDefaults(
 
 // static
 NSScrollerStyle ScrollbarThemeMac::RecommendedScrollerStyle() {
-  if (RuntimeEnabledFeatures::OverlayScrollbarsEnabled())
+  if (OverlayScrollbarsEnabled())
     return NSScrollerStyleOverlay;
   return s_preferred_scroller_style;
 }

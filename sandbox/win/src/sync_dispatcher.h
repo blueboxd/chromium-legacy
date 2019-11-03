@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
@@ -27,12 +28,12 @@ class SyncDispatcher : public Dispatcher {
  private:
   // Processes IPC requests coming from calls to CreateEvent in the target.
   bool CreateEvent(IPCInfo* ipc,
-                   base::string16* name,
+                   std::wstring* name,
                    uint32_t event_type,
                    uint32_t initial_state);
 
   // Processes IPC requests coming from calls to OpenEvent in the target.
-  bool OpenEvent(IPCInfo* ipc, base::string16* name, uint32_t desired_access);
+  bool OpenEvent(IPCInfo* ipc, std::wstring* name, uint32_t desired_access);
 
   PolicyBase* policy_base_;
   DISALLOW_COPY_AND_ASSIGN(SyncDispatcher);

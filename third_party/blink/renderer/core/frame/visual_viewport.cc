@@ -59,7 +59,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
-#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mobile.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -656,7 +656,7 @@ void VisualViewport::InitializeScrollbars() {
 }
 
 int VisualViewport::ScrollbarThickness() const {
-  ScrollbarThemeOverlay& theme = ScrollbarThemeOverlay::MobileTheme();
+  auto& theme = ScrollbarThemeOverlayMobile::GetInstance();
   int thickness = theme.ScrollbarThickness(kRegularScrollbar);
   return clampTo<int>(
       std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
@@ -690,7 +690,7 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
     ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
     DCHECK(coordinator);
 
-    ScrollbarThemeOverlay& theme = ScrollbarThemeOverlay::MobileTheme();
+    auto& theme = ScrollbarThemeOverlayMobile::GetInstance();
     int thumb_thickness = clampTo<int>(
         std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
             MainFrame(), theme.ThumbThickness())));

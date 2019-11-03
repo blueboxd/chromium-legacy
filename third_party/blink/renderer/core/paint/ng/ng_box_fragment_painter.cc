@@ -1180,7 +1180,7 @@ void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
 
   // Need to check the style of each text items because they can have different
   // styles than its siblings if inline boxes are culled.
-  if (UNLIKELY(IsVisibleToPaint(item, item.Style())))
+  if (UNLIKELY(!IsVisibleToPaint(item, item.Style())))
     return;
 
   NGTextFragmentPainter<NGInlineCursor> text_painter(cursor);

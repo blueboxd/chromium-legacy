@@ -265,7 +265,7 @@ DWORD RestrictedToken::AddUserSidForDenyOnly() {
 }
 
 DWORD RestrictedToken::DeleteAllPrivileges(
-    const std::vector<base::string16>* exceptions) {
+    const std::vector<std::wstring>* exceptions) {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
@@ -28,7 +29,7 @@ class NamedPipeDispatcher : public Dispatcher {
   // Processes IPC requests coming from calls to CreateNamedPipeW() in the
   // target.
   bool CreateNamedPipe(IPCInfo* ipc,
-                       base::string16* name,
+                       std::wstring* name,
                        uint32_t open_mode,
                        uint32_t pipe_mode,
                        uint32_t max_instances,

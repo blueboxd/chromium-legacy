@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_test_suite.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
-#include "third_party/blink/renderer/core/scroll/scrollbar_theme_mock.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mock.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/testing/fake_graphics_layer.h"
@@ -26,7 +26,7 @@ namespace {
 using testing::_;
 using testing::Return;
 
-class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
+class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeOverlayMock {
  public:
   MOCK_CONST_METHOD0(ShouldRepaintAllPartsOnInvalidation, bool());
   MOCK_CONST_METHOD3(PartsToInvalidateOnThumbPositionChange,
@@ -94,7 +94,8 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
-  ScrollbarTheme::SetMockScrollbarsEnabled(true);
+  ScopedMockOverlayScrollbars mock_overlay_scrollbars;
+
   MockScrollableArea* scrollable_area =
       MockScrollableArea::Create(ScrollOffset(0, 100));
   FakeGraphicsLayerClient graphics_layer_client;
@@ -277,8 +278,7 @@ TEST_F(ScrollableAreaTest, PopupOverlayScrollbarShouldNotFadeOut) {
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform;
 
-  ScopedOverlayScrollbarsForTest overlay_scrollbars(true);
-  ScrollbarTheme::SetMockScrollbarsEnabled(true);
+  ScopedMockOverlayScrollbars mock_overlay_scrollbars;
 
   MockScrollableArea* scrollable_area =
       MockScrollableArea::Create(ScrollOffset(0, 100));

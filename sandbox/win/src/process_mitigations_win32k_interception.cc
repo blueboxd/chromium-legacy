@@ -49,8 +49,8 @@ class ScopedSharedMemory {
 };
 
 void UnicodeStringToString(PUNICODE_STRING unicode_string,
-                           base::string16* result) {
-  *result = base::string16(
+                           std::wstring* result) {
+  *result = std::wstring(
       unicode_string->Buffer,
       unicode_string->Buffer +
           (unicode_string->Length / sizeof(unicode_string->Buffer[0])));
@@ -218,7 +218,7 @@ static NTSTATUS GetCertificateCommon(
   ScopedSharedMemory buffer(certificate_size);
   if (!buffer.IsValid())
     return STATUS_INVALID_PARAMETER;
-  base::string16 device_name_str;
+  std::wstring device_name_str;
   void* protected_output_handle = nullptr;
   if (device_name) {
     if (device_name->Length == 0)
@@ -270,7 +270,7 @@ static NTSTATUS GetCertificateSizeCommon(
 
   CrossCallReturn answer = {};
   SharedMemIPCClient ipc(ipc_memory);
-  base::string16 device_name_str;
+  std::wstring device_name_str;
   void* protected_output_handle = nullptr;
   if (device_name) {
     UnicodeStringToString(device_name, &device_name_str);
@@ -442,7 +442,7 @@ NTSTATUS WINAPI TargetGetSuggestedOPMProtectedOutputArraySize(
 
   CrossCallReturn answer = {};
   SharedMemIPCClient ipc(ipc_memory);
-  base::string16 device_name_str;
+  std::wstring device_name_str;
   UnicodeStringToString(device_name, &device_name_str);
   ResultCode code =
       CrossCall(ipc, IpcTag::GDI_GETSUGGESTEDOPMPROTECTEDOUTPUTARRAYSIZE,
@@ -506,7 +506,7 @@ TargetCreateOPMProtectedOutputs(CreateOPMProtectedOutputsFunction,
     return STATUS_INVALID_PARAMETER;
 
   InOutCountedBuffer buffer(outputs_array, array_size.ValueOrDie());
-  base::string16 device_name_str;
+  std::wstring device_name_str;
   UnicodeStringToString(device_name, &device_name_str);
   ResultCode code = CrossCall(ipc, IpcTag::GDI_CREATEOPMPROTECTEDOUTPUTS,
                               device_name_str.c_str(), buffer, &answer);

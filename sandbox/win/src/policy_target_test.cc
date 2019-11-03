@@ -6,6 +6,7 @@
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/sandbox.h"
@@ -164,7 +165,7 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_process(int argc, wchar_t** argv) {
   PROCESS_INFORMATION temp_process_info = {};
   // Note: CreateProcessW() can write to its lpCommandLine, don't pass a
   // raw string literal.
-  base::string16 writable_cmdline_str(L"foo.exe");
+  std::wstring writable_cmdline_str(L"foo.exe");
   if (!::CreateProcessW(L"foo.exe", &writable_cmdline_str[0], nullptr, nullptr,
                         false, 0, nullptr, nullptr, &startup_info,
                         &temp_process_info))
@@ -246,7 +247,7 @@ TEST(PolicyTargetTest, DesktopPolicy) {
   wchar_t prog_name[MAX_PATH];
   GetModuleFileNameW(nullptr, prog_name, MAX_PATH);
 
-  base::string16 arguments(L"\"");
+  std::wstring arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child 0 wait";  // Don't care about the "state" argument.
 
@@ -263,7 +264,7 @@ TEST(PolicyTargetTest, DesktopPolicy) {
   result =
       broker->SpawnTarget(prog_name, arguments.c_str(), policy, &warning_result,
                           &last_error, &temp_process_info);
-  base::string16 desktop_name = policy->GetAlternateDesktop();
+  std::wstring desktop_name = policy->GetAlternateDesktop();
   policy = nullptr;
 
   EXPECT_EQ(SBOX_ALL_OK, result);
@@ -313,7 +314,7 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   wchar_t prog_name[MAX_PATH];
   GetModuleFileNameW(nullptr, prog_name, MAX_PATH);
 
-  base::string16 arguments(L"\"");
+  std::wstring arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child 0 wait";  // Don't care about the "state" argument.
 
@@ -330,7 +331,7 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   result =
       broker->SpawnTarget(prog_name, arguments.c_str(), policy, &warning_result,
                           &last_error, &temp_process_info);
-  base::string16 desktop_name = policy->GetAlternateDesktop();
+  std::wstring desktop_name = policy->GetAlternateDesktop();
   policy = nullptr;
 
   EXPECT_EQ(SBOX_ALL_OK, result);
@@ -348,7 +349,7 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   ASSERT_FALSE(desktop_name.empty());
 
   // Make sure there is a backslash, for the window station name.
-  EXPECT_NE(desktop_name.find_first_of(L'\\'), base::string16::npos);
+  EXPECT_NE(desktop_name.find_first_of(L'\\'), std::wstring::npos);
 
   // Isolate the desktop name.
   desktop_name = desktop_name.substr(desktop_name.find_first_of(L'\\') + 1);
@@ -383,8 +384,8 @@ TEST(PolicyTargetTest, BothLocalAndAlternateWinstationDesktop) {
   result = policy3->SetAlternateDesktop(false);
   EXPECT_EQ(SBOX_ALL_OK, result);
 
-  base::string16 policy1_desktop_name = policy1->GetAlternateDesktop();
-  base::string16 policy2_desktop_name = policy2->GetAlternateDesktop();
+  std::wstring policy1_desktop_name = policy1->GetAlternateDesktop();
+  std::wstring policy2_desktop_name = policy2->GetAlternateDesktop();
 
   // Extract only the "desktop name" portion of
   // "{winstation name}\\{desktop name}"
@@ -424,11 +425,11 @@ TEST(PolicyTargetTest, ShareHandleTest) {
   scoped_refptr<TargetPolicy> policy = broker->CreatePolicy();
   policy->AddHandleToShare(read_only_region.GetPlatformHandle());
 
-  base::string16 arguments(L"\"");
+  std::wstring arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child 0 shared_memory_handle ";
-  arguments += base::NumberToString16(
-      base::win::HandleToUint32(read_only_region.GetPlatformHandle()));
+  arguments += base::AsWString(base::NumberToString16(
+      base::win::HandleToUint32(read_only_region.GetPlatformHandle())));
 
   // Launch the app.
   ResultCode result = SBOX_ALL_OK;

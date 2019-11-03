@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
-#include "third_party/blink/renderer/core/scroll/scrollbar_theme_mock.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mock.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -49,8 +48,6 @@
 #endif
 
 namespace blink {
-
-bool ScrollbarTheme::g_mock_scrollbars_enabled_ = false;
 
 static inline bool ShouldPaintScrollbarPart(const IntRect& part_rect,
                                             const CullRect& cull_rect) {
@@ -305,25 +302,14 @@ base::TimeDelta ScrollbarTheme::AutoscrollTimerDelay() {
   return base::TimeDelta::FromSecondsD(1.f / kAutoscrollMultiplier);
 }
 
-ScrollbarTheme& ScrollbarTheme::DeprecatedStaticGetTheme() {
-  if (ScrollbarTheme::MockScrollbarsEnabled()) {
-    if (RuntimeEnabledFeatures::OverlayScrollbarsEnabled()) {
-      DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlay_mock_theme, ());
-      return overlay_mock_theme;
-    }
-
-    DEFINE_STATIC_LOCAL(ScrollbarThemeMock, mock_theme, ());
-    return mock_theme;
+ScrollbarTheme& ScrollbarTheme::GetTheme() {
+  if (MockScrollbarsEnabled()) {
+    // We only support mock overlay scrollbars.
+    DCHECK(OverlayScrollbarsEnabled());
+    DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlay_mock_theme, ());
+    return overlay_mock_theme;
   }
   return NativeTheme();
-}
-
-void ScrollbarTheme::SetMockScrollbarsEnabled(bool flag) {
-  g_mock_scrollbars_enabled_ = flag;
-}
-
-bool ScrollbarTheme::MockScrollbarsEnabled() {
-  return g_mock_scrollbars_enabled_;
 }
 
 void ScrollbarTheme::PaintTrackAndButtons(GraphicsContext& context,

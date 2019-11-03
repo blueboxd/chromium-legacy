@@ -164,8 +164,7 @@ void CustomScrollbarTheme::PaintThumb(GraphicsContext& context,
 void CustomScrollbarTheme::PaintTickmarks(GraphicsContext& context,
                                           const Scrollbar& scrollbar,
                                           const IntRect& rect) {
-  ScrollbarTheme::DeprecatedStaticGetTheme().PaintTickmarks(context, scrollbar,
-                                                            rect);
+  GetTheme().PaintTickmarks(context, scrollbar, rect);
 }
 
 void CustomScrollbarTheme::PaintIntoRect(

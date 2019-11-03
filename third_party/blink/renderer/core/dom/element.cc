@@ -146,6 +146,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/svg/svg_a_element.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
@@ -1200,7 +1201,8 @@ int Element::clientWidth() {
       (in_quirks_mode && IsHTMLElement() && GetDocument().body() == this)) {
     auto* layout_view = GetDocument().GetLayoutView();
     if (layout_view) {
-      if (!RuntimeEnabledFeatures::OverlayScrollbarsEnabled() ||
+      // TODO(crbug.com/740879): Use per-page overlay scrollbar settings.
+      if (!ScrollbarThemeSettings::OverlayScrollbarsEnabled() ||
           !GetDocument().GetFrame()->IsLocalRoot())
         GetDocument().UpdateStyleAndLayoutForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
@@ -1238,7 +1240,8 @@ int Element::clientHeight() {
       (in_quirks_mode && IsHTMLElement() && GetDocument().body() == this)) {
     auto* layout_view = GetDocument().GetLayoutView();
     if (layout_view) {
-      if (!RuntimeEnabledFeatures::OverlayScrollbarsEnabled() ||
+      // TODO(crbug.com/740879): Use per-page overlay scrollbar settings.
+      if (!ScrollbarThemeSettings::OverlayScrollbarsEnabled() ||
           !GetDocument().GetFrame()->IsLocalRoot())
         GetDocument().UpdateStyleAndLayoutForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())

@@ -102,6 +102,8 @@ SXG_FINGERPRINT = '55qC1nKu2A88ESbFmk5sTPQS/ScG+8DD7P+2bgFA9iM='
 # And one for external/wpt/signed-exchange/resources/127.0.0.1.sxg.pem
 SXG_WPT_FINGERPRINT = '0Rt4mT6SJXojEMHTnKnlJ/hBKMBcI4kteBlhR1eTTdk='
 
+# A convervative rule for names that are valid for file or directory names.
+VALID_FILE_NAME_REGEX = re.compile(r'^[\w\-=]+$')
 
 class Port(object):
     """Abstract class for Port-specific hooks for the web_test package."""
@@ -251,26 +253,87 @@ class Port(object):
         return 'Port{name=%s, version=%s, architecture=%s, test_configuration=%s}' % (
             self._name, self._version, self._architecture, self._test_configuration)
 
-    def primary_driver_flag(self):
-        """Returns the driver flag that is used for flag-specific expectations and baselines. This
-           is the flag in web_tests/additional-driver-flag.setting, if present, otherwise the
-           first flag passed by --additional-driver-flag.
+    @memoized
+    def _flag_specific_config_name(self):
+        """Returns the name of the flag-specific configuration which best matches
+           self._specified_additional_driver_flags(), or the first specified flag
+           with leading '-'s stripped if no match in the configuration is found.
         """
+        specified_flags = self._specified_additional_driver_flags()
+        if not specified_flags:
+            return None
+
+        best_match = None
+        configs = self._flag_specific_configs()
+        for name in configs:
+            # To match, the specified flags must contain all config args.
+            args = configs[name]
+            if any(arg not in specified_flags for arg in args):
+                continue
+            # The first config matching the highest number of specified flags wins.
+            if not best_match or len(configs[best_match]) < len(args):
+                best_match = name
+            else:
+                assert len(configs[best_match]) > len(args), (
+                    'Ambiguous flag-specific configs {} and {}: they match the same number of additional driver args.'
+                    .format(best_match, name))
+
+        if best_match:
+            return best_match
+        # If no match, fallback to the old mode: using the name of the first specified flag.
+        return specified_flags[0].lstrip('-')
+
+    @memoized
+    def _flag_specific_configs(self):
+        """Reads configuration from FlagSpecificConfig and returns a dictionary from name to args."""
+        config_file = self._filesystem.join(self.web_tests_dir(), 'FlagSpecificConfig')
+        if not self._filesystem.exists(config_file):
+            return {}
+
+        try:
+            json_configs = json.loads(self._filesystem.read_text_file(config_file))
+        except ValueError as error:
+            raise ValueError('{} is not a valid JSON file: {}'.format(config_file, error))
+
+        configs = {}
+        for config in json_configs:
+            name = config['name']
+            args = config['args']
+            if not VALID_FILE_NAME_REGEX.match(name):
+                raise ValueError('{}: name "{}" contains invalid characters'.format(config_file, name))
+            if name in configs:
+                raise ValueError('{} contains duplicated name {}.'.format(config_file, name))
+            if args in configs.itervalues():
+                raise ValueError('{}: name "{}" has the same args as another entry.'.format(config_file, name))
+            configs[name] = args
+        return configs
+
+    def _specified_additional_driver_flags(self):
+        """Returns the list of additional driver flags specified by the user in
+           the following ways, concatenated:
+           1. A single flag in web_tests/additional-driver-flag.setting. If present,
+              this flag will be the first flag.
+           2. flags expanded from --flag-specific=<name> based on flag-specific config.
+           3. Zero or more flags passed by --additional-driver-flag.
+        """
+        flags = []
         flag_file = self._filesystem.join(self.web_tests_dir(), 'additional-driver-flag.setting')
         if self._filesystem.exists(flag_file):
             flag = self._filesystem.read_text_file(flag_file).strip()
             if flag:
-                return flag
-        flags = self.get_option('additional_driver_flag', [])
-        if flags:
-            return flags[0]
+                flags = [flag]
+
+        flag_specific_option = self.get_option('flag_specific')
+        if flag_specific_option:
+            configs = self._flag_specific_configs()
+            assert flag_specific_option in configs, '{} is not defined in FlagSpecificConfig'.format(flag_specific_option)
+            flags += configs[flag_specific_option]
+
+        flags += self.get_option('additional_driver_flag', [])
+        return flags
 
     def additional_driver_flags(self):
-        # Clone list to avoid mutating option state.
-        flags = list(self.get_option('additional_driver_flag', []))
-
-        if flags and flags[0] == self.primary_driver_flag():
-            flags = flags[1:]
+        flags = self._specified_additional_driver_flags()
         if self.driver_name() == self.CONTENT_SHELL_NAME:
             flags += [
                 '--run-web-tests',
@@ -1298,17 +1361,17 @@ class Port(object):
         return test_configurations
 
     def _flag_specific_expectations_path(self):
-        flag = self.primary_driver_flag()
-        if flag:
+        config_name = self._flag_specific_config_name()
+        if config_name:
             return self._filesystem.join(
-                self.web_tests_dir(), self.FLAG_EXPECTATIONS_PREFIX, flag.lstrip('-'))
+                self.web_tests_dir(), self.FLAG_EXPECTATIONS_PREFIX, config_name)
 
     def _flag_specific_baseline_search_path(self):
-        flag = self.primary_driver_flag()
-        if not flag:
+        config_name = self._flag_specific_config_name()
+        if not config_name:
             return []
         flag_dir = self._filesystem.join(
-            self.web_tests_dir(), 'flag-specific', flag.lstrip('-'))
+            self.web_tests_dir(), 'flag-specific', config_name)
         platform_dirs = [
             self._filesystem.join(flag_dir, 'platform', platform_dir)
             for platform_dir in self.FALLBACK_PATHS[self.version()]]
@@ -1349,7 +1412,7 @@ class Port(object):
         """Returns an OrderedDict of name -> expectations strings."""
         expectations = self.expectations_dict()
 
-        flag_path = self._filesystem.join(self.web_tests_dir(), 'FlagExpectations')
+        flag_path = self._filesystem.join(self.web_tests_dir(), self.FLAG_EXPECTATIONS_PREFIX)
         if not self._filesystem.exists(flag_path):
             return expectations
 
@@ -1801,10 +1864,10 @@ class Port(object):
 class VirtualTestSuite(object):
 
     def __init__(self, prefix=None, bases=None, args=None):
+        assert VALID_FILE_NAME_REGEX.match(prefix), "Virtual test suite prefix '{}' contains invalid characters".format(prefix)
         assert isinstance(bases, list)
         assert args
         assert isinstance(args, list)
-        assert '/' not in prefix, "Virtual test suites prefixes cannot contain /'s: %s" % prefix
         self.full_prefix = 'virtual/' + prefix + '/'
         self.bases = bases
         self.args = args

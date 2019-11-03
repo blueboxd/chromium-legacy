@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/strings/string16.h"
 #include "sandbox/win/src/sandbox_types.h"
 
 namespace sandbox {
@@ -31,7 +30,7 @@ ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop);
 // station is specified, the name is prepended with the window station name,
 // followed by a backslash. This name can be used as the lpDesktop parameter
 // to CreateProcess.
-base::string16 GetFullDesktopName(HWINSTA winsta, HDESK desktop);
+std::wstring GetFullDesktopName(HWINSTA winsta, HDESK desktop);
 
 }  // namespace sandbox
 

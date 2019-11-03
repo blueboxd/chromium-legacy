@@ -11,10 +11,10 @@
 
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/logging.h"
 #include "base/scoped_native_library.h"
-#include "base/strings/string16.h"
 #include "base/win/pe_image.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/interception_internal.h"
@@ -159,7 +159,7 @@ ResultCode InterceptionManager::InitializeInterceptions() {
 }
 
 size_t InterceptionManager::GetBufferSize() const {
-  std::set<base::string16> dlls;
+  std::set<std::wstring> dlls;
   size_t buffer_bytes = 0;
 
   for (const auto& interception : interceptions_) {
@@ -221,7 +221,7 @@ bool InterceptionManager::SetupConfigBuffer(void* buffer, size_t buffer_bytes) {
       continue;
     }
 
-    const base::string16 dll = it->dll;
+    const std::wstring dll = it->dll;
     if (!SetupDllInfo(*it, &buffer, &buffer_bytes))
       return false;
 
@@ -343,7 +343,7 @@ bool InterceptionManager::IsInterceptionPerformedByChild(
   if (data.type >= INTERCEPTION_LAST)
     return false;
 
-  base::string16 ntdll(kNtdllName);
+  std::wstring ntdll(kNtdllName);
   if (ntdll == data.dll)
     return false;  // ntdll has to be intercepted from the parent
 
@@ -464,7 +464,7 @@ ResultCode InterceptionManager::PatchClientFunctions(
 #endif
 
   for (auto interception : interceptions_) {
-    const base::string16 ntdll(kNtdllName);
+    const std::wstring ntdll(kNtdllName);
     if (interception.dll != ntdll)
       return SBOX_ERROR_BAD_PARAMS;
 

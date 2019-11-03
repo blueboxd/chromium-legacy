@@ -344,7 +344,7 @@ TEST(IPCTest, IPCLeak) {
     EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_REGISTRY,
                                TargetPolicy::REG_ALLOW_READONLY,
                                L"HKEY_LOCAL_MACHINE\\Software\\*"));
-    base::string16 command = base::string16(L"IPC_Leak ");
+    std::wstring command = std::wstring(L"IPC_Leak ");
     command += std::to_wstring(test.test_id);
     EXPECT_EQ(test.expected_result,
               base::win::Uint32ToHandle(runner.RunTest(command.c_str())))

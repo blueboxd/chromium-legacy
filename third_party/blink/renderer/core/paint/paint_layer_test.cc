@@ -94,7 +94,7 @@ TEST_P(PaintLayerTest, RootLayerCompositedBounds) {
 }
 
 TEST_P(PaintLayerTest, RootLayerScrollBounds) {
-  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  USE_NON_OVERLAY_SCROLLBARS();
 
   SetBodyInnerHTML(
       "<style> body { width: 1000px; height: 1000px; margin: 0 } </style>");

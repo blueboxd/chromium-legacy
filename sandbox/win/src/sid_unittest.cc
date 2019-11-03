@@ -159,7 +159,7 @@ TEST(SidTest, NamedCapability) {
 TEST(SidTest, Sddl) {
   Sid sid_sddl = Sid::FromSddlString(L"S-1-1-0");
   ASSERT_TRUE(sid_sddl.IsValid());
-  base::string16 sddl_str;
+  std::wstring sddl_str;
   ASSERT_TRUE(sid_sddl.ToSddlString(&sddl_str));
   ASSERT_EQ(L"S-1-1-0", sddl_str);
 }

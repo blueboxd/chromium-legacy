@@ -597,7 +597,7 @@ const char* const kChromeHostURLs[] = {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
     kChromeUILinuxProxyConfigHost,
 #endif
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)
     kChromeUISandboxHost,
 #endif
 #if defined(OS_WIN)

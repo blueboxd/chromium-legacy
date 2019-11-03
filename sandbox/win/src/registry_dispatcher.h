@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
@@ -27,7 +28,7 @@ class RegistryDispatcher : public Dispatcher {
  private:
   // Processes IPC requests coming from calls to NtCreateKey in the target.
   bool NtCreateKey(IPCInfo* ipc,
-                   base::string16* name,
+                   std::wstring* name,
                    uint32_t attributes,
                    HANDLE root,
                    uint32_t desired_access,
@@ -36,7 +37,7 @@ class RegistryDispatcher : public Dispatcher {
 
   // Processes IPC requests coming from calls to NtOpenKey in the target.
   bool NtOpenKey(IPCInfo* ipc,
-                 base::string16* name,
+                 std::wstring* name,
                  uint32_t attributes,
                  HANDLE root,
                  uint32_t desired_access);

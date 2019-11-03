@@ -260,7 +260,8 @@ class WebSettings {
   virtual void SetBarrelButtonForDragEnabled(bool) = 0;
   virtual void SetUseLegacyBackgroundSizeShorthandBehavior(bool) = 0;
   virtual void SetViewportStyle(WebViewportStyle) = 0;
-  virtual void SetUseSolidColorScrollbars(bool) = 0;
+  // TODO(wangxianzhu): Remove this function when removing chrome side caller.
+  void SetUseSolidColorScrollbars(bool) {}
   virtual void SetUseWideViewport(bool) = 0;
   virtual void SetV8CacheOptions(V8CacheOptions) = 0;
   virtual void SetValidationMessageTimerMagnification(int) = 0;

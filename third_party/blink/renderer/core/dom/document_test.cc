@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
@@ -1120,7 +1121,7 @@ TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
 TEST_F(DocumentTest, ElementFromPointOnScrollbar) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   // This test requires that scrollbars take up space.
-  ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);
+  ScopedMockOverlayScrollbars no_overlay_scrollbars(false);
 
   SetHtmlInnerHTML(R"HTML(
     <style>
@@ -1148,7 +1149,7 @@ TEST_F(DocumentTest, ElementFromPointOnScrollbar) {
 TEST_F(DocumentTest, ElementFromPointWithPageZoom) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   // This test requires that scrollbars take up space.
-  ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);
+  ScopedMockOverlayScrollbars no_overlay_scrollbars(false);
 
   SetHtmlInnerHTML(R"HTML(
     <style>

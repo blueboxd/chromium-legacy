@@ -61,7 +61,7 @@ bool SpawnWinProc(PROCESS_INFORMATION* pi, bool success_test, HANDLE* event) {
   }
 
   // Command line must be writable.
-  base::string16 cmd_writeable(hooking_win_proc::g_winproc_file);
+  std::wstring cmd_writeable(hooking_win_proc::g_winproc_file);
 
   if (!::CreateProcessW(nullptr, &cmd_writeable[0], nullptr, nullptr, false,
                         creation_flags, nullptr, nullptr,
@@ -236,8 +236,8 @@ void TestWin8ExtensionPointAppInitWrapper(bool is_success_test) {
   const wchar_t* dlls_value_name = L"AppInit_DLLs";
   const wchar_t* enabled_value_name = L"LoadAppInit_DLLs";
   const wchar_t* signing_value_name = L"RequireSignedAppInit_DLLs";
-  base::string16 orig_dlls;
-  base::string16 new_dlls;
+  std::wstring orig_dlls;
+  std::wstring new_dlls;
   DWORD orig_enabled_value = 0;
   DWORD orig_signing_value = 0;
   base::win::RegKey app_init_key(HKEY_LOCAL_MACHINE, app_init_reg_path,
@@ -367,7 +367,7 @@ TEST(ProcessMitigationsTest, CheckWin8ExtensionPointPolicySuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(sandbox::TESTPOLICY_EXTENSIONPOINT);
 
   //---------------------------------

@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "sandbox/win/src/crosscall_params.h"
 #include "sandbox/win/src/ipc_tags.h"
 
@@ -118,7 +117,7 @@ class CrossCallParamsEx : public CrossCallParams {
 
   // Gets a parameter that is a string. Returns false if the parameter does not
   // exist.
-  bool GetParameterStr(uint32_t index, base::string16* string);
+  bool GetParameterStr(uint32_t index, std::wstring* string);
 
   // Gets a parameter that is an in/out buffer. Returns false is the parameter
   // does not exist or if the size of the actual parameter is not equal to the

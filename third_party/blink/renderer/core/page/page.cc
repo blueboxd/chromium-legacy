@@ -73,7 +73,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
-#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mobile.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -915,8 +915,8 @@ void Page::RegisterPluginsChangedObserver(PluginsChangedObserver* observer) {
 
 ScrollbarTheme& Page::GetScrollbarTheme() const {
   if (settings_->GetForceAndroidOverlayScrollbar())
-    return ScrollbarThemeOverlay::MobileTheme();
-  return ScrollbarTheme::DeprecatedStaticGetTheme();
+    return ScrollbarThemeOverlayMobile::GetInstance();
+  return ScrollbarTheme::GetTheme();
 }
 
 PageScheduler* Page::GetPageScheduler() const {

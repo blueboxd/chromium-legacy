@@ -123,22 +123,11 @@ PartPaintingParams ButtonPartPaintingParams(const Scrollbar& scrollbar,
   return PartPaintingParams(paint_part, state);
 }
 
-static int GetScrollbarThickness() {
-  return Platform::Current()
-      ->ThemeEngine()
-      ->GetSize(WebThemeEngine::kPartScrollbarVerticalThumb)
-      .width;
-}
-
 }  // namespace
 
 ScrollbarTheme& ScrollbarTheme::NativeTheme() {
-  if (RuntimeEnabledFeatures::OverlayScrollbarsEnabled()) {
-    DEFINE_STATIC_LOCAL(
-        ScrollbarThemeOverlay, theme,
-        (GetScrollbarThickness(), 0, ScrollbarThemeOverlay::kAllowHitTest));
-    return theme;
-  }
+  if (OverlayScrollbarsEnabled())
+    return ScrollbarThemeOverlay::GetInstance();
 
   DEFINE_STATIC_LOCAL(ScrollbarThemeAura, theme, ());
   return theme;

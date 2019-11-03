@@ -11,6 +11,7 @@
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "base/win/scoped_handle.h"
@@ -34,12 +35,12 @@ bool IsProcessRunning(HANDLE process) {
 namespace sandbox {
 
 // Constructs a full path to a file inside the system32 folder.
-base::string16 MakePathToSys32(const wchar_t* name, bool is_obj_man_path) {
+std::wstring MakePathToSys32(const wchar_t* name, bool is_obj_man_path) {
   wchar_t windows_path[MAX_PATH] = {0};
   if (0 == ::GetSystemWindowsDirectoryW(windows_path, MAX_PATH))
-    return base::string16();
+    return std::wstring();
 
-  base::string16 full_path(windows_path);
+  std::wstring full_path(windows_path);
   if (full_path.empty())
     return full_path;
 
@@ -52,12 +53,12 @@ base::string16 MakePathToSys32(const wchar_t* name, bool is_obj_man_path) {
 }
 
 // Constructs a full path to a file inside the syswow64 folder.
-base::string16 MakePathToSysWow64(const wchar_t* name, bool is_obj_man_path) {
+std::wstring MakePathToSysWow64(const wchar_t* name, bool is_obj_man_path) {
   wchar_t windows_path[MAX_PATH] = {0};
   if (0 == ::GetSystemWindowsDirectoryW(windows_path, MAX_PATH))
-    return base::string16();
+    return std::wstring();
 
-  base::string16 full_path(windows_path);
+  std::wstring full_path(windows_path);
   if (full_path.empty())
     return full_path;
 
@@ -69,7 +70,7 @@ base::string16 MakePathToSysWow64(const wchar_t* name, bool is_obj_man_path) {
   return full_path;
 }
 
-base::string16 MakePathToSys(const wchar_t* name, bool is_obj_man_path) {
+std::wstring MakePathToSys(const wchar_t* name, bool is_obj_man_path) {
   return (base::win::OSInfo::GetInstance()->wow64_status() ==
       base::win::OSInfo::WOW64_ENABLED) ?
       MakePathToSysWow64(name, is_obj_man_path) :
@@ -150,7 +151,7 @@ bool TestRunner::AddRuleSys32(TargetPolicy::Semantics semantics,
   if (!is_init_)
     return false;
 
-  base::string16 win32_path = MakePathToSys32(pattern, false);
+  std::wstring win32_path = MakePathToSys32(pattern, false);
   if (win32_path.empty())
     return false;
 
@@ -183,7 +184,7 @@ int TestRunner::RunTest(const wchar_t* command) {
   wchar_t state_number[2];
   state_number[0] = static_cast<wchar_t>(L'0' + state_);
   state_number[1] = L'\0';
-  base::string16 full_command(state_number);
+  std::wstring full_command(state_number);
   full_command += L" ";
   full_command += command;
 
@@ -215,7 +216,7 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
   DWORD last_error = ERROR_SUCCESS;
   PROCESS_INFORMATION target = {0};
 
-  base::string16 arguments(L"\"");
+  std::wstring arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child";
   arguments += no_sandbox_ ? L"-no-sandbox " : L" ";
@@ -305,7 +306,8 @@ int DispatchCall(int argc, wchar_t **argv) {
   if (0 == _wcsicmp(argv[3], L"shared_memory_handle")) {
     HANDLE raw_handle = nullptr;
     base::StringPiece test_contents = "Hello World";
-    base::StringToUint(argv[4], reinterpret_cast<unsigned int*>(&raw_handle));
+    base::StringToUint(base::AsStringPiece16(argv[4]),
+                       reinterpret_cast<unsigned int*>(&raw_handle));
     if (raw_handle == nullptr)
       return SBOX_TEST_INVALID_PARAMETER;
     // First extract the handle to the platform-native ScopedHandle.

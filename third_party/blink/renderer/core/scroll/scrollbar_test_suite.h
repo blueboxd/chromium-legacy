@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
-#include "third_party/blink/renderer/core/scroll/scrollbar_theme_mock.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -108,7 +108,7 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
   void SetIsPopup() { chrome_client_->SetIsPopup(true); }
 
   ScrollbarTheme& GetPageScrollbarTheme() const override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme();
+    return ScrollbarTheme::GetTheme();
   }
 
   using ScrollableArea::ShowOverlayScrollbars;

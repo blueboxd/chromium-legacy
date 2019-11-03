@@ -527,9 +527,7 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
   }
 
   mojo::internal::ValidationContext validation_context(
-    message->payload(), message->payload_num_bytes(),
-    message->handles()->size(), message->payload_num_interface_ids(), message,
-    "{{class_name}} RequestValidator");
+      message, "{{class_name}} RequestValidator");
 
   switch (message->header()->name) {
 {%- for method in interface.methods %}
@@ -573,9 +571,7 @@ bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
   }
 
   mojo::internal::ValidationContext validation_context(
-    message->payload(), message->payload_num_bytes(),
-    message->handles()->size(), message->payload_num_interface_ids(), message,
-    "{{class_name}} ResponseValidator");
+      message, "{{class_name}} ResponseValidator");
 
   if (!mojo::internal::ValidateMessageIsResponse(message, &validation_context))
     return false;

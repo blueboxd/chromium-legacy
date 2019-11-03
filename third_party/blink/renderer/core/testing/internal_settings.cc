@@ -60,8 +60,6 @@ namespace blink {
 InternalSettings::Backup::Backup(Settings* settings)
     : original_csp_(RuntimeEnabledFeatures::
                         ExperimentalContentSecurityPolicyFeaturesEnabled()),
-      original_overlay_scrollbars_enabled_(
-          RuntimeEnabledFeatures::OverlayScrollbarsEnabled()),
       original_editing_behavior_(settings->GetEditingBehaviorType()),
       original_text_autosizing_enabled_(settings->TextAutosizingEnabled()),
       original_text_autosizing_window_size_override_(
@@ -83,8 +81,6 @@ InternalSettings::Backup::Backup(Settings* settings)
 void InternalSettings::Backup::RestoreTo(Settings* settings) {
   RuntimeEnabledFeatures::SetExperimentalContentSecurityPolicyFeaturesEnabled(
       original_csp_);
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(
-      original_overlay_scrollbars_enabled_);
   settings->SetEditingBehaviorType(original_editing_behavior_);
   settings->SetTextAutosizingEnabled(original_text_autosizing_enabled_);
   settings->SetTextAutosizingWindowSizeOverride(

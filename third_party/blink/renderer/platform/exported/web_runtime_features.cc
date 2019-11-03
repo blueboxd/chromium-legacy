@@ -30,6 +30,7 @@
 
 #include "third_party/blink/public/platform/web_runtime_features.h"
 
+#include "third_party/blink/renderer/platform/graphics/scrollbar_theme_settings.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -410,7 +411,7 @@ void WebRuntimeFeatures::EnableXSLT(bool enable) {
 }
 
 void WebRuntimeFeatures::EnableOverlayScrollbars(bool enable) {
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(enable);
+  ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(enable);
 }
 
 void WebRuntimeFeatures::ForceOverlayFullscreenVideo(bool enable) {

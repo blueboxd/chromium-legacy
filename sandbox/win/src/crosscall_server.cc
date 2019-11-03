@@ -249,8 +249,7 @@ bool CrossCallParamsEx::GetParameterVoidPtr(uint32_t index, void** param) {
 
 // Covers the common case of reading a string. Note that the string is not
 // scanned for invalid characters.
-bool CrossCallParamsEx::GetParameterStr(uint32_t index,
-                                        base::string16* string) {
+bool CrossCallParamsEx::GetParameterStr(uint32_t index, std::wstring* string) {
   DCHECK(string->empty());
   uint32_t size = 0;
   ArgType type;
@@ -260,14 +259,16 @@ bool CrossCallParamsEx::GetParameterStr(uint32_t index,
 
   // Check if this is an empty string.
   if (size == 0) {
-    *string = base::WideToUTF16(L"");
+    *string = std::wstring();
     return true;
   }
 
   if (!start || ((size % sizeof(wchar_t)) != 0))
     return false;
-  return base::WideToUTF16(reinterpret_cast<wchar_t*>(start),
-                           size / sizeof(wchar_t), string);
+
+  string->assign(reinterpret_cast<const wchar_t*>(start),
+                 size / sizeof(wchar_t));
+  return true;
 }
 
 bool CrossCallParamsEx::GetParameterPtr(uint32_t index,

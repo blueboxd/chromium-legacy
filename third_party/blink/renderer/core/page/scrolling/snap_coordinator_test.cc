@@ -19,16 +19,15 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 
 namespace blink {
 
 using html_names::kStyleAttr;
 
 class SnapCoordinatorTest : public testing::Test,
-                            public UseMockScrollbarSettings {
+                            public ScopedMockOverlayScrollbars {
  protected:
-  SnapCoordinatorTest() : UseMockScrollbarSettings() {}
   void SetUp() override {
     page_holder_ = std::make_unique<DummyPageHolder>(
         IntSize(), nullptr, nullptr, base::BindOnce([](Settings& settings) {

@@ -350,9 +350,8 @@ class PortTest(LoggingTestCase):
         self.assertEqual('\n'.join(port.expectations_dict().keys()),
                          MOCK_WEB_TESTS + 'platform/exists/TestExpectations')
 
-    def test_additional_expectations(self):
-        port = self.make_port(port_name='foo')
-        port.port_name = 'foo'
+    def _make_port_for_test_additional_expectations(self, options_dict={}):
+        port = self.make_port(port_name='foo', options=optparse.Values(options_dict))
         port.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'platform/foo/TestExpectations', '')
         port.host.filesystem.write_text_file(
@@ -361,28 +360,38 @@ class PortTest(LoggingTestCase):
             '/tmp/additional-expectations-2.txt', 'content2\n')
         port.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'FlagExpectations/special-flag', 'content3')
+        return port
 
-        self.assertEqual('\n'.join(port.expectations_dict().values()), '')
+    def test_additional_expectations_empty(self):
+        port = self._make_port_for_test_additional_expectations()
+        self.assertEqual(port.expectations_dict().values(), [])
 
-        # pylint: disable=protected-access
-        port._options.additional_expectations = [
-            '/tmp/additional-expectations-1.txt']
-        self.assertEqual('\n'.join(port.expectations_dict().values()), 'content1\n')
+    def test_additional_expectations_1(self):
+        port = self._make_port_for_test_additional_expectations(
+            {'additional_expectations': ['/tmp/additional-expectations-1.txt']})
+        self.assertEqual(port.expectations_dict().values(), ['content1\n'])
 
-        port._options.additional_expectations = [
-            '/tmp/nonexistent-file', '/tmp/additional-expectations-1.txt']
-        self.assertEqual('\n'.join(port.expectations_dict().values()), 'content1\n')
+    def test_additional_expectations_nonexistent_and_1(self):
+        port = self._make_port_for_test_additional_expectations(
+            {'additional_expectations': ['/tmp/nonexistent-file',
+                                         '/tmp/additional-expectations-1.txt']})
+        self.assertEqual(port.expectations_dict().values(), ['content1\n'])
 
-        port._options.additional_expectations = [
-            '/tmp/additional-expectations-1.txt', '/tmp/additional-expectations-2.txt']
-        self.assertEqual('\n'.join(port.expectations_dict().values()), 'content1\n\ncontent2\n')
+    def test_additional_expectations_2(self):
+        port = self._make_port_for_test_additional_expectations(
+            {'additional_expectations': ['/tmp/additional-expectations-1.txt',
+                                         '/tmp/additional-expectations-2.txt']})
+        self.assertEqual(port.expectations_dict().values(), ['content1\n', 'content2\n'])
 
-        port._options.additional_driver_flag = ['--special-flag']
-        self.assertEqual('\n'.join(port.expectations_dict().values()), 'content3\ncontent1\n\ncontent2\n')
+    def test_additional_expectations_additional_flag(self):
+        port = self._make_port_for_test_additional_expectations(
+            {'additional_expectations': ['/tmp/additional-expectations-1.txt',
+                                         '/tmp/additional-expectations-2.txt'],
+             'additional_driver_flag': ['--special-flag']})
+        self.assertEqual(port.expectations_dict().values(), ['content3', 'content1\n', 'content2\n'])
 
     def test_flag_specific_expectations(self):
         port = self.make_port(port_name='foo')
-        port.port_name = 'foo'
         port.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'FlagExpectations/special-flag-a', 'aa')
         port.host.filesystem.write_text_file(
@@ -390,14 +399,13 @@ class PortTest(LoggingTestCase):
         port.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'FlagExpectations/README.txt', 'cc')
 
-        self.assertEqual('\n'.join(port.expectations_dict().values()), '')
+        self.assertEqual(port.expectations_dict().values(), [])
         # all_expectations_dict() is an OrderedDict, but its order depends on
         # file system walking order.
-        self.assertEqual('\n'.join(sorted(port.all_expectations_dict().values())), 'aa\nbb')
+        self.assertEqual(sorted(port.all_expectations_dict().values()), ['aa', 'bb'])
 
     def test_flag_specific_expectations_identify_unreadable_file(self):
         port = self.make_port(port_name='foo')
-        port.port_name = 'foo'
 
         non_utf8_file = MOCK_WEB_TESTS + 'FlagExpectations/non-utf8-file'
         invalid_utf8 = '\xC0'
@@ -411,40 +419,138 @@ class PortTest(LoggingTestCase):
         self.assertLog(['ERROR: Failed to read expectations file: \'' +
                         non_utf8_file + '\'\n'])
 
-    def test_driver_flag_from_file(self):
-        # primary_driver_flag() comes from additional-driver-flag.setting file or
-        # --additional-driver-flag. additional_driver_flags() excludes primary_driver_flag().
+    def test_flag_specific_config_name_from_options(self):
+        port_a = self.make_port(options=optparse.Values({}))
+        # pylint: disable=protected-access
+        self.assertEqual(port_a._specified_additional_driver_flags(), []);
+        self.assertIsNone(port_a._flag_specific_config_name())
 
-        port_a = self.make_port(options=optparse.Values(
-            {'additional_driver_flag': []}))
         port_b = self.make_port(options=optparse.Values(
             {'additional_driver_flag': ['--bb']}))
+        self.assertEqual(port_b._specified_additional_driver_flags(), ['--bb']);
+        self.assertEqual(port_b._flag_specific_config_name(), 'bb')
+
+        port_c = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': ['--cc', '--dd']}))
+        self.assertEqual(port_c._specified_additional_driver_flags(), ['--cc', '--dd']);
+        self.assertEqual(port_c._flag_specific_config_name(), 'cc')
+
+    def test_flag_specific_config_name_from_options_and_file(self):
+        flag_file = MOCK_WEB_TESTS + 'additional-driver-flag.setting'
+
+        port_a = self.make_port(options=optparse.Values({}))
+        port_a.host.filesystem.write_text_file(flag_file, '--aa')
+        # pylint: disable=protected-access
+        self.assertEqual(port_a._specified_additional_driver_flags(), ['--aa']);
+        self.assertEqual(port_a._flag_specific_config_name(), 'aa')
+
+        port_b = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': ['--bb']}))
+        port_b.host.filesystem.write_text_file(flag_file, '--aa')
+        self.assertEqual(port_b._specified_additional_driver_flags(), ['--aa', '--bb']);
+        self.assertEqual(port_b._flag_specific_config_name(), 'aa')
+
         port_c = self.make_port(options=optparse.Values(
             {'additional_driver_flag': ['--bb', '--cc']}))
-
-        self.assertEqual(port_a.primary_driver_flag(), None)
-        self.assertEqual(port_b.primary_driver_flag(), '--bb')
-        self.assertEqual(port_c.primary_driver_flag(), '--bb')
-
-        default_flags = port_a.additional_driver_flags()
-        self.assertEqual(port_b.additional_driver_flags(), default_flags)
-        self.assertEqual(port_c.additional_driver_flags(),
-                         ['--cc'] + default_flags)
-
-        flag_file = MOCK_WEB_TESTS + 'additional-driver-flag.setting'
-        port_a.host.filesystem.write_text_file(flag_file, '--aa')
-        port_b.host.filesystem.write_text_file(flag_file, '--aa')
         port_c.host.filesystem.write_text_file(flag_file, '--bb')
+        # We don't remove duplicated flags at this time.
+        self.assertEqual(port_c._specified_additional_driver_flags(), ['--bb', '--bb', '--cc']);
+        self.assertEqual(port_c._flag_specific_config_name(), 'bb')
 
-        self.assertEqual(port_a.primary_driver_flag(), '--aa')
-        self.assertEqual(port_b.primary_driver_flag(), '--aa')
-        self.assertEqual(port_c.primary_driver_flag(), '--bb')
+    def _write_flag_specific_config(self, port):
+        port.host.filesystem.write_text_file(
+            port.host.filesystem.join(port.web_tests_dir(), 'FlagSpecificConfig'),
+            '['
+            '  {"name": "a", "args": ["--aa"]},'
+            '  {"name": "b", "args": ["--aa", "--bb"]},'
+            '  {"name": "c", "args": ["--aa", "--cc"]}'
+            ']')
 
-        self.assertEqual(port_a.additional_driver_flags(), default_flags)
-        self.assertEqual(port_b.additional_driver_flags(),
-                         ['--bb'] + default_flags)
-        self.assertEqual(port_c.additional_driver_flags(),
-                         ['--cc'] + default_flags)
+    def test_flag_specific_config_name_from_options_and_config(self):
+        port_a1 = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': ['--aa']}))
+        self._write_flag_specific_config(port_a1)
+        # pylint: disable=protected-access
+        self.assertEqual(port_a1._flag_specific_config_name(), 'a')
+
+        port_a2 = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': ['--aa', '--dd']}))
+        self._write_flag_specific_config(port_a2)
+        self.assertEqual(port_a2._flag_specific_config_name(), 'a')
+
+        port_b1 = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': ['--bb']}))
+        self._write_flag_specific_config(port_b1)
+        # No match. Fallback to first specified flag.
+        self.assertEqual(port_b1._flag_specific_config_name(), 'bb')
+
+        port_b2 = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': ['--aa', '--bb']}))
+        self._write_flag_specific_config(port_b2)
+        self.assertEqual(port_b2._flag_specific_config_name(), 'b')
+
+        port_b3 = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': ['--bb', '--aa']}))
+        self._write_flag_specific_config(port_b3)
+        self.assertEqual(port_b3._flag_specific_config_name(), 'b')
+
+        port_b4 = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': ['--bb', '--aa', '--dd']}))
+        self._write_flag_specific_config(port_b4)
+        self.assertEqual(port_b4._flag_specific_config_name(), 'b')
+
+    def test_ambigous_flag_specific_match(self):
+        port = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': ['--aa', '--bb', '--cc']}))
+        self._write_flag_specific_config(port)
+        # pylint: disable=protected-access
+        self.assertRaises(AssertionError, port._flag_specific_config_name)
+
+    def test_flag_specific_fallback(self):
+        port = self.make_port(options=optparse.Values(
+            {'additional_driver_flag': ['--dd', '--ee']}))
+        self._write_flag_specific_config(port)
+        # pylint: disable=protected-access
+        self.assertEqual(port._flag_specific_config_name(), 'dd')
+
+    def test_flag_specific_option(self):
+        port_a = self.make_port(options=optparse.Values({'flag_specific': 'a'}))
+        self._write_flag_specific_config(port_a)
+        # pylint: disable=protected-access
+        self.assertEqual(port_a._flag_specific_config_name(), 'a')
+
+        port_b = self.make_port(options=optparse.Values(
+            {'flag_specific': 'a', 'additional_driver_flag': ['--bb']}))
+        self._write_flag_specific_config(port_b)
+        self.assertEqual(port_b._flag_specific_config_name(), 'b')
+
+        port_d = self.make_port(options=optparse.Values({'flag_specific': 'd'}))
+        self._write_flag_specific_config(port_d)
+        self.assertRaises(AssertionError, port_d._flag_specific_config_name)
+
+    def test_duplicate_flag_specific_name(self):
+        port = self.make_port()
+        port.host.filesystem.write_text_file(
+            port.host.filesystem.join(port.web_tests_dir(), 'FlagSpecificConfig'),
+            '[{"name": "a", "args": ["--aa"]}, {"name": "a", "args": ["--aa", "--bb"]}]')
+        # pylint: disable=protected-access
+        self.assertRaises(ValueError, port._flag_specific_configs)
+
+    def test_duplicate_flag_specific_args(self):
+        port = self.make_port()
+        port.host.filesystem.write_text_file(
+            port.host.filesystem.join(port.web_tests_dir(), 'FlagSpecificConfig'),
+            '[{"name": "a", "args": ["--aa"]}, {"name": "b", "args": ["--aa"]}]')
+        # pylint: disable=protected-access
+        self.assertRaises(ValueError, port._flag_specific_configs)
+
+    def test_invalid_flag_specific_name(self):
+        port = self.make_port()
+        port.host.filesystem.write_text_file(
+            port.host.filesystem.join(port.web_tests_dir(), 'FlagSpecificConfig'),
+            '[{"name": "a/", "args": ["--aa"]}]')
+        # pylint: disable=protected-access
+        self.assertRaises(ValueError, port._flag_specific_configs)
 
     def test_additional_env_var(self):
         port = self.make_port(options=optparse.Values({'additional_env_var': ['FOO=BAR', 'BAR=FOO']}))

@@ -54,7 +54,7 @@ HandleCloserAgent::~HandleCloserAgent() {}
 // generating EXCEPTION_INVALID_HANDLE on shutdown, but nothing else. For now
 // the only supported |type| is Event or File.
 bool HandleCloserAgent::AttemptToStuffHandleSlot(HANDLE closed_handle,
-                                                 const base::string16& type) {
+                                                 const std::wstring& type) {
   // Only attempt to stuff Files and Events at the moment.
   if (type != L"Event" && type != L"File") {
     return true;
@@ -135,13 +135,13 @@ void HandleCloserAgent::InitializeHandlesToClose(bool* is_csrss_connected) {
   HandleListEntry* entry = g_handles_to_close->handle_entries;
   for (size_t i = 0; i < g_handles_to_close->num_handle_types; ++i) {
     // Set the type name.
-    base::char16* input = entry->handle_type;
+    wchar_t* input = entry->handle_type;
     if (!wcscmp(input, L"ALPC Port")) {
       *is_csrss_connected = false;
     }
     HandleMap::mapped_type& handle_names = handles_to_close_[input];
-    input = reinterpret_cast<base::char16*>(reinterpret_cast<char*>(entry) +
-                                            entry->offset_to_names);
+    input = reinterpret_cast<wchar_t*>(reinterpret_cast<char*>(entry) +
+                                       entry->offset_to_names);
     // Grab all the handle names.
     for (size_t j = 0; j < entry->name_count; ++j) {
       std::pair<HandleMap::mapped_type::iterator, bool> name =
@@ -154,9 +154,9 @@ void HandleCloserAgent::InitializeHandlesToClose(bool* is_csrss_connected) {
     entry = reinterpret_cast<HandleListEntry*>(reinterpret_cast<char*>(entry) +
                                                entry->record_bytes);
 
-    DCHECK(reinterpret_cast<base::char16*>(entry) >= input);
-    DCHECK(reinterpret_cast<base::char16*>(entry) - input <
-           static_cast<ptrdiff_t>(sizeof(size_t) / sizeof(base::char16)));
+    DCHECK(reinterpret_cast<wchar_t*>(entry) >= input);
+    DCHECK(reinterpret_cast<wchar_t*>(entry) - input <
+           static_cast<ptrdiff_t>(sizeof(size_t) / sizeof(wchar_t)));
   }
 
   // Clean up the memory we copied over.
@@ -182,7 +182,7 @@ bool HandleCloserAgent::CloseHandles() {
                                      32 * sizeof(wchar_t));
   OBJECT_TYPE_INFORMATION* type_info =
       reinterpret_cast<OBJECT_TYPE_INFORMATION*>(&(type_info_buffer[0]));
-  base::string16 handle_name;
+  std::wstring handle_name;
   HANDLE handle = nullptr;
   int invalid_count = 0;
 

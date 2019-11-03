@@ -128,6 +128,8 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandCloseTab, IDS_TAB_CXMENU_CLOSETAB);
+  AddItemWithStringId(TabStripModel::CommandCloseOtherTabs,
+                      IDS_TAB_CXMENU_CLOSEOTHERTABS);
   AddItemWithStringId(TabStripModel::CommandCloseTabsToRight,
                       IDS_TAB_CXMENU_CLOSETABSTORIGHT);
 }

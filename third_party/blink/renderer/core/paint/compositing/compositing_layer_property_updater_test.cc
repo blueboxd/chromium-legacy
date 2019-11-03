@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 
 namespace blink {
@@ -50,7 +49,11 @@ TEST_F(CompositingLayerPropertyUpdaterTest,
        EnsureOverlayScrollbarLayerHasEffectNode) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
-  UseMockScrollbarSettings mock_scrollbar(false, true);
+  ASSERT_TRUE(GetDocument()
+                  .GetFrame()
+                  ->GetPage()
+                  ->GetScrollbarTheme()
+                  .UsesOverlayScrollbars());
   SetBodyInnerHTML(R"HTML(
     <style>
       #scroller {
@@ -67,9 +70,6 @@ TEST_F(CompositingLayerPropertyUpdaterTest,
       <div id='big'></div>
     </div>
   )HTML");
-
-  ASSERT_TRUE(
-      GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
 
   PaintLayer* scroller_layer =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"))->Layer();

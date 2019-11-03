@@ -5,10 +5,10 @@
 #include "sandbox/win/src/process_mitigations_win32k_dispatcher.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/unsafe_shared_memory_region.h"
-#include "base/strings/string16.h"
 #include "base/unguessable_token.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/interception.h"
@@ -333,7 +333,7 @@ bool ProcessMitigationsWin32KDispatcher::GetMonitorInfo(IPCInfo* ipc,
 
 bool ProcessMitigationsWin32KDispatcher::
     GetSuggestedOPMProtectedOutputArraySize(IPCInfo* ipc,
-                                            base::string16* device_name) {
+                                            std::wstring* device_name) {
   if (!policy_base_->GetEnableOPMRedirection()) {
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
@@ -351,7 +351,7 @@ bool ProcessMitigationsWin32KDispatcher::
 
 bool ProcessMitigationsWin32KDispatcher::CreateOPMProtectedOutputs(
     IPCInfo* ipc,
-    base::string16* device_name,
+    std::wstring* device_name,
     CountedBuffer* protected_outputs) {
   if (!policy_base_->GetEnableOPMRedirection()) {
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
@@ -380,7 +380,7 @@ bool ProcessMitigationsWin32KDispatcher::CreateOPMProtectedOutputs(
 
 bool ProcessMitigationsWin32KDispatcher::GetCertificateSize(
     IPCInfo* ipc,
-    base::string16* device_name,
+    std::wstring* device_name,
     void* protected_output) {
   if (!policy_base_->GetEnableOPMRedirection()) {
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
@@ -410,7 +410,7 @@ bool ProcessMitigationsWin32KDispatcher::GetCertificateSize(
 
 bool ProcessMitigationsWin32KDispatcher::GetCertificate(
     IPCInfo* ipc,
-    base::string16* device_name,
+    std::wstring* device_name,
     void* protected_output,
     void* shared_buffer_handle,
     uint32_t shared_buffer_size) {

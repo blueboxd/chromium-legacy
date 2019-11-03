@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -358,11 +357,9 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
     cc::ScrollbarLayerBase* scrollbar_layer =
         GetScrollbarLayer(scrollable_area, orientation);
     if (!scrollbar_layer) {
-      Settings* settings = page_->MainFrame()->GetSettings();
-
       scoped_refptr<cc::ScrollbarLayerBase> new_scrollbar_layer;
-      if (settings->GetUseSolidColorScrollbars()) {
-        DCHECK(RuntimeEnabledFeatures::OverlayScrollbarsEnabled());
+      if (scrollbar.IsSolidColor()) {
+        DCHECK(scrollbar.IsOverlayScrollbar());
         new_scrollbar_layer = CreateSolidColorScrollbarLayer(
             orientation, scrollbar.GetTheme().ThumbThickness(scrollbar),
             scrollbar.GetTheme().TrackPosition(scrollbar),

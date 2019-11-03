@@ -118,7 +118,6 @@ class CORE_EXPORT DevToolsEmulator final
   bool is_mobile_layout_theme_enabled_;
   float original_default_minimum_page_scale_factor_;
   float original_default_maximum_page_scale_factor_;
-  bool use_solid_color_scrollbar_;
   bool embedder_text_autosizing_enabled_;
   float embedder_device_scale_adjustment_;
   bool embedder_prefer_compositing_to_lcd_text_enabled_;

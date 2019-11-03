@@ -82,7 +82,7 @@ bool FilesystemDispatcher::SetupService(InterceptionManager* manager,
 }
 
 bool FilesystemDispatcher::NtCreateFile(IPCInfo* ipc,
-                                        base::string16* name,
+                                        std::wstring* name,
                                         uint32_t attributes,
                                         uint32_t desired_access,
                                         uint32_t file_attributes,
@@ -128,7 +128,7 @@ bool FilesystemDispatcher::NtCreateFile(IPCInfo* ipc,
 }
 
 bool FilesystemDispatcher::NtOpenFile(IPCInfo* ipc,
-                                      base::string16* name,
+                                      std::wstring* name,
                                       uint32_t attributes,
                                       uint32_t desired_access,
                                       uint32_t share_access,
@@ -172,7 +172,7 @@ bool FilesystemDispatcher::NtOpenFile(IPCInfo* ipc,
 }
 
 bool FilesystemDispatcher::NtQueryAttributesFile(IPCInfo* ipc,
-                                                 base::string16* name,
+                                                 std::wstring* name,
                                                  uint32_t attributes,
                                                  CountedBuffer* info) {
   if (sizeof(FILE_BASIC_INFORMATION) != info->Size())
@@ -212,7 +212,7 @@ bool FilesystemDispatcher::NtQueryAttributesFile(IPCInfo* ipc,
 }
 
 bool FilesystemDispatcher::NtQueryFullAttributesFile(IPCInfo* ipc,
-                                                     base::string16* name,
+                                                     std::wstring* name,
                                                      uint32_t attributes,
                                                      CountedBuffer* info) {
   if (sizeof(FILE_NETWORK_OPEN_INFORMATION) != info->Size())
@@ -268,7 +268,7 @@ bool FilesystemDispatcher::NtSetInformationFile(IPCInfo* ipc,
   if (!IsSupportedRenameCall(rename_info, length, info_class))
     return false;
 
-  base::string16 name;
+  std::wstring name;
   name.assign(rename_info->FileName,
               rename_info->FileNameLength / sizeof(rename_info->FileName[0]));
   if (!PreProcessName(&name)) {

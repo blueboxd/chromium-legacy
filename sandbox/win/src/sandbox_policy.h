@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
+
 #include "base/memory/scoped_refptr.h"
-#include "base/strings/string16.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/security_level.h"
 
@@ -153,7 +154,7 @@ class TargetPolicy {
   // Returns the name of the alternate desktop used. If an alternate window
   // station is specified, the name is prepended by the window station name,
   // followed by a backslash.
-  virtual base::string16 GetAlternateDesktop() const = 0;
+  virtual std::wstring GetAlternateDesktop() const = 0;
 
   // Precreates the desktop and window station, if any.
   virtual ResultCode CreateAlternateDesktop(bool alternate_winstation) = 0;

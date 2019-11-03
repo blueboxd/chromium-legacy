@@ -59,7 +59,7 @@
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
-#include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -309,7 +309,7 @@ class TestWebViewClient : public WebViewClient {
 
 // Convenience class for handling the lifetime of a WebView and its associated
 // mainframe in tests.
-class WebViewHelper {
+class WebViewHelper : public ScopedMockOverlayScrollbars {
   USING_FAST_MALLOC(WebViewHelper);
 
  public:
@@ -392,7 +392,6 @@ class WebViewHelper {
   bool viewport_enabled_ = false;
 
   WebViewImpl* web_view_;
-  UseMockScrollbarSettings mock_scrollbar_settings_;
 
   std::unique_ptr<TestWebViewClient> owned_test_web_view_client_;
   TestWebViewClient* test_web_view_client_ = nullptr;

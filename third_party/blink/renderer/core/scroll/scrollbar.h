@@ -127,6 +127,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
 
   void Paint(GraphicsContext&, const CullRect&) const;
 
+  virtual bool IsSolidColor() const;
   virtual bool IsOverlayScrollbar() const;
   bool ShouldParticipateInHitTesting();
 

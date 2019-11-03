@@ -25,7 +25,7 @@ SBOX_TESTS_COMMAND int NamedPipe_Create(int argc, wchar_t** argv) {
   // The second parameter allows us to enforce an allowlist for where the
   // pipe should be in the object namespace after creation.
   if (argc == 2) {
-    base::string16 handle_name;
+    std::wstring handle_name;
     if (GetHandleName(pipe, &handle_name)) {
       if (handle_name.compare(0, wcslen(argv[1]), argv[1]) != 0)
         return SBOX_TEST_FAILED;

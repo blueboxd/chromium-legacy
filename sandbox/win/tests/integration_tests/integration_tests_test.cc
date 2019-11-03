@@ -20,9 +20,9 @@
 namespace sandbox {
 
 namespace {
-base::string16 NonCollidingName() {
+std::wstring NonCollidingName() {
   auto token = base::UnguessableToken::Create();
-  return base::UTF8ToUTF16(token.ToString().c_str());
+  return base::UTF8ToWide(token.ToString().c_str());
 }
 
 struct PolicyDiagnosticsWaiter {
@@ -407,7 +407,7 @@ TEST(IntegrationTestsTest, GetPolicyDiagnosticsReflectsActiveChildren) {
   HANDLE event_done = CreateEventW(nullptr, true, false, name_done.c_str());
   base::win::ScopedHandle handle_done(event_done);
 
-  auto cmd_line = base::string16(L"IntegrationTestsTest_event ");
+  auto cmd_line = std::wstring(L"IntegrationTestsTest_event ");
   cmd_line += name_a;
   cmd_line += L" ";
   cmd_line += name_done;

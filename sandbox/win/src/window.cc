@@ -64,7 +64,7 @@ ResultCode CreateAltWindowStation(HWINSTA* winsta) {
 }
 
 ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop) {
-  base::string16 desktop_name = L"sbox_alternate_desktop_";
+  std::wstring desktop_name = L"sbox_alternate_desktop_";
 
   if (!winsta) {
     desktop_name += L"local_winstation_";
@@ -128,13 +128,13 @@ ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop) {
   return SBOX_ERROR_CANNOT_CREATE_DESKTOP;
 }
 
-base::string16 GetFullDesktopName(HWINSTA winsta, HDESK desktop) {
+std::wstring GetFullDesktopName(HWINSTA winsta, HDESK desktop) {
   if (!desktop) {
     NOTREACHED();
-    return base::string16();
+    return std::wstring();
   }
 
-  base::string16 name;
+  std::wstring name;
   if (winsta) {
     name = base::win::GetWindowObjectName(winsta);
     name += L'\\';

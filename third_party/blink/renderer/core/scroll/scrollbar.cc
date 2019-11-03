@@ -678,6 +678,10 @@ int Scrollbar::ScrollbarThickness() const {
       scrollable_area_->GetLayoutBox()->GetFrame(), theme_scrollbar_thickness_);
 }
 
+bool Scrollbar::IsSolidColor() const {
+  return theme_.IsSolidColor();
+}
+
 bool Scrollbar::IsOverlayScrollbar() const {
   return theme_.UsesOverlayScrollbars();
 }

@@ -271,7 +271,7 @@ void DynamicCodeTestHarness(sandbox::MitigationFlags which_mitigation,
               sandbox::SBOX_ALL_OK);
   }
 
-  base::string16 shared =
+  std::wstring shared =
       (which_mitigation == sandbox::MITIGATION_DYNAMIC_CODE_DISABLE)
           ? L"TestWin81DynamicCode "
           : L"TestWin10DynamicCodeWithOptOut ";
@@ -281,7 +281,7 @@ void DynamicCodeTestHarness(sandbox::MitigationFlags which_mitigation,
   }
 
   // Test 1:
-  base::string16 test =
+  std::wstring test =
       base::StringPrintf(L"%ls %u", shared.c_str(), VIRTUALALLOC);
   EXPECT_EQ((expect_success ? sandbox::SBOX_TEST_SUCCEEDED
                             : ERROR_DYNAMIC_CODE_BLOCKED),
@@ -411,7 +411,7 @@ TEST(ProcessMitigationsTest, CheckWin81DynamicCodePolicySuccess) {
   return;
 #endif
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_DYNAMICCODE);
 
 //---------------------------------
@@ -487,7 +487,7 @@ TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOutPolicySuccess) {
   return;
 #endif
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_DYNAMICCODEOPTOUT);
 
 //---------------------------------

@@ -465,7 +465,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   std::vector<HANDLE> inherited_handle_list;
   DWORD child_process_creation = PROCESS_CREATION_CHILD_PROCESS_RESTRICTED;
 
-  base::string16 desktop = policy_base->GetAlternateDesktop();
+  std::wstring desktop = policy_base->GetAlternateDesktop();
   if (!desktop.empty()) {
     startup_info.startup_info()->lpDesktop =
         const_cast<wchar_t*>(desktop.c_str());

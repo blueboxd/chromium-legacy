@@ -253,11 +253,12 @@ TEST(SandboxNtUtil, NtGetPathFromHandle) {
 
   // Basic sanity test, the functionality of NtGetPathFromHandle to return
   // the correct value is already tested from win_utils_unittest.cc.
-  EXPECT_TRUE(base::EndsWith(path.get(), exe.BaseName().value(),
+  EXPECT_TRUE(base::EndsWith(base::AsStringPiece16(path.get()),
+                             base::AsStringPiece16(exe.BaseName().value()),
                              base::CompareCase::INSENSITIVE_ASCII));
 
   // Compare to GetNtPathFromWin32Path for extra check.
-  base::string16 nt_path;
+  std::wstring nt_path;
   EXPECT_TRUE(GetNtPathFromWin32Path(exe.value(), &nt_path));
   EXPECT_STREQ(path.get(), nt_path.c_str());
 }

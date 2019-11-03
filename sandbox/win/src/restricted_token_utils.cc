@@ -62,7 +62,7 @@ DWORD CreateRestrictedToken(HANDLE effective_token,
   if (lockdown_default_dacl)
     restricted_token.SetLockdownDefaultDacl();
 
-  std::vector<base::string16> privilege_exceptions;
+  std::vector<std::wstring> privilege_exceptions;
   std::vector<Sid> sid_exceptions;
 
   bool deny_sids = true;
@@ -189,7 +189,7 @@ DWORD SetObjectIntegrityLabel(HANDLE handle,
                               const wchar_t* ace_access,
                               const wchar_t* integrity_level_sid) {
   // Build the SDDL string for the label.
-  base::string16 sddl = L"S:(";  // SDDL for a SACL.
+  std::wstring sddl = L"S:(";    // SDDL for a SACL.
   sddl += SDDL_MANDATORY_LABEL;  // Ace Type is "Mandatory Label".
   sddl += L";;";                 // No Ace Flags.
   sddl += ace_access;            // Add the ACE access.
@@ -422,7 +422,7 @@ DWORD CreateLowBoxObjectDirectory(PSID lowbox_sid,
     return ::GetLastError();
 
   std::unique_ptr<wchar_t, LocalFreeDeleter> sid_string_ptr(sid_string);
-  base::string16 directory_path = base::StringPrintf(
+  std::wstring directory_path = base::StringPrintf(
       L"\\Sessions\\%d\\AppContainerNamedObjects\\%ls", session_id, sid_string);
 
   NtCreateDirectoryObjectFunction CreateObjectDirectory = nullptr;

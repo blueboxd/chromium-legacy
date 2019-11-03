@@ -1820,7 +1820,8 @@ TEST_F(MapCoordinatesTest, IgnoreScrollOffsetWithWritingModes) {
 // non-overlay scrollbar.
 TEST_F(MapCoordinatesTest,
        IgnoreScrollOffsetWithWritingModesAndNonOverlayScrollbar) {
-  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  USE_NON_OVERLAY_SCROLLBARS();
+
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }

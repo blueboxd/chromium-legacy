@@ -21812,9 +21812,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_CloseOtherTabs">
-  <obsolete>Deprecated due to removal.</obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>pbos@chromium.org</owner>
+  <description>
+    User selected Close Other Tabs from the tab context menu. Temporarily
+    removed in M78.
+  </description>
 </action>
 
 <action name="TabContextMenu_CloseTab">

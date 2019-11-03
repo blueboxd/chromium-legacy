@@ -161,6 +161,13 @@ def parse_args(args):
                 help=('Additional command line flag to pass to the driver. Specify multiple '
                       'times to add multiple flags.')),
             optparse.make_option(
+                '--flag-specific',
+                dest='flag_specific',
+                action='store',
+                default=None,
+                help=('Name of a flag-specific configuration defined in FlagSpecificConfig, '
+                      ' as a shortcut of --additional-driver-flag options.')),
+            optparse.make_option(
                 '--additional-expectations',
                 action='append',
                 default=[],
@@ -440,7 +447,7 @@ def parse_args(args):
                 '--test-list',
                 action='append',
                 metavar='FILE',
-                help='read list of tests to run from file'),
+                help='read list of tests to run from file, as if they were specified on the command line'),
             optparse.make_option(
                 '--isolated-script-test-filter',
                 action='append',

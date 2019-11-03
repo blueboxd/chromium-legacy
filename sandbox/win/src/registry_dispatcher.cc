@@ -23,8 +23,8 @@ namespace {
 
 // Builds a path using the root directory and the name.
 bool GetCompletePath(HANDLE root,
-                     const base::string16& name,
-                     base::string16* complete_name) {
+                     const std::wstring& name,
+                     std::wstring* complete_name) {
   if (root) {
     if (!sandbox::GetPathFromHandle(root, complete_name))
       return false;
@@ -73,14 +73,14 @@ bool RegistryDispatcher::SetupService(InterceptionManager* manager,
 }
 
 bool RegistryDispatcher::NtCreateKey(IPCInfo* ipc,
-                                     base::string16* name,
+                                     std::wstring* name,
                                      uint32_t attributes,
                                      HANDLE root,
                                      uint32_t desired_access,
                                      uint32_t title_index,
                                      uint32_t create_options) {
   base::win::ScopedHandle root_handle;
-  base::string16 real_path = *name;
+  std::wstring real_path = *name;
 
   // If there is a root directory, we need to duplicate the handle to make
   // it valid in this process.
@@ -122,12 +122,12 @@ bool RegistryDispatcher::NtCreateKey(IPCInfo* ipc,
 }
 
 bool RegistryDispatcher::NtOpenKey(IPCInfo* ipc,
-                                   base::string16* name,
+                                   std::wstring* name,
                                    uint32_t attributes,
                                    HANDLE root,
                                    uint32_t desired_access) {
   base::win::ScopedHandle root_handle;
-  base::string16 real_path = *name;
+  std::wstring real_path = *name;
 
   // If there is a root directory, we need to duplicate the handle to make
   // it valid in this process.

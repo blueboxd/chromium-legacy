@@ -1,5 +1,5 @@
-FlagExpectations stores flag-specific test expectations.  To run layout tests
-with a flag, use:
+web_tests/FlagExpectations stores flag-specific test expectations.
+To run layout tests with a flag passed to content_shell, use:
 
   run_web_tests.py --additional-driver-flag=--name-of-flag
 
@@ -7,21 +7,20 @@ Create a new file:
 
   FlagExpectations/name-of-flag
 
-These are formatted:
+The entries in the file is the same as the main TestExpectations file, e.g.
   crbug.com/123456 path/to/your/test.html [ Expectation ]
 
-Then run the tests with --additional-expectations:
+This file will override the main TestExpectations file when the above command
+is run.
 
-  run_web_tests.py --additional-driver-flag=--name-of-flag
-  --additional-expectations=path/to/FlagExpectations/name-of-flag
+If the name-of-flag is too long, or when multiple additional flags are needed,
+you can add an entry in web_tests/FlagSpecificConfig, like
+  {
+    "name": "short-name",
+    "args": ["--name-of-flag1", "--name-of-flag2"]
+  }
 
-which will override the main TestExpectations file.
+And create a new file in the same format of the above
+FlagExpectations/name-of-flag file:
 
-When passing a set of tests via the command line, such as using --test-list,
-the SKIP expectation is not respected by default. The option --skipped=always
-can be added in order to actually skip those tests.
-
-To run a subset of all tests, with custom expectations, and to properly skip:
-  run_web_tests.py --additional-driver-flag=--name-of-flag
-  --additional-expectations=path/to/FlagExpectations/name-of-flag
-  --test-list=path/to/test-list-file --skipped=always
+  FlagExpectations/short-name

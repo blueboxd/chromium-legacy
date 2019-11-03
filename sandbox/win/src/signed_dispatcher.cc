@@ -6,7 +6,8 @@
 
 #include <stdint.h>
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "base/strings/string_util.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/crosscall_client.h"
@@ -46,7 +47,7 @@ bool SignedDispatcher::CreateSection(IPCInfo* ipc, HANDLE file_handle) {
   }
 
   base::win::ScopedHandle local_handle(local_file_handle);
-  base::string16 path;
+  std::wstring path;
   if (!GetPathFromHandle(local_handle.Get(), &path))
     return false;
   const wchar_t* module_name = path.c_str();

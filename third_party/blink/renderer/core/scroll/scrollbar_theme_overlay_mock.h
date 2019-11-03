@@ -31,14 +31,19 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_THEME_OVERLAY_MOCK_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_THEME_OVERLAY_MOCK_H_
 
-#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mobile.h"
 
 namespace blink {
 
-class CORE_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
+class CORE_EXPORT ScrollbarThemeOverlayMock
+    : public ScrollbarThemeOverlayMobile {
  public:
+  // These parameters should be the same as those used by
+  // cc::SolidColorScrollbarLayerImpl to make sure composited and
+  // non-composited scrollbars have the same appearance for tests using mock
+  // overlay scrollbars.
   ScrollbarThemeOverlayMock()
-      : ScrollbarThemeOverlay(3, 4, kDisallowHitTest, Color(128, 128, 128)) {}
+      : ScrollbarThemeOverlayMobile(3, 4, Color(128, 128, 128, 128)) {}
 
   base::TimeDelta OverlayScrollbarFadeOutDelay() const override {
     return delay_;
@@ -51,14 +56,6 @@ class CORE_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
     delay_ = delay;
   }
 
-  void PaintThumb(GraphicsContext& gc,
-                  const Scrollbar& scrollbar,
-                  const IntRect& rect) override {
-    if (!scrollbar.Enabled())
-      return;
-    ScrollbarThemeOverlay::PaintThumb(gc, scrollbar, rect);
-  }
-
   bool ShouldSnapBackToDragOrigin(const Scrollbar& scrollbar,
                                   const WebMouseEvent& evt) override {
     return false;
@@ -67,8 +64,9 @@ class CORE_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
   int MinimumThumbLength(const Scrollbar&) override { return 7; }
 
  private:
-  base::TimeDelta delay_;
   bool IsMockTheme() const final { return true; }
+
+  base::TimeDelta delay_;
 };
 
 }  // namespace blink

@@ -53,6 +53,8 @@ double NowTicksInSeconds(const base::TestMockTimeTaskRunner* task_runner) {
   return task_runner->NowTicks().since_origin().InSecondsF();
 }
 
+}  // namespace
+
 class MockScrollableAreaForAnimatorTest
     : public GarbageCollected<MockScrollableAreaForAnimatorTest>,
       public ScrollableArea {
@@ -130,7 +132,7 @@ class MockScrollableAreaForAnimatorTest
   }
 
   ScrollbarTheme& GetPageScrollbarTheme() const override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme();
+    return ScrollbarTheme::GetTheme();
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -147,8 +149,6 @@ class MockScrollableAreaForAnimatorTest
   Member<ScrollAnimator> animator;
   mutable scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
 };
-
-}  // namespace
 
 class TestScrollAnimator : public ScrollAnimator {
  public:

@@ -41,12 +41,11 @@ class CustomScrollbarTheme final : public ScrollbarTheme {
   ~CustomScrollbarTheme() override = default;
 
   int ScrollbarThickness(ScrollbarControlSize control_size) override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme().ScrollbarThickness(
-        control_size);
+    return GetTheme().ScrollbarThickness(control_size);
   }
 
   WebScrollbarButtonsPlacement ButtonsPlacement() const override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme().ButtonsPlacement();
+    return GetTheme().ButtonsPlacement();
   }
 
   void PaintScrollCorner(GraphicsContext&,
@@ -56,26 +55,22 @@ class CustomScrollbarTheme final : public ScrollbarTheme {
 
   bool ShouldCenterOnThumb(const Scrollbar& scrollbar,
                            const WebMouseEvent& event) override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme().ShouldCenterOnThumb(
-        scrollbar, event);
+    return GetTheme().ShouldCenterOnThumb(scrollbar, event);
   }
   bool ShouldSnapBackToDragOrigin(const Scrollbar& scrollbar,
                                   const WebMouseEvent& event) override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme()
-        .ShouldSnapBackToDragOrigin(scrollbar, event);
+    return GetTheme().ShouldSnapBackToDragOrigin(scrollbar, event);
   }
 
   base::TimeDelta InitialAutoscrollTimerDelay() override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme()
-        .InitialAutoscrollTimerDelay();
+    return GetTheme().InitialAutoscrollTimerDelay();
   }
   base::TimeDelta AutoscrollTimerDelay() override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme().AutoscrollTimerDelay();
+    return GetTheme().AutoscrollTimerDelay();
   }
 
   void RegisterScrollbar(Scrollbar& scrollbar) override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme().RegisterScrollbar(
-        scrollbar);
+    return GetTheme().RegisterScrollbar(scrollbar);
   }
 
   int MinimumThumbLength(const Scrollbar&) override;

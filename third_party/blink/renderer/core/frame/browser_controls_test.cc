@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -59,7 +60,8 @@ namespace blink {
 // These tests cover browser controls scrolling on main-thread.
 // The animation for completing a partial show/hide is done in compositor so
 // it is not covered here.
-class BrowserControlsTest : public testing::Test {
+class BrowserControlsTest : public testing::Test,
+                            public ScopedMockOverlayScrollbars {
  public:
   BrowserControlsTest() : base_url_("http://www.test.com/") {
     RegisterMockedHttpURLLoad("large-div.html");

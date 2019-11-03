@@ -529,7 +529,7 @@ TEST(RestrictedTokenTest, DeleteAllPrivilegesException) {
   RestrictedToken token;
   base::win::ScopedHandle token_handle;
 
-  std::vector<base::string16> exceptions;
+  std::vector<std::wstring> exceptions;
   exceptions.push_back(SE_CHANGE_NOTIFY_NAME);
 
   ASSERT_EQ(static_cast<DWORD>(ERROR_SUCCESS), token.Init(nullptr));

@@ -77,7 +77,7 @@ namespace sandbox {
 bool FileSystemPolicy::GenerateRules(const wchar_t* name,
                                      TargetPolicy::Semantics semantics,
                                      LowLevelPolicy* policy) {
-  base::string16 mod_name(name);
+  std::wstring mod_name(name);
   if (mod_name.empty()) {
     return false;
   }
@@ -241,7 +241,7 @@ bool FileSystemPolicy::SetInitialRules(LowLevelPolicy* policy) {
 
 bool FileSystemPolicy::CreateFileAction(EvalResult eval_result,
                                         const ClientInfo& client_info,
-                                        const base::string16& file,
+                                        const std::wstring& file,
                                         uint32_t attributes,
                                         uint32_t desired_access,
                                         uint32_t file_attributes,
@@ -276,7 +276,7 @@ bool FileSystemPolicy::CreateFileAction(EvalResult eval_result,
 
 bool FileSystemPolicy::OpenFileAction(EvalResult eval_result,
                                       const ClientInfo& client_info,
-                                      const base::string16& file,
+                                      const std::wstring& file,
                                       uint32_t attributes,
                                       uint32_t desired_access,
                                       uint32_t share_access,
@@ -311,7 +311,7 @@ bool FileSystemPolicy::OpenFileAction(EvalResult eval_result,
 bool FileSystemPolicy::QueryAttributesFileAction(
     EvalResult eval_result,
     const ClientInfo& client_info,
-    const base::string16& file,
+    const std::wstring& file,
     uint32_t attributes,
     FILE_BASIC_INFORMATION* file_info,
     NTSTATUS* nt_status) {
@@ -339,7 +339,7 @@ bool FileSystemPolicy::QueryAttributesFileAction(
 bool FileSystemPolicy::QueryFullAttributesFileAction(
     EvalResult eval_result,
     const ClientInfo& client_info,
-    const base::string16& file,
+    const std::wstring& file,
     uint32_t attributes,
     FILE_NETWORK_OPEN_INFORMATION* file_info,
     NTSTATUS* nt_status) {
@@ -400,7 +400,7 @@ bool FileSystemPolicy::SetInformationFileAction(EvalResult eval_result,
   return true;
 }
 
-bool PreProcessName(base::string16* path) {
+bool PreProcessName(std::wstring* path) {
   ConvertToLongPath(path);
 
   if (ERROR_NOT_A_REPARSE_POINT == IsReparsePoint(*path))
@@ -410,8 +410,8 @@ bool PreProcessName(base::string16* path) {
   return false;
 }
 
-base::string16 FixNTPrefixForMatch(const base::string16& name) {
-  base::string16 mod_name = name;
+std::wstring FixNTPrefixForMatch(const std::wstring& name) {
+  std::wstring mod_name = name;
 
   // NT prefix escaped for rule matcher
   const wchar_t kNTPrefixEscaped[] = L"\\/?/?\\";

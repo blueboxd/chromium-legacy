@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mobile.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
@@ -259,7 +259,7 @@ TEST_P(VisualViewportTest, TestResize) {
 // Make sure that the visibleContentRect method acurately reflects the scale and
 // scroll location of the viewport with and without scrollbars.
 TEST_P(VisualViewportTest, TestVisibleContentRect) {
-  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  USE_NON_OVERLAY_SCROLLBARS();
   InitializeWithDesktopSettings();
 
   RegisterMockedHttpURLLoad("200-by-300.html");
@@ -2426,7 +2426,7 @@ TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
   auto& horizontal_scrollbar_state =
       horizontal_scrollbar->GetPropertyTreeState();
 
-  ScrollbarThemeOverlay& theme = ScrollbarThemeOverlay::MobileTheme();
+  auto& theme = ScrollbarThemeOverlayMobile::GetInstance();
   int scrollbar_thickness = clampTo<int>(std::floor(
       GetFrame()->GetPage()->GetChromeClient().WindowToViewportScalar(
           GetFrame(), theme.ScrollbarThickness(kRegularScrollbar))));

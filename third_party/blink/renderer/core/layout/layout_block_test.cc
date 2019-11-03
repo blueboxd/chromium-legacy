@@ -31,7 +31,8 @@ TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle) {
 }
 
 TEST_F(LayoutBlockTest, WidthAvailableToChildrenChanged) {
-  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  USE_NON_OVERLAY_SCROLLBARS();
+
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <div id='list' style='overflow-y:auto; width:150px; height:100px'>

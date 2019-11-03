@@ -68,11 +68,12 @@ python third_party/blink/tools/run_web_tests.py -t android --android
 
 Tests marked as `[ Skip ]` in
 [TestExpectations](../../third_party/blink/web_tests/TestExpectations)
-won't be run at all, generally because they cause some intractable tool error.
+won't be run by default, generally because they cause some intractable tool error.
 To force one of them to be run, either rename that file or specify the skipped
-test as the only one on the command line (see below). Read the
-[Web Test Expectations documentation](./web_test_expectations.md) to learn
-more about TestExpectations and related files.
+test on the command line (see below) or in a file specified with --test-list
+(however, --skip=always can make the tests marked as `[ Skip ]` always skipped).
+Read the [Web Test Expectations documentation](./web_test_expectations.md) to
+learn more about TestExpectations and related files.
 
 *** promo
 Currently only the tests listed in
@@ -219,6 +220,31 @@ There are two ways to run web tests with additional command-line arguments:
   It will also look for flag-specific expectations in
   `web_tests/FlagExpectations/blocking-repaint`, if this file exists. The
   suppressions in this file override the main TestExpectations file.
+
+  It will also look for baselines in `web_tests/flag-specific/blocking-repaint`.
+  The baselines in this directory override the fallback baselines.
+
+  By default, name of the expectation file name under
+  `web_tests/FlagExpectations` and name of the baseline directory under
+  `web_tests/flag-specific` uses the first flag of --additional-driver-flag
+  with leading '-'s stripped.
+
+  You can also customize the name in `web_tests/FlagSpecificConfig` when
+  the name is too long or when we need to match multiple additional args:
+
+  ```json
+  {
+    "name": "short-name",
+    "args": ["--blocking-repaint", "--another-flag"]
+  }
+  ```
+
+  When at least `--additional-driver-flag=--blocking-repaint` and
+  `--additional-driver-flag=--another-flag` are specified, `short-name` will
+  be used as name of the flag specific expectation file and the baseline directory.
+
+  With the config, you can also use `--flag-specific=short-name` as a shortcut
+  of `--additional-driver-flag=--blocking-repaint --additional-driver-flag=--another-flag`.
 
 * Using a *virtual test suite* defined in
   [web_tests/VirtualTestSuites](../../third_party/blink/web_tests/VirtualTestSuites).

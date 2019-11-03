@@ -12,16 +12,12 @@
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
-#include "third_party/blink/renderer/core/scroll/scrollbar_theme_mock.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mock.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-
-namespace {
-blink::ScrollbarThemeMock scrollbar_theme_;
-}
 
 namespace blink {
 
@@ -83,7 +79,8 @@ class ScrollableAreaStub : public GarbageCollected<ScrollableAreaStub>,
   }
 
   ScrollbarTheme& GetPageScrollbarTheme() const override {
-    return scrollbar_theme_;
+    DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, theme, ());
+    return theme;
   }
 
   void Trace(blink::Visitor* visitor) override {

@@ -43,7 +43,7 @@ bool SyncDispatcher::SetupService(InterceptionManager* manager,
 }
 
 bool SyncDispatcher::CreateEvent(IPCInfo* ipc,
-                                 base::string16* name,
+                                 std::wstring* name,
                                  uint32_t event_type,
                                  uint32_t initial_state) {
   const wchar_t* event_name = name->c_str();
@@ -61,7 +61,7 @@ bool SyncDispatcher::CreateEvent(IPCInfo* ipc,
 }
 
 bool SyncDispatcher::OpenEvent(IPCInfo* ipc,
-                               base::string16* name,
+                               std::wstring* name,
                                uint32_t desired_access) {
   const wchar_t* event_name = name->c_str();
 

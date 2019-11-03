@@ -25,12 +25,12 @@ bool SignedPolicy::GenerateRules(const wchar_t* name,
   }
 
   base::FilePath file_path(name);
-  base::string16 nt_path_name;
+  std::wstring nt_path_name;
   if (!GetNtPathFromWin32Path(file_path.DirName().value().c_str(),
                               &nt_path_name))
     return false;
   base::FilePath nt_path(nt_path_name);
-  base::string16 nt_filename = nt_path.Append(file_path.BaseName()).value();
+  std::wstring nt_filename = nt_path.Append(file_path.BaseName()).value();
   // Create a rule to ASK_BROKER if name matches.
   PolicyRule signed_policy(ASK_BROKER);
   if (!signed_policy.AddStringMatch(IF, NameBased::NAME, nt_filename.c_str(),

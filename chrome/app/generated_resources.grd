@@ -6177,6 +6177,9 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the tab context menu item for closing one or more tabs.">
           Close
         </message>
+        <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="The label of the 'Close Other Tabs' Tab context menu item.">
+          Close other tabs
+        </message>
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item.">
           Close tabs to the right
         </message>
@@ -6220,6 +6223,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_TAB_CXMENU_CLOSETAB" desc="In Title Case: The label of the tab context menu item for closing one or more tabs.">
           Close
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="In Title Case: The label of the 'Close Other Tabs' Tab context menu item.">
+          Close Other Tabs
         </message>
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="In Title Case: The label of the 'Close Tabs to the Right' Tab context menu item.">
           Close Tabs to the Right

@@ -5,6 +5,7 @@
 #include "mojo/public/cpp/bindings/lib/validation_context.h"
 
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
 namespace internal {
@@ -14,7 +15,7 @@ ValidationContext::ValidationContext(const void* data,
                                      size_t num_handles,
                                      size_t num_associated_endpoint_handles,
                                      Message* message,
-                                     const base::StringPiece& description,
+                                     const char* description,
                                      int stack_depth)
     : message_(message),
       description_(description),
@@ -42,6 +43,14 @@ ValidationContext::ValidationContext(const void* data,
     associated_endpoint_handle_end_ = 0;
   }
 }
+
+ValidationContext::ValidationContext(Message* message, const char* description)
+    : ValidationContext(message->payload(),
+                        message->payload_num_bytes(),
+                        message->handles()->size(),
+                        message->payload_num_interface_ids(),
+                        message,
+                        description) {}
 
 ValidationContext::~ValidationContext() {
 }

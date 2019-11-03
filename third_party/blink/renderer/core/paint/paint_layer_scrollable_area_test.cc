@@ -643,7 +643,8 @@ TEST_P(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
 }
 
 TEST_P(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
-  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  USE_NON_OVERLAY_SCROLLBARS();
+
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: overlay; height: 100px; width: 100px; }
@@ -662,7 +663,8 @@ TEST_P(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
 }
 
 TEST_P(PaintLayerScrollableAreaTest, ShowAutoScrollbarsForVisibleContent) {
-  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  USE_NON_OVERLAY_SCROLLBARS();
+
   SetBodyInnerHTML(R"HTML(
     <style>
     #outerDiv {
@@ -692,7 +694,8 @@ TEST_P(PaintLayerScrollableAreaTest, ShowAutoScrollbarsForVisibleContent) {
 }
 
 TEST_P(PaintLayerScrollableAreaTest, FloatOverflowInRtlContainer) {
-  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  USE_NON_OVERLAY_SCROLLBARS();
+
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>

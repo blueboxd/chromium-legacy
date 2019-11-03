@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/interception.h"
@@ -41,7 +42,7 @@ bool NamedPipeDispatcher::SetupService(InterceptionManager* manager,
 }
 
 bool NamedPipeDispatcher::CreateNamedPipe(IPCInfo* ipc,
-                                          base::string16* name,
+                                          std::wstring* name,
                                           uint32_t open_mode,
                                           uint32_t pipe_mode,
                                           uint32_t max_instances,
@@ -51,13 +52,13 @@ bool NamedPipeDispatcher::CreateNamedPipe(IPCInfo* ipc,
   ipc->return_info.win32_result = ERROR_ACCESS_DENIED;
   ipc->return_info.handle = INVALID_HANDLE_VALUE;
 
-  base::StringPiece16 dotdot(L"..");
+  base::StringPiece16 dotdot(STRING16_LITERAL(".."));
 
-  for (const base::StringPiece16& path :
-       base::SplitStringPiece(*name, base::string16(1, '/'),
-                              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+  for (const base::StringPiece16& path : base::SplitStringPiece(
+           base::AsStringPiece16(*name), STRING16_LITERAL("/"),
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     for (const base::StringPiece16& inner :
-         base::SplitStringPiece(path, base::string16(1, '\\'),
+         base::SplitStringPiece(path, STRING16_LITERAL("\\"),
                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       if (inner == dotdot)
         return true;

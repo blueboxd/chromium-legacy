@@ -1171,9 +1171,6 @@
       name: "OverflowIconsForMediaControls",
     },
     {
-      name: "OverlayScrollbars",
-    },
-    {
       name: "OverscrollCustomization",
       settable_from_internals: true,
       status: "experimental",

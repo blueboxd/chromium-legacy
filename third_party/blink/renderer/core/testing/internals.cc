@@ -149,6 +149,7 @@
 #include "third_party/blink/renderer/core/testing/mock_hyphenation.h"
 #include "third_party/blink/renderer/core/testing/origin_trials_test.h"
 #include "third_party/blink/renderer/core/testing/record_test.h"
+#include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/core/testing/sequence_test.h"
 #include "third_party/blink/renderer/core/testing/static_selection.h"
 #include "third_party/blink/renderer/core/testing/type_conversions.h"
@@ -260,6 +261,7 @@ static ScrollableArea* ScrollableAreaForNode(Node* node) {
 }
 
 static RuntimeEnabledFeatures::Backup* g_s_features_backup = nullptr;
+static std::unique_ptr<ScopedMockOverlayScrollbars> g_s_mock_overlay_scrollbars;
 
 void Internals::ResetToConsistentState(Page* page) {
   DCHECK(page);
@@ -300,7 +302,7 @@ void Internals::ResetToConsistentState(Page* page) {
       OverrideCapsLockState::kDefault);
 
   IntersectionObserver::SetThrottleDelayEnabledForTesting(true);
-  ScrollbarTheme::SetMockScrollbarsEnabled(false);
+  g_s_mock_overlay_scrollbars.reset();
 }
 
 Internals::Internals(ExecutionContext* context)
@@ -3501,12 +3503,11 @@ String Internals::getDocumentAgentId(Document* document) {
 }
 
 void Internals::useMockOverlayScrollbars() {
-  ScrollbarTheme::SetMockScrollbarsEnabled(true);
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
+  g_s_mock_overlay_scrollbars.reset(new ScopedMockOverlayScrollbars(true));
 }
 
 bool Internals::overlayScrollbarsEnabled() const {
-  return RuntimeEnabledFeatures::OverlayScrollbarsEnabled();
+  return ScrollbarThemeSettings::OverlayScrollbarsEnabled();
 }
 
 }  // namespace blink

@@ -450,14 +450,6 @@
       initial: false,
     },
 
-    // If true, scrollers will use overlay scrollbars.  These do not take up any
-    // layout width, are drawn using solid color quads by the compositor, and fade away
-    // after a timeout.
-    {
-      name: "useSolidColorScrollbars",
-      initial: false,
-    },
-
     // The rubber-band overscroll effect is implemented in Blink and is being moved
     // to the compositor thread. This will be set to true and eventually removed.
     // crbug.com/133097

@@ -182,7 +182,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetBarrelButtonForDragEnabled(bool) override;
   void SetUseLegacyBackgroundSizeShorthandBehavior(bool) override;
   void SetViewportStyle(WebViewportStyle) override;
-  void SetUseSolidColorScrollbars(bool) override;
   void SetUseWideViewport(bool) override;
   void SetV8CacheOptions(V8CacheOptions) override;
   void SetValidationMessageTimerMagnification(int) override;

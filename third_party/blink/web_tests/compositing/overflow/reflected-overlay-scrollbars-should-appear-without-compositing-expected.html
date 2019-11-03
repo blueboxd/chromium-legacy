@@ -35,19 +35,10 @@ if (window.internals) {
 
 #scrolled {
     width: 100px;
-    height: 300px;
+    height: 400px;
     background: green;
 }
 </style>
-<script>
-if (window.testRunner)
-    testRunner.dumpAsTextWithPixelResults();
-
-onload = function() {
-    if (window.internals && window.testRunner)
-        testRunner.setCustomTextOutput(internals.layerTreeAsText(document));
-};
-</script>
 <div id="container">
   <div id="clipper">
     <div id="scroller">

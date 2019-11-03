@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 
 static const int kMaxRecursionDepth = 100;
@@ -40,8 +39,12 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ValidationContext {
                     size_t num_handles,
                     size_t num_associated_endpoint_handles,
                     Message* message = nullptr,
-                    const base::StringPiece& description = "",
+                    const char* description = "",
                     int stack_depth = 0);
+
+  // As above, but infers most of the parameters from the Message payload.
+  // Used heavily in generated code and so affects binary size.
+  ValidationContext(Message* message, const char* description);
 
   ~ValidationContext();
 
@@ -135,7 +138,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ValidationContext {
   }
 
   Message* message() const { return message_; }
-  const base::StringPiece& description() const { return description_; }
+  const char* description() const { return description_; }
 
  private:
   bool InternalIsValidRange(uintptr_t begin, uintptr_t end) const {
@@ -143,7 +146,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ValidationContext {
   }
 
   Message* const message_;
-  const base::StringPiece description_;
+  const char* const description_;
 
   // [data_begin_, data_end_) is the valid memory range.
   uintptr_t data_begin_;

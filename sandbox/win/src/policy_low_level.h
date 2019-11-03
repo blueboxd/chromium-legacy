@@ -10,8 +10,9 @@
 
 #include <list>
 
+#include <string>
+
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/policy_engine_opcodes.h"
 #include "sandbox/win/src/policy_engine_params.h"
@@ -167,7 +168,7 @@ class PolicyRule {
                        int state,
                        bool last_call,
                        int* skip_count,
-                       base::string16* fragment);
+                       std::wstring* fragment);
 
   // Loop over all generated opcodes and copy them to increasing memory
   // addresses from opcode_start and copy the extra data (strings usually) into

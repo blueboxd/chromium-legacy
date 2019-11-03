@@ -72,8 +72,8 @@ TEST(DriveMetadataDBMigrationUtilTest, RollbackFromV4ToV3) {
   const char kDemotedDirtyIDKeyPrefix[] = "DEMOTED_DIRTY: ";
 
   // Set up environment.
-  std::unique_ptr<leveldb::DB> db;
   base::ScopedTempDir base_dir;
+  std::unique_ptr<leveldb::DB> db;
   ASSERT_TRUE(base_dir.CreateUniqueTempDir());
   {
     leveldb_env::Options options;

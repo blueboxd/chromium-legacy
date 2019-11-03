@@ -166,40 +166,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     }
   }
 
-  // Second wave of MD colors (colors that only appear in secondary UI).
   constexpr SkColor kPrimaryTextColor = gfx::kGoogleGrey900;
-
-  switch (color_id) {
-    // Labels
-    case NativeTheme::kColorId_LabelEnabledColor:
-      return kPrimaryTextColor;
-    case NativeTheme::kColorId_LabelDisabledColor:
-      return SkColorSetA(
-          base_theme->GetSystemColor(NativeTheme::kColorId_LabelEnabledColor,
-                                     color_scheme),
-          gfx::kDisabledControlAlpha);
-
-    // FocusableBorder
-    case NativeTheme::kColorId_UnfocusedBorderColor:
-      return SkColorSetA(SK_ColorBLACK, 0x4e);
-
-    // Textfields
-    case NativeTheme::kColorId_TextfieldDefaultColor:
-      return kPrimaryTextColor;
-    case NativeTheme::kColorId_TextfieldDefaultBackground:
-      return base_theme->GetSystemColor(NativeTheme::kColorId_DialogBackground,
-                                        color_scheme);
-    case NativeTheme::kColorId_TextfieldReadOnlyColor:
-      return SkColorSetA(
-          base_theme->GetSystemColor(
-              NativeTheme::kColorId_TextfieldDefaultColor, color_scheme),
-          gfx::kDisabledControlAlpha);
-
-    default:
-      break;
-  }
-
-  // Shared constant for disabled text.
   constexpr SkColor kDisabledTextColor = gfx::kGoogleGrey600;
 
   // Buttons:
@@ -269,10 +236,12 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Label
     case NativeTheme::kColorId_LabelEnabledColor:
-      return kButtonEnabledColor;
+      return kPrimaryTextColor;
     case NativeTheme::kColorId_LabelDisabledColor:
-      return base_theme->GetSystemColor(
-          NativeTheme::kColorId_ButtonDisabledColor, color_scheme);
+      return SkColorSetA(
+          base_theme->GetSystemColor(NativeTheme::kColorId_LabelEnabledColor,
+                                     color_scheme),
+          gfx::kDisabledControlAlpha);
     case NativeTheme::kColorId_LabelTextSelectionColor:
       return kTextSelectionColor;
     case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
@@ -301,12 +270,18 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Textfield
     case NativeTheme::kColorId_TextfieldDefaultColor:
-      return SK_ColorBLACK;
+      return kPrimaryTextColor;
     case NativeTheme::kColorId_TextfieldDefaultBackground:
+      return base_theme->GetSystemColor(NativeTheme::kColorId_DialogBackground,
+                                        color_scheme);
     case NativeTheme::kColorId_TextfieldReadOnlyBackground:
       return SK_ColorWHITE;
     case NativeTheme::kColorId_TextfieldReadOnlyColor:
-      return kDisabledTextColor;
+      return SkColorSetA(
+          base_theme->GetSystemColor(
+              NativeTheme::kColorId_TextfieldDefaultColor, color_scheme),
+          gfx::kDisabledControlAlpha);
+
     case NativeTheme::kColorId_TextfieldSelectionColor:
       return kTextSelectionColor;
     case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
@@ -357,7 +332,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_FocusedBorderColor:
       return SkColorSetA(gfx::kGoogleBlue500, 0x66);
     case NativeTheme::kColorId_UnfocusedBorderColor:
-      return SkColorSetA(SK_ColorBLACK, 0x66);
+      return SkColorSetA(SK_ColorBLACK, 0x4e);
 
     // Material spinner/throbber
     case NativeTheme::kColorId_ThrobberSpinningColor:

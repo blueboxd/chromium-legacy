@@ -70,6 +70,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
     // (CannedSyncableFileSystem::TearDown does not do this as there may be
     // multiple syncable file systems registered for the name)
     RevokeSyncableFileSystem();
+    content::RunAllTasksUntilIdle();
   }
 
  protected:
@@ -113,8 +114,8 @@ class LocalFileChangeTrackerTest : public testing::Test {
     change_tracker()->GetAllChangedURLs(urls);
   }
 
-  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir base_dir_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
   CannedSyncableFileSystem file_system_;
 

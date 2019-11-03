@@ -26,7 +26,8 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
                       params.fragment_geometry.padding),
       border_scrollbar_padding_(border_padding_ +
                                 params.fragment_geometry.scrollbar),
-      is_column_(Style().ResolvedIsColumnFlexDirection()) {
+      is_column_(Style().ResolvedIsColumnFlexDirection()),
+      is_horizontal_flow_(FlexLayoutAlgorithm::IsHorizontalFlow(Style())) {
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
@@ -498,7 +499,6 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
   const LayoutUnit line_break_length = MainAxisContentExtent(LayoutUnit::Max());
   algorithm_.emplace(&Style(), line_break_length);
-  is_horizontal_flow_ = algorithm_->IsHorizontalFlow();
 
   ConstructAndAppendFlexItems();
 

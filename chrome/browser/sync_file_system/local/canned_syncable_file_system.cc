@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/file_change.h"
@@ -266,6 +267,7 @@ void CannedSyncableFileSystem::TearDown() {
   // Make sure we give some more time to finish tasks on other threads.
   EnsureLastTaskRuns(io_task_runner_.get());
   EnsureLastTaskRuns(file_task_runner_.get());
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 }
 
 FileSystemURL CannedSyncableFileSystem::URL(const std::string& path) const {

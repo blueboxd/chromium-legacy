@@ -68,12 +68,12 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   const NGBoxStrut border_padding_;
   const NGBoxStrut border_scrollbar_padding_;
   const bool is_column_;
-  LogicalSize border_box_size_;
-  LogicalSize content_box_size_;
+  const bool is_horizontal_flow_;
   // These are populated at the top of Layout(), so aren't available in
   // ComputeMinMaxSize() or anything it calls.
+  LogicalSize border_box_size_;
+  LogicalSize content_box_size_;
   base::Optional<FlexLayoutAlgorithm> algorithm_;
-  bool is_horizontal_flow_;
 };
 
 }  // namespace blink

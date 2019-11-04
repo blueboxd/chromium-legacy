@@ -722,7 +722,7 @@ void CrostiniManager::MaybeUpgradeCrostiniAfterChecks() {
   if (!is_cros_termina_registered_) {
     return;
   }
-  if (!IsCrostiniAllowedForProfile(profile_)) {
+  if (!CrostiniFeatures::Get()->IsAllowed(profile_)) {
     return;
   }
   termina_update_check_needed_ = true;

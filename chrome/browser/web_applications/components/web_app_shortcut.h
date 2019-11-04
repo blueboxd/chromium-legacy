@@ -162,7 +162,7 @@ scoped_refptr<base::TaskRunner> GetShortcutIOTaskRunner();
 // on-disk file name .
 base::FilePath GetSanitizedFileName(const base::string16& name);
 
-base::FilePath GetShortcutDataDir(const web_app::ShortcutInfo& shortcut_info);
+base::FilePath GetShortcutDataDir(const ShortcutInfo& shortcut_info);
 
 // Delete all the shortcuts for an entire profile.
 // This is executed on the FILE thread.

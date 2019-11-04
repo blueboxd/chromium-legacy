@@ -281,7 +281,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   arc_app_window_controller_ = arc_app_window_controller.get();
   app_window_controllers_.push_back(std::move(arc_app_window_controller));
 
-  if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
+  if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile)) {
     std::unique_ptr<CrostiniAppWindowShelfController> crostini_controller =
         std::make_unique<CrostiniAppWindowShelfController>(this);
     crostini_app_window_shelf_controller_ = crostini_controller.get();
@@ -1277,7 +1277,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
             profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
     app_icon_loaders_.push_back(std::move(internal_app_icon_loader));
 
-    if (crostini::IsCrostiniUIAllowedForProfile(profile_)) {
+    if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
       std::unique_ptr<AppIconLoader> crostini_app_icon_loader =
           std::make_unique<CrostiniAppIconLoader>(
               profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
@@ -1313,7 +1313,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
       app_updaters_.push_back(std::move(arc_app_updater));
     }
 
-    if (crostini::IsCrostiniUIAllowedForProfile(profile())) {
+    if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile())) {
       std::unique_ptr<LauncherAppUpdater> crostini_app_updater(
           new LauncherCrostiniAppUpdater(this, profile()));
       app_updaters_.push_back(std::move(crostini_app_updater));

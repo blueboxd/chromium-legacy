@@ -12,7 +12,6 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 enum class WebappInstallSource;
 struct WebApplicationInfo;
@@ -90,8 +89,7 @@ class InstallManager {
 
   // These params are a subset of ExternalInstallOptions.
   struct InstallParams {
-    blink::mojom::DisplayMode user_display_mode =
-        blink::mojom::DisplayMode::kUndefined;
+    DisplayMode user_display_mode = DisplayMode::kUndefined;
 
     bool add_to_applications_menu = true;
     bool add_to_desktop = true;

@@ -44,7 +44,6 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -350,7 +349,7 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
 TEST_F(PendingAppInstallTaskTest,
        WebAppOrShortcutFromContents_InstallationSucceeds) {
   auto task = GetInstallationTaskWithTestMocks(
-      {kWebAppUrl, blink::mojom::DisplayMode::kUndefined,
+      {kWebAppUrl, DisplayMode::kUndefined,
        ExternalInstallSource::kInternalDefault});
 
   base::RunLoop run_loop;
@@ -389,7 +388,7 @@ TEST_F(PendingAppInstallTaskTest,
 TEST_F(PendingAppInstallTaskTest,
        WebAppOrShortcutFromContents_InstallationFails) {
   auto task = GetInstallationTaskWithTestMocks(
-      {kWebAppUrl, blink::mojom::DisplayMode::kStandalone,
+      {kWebAppUrl, DisplayMode::kStandalone,
        ExternalInstallSource::kInternalDefault});
   data_retriever()->SetRendererWebApplicationInfo(nullptr);
 
@@ -416,7 +415,7 @@ TEST_F(PendingAppInstallTaskTest,
 TEST_F(PendingAppInstallTaskTest,
        WebAppOrShortcutFromContents_NoDesktopShortcut) {
   ExternalInstallOptions install_options(
-      kWebAppUrl, blink::mojom::DisplayMode::kStandalone,
+      kWebAppUrl, DisplayMode::kStandalone,
       ExternalInstallSource::kInternalDefault);
   install_options.add_to_desktop = false;
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
@@ -445,7 +444,7 @@ TEST_F(PendingAppInstallTaskTest,
 TEST_F(PendingAppInstallTaskTest,
        WebAppOrShortcutFromContents_NoQuickLaunchBarShortcut) {
   ExternalInstallOptions install_options(
-      kWebAppUrl, blink::mojom::DisplayMode::kStandalone,
+      kWebAppUrl, DisplayMode::kStandalone,
       ExternalInstallSource::kInternalDefault);
   install_options.add_to_quick_launch_bar = false;
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
@@ -474,7 +473,7 @@ TEST_F(
     PendingAppInstallTaskTest,
     WebAppOrShortcutFromContents_NoDesktopShortcutAndNoQuickLaunchBarShortcut) {
   ExternalInstallOptions install_options(
-      kWebAppUrl, blink::mojom::DisplayMode::kStandalone,
+      kWebAppUrl, DisplayMode::kStandalone,
       ExternalInstallSource::kInternalDefault);
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
@@ -503,7 +502,7 @@ TEST_F(
 TEST_F(PendingAppInstallTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerWindow) {
   auto install_options =
-      ExternalInstallOptions(kWebAppUrl, blink::mojom::DisplayMode::kStandalone,
+      ExternalInstallOptions(kWebAppUrl, DisplayMode::kStandalone,
                              ExternalInstallSource::kInternalDefault);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
@@ -523,7 +522,7 @@ TEST_F(PendingAppInstallTaskTest,
 TEST_F(PendingAppInstallTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerTab) {
   auto install_options =
-      ExternalInstallOptions(kWebAppUrl, blink::mojom::DisplayMode::kBrowser,
+      ExternalInstallOptions(kWebAppUrl, DisplayMode::kBrowser,
                              ExternalInstallSource::kInternalDefault);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
@@ -542,7 +541,7 @@ TEST_F(PendingAppInstallTaskTest,
 
 TEST_F(PendingAppInstallTaskTest, WebAppOrShortcutFromContents_DefaultApp) {
   auto install_options =
-      ExternalInstallOptions(kWebAppUrl, blink::mojom::DisplayMode::kUndefined,
+      ExternalInstallOptions(kWebAppUrl, DisplayMode::kUndefined,
                              ExternalInstallSource::kInternalDefault);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
@@ -563,7 +562,7 @@ TEST_F(PendingAppInstallTaskTest, WebAppOrShortcutFromContents_DefaultApp) {
 
 TEST_F(PendingAppInstallTaskTest, WebAppOrShortcutFromContents_AppFromPolicy) {
   auto install_options =
-      ExternalInstallOptions(kWebAppUrl, blink::mojom::DisplayMode::kUndefined,
+      ExternalInstallOptions(kWebAppUrl, DisplayMode::kUndefined,
                              ExternalInstallSource::kExternalPolicy);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
@@ -583,8 +582,7 @@ TEST_F(PendingAppInstallTaskTest, WebAppOrShortcutFromContents_AppFromPolicy) {
 }
 
 TEST_F(PendingAppInstallTaskTest, InstallPlaceholder) {
-  ExternalInstallOptions options(kWebAppUrl,
-                                 blink::mojom::DisplayMode::kStandalone,
+  ExternalInstallOptions options(kWebAppUrl, DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   auto task = GetInstallationTaskWithTestMocks(std::move(options));
@@ -618,8 +616,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholder) {
 // Tests that palceholders are correctly installed when the platform doesn't
 // support os shortcuts.
 TEST_F(PendingAppInstallTaskTest, InstallPlaceholderNoCreateOsShorcuts) {
-  ExternalInstallOptions options(kWebAppUrl,
-                                 blink::mojom::DisplayMode::kStandalone,
+  ExternalInstallOptions options(kWebAppUrl, DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   auto task = GetInstallationTaskWithTestMocks(std::move(options));
@@ -652,8 +649,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholderNoCreateOsShorcuts) {
 }
 
 TEST_F(PendingAppInstallTaskTest, InstallPlaceholderTwice) {
-  ExternalInstallOptions options(kWebAppUrl,
-                                 blink::mojom::DisplayMode::kStandalone,
+  ExternalInstallOptions options(kWebAppUrl, DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   AppId placeholder_app_id;
@@ -692,8 +688,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholderTwice) {
 }
 
 TEST_F(PendingAppInstallTaskTest, ReinstallPlaceholderSucceeds) {
-  ExternalInstallOptions options(kWebAppUrl,
-                                 blink::mojom::DisplayMode::kStandalone,
+  ExternalInstallOptions options(kWebAppUrl, DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   AppId placeholder_app_id;
@@ -738,8 +733,7 @@ TEST_F(PendingAppInstallTaskTest, ReinstallPlaceholderSucceeds) {
 }
 
 TEST_F(PendingAppInstallTaskTest, ReinstallPlaceholderFails) {
-  ExternalInstallOptions options(kWebAppUrl,
-                                 blink::mojom::DisplayMode::kStandalone,
+  ExternalInstallOptions options(kWebAppUrl, DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   AppId placeholder_app_id;
@@ -788,8 +782,7 @@ TEST_F(PendingAppInstallTaskTest, ReinstallPlaceholderFails) {
 }
 
 TEST_F(PendingAppInstallTaskTest, UninstallAndReplace) {
-  ExternalInstallOptions options = {kWebAppUrl,
-                                    blink::mojom::DisplayMode::kUndefined,
+  ExternalInstallOptions options = {kWebAppUrl, DisplayMode::kUndefined,
                                     ExternalInstallSource::kInternalDefault};
   AppId app_id;
   {
@@ -850,7 +843,7 @@ TEST_F(PendingAppInstallTaskTest, InstallURLLoadFailed) {
     base::RunLoop run_loop;
 
     ExternalInstallOptions install_options(
-        GURL(), blink::mojom::DisplayMode::kStandalone,
+        GURL(), DisplayMode::kStandalone,
         ExternalInstallSource::kInternalDefault);
     PendingAppInstallTask install_task(profile(), registrar(),
                                        shortcut_manager(), ui_manager(),
@@ -869,7 +862,7 @@ TEST_F(PendingAppInstallTaskTest, InstallURLLoadFailed) {
 
 TEST_F(PendingAppInstallTaskTest, FailedWebContentsDestroyed) {
   ExternalInstallOptions install_options(
-      GURL(), blink::mojom::DisplayMode::kStandalone,
+      GURL(), DisplayMode::kStandalone,
       ExternalInstallSource::kInternalDefault);
   PendingAppInstallTask install_task(profile(), registrar(), shortcut_manager(),
                                      ui_manager(), finalizer(),

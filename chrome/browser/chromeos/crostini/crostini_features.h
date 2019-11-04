@@ -17,6 +17,11 @@ class CrostiniFeatures {
  public:
   static CrostiniFeatures* Get();
 
+  // Returns true if crostini is allowed to run for |profile|.
+  // Otherwise, returns false, e.g. if crostini is not available on the device,
+  // or it is in the flow to set up managed account creation.
+  virtual bool IsAllowed(Profile* profile);
+
   // When |check_policy| is true, returns true if fully interactive crostini UI
   // may be shown. Implies crostini is allowed to run.
   // When check_policy is false, returns true if crostini UI is not forbidden by

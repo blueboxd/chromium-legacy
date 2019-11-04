@@ -9,10 +9,10 @@
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -36,7 +36,7 @@ bool WebAppBrowserController::CreatedForInstalledPwa() const {
 
 bool WebAppBrowserController::HasMinimalUiButtons() const {
   return registrar().GetAppEffectiveDisplayMode(app_id_) ==
-         blink::mojom::DisplayMode::kMinimalUi;
+         DisplayMode::kMinimalUi;
 }
 
 bool WebAppBrowserController::IsHostedApp() const {

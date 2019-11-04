@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
@@ -43,10 +44,8 @@ class WebAppRegistrar : public AppRegistrar {
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
-  blink::mojom::DisplayMode GetAppDisplayMode(
-      const AppId& app_id) const override;
-  blink::mojom::DisplayMode GetAppUserDisplayMode(
-      const AppId& app_id) const override;
+  DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
+  DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
 
   // Only range-based |for| loop supported. Don't use AppSet directly.

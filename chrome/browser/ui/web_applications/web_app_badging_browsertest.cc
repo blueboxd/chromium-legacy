@@ -120,8 +120,8 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     awaiter_->Run();
   }
 
-  const web_app::AppId& main_app_id() { return main_app_id_; }
-  const web_app::AppId& cross_site_app_id() { return cross_site_app_id_; }
+  const AppId& main_app_id() { return main_app_id_; }
+  const AppId& cross_site_app_id() { return cross_site_app_id_; }
 
   RenderFrameHost* main_frame_;
   RenderFrameHost* in_scope_frame_;
@@ -129,12 +129,12 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
   bool was_cleared_ = false;
   bool was_flagged_ = false;
-  base::Optional<web_app::AppId> changed_app_id_ = base::nullopt;
+  base::Optional<AppId> changed_app_id_ = base::nullopt;
   base::Optional<uint64_t> last_badge_content_ = base::nullopt;
 
  private:
-  web_app::AppId main_app_id_;
-  web_app::AppId cross_site_app_id_;
+  AppId main_app_id_;
+  AppId cross_site_app_id_;
   std::unique_ptr<base::RunLoop> awaiter_;
   badging::TestBadgeManagerDelegate* delegate_;
   net::EmbeddedTestServer cross_origin_https_server_;
@@ -249,6 +249,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
+    ControllerTypeParamToString);
 
 }  // namespace web_app

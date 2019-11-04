@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -101,7 +102,7 @@ void FindCrostiniTasks(Profile* profile,
                        const std::vector<extensions::EntryInfo>& entries,
                        std::vector<FullTaskDescriptor>* result_list,
                        base::OnceClosure completion_closure) {
-  if (!crostini::IsCrostiniUIAllowedForProfile(profile)) {
+  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile)) {
     std::move(completion_closure).Run();
     return;
   }
@@ -163,7 +164,7 @@ void ExecuteCrostiniTask(
     const TaskDescriptor& task,
     const std::vector<storage::FileSystemURL>& file_system_urls,
     FileTaskFinishedCallback done) {
-  DCHECK(crostini::IsCrostiniUIAllowedForProfile(profile));
+  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
 
   crostini::LaunchCrostiniApp(profile, task.app_id, display::kInvalidDisplayId,
                               file_system_urls,

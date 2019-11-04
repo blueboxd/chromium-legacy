@@ -69,8 +69,7 @@ content::WebContents* ShowWebApplicationWindow(
 
   SetWebAppPrefsForWebContents(web_contents);
 
-  web_app::WebAppTabHelper* tab_helper =
-      web_app::WebAppTabHelper::FromWebContents(web_contents);
+  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
   tab_helper->SetAppId(app_id);
 
@@ -88,8 +87,7 @@ content::WebContents* ShowWebApplicationWindow(
 }  // namespace
 
 WebAppLaunchManager::WebAppLaunchManager(Profile* profile)
-    : apps::LaunchManager(profile),
-      provider_(web_app::WebAppProvider::Get(profile)) {}
+    : apps::LaunchManager(profile), provider_(WebAppProvider::Get(profile)) {}
 
 WebAppLaunchManager::~WebAppLaunchManager() = default;
 
@@ -99,11 +97,10 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
     return nullptr;
 
   // System Web Apps go through their own launch path.
-  base::Optional<web_app::SystemAppType> system_app_type =
-      web_app::GetSystemWebAppTypeForAppId(profile(), params.app_id);
+  base::Optional<SystemAppType> system_app_type =
+      GetSystemWebAppTypeForAppId(profile(), params.app_id);
   if (system_app_type) {
-    Browser* browser =
-        web_app::LaunchSystemWebApp(profile(), *system_app_type, GURL());
+    Browser* browser = LaunchSystemWebApp(profile(), *system_app_type, GURL());
     return browser->tab_strip_model()->GetActiveWebContents();
   }
 

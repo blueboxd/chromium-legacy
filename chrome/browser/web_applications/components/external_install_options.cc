@@ -8,13 +8,12 @@
 #include <tuple>
 
 #include "base/strings/string_util.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 
 namespace web_app {
 
 ExternalInstallOptions::ExternalInstallOptions(
     const GURL& url,
-    blink::mojom::DisplayMode user_display_mode,
+    DisplayMode user_display_mode,
     ExternalInstallSource install_source)
     : url(url),
       user_display_mode(user_display_mode),

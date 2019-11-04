@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -14,7 +13,6 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -108,7 +106,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   local_data->set_is_locally_installed(web_app.is_locally_installed());
 
   // Optional fields:
-  if (web_app.display_mode() != blink::mojom::DisplayMode::kUndefined) {
+  if (web_app.display_mode() != DisplayMode::kUndefined) {
     local_data->set_display_mode(
         ToWebAppProtoDisplayMode(web_app.display_mode()));
   }
@@ -339,58 +337,56 @@ std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(const AppId& app_id,
   return web_app;
 }
 
-blink::mojom::DisplayMode ToMojomDisplayMode(
-    WebAppProto::DisplayMode display_mode) {
+DisplayMode ToMojomDisplayMode(WebAppProto::DisplayMode display_mode) {
   switch (display_mode) {
     case WebAppProto::BROWSER:
-      return blink::mojom::DisplayMode::kBrowser;
+      return DisplayMode::kBrowser;
     case WebAppProto::MINIMAL_UI:
-      return blink::mojom::DisplayMode::kMinimalUi;
+      return DisplayMode::kMinimalUi;
     case WebAppProto::STANDALONE:
-      return blink::mojom::DisplayMode::kStandalone;
+      return DisplayMode::kStandalone;
     case WebAppProto::FULLSCREEN:
-      return blink::mojom::DisplayMode::kFullscreen;
+      return DisplayMode::kFullscreen;
   }
 }
 
-blink::mojom::DisplayMode ToMojomDisplayMode(
+DisplayMode ToMojomDisplayMode(
     ::sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode) {
   switch (user_display_mode) {
     case ::sync_pb::WebAppSpecifics::BROWSER:
-      return blink::mojom::DisplayMode::kBrowser;
+      return DisplayMode::kBrowser;
     case ::sync_pb::WebAppSpecifics::STANDALONE:
-      return blink::mojom::DisplayMode::kStandalone;
+      return DisplayMode::kStandalone;
   }
 }
 
-WebAppProto::DisplayMode ToWebAppProtoDisplayMode(
-    blink::mojom::DisplayMode display_mode) {
+WebAppProto::DisplayMode ToWebAppProtoDisplayMode(DisplayMode display_mode) {
   switch (display_mode) {
-    case blink::mojom::DisplayMode::kBrowser:
+    case DisplayMode::kBrowser:
       return WebAppProto::BROWSER;
-    case blink::mojom::DisplayMode::kMinimalUi:
+    case DisplayMode::kMinimalUi:
       return WebAppProto::MINIMAL_UI;
-    case blink::mojom::DisplayMode::kUndefined:
+    case DisplayMode::kUndefined:
       NOTREACHED();
       FALLTHROUGH;
-    case blink::mojom::DisplayMode::kStandalone:
+    case DisplayMode::kStandalone:
       return WebAppProto::STANDALONE;
-    case blink::mojom::DisplayMode::kFullscreen:
+    case DisplayMode::kFullscreen:
       return WebAppProto::FULLSCREEN;
   }
 }
 
 ::sync_pb::WebAppSpecifics::UserDisplayMode ToWebAppSpecificsUserDisplayMode(
-    blink::mojom::DisplayMode user_display_mode) {
+    DisplayMode user_display_mode) {
   switch (user_display_mode) {
-    case blink::mojom::DisplayMode::kBrowser:
+    case DisplayMode::kBrowser:
       return ::sync_pb::WebAppSpecifics::BROWSER;
-    case blink::mojom::DisplayMode::kUndefined:
-    case blink::mojom::DisplayMode::kMinimalUi:
-    case blink::mojom::DisplayMode::kFullscreen:
+    case DisplayMode::kUndefined:
+    case DisplayMode::kMinimalUi:
+    case DisplayMode::kFullscreen:
       NOTREACHED();
       FALLTHROUGH;
-    case blink::mojom::DisplayMode::kStandalone:
+    case DisplayMode::kStandalone:
       return ::sync_pb::WebAppSpecifics::STANDALONE;
   }
 }

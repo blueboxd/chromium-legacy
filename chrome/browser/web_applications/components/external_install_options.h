@@ -8,8 +8,8 @@
 #include <iosfwd>
 
 #include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -18,7 +18,7 @@ enum class ExternalInstallSource;
 
 struct ExternalInstallOptions {
   ExternalInstallOptions(const GURL& url,
-                         blink::mojom::DisplayMode user_display_mode,
+                         DisplayMode user_display_mode,
                          ExternalInstallSource install_source);
   ~ExternalInstallOptions();
   ExternalInstallOptions(const ExternalInstallOptions& other);
@@ -28,7 +28,7 @@ struct ExternalInstallOptions {
   bool operator==(const ExternalInstallOptions& other) const;
 
   GURL url;
-  blink::mojom::DisplayMode user_display_mode;
+  DisplayMode user_display_mode;
   ExternalInstallSource install_source;
 
   // If true, a shortcut is added to the Applications folder on macOS, and Start

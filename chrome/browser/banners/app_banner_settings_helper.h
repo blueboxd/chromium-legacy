@@ -73,11 +73,6 @@ class AppBannerSettingsHelper {
     APP_BANNER_EVENT_NUM_EVENTS,
   };
 
-  enum AppBannerRapporMetric {
-    WEB,
-    NATIVE,
-  };
-
   static const char kInstantAppsKey[];
 
   // The content setting basically records a simplified subset of history.
@@ -90,14 +85,12 @@ class AppBannerSettingsHelper {
   // Record a banner installation event, for either a WEB or NATIVE app.
   static void RecordBannerInstallEvent(
       content::WebContents* web_contents,
-      const std::string& package_name_or_start_url,
-      AppBannerRapporMetric rappor_metric);
+      const std::string& package_name_or_start_url);
 
   // Record a banner dismissal event, for either a WEB or NATIVE app.
   static void RecordBannerDismissEvent(
       content::WebContents* web_contents,
-      const std::string& package_name_or_start_url,
-      AppBannerRapporMetric rappor_metric);
+      const std::string& package_name_or_start_url);
 
   // Record a banner event specified by |event|.
   static void RecordBannerEvent(content::WebContents* web_contents,

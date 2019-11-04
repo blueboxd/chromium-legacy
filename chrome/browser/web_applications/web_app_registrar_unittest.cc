@@ -23,7 +23,6 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -40,8 +39,8 @@ Registry CreateRegistryForTesting(const std::string& base_url, int num_apps) {
     auto web_app = std::make_unique<WebApp>(app_id);
     web_app->AddSource(Source::kSync);
     web_app->SetLaunchUrl(GURL(url));
-    web_app->SetDisplayMode(blink::mojom::DisplayMode::kBrowser);
-    web_app->SetUserDisplayMode(blink::mojom::DisplayMode::kBrowser);
+    web_app->SetDisplayMode(DisplayMode::kBrowser);
+    web_app->SetUserDisplayMode(DisplayMode::kBrowser);
 
     registry.emplace(app_id, std::move(web_app));
   }
@@ -132,8 +131,8 @@ class WebAppRegistrarTest : public WebAppTest {
     auto web_app = std::make_unique<WebApp>(app_id);
 
     web_app->AddSource(Source::kSync);
-    web_app->SetDisplayMode(blink::mojom::DisplayMode::kStandalone);
-    web_app->SetUserDisplayMode(blink::mojom::DisplayMode::kStandalone);
+    web_app->SetDisplayMode(DisplayMode::kStandalone);
+    web_app->SetUserDisplayMode(DisplayMode::kStandalone);
     web_app->SetName("Name");
     web_app->SetLaunchUrl(launch_url);
     return web_app;
@@ -174,8 +173,8 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   auto web_app2 = std::make_unique<WebApp>(app_id2);
 
   web_app->AddSource(Source::kSync);
-  web_app->SetDisplayMode(blink::mojom::DisplayMode::kStandalone);
-  web_app->SetUserDisplayMode(blink::mojom::DisplayMode::kStandalone);
+  web_app->SetDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
   web_app->SetName(name);
   web_app->SetDescription(description);
   web_app->SetLaunchUrl(launch_url);
@@ -183,8 +182,8 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   web_app->SetThemeColor(theme_color);
 
   web_app2->AddSource(Source::kDefault);
-  web_app2->SetDisplayMode(blink::mojom::DisplayMode::kBrowser);
-  web_app2->SetUserDisplayMode(blink::mojom::DisplayMode::kBrowser);
+  web_app2->SetDisplayMode(DisplayMode::kBrowser);
+  web_app2->SetUserDisplayMode(DisplayMode::kBrowser);
   web_app2->SetLaunchUrl(launch_url2);
 
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id));
@@ -254,7 +253,7 @@ TEST_F(WebAppRegistrarTest, AllAppsMutable) {
   std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 10);
 
   for (WebApp& web_app : controller().mutable_registrar().AllAppsMutable()) {
-    web_app.SetDisplayMode(blink::mojom::DisplayMode::kStandalone);
+    web_app.SetDisplayMode(DisplayMode::kStandalone);
     const size_t num_removed = ids.erase(web_app.app_id());
     EXPECT_EQ(1U, num_removed);
   }
@@ -311,8 +310,8 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   const std::string name = "Name";
   const std::string description = "Description";
   const base::Optional<SkColor> theme_color = 0xAABBCCDD;
-  const auto display_mode = blink::mojom::DisplayMode::kMinimalUi;
-  const auto user_display_mode = blink::mojom::DisplayMode::kStandalone;
+  const auto display_mode = DisplayMode::kMinimalUi;
+  const auto user_display_mode = DisplayMode::kStandalone;
 
   EXPECT_EQ(std::string(), registrar().GetAppShortName(app_id));
   EXPECT_EQ(GURL(), registrar().GetAppLaunchURL(app_id));
@@ -335,7 +334,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   EXPECT_EQ(description, registrar().GetAppDescription(app_id));
   EXPECT_EQ(theme_color, registrar().GetAppThemeColor(app_id));
   EXPECT_EQ(launch_url, registrar().GetAppLaunchURL(app_id));
-  EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
+  EXPECT_EQ(DisplayMode::kStandalone,
             registrar().GetAppUserDisplayMode(app_id));
 
   {
@@ -347,19 +346,15 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   }
 
   {
-    EXPECT_EQ(blink::mojom::DisplayMode::kUndefined,
+    EXPECT_EQ(DisplayMode::kUndefined,
               registrar().GetAppUserDisplayMode("unknown"));
 
-    web_app_ptr->SetUserDisplayMode(blink::mojom::DisplayMode::kBrowser);
-    EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
-              registrar().GetAppUserDisplayMode(app_id));
+    web_app_ptr->SetUserDisplayMode(DisplayMode::kBrowser);
+    EXPECT_EQ(DisplayMode::kBrowser, registrar().GetAppUserDisplayMode(app_id));
 
-    sync_bridge().SetAppUserDisplayMode(app_id,
-                                        blink::mojom::DisplayMode::kStandalone);
-    EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
-              web_app_ptr->user_display_mode());
-    EXPECT_EQ(blink::mojom::DisplayMode::kMinimalUi,
-              web_app_ptr->display_mode());
+    sync_bridge().SetAppUserDisplayMode(app_id, DisplayMode::kStandalone);
+    EXPECT_EQ(DisplayMode::kStandalone, web_app_ptr->user_display_mode());
+    EXPECT_EQ(DisplayMode::kMinimalUi, web_app_ptr->display_mode());
   }
 }
 
@@ -376,8 +371,7 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
   const AppId app2_id = GenerateAppIdFromURL(app2_scope);
   const AppId app3_id = GenerateAppIdFromURL(app3_scope);
 
-  std::vector<web_app::AppId> in_scope =
-      registrar().FindAppsInScope(origin_scope);
+  std::vector<AppId> in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_EQ(0u, in_scope.size());
 
   auto app1 = CreateWebApp(app1_scope.spec());
@@ -555,7 +549,7 @@ TEST_F(WebAppRegistrarTest, BeginAndCommitUpdate) {
   for (auto& app_id : ids) {
     WebApp* app = update->UpdateApp(app_id);
     EXPECT_TRUE(app);
-    app->SetDisplayMode(blink::mojom::DisplayMode::kStandalone);
+    app->SetDisplayMode(DisplayMode::kStandalone);
   }
 
   SyncBridgeCommitUpdate(std::move(update));

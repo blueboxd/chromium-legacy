@@ -22,11 +22,16 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   ~FakeCrostiniFeatures() override;
 
   // CrostiniFeatures:
+  bool IsAllowed(Profile* profile) override;
   bool IsUIAllowed(Profile* profile, bool check_policy) override;
   bool IsEnabled(Profile* profile) override;
   bool IsExportImportUIAllowed(Profile* profile) override;
   bool IsRootAccessAllowed(Profile* profile) override;
 
+  void set_allowed(bool allowed) {
+    allowed_set_ = true;
+    allowed_ = allowed;
+  }
   void set_ui_allowed(bool allowed) {
     ui_allowed_set_ = true;
     ui_allowed_ = allowed;
@@ -49,6 +54,8 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   // FakeCrostiniFeatures is created and replaced at destruction.
   CrostiniFeatures* original_features_;
 
+  bool allowed_set_ = false;
+  bool allowed_ = false;
   bool ui_allowed_set_ = false;
   bool ui_allowed_ = false;
   bool enabled_ = false;

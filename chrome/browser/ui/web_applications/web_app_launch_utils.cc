@@ -82,9 +82,8 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
   // indication to the user, so disallow it.
   DCHECK(!profile->IsOffTheRecord());
   Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      web_app::GenerateApplicationNameFromAppId(app_id),
-      true /* trusted_source */, gfx::Rect(), profile,
-      true /* user_gesture */));
+      GenerateApplicationNameFromAppId(app_id), true /* trusted_source */,
+      gfx::Rect(), profile, true /* user_gesture */));
   return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);
 }
 
@@ -95,7 +94,7 @@ Browser* ReparentWebContentsForFocusMode(content::WebContents* contents) {
   // and incognito sessions.
   DCHECK(!profile->IsOffTheRecord());
   Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      web_app::GenerateApplicationNameForFocusMode(), true /* trusted_source */,
+      GenerateApplicationNameForFocusMode(), true /* trusted_source */,
       gfx::Rect(), profile, true /* user_gesture */));
   browser_params.is_focus_mode = true;
   return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);

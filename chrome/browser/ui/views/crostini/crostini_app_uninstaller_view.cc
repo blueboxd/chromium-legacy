@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,7 +33,7 @@ void ShowCrostiniAppUninstallerView(Profile* profile,
 // static
 void CrostiniAppUninstallerView::Show(Profile* profile,
                                       const std::string& app_id) {
-  DCHECK(crostini::IsCrostiniUIAllowedForProfile(profile));
+  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
   views::DialogDelegate::CreateDialogWidget(
       new CrostiniAppUninstallerView(profile, app_id), nullptr, nullptr)
       ->Show();

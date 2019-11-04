@@ -35,8 +35,7 @@ class WebAppGuestSessionBrowserTest : public InProcessBrowserTest {
 // Test that the OS Settings app launches successfully.
 IN_PROC_BROWSER_TEST_F(WebAppGuestSessionBrowserTest, LaunchOsSettings) {
   auto& system_web_app_manager =
-      web_app::WebAppProvider::Get(browser()->profile())
-          ->system_web_app_manager();
+      WebAppProvider::Get(browser()->profile())->system_web_app_manager();
   system_web_app_manager.InstallSystemAppsForTesting();
 
   Profile* profile = browser()->profile();

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_
 
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom-forward.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -137,13 +137,14 @@ enum class ExternalInstallSource {
   kArc = 4,
 };
 
+using DisplayMode = blink::mojom::DisplayMode;
+
 // When user_display_mode indicates a user preference for opening in
 // a browser tab, we open in a browser tab. Otherwise, we open in a standalone
 // window (for app_display_mode 'standalone' or 'fullscreen'), or a minimal-ui
 // window (for app_display_mode 'browser' or 'minimal-ui').
-blink::mojom::DisplayMode ResolveEffectiveDisplayMode(
-    blink::mojom::DisplayMode app_display_mode,
-    blink::mojom::DisplayMode user_display_mode);
+DisplayMode ResolveEffectiveDisplayMode(DisplayMode app_display_mode,
+                                        DisplayMode user_display_mode);
 
 }  // namespace web_app
 

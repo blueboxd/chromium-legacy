@@ -31,7 +31,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -51,8 +50,7 @@ const GURL kQuxLaunchUrl("https://qux.example/launch");
 ExternalInstallOptions GetFooInstallOptions(
     base::Optional<bool> override_previous_user_uninstall =
         base::Optional<bool>()) {
-  ExternalInstallOptions options(kFooWebAppUrl,
-                                 blink::mojom::DisplayMode::kBrowser,
+  ExternalInstallOptions options(kFooWebAppUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
 
   if (override_previous_user_uninstall.has_value())
@@ -63,15 +61,13 @@ ExternalInstallOptions GetFooInstallOptions(
 }
 
 ExternalInstallOptions GetBarInstallOptions() {
-  ExternalInstallOptions options(kBarWebAppUrl,
-                                 blink::mojom::DisplayMode::kStandalone,
+  ExternalInstallOptions options(kBarWebAppUrl, DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   return options;
 }
 
 ExternalInstallOptions GetQuxInstallOptions() {
-  ExternalInstallOptions options(kQuxWebAppUrl,
-                                 blink::mojom::DisplayMode::kStandalone,
+  ExternalInstallOptions options(kQuxWebAppUrl, DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   return options;
 }
@@ -276,7 +272,7 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    auto* provider = web_app::TestWebAppProvider::Get(profile());
+    auto* provider = TestWebAppProvider::Get(profile());
 
     auto test_app_registrar = std::make_unique<TestAppRegistrar>();
     app_registrar_ = test_app_registrar.get();
@@ -754,8 +750,7 @@ TEST_F(PendingAppManagerImplTest, Install_AlwaysUpdate) {
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
   auto get_force_reinstall_info = []() {
-    ExternalInstallOptions options(kFooWebAppUrl,
-                                   blink::mojom::DisplayMode::kStandalone,
+    ExternalInstallOptions options(kFooWebAppUrl, DisplayMode::kStandalone,
                                    ExternalInstallSource::kExternalPolicy);
     options.force_reinstall = true;
     return options;

@@ -858,7 +858,7 @@ class RTCPeerConnectionHandler::Observer
       : handler_(handler), main_thread_(task_runner) {}
 
   // When an RTC event log is sent back from PeerConnection, it arrives here.
-  void OnWebRtcEventLogWrite(const std::string& output) override {
+  void OnWebRtcEventLogWrite(const String& output) override {
     if (!main_thread_->BelongsToCurrentThread()) {
       main_thread_->PostTask(
           FROM_HERE,
@@ -949,11 +949,11 @@ class RTCPeerConnectionHandler::Observer
 
     main_thread_->PostTask(
         FROM_HERE,
-        base::BindOnce(&RTCPeerConnectionHandler::Observer::OnIceCandidateImpl,
-                       this, sdp, candidate->sdp_mid(),
-                       candidate->sdp_mline_index(),
-                       candidate->candidate().component(),
-                       candidate->candidate().address().family()));
+        base::BindOnce(
+            &RTCPeerConnectionHandler::Observer::OnIceCandidateImpl, this,
+            String::FromUTF8(sdp), String::FromUTF8(candidate->sdp_mid()),
+            candidate->sdp_mline_index(), candidate->candidate().component(),
+            candidate->candidate().address().family()));
   }
 
   void OnIceCandidateError(const std::string& host_candidate,
@@ -964,7 +964,8 @@ class RTCPeerConnectionHandler::Observer
         FROM_HERE,
         base::BindOnce(
             &RTCPeerConnectionHandler::Observer::OnIceCandidateErrorImpl, this,
-            host_candidate, url, error_code, error_text));
+            String::FromUTF8(host_candidate), String::FromUTF8(url), error_code,
+            String::FromUTF8(error_text)));
   }
 
   void OnDataChannelImpl(scoped_refptr<DataChannelInterface> channel) {
@@ -973,8 +974,8 @@ class RTCPeerConnectionHandler::Observer
       handler_->OnDataChannel(std::move(channel));
   }
 
-  void OnIceCandidateImpl(const std::string& sdp,
-                          const std::string& sdp_mid,
+  void OnIceCandidateImpl(const String& sdp,
+                          const String& sdp_mid,
                           int sdp_mline_index,
                           int component,
                           int address_family) {
@@ -985,10 +986,10 @@ class RTCPeerConnectionHandler::Observer
     }
   }
 
-  void OnIceCandidateErrorImpl(const std::string& host_candidate,
-                               const std::string& url,
+  void OnIceCandidateErrorImpl(const String& host_candidate,
+                               const String& url,
                                int error_code,
-                               const std::string& error_text) {
+                               const String& error_text) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     if (handler_) {
       handler_->OnIceCandidateError(host_candidate, url, error_code,
@@ -1308,22 +1309,23 @@ void RTCPeerConnectionHandler::SetLocalDescription(
   webrtc::SessionDescriptionInterface* native_desc =
       CreateNativeSessionDescription(sdp, type, &error);
   if (!native_desc) {
-    std::string reason_str = "Failed to parse SessionDescription. ";
-    reason_str.append(error.line);
-    reason_str.append(" ");
-    reason_str.append(error.description);
-    LOG(ERROR) << reason_str;
+    StringBuilder reason_str;
+    reason_str.Append("Failed to parse SessionDescription. ");
+    reason_str.Append(error.line.c_str());
+    reason_str.Append(" ");
+    reason_str.Append(error.description.c_str());
+    LOG(ERROR) << reason_str.ToString();
     if (peer_connection_tracker_) {
       peer_connection_tracker_->TrackSessionDescriptionCallback(
           this, PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION,
-          "OnFailure", String::FromUTF8(reason_str));
+          "OnFailure", reason_str.ToString());
     }
     // Warning: this line triggers the error callback to be executed, causing
     // arbitrary JavaScript to be executed synchronously. As a result, it is
     // possible for |this| to be deleted after this line. See
     // https://crbug.com/1005251.
     request.RequestFailed(webrtc::RTCError(webrtc::RTCErrorType::INTERNAL_ERROR,
-                                           std::move(reason_str)));
+                                           reason_str.ToString().Utf8()));
     return;
   }
 
@@ -1385,22 +1387,24 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
   std::unique_ptr<webrtc::SessionDescriptionInterface> native_desc(
       CreateNativeSessionDescription(sdp, type, &error));
   if (!native_desc) {
-    std::string reason_str = "Failed to parse SessionDescription. ";
-    reason_str.append(error.line);
-    reason_str.append(" ");
-    reason_str.append(error.description);
-    LOG(ERROR) << reason_str;
+    StringBuilder reason_str;
+    reason_str.Append("Failed to parse SessionDescription. ");
+    reason_str.Append(error.line.c_str());
+    reason_str.Append(" ");
+    reason_str.Append(error.description.c_str());
+    LOG(ERROR) << reason_str.ToString();
     if (peer_connection_tracker_) {
       peer_connection_tracker_->TrackSessionDescriptionCallback(
           this, PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION,
-          "OnFailure", String::FromUTF8(reason_str));
+          "OnFailure", reason_str.ToString());
     }
     // Warning: this line triggers the error callback to be executed, causing
     // arbitrary JavaScript to be executed synchronously. As a result, it is
     // possible for |this| to be deleted after this line. See
     // https://crbug.com/1005251.
-    request.RequestFailed(webrtc::RTCError(
-        webrtc::RTCErrorType::UNSUPPORTED_OPERATION, std::move(reason_str)));
+    request.RequestFailed(
+        webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION,
+                         reason_str.ToString().Utf8()));
     return;
   }
 
@@ -2037,12 +2041,10 @@ void RTCPeerConnectionHandler::StopEventLog() {
   native_peer_connection_->StopRtcEventLog();
 }
 
-void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(
-    const std::string& output) {
+void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(const String& output) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (peer_connection_tracker_) {
-    peer_connection_tracker_->TrackRtcEventLogWrite(this,
-                                                    String::FromUTF8(output));
+    peer_connection_tracker_->TrackRtcEventLogWrite(this, output);
   }
 }
 
@@ -2388,17 +2390,15 @@ void RTCPeerConnectionHandler::OnDataChannel(
     client_->DidAddRemoteDataChannel(std::move(channel));
 }
 
-void RTCPeerConnectionHandler::OnIceCandidate(const std::string& sdp,
-                                              const std::string& sdp_mid,
+void RTCPeerConnectionHandler::OnIceCandidate(const String& sdp,
+                                              const String& sdp_mid,
                                               int sdp_mline_index,
                                               int component,
                                               int address_family) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateImpl");
   scoped_refptr<blink::WebRTCICECandidate> web_candidate =
-      blink::WebRTCICECandidate::Create(blink::WebString::FromUTF8(sdp),
-                                        blink::WebString::FromUTF8(sdp_mid),
-                                        sdp_mline_index);
+      blink::WebRTCICECandidate::Create(sdp, sdp_mid, sdp_mline_index);
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddIceCandidate(
         this, web_candidate, PeerConnectionTracker::SOURCE_LOCAL, true);
@@ -2419,18 +2419,15 @@ void RTCPeerConnectionHandler::OnIceCandidate(const std::string& sdp,
     client_->DidGenerateICECandidate(std::move(web_candidate));
 }
 
-void RTCPeerConnectionHandler::OnIceCandidateError(
-    const std::string& host_candidate,
-    const std::string& url,
-    int error_code,
-    const std::string& error_text) {
+void RTCPeerConnectionHandler::OnIceCandidateError(const String& host_candidate,
+                                                   const String& url,
+                                                   int error_code,
+                                                   const String& error_text) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateError");
 
   if (!is_closed_) {
-    client_->DidFailICECandidate(blink::WebString::FromUTF8(host_candidate),
-                                 blink::WebString::FromUTF8(url), error_code,
-                                 blink::WebString::FromUTF8(error_text));
+    client_->DidFailICECandidate(host_candidate, url, error_code, error_text);
   }
 }
 

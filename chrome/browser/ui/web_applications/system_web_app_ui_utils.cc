@@ -37,21 +37,20 @@
 
 namespace web_app {
 
-base::Optional<SystemAppType> GetSystemWebAppTypeForAppId(
-    Profile* profile,
-    web_app::AppId app_id) {
+base::Optional<SystemAppType> GetSystemWebAppTypeForAppId(Profile* profile,
+                                                          AppId app_id) {
   auto* provider = WebAppProvider::Get(profile);
   return provider ? provider->system_web_app_manager().GetSystemAppTypeForAppId(
                         app_id)
                   : base::Optional<SystemAppType>();
 }
 
-base::Optional<web_app::AppId> GetAppIdForSystemWebApp(Profile* profile,
-                                                       SystemAppType app_type) {
+base::Optional<AppId> GetAppIdForSystemWebApp(Profile* profile,
+                                              SystemAppType app_type) {
   auto* provider = WebAppProvider::Get(profile);
   return provider
              ? provider->system_web_app_manager().GetAppIdForSystemApp(app_type)
-             : base::Optional<web_app::AppId>();
+             : base::Optional<AppId>();
 }
 
 Browser* LaunchSystemWebApp(Profile* profile,
@@ -71,8 +70,7 @@ Browser* LaunchSystemWebApp(Profile* profile,
     }
   }
 
-  base::Optional<web_app::AppId> app_id =
-      GetAppIdForSystemWebApp(profile, app_type);
+  base::Optional<AppId> app_id = GetAppIdForSystemWebApp(profile, app_type);
   // TODO(calamity): Queue a task to launch app after it is installed.
   if (!app_id)
     return nullptr;
@@ -103,8 +101,7 @@ Browser* LaunchSystemWebApp(Profile* profile,
 Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type) {
   // TODO(calamity): Determine whether, during startup, we need to wait for
   // app install and then provide a valid answer here.
-  base::Optional<web_app::AppId> app_id =
-      GetAppIdForSystemWebApp(profile, app_type);
+  base::Optional<AppId> app_id = GetAppIdForSystemWebApp(profile, app_type);
   if (!app_id)
     return nullptr;
 

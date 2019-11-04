@@ -56,7 +56,7 @@ std::unique_ptr<WebApplicationInfo> ConvertWebAppToRendererWebApplicationInfo(
   // populated by a UI dialog in production code. We set it here for testing
   // purposes.
   web_application_info->open_as_window =
-      app.user_display_mode() == blink::mojom::DisplayMode::kStandalone;
+      app.user_display_mode() == DisplayMode::kStandalone;
   return web_application_info;
 }
 
@@ -160,10 +160,9 @@ class WebAppInstallManagerTest : public WebAppTest {
     return web_app_info;
   }
 
-  std::unique_ptr<WebApp> CreateWebApp(
-      const GURL& launch_url,
-      Source::Type source,
-      blink::mojom::DisplayMode user_display_mode) {
+  std::unique_ptr<WebApp> CreateWebApp(const GURL& launch_url,
+                                       Source::Type source,
+                                       DisplayMode user_display_mode) {
     const AppId app_id = GenerateAppIdFromURL(launch_url);
 
     auto web_app = std::make_unique<WebApp>(app_id);
@@ -177,7 +176,7 @@ class WebAppInstallManagerTest : public WebAppTest {
   std::unique_ptr<WebApp> CreateWebAppInSyncInstall(
       const GURL& launch_url,
       const std::string& app_name,
-      blink::mojom::DisplayMode user_display_mode,
+      DisplayMode user_display_mode,
       SkColor theme_color,
       bool locally_installed) {
     auto web_app = CreateWebApp(launch_url, Source::kSync, user_display_mode);
@@ -420,10 +419,10 @@ TEST_F(WebAppInstallManagerTest,
 
   install_manager().InstallWebAppFromSync(
       app_id, CreateWebAppInfo(app_url),
-      base::BindLambdaForTesting([](const web_app::AppId& installed_app_id,
-                                    web_app::InstallResultCode code) {
-        EXPECT_EQ(InstallResultCode::kWebContentsDestroyed, code);
-      }));
+      base::BindLambdaForTesting(
+          [](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kWebContentsDestroyed, code);
+          }));
   EXPECT_TRUE(install_manager().has_web_contents_for_testing());
 
   // Wait for the task to start.
@@ -438,16 +437,16 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
   const std::string url_path{"https://example.com/path"};
   const GURL url{url_path};
 
-  const std::unique_ptr<WebApp> expected_app = CreateWebApp(
-      url, Source::kSync,
-      /*user_display_mode=*/blink::mojom::DisplayMode::kStandalone);
+  const std::unique_ptr<WebApp> expected_app =
+      CreateWebApp(url, Source::kSync,
+                   /*user_display_mode=*/DisplayMode::kStandalone);
   expected_app->SetIsInSyncInstall(false);
   expected_app->SetScope(url);
   expected_app->SetName("Name");
   expected_app->SetIsLocallyInstalled(false);
   expected_app->SetDescription("Description");
   expected_app->SetThemeColor(SK_ColorCYAN);
-  expected_app->SetDisplayMode(blink::mojom::DisplayMode::kBrowser);
+  expected_app->SetDisplayMode(DisplayMode::kBrowser);
   {
     WebApp::SyncData sync_data;
     sync_data.name = "Name";
@@ -501,7 +500,7 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
 
   const std::unique_ptr<WebApp> expected_app =
       CreateWebApp(url, Source::kSync,
-                   /*user_display_mode=*/blink::mojom::DisplayMode::kBrowser);
+                   /*user_display_mode=*/DisplayMode::kBrowser);
   expected_app->SetIsInSyncInstall(false);
   expected_app->SetName("Name from sync");
   expected_app->SetIsLocallyInstalled(false);

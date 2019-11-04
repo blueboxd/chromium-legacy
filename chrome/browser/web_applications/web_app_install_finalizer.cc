@@ -22,7 +22,6 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace web_app {
@@ -137,8 +136,8 @@ void WebAppInstallFinalizer::FinalizeInstall(
     web_app->SetLaunchUrl(web_app_info.app_url);
     web_app->SetIsLocallyInstalled(options.locally_installed);
     web_app->SetUserDisplayMode(web_app_info.open_as_window
-                                    ? blink::mojom::DisplayMode::kStandalone
-                                    : blink::mojom::DisplayMode::kBrowser);
+                                    ? DisplayMode::kStandalone
+                                    : DisplayMode::kBrowser);
   }
 
   web_app->AddSource(source);

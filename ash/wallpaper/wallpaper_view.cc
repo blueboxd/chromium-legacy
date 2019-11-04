@@ -137,10 +137,12 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
                          /*filter=*/true, flags);
     return;
   }
+  bool will_not_fill = width() > dst.width() || height() > dst.height();
+  // When not filling the view, we paint the small_image_ directly to the
+  // canvas.
+  float blur = will_not_fill ? repaint_blur_ : repaint_blur_ * quality;
 
-  float blur = repaint_blur_ * quality;
   // Create the blur and brightness filter to apply to the downsampled image.
-  cc::PaintFlags filter_flags;
   cc::FilterOperations operations;
   // In tablet mode, the wallpaper already has a color filter applied in
   // |OnPaint| so we don't need to darken here.
@@ -150,10 +152,25 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
     operations.Append(
         cc::FilterOperation::CreateBrightnessFilter(repaint_opacity_));
   }
+
   operations.Append(cc::FilterOperation::CreateBlurFilter(
       blur, SkBlurImageFilter::kClamp_TileMode));
   sk_sp<cc::PaintFilter> filter = cc::RenderSurfaceFilters::BuildImageFilter(
       operations, gfx::SizeF(dst.size()), gfx::Vector2dF());
+
+  // If the wallpaper can't fill the desktop, paint it directly to the
+  // canvas so that it can blend the image with the rest of background
+  // correctly.
+  if (blur > 0 && will_not_fill) {
+    cc::PaintFlags filter_flags(flags);
+    filter_flags.setImageFilter(filter);
+    canvas->DrawImageInt(*small_image_, 0, 0, small_image_->width(),
+                         small_image_->height(), dst.x(), dst.y(), dst.width(),
+                         dst.height(),
+                         /*filter=*/true, filter_flags);
+    return;
+  }
+  cc::PaintFlags filter_flags;
   filter_flags.setImageFilter(filter);
 
   gfx::Canvas filtered_canvas(small_image_->size(),

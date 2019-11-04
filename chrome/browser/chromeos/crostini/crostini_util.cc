@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon.h"
@@ -38,7 +37,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -268,32 +266,6 @@ class IconLoadWaiter : public CrostiniAppIcon::Observer {
   base::OnceCallback<void(const std::vector<gfx::ImageSkia>&)> callback_;
 };
 
-bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
-  if (!profile || profile->IsChild() || profile->IsLegacySupervised() ||
-      profile->IsOffTheRecord() ||
-      chromeos::ProfileHelper::IsEphemeralUserProfile(profile) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
-    return false;
-  }
-  if (!crostini::CrostiniManager::IsDevKvmPresent()) {
-    // Hardware is physically incapable, no matter what the user wants.
-    return false;
-  }
-
-  bool kernelnext = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kKernelnextRestrictVMs);
-  bool kernelnext_override =
-      base::FeatureList::IsEnabled(features::kKernelnextVMs);
-  if (kernelnext && !kernelnext_override) {
-    // The host kernel is on an experimental version. In future updates this
-    // device may not have VM support, so we allow enabling VMs, but guard them
-    // on a chrome://flags switch (enable-experimental-kernel-vm-support).
-    return false;
-  }
-
-  return base::FeatureList::IsEnabled(features::kCrostini);
-}
-
 }  // namespace
 
 namespace crostini {
@@ -325,32 +297,6 @@ bool IsUninstallable(Profile* profile, const std::string& app_id) {
   if (registration)
     return registration->CanUninstall();
   return false;
-}
-
-bool IsCrostiniAllowedForProfile(Profile* profile) {
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (!IsUnaffiliatedCrostiniAllowedByPolicy() && !user->IsAffiliated()) {
-    return false;
-  }
-  if (!profile->GetPrefs()->GetBoolean(
-          crostini::prefs::kUserCrostiniAllowedByPolicy)) {
-    return false;
-  }
-  if (!virtual_machines::AreVirtualMachinesAllowedByPolicy()) {
-    return false;
-  }
-  return IsCrostiniAllowedForProfileImpl(profile);
-}
-
-bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy) {
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
-    return false;
-  }
-  if (check_policy) {
-    return IsCrostiniAllowedForProfile(profile);
-  }
-  return IsCrostiniAllowedForProfileImpl(profile);
 }
 
 bool IsCrostiniRunning(Profile* profile) {
@@ -393,7 +339,7 @@ void LaunchCrostiniApp(Profile* profile,
                        const std::vector<storage::FileSystemURL>& files,
                        LaunchCrostiniAppCallback callback) {
   // Policies can change under us, and crostini may now be forbidden.
-  if (!IsCrostiniUIAllowedForProfile(profile)) {
+  if (!CrostiniFeatures::Get()->IsUIAllowed(profile)) {
     return std::move(callback).Run(false, "Crostini UI not allowed");
   }
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
@@ -501,17 +447,6 @@ base::Optional<std::string> CrostiniAppIdFromAppName(
     return base::nullopt;
   }
   return app_name.substr(strlen(kCrostiniAppNamePrefix));
-}
-
-bool IsUnaffiliatedCrostiniAllowedByPolicy() {
-  bool unaffiliated_crostini_allowed;
-  if (chromeos::CrosSettings::Get()->GetBoolean(
-          chromeos::kDeviceUnaffiliatedCrostiniAllowed,
-          &unaffiliated_crostini_allowed)) {
-    return unaffiliated_crostini_allowed;
-  }
-  // If device policy is not set, allow Crostini.
-  return true;
 }
 
 void AddNewLxdContainerToPrefs(Profile* profile,

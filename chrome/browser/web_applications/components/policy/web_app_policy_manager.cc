@@ -22,7 +22,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -42,14 +41,14 @@ ExternalInstallOptions ParseInstallOptionsFromPolicyEntry(
          default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue);
 
-  blink::mojom::DisplayMode user_display_mode;
+  DisplayMode user_display_mode;
   if (!default_launch_container) {
-    user_display_mode = blink::mojom::DisplayMode::kBrowser;
+    user_display_mode = DisplayMode::kBrowser;
   } else if (default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue) {
-    user_display_mode = blink::mojom::DisplayMode::kBrowser;
+    user_display_mode = DisplayMode::kBrowser;
   } else {
-    user_display_mode = blink::mojom::DisplayMode::kStandalone;
+    user_display_mode = DisplayMode::kStandalone;
   }
 
   ExternalInstallOptions install_options{

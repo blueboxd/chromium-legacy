@@ -59,7 +59,7 @@ void CrostiniApps::ReInitializeForTesting(
 void CrostiniApps::Initialize(
     const mojo::Remote<apps::mojom::AppService>& app_service) {
   DCHECK(profile_);
-  if (!crostini::IsCrostiniUIAllowedForProfile(profile_)) {
+  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
     return;
   }
   registry_ = crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);

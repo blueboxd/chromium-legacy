@@ -7,7 +7,7 @@
 namespace web_app {
 
 TestFileHandlerManager::TestFileHandlerManager()
-    : web_app::FileHandlerManager(nullptr) {}
+    : FileHandlerManager(nullptr) {}
 
 TestFileHandlerManager::~TestFileHandlerManager() = default;
 
@@ -20,7 +20,7 @@ TestFileHandlerManager::GetFileHandlers(const AppId& app_id) {
 }
 
 void TestFileHandlerManager::InstallFileHandler(
-    const web_app::AppId& app_id,
+    const AppId& app_id,
     const GURL& action,
     std::vector<std::string> accepts) {
   if (!base::Contains(file_handlers_, app_id))

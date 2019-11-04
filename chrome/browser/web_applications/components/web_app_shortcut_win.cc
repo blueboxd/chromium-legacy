@@ -361,14 +361,14 @@ namespace internals {
 
 void OnShortcutInfoLoadedForSetRelaunchDetails(
     HWND hwnd,
-    std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
+    std::unique_ptr<ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Set window's icon to the one we're about to create/update in the web app
   // path. The icon cache will refresh on icon creation.
-  base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
-      shortcut_info->profile_path, shortcut_info->extension_id,
-      shortcut_info->url);
+  base::FilePath web_app_path =
+      GetWebAppDataDirectory(shortcut_info->profile_path,
+                             shortcut_info->extension_id, shortcut_info->url);
   base::FilePath icon_file =
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info->title);
 

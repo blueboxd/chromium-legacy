@@ -135,7 +135,7 @@ bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {
 }
 
 void AppBannerManagerDesktop::ShowBannerUi(WebappInstallSource install_source) {
-  RecordDidShowBanner("AppBanner.WebApp.Shown");
+  RecordDidShowBanner();
   TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
   ReportStatus(SHOWING_APP_INSTALLATION_DIALOG);
   CreateWebApp(install_source);
@@ -199,13 +199,13 @@ void AppBannerManagerDesktop::DidFinishCreatingWebApp(
   if (code == web_app::InstallResultCode::kSuccessNewInstall) {
     SendBannerAccepted();
     TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
-    AppBannerSettingsHelper::RecordBannerInstallEvent(
-        contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
+    AppBannerSettingsHelper::RecordBannerInstallEvent(contents,
+                                                      GetAppIdentifier());
   } else if (code == web_app::InstallResultCode::kUserInstallDeclined) {
     SendBannerDismissed();
     TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
-    AppBannerSettingsHelper::RecordBannerDismissEvent(
-        contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
+    AppBannerSettingsHelper::RecordBannerDismissEvent(contents,
+                                                      GetAppIdentifier());
   }
 }
 

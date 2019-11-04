@@ -101,52 +101,6 @@ components/rappor/rappor_parameters.h.
 <!-- Rappor metric definitions -->
 
 <rappor-metrics>
-<rappor-metric name="AppBanner.NativeApp.Dismissed" type="ETLD_PLUS_ONE">
-  <owner>dfalcantara@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that displayed a native app banner, which was explicitly
-    dismissed by the user.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="AppBanner.NativeApp.Installed" type="ETLD_PLUS_ONE">
-  <owner>dfalcantara@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that displayed a native app banner, which resulted in
-    the user installing the promoted application.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="AppBanner.NativeApp.Shown" type="ETLD_PLUS_ONE">
-  <owner>dfalcantara@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that displayed a native app banner.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="AppBanner.WebApp.Dismissed" type="ETLD_PLUS_ONE">
-  <owner>dfalcantara@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that displayed a web app banner, which was explicitly
-    dismissed by the user.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="AppBanner.WebApp.Installed" type="ETLD_PLUS_ONE">
-  <owner>dfalcantara@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that displayed a web app banner, which resulted in the
-    user installing the promoted application.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="AppBanner.WebApp.Shown" type="ETLD_PLUS_ONE">
-  <owner>dfalcantara@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that displayed a web app banner.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="Bluetooth.APIUsage.Origin" type="ETLD_PLUS_ONE">
   <owner>jyasskin@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
@@ -229,71 +183,6 @@ components/rappor/rappor_parameters.h.
   <summary>
     The domain and registry of the URL that is using Device Orientation API from
     a frame with an origin different to that of the main frame.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Launch.HomeScreen.Shortcut" type="ETLD_PLUS_ONE">
-  <owner>dfalcantara@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that was launched from the Android Home screen into a
-    tab. This explicitly does not count relaunches via the Android Recents menu.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Launch.HomeScreen.Standalone" type="ETLD_PLUS_ONE">
-  <owner>dfalcantara@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that was launched from the Android Home screen into a
-    WebappActivity. This explicitly does not count relaunches via the Android
-    Recents menu.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Launch.HomeScreenSource.AddToHomeScreen"
-    type="ETLD_PLUS_ONE">
-  <owner>dominickn@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that was launched from the Android Home screen via an
-    intent added from an add to homescreen menu item. This explicitly does not
-    count relaunches via the Android Recents menu.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Launch.HomeScreenSource.AppBanner" type="ETLD_PLUS_ONE">
-  <owner>dominickn@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that was launched from the Android Home screen via an
-    intent added from an app banner. This explicitly does not count relaunches
-    via the Android Recents menu.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Launch.HomeScreenSource.BookmarkNavigatorWidget"
-    type="ETLD_PLUS_ONE">
-  <owner>aurimas@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that was launched from the Chrome's bookmark navigator
-    widget. This explicitly does not count relaunches via the Android Recents
-    menu.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Launch.HomeScreenSource.BookmarkShortcutWidget"
-    type="ETLD_PLUS_ONE">
-  <owner>aurimas@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that was launched from the Chrome's bookmark shortcut
-    widget. This explicitly does not count relaunches via the Android Recents
-    menu.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Launch.HomeScreenSource.Unknown" type="ETLD_PLUS_ONE">
-  <owner>dominickn@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that was launched from the Android Home screen via an
-    intent added from an unknown source. This explicitly does not count
-    relaunches via the Android Recents menu.
   </summary>
 </rappor-metric>
 

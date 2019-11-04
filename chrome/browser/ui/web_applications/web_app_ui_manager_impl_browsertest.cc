@@ -84,7 +84,7 @@ class WebAppUiManagerImplBrowserTest : public InProcessBrowserTest {
   }
 
   Browser* LaunchWebApp(const AppId& app_id) {
-    return web_app::LaunchWebAppBrowser(profile(), app_id);
+    return LaunchWebAppBrowser(profile(), app_id);
   }
 
   WebAppUiManager& ui_manager() {

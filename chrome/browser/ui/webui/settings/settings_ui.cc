@@ -88,7 +88,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
@@ -371,8 +371,8 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
       std::make_unique<chromeos::settings::AccessibilityHandler>(web_ui));
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::AndroidAppsHandler>(profile));
-  if (crostini::IsCrostiniUIAllowedForProfile(profile,
-                                              false /* check_policy */)) {
+  if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile,
+                                                     /*check_policy=*/false)) {
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::CrostiniHandler>(profile));
   }
@@ -481,11 +481,11 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
                           ash::stylus_utils::HasInternalStylus());
 
   html_source->AddBoolean("showCrostini",
-                          crostini::IsCrostiniUIAllowedForProfile(
-                              profile, false /* check_policy */));
+                          crostini::CrostiniFeatures::Get()->IsUIAllowed(
+                              profile, /*check_policy=*/false));
 
-  html_source->AddBoolean("allowCrostini",
-                          crostini::IsCrostiniUIAllowedForProfile(profile));
+  html_source->AddBoolean(
+      "allowCrostini", crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
 
   html_source->AddBoolean("showPluginVm",
                           plugin_vm::IsPluginVmEnabled(profile));

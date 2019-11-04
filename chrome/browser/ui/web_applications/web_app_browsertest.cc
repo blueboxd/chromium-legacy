@@ -6,9 +6,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace {
@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ThemeColor) {
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
   int index = 0;
-  auto has_buttons = [this, &index](blink::mojom::DisplayMode display_mode,
+  auto has_buttons = [this, &index](DisplayMode display_mode,
                                     bool open_as_window) -> bool {
     const std::string base_url = "https://example.com/path";
     auto web_app_info = std::make_unique<WebApplicationInfo>();
@@ -73,16 +73,16 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
     return app_browser->app_controller()->HasMinimalUiButtons();
   };
 
-  EXPECT_TRUE(has_buttons(blink::mojom::DisplayMode::kBrowser,
+  EXPECT_TRUE(has_buttons(DisplayMode::kBrowser,
                           /*open_as_window=*/true));
-  EXPECT_TRUE(has_buttons(blink::mojom::DisplayMode::kMinimalUi,
+  EXPECT_TRUE(has_buttons(DisplayMode::kMinimalUi,
                           /*open_as_window=*/true));
-  EXPECT_FALSE(has_buttons(blink::mojom::DisplayMode::kStandalone,
+  EXPECT_FALSE(has_buttons(DisplayMode::kStandalone,
                            /*open_as_window=*/true));
-  EXPECT_FALSE(has_buttons(blink::mojom::DisplayMode::kFullscreen,
+  EXPECT_FALSE(has_buttons(DisplayMode::kFullscreen,
                            /*open_as_window=*/true));
 
-  EXPECT_FALSE(has_buttons(blink::mojom::DisplayMode::kMinimalUi,
+  EXPECT_FALSE(has_buttons(DisplayMode::kMinimalUi,
                            /*open_as_window=*/false));
 }
 

@@ -202,7 +202,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   void StopEventLog();
 
   // WebRTC event log fragments sent back from PeerConnection land here.
-  void OnWebRtcEventLogWrite(const std::string& output);
+  void OnWebRtcEventLogWrite(const String& output);
 
  protected:
   webrtc::PeerConnectionInterface* native_peer_connection() {
@@ -234,15 +234,15 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       std::vector<blink::RtpTransceiverState> transceiver_states,
       bool is_remote_description);
   void OnDataChannel(scoped_refptr<webrtc::DataChannelInterface> channel);
-  void OnIceCandidate(const std::string& sdp,
-                      const std::string& sdp_mid,
+  void OnIceCandidate(const String& sdp,
+                      const String& sdp_mid,
                       int sdp_mline_index,
                       int component,
                       int address_family);
-  void OnIceCandidateError(const std::string& host_candidate,
-                           const std::string& url,
+  void OnIceCandidateError(const String& host_candidate,
+                           const String& url,
                            int error_code,
-                           const std::string& error_text);
+                           const String& error_text);
   void OnInterestingUsage(int usage_pattern);
 
  private:

@@ -489,13 +489,13 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
+    ControllerTypeParamToString);
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppEngagementBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp),
-    web_app::ControllerTypeParamToString);
+    ControllerTypeParamToString);
 
 }  // namespace web_app

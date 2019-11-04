@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1390 tests; 1354 PASS, 36 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1397 tests; 1354 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -401,6 +401,13 @@ PASS ValidityState interface: document.createElement("input").validity must inhe
 PASS ValidityState interface: document.createElement("input").validity must inherit property "badInput" with the proper type
 PASS ValidityState interface: document.createElement("input").validity must inherit property "customError" with the proper type
 PASS ValidityState interface: document.createElement("input").validity must inherit property "valid" with the proper type
+FAIL SubmitEvent interface: existence and properties of interface object assert_own_property: self does not have own property "SubmitEvent" expected property "SubmitEvent" missing
+FAIL SubmitEvent interface object length assert_own_property: self does not have own property "SubmitEvent" expected property "SubmitEvent" missing
+FAIL SubmitEvent interface object name assert_own_property: self does not have own property "SubmitEvent" expected property "SubmitEvent" missing
+FAIL SubmitEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SubmitEvent" expected property "SubmitEvent" missing
+FAIL SubmitEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SubmitEvent" expected property "SubmitEvent" missing
+FAIL SubmitEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "SubmitEvent" expected property "SubmitEvent" missing
+FAIL SubmitEvent interface: attribute submitter assert_own_property: self does not have own property "SubmitEvent" expected property "SubmitEvent" missing
 PASS FormDataEvent interface: existence and properties of interface object
 PASS FormDataEvent interface object length
 PASS FormDataEvent interface object name

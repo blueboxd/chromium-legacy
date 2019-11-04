@@ -108,22 +108,20 @@ void CrostiniTestHelper::ReInitializeAppServiceIntegration() {
     chromeos::DBusThreadManager::Initialize();
   }
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
-    // The App Service is originally initialized when the Profile is created,
-    // but this class' constructor takes the Profile* as an argument, which
-    // means that the fake user (created during that constructor) is
-    // necessarily configured after the App Service's initialization.
-    //
-    // Without further action, in tests (but not in production which looks at
-    // real users, not fakes), the App Service serves no Crostini apps, as at
-    // the time it looked, the profile/user doesn't have Crostini enabled.
-    //
-    // We therefore manually have the App Service re-examine whether Crostini
-    // is enabled for this profile.
-    auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
-    proxy->ReInitializeCrostiniForTesting(profile_);
-    proxy->FlushMojoCallsForTesting();
-  }
+  // The App Service is originally initialized when the Profile is created,
+  // but this class' constructor takes the Profile* as an argument, which
+  // means that the fake user (created during that constructor) is
+  // necessarily configured after the App Service's initialization.
+  //
+  // Without further action, in tests (but not in production which looks at
+  // real users, not fakes), the App Service serves no Crostini apps, as at
+  // the time it looked, the profile/user doesn't have Crostini enabled.
+  //
+  // We therefore manually have the App Service re-examine whether Crostini
+  // is enabled for this profile.
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
+  proxy->ReInitializeCrostiniForTesting(profile_);
+  proxy->FlushMojoCallsForTesting();
 }
 
 void CrostiniTestHelper::UpdateAppKeywords(

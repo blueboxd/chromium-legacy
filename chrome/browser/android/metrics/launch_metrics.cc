@@ -8,12 +8,9 @@
 #include "chrome/android/chrome_jni_headers/LaunchMetrics_jni.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/prefs/pref_metrics_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
@@ -65,32 +62,6 @@ static void JNI_LaunchMetrics_RecordLaunch(
     service->SetLastShortcutLaunchTime(web_contents, url);
   }
 
-  std::string rappor_metric_source;
-  switch (histogram_source) {
-    case ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_DEPRECATED:
-    case ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_PWA:
-    case ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_STANDALONE:
-    case ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_SHORTCUT:
-      rappor_metric_source = "Launch.HomeScreenSource.AddToHomeScreen";
-      break;
-    case ShortcutInfo::SOURCE_APP_BANNER:
-      rappor_metric_source = "Launch.HomeScreenSource.AppBanner";
-      break;
-    case ShortcutInfo::SOURCE_BOOKMARK_NAVIGATOR_WIDGET:
-      rappor_metric_source = "Launch.HomeScreenSource.BookmarkNavigatorWidget";
-      break;
-    case ShortcutInfo::SOURCE_BOOKMARK_SHORTCUT_WIDGET:
-      rappor_metric_source = "Launch.HomeScreenSource.BookmarkShortcutWidget";
-      break;
-    case ShortcutInfo::SOURCE_NOTIFICATION:
-      rappor_metric_source = "Launch.HomeScreenSource.Notification";
-      break;
-    case ShortcutInfo::SOURCE_UNKNOWN:
-    case ShortcutInfo::SOURCE_COUNT:
-      rappor_metric_source = "Launch.HomeScreenSource.Unknown";
-      break;
-  }
-
   UMA_HISTOGRAM_ENUMERATION("Launch.HomeScreenSource",
                             static_cast<ShortcutInfo::Source>(histogram_source),
                             ShortcutInfo::SOURCE_COUNT);
@@ -101,20 +72,11 @@ static void JNI_LaunchMetrics_RecordLaunch(
         static_cast<blink::mojom::DisplayMode>(display_mode));
   }
 
-  rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                          rappor_metric_source, url);
-
   HomeScreenLaunchType action = is_shortcut ? HomeScreenLaunchType::SHORTCUT
                                             : HomeScreenLaunchType::STANDALONE;
-  std::string rappor_metric_action = is_shortcut
-                                         ? "Launch.HomeScreen.Shortcut"
-                                         : "Launch.HomeScreen.Standalone";
 
   UMA_HISTOGRAM_ENUMERATION("Launch.HomeScreen", action,
                             HomeScreenLaunchType::COUNT);
-
-  rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                          rappor_metric_action, url);
 }
 
 static void JNI_LaunchMetrics_RecordHomePageLaunchMetrics(

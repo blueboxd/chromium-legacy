@@ -17,7 +17,6 @@
 #include "base/util/values/values_util.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,8 +24,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -262,8 +259,7 @@ void AppBannerSettingsHelper::ClearHistoryForURLs(
 
 void AppBannerSettingsHelper::RecordBannerInstallEvent(
     content::WebContents* web_contents,
-    const std::string& package_name_or_start_url,
-    AppBannerRapporMetric rappor_metric) {
+    const std::string& package_name_or_start_url) {
   banners::TrackInstallEvent(banners::INSTALL_EVENT_WEB_APP_INSTALLED);
 
   AppBannerSettingsHelper::RecordBannerEvent(
@@ -271,18 +267,11 @@ void AppBannerSettingsHelper::RecordBannerInstallEvent(
       package_name_or_start_url,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
       banners::AppBannerManager::GetCurrentTime());
-
-  rappor::SampleDomainAndRegistryFromGURL(
-      g_browser_process->rappor_service(),
-      (rappor_metric == WEB ? "AppBanner.WebApp.Installed"
-                            : "AppBanner.NativeApp.Installed"),
-      web_contents->GetLastCommittedURL());
 }
 
 void AppBannerSettingsHelper::RecordBannerDismissEvent(
     content::WebContents* web_contents,
-    const std::string& package_name_or_start_url,
-    AppBannerRapporMetric rappor_metric) {
+    const std::string& package_name_or_start_url) {
   banners::TrackDismissEvent(banners::DISMISS_EVENT_CLOSE_BUTTON);
 
   AppBannerSettingsHelper::RecordBannerEvent(
@@ -290,12 +279,6 @@ void AppBannerSettingsHelper::RecordBannerDismissEvent(
       package_name_or_start_url,
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
       banners::AppBannerManager::GetCurrentTime());
-
-  rappor::SampleDomainAndRegistryFromGURL(
-      g_browser_process->rappor_service(),
-      (rappor_metric == WEB ? "AppBanner.WebApp.Dismissed"
-                            : "AppBanner.NativeApp.Dismissed"),
-      web_contents->GetLastCommittedURL());
 }
 
 void AppBannerSettingsHelper::RecordBannerEvent(

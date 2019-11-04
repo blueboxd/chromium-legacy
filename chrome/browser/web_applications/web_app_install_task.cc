@@ -25,7 +25,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -627,10 +626,10 @@ void WebAppInstallTask::OnDialogCompleted(
   InstallFinalizer::FinalizeOptions finalize_options;
   finalize_options.install_source = install_source_;
   finalize_options.locally_installed = true;
-  if (install_params_ && install_params_->user_display_mode !=
-                             blink::mojom::DisplayMode::kUndefined) {
-    web_app_info_copy.open_as_window = install_params_->user_display_mode !=
-                                       blink::mojom::DisplayMode::kBrowser;
+  if (install_params_ &&
+      install_params_->user_display_mode != DisplayMode::kUndefined) {
+    web_app_info_copy.open_as_window =
+        install_params_->user_display_mode != DisplayMode::kBrowser;
   }
 
   install_finalizer_->FinalizeInstall(

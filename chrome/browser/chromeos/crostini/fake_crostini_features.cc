@@ -15,6 +15,12 @@ FakeCrostiniFeatures::~FakeCrostiniFeatures() {
   CrostiniFeatures::SetForTesting(original_features_);
 }
 
+bool FakeCrostiniFeatures::IsAllowed(Profile* profile) {
+  if (allowed_set_)
+    return allowed_;
+  return original_features_->IsAllowed(profile);
+}
+
 bool FakeCrostiniFeatures::IsUIAllowed(Profile* profile, bool check_policy) {
   if (ui_allowed_set_)
     return ui_allowed_;

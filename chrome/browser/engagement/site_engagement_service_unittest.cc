@@ -1722,6 +1722,9 @@ TEST_F(SiteEngagementServiceTest, CleanupMovesScoreBackToRebase) {
 }
 
 TEST_F(SiteEngagementServiceTest, IncognitoEngagementService) {
+  base::Time current_day = GetReferenceTime();
+  clock_.SetNow(current_day);
+
   SiteEngagementService* service = SiteEngagementService::Get(profile());
   ASSERT_TRUE(service);
 
@@ -1733,8 +1736,8 @@ TEST_F(SiteEngagementServiceTest, IncognitoEngagementService) {
   service->AddPoints(url1, 1);
   service->AddPoints(url2, 2);
 
-  SiteEngagementService* incognito_service =
-      SiteEngagementService::Get(profile()->GetOffTheRecordProfile());
+  auto incognito_service = base::WrapUnique(
+      new SiteEngagementService(profile()->GetOffTheRecordProfile(), &clock_));
   EXPECT_EQ(1, incognito_service->GetScore(url1));
   EXPECT_EQ(2, incognito_service->GetScore(url2));
   EXPECT_EQ(0, incognito_service->GetScore(url3));
@@ -1755,6 +1758,16 @@ TEST_F(SiteEngagementServiceTest, IncognitoEngagementService) {
   service->AddPoints(url4, 2);
   EXPECT_EQ(2, incognito_service->GetScore(url4));
   EXPECT_EQ(2, service->GetScore(url4));
+
+  // Engagement should never become stale in incognito.
+  current_day += incognito_service->GetStalePeriod();
+  clock_.SetNow(current_day);
+  EXPECT_FALSE(incognito_service->IsLastEngagementStale());
+  current_day += incognito_service->GetStalePeriod();
+  clock_.SetNow(current_day);
+  EXPECT_FALSE(incognito_service->IsLastEngagementStale());
+
+  incognito_service->Shutdown();
 }
 
 TEST_F(SiteEngagementServiceTest, GetScoreFromSettings) {

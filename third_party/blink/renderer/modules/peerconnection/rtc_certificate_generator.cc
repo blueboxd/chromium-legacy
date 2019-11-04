@@ -139,8 +139,8 @@ bool RTCCertificateGenerator::IsSupportedKeyParams(
 }
 
 rtc::scoped_refptr<rtc::RTCCertificate> RTCCertificateGenerator::FromPEM(
-    blink::WebString pem_private_key,
-    blink::WebString pem_certificate) {
+    String pem_private_key,
+    String pem_certificate) {
   rtc::scoped_refptr<rtc::RTCCertificate> certificate =
       rtc::RTCCertificate::FromPEM(rtc::RTCCertificatePEM(
           pem_private_key.Utf8(), pem_certificate.Utf8()));

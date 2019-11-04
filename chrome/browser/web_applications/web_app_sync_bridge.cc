@@ -30,7 +30,6 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -172,9 +171,8 @@ void WebAppSyncBridge::Init(base::OnceClosure callback) {
                                          std::move(callback)));
 }
 
-void WebAppSyncBridge::SetAppUserDisplayMode(
-    const AppId& app_id,
-    blink::mojom::DisplayMode user_display_mode) {
+void WebAppSyncBridge::SetAppUserDisplayMode(const AppId& app_id,
+                                             DisplayMode user_display_mode) {
   ScopedRegistryUpdate update(this);
   WebApp* web_app = update->UpdateApp(app_id);
   if (web_app)

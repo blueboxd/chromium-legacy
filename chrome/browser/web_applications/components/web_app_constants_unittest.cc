@@ -5,9 +5,6 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
-
-using blink::mojom::DisplayMode;
 
 namespace web_app {
 

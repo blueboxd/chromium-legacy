@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -200,7 +201,7 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
   if (registry_service && registry_service->IsCrostiniShelfAppId(app_id)) {
-    return crostini::IsCrostiniUIAllowedForProfile(profile_) &&
+    return crostini::CrostiniFeatures::Get()->IsUIAllowed(profile_) &&
            registry_service->GetRegistration(app_id).has_value();
   }
 

@@ -12,8 +12,8 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -159,7 +159,7 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
   Profile* profile = GetSenderProfile(method_call, response_sender);
   SendResponse(
       method_call, response_sender,
-      profile ? crostini::IsCrostiniAllowedForProfile(profile) : false);
+      profile ? crostini::CrostiniFeatures::Get()->IsAllowed(profile) : false);
 }
 
 void ChromeFeaturesServiceProvider::IsPluginVmEnabled(

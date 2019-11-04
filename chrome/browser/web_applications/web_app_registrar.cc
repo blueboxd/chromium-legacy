@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -117,18 +116,14 @@ base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
   return web_app ? base::Optional<GURL>(web_app->scope()) : base::nullopt;
 }
 
-blink::mojom::DisplayMode WebAppRegistrar::GetAppDisplayMode(
-    const AppId& app_id) const {
+DisplayMode WebAppRegistrar::GetAppDisplayMode(const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->display_mode()
-                 : blink::mojom::DisplayMode::kUndefined;
+  return web_app ? web_app->display_mode() : DisplayMode::kUndefined;
 }
 
-blink::mojom::DisplayMode WebAppRegistrar::GetAppUserDisplayMode(
-    const AppId& app_id) const {
+DisplayMode WebAppRegistrar::GetAppUserDisplayMode(const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->user_display_mode()
-                 : blink::mojom::DisplayMode::kUndefined;
+  return web_app ? web_app->user_display_mode() : DisplayMode::kUndefined;
 }
 
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {

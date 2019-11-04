@@ -25,7 +25,6 @@
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -179,13 +178,13 @@ void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
   web_app_info.app_url = install_options_.url;
 
   switch (install_options_.user_display_mode) {
-    case blink::mojom::DisplayMode::kUndefined:
-    case blink::mojom::DisplayMode::kBrowser:
+    case DisplayMode::kUndefined:
+    case DisplayMode::kBrowser:
       web_app_info.open_as_window = false;
       break;
-    case blink::mojom::DisplayMode::kMinimalUi:
-    case blink::mojom::DisplayMode::kStandalone:
-    case blink::mojom::DisplayMode::kFullscreen:
+    case DisplayMode::kMinimalUi:
+    case DisplayMode::kStandalone:
+    case DisplayMode::kFullscreen:
       web_app_info.open_as_window = true;
       break;
   }

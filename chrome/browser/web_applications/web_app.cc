@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include "base/logging.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/color_utils.h"
 
@@ -25,8 +26,8 @@ namespace web_app {
 
 WebApp::WebApp(const AppId& app_id)
     : app_id_(app_id),
-      display_mode_(blink::mojom::DisplayMode::kUndefined),
-      user_display_mode_(blink::mojom::DisplayMode::kUndefined) {}
+      display_mode_(DisplayMode::kUndefined),
+      user_display_mode_(DisplayMode::kUndefined) {}
 
 WebApp::~WebApp() = default;
 
@@ -72,23 +73,23 @@ void WebApp::SetThemeColor(base::Optional<SkColor> theme_color) {
   theme_color_ = theme_color;
 }
 
-void WebApp::SetDisplayMode(blink::mojom::DisplayMode display_mode) {
-  DCHECK_NE(blink::mojom::DisplayMode::kUndefined, display_mode);
+void WebApp::SetDisplayMode(DisplayMode display_mode) {
+  DCHECK_NE(DisplayMode::kUndefined, display_mode);
   display_mode_ = display_mode;
 }
 
-void WebApp::SetUserDisplayMode(blink::mojom::DisplayMode user_display_mode) {
+void WebApp::SetUserDisplayMode(DisplayMode user_display_mode) {
   switch (user_display_mode) {
-    case blink::mojom::DisplayMode::kBrowser:
-      user_display_mode_ = blink::mojom::DisplayMode::kBrowser;
+    case DisplayMode::kBrowser:
+      user_display_mode_ = DisplayMode::kBrowser;
       break;
-    case blink::mojom::DisplayMode::kUndefined:
-    case blink::mojom::DisplayMode::kMinimalUi:
-    case blink::mojom::DisplayMode::kFullscreen:
+    case DisplayMode::kUndefined:
+    case DisplayMode::kMinimalUi:
+    case DisplayMode::kFullscreen:
       NOTREACHED();
       FALLTHROUGH;
-    case blink::mojom::DisplayMode::kStandalone:
-      user_display_mode_ = blink::mojom::DisplayMode::kStandalone;
+    case DisplayMode::kStandalone:
+      user_display_mode_ = DisplayMode::kStandalone;
       break;
   }
 }

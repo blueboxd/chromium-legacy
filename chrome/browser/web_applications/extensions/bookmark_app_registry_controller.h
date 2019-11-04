@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_REGISTRY_CONTROLLER_H_
 
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 
 class Profile;
 
@@ -21,7 +22,7 @@ class BookmarkAppRegistryController : public web_app::AppRegistryController {
   // AppRegistryController:
   void Init(base::OnceClosure callback) override;
   void SetAppUserDisplayMode(const web_app::AppId& app_id,
-                             blink::mojom::DisplayMode display_mode) override;
+                             web_app::DisplayMode display_mode) override;
   void SetAppIsLocallyInstalledForTesting(const web_app::AppId& app_id,
                                           bool is_locally_installed) override;
   web_app::WebAppSyncBridge* AsWebAppSyncBridge() override;

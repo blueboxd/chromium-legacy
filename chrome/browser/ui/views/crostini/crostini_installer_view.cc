@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
@@ -117,7 +118,7 @@ void crostini::ShowCrostiniInstallerView(
     crostini::CrostiniUISurface ui_surface) {
   // Defensive check to prevent showing the installer when crostini is not
   // allowed.
-  if (!IsCrostiniUIAllowedForProfile(profile)) {
+  if (!CrostiniFeatures::Get()->IsUIAllowed(profile)) {
     return;
   }
   base::UmaHistogramEnumeration(kCrostiniSetupSourceHistogram, ui_surface,
@@ -135,7 +136,7 @@ void crostini::ShowCrostiniInstallerView(
 void CrostiniInstallerView::Show(
     Profile* profile,
     crostini::CrostiniInstallerUIDelegate* delegate) {
-  DCHECK(crostini::IsCrostiniUIAllowedForProfile(profile));
+  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
   if (!g_crostini_installer_view) {
     DCHECK(!crostini::CrostiniManager::GetForProfile(profile)
                 ->GetInstallerViewStatus());

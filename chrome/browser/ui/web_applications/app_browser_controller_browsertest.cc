@@ -49,12 +49,11 @@ class AppBrowserControllerBrowserTest
     auto* provider = WebAppProvider::Get(profile());
     provider->system_web_app_manager().SetSystemAppsForTesting(
         {{SystemAppType::TERMINAL, SystemAppInfo(app_url)}});
-    web_app::ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
-        .Insert(app_url, app_id,
-                web_app::ExternalInstallSource::kInternalDefault);
-    ASSERT_EQ(web_app::GetAppIdForSystemWebApp(browser()->profile(),
-                                               SystemAppType::TERMINAL),
-              app_id);
+    ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+        .Insert(app_url, app_id, ExternalInstallSource::kInternalDefault);
+    ASSERT_EQ(
+        GetAppIdForSystemWebApp(browser()->profile(), SystemAppType::TERMINAL),
+        app_id);
 
     const extensions::Extension* extension =
         extensions::ExtensionRegistry::Get(profile())->GetInstalledExtension(

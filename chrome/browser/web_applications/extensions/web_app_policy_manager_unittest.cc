@@ -29,7 +29,6 @@
 #include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 using sync_preferences::TestingPrefServiceSyncable;
@@ -51,8 +50,7 @@ base::Value GetWindowedItem() {
 }
 
 ExternalInstallOptions GetWindowedInstallOptions() {
-  ExternalInstallOptions options(kWindowedUrl,
-                                 blink::mojom::DisplayMode::kStandalone,
+  ExternalInstallOptions options(kWindowedUrl, DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -72,8 +70,7 @@ base::Value GetTabbedItem() {
 }
 
 ExternalInstallOptions GetTabbedInstallOptions() {
-  ExternalInstallOptions options(kTabbedUrl,
-                                 blink::mojom::DisplayMode::kBrowser,
+  ExternalInstallOptions options(kTabbedUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -91,8 +88,7 @@ base::Value GetNoContainerItem() {
 }
 
 ExternalInstallOptions GetNoContainerInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl,
-                                 blink::mojom::DisplayMode::kBrowser,
+  ExternalInstallOptions options(kNoContainerUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -110,8 +106,7 @@ base::Value GetCreateDesktopShorcutDefaultItem() {
 }
 
 ExternalInstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl,
-                                 blink::mojom::DisplayMode::kBrowser,
+  ExternalInstallOptions options(kNoContainerUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -130,8 +125,7 @@ base::Value GetCreateDesktopShorcutFalseItem() {
 }
 
 ExternalInstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl,
-                                 blink::mojom::DisplayMode::kBrowser,
+  ExternalInstallOptions options(kNoContainerUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
@@ -150,8 +144,7 @@ base::Value GetCreateDesktopShorcutTrueItem() {
 }
 
 ExternalInstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
-  ExternalInstallOptions options(kNoContainerUrl,
-                                 blink::mojom::DisplayMode::kBrowser,
+  ExternalInstallOptions options(kNoContainerUrl, DisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = true;
@@ -173,7 +166,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    auto* provider = web_app::TestWebAppProvider::Get(profile());
+    auto* provider = TestWebAppProvider::Get(profile());
 
     auto test_app_registrar = std::make_unique<TestAppRegistrar>();
     test_app_registrar_ = test_app_registrar.get();

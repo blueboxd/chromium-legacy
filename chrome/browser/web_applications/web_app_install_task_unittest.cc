@@ -44,7 +44,6 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
@@ -524,7 +523,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
   const GURL manifest_scope = GURL("https://example.com/scope");
   const base::Optional<SkColor> manifest_theme_color = 0xAABBCCDD;
   const base::Optional<SkColor> expected_theme_color = 0xFFBBCCDD;  // Opaque.
-  const auto display_mode = blink::mojom::DisplayMode::kMinimalUi;
+  const auto display_mode = DisplayMode::kMinimalUi;
 
   {
     auto manifest = std::make_unique<blink::Manifest>();
@@ -1136,30 +1135,30 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
                          /*open_as_window*/ false);
 
     InstallManager::InstallParams params;
-    params.user_display_mode = blink::mojom::DisplayMode::kUndefined;
+    params.user_display_mode = DisplayMode::kUndefined;
     auto app_id = InstallWebAppWithParams(params);
 
-    EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
+    EXPECT_EQ(DisplayMode::kBrowser,
               registrar().GetAppById(app_id)->user_display_mode());
   }
   {
     CreateDataToRetrieve(GURL("https://example.org/"), /*open_as_window*/ true);
 
     InstallManager::InstallParams params;
-    params.user_display_mode = blink::mojom::DisplayMode::kUndefined;
+    params.user_display_mode = DisplayMode::kUndefined;
     auto app_id = InstallWebAppWithParams(params);
 
-    EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
+    EXPECT_EQ(DisplayMode::kStandalone,
               registrar().GetAppById(app_id)->user_display_mode());
   }
   {
     CreateDataToRetrieve(GURL("https://example.au/"), /*open_as_window*/ true);
 
     InstallManager::InstallParams params;
-    params.user_display_mode = blink::mojom::DisplayMode::kBrowser;
+    params.user_display_mode = DisplayMode::kBrowser;
     auto app_id = InstallWebAppWithParams(params);
 
-    EXPECT_EQ(blink::mojom::DisplayMode::kBrowser,
+    EXPECT_EQ(DisplayMode::kBrowser,
               registrar().GetAppById(app_id)->user_display_mode());
   }
   {
@@ -1167,10 +1166,10 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
                          /*open_as_window*/ false);
 
     InstallManager::InstallParams params;
-    params.user_display_mode = blink::mojom::DisplayMode::kStandalone;
+    params.user_display_mode = DisplayMode::kStandalone;
     auto app_id = InstallWebAppWithParams(params);
 
-    EXPECT_EQ(blink::mojom::DisplayMode::kStandalone,
+    EXPECT_EQ(DisplayMode::kStandalone,
               registrar().GetAppById(app_id)->user_display_mode());
   }
 }

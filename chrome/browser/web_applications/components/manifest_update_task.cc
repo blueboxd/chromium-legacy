@@ -8,10 +8,10 @@
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/common/web_application_info.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
 
@@ -124,15 +124,15 @@ void ManifestUpdateTask::OnAllAppWindowsClosed(blink::Manifest manifest) {
 
   // Preserve the user's choice of opening in browser tab or standalone window.
   switch (registrar_.GetAppUserDisplayMode(app_id_)) {
-    case blink::mojom::DisplayMode::kBrowser:
+    case DisplayMode::kBrowser:
       web_application_info->open_as_window = false;
       break;
-    case blink::mojom::DisplayMode::kStandalone:
+    case DisplayMode::kStandalone:
       web_application_info->open_as_window = true;
       break;
-    case blink::mojom::DisplayMode::kUndefined:
-    case blink::mojom::DisplayMode::kMinimalUi:
-    case blink::mojom::DisplayMode::kFullscreen:
+    case DisplayMode::kUndefined:
+    case DisplayMode::kMinimalUi:
+    case DisplayMode::kFullscreen:
       NOTREACHED();
       break;
   }

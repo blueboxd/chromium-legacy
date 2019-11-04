@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/sync/model/entity_change.h"
@@ -61,9 +62,8 @@ class WebAppSyncBridge : public AppRegistryController,
 
   // AppRegistryController:
   void Init(base::OnceClosure callback) override;
-  void SetAppUserDisplayMode(
-      const AppId& app_id,
-      blink::mojom::DisplayMode user_display_mode) override;
+  void SetAppUserDisplayMode(const AppId& app_id,
+                             DisplayMode user_display_mode) override;
   void SetAppIsLocallyInstalledForTesting(const AppId& app_id,
                                           bool is_locally_installed) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;

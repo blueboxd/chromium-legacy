@@ -31,7 +31,7 @@ enum class ControllerType {
 };
 
 std::string ControllerTypeParamToString(
-    const ::testing::TestParamInfo<web_app::ControllerType>& controller_type);
+    const ::testing::TestParamInfo<ControllerType>& controller_type);
 
 // Base class for tests of user interface support for web applications.
 // ControllerType selects between use of WebAppBrowserController and

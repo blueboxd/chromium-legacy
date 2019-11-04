@@ -69,8 +69,8 @@ namespace web_app {
 
 void RevealAppShimInFinderForAppOnFileThread(
     const base::FilePath& app_path,
-    const web_app::ShortcutInfo& shortcut_info) {
-  web_app::WebAppShortcutCreator shortcut_creator(app_path, &shortcut_info);
+    const ShortcutInfo& shortcut_info) {
+  WebAppShortcutCreator shortcut_creator(app_path, &shortcut_info);
   shortcut_creator.RevealAppShimInFinder();
 }
 
@@ -81,7 +81,7 @@ void RevealAppShimInFinderForApp(Profile* profile,
       ShortcutInfoForExtensionAndProfile(app, profile));
 }
 
-void RebuildAppAndLaunch(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
+void RebuildAppAndLaunch(std::unique_ptr<ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -98,7 +98,7 @@ void RebuildAppAndLaunch(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
     return;
   base::OnceCallback<void(base::Process)> launched_callback = base::DoNothing();
   base::OnceClosure terminated_callback = base::DoNothing();
-  web_app::GetShortcutInfoForApp(
+  GetShortcutInfoForApp(
       extension, profile,
       base::BindOnce(
           &LaunchShim, LaunchShimUpdateBehavior::RECREATE_IF_INSTALLED,
@@ -118,7 +118,7 @@ bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
   return true;
 }
 
-// Mac-specific version of web_app::ShouldCreateShortcutFor() used during batch
+// Mac-specific version of ShouldCreateShortcutFor() used during batch
 // upgrades to ensure all shortcuts a user may still have are repaired when
 // required by a Chrome upgrade.
 bool ShouldUpgradeShortcutFor(Profile* profile,
@@ -147,8 +147,8 @@ void UpdateShortcutsForAllApps(Profile* profile, base::OnceClosure callback) {
   for (auto& extension_refptr : *candidates) {
     const extensions::Extension* extension = extension_refptr.get();
     if (ShouldUpgradeShortcutFor(profile, extension)) {
-      web_app::UpdateAllShortcuts(base::string16(), profile, extension,
-                                  latch->NoOpClosure());
+      UpdateAllShortcuts(base::string16(), profile, extension,
+                         latch->NoOpClosure());
     }
   }
 }

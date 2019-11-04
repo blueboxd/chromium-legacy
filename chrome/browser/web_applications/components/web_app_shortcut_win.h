@@ -35,7 +35,7 @@ base::FilePath GetIconFilePath(const base::FilePath& web_app_path,
 
 void OnShortcutInfoLoadedForSetRelaunchDetails(
     HWND hwnd,
-    std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
+    std::unique_ptr<ShortcutInfo> shortcut_info);
 
 }  // namespace internals
 

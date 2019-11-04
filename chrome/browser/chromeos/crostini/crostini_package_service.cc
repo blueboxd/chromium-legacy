@@ -10,9 +10,9 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/profiles/profile.h"
@@ -473,7 +473,7 @@ void CrostiniPackageService::UninstallApplication(
   const ContainerId container_id(vm_name, container_name);
 
   // Policies can change under us, and crostini may now be forbidden.
-  if (!IsCrostiniUIAllowedForProfile(profile_)) {
+  if (!CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
     LOG(ERROR) << "Can't uninstall because policy no longer allows Crostini";
     UpdatePackageOperationStatus(container_id, PackageOperationStatus::FAILED,
                                  0);

@@ -55,18 +55,6 @@ using LaunchCrostiniAppCallback =
 // Checks if user profile is able to a crostini app with a given app_id.
 bool IsUninstallable(Profile* profile, const std::string& app_id);
 
-// Returns true if crostini is allowed to run for |profile|.
-// Otherwise, returns false, e.g. if crostini is not available on the device,
-// or it is in the flow to set up managed account creation.
-bool IsCrostiniAllowedForProfile(Profile* profile);
-
-// When |check_policy| is true, returns true if fully interactive crostini UI
-// may be shown. Implies crostini is allowed to run.
-// When check_policy is false, returns true if crostini UI is not forbidden by
-// hardware, flags, etc, even if it is forbidden by the enterprise policy. The
-// UI uses this to indicate that crostini is available but disabled by policy.
-bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy = true);
-
 // Returns whether the default Crostini VM is running for the user.
 bool IsCrostiniRunning(Profile* profile);
 
@@ -183,10 +171,6 @@ constexpr char kCrostiniBusterImageAlias[] = "debian/buster";
 
 constexpr base::FilePath::CharType kHomeDirectory[] =
     FILE_PATH_LITERAL("/home");
-
-// Whether running Crostini is allowed for unaffiliated users per enterprise
-// policy.
-bool IsUnaffiliatedCrostiniAllowedByPolicy();
 
 // Add a newly created LXD container to the kCrostiniContainers pref
 void AddNewLxdContainerToPrefs(Profile* profile,

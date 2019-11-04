@@ -27,7 +27,6 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -172,11 +171,11 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
       continue;
     }
     std::string launch_container_str = value->GetString();
-    auto user_display_mode = blink::mojom::DisplayMode::kBrowser;
+    auto user_display_mode = DisplayMode::kBrowser;
     if (launch_container_str == kLaunchContainerTab) {
-      user_display_mode = blink::mojom::DisplayMode::kBrowser;
+      user_display_mode = DisplayMode::kBrowser;
     } else if (launch_container_str == kLaunchContainerWindow) {
-      user_display_mode = blink::mojom::DisplayMode::kStandalone;
+      user_display_mode = DisplayMode::kStandalone;
     } else {
       LOG(ERROR) << file.value() << " had an invalid " << kLaunchContainer;
       continue;

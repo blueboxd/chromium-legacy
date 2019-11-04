@@ -484,7 +484,7 @@ void SiteEngagementService::MaybeRecordMetrics() {
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
-          &GetAllDetailsInBackground, clock_->Now(),
+          &GetAllDetailsInBackground, now,
           base::WrapRefCounted(
               HostContentSettingsMapFactory::GetForProfile(profile_))),
       base::BindOnce(&SiteEngagementService::RecordMetrics,
@@ -536,6 +536,9 @@ bool SiteEngagementService::ShouldRecordEngagement(const GURL& url) const {
 }
 
 base::Time SiteEngagementService::GetLastEngagementTime() const {
+  if (profile_->IsOffTheRecord())
+    return base::Time();
+
   return base::Time::FromInternalValue(
       profile_->GetPrefs()->GetInt64(prefs::kSiteEngagementLastUpdateTime));
 }
@@ -627,15 +630,18 @@ void SiteEngagementService::OnEngagementEvent(
 }
 
 bool SiteEngagementService::IsLastEngagementStale() const {
-  // Only happens on first run when no engagement has ever been recorded.
+  // |last_engagement_time| will be null when no engagement has been recorded
+  // (first run or post clearing site data), or if we are running in incognito.
+  // Do not regard these cases as stale.
   base::Time last_engagement_time = GetLastEngagementTime();
   if (last_engagement_time.is_null())
     return false;
 
   // Stale is either too *far* back, or any amount *forward* in time. This could
   // occur due to a changed clock, or extended non-use of the browser.
-  return (clock_->Now() - last_engagement_time) >= GetStalePeriod() ||
-         (clock_->Now() < last_engagement_time);
+  base::Time now = clock_->Now();
+  return (now - last_engagement_time) >= GetStalePeriod() ||
+         (now < last_engagement_time);
 }
 
 void SiteEngagementService::OnURLsDeleted(

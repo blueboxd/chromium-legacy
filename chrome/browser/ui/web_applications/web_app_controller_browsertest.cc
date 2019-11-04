@@ -20,13 +20,13 @@
 namespace web_app {
 
 std::string ControllerTypeParamToString(
-    const ::testing::TestParamInfo<web_app::ControllerType>& controller_type) {
+    const ::testing::TestParamInfo<ControllerType>& controller_type) {
   switch (controller_type.param) {
-    case web_app::ControllerType::kHostedAppController:
+    case ControllerType::kHostedAppController:
       return "HostedAppController";
-    case web_app::ControllerType::kUnifiedControllerWithBookmarkApp:
+    case ControllerType::kUnifiedControllerWithBookmarkApp:
       return "UnifiedControllerWithBookmarkApp";
-    case web_app::ControllerType::kUnifiedControllerWithWebApp:
+    case ControllerType::kUnifiedControllerWithWebApp:
       return "UnifiedControllerWithWebApp";
   }
 }

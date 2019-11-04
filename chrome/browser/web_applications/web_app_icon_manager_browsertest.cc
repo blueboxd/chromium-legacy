@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
         base::BindLambdaForTesting(
             [&app_id, &run_loop](const AppId& installed_app_id,
                                  InstallResultCode code) {
-              EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
+              EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
               app_id = installed_app_id;
               run_loop.Quit();
             }));

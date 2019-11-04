@@ -120,7 +120,7 @@ void PostShortcutIOTaskAndReply(
 
   // Ownership of |shortcut_info| moves to the Reply, which is guaranteed to
   // outlive the const reference.
-  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
+  const ShortcutInfo& shortcut_info_ref = *shortcut_info;
   GetShortcutIOTaskRunner()->PostTaskAndReply(
       FROM_HERE, base::BindOnce(std::move(task), std::cref(shortcut_info_ref)),
       base::BindOnce(&DeleteShortcutInfoOnUIThread, std::move(shortcut_info),
@@ -150,10 +150,9 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
   return base::FilePath(file_name);
 }
 
-base::FilePath GetShortcutDataDir(const web_app::ShortcutInfo& shortcut_info) {
-  return web_app::GetWebAppDataDirectory(shortcut_info.profile_path,
-                                         shortcut_info.extension_id,
-                                         shortcut_info.url);
+base::FilePath GetShortcutDataDir(const ShortcutInfo& shortcut_info) {
+  return GetWebAppDataDirectory(shortcut_info.profile_path,
+                                shortcut_info.extension_id, shortcut_info.url);
 }
 
 }  // namespace internals

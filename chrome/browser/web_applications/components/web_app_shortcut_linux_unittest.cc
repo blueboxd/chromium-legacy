@@ -94,11 +94,10 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
   // No existing shortcuts.
   {
     MockEnvironment env;
-    web_app::ShortcutLocations result =
+    ShortcutLocations result =
         GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     EXPECT_FALSE(result.on_desktop);
-    EXPECT_EQ(web_app::APP_MENU_LOCATION_NONE,
-              result.applications_menu_location);
+    EXPECT_EQ(APP_MENU_LOCATION_NONE, result.applications_menu_location);
 
     EXPECT_FALSE(result.in_quick_launch_bar);
   }
@@ -112,11 +111,10 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     MockEnvironment env;
     ASSERT_TRUE(base::CreateDirectory(desktop_path));
     ASSERT_TRUE(WriteEmptyFile(desktop_path.Append(kTemplateFilename)));
-    web_app::ShortcutLocations result = GetExistingShortcutLocations(
+    ShortcutLocations result = GetExistingShortcutLocations(
         &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
-    EXPECT_EQ(web_app::APP_MENU_LOCATION_NONE,
-              result.applications_menu_location);
+    EXPECT_EQ(APP_MENU_LOCATION_NONE, result.applications_menu_location);
 
     EXPECT_FALSE(result.in_quick_launch_bar);
   }
@@ -131,10 +129,10 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     env.Set("XDG_DATA_HOME", temp_dir.GetPath().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
     ASSERT_TRUE(WriteEmptyFile(apps_path.Append(kTemplateFilename)));
-    web_app::ShortcutLocations result =
+    ShortcutLocations result =
         GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     EXPECT_FALSE(result.on_desktop);
-    EXPECT_EQ(web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+    EXPECT_EQ(APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
               result.applications_menu_location);
 
     EXPECT_FALSE(result.in_quick_launch_bar);
@@ -151,12 +149,11 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     ASSERT_TRUE(base::CreateDirectory(apps_path));
     ASSERT_TRUE(WriteString(apps_path.Append(kTemplateFilename),
                             kNoDisplayDesktopFile));
-    web_app::ShortcutLocations result =
+    ShortcutLocations result =
         GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     // Doesn't count as being in applications menu.
     EXPECT_FALSE(result.on_desktop);
-    EXPECT_EQ(web_app::APP_MENU_LOCATION_HIDDEN,
-              result.applications_menu_location);
+    EXPECT_EQ(APP_MENU_LOCATION_HIDDEN, result.applications_menu_location);
     EXPECT_FALSE(result.in_quick_launch_bar);
   }
 
@@ -176,10 +173,10 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     env.Set("XDG_DATA_HOME", temp_dir2.GetPath().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
     ASSERT_TRUE(WriteEmptyFile(apps_path.Append(kTemplateFilename)));
-    web_app::ShortcutLocations result = GetExistingShortcutLocations(
+    ShortcutLocations result = GetExistingShortcutLocations(
         &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
-    EXPECT_EQ(web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+    EXPECT_EQ(APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
               result.applications_menu_location);
     EXPECT_FALSE(result.in_quick_launch_bar);
   }

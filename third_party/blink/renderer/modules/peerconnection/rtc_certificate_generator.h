@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace base {
@@ -25,8 +25,6 @@ using RTCCertificateCallback =
 // Chromium's WebRTCCertificateGenerator implementation; uses the
 // PeerConnectionIdentityStore/SSLIdentity::Generate to generate the identity,
 // rtc::RTCCertificate and blink::RTCCertificate.
-//
-// TODO(crbug.com/787254): Convert use of WebString to WTF::String.
 class MODULES_EXPORT RTCCertificateGenerator {
  public:
   RTCCertificateGenerator() {}
@@ -52,9 +50,8 @@ class MODULES_EXPORT RTCCertificateGenerator {
 
   // Creates a certificate from the PEM strings. See also
   // |rtc::RTCCertificate::ToPEM|.
-  rtc::scoped_refptr<rtc::RTCCertificate> FromPEM(
-      blink::WebString pem_private_key,
-      blink::WebString pem_certificate);
+  rtc::scoped_refptr<rtc::RTCCertificate> FromPEM(String pem_private_key,
+                                                  String pem_certificate);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RTCCertificateGenerator);

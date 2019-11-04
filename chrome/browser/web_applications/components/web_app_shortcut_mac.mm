@@ -616,7 +616,7 @@ std::unique_ptr<web_app::ShortcutInfo> BuildShortcutInfoFromBundle(
 
 namespace web_app {
 
-std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
+std::unique_ptr<ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
     const base::FilePath& bundle_path) {
   base::Version full_version = BundleInfoPlist(bundle_path).GetVersion();
   uint32_t major_version = 0;
@@ -1118,8 +1118,8 @@ void WebAppShortcutCreator::RevealAppShimInFinder() const {
 void LaunchShim(LaunchShimUpdateBehavior update_behavior,
                 ShimLaunchedCallback launched_callback,
                 ShimTerminatedCallback terminated_callback,
-                std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
-  if (web_app::AppShimLaunchDisabled()) {
+                std::unique_ptr<ShortcutInfo> shortcut_info) {
+  if (AppShimLaunchDisabled()) {
     base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(std::move(launched_callback), base::Process()));
@@ -1161,11 +1161,10 @@ void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  if (web_app::AppShimLaunchDisabled())
+  if (AppShimLaunchDisabled())
     return;
 
-  web_app::WebAppShortcutCreator shortcut_creator(app_data_path,
-                                                  &shortcut_info);
+  WebAppShortcutCreator shortcut_creator(app_data_path, &shortcut_info);
   std::vector<base::FilePath> updated_shim_paths;
   bool create_if_needed = false;
   // Tests use web_app::UpdateAllShortcuts to force shim creation (rather than
@@ -1186,7 +1185,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
     if (!info.IsForProfile(profile_path))
       continue;
 
-    std::unique_ptr<web_app::ShortcutInfo> shortcut_info =
+    std::unique_ptr<ShortcutInfo> shortcut_info =
         BuildShortcutInfoFromBundle(info.bundle_path());
     WebAppShortcutCreator shortcut_creator(info.bundle_path().DirName(),
                                            shortcut_info.get());

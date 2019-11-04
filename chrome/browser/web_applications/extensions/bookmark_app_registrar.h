@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -38,9 +39,9 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
-  blink::mojom::DisplayMode GetAppDisplayMode(
+  web_app::DisplayMode GetAppDisplayMode(
       const web_app::AppId& app_id) const override;
-  blink::mojom::DisplayMode GetAppUserDisplayMode(
+  web_app::DisplayMode GetAppUserDisplayMode(
       const web_app::AppId& app_id) const override;
   std::vector<web_app::AppId> GetAppIds() const override;
 

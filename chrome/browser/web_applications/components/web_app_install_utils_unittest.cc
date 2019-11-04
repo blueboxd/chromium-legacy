@@ -5,10 +5,10 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/web_application_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -52,7 +52,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
                                ForInstallableSite::kNo);
   EXPECT_EQ(base::UTF8ToUTF16(kAppShortName), web_app_info.title);
   EXPECT_EQ(kAppUrl, web_app_info.app_url);
-  EXPECT_EQ(blink::mojom::DisplayMode::kBrowser, web_app_info.display_mode);
+  EXPECT_EQ(DisplayMode::kBrowser, web_app_info.display_mode);
 
   // The icon info from |web_app_info| should be left as is, since the manifest
   // doesn't have any icon information.
@@ -62,7 +62,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   // Test that |manifest.name| takes priority over |manifest.short_name|, and
   // that icons provided by the manifest replace icons in |web_app_info|.
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
-  manifest.display = blink::mojom::DisplayMode::kMinimalUi;
+  manifest.display = DisplayMode::kMinimalUi;
 
   blink::Manifest::ImageResource icon;
   icon.src = kAppIcon2;
@@ -78,7 +78,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   UpdateWebAppInfoFromManifest(manifest, &web_app_info,
                                ForInstallableSite::kNo);
   EXPECT_EQ(base::UTF8ToUTF16(kAppTitle), web_app_info.title);
-  EXPECT_EQ(blink::mojom::DisplayMode::kMinimalUi, web_app_info.display_mode);
+  EXPECT_EQ(DisplayMode::kMinimalUi, web_app_info.display_mode);
 
   EXPECT_EQ(2u, web_app_info.icons.size());
   EXPECT_EQ(kAppIcon2, web_app_info.icons[0].url);

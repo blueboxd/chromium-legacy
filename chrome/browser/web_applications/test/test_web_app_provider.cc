@@ -38,8 +38,8 @@ std::unique_ptr<KeyedService> TestWebAppProvider::BuildDefault(
 // static
 TestWebAppProvider* TestWebAppProvider::Get(Profile* profile) {
   CHECK(profile->AsTestingProfile());
-  auto* test_provider = static_cast<web_app::TestWebAppProvider*>(
-      web_app::WebAppProvider::Get(profile));
+  auto* test_provider =
+      static_cast<TestWebAppProvider*>(WebAppProvider::Get(profile));
   CHECK(!test_provider->started_);
 
   // Disconnect so that clients are forced to call Start() before accessing any

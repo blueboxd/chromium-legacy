@@ -267,8 +267,7 @@ void AppBannerManagerAndroid::RecordEventForAppBanner(
         case AddToHomescreenParams::AppType::SHORTCUT:
           TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
           AppBannerSettingsHelper::RecordBannerInstallEvent(
-              web_contents(), a2hs_params.shortcut_info->url.spec(),
-              AppBannerSettingsHelper::WEB);
+              web_contents(), a2hs_params.shortcut_info->url.spec());
           break;
         default:
           NOTREACHED();
@@ -303,10 +302,10 @@ void AppBannerManagerAndroid::RecordEventForAppBanner(
 
     case AddToHomescreenInstaller::Event::UI_SHOWN:
       if (a2hs_params.app_type == AddToHomescreenParams::AppType::NATIVE) {
-        RecordDidShowBanner("AppBanner.NativeApp.Shown");
+        RecordDidShowBanner();
         TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_CREATED);
       } else {
-        RecordDidShowBanner("AppBanner.WebApp.Shown");
+        RecordDidShowBanner();
         TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
       }
       break;
@@ -319,16 +318,14 @@ void AppBannerManagerAndroid::RecordEventForAppBanner(
         DCHECK(!a2hs_params.native_app_package_name.empty());
         TrackUserResponse(USER_RESPONSE_NATIVE_APP_DISMISSED);
         AppBannerSettingsHelper::RecordBannerDismissEvent(
-            web_contents(), a2hs_params.native_app_package_name,
-            AppBannerSettingsHelper::NATIVE);
+            web_contents(), a2hs_params.native_app_package_name);
       } else {
         if (a2hs_params.app_type == AddToHomescreenParams::AppType::WEBAPK)
           webapk::TrackInstallEvent(
               webapk::ADD_TO_HOMESCREEN_DIALOG_DISMISSED_BEFORE_INSTALLATION);
         TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
         AppBannerSettingsHelper::RecordBannerDismissEvent(
-            web_contents(), a2hs_params.shortcut_info->url.spec(),
-            AppBannerSettingsHelper::WEB);
+            web_contents(), a2hs_params.shortcut_info->url.spec());
       }
       break;
   }

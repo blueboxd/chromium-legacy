@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/stl_util.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -130,16 +129,14 @@ base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {
   return base::make_optional(result->second.install_url);
 }
 
-blink::mojom::DisplayMode TestAppRegistrar::GetAppDisplayMode(
-    const AppId& app_id) const {
+DisplayMode TestAppRegistrar::GetAppDisplayMode(const AppId& app_id) const {
   NOTIMPLEMENTED();
-  return blink::mojom::DisplayMode::kBrowser;
+  return DisplayMode::kBrowser;
 }
 
-blink::mojom::DisplayMode TestAppRegistrar::GetAppUserDisplayMode(
-    const AppId& app_id) const {
+DisplayMode TestAppRegistrar::GetAppUserDisplayMode(const AppId& app_id) const {
   NOTIMPLEMENTED();
-  return blink::mojom::DisplayMode::kBrowser;
+  return DisplayMode::kBrowser;
 }
 
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {

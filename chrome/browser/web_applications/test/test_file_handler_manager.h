@@ -26,7 +26,7 @@ class TestFileHandlerManager : public FileHandlerManager {
   const std::vector<apps::FileHandlerInfo>* GetFileHandlers(
       const AppId& app_id) override;
 
-  void InstallFileHandler(const web_app::AppId& app_id,
+  void InstallFileHandler(const AppId& app_id,
                           const GURL& handler,
                           std::vector<std::string> accepts);
 

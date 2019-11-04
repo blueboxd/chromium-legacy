@@ -241,9 +241,8 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual void OnDidPerformInstallableWebAppCheck(
       const InstallableData& result);
 
-  // Records that a banner was shown. The |event_name| corresponds to the RAPPOR
-  // metric being recorded.
-  void RecordDidShowBanner(const std::string& event_name);
+  // Records that a banner was shown.
+  void RecordDidShowBanner();
 
   // Reports |code| via a UMA histogram or logs it to the console.
   void ReportStatus(InstallableStatusCode code);

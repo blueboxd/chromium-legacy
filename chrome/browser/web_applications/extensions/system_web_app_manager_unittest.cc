@@ -32,7 +32,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -44,8 +43,7 @@ const GURL kAppUrl2(content::GetWebUIURL("system-app2"));
 const GURL kAppUrl3(content::GetWebUIURL("system-app3"));
 
 ExternalInstallOptions GetWindowedInstallOptions() {
-  ExternalInstallOptions options(kAppUrl1,
-                                 blink::mojom::DisplayMode::kStandalone,
+  ExternalInstallOptions options(kAppUrl1, DisplayMode::kStandalone,
                                  ExternalInstallSource::kSystemInstalled);
   options.add_to_applications_menu = false;
   options.add_to_desktop = false;
@@ -68,7 +66,7 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    auto* provider = web_app::TestWebAppProvider::Get(profile());
+    auto* provider = TestWebAppProvider::Get(profile());
 
     auto test_app_registrar = std::make_unique<TestAppRegistrar>();
     test_app_registrar_ = test_app_registrar.get();

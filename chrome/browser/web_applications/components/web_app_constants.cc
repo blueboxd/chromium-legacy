@@ -4,8 +4,6 @@
 
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
-
 namespace web_app {
 
 static_assert(Source::kMinValue == 0, "Source enum should be zero based");
@@ -15,31 +13,30 @@ bool IsSuccess(InstallResultCode code) {
          code == InstallResultCode::kSuccessAlreadyInstalled;
 }
 
-blink::mojom::DisplayMode ResolveEffectiveDisplayMode(
-    blink::mojom::DisplayMode app_display_mode,
-    blink::mojom::DisplayMode user_display_mode) {
+DisplayMode ResolveEffectiveDisplayMode(DisplayMode app_display_mode,
+                                        DisplayMode user_display_mode) {
   switch (user_display_mode) {
-    case blink::mojom::DisplayMode::kBrowser:
-      return blink::mojom::DisplayMode::kBrowser;
-    case blink::mojom::DisplayMode::kUndefined:
-    case blink::mojom::DisplayMode::kMinimalUi:
-    case blink::mojom::DisplayMode::kFullscreen:
+    case DisplayMode::kBrowser:
+      return DisplayMode::kBrowser;
+    case DisplayMode::kUndefined:
+    case DisplayMode::kMinimalUi:
+    case DisplayMode::kFullscreen:
       NOTREACHED();
       FALLTHROUGH;
-    case blink::mojom::DisplayMode::kStandalone:
+    case DisplayMode::kStandalone:
       break;
   }
 
   switch (app_display_mode) {
-    case blink::mojom::DisplayMode::kBrowser:
-    case blink::mojom::DisplayMode::kMinimalUi:
-      return blink::mojom::DisplayMode::kMinimalUi;
-    case blink::mojom::DisplayMode::kUndefined:
+    case DisplayMode::kBrowser:
+    case DisplayMode::kMinimalUi:
+      return DisplayMode::kMinimalUi;
+    case DisplayMode::kUndefined:
       NOTREACHED();
       FALLTHROUGH;
-    case blink::mojom::DisplayMode::kStandalone:
-    case blink::mojom::DisplayMode::kFullscreen:
-      return blink::mojom::DisplayMode::kStandalone;
+    case DisplayMode::kStandalone:
+    case DisplayMode::kFullscreen:
+      return DisplayMode::kStandalone;
   }
 }
 

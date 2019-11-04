@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -27,7 +28,7 @@ bool RtcEventLogOutputSinkProxy::IsActive() const {
 }
 
 bool RtcEventLogOutputSinkProxy::Write(const std::string& output) {
-  sink_->OnWebRtcEventLogWrite(output);
+  sink_->OnWebRtcEventLogWrite(String::FromUTF8(output.c_str()));
   return true;
 }
 

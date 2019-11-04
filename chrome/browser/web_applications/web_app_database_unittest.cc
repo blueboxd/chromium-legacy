@@ -22,7 +22,6 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "components/sync/model/model_type_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -72,15 +71,12 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetThemeColor(theme_color);
     app->SetIsLocallyInstalled(!(suffix & 2));
     app->SetIsInSyncInstall(!(suffix & 4));
-    app->SetUserDisplayMode((suffix & 1)
-                                ? blink::mojom::DisplayMode::kBrowser
-                                : blink::mojom::DisplayMode::kStandalone);
+    app->SetUserDisplayMode((suffix & 1) ? DisplayMode::kBrowser
+                                         : DisplayMode::kStandalone);
 
-    const blink::mojom::DisplayMode display_modes[4] = {
-        blink::mojom::DisplayMode::kBrowser,
-        blink::mojom::DisplayMode::kMinimalUi,
-        blink::mojom::DisplayMode::kStandalone,
-        blink::mojom::DisplayMode::kFullscreen};
+    const DisplayMode display_modes[4] = {
+        DisplayMode::kBrowser, DisplayMode::kMinimalUi,
+        DisplayMode::kStandalone, DisplayMode::kFullscreen};
     app->SetDisplayMode(display_modes[(suffix >> 4) & 3]);
 
     const std::string icon_url =
@@ -258,7 +254,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   const auto launch_url = GURL("https://example.com/");
   const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
   const std::string name = "Name";
-  const auto user_display_mode = blink::mojom::DisplayMode::kBrowser;
+  const auto user_display_mode = DisplayMode::kBrowser;
 
   auto app = std::make_unique<WebApp>(app_id);
 
@@ -275,7 +271,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   }
 
   // Let optional fields be empty:
-  EXPECT_EQ(app->display_mode(), blink::mojom::DisplayMode::kUndefined);
+  EXPECT_EQ(app->display_mode(), DisplayMode::kUndefined);
   EXPECT_TRUE(app->description().empty());
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
@@ -304,7 +300,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app_copy->HasAnySources());
 
   // No optional fields.
-  EXPECT_EQ(app_copy->display_mode(), blink::mojom::DisplayMode::kUndefined);
+  EXPECT_EQ(app_copy->display_mode(), DisplayMode::kUndefined);
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());

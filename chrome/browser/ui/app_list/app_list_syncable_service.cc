@@ -19,7 +19,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -434,7 +434,7 @@ void AppListSyncableService::BuildModel() {
     ext_apps_builder_ = std::make_unique<ExtensionAppModelBuilder>(controller);
     if (arc::IsArcAllowedForProfile(profile_))
       arc_apps_builder_ = std::make_unique<ArcAppModelBuilder>(controller);
-    if (crostini::IsCrostiniUIAllowedForProfile(profile_)) {
+    if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
       crostini_apps_builder_ =
           std::make_unique<CrostiniAppModelBuilder>(controller);
     }

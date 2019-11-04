@@ -69,7 +69,7 @@ public class TrustedWebActivityPreferencesUiTest {
     @Feature({"Preferences"})
     public void testSingleCategoryManagedBy() throws Exception {
         final String site = "http://example.com";
-        final Origin origin = new Origin(site);
+        final Origin origin = Origin.create(site);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mPermissionMananger.register(origin, mPackage, true));
@@ -122,7 +122,7 @@ public class TrustedWebActivityPreferencesUiTest {
     @Feature({"Preferences"})
     public void testWebsitePreferencesManagedBy() {
         final String site = "http://example.com";
-        final Origin origin = new Origin(site);
+        final Origin origin = Origin.create(site);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mPermissionMananger.register(origin, mPackage, true));

@@ -122,12 +122,12 @@ TpmChallengeKeyImpl::~TpmChallengeKeyImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void TpmChallengeKeyImpl::Run(AttestationKeyType key_type,
-                              Profile* profile,
-                              TpmChallengeKeyCallback callback,
-                              const std::string& challenge,
-                              bool register_key,
-                              const std::string& key_name_for_spkac) {
+void TpmChallengeKeyImpl::BuildResponse(AttestationKeyType key_type,
+                                        Profile* profile,
+                                        TpmChallengeKeyCallback callback,
+                                        const std::string& challenge,
+                                        bool register_key,
+                                        const std::string& key_name_for_spkac) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // |key_name_for_spkac| was designed to only be used with KEY_DEVICE.

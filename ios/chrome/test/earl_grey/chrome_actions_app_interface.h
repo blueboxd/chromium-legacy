@@ -37,6 +37,12 @@
 // web state.
 + (id<GREYAction>)tapWebElement:(ElementSelector*)selector;
 
+// Action to scroll to top of a collection.
+// On iOS 13 the settings menu appears as a card that can be dismissed with a
+// downward swipe, for this reason we need to swipe up programatically to
+// avoid dismissing the VC.
++ (id<GREYAction>)scrollToTop;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_ACTIONS_APP_INTERFACE_H_

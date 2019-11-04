@@ -13,6 +13,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -77,7 +78,8 @@ class AppShimController : public chrome::mojom::AppShim {
 
   // chrome::mojom::AppShim implementation.
   void CreateRemoteCocoaApplication(
-      remote_cocoa::mojom::ApplicationAssociatedRequest request) override;
+      mojo::PendingAssociatedReceiver<remote_cocoa::mojom::Application>
+          receiver) override;
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override;
   void SetBadgeLabel(const std::string& badge_label) override;
   void SetUserAttention(apps::AppShimAttentionType attention_type) override;

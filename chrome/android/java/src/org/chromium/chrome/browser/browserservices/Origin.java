@@ -27,55 +27,8 @@ public class Origin {
 
     private final Uri mOrigin;
 
-    /**
-     * Constructs a canonical Origin from a String.
-     */
-    public Origin(String uri) {
-        this(Uri.parse(uri));
-    }
-
-    /**
-     * Constructs a canonical Origin from an Uri.
-     */
-    public Origin(Uri uri) {
-        if (uri == null || uri.getScheme() == null || uri.getAuthority() == null) {
-            mOrigin = Uri.EMPTY;
-            return;
-        }
-
-        // Make explicit ports implicit and remove any user:password.
-        int port = uri.getPort();
-        String scheme = uri.getScheme();
-        if (scheme.equals(UrlConstants.HTTP_SCHEME) && port == HTTP_DEFAULT_PORT) port = -1;
-        if (scheme.equals(UrlConstants.HTTPS_SCHEME) && port == HTTPS_DEFAULT_PORT) port = -1;
-
-        String authority = uri.getHost();
-        if (port != -1) authority += ":" + port;
-
-        Uri origin;
-        try {
-            origin = uri.normalizeScheme()
-                    .buildUpon()
-                    .opaquePart("")
-                    .fragment("")
-                    .path("")
-                    .encodedAuthority(authority)
-                    .clearQuery()
-                    .build();
-        } catch (UnsupportedOperationException e) {
-            origin = Uri.EMPTY;
-        }
-
+    private Origin(Uri origin) {
         mOrigin = origin;
-    }
-
-    /**
-     * Constructs a canonical Origin from an Uri.
-     */
-    @Nullable
-    public static Origin create(Uri uri) {
-        // This method will return null in the near future.
-        return new Origin(uri);
     }
 
     /**
@@ -87,11 +40,54 @@ public class Origin {
     }
 
     /**
-     * Returns whether the Origin is valid.
+     * Constructs a canonical Origin from an Uri.
      */
-    public boolean isValid() { return !mOrigin.equals(Uri.EMPTY); }
+    @Nullable
+    public static Origin create(Uri uri) {
+        if (uri == null || uri.getScheme() == null || uri.getAuthority() == null) {
+            return null;
+        }
+
+        // Make explicit ports implicit and remove any user:password.
+        int port = uri.getPort();
+        String scheme = uri.getScheme();
+        if (scheme.equals(UrlConstants.HTTP_SCHEME) && port == HTTP_DEFAULT_PORT) port = -1;
+        if (scheme.equals(UrlConstants.HTTPS_SCHEME) && port == HTTPS_DEFAULT_PORT) port = -1;
+
+        String authority = uri.getHost();
+        if (port != -1) authority += ":" + port;
+
+        try {
+            return new Origin(uri.normalizeScheme()
+                    .buildUpon()
+                    .opaquePart("")
+                    .fragment("")
+                    .path("")
+                    .encodedAuthority(authority)
+                    .clearQuery()
+                    .build());
+        } catch (UnsupportedOperationException e) {
+            return null;
+        }
+    }
 
     /**
+     * Constructs a canonical Origin from a String, throwing an exception if parsing fails.
+     */
+    public static Origin createOrThrow(String uri) {
+        return createOrThrow(Uri.parse(uri));
+    }
+
+    /**
+     * Constructs a canonical Origin from an Uri, throwing an exception if parsing fails.
+     */
+    public static Origin createOrThrow(Uri uri) {
+        Origin origin = Origin.create(uri);
+        if (origin == null) throw new IllegalArgumentException("Could not parse: " + uri);
+        return origin;
+    }
+
+    /*
      * Returns a Uri representing the Origin.
      */
     public Uri uri() {

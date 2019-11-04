@@ -104,6 +104,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableChromevoxDeveloperOption[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableConsumerKiosk[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kEnableTabletFormFactor[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableEncryptionMigration[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableExtensionAssetsSharing[];
@@ -242,6 +244,9 @@ bool ShouldTetherHostScansIgnoreWiredConnections();
 
 // Returns true if we should skip all other OOBE pages after user login.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldSkipOobePostLogin();
+
+// Returns true if the device is of tablet form factor.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsTabletFormFactor();
 
 // Returns true if GAIA services has been disabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsGaiaServicesDisabled();

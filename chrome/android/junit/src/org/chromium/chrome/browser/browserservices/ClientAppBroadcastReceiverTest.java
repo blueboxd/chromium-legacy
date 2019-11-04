@@ -148,8 +148,8 @@ public class ClientAppBroadcastReceiverTest {
         String appName = "App Name 3";
         Set<String> domains = new HashSet<>(Arrays.asList("example.com", "example2.com"));
 
-        Origin origin1 = new Origin("https://www.example.com");
-        Origin origin2 = new Origin("https://www.example2.com");
+        Origin origin1 = Origin.create("https://www.example.com");
+        Origin origin2 = Origin.create("https://www.example2.com");
         Set<String> origins = new HashSet<>(Arrays.asList(origin1.toString(), origin2.toString()));
 
         addToRegister(id, appName, domains, origins);

@@ -32,7 +32,6 @@
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
-#include "third_party/blink/public/platform/web_rtc_offer_options.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
@@ -49,6 +48,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
@@ -510,12 +510,13 @@ void GetRTCStatsOnSignalingThread(
 }
 
 void ConvertOfferOptionsToWebrtcOfferOptions(
-    const blink::WebRTCOfferOptions& options,
+    const RTCOfferOptionsPlatform* options,
     webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output) {
-  output->offer_to_receive_audio = options.OfferToReceiveAudio();
-  output->offer_to_receive_video = options.OfferToReceiveVideo();
-  output->voice_activity_detection = options.VoiceActivityDetection();
-  output->ice_restart = options.IceRestart();
+  DCHECK(options);
+  output->offer_to_receive_audio = options->OfferToReceiveAudio();
+  output->offer_to_receive_video = options->OfferToReceiveVideo();
+  output->voice_activity_detection = options->VoiceActivityDetection();
+  output->ice_restart = options->IceRestart();
 }
 
 void ConvertAnswerOptionsToWebrtcAnswerOptions(
@@ -1150,7 +1151,7 @@ RTCPeerConnectionHandler::CreateOffer(
 blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::CreateOffer(
     const blink::WebRTCSessionDescriptionRequest& request,
-    const blink::WebRTCOfferOptions& options) {
+    blink::RTCOfferOptionsPlatform* options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createOffer");
 

@@ -153,7 +153,7 @@ class SearchController {
     chrome.fileManagerPrivate.searchDriveMetadata(
         {
           query: searchString,
-          types: 'ALL',
+          types: chrome.fileManagerPrivate.SearchType.ALL,
           maxResults: 4,
         },
         suggestions => {

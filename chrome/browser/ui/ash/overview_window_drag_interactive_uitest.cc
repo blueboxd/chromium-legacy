@@ -169,7 +169,13 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
   ui_test_utils::WaitForBrowserToClose(chrome::FindLastActive());
 }
 
-IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DragToSnap) {
+// Disable for ChromeOS crbug.com/1021005.
+#if defined(OS_CHROMEOS)
+#define MAYBE_DragToSnap DISABLED_DragToSnap
+#else
+#define MAYBE_DragToSnap DragToSnap
+#endif
+IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, MAYBE_DragToSnap) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
   ui_controls::SendKeyPress(browser_window, ui::VKEY_MEDIA_LAUNCH_APP1,

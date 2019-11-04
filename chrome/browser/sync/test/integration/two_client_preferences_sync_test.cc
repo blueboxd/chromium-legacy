@@ -222,10 +222,8 @@ class TwoClientPreferencesSyncTestWithSelfNotifications : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientPreferencesSyncTestWithSelfNotifications);
 };
 
-// Flaky. https://crbug.com/1012688
-// This was E2E_ENABLED(ShouldKeepLocalDataOnTypeMismatch).
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
-                       DISABLED_ShouldKeepLocalDataOnTypeMismatch) {
+                       E2E_ENABLED(ShouldKeepLocalDataOnTypeMismatch)) {
   ResetSyncForPrimaryAccount();
   // Client 1 has type-conflicting data in it's pref file. Verify that incoming
   // values from sync of other type do not modify the local state.

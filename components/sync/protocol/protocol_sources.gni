@@ -52,6 +52,7 @@ sync_protocol_bases = [
   "session_specifics",
   "sharing_click_to_call_message",
   "sharing_message",
+  "sharing_remote_copy_message",
   "sharing_shared_clipboard_message",
   "sharing_sms_fetch_message",
   "sync",

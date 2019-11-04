@@ -634,12 +634,14 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
     event.canExecute =
         (volumeType === VolumeManagerCommon.VolumeType.ARCHIVE ||
          volumeType === VolumeManagerCommon.VolumeType.REMOVABLE ||
-         volumeType === VolumeManagerCommon.VolumeType.PROVIDED);
+         volumeType === VolumeManagerCommon.VolumeType.PROVIDED ||
+         volumeType === VolumeManagerCommon.VolumeType.SMB);
     event.command.setHidden(!event.canExecute);
 
     switch (volumeType) {
       case VolumeManagerCommon.VolumeType.ARCHIVE:
       case VolumeManagerCommon.VolumeType.PROVIDED:
+      case VolumeManagerCommon.VolumeType.SMB:
         event.command.label = str('CLOSE_VOLUME_BUTTON_LABEL');
         break;
       case VolumeManagerCommon.VolumeType.REMOVABLE:

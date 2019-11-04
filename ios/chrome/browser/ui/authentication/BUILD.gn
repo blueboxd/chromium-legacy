@@ -162,6 +162,7 @@ source_set("eg_test_support") {
   deps = [
     ":authentication",
     "unified_consent",
+    "//base/test:test_support",
     "//components/signin/public/identity_manager",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/browser_state",

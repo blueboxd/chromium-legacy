@@ -20,12 +20,16 @@ ExtensionDownloaderDelegate::~ExtensionDownloaderDelegate() {
 
 void ExtensionDownloaderDelegate::OnExtensionDownloadStageChanged(
     const ExtensionId& id,
-    ExtensionDownloaderDelegate::Stage stage) {}
+    Stage stage) {}
+
+void ExtensionDownloaderDelegate::OnExtensionDownloadCacheStatusRetrieved(
+    const ExtensionId& id,
+    CacheStatus cache_status) {}
 
 void ExtensionDownloaderDelegate::OnExtensionDownloadFailed(
     const ExtensionId& id,
-    ExtensionDownloaderDelegate::Error error,
-    const ExtensionDownloaderDelegate::PingResult& ping_result,
+    Error error,
+    const PingResult& ping_result,
     const std::set<int>& request_id) {}
 
 void ExtensionDownloaderDelegate::OnExtensionDownloadRetryForTests() {}

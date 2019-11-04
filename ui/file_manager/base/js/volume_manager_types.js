@@ -124,6 +124,9 @@ VolumeManagerCommon.RootType = {
 
   // Root directory of an external media folder under computers grand root.
   EXTERNAL_MEDIA: 'external_media',
+
+  // Root directory of an SMB file share.
+  SMB: 'smb',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -160,6 +163,7 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.COMPUTER,                          // 20
   VolumeManagerCommon.RootType.EXTERNAL_MEDIA,                    // 21
   VolumeManagerCommon.RootType.DOCUMENTS_PROVIDER,                // 22
+  VolumeManagerCommon.RootType.SMB,                               // 23
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===
@@ -244,6 +248,7 @@ VolumeManagerCommon.VolumeType = {
   CROSTINI: 'crostini',
   ANDROID_FILES: 'android_files',
   MY_FILES: 'my_files',
+  SMB: 'smb',
 };
 
 /**
@@ -269,7 +274,8 @@ VolumeManagerCommon.VolumeType.isNative = type => {
       type === VolumeManagerCommon.VolumeType.ANDROID_FILES ||
       type === VolumeManagerCommon.VolumeType.CROSTINI ||
       type === VolumeManagerCommon.VolumeType.REMOVABLE ||
-      type === VolumeManagerCommon.VolumeType.ARCHIVE;
+      type === VolumeManagerCommon.VolumeType.ARCHIVE ||
+      type === VolumeManagerCommon.VolumeType.SMB;
 };
 
 Object.freeze(VolumeManagerCommon.VolumeType);
@@ -313,6 +319,8 @@ VolumeManagerCommon.getVolumeTypeFromRootType = rootType => {
       return VolumeManagerCommon.VolumeType.ANDROID_FILES;
     case VolumeManagerCommon.RootType.MY_FILES:
       return VolumeManagerCommon.VolumeType.MY_FILES;
+    case VolumeManagerCommon.RootType.SMB:
+      return VolumeManagerCommon.VolumeType.SMB;
   }
   assertNotReached('Unknown root type: ' + rootType);
 };
@@ -345,6 +353,8 @@ VolumeManagerCommon.getRootTypeFromVolumeType = volumeType => {
       return VolumeManagerCommon.RootType.PROVIDED;
     case VolumeManagerCommon.VolumeType.REMOVABLE:
       return VolumeManagerCommon.RootType.REMOVABLE;
+    case VolumeManagerCommon.VolumeType.SMB:
+      return VolumeManagerCommon.RootType.SMB;
   }
   assertNotReached('Unknown volume type: ' + volumeType);
 };

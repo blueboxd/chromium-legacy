@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_installer.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -116,9 +115,6 @@ void WaitForAppService(Profile* profile) {
   // (because they are potentially IPC calls). When the tests install and
   // uninstall apps, they may need to pump the run loop so that those async
   // calls settle.
-  if (!base::FeatureList::IsEnabled(features::kAppServiceAsh))
-    return;
-
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->FlushMojoCallsForTesting();
 }

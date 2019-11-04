@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -108,7 +109,7 @@ void ChromeExtensionMessageFilter::OnDestruct() const {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     delete this;
   } else {
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
   }
 }
 

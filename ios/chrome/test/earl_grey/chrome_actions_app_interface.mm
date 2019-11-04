@@ -105,4 +105,25 @@ NSString* kChromeActionsErrorDomain = @"ChromeActionsError";
                                 selector);
 }
 
++ (id<GREYAction>)scrollToTop {
+  GREYPerformBlock scrollToTopBlock = ^BOOL(id element,
+                                            __strong NSError** error) {
+    grey_dispatch_sync_on_main_thread(^{
+      UIScrollView* view = base::mac::ObjCCast<UIScrollView>(element);
+      if (!view) {
+        *error = [NSError
+            errorWithDomain:kChromeActionsErrorDomain
+                       code:0
+                   userInfo:@{
+                     NSLocalizedDescriptionKey : @"View is not a UIScrollView"
+                   }];
+      }
+      view.contentOffset = CGPointZero;
+    });
+    return YES;
+  };
+  return [GREYActionBlock actionWithName:@"Scroll to top"
+                            performBlock:scrollToTopBlock];
+}
+
 @end

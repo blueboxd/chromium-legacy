@@ -124,4 +124,5 @@ QuickViewUma.VolumeType = [
   VolumeManagerCommon.VolumeType.CROSTINI,
   VolumeManagerCommon.VolumeType.ANDROID_FILES,
   VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER,
+  VolumeManagerCommon.VolumeType.SMB,
 ];

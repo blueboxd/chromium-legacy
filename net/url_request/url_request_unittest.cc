@@ -11176,8 +11176,15 @@ class HTTPSEarlyDataTest : public TestWithTaskEnvironment {
   EmbeddedTestServer test_server_;
 };
 
+// Flaky on iOS, crbug.com/1021021
+#if defined(OS_IOS)
+#define MAYBE_TLSEarlyDataTest DISABLED_TLSEarlyDataTest
+#else
+#define MAYBE_TLSEarlyDataTest TLSEarlyDataTest
+#endif
+
 // TLSEarlyDataTest tests that we handle early data correctly.
-TEST_F(HTTPSEarlyDataTest, TLSEarlyDataTest) {
+TEST_F(HTTPSEarlyDataTest, MAYBE_TLSEarlyDataTest) {
   ASSERT_TRUE(test_server_.Start());
   context_.http_transaction_factory()->GetSession()->ClearSSLSessionCache();
 
@@ -11298,8 +11305,15 @@ std::unique_ptr<test_server::HttpResponse> HandleTooEarly(
   return std::make_unique<ZeroRTTResponse>(zero_rtt, true);
 }
 
+// Flaky on iOS, crbug.com/1021021
+#if defined(OS_IOS)
+#define MAYBE_TLSEarlyDataTooEarlyTest DISABLED_TLSEarlyDataTooEarlyTest
+#else
+#define MAYBE_TLSEarlyDataTooEarlyTest TLSEarlyDataTooEarlyTest
+#endif
+
 // Test that we handle 425 (Too Early) correctly.
-TEST_F(HTTPSEarlyDataTest, TLSEarlyDataTooEarlyTest) {
+TEST_F(HTTPSEarlyDataTest, MAYBE_TLSEarlyDataTooEarlyTest) {
   bool sent_425 = false;
   test_server_.RegisterRequestHandler(
       base::BindRepeating(&HandleTooEarly, base::Unretained(&sent_425)));

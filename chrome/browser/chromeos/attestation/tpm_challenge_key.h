@@ -71,17 +71,17 @@ class TpmChallengeKey {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Should be called only once for every instance. |TpmChallengeKey| object
-  // should live as long as response from |Run| function via |callback| is
-  // expected. On destruction it stops challenge process and silently discards
-  // callback. |key_name_for_spkac| the name of the key used for
-  // SignedPublicKeyAndChallenge when sending a challenge machine key request
-  // with |registerKey|=true.
-  virtual void Run(AttestationKeyType key_type,
-                   Profile* profile,
-                   TpmChallengeKeyCallback callback,
-                   const std::string& challenge,
-                   bool register_key,
-                   const std::string& key_name_for_spkac) = 0;
+  // should live as long as response from |BuildResponse| function via
+  // |callback| is expected. On destruction it stops challenge process and
+  // silently discards callback. |key_name_for_spkac| the name of the key used
+  // for SignedPublicKeyAndChallenge when sending a challenge machine key
+  // request with |registerKey|=true.
+  virtual void BuildResponse(AttestationKeyType key_type,
+                             Profile* profile,
+                             TpmChallengeKeyCallback callback,
+                             const std::string& challenge,
+                             bool register_key,
+                             const std::string& key_name_for_spkac) = 0;
 
  protected:
   // Use TpmChallengeKeyFactory for creation.
@@ -110,12 +110,12 @@ class TpmChallengeKeyImpl : public TpmChallengeKey {
   ~TpmChallengeKeyImpl() override;
 
   // TpmChallengeKey
-  void Run(AttestationKeyType key_type,
-           Profile* profile,
-           TpmChallengeKeyCallback callback,
-           const std::string& challenge,
-           bool register_key,
-           const std::string& key_name_for_spkac) override;
+  void BuildResponse(AttestationKeyType key_type,
+                     Profile* profile,
+                     TpmChallengeKeyCallback callback,
+                     const std::string& challenge,
+                     bool register_key,
+                     const std::string& key_name_for_spkac) override;
 
  private:
   enum class PrepareKeyResult {

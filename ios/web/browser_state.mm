@@ -89,8 +89,8 @@ BrowserState::~BrowserState() {
   shared_url_loader_factory_->Detach();
 
   if (network_context_) {
-    web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
-                               network_context_owner_.release());
+    base::DeleteSoon(FROM_HERE, {web::WebThread::IO},
+                     network_context_owner_.release());
   }
 
   // Delete the URLDataManagerIOSBackend instance on the IO thread if it has
@@ -99,8 +99,8 @@ BrowserState::~BrowserState() {
   // BrowserState are still accessing it on the IO thread at this point,
   // they're going to have a bad time anyway.
   if (url_data_manager_ios_backend_) {
-    bool posted = web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
-                                             url_data_manager_ios_backend_);
+    bool posted = base::DeleteSoon(FROM_HERE, {web::WebThread::IO},
+                                   url_data_manager_ios_backend_);
     if (!posted)
       delete url_data_manager_ios_backend_;
   }

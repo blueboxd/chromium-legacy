@@ -19,6 +19,9 @@ import androidx.browser.customtabs.CustomTabsService;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.TrustedWebUtils;
 
+/**
+ * Common utilities for Trusted Web Activity tests.
+ */
 public class TrustedWebActivityTestUtil {
     /** Creates an Intent that will launch a Custom Tab to the given |url|. */
     public static Intent createTrustedWebActivityIntent(String url) {
@@ -31,7 +34,7 @@ public class TrustedWebActivityTestUtil {
     /** Caches a successful verification for the given |packageName| and |url|. */
     public static void spoofVerification(String packageName, String url) {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> OriginVerifier.addVerificationOverride(packageName, new Origin(url),
+                () -> OriginVerifier.addVerificationOverride(packageName, Origin.create(url),
                         CustomTabsService.RELATION_HANDLE_ALL_URLS));
     }
 

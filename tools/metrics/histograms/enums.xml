@@ -22889,7 +22889,7 @@ Called by update_net_error_codes.py.-->
   <int value="738" label="CryptoAlgorithmPbkdf2"/>
   <int value="739" label="DocumentSetDomain"/>
   <int value="740" label="UpgradeInsecureRequestsEnabled"/>
-  <int value="741" label="UpgradeInsecureRequestsUpgradedRequest"/>
+  <int value="741" label="UpgradeInsecureRequestsUpgradedRequest_Obsolete"/>
   <int value="742" label="DocumentDesignMode"/>
   <int value="743" label="GlobalCacheStorage"/>
   <int value="744" label="NetInfo"/>
@@ -25325,6 +25325,12 @@ Called by update_net_error_codes.py.-->
   <int value="3074"
       label="CredentialManagerIsUserVerifyingPlatformAuthenticatorAvailable"/>
   <int value="3075" label="ObsoleteWebrtcTlsVersion"/>
+  <int value="3076" label="UpgradeInsecureRequestsUpgradedRequestBlockable"/>
+  <int value="3077"
+      label="UpgradeInsecureRequestsUpgradedRequestOptionallyBlockable"/>
+  <int value="3078" label="UpgradeInsecureRequestsUpgradedRequestWebsocket"/>
+  <int value="3079" label="UpgradeInsecureRequestsUpgradedRequestForm"/>
+  <int value="3080" label="UpgradeInsecureRequestsUpgradedRequestUnknown"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -26478,6 +26484,7 @@ Called by update_net_error_codes.py.-->
   <int value="20" label="COMPUTER"/>
   <int value="21" label="EXTERNAL_MEDIA"/>
   <int value="22" label="DOCUMENTS_PROVIDER"/>
+  <int value="23" label="SMB"/>
 </enum>
 
 <enum name="FileManagerTaskType">
@@ -26501,6 +26508,7 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Crostini Linux Files"/>
   <int value="8" label="Android Files"/>
   <int value="9" label="Android Documents Provider"/>
+  <int value="10" label="SMB File Share"/>
 </enum>
 
 <enum name="FileManagerZipHandlerType">
@@ -36241,6 +36249,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1184480269" label="LsdPermissionPrompt:enabled"/>
   <int value="-1183321008" label="ImeDecoderWithSandbox:disabled"/>
   <int value="-1183009666" label="OfflinePagesLimitlessPrefetching:disabled"/>
+  <int value="-1178350793" label="RemoteCopyReceiver:disabled"/>
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
   <int value="-1176748003"
       label="FramebustingNeedsSameOriginOrUserGesture:disabled"/>
@@ -37917,6 +37926,7 @@ from previous Chrome versions.
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1036068554" label="enable-android-pay-integration-v2"/>
   <int value="1038234679" label="PrefetchPrivacyChanges:disabled"/>
+  <int value="1042202617" label="RemoteCopyReceiver:enabled"/>
   <int value="1043291220" label="OverviewSwipeToClose:disabled"/>
   <int value="1043334401" label="disable-slimming-paint-invalidation"/>
   <int value="1044928476"
@@ -56595,6 +56605,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="ClickToCall"/>
   <int value="4" label="SharedClipboard"/>
   <int value="5" label="SmsFetchRequest"/>
+  <int value="6" label="RemoteCopy"/>
 </enum>
 
 <enum name="SharingSendMessageResult">

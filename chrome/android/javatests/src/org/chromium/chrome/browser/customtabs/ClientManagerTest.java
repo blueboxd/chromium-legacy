@@ -186,15 +186,15 @@ public class ClientManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // With no prepopulated origins, this verification should fail.
             cm.verifyAndInitializeWithPostMessageOriginForSession(
-                    mSession, new Origin(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
+                    mSession, Origin.create(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
             Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
 
             // If there is a prepopulated origin, we should get a synchronous verification.
             OriginVerifier.addVerificationOverride(
-                    ContextUtils.getApplicationContext().getPackageName(), new Origin(URL),
+                    ContextUtils.getApplicationContext().getPackageName(), Origin.create(URL),
                     CustomTabsService.RELATION_USE_AS_ORIGIN);
             cm.verifyAndInitializeWithPostMessageOriginForSession(
-                    mSession, new Origin(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
+                    mSession, Origin.create(URL), CustomTabsService.RELATION_USE_AS_ORIGIN);
         });
 
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -227,7 +227,7 @@ public class ClientManagerTest {
         // Should always start with no origin.
         Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
 
-        Origin origin = new Origin(URL);
+        Origin origin = Origin.create(URL);
 
         // With no prepopulated origins, this verification should fail.
         cm.verifyAndInitializeWithPostMessageOriginForSession(
@@ -268,7 +268,7 @@ public class ClientManagerTest {
         Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Origin origin = new Origin(HTTP_URL);
+            Origin origin = Origin.create(HTTP_URL);
             // With no prepopulated origins, this verification should fail.
             cm.verifyAndInitializeWithPostMessageOriginForSession(
                     mSession, origin, CustomTabsService.RELATION_USE_AS_ORIGIN);

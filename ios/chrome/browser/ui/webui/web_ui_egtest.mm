@@ -19,6 +19,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/web_client.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/scheme_host_port.h"

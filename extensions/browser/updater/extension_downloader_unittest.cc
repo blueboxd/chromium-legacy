@@ -8,6 +8,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extensions_test.h"
+#include "extensions/browser/updater/extension_cache_fake.h"
 #include "extensions/browser/updater/extension_downloader_test_helper.h"
 #include "extensions/common/extension.h"
 
@@ -52,6 +53,32 @@ class ExtensionDownloaderTest : public ExtensionsTest {
                                 std::unique_ptr<ManifestFetchData> fetch) {
     helper->downloader().StartUpdateCheck(std::move(fetch));
   }
+
+  std::string CreateUpdateManifest(const std::string& extension_id,
+                                   const std::string& extension_version) {
+    return "<?xml version='1.0' encoding='UTF-8'?>"
+           "<gupdate xmlns='http://www.google.com/update2/response'"
+           "                protocol='2.0'>"
+           " <app appid='" +
+           extension_id +
+           "'>"
+           "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
+           "               version='" +
+           extension_version +
+           "' prodversionmin='1.1' />"
+           " </app>"
+           "</gupdate>";
+  }
+
+  void SetHelperHandlers(ExtensionDownloaderTestHelper* helper,
+                         const GURL& fetch_url,
+                         const std::string& manifest) {
+    helper->test_url_loader_factory().AddResponse(fetch_url.spec(), manifest,
+                                                  net::HTTP_OK);
+    GURL kCrxUrl("http://example.com/extension_1.2.3.4.crx");
+    helper->test_url_loader_factory().AddResponse(kCrxUrl.spec(), "no data",
+                                                  net::HTTP_OK);
+  }
 };
 
 // Several tests checking that OnExtensionDownloadStageChanged callback is
@@ -60,28 +87,16 @@ TEST_F(ExtensionDownloaderTest, TestStageChanges) {
   ExtensionDownloaderTestHelper helper;
 
   std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
-  GURL fetch_url = fetch->full_url();
-
-  const std::string kManifest =
-      "<?xml version='1.0' encoding='UTF-8'?>"
-      "<gupdate xmlns='http://www.google.com/update2/response'"
-      "                protocol='2.0'>"
-      " <app appid='" +
-      std::string(kTestExtensionId) +
-      "'>"
-      "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-      "               version='1.1' prodversionmin='1.1' />"
-      " </app>"
-      "</gupdate>";
-  helper.test_url_loader_factory().AddResponse(fetch_url.spec(), kManifest,
-                                               net::HTTP_OK);
-  GURL kCrxUrl("http://example.com/extension_1.2.3.4.crx");
-  helper.test_url_loader_factory().AddResponse(kCrxUrl.spec(), "no data",
-                                               net::HTTP_OK);
+  const std::string manifest = CreateUpdateManifest(kTestExtensionId, "1.1");
+  SetHelperHandlers(&helper, fetch->full_url(), manifest);
 
   MockExtensionDownloaderDelegate& delegate = helper.delegate();
   EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
       .WillOnce(Return(true));
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadCacheStatusRetrieved(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::CacheStatus::CACHE_DISABLED));
   Sequence sequence;
   EXPECT_CALL(delegate,
               OnExtensionDownloadStageChanged(
@@ -128,24 +143,8 @@ TEST_F(ExtensionDownloaderTest, TestStageChangesNoUpdates) {
   ExtensionDownloaderTestHelper helper;
 
   std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
-  GURL fetch_url = fetch->full_url();
-
-  const std::string kManifest =
-      "<?xml version='1.0' encoding='UTF-8'?>"
-      "<gupdate xmlns='http://www.google.com/update2/response'"
-      "                protocol='2.0'>"
-      " <app appid='" +
-      std::string(kTestExtensionId) +
-      "'>"
-      "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-      "               version='1.1' prodversionmin='1.1' />"
-      " </app>"
-      "</gupdate>";
-  helper.test_url_loader_factory().AddResponse(fetch_url.spec(), kManifest,
-                                               net::HTTP_OK);
-  GURL kCrxUrl("http://example.com/extension_1.2.3.4.crx");
-  helper.test_url_loader_factory().AddResponse(kCrxUrl.spec(), "no data",
-                                               net::HTTP_OK);
+  const std::string manifest = CreateUpdateManifest(kTestExtensionId, "1.1");
+  SetHelperHandlers(&helper, fetch->full_url(), manifest);
 
   MockExtensionDownloaderDelegate& delegate = helper.delegate();
   EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
@@ -300,6 +299,100 @@ TEST_F(ExtensionDownloaderTest, TestNoUpdatesManifestReports) {
   // TODO(burunduk) Also check error (second argument). By now we return
   // CRX_FETCH_FAILED, but probably we may want to make another one.
   EXPECT_CALL(delegate, OnExtensionDownloadFailed(kTestExtensionId, _, _, _));
+
+  AddFetchDataToDownloader(&helper, std::move(fetch));
+
+  content::RunAllTasksUntilIdle();
+
+  testing::Mock::VerifyAndClearExpectations(&delegate);
+}
+
+// Test that cache status callback is called correctly if there is no such
+// extension in cache.
+TEST_F(ExtensionDownloaderTest, TestCacheStatusMiss) {
+  ExtensionDownloaderTestHelper helper;
+
+  std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
+  const std::string manifest = CreateUpdateManifest(kTestExtensionId, "1.1");
+  SetHelperHandlers(&helper, fetch->full_url(), manifest);
+
+  // Create cache and provide it to downloader.
+  auto test_extension_cache = std::make_unique<ExtensionCacheFake>();
+  helper.downloader().StartAllPending(test_extension_cache.get());
+
+  MockExtensionDownloaderDelegate& delegate = helper.delegate();
+  EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
+      .WillOnce(Return(true));
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadCacheStatusRetrieved(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::CacheStatus::CACHE_MISS));
+
+  AddFetchDataToDownloader(&helper, std::move(fetch));
+
+  content::RunAllTasksUntilIdle();
+
+  testing::Mock::VerifyAndClearExpectations(&delegate);
+}
+
+// Test that cache status callback is called correctly if there is an extension
+// archive in cache, but only an old version.
+TEST_F(ExtensionDownloaderTest, TestCacheStatusOutdated) {
+  ExtensionDownloaderTestHelper helper;
+
+  std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
+  const std::string manifest = CreateUpdateManifest(kTestExtensionId, "1.1");
+  SetHelperHandlers(&helper, fetch->full_url(), manifest);
+
+  // Create cache and provide it to downloader.
+  auto test_extension_cache = std::make_unique<ExtensionCacheFake>();
+  test_extension_cache->AllowCaching(kTestExtensionId);
+  test_extension_cache->PutExtension(
+      kTestExtensionId, "" /* expected hash, ignored by ExtensionCacheFake */,
+      base::FilePath(), "1.0", base::DoNothing());
+  helper.downloader().StartAllPending(test_extension_cache.get());
+
+  MockExtensionDownloaderDelegate& delegate = helper.delegate();
+  EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
+      .WillOnce(Return(true));
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadCacheStatusRetrieved(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::CacheStatus::CACHE_OUTDATED));
+
+  AddFetchDataToDownloader(&helper, std::move(fetch));
+
+  content::RunAllTasksUntilIdle();
+
+  testing::Mock::VerifyAndClearExpectations(&delegate);
+}
+
+// Test that cache status callback is called correctly if there is an extension
+// archive in cache.
+TEST_F(ExtensionDownloaderTest, TestCacheStatusHit) {
+  ExtensionDownloaderTestHelper helper;
+
+  std::unique_ptr<ManifestFetchData> fetch(CreateTestAppFetchData());
+  const std::string manifest = CreateUpdateManifest(kTestExtensionId, "1.1");
+  SetHelperHandlers(&helper, fetch->full_url(), manifest);
+
+  // Create cache and provide it to downloader.
+  auto test_extension_cache = std::make_unique<ExtensionCacheFake>();
+  test_extension_cache->AllowCaching(kTestExtensionId);
+  test_extension_cache->PutExtension(
+      kTestExtensionId, "" /* expected hash, ignored by ExtensionCacheFake */,
+      base::FilePath(FILE_PATH_LITERAL(
+          "file_not_found.crx")) /* We don't need to actually read file. */,
+      "1.1", base::DoNothing());
+  helper.downloader().StartAllPending(test_extension_cache.get());
+
+  MockExtensionDownloaderDelegate& delegate = helper.delegate();
+  EXPECT_CALL(delegate, IsExtensionPending(kTestExtensionId))
+      .WillOnce(Return(true));
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadCacheStatusRetrieved(
+                  kTestExtensionId,
+                  ExtensionDownloaderDelegate::CacheStatus::CACHE_HIT));
 
   AddFetchDataToDownloader(&helper, std::move(fetch));
 

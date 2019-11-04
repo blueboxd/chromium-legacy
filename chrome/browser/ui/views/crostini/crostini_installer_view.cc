@@ -226,6 +226,7 @@ bool CrostiniInstallerView::Accept() {
 
   VLOG(1) << "delegate_->Install()";
   delegate_->Install(
+      crostini::CrostiniManager::RestartOptions{},
       base::BindRepeating(&CrostiniInstallerView::OnProgressUpdate,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&CrostiniInstallerView::OnInstallFinished,

@@ -2174,10 +2174,17 @@ class HotseatShelfAppBrowserTest : public ShelfAppBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(HotseatShelfAppBrowserTest);
 };
 
+// crbug.com/1021011: Disable on ChromeOS
+#if defined(OS_CHROMEOS)
+#define MAYBE_TappingAppIconsHidesHotseat DISABLED_TappingAppIconsHidesHotseat
+#else
+#define MAYBE_TappingAppIconsHidesHotseat TappingAppIconsHidesHotseat
+#endif
+
 // Tests that launching and switching apps by tapping shelf buttons hides the
 // hotseat.
 IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest,
-                       TappingAppIconsHidesHotseat) {
+                       MAYBE_TappingAppIconsHidesHotseat) {
   ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Create two apps, then extend the hotseat.

@@ -87,6 +87,9 @@ public class OriginVerifier {
     private static final AtomicReference<Set<String>> sVerificationOverrides =
             new AtomicReference<>();
 
+    /**
+     * Factory that can be injected by Dagger.
+     */
     @Reusable
     public static class Factory {
         @Inject
@@ -237,7 +240,7 @@ public class OriginVerifier {
         String disableDalUrl = CommandLine.getInstance().getSwitchValue(
                 ChromeSwitches.DISABLE_DIGITAL_ASSET_LINK_VERIFICATION);
         if (!TextUtils.isEmpty(disableDalUrl)
-                && mOrigin.equals(new Origin(disableDalUrl))) {
+                && mOrigin.equals(Origin.create(disableDalUrl))) {
             Log.i(TAG, "Verification skipped for %s due to command line flag.", origin);
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(true, null));
             return;

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_commands.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_identifiers.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"

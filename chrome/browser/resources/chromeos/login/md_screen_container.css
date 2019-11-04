@@ -3,11 +3,6 @@
  * found in the LICENSE file.
  */
 
-:root {
-  --oobe-dialog-host-height: 100%;
-  --oobe-dialog-host-width: 100%;
-}
-
  #outer-container {
    align-items: center;
    box-sizing: border-box;

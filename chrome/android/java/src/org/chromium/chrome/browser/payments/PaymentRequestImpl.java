@@ -1197,10 +1197,10 @@ public class PaymentRequestImpl
     private boolean openPaymentHandlerWindowInternal(URI url) {
         assert mInvokedPaymentInstrument != null;
         assert mInvokedPaymentInstrument instanceof ServiceWorkerPaymentApp;
-        assert new Origin(url.toString())
-                .equals(new Origin(((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)
-                                           .getScope()
-                                           .toString()));
+        assert Origin.create(url.toString())
+                .equals(Origin.create(((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)
+                        .getScope()
+                        .toString()));
 
         if (mPaymentHandlerUi != null) return false;
         mPaymentHandlerUi = new PaymentHandlerCoordinator();

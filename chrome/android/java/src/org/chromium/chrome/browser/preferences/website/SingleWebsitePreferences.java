@@ -158,7 +158,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
      */
     public static Bundle createFragmentArgsForSite(String url) {
         Bundle fragmentArgs = new Bundle();
-        String origin = new Origin(url).toString();
+        String origin = Origin.createOrThrow(url).toString();
         fragmentArgs.putSerializable(EXTRA_SITE_ADDRESS, WebsiteAddress.create(origin));
         return fragmentArgs;
     }
@@ -428,7 +428,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
 
     private void setUpNotificationsPreference(Preference preference) {
         TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
-        Origin origin = new Origin(mSite.getAddress().getOrigin());
+        Origin origin = Origin.createOrThrow(mSite.getAddress().getOrigin());
         String managedBy = manager.getDelegateAppName(origin);
         if (managedBy != null) {
             final Intent notificationSettingsIntent =

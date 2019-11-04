@@ -28,6 +28,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -66,7 +67,8 @@ class TestShimClient : public chrome::mojom::AppShim {
 
   // chrome::mojom::AppShim implementation (not used in testing, but can be).
   void CreateRemoteCocoaApplication(
-      remote_cocoa::mojom::ApplicationAssociatedRequest request) override {}
+      mojo::PendingAssociatedReceiver<remote_cocoa::mojom::Application>
+          receiver) override {}
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
   void SetBadgeLabel(const std::string& badge_label) override {}

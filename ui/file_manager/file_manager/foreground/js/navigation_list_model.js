@@ -485,6 +485,7 @@ class NavigationListModel extends cr.EventTarget {
         case VolumeManagerCommon.VolumeType.DRIVE:
         case VolumeManagerCommon.VolumeType.MEDIA_VIEW:
         case VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER:
+        case VolumeManagerCommon.VolumeType.SMB:
           if (!volumeIndexes[volumeType]) {
             volumeIndexes[volumeType] = [i];
           } else {
@@ -636,6 +637,12 @@ class NavigationListModel extends cr.EventTarget {
     if (!hasDrive && this.fakeDriveItem_) {
       this.navigationItems_.push(this.fakeDriveItem_);
       this.fakeDriveItem_.section = NavigationSection.CLOUD;
+    }
+
+    // Add SMB.
+    for (const provided of getVolumes(VolumeManagerCommon.VolumeType.SMB)) {
+      this.navigationItems_.push(provided);
+      provided.section = NavigationSection.CLOUD;
     }
 
     // Add FSP.

@@ -82,7 +82,9 @@ public class CustomTabsConnectionService extends CustomTabsService {
     @Override
     protected boolean requestPostMessageChannel(CustomTabsSessionToken sessionToken,
             Uri postMessageOrigin) {
-        return mConnection.requestPostMessageChannel(sessionToken, new Origin(postMessageOrigin));
+        Origin origin = Origin.create(postMessageOrigin);
+        if (origin == null) return false;
+        return mConnection.requestPostMessageChannel(sessionToken, origin);
     }
 
     @Override
@@ -94,8 +96,10 @@ public class CustomTabsConnectionService extends CustomTabsService {
 
     @Override
     protected boolean validateRelationship(
-            CustomTabsSessionToken sessionToken, int relation, Uri origin, Bundle extras) {
-        return mConnection.validateRelationship(sessionToken, relation, new Origin(origin), extras);
+            CustomTabsSessionToken sessionToken, int relation, Uri originAsUri, Bundle extras) {
+        Origin origin = Origin.create(originAsUri);
+        if (origin == null) return false;
+        return mConnection.validateRelationship(sessionToken, relation, origin, extras);
     }
 
     @Override

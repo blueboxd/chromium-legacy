@@ -89,8 +89,6 @@ struct GenericHashTraitsBase<false, T> {
   static const WeakHandlingFlag kWeakHandlingFlag =
       IsWeak<T>::value ? kWeakHandling : kNoWeakHandling;
 
-  static const bool kIsWeak = IsWeak<T>::value;
-
   static constexpr bool kCanHaveDeletedValue = true;
 
   // The kHasMovingCallback value is only used for HashTable backing stores.
@@ -408,6 +406,11 @@ struct KeyValuePair {
   ValueTypeArg value;
 };
 
+template <typename K, typename V>
+struct IsWeak<KeyValuePair<K, V>> {
+  static constexpr bool value = IsWeak<K>::value || IsWeak<V>::value;
+};
+
 template <typename KeyTraitsArg, typename ValueTraitsArg>
 struct KeyValuePairHashTraits
     : GenericHashTraits<KeyValuePair<typename KeyTraitsArg::TraitType,
@@ -447,8 +450,6 @@ struct KeyValuePairHashTraits
        ValueTraits::kWeakHandlingFlag == kWeakHandling)
           ? kWeakHandling
           : kNoWeakHandling;
-
-  static const bool kIsWeak = KeyTraits::kIsWeak || ValueTraits::kIsWeak;
 
   static const unsigned kMinimumTableSize = KeyTraits::kMinimumTableSize;
 

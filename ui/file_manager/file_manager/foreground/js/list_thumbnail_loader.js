@@ -433,14 +433,11 @@ ListThumbnailLoader.Task = class {
             ThumbnailLoader.LoadTarget.EXTERNAL_METADATA
           ];
 
-          // If the file is on a provided file system which is based on
-          // network, then don't generate thumbnails from file entry, as it
-          // could cause very high network traffic.
+          // If the file is on a network filesystem, don't generate thumbnails
+          // from file entry, as it could cause very high network traffic.
           const volumeInfo = this.volumeManager_.getVolumeInfo(this.entry_);
           if (volumeInfo &&
-              (volumeInfo.volumeType !==
-                   VolumeManagerCommon.VolumeType.PROVIDED ||
-               volumeInfo.source !== VolumeManagerCommon.Source.NETWORK)) {
+              volumeInfo.source !== VolumeManagerCommon.Source.NETWORK) {
             loadTargets.push(ThumbnailLoader.LoadTarget.FILE_ENTRY);
           }
 

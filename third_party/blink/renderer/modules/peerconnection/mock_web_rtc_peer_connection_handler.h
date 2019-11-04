@@ -33,7 +33,7 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
       const WebMediaConstraints&) override;
   WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest&,
-      const WebRTCOfferOptions&) override;
+      RTCOfferOptionsPlatform*) override;
   void CreateAnswer(const WebRTCSessionDescriptionRequest&,
                     const WebMediaConstraints&) override;
   void CreateAnswer(const WebRTCSessionDescriptionRequest&,

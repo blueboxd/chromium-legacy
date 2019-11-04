@@ -833,7 +833,7 @@ public class CustomTabsConnection {
         Uri redirectEndpoint = intent.getParcelableExtra(REDIRECT_ENDPOINT_KEY);
         if (redirectEndpoint == null || !isValid(redirectEndpoint)) return;
 
-        Origin origin = new Origin(url);
+        Origin origin = Origin.create(url);
         if (origin == null) return;
         if (!mClientManager.isFirstPartyOriginForSession(session, origin)) return;
 
@@ -936,7 +936,9 @@ public class CustomTabsConnection {
 
         if (resourceList == null || referrer == null) return 0;
         if (policy < 0 || policy > ReferrerPolicy.LAST) policy = ReferrerPolicy.DEFAULT;
-        if (!mClientManager.isFirstPartyOriginForSession(session, new Origin(referrer))) return 0;
+        Origin origin = Origin.create(referrer);
+        if (origin == null) return 0;
+        if (!mClientManager.isFirstPartyOriginForSession(session, origin)) return 0;
 
         String referrerString = referrer.toString();
         int requestsSent = 0;
@@ -964,7 +966,9 @@ public class CustomTabsConnection {
     @VisibleForTesting
     boolean canDoParallelRequest(CustomTabsSessionToken session, Uri referrer) {
         ThreadUtils.assertOnUiThread();
-        return mClientManager.isFirstPartyOriginForSession(session, new Origin(referrer));
+        Origin origin = Origin.create(referrer);
+        if (origin == null) return false;
+        return mClientManager.isFirstPartyOriginForSession(session, origin);
     }
 
     /** See {@link ClientManager#getReferrerForSession(CustomTabsSessionToken)} */

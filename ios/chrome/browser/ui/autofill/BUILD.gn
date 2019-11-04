@@ -162,7 +162,9 @@ source_set("eg_tests") {
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web/public/js_messaging",
     "//ios/web/public/test/http_server",
+    "//net:test_support",
     "//services/network:test_support",
+    "//testing/gtest:gtest",
   ]
   libs = [
     "UIKit.framework",

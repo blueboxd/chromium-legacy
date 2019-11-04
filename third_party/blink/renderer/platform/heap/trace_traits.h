@@ -165,12 +165,12 @@ struct TraceTrait {
   STATIC_ONLY(TraceTrait);
 
  public:
-  // Only objects for which kCanTraceMultipleObjects is false can be used as
-  // ephemeron keys. Other cases are disallowed (and don't make sense).
-  static constexpr bool kCanTraceMultipleObjects = false;
-
   static TraceDescriptor GetTraceDescriptor(void* self) {
     return AdjustPointerTrait<T>::GetTraceDescriptor(static_cast<T*>(self));
+  }
+
+  static TraceDescriptor GetWeakTraceDescriptor(void* self) {
+    return {self, nullptr};
   }
 
   static HeapObjectHeader* GetHeapObjectHeader(void* self) {
@@ -195,8 +195,6 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
   using Backing = HeapVectorBacking<T, Traits>;
 
  public:
-  static constexpr bool kCanTraceMultipleObjects = true;
-
   static TraceDescriptor GetTraceDescriptor(void* self) {
     return {self, TraceTrait<Backing>::Trace};
   }
@@ -223,28 +221,59 @@ template <typename Table>
 struct TraceTrait<HeapHashTableBacking<Table>> {
   STATIC_ONLY(TraceTrait);
   using Backing = HeapHashTableBacking<Table>;
+  using ValueType = typename Table::ValueTraits::TraitType;
   using Traits = typename Table::ValueTraits;
 
  public:
-  static constexpr bool kCanTraceMultipleObjects = true;
-
   static TraceDescriptor GetTraceDescriptor(void* self) {
-    return {self, TraceTrait<Backing>::Trace<WTF::kNoWeakHandling>};
+    return {self, Trace<WTF::kNoWeakHandling>};
   }
 
   static TraceDescriptor GetWeakTraceDescriptor(void* self) {
-    return {self, TraceTrait<Backing>::Trace<WTF::kWeakHandling>};
+    return GetWeakTraceDescriptorImpl<ValueType>::GetWeakTraceDescriptor(self);
   }
 
-  template <WTF::WeakHandlingFlag WeakHandling = WTF::kNoWeakHandling,
-            typename VisitorDispatcher>
-  static void Trace(VisitorDispatcher visitor, void* self) {
+  template <WTF::WeakHandlingFlag WeakHandling = WTF::kNoWeakHandling>
+  static void Trace(Visitor* visitor, void* self) {
     if (WTF::IsTraceableInCollectionTrait<Traits>::value ||
         Traits::kWeakHandlingFlag == WTF::kWeakHandling) {
       WTF::TraceInCollectionTrait<WeakHandling, Backing, void>::Trace(visitor,
                                                                       self);
     }
   }
+
+ private:
+  template <typename ValueType>
+  struct GetWeakTraceDescriptorImpl {
+    static TraceDescriptor GetWeakTraceDescriptor(void* backing) {
+      return {backing, nullptr};
+    }
+  };
+
+  template <typename K, typename V>
+  struct GetWeakTraceDescriptorImpl<WTF::KeyValuePair<K, V>> {
+    static TraceDescriptor GetWeakTraceDescriptor(void* backing) {
+      return GetWeakTraceDescriptorKVPImpl<K, V>::GetWeakTraceDescriptor(
+          backing);
+    }
+
+    template <typename KeyType,
+              typename ValueType,
+              bool ephemeron_semantics =
+                  WTF::IsWeak<KeyType>::value != WTF::IsWeak<ValueType>::value>
+    struct GetWeakTraceDescriptorKVPImpl {
+      static TraceDescriptor GetWeakTraceDescriptor(void* backing) {
+        return {backing, nullptr};
+      }
+    };
+
+    template <typename KeyType, typename ValueType>
+    struct GetWeakTraceDescriptorKVPImpl<KeyType, ValueType, true> {
+      static TraceDescriptor GetWeakTraceDescriptor(void* backing) {
+        return {backing, Trace<WTF::kWeakHandling>};
+      }
+    };
+  };
 };
 
 // This trace trait for std::pair will null weak members if their referent is
@@ -253,8 +282,6 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
 template <typename T, typename U>
 struct TraceTrait<std::pair<T, U>> {
   STATIC_ONLY(TraceTrait);
-
-  static constexpr bool kCanTraceMultipleObjects = true;
 
  public:
   static const bool kFirstIsTraceable = WTF::IsTraceable<T>::value;
@@ -332,8 +359,6 @@ struct TraceKeyValuePairTraits {
   // Specializations for ephemerons:
   template <>
   static bool Trace<true>(Visitor* visitor, Key& key, Value& value) {
-    static_assert(!blink::TraceTrait<Key>::kCanTraceMultipleObjects,
-                  "Ephemeron key cannot be a composite type");
     return visitor->VisitEphemeronKeyValuePair(
         &key, &value, Strongify,
         TraceCollectionIfEnabled < Strongify ? WTF::kNoWeakHandling
@@ -358,10 +383,13 @@ template <typename T,
 struct TraceNoWeakHandlingInCollectionHelper;
 
 template <typename T, typename Traits>
-struct TraceNoWeakHandlingInCollectionHelper<T, Traits, kWeakHandling> {
+struct TraceNoWeakHandlingInCollectionHelper<blink::WeakMember<T>,
+                                             Traits,
+                                             kWeakHandling> {
   template <typename VisitorDispatcher>
-  static bool Trace(VisitorDispatcher visitor, T& t) {
-    return Traits::TraceInCollection(visitor, t, kNoWeakHandling);
+  static bool Trace(VisitorDispatcher visitor, blink::WeakMember<T>& t) {
+    visitor->Trace(t.Get());
+    return false;
   }
 };
 
@@ -393,13 +421,18 @@ struct TraceInCollectionTrait<kNoWeakHandling, T, Traits> {
 };
 
 // Catch-all for types that have HashTrait support for tracing with weakness.
+// Empty to enforce specialization.
 template <typename T, typename Traits>
-struct TraceInCollectionTrait<kWeakHandling, T, Traits> {
-  static bool IsAlive(T& value) { return Traits::IsAlive(value); }
+struct TraceInCollectionTrait<kWeakHandling, T, Traits> {};
 
-  template <typename VisitorDispatcher>
-  static bool Trace(VisitorDispatcher visitor, T& t) {
-    return Traits::TraceInCollection(visitor, t, kWeakHandling);
+template <typename T, typename Traits>
+struct TraceInCollectionTrait<kWeakHandling, blink::WeakMember<T>, Traits> {
+  static bool IsAlive(blink::WeakMember<T>& value) {
+    return blink::ThreadHeap::IsHeapObjectAlive(value);
+  }
+
+  static bool Trace(blink::Visitor* visitor, blink::WeakMember<T>& value) {
+    return !blink::ThreadHeap::IsHeapObjectAlive(value);
   }
 };
 

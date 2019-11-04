@@ -100,6 +100,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//net:test_support",
     "//ui/strings:ui_strings_grit",
   ]
 }

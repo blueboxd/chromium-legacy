@@ -268,6 +268,9 @@ const char kEnableMarketingOptInScreen[] = "enable-market-opt-in";
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
 
+// Enables tablet form factor.
+const char kEnableTabletFormFactor[] = "enable-tablet-form-factor";
+
 // Enables the touch calibration option in MD settings UI for valid touch
 // displays.
 const char kEnableTouchCalibrationSetting[] =
@@ -570,6 +573,11 @@ bool ShouldTetherHostScansIgnoreWiredConnections() {
 
 bool ShouldSkipOobePostLogin() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kOobeSkipPostLogin);
+}
+
+bool IsTabletFormFactor() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableTabletFormFactor);
 }
 
 bool IsGaiaServicesDisabled() {

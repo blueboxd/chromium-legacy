@@ -7,7 +7,8 @@
 
 #include "base/macros.h"
 #include "components/remote_cocoa/common/text_input_host.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
@@ -22,7 +23,9 @@ class VIEWS_EXPORT TextInputHost : public remote_cocoa::mojom::TextInputHost {
  public:
   explicit TextInputHost(NativeWidgetMacNSWindowHost* host_impl);
   ~TextInputHost() override;
-  void BindRequest(remote_cocoa::mojom::TextInputHostAssociatedRequest request);
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<remote_cocoa::mojom::TextInputHost>
+          receiver);
 
   // Set the current TextInputClient.
   void SetTextInputClient(ui::TextInputClient* new_text_input_client);
@@ -80,7 +83,8 @@ class VIEWS_EXPORT TextInputHost : public remote_cocoa::mojom::TextInputHost {
 
   NativeWidgetMacNSWindowHost* const host_impl_;
 
-  mojo::AssociatedBinding<remote_cocoa::mojom::TextInputHost> mojo_binding_;
+  mojo::AssociatedReceiver<remote_cocoa::mojom::TextInputHost> mojo_receiver_{
+      this};
   DISALLOW_COPY_AND_ASSIGN(TextInputHost);
 };
 

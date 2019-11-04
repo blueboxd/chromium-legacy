@@ -22,12 +22,12 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
-#include "third_party/blink/public/platform/web_rtc_offer_options.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -68,19 +68,19 @@ static String SerializeMediaConstraints(
   return String(constraints.ToString());
 }
 
-static String SerializeOfferOptions(const blink::WebRTCOfferOptions& options) {
-  if (options.IsNull())
+static String SerializeOfferOptions(blink::RTCOfferOptionsPlatform* options) {
+  if (!options)
     return "null";
 
   StringBuilder result;
   result.Append("offerToReceiveVideo: ");
-  result.AppendNumber(options.OfferToReceiveVideo());
+  result.AppendNumber(options->OfferToReceiveVideo());
   result.Append(", offerToReceiveAudio: ");
-  result.AppendNumber(options.OfferToReceiveAudio());
+  result.AppendNumber(options->OfferToReceiveAudio());
   result.Append(", voiceActivityDetection: ");
-  result.Append(SerializeBoolean(options.VoiceActivityDetection()));
+  result.Append(SerializeBoolean(options->VoiceActivityDetection()));
   result.Append(", iceRestart: ");
-  result.Append(SerializeBoolean(options.IceRestart()));
+  result.Append(SerializeBoolean(options->IceRestart()));
   return result.ToString();
 }
 
@@ -776,7 +776,7 @@ void PeerConnectionTracker::UnregisterPeerConnection(
 
 void PeerConnectionTracker::TrackCreateOffer(
     RTCPeerConnectionHandler* pc_handler,
-    const blink::WebRTCOfferOptions& options) {
+    RTCOfferOptionsPlatform* options) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)

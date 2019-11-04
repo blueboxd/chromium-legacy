@@ -65,7 +65,6 @@ struct VectorTraitsBase {
   };
   // We don't support weak handling in vectors.
   static const WeakHandlingFlag kWeakHandlingFlag = kNoWeakHandling;
-  static const bool kIsWeak = false;
 
   // Vectors do not support deleting values.
   static constexpr bool kCanHaveDeletedValue = false;
@@ -148,7 +147,6 @@ struct VectorTraits<std::pair<First, Second>> {
   };
   // We don't support weak handling in vectors.
   static const WeakHandlingFlag kWeakHandlingFlag = kNoWeakHandling;
-  static const bool kIsWeak = false;
 
   // Vectors do not support deleting values.
   static constexpr bool kCanHaveDeletedValue = false;

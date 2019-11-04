@@ -468,7 +468,7 @@ enum WebFeature {
   kCryptoAlgorithmPbkdf2 = 738,
   kDocumentSetDomain = 739,
   kUpgradeInsecureRequestsEnabled = 740,
-  kUpgradeInsecureRequestsUpgradedRequest = 741,
+  kUpgradeInsecureRequestsUpgradedRequest_Obsolete = 741,
   kDocumentDesignMode = 742,
   kGlobalCacheStorage = 743,
   kNetInfo = 744,
@@ -2457,6 +2457,11 @@ enum WebFeature {
   kMouseEventScreenY = 3073,
   kCredentialManagerIsUserVerifyingPlatformAuthenticatorAvailable = 3074,
   kObsoleteWebrtcTlsVersion = 3075,
+  kUpgradeInsecureRequestsUpgradedRequestBlockable = 3076,
+  kUpgradeInsecureRequestsUpgradedRequestOptionallyBlockable = 3077,
+  kUpgradeInsecureRequestsUpgradedRequestWebsocket = 3078,
+  kUpgradeInsecureRequestsUpgradedRequestForm = 3079,
+  kUpgradeInsecureRequestsUpgradedRequestUnknown = 3080,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

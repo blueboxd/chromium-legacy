@@ -248,6 +248,15 @@ class CORE_EXPORT NGInlineCursor {
   // Same as |MoveToNext| except that this skips children even if they exist.
   void MoveToNextSkippingChildren();
 
+  // Move the current to next/previous inline leaf.
+  void MoveToNextInlineLeaf();
+  void MoveToNextInlineLeafIgnoringLineBreak();
+  void MoveToPreviousInlineLeaf();
+  void MoveToPreviousInlineLeafIgnoringLineBreak();
+
+  // Move the cursor position to previous fragment in pre-order DFS.
+  void MoveToPrevious();
+
   // Move the current position to previous line. It is error to call other than
   // line box.
   void MoveToPreviousLine();
@@ -299,6 +308,8 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToNextSiblingPaintFragment();
   void MoveToNextPaintFragmentSkippingChildren();
 
+  void MoveToPreviousPaintFragment();
+  void MoveToPreviousSiblingPaintFragment();
   ItemsSpan items_;
   ItemsSpan::iterator item_iter_;
   const NGFragmentItem* current_item_ = nullptr;

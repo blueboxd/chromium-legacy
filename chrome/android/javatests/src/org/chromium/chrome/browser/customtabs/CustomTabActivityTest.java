@@ -1263,7 +1263,7 @@ public class CustomTabActivityTest {
         connection.newSession(token);
         connection.overridePackageNameForSessionForTesting(token, "app1");
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> OriginVerifier.addVerificationOverride("app1", new Origin(referrer),
+                () -> OriginVerifier.addVerificationOverride("app1", Origin.create(referrer),
                         CustomTabsService.RELATION_USE_AS_ORIGIN));
 
         final CustomTabsSessionToken session = warmUpAndLaunchUrlWithSession(intent);
@@ -1608,7 +1608,7 @@ public class CustomTabActivityTest {
                         onPostMessageHelper.notifyCalled();
                     }
                 }).session;
-        session.requestPostMessageChannel(null);
+        session.requestPostMessageChannel(Uri.parse("https://www.example.com/"));
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(url));
         intent.setComponent(new ComponentName(
@@ -1664,7 +1664,7 @@ public class CustomTabActivityTest {
             }
         });
 
-        session.requestPostMessageChannel(null);
+        session.requestPostMessageChannel(Uri.parse("https://www.example.com/"));
 
         messageChannelHelper.waitForCallback(0);
         onPostMessageHelper.waitForCallback(0);
@@ -1737,7 +1737,8 @@ public class CustomTabActivityTest {
         String titleString = "";
 
         if (requestTime == BEFORE_MAY_LAUNCH_URL) {
-            channelRequested = session.requestPostMessageChannel(null);
+            channelRequested =
+                    session.requestPostMessageChannel(Uri.parse("https://www.example.com/"));
             Assert.assertTrue(channelRequested);
         }
 
@@ -1746,7 +1747,8 @@ public class CustomTabActivityTest {
         ensureCompletedSpeculationForUrl(connection, url);
 
         if (requestTime == BEFORE_INTENT) {
-            channelRequested = session.requestPostMessageChannel(null);
+            channelRequested =
+                    session.requestPostMessageChannel(Uri.parse("https://www.example.com/"));
             Assert.assertTrue(channelRequested);
         }
 
@@ -1770,7 +1772,8 @@ public class CustomTabActivityTest {
         });
 
         if (requestTime == AFTER_INTENT) {
-            channelRequested = session.requestPostMessageChannel(null);
+            channelRequested =
+                    session.requestPostMessageChannel(Uri.parse("https://www.example.com/"));
             Assert.assertTrue(channelRequested);
             messageChannelHelper.waitForCallback(0);
         }
@@ -1782,7 +1785,7 @@ public class CustomTabActivityTest {
         titleString += currentMessage;
 
         // Request a new channel, verify it was created.
-        session.requestPostMessageChannel(null);
+        session.requestPostMessageChannel(Uri.parse("https://www.example.com/"));
         messageChannelHelper.waitForCallback(1);
 
         String newMessage = "and refreshing";
@@ -1950,7 +1953,7 @@ public class CustomTabActivityTest {
 
         // warmup(), create session, allow parallel requests, allow origin.
         CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
-        final Origin origin = new Origin(requestUri);
+        final Origin origin = Origin.create(requestUri);
         Assert.assertTrue(connection.newSession(token));
         connection.mClientManager.setAllowParallelRequestForSession(token, true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {

@@ -9,6 +9,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/net/url_test_util.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util.h"

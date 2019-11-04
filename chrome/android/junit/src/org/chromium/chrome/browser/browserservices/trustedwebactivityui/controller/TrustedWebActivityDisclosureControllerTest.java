@@ -41,7 +41,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 @Config(manifest = Config.NONE)
 public class TrustedWebActivityDisclosureControllerTest {
     private static final String CLIENT_PACKAGE = "com.example.twaclient";
-    private static final Origin ORIGIN = new Origin("com.example.twa");
+    private static final Origin ORIGIN = Origin.create("com.example.twa");
 
     @Mock public ChromePreferenceManager mPreferences;
     @Mock public ActivityLifecycleDispatcher mLifecycleDispatcher;

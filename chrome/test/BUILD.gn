@@ -1322,7 +1322,6 @@ if (!is_android) {
       "../browser/ui/webui/profile_helper_browsertest.cc",
       "../browser/ui/webui/settings/settings_ui_browsertest.cc",
       "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
-      "../browser/ui/webui/webui_browsertest.cc",
       "../browser/ui/webui/webui_load_timer_browsertest.cc",
       "../browser/ui/webui/webui_webview_browsertest.cc",
       "../browser/ui/zoom/zoom_controller_browsertest.cc",

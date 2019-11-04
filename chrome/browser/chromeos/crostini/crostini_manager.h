@@ -151,6 +151,17 @@ class CrostiniManager : public KeyedService,
     virtual void OnContainerMounted(bool success) = 0;
   };
 
+  struct RestartOptions {
+    // This normally will not have effect on existing container.
+    base::Optional<std::string> container_username;
+
+    RestartOptions();
+    ~RestartOptions();
+    // Add copy version if necessary.
+    RestartOptions(RestartOptions&&);
+    RestartOptions& operator=(RestartOptions&&);
+  };
+
   static CrostiniManager* GetForProfile(Profile* profile);
 
   explicit CrostiniManager(Profile* profile);
@@ -403,6 +414,12 @@ class CrostiniManager : public KeyedService,
                             std::string container_name,
                             CrostiniResultCallback callback,
                             RestartObserver* observer = nullptr);
+
+  RestartId RestartCrostiniWithOptions(std::string vm_name,
+                                       std::string container_name,
+                                       RestartOptions options,
+                                       CrostiniResultCallback callback,
+                                       RestartObserver* observer = nullptr);
 
   // Aborts a restart. A "next" restarter with the same <vm_name,
   // container_name> will run, if there is one. |callback| will be called once

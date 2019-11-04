@@ -31,8 +31,7 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
                                TraceDescriptor,
                                TraceDescriptor,
                                WeakCallback,
-                               void*,
-                               bool) final;
+                               void*) final;
   bool VisitEphemeronKeyValuePair(void*,
                                   void*,
                                   bool,

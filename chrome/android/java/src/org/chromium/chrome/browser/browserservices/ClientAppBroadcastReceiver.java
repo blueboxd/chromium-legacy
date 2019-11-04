@@ -144,8 +144,9 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             Set<String> domains = register.getDomainsForRegisteredUid(uid);
             Set<String> origins = register.getOriginsForRegisteredUid(uid);
 
-            for (String origin : origins) {
-                permissionUpdater.onClientAppUninstalled(new Origin(origin));
+            for (String originAsString : origins) {
+                Origin origin = Origin.create(originAsString);
+                if (origin != null) permissionUpdater.onClientAppUninstalled(origin);
             }
 
             String appName = register.getAppNameForRegisteredUid(uid);

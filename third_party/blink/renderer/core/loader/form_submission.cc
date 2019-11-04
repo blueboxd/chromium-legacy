@@ -216,7 +216,7 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
       action_url.ProtocolIs("http") &&
       !SecurityOrigin::Create(action_url)->IsPotentiallyTrustworthy()) {
     UseCounter::Count(document,
-                      WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
+                      WebFeature::kUpgradeInsecureRequestsUpgradedRequestForm);
     action_url.SetProtocol("https");
     if (action_url.Port() == 80)
       action_url.SetPort(443);

@@ -26,11 +26,11 @@ class DataChannelInterface;
 
 namespace blink {
 class RTCPeerConnectionHandler;
+class RTCOfferOptionsPlatform;
 class WebLocalFrame;
 class WebMediaConstraints;
 class WebRTCAnswerOptions;
 class WebRTCICECandidate;
-class WebRTCOfferOptions;
 class WebUserMediaRequest;
 
 // This class collects data about each peer connection,
@@ -99,7 +99,7 @@ class MODULES_EXPORT PeerConnectionTracker
   // The |pc_handler| is the handler object associated with the PeerConnection,
   // the |constraints| is the media constraints used to create the offer/answer.
   virtual void TrackCreateOffer(RTCPeerConnectionHandler* pc_handler,
-                                const blink::WebRTCOfferOptions& options);
+                                RTCOfferOptionsPlatform* options);
   // TODO(hta): Get rid of the version below.
   virtual void TrackCreateOffer(RTCPeerConnectionHandler* pc_handler,
                                 const blink::WebMediaConstraints& options);

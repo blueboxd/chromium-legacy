@@ -272,6 +272,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/tab_grid:tab_grid_ui_constants",
     "//ios/chrome/browser/ui/tab_grid/grid:grid_ui_constants",
+    "//ios/chrome/browser/ui/table_view:feature_flags",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/toolbar:test_support",
     "//ios/chrome/browser/ui/toolbar:toolbar_ui",
@@ -292,6 +293,7 @@ source_set("test_support") {
     "//ios/web/public/deprecated",
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
+    "//net:test_support",
     "//services/metrics/public/cpp:metrics_cpp",
     "//ui/base",
     "//ui/base:test_support",
@@ -305,7 +307,6 @@ source_set("test_support") {
     "//ios/third_party/gtx:gtx+link",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
-    "//net:test_support",
   ]
 
   libs = [
@@ -385,6 +386,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/payments:payments_ui",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/qr_scanner:eg_app_support+eg2",
+    "//ios/chrome/browser/ui/reading_list:eg_app_support+eg2",
     "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui_constants",
     "//ios/chrome/browser/ui/safe_mode",
     "//ios/chrome/browser/ui/safe_mode:eg_app_support+eg2",
@@ -403,6 +405,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/tab_grid:tab_grid_ui_constants",
     "//ios/chrome/browser/ui/tab_grid/grid:grid_ui_constants",
+    "//ios/chrome/browser/ui/table_view:feature_flags",
     "//ios/chrome/browser/ui/toolbar:eg_app_support+eg2",
     "//ios/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/keyboard_assist",
@@ -484,11 +487,8 @@ source_set("eg_test_support+eg2") {
     "//ios/third_party/gtx:gtx+link",
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
+    "//net:test_support",
     "//ui/base",
     "//url",
-  ]
-
-  public_deps = [
-    "//net:test_support",
   ]
 }

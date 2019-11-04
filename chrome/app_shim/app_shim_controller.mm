@@ -373,8 +373,9 @@ void AppShimController::OnShimConnectedResponse(
 }
 
 void AppShimController::CreateRemoteCocoaApplication(
-    remote_cocoa::mojom::ApplicationAssociatedRequest request) {
-  remote_cocoa::ApplicationBridge::Get()->BindRequest(std::move(request));
+    mojo::PendingAssociatedReceiver<remote_cocoa::mojom::Application>
+        receiver) {
+  remote_cocoa::ApplicationBridge::Get()->BindReceiver(std::move(receiver));
   remote_cocoa::ApplicationBridge::Get()->SetContentNSViewCreateCallbacks(
       base::BindRepeating(remote_cocoa::CreateRenderWidgetHostNSView),
       base::BindRepeating(remote_cocoa::CreateWebContentsNSView));

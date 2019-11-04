@@ -63,7 +63,8 @@ class CrostiniInstaller : public KeyedService,
   void Shutdown() override;
 
   // CrostiniInstallerUIDelegate:
-  void Install(ProgressCallback progress_callback,
+  void Install(CrostiniManager::RestartOptions options,
+               ProgressCallback progress_callback,
                ResultCallback result_callback) override;
   void Cancel(base::OnceClosure callback) override;
   void CancelBeforeStart() override;
@@ -126,6 +127,7 @@ class CrostiniInstaller : public KeyedService,
   int32_t container_download_percent_;
   crostini::CrostiniManager::RestartId restart_id_ =
       crostini::CrostiniManager::kUninitializedRestartId;
+  CrostiniManager::RestartOptions restart_options_;
 
   bool skip_launching_terminal_for_testing_ = false;
 

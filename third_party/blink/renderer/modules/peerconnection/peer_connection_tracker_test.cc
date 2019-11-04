@@ -10,7 +10,6 @@
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/platform/web_rtc_offer_options.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
@@ -18,6 +17,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 
 using ::testing::_;
 
@@ -167,9 +167,10 @@ TEST_F(PeerConnectionTrackerTest, CreatingObject) {
 TEST_F(PeerConnectionTrackerTest, TrackCreateOffer) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
-  // Note: blink::WebRTCOfferOptions is not mockable. So we can't write tests
-  // for anything but a null options parameter.
-  blink::WebRTCOfferOptions options(0, 0, false, false);
+  // Note: blink::RTCOfferOptionsPlatform is not mockable. So we can't write
+  // tests for anything but a null options parameter.
+  RTCOfferOptionsPlatform* options =
+      MakeGarbageCollected<RTCOfferOptionsPlatform>(0, 0, false, false);
   EXPECT_CALL(
       *mock_host_,
       UpdatePeerConnection(

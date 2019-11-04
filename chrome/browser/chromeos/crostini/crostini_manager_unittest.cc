@@ -734,6 +734,31 @@ TEST_F(CrostiniManagerRestartTest, RestartSuccess) {
   // Mount only performed for termina/penguin.
   EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
   EXPECT_EQ(1, restart_crostini_callback_count_);
+
+  base::Optional<ContainerInfo> container_info =
+      crostini_manager()->GetContainerInfo(kVmName, kContainerName);
+  EXPECT_EQ(container_info.value().username,
+            DefaultContainerUserNameForProfile(profile()));
+}
+
+TEST_F(CrostiniManagerRestartTest, RestartSuccessWithOptions) {
+  CrostiniManager::RestartOptions options;
+  options.container_username = "helloworld";
+  restart_id_ = crostini_manager()->RestartCrostiniWithOptions(
+      kVmName, kContainerName, std::move(options),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  // Mount only performed for termina/penguin.
+  EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_EQ(1, restart_crostini_callback_count_);
+
+  base::Optional<ContainerInfo> container_info =
+      crostini_manager()->GetContainerInfo(kVmName, kContainerName);
+  EXPECT_EQ(container_info.value().username, "helloworld");
 }
 
 TEST_F(CrostiniManagerRestartTest, AbortOnComponentLoaded) {

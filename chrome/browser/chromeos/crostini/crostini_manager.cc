@@ -110,6 +110,12 @@ void InvokeAndErasePendingContainerCallbacks(
 
 }  // namespace
 
+CrostiniManager::RestartOptions::RestartOptions() = default;
+CrostiniManager::RestartOptions::RestartOptions(RestartOptions&&) = default;
+CrostiniManager::RestartOptions::~RestartOptions() = default;
+CrostiniManager::RestartOptions& CrostiniManager::RestartOptions::operator=(
+    RestartOptions&&) = default;
+
 class CrostiniManager::CrostiniRestarter
     : public base::RefCountedThreadSafe<CrostiniRestarter>,
       public crostini::VmShutdownObserver,
@@ -119,11 +125,13 @@ class CrostiniManager::CrostiniRestarter
                     CrostiniManager* crostini_manager,
                     std::string vm_name,
                     std::string container_name,
+                    RestartOptions options,
                     CrostiniManager::CrostiniResultCallback callback)
       : profile_(profile),
         crostini_manager_(crostini_manager),
         vm_name_(std::move(vm_name)),
         container_name_(std::move(container_name)),
+        options_(std::move(options)),
         completed_callback_(std::move(callback)),
         restart_id_(next_restart_id_++) {
     crostini_manager_->AddVmShutdownObserver(this);
@@ -363,7 +371,9 @@ class CrostiniManager::CrostiniRestarter
     }
     StartStage(mojom::InstallerState::kSetupContainer);
     crostini_manager_->SetUpLxdContainerUser(
-        vm_name_, container_name_, DefaultContainerUserNameForProfile(profile_),
+        vm_name_, container_name_,
+        options_.container_username.value_or(
+            DefaultContainerUserNameForProfile(profile_)),
         base::BindOnce(&CrostiniRestarter::SetUpLxdContainerUserFinished,
                        this));
   }
@@ -523,6 +533,7 @@ class CrostiniManager::CrostiniRestarter
 
   std::string vm_name_;
   std::string container_name_;
+  RestartOptions options_;
   std::string source_path_;
   bool is_initial_install_ = true;
   CrostiniManager::CrostiniResultCallback completed_callback_;
@@ -1721,6 +1732,17 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
     std::string container_name,
     CrostiniResultCallback callback,
     RestartObserver* observer) {
+  return RestartCrostiniWithOptions(std::move(vm_name),
+                                    std::move(container_name), RestartOptions{},
+                                    std::move(callback), observer);
+}
+
+CrostiniManager::RestartId CrostiniManager::RestartCrostiniWithOptions(
+    std::string vm_name,
+    std::string container_name,
+    RestartOptions options,
+    CrostiniResultCallback callback,
+    RestartObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Currently, |remove_crostini_callbacks_| is only used just before running
   // CrostiniRemover. If that changes, then we should check for a currently
@@ -1734,7 +1756,7 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
 
   auto restarter = base::MakeRefCounted<CrostiniRestarter>(
       profile_, this, std::move(vm_name), std::move(container_name),
-      std::move(callback));
+      std::move(options), std::move(callback));
   if (observer)
     restarter->AddObserver(observer);
   auto key = ContainerId(restarter->vm_name(), restarter->container_name());

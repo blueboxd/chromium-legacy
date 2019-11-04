@@ -88,6 +88,7 @@ source_set("eg_tests") {
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web/public/test/http_server",
+    "//net:test_support",
   ]
   libs = [ "XCTest.framework" ]
 }

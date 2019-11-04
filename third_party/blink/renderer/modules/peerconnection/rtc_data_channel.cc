@@ -249,7 +249,7 @@ RTCDataChannel::~RTCDataChannel() = default;
 
 String RTCDataChannel::label() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return WebString::FromUTF8(channel()->label());
+  return String::FromUTF8(channel()->label());
 }
 
 bool RTCDataChannel::reliable() const {
@@ -284,7 +284,7 @@ uint16_t RTCDataChannel::maxRetransmits(bool& is_null) const {
 
 String RTCDataChannel::protocol() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return WebString::FromUTF8(channel()->protocol());
+  return String::FromUTF8(channel()->protocol());
 }
 
 bool RTCDataChannel::negotiated() const {
@@ -359,8 +359,7 @@ void RTCDataChannel::send(const String& data, ExceptionState& exception_state) {
     return;
   }
 
-  std::string utf8_buffer = static_cast<WebString>(data).Utf8();
-  webrtc::DataBuffer data_buffer(utf8_buffer);
+  webrtc::DataBuffer data_buffer(data.Utf8());
   buffered_amount_ += data_buffer.size();
   RecordMessageSent(*channel().get(), data_buffer.size());
   if (!channel()->Send(data_buffer)) {

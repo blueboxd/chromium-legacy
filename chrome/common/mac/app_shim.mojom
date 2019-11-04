@@ -45,7 +45,7 @@ interface AppShim {
   // Create the interface to the NSApplication (through which NSViews and
   // NSWindows may be created).
   CreateRemoteCocoaApplication(
-      associated remote_cocoa.mojom.Application& application);
+      pending_associated_receiver<remote_cocoa.mojom.Application> application);
 
   // Initialize the command handler for the specified BridgedNativeWidget. This
   // method exists at this scope (as opposed to in remote_cocoa) because it

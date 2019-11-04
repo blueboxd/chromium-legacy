@@ -293,6 +293,9 @@
 // Returns matcher for the payment request search bar.
 + (id<GREYMatcher>)paymentRequestPickerSearchBar;
 
+// Returns matcher for the reading list button on the Tools menu.
++ (id<GREYMatcher>)readingListMenuButton;
+
 // Returns matcher for the bookmarks button on the Tools menu.
 + (id<GREYMatcher>)bookmarksMenuButton;
 

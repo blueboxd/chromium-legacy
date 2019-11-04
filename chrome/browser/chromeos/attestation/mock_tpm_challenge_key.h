@@ -22,7 +22,7 @@ class MockTpmChallengeKey : public TpmChallengeKey {
   void EnableFake();
 
   MOCK_METHOD(void,
-              Run,
+              BuildResponse,
               (chromeos::attestation::AttestationKeyType key_type,
                Profile* profile,
                TpmChallengeKeyCallback callback,
@@ -31,7 +31,7 @@ class MockTpmChallengeKey : public TpmChallengeKey {
                const std::string& key_name_for_spkac),
               (override));
 
-  void FakeRunSuccess(TpmChallengeKeyCallback callback);
+  void FakeBuildResponseSuccess(TpmChallengeKeyCallback callback);
 };
 
 }  // namespace attestation

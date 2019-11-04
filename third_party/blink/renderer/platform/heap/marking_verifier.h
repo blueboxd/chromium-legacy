@@ -30,8 +30,7 @@ class MarkingVerifier final : public Visitor {
                                TraceDescriptor,
                                TraceDescriptor,
                                WeakCallback,
-                               void*,
-                               bool) final;
+                               void*) final;
 
   // Unused overrides.
   void VisitBackingStoreOnly(void*, void**) final {}

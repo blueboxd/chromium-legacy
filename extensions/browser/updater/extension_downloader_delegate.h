@@ -43,7 +43,7 @@ class ExtensionDownloaderDelegate {
     CRX_FETCH_FAILED,
   };
 
-  // Passed as an argument OnExtensionDownloadStageChanged() to detail how
+  // Passed as an argument to OnExtensionDownloadStageChanged() to detail how
   // downloading is going on. Typical sequence is: PENDING ->
   // QUEUED_FOR_MANIFEST -> DOWNLOADING_MANIFEST -> PARSING_MANIFEST ->
   // MANIFEST_LOADED -> QUEUED_FOR_CRX -> DOWNLOADING_CRX -> FINISHED. Stages
@@ -95,6 +95,33 @@ class ExtensionDownloaderDelegate {
     kMaxValue = FINISHED,
   };
 
+  // Passes as an argument to OnExtensionDownloadCacheStatusRetrieved to inform
+  // delegate about cache status.
+  // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
+  // update enums.xml (name: ExtensionInstallationCacheStatus) when adding new
+  // entries.
+  enum class CacheStatus {
+    // No information about cache status. This is never reported by
+    // ExtensionDownloader, but may be used later in statistics.
+    CACHE_UNKNOWN = 0,
+
+    // There is no cache at all.
+    CACHE_DISABLED = 1,
+
+    // Extension was not found in cache.
+    CACHE_MISS = 2,
+
+    // There is an extension in cache, but its version is not as expected.
+    CACHE_OUTDATED = 3,
+
+    // Cache entry is good and will be used.
+    CACHE_HIT = 4,
+
+    // Magic constant used by the histogram macros.
+    // Always update it to the max value.
+    kMaxValue = CACHE_HIT,
+  };
+
   // Passed as an argument to the completion callbacks to signal whether
   // the extension update sent a ping.
   struct PingResult {
@@ -130,6 +157,13 @@ class ExtensionDownloaderDelegate {
   // of downloading.
   virtual void OnExtensionDownloadStageChanged(const ExtensionId& id,
                                                Stage stage);
+
+  // Invoked once during downloading, after fetching and parsing update
+  // manifest, |cache_status| contains information about what have we found in
+  // local cache about the extension.
+  virtual void OnExtensionDownloadCacheStatusRetrieved(
+      const ExtensionId& id,
+      CacheStatus cache_status);
 
   // Invoked if the extension couldn't be downloaded. |error| contains the
   // failure reason.

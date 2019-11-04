@@ -225,6 +225,7 @@ source_set("eg_tests") {
     "//ios/web/public/test",
     "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
+    "//net:test_support",
     "//ui/base",
     "//url",
   ]
@@ -249,6 +250,7 @@ source_set("test_support") {
     "//ios/chrome/test:eg_test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//net:test_support",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

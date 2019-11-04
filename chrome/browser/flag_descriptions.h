@@ -2308,6 +2308,9 @@ extern const char kClickToCallContextMenuForSelectedTextDescription[];
 extern const char kClickToCallUIName[];
 extern const char kClickToCallUIDescription[];
 
+extern const char kRemoteCopyReceiverName[];
+extern const char kRemoteCopyReceiverDescription[];
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 

@@ -3754,6 +3754,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
      flag_descriptions::kClickToCallUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(kClickToCallUI)},
+
+    {"remote-copy-receiver", flag_descriptions::kRemoteCopyReceiverName,
+     flag_descriptions::kRemoteCopyReceiverDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(kRemoteCopyReceiver)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 

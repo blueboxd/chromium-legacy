@@ -288,6 +288,32 @@ TEST_P(NGInlineCursorTest, Next) {
                                 "#span2", "text3", "text4", "text5"));
 }
 
+TEST_P(NGInlineCursorTest, NextInlineLeaf) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor =
+      SetupCursor("<div id=root>abc<b>DEF</b><br>xyz</div>");
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToNextInlineLeaf();
+  }
+  EXPECT_THAT(list, ElementsAre("#linebox", "abc", "DEF", "", "xyz"));
+}
+
+TEST_P(NGInlineCursorTest, NextInlineLeafIgnoringLineBreak) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor =
+      SetupCursor("<div id=root>abc<b>DEF</b><br>xyz</div>");
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToNextInlineLeafIgnoringLineBreak();
+  }
+  EXPECT_THAT(list, ElementsAre("#linebox", "abc", "DEF", "xyz"));
+}
+
 TEST_P(NGInlineCursorTest, NextLine) {
   NGInlineCursor cursor = SetupCursor("<div id=root>abc<br>xyz</div>");
   NGInlineCursor line1(cursor);
@@ -408,6 +434,73 @@ TEST_P(NGInlineCursorTest, EmptyOutOfFlow) {
   NGInlineCursor cursor(*block_flow);
   Vector<String> list = ToDebugStringList(cursor);
   EXPECT_THAT(list, ElementsAre());
+}
+
+TEST_P(NGInlineCursorTest, Previous) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor =
+      SetupCursor("<div id=root>abc<b>DEF</b><br>xyz</div>");
+  // TDOO(yosin): We'll use |MoveTo(*cursor.GetLayoutBlockFlow()->LastChild())|
+  // once |MoveTo()| works with rootless cursor.
+  while (cursor) {
+    NGInlineCursor next(cursor);
+    next.MoveToNext();
+    if (!next)
+      break;
+    cursor = next;
+  }
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToPrevious();
+  }
+  EXPECT_THAT(list, ElementsAre("xyz", "#linebox", "", "DEF", "LayoutInline B",
+                                "abc", "#linebox"));
+}
+
+TEST_P(NGInlineCursorTest, PreviousInlineLeaf) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor =
+      SetupCursor("<div id=root>abc<b>DEF</b><br>xyz</div>");
+  // TDOO(yosin): We'll use |MoveTo(*cursor.GetLayoutBlockFlow()->LastChild())|
+  // once |MoveTo()| works with rootless cursor.
+  while (cursor) {
+    NGInlineCursor next(cursor);
+    next.MoveToNext();
+    if (!next)
+      break;
+    cursor = next;
+  }
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToPreviousInlineLeaf();
+  }
+  EXPECT_THAT(list, ElementsAre("xyz", "", "DEF", "abc"));
+}
+
+TEST_P(NGInlineCursorTest, PreviousInlineLeafIgnoringLineBreak) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor =
+      SetupCursor("<div id=root>abc<b>DEF</b><br>xyz</div>");
+  // TDOO(yosin): We'll use |MoveTo(*cursor.GetLayoutBlockFlow()->LastChild())|
+  // once |MoveTo()| works with rootless cursor.
+  while (cursor) {
+    NGInlineCursor next(cursor);
+    next.MoveToNext();
+    if (!next)
+      break;
+    cursor = next;
+  }
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToPreviousInlineLeafIgnoringLineBreak();
+  }
+  EXPECT_THAT(list, ElementsAre("xyz", "DEF", "abc"));
 }
 
 TEST_P(NGInlineCursorTest, PreviousLine) {

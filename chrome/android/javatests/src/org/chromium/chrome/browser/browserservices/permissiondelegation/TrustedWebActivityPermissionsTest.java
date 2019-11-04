@@ -61,7 +61,7 @@ public class TrustedWebActivityPermissionsTest {
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 ServerCertificate.CERT_OK);
         mTestPage = mTestServer.getURL(TEST_PAGE);
-        mOrigin = new Origin(mTestPage);
+        mOrigin = Origin.create(mTestPage);
         mPackage = InstrumentationRegistry.getTargetContext().getPackageName();
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(

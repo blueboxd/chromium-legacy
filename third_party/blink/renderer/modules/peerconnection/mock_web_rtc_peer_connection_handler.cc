@@ -257,7 +257,7 @@ MockWebRTCPeerConnectionHandler::CreateOffer(
 WebVector<std::unique_ptr<WebRTCRtpTransceiver>>
 MockWebRTCPeerConnectionHandler::CreateOffer(
     const WebRTCSessionDescriptionRequest&,
-    const WebRTCOfferOptions&) {
+    RTCOfferOptionsPlatform*) {
   return {};
 }
 

@@ -28,6 +28,12 @@ chrome.fileManagerPrivate = {
     PACK_WITH: 'pack_with',
     SHARE_WITH: 'share_with',
   },
+  SearchType: {
+    ALL: 'ALL',
+    SHARED_WITH_ME: 'SHARED_WITH_ME',
+    EXCLUDE_DIRECTORIES: 'EXCLUDE_DIRECTORIES',
+    OFFLINE: 'OFFLINE',
+  },
   currentId_: 'test@example.com',
   displayedId_: 'test@example.com',
   preferences_: {
@@ -176,8 +182,8 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, entries);
   },
   searchDriveMetadata: (searchParams, callback) => {
-    // Returns chrome.fileManagerPrivate.SearchResult[].
-    // chrome.fileManagerPrivate.SearchResult { entry: Entry,
+    // Returns chrome.fileManagerPrivate.DriveMetadataSearchResult[].
+    // chrome.fileManagerPrivate.DriveMetadataSearchResult { entry: Entry,
     // highlightedBaseName: string }
     setTimeout(callback, 0, []);
   },

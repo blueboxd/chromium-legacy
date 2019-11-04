@@ -877,8 +877,35 @@ void MixedContentChecker::UpgradeInsecureRequest(
       (!url.Host().IsNull() &&
        fetch_client_settings_object->GetUpgradeInsecureNavigationsSet()
            .Contains(url.Host().Impl()->GetHash()))) {
-    UseCounter::Count(execution_context_for_logging,
-                      WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
+    if (!resource_request.IsAutomaticUpgrade()) {
+      // These UseCounters are specific for UpgradeInsecureRequests, don't log
+      // for autoupgrades.
+      mojom::RequestContextType context = resource_request.GetRequestContext();
+      if (context == mojom::RequestContextType::UNSPECIFIED) {
+        UseCounter::Count(
+            execution_context_for_logging,
+            WebFeature::kUpgradeInsecureRequestsUpgradedRequestUnknown);
+      } else {
+        WebMixedContentContextType content_type =
+            WebMixedContent::ContextTypeFromRequestContext(context, false);
+        switch (content_type) {
+          case WebMixedContentContextType::kOptionallyBlockable:
+            UseCounter::Count(
+                execution_context_for_logging,
+                WebFeature::
+                    kUpgradeInsecureRequestsUpgradedRequestOptionallyBlockable);
+            break;
+          case WebMixedContentContextType::kBlockable:
+          case WebMixedContentContextType::kShouldBeBlockable:
+            UseCounter::Count(
+                execution_context_for_logging,
+                WebFeature::kUpgradeInsecureRequestsUpgradedRequestBlockable);
+            break;
+          case WebMixedContentContextType::kNotMixedContent:
+            NOTREACHED();
+        }
+      }
+    }
     url.SetProtocol("https");
     if (url.Port() == 80)
       url.SetPort(443);

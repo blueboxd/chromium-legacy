@@ -59,7 +59,11 @@ public class TrustedWebActivityPermissionManager {
     InstalledWebappBridge.Permission[] getNotificationPermissions() {
         List<InstalledWebappBridge.Permission> permissions = new ArrayList<>();
         for (String originAsString : mStore.getStoredOrigins()) {
-            Origin origin = new Origin(originAsString);
+            Origin origin = Origin.create(originAsString);
+            assert origin != null
+                    : "Found unparsable Origins in the Permission Store : " + originAsString;
+            if (origin == null) continue;
+
             Boolean enabled = mStore.areNotificationsEnabled(origin);
 
             if (enabled == null) {

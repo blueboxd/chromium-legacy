@@ -310,8 +310,7 @@ NativeWidgetNSWindowBridge::NativeWidgetNSWindowBridge(
     : id_(bridged_native_widget_id),
       host_(host),
       host_helper_(host_helper),
-      text_input_host_(text_input_host),
-      bridge_mojo_binding_(this) {
+      text_input_host_(text_input_host) {
   DCHECK(GetIdToWidgetImplMap().find(id_) == GetIdToWidgetImplMap().end());
   GetIdToWidgetImplMap().insert(std::make_pair(id_, this));
 }
@@ -325,12 +324,12 @@ NativeWidgetNSWindowBridge::~NativeWidgetNSWindowBridge() {
   DestroyContentView();
 }
 
-void NativeWidgetNSWindowBridge::BindRequest(
-    mojom::NativeWidgetNSWindowAssociatedRequest request,
+void NativeWidgetNSWindowBridge::BindReceiver(
+    mojo::PendingAssociatedReceiver<mojom::NativeWidgetNSWindow> receiver,
     base::OnceClosure connection_closed_callback) {
-  bridge_mojo_binding_.Bind(std::move(request),
-                            ui::WindowResizeHelperMac::Get()->task_runner());
-  bridge_mojo_binding_.set_connection_error_handler(
+  bridge_mojo_receiver_.Bind(std::move(receiver),
+                             ui::WindowResizeHelperMac::Get()->task_runner());
+  bridge_mojo_receiver_.set_disconnect_handler(
       std::move(connection_closed_callback));
 }
 

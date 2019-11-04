@@ -491,7 +491,7 @@ void ProfileIOData::ShutdownOnUIThread() {
 
   safe_browsing_enabled_.Destroy();
 
-  bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
+  bool posted = base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, this);
   if (!posted)
     delete this;
 }

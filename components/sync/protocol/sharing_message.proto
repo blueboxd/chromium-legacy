@@ -5,6 +5,7 @@
 syntax = "proto3";
 
 import "sharing_click_to_call_message.proto";
+import "sharing_remote_copy_message.proto";
 import "sharing_shared_clipboard_message.proto";
 import "sharing_sms_fetch_message.proto";
 
@@ -24,10 +25,11 @@ enum MessageType {
   CLICK_TO_CALL_MESSAGE = 3;
   SHARED_CLIPBOARD_MESSAGE = 4;
   SMS_FETCH_REQUEST = 5;
+  REMOTE_COPY_MESSAGE = 6;
 }
 
 // Message for sending between devices in Sharing.
-// Next tag: 9
+// Next tag: 10
 message SharingMessage {
   // Identifier of sender. required except for AckMessage.
   string sender_guid = 1;
@@ -39,6 +41,7 @@ message SharingMessage {
     ClickToCallMessage click_to_call_message = 4;
     SharedClipboardMessage shared_clipboard_message = 5;
     SmsFetchRequest sms_fetch_request = 8;
+    RemoteCopyMessage remote_copy_message = 9;
   }
 
   // RecipientInfo for responding an AckMessage to the sender. optional.

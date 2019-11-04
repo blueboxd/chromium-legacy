@@ -34,11 +34,11 @@
 namespace blink {
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
+class RTCOfferOptionsPlatform;
 class SetLocalDescriptionRequest;
 class WebLocalFrame;
 class WebRTCAnswerOptions;
 class WebRTCLegacyStats;
-class WebRTCOfferOptions;
 class WebRTCPeerConnectionHandlerClient;
 
 // Mockable wrapper for blink::WebRTCStatsResponse
@@ -112,7 +112,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       const blink::WebMediaConstraints& options) override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
       const blink::WebRTCSessionDescriptionRequest& request,
-      const blink::WebRTCOfferOptions& options) override;
+      blink::RTCOfferOptionsPlatform* options) override;
 
   void CreateAnswer(const blink::WebRTCSessionDescriptionRequest& request,
                     const blink::WebMediaConstraints& options) override;

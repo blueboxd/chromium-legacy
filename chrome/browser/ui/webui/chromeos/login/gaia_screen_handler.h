@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chrome/browser/ui/webui/chromeos/login/saml_challenge_key_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/user_manager/user_type.h"
 #include "net/base/net_errors.h"
@@ -218,6 +219,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void HandleUsingSAMLAPI(bool is_third_party_idp);
   void HandleScrapedPasswordCount(int password_count);
   void HandleScrapedPasswordVerificationFailed();
+  void HandleSamlChallengeMachineKey(const std::string& callback_id,
+                                     const std::string& url,
+                                     const std::string& challenge);
 
   void HandleGaiaUIReady();
 
@@ -332,6 +336,11 @@ class GaiaScreenHandler : public BaseScreenHandler,
     return !security_token_pin_dialog_closed_callback_.is_null();
   }
 
+  // Assigns new SamlChallengeKeyHandler object to
+  // |saml_challenge_key_handler_|.
+  // TODO(miersh): ... or assigns an object for testing.
+  void CreateSamlChallengeKeyHandler();
+
   // Current state of Gaia frame.
   FrameState frame_state_ = FRAME_STATE_UNKNOWN;
 
@@ -434,6 +443,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Is non-empty iff the dialog is active.
   SecurityTokenPinDialogClosedCallback
       security_token_pin_dialog_closed_callback_;
+
+  // Handler for |samlChallengeMachineKey| request.
+  std::unique_ptr<SamlChallengeKeyHandler> saml_challenge_key_handler_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_{this};
 

@@ -262,7 +262,8 @@ SearchBox.AutocompleteListItem_ =
     class AutocompleteListItem_ extends cr.ui.ListItem {
   /**
    * @param {Document} document Document.
-   * @param {SearchItem|chrome.fileManagerPrivate.SearchResult} item An object
+   * @param {SearchItem|chrome.fileManagerPrivate.DriveMetadataSearchResult}
+   *     item An object
    * representing a suggestion.
    */
   constructor(document, item) {

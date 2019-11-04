@@ -248,9 +248,9 @@ class TpmChallengeKeyTestBase : public BrowserWithTestWindowTest {
     };
 
     base::RunLoop loop;
-    challenge_key_impl_->Run(key_type_, GetProfile(),
-                             base::Bind(callback, loop.QuitClosure(), res),
-                             challenge, register_key, key_name_for_spkac);
+    challenge_key_impl_->BuildResponse(
+        key_type_, GetProfile(), base::Bind(callback, loop.QuitClosure(), res),
+        challenge, register_key, key_name_for_spkac);
     loop.Run();
   }
 

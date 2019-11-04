@@ -548,3 +548,9 @@ tree .tree-item > .tree-item > .tree-row >
 .tree-row[selected] [file-type-icon='plugin_vm'] {
   background-image: url(../images/volumes/plugin_vm_active.svg);
 }
+
+[volume-type-icon='smb'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/smb.png) 1x,
+      url(../images/volumes/2x/smb.png) 2x);
+}

@@ -10,8 +10,10 @@ FakeCrostiniInstallerUIDelegate::FakeCrostiniInstallerUIDelegate() = default;
 FakeCrostiniInstallerUIDelegate::~FakeCrostiniInstallerUIDelegate() = default;
 
 void FakeCrostiniInstallerUIDelegate::Install(
+    CrostiniManager::RestartOptions options,
     ProgressCallback progress_callback,
     ResultCallback result_callback) {
+  restart_options_ = std::move(options);
   progress_callback_ = std::move(progress_callback);
   result_callback_ = std::move(result_callback);
 }

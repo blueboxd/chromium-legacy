@@ -27,10 +27,27 @@ file://base/metrics/OWNERS
 # expose to the open web.
 file://third_party/blink/API_OWNERS
 
-# Extension API related files.
+# Extension related files.
+file://chrome/browser/extensions/component_extensions_whitelist/EXTENSION_WHITELIST_OWNERS
 file://extensions/common/api/API_OWNERS
 
 # This restriction is in place to avoid accidential addition to our top level
 # layout files, such as add duplicated assets, or introducing new colors when
 # we don't want them.
 file://ui/android/java/res/LAYOUT_OWNERS
+
+# Updating policy_templates.json can have drastic effects for systems depending
+# on policy definitions (for example, Google's cloud management tools for
+# Chrome and Chrome OS).
+# The rules are documented at:
+# https://sites.google.com/a/chromium.org/dev/developers/how-tos/enterprise/adding-new-policies
+file://components/policy/resources/ENTERPRISE_POLICY_OWNERS
+
+# This restriction is in place due to the complicated compliance regulations
+# around this code.
+file://chrome/android/java/src/org/chromium/chrome/browser/searchwidget/COMPLIANCE_OWNERS
+
+# Notification channels appear in system UI and are persisted forever by
+# Android, so should not be added or removed lightly, and the proper
+# deprecation and versioning steps must be taken when doing so.
+file://chrome/android/java/src/org/chromium/chrome/browser/notifications/channels/NOTIFICATION_CHANNEL_OWNERS

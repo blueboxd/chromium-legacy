@@ -14,7 +14,7 @@
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "components/remote_cocoa/browser/window.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
@@ -247,8 +247,7 @@ NativeWidgetMacNSWindowHost::NativeWidgetMacNSWindowHost(NativeWidgetMac* owner)
       native_widget_mac_(owner),
       root_view_id_(remote_cocoa::GetNewNSViewId()),
       accessibility_focus_overrider_(this),
-      text_input_host_(new TextInputHost(this)),
-      remote_ns_window_host_binding_(this) {
+      text_input_host_(new TextInputHost(this)) {
   DCHECK(GetIdToWidgetHostImplMap().find(widget_id_) ==
          GetIdToWidgetHostImplMap().end());
   GetIdToWidgetHostImplMap().emplace(widget_id_, this);
@@ -259,17 +258,18 @@ NativeWidgetMacNSWindowHost::~NativeWidgetMacNSWindowHost() {
   DCHECK(children_.empty());
   native_window_mapping_.reset();
   if (application_host_) {
-    remote_ns_window_ptr_.reset();
+    remote_ns_window_remote_.reset();
     application_host_->RemoveObserver(this);
     application_host_ = nullptr;
   }
 
   // Workaround for https://crbug.com/915572
-  if (remote_ns_window_host_binding_.is_bound()) {
-    auto request = remote_ns_window_host_binding_.Unbind();
-    if (request.is_pending()) {
-      mojo::MakeStrongAssociatedBinding(
-          std::make_unique<BridgedNativeWidgetHostDummy>(), std::move(request));
+  if (remote_ns_window_host_receiver_.is_bound()) {
+    auto receiver = remote_ns_window_host_receiver_.Unbind();
+    if (receiver.is_valid()) {
+      mojo::MakeSelfOwnedAssociatedReceiver(
+          std::make_unique<BridgedNativeWidgetHostDummy>(),
+          std::move(receiver));
     }
   }
 
@@ -309,8 +309,8 @@ NativeWidgetMacNSWindowHost::GetNativeViewAccessibleForNSWindow() const {
 
 remote_cocoa::mojom::NativeWidgetNSWindow*
 NativeWidgetMacNSWindowHost::GetNSWindowMojo() const {
-  if (remote_ns_window_ptr_)
-    return remote_ns_window_ptr_.get();
+  if (remote_ns_window_remote_)
+    return remote_ns_window_remote_.get();
   if (in_process_ns_window_bridge_)
     return in_process_ns_window_bridge_.get();
   return nullptr;
@@ -348,17 +348,17 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
             root_view_id_, [in_process_ns_window_ contentView]);
   }
 
-  // Initialize |remote_ns_window_ptr_| to point to a bridge created by
+  // Initialize |remote_ns_window_remote_| to point to a bridge created by
   // |factory|.
-  remote_cocoa::mojom::NativeWidgetNSWindowHostAssociatedPtr host_ptr;
-  remote_ns_window_host_binding_.Bind(
-      mojo::MakeRequest(&host_ptr),
-      ui::WindowResizeHelperMac::Get()->task_runner());
-  remote_cocoa::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
-  text_input_host_->BindRequest(mojo::MakeRequest(&text_input_host_ptr));
+  mojo::PendingAssociatedRemote<remote_cocoa::mojom::TextInputHost>
+      text_input_host_remote;
+  text_input_host_->BindReceiver(
+      text_input_host_remote.InitWithNewEndpointAndPassReceiver());
   application_host_->GetApplication()->CreateNativeWidgetNSWindow(
-      widget_id_, mojo::MakeRequest(&remote_ns_window_ptr_),
-      host_ptr.PassInterface(), text_input_host_ptr.PassInterface());
+      widget_id_, remote_ns_window_remote_.BindNewEndpointAndPassReceiver(),
+      remote_ns_window_host_receiver_.BindNewEndpointAndPassRemote(
+          ui::WindowResizeHelperMac::Get()->task_runner()),
+      std::move(text_input_host_remote));
 
   // Create the window in its process, and attach it to its parent window.
   GetNSWindowMojo()->CreateWindow(std::move(window_create_params));
@@ -464,7 +464,7 @@ void NativeWidgetMacNSWindowHost::SetBounds(const gfx::Rect& bounds) {
   GetNSWindowMojo()->SetBounds(
       bounds, native_widget_mac_->GetWidget()->GetMinimumSize());
 
-  if (remote_ns_window_ptr_) {
+  if (remote_ns_window_remote_) {
     gfx::Rect window_in_screen =
         gfx::ScreenRectFromNSRect([in_process_ns_window_ frame]);
     gfx::Rect content_in_screen =
@@ -734,7 +734,7 @@ void NativeWidgetMacNSWindowHost::GetAttachedNativeViewHostViewsRecursive(
 
 void NativeWidgetMacNSWindowHost::UpdateLocalWindowFrame(
     const gfx::Rect& frame) {
-  if (!remote_ns_window_ptr_)
+  if (!remote_ns_window_remote_)
     return;
   [in_process_ns_window_ setFrame:gfx::ScreenRectToNSRect(frame)
                           display:NO

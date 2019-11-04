@@ -2169,14 +2169,6 @@ list.autocomplete-suggestions > [lead] {
   z-index: 502; /* Above splitter, but below quickview. */
 }
 
-.files-vertical-padder-8 {
-  height: 8px;
-}
-
-#completed-panel {
-  padding-bottom: 8px;
-}
-
 .signals-overscroll {
   min-height: calc(68px + 24px);
 }

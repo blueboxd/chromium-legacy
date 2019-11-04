@@ -343,6 +343,9 @@
 // with custom WebKit frameworks.
 + (BOOL)isCustomWebKitLoadedIfRequested WARN_UNUSED_RESULT;
 
+// Returns YES if collections are presented in cards.
++ (BOOL)isCollectionsCardPresentationStyleEnabled WARN_UNUSED_RESULT;
+
 #pragma mark - Popup Blocking
 
 // Gets the current value of the popup content setting preference for the

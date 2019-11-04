@@ -859,6 +859,43 @@ void ExtensionDownloader::DetermineUpdates(
   }
 }
 
+base::Optional<base::FilePath> ExtensionDownloader::GetCachedExtension(
+    const ExtensionFetch& fetch_data) {
+  if (!extension_cache_) {
+    delegate_->OnExtensionDownloadCacheStatusRetrieved(
+        fetch_data.id,
+        ExtensionDownloaderDelegate::CacheStatus::CACHE_DISABLED);
+    return base::nullopt;
+  }
+
+  std::string version;
+  if (!extension_cache_->GetExtension(fetch_data.id, fetch_data.package_hash,
+                                      nullptr, &version)) {
+    delegate_->OnExtensionDownloadCacheStatusRetrieved(
+        fetch_data.id, ExtensionDownloaderDelegate::CacheStatus::CACHE_MISS);
+    return base::nullopt;
+  }
+
+  if (version != fetch_data.version) {
+    delegate_->OnExtensionDownloadCacheStatusRetrieved(
+        fetch_data.id,
+        ExtensionDownloaderDelegate::CacheStatus::CACHE_OUTDATED);
+    return base::nullopt;
+  }
+
+  delegate_->OnExtensionDownloadCacheStatusRetrieved(
+      fetch_data.id, ExtensionDownloaderDelegate::CacheStatus::CACHE_HIT);
+
+  base::FilePath crx_path;
+  // Now get .crx file path.
+  // TODO(https://crbug.com/1018271#c2) This has a  side-effect in extension
+  // cache implementation: extension in the cache will be marked as recently
+  // used.
+  extension_cache_->GetExtension(fetch_data.id, fetch_data.package_hash,
+                                 &crx_path, &version);
+  return std::move(crx_path);
+}
+
 // Begins (or queues up) download of an updated extension.
 void ExtensionDownloader::FetchUpdatedExtension(
     std::unique_ptr<ExtensionFetch> fetch_data) {
@@ -892,25 +929,19 @@ void ExtensionDownloader::FetchUpdatedExtension(
         fetch_data->id, ExtensionDownloaderDelegate::Stage::DOWNLOADING_CRX);
     extensions_queue_.active_request()->request_ids.insert(
         fetch_data->request_ids.begin(), fetch_data->request_ids.end());
+    return;
+  }
+  base::Optional<base::FilePath> cached_crx_path =
+      GetCachedExtension(*fetch_data);
+  if (cached_crx_path) {
+    delegate_->OnExtensionDownloadStageChanged(
+        fetch_data->id, ExtensionDownloaderDelegate::Stage::FINISHED);
+    NotifyDelegateDownloadFinished(std::move(fetch_data), true,
+                                   cached_crx_path.value(), false);
   } else {
-    std::string version;
-    if (extension_cache_ &&
-        extension_cache_->GetExtension(fetch_data->id, fetch_data->package_hash,
-                                       NULL, &version) &&
-        version == fetch_data->version) {
-      base::FilePath crx_path;
-      // Now get .crx file path and mark extension as used.
-      extension_cache_->GetExtension(fetch_data->id, fetch_data->package_hash,
-                                     &crx_path, &version);
-      delegate_->OnExtensionDownloadStageChanged(
-          fetch_data->id, ExtensionDownloaderDelegate::Stage::FINISHED);
-      NotifyDelegateDownloadFinished(std::move(fetch_data), true, crx_path,
-                                     false);
-    } else {
-      delegate_->OnExtensionDownloadStageChanged(
-          fetch_data->id, ExtensionDownloaderDelegate::Stage::QUEUED_FOR_CRX);
-      extensions_queue_.ScheduleRequest(std::move(fetch_data));
-    }
+    delegate_->OnExtensionDownloadStageChanged(
+        fetch_data->id, ExtensionDownloaderDelegate::Stage::QUEUED_FOR_CRX);
+    extensions_queue_.ScheduleRequest(std::move(fetch_data));
   }
 }
 

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -140,6 +141,7 @@ class CrostiniInstallerTest : public testing::Test {
 
   void Install() {
     crostini_installer_->Install(
+        CrostiniManager::RestartOptions{},
         base::BindRepeating(&MockCallbacks::OnProgress,
                             base::Unretained(&mock_callbacks_)),
         base::BindRepeating(&MockCallbacks::OnFinished,
@@ -256,7 +258,8 @@ TEST_F(CrostiniInstallerTest, CancelAfterStart) {
 TEST_F(CrostiniInstallerTest, CancelAfterStartBeforeCheckDisk) {
   EXPECT_CALL(mock_callbacks_, OnCanceled());
 
-  crostini_installer_->Install(base::DoNothing(), base::DoNothing());
+  crostini_installer_->Install(CrostiniManager::RestartOptions{},
+                               base::DoNothing(), base::DoNothing());
   Cancel();  // Cancel immediately
 
   task_environment_.RunUntilIdle();

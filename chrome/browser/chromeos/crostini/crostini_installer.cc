@@ -176,7 +176,8 @@ void CrostiniInstaller::Shutdown() {
   }
 }
 
-void CrostiniInstaller::Install(ProgressCallback progress_callback,
+void CrostiniInstaller::Install(CrostiniManager::RestartOptions options,
+                                ProgressCallback progress_callback,
                                 ResultCallback result_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -187,6 +188,7 @@ void CrostiniInstaller::Install(ProgressCallback progress_callback,
     return;
   }
 
+  restart_options_ = std::move(options);
   progress_callback_ = std::move(progress_callback);
   result_callback_ = std::move(result_callback);
 
@@ -608,12 +610,14 @@ void CrostiniInstaller::OnAvailableDiskSpace(int64_t bytes) {
 
   // Kick off the Crostini Restart sequence. We will be added as an observer.
   restart_id_ =
-      crostini::CrostiniManager::GetForProfile(profile_)->RestartCrostini(
-          crostini::kCrostiniDefaultVmName,
-          crostini::kCrostiniDefaultContainerName,
-          base::BindOnce(&CrostiniInstaller::OnCrostiniRestartFinished,
-                         weak_ptr_factory_.GetWeakPtr()),
-          this);
+      crostini::CrostiniManager::GetForProfile(profile_)
+          ->RestartCrostiniWithOptions(
+              crostini::kCrostiniDefaultVmName,
+              crostini::kCrostiniDefaultContainerName,
+              std::move(restart_options_),
+              base::BindOnce(&CrostiniInstaller::OnCrostiniRestartFinished,
+                             weak_ptr_factory_.GetWeakPtr()),
+              this);
 
   // |restart_id| will be invalid when |CrostiniManager::RestartCrostini()|
   // decides to fail immediately and calls |OnCrostiniRestartFinished()|, which

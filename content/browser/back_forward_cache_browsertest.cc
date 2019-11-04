@@ -302,10 +302,10 @@ class ThemeColorObserver : public WebContentsObserver {
 // Navigate from A to B and go back.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  const url::Origin origin_a = url::Origin::Create(url_a);
-  const url::Origin origin_b = url::Origin::Create(url_b);
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  url::Origin origin_a = url::Origin::Create(url_a);
+  url::Origin origin_b = url::Origin::Create(url_b);
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -344,8 +344,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
 // Navigate from A to B and go back.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicDocumentInitiated) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -382,8 +382,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicDocumentInitiated) {
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        NavigateBackForwardRepeatedly) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -480,8 +480,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
     return;
 
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A and open a popup.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -536,9 +536,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
 // Navigate from A(B) to C and go back.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicIframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL(
+  GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  const GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
   // 1) Navigate to A(B).
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -575,8 +575,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicIframe) {
 // Ensure flushing the BackForwardCache works properly.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BackForwardCacheFlush) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -608,8 +608,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BackForwardCacheFlush) {
 // document from the BackForwardCache.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VisibleURL) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Go to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -632,9 +632,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VisibleURL) {
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        CacheSizeLimitedToOneDocumentPerTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  const GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   // BackForwardCache is empty.
@@ -668,14 +668,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // The number of document the BackForwardCache can hold per tab.
-  static constexpr size_t kBackForwardCacheLimit = 5;
+  size_t kBackForwardCacheLimit = 5;
   web_contents()
       ->GetController()
       .GetBackForwardCache()
       .set_cache_size_limit_for_testing(kBackForwardCacheLimit);
 
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url_a));  // BackForwardCache size is 0.
   RenderFrameHostImpl* rfh_a = current_frame_host();
@@ -699,9 +699,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 // Test case: a1(b2) -> c3 -> a1(b2)
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache1) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL(
+  GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  const GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
   std::vector<RenderFrameDeletedObserver*> rfh_observer;
 
@@ -741,9 +741,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache1) {
 // Test case: a1(b2) -> b3 -> a1(b2).
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache2) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL(
+  GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   std::vector<RenderFrameDeletedObserver*> rfh_observer;
 
@@ -784,9 +784,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache2) {
 // Test case: a1(b2) -> b3(a4) -> a1(b2) -> b3(a4)
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache3) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL(
+  GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  const GURL url_b(embedded_test_server()->GetURL(
+  GURL url_b(embedded_test_server()->GetURL(
       "b.com", "/cross_site_iframe_factory.html?b(a)"));
 
   std::vector<RenderFrameDeletedObserver*> rfh_observer;
@@ -852,10 +852,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache4) {
       .set_cache_size_limit_for_testing(3);
 
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_ab(embedded_test_server()->GetURL(
+  GURL url_ab(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   std::vector<RenderFrameDeletedObserver*> rfh_observer;
 
@@ -935,10 +935,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // to verify that the frame wasn't simply swapped in without actually
   // committing.
 
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL(
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL(
       "b.com", "/back_forward_cache/page_with_dedicated_worker.html"));
-  const GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
   // 1. Navigate to a cacheable page (A).
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -1022,11 +1022,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // We use pages with cross process iframes to verify that proxy storage and
   // retrieval works well in every possible combination.
 
-  const GURL url_a(embedded_test_server()->GetURL(
+  GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(i,j)"));
-  const GURL url_b(embedded_test_server()->GetURL(
+  GURL url_b(embedded_test_server()->GetURL(
       "b.com", "/back_forward_cache/page_with_dedicated_worker.html"));
-  const GURL url_c(embedded_test_server()->GetURL(
+  GURL url_c(embedded_test_server()->GetURL(
       "c.com", "/cross_site_iframe_factory.html?c(k,l,m)"));
 
   NavigationControllerImpl& controller = web_contents()->GetController();
@@ -1109,11 +1109,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Page A is cacheable, while page B is not.
-  const GURL url_a(embedded_test_server()->GetURL(
+  GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(z)"));
-  const GURL url_b(embedded_test_server()->GetURL(
+  GURL url_b(embedded_test_server()->GetURL(
       "b.com", "/back_forward_cache/page_with_dedicated_worker.html"));
-  const GURL test_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  GURL test_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
   NavigationControllerImpl& controller = web_contents()->GetController();
 
@@ -1251,8 +1251,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        ConfirmUnloadEventNotFired) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -1978,8 +1978,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        NavigationCancelledAtWillStartRequest) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -2015,8 +2015,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        NavigationCancelledAtWillProcessResponse) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -2165,8 +2165,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        EvictsFromCacheIfRendererProcessCrashes) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -2805,8 +2805,8 @@ class GeolocationBackForwardCacheBrowserTest
 IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
                        CacheAfterGeolocationRequest) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -2836,8 +2836,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
 IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
                        CancelGeolocationRequestInFlight) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -2943,8 +2943,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(1);
 
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -2981,10 +2981,10 @@ IN_PROC_BROWSER_TEST_F(
     BackForwardCacheBrowserTest,
     DisableBackForwardCachePreventsDocumentsFromBeingCached) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  const url::Origin origin_a = url::Origin::Create(url_a);
-  const url::Origin origin_b = url::Origin::Create(url_b);
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  url::Origin origin_a = url::Origin::Create(url_a);
+  url::Origin origin_b = url::Origin::Create(url_b);
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -3009,10 +3009,10 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DisableBackForwardIsNoOpIfRfhIsGone) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  const url::Origin origin_a = url::Origin::Create(url_a);
-  const url::Origin origin_b = url::Origin::Create(url_b);
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  url::Origin origin_a = url::Origin::Create(url_a);
+  url::Origin origin_b = url::Origin::Create(url_b);
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -3074,10 +3074,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   base::HistogramTester histogram_tester;
 
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  const url::Origin origin_a = url::Origin::Create(url_a);
-  const url::Origin origin_b = url::Origin::Create(url_b);
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  url::Origin origin_a = url::Origin::Create(url_a);
+  url::Origin origin_b = url::Origin::Create(url_b);
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -3108,9 +3108,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 // record metrics.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, MetricsNotRecorded) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  const GURL url_b2(embedded_test_server()->GetURL("b.com", "/title1.html#2"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_b2(embedded_test_server()->GetURL("b.com", "/title1.html#2"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -3159,9 +3159,9 @@ class BackForwardCacheBrowserTestWithDomainControlEnabled
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
                        CachePagesWithMatchedURLs) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL(
+  GURL url_a(embedded_test_server()->GetURL(
       "a.allowed", "/back_forward_cache/allowed_path.html"));
-  const GURL url_b(embedded_test_server()->GetURL(
+  GURL url_b(embedded_test_server()->GetURL(
       "b.allowed", "/back_forward_cache/allowed_path.html?query=bar"));
 
   // 1) Navigate to A.
@@ -3195,11 +3195,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
                        DoNotCachePagesWithUnMatchedURLs) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL(
+  GURL url_a(embedded_test_server()->GetURL(
       "a.disallowed", "/back_forward_cache/disallowed_path.html"));
-  const GURL url_b(embedded_test_server()->GetURL(
+  GURL url_b(embedded_test_server()->GetURL(
       "b.allowed", "/back_forward_cache/disallowed_path.html"));
-  const GURL url_c(embedded_test_server()->GetURL(
+  GURL url_c(embedded_test_server()->GetURL(
       "c.disallowed", "/back_forward_cache/disallowed_path.html"));
 
   // 1) Navigate to A.
@@ -3420,12 +3420,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Encoding) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL(
+  GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/back_forward_cache/charset_windows-1250.html"));
-  const GURL url_b(embedded_test_server()->GetURL(
+  GURL url_b(embedded_test_server()->GetURL(
       "b.com", "/back_forward_cache/charset_utf-8.html"));
-  const url::Origin origin_a = url::Origin::Create(url_a);
-  const url::Origin origin_b = url::Origin::Create(url_b);
+  url::Origin origin_a = url::Origin::Create(url_a);
+  url::Origin origin_b = url::Origin::Create(url_b);
 
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = current_frame_host();
@@ -3444,9 +3444,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, RestoreWhilePendingCommit) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
                                                       "/main_document");
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
-  const GURL url3(embedded_test_server()->GetURL("c.com", "/main_document"));
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url3(embedded_test_server()->GetURL("c.com", "/main_document"));
 
   // Load a page and navigate away from it, so it is stored in the back-forward
   // cache.
@@ -3565,9 +3565,9 @@ IN_PROC_BROWSER_TEST_F(
     BackForwardCacheBrowserTest,
     DoesNotFireDidFirstVisuallyNonEmptyPaintForSameDocumentNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a_1(embedded_test_server()->GetURL(
+  GURL url_a_1(embedded_test_server()->GetURL(
       "a.com", "/accessibility/html/a-name.html"));
-  const GURL url_a_2(embedded_test_server()->GetURL(
+  GURL url_a_2(embedded_test_server()->GetURL(
       "a.com", "/accessibility/html/a-name.html#id"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url_a_1));
@@ -3586,8 +3586,8 @@ IN_PROC_BROWSER_TEST_F(
     BackForwardCacheBrowserTest,
     FiresDidFirstVisuallyNonEmptyPaintWhenRestoredFromCache) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -3614,9 +3614,8 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        SetsThemeColorWhenRestoredFromCache) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url_a(
-      embedded_test_server()->GetURL("a.com", "/theme_color.html"));
-  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/theme_color.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   WaitForFirstVisuallyNonEmptyPaint(web_contents());

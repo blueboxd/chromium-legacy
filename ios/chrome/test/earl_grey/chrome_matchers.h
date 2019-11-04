@@ -288,6 +288,9 @@ id<GREYMatcher> PaymentRequestPickerRow();
 // Returns matcher for the payment request search bar.
 id<GREYMatcher> PaymentRequestPickerSearchBar();
 
+// Returns matcher for the reading list on the Tools menu.
+id<GREYMatcher> ReadingListMenuButton();
+
 // Returns matcher for the bookmarks button on the Tools menu.
 id<GREYMatcher> BookmarksMenuButton();
 

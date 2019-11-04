@@ -46,7 +46,7 @@ BackgroundSyncScheduler::~BackgroundSyncScheduler() {
   for (auto& one_shot_processing_info : delayed_processing_info_one_shot_)
     one_shot_processing_info.second->Stop();
 
-  for (auto& periodic_processing_info : delayed_processing_info_one_shot_)
+  for (auto& periodic_processing_info : delayed_processing_info_periodic_)
     periodic_processing_info.second->Stop();
 }
 

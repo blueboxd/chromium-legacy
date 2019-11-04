@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom-forward.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 
 namespace crostini {
 
@@ -34,7 +35,8 @@ class CrostiniInstallerUIDelegate {
   // Start the installation. |progress_callback| will be called multiple times
   // until |result_callback| is called. The crostini terminal will be launched
   // when the installation succeeds.
-  virtual void Install(ProgressCallback progress_callback,
+  virtual void Install(CrostiniManager::RestartOptions options,
+                       ProgressCallback progress_callback,
                        ResultCallback result_callback) = 0;
 
   // Cancel the ongoing installation. |callback| will be called when it

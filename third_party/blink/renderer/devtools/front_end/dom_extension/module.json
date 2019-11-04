@@ -1,9 +1,0 @@
-{
-    "dependencies": [
-        "platform"
-    ],
-    "scripts": [],
-    "modules": [
-        "DOMExtension.js"
-    ]
-}

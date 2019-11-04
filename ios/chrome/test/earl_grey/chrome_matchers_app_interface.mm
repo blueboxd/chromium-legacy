@@ -620,6 +620,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kPaymentRequestPickerSearchBarAccessibilityID);
 }
 
++ (id<GREYMatcher>)readingListMenuButton {
+  return grey_accessibilityID(kToolsMenuReadingListId);
+}
+
 + (id<GREYMatcher>)bookmarksMenuButton {
   return grey_accessibilityID(kToolsMenuBookmarksId);
 }

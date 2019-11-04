@@ -240,7 +240,11 @@ class LauncherSearch {
    * @private
    */
   queryDriveEntries_(queryId, query, limit, startTime) {
-    const param = {query: query, types: 'ALL', maxResults: limit};
+    const param = {
+      query: query,
+      types: chrome.fileManagerPrivate.SearchType.ALL,
+      maxResults: limit
+    };
     return new Promise((resolve, reject) => {
       chrome.fileManagerPrivate.searchDriveMetadata(param, results => {
         chrome.fileManagerPrivate.getDriveConnectionState(connectionState => {
@@ -270,7 +274,12 @@ class LauncherSearch {
     }
     return new Promise((resolve, reject) => {
       chrome.fileManagerPrivate.searchFiles(
-          {query: query, types: 'ALL', maxResults: limit}, results => {
+          {
+            query: query,
+            types: chrome.fileManagerPrivate.SearchType.ALL,
+            maxResults: limit
+          },
+          results => {
             chrome.metricsPrivate.recordTime(
                 'FileBrowser.LauncherSearch.Local', Date.now() - startTime);
             resolve(results);

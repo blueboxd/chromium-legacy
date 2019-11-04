@@ -22,6 +22,7 @@ chrome.fileManagerPrivate.VolumeType = {
   ANDROID_FILES: 'android_files',
   DOCUMENTS_PROVIDER: 'documents_provider',
   TESTING: 'testing',
+  SMB: 'smb',
 };
 
 /** @enum {string} */
@@ -429,7 +430,7 @@ chrome.fileManagerPrivate.SearchParams;
 /**
  * @typedef {{
  *   query: string,
- *   types: string,
+ *   types: !chrome.fileManagerPrivate.SearchType,
  *   maxResults: number
  * }}
  */
@@ -442,7 +443,7 @@ chrome.fileManagerPrivate.SearchMetadataParams;
  *   availableOffline: (boolean|undefined)
  * }}
  */
-chrome.fileManagerPrivate.SearchResult;
+chrome.fileManagerPrivate.DriveMetadataSearchResult;
 
 /**
  * @typedef {{
@@ -748,12 +749,11 @@ chrome.fileManagerPrivate.searchDrive = function(searchParams, callback) {};
 
 /**
  * Performs drive metadata search. |searchParams| |callback|
- * @param {chrome.fileManagerPrivate.SearchMetadataParams} searchParams
- * @param {function((!Array<!chrome.fileManagerPrivate.SearchResult>|undefined))}
+ * @param {!chrome.fileManagerPrivate.SearchMetadataParams} searchParams
+ * @param {function(!Array<!chrome.fileManagerPrivate.DriveMetadataSearchResult>):void}
  *     callback
  */
-chrome.fileManagerPrivate.searchDriveMetadata = function(searchParams,
-    callback) {};
+chrome.fileManagerPrivate.searchDriveMetadata = function(searchParams, callback) {};
 
 /**
  * Search for files in the given volume, whose content hash matches the list of

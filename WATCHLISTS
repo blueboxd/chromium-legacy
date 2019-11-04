@@ -736,7 +736,6 @@
     'chromedriver': {
       'filepath': 'chrome/test/chromedriver|'\
                   'chrome/test/data/chromedriver|'\
-                  'third_party/blink/renderer/devtools/front_end/emulated_devices/module.json|'\
                   'third_party/blink/web_tests/external/wpt/webdriver|'\
                   'third_party/blink/web_tests/WebDriverExpectations|'\
                   'third_party/webdriver'
@@ -2076,6 +2075,7 @@
     'blink_css_flexbox': ['cbiesinger@chromium.org'],
     'blink_css_fragmentation_tests': ['mstensho@chromium.org'],
     'blink_css_grid_layout': ['jfernandez@igalia.com',
+                              'obrufau@igalia.com',
                               'rego@igalia.com',
                               'svillar@igalia.com'],
     'blink_custom_elements': ['dominicc+watchlist@chromium.org'],

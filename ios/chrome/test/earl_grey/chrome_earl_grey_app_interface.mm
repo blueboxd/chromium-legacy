@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
+#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -585,6 +586,10 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 + (BOOL)isCustomWebKitLoadedIfRequested {
   return IsCustomWebKitLoadedIfRequested();
+}
+
++ (BOOL)isCollectionsCardPresentationStyleEnabled {
+  return IsCollectionsCardPresentationStyleEnabled();
 }
 
 #pragma mark - ScopedBlockPopupsPref

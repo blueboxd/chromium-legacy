@@ -207,6 +207,7 @@ source_set("eg_tests") {
     "//ios/testing:hardware_keyboarr_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
+    "//net:test_support",
     "//testing/gmock",
     "//ui/base",
   ]

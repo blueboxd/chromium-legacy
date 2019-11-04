@@ -49,12 +49,12 @@ enum class RTCErrorType;
 
 namespace blink {
 
+class RTCOfferOptionsPlatform;
 class WebLocalFrame;
 class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
 class WebRTCAnswerOptions;
-class WebRTCOfferOptions;
 class WebRTCRtpSender;
 class WebRTCSessionDescription;
 class WebRTCSessionDescriptionRequest;
@@ -93,7 +93,7 @@ class WebRTCPeerConnectionHandler {
       const WebMediaConstraints&) = 0;
   virtual WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest&,
-      const WebRTCOfferOptions&) = 0;
+      RTCOfferOptionsPlatform*) = 0;
   virtual void CreateAnswer(const WebRTCSessionDescriptionRequest&,
                             const WebMediaConstraints&) = 0;
   virtual void CreateAnswer(const WebRTCSessionDescriptionRequest&,

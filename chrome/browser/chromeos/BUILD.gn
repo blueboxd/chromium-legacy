@@ -700,6 +700,8 @@ source_set("chromeos") {
     "attestation/platform_verification_flow.h",
     "attestation/tpm_challenge_key.cc",
     "attestation/tpm_challenge_key.h",
+    "attestation/tpm_challenge_key_with_timeout.cc",
+    "attestation/tpm_challenge_key_with_timeout.h",
     "authpolicy/auth_policy_credentials_manager.cc",
     "authpolicy/auth_policy_credentials_manager.h",
     "authpolicy/authpolicy_helper.cc",

@@ -269,8 +269,13 @@ class DisplayPanel extends HTMLElement {
         summaryPanel.setAttribute('count', progressCount);
         summaryPanel.errorMarkerVisibility =
             (errors > 0) ? 'visible' : 'hidden';
+      } else if (errors == 0) {
+        if (summaryPanel.indicator != 'status') {
+          summaryPanel.indicator = 'status';
+          summaryPanel.status = 'success';
+          summaryPanel.primaryText = util.strf('PERCENT_COMPLETE', 100);
+        }
       } else {
-        assert(errors > 0);
         // Make sure we have a failure indicator on the summary panel.
         if (summaryPanel.indicator != 'status') {
           summaryPanel.indicator = 'status';

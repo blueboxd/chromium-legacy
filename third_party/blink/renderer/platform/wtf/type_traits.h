@@ -37,6 +37,10 @@ inline const char* GetStringWithTypeName() {
   return PRETTY_FUNCTION;
 }
 
+// Specifies whether a type should be treated weakly by the memory management
+// system. Only supported by the garbage collector and not by PartitionAlloc.
+// Requires garbage collection support, so it is only safe to  override in sync
+// with changing garbage collection semantics.
 template <typename T>
 struct IsWeak {
   static const bool value = false;

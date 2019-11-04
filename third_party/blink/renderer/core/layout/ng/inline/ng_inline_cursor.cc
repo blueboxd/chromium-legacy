@@ -712,6 +712,19 @@ void NGInlineCursor::MoveToNextForSameLayoutObject() {
   }
 }
 
+void NGInlineCursor::MoveToNextInlineLeaf() {
+  if (IsNotNull() && IsInlineLeaf())
+    MoveToNext();
+  while (IsNotNull() && !IsInlineLeaf())
+    MoveToNext();
+}
+
+void NGInlineCursor::MoveToNextInlineLeafIgnoringLineBreak() {
+  do {
+    MoveToNextInlineLeaf();
+  } while (IsNotNull() && IsLineBreak());
+}
+
 void NGInlineCursor::MoveToNextLine() {
   DCHECK(IsLineBox());
   if (current_paint_fragment_) {
@@ -738,6 +751,25 @@ void NGInlineCursor::MoveToNextSkippingChildren() {
   if (root_paint_fragment_)
     return MoveToNextPaintFragmentSkippingChildren();
   MoveToNextItemSkippingChildren();
+}
+
+void NGInlineCursor::MoveToPrevious() {
+  if (root_paint_fragment_)
+    return MoveToPreviousPaintFragment();
+  MoveToPreviousItem();
+}
+
+void NGInlineCursor::MoveToPreviousInlineLeaf() {
+  if (IsNotNull() && IsInlineLeaf())
+    MoveToPrevious();
+  while (IsNotNull() && !IsInlineLeaf())
+    MoveToPrevious();
+}
+
+void NGInlineCursor::MoveToPreviousInlineLeafIgnoringLineBreak() {
+  do {
+    MoveToPreviousInlineLeaf();
+  } while (IsNotNull() && IsLineBreak());
 }
 
 void NGInlineCursor::MoveToPreviousLine() {
@@ -864,6 +896,30 @@ void NGInlineCursor::MoveToNextPaintFragmentSkippingChildren() {
     }
     MoveToParentPaintFragment();
   }
+}
+
+void NGInlineCursor::MoveToPreviousPaintFragment() {
+  DCHECK(IsPaintFragmentCursor() && current_paint_fragment_);
+  const NGPaintFragment* const parent = current_paint_fragment_->Parent();
+  MoveToPreviousSiblingPaintFragment();
+  if (current_paint_fragment_) {
+    while (TryToMoveToLastChild())
+      continue;
+    return;
+  }
+  current_paint_fragment_ = parent == root_paint_fragment_ ? nullptr : parent;
+}
+
+void NGInlineCursor::MoveToPreviousSiblingPaintFragment() {
+  DCHECK(IsPaintFragmentCursor() && current_paint_fragment_);
+  const NGPaintFragment* const current = current_paint_fragment_;
+  current_paint_fragment_ = nullptr;
+  for (auto* sibling : current->Parent()->Children()) {
+    if (sibling == current)
+      return;
+    current_paint_fragment_ = sibling;
+  }
+  NOTREACHED();
 }
 
 std::ostream& operator<<(std::ostream& ostream, const NGInlineCursor& cursor) {

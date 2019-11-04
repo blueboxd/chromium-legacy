@@ -12,10 +12,10 @@
   border-radius: unset;
   box-shadow: unset;
   flex-direction: column;
-  height: var(--oobe-dialog-host-height);
+  height: 100%;
   min-height: 0;
   position: relative;
-  width: var(--oobe-dialog-host-width);
+  width: 100%;
 }
 
 :host(:not([full-screen-dialog])) {

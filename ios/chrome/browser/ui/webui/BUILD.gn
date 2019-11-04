@@ -137,6 +137,7 @@ source_set("eg_tests") {
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/web",
     "//ios/web/public/test:element_selector",
+    "//net:test_support",
     "//ui/base",
     "//url",
   ]

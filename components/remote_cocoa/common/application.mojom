@@ -37,9 +37,9 @@ interface Application {
   // the bridge.
   CreateNativeWidgetNSWindow(
       uint64 bridge_id,
-      associated NativeWidgetNSWindow& window_request,
-      associated NativeWidgetNSWindowHost host,
-      associated TextInputHost text_input_host);
+      pending_associated_receiver<NativeWidgetNSWindow> window_receiver,
+      pending_associated_remote<NativeWidgetNSWindowHost> host,
+      pending_associated_remote<TextInputHost> text_input_host);
 
   // Create and take ownership of the NSView for a RenderWidgetHostView. The
   // resulting object will be destroyed when the connection is closed.

@@ -43,6 +43,8 @@
 
 namespace blink {
 
+class RTCOfferOptionsPlatform;
+
 static const char* kOfferSdpUnifiedPlanSingleAudioSingleVideo =
     "v=0\r\n"
     "o=- 6676943034916303038 2 IN IP4 127.0.0.1\r\n"
@@ -713,7 +715,7 @@ class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
 
   WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest& request,
-      const WebRTCOfferOptions&) override {
+      RTCOfferOptionsPlatform*) override {
     PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
         async_operation_action_, request);
     return {};

@@ -78,7 +78,8 @@ public class Verifier implements NativeInitObserver {
         @Override
         public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
             if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
-            verifyVisitedOrigin(new Origin(navigation.getUrl()));
+
+            verifyVisitedOrigin(Origin.createOrThrow(navigation.getUrl()));
         }
     };
 
@@ -89,7 +90,7 @@ public class Verifier implements NativeInitObserver {
                     // When a link with target="_blank" is followed and the user navigates back, we
                     // don't get the onDidFinishNavigation event (because the original page wasn't
                     // navigated away from, it was only ever hidden). https://crbug.com/942088
-                    verifyVisitedOrigin(new Origin(tab.getUrl()));
+                    verifyVisitedOrigin(Origin.createOrThrow(tab.getUrl()));
                 }
             };
 
@@ -132,8 +133,10 @@ public class Verifier implements NativeInitObserver {
 
     @Override
     public void onFinishNativeInitialization() {
-        Origin initialOrigin = new Origin(mIntentDataProvider.getUrlToLoad());
-        if (!initialOrigin.isValid()) {
+        // This value comes from an externally sent Intent, it may be invalid.
+        Origin initialOrigin = Origin.create(mIntentDataProvider.getUrlToLoad());
+
+        if (initialOrigin == null) {
             mTabObserverRegistrar.unregisterTabObserver(mVerifyOnPageLoadObserver);
             updateState(initialOrigin, VerificationStatus.FAILURE);
             return;
@@ -148,8 +151,10 @@ public class Verifier implements NativeInitObserver {
         List<String> additionalOrigins =
                 mIntentDataProvider.getTrustedWebActivityAdditionalOrigins();
         if (additionalOrigins != null) {
-            for (String origin : additionalOrigins) {
-                mOriginsToVerify.add(new Origin(origin));
+            for (String originAsString : additionalOrigins) {
+                // This value comes from an externally sent Intent, it may be invalid.
+                Origin origin = Origin.create(originAsString);
+                if (origin != null) mOriginsToVerify.add(origin);
             }
         }
     }
@@ -159,7 +164,9 @@ public class Verifier implements NativeInitObserver {
      * verified for.
      */
     public boolean isPageOnVerifiedOrigin(String url) {
-        return mDelegate.wasPreviouslyVerified(new Origin(url));
+        Origin origin = Origin.create(url);
+        if (origin == null) return false;
+        return mDelegate.wasPreviouslyVerified(origin);
     }
 
     /**
@@ -167,7 +174,9 @@ public class Verifier implements NativeInitObserver {
      * Returns a {@link Promise<Boolean>} with boolean telling whether verification succeeded.
      */
     public Promise<Boolean> verifyOrigin(String url) {
-        Origin origin = new Origin(url);
+        Origin origin = Origin.create(url);
+        if (origin == null) return Promise.fulfilled(false);
+
         if (mDelegate.wasPreviouslyVerified(origin)) {
             return Promise.fulfilled(true);
         }
@@ -198,7 +207,7 @@ public class Verifier implements NativeInitObserver {
     private void onVerificationResult(Origin origin, boolean verified) {
         mOriginsToVerify.remove(origin);
         Tab tab = mTabProvider.getTab();
-        boolean stillOnSameOrigin = tab != null && origin.equals(new Origin(tab.getUrl()));
+        boolean stillOnSameOrigin = tab != null && origin.equals(Origin.create(tab.getUrl()));
         if (stillOnSameOrigin) {
             updateState(origin, verified ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE);
         }

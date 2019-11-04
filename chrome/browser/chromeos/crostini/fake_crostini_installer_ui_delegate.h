@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 
 namespace crostini {
 
@@ -15,11 +16,13 @@ class FakeCrostiniInstallerUIDelegate : public CrostiniInstallerUIDelegate {
   FakeCrostiniInstallerUIDelegate();
   ~FakeCrostiniInstallerUIDelegate();
 
-  void Install(ProgressCallback progress_callback,
+  void Install(CrostiniManager::RestartOptions options,
+               ProgressCallback progress_callback,
                ResultCallback result_callback) override;
   void Cancel(base::OnceClosure callback) override;
   void CancelBeforeStart() override;
 
+  CrostiniManager::RestartOptions restart_options_;
   ProgressCallback progress_callback_;
   ResultCallback result_callback_;
   base::OnceClosure cancel_callback_;

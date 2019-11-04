@@ -15,12 +15,13 @@ MockTpmChallengeKey::MockTpmChallengeKey() = default;
 MockTpmChallengeKey::~MockTpmChallengeKey() = default;
 
 void MockTpmChallengeKey::EnableFake() {
-  ON_CALL(*this, Run)
-      .WillByDefault(
-          WithArgs<2>(Invoke(this, &MockTpmChallengeKey::FakeRunSuccess)));
+  ON_CALL(*this, BuildResponse)
+      .WillByDefault(WithArgs<2>(
+          Invoke(this, &MockTpmChallengeKey::FakeBuildResponseSuccess)));
 }
 
-void MockTpmChallengeKey::FakeRunSuccess(TpmChallengeKeyCallback callback) {
+void MockTpmChallengeKey::FakeBuildResponseSuccess(
+    TpmChallengeKeyCallback callback) {
   std::move(callback).Run(TpmChallengeKeyResult::MakeResult("response"));
 }
 

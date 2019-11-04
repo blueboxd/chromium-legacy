@@ -68,7 +68,9 @@ public class TrustedWebActivityClient {
      * @return Whether a Trusted Web Activity client was found to show the notification.
      */
     public boolean twaExistsForScope(Uri scope) {
-        return mConnection.serviceExistsForScope(scope, new Origin(scope).toString());
+        Origin origin = Origin.create(scope);
+        if (origin == null) return false;
+        return mConnection.serviceExistsForScope(scope, origin.toString());
     }
 
     /**
@@ -98,7 +100,7 @@ public class TrustedWebActivityClient {
             NotificationBuilderBase builder, NotificationUmaTracker notificationUmaTracker) {
         Resources res = ContextUtils.getApplicationContext().getResources();
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
-        Origin origin = new Origin(scope);
+        Origin origin = Origin.createOrThrow(scope);
 
         mConnection.execute(scope, origin.toString(), service -> {
             if (!service.areNotificationsEnabled(channelDisplayName)) {
@@ -163,7 +165,8 @@ public class TrustedWebActivityClient {
      * @param platformId The id of the notification to cancel.
      */
     public void cancelNotification(Uri scope, String platformTag, int platformId) {
-        mConnection.execute(scope, new Origin(scope).toString(),
+        Origin origin = Origin.createOrThrow(scope);
+        mConnection.execute(scope, origin.toString(),
                 service -> service.cancel(platformTag, platformId));
     }
 
@@ -189,7 +192,7 @@ public class TrustedWebActivityClient {
      */
     public static @Nullable Intent createLaunchIntentForTwa(Context appContext, String url,
             List<ResolveInfo> resolveInfosForUrl) {
-        Origin origin = new Origin(url);
+        Origin origin = Origin.createOrThrow(url);
 
         // Trusted Web Activities only work with https so we can shortcut here.
         if (!UrlConstants.HTTPS_SCHEME.equals(origin.uri().getScheme())) return null;

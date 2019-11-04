@@ -220,6 +220,20 @@ function testFilesDisplayPanelMixedSummary() {
   summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
   assertEquals(summaryPanelItem.panelTypeSummary, summaryPanelItem.panelType);
   assertEquals('status', summaryPanelItem.indicator);
+  assertEquals('failure', summaryPanelItem.status);
+
+  // Remove the error panel items and add 2 done (a.k.a. success) panel items.
+  displayPanel.removeAllPanelItems();
+  const donePanel = displayPanel.addPanelItem('testpanel6');
+  donePanel.panelType = donePanel.panelTypeDone;
+  const extraDonePanel = displayPanel.addPanelItem('testpanel7');
+  extraDonePanel.panelType = extraDonePanel.panelTypeDone;
+
+  // Verify a summary panel is shown with success indicator.
+  summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
+  assertEquals(summaryPanelItem.panelTypeSummary, summaryPanelItem.panelType);
+  assertEquals('status', summaryPanelItem.indicator);
+  assertEquals('success', summaryPanelItem.status);
 }
 
 function testFilesDisplayPanelCircularProgress() {

@@ -32,6 +32,17 @@ const std::string* GetTopicName(base::Value& value) {
   return value.FindStringKey(kPrivateTopicNameKey);
 }
 
+bool IsNetworkError(int net_error) {
+  // Note: ERR_HTTP_RESPONSE_CODE_FAILURE isn't a real network error - it
+  // indicates that the network request itself succeeded, but we received an
+  // HTTP error. The alternative to special-casing this error would be to call
+  // SetAllowHttpErrorResults(true) on the SimpleUrlLoader, but that also means
+  // we'd download the response body in case of HTTP errors, which we don't
+  // need.
+  return net_error != net::OK &&
+         net_error != net::ERR_HTTP_RESPONSE_CODE_FAILURE;
+}
+
 // Subscription status values for UMA_HISTOGRAM.
 enum class SubscriptionStatus {
   kSuccess = 0,
@@ -64,7 +75,7 @@ void RecordRequestStatus(
     return;
   }
 
-  if (net_error != net::OK && (response_code == -1 || response_code == 200)) {
+  if (IsNetworkError(net_error)) {
     // Tracks the cases, when request fails due to network error.
     base::UmaHistogramSparse("FCMInvalidations.FailedSubscriptionsErrorCode",
                              -net_error);
@@ -115,6 +126,14 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
     int net_error,
     int response_code,
     std::unique_ptr<std::string> response_body) {
+  if (IsNetworkError(net_error)) {
+    std::move(request_completed_callback_)
+        .Run(Status(StatusCode::FAILED, base::StringPrintf("Network Error")),
+             std::string());
+    RecordRequestStatus(SubscriptionStatus::kNetworkFailure, type_, topic_,
+                        net_error, response_code);
+    return;
+  }
 
   if (response_code != net::HTTP_OK) {
     StatusCode status = StatusCode::FAILED;
@@ -129,15 +148,6 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
         .Run(
             Status(status, base::StringPrintf("HTTP Error: %d", response_code)),
             std::string());
-    return;
-  }
-
-  if (net_error != net::OK) {
-    std::move(request_completed_callback_)
-        .Run(Status(StatusCode::FAILED, base::StringPrintf("Network Error")),
-             std::string());
-    RecordRequestStatus(SubscriptionStatus::kNetworkFailure, type_, topic_,
-                        net_error, response_code);
     return;
   }
 

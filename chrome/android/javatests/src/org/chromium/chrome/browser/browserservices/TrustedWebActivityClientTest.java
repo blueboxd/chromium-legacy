@@ -60,7 +60,7 @@ import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TrustedWebActivityClientTest {
     private static final Uri SCOPE = Uri.parse("https://www.example.com/notifications");
-    private static final Origin ORIGIN = new Origin(SCOPE);
+    private static final Origin ORIGIN = Origin.create(SCOPE);
     private static final String NOTIFICATION_TAG = "tag";
     private static final int NOTIFICATION_ID = 123;
 

@@ -82,8 +82,7 @@ class BackingVisitor : public Visitor {
                                TraceDescriptor,
                                TraceDescriptor,
                                WeakCallback,
-                               void*,
-                               bool) final {}
+                               void*) final {}
   void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void* slot, MovingObjectCallback) final {}
   void RegisterWeakCallback(void* closure, WeakCallback) final {}
@@ -901,120 +900,6 @@ TEST_F(IncrementalMarkingTest, HeapHashSetSwap) {
   Swap<HeapHashSet<WeakMember<Object>>>();
 }
 
-class StrongWeakPair : public std::pair<Member<Object>, WeakMember<Object>> {
-  DISALLOW_NEW();
-
-  typedef std::pair<Member<Object>, WeakMember<Object>> Base;
-
- public:
-  StrongWeakPair(Object* obj1, Object* obj2) : Base(obj1, obj2) {}
-
-  StrongWeakPair(WTF::HashTableDeletedValueType)
-      : Base(WTF::kHashTableDeletedValue, nullptr) {}
-
-  bool IsHashTableDeletedValue() const {
-    return first.IsHashTableDeletedValue();
-  }
-
-  // Trace will be called for write barrier invocations. Only strong members
-  // are interesting.
-  void Trace(blink::Visitor* visitor) { visitor->Trace(first); }
-
-  // TraceInCollection will be called for weak processing.
-  template <typename VisitorDispatcher>
-  bool TraceInCollection(VisitorDispatcher visitor,
-                         WTF::WeakHandlingFlag weakness) {
-    visitor->Trace(first);
-    if (weakness == WTF::kNoWeakHandling) {
-      visitor->Trace(second);
-    }
-    return false;
-  }
-};
-
-}  // namespace incremental_marking_test
-}  // namespace blink
-
-namespace WTF {
-
-template <>
-struct HashTraits<blink::incremental_marking_test::StrongWeakPair>
-    : SimpleClassHashTraits<blink::incremental_marking_test::StrongWeakPair> {
-  static const WTF::WeakHandlingFlag kWeakHandlingFlag = WTF::kWeakHandling;
-
-  template <typename U = void>
-  struct IsTraceableInCollection {
-    static const bool value = true;
-  };
-
-  static const bool kHasIsEmptyValueFunction = true;
-  static bool IsEmptyValue(
-      const blink::incremental_marking_test::StrongWeakPair& value) {
-    return !value.first;
-  }
-
-  static void ConstructDeletedValue(
-      blink::incremental_marking_test::StrongWeakPair& slot,
-      bool) {
-    new (NotNull, &slot)
-        blink::incremental_marking_test::StrongWeakPair(kHashTableDeletedValue);
-  }
-
-  static bool IsDeletedValue(
-      const blink::incremental_marking_test::StrongWeakPair& value) {
-    return value.IsHashTableDeletedValue();
-  }
-
-  template <typename VisitorDispatcher>
-  static bool TraceInCollection(
-      VisitorDispatcher visitor,
-      blink::incremental_marking_test::StrongWeakPair& t,
-      WTF::WeakHandlingFlag weakness) {
-    return t.TraceInCollection(visitor, weakness);
-  }
-};
-
-template <>
-struct DefaultHash<blink::incremental_marking_test::StrongWeakPair> {
-  typedef PairHash<blink::Member<blink::incremental_marking_test::Object>,
-                   blink::WeakMember<blink::incremental_marking_test::Object>>
-      Hash;
-};
-
-template <>
-struct IsTraceable<blink::incremental_marking_test::StrongWeakPair> {
-  static const bool value = IsTraceable<std::pair<
-      blink::Member<blink::incremental_marking_test::Object>,
-      blink::WeakMember<blink::incremental_marking_test::Object>>>::value;
-};
-
-}  // namespace WTF
-
-namespace blink {
-namespace incremental_marking_test {
-
-TEST_F(IncrementalMarkingTest, HeapHashSetStrongWeakPair) {
-  auto* obj1 = MakeGarbageCollected<Object>();
-  auto* obj2 = MakeGarbageCollected<Object>();
-  HeapHashSet<StrongWeakPair> set;
-  {
-    // Both, the weak and the strong field, are hit by the write barrier.
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    set.insert(StrongWeakPair(obj1, obj2));
-  }
-}
-
-TEST_F(IncrementalMarkingTest, HeapLinkedHashSetStrongWeakPair) {
-  auto* obj1 = MakeGarbageCollected<Object>();
-  auto* obj2 = MakeGarbageCollected<Object>();
-  HeapLinkedHashSet<StrongWeakPair> set;
-  {
-    // Both, the weak and the strong field, are hit by the write barrier.
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    set.insert(StrongWeakPair(obj1, obj2));
-  }
-}
-
 // =============================================================================
 // HeapLinkedHashSet support. ==================================================
 // =============================================================================
@@ -1355,32 +1240,6 @@ TEST_F(IncrementalMarkingTest, HeapHashMapSwapWeakMemberMember) {
     ExpectWriteBarrierFires scope(ThreadState::Current(),
                                   {obj1, obj2, obj3, obj4});
     std::swap(map1, map2);
-  }
-}
-
-TEST_F(IncrementalMarkingTest, HeapHashMapInsertStrongWeakPairMember) {
-  auto* obj1 = MakeGarbageCollected<Object>();
-  auto* obj2 = MakeGarbageCollected<Object>();
-  auto* obj3 = MakeGarbageCollected<Object>();
-  HeapHashMap<StrongWeakPair, Member<Object>> map;
-  {
-    // Tests that the write barrier also fires for entities such as
-    // StrongWeakPair that don't overload assignment operators in translators.
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj3});
-    map.insert(StrongWeakPair(obj1, obj2), obj3);
-  }
-}
-
-TEST_F(IncrementalMarkingTest, HeapHashMapInsertMemberStrongWeakPair) {
-  auto* obj1 = MakeGarbageCollected<Object>();
-  auto* obj2 = MakeGarbageCollected<Object>();
-  auto* obj3 = MakeGarbageCollected<Object>();
-  HeapHashMap<Member<Object>, StrongWeakPair> map;
-  {
-    // Tests that the write barrier also fires for entities such as
-    // StrongWeakPair that don't overload assignment operators in translators.
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
-    map.insert(obj1, StrongWeakPair(obj2, obj3));
   }
 }
 

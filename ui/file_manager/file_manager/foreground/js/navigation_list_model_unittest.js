@@ -318,6 +318,8 @@ function testOrderAndNestItems() {
       VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:videos_root'));
   volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
       VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:audio_root'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.SMB, 'smb:file-share'));
 
   // ZipArchiver mounts zip files as a PROVIDED volume type.
   const zipVolumeId = 'provided:dmboannefpncccogfdikhmhpmdnddgoe:' +
@@ -341,17 +343,18 @@ function testOrderAndNestItems() {
   //        -> Play files
   //        -> Linux files
   //  8.  Drive  - from setup()
-  //  9.  provided:prov1
-  // 10.  provided:prov2
+  //  9.  smb:file-share
+  // 10.  provided:prov1
+  // 11.  provided:prov2
   //
-  // 11.  removable:hoge
-  // 12.  removable:fuga
-  // 13.  archive:a-rar  - mounted as archive
-  // 14.  mtp:a-phone
-  // 15.  provided:"zip" - mounted as provided: $zipVolumeId
+  // 12.  removable:hoge
+  // 13.  removable:fuga
+  // 14.  archive:a-rar  - mounted as archive
+  // 15.  mtp:a-phone
+  // 16.  provided:"zip" - mounted as provided: $zipVolumeId
   //
-  // 16.  android:app1
-  // 17.  android:app2
+  // 17.  android:app1
+  // 18.  android:app2
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
@@ -360,7 +363,7 @@ function testOrderAndNestItems() {
 
   // Check items order and that MTP/Archive/Removable respect the original
   // order.
-  assertEquals(17, model.length);
+  assertEquals(18, model.length);
   assertEquals('recent-label', model.item(0).label);
 
   assertEquals('media_view:images_root', model.item(1).label);
@@ -372,18 +375,19 @@ function testOrderAndNestItems() {
   assertEquals('My files', model.item(6).label);
 
   assertEquals('My Drive', model.item(7).label);
-  assertEquals('provided:prov1', model.item(8).label);
-  assertEquals('provided:prov2', model.item(9).label);
+  assertEquals('smb:file-share', model.item(8).label);
+  assertEquals('provided:prov1', model.item(9).label);
+  assertEquals('provided:prov2', model.item(10).label);
 
-  assertEquals('removable:hoge', model.item(10).label);
-  assertEquals('removable:fuga', model.item(11).label);
+  assertEquals('removable:hoge', model.item(11).label);
+  assertEquals('removable:fuga', model.item(12).label);
 
-  assertEquals('archive:a-rar', model.item(12).label);
-  assertEquals('mtp:a-phone', model.item(13).label);
-  assertEquals(zipVolumeId, model.item(14).label);
+  assertEquals('archive:a-rar', model.item(13).label);
+  assertEquals('mtp:a-phone', model.item(14).label);
+  assertEquals(zipVolumeId, model.item(15).label);
 
-  assertEquals('android:app1', model.item(15).label);
-  assertEquals('android:app2', model.item(16).label);
+  assertEquals('android:app1', model.item(16).label);
+  assertEquals('android:app2', model.item(17).label);
 
   // Check NavigationSection, which defaults to TOP.
   // recent-label.
@@ -403,30 +407,32 @@ function testOrderAndNestItems() {
   // My Files.
   assertEquals(NavigationSection.MY_FILES, model.item(6).section);
 
-  // Drive and FSP are grouped together.
+  // Drive, FSP, and SMB are grouped together.
   // My Drive.
   assertEquals(NavigationSection.CLOUD, model.item(7).section);
-  // provided:prov1.
+  // smb:file-share.
   assertEquals(NavigationSection.CLOUD, model.item(8).section);
-  // provided:prov2.
+  // provided:prov1.
   assertEquals(NavigationSection.CLOUD, model.item(9).section);
+  // provided:prov2.
+  assertEquals(NavigationSection.CLOUD, model.item(10).section);
 
   // MTP/Archive/Removable are grouped together.
   // removable:hoge.
-  assertEquals(NavigationSection.REMOVABLE, model.item(10).section);
-  // removable:fuga.
   assertEquals(NavigationSection.REMOVABLE, model.item(11).section);
-  // archive:a-rar.
+  // removable:fuga.
   assertEquals(NavigationSection.REMOVABLE, model.item(12).section);
-  // mtp:a-phone.
+  // archive:a-rar.
   assertEquals(NavigationSection.REMOVABLE, model.item(13).section);
-  // archive:"zip" - $zipVolumeId
+  // mtp:a-phone.
   assertEquals(NavigationSection.REMOVABLE, model.item(14).section);
+  // archive:"zip" - $zipVolumeId
+  assertEquals(NavigationSection.REMOVABLE, model.item(15).section);
 
   // android:app1
-  assertEquals(NavigationSection.ANDROID_APPS, model.item(15).section);
-  // android:app2
   assertEquals(NavigationSection.ANDROID_APPS, model.item(16).section);
+  // android:app2
+  assertEquals(NavigationSection.ANDROID_APPS, model.item(17).section);
 
   const myFilesModel = model.item(6);
   // Re-order again: cast to allow calling this private model function.

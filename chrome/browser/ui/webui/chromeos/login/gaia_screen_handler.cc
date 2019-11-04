@@ -683,7 +683,8 @@ void GaiaScreenHandler::DeclareLocalizedValues(
 
 void GaiaScreenHandler::Initialize() {
   initialized_ = true;
-
+  // This should be called only once on page load.
+  AllowJavascript();
   if (show_when_ready_)
     ShowGaiaScreenIfReady();
 }
@@ -699,6 +700,8 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleScrapedPasswordCount);
   AddCallback("scrapedPasswordVerificationFailed",
               &GaiaScreenHandler::HandleScrapedPasswordVerificationFailed);
+  AddCallback("samlChallengeMachineKey",
+              &GaiaScreenHandler::HandleSamlChallengeMachineKey);
   AddCallback("loginWebuiReady", &GaiaScreenHandler::HandleGaiaUIReady);
   AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
   AddCallback("updateOfflineLogin",
@@ -972,6 +975,18 @@ void GaiaScreenHandler::HandleScrapedPasswordVerificationFailed() {
   RecordSAMLScrapingVerificationResultInHistogram(false);
 }
 
+void GaiaScreenHandler::HandleSamlChallengeMachineKey(
+    const std::string& callback_id,
+    const std::string& url,
+    const std::string& challenge) {
+  CreateSamlChallengeKeyHandler();
+  saml_challenge_key_handler_->Run(
+      Profile::FromWebUI(web_ui()),
+      base::BindOnce(&GaiaScreenHandler::ResolveJavascriptCallback,
+                     weak_factory_.GetWeakPtr(), base::Value(callback_id)),
+      GURL(url), challenge);
+}
+
 void GaiaScreenHandler::HandleGaiaUIReady() {
   VLOG(1) << "Gaia is loaded";
 
@@ -1022,7 +1037,6 @@ void GaiaScreenHandler::HandleGetIsSamlUserPasswordless(
     const std::string& callback_id,
     const std::string& typed_email,
     const std::string& gaia_id) {
-  AllowJavascript();
   const bool is_saml_user_passwordless =
       extension_provided_client_cert_usage_observer_ &&
       extension_provided_client_cert_usage_observer_->ClientCertsWereUsed();
@@ -1306,6 +1320,10 @@ void GaiaScreenHandler::CloseSecurityTokenPinDialog() {
 
 bool GaiaScreenHandler::IsOfflineLoginActive() const {
   return (screen_mode_ == GAIA_SCREEN_MODE_OFFLINE) || offline_login_is_active_;
+}
+
+void GaiaScreenHandler::CreateSamlChallengeKeyHandler() {
+  saml_challenge_key_handler_ = std::make_unique<SamlChallengeKeyHandler>();
 }
 
 void GaiaScreenHandler::CancelShowGaiaAsync() {

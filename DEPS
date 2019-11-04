@@ -172,7 +172,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '4cc2dc64ff134fca1f26651b9b2c8882ec7f0837',
+  'skia_revision': 'feac94f2761d792673a132c75923c45175cffc08',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -243,7 +243,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'cc75dee3bad38eeafa083f0a8042e1145ccda4bd',
+  'devtools_frontend_revision': '8cfb8ccc1ac82db1990dfadf7526081e46c2cb78',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -291,7 +291,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '618ee509421ffb349f29d5e19bc4b951456dadbe',
+  'spv_tools_revision': 'f1e5cd73f658abcc23ee96d78f2dc27c4b7028c1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -871,7 +871,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'dda199292eed8d1918fc8846bf36feab5b48b2db',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '48be9ec54eea8f4302ed34e5eff3c0105446de7c',
       'condition': 'checkout_linux',
   },
 
@@ -1311,7 +1311,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9dd3e34fd3c36508fdcf755d66b6d9b12d49e45c',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '26280ecc7991b2b297302fd840569913d7e6ef2f',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1512,7 +1512,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'dd55f3ca8f2ea716ca917a4aaf36f0729fe902b1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '8846c8af8511b505c4b61cefd4db49d15871baa7',
+    Var('webrtc_git') + '/src.git' + '@' + 'cc9bf6398c0348395442875cec6d14092a1959f7',
 
   # Wuffs' canonical repository is at github.com/google/wuffs, but we use
   # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.

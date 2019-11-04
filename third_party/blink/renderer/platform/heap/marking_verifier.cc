@@ -56,8 +56,7 @@ void MarkingVerifier::VisitBackingStoreWeakly(void* object,
                                               TraceDescriptor strong_desc,
                                               TraceDescriptor weak_desc,
                                               WeakCallback,
-                                              void*,
-                                              bool) {
+                                              void*) {
   if (!object)
     return;
 

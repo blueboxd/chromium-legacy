@@ -363,6 +363,10 @@ id<GREYMatcher> PaymentRequestPickerSearchBar() {
   return [ChromeMatchersAppInterface paymentRequestPickerSearchBar];
 }
 
+id<GREYMatcher> ReadingListMenuButton() {
+  return [ChromeMatchersAppInterface readingListMenuButton];
+}
+
 id<GREYMatcher> BookmarksMenuButton() {
   return [ChromeMatchersAppInterface bookmarksMenuButton];
 }

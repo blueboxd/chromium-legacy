@@ -89,17 +89,17 @@ void MarkingVisitorCommon::VisitBackingStoreStrongly(void* object,
 }
 
 // All work is registered through RegisterWeakCallback.
-void MarkingVisitorCommon::VisitBackingStoreWeakly(void* object,
-                                                   void** object_slot,
-                                                   TraceDescriptor strong_desc,
-                                                   TraceDescriptor weak_desc,
-                                                   WeakCallback callback,
-                                                   void* parameter,
-                                                   bool is_ephemeron) {
+void MarkingVisitorCommon::VisitBackingStoreWeakly(
+    void* object,
+    void** object_slot,
+    TraceDescriptor strong_desc,
+    TraceDescriptor weak_desc,
+    WeakCallback weak_callback,
+    void* weak_callback_parameter) {
   RegisterBackingStoreReference(object_slot);
   if (!object)
     return;
-  RegisterWeakCallback(parameter, callback);
+  RegisterWeakCallback(weak_callback_parameter, weak_callback);
 
   if (weak_desc.callback) {
     weak_table_worklist_.Push(

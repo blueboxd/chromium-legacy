@@ -187,8 +187,7 @@ class GC_PLUGIN_IGNORE(
                                TraceDescriptor,
                                TraceDescriptor,
                                WeakCallback,
-                               void*,
-                               bool) final;
+                               void*) final;
   bool VisitEphemeronKeyValuePair(void*,
                                   void*,
                                   bool,
@@ -720,10 +719,10 @@ void V8EmbedderGraphBuilder::VisitBackingStoreWeakly(
     void** object_slot,
     TraceDescriptor strong_desc,
     TraceDescriptor weak_desc,
-    WeakCallback callback,
-    void* parameter,
-    bool is_ephemeron) {
-  if (is_ephemeron) {
+    WeakCallback,
+    void*) {
+  // Only ephemerons have weak callbacks.
+  if (weak_desc.callback) {
     // Heap snapshot is always run after a GC so we know there are no dead
     // entries in the backing store, thus it safe to trace it strongly.
     VisitBackingStoreStrongly(object, object_slot, strong_desc);

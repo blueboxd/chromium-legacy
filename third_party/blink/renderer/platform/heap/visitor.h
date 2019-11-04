@@ -143,58 +143,22 @@ class PLATFORM_EXPORT Visitor {
                               TraceDescriptorFor(backing_store));
   }
 
-  template <bool HasWeakTraceDescriptor>
-  struct GetWeakTraceDescriptorDispatcher {
-    template <typename T>
-    static TraceDescriptor GetWeakTraceDescriptor(T* backing) {
-      return {backing, nullptr};
-    }
-  };
-
-  template <>
-  struct GetWeakTraceDescriptorDispatcher<true> {
-    template <typename T>
-    static TraceDescriptor GetWeakTraceDescriptor(T* backing) {
-      return TraceTrait<T>::GetWeakTraceDescriptor(backing);
-    }
-  };
-
-  template <
-      typename Traits,
-      bool =
-          WTF::IsSubclassOfTemplate<Traits, WTF::KeyValuePairHashTraits>::value>
-  struct IsEphemeron {
-    static constexpr bool value = false;
-  };
-
-  template <typename Traits>
-  struct IsEphemeron<Traits, true> {
-    static constexpr bool value =
-        (Traits::KeyTraits::kIsWeak != Traits::ValueTraits::kIsWeak);
-  };
-
   template <typename HashTable, typename T>
   void TraceBackingStoreWeakly(T* backing_store,
                                T** backing_store_slot,
-                               WeakCallback callback,
-                               void* parameter) {
+                               WeakCallback weak_callback,
+                               void* weak_callback_parameter) {
     static_assert(sizeof(T), "T must be fully defined");
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    VisitBackingStoreWeakly(
-        reinterpret_cast<void*>(backing_store),
-        reinterpret_cast<void**>(backing_store_slot),
-        TraceTrait<T>::GetTraceDescriptor(
-            reinterpret_cast<void*>(backing_store)),
-        GetWeakTraceDescriptorDispatcher <
-                (HashTable::ValueTraits::kWeakHandlingFlag ==
-                 WTF::kWeakHandling) &&
-            WTF::IsTraceableInCollectionTrait<
-                typename HashTable::ValueTraits>::value >
-                ::GetWeakTraceDescriptor(backing_store),
-        callback, parameter,
-        IsEphemeron<typename HashTable::ValueTraits>::value);
+    VisitBackingStoreWeakly(reinterpret_cast<void*>(backing_store),
+                            reinterpret_cast<void**>(backing_store_slot),
+                            TraceTrait<T>::GetTraceDescriptor(
+                                reinterpret_cast<void*>(backing_store)),
+                            TraceTrait<T>::GetWeakTraceDescriptor(
+                                reinterpret_cast<void*>(backing_store)),
+                            weak_callback, weak_callback_parameter);
   }
 
   template <typename T>
@@ -294,8 +258,7 @@ class PLATFORM_EXPORT Visitor {
                                        TraceDescriptor,
                                        TraceDescriptor,
                                        WeakCallback,
-                                       void*,
-                                       bool) = 0;
+                                       void*) = 0;
   virtual void VisitBackingStoreOnly(void*, void**) = 0;
 
   // Visits cross-component references to V8.

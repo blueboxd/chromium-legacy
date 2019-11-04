@@ -7,12 +7,12 @@
 #import <Cocoa/Cocoa.h>
 
 #include "components/remote_cocoa/browser/window.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace remote_cocoa {
 
-ApplicationHost::ApplicationHost(mojom::ApplicationAssociatedRequest* request) {
-  *request = mojo::MakeRequest(&application_ptr_);
+ApplicationHost::ApplicationHost(
+    mojo::PendingAssociatedReceiver<mojom::Application>* receiver) {
+  *receiver = application_remote_.BindNewEndpointAndPassReceiver();
 }
 
 ApplicationHost::~ApplicationHost() {
@@ -21,7 +21,7 @@ ApplicationHost::~ApplicationHost() {
 }
 
 mojom::Application* ApplicationHost::GetApplication() {
-  return application_ptr_.get();
+  return application_remote_.get();
 }
 
 void ApplicationHost::AddObserver(Observer* observer) {

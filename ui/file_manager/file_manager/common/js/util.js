@@ -1144,6 +1144,7 @@ util.getRootTypeLabel = locationInfo => {
     case VolumeManagerCommon.RootType.PROVIDED:
     case VolumeManagerCommon.RootType.ANDROID_FILES:
     case VolumeManagerCommon.RootType.DOCUMENTS_PROVIDER:
+    case VolumeManagerCommon.RootType.SMB:
       return locationInfo.volumeInfo.label;
     default:
       console.error('Unsupported root type: ' + locationInfo.rootType);

@@ -251,14 +251,14 @@ void BrowserPolicyConnectorChromeOS::Init(
           chromeos::NetworkHandler::Get()->network_state_handler(),
           content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
-  device_cloud_external_data_policy_handlers_.emplace_back(
+  device_cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::DeviceNativePrintersExternalDataHandler>(
           GetPolicyService()));
-  device_cloud_external_data_policy_handlers_.emplace_back(
+  device_cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::DeviceWallpaperImageExternalDataHandler>(
           local_state, GetPolicyService()));
   if (base::FeatureList::IsEnabled(::features::kWilcoDtc)) {
-    device_cloud_external_data_policy_handlers_.emplace_back(
+    device_cloud_external_data_policy_handlers_.push_back(
         std::make_unique<
             policy::DeviceWilcoDtcConfigurationExternalDataHandler>(
             GetPolicyService()));

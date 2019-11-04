@@ -153,7 +153,9 @@ public class CustomTabSessionHandler implements SessionHandler, StartStopWithNat
         CustomTabsSessionToken session = mIntentDataProvider.getSession();
         String packageName = mConnection.getClientPackageNameForSession(session);
         if (TextUtils.isEmpty(packageName)) return false;
+        Origin origin = Origin.create(referrer);
+        if (origin == null) return false;
         return OriginVerifier.wasPreviouslyVerified(
-                packageName, new Origin(referrer), CustomTabsService.RELATION_USE_AS_ORIGIN);
+                packageName, origin, CustomTabsService.RELATION_USE_AS_ORIGIN);
     }
 }

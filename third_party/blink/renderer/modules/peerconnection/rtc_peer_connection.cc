@@ -48,8 +48,6 @@
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
-#include "third_party/blink/public/platform/web_rtc_key_params.h"
-#include "third_party/blink/public/platform/web_rtc_offer_options.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_session_description_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
@@ -129,6 +127,7 @@
 #include "third_party/webrtc/api/jsep.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/pc/session_description.h"
+#include "third_party/webrtc/rtc_base/ssl_identity.h"
 
 namespace blink {
 
@@ -194,8 +193,9 @@ bool IsIceCandidateMissingSdp(
   return false;
 }
 
-WebRTCOfferOptions ConvertToWebRTCOfferOptions(const RTCOfferOptions* options) {
-  return WebRTCOfferOptions(MakeGarbageCollected<RTCOfferOptionsPlatform>(
+RTCOfferOptionsPlatform* ConvertToRTCOfferOptionsPlatform(
+    const RTCOfferOptions* options) {
+  return MakeGarbageCollected<RTCOfferOptionsPlatform>(
       options->hasOfferToReceiveVideo()
           ? std::max(options->offerToReceiveVideo(), 0)
           : -1,
@@ -204,7 +204,7 @@ WebRTCOfferOptions ConvertToWebRTCOfferOptions(const RTCOfferOptions* options) {
           : -1,
       options->hasVoiceActivityDetection() ? options->voiceActivityDetection()
                                            : true,
-      options->hasIceRestart() ? options->iceRestart() : false));
+      options->hasIceRestart() ? options->iceRestart() : false);
 }
 
 WebRTCAnswerOptions ConvertToWebRTCAnswerOptions(
@@ -855,8 +855,8 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
         context,
         WebFeature::kRTCPeerConnectionCreateOfferOptionsOfferToReceive);
   }
-  auto web_transceivers =
-      peer_handler_->CreateOffer(request, ConvertToWebRTCOfferOptions(options));
+  auto web_transceivers = peer_handler_->CreateOffer(
+      request, ConvertToRTCOfferOptionsPlatform(options));
   for (auto& web_transceiver : web_transceivers)
     CreateOrUpdateTransceiver(std::move(web_transceiver));
   return promise;
@@ -899,8 +899,7 @@ ScriptPromise RTCPeerConnection::createOffer(
           context, WebFeature::kRTCPeerConnectionCreateOfferLegacyCompliant);
     }
 
-    web_transceivers =
-        peer_handler_->CreateOffer(request, WebRTCOfferOptions(offer_options));
+    web_transceivers = peer_handler_->CreateOffer(request, offer_options);
   } else {
     MediaErrorState media_error_state;
     WebMediaConstraints constraints = media_constraints_impl::Create(
@@ -1659,7 +1658,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   const char* unsupported_params_string =
       "The 1st argument provided is an AlgorithmIdentifier with a supported "
       "algorithm name, but the parameters are not supported.";
-  base::Optional<WebRTCKeyParams> key_params;
+  base::Optional<rtc::KeyParams> key_params;
   switch (crypto_algorithm.Id()) {
     case kWebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
       // name: "RSASSA-PKCS1-v1_5"
@@ -1672,8 +1671,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
               kWebCryptoAlgorithmIdSha256) {
         unsigned modulus_length =
             crypto_algorithm.RsaHashedKeyGenParams()->ModulusLengthBits();
-        key_params =
-            WebRTCKeyParams::CreateRSA(modulus_length, public_exponent);
+        key_params = rtc::KeyParams::RSA(modulus_length, public_exponent);
       } else {
         return ScriptPromise::RejectWithDOMException(
             script_state, MakeGarbageCollected<DOMException>(
@@ -1686,7 +1684,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
       // The only recognized "namedCurve" is "P-256".
       if (crypto_algorithm.EcKeyGenParams()->NamedCurve() ==
           kWebCryptoNamedCurveP256) {
-        key_params = WebRTCKeyParams::CreateECDSA(kWebRTCECCurveNistP256);
+        key_params = rtc::KeyParams::ECDSA(rtc::EC_NIST_P256);
       } else {
         return ScriptPromise::RejectWithDOMException(
             script_state, MakeGarbageCollected<DOMException>(

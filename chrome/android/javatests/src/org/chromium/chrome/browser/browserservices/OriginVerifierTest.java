@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import android.net.Uri;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -85,8 +84,8 @@ public class OriginVerifierTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
 
-        mHttpsOrigin = new Origin("https://www.example.com");
-        mHttpOrigin = new Origin("http://www.android.com");
+        mHttpsOrigin = Origin.create("https://www.example.com");
+        mHttpOrigin = Origin.create("http://www.android.com");
 
         mHandleAllUrlsVerifier = new OriginVerifier(
                 PACKAGE_NAME, CustomTabsService.RELATION_HANDLE_ALL_URLS, new MockWebContents());
@@ -114,12 +113,6 @@ public class OriginVerifierTest {
     @Test
     @SmallTest
     public void testOnlyHttpsAllowed() throws InterruptedException {
-        Origin origin = new Origin(Uri.parse("LOL"));
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                () -> mHandleAllUrlsVerifier.start(new TestOriginVerificationListener(), origin));
-        Assert.assertTrue(
-                mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        Assert.assertFalse(mLastVerified);
         PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                 () -> mHandleAllUrlsVerifier.start(
                                 new TestOriginVerificationListener(), mHttpOrigin));

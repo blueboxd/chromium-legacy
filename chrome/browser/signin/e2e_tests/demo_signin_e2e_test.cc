@@ -98,9 +98,7 @@ class DemoSignInTest : public signin::test::LiveTest {
     auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_TRUE(content::ExecuteScript(
         settings_tab,
-        "testElement = document.createElement('settings-sync-account-control');"
-        "document.body.appendChild(testElement);"
-        "testElement.$$('#sign-in').click();"));
+        "settings.SyncBrowserProxyImpl.getInstance().startSignIn()"));
     SignInFromCurrentPage(test_account);
   }
 
@@ -116,6 +114,18 @@ class DemoSignInTest : public signin::test::LiveTest {
         browser(), test_account.user, test_account.password);
     cookie_update_loop.Run();
     refresh_token_update_loop.Run();
+  }
+
+  void TurnOnSync(const TestAccount& test_account) {
+    SignInFromSettings(test_account);
+
+    TestIdentityManagerObserver observer(identity_manager());
+    base::RunLoop primary_account_set_loop;
+    observer.SetOnPrimaryAccountSetCallback(
+        primary_account_set_loop.QuitClosure());
+    login_ui_test_utils::DismissSyncConfirmationDialog(
+        browser(), base::TimeDelta::FromSeconds(3));
+    primary_account_set_loop.Run();
   }
 
   void SignOutFromWeb(size_t signed_in_accounts) {
@@ -166,17 +176,11 @@ IN_PROC_BROWSER_TEST_F(DemoSignInTest, SimpleSignInFlow) {
 IN_PROC_BROWSER_TEST_F(DemoSignInTest, WebSignOut) {
   TestAccount test_account;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
-  SignInFromSettings(test_account);
+  TurnOnSync(test_account);
 
-  TestIdentityManagerObserver observer(identity_manager());
-  base::RunLoop primary_account_set_loop;
-  observer.SetOnPrimaryAccountSetCallback(
-      primary_account_set_loop.QuitClosure());
-  login_ui_test_utils::DismissSyncConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(3));
-  primary_account_set_loop.Run();
   const CoreAccountInfo& primary_account =
-      observer.PrimaryAccountFromSetCallback();
+      identity_manager()->GetPrimaryAccountInfo();
+  EXPECT_FALSE(primary_account.IsEmpty());
   EXPECT_TRUE(gaia::AreEmailsSame(test_account.user, primary_account.email));
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
 
@@ -243,6 +247,51 @@ IN_PROC_BROWSER_TEST_F(DemoSignInTest, WebSignInAndSignOut) {
   ASSERT_TRUE(accounts_in_cookie_jar_3.signed_in_accounts.empty());
   EXPECT_EQ(2u, accounts_in_cookie_jar_3.signed_out_accounts.size());
   EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
+}
+
+// Signs in an account through the settings page and enables Sync. Checks that
+// Sync is enabled. Signs in a second account on the web.
+// Then, turns Sync off from the settings page and checks that both accounts are
+// removed from Chrome and from cookies.
+IN_PROC_BROWSER_TEST_F(DemoSignInTest, TurnOffSync) {
+  TestAccount test_account_1;
+  CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account_1));
+  TurnOnSync(test_account_1);
+
+  TestAccount test_account_2;
+  CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_2", test_account_2));
+  SignInFromWeb(test_account_2);
+
+  const CoreAccountInfo& primary_account =
+      identity_manager()->GetPrimaryAccountInfo();
+  EXPECT_FALSE(primary_account.IsEmpty());
+  EXPECT_TRUE(gaia::AreEmailsSame(test_account_1.user, primary_account.email));
+  EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
+
+  GURL settings_url("chrome://settings");
+  AddTabAtIndex(0, settings_url, ui::PageTransition::PAGE_TRANSITION_TYPED);
+  TestIdentityManagerObserver observer(identity_manager());
+  base::RunLoop cookie_update_loop;
+  observer.SetOnAccountsInCookieUpdatedCallback(
+      cookie_update_loop.QuitClosure());
+  base::RunLoop primary_account_cleared_loop;
+  observer.SetOnPrimaryAccountClearedCallback(
+      primary_account_cleared_loop.QuitClosure());
+  SignOutTestObserver sign_out_observer(identity_manager());
+  auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScript(
+      settings_tab,
+      "settings.SyncBrowserProxyImpl.getInstance().signOut(false)"));
+  primary_account_cleared_loop.Run();
+  sign_out_observer.WaitForRefreshTokenRemovedForAccounts(2);
+  cookie_update_loop.Run();
+
+  const AccountsInCookieJarInfo& accounts_in_cookie_jar_2 =
+      identity_manager()->GetAccountsInCookieJar();
+  EXPECT_TRUE(accounts_in_cookie_jar_2.accounts_are_fresh);
+  ASSERT_TRUE(accounts_in_cookie_jar_2.signed_in_accounts.empty());
+  EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
 }
 
 }  // namespace test

@@ -293,6 +293,9 @@ void VolumeToVolumeMetadata(
       volume_metadata->volume_type =
           file_manager_private::VOLUME_TYPE_TESTING;
       break;
+    case VOLUME_TYPE_SMB:
+      volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_SMB;
+      break;
     case NUM_VOLUME_TYPE:
       NOTREACHED();
       break;

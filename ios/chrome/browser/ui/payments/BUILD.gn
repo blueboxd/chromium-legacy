@@ -315,6 +315,7 @@ source_set("eg_tests") {
     "//ios/third_party/material_components_ios",
     "//ios/web/public/test",
     "//ios/web/public/test/http_server",
+    "//net:test_support",
     "//testing/gtest",
     "//third_party/libaddressinput:strings_grit",
     "//ui/base",

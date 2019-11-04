@@ -910,21 +910,6 @@ struct HashTraits<blink::WeakMember<T>>
   }
 
   static PeekOutType Peek(const blink::WeakMember<T>& value) { return value; }
-
-  static bool IsAlive(blink::WeakMember<T>& weak_member) {
-    return blink::ThreadHeap::IsHeapObjectAlive(weak_member);
-  }
-
-  template <typename VisitorDispatcher>
-  static bool TraceInCollection(VisitorDispatcher visitor,
-                                blink::WeakMember<T>& weak_member,
-                                WeakHandlingFlag weakness) {
-    if (weakness == kNoWeakHandling) {
-      visitor->Trace(weak_member.Get());  // Strongified visit.
-      return false;
-    }
-    return !blink::ThreadHeap::IsHeapObjectAlive(weak_member);
-  }
 };
 
 template <typename T>

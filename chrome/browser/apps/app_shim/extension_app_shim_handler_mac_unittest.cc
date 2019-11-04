@@ -28,6 +28,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -258,7 +259,8 @@ class TestAppShim : public chrome::mojom::AppShim {
  public:
   // chrome::mojom::AppShim:
   void CreateRemoteCocoaApplication(
-      remote_cocoa::mojom::ApplicationAssociatedRequest request) override {}
+      mojo::PendingAssociatedReceiver<remote_cocoa::mojom::Application>
+          receiver) override {}
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
   void SetBadgeLabel(const std::string& badge_label) override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}

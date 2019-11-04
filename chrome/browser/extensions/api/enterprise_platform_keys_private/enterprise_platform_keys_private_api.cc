@@ -85,8 +85,8 @@ void EPKPChallengeKey::Run(
   }
 
   impl_ = chromeos::attestation::TpmChallengeKeyFactory::Create();
-  impl_->Run(type, profile, std::move(callback), challenge, register_key,
-             key_name_for_spkac);
+  impl_->BuildResponse(type, profile, std::move(callback), challenge,
+                       register_key, key_name_for_spkac);
 }
 
 EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::

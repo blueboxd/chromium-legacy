@@ -61,8 +61,8 @@ TEST_F(NetworkContextOwnerTest, Basic) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(saw_connection_error_);
 
-  web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
-                             network_context_owner_.release());
+  base::DeleteSoon(FROM_HERE, {web::WebThread::IO},
+                   network_context_owner_.release());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(saw_connection_error_);  // other end gone
 }
@@ -89,8 +89,8 @@ TEST_F(NetworkContextOwnerTest, ShutdownHandling) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(saw_connection_error_);  // other end gone post-shutdown.
 
-  web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
-                             network_context_owner_.release());
+  base::DeleteSoon(FROM_HERE, {web::WebThread::IO},
+                   network_context_owner_.release());
 }
 
 }  // namespace web

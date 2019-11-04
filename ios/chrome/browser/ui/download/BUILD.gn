@@ -134,6 +134,7 @@ source_set("eg_tests") {
     "//ios/web:earl_grey_test_support",
     "//ios/web/public",
     "//ios/web/public/test:element_selector",
+    "//net:test_support",
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]

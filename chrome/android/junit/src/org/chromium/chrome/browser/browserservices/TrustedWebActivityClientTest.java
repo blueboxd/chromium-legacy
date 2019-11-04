@@ -138,7 +138,8 @@ public class TrustedWebActivityClientTest {
     }
 
     private void postNotification() {
-        mClient.notifyNotification(Uri.parse(""), "tag", 1, mNotificationBuilder,
+        Uri uri = Uri.parse("https://www.example.com");
+        mClient.notifyNotification(uri, "tag", 1, mNotificationBuilder,
                 mNotificationUmaTracker);
     }
 }

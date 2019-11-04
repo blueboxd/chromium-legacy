@@ -51,15 +51,17 @@ WebSocketCommon::ConnectResult WebSocketCommon::Connect(
            WebMixedContentContextType::kBlockable)) &&
       url_.Protocol() == "ws" &&
       !SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy()) {
-    if (!upgrade_insecure_requests_set) {
+    if (upgrade_insecure_requests_set) {
+      UseCounter::Count(
+          execution_context,
+          WebFeature::kUpgradeInsecureRequestsUpgradedRequestWebsocket);
+    } else {
       was_autoupgraded_to_wss_ = true;
       LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kStarted);
       execution_context->AddConsoleMessage(
           MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
               execution_context->Url(), url_));
     }
-    UseCounter::Count(execution_context,
-                      WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
     url_.SetProtocol("wss");
     if (url_.Port() == 80)
       url_.SetPort(443);

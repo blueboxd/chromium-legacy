@@ -234,13 +234,13 @@ class DriveMetadataSearchContentScanner extends ContentScanner {
 
 /**
  * The search types on the Drive File System.
- * @enum {string}
+ * @enum {!chrome.fileManagerPrivate.SearchType}
  */
 DriveMetadataSearchContentScanner.SearchType = {
-  SEARCH_ALL: 'ALL',
-  SEARCH_SHARED_WITH_ME: 'SHARED_WITH_ME',
-  SEARCH_RECENT_FILES: 'EXCLUDE_DIRECTORIES',
-  SEARCH_OFFLINE: 'OFFLINE'
+  SEARCH_ALL: chrome.fileManagerPrivate.SearchType.ALL,
+  SEARCH_SHARED_WITH_ME: chrome.fileManagerPrivate.SearchType.SHARED_WITH_ME,
+  SEARCH_RECENT_FILES: chrome.fileManagerPrivate.SearchType.EXCLUDE_DIRECTORIES,
+  SEARCH_OFFLINE: chrome.fileManagerPrivate.SearchType.OFFLINE,
 };
 Object.freeze(DriveMetadataSearchContentScanner.SearchType);
 

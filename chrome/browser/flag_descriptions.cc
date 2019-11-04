@@ -3858,6 +3858,12 @@ const char kClickToCallUIDescription[] =
     "Enables click to call feature signals to be handled on desktop by showing "
     "a list of user's available devices with telephony functionality.";
 
+const char kRemoteCopyReceiverName[] =
+    "Enables the remote copy feature to receive messages";
+const char kRemoteCopyReceiverDescription[] =
+    "Enables the remote copy feature to handle messages by writing content to "
+    "the clipboard and showing a notification to the user.";
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 

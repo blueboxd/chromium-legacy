@@ -161,6 +161,8 @@ std::string VolumeTypeToString(VolumeType type) {
       return "testing";
     case VOLUME_TYPE_CROSTINI:
       return "crostini";
+    case VOLUME_TYPE_SMB:
+      return "smb";
     case NUM_VOLUME_TYPE:
       break;
   }

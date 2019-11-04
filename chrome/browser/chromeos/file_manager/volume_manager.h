@@ -63,6 +63,7 @@ enum VolumeType {
   VOLUME_TYPE_CROSTINI,
   VOLUME_TYPE_ANDROID_FILES,
   VOLUME_TYPE_DOCUMENTS_PROVIDER,
+  VOLUME_TYPE_SMB,
   // The enum values must be kept in sync with FileManagerVolumeType in
   // tools/metrics/histograms/enums.xml. Since enums for histograms are
   // append-only (for keeping the number consistent across versions), new values

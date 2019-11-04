@@ -382,8 +382,8 @@ void ProfileAttributesStorage::SaveAvatarImageAtPath(
   if (downloader_iter != avatar_images_downloads_in_progress_.end()) {
     // We mustn't delete the avatar downloader right here, since we're being
     // called by it.
-    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
-                                       downloader_iter->second.release());
+    base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
+                     downloader_iter->second.release());
     avatar_images_downloads_in_progress_.erase(downloader_iter);
   }
 

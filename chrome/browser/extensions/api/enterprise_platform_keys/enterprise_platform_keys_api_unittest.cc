@@ -195,7 +195,7 @@ TEST_F(EPKChallengeMachineKeyTest, KeyNotRegisteredByDefault) {
   whitelist.AppendString(extension_->id());
   prefs_->Set(prefs::kAttestationExtensionWhitelist, whitelist);
 
-  EXPECT_CALL(*mock_tpm_challenge_key_, Run)
+  EXPECT_CALL(*mock_tpm_challenge_key_, BuildResponse)
       .WillOnce(Invoke(FakeRunCheckNotRegister));
 
   EXPECT_TRUE(utils::RunFunction(func_.get(), CreateArgs(), browser(),

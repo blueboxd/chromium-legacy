@@ -3063,6 +3063,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "remote-copy-receiver",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "request-unbuffered-dispatch",
     "owners": [ "bokan" ],
     "expiry_milestone": 80

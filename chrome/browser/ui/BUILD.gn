@@ -1782,6 +1782,8 @@ jumbo_static_library("ui") {
       "webui/chromeos/login/recommend_apps_screen_handler.h",
       "webui/chromeos/login/reset_screen_handler.cc",
       "webui/chromeos/login/reset_screen_handler.h",
+      "webui/chromeos/login/saml_challenge_key_handler.cc",
+      "webui/chromeos/login/saml_challenge_key_handler.h",
       "webui/chromeos/login/signin_screen_handler.cc",
       "webui/chromeos/login/signin_screen_handler.h",
       "webui/chromeos/login/supervision_transition_screen_handler.cc",

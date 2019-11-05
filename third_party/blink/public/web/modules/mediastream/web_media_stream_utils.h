@@ -18,6 +18,10 @@ class WebMediaStreamTrack;
 
 // Requests that a refresh frame be sent "soon" (e.g., to resolve picture loss
 // or quality issues).
+//
+// TODO(crbug.com/704136): Move these helper functions out of the Blink
+// public API. Note for while moving it: there is an existing
+// media_stream_utils.h on renderer/modules/mediastream.
 BLINK_MODULES_EXPORT void RequestRefreshFrameFromVideoTrack(
     const WebMediaStreamTrack& video_track);
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
 
 #include <limits>
 #include <memory>
@@ -13,11 +13,11 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_deliverer.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -25,7 +25,7 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 
-BLINK_PLATFORM_EXPORT extern const int kFallbackAudioLatencyMs;
+PLATFORM_EXPORT extern const int kFallbackAudioLatencyMs;
 
 class MediaStreamAudioTrack;
 
@@ -60,7 +60,7 @@ class MediaStreamAudioTrack;
 //   // Regardless of whether ConnectToTrack() succeeds, there will always be a
 //   // MediaStreamAudioTrack instance created.
 //   CHECK(MediaStreamAudioTrack::From(blink_track));
-class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
+class PLATFORM_EXPORT MediaStreamAudioSource
     : public WebPlatformMediaStreamSource {
  public:
   MediaStreamAudioSource(
@@ -212,4 +212,4 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_SOURCE_H_

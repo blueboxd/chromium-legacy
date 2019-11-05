@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"

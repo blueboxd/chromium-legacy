@@ -12,11 +12,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_capturer_source.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_level_calculator.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_level_calculator.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace media {

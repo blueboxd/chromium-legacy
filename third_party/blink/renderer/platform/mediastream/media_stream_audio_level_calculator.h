@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_LEVEL_CALCULATOR_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_LEVEL_CALCULATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_LEVEL_CALCULATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_LEVEL_CALCULATOR_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace media {
 class AudioBus;
@@ -21,16 +21,12 @@ namespace blink {
 //
 // The algorithm used by this class is the same as how it is done in
 // third_party/webrtc/voice_engine/level_indicator.cc.
-//
-// TODO(crbug.com/704136): Move this class out of the Blink exposed API
-// when all users of it have been Onion souped.
-//
-class BLINK_PLATFORM_EXPORT MediaStreamAudioLevelCalculator {
+class PLATFORM_EXPORT MediaStreamAudioLevelCalculator {
  public:
   // Provides thread-safe access to the current signal level.  This object is
   // intended to be passed to modules running on other threads that poll for the
   // current signal level.
-  class BLINK_PLATFORM_EXPORT Level : public base::RefCountedThreadSafe<Level> {
+  class PLATFORM_EXPORT Level : public base::RefCountedThreadSafe<Level> {
    public:
     float GetCurrent() const;
 
@@ -66,4 +62,4 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioLevelCalculator {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_LEVEL_CALCULATOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_LEVEL_CALCULATOR_H_

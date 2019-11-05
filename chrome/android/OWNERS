@@ -20,9 +20,6 @@ per-file chrome_bundle_tmpl.gni=tiborg@chromium.org
 # For VR Javatest changes
 per-file BUILD.gn=bsheedy@chromium.org
 
-per-file *.proguard_flags.expected=*
-per-file *.AndroidManifest.expected=*
-
 # Translation artifacts:
 per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 

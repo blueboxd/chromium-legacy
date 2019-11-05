@@ -7,6 +7,10 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace media {
 class AudioBus;
 }

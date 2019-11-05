@@ -10,10 +10,10 @@
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_push_fifo.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_audio_destination_consumer.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {

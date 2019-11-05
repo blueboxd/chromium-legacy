@@ -132,6 +132,7 @@ js_library("find_shortcut_behavior") {
   deps = [
     ":assert",
     ":cr",
+    ":util",
     "cr/ui:command",
   ]
 }

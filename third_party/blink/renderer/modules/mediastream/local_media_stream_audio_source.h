@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_LOCAL_MEDIA_STREAM_AUDIO_SOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_LOCAL_MEDIA_STREAM_AUDIO_SOURCE_H_
 
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 
 #include <string>
 

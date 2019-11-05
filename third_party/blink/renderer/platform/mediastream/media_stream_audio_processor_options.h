@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_
 
 #include <string>
 
@@ -15,8 +15,8 @@
 #include "media/base/audio_point.h"
 #include "media/base/audio_processing.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/media/base/media_channel.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
@@ -40,7 +40,7 @@ static constexpr int kAudioProcessingSampleRate =
 #endif
 
 // Simple struct with audio-processing properties.
-struct BLINK_PLATFORM_EXPORT AudioProcessingProperties {
+struct PLATFORM_EXPORT AudioProcessingProperties {
   enum class EchoCancellationType {
     // Echo cancellation disabled.
     kEchoCancellationDisabled,
@@ -96,7 +96,7 @@ struct BLINK_PLATFORM_EXPORT AudioProcessingProperties {
 };
 
 // Enables the typing detection with the given detector.
-BLINK_PLATFORM_EXPORT void EnableTypingDetection(
+PLATFORM_EXPORT void EnableTypingDetection(
     AudioProcessing::Config* apm_config,
     webrtc::TypingDetection* typing_detector);
 
@@ -104,7 +104,7 @@ BLINK_PLATFORM_EXPORT void EnableTypingDetection(
 // |audio_processing|. |worker_queue| must be kept alive until either
 // |audio_processing| is destroyed, or
 // StopEchoCancellationDump(audio_processing) is called.
-BLINK_PLATFORM_EXPORT void StartEchoCancellationDump(
+PLATFORM_EXPORT void StartEchoCancellationDump(
     AudioProcessing* audio_processing,
     base::File aec_dump_file,
     rtc::TaskQueue* worker_queue);
@@ -112,11 +112,11 @@ BLINK_PLATFORM_EXPORT void StartEchoCancellationDump(
 // Stops the echo cancellation dump in |audio_processing|.
 // This method has no impact if echo cancellation dump has not been started on
 // |audio_processing|.
-BLINK_PLATFORM_EXPORT void StopEchoCancellationDump(
+PLATFORM_EXPORT void StopEchoCancellationDump(
     AudioProcessing* audio_processing);
 
 // Enables automatic gain control with flags and optional configures.
-BLINK_PLATFORM_EXPORT void ConfigAutomaticGainControl(
+PLATFORM_EXPORT void ConfigAutomaticGainControl(
     AudioProcessing::Config* apm_config,
     bool agc_enabled,
     bool experimental_agc_enabled,
@@ -125,7 +125,7 @@ BLINK_PLATFORM_EXPORT void ConfigAutomaticGainControl(
     base::Optional<int> hybrid_agc_saturation_margin,
     base::Optional<double> compression_gain_db);
 
-BLINK_PLATFORM_EXPORT void PopulateApmConfig(
+PLATFORM_EXPORT void PopulateApmConfig(
     AudioProcessing::Config* apm_config,
     const AudioProcessingProperties& properties,
     const base::Optional<std::string>& audio_processing_platform_config_json,
@@ -133,4 +133,4 @@ BLINK_PLATFORM_EXPORT void PopulateApmConfig(
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 
 namespace blink {
 

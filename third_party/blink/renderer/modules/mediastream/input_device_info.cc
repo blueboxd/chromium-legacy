@@ -9,10 +9,10 @@
 #include "build/build_config.h"
 #include "media/base/sample_format.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 
 namespace blink {

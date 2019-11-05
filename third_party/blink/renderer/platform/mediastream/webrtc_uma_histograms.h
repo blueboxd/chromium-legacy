@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEBRTC_UMA_HISTOGRAMS_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEBRTC_UMA_HISTOGRAMS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_WEBRTC_UMA_HISTOGRAMS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_WEBRTC_UMA_HISTOGRAMS_H_
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/sequence_checker.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rtc_api_name.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -29,9 +29,9 @@ enum MediaStreamRequestState {
   NUM_MEDIA_STREAM_REQUEST_WITH_NO_RESULT
 };
 
-BLINK_PLATFORM_EXPORT void LogUserMediaRequestWithNoResult(
+PLATFORM_EXPORT void LogUserMediaRequestWithNoResult(
     MediaStreamRequestState state);
-BLINK_PLATFORM_EXPORT void LogUserMediaRequestResult(
+PLATFORM_EXPORT void LogUserMediaRequestResult(
     mojom::MediaStreamRequestResult result);
 
 // Helper method used to collect information about the number of times
@@ -45,7 +45,7 @@ BLINK_PLATFORM_EXPORT void LogUserMediaRequestResult(
 // that gets incremented only once per "session" as established by the
 // PerSessionWebRTCAPIMetrics singleton below. It can be viewed at
 // chrome://histograms/WebRTC.webkitApiCountPerSession.
-BLINK_PLATFORM_EXPORT void UpdateWebRTCMethodCount(WebRTCAPIName api_name);
+PLATFORM_EXPORT void UpdateWebRTCMethodCount(WebRTCAPIName api_name);
 
 // A singleton that keeps track of the number of MediaStreams being
 // sent over PeerConnections. It uses the transition to zero such
@@ -56,7 +56,7 @@ BLINK_PLATFORM_EXPORT void UpdateWebRTCMethodCount(WebRTCAPIName api_name);
 //
 // The UpdateWebRTCMethodCount function above uses this class to log a
 // metric at most once per session.
-class BLINK_PLATFORM_EXPORT PerSessionWebRTCAPIMetrics {
+class PLATFORM_EXPORT PerSessionWebRTCAPIMetrics {
  public:
   virtual ~PerSessionWebRTCAPIMetrics();
 
@@ -69,7 +69,7 @@ class BLINK_PLATFORM_EXPORT PerSessionWebRTCAPIMetrics {
 
  protected:
   friend struct base::DefaultSingletonTraits<PerSessionWebRTCAPIMetrics>;
-  friend BLINK_PLATFORM_EXPORT void UpdateWebRTCMethodCount(WebRTCAPIName);
+  friend PLATFORM_EXPORT void UpdateWebRTCMethodCount(WebRTCAPIName);
 
   // Protected so that unit tests can test without this being a
   // singleton.
@@ -95,4 +95,4 @@ class BLINK_PLATFORM_EXPORT PerSessionWebRTCAPIMetrics {
 
 }  //  namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEBRTC_UMA_HISTOGRAMS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_WEBRTC_UMA_HISTOGRAMS_H_

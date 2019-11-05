@@ -232,16 +232,12 @@ void LoadDisplayProperties(PrefService* local_state) {
       continue;
     }
     display::Display::Rotation rotation = display::Display::ROTATE_0;
-    float ui_scale = 1.0f;
     const gfx::Insets* insets_to_set = nullptr;
 
     int rotation_value = 0;
     if (dict_value->GetInteger("rotation", &rotation_value)) {
       rotation = static_cast<display::Display::Rotation>(rotation_value);
     }
-    int ui_scale_value = 0;
-    if (dict_value->GetInteger("ui-scale", &ui_scale_value))
-      ui_scale = static_cast<float>(ui_scale_value) / 1000.0f;
 
     int width = 0, height = 0;
     dict_value->GetInteger("width", &width);
@@ -271,8 +267,8 @@ void LoadDisplayProperties(PrefService* local_state) {
     dict_value->GetDouble(kDisplayZoom, &display_zoom);
 
     GetDisplayManager()->RegisterDisplayProperty(
-        id, rotation, ui_scale, insets_to_set, resolution_in_pixels,
-        device_scale_factor, display_zoom, refresh_rate, is_interlaced);
+        id, rotation, insets_to_set, resolution_in_pixels, device_scale_factor,
+        display_zoom, refresh_rate, is_interlaced);
   }
 }
 
@@ -537,11 +533,6 @@ void StoreCurrentDisplayProperties(PrefService* pref_service) {
     property_value->SetInteger("rotation",
                                static_cast<int>(info.GetRotation(
                                    display::Display::RotationSource::USER)));
-
-    // We store a negative ui scale to let us know the next time we boot that it
-    // is not the first boot with display zoom mode enabled.
-    // TODO(oshima|malaykeshav): Remove this in m71.
-    property_value->SetInteger("ui-scale", -1000);
 
     display::ManagedDisplayMode mode;
     if (!display.IsInternal() &&

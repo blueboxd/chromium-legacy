@@ -105,7 +105,7 @@
   {
     "name": "animated-avatar-button",
     "owners": ["jkrcal"],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "app-management",
@@ -131,6 +131,10 @@
     "name": "app-service-shelf",
     "owners": [ "//chrome/services/app_service/OWNERS" ],
     "expiry_milestone": 79
+  },{
+    "name": "arc-application-zoom",
+    "owners": [ "sarakato" ],
+    "expiry_milestone": 81
   },
   {
     "name": "arc-available-for-child",

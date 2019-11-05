@@ -5099,6 +5099,7 @@ interface NDEFRecord
     getter mediaType
     getter recordType
     method constructor
+    method toRecords
 interface NDEFWriter
     attribute @@toStringTag
     method constructor

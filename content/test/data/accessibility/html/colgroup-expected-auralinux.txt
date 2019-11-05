@@ -2,11 +2,11 @@
 ++[table] cols=2 headers=('Single', 'Pair'); rows=2 headers=(NONE); caption=false; spans=(all: 1x1)
 ++++[table row]
 ++++++[column header] name='Single' (row=0, col=0, row_span=1, col_span=1, n_row_headers=0, n_col_headers=0)
-++++++++[text] name='Single'
+++++++++[static] name='Single'
 ++++++[column header] name='Pair' (row=0, col=1, row_span=1, col_span=1, n_row_headers=0, n_col_headers=0)
-++++++++[text] name='Pair'
+++++++++[static] name='Pair'
 ++++[table row]
 ++++++[table cell] name='A' (row=1, col=0, row_span=1, col_span=1, n_row_headers=0, n_col_headers=1)
-++++++++[text] name='A'
+++++++++[static] name='A'
 ++++++[table cell] name='AA' (row=1, col=1, row_span=1, col_span=1, n_row_headers=0, n_col_headers=1)
-++++++++[text] name='AA'
+++++++++[static] name='AA'

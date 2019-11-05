@@ -73,7 +73,8 @@ class MemberPointerVerifier {
       if (IsFullyDefined<T>::value && !IsGarbageCollectedMixin<T>::value)
         HeapObjectHeader::CheckFromPayload(pointer);
     } else {
-      DCHECK(HeapObjectHeader::FromInnerAddress(pointer));
+      DCHECK(HeapObjectHeader::FromInnerAddress<
+             HeapObjectHeader::AccessMode::kAtomic>(pointer));
     }
   }
 
@@ -325,99 +326,6 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
   friend class WTF::ConstructTraits;
 };
 
-// A checked version of Member<>, verifying that only same-thread references
-// are kept in the smart pointer. Intended to be used to diagnose unclean
-// thread reference usage in release builds. It simply exposes the debug-only
-// MemberBase<> checking we already have in place for select usage to diagnose
-// per-thread issues. Only intended used temporarily while diagnosing suspected
-// problems with cross-thread references.
-template <typename T>
-class SameThreadCheckedMember : public Member<T> {
-  DISALLOW_NEW();
-  typedef Member<T> Parent;
-
- public:
-  SameThreadCheckedMember() : Parent() { SaveCreationThreadState(); }
-  SameThreadCheckedMember(std::nullptr_t) : Parent(nullptr) {
-    SaveCreationThreadState();
-  }
-
-  SameThreadCheckedMember(T* raw) : Parent(raw) {
-    SaveCreationThreadState();
-    CheckPointer();
-  }
-
-  SameThreadCheckedMember(T& raw) : Parent(raw) {
-    SaveCreationThreadState();
-    CheckPointer();
-  }
-
-  SameThreadCheckedMember(WTF::HashTableDeletedValueType x) : Parent(x) {
-    SaveCreationThreadState();
-    CheckPointer();
-  }
-
-  SameThreadCheckedMember(const SameThreadCheckedMember& other)
-      : Parent(other) {
-    SaveCreationThreadState();
-  }
-  template <typename U>
-  SameThreadCheckedMember(const SameThreadCheckedMember<U>& other)
-      : Parent(other) {
-    SaveCreationThreadState();
-    CheckPointer();
-  }
-
-  template <typename U>
-  SameThreadCheckedMember(const Persistent<U>& other) : Parent(other) {
-    SaveCreationThreadState();
-    CheckPointer();
-  }
-
-  template <typename U>
-  SameThreadCheckedMember& operator=(const Persistent<U>& other) {
-    Parent::operator=(other);
-    CheckPointer();
-    return *this;
-  }
-
-  template <typename U>
-  SameThreadCheckedMember& operator=(const SameThreadCheckedMember<U>& other) {
-    Parent::operator=(other);
-    CheckPointer();
-    return *this;
-  }
-
-  template <typename U>
-  SameThreadCheckedMember& operator=(const WeakMember<U>& other) {
-    Parent::operator=(other);
-    CheckPointer();
-    return *this;
-  }
-
-  template <typename U>
-  SameThreadCheckedMember& operator=(U* other) {
-    Parent::operator=(other);
-    CheckPointer();
-    return *this;
-  }
-
-  SameThreadCheckedMember& operator=(std::nullptr_t) {
-    Parent::operator=(nullptr);
-    return *this;
-  }
-
- private:
-  void CheckPointer() { pointer_verifier_.CheckPointer(this->GetRaw()); }
-
-  void SaveCreationThreadState() {
-    pointer_verifier_.SaveCreationThreadState(this->GetRaw());
-  }
-
-  MemberPointerVerifier<T, TracenessMemberConfiguration::kTraced>
-      pointer_verifier_;
-};
-
 // WeakMember is similar to Member in that it is used to point to other oilpan
 // heap allocated objects.
 // However instead of creating a strong pointer to the object, the WeakMember
@@ -560,12 +468,6 @@ struct DefaultHash<blink::UntracedMember<T>> {
 };
 
 template <typename T>
-struct DefaultHash<blink::SameThreadCheckedMember<T>> {
-  STATIC_ONLY(DefaultHash);
-  using Hash = MemberHash<T>;
-};
-
-template <typename T>
 struct IsTraceable<blink::Member<T>> {
   STATIC_ONLY(IsTraceable);
   static const bool value = true;
@@ -579,12 +481,6 @@ struct IsWeak<blink::WeakMember<T>> {
 
 template <typename T>
 struct IsTraceable<blink::WeakMember<T>> {
-  STATIC_ONLY(IsTraceable);
-  static const bool value = true;
-};
-
-template <typename T>
-struct IsTraceable<blink::SameThreadCheckedMember<T>> {
   STATIC_ONLY(IsTraceable);
   static const bool value = true;
 };

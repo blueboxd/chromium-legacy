@@ -1,8 +1,8 @@
 [document web]
 ++[article] posinset:0 setsize:0
-++++[text] name='This is an ARIA article 1.'
+++++[static] name='This is an ARIA article 1.'
 ++[article] posinset:0 setsize:0
-++++[text] name='This is an ARIA article 2.'
+++++[static] name='This is an ARIA article 2.'
 ++[list box] setsize:2
 ++++[list item] name='Item 1' selectable posinset:1 setsize:2
 ++++[list item] name='Item 2' selectable posinset:2 setsize:2
@@ -11,26 +11,26 @@
 ++++[list item] name='Item 2' selectable posinset:2 setsize:2
 ++[form]
 ++++[radio button] checkable:true posinset:3 setsize:4
-++++[text] name='1'
-++++[text] name='<newline>'
+++++[static] name='1'
+++++[static] name='<newline>'
 ++++[radio button] checkable:true posinset:4 setsize:4
-++++[text] name='2'
+++++[static] name='2'
 ++[radio button] checkable:true posinset:1 setsize:2
-++[text] name='Apple'
-++[text] name='<newline>'
+++[static] name='Apple'
+++[static] name='<newline>'
 ++[radio button] checkable:true posinset:2 setsize:2
-++[text] name='Banana'
+++[static] name='Banana'
 ++[panel] name='Cake' labelled-by setsize:0
 ++++[label] label-for
-++++++[text] name='Cake'
+++++++[static] name='Cake'
 ++++[radio button] name='Chiffon cakes' checked checkable:true posinset:1 setsize:2
-++++[text] name='<newline>'
+++++[static] name='<newline>'
 ++++[radio button] name='Chocolate cakes' checkable:true posinset:2 setsize:2
 ++[form]
 ++++[paragraph]
 ++++++[push button] name='changedFromRadio'
 ++++++[label]
-++++++++[text] name='red'
-++++++[text] name='<newline>'
+++++++++[static] name='red'
+++++++[static] name='<newline>'
 ++++++[radio button] name='blue' checkable:true posinset:1 setsize:1
-++[text] name='Done'
+++[static] name='Done'

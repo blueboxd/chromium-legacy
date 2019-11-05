@@ -599,6 +599,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mCustomTabIntentHandler = component.resolveIntentHandler();
         component.resolveCompositorContentInitializer();
         component.resolveSessionHandler();
+        component.resolveToolbarColorController();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
             component.resolveTrustedWebActivityCoordinator();

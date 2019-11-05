@@ -4,6 +4,9 @@
 
 /** @fileoverview Suite of tests for the ListPropertyUpdateBehavior.  */
 
+// #import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
+// #import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 suite('ListPropertyUpdateBehavior', function() {
   /**
    * A list property update behavior test element created before each test.
@@ -248,7 +251,7 @@ suite('ListPropertyUpdateBehavior', function() {
           {letter: 'x', words: ['xylophone']}, {letter: 'y', words: ['yo-yo']},
           {letter: 'z', words: ['zebra', 'zephyr']}
         ];
-        esult = testElement.updateComplexArray(newArray);
+        result = testElement.updateComplexArray(newArray);
 
         assertTrue(result.topArrayChanged);
         assertFalse(result.wordsArrayChanged);

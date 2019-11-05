@@ -173,6 +173,8 @@ Response PermissionDescriptorToPermissionType(
     } else {
       return Response::InvalidParams("Invalid WakeLockType: " + type);
     }
+  } else if (name == "nfc") {
+    *permission_type = PermissionType::NFC;
   } else {
     return Response::InvalidParams("Invalid PermissionDescriptor name: " +
                                    name);
@@ -227,6 +229,8 @@ Response FromProtocolPermissionType(
     *out_type = PermissionType::WAKE_LOCK_SCREEN;
   } else if (type == protocol::Browser::PermissionTypeEnum::WakeLockSystem) {
     *out_type = PermissionType::WAKE_LOCK_SYSTEM;
+  } else if (type == protocol::Browser::PermissionTypeEnum::Nfc) {
+    *out_type = PermissionType::NFC;
   } else {
     return Response::InvalidParams("Unknown permission type: " + type);
   }

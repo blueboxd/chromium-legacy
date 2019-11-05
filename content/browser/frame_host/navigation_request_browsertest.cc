@@ -1209,7 +1209,7 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   EXPECT_EQ(2, installer.install_count());
   EXPECT_EQ(b_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
-  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
+  EXPECT_EQ(blink::mojom::RequestContextType::IFRAME,
             installer.navigation_throttle()->request_context_type());
 
   // Ditto for frame c navigation.
@@ -1218,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   EXPECT_EQ(3, installer.install_count());
   EXPECT_EQ(c_url, url_recorder.urls().back());
   EXPECT_EQ(3ul, url_recorder.urls().size());
-  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
+  EXPECT_EQ(blink::mojom::RequestContextType::IFRAME,
             installer.navigation_throttle()->request_context_type());
 
   // Lets the final navigation finish so that we conclude running the

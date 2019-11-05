@@ -55,6 +55,11 @@ struct NDEFRecord {
 
   // Payload of the NDEFRecord.
   array<uint8> data;
+
+  // |data| parsed as an NDEFMessage. This field may be set for some
+  // "smart-poster" or external type records. This field may be null even if
+  // |data| is valid.
+  NDEFMessage? payload_message;
 };
 
 struct NDEFMessage {

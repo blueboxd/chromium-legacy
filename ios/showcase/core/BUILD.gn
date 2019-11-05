@@ -66,12 +66,14 @@ source_set("main") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
   sources = [
     "showcase_egtest.mm",
   ]
   deps = [
     "//ios/showcase/test",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -84,9 +86,12 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = []
+  sources = [
+    "showcase_egtest.mm",
+  ]
   deps = [
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/showcase/test:eg2_test",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
   ]

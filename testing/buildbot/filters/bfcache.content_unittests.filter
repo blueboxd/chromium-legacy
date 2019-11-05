@@ -17,10 +17,10 @@
 # https://crbug.com/1020884
 -ServiceWorkerProviderHostTest.*
 -ServiceWorkerNavigationLoaderTest.*
--ServiceWorkerRegistrationObjectHostUpdateTestP.*
+-ServiceWorkerRegistrationObjectHostUpdateTestP/ServiceWorkerRegistrationObjectHostUpdateTest.*
 -ServiceWorkerControlleeRequestHandlerTest.*
--ServiceWorkerActivationTestWithDevTools.*
--ServiceWorkerUpdateJobTestP.*
+-ServiceWorkerActivationTestWithDevTools/ServiceWorkerActivationTest.*
+-ServiceWorkerUpdateJobTestP/ServiceWorkerUpdateJobTest.*
 -ServiceWorkerRegistrationObjectHostTest.*
 -ServiceWorkerJobTest.*
 -ServiceWorkerVersionTest.*

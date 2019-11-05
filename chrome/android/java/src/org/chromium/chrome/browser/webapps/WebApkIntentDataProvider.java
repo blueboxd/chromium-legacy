@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
@@ -543,6 +544,11 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
     @Override
     public int getToolbarColor() {
         return mToolbarColor;
+    }
+
+    @Override
+    public int getTitleVisibilityState() {
+        return CustomTabsIntent.SHOW_PAGE_TITLE;
     }
 
     @Override

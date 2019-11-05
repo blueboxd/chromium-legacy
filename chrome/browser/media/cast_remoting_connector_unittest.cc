@@ -21,21 +21,13 @@
 #include "content/public/test/browser_task_environment.h"
 #include "media/mojo/mojom/mirror_service_remoting.mojom.h"
 #include "media/mojo/mojom/remoting.mojom.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
-using media::mojom::RemoterPtr;
-using media::mojom::RemoterRequest;
 using media::mojom::RemotingSinkMetadata;
 using media::mojom::RemotingSinkMetadataPtr;
-using media::mojom::RemotingSourcePtr;
-using media::mojom::RemotingSourceRequest;
 using media::mojom::RemotingStartFailReason;
 using media::mojom::RemotingStopReason;
 
@@ -106,7 +98,7 @@ class MockRemotingSource : public media::mojom::RemotingSource {
   MockRemotingSource() {}
   ~MockRemotingSource() final {}
 
-  void Bind(mojo::PendingReceiver<RemotingSource> receiver) {
+  void Bind(mojo::PendingReceiver<media::mojom::RemotingSource> receiver) {
     receiver_.Bind(std::move(receiver));
   }
 
@@ -141,7 +133,7 @@ class MockMediaRemoter final : public media::mojom::MirrorServiceRemoter,
 
   explicit MockMediaRemoter(CastRemotingConnector* connector) {
     connector->ConnectWithMediaRemoter(receiver_.BindNewPipeAndPassRemote(),
-                                       mojo::MakeRequest(&source_));
+                                       source_.BindNewPipeAndPassReceiver());
   }
 
   ~MockMediaRemoter() final {}
@@ -221,7 +213,7 @@ class MockMediaRemoter final : public media::mojom::MirrorServiceRemoter,
   mojo::Remote<media::mojom::MirrorServiceRemotingSource> deprecated_source_;
 
   mojo::Receiver<media::mojom::Remoter> receiver_{this};
-  RemotingSourcePtr source_;
+  mojo::Remote<media::mojom::RemotingSource> source_;
 };
 
 }  // namespace

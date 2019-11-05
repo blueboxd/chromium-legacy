@@ -613,6 +613,28 @@ network::mojom::IPAddressSpace CalculateIPAddressSpace(
   return network::mojom::IPAddressSpace::kPublic;
 }
 
+// Convert the navigation type to the appropriate cross-document one.
+//
+// This is currently used when:
+// 1) Restarting a same-document navigation as cross-document.
+// 2) Committing an error page after blocking a same-document navigations.
+mojom::NavigationType ConvertToCrossDocumentType(mojom::NavigationType type) {
+  switch (type) {
+    case mojom::NavigationType::SAME_DOCUMENT:
+      return mojom::NavigationType::DIFFERENT_DOCUMENT;
+    case mojom::NavigationType::HISTORY_SAME_DOCUMENT:
+      return mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
+    case mojom::NavigationType::RELOAD:
+    case mojom::NavigationType::RELOAD_BYPASSING_CACHE:
+    case mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL:
+    case mojom::NavigationType::RESTORE:
+    case mojom::NavigationType::RESTORE_WITH_POST:
+    case mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT:
+    case mojom::NavigationType::DIFFERENT_DOCUMENT:
+      return type;
+  }
+}
+
 }  // namespace
 
 // static
@@ -1335,15 +1357,8 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   render_frame_host_ = nullptr;
 
   // Convert the navigation type to the appropriate cross-document one.
-  if (common_params_->navigation_type ==
-      mojom::NavigationType::HISTORY_SAME_DOCUMENT) {
-    common_params_->navigation_type =
-        mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
-  } else {
-    DCHECK(common_params_->navigation_type ==
-           mojom::NavigationType::SAME_DOCUMENT);
-    common_params_->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
-  }
+  common_params_->navigation_type =
+      ConvertToCrossDocumentType(common_params_->navigation_type);
 }
 
 void NavigationRequest::RegisterSubresourceOverride(
@@ -2360,6 +2375,14 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
 void NavigationRequest::CommitErrorPage(
     const base::Optional<std::string>& error_page_content) {
   UpdateCommitNavigationParamsHistory();
+
+  // Error pages are always cross-document.
+  //
+  // This is useful when a same-document navigation is blocked and commit an
+  // error page instead. See https://crbug.com/1018385.
+  common_params_->navigation_type =
+      ConvertToCrossDocumentType(common_params_->navigation_type);
+
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
   // Error pages commit in an opaque origin in the renderer process. If this
   // NavigationRequest resulted in committing an error page, set

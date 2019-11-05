@@ -35,8 +35,6 @@ static_library("browser") {
     "mice_account_reconcilor_delegate.h",
     "mirror_account_reconcilor_delegate.cc",
     "mirror_account_reconcilor_delegate.h",
-    "multilogin_parameters.cc",
-    "multilogin_parameters.h",
     "signin_error_controller.cc",
     "signin_error_controller.h",
     "signin_header_helper.cc",

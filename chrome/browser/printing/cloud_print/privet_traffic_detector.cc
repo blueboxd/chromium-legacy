@@ -93,8 +93,7 @@ PrivetTrafficDetector::PrivetTrafficDetector(
 PrivetTrafficDetector::~PrivetTrafficDetector() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
-  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                     helper_);
+  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO}, helper_);
 }
 
 void PrivetTrafficDetector::OnConnectionChanged(

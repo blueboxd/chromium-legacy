@@ -34,6 +34,32 @@ const char KeyStorageLinux::kFolderName[] = "Chromium Keys";
 const char KeyStorageLinux::kKey[] = "Chromium Safe Storage";
 #endif
 
+namespace {
+
+const char* SelectedLinuxBackendToString(
+    os_crypt::SelectedLinuxBackend selection) {
+  switch (selection) {
+    case os_crypt::SelectedLinuxBackend::DEFER:
+      return "DEFER";
+    case os_crypt::SelectedLinuxBackend::BASIC_TEXT:
+      return "BASIC_TEXT";
+    case os_crypt::SelectedLinuxBackend::GNOME_ANY:
+      return "GNOME_ANY";
+    case os_crypt::SelectedLinuxBackend::GNOME_KEYRING:
+      return "GNOME_KEYRING";
+    case os_crypt::SelectedLinuxBackend::GNOME_LIBSECRET:
+      return "GNOME_LIBSECRET";
+    case os_crypt::SelectedLinuxBackend::KWALLET:
+      return "KWALLET";
+    case os_crypt::SelectedLinuxBackend::KWALLET5:
+      return "KWALLET5";
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+}  // namespace
+
 // static
 std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
     const os_crypt::Config& config) {
@@ -46,6 +72,8 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
       base::nix::GetDesktopEnvironment(env.get());
   os_crypt::SelectedLinuxBackend selected_backend =
       os_crypt::SelectBackend(config.store, use_backend, desktop_env);
+  VLOG(1) << "Selected backend for OSCrypt: "
+          << SelectedLinuxBackendToString(selected_backend);
 
   // TODO(crbug.com/782851) Schedule the initialisation on each backend's
   // favourite thread.
@@ -62,6 +90,7 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
       VLOG(1) << "OSCrypt using Libsecret as backend.";
       return key_storage;
     }
+    LOG(WARNING) << "OSCrypt tried Libsecret but couldn't initialise.";
   }
 #endif  // defined(USE_LIBSECRET)
 
@@ -73,6 +102,7 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
       VLOG(1) << "OSCrypt using Keyring as backend.";
       return key_storage;
     }
+    LOG(WARNING) << "OSCrypt tried Keyring but couldn't initialise.";
   }
 #endif  // defined(USE_KEYRING)
 
@@ -90,12 +120,14 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
       VLOG(1) << "OSCrypt using KWallet as backend.";
       return key_storage;
     }
+    LOG(WARNING) << "OSCrypt tried KWallet but couldn't initialise.";
   }
 #endif  // defined(USE_KWALLET)
 #endif  // defined(USE_LIBSECRET) || defined(USE_KEYRING) ||
         // defined(USE_KWALLET)
 
-  // The appropriate store was not available.
+  // Either there are no supported backends on this platform, or we chose to
+  // use no backend, or the chosen backend failed to initialise.
   VLOG(1) << "OSCrypt did not initialize a backend.";
   return nullptr;
 }

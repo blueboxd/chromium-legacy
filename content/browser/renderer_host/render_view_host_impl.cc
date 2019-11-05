@@ -501,15 +501,9 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
       atoi(command_line.GetSwitchValueASCII(
       switches::kAcceleratedCanvas2dMSAASampleCount).c_str());
 
-  prefs.use_solid_color_scrollbars = false;
-
   prefs.disable_ipc_flooding_protection =
       command_line.HasSwitch(switches::kDisableIpcFloodingProtection) ||
       command_line.HasSwitch(switches::kDisablePushStateThrottle);
-
-#if defined(OS_ANDROID)
-  prefs.use_solid_color_scrollbars = true;
-#endif  // defined(OS_ANDROID)
 
   prefs.accelerated_video_decode_enabled =
       !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);

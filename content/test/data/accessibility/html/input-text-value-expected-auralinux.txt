@@ -1,15 +1,15 @@
 [document web]
 ++[section]
 ++++[label] label-for
-++++++[text] name='l1'
+++++++[static] name='l1'
 ++++[entry] name='l1' single-line labelled-by
 ++++[label] label-for
-++++++[text] name='l2'
+++++++[static] name='l2'
 ++++[entry] name='l2' single-line labelled-by
 ++++[entry] name='l2' single-line
 ++++[entry] name='l2' single-line
 ++++[label] label-for
-++++++[text] name='Email'
+++++++[static] name='Email'
 ++++[section] label-for
 ++++[entry] name='Email' single-line labelled-by
 ++++[entry] name='Email' single-line labelled-by

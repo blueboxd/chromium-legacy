@@ -8,6 +8,7 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
@@ -28,6 +29,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
+import org.json.JSONArray;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Supplier;
@@ -41,8 +43,10 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -254,5 +258,85 @@ class AutofillAssistantUiTestUtil {
             ChromeActivity activity, AutofillAssistantTestService testService) {
         testService.scheduleForInjection();
         TestThreadUtils.runOnUiThreadBlocking(() -> AutofillAssistantFacade.start(activity));
+    }
+
+    /** Computes the bounding rectangle of the specified DOM element in absolute screen space. */
+    public static Rect getAbsoluteBoundingRect(String elementId, CustomTabActivityTestRule testRule)
+            throws Exception {
+        // Get bounding rectangle in viewport space.
+        Rect elementRect = getBoundingRectForElement(elementId, testRule.getWebContents());
+
+        /*
+         * Conversion from viewport space to screen space is done in two steps:
+         * - First, convert viewport to compositor space (scrolling offset, multiply with factor).
+         * - Then, convert compositor space to screen space (add content offset).
+         */
+        Rect viewport = getViewport(testRule.getWebContents());
+        float cssToPysicalPixels =
+                (((float) testRule.getActivity().getCompositorViewHolder().getWidth()
+                        / (float) viewport.width()));
+
+        int[] compositorLocation = new int[2];
+        testRule.getActivity().getCompositorViewHolder().getLocationOnScreen(compositorLocation);
+        int offsetY = compositorLocation[1]
+                + testRule.getActivity().getFullscreenManager().getContentOffset();
+        return new Rect((int) ((elementRect.left - viewport.left) * cssToPysicalPixels),
+                (int) ((elementRect.top - viewport.top) * cssToPysicalPixels + offsetY),
+                (int) ((elementRect.right - viewport.left) * cssToPysicalPixels),
+                (int) ((elementRect.bottom - viewport.top) * cssToPysicalPixels + offsetY));
+    }
+
+    /**
+     * Retrieves the bounding rectangle for the specified element in the DOM tree in CSS pixel
+     * coordinates.
+     */
+    public static Rect getBoundingRectForElement(String elementId, WebContents webContents)
+            throws Exception {
+        if (!checkElementExists(elementId, webContents)) {
+            throw new IllegalArgumentException(elementId + " does not exist");
+        }
+        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
+                new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
+        javascriptHelper.evaluateJavaScriptForTests(webContents,
+                "(function() {"
+                        + " rect = document.getElementById('" + elementId
+                        + "').getBoundingClientRect();"
+                        + " return [window.scrollX + rect.left, window.scrollY + rect.top, "
+                        + "         window.scrollX + rect.right, window.scrollY + rect.bottom];"
+                        + "})()");
+        javascriptHelper.waitUntilHasValue();
+        JSONArray rectJson = new JSONArray(javascriptHelper.getJsonResultAndClear());
+        return new Rect(
+                rectJson.getInt(0), rectJson.getInt(1), rectJson.getInt(2), rectJson.getInt(3));
+    }
+
+    /** Checks whether the specified element exists in the DOM tree. */
+    public static boolean checkElementExists(String elementId, WebContents webContents)
+            throws Exception {
+        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
+                new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
+        javascriptHelper.evaluateJavaScriptForTests(webContents,
+                "(function() {"
+                        + " return [document.getElementById('" + elementId + "') != null]; "
+                        + "})()");
+        javascriptHelper.waitUntilHasValue();
+        JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());
+        return result.getBoolean(0);
+    }
+
+    /**
+     * Retrieves the visual viewport of the webpage in CSS pixel coordinates.
+     */
+    public static Rect getViewport(WebContents webContents) throws Exception {
+        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
+                new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
+        javascriptHelper.evaluateJavaScriptForTests(webContents,
+                "(function() {"
+                        + " const v = window.visualViewport;"
+                        + " return [v.pageLeft, v.pageTop, v.width, v.height]"
+                        + "})()");
+        javascriptHelper.waitUntilHasValue();
+        JSONArray values = new JSONArray(javascriptHelper.getJsonResultAndClear());
+        return new Rect(values.getInt(0), values.getInt(1), values.getInt(2), values.getInt(3));
     }
 }

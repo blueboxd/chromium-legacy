@@ -34,7 +34,6 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
                                void*) final;
   bool VisitEphemeronKeyValuePair(void*,
                                   void*,
-                                  bool,
                                   EphemeronTracingCallback,
                                   EphemeronTracingCallback) final;
 

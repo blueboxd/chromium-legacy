@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "components/reading_list/features/reading_list_buildflags.h"
 #include "components/sync/base/enum_set.h"
 
 namespace base {

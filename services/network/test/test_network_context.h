@@ -159,6 +159,12 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
       mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) override {}
+  void CreateQuicTransport(
+      const GURL& url,
+      const url::Origin& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
+      mojo::PendingRemote<mojom::QuicTransportHandshakeClient> handshake_client)
+      override {}
   void LookUpProxyForURL(
       const GURL& url,
       mojo::PendingRemote<::network::mojom::ProxyLookupClient>

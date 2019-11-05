@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "google_apis/gaia/core_account_id.h"
+
 class PrefService;
 
 namespace user_prefs {
@@ -91,11 +93,11 @@ void SetPaymentsIntegrationEnabled(PrefService* prefs, bool enabled);
 std::string GetAllProfilesValidityMapsEncodedString(const PrefService* prefs);
 
 void SetUserOptedInWalletSyncTransport(PrefService* prefs,
-                                       const std::string& account_id,
+                                       const CoreAccountId& account_id,
                                        bool opted_in);
 
 bool IsUserOptedInWalletSyncTransport(const PrefService* prefs,
-                                      const std::string& account_id);
+                                      const CoreAccountId& account_id);
 
 void ClearSyncTransportOptIns(PrefService* prefs);
 

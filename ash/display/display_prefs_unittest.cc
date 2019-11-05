@@ -407,13 +407,10 @@ TEST_F(DisplayPrefsTest, BasicStores) {
       local_state()->GetDictionary(prefs::kDisplayProperties);
   const base::DictionaryValue* property = nullptr;
   EXPECT_TRUE(properties->GetDictionary(base::NumberToString(id1), &property));
-  int ui_scale = 0;
   int rotation = 0;
   EXPECT_TRUE(property->GetInteger("rotation", &rotation));
-  EXPECT_TRUE(property->GetInteger("ui-scale", &ui_scale));
   EXPECT_EQ(1, rotation);
 
-  EXPECT_EQ(-1000, ui_scale);
   double display_zoom_1;
   EXPECT_TRUE(property->GetDouble("display_zoom_factor", &display_zoom_1));
   EXPECT_NEAR(display_zoom_1, zoom_factor_1, 0.0001);
@@ -460,10 +457,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
 
   EXPECT_TRUE(properties->GetDictionary(base::NumberToString(id2), &property));
   EXPECT_TRUE(property->GetInteger("rotation", &rotation));
-  EXPECT_TRUE(property->GetInteger("ui-scale", &ui_scale));
   EXPECT_EQ(0, rotation);
-  // ui_scale works only on 2x scale factor/1st display.
-  EXPECT_EQ(-1000, ui_scale);
 
   double display_zoom_2;
   EXPECT_TRUE(property->GetDouble("display_zoom_factor", &display_zoom_2));
@@ -571,8 +565,8 @@ TEST_F(DisplayPrefsTest, BasicStores) {
 
   // Set new display's selected resolution.
   display_manager()->RegisterDisplayProperty(
-      id2 + 1, display::Display::ROTATE_0, 1.0f, nullptr, gfx::Size(500, 400),
-      1.0f, 1.0f, 60.f, false);
+      id2 + 1, display::Display::ROTATE_0, nullptr, gfx::Size(500, 400), 1.0f,
+      1.0f, 60.f, false);
 
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
 
@@ -594,8 +588,8 @@ TEST_F(DisplayPrefsTest, BasicStores) {
 
   // Set yet another new display's selected resolution.
   display_manager()->RegisterDisplayProperty(
-      id2 + 1, display::Display::ROTATE_0, 1.0f, nullptr, gfx::Size(500, 400),
-      1.0f, 1.0f, 60.f, false);
+      id2 + 1, display::Display::ROTATE_0, nullptr, gfx::Size(500, 400), 1.0f,
+      1.0f, 60.f, false);
   // Disconnect 2nd display first to generate new id for external display.
   UpdateDisplay("200x200*2");
   UpdateDisplay("200x200*2, 500x400#600x500|500x400%60.0f");

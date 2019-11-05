@@ -26,9 +26,11 @@ class Profile {
 
   virtual ~Profile() {}
 
-  // TODO: add parameters to control which time range gets deleted.
-  virtual void ClearBrowsingData(std::vector<BrowsingDataType> data_types,
-                                 base::OnceCallback<void()> callback) = 0;
+  virtual void ClearBrowsingData(
+      const std::vector<BrowsingDataType>& data_types,
+      base::Time from_time,
+      base::Time to_time,
+      base::OnceClosure callback) = 0;
 };
 
 }  // namespace weblayer

@@ -16,6 +16,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace chromecast {
@@ -46,9 +47,10 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
   }
 
  private:
-  CastExtensionURLLoader(network::mojom::URLLoaderRequest loader_request,
-                         network::mojom::URLLoaderClientPtr client)
-      : original_loader_binding_(this, std::move(loader_request)),
+  CastExtensionURLLoader(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
+      network::mojom::URLLoaderClientPtr client)
+      : original_loader_receiver_(this, std::move(loader_receiver)),
         original_client_(std::move(client)),
         network_client_binding_(this) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -148,7 +150,7 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
 
   // This is the URLLoader that was passed in to
   // CastExtensionURLLoaderFactory.
-  mojo::Binding<network::mojom::URLLoader> original_loader_binding_;
+  mojo::Receiver<network::mojom::URLLoader> original_loader_receiver_;
 
   // This is the URLLoaderClient that was passed in to
   // CastExtensionURLLoaderFactory. We'll send the data to it but not

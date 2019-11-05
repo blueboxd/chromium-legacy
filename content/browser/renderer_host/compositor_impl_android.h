@@ -29,6 +29,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -252,7 +253,7 @@ class CONTENT_EXPORT CompositorImpl
   bool has_submitted_frame_since_became_visible_ = false;
 
   // Viz-specific members for communicating with the display.
-  viz::mojom::DisplayPrivateAssociatedPtr display_private_;
+  mojo::AssociatedRemote<viz::mojom::DisplayPrivate> display_private_;
   std::unique_ptr<viz::HostDisplayClient> display_client_;
   bool vsync_paused_ = false;
 

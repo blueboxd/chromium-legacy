@@ -7,8 +7,8 @@
 ++++[entry] editable focusable selectable-text text-input-type:text
 ++++[push button] name='First image button in a form is a valid default button' focusable default
 ++++++[image]
-++++++[text] name='First image button in a form is a valid default button'
+++++++[static] name='First image button in a form is a valid default button'
 ++++[push button] name='Second image button in a form not a valid default button' focusable
 ++++++[image]
-++++++[text] name='Second image button in a form not a valid default button'
+++++++[static] name='Second image button in a form not a valid default button'
 ++[push button] name='Submit outside of form not a valid default button' focusable

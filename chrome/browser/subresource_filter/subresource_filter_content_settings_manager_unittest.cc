@@ -72,8 +72,6 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
   base::SimpleTestClock* test_clock() { return test_clock_; }
 
  private:
-  base::ScopedTempDir scoped_dir_;
-
   content::BrowserTaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
   TestingProfile testing_profile_;

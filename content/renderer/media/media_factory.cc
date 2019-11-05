@@ -619,7 +619,8 @@ media::DecoderFactory* MediaFactory::GetDecoderFactory() {
 media::mojom::RemoterFactory* MediaFactory::GetRemoterFactory() {
   if (!remoter_factory_) {
     DCHECK(remote_interfaces_);
-    remote_interfaces_->GetInterface(&remoter_factory_);
+    remote_interfaces_->GetInterface(
+        remoter_factory_.BindNewPipeAndPassReceiver());
   }
   return remoter_factory_.get();
 }

@@ -71,6 +71,7 @@
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "base/command_line.h"
@@ -243,6 +244,10 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::Authenticator>(base::BindRepeating(
       &RenderFrameHostImpl::GetAuthenticator, base::Unretained(host)));
 
+  map->Add<blink::mojom::QuicTransportConnector>(
+      base::BindRepeating(&RenderFrameHostImpl::CreateQuicTransportConnector,
+                          base::Unretained(host)));
+
   map->Add<blink::test::mojom::VirtualAuthenticatorManager>(
       base::BindRepeating(&RenderFrameHostImpl::GetVirtualAuthenticatorManager,
                           base::Unretained(host)));
@@ -377,6 +382,9 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       base::BindRepeating(&BindTextDetection));
   map->Add<blink::mojom::IDBFactory>(base::BindRepeating(
       &DedicatedWorkerHost::CreateIDBFactory, base::Unretained(host)));
+  map->Add<blink::mojom::QuicTransportConnector>(
+      base::BindRepeating(&DedicatedWorkerHost::CreateQuicTransportConnector,
+                          base::Unretained(host)));
 
 #if !defined(OS_ANDROID)
   map->Add<blink::mojom::SerialService>(base::BindRepeating(
@@ -425,6 +433,8 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host,
       base::BindRepeating(&BindTextDetection));
   map->Add<blink::mojom::IDBFactory>(base::BindRepeating(
       &SharedWorkerHost::CreateIDBFactory, base::Unretained(host)));
+  map->Add<blink::mojom::QuicTransportConnector>(base::BindRepeating(
+      &SharedWorkerHost::CreateQuicTransportConnector, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(
@@ -486,6 +496,10 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
 
   map->Add<shape_detection::mojom::TextDetection>(
       base::BindRepeating(&BindTextDetection));
+
+  map->Add<blink::mojom::QuicTransportConnector>(base::BindRepeating(
+      &ServiceWorkerProviderHost::CreateQuicTransportConnector,
+      base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(

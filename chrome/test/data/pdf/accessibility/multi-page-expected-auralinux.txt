@@ -2,7 +2,7 @@
 ++[document frame]
 ++++[landmark] name='Page 1'
 ++++++[paragraph]
-++++++++[text] name='Page 1'
+++++++++[static] name='Page 1'
 ++++[landmark] name='Page 2'
 ++++++[paragraph]
-++++++++[text] name='Page 2'
+++++++++[static] name='Page 2'

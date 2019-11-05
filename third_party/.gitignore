@@ -40,7 +40,7 @@
 /arcore-android-sdk/test-apks/arcore/*.apk
 /asan
 /auto/src
-/bazel/desugar/Desugar.jar
+/bazel/desugar/*.jar
 /bison
 /boringssl/src
 /bouncycastle/lib/

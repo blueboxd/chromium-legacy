@@ -320,8 +320,14 @@ TEST(HTTPParsersTest, ParseMultipartHeaders) {
   response.AddHttpHeaderField("foo", "bar");
   response.AddHttpHeaderField("range", "piyo");
   response.AddHttpHeaderField("content-length", "999");
+  response.AddHttpHeaderField("set-cookie", "a=1");
 
-  const char kData[] = "content-type: image/png\ncontent-length: 10\n\n";
+  const char kData[] =
+      "content-type: image/png\n"
+      "content-length: 10\n"
+      "set-cookie: x=2\n"
+      "set-cookie: y=3\n"
+      "\n";
   wtf_size_t end = 0;
   bool result =
       ParseMultipartHeadersFromBody(kData, strlen(kData), &response, &end);
@@ -332,6 +338,7 @@ TEST(HTTPParsersTest, ParseMultipartHeaders) {
   EXPECT_EQ("10", response.HttpHeaderField("content-length"));
   EXPECT_EQ("bar", response.HttpHeaderField("foo"));
   EXPECT_EQ(AtomicString(), response.HttpHeaderField("range"));
+  EXPECT_EQ("x=2, y=3", response.HttpHeaderField("set-cookie"));
 }
 
 TEST(HTTPParsersTest, ParseMultipartHeadersContentCharset) {

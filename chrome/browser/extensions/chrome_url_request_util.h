@@ -8,6 +8,7 @@
 #include <string>
 
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "ui/base/page_transition_types.h"
 
@@ -55,7 +56,7 @@ base::FilePath GetBundleResourcePath(
 // GetBundleResourcePath returns a valid path.
 void LoadResourceFromResourceBundle(
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     const base::FilePath& resource_relative_path,
     int resource_id,
     const std::string& content_security_policy,

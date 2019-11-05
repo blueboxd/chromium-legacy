@@ -970,7 +970,7 @@ bool ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
   if (!sync) {
     return false;
   }
-  ObserveServiceForSyncDisables(sync, profile->GetPrefs());
+  StartObserving(sync, profile->GetPrefs());
   return true;
 }
 
@@ -1018,13 +1018,13 @@ void ChromeMetricsServiceClient::OnHistoryDeleted() {
     ukm_service_->Purge();
 }
 
-void ChromeMetricsServiceClient::OnSyncPrefsChanged(bool must_purge) {
+void ChromeMetricsServiceClient::OnUkmAllowedStateChanged(bool must_purge) {
   if (!ukm_service_)
     return;
   if (must_purge) {
     ukm_service_->Purge();
-    ukm_service_->ResetClientState(ukm::ResetReason::kOnSyncPrefsChanged);
-  } else if (!SyncStateAllowsExtensionUkm()) {
+    ukm_service_->ResetClientState(ukm::ResetReason::kOnUkmAllowedStateChanged);
+  } else if (!IsUkmAllowedWithExtensionsForAllProfiles()) {
     ukm_service_->PurgeExtensions();
   }
 
@@ -1086,12 +1086,12 @@ void ChromeMetricsServiceClient::SetIsProcessRunningForTesting(
   g_is_process_running = func;
 }
 
-bool ChromeMetricsServiceClient::SyncStateAllowsUkm() {
-  return SyncDisableObserver::SyncStateAllowsUkm();
+bool ChromeMetricsServiceClient::IsUkmAllowedForAllProfiles() {
+  return UkmConsentStateObserver::IsUkmAllowedForAllProfiles();
 }
 
-bool ChromeMetricsServiceClient::SyncStateAllowsExtensionUkm() {
-  return SyncDisableObserver::SyncStateAllowsExtensionUkm();
+bool ChromeMetricsServiceClient::IsUkmAllowedWithExtensionsForAllProfiles() {
+  return UkmConsentStateObserver::IsUkmAllowedWithExtensionsForAllProfiles();
 }
 
 bool g_notification_listeners_failed = false;

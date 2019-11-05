@@ -10,12 +10,9 @@ namespace mojo {
 bool StructTraits<viz::mojom::HitTestRegionDataView, viz::HitTestRegion>::Read(
     viz::mojom::HitTestRegionDataView data,
     viz::HitTestRegion* out) {
-  if (!data.ReadFrameSinkId(&out->frame_sink_id))
-    return false;
-  if (!data.ReadRect(&out->rect))
-    return false;
-  if (!data.ReadTransform(&out->transform))
-    return false;
+  CHECK(data.ReadFrameSinkId(&out->frame_sink_id));
+  CHECK(data.ReadRect(&out->rect));
+  CHECK(data.ReadTransform(&out->transform));
   out->flags = data.flags();
   out->async_hit_test_reasons = data.async_hit_test_reasons();
   return true;
@@ -26,12 +23,9 @@ bool StructTraits<
     viz::mojom::HitTestRegionListDataView,
     viz::HitTestRegionList>::Read(viz::mojom::HitTestRegionListDataView data,
                                   viz::HitTestRegionList* out) {
-  if (!data.ReadRegions(&out->regions))
-    return false;
-  if (!data.ReadBounds(&out->bounds))
-    return false;
-  if (!data.ReadTransform(&out->transform))
-    return false;
+  CHECK(data.ReadRegions(&out->regions));
+  CHECK(data.ReadBounds(&out->bounds));
+  CHECK(data.ReadTransform(&out->transform));
   out->flags = data.flags();
   out->async_hit_test_reasons = data.async_hit_test_reasons();
   return true;

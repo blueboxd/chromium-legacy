@@ -74,7 +74,7 @@ void SVGEnumerationBase::Add(SVGPropertyBase*, SVGElement*) {
 }
 
 void SVGEnumerationBase::CalculateAnimatedValue(
-    const SVGAnimationElement& animation_element,
+    const SVGAnimateElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from,

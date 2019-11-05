@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.webapps.dependency_injection;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.CustomTabUmaRecorder;
 import org.chromium.chrome.browser.webapps.WebappActivityTabController;
 
 import dagger.Module;
@@ -31,5 +34,13 @@ public final class WebappActivityModule {
     public BrowserServicesActivityTabController provideTabController(
             WebappActivityTabController webappTabController) {
         return webappTabController;
+    }
+
+    @Nullable
+    @Provides
+    // TODO(crbug.com/1021201): Add bit to all metrics to record whether they are recorded from a
+    // WebappActivity.
+    public CustomTabUmaRecorder provideCustomTabUmaRecorder() {
+        return null;
     }
 }

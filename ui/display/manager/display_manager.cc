@@ -627,7 +627,6 @@ bool DisplayManager::SetDisplayMode(int64_t display_id,
 void DisplayManager::RegisterDisplayProperty(
     int64_t display_id,
     Display::Rotation rotation,
-    float ui_scale,
     const gfx::Insets* overscan_insets,
     const gfx::Size& resolution_in_pixels,
     float device_scale_factor,
@@ -646,26 +645,7 @@ void DisplayManager::RegisterDisplayProperty(
   info.SetRotation(rotation, Display::RotationSource::USER);
   info.SetRotation(rotation, Display::RotationSource::ACTIVE);
 
-  // TODO(malaykeshav|oshima): Remove this code in m71.
-  //
-  // We want to match the effective display resolution from what it was when
-  // ui scale was being used. This ensures that the users do not face any
-  // disruption after an update and/or when the display zoom feature is
-  // enabled. This also ensures that kiosk apps that have a ui scale set does
-  // not break when display zoom is enabled.
-  // NOTE - If the user tries to change the zoom level, they may not be able
-  // to come back to this zoom level again.
-
-  // We store a negative ui_scale value until m71.
-  // If |ui_scale| is negative, it means this is not the first boot with
-  // display zoom enabled, and hence we do not need to port the value for
-  // zoom scale from |ui_scale|.
-  if (ui_scale < 0) {
-    info.set_zoom_factor(display_zoom_factor);
-  } else {
-    info.set_zoom_factor(1.f / ui_scale);
-    info.set_is_zoom_factor_from_ui_scale(true);
-  }
+  info.set_zoom_factor(display_zoom_factor);
 
   if (overscan_insets)
     info.SetOverscanInsets(*overscan_insets);
@@ -690,16 +670,13 @@ bool DisplayManager::GetActiveModeForDisplayId(int64_t display_id,
   }
 
   // If 'selected' mode is empty, it should return the default mode. This means
-  // the native mode for the external display. Unfortunately this is not true
-  // for the internal display because restoring UI-scale doesn't register the
-  // restored mode to |display_mode_|, so it needs to look up the mode whose
-  // UI-scale value matches. See the TODO in RegisterDisplayProperty().
+  // the native mode for the external display, and the first one for internal.
   const ManagedDisplayInfo& info = GetDisplayInfo(display_id);
   const ManagedDisplayInfo::ManagedDisplayModeList& display_modes =
       info.display_modes();
 
   for (const auto& display_mode : display_modes) {
-    if (GetDisplayIdForUIScaling() == display_id) {
+    if (display::Display::IsInternalDisplayId(display_id)) {
       if (display_modes.size() == 1) {
         *mode = display_mode;
         return true;
@@ -745,10 +722,6 @@ void DisplayManager::SetSelectedModeForDisplayId(
   }
 
   display_modes_[display_id] = *iter;
-}
-
-bool DisplayManager::IsDisplayUIScalingEnabled() const {
-  return GetDisplayIdForUIScaling() != kInvalidDisplayId;
 }
 
 gfx::Insets DisplayManager::GetOverscanInsets(int64_t display_id) const {
@@ -1306,12 +1279,6 @@ std::string DisplayManager::GetDisplayNameForId(int64_t id) const {
     return iter->second.name();
 
   return base::StringPrintf("Display %d", static_cast<int>(id));
-}
-
-int64_t DisplayManager::GetDisplayIdForUIScaling() const {
-  // UI Scaling is effective on internal display.
-  return Display::HasInternalDisplay() ? Display::InternalDisplayId()
-                                       : kInvalidDisplayId;
 }
 
 bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
@@ -2048,30 +2015,6 @@ void DisplayManager::InsertAndUpdateDisplayInfo(
   if (it != display_info_.end()) {
     ManagedDisplayInfo* info = &(it->second);
     info->Copy(new_info);
-
-    // FHD devices with 1.25 DSF behave differently from other configuration.
-    // It uses 1.25 DSF for its display mode, only when the UI-Scale is set to
-    // 0.8. Which means that the rest of the display modes do not have a 1.25
-    // DSF. Instead they have a DSF of 1.
-    // The logic to convert a ui scale to the corresponding display zoom factor
-    // relies on the assumption that the DSF for all modes in an internal
-    // display is constant.
-    // In the case of a FHD 1.25 DSF device, when we are converting a ui scale
-    // to the corresponding display zoom scale, we assume a DSF of 1.25 for all
-    // non native display modes. This we now know is incorrect. The actual
-    // active DSF for all non native modes is 1. This means we have to offset
-    // the new net scale of |1.25 DSF * zoom_scale| such that it is equal to the
-    // old net scale of |1 DSF * 1/ui_scale| to get the correct one-to-one
-    // mapping. We know |zoom_scale = 1/ui_scale|, which means we have to offset
-    // the net scale by a factor of 1/1.25 to get the correct result.
-    // See https://crbug/845987 for more detailed info and explanation.
-    if (info->is_zoom_factor_from_ui_scale() &&
-        Display::IsInternalDisplayId(new_info.id()) &&
-        new_info.bounds_in_native().height() == 1080 &&
-        new_info.device_scale_factor() == 1.25f) {
-      info->set_zoom_factor(info->zoom_factor() * 0.8f);
-      info->set_is_zoom_factor_from_ui_scale(false);
-    }
   } else {
     display_info_[new_info.id()] = new_info;
     // Set from_native_platform to false so that all information

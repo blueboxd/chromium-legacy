@@ -38,6 +38,7 @@ def main():
       options.input_jar,
       '--output',
       options.output_jar,
+      '--generate_base_classes_for_default_methods',
       # Don't include try-with-resources files in every .jar. Instead, they
       # are included via //third_party/bazel/desugar:desugar_runtime_java.
       '--desugar_try_with_resources_omit_runtime_classes',

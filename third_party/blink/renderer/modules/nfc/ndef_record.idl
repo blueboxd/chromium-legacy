@@ -18,4 +18,5 @@
     readonly attribute USVString? encoding;
     readonly attribute USVString? lang;
     readonly attribute DataView? data;
+    [RaisesException] sequence<NDEFRecord>? toRecords();
 };

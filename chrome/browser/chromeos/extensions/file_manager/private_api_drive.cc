@@ -47,6 +47,7 @@
 #include "components/drive/chromeos/search_metadata.h"
 #include "components/drive/event_logger.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -235,7 +236,7 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
     DCHECK(!callback_.is_null());
 
     std::move(callback_).Run(std::move(properties_), result);
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
   }
 
   // Given parameters.
@@ -411,7 +412,7 @@ class SingleEntryPropertiesGetterForDriveFs {
 
     std::move(callback_).Run(std::move(properties_),
                              drive::FileErrorToBaseFileError(error));
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
   }
 
   // Given parameters.
@@ -500,7 +501,7 @@ class SingleEntryPropertiesGetterForDocumentsProvider {
     DCHECK(callback_);
 
     std::move(callback_).Run(std::move(properties_), error);
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
   }
 
   // Given parameters.

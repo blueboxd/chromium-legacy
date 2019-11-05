@@ -404,13 +404,18 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  DCHECK_EQ(webState, _webState.get());
+  if ([self shouldCancelPreloadForMimeType:webState->GetContentsMimeType()])
+    [self schedulePrerenderCancel];
+}
+
+- (void)webState:(web::WebState*)webState
     didLoadPageWithSuccess:(BOOL)loadSuccess {
   DCHECK_EQ(webState, _webState.get());
-  // Cancel prerendering if response is "application/octet-stream". It can be a
-  // video file which should not be played from preload tab. See issue at
-  // http://crbug.com/436813 for more details.
-  const std::string& mimeType = webState->GetContentsMimeType();
-  if (mimeType == "application/octet-stream")
+  // The load should have been cancelled when the navigation finishes, but this
+  // makes sure that we didn't miss one.
+  if ([self shouldCancelPreloadForMimeType:webState->GetContentsMimeType()])
     [self schedulePrerenderCancel];
 }
 
@@ -484,6 +489,16 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 }
 
 #pragma mark - Cancellation Helpers
+
+- (BOOL)shouldCancelPreloadForMimeType:(std::string)mimeType {
+  // Cancel prerendering if response is "application/octet-stream". It can be a
+  // video file which should not be played from preload tab. See issue at
+  // http://crbug.com/436813 for more details.
+  // On iOS 13, PDF are getting focused when loaded, preventing the user from
+  // typing in the omnibox. See crbug.com/1017352.
+  return mimeType == "application/octet-stream" ||
+         mimeType == "application/pdf";
+}
 
 - (void)removeScheduledPrerenderRequests {
   [NSObject cancelPreviousPerformRequestsWithTarget:self];

@@ -86,7 +86,7 @@ interface VideoEncodeAccelerator {
   // TODO(mcasas): Update to asynchronous, https://crbug.com/744210.
   [Sync]
   Initialize(VideoEncodeAcceleratorConfig config,
-             VideoEncodeAcceleratorClient client)
+             pending_remote<VideoEncodeAcceleratorClient> client)
       => (bool result);
 
   // Encodes a |frame|, being completely done with it after its callback.

@@ -175,6 +175,9 @@ enum class ContentSettingsType : int32_t {
   // inferred from e.g. last update check timestamp.
   INSTALLED_WEB_APP_METADATA,
 
+  // Used to store whether to allow a website to exchange data with NFC devices.
+  NFC,
+
   NUM_TYPES,
 };
 

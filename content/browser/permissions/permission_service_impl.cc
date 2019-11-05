@@ -107,6 +107,9 @@ bool PermissionDescriptorToPermissionType(
         return true;
       }
       break;
+    case PermissionName::NFC:
+      *permission_type = PermissionType::NFC;
+      return true;
   }
 
   NOTREACHED();

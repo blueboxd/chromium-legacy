@@ -492,7 +492,7 @@ void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
     // Note that while this is not a Sync IPC, the call to
     // InvalidateFrameSinkId below will end up triggering a sync call to
     // FrameSinkManager::DestroyCompositorFrameSink, as this is the root
-    // frame sink. Because |display_private_| is an associated interface to
+    // frame sink. Because |display_private_| is an associated remote to
     // FrameSinkManager, this subsequent sync call will ensure ordered
     // execution of this call.
     display_private_->ForceImmediateDrawAndSwapIfPossible();
@@ -827,10 +827,11 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient> client_receiver =
       root_params->compositor_frame_sink_client
           .InitWithNewPipeAndPassReceiver();
-  root_params->display_private = mojo::MakeRequest(&display_private_);
+  display_private_.reset();
+  root_params->display_private =
+      display_private_.BindNewEndpointAndPassReceiver();
   display_client_ = std::make_unique<AndroidHostDisplayClient>(this);
-  root_params->display_client =
-      display_client_->GetBoundPtr(task_runner).PassInterface();
+  root_params->display_client = display_client_->GetBoundRemote(task_runner);
 
   const auto& display_props =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);

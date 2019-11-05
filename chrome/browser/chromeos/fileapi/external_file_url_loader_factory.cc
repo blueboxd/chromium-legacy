@@ -24,8 +24,8 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
@@ -202,7 +202,7 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
   static void CreateAndStart(
       void* profile_id,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderRequest loader,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote) {
     // Owns itself. Will live as long as its URLLoader and URLLoaderClient
     // bindings are alive - essentially until either the client gives up or all
@@ -224,14 +224,13 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
  private:
   explicit ExternalFileURLLoader(
       void* profile_id,
-      network::mojom::URLLoaderRequest loader,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote)
-      : binding_(this),
-        resolver_(std::make_unique<ExternalFileResolver>(profile_id)) {
+      : resolver_(std::make_unique<ExternalFileResolver>(profile_id)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    binding_.Bind(std::move(loader));
-    binding_.set_connection_error_handler(base::BindOnce(
-        &ExternalFileURLLoader::OnConnectionError, base::Unretained(this)));
+    receiver_.Bind(std::move(loader));
+    receiver_.set_disconnect_handler(base::BindOnce(
+        &ExternalFileURLLoader::OnMojoDisconnect, base::Unretained(this)));
     client_.Bind(std::move(client_remote));
   }
   ~ExternalFileURLLoader() override = default;
@@ -312,19 +311,19 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
     MaybeDeleteSelf();
   }
 
-  void OnConnectionError() {
+  void OnMojoDisconnect() {
     data_producer_.reset();
     client_.reset();
-    binding_.Close();
+    receiver_.reset();
     MaybeDeleteSelf();
   }
 
   void MaybeDeleteSelf() {
-    if (!binding_.is_bound() && !client_.is_bound())
+    if (!receiver_.is_bound() && !client_.is_bound())
       delete this;
   }
 
-  mojo::Binding<network::mojom::URLLoader> binding_;
+  mojo::Receiver<network::mojom::URLLoader> receiver_{this};
   mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   std::unique_ptr<ExternalFileResolver> resolver_;

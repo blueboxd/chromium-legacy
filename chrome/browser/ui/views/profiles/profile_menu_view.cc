@@ -587,7 +587,8 @@ void ProfileMenuView::BuildSyncInfo() {
                             base::Unretained(this), account_info.value()));
   } else {
     SetSyncInfo(/*icon=*/gfx::ImageSkia(),
-                l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO),
+                l10n_util::GetStringUTF16(
+                    IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_WITH_NO_ACCOUNT),
                 l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
                 base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
                                     base::Unretained(this)));

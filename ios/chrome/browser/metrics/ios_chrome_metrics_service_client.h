@@ -20,7 +20,7 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/ukm/observers/history_delete_observer.h"
-#include "components/ukm/observers/sync_disable_observer.h"
+#include "components/ukm/observers/ukm_consent_state_observer.h"
 #import "ios/chrome/browser/metrics/incognito_web_state_observer.h"
 #include "ios/web/public/deprecated/global_web_state_observer.h"
 
@@ -45,7 +45,7 @@ class UkmService;
 class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
                                       public metrics::MetricsServiceClient,
                                       public ukm::HistoryDeleteObserver,
-                                      public ukm::SyncDisableObserver,
+                                      public ukm::UkmConsentStateObserver,
                                       public web::GlobalWebStateObserver {
  public:
   ~IOSChromeMetricsServiceClient() override;
@@ -76,15 +76,15 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
       override;
   base::TimeDelta GetStandardUploadInterval() override;
   void OnRendererProcessCrash() override;
-  bool SyncStateAllowsUkm() override;
+  bool IsUkmAllowedForAllProfiles() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
   std::string GetUploadSigningKey() override;
 
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;
 
-  // ukm::SyncDisableObserver:
-  void OnSyncPrefsChanged(bool must_purge) override;
+  // ukm::UkmConsentStateObserver:
+  void OnUkmAllowedStateChanged(bool must_purge) override;
 
   // web::GlobalWebStateObserver:
   void WebStateDidStartLoading(web::WebState* web_state) override;

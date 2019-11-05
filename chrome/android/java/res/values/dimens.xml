@@ -509,6 +509,9 @@
     <dimen name="circular_monogram_size">20dp</dimen>
     <dimen name="circular_monogram_text_size">14dp</dimen>
 
+    <!-- Contact Picker dimensions -->
+    <dimen name="contact_picker_icon_size">36dp</dimen>
+
     <!-- Photo Picker dimensions -->
     <dimen name="photo_picker_selected_padding">12dp</dimen>
     <dimen name="photo_picker_label_gap">10dp</dimen>

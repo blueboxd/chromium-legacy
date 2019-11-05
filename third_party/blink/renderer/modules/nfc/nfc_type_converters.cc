@@ -28,15 +28,21 @@ using device::mojom::blink::NDEFScanOptionsPtr;
 // Mojo type converters
 namespace mojo {
 
-NDEFRecordPtr TypeConverter<NDEFRecordPtr, ::blink::NDEFRecord*>::Convert(
-    const ::blink::NDEFRecord* record) {
-  return NDEFRecord::New(record->recordType(), record->mediaType(),
-                         record->id(), record->encoding(), record->lang(),
-                         record->payloadData());
+NDEFRecordPtr TypeConverter<NDEFRecordPtr, blink::NDEFRecord*>::Convert(
+    const blink::NDEFRecord* record) {
+  return NDEFRecord::New(
+      record->recordType(), record->mediaType(), record->id(),
+      record->encoding(), record->lang(), record->payloadData(),
+      TypeConverter<NDEFMessagePtr, blink::NDEFMessage*>::Convert(
+          record->payload_message()));
 }
 
-NDEFMessagePtr TypeConverter<NDEFMessagePtr, ::blink::NDEFMessage*>::Convert(
-    const ::blink::NDEFMessage* message) {
+NDEFMessagePtr TypeConverter<NDEFMessagePtr, blink::NDEFMessage*>::Convert(
+    const blink::NDEFMessage* message) {
+  // |message| may come from blink::NDEFRecord::payload_message() which is
+  // possible to be null for some "smart-poster" and external type records.
+  if (!message)
+    return nullptr;
   NDEFMessagePtr messagePtr = NDEFMessage::New();
   messagePtr->url = message->url();
   messagePtr->data.resize(message->records().size());

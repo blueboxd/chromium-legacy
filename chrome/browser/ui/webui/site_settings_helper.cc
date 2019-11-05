@@ -122,6 +122,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::WAKE_LOCK_SYSTEM, nullptr},
     {ContentSettingsType::LEGACY_COOKIE_ACCESS, nullptr},
     {ContentSettingsType::INSTALLED_WEB_APP_METADATA, nullptr},
+    {ContentSettingsType::NFC, nullptr},
 };
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.

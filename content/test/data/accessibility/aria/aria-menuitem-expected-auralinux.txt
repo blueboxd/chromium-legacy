@@ -3,6 +3,6 @@
 ++++[menu item] name='File'
 ++++[menu item] name='Edit'
 ++++[menu item] name='Complex menuitem'
-++++++[text] name='Complex '
+++++++[static] name='Complex '
 ++++++[entry] selectable-text
-++++++[text] name=' menuitem'
+++++++[static] name=' menuitem'

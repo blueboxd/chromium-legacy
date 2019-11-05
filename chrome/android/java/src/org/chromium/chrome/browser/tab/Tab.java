@@ -772,7 +772,7 @@ public class Tab {
      */
     protected void showRenderedPage() {
         updateTitle();
-        hideNativePage(true, null);
+        if (mNativePage != null) hideNativePage(true, null);
     }
 
     /**

@@ -1,3 +1,3 @@
 [document web]
 ++[panel] xml-roles:figure
-++++[text] name='Figure'
+++++[static] name='Figure'

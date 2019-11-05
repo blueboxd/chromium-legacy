@@ -239,7 +239,7 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
     auto blocked_time_since_last_swap =
         delegate_->GetGpuBlockedTimeSinceLastSwap();
 
-    if (!multiple_surfaces_swapped_) {
+    if (!blocked_time_since_last_swap.is_min() && !multiple_surfaces_swapped_) {
       static constexpr base::TimeDelta kTimingMetricsHistogramMin =
           base::TimeDelta::FromMicroseconds(5);
       static constexpr base::TimeDelta kTimingMetricsHistogramMax =

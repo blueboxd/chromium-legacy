@@ -22,17 +22,16 @@ class NDEFPushOptions;
 namespace mojo {
 
 template <>
-struct TypeConverter<device::mojom::blink::NDEFRecordPtr,
-                     ::blink::NDEFRecord*> {
+struct TypeConverter<device::mojom::blink::NDEFRecordPtr, blink::NDEFRecord*> {
   static device::mojom::blink::NDEFRecordPtr Convert(
-      const ::blink::NDEFRecord* record);
+      const blink::NDEFRecord* record);
 };
 
 template <>
 struct TypeConverter<device::mojom::blink::NDEFMessagePtr,
-                     ::blink::NDEFMessage*> {
+                     blink::NDEFMessage*> {
   static device::mojom::blink::NDEFMessagePtr Convert(
-      const ::blink::NDEFMessage* message);
+      const blink::NDEFMessage* message);
 };
 
 template <>

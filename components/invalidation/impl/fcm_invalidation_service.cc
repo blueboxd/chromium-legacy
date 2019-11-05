@@ -136,7 +136,7 @@ bool FCMInvalidationService::UpdateRegisteredInvalidationIds(
   if (!invalidator_registrar_.UpdateRegisteredTopics(handler, topics))
     return false;
   DoUpdateRegisteredIdsIfNeeded();
-  logger_.OnUpdateTopics(invalidator_registrar_.GetSanitizedHandlersIdsMap());
+  logger_.OnUpdateTopics(invalidator_registrar_.GetHandlerNameToTopicsMap());
   return true;
 }
 
@@ -318,7 +318,7 @@ void FCMInvalidationService::OnInstanceIdRecieved(const std::string& id) {
     DictionaryPrefUpdate update(pref_service_,
                                 prefs::kInvalidationClientIDCache);
     update->SetStringKey(sender_id_, id);
-    invalidator_registrar_.UpdateInvalidatorId(id);
+    invalidator_registrar_.UpdateInvalidatorInstanceId(id);
   }
 }
 
@@ -330,8 +330,8 @@ void FCMInvalidationService::OnDeleteIDCompleted(
 void FCMInvalidationService::DoUpdateRegisteredIdsIfNeeded() {
   if (!invalidation_listener_ || !update_was_requested_)
     return;
-  auto registered_ids = invalidator_registrar_.GetAllRegisteredIds();
-  invalidation_listener_->UpdateRegisteredTopics(registered_ids);
+  auto subscribed_topics = invalidator_registrar_.GetAllSubscribedTopics();
+  invalidation_listener_->UpdateRegisteredTopics(subscribed_topics);
   update_was_requested_ = false;
 }
 

@@ -59,6 +59,7 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::IDLE_DETECTION:
     case PermissionType::WAKE_LOCK_SCREEN:
     case PermissionType::WAKE_LOCK_SYSTEM:
+    case PermissionType::NFC:
     case PermissionType::NUM:
       return base::nullopt;
   }

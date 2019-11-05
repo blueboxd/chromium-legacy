@@ -1,7 +1,7 @@
 [document web]
 ++[section]
-++++[text] name='blockDisplay'
+++++[static] name='blockDisplay'
 ++[section]
-++++[text] name='blockDisplay Hiddenfalse'
+++++[static] name='blockDisplay Hiddenfalse'
 ++[section]
 ++[section] name='blockDisplay Hiddentruefocusable' hidden:true

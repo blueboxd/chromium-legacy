@@ -4719,6 +4719,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniUseBusterImageName,
      flag_descriptions::kCrostiniUseBusterImageDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseBusterImage)},
+    {"arc-application-zoom", flag_descriptions::kArcApplicationZoomName,
+     flag_descriptions::kArcApplicationZoomDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kEnableApplicationZoomFeature)},
 #endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

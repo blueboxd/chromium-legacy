@@ -888,8 +888,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetMainFrameResizesAreOrientationChanges(
       prefs.main_frame_resizes_are_orientation_changes);
 
-  settings->SetUseSolidColorScrollbars(prefs.use_solid_color_scrollbars);
-
   settings->SetShowContextMenuOnMouseUp(prefs.context_menu_on_mouse_up);
   settings->SetAlwaysShowContextMenuOnTouch(
       prefs.always_show_context_menu_on_touch);

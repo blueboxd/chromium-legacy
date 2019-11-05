@@ -151,7 +151,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
                 R.string.contacts_picker_no_contacts_found,
                 R.string.contacts_picker_no_contacts_found);
 
-        mPickerAdapter = new PickerAdapter(this, context.getContentResolver(), formattedOrigin);
+        mPickerAdapter = new PickerAdapter(this, context, formattedOrigin);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mPickerAdapter);
         int titleId = multiSelectionAllowed ? R.string.contacts_picker_select_contacts
                                             : R.string.contacts_picker_select_contact;

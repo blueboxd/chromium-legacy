@@ -195,7 +195,7 @@ public class CustomTabActivityTabController
         mTabFactory.getTabModelSelector().saveState();
     }
 
-    /** Returns {@link TabModelSelector}. Should be called after postInflationStartup. */
+    @Override
     public TabModelSelector getTabModelSelector() {
         return mTabFactory.getTabModelSelector();
     }

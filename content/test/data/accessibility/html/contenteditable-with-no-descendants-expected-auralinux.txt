@@ -3,4 +3,4 @@
 ++[section] description='description' editable selectable-text described-by
 ++[section] name='title' editable selectable-text
 ++[paragraph] description-for
-++++[text] name='description'
+++++[static] name='description'

@@ -1717,16 +1717,6 @@ HeapObjectHeader* NormalPage::ConservativelyFindHeaderFromAddress(
   return header;
 }
 
-HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
-  DCHECK(ContainedInObjectPayload(address));
-  DCHECK(!ArenaForNormalPage()->IsInCurrentAllocationPointRegion(address));
-  HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(
-      object_start_bit_map()->FindHeader(address));
-  DCHECK_LT(0u, header->GcInfoIndex());
-  DCHECK_GT(header->PayloadEnd(), address);
-  return header;
-}
-
 void NormalPage::CollectStatistics(
     ThreadState::Statistics::ArenaStatistics* arena_stats) {
   HeapObjectHeader* header = nullptr;

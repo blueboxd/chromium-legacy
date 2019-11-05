@@ -271,13 +271,13 @@ std::string GetAllProfilesValidityMapsEncodedString(const PrefService* prefs) {
 }
 
 void SetUserOptedInWalletSyncTransport(PrefService* prefs,
-                                       const std::string& account_id,
+                                       const CoreAccountId& account_id,
                                        bool opted_in) {
   // Get the hash of the account id. The hashing here is only a secondary bit of
   // obfuscation. The primary privacy guarantees are handled by clearing this
   // whenever cookies are cleared.
   std::string account_hash;
-  base::Base64Encode(crypto::SHA256HashString(account_id), &account_hash);
+  base::Base64Encode(crypto::SHA256HashString(account_id.id), &account_hash);
 
   DictionaryPrefUpdate update(prefs, prefs::kAutofillSyncTransportOptIn);
   int value = GetSyncTransportOptInBitFieldForAccount(prefs, account_hash);
@@ -300,10 +300,10 @@ void SetUserOptedInWalletSyncTransport(PrefService* prefs,
 }
 
 bool IsUserOptedInWalletSyncTransport(const PrefService* prefs,
-                                      const std::string& account_id) {
+                                      const CoreAccountId& account_id) {
   // Get the hash of the account id.
   std::string account_hash;
-  base::Base64Encode(crypto::SHA256HashString(account_id), &account_hash);
+  base::Base64Encode(crypto::SHA256HashString(account_id.id), &account_hash);
 
   // Return whether the wallet opt-in bit is set.
   return GetSyncTransportOptInBitFieldForAccount(prefs, account_hash) &

@@ -133,6 +133,12 @@ polymer_modulizer("icons") {
   html_type = "iron-iconset"
 }
 
+polymer_modulizer("search_highlight_style_css") {
+  js_file = "search_highlight_style_css.m.js"
+  html_file = "search_highlight_style_css.html"
+  html_type = "style-module"
+}
+
 js_modulizer("modulize") {
   input_files = [ "cr_container_shadow_behavior.js" ]
   deps = []
@@ -147,6 +153,7 @@ group("polymer3_elements") {
     ":icons_module",
     ":md_select_css_module",
     ":modulize",
+    ":search_highlight_style_css_module",
     ":shared_style_css_module",
     ":shared_vars_css_module",
     "cr_action_menu:cr_action_menu_module",

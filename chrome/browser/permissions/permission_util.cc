@@ -60,6 +60,8 @@ std::string PermissionUtil::GetPermissionString(
       return "WakeLockScreen";
     case ContentSettingsType::WAKE_LOCK_SYSTEM:
       return "WakeLockSystem";
+    case ContentSettingsType::NFC:
+      return "NFC";
     default:
       break;
   }
@@ -140,6 +142,8 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     *out = PermissionType::WAKE_LOCK_SCREEN;
   } else if (type == ContentSettingsType::WAKE_LOCK_SYSTEM) {
     *out = PermissionType::WAKE_LOCK_SYSTEM;
+  } else if (type == ContentSettingsType::NFC) {
+    *out = PermissionType::NFC;
   } else {
     return false;
   }
@@ -167,6 +171,9 @@ bool PermissionUtil::IsPermission(ContentSettingsType type) {
     case ContentSettingsType::PERIODIC_BACKGROUND_SYNC:
     case ContentSettingsType::WAKE_LOCK_SCREEN:
     case ContentSettingsType::WAKE_LOCK_SYSTEM:
+#if defined(OS_ANDROID)
+    case ContentSettingsType::NFC:
+#endif
       return true;
     default:
       return false;

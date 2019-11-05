@@ -37,6 +37,7 @@
 
 namespace blink {
 
+class CSSValue;
 class SVGTransformListTearOff;
 
 class SVGTransformList final
@@ -60,7 +61,7 @@ class SVGTransformList final
   bool Parse(const LChar*& ptr, const LChar* end);
 
   void Add(SVGPropertyBase*, SVGElement*) override;
-  void CalculateAnimatedValue(const SVGAnimationElement&,
+  void CalculateAnimatedValue(const SVGAnimateElement&,
                               float percentage,
                               unsigned repeat_count,
                               SVGPropertyBase* from_value,

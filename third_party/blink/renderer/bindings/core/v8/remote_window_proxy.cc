@@ -49,7 +49,8 @@ RemoteWindowProxy::RemoteWindowProxy(v8::Isolate* isolate,
     : WindowProxy(isolate, frame, std::move(world)) {}
 
 void RemoteWindowProxy::DisposeContext(Lifecycle next_status,
-                                       FrameReuseStatus) {
+                                       FrameReuseStatus,
+                                       v8::Context::DetachedWindowReason) {
   DCHECK(next_status == Lifecycle::kV8MemoryIsForciblyPurged ||
          next_status == Lifecycle::kGlobalObjectIsDetached ||
          next_status == Lifecycle::kFrameIsDetached ||

@@ -3174,4 +3174,25 @@ IN_PROC_BROWSER_TEST_P(NavigationUrlRewriteBrowserTest, RewriteToNoAccess) {
   }
 }
 
+// Update the fragment part of the URL while it is currently displaying an error
+// page. Regression test https://crbug.com/1018385
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+                       SameDocumentNavigationInErrorPage) {
+  WebContents* wc = shell()->web_contents();
+  NavigationHandleCommitObserver navigation_0(wc, GURL("about:srcdoc#0"));
+  NavigationHandleCommitObserver navigation_1(wc, GURL("about:srcdoc#1"));
+
+  // Big warning: about:srcdoc is not supposed to be valid browser-initiated
+  // main-frame navigation, it is currently blocked by the NavigationRequest.
+  // It is used here to reproduce bug https://crbug.com/1018385. Please avoid
+  // copying this kind of navigation in your own tests.
+  EXPECT_FALSE(NavigateToURL(shell(), GURL("about:srcdoc#0")));
+  EXPECT_FALSE(NavigateToURL(shell(), GURL("about:srcdoc#1")));
+
+  EXPECT_TRUE(navigation_0.has_committed());
+  EXPECT_TRUE(navigation_1.has_committed());
+  EXPECT_FALSE(navigation_0.was_same_document());
+  EXPECT_FALSE(navigation_1.was_same_document());
+}
+
 }  // namespace content

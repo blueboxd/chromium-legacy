@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -261,6 +262,26 @@ void ResourceResponse::AddHttpHeaderField(const AtomicString& name,
   HTTPHeaderMap::AddResult result = http_header_fields_.Add(name, value);
   if (!result.is_new_entry)
     result.stored_value->value = result.stored_value->value + ", " + value;
+}
+
+void ResourceResponse::AddHttpHeaderFieldWithMultipleValues(
+    const AtomicString& name,
+    const Vector<AtomicString>& values) {
+  if (values.IsEmpty())
+    return;
+
+  UpdateHeaderParsedState(name);
+
+  StringBuilder value_builder;
+  const auto it = http_header_fields_.Find(name);
+  if (it != http_header_fields_.end())
+    value_builder.Append(it->value);
+  for (const auto& value : values) {
+    if (!value_builder.IsEmpty())
+      value_builder.Append(", ");
+    value_builder.Append(value);
+  }
+  http_header_fields_.Set(name, value_builder.ToAtomicString());
 }
 
 void ResourceResponse::ClearHttpHeaderField(const AtomicString& name) {

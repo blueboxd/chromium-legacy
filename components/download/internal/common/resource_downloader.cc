@@ -169,10 +169,8 @@ void ResourceDownloader::Start(
           url_loader_client_.get(), mojo::MakeRequest(&url_loader_client_ptr));
 
   // Set up the URLLoader
-  network::mojom::URLLoaderRequest url_loader_request =
-      mojo::MakeRequest(&url_loader_);
   url_loader_factory_->CreateLoaderAndStart(
-      std::move(url_loader_request),
+      mojo::MakeRequest(&url_loader_),
       0,  // routing_id
       0,  // request_id
       network::mojom::kURLLoadOptionSendSSLInfoWithResponse,

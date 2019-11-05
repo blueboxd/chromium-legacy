@@ -1,0 +1,11 @@
+[embedded component]
+++[document frame]
+++++[landmark] name='Page 1'
+++++++[paragraph]
+++++++++[text] name='Case 1<newline>'
+++++++[paragraph]
+++++++++[text] name='Case 2<newline>'
+++++++[paragraph]
+++++++++[text] name='Case 3<newline>'
+++++++[paragraph]
+++++++++[text] name='Case 4'

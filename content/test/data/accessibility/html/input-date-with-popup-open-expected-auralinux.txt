@@ -4,20 +4,20 @@
 ++++++[section]
 ++++++++[section]
 ++++++++++[spin button] name='Month' current=9.000000 minimum=1.000000 maximum=12.000000
-++++++++++++[text] name='09'
-++++++++++[text] name='/'
+++++++++++++[static] name='09'
+++++++++++[static] name='/'
 ++++++++++[spin button] name='Day' current=1.000000 minimum=1.000000 maximum=31.000000
-++++++++++++[text] name='01'
-++++++++++[text] name='/'
+++++++++++++[static] name='01'
+++++++++++[static] name='/'
 ++++++++++[spin button] name='Year' current=2008.000000 minimum=1.000000 maximum=275760.000000
-++++++++++++[text] name='2008'
+++++++++++++[static] name='2008'
 ++++++[push button] name='Show date picker'
 ++++++[document web] controlled-by
 ++++++++[section]
 ++++++++++[section]
 ++++++++++++[section]
 ++++++++++++++[push button] name='Show month selection panel'
-++++++++++++++++[text] name='September 2008'
+++++++++++++++++[static] name='September 2008'
 ++++++++++++++++[document frame]
 ++++++++++++[push button] name='Show previous month'
 ++++++++++++++[document frame]
@@ -28,18 +28,18 @@
 ++++++++++++[table] cols=0 headers=(NONE); rows=0 headers=(NONE); caption=false; spans=(all: 1x1)
 ++++++++++++++[section]
 ++++++++++++++++[section]
-++++++++++++++++++[text] name='Sun'
+++++++++++++++++++[static] name='Sun'
 ++++++++++++++++[section]
-++++++++++++++++++[text] name='Mon'
+++++++++++++++++++[static] name='Mon'
 ++++++++++++++++[section]
-++++++++++++++++++[text] name='Tue'
+++++++++++++++++++[static] name='Tue'
 ++++++++++++++++[section]
-++++++++++++++++++[text] name='Wed'
+++++++++++++++++++[static] name='Wed'
 ++++++++++++++++[section]
-++++++++++++++++++[text] name='Thu'
+++++++++++++++++++[static] name='Thu'
 ++++++++++++++++[section]
-++++++++++++++++++[text] name='Fri'
+++++++++++++++++++[static] name='Fri'
 ++++++++++++++++[section]
-++++++++++++++++++[text] name='Sat'
+++++++++++++++++++[static] name='Sat'
 ++++++++++++++[section]
 ++++++++++++++++[section]

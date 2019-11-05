@@ -35,6 +35,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -58,7 +59,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
       uint32_t options,
       const network::ResourceRequest& request,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      network::mojom::URLLoaderRequest loader_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
       network::mojom::URLLoaderClientPtr client,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
       bool intercept_only);
@@ -108,7 +109,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void OnURLLoaderError(uint32_t custom_reason, const std::string& description);
 
   // Call OnComplete on |target_client_|. If |wait_for_loader_error| is true
-  // then this object will wait for |proxied_loader_binding_| to have a
+  // then this object will wait for |proxied_loader_receiver_| to have a
   // connection error before destructing.
   void CallOnComplete(const network::URLLoaderCompletionStatus& status,
                       bool wait_for_loader_error);
@@ -145,7 +146,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
 
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
-  mojo::Binding<network::mojom::URLLoader> proxied_loader_binding_;
+  mojo::Receiver<network::mojom::URLLoader> proxied_loader_receiver_;
   network::mojom::URLLoaderClientPtr target_client_;
 
   mojo::Binding<network::mojom::URLLoaderClient> proxied_client_binding_;
@@ -265,7 +266,7 @@ InterceptedRequest::InterceptedRequest(
     uint32_t options,
     const network::ResourceRequest& request,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    network::mojom::URLLoaderRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     network::mojom::URLLoaderClientPtr client,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
     bool intercept_only)
@@ -276,16 +277,15 @@ InterceptedRequest::InterceptedRequest(
       intercept_only_(intercept_only),
       request_(request),
       traffic_annotation_(traffic_annotation),
-      proxied_loader_binding_(this, std::move(loader_request)),
+      proxied_loader_receiver_(this, std::move(loader_receiver)),
       target_client_(std::move(client)),
       proxied_client_binding_(this),
       target_factory_(std::move(target_factory)) {
   // If there is a client error, clean up the request.
   target_client_.set_connection_error_handler(base::BindOnce(
       &InterceptedRequest::OnURLLoaderClientError, base::Unretained(this)));
-  proxied_loader_binding_.set_connection_error_with_reason_handler(
-      base::BindOnce(&InterceptedRequest::OnURLLoaderError,
-                     base::Unretained(this)));
+  proxied_loader_receiver_.set_disconnect_with_reason_handler(base::BindOnce(
+      &InterceptedRequest::OnURLLoaderError, base::Unretained(this)));
 }
 
 InterceptedRequest::~InterceptedRequest() {
@@ -595,7 +595,7 @@ void InterceptedRequest::FollowRedirect(
     target_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
 
   // If |OnURLLoaderClientError| was called then we're just waiting for the
-  // connection error handler of |proxied_loader_binding_|. Don't restart the
+  // connection error handler of |proxied_loader_receiver_|. Don't restart the
   // job since that'll create another URLLoader
   if (!target_client_)
     return;
@@ -672,13 +672,13 @@ void InterceptedRequest::CallOnComplete(
   if (target_client_)
     target_client_->OnComplete(status);
 
-  if (proxied_loader_binding_ && wait_for_loader_error) {
+  if (proxied_loader_receiver_.is_bound() && wait_for_loader_error) {
     // Since the original client is gone no need to continue loading the
     // request.
     proxied_client_binding_.Close();
     target_loader_.reset();
 
-    // Don't delete |this| yet, in case the |proxied_loader_binding_|'s
+    // Don't delete |this| yet, in case the |proxied_loader_receiver_|'s
     // error_handler is called with a reason to indicate an error which we want
     // to send to the client bridge. Also reset |target_client_| so we don't
     // get its error_handler called and then delete |this|.

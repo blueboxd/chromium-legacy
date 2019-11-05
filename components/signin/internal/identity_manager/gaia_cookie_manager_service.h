@@ -86,9 +86,11 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     GaiaCookieRequest& operator=(GaiaCookieRequest&&);
 
     GaiaCookieRequestType request_type() const { return request_type_; }
-    const std::vector<AccountIdGaiaIdPair>& accounts() const {
-      return accounts_;
-    }
+
+    // For use in the Request of type SET_ACCOUNTS.
+    const std::vector<AccountIdGaiaIdPair>& GetAccounts() const;
+    gaia::MultiloginMode GetMultiloginMode() const;
+
     // For use in the Request of type ADD_ACCOUNT which must have exactly one
     // account_id.
     const CoreAccountId GetAccountID();
@@ -109,27 +111,31 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     static GaiaCookieRequest CreateLogOutRequest(gaia::GaiaSource source);
     static GaiaCookieRequest CreateListAccountsRequest();
     static GaiaCookieRequest CreateSetAccountsRequest(
+        gaia::MultiloginMode mode,
         const std::vector<AccountIdGaiaIdPair>& account_ids,
         gaia::GaiaSource source,
         SetAccountsInCookieCompletedCallback callback);
 
    private:
+    // Parameters for the SET_ACCOUNTS requests.
+    struct SetAccountsParams {
+      SetAccountsParams();
+      SetAccountsParams(const SetAccountsParams& other);
+      ~SetAccountsParams();
+
+      gaia::MultiloginMode mode;
+      std::vector<AccountIdGaiaIdPair> accounts;
+    };
+
     GaiaCookieRequest(GaiaCookieRequestType request_type,
                       gaia::GaiaSource source);
-    GaiaCookieRequest(GaiaCookieRequestType request_type,
-                      const std::vector<AccountIdGaiaIdPair>& accounts,
-                      gaia::GaiaSource source,
-                      SetAccountsInCookieCompletedCallback callback);
-    GaiaCookieRequest(GaiaCookieRequestType request_type,
-                      const CoreAccountId& account_id,
-                      gaia::GaiaSource source,
-                      AddAccountToCookieCompletedCallback callback);
 
     GaiaCookieRequestType request_type_;
     // For use in the request of type ADD_ACCOUNT.
     CoreAccountId account_id_;
     // For use in the request of type SET_ACCOUNT.
-    std::vector<AccountIdGaiaIdPair> accounts_;
+    SetAccountsParams set_accounts_params_;
+
     gaia::GaiaSource source_;
 
     SetAccountsInCookieCompletedCallback
@@ -222,7 +228,8 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   // Takes list of account_ids and sets the cookie for these accounts regardless
   // of the current cookie state. Removes the accounts that are not in
   // account_ids and add the missing ones.
-  void SetAccountsInCookie(const std::vector<AccountIdGaiaIdPair>& account_ids,
+  void SetAccountsInCookie(gaia::MultiloginMode mode,
+                           const std::vector<AccountIdGaiaIdPair>& account_ids,
                            gaia::GaiaSource source,
                            SetAccountsInCookieCompletedCallback
                                set_accounts_in_cookies_completed_callback);

@@ -294,7 +294,7 @@ void LayoutNGBlockFlowMixin<Base>::Paint(const PaintInfo& paint_info) const {
     return;
   }
 
-  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentPaintEnabled())) {
+  if (RuntimeEnabledFeatures::LayoutNGFragmentPaintEnabled()) {
     if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
       NGBoxFragmentPainter(*fragment).Paint(paint_info);
       return;

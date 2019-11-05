@@ -37,10 +37,10 @@ import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
+import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.WebApkUma;
@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
@@ -82,6 +81,7 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
 
     private WebappInfo mWebappInfo;
 
+    private CustomTabToolbarCoordinator mToolbarCoordinator;
     private CustomTabActivityNavigationController mNavigationController;
     private WebappActivityTabController mTabController;
     private SplashController mSplashController;
@@ -339,7 +339,11 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
                 ChromeApplication.getComponent().createWebappActivityComponent(
                         commonsModule, webappModule);
         mTabController = component.resolveTabController();
+        mToolbarCoordinator = component.resolveToolbarCoordinator();
         mNavigationController = component.resolveNavigationController();
+
+        component.resolveCompositorContentInitializer();
+
         mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
         mNavigationController.setLandingPageOnCloseCriterion(
                 url -> WebappScopePolicy.isUrlInScope(scopePolicy(), getWebappInfo(), url));
@@ -351,16 +355,6 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
 
     @Override
     public void finishNativeInitialization() {
-        LayoutManager layoutDriver = new LayoutManager(getCompositorViewHolder());
-        initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
-                (ViewGroup) findViewById(android.R.id.content),
-                (ToolbarControlContainer) findViewById(R.id.control_container));
-        getToolbarManager().initializeWithNative(getTabModelSelector(),
-                getFullscreenManager().getBrowserVisibilityDelegate(), null, layoutDriver, null,
-                null, null, view -> onToolbarCloseButtonClicked());
-        getToolbarManager().setShowTitle(true);
-        getToolbarManager().setCloseButtonDrawable(null); // Hides close button.
-
         if (UsageStatsService.isEnabled() && !mWebappInfo.isSplashProvidedByWebApk()) {
             UsageStatsService.getInstance().createPageViewObserver(getTabModelSelector(), this);
         }
@@ -567,9 +561,7 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
                             scopePolicy(), mWebappInfo, navigation.getUrl());
                     if (!isNavigationInScope) {
                         // Briefly show the toolbar for off-scope navigations.
-                        getFullscreenManager()
-                                .getBrowserVisibilityDelegate()
-                                .showControlsTransient();
+                        mToolbarCoordinator.showToolbarTemporarily();
                     }
                     if (mWebappInfo.isForWebApk()) {
                         WebApkUma.recordNavigation(isNavigationInScope);
@@ -660,13 +652,6 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
         } else {
             getToolbarManager().setCloseButtonDrawable(null);
         }
-    }
-
-    /**
-     * Moves the user back in history to most recent on-origin location.
-     */
-    private void onToolbarCloseButtonClicked() {
-        mNavigationController.navigateOnClose();
     }
 
     private void updateTaskDescription() {

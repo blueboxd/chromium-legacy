@@ -32,6 +32,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -142,18 +144,18 @@ class DelayableRequest {
 class DelayedURLLoader : public network::mojom::URLLoader,
                          public DelayableRequest {
  public:
-  DelayedURLLoader(network::mojom::URLLoaderRequest request,
+  DelayedURLLoader(mojo::PendingReceiver<network::mojom::URLLoader> receiver,
                    network::mojom::URLLoaderClientPtr client,
                    int net_error,
                    bool should_delay,
                    DestructionCallback destruction_callback)
-      : binding_(this, std::move(request)),
+      : receiver_(this, std::move(receiver)),
         client_(std::move(client)),
         net_error_(net_error),
         should_delay_(should_delay),
         destruction_callback_(std::move(destruction_callback)) {
-    binding_.set_connection_error_handler(base::BindOnce(
-        &DelayedURLLoader::OnConnectionError, base::Unretained(this)));
+    receiver_.set_disconnect_handler(base::BindOnce(
+        &DelayedURLLoader::OnMojoDisconnect, base::Unretained(this)));
     if (!should_delay)
       SendResponse();
   }
@@ -180,7 +182,7 @@ class DelayedURLLoader : public network::mojom::URLLoader,
       std::move(destruction_callback_).Run(this);
   }
 
-  void OnConnectionError() { delete this; }
+  void OnMojoDisconnect() { delete this; }
 
   // mojom::URLLoader implementation:
   void FollowRedirect(const std::vector<std::string>& removed_headers,
@@ -191,7 +193,7 @@ class DelayedURLLoader : public network::mojom::URLLoader,
   void PauseReadingBodyFromNet() override {}
   void ResumeReadingBodyFromNet() override {}
 
-  mojo::Binding<network::mojom::URLLoader> binding_;
+  mojo::Receiver<network::mojom::URLLoader> receiver_;
   network::mojom::URLLoaderClientPtr client_;
   int net_error_;
   bool should_delay_;

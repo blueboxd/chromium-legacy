@@ -25,7 +25,7 @@
 #include "components/metrics/metrics_service_client.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/ukm/observers/history_delete_observer.h"
-#include "components/ukm/observers/sync_disable_observer.h"
+#include "components/ukm/observers/ukm_consent_state_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -46,7 +46,7 @@ class MetricsStateManager;
 class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
                                    public content::NotificationObserver,
                                    public ukm::HistoryDeleteObserver,
-                                   public ukm::SyncDisableObserver {
+                                   public ukm::UkmConsentStateObserver {
  public:
   ~ChromeMetricsServiceClient() override;
 
@@ -81,8 +81,8 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   bool IsReportingPolicyManaged() override;
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
   bool IsUMACellularUploadLogicEnabled() override;
-  bool SyncStateAllowsUkm() override;
-  bool SyncStateAllowsExtensionUkm() override;
+  bool IsUkmAllowedForAllProfiles() override;
+  bool IsUkmAllowedWithExtensionsForAllProfiles() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
   std::string GetAppPackageName() override;
   std::string GetUploadSigningKey() override;
@@ -92,8 +92,8 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;
 
-  // ukm::SyncDisableObserver:
-  void OnSyncPrefsChanged(bool must_purge) override;
+  // ukm::UkmConsentStateObserver:
+  void OnUkmAllowedStateChanged(bool must_purge) override;
 
   // Determine what to do with a file based on filename. Visible for testing.
   using IsProcessRunningFunction = bool (*)(base::ProcessId);

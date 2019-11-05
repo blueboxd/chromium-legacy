@@ -48,7 +48,7 @@ class UkmDebugDataExtractor;
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. This maps to the enum UkmResetReason.
 enum class ResetReason {
-  kOnSyncPrefsChanged = 0,
+  kOnUkmAllowedStateChanged = 0,
   kUpdatePermissions = 1,
   kMaxValue = kUpdatePermissions,
 };

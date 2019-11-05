@@ -8,7 +8,8 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 
 namespace viz {
@@ -18,7 +19,7 @@ class FakeDisplayClient : public mojom::DisplayClient {
   FakeDisplayClient();
   ~FakeDisplayClient() override;
 
-  mojom::DisplayClientPtr BindInterfacePtr();
+  mojo::PendingRemote<mojom::DisplayClient> BindRemote();
 
   // mojom::DisplayClient implementation.
 #if defined(OS_MACOSX)
@@ -36,7 +37,7 @@ class FakeDisplayClient : public mojom::DisplayClient {
 #endif
 
  private:
-  mojo::Binding<mojom::DisplayClient> binding_;
+  mojo::Receiver<mojom::DisplayClient> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeDisplayClient);
 };

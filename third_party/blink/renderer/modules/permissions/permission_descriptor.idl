@@ -22,6 +22,7 @@ enum PermissionName {
     "magnetometer",
     // "clipboard",
     "wake-lock",
+    "nfc",
 
     // Non-standard:
     "accessibility-events",

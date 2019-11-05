@@ -40,6 +40,7 @@ def main():
 
     dispatch_table = {
         'example': bind_gen.run_example,
+        'interface': bind_gen.generate_interfaces,
     }
 
     for task in tasks:

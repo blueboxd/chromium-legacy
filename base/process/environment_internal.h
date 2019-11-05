@@ -43,7 +43,7 @@ BASE_EXPORT std::unique_ptr<char*[]> AlterEnvironment(
 // extra terminating null character. So, e.g., the environment A=1 B=2 is
 // represented as L"A=1\0B=2\0\0".
 BASE_EXPORT NativeEnvironmentString
-AlterEnvironment(const char16* env, const EnvironmentMap& changes);
+AlterEnvironment(const wchar_t* env, const EnvironmentMap& changes);
 #endif  // OS_*
 
 }  // namespace internal

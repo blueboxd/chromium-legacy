@@ -52,11 +52,13 @@ namespace signin {
 OAuthMultiloginHelper::OAuthMultiloginHelper(
     SigninClient* signin_client,
     ProfileOAuth2TokenService* token_service,
+    gaia::MultiloginMode mode,
     const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>& accounts,
     const std::string& external_cc_result,
     base::OnceCallback<void(SetAccountsInCookieResult)> callback)
     : signin_client_(signin_client),
       token_service_(token_service),
+      mode_(mode),
       accounts_(accounts),
       external_cc_result_(external_cc_result),
       callback_(std::move(callback)) {
@@ -124,7 +126,7 @@ void OAuthMultiloginHelper::StartFetchingMultiLogin() {
   DCHECK_EQ(gaia_id_token_pairs_.size(), accounts_.size());
   gaia_auth_fetcher_ =
       signin_client_->CreateGaiaAuthFetcher(this, gaia::GaiaSource::kChrome);
-  gaia_auth_fetcher_->StartOAuthMultilogin(gaia_id_token_pairs_,
+  gaia_auth_fetcher_->StartOAuthMultilogin(mode_, gaia_id_token_pairs_,
                                            external_cc_result_);
 }
 

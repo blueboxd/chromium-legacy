@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/svg/svg_integer.h"
 
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
-#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -63,7 +63,7 @@ void SVGInteger::Add(SVGPropertyBase* other, SVGElement*) {
 }
 
 void SVGInteger::CalculateAnimatedValue(
-    const SVGAnimationElement& animation_element,
+    const SVGAnimateElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from,

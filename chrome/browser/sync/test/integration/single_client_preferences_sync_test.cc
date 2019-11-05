@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -11,6 +13,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/json_pref_store.h"
@@ -34,7 +37,33 @@ class SingleClientPreferencesSyncTest : public SyncTest {
 
   ~SingleClientPreferencesSyncTest() override {}
 
+  // If non-empty, |contents| will be written to the Preferences file of the
+  // profile at |index| before that Profile object is created.
+  void SetPreexistingPreferencesFileContents(int index,
+                                             const std::string& contents) {
+    preexisting_preferences_file_contents_[index] = contents;
+  }
+
+ protected:
+  void BeforeSetupClient(int index,
+                         const base::FilePath& profile_path) override {
+    const std::string& contents = preexisting_preferences_file_contents_[index];
+    if (contents.empty()) {
+      return;
+    }
+
+    base::FilePath pref_path(profile_path.Append(chrome::kPreferencesFilename));
+    ASSERT_TRUE(base::CreateDirectory(profile_path));
+    ASSERT_NE(-1,
+              base::WriteFile(pref_path, contents.c_str(), contents.size()));
+  }
+
  private:
+  // The contents to be written to a profile's Preferences file before the
+  // Profile object is created. If empty, no preexisting file will be written.
+  // The map key corresponds to the profile's index.
+  std::map<int, std::string> preexisting_preferences_file_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(SingleClientPreferencesSyncTest);
 };
 

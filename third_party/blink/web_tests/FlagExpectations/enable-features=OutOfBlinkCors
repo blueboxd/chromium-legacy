@@ -1,6 +1,6 @@
 # Tests that passes only with OOR-CORS, running at linux-oor-cors-rel bot.
 # Entries below are expected to revert relevant entries in NeverFixTests.
-# TODO(cbur.com/870173): Remove this file after the OOR-CORS launch.
+# TODO(cbur.com/1001450): Remove this file after the OOR-CORS launch.
 crbug.com/870173 external/wpt/fetch/sec-metadata/appcache.tentative.https.sub.html [ Pass ]
 crbug.com/870173 external/wpt/fetch/sec-metadata/redirect/redirect-http-upgrade.tentative.sub.html [ Pass ]
 crbug.com/870173 external/wpt/fetch/sec-metadata/redirect/multiple-redirect-https-downgrade-upgrade.tentative.sub.html [ Pass ]

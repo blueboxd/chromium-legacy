@@ -70,7 +70,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     uint32_t options,
     const network::ResourceRequest& request,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    network::mojom::URLLoaderRequest loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     network::mojom::URLLoaderClientPtr client)
     : factory_(factory),
       request_(request),
@@ -80,7 +80,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       routing_id_(routing_id),
       options_(options),
       traffic_annotation_(traffic_annotation),
-      proxied_loader_binding_(this, std::move(loader_request)),
+      proxied_loader_receiver_(this, std::move(loader_receiver)),
       target_client_(std::move(client)),
       proxied_client_binding_(this),
       current_response_(network::mojom::URLResponseHead::New()),
@@ -93,7 +93,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
       weak_factory_.GetWeakPtr(),
       network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
-  proxied_loader_binding_.set_connection_error_handler(base::BindOnce(
+  proxied_loader_receiver_.set_disconnect_handler(base::BindOnce(
       &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
       weak_factory_.GetWeakPtr(),
       network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
@@ -107,7 +107,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       request_(request),
       original_initiator_(request.request_initiator),
       request_id_(request_id),
-      proxied_loader_binding_(this),
+      proxied_loader_receiver_(this),
       proxied_client_binding_(this),
       for_cors_preflight_(true),
       has_any_extra_headers_listeners_(

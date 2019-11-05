@@ -157,7 +157,7 @@ void SVGStringListBase::Add(SVGPropertyBase* other,
   NOTREACHED();
 }
 
-void SVGStringListBase::CalculateAnimatedValue(const SVGAnimationElement&,
+void SVGStringListBase::CalculateAnimatedValue(const SVGAnimateElement&,
                                                float,
                                                unsigned,
                                                SVGPropertyBase*,

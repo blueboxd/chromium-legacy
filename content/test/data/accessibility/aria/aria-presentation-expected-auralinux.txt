@@ -1,2 +1,2 @@
 [document web]
-++[text] name='aria-role presentation'
+++[static] name='aria-role presentation'

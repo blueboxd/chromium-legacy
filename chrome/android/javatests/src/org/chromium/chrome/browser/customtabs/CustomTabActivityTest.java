@@ -918,7 +918,10 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         final OnFinishedForTest onFinished = new OnFinishedForTest(pi);
-        getActivity().getIntentDataProvider().setPendingIntentOnFinishedForTesting(onFinished);
+        getActivity()
+                .getComponent()
+                .resolveToolbarCoordinator()
+                .setCustomButtonPendingIntentOnFinishedForTesting(onFinished);
 
         View toolbarView = mCustomTabActivityTestRule.getActivity().findViewById(R.id.toolbar);
         Assert.assertTrue(
@@ -973,7 +976,10 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         // Forward the onFinished event to both objects.
-        getActivity().getIntentDataProvider().setPendingIntentOnFinishedForTesting(
+        getActivity()
+                .getComponent()
+                .resolveToolbarCoordinator()
+                .setCustomButtonPendingIntentOnFinishedForTesting(
                 (pendingIntent, openedIntent, resultCode, resultData, resultExtras) -> {
                     onFinished1.onSendFinished(
                             pendingIntent, openedIntent, resultCode, resultData, resultExtras);

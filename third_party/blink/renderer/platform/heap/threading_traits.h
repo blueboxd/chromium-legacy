@@ -16,9 +16,6 @@
 
 namespace blink {
 
-template <typename T>
-class SameThreadCheckedMember;
-
 // ThreadAffinity indicates which threads objects can be used on. We
 // distinguish between objects that can be used on the main thread
 // only and objects that can be used on any thread.
@@ -81,12 +78,6 @@ template <typename T>
 struct ThreadingTrait<Member<T>> {
   STATIC_ONLY(ThreadingTrait);
   static const ThreadAffinity kAffinity = ThreadingTrait<T>::kAffinity;
-};
-
-template <typename T>
-struct ThreadingTrait<SameThreadCheckedMember<T>> {
-  STATIC_ONLY(ThreadingTrait);
-  static const ThreadAffinity kAffinity = ThreadingTrait<T>::Affinity;
 };
 
 template <typename T>

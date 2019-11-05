@@ -513,6 +513,9 @@ TEST_F(ResourceBundleImageTest, LoadDataResourceString) {
 
   // Resource ID 8 is Gzip compressed, expect it to be uncompressed.
   EXPECT_EQ("this is id 8", resource_bundle->LoadDataResourceString(8));
+
+  // Resource ID 4 is plain text (not compressed), expect to return as-is.
+  EXPECT_EQ("this is id 4", resource_bundle->LoadDataResourceString(4));
 }
 
 TEST_F(ResourceBundleImageTest, GetRawDataResource) {

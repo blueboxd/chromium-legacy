@@ -2481,8 +2481,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kImageMap:
       return ATK_ROLE_IMAGE_MAP;
     case ax::mojom::Role::kInlineTextBox:
-      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
-      return ATK_ROLE_TEXT;
+      return kStaticRole;
     case ax::mojom::Role::kInputTime:
       return ATK_ROLE_DATE_EDITOR;
     case ax::mojom::Role::kLabelText:
@@ -2501,8 +2500,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kLineBreak:
       // TODO(Accessibility) Having a separate accessible object for line breaks
       // is inconsistent with other implementations. http://crbug.com/873144#c1.
-      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
-      return ATK_ROLE_TEXT;
+      return kStaticRole;
     case ax::mojom::Role::kLink:
       return ATK_ROLE_LINK;
     case ax::mojom::Role::kList:
@@ -2619,8 +2617,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
         default:
           break;
       }
-      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
-      return ATK_ROLE_TEXT;
+      return kStaticRole;
     }
     case ax::mojom::Role::kStatus:
       return ATK_ROLE_STATUSBAR;
@@ -3276,7 +3273,7 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
 bool AXPlatformNodeAuraLinux::EmitsAtkTextEvents() const {
   // If this node is not a static text node, it supports the full AtkText
   // interface.
-  if (GetAtkRole() != ATK_ROLE_TEXT)
+  if (GetAtkRole() != kStaticRole)
     return true;
 
   // If this node has children it is not a static text leaf node and supports

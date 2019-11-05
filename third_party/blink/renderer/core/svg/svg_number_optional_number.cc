@@ -99,7 +99,7 @@ void SVGNumberOptionalNumber::Add(SVGPropertyBase* other,
 }
 
 void SVGNumberOptionalNumber::CalculateAnimatedValue(
-    const SVGAnimationElement& animation_element,
+    const SVGAnimateElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from,

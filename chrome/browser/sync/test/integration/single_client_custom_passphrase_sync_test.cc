@@ -210,11 +210,14 @@ class SingleClientCustomPassphraseSyncTestWithUssTests
   DISALLOW_COPY_AND_ASSIGN(SingleClientCustomPassphraseSyncTestWithUssTests);
 };
 
-class SingleClientCustomPassphraseForceDisableScryptSyncTest
+class SingleClientCustomPassphraseForceDisableScryptDirectoryOnlySyncTest
     : public SingleClientCustomPassphraseSyncTest {
  public:
-  SingleClientCustomPassphraseForceDisableScryptSyncTest()
-      : features_(/*force_disabled=*/true, /*use_for_new_passphrases=*/false) {
+  SingleClientCustomPassphraseForceDisableScryptDirectoryOnlySyncTest()
+      : scrypt_features_(/*force_disabled=*/true,
+                         /*use_for_new_passphrases=*/false) {
+    override_features_.InitAndDisableFeature(switches::kSyncUSSNigori);
+
     // Creation of NigoriSpecifics with scrypt derivation method requires
     // |force_disabled| temporary set to false.
     ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
@@ -227,7 +230,8 @@ class SingleClientCustomPassphraseForceDisableScryptSyncTest
   const sync_pb::NigoriSpecifics& scrypt_nigori() { return scrypt_nigori_; }
 
  private:
-  ScopedScryptFeatureToggler features_;
+  ScopedScryptFeatureToggler scrypt_features_;
+  base::test::ScopedFeatureList override_features_;
   sync_pb::NigoriSpecifics scrypt_nigori_;
 };
 
@@ -386,8 +390,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   EXPECT_TRUE(WaitForClientBookmarkWithTitle("scypt-encrypted bookmark"));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseForceDisableScryptSyncTest,
-                       CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled) {
+IN_PROC_BROWSER_TEST_F(
+    SingleClientCustomPassphraseForceDisableScryptDirectoryOnlySyncTest,
+    CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled) {
   SetNigoriInFakeServer(GetFakeServer(), scrypt_nigori());
   SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
 

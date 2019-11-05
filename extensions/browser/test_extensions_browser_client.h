@@ -18,6 +18,7 @@
 #include "components/update_client/update_client.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/updater/extension_cache.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace extensions {
 class KioskDelegate;
@@ -87,7 +88,7 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
       int* resource_id) const override;
   void LoadResourceFromResourceBundle(
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderRequest loader,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
       const base::FilePath& resource_relative_path,
       int resource_id,
       const std::string& content_security_policy,

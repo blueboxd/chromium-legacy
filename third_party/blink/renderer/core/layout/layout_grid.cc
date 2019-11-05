@@ -319,6 +319,7 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
 
     // 2- Next, the track sizing algorithm resolves the sizes of the grid rows,
     // using the grid column sizes calculated in the previous step.
+    bool recompute_with_track_based_height = false;
     if (CachedHasDefiniteLogicalHeight()) {
       ComputeTrackSizesForDefiniteSize(
           kForRows, AvailableLogicalHeight(kExcludeMarginBorderPadding));
@@ -327,13 +328,14 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
                                        OverrideIntrinsicContentLogicalHeight());
     } else {
       ComputeTrackSizesForIndefiniteSize(track_sizing_algorithm_, kForRows);
+      if (ShouldApplySizeContainment())
+        recompute_with_track_based_height = true;
     }
     LayoutUnit track_based_logical_height =
         track_sizing_algorithm_.ComputeTrackBasedSize() +
         BorderAndPaddingLogicalHeight();
-    if (!CachedHasDefiniteLogicalHeight() && ShouldApplySizeContainment()) {
+    if (recompute_with_track_based_height)
       ComputeTrackSizesForDefiniteSize(kForRows, track_based_logical_height);
-    }
 
     // TODO(rego): We shouldn't need this once crbug.com/906530 is fixed.
     // Right now we need this because
@@ -582,9 +584,9 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
     base::Optional<LayoutUnit> available_size) const {
   DCHECK(!available_size || available_size.value() != -1);
   bool is_row_axis = direction == kForColumns;
-  // TODO(vmpstr): If we have available_size or min-size specified (as
-  // determined below), then should still repeat tracks to fill the available
-  // space.
+  // Since auto-fit collapses empty tracks, and contain: size dictates that
+  // children should be ignored for the purposes of layout, we can conclude that
+  // if these conditions hold we have 0 repetitions.
   if (ShouldApplySizeContainment() &&
       ((is_row_axis &&
         StyleRef().GridAutoRepeatColumnsType() == AutoRepeatType::kAutoFit) ||
@@ -646,11 +648,10 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
               : AdjustContentBoxLogicalHeightForBoxSizing(min_size_value);
     }
 
-    // We can treat the intrinsic-size similar to min-size when filling the
-    // remainder of space. That is, we should fill the intrinsic size fully.
-    // TODO(vmpstr): What happens in cases where max_size is specified but is
-    // smaller than min_size? The grid container would be sized to min_size but
-    // needs_to_fulfill_minimum_size below would be false.
+    // See https://drafts.csswg.org/css-grid/#auto-repeat for explanation of why
+    // we use needs_to_fulfill_minimum_size. Note that we can treat the
+    // intrinsic-size similar to min-size when filling the remainder of space.
+    // That is, we should fill the intrinsic size fully.
     if (!max_size.IsSpecified() &&
         (min_size.IsSpecified() || intrinsic_size_override)) {
       needs_to_fulfill_minimum_size = true;

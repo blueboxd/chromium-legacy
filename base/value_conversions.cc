@@ -92,20 +92,11 @@ bool GetValueAsUnguessableToken(const Value& value, UnguessableToken* token) {
     return false;
   }
 
-  // TODO(dcheng|yucliu): Make a function that accepts non vector variant and
-  // reads a fixed number of bytes.
-  std::vector<uint8_t> high_low_bytes;
-  if (!HexStringToBytes(value.GetString(), &high_low_bytes)) {
-    return false;
-  }
-
   UnguessableTokenRepresentation representation;
-  if (high_low_bytes.size() != sizeof(representation.buffer)) {
+  if (!HexStringToSpan(value.GetString(), representation.buffer)) {
     return false;
   }
 
-  std::copy(high_low_bytes.begin(), high_low_bytes.end(),
-            std::begin(representation.buffer));
   *token = UnguessableToken::Deserialize(representation.field.high,
                                          representation.field.low);
   return true;

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/component_export.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/base/file_mojom_traits.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
@@ -17,6 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/request_priority.h"
+#include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/network_isolation_key_mojom_traits.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -96,6 +98,22 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     return request.isolated_world_origin;
   }
   static const GURL& referrer(const network::ResourceRequest& request) {
+    // TODO(crbug.com/912680, crbug.com/1020592): Move this back to
+    // NetworkServiceNetworkDelegate when the current cause of referrer
+    // mismatches is found.
+    if (request.referrer != net::URLRequestJob::ComputeReferrerForPolicy(
+                                request.referrer_policy, request.referrer,
+                                request.request_initiator, request.url)) {
+      // Record information to help debug issues like http://crbug.com/422871.
+      if (request.url.SchemeIsHTTPOrHTTPS()) {
+        auto referrer_policy = request.referrer_policy;
+        base::debug::Alias(&referrer_policy);
+        DEBUG_ALIAS_FOR_GURL(target_buf, request.url);
+        DEBUG_ALIAS_FOR_GURL(referrer_buf, request.referrer);
+        base::debug::DumpWithoutCrashing();
+      }
+    }
+
     return request.referrer;
   }
   static net::URLRequest::ReferrerPolicy referrer_policy(

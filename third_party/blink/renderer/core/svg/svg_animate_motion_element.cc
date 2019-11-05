@@ -144,21 +144,18 @@ static bool ParsePoint(const String& string, FloatPoint& point) {
 
 void SVGAnimateMotionElement::ResetAnimatedType() {
   SVGElement* target_element = targetElement();
-  if (!target_element || !TargetCanHaveMotionTransform(*target_element))
-    return;
-  if (AffineTransform* transform = target_element->AnimateMotionTransform())
-    transform->MakeIdentity();
+  DCHECK(target_element);
+  DCHECK(TargetCanHaveMotionTransform(*target_element));
+  AffineTransform* transform = target_element->AnimateMotionTransform();
+  DCHECK(transform);
+  transform->MakeIdentity();
 }
 
 void SVGAnimateMotionElement::ClearAnimatedType() {
   SVGElement* target_element = targetElement();
-  if (!target_element)
-    return;
-
+  DCHECK(target_element);
   AffineTransform* transform = target_element->AnimateMotionTransform();
-  if (!transform)
-    return;
-
+  DCHECK(transform);
   transform->MakeIdentity();
 
   if (LayoutObject* target_layout_object = target_element->GetLayoutObject())
@@ -201,8 +198,7 @@ void SVGAnimateMotionElement::CalculateAnimatedValue(float percentage,
   SVGElement* target_element = targetElement();
   DCHECK(target_element);
   AffineTransform* transform = target_element->AnimateMotionTransform();
-  if (!transform)
-    return;
+  DCHECK(transform);
 
   if (!IsAdditive())
     transform->MakeIdentity();
@@ -257,12 +253,9 @@ void SVGAnimateMotionElement::ApplyResultsToTarget() {
   // We accumulate to the target element transform list so there is not much to
   // do here.
   SVGElement* target_element = targetElement();
-  if (!target_element)
-    return;
-
+  DCHECK(target_element);
   AffineTransform* target_transform = target_element->AnimateMotionTransform();
-  if (!target_transform)
-    return;
+  DCHECK(target_transform);
 
   if (LayoutObject* target_layout_object = target_element->GetLayoutObject())
     InvalidateForAnimateMotionTransformChange(*target_layout_object);
@@ -273,8 +266,7 @@ void SVGAnimateMotionElement::ApplyResultsToTarget() {
     DCHECK(shadow_tree_element);
     AffineTransform* shadow_transform =
         shadow_tree_element->AnimateMotionTransform();
-    if (!shadow_transform)
-      continue;
+    DCHECK(shadow_transform);
     shadow_transform->SetTransform(*target_transform);
     if (LayoutObject* layout_object = shadow_tree_element->GetLayoutObject())
       InvalidateForAnimateMotionTransformChange(*layout_object);

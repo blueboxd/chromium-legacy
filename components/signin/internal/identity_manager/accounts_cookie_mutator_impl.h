@@ -41,7 +41,7 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
       AddAccountToCookieCompletedCallback completion_callback) override;
 
   void SetAccountsInCookie(
-      const std::vector<CoreAccountId>& account_ids,
+      const MultiloginParameters& parameters,
       gaia::GaiaSource source,
       base::OnceCallback<void(SetAccountsInCookieResult)>
           set_accounts_in_cookies_completed_callback) override;

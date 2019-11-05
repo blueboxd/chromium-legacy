@@ -87,7 +87,7 @@ class SVGPreserveAspectRatio final
   bool Parse(const LChar*& ptr, const LChar* end, bool validate);
 
   void Add(SVGPropertyBase*, SVGElement*) override;
-  void CalculateAnimatedValue(const SVGAnimationElement&,
+  void CalculateAnimatedValue(const SVGAnimateElement&,
                               float percentage,
                               unsigned repeat_count,
                               SVGPropertyBase* from,

@@ -4,8 +4,8 @@
 ++++++[section]
 ++++++++[section]
 ++++++++++[spin button] name='Month' valuetext:0 current=0.000000 minimum=1.000000 maximum=12.000000
-++++++++++++[text] name='---------'
-++++++++++[text] name=' '
+++++++++++++[static] name='---------'
+++++++++++[static] name=' '
 ++++++++++[spin button] name='Year' valuetext:0 current=0.000000 minimum=1.000000 maximum=275760.000000
-++++++++++++[text] name='----'
+++++++++++++[static] name='----'
 ++++++[push button] name='Show date picker' haspopup:menu

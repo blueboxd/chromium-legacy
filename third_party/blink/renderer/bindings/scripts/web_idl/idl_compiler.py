@@ -46,15 +46,13 @@ class IdlCompiler(object):
     Note that an old IR for 'x' remains internally.  See IRMap for the details.
     """
 
-    def __init__(self, ir_map, ref_to_idl_def_factory, ref_to_idl_type_factory,
-                 idl_type_factory, report_error):
+    def __init__(self, ir_map, ref_to_idl_def_factory, idl_type_factory,
+                 report_error):
         """
         Args:
             ir_map: IRMap filled with the initial IRs of IDL definitions.
             ref_to_idl_def_factory: RefByIdFactory that created all references
                 to UserDefinedType.
-            ref_to_idl_type_factory: RefByIdFactory that created all references
-                to IdlType.
             idl_type_factory: IdlTypeFactory that created all instances of
                 IdlType.
             report_error: A callback that will be invoked when an error occurs
@@ -64,12 +62,10 @@ class IdlCompiler(object):
         """
         assert isinstance(ir_map, IRMap)
         assert isinstance(ref_to_idl_def_factory, RefByIdFactory)
-        assert isinstance(ref_to_idl_type_factory, RefByIdFactory)
         assert isinstance(idl_type_factory, IdlTypeFactory)
         assert callable(report_error)
         self._ir_map = ir_map
         self._ref_to_idl_def_factory = ref_to_idl_def_factory
-        self._ref_to_idl_type_factory = ref_to_idl_type_factory
         self._idl_type_factory = idl_type_factory
         self._report_error = report_error
         self._db = DatabaseBody()
@@ -415,7 +411,7 @@ class IdlCompiler(object):
                 assert False
             ref.set_target_object(idl_type)
 
-        self._ref_to_idl_type_factory.for_each(resolve)
+        self._idl_type_factory.for_each_reference(resolve)
 
     def _create_public_unions(self):
         all_union_types = []  # all instances of UnionType

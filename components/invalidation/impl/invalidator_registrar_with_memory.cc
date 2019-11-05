@@ -73,6 +73,7 @@ InvalidatorRegistrarWithMemory::InvalidatorRegistrarWithMemory(
     update->SetKey(sender_id_, base::DictionaryValue());
     return;
   }
+  // Restore |handler_name_to_subscribed_topics_map_| from prefs.
   for (const auto& it : pref_data->DictItems()) {
     Topic topic = it.first;
     if (it.second.is_dict()) {
@@ -81,20 +82,20 @@ InvalidatorRegistrarWithMemory::InvalidatorRegistrarWithMemory(
       if (!handler || !is_public) {
         continue;
       }
-      handler_name_to_topics_map_[handler->GetString()].emplace(
+      handler_name_to_subscribed_topics_map_[handler->GetString()].emplace(
           topic, TopicMetadata{is_public->GetBool()});
     } else if (it.second.is_string()) {
       std::string handler_name;
       it.second.GetAsString(&handler_name);
-      handler_name_to_topics_map_[handler_name].emplace(topic,
-                                                        TopicMetadata{false});
+      handler_name_to_subscribed_topics_map_[handler_name].emplace(
+          topic, TopicMetadata{false});
     }
   }
 }
 
 InvalidatorRegistrarWithMemory::~InvalidatorRegistrarWithMemory() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK(handler_to_topics_map_.empty());
+  CHECK(registered_handler_to_topics_map_.empty());
 }
 
 void InvalidatorRegistrarWithMemory::RegisterHandler(
@@ -111,9 +112,10 @@ void InvalidatorRegistrarWithMemory::UnregisterHandler(
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
   handlers_.RemoveObserver(handler);
-  handler_to_topics_map_.erase(handler);
-  // Note: Do *not* remove the entry from |handler_name_to_topics_map_| so that
-  // GetAllRegisteredIds() still returns the registered topics.
+  registered_handler_to_topics_map_.erase(handler);
+  // Note: Do *not* remove the entry from
+  // |handler_name_to_subscribed_topics_map_| so that GetAllSubscribedTopics()
+  // still returns the registered topics.
 }
 
 bool InvalidatorRegistrarWithMemory::IsHandlerRegistered(
@@ -135,9 +137,9 @@ bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
 
   if (success) {
     if (topics.empty()) {
-      handler_to_topics_map_.erase(handler);
+      registered_handler_to_topics_map_.erase(handler);
     } else {
-      handler_to_topics_map_[handler] = topics;
+      registered_handler_to_topics_map_[handler] = topics;
     }
   }
 
@@ -149,21 +151,21 @@ bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
   }
 
   // TODO(treib): This seems inconsistent - if there's a duplicate, we don't
-  // update |handler_to_topics_map_| but we *do* still update
-  // |handler_name_to_topics_map_| and the prefs?!
+  // update |registered_handler_to_topics_map_| but we *do* still update
+  // |handler_name_to_subscribed_topics_map_| and the prefs?!
 
   DictionaryPrefUpdate update(local_state_, kTopicsToHandler);
   base::Value* pref_data = update->FindDictKey(sender_id_);
   auto to_unregister = FindRemovedTopics(old_topics, topics);
-  if (!to_unregister.empty()) {
-    for (const auto& topic : to_unregister) {
-      pref_data->RemoveKey(topic);
-      handler_name_to_topics_map_[handler->GetOwnerName()].erase(topic);
-    }
+  for (const auto& topic : to_unregister) {
+    pref_data->RemoveKey(topic);
+    handler_name_to_subscribed_topics_map_[handler->GetOwnerName()].erase(
+        topic);
   }
 
   for (const auto& topic : topics) {
-    handler_name_to_topics_map_[handler->GetOwnerName()].insert(topic);
+    handler_name_to_subscribed_topics_map_[handler->GetOwnerName()].insert(
+        topic);
     base::DictionaryValue handler_pref;
     handler_pref.SetStringKey(kHandler, handler->GetOwnerName());
     handler_pref.SetBoolKey(kIsPublic, topic.second.is_public);
@@ -175,13 +177,14 @@ bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
 Topics InvalidatorRegistrarWithMemory::GetRegisteredTopics(
     InvalidationHandler* handler) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  auto lookup = handler_to_topics_map_.find(handler);
-  return lookup != handler_to_topics_map_.end() ? lookup->second : Topics();
+  auto lookup = registered_handler_to_topics_map_.find(handler);
+  return lookup != registered_handler_to_topics_map_.end() ? lookup->second
+                                                           : Topics();
 }
 
-Topics InvalidatorRegistrarWithMemory::GetAllRegisteredIds() const {
+Topics InvalidatorRegistrarWithMemory::GetAllSubscribedTopics() const {
   Topics registered_topics;
-  for (const auto& handler_to_topic : handler_name_to_topics_map_) {
+  for (const auto& handler_to_topic : handler_name_to_subscribed_topics_map_) {
     registered_topics.insert(handler_to_topic.second.begin(),
                              handler_to_topic.second.end());
   }
@@ -196,18 +199,15 @@ void InvalidatorRegistrarWithMemory::DispatchInvalidationsToHandlers(
     return;
   }
 
-  for (const auto& handler_and_topics : handler_to_topics_map_) {
-    TopicInvalidationMap to_emit =
+  for (const auto& handler_and_topics : registered_handler_to_topics_map_) {
+    TopicInvalidationMap topics_to_emit =
         invalidation_map.GetSubsetWithTopics(handler_and_topics.second);
-    ObjectIdInvalidationMap object_ids_to_emit;
-    std::vector<syncer::Invalidation> invalidations;
-    to_emit.GetAllInvalidations(&invalidations);
-    for (const auto& invalidation : invalidations) {
-      object_ids_to_emit.Insert(invalidation);
+    if (topics_to_emit.Empty()) {
+      continue;
     }
-    if (!to_emit.Empty()) {
-      handler_and_topics.first->OnIncomingInvalidation(object_ids_to_emit);
-    }
+    ObjectIdInvalidationMap object_ids_to_emit =
+        ConvertTopicInvalidationMapToObjectIdInvalidationMap(topics_to_emit);
+    handler_and_topics.first->OnIncomingInvalidation(object_ids_to_emit);
   }
 }
 
@@ -226,20 +226,21 @@ InvalidatorState InvalidatorRegistrarWithMemory::GetInvalidatorState() const {
   return state_;
 }
 
-void InvalidatorRegistrarWithMemory::UpdateInvalidatorId(
-    const std::string& id) {
+void InvalidatorRegistrarWithMemory::UpdateInvalidatorInstanceId(
+    const std::string& instance_id) {
   for (auto& observer : handlers_)
-    observer.OnInvalidatorClientIdChange(id);
+    observer.OnInvalidatorClientIdChange(instance_id);
 }
 
 std::map<std::string, Topics>
-InvalidatorRegistrarWithMemory::GetSanitizedHandlersIdsMap() {
+InvalidatorRegistrarWithMemory::GetHandlerNameToTopicsMap() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::map<std::string, Topics> clean_handlers_to_topics;
-  for (const auto& handler_and_topics : handler_to_topics_map_)
-    clean_handlers_to_topics[handler_and_topics.first->GetOwnerName()] =
-        Topics(handler_and_topics.second);
-  return clean_handlers_to_topics;
+  std::map<std::string, Topics> names_to_topics;
+  for (const auto& handler_and_topics : registered_handler_to_topics_map_) {
+    names_to_topics[handler_and_topics.first->GetOwnerName()] =
+        handler_and_topics.second;
+  }
+  return names_to_topics;
 }
 
 void InvalidatorRegistrarWithMemory::RequestDetailedStatus(
@@ -251,7 +252,7 @@ void InvalidatorRegistrarWithMemory::RequestDetailedStatus(
 bool InvalidatorRegistrarWithMemory::HasDuplicateTopicRegistration(
     InvalidationHandler* handler,
     const Topics& topics) const {
-  for (const auto& handler_and_topics : handler_to_topics_map_) {
+  for (const auto& handler_and_topics : registered_handler_to_topics_map_) {
     if (handler_and_topics.first == handler) {
       continue;
     }
@@ -270,8 +271,8 @@ bool InvalidatorRegistrarWithMemory::HasDuplicateTopicRegistration(
 base::DictionaryValue InvalidatorRegistrarWithMemory::CollectDebugData() const {
   base::DictionaryValue return_value;
   return_value.SetInteger("InvalidatorRegistrarWithMemory.Handlers",
-                          handler_name_to_topics_map_.size());
-  for (const auto& handler_to_topics : handler_name_to_topics_map_) {
+                          handler_name_to_subscribed_topics_map_.size());
+  for (const auto& handler_to_topics : handler_name_to_subscribed_topics_map_) {
     const std::string& handler = handler_to_topics.first;
     for (const auto& topic : handler_to_topics.second) {
       return_value.SetString("InvalidatorRegistrarWithMemory." + topic.first,

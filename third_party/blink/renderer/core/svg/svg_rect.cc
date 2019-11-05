@@ -21,7 +21,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_rect.h"
 
-#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -95,7 +95,7 @@ void SVGRect::Add(SVGPropertyBase* other, SVGElement*) {
 }
 
 void SVGRect::CalculateAnimatedValue(
-    const SVGAnimationElement& animation_element,
+    const SVGAnimateElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,

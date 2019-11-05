@@ -13,6 +13,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -49,6 +50,9 @@ public class ContactView extends SelectableItemView<ContactDetails> {
     private TextView mPhoneNumber;
     private TextView mPhoneNumberOverflowCount;
 
+    // The UI that indicates this is the owner of the device.
+    private ImageView mStar;
+
     // The dialog manager to use to show contact details.
     private ModalDialogManager mManager;
 
@@ -74,6 +78,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         mEmailOverflowCount = findViewById(R.id.email_overflow_count);
         mPhoneNumber = findViewById(R.id.telephone_number);
         mPhoneNumberOverflowCount = findViewById(R.id.telephone_number_overflow_count);
+        mStar = findViewById(R.id.star);
 
         mEmailOverflowCount.setOnClickListener(this);
         mPhoneNumberOverflowCount.setOnClickListener(this);
@@ -181,6 +186,8 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         updateTextViewVisibilityAndContent(
                 mPhoneNumberOverflowCount, details.overflowTelephoneNumberCount);
 
+        if (contactDetails.isSelf()) mStar.setVisibility(View.VISIBLE);
+
         if (icon == null) {
             icon = mCategoryView.getIconGenerator().generateIconForText(
                     contactDetails.getDisplayNameAbbreviation());
@@ -212,5 +219,6 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         mEmailOverflowCount.setText("");
         mPhoneNumber.setText("");
         mPhoneNumberOverflowCount.setText("");
+        mStar.setVisibility(View.GONE);
     }
 }

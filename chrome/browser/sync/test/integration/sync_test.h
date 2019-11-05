@@ -289,17 +289,13 @@ class SyncTest : public InProcessBrowserTest {
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context);
 
-  virtual void BeforeSetupClient(int index);
+  // Invoked immediately before creating profile |index| under |profile_path|.
+  virtual void BeforeSetupClient(int index, const base::FilePath& profile_path);
 
   // Implementations of the EnableNotifications() and DisableNotifications()
   // functions defined above.
   void DisableNotificationsImpl();
   void EnableNotificationsImpl();
-
-  // If non-empty, |contents| will be written to the Preferences file of the
-  // profile at |index| before that Profile object is created.
-  void SetPreexistingPreferencesFileContents(int index,
-                                             const std::string& contents);
 
   // Helper to ProfileManager::CreateProfileAsync that creates a new profile
   // used for UI Signin. Blocks until profile is created.
@@ -360,9 +356,8 @@ class SyncTest : public InProcessBrowserTest {
       instance_id::InstanceIDDriver* instance_id_driver,
       content::BrowserContext* context);
 
-  // Helper to Profile::CreateProfile that handles path creation, setting up
-  // preexisting pref files, and registering the created profile  as a testing
-  // profile.
+  // Helper to Profile::CreateProfile that handles path creation. It creates
+  // a profile then registers it as a testing profile.
   Profile* MakeTestProfile(base::FilePath profile_path, int index);
 
   // Helper method used to create a Gaia account at runtime.
@@ -510,11 +505,6 @@ class SyncTest : public InProcessBrowserTest {
   // be set if tests are run against external servers with support for user
   // creation via http requests.
   bool create_gaia_account_at_runtime_;
-
-  // The contents to be written to a profile's Preferences file before the
-  // Profile object is created. If empty, no preexisting file will be written.
-  // The map key corresponds to the profile's index.
-  std::map<int, std::string> preexisting_preferences_file_contents_;
 
   // Disable extension install verification.
   extensions::ScopedInstallVerifierBypassForTest ignore_install_verification_;

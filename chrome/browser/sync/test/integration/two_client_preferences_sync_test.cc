@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <string>
 
 #include "base/guid.h"
@@ -167,39 +168,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(ListPrefMatchChecker(prefs::kURLsToRestoreOnStartup).Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
-                       E2E_ENABLED(SingleClientEnabledEncryptionBothChanged)) {
-  ResetSyncForPrimaryAccount();
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
-  ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
-
-  ASSERT_TRUE(EnableEncryption(0));
-  ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ChangeStringPref(1, prefs::kHomePage, "http://www.google.com/1");
-  ASSERT_TRUE(AwaitEncryptionComplete(0));
-  ASSERT_TRUE(AwaitEncryptionComplete(1));
-  ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    TwoClientPreferencesSyncTest,
-    E2E_ENABLED(BothClientsEnabledEncryptionAndChangedMultipleTimes)) {
-  ResetSyncForPrimaryAccount();
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
-
-  ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ASSERT_TRUE(EnableEncryption(0));
-  ASSERT_TRUE(EnableEncryption(1));
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kHomePageIsNewTabPage).Wait());
-
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kShowHomeButton).Wait());
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kShowHomeButton).Wait());
-}
-
 // The following tests use lower-level mechanisms to wait for sync cycle
 // completions. Those only work reliably with self notifications turned on.
 class TwoClientPreferencesSyncTestWithSelfNotifications : public SyncTest {
@@ -225,34 +193,36 @@ class TwoClientPreferencesSyncTestWithSelfNotifications : public SyncTest {
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
                        E2E_ENABLED(ShouldKeepLocalDataOnTypeMismatch)) {
   ResetSyncForPrimaryAccount();
-  // Client 1 has type-conflicting data in it's pref file. Verify that incoming
-  // values from sync of other type do not modify the local state.
-  SetPreexistingPreferencesFileContents(
-      1, "{\"testing\":{\"my-test-preference\": \"some-string\"}}");
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   constexpr char pref_name[] = "testing.my-test-preference";
+  constexpr char string_value[] = "some-string";
+
+  // Client 0 registers a boolean preference, client 1 registers a string.
   GetRegistry(GetProfile(0))
       ->RegisterBooleanPref(pref_name, false,
                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  GetRegistry(GetProfile(1))
+      ->RegisterStringPref(pref_name, "",
+                           user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  // Set non-default values on both clients.
+  ChangeBooleanPref(0, pref_name);
+  ChangeStringPref(1, pref_name, string_value);
+  ASSERT_THAT(GetPrefs(0)->GetBoolean(pref_name), Eq(true));
+  ASSERT_THAT(GetPrefs(1)->GetString(pref_name), Eq(string_value));
+
+  // Start sync and await until they sync mutually.
+  base::HistogramTester histogram_tester;
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  ChangeBooleanPref(0, pref_name);
-  ASSERT_THAT(GetPrefs(0)->GetBoolean(pref_name), Eq(true));
-  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
+  // Verify that neither of the clients got updated, because of type mismatch.
+  EXPECT_THAT(GetPrefs(0)->GetBoolean(pref_name), Eq(true));
+  EXPECT_THAT(GetPrefs(1)->GetString(pref_name), Eq(string_value));
 
-  // Verify the value got not stored at client1 (because of type mismatch).
-  scoped_refptr<PrefStore> pref_store =
-      BuildPrefStoreFromPrefsFile(GetProfile(1));
-  const base::Value* result;
-  ASSERT_TRUE(pref_store->GetValue("testing.my-test-preference", &result));
-  EXPECT_THAT(result->GetString(), Eq("some-string"));
-
-  // Verify reads at client1 get served the default value.
-  GetRegistry(GetProfile(1))
-      ->RegisterBooleanPref(pref_name, false,
-                            user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  EXPECT_THAT(GetPrefs(1)->GetBoolean(pref_name), Eq(false));
+  // Only one of the two clients sees the mismatch, the one sync-ing last.
+  histogram_tester.ExpectTotalCount("Sync.Preferences.RemotePrefTypeMismatch",
+                                    1);
 }
 
 // Verifies that priority synced preferences and regular sycned preferences are

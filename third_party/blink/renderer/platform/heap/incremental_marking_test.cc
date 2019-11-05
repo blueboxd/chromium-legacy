@@ -59,13 +59,14 @@ class BackingVisitor : public Visitor {
   bool VisitEphemeronKeyValuePair(
       void* key,
       void* value,
-      bool strong_handling,
       EphemeronTracingCallback key_trace_callback,
       EphemeronTracingCallback value_trace_callback) final {
     const bool key_is_dead = key_trace_callback(this, key);
-    if (key_is_dead && !strong_handling)
+    if (key_is_dead)
       return true;
-    return value_trace_callback(this, value);
+    const bool value_is_dead = value_trace_callback(this, value);
+    DCHECK(!value_is_dead);
+    return false;
   }
 
   // Unused overrides.

@@ -16,6 +16,9 @@ def _setup_sys_path():
     root_dir = os.path.join(this_dir, *(['..'] * expected_path.count('/')))
 
     sys.path = [
+        # //third_party/blink/renderer/bindings/scripts/web_idl
+        os.path.join(root_dir, 'third_party', 'blink', 'renderer', 'bindings',
+                     'scripts'),
         # //third_party/blink/renderer/build/scripts/blinkbuild
         os.path.join(root_dir, 'third_party', 'blink', 'renderer', 'build',
                      'scripts'),
@@ -47,7 +50,9 @@ def _setup_clang_format():
 _setup_clang_format()
 
 from .example import run_example
+from .interface import generate_interfaces
 
 __all__ = [
+    "generate_interfaces",
     "run_example",
 ]

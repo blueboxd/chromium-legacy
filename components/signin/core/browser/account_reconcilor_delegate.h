@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "components/signin/core/browser/multilogin_parameters.h"
+#include "components/signin/public/base/multilogin_parameters.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"

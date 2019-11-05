@@ -18,6 +18,7 @@ namespace blink {
 class DOMDataView;
 class ExceptionState;
 class ExecutionContext;
+class NDEFMessage;
 class NDEFRecordInit;
 
 class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
@@ -48,8 +49,11 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   const String& encoding() const;
   const String& lang() const;
   DOMDataView* data() const;
+  base::Optional<HeapVector<Member<NDEFRecord>>> toRecords(
+      ExceptionState& exception_state) const;
 
   const WTF::Vector<uint8_t>& payloadData() const;
+  const NDEFMessage* payload_message() const;
 
   void Trace(blink::Visitor*) override;
 
@@ -62,6 +66,9 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   // Holds the NDEFRecord.[[PayloadData]] bytes defined at
   // https://w3c.github.io/web-nfc/#the-ndefrecord-interface.
   WTF::Vector<uint8_t> payload_data_;
+  // |payload_data_| parsed as an NDEFMessage. This field will be set for some
+  // "smart-poster" and external type records.
+  Member<NDEFMessage> payload_message_;
 };
 
 }  // namespace blink

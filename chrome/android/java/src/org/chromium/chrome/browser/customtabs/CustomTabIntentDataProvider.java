@@ -428,26 +428,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         }
     }
 
-    /**
-     * Sends the pending intent for the custom button on the toolbar with the given {@code params},
-     *         with the given {@code url} as data.
-     * @param context The context to use for sending the {@link PendingIntent}.
-     * @param params The parameters for the custom button.
-     * @param url The URL to attach as additional data to the {@link PendingIntent}.
-     * @param title The title to attach as additional data to the {@link PendingIntent}.
-     */
-    public void sendButtonPendingIntentWithUrlAndTitle(
-            Context context, CustomButtonParams params, String url, String title) {
-        Intent addedIntent = new Intent();
-        addedIntent.setData(Uri.parse(url));
-        addedIntent.putExtra(Intent.EXTRA_SUBJECT, title);
-        try {
-            params.getPendingIntent().send(context, 0, addedIntent, mOnFinished, null);
-        } catch (CanceledException e) {
-            Log.e(TAG, "CanceledException while sending pending intent in custom tab");
-        }
-    }
-
     private boolean checkCloseButtonSize(Context context, Bitmap bitmap) {
         int size = context.getResources().getDimensionPixelSize(R.dimen.toolbar_icon_height);
         if (bitmap.getHeight() == size && bitmap.getWidth() == size) return true;

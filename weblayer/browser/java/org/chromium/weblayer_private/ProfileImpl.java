@@ -43,11 +43,11 @@ public final class ProfileImpl extends IProfile.Stub {
     }
 
     @Override
-    public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes,
-            @NonNull IObjectWrapper completionCallback) {
+    public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes, long fromMillis,
+            long toMillis, @NonNull IObjectWrapper completionCallback) {
         Runnable callback = ObjectWrapper.unwrap(completionCallback, Runnable.class);
         ProfileImplJni.get().clearBrowsingData(
-                mNativeProfile, mapBrowsingDataTypes(dataTypes), callback);
+                mNativeProfile, mapBrowsingDataTypes(dataTypes), fromMillis, toMillis, callback);
     }
 
     private static @ImplBrowsingDataType int[] mapBrowsingDataTypes(
@@ -78,7 +78,7 @@ public final class ProfileImpl extends IProfile.Stub {
     interface Natives {
         long createProfile(String path);
         void deleteProfile(long profile);
-        void clearBrowsingData(
-                long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes, Runnable callback);
+        void clearBrowsingData(long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes,
+                long fromMillis, long toMillis, Runnable callback);
     }
 }

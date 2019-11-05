@@ -111,13 +111,13 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient> client_receiver =
       root_params->compositor_frame_sink_client
           .InitWithNewPipeAndPassReceiver();
+  compositor_data.display_private.reset();
   root_params->display_private =
-      mojo::MakeRequest(&compositor_data.display_private);
+      compositor_data.display_private.BindNewEndpointAndPassReceiver();
   compositor_data.display_client =
       std::make_unique<HostDisplayClient>(compositor);
   root_params->display_client =
-      compositor_data.display_client->GetBoundPtr(resize_task_runner_)
-          .PassInterface();
+      compositor_data.display_client->GetBoundRemote(resize_task_runner_);
 
   if (compositor->use_external_begin_frame_control()) {
     root_params->external_begin_frame_controller =

@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace v8 {
 class EmbedderGraph;
@@ -301,7 +302,7 @@ class PLATFORM_EXPORT ThreadState final {
   // terminated and the worklist is empty)
   bool ConcurrentMarkingStep();
   void ScheduleConcurrentMarking();
-  void PerformConcurrentMark(int);
+  void PerformConcurrentMark();
 
   void CompleteSweep();
   void NotifySweepDone();
@@ -594,8 +595,9 @@ class PLATFORM_EXPORT ThreadState final {
   std::unique_ptr<IncrementalMarkingScheduler> incremental_marking_scheduler_;
 
   std::unique_ptr<CancelableTaskScheduler> marker_scheduler_;
+  Vector<int> available_concurrent_marking_ids_;
   uint8_t active_markers_ = 0;
-  base::Lock active_concurrent_markers_lock_;
+  base::Lock concurrent_marker_bootstrapping_lock_;
   size_t concurrently_marked_bytes_ = 0;
 
   std::unique_ptr<CancelableTaskScheduler> sweeper_scheduler_;

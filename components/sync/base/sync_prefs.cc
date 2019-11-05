@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/reading_list/features/reading_list_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_selectable_type.h"
 
@@ -113,10 +112,8 @@ const char* GetPrefNameForType(UserSelectableType type) {
       return prefs::kSyncExtensions;
     case UserSelectableType::kApps:
       return prefs::kSyncApps;
-#if BUILDFLAG(ENABLE_READING_LIST)
     case UserSelectableType::kReadingList:
       return prefs::kSyncReadingList;
-#endif
     case UserSelectableType::kTabs:
       return prefs::kSyncTabs;
     case UserSelectableType::kWifiConfigurations:

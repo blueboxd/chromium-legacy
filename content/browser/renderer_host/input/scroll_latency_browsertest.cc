@@ -284,9 +284,9 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
     //    coordinates to manipulate the scrollbar is different from other
     //    platforms.
     // We could overcome the first limitation, by toggling various features
-    // and WebPreferences (e.g. kOverlayScrollbar feature, and
-    // viewport_enabled and use_solid_color_scrollbars WebPreferences) but at
-    // that point, we're not really testing a shipping configuration.
+    // and WebPreferences (e.g. kOverlayScrollbar feature, and viewport_enabled
+    // WebPreferences) but at that point, we're not really testing a shipping
+    // configuration.
 #if !defined(OS_ANDROID)
 
     // Click on the forward scrollbar button to induce a compositor thread

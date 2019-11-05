@@ -737,17 +737,6 @@ struct VectorTraits<blink::Member<T>> : VectorTraitsBase<blink::Member<T>> {
 };
 
 template <typename T>
-struct VectorTraits<blink::SameThreadCheckedMember<T>>
-    : VectorTraitsBase<blink::SameThreadCheckedMember<T>> {
-  STATIC_ONLY(VectorTraits);
-  static const bool kNeedsDestruction = false;
-  static const bool kCanInitializeWithMemset = true;
-  static const bool kCanClearUnusedSlotsWithMemset = true;
-  static const bool kCanMoveWithMemcpy = true;
-  static const bool kCanSwapUsingCopyOrMove = false;
-};
-
-template <typename T>
 struct VectorTraits<blink::WeakMember<T>>
     : VectorTraitsBase<blink::WeakMember<T>> {
   STATIC_ONLY(VectorTraits);
@@ -843,42 +832,6 @@ struct HashTraits<blink::Member<T>> : SimpleClassHashTraits<blink::Member<T>> {
   }
   static bool IsDeletedValue(const blink::Member<T>& value) {
     return value.IsHashTableDeletedValue();
-  }
-};
-
-template <typename T>
-struct HashTraits<blink::SameThreadCheckedMember<T>>
-    : SimpleClassHashTraits<blink::SameThreadCheckedMember<T>> {
-  STATIC_ONLY(HashTraits);
-  // FIXME: Implement proper const'ness for iterator types. Requires support
-  // in the marking Visitor.
-  using PeekInType = T*;
-  using IteratorGetType = blink::SameThreadCheckedMember<T>*;
-  using IteratorConstGetType = const blink::SameThreadCheckedMember<T>*;
-  using IteratorReferenceType = blink::SameThreadCheckedMember<T>&;
-  using IteratorConstReferenceType = const blink::SameThreadCheckedMember<T>&;
-  static IteratorReferenceType GetToReferenceConversion(IteratorGetType x) {
-    return *x;
-  }
-  static IteratorConstReferenceType GetToReferenceConstConversion(
-      IteratorConstGetType x) {
-    return *x;
-  }
-
-  using PeekOutType = T*;
-
-  template <typename U>
-  static void Store(const U& value,
-                    blink::SameThreadCheckedMember<T>& storage) {
-    storage = value;
-  }
-
-  static PeekOutType Peek(const blink::SameThreadCheckedMember<T>& value) {
-    return value;
-  }
-
-  static blink::SameThreadCheckedMember<T> EmptyValue() {
-    return blink::SameThreadCheckedMember<T>(nullptr, nullptr);
   }
 };
 

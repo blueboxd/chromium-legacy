@@ -116,10 +116,10 @@ std::string HexEncodeString(const std::string& input) {
 std::string HexDecodeString(const std::string& input) {
   if (input.empty())
     return std::string();
-  std::vector<uint8_t> bytes;
-  bool result = HexStringToBytes(input, &bytes);
+  std::string bytes;
+  bool result = HexStringToString(input, &bytes);
   DCHECK(result);
-  return std::string(reinterpret_cast<const char*>(&bytes[0]), bytes.size());
+  return bytes;
 }
 
 }  // namespace

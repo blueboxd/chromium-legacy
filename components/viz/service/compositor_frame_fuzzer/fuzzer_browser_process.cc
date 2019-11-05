@@ -103,8 +103,8 @@ FuzzerBrowserProcess::BuildRootCompositorFrameSinkParams() {
   params->compositor_frame_sink_client =
       root_compositor_frame_sink_client_.BindInterfaceRemote();
   params->display_private =
-      MakeRequestAssociatedWithDedicatedPipe(&display_private_);
-  params->display_client = display_client_.BindInterfacePtr().PassInterface();
+      display_private_.BindNewEndpointAndPassDedicatedReceiverForTesting();
+  params->display_client = display_client_.BindRemote();
   params->external_begin_frame_controller =
       MakeRequestAssociatedWithDedicatedPipe(
           &external_begin_frame_controller_ptr_);

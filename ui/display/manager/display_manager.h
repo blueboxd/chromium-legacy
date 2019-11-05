@@ -197,10 +197,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
                           Display::Rotation rotation,
                           Display::RotationSource source);
 
-  // Sets the external display's configuration, including resolution change,
-  // ui-scale change, and device scale factor change. Returns true if it changes
-  // the display resolution so that the caller needs to show a notification in
-  // case the new resolution actually doesn't work.
+  // Sets the external display's configuration, including resolution change and
+  // device scale factor change. Returns true if it changes the display
+  // resolution so that the caller needs to show a notification in case the new
+  // resolution actually doesn't work.
   bool SetDisplayMode(int64_t display_id,
                       const ManagedDisplayMode& display_mode);
 
@@ -208,11 +208,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // |overscan_insets| is null if the display has no custom overscan insets.
   // |touch_calibration_data| is null if the display has no touch calibration
   // associated data.
-  // |ui_scale| will be negative if this is not the first boot with display zoom
-  // mode enabled.
   void RegisterDisplayProperty(int64_t display_id,
                                Display::Rotation rotation,
-                               float ui_scale,
                                const gfx::Insets* overscan_insets,
                                const gfx::Size& resolution_in_pixels,
                                float device_scale_factor,
@@ -403,12 +400,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   // Returns the human-readable name for the display |id|.
   std::string GetDisplayNameForId(int64_t id) const;
-
-  // Returns the display id that is capable of UI scaling. On device, this
-  // returns internal display's ID if its device scale factor is 2, or invalid
-  // ID if such internal display doesn't exist. On linux desktop, this returns
-  // the first display ID.
-  int64_t GetDisplayIdForUIScaling() const;
 
   // Returns true if mirror mode should be set on for the specified displays.
   bool ShouldSetMirrorModeOn(const DisplayIdList& id_list);

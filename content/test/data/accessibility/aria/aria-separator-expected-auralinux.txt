@@ -1,5 +1,5 @@
 [document web]
-++[text] name='Before'
+++[static] name='Before'
 ++[separator] horizontal
 ++[separator] horizontal current=1.000000 minimum=1.000000 maximum=3.000000
-++[text] name='After'
+++[static] name='After'

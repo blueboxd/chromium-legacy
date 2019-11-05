@@ -84,6 +84,10 @@ chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
       return chrome_browser_sharing::SMS_FETCH_REQUEST;
     case chrome_browser_sharing::SharingMessage::kRemoteCopyMessage:
       return chrome_browser_sharing::REMOTE_COPY_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::kSignallingMessage:
+      return chrome_browser_sharing::SIGNALLING_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::kIceCandidateMessage:
+      return chrome_browser_sharing::ICE_CANDIDATE_MESSAGE;
   }
   // For proto3 enums unrecognized enum values are kept when parsing, and a new
   // payload case received over the network would not default to

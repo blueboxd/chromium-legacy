@@ -65,10 +65,13 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory {
 
   Topics GetRegisteredTopics(InvalidationHandler* handler) const;
 
-  // Returns the set of all IDs that are registered to some handler (even
-  // handlers that have been unregistered).
-  // TODO(treib): Rename "Ids" to "Topics".
-  Topics GetAllRegisteredIds() const;
+  // Returns the set of all topics that (we think) we are subscribed to on the
+  // server. This is the set of topics which were registered to some handler and
+  // not unregistered (via UpdateRegisteredTopics()). This includes topics whose
+  // *handler* has been unregistered without unregistering the topic itself
+  // first (e.g. because Chrome was restarted and the handler hasn't registered
+  // itself again yet).
+  Topics GetAllSubscribedTopics() const;
 
   // Sorts incoming invalidations into a bucket for each handler and then
   // dispatches the batched invalidations to the corresponding handler.
@@ -87,15 +90,13 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory {
   // updated state.
   InvalidatorState GetInvalidatorState() const;
 
-  // Updates the invalidator id to the given one and then notifies
-  // all handlers.
-  void UpdateInvalidatorId(const std::string& id);
+  // Notifies all handlers about the new instance ID.
+  void UpdateInvalidatorInstanceId(const std::string& instance_id);
 
-  // Gets a new map for the name of invalidator handlers and their
-  // objects id. This is used by the InvalidatorLogger to be able
-  // to display every registered handler and its topics.
-  // TODO(treib): Rename "Ids" to "Topics".
-  std::map<std::string, Topics> GetSanitizedHandlersIdsMap();
+  // Gets a new map from the name of invalidation handlers to their topics. This
+  // is used by the InvalidatorLogger to be able to display every registered
+  // handler and its topics.
+  std::map<std::string, Topics> GetHandlerNameToTopicsMap();
 
   void RequestDetailedStatus(
       base::RepeatingCallback<void(const base::DictionaryValue&)> callback)
@@ -115,15 +116,18 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory {
 
   base::ObserverList<InvalidationHandler, true>::Unchecked handlers_;
   // Note: When a handler is unregistered, its entry is removed from
-  // |handler_to_topics_map_| but NOT from |handler_name_to_topics_map_|.
-  std::map<InvalidationHandler*, Topics> handler_to_topics_map_;
-  std::map<std::string, Topics> handler_name_to_topics_map_;
+  // |registered_handler_to_topics_map_| but NOT from
+  // |handler_name_to_subscribed_topics_map_|.
+  std::map<InvalidationHandler*, Topics> registered_handler_to_topics_map_;
+  std::map<std::string, Topics> handler_name_to_subscribed_topics_map_;
 
   InvalidatorState state_;
 
   // This can be either a regular (Profile-attached) PrefService or the local
   // state PrefService.
   PrefService* const local_state_;
+
+  // The FCM sender ID. May be empty.
   const std::string sender_id_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidatorRegistrarWithMemory);

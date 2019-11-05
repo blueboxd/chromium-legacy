@@ -662,8 +662,15 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   WebNavigationType navigation_type = DetermineNavigationType(
       frame_load_type, resource_request.HttpBody() || request.Form(),
       request.GetTriggeringEventInfo() != TriggeringEventInfo::kNotFromEvent);
-  resource_request.SetRequestContext(
-      DetermineRequestContextFromNavigationType(navigation_type));
+  mojom::RequestContextType request_context_type =
+      DetermineRequestContextFromNavigationType(navigation_type);
+
+  // TODO(lyf): handle `frame` context type. https://crbug.com/1019716
+  if (mojom::RequestContextType::LOCATION == request_context_type &&
+      !frame_->IsMainFrame()) {
+    request_context_type = mojom::RequestContextType::IFRAME;
+  }
+  resource_request.SetRequestContext(request_context_type);
   request.SetFrameType(frame_->IsMainFrame()
                            ? network::mojom::RequestContextFrameType::kTopLevel
                            : network::mojom::RequestContextFrameType::kNested);

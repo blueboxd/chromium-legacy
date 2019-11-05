@@ -43,14 +43,14 @@ An archive of all packages built so far is at https://is.gd/chromeclang
 
     ```shell
     git cl try &&
-    git cl try -B luci.chromium.try -b mac_chromium_asan_rel_ng \
+    git cl try -B chromium/try -b mac_chromium_asan_rel_ng \
       -b linux_chromium_cfi_rel_ng \
       -b linux_chromium_chromeos_asan_rel_ng -b linux_chromium_msan_rel_ng \
       -b linux_chromium_chromeos_msan_rel_ng -b linux-chromeos-dbg \
       -b win-asan -b chromeos-amd64-generic-cfi-thin-lto-rel \
       -b linux_chromium_compile_dbg_32_ng -b win7-rel \
       -b win-angle-deqp-rel-64 &&
-    git cl try -B luci.chrome.try -b iphone-device -b ipad-device
+    git cl try -B chrome/try -b iphone-device -b ipad-device
     ```
 
 1.  Optional: Start Pinpoint perf tryjobs. These are generally too noisy to

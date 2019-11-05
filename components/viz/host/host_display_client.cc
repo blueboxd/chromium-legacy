@@ -18,8 +18,7 @@
 
 namespace viz {
 
-HostDisplayClient::HostDisplayClient(gfx::AcceleratedWidget widget)
-    : binding_(this) {
+HostDisplayClient::HostDisplayClient(gfx::AcceleratedWidget widget) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   widget_ = widget;
 #endif
@@ -27,11 +26,9 @@ HostDisplayClient::HostDisplayClient(gfx::AcceleratedWidget widget)
 
 HostDisplayClient::~HostDisplayClient() = default;
 
-mojom::DisplayClientPtr HostDisplayClient::GetBoundPtr(
+mojo::PendingRemote<mojom::DisplayClient> HostDisplayClient::GetBoundRemote(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  mojom::DisplayClientPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr), task_runner);
-  return ptr;
+  return receiver_.BindNewPipeAndPassRemote(task_runner);
 }
 
 #if defined(OS_MACOSX)

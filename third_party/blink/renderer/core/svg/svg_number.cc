@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_number.h"
 
-#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -79,7 +79,7 @@ void SVGNumber::Add(SVGPropertyBase* other, SVGElement*) {
 }
 
 void SVGNumber::CalculateAnimatedValue(
-    const SVGAnimationElement& animation_element,
+    const SVGAnimateElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from,

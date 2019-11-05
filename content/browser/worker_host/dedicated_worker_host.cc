@@ -18,6 +18,7 @@
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
+#include "content/browser/webtransport/quic_transport_connector_impl.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -383,6 +384,22 @@ void DedicatedWorkerHost::CreateWebSocketConnector(
                                   worker_process_id_, ancestor_render_frame_id_,
                                   origin_, network_isolation_key_),
                               std::move(receiver));
+}
+
+void DedicatedWorkerHost::CreateQuicTransportConnector(
+    mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHostImpl* ancestor_render_frame_host =
+      GetAncestorRenderFrameHost();
+  if (!ancestor_render_frame_host) {
+    // The ancestor frame may have already been closed. In that case, the worker
+    // will soon be terminated too, so abort the connection.
+    return;
+  }
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<QuicTransportConnectorImpl>(worker_process_id_, origin_,
+                                                   network_isolation_key_),
+      std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateNestedDedicatedWorker(

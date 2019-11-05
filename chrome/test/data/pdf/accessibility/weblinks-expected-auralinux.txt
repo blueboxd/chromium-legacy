@@ -2,16 +2,16 @@
 ++[document frame]
 ++++[landmark] name='Page 1'
 ++++++[paragraph]
-++++++++[text] name='Hello, '
+++++++++[static] name='Hello, '
 ++++++++[link] name='http://yahoo.com'
-++++++++++[text] name='http://yahoo.com'
-++++++++[text] name='! nice meeting you<newline>'
+++++++++++[static] name='http://yahoo.com'
+++++++++[static] name='! nice meeting you<newline>'
 ++++++[paragraph]
-++++++++[text] name='Goodbye, '
+++++++++[static] name='Goodbye, '
 ++++++++[link] name='http://bing.com'
-++++++++++[text] name='http://bing.com'
-++++++++[text] name='! nice meeting you<newline>'
+++++++++++[static] name='http://bing.com'
+++++++++[static] name='! nice meeting you<newline>'
 ++++++[paragraph]
-++++++++[text] name='Bye, '
+++++++++[static] name='Bye, '
 ++++++++[link] name='http://google.com'
-++++++++++[text] name='http://google.com'
+++++++++++[static] name='http://google.com'

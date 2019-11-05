@@ -1,2 +1,2 @@
 [document web] caret_offset=0
-++[text] name='Done' caret_offset=0
+++[static] name='Done' caret_offset=0

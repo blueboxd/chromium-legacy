@@ -31,9 +31,8 @@ from .operation import Operation
 from .typedef import Typedef
 
 
-def load_and_register_idl_definitions(
-        filepaths, register_ir, create_ref_to_idl_def, create_ref_to_idl_type,
-        idl_type_factory):
+def load_and_register_idl_definitions(filepaths, register_ir,
+                                      create_ref_to_idl_def, idl_type_factory):
     """
     Reads ASTs from |filepaths| and builds IRs from ASTs.
 
@@ -43,8 +42,6 @@ def load_and_register_idl_definitions(
             IR.
         create_ref_to_idl_def: A callback function that creates a reference
             to an IDL definition from the given identifier.
-        create_ref_to_idl_type: A callback function that creates a reference
-            to an IdlType from the given identifier.
         idl_type_factory: All IdlType instances will be created through this
             factory.
     """
@@ -56,7 +53,6 @@ def load_and_register_idl_definitions(
         builder = _IRBuilder(
             component=component,
             create_ref_to_idl_def=create_ref_to_idl_def,
-            create_ref_to_idl_type=create_ref_to_idl_type,
             idl_type_factory=idl_type_factory)
 
         for file_node in asts_per_component:
@@ -66,25 +62,20 @@ def load_and_register_idl_definitions(
 
 
 class _IRBuilder(object):
-    def __init__(self, component, create_ref_to_idl_def,
-                 create_ref_to_idl_type, idl_type_factory):
+    def __init__(self, component, create_ref_to_idl_def, idl_type_factory):
         """
         Args:
             component: A Component to which the built IRs are associated.
             create_ref_to_idl_def: A callback function that creates a reference
                 to an IDL definition from the given identifier.
-            create_ref_to_idl_type: A callback function that creates a reference
-                to an IdlType from the given identifier.
             idl_type_factory: All IdlType instances will be created through this
                 factory.
         """
         assert callable(create_ref_to_idl_def)
-        assert callable(create_ref_to_idl_type)
         assert isinstance(idl_type_factory, IdlTypeFactory)
 
         self._component = component
         self._create_ref_to_idl_def = create_ref_to_idl_def
-        self._create_ref_to_idl_type = create_ref_to_idl_type
         self._idl_type_factory = idl_type_factory
 
     def build_top_level_def(self, node):
@@ -115,7 +106,7 @@ class _IRBuilder(object):
 
         identifier = Identifier(node.GetName())
         members = [
-            self._build_interface_or_namespace_member(
+            self._build_interface_member(
                 child, interface_identifier=identifier)
             for child in child_nodes
         ]
@@ -163,7 +154,7 @@ class _IRBuilder(object):
         child_nodes = list(node.GetChildren())
         extended_attributes = self._take_extended_attributes(child_nodes)
 
-        members = map(self._build_interface_or_namespace_member, child_nodes)
+        members = map(self._build_interface_member, child_nodes)
         attributes = []
         constants = []
         operations = []
@@ -189,10 +180,10 @@ class _IRBuilder(object):
             component=self._component,
             debug_info=self._build_debug_info(node))
 
-    def _build_interface_or_namespace_member(self,
-                                             node,
-                                             fallback_extended_attributes=None,
-                                             interface_identifier=None):
+    def _build_interface_member(self,
+                                node,
+                                fallback_extended_attributes=None,
+                                interface_identifier=None):
         def build_attribute(node):
             child_nodes = list(node.GetChildren())
             idl_type = self._take_type(child_nodes)
@@ -234,8 +225,7 @@ class _IRBuilder(object):
                 child_nodes) or fallback_extended_attributes
             assert len(child_nodes) == 0
             return_type = self._idl_type_factory.reference_type(
-                ref_to_idl_type=self._create_ref_to_idl_type(
-                    interface_identifier))
+                interface_identifier)
             return Constructor.IR(
                 arguments=arguments,
                 return_type=return_type,
@@ -305,7 +295,7 @@ class _IRBuilder(object):
 
         child_nodes = list(node.GetChildren())
         extended_attributes = self._take_extended_attributes(child_nodes)
-        members = map(self._build_interface_or_namespace_member, child_nodes)
+        members = map(self._build_interface_member, child_nodes)
         constants = []
         operations = []
         for member in members:
@@ -570,8 +560,9 @@ class _IRBuilder(object):
 
         member = None
         if len(child_nodes) == 1:
-            member = self._build_interface_or_namespace_member(
-                child_nodes[0], extended_attributes)
+            member = self._build_interface_member(
+                child_nodes[0],
+                fallback_extended_attributes=extended_attributes)
             extended_attributes = None
         operation = member if isinstance(member, Operation.IR) else None
         attribute = member if isinstance(member, Attribute.IR) else None
@@ -659,8 +650,7 @@ class _IRBuilder(object):
 
         def build_reference_type(node, extended_attributes):
             return self._idl_type_factory.reference_type(
-                ref_to_idl_type=self._create_ref_to_idl_type(
-                    Identifier(node.GetName()), self._build_debug_info(node)),
+                Identifier(node.GetName()),
                 is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))

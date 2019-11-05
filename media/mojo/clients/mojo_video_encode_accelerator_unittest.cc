@@ -11,6 +11,7 @@
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,12 +35,13 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
   MockMojoVideoEncodeAccelerator() = default;
 
   // mojom::VideoEncodeAccelerator impl.
-  void Initialize(const media::VideoEncodeAccelerator::Config& config,
-                  mojom::VideoEncodeAcceleratorClientPtr client,
-                  InitializeCallback success_callback) override {
+  void Initialize(
+      const media::VideoEncodeAccelerator::Config& config,
+      mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> client,
+      InitializeCallback success_callback) override {
     if (initialization_success_) {
       ASSERT_TRUE(client);
-      client_ = std::move(client);
+      client_.Bind(std::move(client));
       const size_t allocation_size = VideoFrame::AllocationSize(
           config.input_format, config.input_visible_size);
 
@@ -48,7 +50,7 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
 
       DoInitialize(config.input_format, config.input_visible_size,
                    config.output_profile, config.initial_bitrate,
-                   config.content_type, &client);
+                   config.content_type, &client_);
     }
     std::move(success_callback).Run(initialization_success_);
   }
@@ -58,7 +60,7 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
                     media::VideoCodecProfile,
                     uint32_t,
                     media::VideoEncodeAccelerator::Config::ContentType,
-                    mojom::VideoEncodeAcceleratorClientPtr*));
+                    mojo::Remote<mojom::VideoEncodeAcceleratorClient>*));
 
   void Encode(const scoped_refptr<VideoFrame>& frame,
               bool keyframe,
@@ -94,7 +96,7 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
   }
 
  private:
-  mojom::VideoEncodeAcceleratorClientPtr client_;
+  mojo::Remote<mojom::VideoEncodeAcceleratorClient> client_;
   int32_t configured_bitstream_buffer_id_ = -1;
   bool initialization_success_ = true;
 

@@ -678,7 +678,7 @@ CrElementsLottieTest.prototype = {
   ]),
 };
 
-TEST_F('CrElementsLottieTest', 'All', function() {
+TEST_F('CrElementsLottieTest', 'DISABLED_All', function() {
   mocha.run();
 });
 GEN('#endif');

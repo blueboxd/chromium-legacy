@@ -525,18 +525,25 @@ void Scheduler::RunNextTask() {
   {
     base::AutoUnlock auto_unlock(lock_);
     order_data->BeginProcessingOrderNumber(order_num);
-    base::ThreadTicks thread_time_start = base::ThreadTicks::Now();
+
+    bool supports_thread_time = base::ThreadTicks::IsSupported();
+
+    // We can't call base::ThreadTicks::Now() if it's not supported
+    base::ThreadTicks thread_time_start =
+        supports_thread_time ? base::ThreadTicks::Now() : base::ThreadTicks();
     base::TimeTicks wall_time_start = base::TimeTicks::Now();
 
     std::move(closure).Run();
 
-    base::TimeDelta thread_time_elapsed =
-        base::ThreadTicks::Now() - thread_time_start;
-    base::TimeDelta wall_time_elapsed =
-        base::TimeTicks::Now() - wall_time_start;
-    base::TimeDelta blocked_time = wall_time_elapsed - thread_time_elapsed;
+    if (supports_thread_time) {
+      base::TimeDelta thread_time_elapsed =
+          base::ThreadTicks::Now() - thread_time_start;
+      base::TimeDelta wall_time_elapsed =
+          base::TimeTicks::Now() - wall_time_start;
+      base::TimeDelta blocked_time = wall_time_elapsed - thread_time_elapsed;
 
-    total_blocked_time_ += blocked_time;
+      total_blocked_time_ += blocked_time;
+    }
 
     if (order_data->IsProcessingOrderNumber())
       order_data->FinishProcessingOrderNumber(order_num);
@@ -559,6 +566,8 @@ void Scheduler::RunNextTask() {
 }
 
 base::TimeDelta Scheduler::TakeTotalBlockingTime() {
+  if (!base::ThreadTicks::IsSupported())
+    return base::TimeDelta::Min();
   base::TimeDelta result;
   std::swap(result, total_blocked_time_);
   return result;

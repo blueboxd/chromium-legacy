@@ -57,14 +57,14 @@ struct RootCompositorFrameSinkData {
         compositor_frame_sink.BindNewEndpointAndPassReceiver();
     params->compositor_frame_sink_client =
         compositor_frame_sink_client.BindInterfaceRemote();
-    params->display_private = MakeRequest(&display_private);
-    params->display_client = display_client.BindInterfacePtr().PassInterface();
+    params->display_private = display_private.BindNewEndpointAndPassReceiver();
+    params->display_client = display_client.BindRemote();
     return params;
   }
 
   mojo::AssociatedRemote<mojom::CompositorFrameSink> compositor_frame_sink;
   MockCompositorFrameSinkClient compositor_frame_sink_client;
-  mojom::DisplayPrivateAssociatedPtr display_private;
+  mojo::AssociatedRemote<mojom::DisplayPrivate> display_private;
   MockDisplayClient display_client;
 };
 

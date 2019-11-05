@@ -355,7 +355,7 @@ bool IOSChromeMetricsServiceClient::RegisterForBrowserStateEvents(
   syncer::SyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForBrowserState(
           browser_state);
-  ObserveServiceForSyncDisables(sync, browser_state->GetPrefs());
+  StartObserving(sync, browser_state->GetPrefs());
   return (history_service != nullptr && sync != nullptr);
 }
 
@@ -395,12 +395,12 @@ void IOSChromeMetricsServiceClient::OnHistoryDeleted() {
     ukm_service_->Purge();
 }
 
-void IOSChromeMetricsServiceClient::OnSyncPrefsChanged(bool must_purge) {
+void IOSChromeMetricsServiceClient::OnUkmAllowedStateChanged(bool must_purge) {
   if (!ukm_service_)
     return;
   if (must_purge) {
     ukm_service_->Purge();
-    ukm_service_->ResetClientState(ukm::ResetReason::kOnSyncPrefsChanged);
+    ukm_service_->ResetClientState(ukm::ResetReason::kOnUkmAllowedStateChanged);
   }
   // Signal service manager to enable/disable UKM based on new state.
   UpdateRunningServices();
@@ -416,8 +416,8 @@ void IOSChromeMetricsServiceClient::OnIncognitoWebStateRemoved() {
   UpdateRunningServices();
 }
 
-bool IOSChromeMetricsServiceClient::SyncStateAllowsUkm() {
-  return SyncDisableObserver::SyncStateAllowsUkm();
+bool IOSChromeMetricsServiceClient::IsUkmAllowedForAllProfiles() {
+  return UkmConsentStateObserver::IsUkmAllowedForAllProfiles();
 }
 
 bool IOSChromeMetricsServiceClient::

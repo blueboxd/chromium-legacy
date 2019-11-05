@@ -8,6 +8,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
@@ -35,7 +37,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   using DeleteCallback = base::OnceCallback<void(mojom::URLLoader* loader)>;
 
   CorsURLLoader(
-      mojom::URLLoaderRequest loader_request,
+      mojo::PendingReceiver<mojom::URLLoader> loader_receiver,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -103,7 +105,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   // Handles OnComplete() callback.
   void HandleComplete(const URLLoaderCompletionStatus& status);
 
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   void SetCorsFlagIfNeeded();
 
@@ -111,7 +113,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       const mojom::URLResponseHead& response,
       const std::string& header_name);
 
-  mojo::Binding<mojom::URLLoader> binding_;
+  mojo::Receiver<mojom::URLLoader> receiver_;
 
   // We need to save these for redirect.
   const int32_t routing_id_;

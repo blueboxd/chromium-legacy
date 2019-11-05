@@ -154,6 +154,8 @@ class RefByIdFactory(object):
 
     def create(self, identifier, debug_info=None):
         """
+        Creates a new instance of RefById.
+
             Args:
                 identifier: An identifier to be resolved later.
                 debug_info: Where the reference is created, which is useful
@@ -168,6 +170,22 @@ class RefByIdFactory(object):
             pass_key=_REF_BY_ID_PASS_KEY)
         self._references.append(ref)
         return ref
+
+    def init_subclass_instance(self, instance, identifier, debug_info=None):
+        """
+        Initializes an instance of a subclass of RefById.
+        """
+        assert type(instance) is not RefById
+        assert isinstance(instance, RefById)
+        assert not self._is_frozen
+        RefById.__init__(
+            instance,
+            identifier,
+            debug_info=debug_info,
+            target_attrs=self._target_attrs,
+            target_attrs_with_priority=self._target_attrs_with_priority,
+            pass_key=_REF_BY_ID_PASS_KEY)
+        self._references.append(instance)
 
     def for_each(self, callback):
         """

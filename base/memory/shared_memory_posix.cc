@@ -102,8 +102,29 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
       return false;
     const size_t current_size = stat.st_size;
     if (current_size != options.size) {
+#if defined(OS_LINUX)
+      // When /dev/shm becomes full, writing memory to a mapped region of
+      // shared memory causes a SIGBUS and kills the process. This is
+      // inconvenient to us because: (1) we'll get many different crash
+      // reports at random places that write to shared memory, and (2)
+      // process killed by SIGBUS confuses many developers. See
+      // crbug.com/1014296 for details.
+      //
+      // Here we preallocate memory by posix_fallocate and detect OOM (ENOSPC)
+      // early to avoid getting killed by SIGBUS.
+
+      // posix_fallocate doesn't use errno and returns the error number
+      // directly. Thus EINTR is handled manually.
+      int result;
+      do {
+        result = posix_fallocate(fd.get(), 0, options.size);
+        if (result != 0 && result != EINTR)
+          return false;
+      } while (result != 0);
+#else
       if (HANDLE_EINTR(ftruncate(fd.get(), options.size)) != 0)
         return false;
+#endif
     }
     requested_size_ = options.size;
   } else {

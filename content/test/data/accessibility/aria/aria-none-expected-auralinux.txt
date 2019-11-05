@@ -1,2 +1,2 @@
 [document web]
-++[text] name='With aria-role none'
+++[static] name='With aria-role none'

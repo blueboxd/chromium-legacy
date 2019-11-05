@@ -5,6 +5,7 @@
 package org.chromium.device.nfc;
 
 import android.net.Uri;
+import android.nfc.FormatException;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.device.mojom.NdefMessage;
@@ -130,6 +131,8 @@ public final class NdefMessageUtils {
                 // TODO(https://crbug.com/520391): Support 'smart-poster' type records.
                 throw new InvalidNdefMessageException();
         }
+        // TODO(https://crbug.com/520391): Need to create an external record for either a custom
+        // type name or a local type name (for an embedded record).
         PairOfDomainAndType pair = parseDomainAndType(record.recordType);
         if (pair != null) {
             return android.nfc.NdefRecord.createExternal(pair.mDomain, pair.mType, record.data);
@@ -276,11 +279,13 @@ public final class NdefMessageUtils {
     /**
      * Constructs External type NdefRecord
      */
-    private static NdefRecord createExternalTypeRecord(String customType, byte[] payload) {
+    private static NdefRecord createExternalTypeRecord(String type, byte[] payload) {
+        // |type| may be a custom type name or a local type name (for an embedded record).
         NdefRecord nfcRecord = new NdefRecord();
-        nfcRecord.recordType = customType;
+        nfcRecord.recordType = type;
         nfcRecord.mediaType = OCTET_STREAM_MIME;
         nfcRecord.data = payload;
+        nfcRecord.payloadMessage = getNdefMessageFromPayload(payload);
         return nfcRecord;
     }
 
@@ -339,5 +344,18 @@ public final class NdefMessageUtils {
         buffer.put(languageCodeBytes);
         buffer.put(record.data);
         return buffer.array();
+    }
+
+    /**
+     * Tries to construct a android.nfc.NdefMessage from the raw bytes |payload| then converts it to
+     * a Mojo NdefMessage and returns. Returns null for anything wrong.
+     */
+    private static NdefMessage getNdefMessageFromPayload(byte[] payload) {
+        try {
+            android.nfc.NdefMessage payloadMessage = new android.nfc.NdefMessage(payload);
+            return toNdefMessage(payloadMessage);
+        } catch (FormatException | UnsupportedEncodingException e) {
+        }
+        return null;
     }
 }

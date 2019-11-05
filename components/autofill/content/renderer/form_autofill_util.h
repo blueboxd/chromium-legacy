@@ -295,8 +295,6 @@ blink::WebFormControlElement FindFormControlElementsByUniqueRendererId(
 // Returns form control elements by unique renderer id. The result has the same
 // number elements as |form_control_renderer_ids| and i-th element of the result
 // corresponds to the i-th element of |form_control_renderer_ids|.
-// |form_control_renderer_ids| is supposed to be small (<=10 elements), because
-// it is being frequently searched by linear pass over its elements.
 // The call of this function might be time expensive, because it retrieves all
 // DOM elements.
 std::vector<blink::WebFormControlElement>
@@ -308,8 +306,6 @@ FindFormControlElementsByUniqueRendererId(
 // id |form_renderer_id|. The result has the same number elements as
 // |form_control_renderer_ids| and i-th element of the result corresponds to the
 // i-th element of |form_control_renderer_ids|.
-// |form_control_renderer_ids| is supposed to be small (<=10 elements), because
-// it is being frequently searched by linear pass over its elements.
 // This function is faster than the previous one, because it only retrieves form
 // control elements from a single form.
 std::vector<blink::WebFormControlElement>

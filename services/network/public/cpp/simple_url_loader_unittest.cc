@@ -31,11 +31,9 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
@@ -1744,13 +1742,14 @@ enum class TestLoaderEvent {
 // unexpected order, to test handling of events from less trusted processes.
 class MockURLLoader : public network::mojom::URLLoader {
  public:
-  MockURLLoader(base::test::TaskEnvironment* task_environment,
-                network::mojom::URLLoaderRequest url_loader_request,
-                network::mojom::URLLoaderClientPtr client,
-                std::vector<TestLoaderEvent> test_events,
-                scoped_refptr<network::ResourceRequestBody> request_body)
+  MockURLLoader(
+      base::test::TaskEnvironment* task_environment,
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
+      network::mojom::URLLoaderClientPtr client,
+      std::vector<TestLoaderEvent> test_events,
+      scoped_refptr<network::ResourceRequestBody> request_body)
       : task_environment_(task_environment),
-        binding_(this, std::move(url_loader_request)),
+        receiver_(this, std::move(url_loader_receiver)),
         client_(std::move(client)),
         test_events_(std::move(test_events)) {
     if (request_body && request_body->elements()->size() == 1 &&
@@ -1930,7 +1929,7 @@ class MockURLLoader : public network::mojom::URLLoader {
         }
         case TestLoaderEvent::kClientPipeClosed: {
           DCHECK(client_);
-          EXPECT_TRUE(binding_.is_bound());
+          EXPECT_TRUE(receiver_.is_bound());
           client_.reset();
           break;
         }
@@ -1984,7 +1983,7 @@ class MockURLLoader : public network::mojom::URLLoader {
   base::test::TaskEnvironment* task_environment_;
 
   std::unique_ptr<net::URLRequest> url_request_;
-  mojo::Binding<network::mojom::URLLoader> binding_;
+  mojo::Receiver<network::mojom::URLLoader> receiver_;
   network::mojom::URLLoaderClientPtr client_;
 
   std::vector<TestLoaderEvent> test_events_;

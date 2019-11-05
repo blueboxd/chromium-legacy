@@ -38,7 +38,7 @@ public class ContextualSearchTermControl extends OverlayPanelTextViewInflater {
                 context, container, resourceLoader,
                 (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
                                 ? R.dimen.contextual_search_end_padding
-                                : R.dimen.overlay_panel_padded_button_width),
+                                : R.dimen.contextual_search_padded_button_width),
                 R.dimen.contextual_search_padded_button_width);
     }
 

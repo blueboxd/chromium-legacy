@@ -3180,6 +3180,10 @@ const char kAppServiceShelfName[] = "App Service Shelf";
 const char kAppServiceShelfDescription[] =
     "Use the App Service to provide data to the UI Shelf";
 
+const char kArcApplicationZoomName[] = "Allow zooming of Android apps";
+const char kArcApplicationZoomDescription[] =
+    "Allow Android apps to be zoomed in/out using ctrl+/-.";
+
 const char kArcBootCompleted[] = "Load Android apps automatically";
 const char kArcBootCompletedDescription[] =
     "Allow Android apps to start automatically after signing in.";

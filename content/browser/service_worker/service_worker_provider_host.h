@@ -45,6 +45,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
+#include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
 #include "url/origin.h"
 
 namespace service_worker_object_host_unittest {
@@ -444,6 +445,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver);
   void CreatePaymentManager(
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
+  void CreateQuicTransportConnector(
+      mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
 
   // BackForwardCache:
   // For service worker clients that are windows.

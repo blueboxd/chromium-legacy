@@ -77,7 +77,7 @@ class SVGStringListBase : public SVGPropertyBase {
   virtual SVGParsingError SetValueAsString(const String&) = 0;
 
   void Add(SVGPropertyBase*, SVGElement*) override;
-  void CalculateAnimatedValue(const SVGAnimationElement&,
+  void CalculateAnimatedValue(const SVGAnimateElement&,
                               float percentage,
                               unsigned repeat_count,
                               SVGPropertyBase* from_value,

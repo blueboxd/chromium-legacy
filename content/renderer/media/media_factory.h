@@ -17,6 +17,7 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/remoting.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
@@ -190,9 +191,9 @@ class MediaFactory {
       web_encrypted_media_client_;
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  // Lazy-bound pointer to the RemoterFactory service in the browser
+  // Lazy-bound remote for the RemoterFactory service in the browser
   // process. Always use the GetRemoterFactory() accessor instead of this.
-  media::mojom::RemoterFactoryPtr remoter_factory_;
+  mojo::Remote<media::mojom::RemoterFactory> remoter_factory_;
 #endif
 };
 

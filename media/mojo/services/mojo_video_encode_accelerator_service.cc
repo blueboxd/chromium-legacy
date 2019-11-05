@@ -45,7 +45,7 @@ MojoVideoEncodeAcceleratorService::~MojoVideoEncodeAcceleratorService() {
 
 void MojoVideoEncodeAcceleratorService::Initialize(
     const media::VideoEncodeAccelerator::Config& config,
-    mojom::VideoEncodeAcceleratorClientPtr client,
+    mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> client,
     InitializeCallback success_callback) {
   DVLOG(1) << __func__ << " " << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -59,7 +59,7 @@ void MojoVideoEncodeAcceleratorService::Initialize(
     std::move(success_callback).Run(false);
     return;
   }
-  vea_client_ = std::move(client);
+  vea_client_.Bind(std::move(client));
 
   if (config.input_visible_size.width() > limits::kMaxDimension ||
       config.input_visible_size.height() > limits::kMaxDimension ||

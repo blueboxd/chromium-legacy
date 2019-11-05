@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contacts_picker;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
@@ -38,6 +39,9 @@ class ContactsFetcherWorkerTask extends AsyncTask<ArrayList<ContactDetails>> {
         void contactsRetrieved(ArrayList<ContactDetails> contacts);
     }
 
+    // The current context to use.
+    private Context mContext;
+
     // The content resolver to use for looking up contacts.
     private ContentResolver mContentResolver;
 
@@ -58,17 +62,18 @@ class ContactsFetcherWorkerTask extends AsyncTask<ArrayList<ContactDetails>> {
 
     /**
      * A ContactsFetcherWorkerTask constructor.
-     * @param contentResolver The ContentResolver to use to fetch the contacts data.
+     * @param context The Context to use.
      * @param callback The callback to use to communicate back the results.
      * @param includeNames Whether names were requested by the website.
      * @param includeEmails Whether to include emails in the data fetched.
      * @param includeTel Whether to include telephones in the data fetched.
      * @param includeAddresses Whether to include telephones in the data fetched.
      */
-    public ContactsFetcherWorkerTask(ContentResolver contentResolver,
-            ContactsRetrievedCallback callback, boolean includeNames, boolean includeEmails,
-            boolean includeTel, boolean includeAddresses) {
-        mContentResolver = contentResolver;
+    public ContactsFetcherWorkerTask(Context context, ContactsRetrievedCallback callback,
+            boolean includeNames, boolean includeEmails, boolean includeTel,
+            boolean includeAddresses) {
+        mContext = context;
+        mContentResolver = context.getContentResolver();
         mCallback = callback;
         mIncludeNames = includeNames;
         mIncludeEmails = includeEmails;

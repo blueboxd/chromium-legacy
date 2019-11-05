@@ -2,13 +2,13 @@
 ++[list]
 ++++[list item] grabbed:true
 ++++++[static] name='• '
-++++++[text] name='grabbed-true '
+++++++[static] name='grabbed-true '
 ++++++[image] name='blue'
 ++++[list item] grabbed:false
 ++++++[static] name='• '
-++++++[text] name='grabbed-false '
+++++++[static] name='grabbed-false '
 ++++++[image] name='blue'
 ++++[list item]
 ++++++[static] name='• '
-++++++[text] name='grabbed-undefined '
+++++++[static] name='grabbed-undefined '
 ++++++[image] name='blue'

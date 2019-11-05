@@ -10257,6 +10257,7 @@ Called by update_net_error_codes.py.-->
   <int value="56" label="Legacy cookie access"/>
   <int value="57" label="Native file system write guard"/>
   <int value="58" label="Installed web app metadata"/>
+  <int value="59" label="NFC"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -25348,6 +25349,8 @@ Called by update_net_error_codes.py.-->
   <int value="3079" label="UpgradeInsecureRequestsUpgradedRequestForm"/>
   <int value="3080" label="UpgradeInsecureRequestsUpgradedRequestUnknown"/>
   <int value="3081" label="HasGlyphRelativeUnits"/>
+  <int value="3082" label="CountQueuingStrategyConstructor"/>
+  <int value="3083" label="ByteLengthQueuingStrategyConstructor"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35603,6 +35606,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1972312724" label="OfflinePagesLoadSignalCollecting:enabled"/>
   <int value="-1972219399" label="NTPSaveToOffline:enabled"/>
   <int value="-1971086581" label="print-scaling"/>
+  <int value="-1967387994" label="ArcEnableApplicationZoomFeature:disabled"/>
   <int value="-1965587041" label="omnibox-tab-switch-suggestions"/>
   <int value="-1964261747" label="WebVrVsyncAlign:disabled"/>
   <int value="-1963838301"
@@ -37840,6 +37844,7 @@ from previous Chrome versions.
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
   <int value="880510010" label="enable-permissions-bubbles"/>
   <int value="884106779" label="supervised-user-safesites"/>
+  <int value="885004540" label="ArcEnableApplicationZoomFeature:enabled"/>
   <int value="885971656" label="EnablePlayStoreAppSearch:enabled"/>
   <int value="886907524" label="autoplay-policy"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
@@ -49107,6 +49112,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="19" label="PERMISSION_PERIODIC_BACKGROUND_SYNC"/>
   <int value="20" label="PERMISSION_WAKE_LOCK_SCREEN"/>
   <int value="21" label="PERMISSION_WAKE_LOCK_SYSTEM"/>
+  <int value="22" label="PERMISSION_NFC"/>
 </enum>
 
 <enum name="PersistedLogsLogReadStatus">
@@ -56629,6 +56635,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="SharedClipboard"/>
   <int value="5" label="SmsFetchRequest"/>
   <int value="6" label="RemoteCopy"/>
+  <int value="7" label="SignallingMessage"/>
+  <int value="8" label="IceCandidateMessage"/>
 </enum>
 
 <enum name="SharingSendMessageResult">
@@ -62113,7 +62121,7 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UkmResetReason">
-  <int value="0" label="OnSyncPrefsChanged"/>
+  <int value="0" label="OnUkmAllowedStateChanged"/>
   <int value="1" label="UpdatePermissions"/>
 </enum>
 

@@ -352,6 +352,27 @@ public class NFCTest {
         assertNull(extMojoNdefMessage.data[0].lang);
         assertEquals(TEST_TEXT, new String(extMojoNdefMessage.data[0].data));
 
+        // Test conversion for external records with the payload being a ndef message.
+        android.nfc.NdefMessage payloadMessage = new android.nfc.NdefMessage(
+                android.nfc.NdefRecord.createTextRecord(LANG_EN_US, TEST_TEXT));
+        byte[] payloadBytes = payloadMessage.toByteArray();
+        // Put |payloadBytes| as payload of an external record.
+        android.nfc.NdefMessage extNdefMessage1 =
+                new android.nfc.NdefMessage(android.nfc.NdefRecord.createExternal(
+                        DUMMY_EXTERNAL_RECORD_DOMAIN, DUMMY_EXTERNAL_RECORD_TYPE, payloadBytes));
+        NdefMessage extMojoNdefMessage1 = NdefMessageUtils.toNdefMessage(extNdefMessage1);
+        assertEquals(1, extMojoNdefMessage1.data.length);
+        assertEquals(DUMMY_EXTERNAL_RECORD_DOMAIN + ':' + DUMMY_EXTERNAL_RECORD_TYPE,
+                extMojoNdefMessage1.data[0].recordType);
+        assertEquals(OCTET_STREAM_MIME, extMojoNdefMessage1.data[0].mediaType);
+        // The embedded ndef message should have content corresponding with the original
+        // |payloadMessage|.
+        NdefMessage payloadMojoMessage = extMojoNdefMessage1.data[0].payloadMessage;
+        assertEquals(1, payloadMojoMessage.data.length);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_TEXT, payloadMojoMessage.data[0].recordType);
+        assertEquals(TEXT_MIME, payloadMojoMessage.data[0].mediaType);
+        assertEquals(TEST_TEXT, new String(payloadMojoMessage.data[0].data));
+
         // Test NdefMessage with an additional WebNFC author record.
         android.nfc.NdefRecord jsonNdefRecord = android.nfc.NdefRecord.createMime(
                 JSON_MIME, ApiCompatibilityUtils.getBytesUtf8(TEST_JSON));

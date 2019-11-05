@@ -11,8 +11,8 @@ from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .extended_attribute import ExtendedAttributes
-from .reference import Proxy
 from .reference import RefById
+from .reference import RefByIdFactory
 from .typedef import Typedef
 from .user_defined_type import UserDefinedType
 
@@ -47,6 +47,13 @@ class IdlTypeFactory(object):
 
     def __init__(self):
         self._idl_types = []
+        # Factory to initialize instances of ReferenceType.
+        attrs_to_be_proxied = (
+            set(RefById.get_all_attributes(IdlType)).difference(
+                # attributes not to be proxied
+                set(('debug_info', 'extended_attributes', 'is_optional'))))
+        self._ref_by_id_factory = RefByIdFactory(
+            target_attrs_with_priority=attrs_to_be_proxied)
         # |_is_frozen| is initially False and you can create new instances of
         # IdlType.  The first invocation of |for_each| freezes the factory and
         # you can no longer create a new instance of IdlType.
@@ -68,10 +75,26 @@ class IdlTypeFactory(object):
         for idl_type in self._idl_types:
             callback(idl_type)
 
+    def for_each_reference(self, callback):
+        """
+        Applies |callback| to all the instances of IdlType that is referencing
+        to another IdlType.
+
+        Instantiation of referencing IdlType is no longer possible, but it's
+        still possible to instantiate other IdlTypes.
+
+        Args:
+            callback: A callable that takes an IdlType as only the argument.
+                Return value is not used.
+        """
+        self._ref_by_id_factory.for_each(callback)
+
     def simple_type(self, *args, **kwargs):
         return self._create(SimpleType, args, kwargs)
 
     def reference_type(self, *args, **kwargs):
+        assert 'ref_by_id_factory' not in kwargs
+        kwargs['ref_by_id_factory'] = self._ref_by_id_factory
         return self._create(ReferenceType, args, kwargs)
 
     def definition_type(self, *args, **kwargs):
@@ -180,17 +203,39 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         """
         callback(self)
 
-    def unwrap(self, nullable=True, typedef=True):
+    def unwrap(self, nullable=None, typedef=None):
         """
         Returns the body part of the actual type, i.e. returns the interesting
         part of this type.
 
         Args:
-            nullable: Unwraps a nullable type and returns |inner_type| if True.
-            typedef: Dereferences a typedef type and returns |original_type| if
-                True.
+            nullable:
+            typedef:
+                All these arguments take tri-state value: True, False, or None.
+                True unwraps that type, False stops unwrapping that type.  All
+                of specified arguments' values must be consistent, and mixture
+                of True and False is not allowed.  Unspecified arguments are
+                automatically set to the opposite value.  If no argument is
+                specified, unwraps all types.
         """
-        return self
+        switches = {
+            'nullable': nullable,
+            'typedef': typedef,
+        }
+
+        value_counts = {None: 0, False: 0, True: 0}
+        for value in switches.itervalues():
+            assert value is None or isinstance(value, bool)
+            value_counts[value] += 1
+        assert value_counts[False] == 0 or value_counts[True] == 0, (
+            "Specify only True or False arguments.  Unspecified arguments are "
+            "automatically set to the opposite value.")
+        default = value_counts[True] == 0
+        for arg, value in switches.iteritems():
+            if value is None:
+                switches[arg] = default
+
+        return self._unwrap(switches)
 
     @property
     def does_include_nullable_type(self):
@@ -417,6 +462,9 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return '{}{}'.format(type_name_inner, ''.join(
             sorted(self.extended_attributes.keys())))
 
+    def _unwrap(self, switches):
+        return self
+
 
 class SimpleType(IdlType):
     """
@@ -500,7 +548,7 @@ class SimpleType(IdlType):
         return self._name == 'void'
 
 
-class ReferenceType(IdlType, WithIdentifier, Proxy):
+class ReferenceType(IdlType, RefById):
     """
     Represents a type specified with the given identifier.
 
@@ -512,28 +560,23 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
     identifier may be resolved to a TypedefType.
     """
 
-    _attrs_to_be_proxied = set(Proxy.get_all_attributes(IdlType)).difference(
-        # attributes not to be proxied
-        set(('debug_info', 'extended_attributes', 'is_optional')))
-
     def __init__(self,
-                 ref_to_idl_type,
+                 identifier,
                  is_optional=False,
                  extended_attributes=None,
                  debug_info=None,
+                 ref_by_id_factory=None,
                  pass_key=None):
-        assert isinstance(ref_to_idl_type, RefById)
+        assert isinstance(ref_by_id_factory, RefByIdFactory)
+
         IdlType.__init__(
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             debug_info=debug_info,
             pass_key=pass_key)
-        WithIdentifier.__init__(self, ref_to_idl_type.identifier)
-        Proxy.__init__(
-            self,
-            target_object=ref_to_idl_type,
-            target_attrs_with_priority=ReferenceType._attrs_to_be_proxied)
+        ref_by_id_factory.init_subclass_instance(
+            self, identifier=identifier, debug_info=debug_info)
 
     def __eq__(self, other):
         return (IdlType.__eq__(self, other)
@@ -656,12 +699,6 @@ class TypedefType(IdlType, WithIdentifier):
         callback(self)
         self.original_type.apply_to_all_composing_elements(callback)
 
-    def unwrap(self, nullable=True, typedef=True):
-        if typedef:
-            return self.original_type.unwrap(
-                nullable=nullable, typedef=typedef)
-        return self
-
     @property
     def does_include_nullable_type(self):
         return self.original_type.does_include_nullable_type
@@ -673,6 +710,11 @@ class TypedefType(IdlType, WithIdentifier):
     @property
     def original_type(self):
         return self._typedef.idl_type
+
+    def _unwrap(self, switches):
+        if switches['typedef']:
+            return self.original_type._unwrap(switches)
+        return self
 
 
 class _ArrayLikeType(IdlType):
@@ -1050,11 +1092,6 @@ class NullableType(IdlType):
         callback(self)
         self.inner_type.apply_to_all_composing_elements(callback)
 
-    def unwrap(self, nullable=True, typedef=True):
-        if nullable:
-            return self.inner_type.unwrap(nullable=nullable, typedef=typedef)
-        return self
-
     @property
     def does_include_nullable_type(self):
         return True
@@ -1066,3 +1103,8 @@ class NullableType(IdlType):
     @property
     def inner_type(self):
         return self._inner_type
+
+    def _unwrap(self, switches):
+        if switches['nullable']:
+            return self.inner_type._unwrap(switches)
+        return self

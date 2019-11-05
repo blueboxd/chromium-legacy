@@ -41,3 +41,6 @@
 
 # https://crbug.com/1020884
 -ServiceWorkerVersionBrowserTest.ReadResourceFailure_WaitingWorker
+
+# https://crbug.com/1021409
+-NavigationControllerBrowserTest.BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion

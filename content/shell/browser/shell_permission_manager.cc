@@ -45,6 +45,7 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
     case PermissionType::CLIPBOARD_WRITE:
     case PermissionType::NUM:
     case PermissionType::WAKE_LOCK_SYSTEM:
+    case PermissionType::NFC:
       return false;
   }
 

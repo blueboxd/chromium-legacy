@@ -34,8 +34,8 @@ RootCompositorFrameSinkImpl::Create(
     uint32_t restart_id,
     bool run_all_compositor_stages_before_draw) {
   // First create an output surface.
-  mojom::DisplayClientPtr display_client =
-      mojom::DisplayClientPtr(std::move(params->display_client));
+  mojo::Remote<mojom::DisplayClient> display_client(
+      std::move(params->display_client));
   auto output_surface = output_surface_provider->CreateOutputSurface(
       params->widget, params->gpu_compositing, display_client.get(),
       params->renderer_settings);
@@ -293,15 +293,15 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     mojo::PendingAssociatedReceiver<mojom::CompositorFrameSink>
         frame_sink_receiver,
     mojo::PendingRemote<mojom::CompositorFrameSinkClient> frame_sink_client,
-    mojom::DisplayPrivateAssociatedRequest display_request,
-    mojom::DisplayClientPtr display_client,
+    mojo::PendingAssociatedReceiver<mojom::DisplayPrivate> display_receiver,
+    mojo::Remote<mojom::DisplayClient> display_client,
     std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
     std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
     std::unique_ptr<Display> display)
     : compositor_frame_sink_client_(std::move(frame_sink_client)),
       compositor_frame_sink_receiver_(this, std::move(frame_sink_receiver)),
       display_client_(std::move(display_client)),
-      display_private_binding_(this, std::move(display_request)),
+      display_private_receiver_(this, std::move(display_receiver)),
       support_(std::make_unique<CompositorFrameSinkSupport>(
           compositor_frame_sink_client_.get(),
           frame_sink_manager,
@@ -320,11 +320,11 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
 }
 
 void RootCompositorFrameSinkImpl::DisplayOutputSurfaceLost() {
-  // |display_| has encountered an error and needs to be recreated. Close
+  // |display_| has encountered an error and needs to be recreated. Reset
   // message pipes from the client, the client will see the connection error and
   // recreate the CompositorFrameSink+Display.
   compositor_frame_sink_receiver_.reset();
-  display_private_binding_.Close();
+  display_private_receiver_.reset();
 }
 
 void RootCompositorFrameSinkImpl::DisplayWillDrawAndSwap(

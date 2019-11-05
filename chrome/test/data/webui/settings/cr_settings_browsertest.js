@@ -391,7 +391,8 @@ CrSettingsPasswordsSectionTest_Cros.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPasswordsSectionTest_Cros', 'All', function() {
+
+TEST_F('CrSettingsPasswordsSectionTest_Cros', 'DISABLED_All', function() {
   mocha.run();
 });
 GEN('#endif  // defined(OS_CHROMEOS)');

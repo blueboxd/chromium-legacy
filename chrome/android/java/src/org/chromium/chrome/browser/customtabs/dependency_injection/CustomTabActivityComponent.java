@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitiali
 import org.chromium.chrome.browser.customtabs.CustomTabSessionHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
+import org.chromium.chrome.browser.customtabs.CustomTabUmaRecorder;
 import org.chromium.chrome.browser.customtabs.ReparentingTaskProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
@@ -22,6 +23,7 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleToolbarController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
+import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
@@ -48,7 +50,9 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     CustomTabActivityNavigationController resolveNavigationController();
     CustomTabActivityTabProvider resolveTabProvider();
     CustomTabStatusBarColorProvider resolveCustomTabStatusBarColorProvider();
+    CustomTabToolbarColorController resolveToolbarColorController();
     CustomTabToolbarCoordinator resolveToolbarCoordinator();
+    CustomTabUmaRecorder resolveCustomTabUmaRecorder();
     CustomTabCompositorContentInitializer resolveCompositorContentInitializer();
     CustomTabSessionHandler resolveSessionHandler();
     CustomTabActivityClientConnectionKeeper resolveConnectionKeeper();

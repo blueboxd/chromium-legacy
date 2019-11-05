@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.webapps.dependency_injection;
 
+import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
+import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
@@ -22,6 +24,8 @@ import dagger.Subcomponent;
 @ActivityScope
 public interface WebappActivityComponent extends ChromeActivityComponent {
     CustomTabActivityNavigationController resolveNavigationController();
+    CustomTabCompositorContentInitializer resolveCompositorContentInitializer();
+    CustomTabToolbarCoordinator resolveToolbarCoordinator();
     SplashController resolveSplashController();
     TabObserverRegistrar resolveTabObserverRegistrar();
     WebappActivityTabController resolveTabController();

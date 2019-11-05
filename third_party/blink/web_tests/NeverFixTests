@@ -196,6 +196,7 @@ external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/support/xhtml-mathml-
 crbug.com/246571 external/wpt/css/css-values/attr-color-invalid-cast.html [ Skip ]
 crbug.com/246571 external/wpt/css/css-values/attr-color-valid.html [ Skip ]
 crbug.com/246571 external/wpt/css/css-values/attr-in-max.html [ Skip ]
+crbug.com/246571 external/wpt/css/css-values/attr-invalid-type-008.html [ Skip ]
 crbug.com/246571 external/wpt/css/css-values/attr-length-invalid-cast.html [ Skip ]
 crbug.com/246571 external/wpt/css/css-values/attr-length-valid.html [ Skip ]
 crbug.com/246571 external/wpt/css/css-values/attr-length-valid-zero.html [ Skip ]

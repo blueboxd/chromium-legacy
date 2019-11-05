@@ -348,7 +348,8 @@ bool SyncTest::CreateGaiaAccount(const std::string& username,
   return entry->GetHttpStatusCode() == 200;
 }
 
-void SyncTest::BeforeSetupClient(int index) {}
+void SyncTest::BeforeSetupClient(int index,
+                                 const base::FilePath& profile_path) {}
 
 bool SyncTest::CreateProfile(int index) {
   base::FilePath profile_path;
@@ -382,6 +383,8 @@ bool SyncTest::CreateProfile(int index) {
     profile_path = user_data_dir.AppendASCII(
         base::StringPrintf("SyncIntegrationTestClient%d", index));
   }
+
+  BeforeSetupClient(index, profile_path);
 
   if (UsingExternalServers()) {
     // If running against an EXTERNAL_LIVE_SERVER, we signin profiles using real
@@ -435,27 +438,6 @@ Profile* SyncTest::MakeProfileForUISignin(base::FilePath profile_path) {
 }
 
 Profile* SyncTest::MakeTestProfile(base::FilePath profile_path, int index) {
-  const auto& preference_contents_it =
-      preexisting_preferences_file_contents_.find(index);
-  if (preference_contents_it != preexisting_preferences_file_contents_.end() &&
-      !preference_contents_it->second.empty()) {
-    // The profile directory might not exist yet (e.g. for the verifier_
-    // profile).
-    if (!base::PathExists(profile_path) &&
-        !base::CreateDirectory(profile_path)) {
-      LOG(FATAL) << "Could not create profile directory: " << profile_path;
-    }
-    base::FilePath pref_path(profile_path.Append(chrome::kPreferencesFilename));
-    int write_result =
-        base::WriteFile(pref_path, preference_contents_it->second.c_str(),
-                        preference_contents_it->second.size());
-    if (write_result !=
-        static_cast<int>(preference_contents_it->second.size())) {
-      LOG(FATAL) << "Preexisting Preferences file could not be written to "
-                 << pref_path;
-    }
-  }
-
   std::unique_ptr<Profile> profile =
       Profile::CreateProfile(profile_path, profile_delegates_[index].get(),
                              Profile::CREATE_MODE_SYNCHRONOUS);
@@ -598,7 +580,6 @@ bool SyncTest::SetupClients() {
 #endif
 
   for (int i = 0; i < num_clients_; ++i) {
-    BeforeSetupClient(i);
     if (!CreateProfile(i)) {
       return false;
     }
@@ -1202,10 +1183,4 @@ arc::SyncArcPackageHelper* SyncTest::sync_arc_helper() {
 #else
   return nullptr;
 #endif
-}
-
-void SyncTest::SetPreexistingPreferencesFileContents(
-    int index,
-    const std::string& contents) {
-  preexisting_preferences_file_contents_[index] = contents;
 }

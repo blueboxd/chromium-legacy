@@ -73,11 +73,11 @@ bool MetricsServiceClient::ShouldStartUpFastForTesting() const {
   return false;
 }
 
-bool MetricsServiceClient::SyncStateAllowsUkm() {
+bool MetricsServiceClient::IsUkmAllowedForAllProfiles() {
   return false;
 }
 
-bool MetricsServiceClient::SyncStateAllowsExtensionUkm() {
+bool MetricsServiceClient::IsUkmAllowedWithExtensionsForAllProfiles() {
   return false;
 }
 

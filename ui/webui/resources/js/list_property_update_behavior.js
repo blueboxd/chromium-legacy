@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {calculateSplices} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 /**
  * @fileoverview |ListPropertyUpdateBehavior| is used to update an existing
  * polymer list property given the list after all the edits were made while
@@ -16,7 +18,7 @@
  */
 
 /** @polymerBehavior */
-const ListPropertyUpdateBehavior = {
+/* #export */ const ListPropertyUpdateBehavior = {
   /**
    * @param {string} propertyPath
    * @param {function(!Object): string} itemUidGetter

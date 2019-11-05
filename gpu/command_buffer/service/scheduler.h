@@ -94,7 +94,8 @@ class GPU_EXPORT Scheduler {
 
   base::WeakPtr<Scheduler> AsWeakPtr();
 
-  // Takes and resets current accumulated blocking time
+  // Takes and resets current accumulated blocking time. Not available on all
+  // platforms. Returns TimeDelta::Min() when not available.
   base::TimeDelta TakeTotalBlockingTime();
 
  private:

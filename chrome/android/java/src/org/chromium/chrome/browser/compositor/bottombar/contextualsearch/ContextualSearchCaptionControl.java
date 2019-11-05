@@ -129,6 +129,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
      */
     @Override
     public void onUpdateFromPeekToExpand(float percentage) {
+        super.onUpdateFromPeekToExpand(percentage);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
             if (mHasPeekingCaption) {
                 if (mTransitionAnimator != null) mTransitionAnimator.cancel();

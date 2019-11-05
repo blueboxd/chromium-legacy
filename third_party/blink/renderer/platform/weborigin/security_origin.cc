@@ -406,12 +406,17 @@ bool SecurityOrigin::CanRequest(const KURL& url) const {
   if (SerializesAsNull()) {
     // Allow the request if the URL is blob and it has the same "null" origin
     // with |this|.
-    // TODO(nhiroki): Probably we should check the equality by
-    // SecurityOrigin::IsSameSchemeHostPort().
-    if (url.ProtocolIs("blob") && BlobURL::GetOrigin(url) == "null" &&
-        BlobURLNullOriginMap::GetInstance()->Get(url) == this) {
+    if (!url.ProtocolIs("blob") || BlobURL::GetOrigin(url) != "null")
+      return false;
+    if (BlobURLNullOriginMap::GetInstance()->Get(url) == this)
       return true;
-    }
+    // BlobURLNullOriginMap doesn't work for cross-thread blob URL loading
+    // (e.g., top-level worker script loading) because SecurityOrigin and
+    // BlobURLNullOriginMap are thread-specific. For the case, check
+    // BlobURLOpaqueOriginNonceMap.
+    base::Optional<base::UnguessableToken> nonce = GetNonceForSerialization();
+    if (nonce && BlobURLOpaqueOriginNonceMap::GetInstance().Get(url) == nonce)
+      return true;
     return false;
   }
 

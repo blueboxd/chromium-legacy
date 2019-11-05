@@ -5,7 +5,6 @@
 #ifndef WEBLAYER_BROWSER_PROFILE_IMPL_H_
 #define WEBLAYER_BROWSER_PROFILE_IMPL_H_
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -30,8 +29,10 @@ class ProfileImpl : public Profile {
   content::BrowserContext* GetBrowserContext();
 
   // Profile implementation:
-  void ClearBrowsingData(std::vector<BrowsingDataType> data_types,
-                         base::OnceCallback<void()> callback) override;
+  void ClearBrowsingData(const std::vector<BrowsingDataType>& data_types,
+                         base::Time from_time,
+                         base::Time to_time,
+                         base::OnceClosure callback) override;
 
 #if defined(OS_ANDROID)
   ProfileImpl(JNIEnv* env, const base::android::JavaParamRef<jstring>& path);
@@ -39,6 +40,8 @@ class ProfileImpl : public Profile {
   void ClearBrowsingData(
       JNIEnv* env,
       const base::android::JavaParamRef<jintArray>& j_data_types,
+      const jlong j_from_time_millis,
+      const jlong j_to_time_millis,
       const base::android::JavaRef<jobject>& j_callback);
 #endif
 

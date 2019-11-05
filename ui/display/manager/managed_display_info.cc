@@ -286,7 +286,6 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       zoom_factor_(1.f),
       refresh_rate_(60.f),
       is_interlaced_(false),
-      is_zoom_factor_from_ui_scale_(false),
       from_native_platform_(false),
       native_(false),
       is_aspect_preserving_scaling_(false),
@@ -309,7 +308,6 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       zoom_factor_(1.f),
       refresh_rate_(60.f),
       is_interlaced_(false),
-      is_zoom_factor_from_ui_scale_(false),
       from_native_platform_(false),
       native_(false),
       is_aspect_preserving_scaling_(false),
@@ -387,7 +385,6 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
 
   rotations_ = native_info.rotations_;
   zoom_factor_ = native_info.zoom_factor_;
-  is_zoom_factor_from_ui_scale_ = native_info.is_zoom_factor_from_ui_scale_;
 }
 
 void ManagedDisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_native) {

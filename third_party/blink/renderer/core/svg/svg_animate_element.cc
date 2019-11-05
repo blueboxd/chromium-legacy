@@ -228,11 +228,6 @@ bool SVGAnimateElement::HasValidTarget() const {
          GetAttributeType() != kAttributeTypeCSS;
 }
 
-bool SVGAnimateElement::ShouldApplyAnimation(
-    const SVGElement& target_element) const {
-  return target_element.parentNode() && HasValidTarget();
-}
-
 SVGPropertyBase* SVGAnimateElement::CreatePropertyForAttributeAnimation(
     const String& value) const {
   // SVG DOM animVal animation code-path.
@@ -437,9 +432,7 @@ bool SVGAnimateElement::CalculateFromAndByValues(const String& from_string,
 }
 
 void SVGAnimateElement::ResetAnimatedType() {
-  SVGElement* target_element = targetElement();
-  if (!ShouldApplyAnimation(*target_element))
-    return;
+  DCHECK(targetElement());
   if (IsAnimatingSVGDom()) {
     // SVG DOM animVal animation code-path.
     animated_value_ = target_property_->CreateAnimatedValue();
@@ -452,31 +445,23 @@ void SVGAnimateElement::ResetAnimatedType() {
   DCHECK(SVGElement::IsAnimatableCSSProperty(AttributeName()));
 
   // CSS properties animation code-path.
-  String base_value = ComputeCSSPropertyValue(target_element, css_property_id_);
+  String base_value =
+      ComputeCSSPropertyValue(targetElement(), css_property_id_);
   animated_value_ = CreatePropertyForAnimation(base_value);
 }
 
 void SVGAnimateElement::ClearAnimatedType() {
-  if (!animated_value_)
-    return;
-
   SVGElement* target_element = targetElement();
-  if (!target_element) {
-    animated_value_.Clear();
-    return;
-  }
+  DCHECK(target_element);
 
-  bool should_apply = ShouldApplyAnimation(*target_element);
   // CSS properties animation code-path.
   if (IsAnimatingCSSProperty()) {
-    if (should_apply) {
-      MutableCSSPropertyValueSet* property_set =
-          target_element->EnsureAnimatedSMILStyleProperties();
-      if (property_set->RemoveProperty(css_property_id_)) {
-        target_element->SetNeedsStyleRecalc(
-            kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                   style_change_reason::kAnimation));
-      }
+    MutableCSSPropertyValueSet* property_set =
+        target_element->EnsureAnimatedSMILStyleProperties();
+    if (property_set->RemoveProperty(css_property_id_)) {
+      target_element->SetNeedsStyleRecalc(
+          kLocalStyleChange,
+          StyleChangeReasonForTracing::Create(style_change_reason::kAnimation));
     }
   }
   // SVG DOM animVal animation code-path.
@@ -488,18 +473,12 @@ void SVGAnimateElement::ClearAnimatedType() {
 
 void SVGAnimateElement::ApplyResultsToTarget() {
   DCHECK_NE(GetAnimatedPropertyType(), kAnimatedUnknown);
-
-  // Early exit if our animated type got destructed by a previous
-  // endedActiveInterval().
-  if (!animated_value_)
-    return;
-
-  SVGElement* target_element = targetElement();
-  if (!ShouldApplyAnimation(*target_element))
-    return;
+  DCHECK(animated_value_);
+  DCHECK(targetElement());
 
   // We do update the style and the animation property independent of each
   // other.
+  SVGElement* target_element = targetElement();
 
   // CSS properties animation code-path.
   if (IsAnimatingCSSProperty()) {

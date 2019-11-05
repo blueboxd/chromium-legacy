@@ -7,6 +7,10 @@ package org.chromium.chrome.browser.browserservices;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+
 /**
  * Interface for controlling Activity's tabs.
  */
@@ -26,4 +30,7 @@ public interface BrowserServicesActivityTabController {
 
     /** Save the current state of the tab. */
     void saveState();
+
+    /** Returns {@link TabModelSelector}. Should be called after postInflationStartup. */
+    public @Nullable TabModelSelector getTabModelSelector();
 }

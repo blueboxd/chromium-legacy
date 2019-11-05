@@ -158,6 +158,11 @@ class WebAppFrameToolbarView::ContentSettingsContainer : public views::View {
   }
 
  private:
+  // views::View:
+  void ChildVisibilityChanged(views::View* child) override {
+    PreferredSizeChanged();
+  }
+
   // Owned by the views hierarchy.
   std::vector<ContentSettingImageView*> content_setting_views_;
 
@@ -560,6 +565,11 @@ gfx::Size WebAppFrameToolbarView::CalculatePreferredSize() const {
 }
 
 void WebAppFrameToolbarView::ChildPreferredSizeChanged(views::View* child) {
+  PreferredSizeChanged();
+}
+
+void WebAppFrameToolbarView::ChildVisibilityChanged(views::View* child) {
+  // Changes to layout need to be taken into account by the frame view.
   PreferredSizeChanged();
 }
 

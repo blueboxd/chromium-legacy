@@ -33,6 +33,10 @@ namespace {
 // thread mode is enabled on Windows 7.
 constexpr int kWin7BackgroundThreadModePriority = 4;
 
+// Value sometimes returned by ::GetThreadPriority() after thread priority is
+// set to normal on Windows 7.
+constexpr int kWin7NormalPriority = 3;
+
 // The information on how to set the thread name comes from
 // a MSDN article: http://msdn2.microsoft.com/en-us/library/xcb2z8hs.aspx
 const DWORD kVCThreadNameException = 0x406D1388;
@@ -441,6 +445,9 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
     case kWin7BackgroundThreadModePriority:
       DCHECK_EQ(win::GetVersion(), win::Version::WIN7);
       return ThreadPriority::BACKGROUND;
+    case kWin7NormalPriority:
+      DCHECK_EQ(win::GetVersion(), win::Version::WIN7);
+      FALLTHROUGH;
     case THREAD_PRIORITY_NORMAL:
       return ThreadPriority::NORMAL;
     case THREAD_PRIORITY_ABOVE_NORMAL:

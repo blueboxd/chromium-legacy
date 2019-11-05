@@ -5,7 +5,7 @@
 #include "weblayer/browser/profile_impl.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -172,12 +172,13 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
 
   ~DataClearer() override { remover_->RemoveObserver(this); }
 
-  void ClearData(int mask) {
+  void ClearData(int mask,
+                 base::Time from_time,
+                 base::Time to_time) {
     int origin_types =
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
         content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
-    remover_->RemoveAndReply(base::Time(), base::Time::Max(), mask,
-                             origin_types, this);
+    remover_->RemoveAndReply(from_time, to_time, mask, origin_types, this);
   }
 
   void OnBrowsingDataRemoverDone() override {
@@ -202,8 +203,11 @@ content::BrowserContext* ProfileImpl::GetBrowserContext() {
   return browser_context_.get();
 }
 
-void ProfileImpl::ClearBrowsingData(std::vector<BrowsingDataType> data_types,
-                                    base::OnceCallback<void()> callback) {
+void ProfileImpl::ClearBrowsingData(
+    const std::vector<BrowsingDataType>& data_types,
+    base::Time from_time,
+    base::Time to_time,
+    base::OnceClosure callback) {
   auto* clearer = new DataClearer(browser_context_.get(), std::move(callback));
   // DataClearer will delete itself in OnBrowsingDataRemoverDone().
   // If Profile is destroyed during clearing, it would lead to destroying
@@ -226,7 +230,7 @@ void ProfileImpl::ClearBrowsingData(std::vector<BrowsingDataType> data_types,
         NOTREACHED();
     }
   }
-  clearer->ClearData(remove_mask);
+  clearer->ClearData(remove_mask, from_time, to_time);
 }
 
 std::unique_ptr<Profile> Profile::Create(const base::FilePath& path) {
@@ -251,6 +255,8 @@ static void JNI_ProfileImpl_DeleteProfile(JNIEnv* env, jlong profile) {
 void ProfileImpl::ClearBrowsingData(
     JNIEnv* env,
     const base::android::JavaParamRef<jintArray>& j_data_types,
+    const jlong j_from_time_millis,
+    const jlong j_to_time_millis,
     const base::android::JavaRef<jobject>& j_callback) {
   std::vector<int> data_type_ints;
   base::android::JavaIntArrayToIntVector(env, j_data_types, &data_type_ints);
@@ -261,6 +267,8 @@ void ProfileImpl::ClearBrowsingData(
   }
   ClearBrowsingData(
       data_types,
+      base::Time::FromJavaTime(static_cast<int64_t>(j_from_time_millis)),
+      base::Time::FromJavaTime(static_cast<int64_t>(j_to_time_millis)),
       base::BindOnce(base::android::RunRunnableAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }

@@ -3,6 +3,7 @@ include_rules = [
   "+components/ukm",
   "+content/public/browser",
   "+content/public/test",
+  "+mojo/public",
   "+net/base",
   "+services/metrics/public/cpp",
   "+ui/base/page_transition_types.h",

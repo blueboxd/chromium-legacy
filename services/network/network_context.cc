@@ -1096,6 +1096,15 @@ void NetworkContext::CreateWebSocket(
 #endif  // !defined(OS_IOS)
 }
 
+void NetworkContext::CreateQuicTransport(
+    const GURL& url,
+    const url::Origin& origin,
+    const net::NetworkIsolationKey& key,
+    mojo::PendingRemote<mojom::QuicTransportHandshakeClient>
+        pending_handshake_client) {
+  // TODO(yhirano): Implement this and have a security review on the impl too.
+}
+
 void NetworkContext::CreateNetLogExporter(
     mojo::PendingReceiver<mojom::NetLogExporter> receiver) {
   net_log_exporter_receivers_.Add(std::make_unique<NetLogExporter>(this),

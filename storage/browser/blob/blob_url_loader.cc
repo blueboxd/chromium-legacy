@@ -83,22 +83,22 @@ scoped_refptr<net::HttpResponseHeaders> GenerateHeaders(
 
 // static
 void BlobURLLoader::CreateAndStart(
-    network::mojom::URLLoaderRequest url_loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     std::unique_ptr<BlobDataHandle> blob_handle) {
-  new BlobURLLoader(std::move(url_loader_request), request, std::move(client),
+  new BlobURLLoader(std::move(url_loader_receiver), request, std::move(client),
                     std::move(blob_handle));
 }
 
 BlobURLLoader::~BlobURLLoader() = default;
 
 BlobURLLoader::BlobURLLoader(
-    network::mojom::URLLoaderRequest url_loader_request,
+    mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     std::unique_ptr<BlobDataHandle> blob_handle)
-    : binding_(this, std::move(url_loader_request)),
+    : receiver_(this, std::move(url_loader_receiver)),
       client_(std::move(client)),
       blob_handle_(std::move(blob_handle)) {
   // PostTask since it might destruct.

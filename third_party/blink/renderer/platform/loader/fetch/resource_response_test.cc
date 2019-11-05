@@ -84,4 +84,22 @@ TEST(ResourceResponseTest, CrossThreadAtomicStrings) {
   thread.reset();
 }
 
+TEST(ResourceResponseTest, AddHttpHeaderFieldWithMultipleValues) {
+  ResourceResponse response(CreateTestResponse());
+
+  Vector<AtomicString> empty_values;
+  response.AddHttpHeaderFieldWithMultipleValues("set-cookie", empty_values);
+  EXPECT_EQ(AtomicString(), response.HttpHeaderField("set-cookie"));
+
+  response.AddHttpHeaderField("set-cookie", "a=1");
+  EXPECT_EQ("a=1", response.HttpHeaderField("set-cookie"));
+
+  Vector<AtomicString> values;
+  values.push_back("b=2");
+  values.push_back("c=3");
+  response.AddHttpHeaderFieldWithMultipleValues("set-cookie", values);
+
+  EXPECT_EQ("a=1, b=2, c=3", response.HttpHeaderField("set-cookie"));
+}
+
 }  // namespace blink

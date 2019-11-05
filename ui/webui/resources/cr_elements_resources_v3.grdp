@@ -176,4 +176,9 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_SEARCH_HIGHLIGHT_STYLE_CSS_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/search_highlight_style_css.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
 </grit-part>

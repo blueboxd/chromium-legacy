@@ -2164,23 +2164,24 @@ WebFormControlElement FindFormControlElementsByUniqueRendererId(
 std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
     WebDocument doc,
     const std::vector<uint32_t>& form_control_renderer_ids) {
-  DCHECK_LE(form_control_renderer_ids.size(), 10u)
-      << "More effective look-up should be implemented";
   WebElementCollection elements = doc.All();
   std::vector<WebFormControlElement> result(form_control_renderer_ids.size());
+
+  // Build a map from entries in |form_control_renderer_ids| to their indices,
+  // for more efficient lookup.
+  std::map<uint32_t, size_t> renderer_id_to_index;
+  for (size_t i = 0; i < form_control_renderer_ids.size(); i++)
+    renderer_id_to_index[form_control_renderer_ids[i]] = i;
 
   for (WebElement element = elements.FirstItem(); !element.IsNull();
        element = elements.NextItem()) {
     if (!element.IsFormControlElement())
       continue;
     WebFormControlElement control = element.To<WebFormControlElement>();
-    auto it = std::find(form_control_renderer_ids.begin(),
-                        form_control_renderer_ids.end(),
-                        control.UniqueRendererFormControlId());
-    if (it == form_control_renderer_ids.end())
+    auto it = renderer_id_to_index.find(control.UniqueRendererFormControlId());
+    if (it == renderer_id_to_index.end())
       continue;
-    size_t index = std::distance(form_control_renderer_ids.begin(), it);
-    result[index] = control;
+    result[it->second] = control;
   }
 
   return result;
@@ -2190,23 +2191,24 @@ std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
     WebDocument doc,
     uint32_t form_renderer_id,
     const std::vector<uint32_t>& form_control_renderer_ids) {
-  DCHECK_LE(form_control_renderer_ids.size(), 10u)
-      << "More effective look-up should be implemented";
   std::vector<WebFormControlElement> result(form_control_renderer_ids.size());
   WebFormElement form = FindFormByUniqueRendererId(doc, form_renderer_id);
   if (form.IsNull())
     return result;
 
+  // Build a map from entries in |form_control_renderer_ids| to their indices,
+  // for more efficient lookup.
+  std::map<uint32_t, size_t> renderer_id_to_index;
+  for (size_t i = 0; i < form_control_renderer_ids.size(); i++)
+    renderer_id_to_index[form_control_renderer_ids[i]] = i;
+
   WebVector<WebFormControlElement> fields;
   form.GetFormControlElements(fields);
   for (const auto& field : fields) {
-    auto it = std::find(form_control_renderer_ids.begin(),
-                        form_control_renderer_ids.end(),
-                        field.UniqueRendererFormControlId());
-    if (it == form_control_renderer_ids.end())
+    auto it = renderer_id_to_index.find(field.UniqueRendererFormControlId());
+    if (it == renderer_id_to_index.end())
       continue;
-    size_t index = std::distance(form_control_renderer_ids.begin(), it);
-    result[index] = field;
+    result[it->second] = field;
   }
   return result;
 }

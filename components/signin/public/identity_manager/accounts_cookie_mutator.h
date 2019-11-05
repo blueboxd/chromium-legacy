@@ -17,6 +17,7 @@ class GoogleServiceAuthError;
 
 namespace signin {
 
+struct MultiloginParameters;
 enum class SetAccountsInCookieResult;
 
 // AccountsCookieMutator is the interface to support merging known local Google
@@ -46,16 +47,22 @@ class AccountsCookieMutator {
       gaia::GaiaSource source,
       AddAccountToCookieCompletedCallback completion_callback) = 0;
 
-  // Updates the state of the Gaia cookie to contain |account_ids|, including
-  // removal of any accounts that are currently present in the cookie but not
-  // contained in |account_ids|. |set_accounts_in_cookies_completed_callback|
-  // will be invoked with the result of the operation: if the error is equal to
+  // Updates the state of the Gaia cookie to contain the accounts in
+  // |parameters|.
+  // If the mode is MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER the order of the
+  // accounts will be enforced, and any extra account (including invalid
+  // sessions) will be removed.
+  // If the mode is MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER, the ordering of
+  // accounts will not be enforced. Additionally, extra accounts won't be
+  // removed from the cookie but only invalidated.
+  // |set_accounts_in_cookies_completed_callback| will be invoked with the
+  // result of the operation: if the error is equal to
   // GoogleServiceAuthError::AuthErrorNone() then the operation succeeded.
   // Notably, if there are accounts being added for which IdentityManager does
   // not have refresh tokens, the operation will fail with a
   // GoogleServiceAuthError::USER_NOT_SIGNED_UP error.
   virtual void SetAccountsInCookie(
-      const std::vector<CoreAccountId>& account_ids,
+      const MultiloginParameters& parameters,
       gaia::GaiaSource source,
       base::OnceCallback<void(SetAccountsInCookieResult)>
           set_accounts_in_cookies_completed_callback) = 0;

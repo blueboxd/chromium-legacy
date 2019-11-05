@@ -30,10 +30,19 @@ _setup_sys_path()
 
 
 from .ast_group import AstGroup
+from .callback_function import CallbackFunction
+from .callback_interface import CallbackInterface
 from .composition_parts import Component
 from .database import Database
 from .database_builder import build_database
+from .dictionary import Dictionary
+from .enumeration import Enumeration
+from .idl_type import IdlType
+from .interface import Interface
+from .namespace import Namespace
 from .runtime_enabled_features import RuntimeEnabledFeatures
+from .typedef import Typedef
+from .union import Union
 
 
 def init(runtime_enabled_features_paths):
@@ -47,7 +56,16 @@ def init(runtime_enabled_features_paths):
 
 __all__ = [
     "AstGroup",
+    "CallbackFunction",
+    "CallbackInterface",
     "Component",
     "Database",
+    "Dictionary",
+    "Enumeration",
+    "IdlType",
+    "Interface",
+    "Namespace",
+    "Typedef",
+    "Union",
     "build_database",
 ]

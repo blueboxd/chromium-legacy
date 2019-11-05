@@ -21,7 +21,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_angle.h"
 
-#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -63,7 +63,7 @@ void SVGMarkerOrientEnumeration::Add(SVGPropertyBase*, SVGElement*) {
 }
 
 void SVGMarkerOrientEnumeration::CalculateAnimatedValue(
-    const SVGAnimationElement&,
+    const SVGAnimateElement&,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from,
@@ -384,7 +384,7 @@ void SVGAngle::Assign(const SVGAngle& other) {
 }
 
 void SVGAngle::CalculateAnimatedValue(
-    const SVGAnimationElement& animation_element,
+    const SVGAnimateElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from,

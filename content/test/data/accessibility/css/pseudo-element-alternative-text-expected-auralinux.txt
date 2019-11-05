@@ -1,5 +1,5 @@
 [document web]
 ++[section]
 ++++[image] name='alternative text'
-++++[text] name='DOM text'
+++++[static] name='DOM text'
 ++++[image]

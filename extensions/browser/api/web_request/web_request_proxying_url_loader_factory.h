@@ -57,7 +57,7 @@ class WebRequestProxyingURLLoaderFactory
         uint32_t options,
         const network::ResourceRequest& request,
         const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-        network::mojom::URLLoaderRequest loader_request,
+        mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
         network::mojom::URLLoaderClientPtr client);
     // For CORS preflights
     InProgressRequest(WebRequestProxyingURLLoaderFactory* factory,
@@ -140,7 +140,7 @@ class WebRequestProxyingURLLoaderFactory
     const int32_t routing_id_ = 0;
     const uint32_t options_ = 0;
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
-    mojo::Binding<network::mojom::URLLoader> proxied_loader_binding_;
+    mojo::Receiver<network::mojom::URLLoader> proxied_loader_receiver_;
     network::mojom::URLLoaderClientPtr target_client_;
 
     base::Optional<WebRequestInfo> info_;

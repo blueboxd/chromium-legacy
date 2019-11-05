@@ -37,6 +37,8 @@ var PermissionsHelper = (function() {
         return {name: "background-fetch"};
       case "periodic-background-sync":
         return {name: "periodic-background-sync"};
+      case "nfc":
+        return {name: "nfc"};
       default:
         throw "Invalid permission name provided";
     }

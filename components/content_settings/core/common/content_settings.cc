@@ -80,6 +80,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::LEGACY_COOKIE_ACCESS, 56},
     {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD, 57},
     {ContentSettingsType::INSTALLED_WEB_APP_METADATA, 58},
+    {ContentSettingsType::NFC, 59},
 };
 
 }  // namespace

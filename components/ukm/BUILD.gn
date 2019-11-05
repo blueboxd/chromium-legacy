@@ -49,8 +49,8 @@ static_library("observers") {
   sources = [
     "observers/history_delete_observer.cc",
     "observers/history_delete_observer.h",
-    "observers/sync_disable_observer.cc",
-    "observers/sync_disable_observer.h",
+    "observers/ukm_consent_state_observer.cc",
+    "observers/ukm_consent_state_observer.h",
   ]
 
   deps = [
@@ -88,7 +88,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "app_source_url_recorder_test.cc",
-    "observers/sync_disable_observer_unittest.cc",
+    "observers/ukm_consent_state_observer_unittest.cc",
     "ukm_recorder_impl_unittest.cc",
     "ukm_service_unittest.cc",
   ]

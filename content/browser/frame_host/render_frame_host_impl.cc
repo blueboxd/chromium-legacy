@@ -108,6 +108,7 @@
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
+#include "content/browser/webtransport/quic_transport_connector_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
@@ -178,7 +179,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_constants.h"
@@ -382,12 +382,13 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
   RemoterFactoryImpl(int process_id, int routing_id)
       : process_id_(process_id), routing_id_(routing_id) {}
 
-  static void Bind(int process_id,
-                   int routing_id,
-                   media::mojom::RemoterFactoryRequest request) {
-    mojo::MakeStrongBinding(
+  static void Bind(
+      int process_id,
+      int routing_id,
+      mojo::PendingReceiver<media::mojom::RemoterFactory> receiver) {
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<RemoterFactoryImpl>(process_id, routing_id),
-        std::move(request));
+        std::move(receiver));
   }
 
  private:
@@ -6496,6 +6497,14 @@ void RenderFrameHostImpl::CreateWebSocketConnector(
           GetProcess()->GetID(), routing_id_, last_committed_origin_,
           network_isolation_key_),
       std::move(receiver));
+}
+
+void RenderFrameHostImpl::CreateQuicTransportConnector(
+    mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
+                                  GetProcess()->GetID(), last_committed_origin_,
+                                  network_isolation_key_),
+                              std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(

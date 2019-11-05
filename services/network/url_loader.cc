@@ -323,7 +323,7 @@ URLLoader::URLLoader(
     mojom::NetworkServiceClient* network_service_client,
     mojom::NetworkContextClient* network_context_client,
     DeleteCallback delete_callback,
-    mojom::URLLoaderRequest url_loader_request,
+    mojo::PendingReceiver<mojom::URLLoader> url_loader_receiver,
     int32_t options,
     const ResourceRequest& request,
     mojom::URLLoaderClientPtr url_loader_client,
@@ -350,7 +350,7 @@ URLLoader::URLLoader(
       keepalive_request_size_(keepalive_request_size),
       keepalive_(request.keepalive),
       do_not_prompt_for_login_(request.do_not_prompt_for_login),
-      binding_(this, std::move(url_loader_request)),
+      receiver_(this, std::move(url_loader_receiver)),
       url_loader_client_(std::move(url_loader_client)),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
@@ -389,14 +389,14 @@ URLLoader::URLLoader(
     // Make sure the loader dies if |header_client_| has an error, otherwise
     // requests can hang.
     header_client_.set_disconnect_handler(
-        base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
+        base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
   }
   if (want_raw_headers_) {
     options_ |= mojom::kURLLoadOptionSendSSLInfoWithResponse |
                 mojom::kURLLoadOptionSendSSLInfoForCertificateError;
   }
-  binding_.set_connection_error_handler(
-      base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
   url_request_ = url_request_context_->CreateRequest(
       GURL(request.url), request.priority, this, traffic_annotation);
   url_request_->set_method(request.method);
@@ -1350,7 +1350,7 @@ void URLLoader::NotifyCompleted(int error_code) {
   DeleteSelf();
 }
 
-void URLLoader::OnConnectionError() {
+void URLLoader::OnMojoDisconnect() {
   NotifyCompleted(net::ERR_FAILED);
 }
 
@@ -1578,10 +1578,10 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
     // EmptyURLLoaderClient (deleting |self_ptr| when the URL request
     // completes).
     mojom::URLLoaderPtr self_ptr;
-    binding_.Close();
-    binding_.Bind(mojo::MakeRequest(&self_ptr));
-    binding_.set_connection_error_handler(
-        base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
+    receiver_.reset();
+    receiver_.Bind(mojo::MakeRequest(&self_ptr));
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
     EmptyURLLoaderClient::DrainURLRequest(
         mojo::MakeRequest(&url_loader_client_), std::move(self_ptr));
 

@@ -256,7 +256,9 @@ class WindowProxy : public GarbageCollected<WindowProxy> {
 
   virtual void Initialize() = 0;
 
-  virtual void DisposeContext(Lifecycle next_status, FrameReuseStatus) = 0;
+  virtual void DisposeContext(Lifecycle next_status,
+                              FrameReuseStatus,
+                              v8::Context::DetachedWindowReason) = 0;
 
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       DOMWindow*,

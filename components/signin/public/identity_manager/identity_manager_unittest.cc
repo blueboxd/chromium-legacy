@@ -40,6 +40,7 @@
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_constants.h"
@@ -1984,7 +1985,8 @@ TEST_F(IdentityManagerTest,
 
   // Needed to insert request in the queue.
   identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
-      accounts, gaia::GaiaSource::kChrome, std::move(completion_callback));
+      gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER, accounts,
+      gaia::GaiaSource::kChrome, std::move(completion_callback));
 
   SimulateOAuthMultiloginFinished(
       identity_manager()->GetGaiaCookieManagerService(),
@@ -2012,7 +2014,8 @@ TEST_F(IdentityManagerTest,
 
   // Needed to insert request in the queue.
   identity_manager()->GetGaiaCookieManagerService()->SetAccountsInCookie(
-      accounts, gaia::GaiaSource::kChrome, std::move(completion_callback));
+      gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER, accounts,
+      gaia::GaiaSource::kChrome, std::move(completion_callback));
 
   // Sample an erroneous response.
   SetAccountsInCookieResult error = SetAccountsInCookieResult::kPersistentError;

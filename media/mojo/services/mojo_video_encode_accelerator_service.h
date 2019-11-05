@@ -19,6 +19,8 @@
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace gpu {
 struct GpuPreferences;
@@ -51,9 +53,10 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
   ~MojoVideoEncodeAcceleratorService() override;
 
   // mojom::VideoEncodeAccelerator impl.
-  void Initialize(const media::VideoEncodeAccelerator::Config& config,
-                  mojom::VideoEncodeAcceleratorClientPtr client,
-                  InitializeCallback callback) override;
+  void Initialize(
+      const media::VideoEncodeAccelerator::Config& config,
+      mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> client,
+      InitializeCallback callback) override;
   void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe,
               EncodeCallback callback) override;
@@ -81,7 +84,7 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
 
   // Owned pointer to the underlying VideoEncodeAccelerator.
   std::unique_ptr<::media::VideoEncodeAccelerator> encoder_;
-  mojom::VideoEncodeAcceleratorClientPtr vea_client_;
+  mojo::Remote<mojom::VideoEncodeAcceleratorClient> vea_client_;
 
   // Cache of parameters for sanity verification.
   size_t output_buffer_size_;

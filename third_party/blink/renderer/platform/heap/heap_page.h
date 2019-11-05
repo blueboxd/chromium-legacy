@@ -223,6 +223,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   enum class AccessMode : uint8_t { kNonAtomic, kAtomic };
 
   static HeapObjectHeader* FromPayload(const void*);
+  template <AccessMode = AccessMode::kNonAtomic>
   static HeapObjectHeader* FromInnerAddress(const void*);
 
   // Checks sanity of the header given a payload pointer.
@@ -242,6 +243,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
     return (encoded & kHeaderGCInfoIndexMask) >> kHeaderGCInfoIndexShift;
   }
 
+  template <AccessMode = AccessMode::kNonAtomic>
   size_t size() const;
   void SetSize(size_t size);
 
@@ -265,6 +267,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // size does not include the sizeof(HeapObjectHeader).
   Address Payload() const;
   size_t PayloadSize() const;
+  template <AccessMode = AccessMode::kNonAtomic>
   Address PayloadEnd() const;
 
   void Finalize(Address, size_t);
@@ -708,6 +711,8 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   // Uses the object_start_bit_map_ to find an object for a given address. It is
   // assumed that the address points into a valid heap object. Use the
   // conservative version if that assumption does not hold.
+  template <
+      HeapObjectHeader::AccessMode = HeapObjectHeader::AccessMode::kNonAtomic>
   HeapObjectHeader* FindHeaderFromAddress(Address);
 
   void VerifyMarking() override;
@@ -1041,12 +1046,13 @@ inline HeapObjectHeader* HeapObjectHeader::FromPayload(const void* payload) {
   return header;
 }
 
+template <HeapObjectHeader::AccessMode mode>
 inline HeapObjectHeader* HeapObjectHeader::FromInnerAddress(
     const void* address) {
   BasePage* const page = PageFromObject(address);
   return page->IsLargeObjectPage()
              ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
-             : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
+             : static_cast<NormalPage*>(page)->FindHeaderFromAddress<mode>(
                    reinterpret_cast<Address>(const_cast<void*>(address)));
 }
 
@@ -1054,8 +1060,22 @@ inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
   (void)FromPayload(payload);
 }
 
+template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
-  const size_t result = internal::DecodeSize(encoded_low_);
+  uint16_t encoded_low_value;
+  if (mode == AccessMode::kNonAtomic) {
+    encoded_low_value = encoded_low_;
+  } else {
+    // mode == AccessMode::kAtomic
+    // Relaxed load as size is immutable after construction while either
+    // marking or sweeping is running
+    internal::AsanUnpoisonScope unpoison_scope(
+        static_cast<const void*>(&encoded_low_), sizeof(encoded_low_));
+    encoded_low_value =
+        reinterpret_cast<const std::atomic<uint16_t>&>(encoded_low_)
+            .load(std::memory_order_relaxed);
+  }
+  const size_t result = internal::DecodeSize(encoded_low_value);
   // Large objects should not refer to header->size() but use
   // LargeObjectPage::PayloadSize().
   DCHECK(result != kLargeObjectSizeInHeader);
@@ -1064,6 +1084,7 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
 }
 
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
+  DCHECK(!PageFromObject(Payload())->thread_state()->IsIncrementalMarking());
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
   encoded_low_ = static_cast<uint16_t>(internal::EncodeSize(size) |
                                        (encoded_low_ & ~kHeaderSizeMask));
@@ -1091,9 +1112,10 @@ inline Address HeapObjectHeader::Payload() const {
          sizeof(HeapObjectHeader);
 }
 
+template <HeapObjectHeader::AccessMode mode>
 inline Address HeapObjectHeader::PayloadEnd() const {
   return reinterpret_cast<Address>(const_cast<HeapObjectHeader*>(this)) +
-         size();
+         size<mode>();
 }
 
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() const {
@@ -1284,6 +1306,17 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::StoreEncoded(uint16_t bits,
   uint16_t value = atomic_encoded->load(std::memory_order_relaxed);
   value = (value & ~mask) | bits;
   atomic_encoded->store(value, std::memory_order_release);
+}
+
+template <HeapObjectHeader::AccessMode mode>
+HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
+  DCHECK(ContainedInObjectPayload(address));
+  DCHECK(!ArenaForNormalPage()->IsInCurrentAllocationPointRegion(address));
+  HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(
+      object_start_bit_map()->FindHeader(address));
+  DCHECK_LT(0u, header->GcInfoIndex());
+  DCHECK_GT(header->PayloadEnd<mode>(), address);
+  return header;
 }
 
 }  // namespace blink

@@ -68,11 +68,16 @@ class EngineInitializeChecker : public SingleClientStatusChangeChecker {
     if (service()->IsEngineInitialized())
       return true;
     // Engine initialization is blocked by an auth error.
-    if (HasAuthError(service()))
+    if (HasAuthError(service())) {
+      LOG(WARNING) << "Sync engine initialization blocked by auth error";
       return true;
+    }
     // Engine initialization is blocked by a failure to fetch Oauth2 tokens.
-    if (service()->IsRetryingAccessTokenFetchForTest())
+    if (service()->IsRetryingAccessTokenFetchForTest()) {
+      LOG(WARNING) << "Sync engine initialization blocked by failure to fetch "
+                      "access tokens";
       return true;
+    }
     // Still waiting on engine initialization.
     return false;
   }
@@ -460,13 +465,18 @@ bool ProfileSyncServiceHarness::AwaitEngineInitialization() {
     return false;
   }
 
-  if (!service()->IsEngineInitialized()) {
-    LOG(ERROR) << "Service engine not initialized.";
+  if (HasAuthError(service())) {
+    LOG(ERROR) << "Credentials were rejected. Sync cannot proceed.";
     return false;
   }
 
-  if (HasAuthError(service())) {
-    LOG(ERROR) << "Credentials were rejected. Sync cannot proceed.";
+  if (service()->IsRetryingAccessTokenFetchForTest()) {
+    LOG(ERROR) << "Failed to fetch access token. Sync cannot proceed.";
+    return false;
+  }
+
+  if (!service()->IsEngineInitialized()) {
+    LOG(ERROR) << "Service engine not initialized.";
     return false;
   }
 

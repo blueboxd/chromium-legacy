@@ -2,12 +2,12 @@
 ++[document frame]
 ++++[landmark] name='Page 1'
 ++++++[heading]
-++++++++[text] name='Heading<newline>'
+++++++++[static] name='Heading<newline>'
 ++++++[paragraph]
-++++++++[text] name='This is a small pdf file:<newline>'
+++++++++[static] name='This is a small pdf file:<newline>'
 ++++++[paragraph]
-++++++++[text] name='Lorem Ipsum is simply dummy text of the printing and typesetting industry.<newline>Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.<newline>'
+++++++++[static] name='Lorem Ipsum is simply dummy text of the printing and typesetting industry.<newline>Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.<newline>'
 ++++++[paragraph]
-++++++++[text] name='It has survived not only five centuries, but also the leap into electronic typesetting,<newline>remaining essentially unchanged. It was popularised in the 1960s with the release of<newline>Letraset sheets containing Lorem Ipsum passages, and more recently with desktop<newline>publishing software like Aldus PageMaker including versions of Lorem Ipsum.<newline>'
+++++++++[static] name='It has survived not only five centuries, but also the leap into electronic typesetting,<newline>remaining essentially unchanged. It was popularised in the 1960s with the release of<newline>Letraset sheets containing Lorem Ipsum passages, and more recently with desktop<newline>publishing software like Aldus PageMaker including versions of Lorem Ipsum.<newline>'
 ++++++[paragraph]
-++++++++[text] name='Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots<newline>in a piece of classical Latin literature from 45 BC, making it over 2000 years old.'
+++++++++[static] name='Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots<newline>in a piece of classical Latin literature from 45 BC, making it over 2000 years old.'

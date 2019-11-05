@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SYNC_BASE_USER_SELECTABLE_TYPE_H_
 #define COMPONENTS_SYNC_BASE_USER_SELECTABLE_TYPE_H_
 
-#include "components/reading_list/features/reading_list_buildflags.h"
 #include "components/sync/base/enum_set.h"
 #include "components/sync/base/model_type.h"
 
@@ -22,11 +21,7 @@ enum class UserSelectableType {
   kHistory,
   kExtensions,
   kApps,
-// TODO(crbug.com/950874): remove this usage of ENABLE_READING_LIST build
-// flag.
-#if BUILDFLAG(ENABLE_READING_LIST)
   kReadingList,
-#endif
   kWifiConfigurations,
   kTabs,
   kLastType = kTabs

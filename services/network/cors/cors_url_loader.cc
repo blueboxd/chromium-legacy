@@ -80,7 +80,7 @@ void ReportCompletionStatusMetric(bool fetch_cors_flag,
 }  // namespace
 
 CorsURLLoader::CorsURLLoader(
-    mojom::URLLoaderRequest loader_request,
+    mojo::PendingReceiver<mojom::URLLoader> loader_receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -92,7 +92,7 @@ CorsURLLoader::CorsURLLoader(
     const OriginAccessList* origin_access_list,
     const OriginAccessList* factory_bound_origin_access_list,
     PreflightController* preflight_controller)
-    : binding_(this, std::move(loader_request)),
+    : receiver_(this, std::move(loader_receiver)),
       routing_id_(routing_id),
       request_id_(request_id),
       options_(options),
@@ -105,8 +105,8 @@ CorsURLLoader::CorsURLLoader(
       origin_access_list_(origin_access_list),
       factory_bound_origin_access_list_(factory_bound_origin_access_list),
       preflight_controller_(preflight_controller) {
-  binding_.set_connection_error_handler(base::BindOnce(
-      &CorsURLLoader::OnConnectionError, base::Unretained(this)));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&CorsURLLoader::OnMojoDisconnect, base::Unretained(this)));
   DCHECK(network_loader_factory_);
   DCHECK(origin_access_list_);
   DCHECK(preflight_controller_);
@@ -399,7 +399,7 @@ void CorsURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
   DCHECK(forwarding_client_);
 
   // |network_loader_| will call OnComplete at anytime when a problem happens
-  // inside the URLLoader, e.g. on URLLoader::OnConnectionError call. We need
+  // inside the URLLoader, e.g. on URLLoader::OnMojoDisconnect call. We need
   // to expect it also happens even during redirect handling.
   DCHECK(!deferred_redirect_url_ || status.error_code != net::OK);
 
@@ -494,8 +494,8 @@ void CorsURLLoader::StartNetworkRequest(
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
   // Binding |this| as an unretained pointer is safe because
   // |network_client_binding_| shares this object's lifetime.
-  network_client_binding_.set_connection_error_handler(base::BindOnce(
-      &CorsURLLoader::OnConnectionError, base::Unretained(this)));
+  network_client_binding_.set_connection_error_handler(
+      base::BindOnce(&CorsURLLoader::OnMojoDisconnect, base::Unretained(this)));
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
       request_, std::move(network_client), traffic_annotation_);
@@ -510,7 +510,7 @@ void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
   // |this| is deleted here.
 }
 
-void CorsURLLoader::OnConnectionError() {
+void CorsURLLoader::OnMojoDisconnect() {
   HandleComplete(URLLoaderCompletionStatus(net::ERR_ABORTED));
 }
 

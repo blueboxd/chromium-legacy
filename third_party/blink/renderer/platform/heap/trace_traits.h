@@ -333,7 +333,7 @@ struct TraceKeyValuePairTraits {
   template <>
   static bool Trace<true>(Visitor* visitor, Key& key, Value& value) {
     return visitor->VisitEphemeronKeyValuePair(
-        &key, &value, Strongify,
+        &key, &value,
         TraceCollectionIfEnabled < Strongify ? WTF::kNoWeakHandling
                                              : KeyTraits::kWeakHandlingFlag,
         Key, KeyTraits > ::Trace,
@@ -347,34 +347,6 @@ struct TraceKeyValuePairTraits {
 
 namespace WTF {
 
-// Helper used for tracing without weak handling in collections that support
-// weak handling. It dispatches to |TraceInCollection| if the provided trait
-// supports weak handling, and to |Trace| otherwise.
-template <typename T,
-          typename Traits,
-          WTF::WeakHandlingFlag traitsWeakness = Traits::kWeakHandlingFlag>
-struct TraceNoWeakHandlingInCollectionHelper;
-
-template <typename T, typename Traits>
-struct TraceNoWeakHandlingInCollectionHelper<blink::WeakMember<T>,
-                                             Traits,
-                                             kWeakHandling> {
-  static bool Trace(blink::Visitor* visitor, blink::WeakMember<T>& t) {
-    visitor->Trace(t.Get());
-    return false;
-  }
-};
-
-template <typename T, typename Traits>
-struct TraceNoWeakHandlingInCollectionHelper<T, Traits, kNoWeakHandling> {
-  static bool Trace(blink::Visitor* visitor, T& t) {
-    static_assert(IsTraceableInCollectionTrait<Traits>::value,
-                  "T should not be traced");
-    visitor->Trace(t);
-    return false;
-  }
-};
-
 // Catch-all for types that have a way to trace that don't have special
 // handling for weakness in collections.  This means that if this type
 // contains WeakMember fields, they will simply be zeroed, but the entry
@@ -386,7 +358,19 @@ struct TraceInCollectionTrait<kNoWeakHandling, T, Traits> {
   static bool IsAlive(T& t) { return true; }
 
   static bool Trace(blink::Visitor* visitor, T& t) {
-    return TraceNoWeakHandlingInCollectionHelper<T, Traits>::Trace(visitor, t);
+    static_assert(IsTraceableInCollectionTrait<Traits>::value,
+                  "T should not be traced");
+    visitor->Trace(t);
+    return false;
+  }
+};
+
+template <typename T, typename Traits>
+struct TraceInCollectionTrait<kNoWeakHandling, blink::WeakMember<T>, Traits> {
+  static bool Trace(blink::Visitor* visitor, blink::WeakMember<T>& t) {
+    // Extract raw pointer to avoid using the WeakMember<> overload in Visitor.
+    visitor->Trace(t.Get());
+    return false;
   }
 };
 

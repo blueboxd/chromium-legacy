@@ -146,13 +146,13 @@ void MetricsServicesManager::UpdateUkmService() {
       metrics_service_client_->AreNotificationListenersEnabledOnAllProfiles();
   bool sync_enabled =
       metrics_service_client_->IsMetricsReportingForceEnabled() ||
-      metrics_service_client_->SyncStateAllowsUkm();
+      metrics_service_client_->IsUkmAllowedForAllProfiles();
   bool is_incognito = client_->IsIncognitoSessionActive();
 
   if (consent_given_ && listeners_active && sync_enabled && !is_incognito) {
     // TODO(skare): revise this - merged in a big change
     ukm->EnableRecording(
-        metrics_service_client_->SyncStateAllowsExtensionUkm());
+        metrics_service_client_->IsUkmAllowedWithExtensionsForAllProfiles());
     if (may_upload_)
       ukm->EnableReporting();
     else

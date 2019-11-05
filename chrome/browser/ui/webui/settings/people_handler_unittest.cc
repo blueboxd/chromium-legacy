@@ -118,6 +118,11 @@ std::string GetConfiguration(const base::DictionaryValue* extra_values,
   result.SetBoolean("typedUrlsSynced",
                     types.Has(syncer::UserSelectableType::kHistory));
   result.SetBoolean("paymentsIntegrationEnabled", false);
+
+  // Reading list doesn't really have a UI and is supported on ios only.
+  result.SetBoolean("readingListSynced",
+                    types.Has(syncer::UserSelectableType::kReadingList));
+
   std::string args;
   base::JSONWriter::Write(result, &args);
   return args;

@@ -291,14 +291,14 @@ void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
     network::mojom::CredentialsMode credentials_mode) {
   DCHECK(IsContextThread());
 
-  // Start fetching scripts regardless of whether this service worker is
-  // installed. For the installed case, the scripts will be read from the
-  // service worker script storage during module script fetch (see
-  // InstalledServiceWorkerModuleScriptFetcher).
+  ModuleScriptCustomFetchType fetch_type =
+      installed_scripts_manager_
+          ? ModuleScriptCustomFetchType::kInstalledServiceWorker
+          : ModuleScriptCustomFetchType::kWorkerConstructor;
   FetchModuleScript(module_url_record, outside_settings_object,
                     outside_resource_timing_notifier,
                     mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
-                    ModuleScriptCustomFetchType::kWorkerConstructor,
+                    fetch_type,
                     MakeGarbageCollected<ServiceWorkerModuleTreeClient>(
                         ScriptController()->GetScriptState()));
 }

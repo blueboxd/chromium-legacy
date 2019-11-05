@@ -23,6 +23,7 @@
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/media/midi_sysex_permission_context.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
+#include "chrome/browser/nfc/nfc_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/payments/payment_handler_permission_context.h"
 #include "chrome/browser/permissions/permission_context_base.h"
@@ -153,6 +154,12 @@ ContentSettingsType PermissionTypeToContentSettingSafe(
       return ContentSettingsType::WAKE_LOCK_SCREEN;
     case PermissionType::WAKE_LOCK_SYSTEM:
       return ContentSettingsType::WAKE_LOCK_SYSTEM;
+    case PermissionType::NFC:
+#if defined(OS_ANDROID)
+      return ContentSettingsType::NFC;
+#else
+      break;
+#endif
     case PermissionType::NUM:
       break;
   }
@@ -355,6 +362,10 @@ PermissionManager::PermissionManager(Profile* profile) : profile_(profile) {
   permission_contexts_[ContentSettingsType::WAKE_LOCK_SYSTEM] =
       std::make_unique<WakeLockPermissionContext>(
           profile, ContentSettingsType::WAKE_LOCK_SYSTEM);
+#if defined(OS_ANDROID)
+  permission_contexts_[ContentSettingsType::NFC] =
+      std::make_unique<NfcPermissionContext>(profile);
+#endif
 }
 
 PermissionManager::~PermissionManager() {

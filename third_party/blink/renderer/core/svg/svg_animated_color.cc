@@ -66,7 +66,7 @@ void SVGColorProperty::Add(SVGPropertyBase* other,
 }
 
 void SVGColorProperty::CalculateAnimatedValue(
-    const SVGAnimationElement& animation_element,
+    const SVGAnimateElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,

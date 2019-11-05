@@ -190,7 +190,6 @@ class GC_PLUGIN_IGNORE(
                                void*) final;
   bool VisitEphemeronKeyValuePair(void*,
                                   void*,
-                                  bool,
                                   EphemeronTracingCallback,
                                   EphemeronTracingCallback) final;
 
@@ -732,10 +731,8 @@ void V8EmbedderGraphBuilder::VisitBackingStoreWeakly(
 bool V8EmbedderGraphBuilder::VisitEphemeronKeyValuePair(
     void* key,
     void* value,
-    bool strong_handling,
     EphemeronTracingCallback key_trace_callback,
     EphemeronTracingCallback value_trace_callback) {
-  DCHECK(strong_handling);
   ephemeron_worklist_.push_back(std::unique_ptr<EphemeronItem>{
       new EphemeronItem(key, value, key_trace_callback, value_trace_callback)});
   return true;

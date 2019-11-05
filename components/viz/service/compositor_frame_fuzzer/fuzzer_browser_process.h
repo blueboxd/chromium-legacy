@@ -53,7 +53,7 @@ class FuzzerBrowserProcess {
   mojo::AssociatedRemote<mojom::CompositorFrameSink>
       root_compositor_frame_sink_remote_;
   FakeCompositorFrameSinkClient root_compositor_frame_sink_client_;
-  mojom::DisplayPrivateAssociatedPtr display_private_;
+  mojo::AssociatedRemote<mojom::DisplayPrivate> display_private_;
   FakeDisplayClient display_client_;
   mojom::ExternalBeginFrameControllerAssociatedPtr
       external_begin_frame_controller_ptr_;

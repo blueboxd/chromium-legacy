@@ -441,7 +441,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
   }
 
  private:
-  void LoadExtension(network::mojom::URLLoaderRequest loader,
+  void LoadExtension(mojo::PendingReceiver<network::mojom::URLLoader> loader,
                      const network::ResourceRequest& request,
                      network::mojom::URLLoaderClientPtr client,
                      scoped_refptr<const Extension> extension,
@@ -562,7 +562,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
       const base::FilePath* read_file_path,
       const base::Time* last_modified_time,
       network::ResourceRequest request,
-      network::mojom::URLLoaderRequest loader,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
       network::mojom::URLLoaderClientPtr client,
       scoped_refptr<ContentVerifier> content_verifier,
       const extensions::ExtensionResource& resource,
@@ -581,7 +581,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   static void StartVerifyJob(
       network::ResourceRequest request,
-      network::mojom::URLLoaderRequest loader,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
       network::mojom::URLLoaderClientPtr client,
       scoped_refptr<ContentVerifier> content_verifier,
       const ExtensionResource& resource,

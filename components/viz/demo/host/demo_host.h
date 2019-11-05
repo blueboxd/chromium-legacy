@@ -13,6 +13,7 @@
 #include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
@@ -54,7 +55,7 @@ class DemoHost : public viz::HostFrameSinkClient {
   const gfx::AcceleratedWidget widget_;
   gfx::Size size_;
   viz::HostFrameSinkManager host_frame_sink_manager_;
-  viz::mojom::DisplayPrivateAssociatedPtr display_private_;
+  mojo::AssociatedRemote<viz::mojom::DisplayPrivate> display_private_;
   std::unique_ptr<viz::HostDisplayClient> display_client_;
   viz::ParentLocalSurfaceIdAllocator allocator_;
 

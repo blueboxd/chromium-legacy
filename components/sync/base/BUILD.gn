@@ -83,7 +83,6 @@ jumbo_static_library("base") {
     "//components/os_crypt",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/reading_list/features:reading_list_buildflags",
     "//components/version_info",
     "//crypto",
     "//net",

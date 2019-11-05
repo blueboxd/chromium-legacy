@@ -4,9 +4,13 @@
 
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
@@ -60,16 +64,23 @@ class OemAppPositionTest : public chromeos::LoginManagerTest {
   DISALLOW_COPY_AND_ASSIGN(OemAppPositionTest);
 };
 
-// Flaky. https://crbug.com/1006522 .
-IN_PROC_BROWSER_TEST_F(OemAppPositionTest, DISABLED_PRE_ValidOemAppPosition) {
+IN_PROC_BROWSER_TEST_F(OemAppPositionTest, PRE_ValidOemAppPosition) {
   RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
 // Tests that an Oem app and its folder are created with valid positions after
 // sign-in.
-IN_PROC_BROWSER_TEST_F(OemAppPositionTest, DISABLED_ValidOemAppPosition) {
+IN_PROC_BROWSER_TEST_F(OemAppPositionTest, ValidOemAppPosition) {
   LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
+
+  // Ensure apps that are installed upon sign-in are registered with the App
+  // Service, resolving any pending messages as a result of running async
+  // callbacks.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
+  ASSERT_TRUE(proxy);
+  proxy->FlushMojoCallsForTesting();
 
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   ASSERT_TRUE(client);

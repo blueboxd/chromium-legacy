@@ -52,6 +52,13 @@ TEST_F(ContentSettingsRegistryTest, GetPlatformDependent) {
       registry()->Get(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER));
 #endif
 
+// NFC only get registered on android.
+#if defined(ANDROID)
+  EXPECT_TRUE(registry()->Get(ContentSettingsType::NFC));
+#else
+  EXPECT_FALSE(registry()->Get(ContentSettingsType::NFC));
+#endif
+
   // Cookies is registered on all platforms.
   EXPECT_TRUE(registry()->Get(ContentSettingsType::COOKIES));
 }

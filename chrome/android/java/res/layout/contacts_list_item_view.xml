@@ -74,4 +74,11 @@
         </LinearLayout>
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/star"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/btn_star_filled"
+        android:visibility="gone" />
 </merge>

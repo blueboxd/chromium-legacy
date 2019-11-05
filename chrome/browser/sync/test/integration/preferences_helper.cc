@@ -108,14 +108,8 @@ void ChangeListPref(int index,
 }
 
 scoped_refptr<PrefStore> BuildPrefStoreFromPrefsFile(Profile* profile) {
-  profile->GetPrefs()->CommitPendingWrite();
-  // Writes are scheduled on the IO thread. The JsonPrefStore requires all
-  // access (construction, Get, Set, ReadPrefs) to be made from the same thread.
-  // So instead of reading the file from the IO thread, we simply schedule a
-  // dummy task to avoid races with writing the file and reading it.
   base::RunLoop run_loop;
-  profile->GetIOTaskRunner()->PostTask(FROM_HERE,
-                                       base::BindOnce(run_loop.QuitClosure()));
+  profile->GetPrefs()->CommitPendingWrite(run_loop.QuitClosure());
   run_loop.Run();
 
   auto pref_store = base::MakeRefCounted<JsonPrefStore>(
@@ -124,6 +118,7 @@ scoped_refptr<PrefStore> BuildPrefStoreFromPrefsFile(Profile* profile) {
   if (pref_store->ReadPrefs() != PersistentPrefStore::PREF_READ_ERROR_NONE) {
     ADD_FAILURE() << " Failed reading the prefs file into the store.";
   }
+
   return pref_store;
 }
 

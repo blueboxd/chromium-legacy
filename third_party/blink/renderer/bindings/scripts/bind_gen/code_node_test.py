@@ -12,24 +12,17 @@ from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
 from .code_node import UnlikelyExitNode
+from .codegen_utils import render_code_node
 from .mako_renderer import MakoRenderer
 
 
 class CodeNodeTest(unittest.TestCase):
-    def render(self, node):
-        prev = ""
-        current = str(node)
-        while current != prev:
-            prev = current
-            current = str(node)
-        return current
-
     def assertRenderResult(self, node, expected):
         def simplify(text):
             return "\n".join(
                 [" ".join(line.split()) for line in text.split("\n")])
 
-        actual = simplify(self.render(node))
+        actual = simplify(render_code_node(node))
         expected = simplify(expected)
 
         self.assertEqual(actual, expected)

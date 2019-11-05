@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contacts_picker;
 
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
 
@@ -19,6 +20,10 @@ import java.util.List;
  * A class to keep track of the metadata associated with a contact.
  */
 public class ContactDetails implements Comparable<ContactDetails> {
+    // The identifier for the information from the signed in user. Must not be a valid id in the
+    // context of the Android Contacts list.
+    public static final String SELF_CONTACT_ID = "-1";
+
     /**
      * A container class for delivering contact details in abbreviated form
      * (where only the first email and phone numbers are returned and the rest
@@ -45,6 +50,14 @@ public class ContactDetails implements Comparable<ContactDetails> {
 
     // The list of addresses registered for this contact.
     private final List<PaymentAddress> mAddresses;
+
+    // Keeps track of whether this is the contact detail for the owner of the device.
+    private boolean mIsSelf;
+
+    // The avatar icon for the owner of the device. Non-null only if the ContactDetails representing
+    // the owner were synthesized (not when a pre-existing contact tile was moved to the top).
+    @Nullable
+    private Drawable mSelfIcon;
 
     /**
      * The ContactDetails constructor.
@@ -86,6 +99,37 @@ public class ContactDetails implements Comparable<ContactDetails> {
 
     public String getId() {
         return mId;
+    }
+
+    /**
+     * Marks whether object is representing the owner of the device.
+     * @param value True if this is the contact details for the owner. False otherwise.
+     */
+    public void setIsSelf(boolean value) {
+        mIsSelf = value;
+    }
+
+    /**
+     * Returns true if this contact detail is representing the owner of the device.
+     */
+    public boolean isSelf() {
+        return mIsSelf;
+    }
+
+    /**
+     * Sets the icon representing the owner of the device.
+     */
+    public void setSelfIcon(Drawable icon) {
+        mSelfIcon = icon;
+    }
+
+    /**
+     * Fetch the cached icon for this contact. Returns null if this is not the 'self' contact, all
+     * other contact avatars should be retrieved through the {@link FetchIconWorkerTask}.
+     */
+    @Nullable
+    public Drawable getSelfIcon() {
+        return mSelfIcon;
     }
 
     /**

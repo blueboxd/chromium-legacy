@@ -1,6 +1,6 @@
 [document web]
 ++[list]
 ++++[list item] name='1'
-++++++[text] name='Item 1'
+++++++[static] name='Item 1'
 ++++[list item] name='2'
-++++++[text] name='Item 2'
+++++++[static] name='Item 2'

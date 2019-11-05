@@ -2,8 +2,8 @@
 ++[form]
 ++++[panel] name='Browser Engines:' labelled-by
 ++++++[label] label-for
-++++++++[text] name='Browser Engines:'
-++++++[text] name='Browser: '
+++++++++[static] name='Browser Engines:'
+++++++[static] name='Browser: '
 ++++++[entry] editable focusable single-line selectable-text
-++++++[text] name=' Rendering Engine: '
+++++++[static] name=' Rendering Engine: '
 ++++++[entry] editable focusable single-line selectable-text

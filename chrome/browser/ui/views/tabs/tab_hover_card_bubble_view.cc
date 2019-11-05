@@ -250,6 +250,7 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
       if (desired_anchor_view_)
         bubble_delegate_->SetAnchorView(desired_anchor_view_);
     }
+    bubble_delegate_->UpdateTextFade(value);
     bubble_delegate_->GetWidget()->SetBounds(current_bubble_bounds_);
   }
 
@@ -272,6 +273,41 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
   DISALLOW_COPY_AND_ASSIGN(WidgetSlideAnimationDelegate);
 };
 
+// This is a label with two tweaks:
+// - a solid background color, which can have alpha
+// - a function to make the foreground and background color fade away (via
+//   alpha) to zero as an animation progresses
+//
+// It is used to overlay the old title and domain values as a hover card slide
+// animation happens.
+class TabHoverCardBubbleView::FadeLabel : public views::Label {
+ public:
+  using Label::Label;
+  ~FadeLabel() override = default;
+
+  // Sets the fade-out of the label as |percent| in the range [0, 1]. Since
+  // FadeLabel is designed to mask new text with the old and then fade away, the
+  // higher the percentage the less opaque the label.
+  void SetFade(double percent) {
+    if (percent >= 1.0) {
+      SetVisible(false);
+      return;
+    }
+
+    const SkAlpha alpha = base::saturated_cast<SkAlpha>(
+        std::numeric_limits<SkAlpha>::max() * (1.0 - percent));
+    SetBackgroundColor(SkColorSetA(GetBackgroundColor(), alpha));
+    SetEnabledColor(SkColorSetA(GetEnabledColor(), alpha));
+    SetVisible(true);
+  }
+
+ protected:
+  // views::Label:
+  void OnPaintBackground(gfx::Canvas* canvas) override {
+    canvas->DrawColor(GetBackgroundColor());
+  }
+};
+
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     : BubbleDialogDelegateView(tab, views::BubbleBorder::TOP_LEFT) {
   // We'll do all of our own layout inside the bubble, so no need to inset this
@@ -291,9 +327,9 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   // navigating through the tab strip.
   set_focus_traversable_from_anchor_view(false);
 
-  title_label_ =
-      new views::Label(base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
-                       views::style::STYLE_PRIMARY);
+  title_label_ = AddChildView(std::make_unique<views::Label>(
+      base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
+      views::style::STYLE_PRIMARY));
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
   title_label_->SetMultiLine(true);
@@ -303,26 +339,38 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
                                 views::MinimumFlexSizeRule::kPreferred,
                                 views::MaximumFlexSizeRule::kPreferred,
                                 /* adjust_height_for_width */ true));
-  AddChildView(title_label_);
 
-  domain_label_ = new views::Label(
+  title_fade_label_ = AddChildView(std::make_unique<FadeLabel>(
+      base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
+      views::style::STYLE_PRIMARY));
+  title_fade_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_fade_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
+  title_fade_label_->SetMultiLine(true);
+  title_fade_label_->SetMaxLines(kTitleMaxLines);
+
+  domain_label_ = AddChildView(std::make_unique<views::Label>(
       base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY,
-      gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
+      gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
   domain_label_->SetElideBehavior(gfx::ELIDE_HEAD);
   domain_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   domain_label_->SetMultiLine(false);
-  AddChildView(domain_label_);
+
+  domain_fade_label_ = AddChildView(std::make_unique<FadeLabel>(
+      base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY,
+      gfx::DirectionalityMode::DIRECTIONALITY_AS_URL));
+  domain_fade_label_->SetElideBehavior(gfx::ELIDE_HEAD);
+  domain_fade_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  domain_fade_label_->SetMultiLine(false);
 
   if (AreHoverCardImagesEnabled()) {
     using Alignment = views::ImageView::Alignment;
     const gfx::Size preview_size = TabStyle::GetPreviewImageSize();
-    preview_image_ = new views::ImageView();
+    preview_image_ = AddChildView(std::make_unique<views::ImageView>());
     preview_image_->SetVisible(AreHoverCardImagesEnabled());
     preview_image_->SetHorizontalAlignment(Alignment::kCenter);
     preview_image_->SetVerticalAlignment(Alignment::kCenter);
     preview_image_->SetImageSize(preview_size);
     preview_image_->SetPreferredSize(preview_size);
-    AddChildView(preview_image_);
   }
 
   views::FlexLayout* const layout =
@@ -331,6 +379,8 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   layout->SetMainAxisAlignment(views::LayoutAlignment::kStart);
   layout->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
   layout->SetCollapseMargins(true);
+  layout->SetChildViewIgnoredByLayout(title_fade_label_, true);
+  layout->SetChildViewIgnoredByLayout(domain_fade_label_, true);
 
   constexpr int kVerticalMargin = 10;
   constexpr int kHorizontalMargin = 18;
@@ -421,6 +471,11 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 
   if (widget_->IsVisible() && !disable_animations_for_testing_) {
     slide_animation_delegate_->AnimateToAnchorView(tab);
+    // Reset the text fade, but only if we're not already animating. If we are,
+    // it will be less disruptive to just continue the animation with the new
+    // text.
+    if (!slide_animation_delegate_->is_animating())
+      UpdateTextFade(0.0);
   } else {
     if (!anchor_view_set)
       SetAnchorView(tab);
@@ -523,6 +578,12 @@ std::unique_ptr<views::View> TabHoverCardBubbleView::CreateFootnoteView() {
   return alert_state_label;
 }
 
+void TabHoverCardBubbleView::Layout() {
+  View::Layout();
+  title_fade_label_->SetBoundsRect(title_label_->bounds());
+  domain_fade_label_->SetBoundsRect(domain_label_->bounds());
+}
+
 base::TimeDelta TabHoverCardBubbleView::GetDelay(int tab_width) const {
   // Delay is calculated as a logarithmic scale and bounded by a minimum width
   // based on the width of a pinned tab and a maximum of the standard width.
@@ -593,17 +654,24 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
             url_formatter::kFormatUrlTrimAfterHost,
         net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
   }
+  title_fade_label_->SetText(title_label_->GetText());
   title_label_->SetText(title);
 
   if (alert_state_ != old_alert_state)
     GetBubbleFrameView()->SetFootnoteView(CreateFootnoteView());
 
+  domain_fade_label_->SetText(domain_label_->GetText());
   domain_label_->SetText(domain);
 
   // If the preview image feature is not enabled, |preview_image_| will be null.
   if (preview_image_ && preview_image_->GetVisible()) {
     RegisterToThumbnailImageUpdates(tab->data().thumbnail);
   }
+}
+
+void TabHoverCardBubbleView::UpdateTextFade(double percent) {
+  title_fade_label_->SetFade(percent);
+  domain_fade_label_->SetFade(percent);
 }
 
 void TabHoverCardBubbleView::RegisterToThumbnailImageUpdates(
@@ -658,6 +726,10 @@ void TabHoverCardBubbleView::ClearPreviewImage() {
 }
 
 void TabHoverCardBubbleView::OnHoverCardLanded() {
+  // Make sure we're displaying the new text at 100% opacity, and none of the
+  // old text.
+  UpdateTextFade(1.0);
+
   // If we were waiting for a preview image with data to load, we don't want to
   // keep showing the old image while hovering on the new tab, so clear it. This
   // shouldn't happen very often for slide animations, but could on slower

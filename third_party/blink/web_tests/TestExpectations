@@ -953,7 +953,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-gap-large-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-gap-large-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-gap-negative-001.xht [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-height-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-height-block-child-001.xht [ Failure ]
 crbug.com/874506 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-inherit-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-inherit-002.xht [ Failure ]
@@ -974,20 +973,14 @@ crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-overflowing-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-reduce-000.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-000.xht [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-002.xht [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-003.xht [ Failure ]
 crbug.com/792435 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-color-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-color-inherit-001.xht [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-color-inherit-002.xht [ Crash Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-dashed-000.xht [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-dotted-000.xht [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-double-000.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-fraction-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-fraction-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-fraction-003.xht [ Crash Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-groove-000.xht [ Failure ]
 crbug.com/792437 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-large-001.xht [ Failure ]
 crbug.com/990240 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-nested-balancing-001.html [ Failure ]
@@ -997,11 +990,7 @@ crbug.com/990240 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/792437 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-percent-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-px-001.xht [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-ridge-000.xht [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-samelength-001.xht [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-shorthand-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-shorthand-2.xht [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-solid-000.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-stacking-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-shorthand-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-000.xht [ Failure ]
@@ -2352,16 +2341,9 @@ crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Fai
 crbug.com/663847 fast/events/context-no-deselect.html [ Failure Pass ]
 crbug.com/663847 virtual/mouseevent_fractional/fast/events/context-no-deselect.html [ Failure Pass ]
 
-crbug.com/453002 [ Win ] virtual/text-antialias/international/text-combine-image-test.html [ Failure Pass ]
-crbug.com/453002 [ Win ] virtual/text-antialias/international/vertical-text-glyph-test.html [ Failure Pass ]
-crbug.com/453002 [ Win ] virtual/text-antialias/justify-ideograph-vertical.html [ Failure Pass ]
-crbug.com/453002 [ Win ] virtual/text-antialias/orientation-sideways.html [ Failure Pass ]
-
 crbug.com/611658 [ Win ] virtual/text-antialias/emphasis-combined-text.html [ Failure ]
 
 crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
-
-crbug.com/605059 [ Retina ] virtual/text-antialias/international/rtl-negative-letter-spacing.html [ Failure ]
 
 crbug.com/654477 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/654477 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
@@ -3052,7 +3034,6 @@ crbug.com/626703 [ Win10 ] external/wpt/html/infrastructure/urls/resolving-urls/
 crbug.com/626703 [ Win7 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html [ Failure Timeout Pass ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=windows-1252 [ Timeout ]
 crbug.com/626703 external/wpt/css/css-values/ch-unit-011.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-values/attr-invalid-type-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/abspos/descendant-static-position-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/abspos/descendant-static-position-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/abspos/descendant-static-position-001.html [ Failure ]
@@ -3933,12 +3914,6 @@ crbug.com/655458 virtual/omt-worker-fetch/external/wpt/workers/semantics/multipl
 
 crbug.com/910709 navigator_language/worker_navigator_language.html [ Timeout ]
 
-# Off-the-main-thread classic worker script fetch.
-# This fails because running a worker on an opaque origin is blocked.
-crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/opaque-origin.html [ Timeout ]
-# Needs investigation. These are timing out.
-crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Skip ]
-crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Skip ]
 crbug.com/1002377 [ Win ] virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
@@ -4050,7 +4025,6 @@ crbug.com/663585 editing/pasteboard/data-transfer-items-image-png.html [ Pass Fa
 
 crbug.com/652536 fast/events/mouse-cursor.html [ Pass Failure ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor.html [ Pass Failure ]
-crbug.com/663858 virtual/text-antialias/emphasis-vertical.html [ Pass Failure ]
 crbug.com/664816 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
 
 crbug.com/702837 virtual/text-antialias/aat-morx.html [ Skip ]
@@ -5769,3 +5743,8 @@ crbug.com/963183 http/tests/devtools/network/network-cookies-pane.js [ Pass Time
 crbug.com/963183 http/tests/devtools/network/preview-searchable.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/network/waterfall-header-height-updates.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/network/network-search.js [ Pass Timeout Failure ]
+
+# Sheriff 2019-11-04
+crbug.com/1021407 [ Retina Release ] virtual/audio-service/media/video-controls-rendering.html [ Pass Failure ]
+crbug.com/1021407 [ Mac10.11 ] virtual/audio-service/media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
+crbug.com/1021407 [ Mac10.11 ] media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]

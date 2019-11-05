@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -43,64 +44,12 @@ class CORE_EXPORT ArrayBufferContents {
   DISALLOW_NEW();
 
  public:
-  using AdjustAmountOfExternalAllocatedMemoryFunction = void (*)(int64_t diff);
   // Types that need to be used when injecting external memory.
-  // DataHandle allows specifying a deleter which will be invoked when
-  // DataHandle instance goes out of scope. If the data memory is allocated
-  // using ArrayBufferContents::AllocateMemoryOrNull, it is necessary to specify
-  // ArrayBufferContents::FreeMemory as the DataDeleter. Most clients would want
-  // to use ArrayBufferContents::CreateDataHandle, which allocates memory and
-  // specifies the correct deleter.
+  // v8::BackingStore allows specifying a deleter which will be invoked when
+  // v8::BackingStore instance goes out of scope. If the data memory is
+  // allocated using ArrayBufferContents::AllocateMemoryOrNull, it is necessary
+  // to specify ArrayBufferContents::FreeMemory as the DataDeleter.
   using DataDeleter = void (*)(void* data, size_t length, void* info);
-
-  class DataHandle {
-    DISALLOW_COPY_AND_ASSIGN(DataHandle);
-
-   public:
-    DataHandle() {}
-
-    DataHandle(void* data,
-               size_t length,
-               DataDeleter deleter,
-               void* deleter_info)
-        : data_(data),
-          data_length_(data ? length : 0),
-          deleter_(deleter),
-          deleter_info_(deleter_info) {}
-    // Move constructor
-    DataHandle(DataHandle&& other) { *this = std::move(other); }
-    ~DataHandle() {
-      if (!data_)
-        return;
-      deleter_(data_, data_length_, deleter_info_);
-    }
-
-    // Move operator
-    DataHandle& operator=(DataHandle&& other) {
-      if (data_)
-        deleter_(data_, data_length_, deleter_info_);
-      data_ = other.data_;
-      data_length_ = other.data_length_;
-      deleter_ = other.deleter_;
-      deleter_info_ = other.deleter_info_;
-      other.data_ = nullptr;
-      return *this;
-    }
-
-    void reset() { *this = DataHandle(); }
-
-    void* Data() const { return data_; }
-    size_t DataLength() const { return data_length_; }
-
-    operator bool() const { return data_; }
-
-   private:
-    void* data_ = nullptr;
-    size_t data_length_ = 0;
-
-    DataDeleter deleter_ = nullptr;
-    void* deleter_info_ = nullptr;
-  };
 
   enum InitializationPolicy { kZeroInitialize, kDontInitialize };
 
@@ -109,17 +58,17 @@ class CORE_EXPORT ArrayBufferContents {
     kShared,
   };
 
-  ArrayBufferContents();
+  ArrayBufferContents() = default;
   ArrayBufferContents(size_t num_elements,
-                      unsigned element_byte_size,
+                      size_t element_byte_size,
                       SharingType is_shared,
                       InitializationPolicy);
   ArrayBufferContents(void* data,
                       size_t length,
                       DataDeleter deleter,
                       SharingType is_shared);
-  ArrayBufferContents(DataHandle, SharingType is_shared);
   ArrayBufferContents(ArrayBufferContents&&) = default;
+  explicit ArrayBufferContents(std::shared_ptr<v8::BackingStore> backing_store);
 
   ~ArrayBufferContents();
 
@@ -138,10 +87,16 @@ class CORE_EXPORT ArrayBufferContents {
     DCHECK(IsShared());
     return DataMaybeShared();
   }
-  void* DataMaybeShared() const { return holder_ ? holder_->Data() : nullptr; }
-  size_t DataLength() const { return holder_ ? holder_->DataLength() : 0; }
-  bool IsShared() const { return holder_ ? holder_->IsShared() : false; }
-  bool IsValid() const { return holder_->Data(); }
+  void* DataMaybeShared() const {
+    return backing_store_ ? backing_store_->Data() : nullptr;
+  }
+  size_t DataLength() const {
+    return backing_store_ ? backing_store_->ByteLength() : 0;
+  }
+  bool IsShared() const {
+    return backing_store_ ? backing_store_->IsShared() : false;
+  }
+  bool IsValid() const { return backing_store_ && backing_store_->Data(); }
 
   void Transfer(ArrayBufferContents& other);
   void ShareWith(ArrayBufferContents& other);
@@ -150,7 +105,6 @@ class CORE_EXPORT ArrayBufferContents {
 
   static void* AllocateMemoryOrNull(size_t, InitializationPolicy);
   static void FreeMemory(void*);
-  static DataHandle CreateDataHandle(size_t, InitializationPolicy);
 
  private:
   static void* AllocateMemoryWithFlags(size_t, InitializationPolicy, int);
@@ -158,31 +112,7 @@ class CORE_EXPORT ArrayBufferContents {
   static void DefaultAdjustAmountOfExternalAllocatedMemoryFunction(
       int64_t diff);
 
-  class CORE_EXPORT DataHolder : public ThreadSafeRefCounted<DataHolder> {
-    DISALLOW_COPY_AND_ASSIGN(DataHolder);
-
-   public:
-    DataHolder();
-    ~DataHolder();
-
-    void AllocateNew(size_t length,
-                     SharingType is_shared,
-                     InitializationPolicy);
-    void Adopt(DataHandle, SharingType is_shared);
-    void CopyMemoryFrom(const DataHolder& source);
-
-    const void* Data() const { return data_.Data(); }
-    void* Data() { return data_.Data(); }
-    size_t DataLength() const { return data_.DataLength(); }
-    bool IsShared() const { return is_shared_ == kShared; }
-
-   private:
-    DataHandle data_;
-    SharingType is_shared_;
-    bool has_registered_external_allocation_;
-  };
-
-  scoped_refptr<DataHolder> holder_;
+  std::shared_ptr<v8::BackingStore> backing_store_;
 
   DISALLOW_COPY_AND_ASSIGN(ArrayBufferContents);
 };

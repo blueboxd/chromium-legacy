@@ -2,6 +2,6 @@
 ++[document frame]
 ++++[landmark] name='Page 1'
 ++++++[paragraph]
-++++++++[text] name='Hello,<newline> world!<newline><newline>Goodbye,<newline> world!<newline>'
+++++++++[static] name='Hello,<newline> world!<newline><newline>Goodbye,<newline> world!<newline>'
 ++++++[paragraph]
-++++++++[text] name='This is some text abc<newline>def'
+++++++++[static] name='This is some text abc<newline>def'

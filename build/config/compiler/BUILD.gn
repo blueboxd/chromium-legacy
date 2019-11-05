@@ -2217,10 +2217,10 @@ config("afdo") {
     cflags = []
     if (clang_emit_debug_info_for_profiling) {
       # Add the following flags to generate debug info for profiling.
-      cflags += [
-        "-fdebug-info-for-profiling",
-        "-gline-tables-only",
-      ]
+      cflags += [ "-gline-tables-only" ]
+      if (!is_nacl) {
+        cflags += [ "-fdebug-info-for-profiling" ]
+      }
     }
     if (_clang_sample_profile != "") {
       rebased_clang_sample_profile =

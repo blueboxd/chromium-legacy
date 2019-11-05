@@ -410,5 +410,15 @@ const base::Feature kCompositeCrossOriginIframes{
 const base::Feature kSetLowPriorityForBeacon{"SetLowPriorityForBeacon",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, JS function calls in a detached window will be reported.
+// Reporting has a non-zero probability of a performance impact, hence an easy
+// way to disable it may come in handy.
+const base::Feature kSetDetachedWindowReasonByNavigation{
+    "SetDetachedWindowReasonByNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kSetDetachedWindowReasonByClosing{
+    "SetDetachedWindowReasonByClosing", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kSetDetachedWindowReasonByOtherReason{
+    "SetDetachedWindowReasonByOtherReason", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

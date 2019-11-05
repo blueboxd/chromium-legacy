@@ -277,6 +277,8 @@ void WebTestMessageFilter::OnSetPermission(
     type = PermissionType::WAKE_LOCK_SCREEN;
   } else if (name == "wake-lock-system") {
     type = PermissionType::WAKE_LOCK_SYSTEM;
+  } else if (name == "nfc") {
+    type = PermissionType::NFC;
   } else {
     NOTREACHED();
     type = PermissionType::NOTIFICATIONS;

@@ -731,8 +731,7 @@ bool BrowserView::IsOnCurrentWorkspace() const {
   }
 
   BOOL on_current_desktop;
-  if (!native_win ||
-      FAILED(virtual_desktop_manager->IsWindowOnCurrentVirtualDesktop(
+  if (FAILED(virtual_desktop_manager->IsWindowOnCurrentVirtualDesktop(
           native_win->GetHost()->GetAcceleratedWidget(),
           &on_current_desktop)) ||
       on_current_desktop) {
@@ -744,9 +743,9 @@ bool BrowserView::IsOnCurrentWorkspace() const {
   // is not on the current virtual desktop when it is. In this situation,
   // it also returns GUID_NULL for the desktop id.
   GUID workspace_guid;
-  return SUCCEEDED(virtual_desktop_manager->GetWindowDesktopId(
-             native_win->GetHost()->GetAcceleratedWidget(), &workspace_guid)) &&
-         workspace_guid != GUID_NULL;
+  return !SUCCEEDED(virtual_desktop_manager->GetWindowDesktopId(
+             native_win->GetHost()->GetAcceleratedWidget(), &workspace_guid)) ||
+         workspace_guid == GUID_NULL;
 #else
   return true;
 #endif  // defined(OS_CHROMEOS)

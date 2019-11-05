@@ -12,7 +12,8 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/viz/host/viz_host_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -27,7 +28,7 @@ class VIZ_HOST_EXPORT HostDisplayClient : public mojom::DisplayClient {
   explicit HostDisplayClient(gfx::AcceleratedWidget widget);
   ~HostDisplayClient() override;
 
-  mojom::DisplayClientPtr GetBoundPtr(
+  mojo::PendingRemote<mojom::DisplayClient> GetBoundRemote(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
@@ -46,7 +47,7 @@ class VIZ_HOST_EXPORT HostDisplayClient : public mojom::DisplayClient {
   void DidCompleteSwapWithNewSize(const gfx::Size& size) override;
 #endif
 
-  mojo::Binding<mojom::DisplayClient> binding_;
+  mojo::Receiver<mojom::DisplayClient> receiver_{this};
 #if defined(OS_MACOSX) || defined(OS_WIN)
   gfx::AcceleratedWidget widget_;
 #endif

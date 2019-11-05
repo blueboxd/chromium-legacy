@@ -6,13 +6,11 @@
 
 namespace viz {
 
-FakeDisplayClient::FakeDisplayClient() : binding_(this) {}
+FakeDisplayClient::FakeDisplayClient() = default;
 FakeDisplayClient::~FakeDisplayClient() = default;
 
-mojom::DisplayClientPtr FakeDisplayClient::BindInterfacePtr() {
-  mojom::DisplayClientPtr ptr;
-  binding_.Bind(MakeRequest(&ptr));
-  return ptr;
+mojo::PendingRemote<mojom::DisplayClient> FakeDisplayClient::BindRemote() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 #if defined(OS_MACOSX)

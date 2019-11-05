@@ -2,17 +2,17 @@
 ++[internal frame]
 ++++[document web]
 ++++++[paragraph]
-++++++++[text] name='My favorite browser is '
+++++++++[static] name='My favorite browser is '
 ++++++++[content deletion]
-++++++++++[text] name='ABC'
-++++++++[text] name=' '
+++++++++++[static] name='ABC'
+++++++++[static] name=' '
 ++++++++[content insertion]
-++++++++++[text] name='Chrome'
-++++++++[text] name='!'
+++++++++++[static] name='Chrome'
+++++++++[static] name='!'
 ++[internal frame]
 ++++[document web]
 ++++++[paragraph]
-++++++++[text] name='This test is to check '
+++++++++[static] name='This test is to check '
 ++++++++[static]
-++++++++++[text] name='mark tag'
-++++++++[text] name='.'
+++++++++++[static] name='mark tag'
+++++++++[static] name='.'

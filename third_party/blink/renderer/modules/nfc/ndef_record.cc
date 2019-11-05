@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
+#include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_record_init.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -229,6 +230,8 @@ static NDEFRecord* CreateUnknownRecord(const String& media_type,
 static NDEFRecord* CreateExternalRecord(const String& custom_type,
                                         const ScriptValue& data,
                                         ExceptionState& exception_state) {
+  // TODO(https://crbug.com/520391): Add support in case of |data| being an
+  // NDEFMessageInit.
   // https://w3c.github.io/web-nfc/#dfn-map-external-data-to-ndef
   if (data.IsEmpty() || !data.V8Value()->IsArrayBuffer()) {
     exception_state.ThrowTypeError(
@@ -290,6 +293,11 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
     exception_state.ThrowTypeError("smart-poster type is not supported yet");
     return nullptr;
   } else {
+    // TODO(https://crbug.com/520391): Here |record_type| may be a custom type
+    // name for an external type record, or a local type name for an external
+    // type record embedded within a ndef message as payload of a parent record,
+    // in either case we should try to create an external type record from
+    // |data|.
     String formated_type = ValidateCustomRecordType(record_type);
     if (!formated_type.IsNull())
       return CreateExternalRecord(formated_type, init->data(), exception_state);
@@ -336,7 +344,12 @@ NDEFRecord::NDEFRecord(const device::mojom::blink::NDEFRecord& record)
       id_(record.id),
       encoding_(record.encoding),
       lang_(record.lang),
-      payload_data_(record.data) {}
+      payload_data_(record.data) {
+  if (record.payload_message) {
+    payload_message_ =
+        MakeGarbageCollected<NDEFMessage>(*record.payload_message);
+  }
+}
 
 const String& NDEFRecord::recordType() const {
   return record_type_;
@@ -368,7 +381,26 @@ const WTF::Vector<uint8_t>& NDEFRecord::payloadData() const {
   return payload_data_;
 }
 
+// https://w3c.github.io/web-nfc/#dfn-convert-ndefrecord-payloaddata-bytes
+base::Optional<HeapVector<Member<NDEFRecord>>> NDEFRecord::toRecords(
+    ExceptionState& exception_state) const {
+  if (record_type_ != "smart-poster" &&
+      ValidateCustomRecordType(record_type_).IsNull()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Only smart-poster records and external type records could have a ndef "
+        "message as payload.");
+    return base::nullopt;
+  }
+  return payload_message_->records();
+}
+
+const NDEFMessage* NDEFRecord::payload_message() const {
+  return payload_message_.Get();
+}
+
 void NDEFRecord::Trace(blink::Visitor* visitor) {
+  visitor->Trace(payload_message_);
   ScriptWrappable::Trace(visitor);
 }
 

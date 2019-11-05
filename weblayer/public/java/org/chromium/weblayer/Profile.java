@@ -66,20 +66,34 @@ public final class Profile {
      * call this method repeatedly without waiting for callback.
      *
      * @param dataTypes See {@link BrowsingDataType}.
+     * @param fromMillis Defines the start (in milliseconds since epoch) of the time range to clear.
+     * @param toMillis Defines the end (in milliseconds since epoch) of the time range to clear.
+     * For clearing all data prefer using {@link Long#MAX_VALUE} to
+     * {@link System.currentTimeMillis()} to take into account possible system clock changes.
      * @return {@link ListenableResult} into which a "null" will be supplied when clearing is
      * finished.
      */
     @NonNull
-    public ListenableResult<Void> clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes) {
+    public ListenableResult<Void> clearBrowsingData(
+            @NonNull @BrowsingDataType int[] dataTypes, long fromMillis, long toMillis) {
         ThreadCheck.ensureOnUiThread();
         try {
             ListenableResult<Void> result = new ListenableResult<>();
-            mImpl.clearBrowsingData(
-                    dataTypes, ObjectWrapper.wrap((Runnable) () -> result.supplyResult(null)));
+            mImpl.clearBrowsingData(dataTypes, fromMillis, toMillis,
+                    ObjectWrapper.wrap((Runnable) () -> result.supplyResult(null)));
             return result;
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+    }
+
+    /**
+     * Clears the data associated with the Profile.
+     * Same as {@link #clearBrowsingData(int[], long, long)} with unbounded time range.
+     */
+    @NonNull
+    public ListenableResult<Void> clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes) {
+        return clearBrowsingData(dataTypes, 0, Long.MAX_VALUE);
     }
 
     public void destroy() {

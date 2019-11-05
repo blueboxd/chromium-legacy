@@ -13,7 +13,7 @@ namespace content {
 
 // This enum is also used for UMA purposes, so it needs to adhere to
 // the UMA guidelines.
-// Make sure you update histograms.xml and GetAllPermissionTypes if you add
+// Make sure you update enums.xml and GetAllPermissionTypes if you add
 // new permission types.
 // Never delete or reorder an entry; only add new entries
 // immediately before PermissionType::NUM
@@ -39,6 +39,7 @@ enum class PermissionType {
   PERIODIC_BACKGROUND_SYNC = 19,
   WAKE_LOCK_SCREEN = 20,
   WAKE_LOCK_SYSTEM = 21,
+  NFC = 22,
 
   // Always keep this at the end.
   NUM,

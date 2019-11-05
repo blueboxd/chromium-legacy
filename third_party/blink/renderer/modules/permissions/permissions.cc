@@ -171,7 +171,14 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
       NOTREACHED();
     }
   }
-
+  if (name == "nfc") {
+    if (!RuntimeEnabledFeatures::WebNFCEnabled(
+            ExecutionContext::From(script_state))) {
+      exception_state.ThrowTypeError("Web NFC is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::NFC);
+  }
   return nullptr;
 }
 

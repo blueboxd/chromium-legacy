@@ -9,11 +9,12 @@ namespace mojo {
 // static
 bool StructTraits<viz::mojom::CompositorFrameDataView, viz::CompositorFrame>::
     Read(viz::mojom::CompositorFrameDataView data, viz::CompositorFrame* out) {
-  return data.ReadPasses(&out->render_pass_list) &&
-         !out->render_pass_list.empty() &&
-         !out->render_pass_list.back()->output_rect.size().IsEmpty() &&
-         data.ReadMetadata(&out->metadata) &&
-         data.ReadResources(&out->resource_list);
+  CHECK(data.ReadPasses(&out->render_pass_list));
+  CHECK(!out->render_pass_list.empty());
+  CHECK(!out->render_pass_list.back()->output_rect.size().IsEmpty());
+  CHECK(data.ReadMetadata(&out->metadata));
+  CHECK(data.ReadResources(&out->resource_list));
+  return true;
 }
 
 }  // namespace mojo

@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -497,10 +498,13 @@ bool ParseMultipartHeadersFromBody(const char* bytes,
     size_t iterator = 0;
 
     response->ClearHttpHeaderField(header);
+    Vector<AtomicString> values;
     while (response_headers->EnumerateHeader(&iterator, header_string_piece,
                                              &value)) {
-      response->AddHttpHeaderField(header, WebString::FromLatin1(value));
+      const AtomicString atomic_value = WebString::FromLatin1(value);
+      values.push_back(atomic_value);
     }
+    response->AddHttpHeaderFieldWithMultipleValues(header, values);
   }
   return true;
 }

@@ -157,6 +157,7 @@ void DecompressIfNeeded(base::StringPiece data, std::string* output) {
     bool success = BrotliDecompress(data, output);
     DCHECK(success);
   } else {
+    // Assume the raw data is not compressed.
     data.CopyToString(output);
   }
 }

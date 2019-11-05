@@ -58,6 +58,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
   ax::mojom::Role GetAccessibleWindowRole() override;
   int GetDialogButtons() const override;
   std::unique_ptr<views::View> CreateFootnoteView() override;
+  void Layout() override;
 
   void set_last_mouse_exit_timestamp(
       base::TimeTicks last_mouse_exit_timestamp) {
@@ -69,6 +70,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
   friend class TabHoverCardBubbleViewInteractiveUiTest;
   class WidgetFadeAnimationDelegate;
   class WidgetSlideAnimationDelegate;
+  class FadeLabel;
 
   // Get delay in milliseconds based on tab width.
   base::TimeDelta GetDelay(int tab_width) const;
@@ -77,6 +79,9 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
 
   // Updates and formats title, alert state, domain, and preview image.
   void UpdateCardContent(const Tab* tab);
+
+  // Update the text fade to the given percent, which should be between 0 and 1.
+  void UpdateTextFade(double percent);
 
   void RegisterToThumbnailImageUpdates(
       scoped_refptr<ThumbnailImage> thumbnail_image);
@@ -116,8 +121,10 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
 
   views::Widget* widget_ = nullptr;
   views::Label* title_label_ = nullptr;
+  FadeLabel* title_fade_label_ = nullptr;
   base::Optional<TabAlertState> alert_state_;
   views::Label* domain_label_ = nullptr;
+  FadeLabel* domain_fade_label_ = nullptr;
   views::ImageView* preview_image_ = nullptr;
 
   // Counter used to keep track of the number of tab hover cards seen before a

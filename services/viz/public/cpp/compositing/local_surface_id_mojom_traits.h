@@ -32,7 +32,9 @@ struct StructTraits<viz::mojom::LocalSurfaceIdDataView, viz::LocalSurfaceId> {
                    viz::LocalSurfaceId* out) {
     out->parent_sequence_number_ = data.parent_sequence_number();
     out->child_sequence_number_ = data.child_sequence_number();
-    return data.ReadEmbedToken(&out->embed_token_) && out->is_valid();
+    CHECK(data.ReadEmbedToken(&out->embed_token_));
+    CHECK(out->is_valid());
+    return true;
   }
 };
 

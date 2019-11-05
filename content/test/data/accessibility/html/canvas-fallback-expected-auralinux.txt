@@ -1,21 +1,21 @@
 [document web]
 ++[section]
 ++++[canvas]
-++++++[text] name='Static fallback'
+++++++[static] name='Static fallback'
 ++++[canvas]
-++++++[text] name='<newline>    '
+++++++[static] name='<newline>    '
 ++++++[paragraph] name='Aria hidden paragraph in fallback content' labelled-by
-++++++++[text] name='Line breaking content in a fallback'
-++++++[text] name='<newline>    '
+++++++++[static] name='Line breaking content in a fallback'
+++++++[static] name='<newline>    '
 ++++++[paragraph] name='Visibility hidden paragraph in fallback content' labelled-by
-++++++++[text] name='This is another paragraph in fallback'
-++++++[text] name='<newline>    '
+++++++++[static] name='This is another paragraph in fallback'
+++++++[static] name='<newline>    '
 ++++++[heading] name='Aria hidden paragraph in fallback content' label-for
-++++++++[text] name='Aria hidden paragraph in fallback content'
-++++++[text] name='<newline>    '
+++++++++[static] name='Aria hidden paragraph in fallback content'
+++++++[static] name='<newline>    '
 ++++++[heading]
-++++++++[text] name='Display none text in fallback content '
-++++++[text] name='<newline>    '
+++++++++[static] name='Display none text in fallback content '
+++++++[static] name='<newline>    '
 ++++++[heading] label-for
-++++++++[text] name='Visibility hidden paragraph in fallback content'
-++++++[text] name='<newline>  '
+++++++++[static] name='Visibility hidden paragraph in fallback content'
+++++++[static] name='<newline>  '

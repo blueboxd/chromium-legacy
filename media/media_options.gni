@@ -85,7 +85,7 @@ declare_args() {
   enable_platform_dolby_vision = proprietary_codecs && is_chromecast
 
   # Enable HLS with SAMPLE-AES decryption.
-  enable_hls_sample_aes = proprietary_codecs && is_chromecast
+  enable_hls_sample_aes = proprietary_codecs && (is_chromecast || is_fuchsia)
 
   # Enable logging override, e.g. enable DVLOGs at build time. Must not be
   # enabled when |use_jumbo_build| is true, in which case multiple .cc files

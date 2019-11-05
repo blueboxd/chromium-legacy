@@ -1465,7 +1465,7 @@ public class Tab {
     /**
      * @return The current {@link TabWebContentsDelegateAndroid} instance.
      */
-    public TabWebContentsDelegateAndroid getTabWebContentsDelegateAndroid() {
+    TabWebContentsDelegateAndroid getTabWebContentsDelegateAndroid() {
         return mWebContentsDelegate;
     }
 

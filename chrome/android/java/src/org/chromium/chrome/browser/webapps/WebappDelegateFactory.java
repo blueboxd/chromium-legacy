@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 
 /**
@@ -97,6 +98,8 @@ public class WebappDelegateFactory extends TabDelegateFactoryImpl {
 
     private final WebappActivity mActivity;
 
+    private TabWebContentsDelegateAndroid mWebContentsDelegateAndroid;
+
     public WebappDelegateFactory(WebappActivity activity) {
         super(activity);
         mActivity = activity;
@@ -110,7 +113,8 @@ public class WebappDelegateFactory extends TabDelegateFactoryImpl {
 
     @Override
     public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
-        return new WebappWebContentsDelegateAndroid(mActivity, tab);
+        mWebContentsDelegateAndroid = new WebappWebContentsDelegateAndroid(mActivity, tab);
+        return mWebContentsDelegateAndroid;
     }
 
     @Override
@@ -119,5 +123,9 @@ public class WebappDelegateFactory extends TabDelegateFactoryImpl {
                 new WebappBrowserControlsDelegate(mActivity, tab),
                 // Ensures browser controls hiding is delayed after activity start.
                 mActivity.getFullscreenManager().getBrowserVisibilityDelegate());
+    }
+
+    WebContentsDelegateAndroid getWebContentsDelegate() {
+        return mWebContentsDelegateAndroid;
     }
 }

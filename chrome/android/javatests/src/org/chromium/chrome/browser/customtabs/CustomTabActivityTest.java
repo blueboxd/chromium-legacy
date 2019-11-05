@@ -2283,8 +2283,9 @@ public class CustomTabActivityTest {
         ApplicationStatus.registerStateListenerForAllActivities(listener);
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            cctActivity.getActivityTab().getTabWebContentsDelegateAndroid().openNewTab(
-                    "about:blank", null, null, WindowOpenDisposition.OFF_THE_RECORD, false);
+            TabTestUtils.getTabWebContentsDelegate(cctActivity.getActivityTab())
+                    .openNewTab(
+                            "about:blank", null, null, WindowOpenDisposition.OFF_THE_RECORD, false);
         });
 
         mCctHiddenCallback.waitForCallback("CCT not hidden.", 0);

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -78,7 +79,7 @@ public class InfoBarAppearanceTest {
         FramebustBlockInfoBar infoBar;
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mTab.getTabWebContentsDelegateAndroid().showFramebustBlockInfobarForTesting(url1);
+            TabTestUtils.getTabWebContentsDelegate(mTab).showFramebustBlockInfobarForTesting(url1);
         });
         infobars = mActivityTestRule.getInfoBarContainer().getInfoBarsForTesting();
         assertEquals(1, infobars.size());
@@ -86,7 +87,7 @@ public class InfoBarAppearanceTest {
         assertEquals(url1, infoBar.getBlockedUrl());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mTab.getTabWebContentsDelegateAndroid().showFramebustBlockInfobarForTesting(url2);
+            TabTestUtils.getTabWebContentsDelegate(mTab).showFramebustBlockInfobarForTesting(url2);
         });
         infobars = mActivityTestRule.getInfoBarContainer().getInfoBarsForTesting();
         assertEquals(1, infobars.size());
@@ -110,7 +111,7 @@ public class InfoBarAppearanceTest {
         mTab.addObserver(navigationWaiter);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mTab.getTabWebContentsDelegateAndroid().showFramebustBlockInfobarForTesting(url);
+            TabTestUtils.getTabWebContentsDelegate(mTab).showFramebustBlockInfobarForTesting(url);
         });
         FramebustBlockInfoBar infoBar =
                 (FramebustBlockInfoBar) mActivityTestRule.getInfoBarContainer()
@@ -134,7 +135,7 @@ public class InfoBarAppearanceTest {
         String url = "http://very.evil.biz";
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mTab.getTabWebContentsDelegateAndroid().showFramebustBlockInfobarForTesting(url);
+            TabTestUtils.getTabWebContentsDelegate(mTab).showFramebustBlockInfobarForTesting(url);
         });
         FramebustBlockInfoBar infoBar =
                 (FramebustBlockInfoBar) mActivityTestRule.getInfoBarContainer()

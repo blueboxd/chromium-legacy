@@ -87,7 +87,7 @@ public class WebappLauncherActivity extends Activity {
         WeakReference<WebappActivity> webappActivity =
                 WebappActivity.findWebappActivityWithTabId(tabId);
         if (webappActivity == null || webappActivity.get() == null) return false;
-        webappActivity.get().getActivityTab().getTabWebContentsDelegateAndroid().activateContents();
+        webappActivity.get().getWebContentsDelegate().activateContents();
         return true;
     }
 

@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
+import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
@@ -94,6 +95,8 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
     private Bitmap mLargestFavicon;
 
     private static Integer sOverrideCoreCountForTesting;
+
+    private WebappDelegateFactory mWebappDelegateFactory;
 
     /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
     private static class Holder {
@@ -500,6 +503,11 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
         return mWebappInfo.scopeUrl();
     }
 
+    WebContentsDelegateAndroid getWebContentsDelegate() {
+        assert mWebappDelegateFactory != null;
+        return mWebappDelegateFactory.getWebContentsDelegate();
+    }
+
     public static void addWebappInfo(String id, WebappInfo info) {
         Holder.sWebappInfoMap.put(id, info);
     }
@@ -777,7 +785,8 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
 
     @Override
     protected TabDelegateFactory createTabDelegateFactory() {
-        return new WebappDelegateFactory(this);
+        mWebappDelegateFactory = new WebappDelegateFactory(this);
+        return mWebappDelegateFactory;
     }
 
     @Override

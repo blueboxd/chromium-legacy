@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -215,7 +216,7 @@ public final class WebApkActivityTest {
         ChromeActivityTestRule.waitFor(mainClass);
 
         TabWebContentsDelegateAndroid tabDelegate =
-                webApkActivity.getActivityTab().getTabWebContentsDelegateAndroid();
+                TabTestUtils.getTabWebContentsDelegate(webApkActivity.getActivityTab());
         tabDelegate.activateContents();
 
         // WebApkActivity should have been brought back to the foreground.

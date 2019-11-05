@@ -124,6 +124,14 @@ public class TabTestUtils {
      * @return {@code true} if the current tab is a custom tab.
      */
     public static boolean isCustomTab(Tab tab) {
-        return tab.getTabWebContentsDelegateAndroid().isCustomTab();
+        return getTabWebContentsDelegate(tab).isCustomTab();
+    }
+
+    /**
+     * @param tab {@link Tab} object.
+     * @return {@link TabWebContentsDelegateAndroid} object for a given tab.
+     */
+    public static TabWebContentsDelegateAndroid getTabWebContentsDelegate(Tab tab) {
+        return tab.getTabWebContentsDelegateAndroid();
     }
 }
